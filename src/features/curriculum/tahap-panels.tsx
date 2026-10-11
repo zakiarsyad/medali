@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { MainIndicatorsPanel } from "./main-indicators-panel";
 import type { ValueIndicators } from "./main-indicators";
+import { MainIndicatorsPanel } from "./main-indicators-panel";
 import type { PpksActivity } from "./ppks-activities";
 import type { TahapBreakdown } from "./stage-breakdown";
 import { StagesSection } from "./stages-section";

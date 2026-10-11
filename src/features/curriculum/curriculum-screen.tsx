@@ -3,11 +3,11 @@ import { PageHead } from "@/ui/page-head";
 import { BaseScorePanel } from "./base-score-panel";
 import { changeNote } from "./change-note";
 import { GradeScalePanel } from "./grade-scale-panel";
-import { TahapPanels } from "./tahap-panels";
 import { readBaseScore, STARTING_BASE_SCORE } from "./stored-base-score";
 import { readMainIndicators } from "./stored-main-indicators";
 import { readPpksActivities } from "./stored-ppks-activities";
 import { readStageBreakdowns } from "./stored-stage-breakdowns";
+import { TahapPanels } from "./tahap-panels";
 
 export async function CurriculumScreen({
   mayChange,
