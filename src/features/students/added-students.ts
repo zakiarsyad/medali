@@ -1,20 +1,8 @@
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  ilike,
-  isNotNull,
-  isNull,
-  or,
-  type SQL,
-  sql,
-} from "drizzle-orm";
+import { and, asc, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
-import { containsPattern } from "@/db/contains-pattern";
 import { accounts, students, studyPrograms } from "@/db/schema";
+import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
 import type { StudentInput } from "./student-input";
 
 /** The most rows the list shows. More than that is found by searching. */
@@ -67,19 +55,11 @@ export interface StudentCounts {
   addedActive: number;
 }
 
-const notRemoved = isNull(students.deletedAt);
 const putInHere = isNotNull(students.inputAt);
 const isActive = eq(students.status, "active");
 
 /** A student put in through Pengguna baru mahasiswa and not removed. */
-export const ADDED_HERE = and(putInHere, notRemoved);
-
-function matches(query: string): SQL | undefined {
-  const text = query.trim();
-  if (text === "") return undefined;
-  const pattern = containsPattern(text);
-  return or(ilike(students.name, pattern), ilike(students.nim, pattern));
-}
+export const ADDED_HERE = and(putInHere, NOT_REMOVED);
 
 /**
  * The students put in through Pengguna baru mahasiswa that match a search,
@@ -89,7 +69,7 @@ export async function listAddedStudents(
   db: Database,
   query: string,
 ): Promise<{ students: AddedStudent[]; matching: number }> {
-  const condition = and(ADDED_HERE, matches(query));
+  const condition = and(ADDED_HERE, matchesSearch(query));
   const [counted] = await db
     .select({ matching: count() })
     .from(students)
@@ -138,10 +118,6 @@ export async function findAddedStudent(
   return found ?? null;
 }
 
-function countWhere(condition: SQL): SQL<number> {
-  return sql`count(*) filter (where ${condition})`.mapWith(Number);
-}
-
 /** The numbers at the top of Pengguna baru mahasiswa. Removed students are left out. */
 export async function countStudents(db: Database): Promise<StudentCounts> {
   const [counted] = await db
@@ -152,7 +128,7 @@ export async function countStudents(db: Database): Promise<StudentCounts> {
       addedActive: countWhere(sql`${putInHere} and ${isActive}`),
     })
     .from(students)
-    .where(notRemoved);
+    .where(NOT_REMOVED);
   if (!counted) throw new Error("The students were not counted.");
   return counted;
 }
