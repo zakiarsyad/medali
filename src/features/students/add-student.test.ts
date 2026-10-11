@@ -9,7 +9,7 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addStudent } from "./add-student";
+import { addStudent, addStudents } from "./add-student";
 
 const inTestDatabase = withTestDatabase();
 
@@ -129,6 +129,68 @@ describe("addStudent", () => {
           rolesAfter: ["student"],
         },
       ]);
+    });
+  });
+});
+
+describe("addStudents", () => {
+  it("adds many students whole, and leaves out a NIM that is already used", async () => {
+    await inTestDatabase(async (db) => {
+      const studyProgramId = await addProgram(db);
+      const actor = await addActor(db);
+      const student = (nim: string, name: string) => ({
+        nim,
+        name,
+        studyProgramId,
+        entryPath: "regular" as const,
+        sex: "female" as const,
+        cohortYear: 2026,
+      });
+      await addStudent(db, student("9900000111", "Mahasiswa Lama Uji"), actor);
+      const accountsBefore = await db.$count(accounts);
+      const linesBefore = await db.$count(roleChanges);
+
+      const added = await addStudents(
+        db,
+        [
+          student("9900000110", "Mahasiswa Banyak Satu"),
+          student("9900000111", "Mahasiswa Banyak Dua"),
+          student("9900000112", "Mahasiswa Banyak Tiga"),
+        ],
+        actor,
+      );
+
+      expect(added.map((student) => student.nim)).toEqual([
+        "9900000110",
+        "9900000112",
+      ]);
+      expect(await db.$count(accounts)).toBe(accountsBefore + 2);
+      expect(await db.$count(roleChanges)).toBe(linesBefore + 2);
+      const kept = await db
+        .select({ name: students.name })
+        .from(students)
+        .where(eq(students.nim, "9900000111"));
+      expect(kept).toEqual([{ name: "Mahasiswa Lama Uji" }]);
+      for (const { accountId, studentId } of added) {
+        const [account] = await db
+          .select({ studentId: accounts.studentId })
+          .from(accounts)
+          .where(eq(accounts.id, accountId));
+        const roles = await db
+          .select({ role: accountRoles.role })
+          .from(accountRoles)
+          .where(eq(accountRoles.accountId, accountId));
+        expect(account?.studentId).toBe(studentId);
+        expect(roles).toEqual([{ role: "student" }]);
+      }
+    });
+  });
+
+  it("adds nothing when given no students", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await addActor(db);
+
+      expect(await addStudents(db, [], actor)).toEqual([]);
     });
   });
 });

@@ -8,19 +8,24 @@ import { currentAccount } from "@/auth/current-account";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
+import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { findAddedStudent } from "./added-students";
 import { changeStudent, NOT_FOUND, removeStudent } from "./change-student";
+import type { FilePreview } from "./file-preview";
 import { refusedForm, type StudentFormState, savedForm } from "./form-values";
 import { isNim } from "./input-limits";
 import { inputStudent } from "./input-student";
+import { savedMessage, saveStudentFile } from "./save-student-file";
+import { previewStudentFile, type UploadedFile } from "./student-file-check";
 import {
   cohortChoices,
   type InputContext,
   parseStudent,
   type StudentFields,
 } from "./student-input";
+import { checkFileShape } from "./uploaded-file";
 
 async function studentInputter(): Promise<Account> {
   const account = await currentAccount();
@@ -110,4 +115,52 @@ export async function removeStudentAction(
   if (!removed.ok) return { error: removed.error, done: null };
   refreshScreens();
   return { error: null, done: `${removed.value} dihapus.` };
+}
+
+const NO_FILE = {
+  ok: false,
+  error: "Berkas tidak diterima. Pilih berkas CSV, lalu coba lagi.",
+} as const;
+
+/** The file of a sent form, refused by name or size before it is read. */
+async function sentFile(form: FormData): Promise<Parsed<UploadedFile>> {
+  const file = form.get("file");
+  if (!(file instanceof File)) return NO_FILE;
+  const wrongShape = checkFileShape(file.name, file.size);
+  if (wrongShape) return { ok: false, error: wrongShape };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  return { ok: true, value: { name: file.name, bytes } };
+}
+
+export async function previewStudentFileAction(
+  form: FormData,
+): Promise<Parsed<FilePreview>> {
+  const inputter = await studentInputter();
+  const file = await sentFile(form);
+  if (!file.ok) return file;
+  const db = database();
+  const context = await inputContext(db);
+  return previewStudentFile(db, inputter, file.value, context);
+}
+
+/** What the screen shows after a file is saved. */
+export interface SavedFileShown {
+  message: string;
+  /** The file as it was at the save, for the rows that were skipped. */
+  preview: FilePreview;
+}
+
+export async function saveStudentFileAction(
+  form: FormData,
+): Promise<Parsed<SavedFileShown>> {
+  const inputter = await studentInputter();
+  const file = await sentFile(form);
+  if (!file.ok) return file;
+  const db = database();
+  const context = await inputContext(db);
+  const saved = await saveStudentFile(db, inputter, file.value, context);
+  if (!saved.ok) return saved;
+  refreshScreens();
+  const message = savedMessage(file.value.name, saved.value);
+  return { ok: true, value: { message, preview: saved.value.preview } };
 }

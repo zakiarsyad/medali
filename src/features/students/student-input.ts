@@ -48,6 +48,19 @@ export interface InputContext {
 const COHORT_YEARS_BACK = 5;
 
 /**
+ * The refusals that a student file words in its own way, because a file
+ * holds text where the form holds a choice.
+ */
+export const UNKNOWN_PROGRAM = "Program studi tidak dikenal.";
+export const UNKNOWN_SEX = "Jenis kelamin harus Laki-laki atau Perempuan.";
+export const UNKNOWN_PROVINCE = "Provinsi tidak dikenal.";
+export const UNKNOWN_AGENCY = "Instansi asal tidak dikenal.";
+
+export function invalidCohort(cohortYears: number[]): string {
+  return `Angkatan tidak valid (contoh ${cohortYears[0]}).`;
+}
+
+/**
  * The Angkatan choices: this year and the five before, the newest first.
  * `keptYear` is the year a student already has, which stays a choice.
  */
@@ -134,18 +147,16 @@ function parseChoices(
   const program = context.programs.find(
     (candidate) => String(candidate.id) === fields.studyProgramId,
   );
-  if (!program) return refused("Program studi tidak dikenal.");
+  if (!program) return refused(UNKNOWN_PROGRAM);
   const path = oneOf(entryPath.enumValues, fields.entryPath);
   if (!path) return refused("Jalur harus Reguler atau Alih program.");
   const studentSex = oneOf(sex.enumValues, fields.sex);
-  if (!studentSex) {
-    return refused("Jenis kelamin harus Laki-laki atau Perempuan.");
-  }
+  if (!studentSex) return refused(UNKNOWN_SEX);
   const cohortYear = context.cohortYears.find(
     (year) => String(year) === fields.cohortYear,
   );
   if (cohortYear === undefined) {
-    return refused(`Angkatan tidak valid (contoh ${context.cohortYears[0]}).`);
+    return refused(invalidCohort(context.cohortYears));
   }
   const status = oneOf(studentStatus.enumValues, fields.status);
   if (!status) return refused("Status harus Aktif, Cuti, atau Non Aktif.");
@@ -174,16 +185,12 @@ export function parseStudent(
   if (!choices.ok) return choices;
   const className = parseClassName(fields.className);
   if (!className.ok) return className;
-  const province = parseListed(
-    PROVINCES,
-    fields.province,
-    "Provinsi tidak dikenal.",
-  );
+  const province = parseListed(PROVINCES, fields.province, UNKNOWN_PROVINCE);
   if (!province.ok) return province;
   const agency = parseListed(
     ORIGIN_AGENCIES,
     fields.originAgency,
-    "Instansi asal tidak dikenal.",
+    UNKNOWN_AGENCY,
   );
   if (!agency.ok) return agency;
   const categories = parseCategories(fields.categories);
