@@ -43,8 +43,9 @@ sees what.
   only their mentees, a head of study program only their program, a
   student only themselves. Confirmed by a check.
 - When Kepala Unit opens Pengaturan > Pengguna dan peran, then they see
-  every account with its roles, and can add an account, change its roles,
-  or remove it.
+  every staff account with its roles, Kepala Unit accounts included, and
+  can add an account, change its roles, or remove it. Students are not
+  listed there.
 - When Kepala Unit removes an account, then it disappears from the list
   and from Ganti peran, but it is not erased. Confirmed on the preview and
   by a check.
@@ -88,7 +89,7 @@ None.
   with two roles, and made-up students.
 - [x] 3. The permission list, the menu for each role and the "Ganti peran"
   picker are added. Each page appears as an empty page.
-- [ ] 4. Pengaturan > Pengguna dan peran lets Kepala Unit see, add, change
+- [x] 4. Pengaturan > Pengguna dan peran lets Kepala Unit see, add, change
   and remove accounts and their roles, with every role change written to
   the log.
 - [ ] 5. Previews apply the table changes on deploy, and the PR preview

@@ -19,7 +19,7 @@ function byRoleOrder(a: RoleId, b: RoleId): number {
   return ROLE_IDS.indexOf(a) - ROLE_IDS.indexOf(b);
 }
 
-async function rolesByAccount(
+export async function rolesByAccount(
   db: Database,
   accountIds: string[],
 ): Promise<Map<string, RoleId[]>> {
@@ -68,12 +68,16 @@ export async function activeAccounts(
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export function isAccountId(id: string): boolean {
+  return UUID.test(id);
+}
+
 /** One active account, or null when the id is unknown, removed or malformed. */
 export async function findActiveAccount(
   db: Database,
   id: string,
 ): Promise<Account | null> {
-  if (!UUID.test(id)) return null;
+  if (!isAccountId(id)) return null;
   const [account] = await activeAccounts(db, id);
   return account ?? null;
 }

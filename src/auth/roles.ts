@@ -6,6 +6,10 @@ export const ACTIONS = ["manage_users"] as const;
 
 export type Action = (typeof ACTIONS)[number];
 
+export const ACTION_TITLES: Record<Action, string> = {
+  manage_users: "Mengelola pengguna dan peran",
+};
+
 /**
  * Which rows of student data a role sees: all of them, only the students
  * of its own study program, only its own mentees, or only itself.

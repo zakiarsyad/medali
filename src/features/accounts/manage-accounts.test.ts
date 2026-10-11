@@ -1,0 +1,383 @@
+import { eq } from "drizzle-orm";
+import { describe, expect, it } from "vitest";
+import { accountsInRoleOrder, findActiveAccount } from "@/auth/accounts";
+import type { RoleId } from "@/auth/role-ids";
+import type { Database } from "@/db/connect";
+import { accountRoles, accounts, roleChanges } from "@/db/schema";
+import { withTestDatabase } from "@/db/test-database";
+import {
+  addAccount,
+  changeRoles,
+  listManagedAccounts,
+  removeAccount,
+} from "./manage-accounts";
+
+const inTestDatabase = withTestDatabase();
+
+async function addHead(db: Database): Promise<string> {
+  return addRawAccount(db, "Kepala Uji", ["head_of_unit"]);
+}
+
+async function addRawAccount(
+  db: Database,
+  name: string,
+  roles: RoleId[],
+): Promise<string> {
+  const [account] = await db.insert(accounts).values({ name }).returning();
+  if (!account) throw new Error("The account was not added.");
+  await db
+    .insert(accountRoles)
+    .values(roles.map((role) => ({ accountId: account.id, role })));
+  return account.id;
+}
+
+function newAccount(email: string) {
+  return {
+    name: "Pengguna Uji",
+    title: null,
+    nip: null,
+    email,
+    roles: ["mentor" as const],
+    studyProgramId: null,
+    unit: null,
+  };
+}
+
+async function logOf(db: Database, accountId: string) {
+  return db
+    .select()
+    .from(roleChanges)
+    .where(eq(roleChanges.accountId, accountId));
+}
+
+describe("addAccount", () => {
+  it("adds the account with its roles and logs who added it", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const added = await addAccount(db, newAccount("uji1@contoh.ac.id"), head);
+      if (!added.ok) throw new Error(added.error);
+
+      const account = await findActiveAccount(db, added.value);
+      expect(account?.roles).toEqual(["mentor"]);
+      const [line] = await logOf(db, added.value);
+      expect(line).toMatchObject({
+        changedBy: head,
+        action: "added",
+        rolesBefore: [],
+        rolesAfter: ["mentor"],
+      });
+    });
+  });
+
+  it("refuses an email another active account uses", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      await addAccount(db, newAccount("uji2@contoh.ac.id"), head);
+      const again = await addAccount(db, newAccount("uji2@contoh.ac.id"), head);
+      expect(again).toEqual({
+        ok: false,
+        error: "Email sudah dipakai pengguna lain.",
+      });
+    });
+  });
+});
+
+describe("changeRoles", () => {
+  it("gives and takes roles, and logs who, when, before and after", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Staf Uji", ["mentor", "counsellor"]);
+
+      const changed = await changeRoles(
+        db,
+        {
+          accountId: id,
+          roles: ["mentor", "assessor"],
+          studyProgramId: null,
+          unit: null,
+        },
+        head,
+      );
+
+      expect(changed.ok).toBe(true);
+      expect((await findActiveAccount(db, id))?.roles).toEqual([
+        "mentor",
+        "assessor",
+      ]);
+      const [line] = await logOf(db, id);
+      expect(line).toMatchObject({
+        changedBy: head,
+        action: "roles_changed",
+        rolesBefore: ["mentor", "counsellor"],
+        rolesAfter: ["mentor", "assessor"],
+      });
+      expect(line?.changedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  it("keeps roles that are not managed in Pengguna dan peran", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Kepala Uji Dua", [
+        "head_of_unit",
+        "mentor",
+      ]);
+
+      await changeRoles(
+        db,
+        {
+          accountId: id,
+          roles: ["assessor"],
+          studyProgramId: null,
+          unit: null,
+        },
+        head,
+      );
+
+      expect((await findActiveAccount(db, id))?.roles).toEqual([
+        "head_of_unit",
+        "assessor",
+      ]);
+    });
+  });
+
+  it("writes no log line when the roles stay the same", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      await changeRoles(
+        db,
+        {
+          accountId: id,
+          roles: ["mentor"],
+          studyProgramId: null,
+          unit: "Unit Baru",
+        },
+        head,
+      );
+      expect(await logOf(db, id)).toEqual([]);
+    });
+  });
+
+  it("refuses a removed account", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      await removeAccount(db, id, head);
+      const changed = await changeRoles(
+        db,
+        {
+          accountId: id,
+          roles: ["assessor"],
+          studyProgramId: null,
+          unit: null,
+        },
+        head,
+      );
+      expect(changed).toEqual({ ok: false, error: "Akun tidak ditemukan." });
+    });
+  });
+});
+
+describe("removeAccount", () => {
+  it("hides the account from the list and from Ganti peran, but keeps it", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Staf Dihapus Uji", ["mentor"]);
+
+      const removed = await removeAccount(db, id, head);
+
+      expect(removed.ok).toBe(true);
+      const listed = await listManagedAccounts(db, {
+        query: "Dihapus Uji",
+        role: null,
+        page: 0,
+      });
+      expect(listed.accounts).toEqual([]);
+      const switchable = await accountsInRoleOrder(db);
+      expect(switchable.map((account) => account.id)).not.toContain(id);
+      const [kept] = await db
+        .select()
+        .from(accounts)
+        .where(eq(accounts.id, id));
+      expect(kept?.deletedBy).toBe(head);
+      expect(kept?.deletedAt).toBeInstanceOf(Date);
+      const [line] = await logOf(db, id);
+      expect(line).toMatchObject({
+        action: "removed",
+        rolesBefore: ["mentor"],
+        rolesAfter: [],
+      });
+    });
+  });
+});
+
+describe("an unknown study program", () => {
+  const UNKNOWN_PROGRAM = 2_000_000_000;
+  const refusal = { ok: false, error: "Program studi tidak dikenal." };
+
+  it("is refused when adding a head of program", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const added = await addAccount(
+        db,
+        {
+          ...newAccount("uji3@contoh.ac.id"),
+          roles: ["head_of_program"],
+          studyProgramId: UNKNOWN_PROGRAM,
+        },
+        head,
+      );
+      expect(added).toEqual(refusal);
+    });
+  });
+
+  it("is refused when changing roles", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      const changed = await changeRoles(
+        db,
+        {
+          accountId: id,
+          roles: ["head_of_program"],
+          studyProgramId: UNKNOWN_PROGRAM,
+          unit: null,
+        },
+        head,
+      );
+      expect(changed).toEqual(refusal);
+    });
+  });
+});
+
+describe("changeRoles on a Kepala Unit account", () => {
+  it("may take away every managed role, keeping Kepala Unit", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Kepala Lain Uji", [
+        "head_of_unit",
+        "mentor",
+      ]);
+
+      const changed = await changeRoles(
+        db,
+        { accountId: id, roles: [], studyProgramId: null, unit: null },
+        head,
+      );
+
+      expect(changed).toEqual({ ok: true, value: ["head_of_unit"] });
+    });
+  });
+
+  it("refuses to leave an account with no role at all", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+
+      const changed = await changeRoles(
+        db,
+        { accountId: id, roles: [], studyProgramId: null, unit: null },
+        head,
+      );
+
+      expect(changed).toEqual({
+        ok: false,
+        error: "Pilih minimal satu peran.",
+      });
+    });
+  });
+});
+
+describe("removeAccount refuses", () => {
+  it.each([
+    ["a Kepala Unit account", ["head_of_unit", "mentor"]],
+    ["a student account", ["student", "bam_bphk"]],
+  ] as const)(
+    "%s, whose roles are not all managed here",
+    async (_kind, roles) => {
+      await inTestDatabase(async (db) => {
+        const head = await addHead(db);
+        const id = await addRawAccount(db, "Tidak Dikelola Uji", [...roles]);
+
+        const removed = await removeAccount(db, id, head);
+
+        expect(removed).toEqual({
+          ok: false,
+          error:
+            "Akun ini tidak dikelola di sini, sehingga tidak bisa dihapus.",
+        });
+        expect(await findActiveAccount(db, id)).not.toBeNull();
+      });
+    },
+  );
+
+  it("the manager's own account", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addRawAccount(db, "Pengelola Uji", ["mentor"]);
+
+      const removed = await removeAccount(db, id, id);
+
+      expect(removed).toEqual({
+        ok: false,
+        error: "Akun Anda sendiri tidak bisa dihapus.",
+      });
+      expect(await findActiveAccount(db, id)).not.toBeNull();
+    });
+  });
+});
+
+describe("listManagedAccounts", () => {
+  it("lists every staff account, Kepala Unit included, with its roles", async () => {
+    await inTestDatabase(async (db) => {
+      await addRawAccount(db, "Daftar Uji Satu", ["mentor", "assessor"]);
+      await addRawAccount(db, "Daftar Uji Kepala", ["head_of_unit"]);
+
+      const listed = await listManagedAccounts(db, {
+        query: "daftar uji",
+        role: null,
+        page: 0,
+      });
+
+      expect(listed.total).toBe(2);
+      expect(listed.accounts.map((account) => account.roles)).toEqual([
+        ["head_of_unit"],
+        ["mentor", "assessor"],
+      ]);
+    });
+  });
+
+  it("leaves student-only accounts out", async () => {
+    await inTestDatabase(async (db) => {
+      await addRawAccount(db, "Daftar Uji Mahasiswa", ["student"]);
+      await addRawAccount(db, "Daftar Uji BAM", ["student", "bam_bphk"]);
+
+      const listed = await listManagedAccounts(db, {
+        query: "daftar uji",
+        role: null,
+        page: 0,
+      });
+
+      expect(listed.accounts.map((account) => account.name)).toEqual([
+        "Daftar Uji BAM",
+      ]);
+    });
+  });
+
+  it("filters by role", async () => {
+    await inTestDatabase(async (db) => {
+      await addRawAccount(db, "Saring Uji Satu", ["mentor"]);
+      await addRawAccount(db, "Saring Uji Dua", ["assessor"]);
+
+      const listed = await listManagedAccounts(db, {
+        query: "saring uji",
+        role: "assessor",
+        page: 0,
+      });
+
+      expect(listed.accounts.map((account) => account.name)).toEqual([
+        "Saring Uji Dua",
+      ]);
+    });
+  });
+});
