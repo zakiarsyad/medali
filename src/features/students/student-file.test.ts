@@ -217,6 +217,31 @@ describe("readStudentFile", () => {
     expect(!other.ok && other.error).toContain("Kolom tidak ditemukan: nim,");
   });
 
+  it("reads a first row that starts with a NIM as a student, whatever its cells say", () => {
+    const rows = read(row("9900000518", { 1: "Status" }), row("9900000519"));
+
+    expect(rows.skipped).toEqual([]);
+    expect(rows.ready.map(({ row, student }) => [row, student.nim])).toEqual([
+      [1, "9900000518"],
+      [2, "9900000519"],
+    ]);
+  });
+
+  it("refuses a file with a quote that is never closed, and reads no row of it", () => {
+    const text = [
+      TITLES,
+      row("9900000520"),
+      row("9900000521", { 1: '"Berkas Uji' }),
+      row("9900000522"),
+    ].join("\n");
+
+    expect(readStudentFile(text, context)).toEqual({
+      ok: false,
+      error:
+        "Tanda kutip di baris 3 tidak ditutup. Perbaiki berkas, lalu unggah lagi.",
+    });
+  });
+
   it("gives each skipped row its number in the file and its NIM, cut short", () => {
     const rows = read(
       TITLES,

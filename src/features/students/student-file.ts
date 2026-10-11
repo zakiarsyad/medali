@@ -1,6 +1,7 @@
 import type { Parsed } from "@/parsed";
 import { readCsv } from "./csv-text";
 import { fileReason } from "./file-reasons";
+import { isNim } from "./input-limits";
 import {
   FILE_COLUMNS,
   type FileCells,
@@ -59,12 +60,18 @@ function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
 }
 
-function filledRows(text: string): NumberedRow[] {
-  const numbered = readCsv(text).map((cells, index) => ({
-    row: index + 1,
-    cells,
-  }));
+function filled(rows: string[][]): NumberedRow[] {
+  const numbered = rows.map((cells, index) => ({ row: index + 1, cells }));
   return numbered.filter(({ cells }) => cells.some((cell) => cell.trim()));
+}
+
+/**
+ * Whether a first row names the columns. A row that starts with a NIM is
+ * a student, even when one of its cells is a word that is also a title.
+ */
+function namesColumns(titles: string[]): boolean {
+  if (isNim(titles[0] ?? "")) return false;
+  return titles.some((title) => KNOWN_TITLES.includes(title));
 }
 
 function titlesOf(row: NumberedRow): string[] {
@@ -158,12 +165,14 @@ export function readStudentFile(
   text: string,
   context: InputContext,
 ): Parsed<FileRows> {
-  const rows = filledRows(text);
+  const read = readCsv(text);
+  if (!read.ok) return read;
+  const rows = filled(read.value);
   const [first, ...rest] = rows;
   if (!first) return refused(EMPTY_FILE);
 
   const titles = titlesOf(first);
-  const hasTitles = titles.some((title) => KNOWN_TITLES.includes(title));
+  const hasTitles = namesColumns(titles);
   const places: Parsed<number[]> = hasTitles
     ? placesByTitle(titles)
     : { ok: true, value: TEMPLATE_ORDER };
