@@ -210,3 +210,36 @@
   margin-right: var(--space-md);
   white-space: nowrap;
 }
+
+.activityForm {
+  margin-top: var(--space-md);
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.valueName {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: var(--text-md);
+}
+
+.tick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-xs);
+  align-items: baseline;
+  padding: var(--space-2xs) 0;
+  color: var(--ink);
+  font-size: var(--text-md);
+}
+
+.formNote {
+  margin: var(--space-md) 0 0;
+}
+
+.ticks {
+  flex-direction: column;
+  gap: 0;
+}

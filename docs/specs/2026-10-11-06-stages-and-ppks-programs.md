@@ -80,6 +80,6 @@ None.
   tahap boxes.
 - [x] 4. The page shows the Program kegiatan PPKS table for the chosen
   semester.
-- [ ] 5. "Tambah kegiatan PPKS" adds an activity.
+- [x] 5. "Tambah kegiatan PPKS" adds an activity.
 - [ ] 6. "Ubah" changes an activity.
 - [ ] 7. "Hapus" removes an activity from the list.

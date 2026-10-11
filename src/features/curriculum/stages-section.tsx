@@ -3,8 +3,9 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./curriculum.module.css";
+import type { ValueIndicators } from "./main-indicators";
 import type { PpksActivity } from "./ppks-activities";
-import { PpksTable } from "./ppks-table";
+import { PpksPanel } from "./ppks-panel";
 import { type Parity, semesterOf, TAHAP } from "./stages";
 
 const PARITIES: { parity: Parity; label: string; short: string }[] = [
@@ -16,7 +17,16 @@ const PARITIES: { parity: Parity; label: string; short: string }[] = [
  * The semester choice and the four tahap, with the PPKS activities of the
  * chosen semester below.
  */
-export function StagesSection({ activities }: { activities: PpksActivity[] }) {
+export function StagesSection({
+  activities,
+  values,
+  mayManage,
+}: {
+  activities: PpksActivity[];
+  /** Every nilai with its main indicators as they are now. */
+  values: ValueIndicators[];
+  mayManage: boolean;
+}) {
   const [parity, setParity] = useState<Parity>("odd");
   const [tahapNo, setTahapNo] = useState(1);
   const semester = semesterOf(tahapNo, parity);
@@ -59,20 +69,17 @@ export function StagesSection({ activities }: { activities: PpksActivity[] }) {
           </button>
         ))}
       </div>
-      <section className={shared.panel}>
-        <h2 className={shared.heading}>
-          Program kegiatan PPKS semester {semester}
-        </h2>
-        <p className={shared.detail}>
-          Tahap {tahap?.name.toLowerCase()}, semester {half?.short}. Daftar
-          kegiatan tanpa tanggal.
-        </p>
-        <PpksTable
-          activities={activities.filter(
-            (activity) => activity.semester === semester,
-          )}
-        />
-      </section>
+      {/* The key: an open form and its message belong to one semester. */}
+      <PpksPanel
+        key={semester}
+        semester={semester}
+        note={`Tahap ${tahap?.name.toLowerCase()}, semester ${half?.short}. Daftar kegiatan tanpa tanggal.`}
+        activities={activities.filter(
+          (activity) => activity.semester === semester,
+        )}
+        values={values}
+        mayManage={mayManage}
+      />
     </section>
   );
 }

@@ -18,3 +18,17 @@ export function activityNote(description: string, isRequired: boolean): string {
   const parts = [description, isRequired ? "" : "tidak wajib"];
   return parts.filter((part) => part !== "").join(" · ");
 }
+
+/** The list with the item taken out when it is in, and put in when not. */
+export function toggled<Item>(list: readonly Item[], item: Item): Item[] {
+  if (list.includes(item)) return list.filter((kept) => kept !== item);
+  return [...list, item];
+}
+
+/** The ticked indicator codes that belong to a nilai still chosen. */
+export function ticksOfValues(
+  ticked: readonly string[],
+  chosen: readonly string[],
+): string[] {
+  return ticked.filter((code) => chosen.includes(code.charAt(0)));
+}
