@@ -2,8 +2,13 @@ import { and, asc, desc, eq, ne, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students, studyPrograms } from "@/db/schema";
+import type { CategoryField } from "./labels";
 import { matchesSearch } from "./student-conditions";
-import type { StatusChoice, StudentListFilters } from "./student-list-address";
+import type {
+  EntryPath,
+  StatusChoice,
+  StudentListFilters,
+} from "./student-list-address";
 import { visibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
@@ -49,13 +54,31 @@ function inCohort(year: number | null): SQL | undefined {
   return year === null ? undefined : eq(students.cohortYear, year);
 }
 
+function inProgram(id: number | null): SQL | undefined {
+  return id === null ? undefined : eq(students.studyProgramId, id);
+}
+
+function byPath(path: EntryPath | null): SQL | undefined {
+  return path === null ? undefined : eq(students.entryPath, path);
+}
+
+function inCategory(field: CategoryField | null): SQL | undefined {
+  return field === null ? undefined : eq(students[field], true);
+}
+
 /** The students an account may see that match every filter. */
-function found(limit: RowLimit, filters: StudentListFilters): SQL | undefined {
+export function found(
+  limit: RowLimit,
+  filters: StudentListFilters,
+): SQL | undefined {
   return and(
     visibleTo(limit),
     WITH_STATUS[filters.status],
     inCohort(filters.cohortYear),
     matchesSearch(filters.query),
+    inProgram(filters.studyProgramId),
+    byPath(filters.entryPath),
+    inCategory(filters.category),
   );
 }
 

@@ -1,0 +1,18 @@
+.chosen {
+  border-color: var(--navy2);
+  background: var(--surface2);
+}
+
+.found {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  align-items: center;
+  margin: var(--space-md) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.found b {
+  color: var(--ink);
+}

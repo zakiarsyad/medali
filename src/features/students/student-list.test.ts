@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
 import { addTestProgram, addTestStudent } from "./test-records";
@@ -175,6 +176,137 @@ describe("listCohortYears", () => {
       });
 
       expect(await listCohortYears(db, limit)).toEqual([2026, 2024]);
+    });
+  });
+});
+
+/** Two programs with students of both jalur and of some kategori. */
+async function addChoiceRows(db: Database) {
+  const first = await addTestProgram(db, "Prodi Uji Pilih Satu");
+  const second = await addTestProgram(db, "Prodi Uji Pilih Dua");
+  await addTestStudent(db, first, {
+    nim: "9900000331",
+    name: "Pilih Reguler Afirmasi",
+    isAffirmation: true,
+  });
+  await addTestStudent(db, first, {
+    nim: "9900000332",
+    name: "Pilih Alih Blended",
+    entryPath: "transfer",
+    isBlended: true,
+  });
+  await addTestStudent(db, second, {
+    nim: "9900000333",
+    name: "Pilih Reguler Afirmasi Bibit",
+    isAffirmation: true,
+    isSeedling: true,
+  });
+  await addTestStudent(db, second, {
+    nim: "9900000334",
+    name: "Pilih Nonaktif",
+    status: "inactive",
+    isInternational: true,
+  });
+  const limit: RowLimit = {
+    kind: "some",
+    studyProgramIds: [first, second],
+    menteesOf: [],
+    studentIds: [],
+  };
+  return { first, second, limit };
+}
+
+describe("the Program studi, Jalur and Kategori filters", () => {
+  it("each narrow the list, and work together", async () => {
+    await inTestDatabase(async (db) => {
+      const { first, second, limit } = await addChoiceRows(db);
+
+      expect(await nimsFound(db, limit, { studyProgramId: first })).toEqual([
+        "9900000331",
+        "9900000332",
+      ]);
+      expect(await nimsFound(db, limit, { entryPath: "transfer" })).toEqual([
+        "9900000332",
+      ]);
+      expect(await nimsFound(db, limit, { category: "isAffirmation" })).toEqual(
+        ["9900000331", "9900000333"],
+      );
+      expect(
+        await nimsFound(db, limit, {
+          studyProgramId: second,
+          entryPath: "regular",
+          category: "isAffirmation",
+          query: "bibit",
+        }),
+      ).toEqual(["9900000333"]);
+      expect(
+        await nimsFound(db, limit, {
+          studyProgramId: first,
+          category: "isSeedling",
+        }),
+      ).toEqual([]);
+    });
+  });
+});
+
+describe("countChoices", () => {
+  it("counts the students each choice holds", async () => {
+    await inTestDatabase(async (db) => {
+      const { first, second, limit } = await addChoiceRows(db);
+
+      const counts = await countChoices(db, limit, NO_FILTERS);
+
+      expect(counts.programs).toEqual(
+        new Map([
+          [first, 2],
+          [second, 1],
+        ]),
+      );
+      expect(counts.entryPaths).toEqual({ regular: 2, transfer: 1 });
+      expect(counts.categories).toEqual({
+        isAffirmation: 2,
+        isSeedling: 1,
+        isInternational: 0,
+        isBlended: 1,
+      });
+    });
+  });
+
+  it("counts a choice with the other filters applied, and without its own", async () => {
+    await inTestDatabase(async (db) => {
+      const { first, second, limit } = await addChoiceRows(db);
+
+      const counts = await countChoices(db, limit, {
+        ...NO_FILTERS,
+        status: "all",
+        studyProgramId: second,
+        entryPath: "regular",
+      });
+
+      expect(counts.programs).toEqual(
+        new Map([
+          [first, 1],
+          [second, 2],
+        ]),
+      );
+      expect(counts.entryPaths).toEqual({ regular: 2, transfer: 0 });
+      expect(counts.categories).toEqual({
+        isAffirmation: 1,
+        isSeedling: 1,
+        isInternational: 1,
+        isBlended: 0,
+      });
+    });
+  });
+
+  it("counts only the rows the account may see", async () => {
+    await inTestDatabase(async (db) => {
+      const { first } = await addChoiceRows(db);
+
+      const counts = await countChoices(db, onlyProgram(first), NO_FILTERS);
+
+      expect(counts.programs).toEqual(new Map([[first, 2]]));
+      expect(counts.entryPaths).toEqual({ regular: 1, transfer: 1 });
     });
   });
 });

@@ -3,6 +3,8 @@ import {
   NO_FILTERS,
   readStudentListParams,
   studentListAddress,
+  topFiltersInUse,
+  withoutTopFilters,
 } from "./student-list-address";
 
 describe("readStudentListParams", () => {
@@ -12,7 +14,41 @@ describe("readStudentListParams", () => {
       query: "",
       cohortYear: null,
       status: "current",
+      studyProgramId: null,
+      entryPath: null,
+      category: null,
     });
+  });
+
+  it("reads the program studi, the jalur and the kategori", () => {
+    const read = readStudentListParams({
+      prodi: "7",
+      jalur: "transfer",
+      kategori: "isSeedling",
+    });
+
+    expect(read.filters).toEqual({
+      ...NO_FILTERS,
+      studyProgramId: 7,
+      entryPath: "transfer",
+      category: "isSeedling",
+    });
+  });
+
+  it.each(["", "0", "-3", "1.5", "abc", "12345678901", "7 or 1=1"])(
+    "falls back to every program studi for %j",
+    (prodi) => {
+      const read = readStudentListParams({ prodi });
+
+      expect(read.filters.studyProgramId).toBeNull();
+    },
+  );
+
+  it("falls back to every jalur and kategori for a choice that does not exist", () => {
+    const read = readStudentListParams({ jalur: "Reguler", kategori: "nim" });
+
+    expect(read.filters.entryPath).toBeNull();
+    expect(read.filters.category).toBeNull();
   });
 
   it("reads the search, the angkatan and the status", () => {
@@ -23,6 +59,7 @@ describe("readStudentListParams", () => {
     });
 
     expect(read.filters).toEqual({
+      ...NO_FILTERS,
       query: "ayu",
       cohortYear: 2024,
       status: "inactive",
@@ -69,16 +106,45 @@ describe("studentListAddress", () => {
       query: "ayu & budi",
       cohortYear: 2023,
       status: "all" as const,
+      studyProgramId: 4,
+      entryPath: "regular" as const,
+      category: "isBlended" as const,
     };
 
     const address = studentListAddress(filters);
 
     expect(address).toBe(
-      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua",
+      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readStudentListParams(Object.fromEntries(search)).filters).toEqual(
       filters,
     );
+  });
+});
+
+describe("the filters of the top bar", () => {
+  const chosen = {
+    ...NO_FILTERS,
+    query: "ayu",
+    status: "all" as const,
+    studyProgramId: 4,
+    category: "isAffirmation" as const,
+  };
+
+  it("are counted when in use, and the others are not", () => {
+    expect(topFiltersInUse(NO_FILTERS)).toBe(0);
+    const searched = { ...NO_FILTERS, query: "ayu" };
+    expect(topFiltersInUse(searched)).toBe(0);
+    expect(topFiltersInUse(chosen)).toBe(2);
+    expect(topFiltersInUse({ ...chosen, entryPath: "regular" })).toBe(3);
+  });
+
+  it("are cleared alone, and the search and the status stay", () => {
+    expect(withoutTopFilters(chosen)).toEqual({
+      ...NO_FILTERS,
+      query: "ayu",
+      status: "all",
+    });
   });
 });

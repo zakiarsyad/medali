@@ -65,6 +65,6 @@ None.
 - [x] 2. Show the Mahasiswa page with the table, limited to what each
   role may see.
 - [x] 3. Add "Cari nama atau NIM" and the Angkatan and Status filters.
-- [ ] 4. Add the Program studi, Jalur and Kategori filters with their
+- [x] 4. Add the Program studi, Jalur and Kategori filters with their
   counts and "Atur ulang filter".
 - [ ] 5. Add the pages of 25 and the empty message.
