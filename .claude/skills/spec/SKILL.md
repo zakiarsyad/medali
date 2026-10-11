@@ -37,9 +37,13 @@ goes in `docs/specs/` in the shape below, and no plan file is written.
 
 ## Scope
 
-- One spec covers one thing. If the request holds several things, split it
-  into several specs and suggest an order.
-- A spec with more than about five steps is too big. Split it.
+- One spec delivers one feature that can be tried from start to finish on
+  the preview, within one menu page. If the request holds several
+  features, split it into several specs and suggest an order.
+- A spec with more than about 8 steps is too big. Split it into features
+  that can each be tried on their own.
+- Work that cannot be tried on its own, such as tables or setup, joins the
+  feature that first needs it.
 - An idea outside the request is not added to the spec. Suggest it as a new
   piece of work, in one line, at the end.
 
