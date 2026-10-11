@@ -38,3 +38,8 @@ export function stageOf(env: StageEnv): Stage {
 export function currentStage(): Stage {
   return stageOf(process.env);
 }
+
+/** The branch a Vercel build was made from, when Vercel says so. */
+export function deployBranch(): string | undefined {
+  return process.env.VERCEL_GIT_COMMIT_REF || undefined;
+}

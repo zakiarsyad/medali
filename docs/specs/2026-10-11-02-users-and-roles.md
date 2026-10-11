@@ -92,5 +92,5 @@ None.
 - [x] 4. Pengaturan > Pengguna dan peran lets Kepala Unit see, add, change
   and remove accounts and their roles, with every role change written to
   the log.
-- [ ] 5. Previews apply the table changes on deploy, and the PR preview
+- [x] 5. Previews apply the table changes on deploy, and the PR preview
   database is reset to sample data.

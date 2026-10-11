@@ -47,8 +47,7 @@ Someone recreating the project sets these by hand:
 
 ## Databases
 
-Two Neon databases exist, added through Vercel. Nothing uses them yet. The
-work that adds the data model brings them in.
+Two Neon databases exist, added through Vercel.
 
 - `medali-main`: tied to the production environment, for the preview of
   `main`.
@@ -56,3 +55,43 @@ work that adds the data model brings them in.
   previews.
 
 Their keys are kept by Vercel. They are never written in the repo.
+
+### What a deploy does to its database
+
+`vercel.json` sets the build command: first the database step, then the
+app build. Vercel tells the build which environment it is in, so the step
+knows which database it has:
+
+- **A PR deploy** (preview environment) empties `medali-preview`, adds the
+  tables of that PR, and fills it with sample data. The PR deployed last
+  is the one whose tables are there.
+- **A `main` deploy** (production environment) only applies new table
+  changes to `medali-main` and keeps its data. The first time, when the
+  database is still empty, it also fills it with sample data, once.
+
+Before it changes anything, the step checks that it has the right
+database. Each database carries a mark saying which preview it belongs
+to, set on its first deploy. A PR deploy refuses a database marked for
+`main`, or one with no mark that already holds tables. A `main` deploy
+refuses a database marked for PR previews, and refuses to run at all for
+a production deploy that does not come from `main`. A production deploy
+from the command line names no branch, so it is refused too.
+
+"Ganti peran", the switch between sample accounts, is on in both
+previews and in the local dev server, and off everywhere else, the campus
+server included. The app also refuses to start with it on unless a
+second sign agrees: a preview must really be running on Vercel, and a
+local run must use a database on the same computer.
+
+### Set only in the Vercel and Neon dashboards
+
+Someone recreating the project, or checking it, makes sure that:
+
+- Each database gives the app its key under the name `DATABASE_URL`:
+  `medali-main` in the production environment only, and `medali-preview`
+  in the preview environment only. The key must be there at build time
+  too, which is the default.
+- The Neon integration does not make a new database branch for each
+  preview deploy. All PR previews share `medali-preview`.
+- The project has no build command set in the dashboard that overrides
+  `vercel.json`.
