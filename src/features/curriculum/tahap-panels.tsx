@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 import { MainIndicatorsPanel } from "./main-indicators-panel";
 import type { ValueIndicators } from "./main-indicators";
 import type { PpksActivity } from "./ppks-activities";
+import type { TahapBreakdown } from "./stage-breakdown";
 import { StagesSection } from "./stages-section";
 
 /**
@@ -16,6 +17,7 @@ export function TahapPanels({
   indicatorNote,
   mayChange,
   activities,
+  breakdowns,
   mayManageActivities,
   children,
 }: {
@@ -25,6 +27,8 @@ export function TahapPanels({
   indicatorNote: string;
   mayChange: boolean;
   activities: PpksActivity[];
+  /** The breakdown of each of the four tahap. */
+  breakdowns: TahapBreakdown[];
   mayManageActivities: boolean;
   children: ReactNode;
 }) {
@@ -42,6 +46,7 @@ export function TahapPanels({
         tahapNo={tahapNo}
         onChoose={setTahapNo}
         activities={activities}
+        breakdowns={breakdowns}
         values={values}
         mayManage={mayManageActivities}
       />

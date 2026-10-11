@@ -7,6 +7,7 @@ import { TahapPanels } from "./tahap-panels";
 import { readBaseScore, STARTING_BASE_SCORE } from "./stored-base-score";
 import { readMainIndicators } from "./stored-main-indicators";
 import { readPpksActivities } from "./stored-ppks-activities";
+import { readStageBreakdowns } from "./stored-stage-breakdowns";
 
 export async function CurriculumScreen({
   mayChange,
@@ -16,10 +17,11 @@ export async function CurriculumScreen({
   mayManageActivities: boolean;
 }) {
   const db = database();
-  const [indicators, baseScore, activities] = await Promise.all([
+  const [indicators, baseScore, activities, breakdowns] = await Promise.all([
     readMainIndicators(db),
     readBaseScore(db),
     readPpksActivities(db),
+    readStageBreakdowns(db),
   ]);
   return (
     <>
@@ -38,6 +40,10 @@ export async function CurriculumScreen({
         )}
         mayChange={mayChange}
         activities={activities}
+        breakdowns={breakdowns.map(({ changed, ...shown }) => ({
+          ...shown,
+          note: changeNote(changed, "Diperbarui", "Isi awal."),
+        }))}
         mayManageActivities={mayManageActivities}
       >
         <BaseScorePanel

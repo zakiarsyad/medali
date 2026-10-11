@@ -15,6 +15,14 @@ export interface ValueBreakdown extends Breakdown {
   name: string;
 }
 
+/** The breakdown of one tahap as the screen shows it. */
+export interface TahapBreakdown {
+  tahapNo: number;
+  values: ValueBreakdown[];
+  /** Who changed the tahap last, or that it holds the starting content. */
+  note: string;
+}
+
 /** The codes of the four main indicators of one nilai, from level 1 to 4. */
 export function codesOf(key: ValueKey): string[] {
   return [1, 2, 3, 4].map((level) => `${key}${level}`);
