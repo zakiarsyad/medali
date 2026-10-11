@@ -8,7 +8,12 @@ import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { addStudentAction, changeStudentAction } from "./actions";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
-import { formValues, START, type StudentFormState } from "./form-values";
+import {
+  formShows,
+  formValues,
+  START,
+  type StudentFormState,
+} from "./form-values";
 import {
   CLASS_MAX_LENGTH,
   NAME_MAX_LENGTH,
@@ -108,14 +113,21 @@ export function StudentForm({
     notify(null);
     const save = editing ? changeStudentAction : addStudentAction;
     const after = await save(before, form);
-    if (after.done) notify(after.done);
-    if (after.done && editing) router.replace(newStudentsAddress(query));
+    // The browser puts a sent form back on its first choices; this keeps
+    // Instansi asal in step with the Jalur the form then shows.
+    setEntryPath(formShows(after, start).entryPath);
+    if (after.done && editing) {
+      const list = newStudentsAddress(query);
+      notify(after.done, list);
+      router.replace(list);
+    } else if (after.done) {
+      notify(after.done);
+    }
     return after;
   }
 
   const [state, action, pending] = useActionState(send, START);
-  // A refused form comes back with what was typed, so nothing is lost.
-  const shown = state.values ?? start;
+  const shown = formShows(state, start);
   return (
     <section className={shared.panel} id={FORM_ANCHOR}>
       <h2 className={shared.heading}>

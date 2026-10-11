@@ -5,11 +5,9 @@ interface SelectFieldProps {
   name: string;
   /** Each choice as the value sent and the words shown. */
   choices: readonly (readonly [value: string, shown: string])[];
+  /** The choice the field starts on, and goes back to when the form is sent. */
   chosen: string;
-  /**
-   * Given when another part of the form follows this choice. The form
-   * then holds the choice itself, so the two never disagree.
-   */
+  /** Given when another part of the form follows this choice. */
   onChoose?: (value: string) => void;
 }
 
@@ -20,17 +18,15 @@ export function SelectField({
   chosen,
   onChoose,
 }: SelectFieldProps) {
-  const choice = onChoose
-    ? {
-        value: chosen,
-        onChange: (event: { target: { value: string } }) =>
-          onChoose(event.target.value),
-      }
-    : { defaultValue: chosen };
   return (
     <label className={shared.field}>
       {label}
-      <select name={name} className={shared.input} {...choice}>
+      <select
+        name={name}
+        className={shared.input}
+        defaultValue={chosen}
+        onChange={onChoose && ((event) => onChoose(event.target.value))}
+      >
         {choices.map(([value, shown]) => (
           <option key={value} value={value}>
             {shown}

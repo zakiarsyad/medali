@@ -20,14 +20,16 @@ export function readNewStudentsParams(params: SearchParams): NewStudentsParams {
   };
 }
 
+/** An address as one text: the path, and what comes after the `?` if any. */
+export function addressOf(path: string, search: string): string {
+  return search ? `${path}?${search}` : path;
+}
+
 /** The address of the list with a search, and the student to change if any. */
 export function newStudentsAddress(query: string, editNim?: string): string {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (editNim) params.set("ubah", editNim);
-  const search = params.toString();
-  const address = search
-    ? `${NEW_STUDENTS_ADDRESS}?${search}`
-    : NEW_STUDENTS_ADDRESS;
+  const address = addressOf(NEW_STUDENTS_ADDRESS, params.toString());
   return editNim ? `${address}#${FORM_ANCHOR}` : address;
 }

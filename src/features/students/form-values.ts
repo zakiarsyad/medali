@@ -32,6 +32,17 @@ export function savedForm(
   return { error: null, done, values: null, attempt: before.attempt + 1 };
 }
 
+/**
+ * What the form shows after a send: what was typed if it was refused, so
+ * nothing is lost, and otherwise what it started with.
+ */
+export function formShows(
+  state: StudentFormState,
+  start: StudentFields,
+): StudentFields {
+  return state.values ?? start;
+}
+
 /** The first choice of the lists that differ from one day to the next. */
 interface FirstChoices {
   studyProgramId: string;

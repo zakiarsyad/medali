@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formValues, refusedForm, START, savedForm } from "./form-values";
+import {
+  formShows,
+  formValues,
+  refusedForm,
+  START,
+  savedForm,
+} from "./form-values";
 import type { StudentFields, StudentInput } from "./student-input";
 
 const first = { studyProgramId: "3", cohortYear: "2026" };
@@ -66,6 +72,24 @@ describe("formValues", () => {
       status: "on_leave",
       categories: ["isAffirmation", "isBlended"],
     });
+  });
+});
+
+describe("formShows", () => {
+  const start = formValues(null, first);
+
+  it("shows what was typed in a refused form, Jalur included", () => {
+    const refused = refusedForm(START, "Nama wajib diisi.", typed);
+    expect(formShows(refused, start)).toEqual(typed);
+    expect(formShows(refused, start).entryPath).toBe("transfer");
+  });
+
+  it("goes back to the start before a send and after a saved one", () => {
+    const refused = refusedForm(START, "Nama wajib diisi.", typed);
+    const saved = savedForm(refused, "Contoh ditambahkan sebagai mahasiswa.");
+    expect(formShows(START, start)).toEqual(start);
+    expect(formShows(saved, start)).toEqual(start);
+    expect(formShows(saved, start).entryPath).toBe("regular");
   });
 });
 
