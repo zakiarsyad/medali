@@ -162,6 +162,13 @@ as its owner. Until then no real person's data goes anywhere: not on a
 local computer, in a preview, in a test, in a spec, in a PR, or in a chat
 with Claude.
 
+## This repo is public
+
+Anyone can see what is pushed here: code, specs, PRs, comments, proof
+pictures and preview links. Before every push, check that it holds no key
+or password, no real person's name or record, and no campus document that
+is not already public.
+
 ## Review
 
 A review checks a change before it is called ready. A fresh helper agent
