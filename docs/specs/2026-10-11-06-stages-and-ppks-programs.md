@@ -82,4 +82,4 @@ None.
   semester.
 - [x] 5. "Tambah kegiatan PPKS" adds an activity.
 - [x] 6. "Ubah" changes an activity.
-- [ ] 7. "Hapus" removes an activity from the list.
+- [x] 7. "Hapus" removes an activity from the list.

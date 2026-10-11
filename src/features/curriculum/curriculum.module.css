@@ -243,3 +243,11 @@
   flex-direction: column;
   gap: 0;
 }
+
+.pushedEnd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-left: auto;
+}

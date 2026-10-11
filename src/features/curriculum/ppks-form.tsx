@@ -16,6 +16,7 @@ import type { ValueIndicators } from "./main-indicators";
 import { type PpksActivity, ticksOfValues, toggled } from "./ppks-activities";
 import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH } from "./ppks-activity-input";
 import { PpksIndicatorTicks } from "./ppks-indicator-ticks";
+import { RemovePpksButton } from "./remove-ppks-button";
 
 const START: FormState = { error: null, done: null };
 
@@ -142,6 +143,9 @@ export function PpksForm({
           <button type="button" className={shared.quiet} onClick={onCancel}>
             Batal
           </button>
+          {activity && (
+            <RemovePpksButton id={activity.id} onRemoved={onSaved} />
+          )}
         </div>
       </div>
       <p className={`${shared.detail} ${styles.formNote}`}>

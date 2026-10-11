@@ -46,3 +46,24 @@ export async function changePpksActivity(
   if (!changed) return ACTIVITY_NOT_FOUND;
   return { ok: true, value: parsed.value.name };
 }
+
+/**
+ * Marks a PPKS activity as removed, with who removed it and when. Nothing
+ * is erased, so a schedule made from it can still refer to it.
+ */
+export async function removePpksActivity(
+  db: Database,
+  actor: Pick<Account, "id" | "roles">,
+  id: string,
+): Promise<Parsed<null>> {
+  if (!may(actor.roles, "manage_activities")) return ACTIVITIES_NOT_ALLOWED;
+  if (!isUuid(id)) return ACTIVITY_NOT_FOUND;
+
+  const [removed] = await db
+    .update(ppksActivities)
+    .set({ deletedAt: new Date(), deletedBy: actor.id })
+    .where(and(eq(ppksActivities.id, id), isNull(ppksActivities.deletedAt)))
+    .returning({ id: ppksActivities.id });
+  if (!removed) return ACTIVITY_NOT_FOUND;
+  return { ok: true, value: null };
+}

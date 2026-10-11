@@ -4,7 +4,11 @@ import type { Database } from "@/db/connect";
 import { ppksActivities } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addPpksActivity } from "./add-ppks-activity";
-import { ACTIVITY_NOT_FOUND, changePpksActivity } from "./change-ppks-activity";
+import {
+  ACTIVITY_NOT_FOUND,
+  changePpksActivity,
+  removePpksActivity,
+} from "./change-ppks-activity";
 import { ACTIVITIES_NOT_ALLOWED } from "./not-allowed";
 import { readPpksActivities } from "./stored-ppks-activities";
 import { addTestActor, SENT_PPKS_ACTIVITY } from "./test-records";
@@ -124,6 +128,84 @@ describe("changePpksActivity", () => {
       const [kept] = await readPpksActivities(db);
       expect(kept?.semester).toBe(3);
       expect(kept?.name).toBe("Kegiatan uji");
+    });
+  });
+});
+
+describe("removePpksActivity", () => {
+  it.each(MAY_MANAGE)(
+    "lets %s remove an activity, kept as a mark with who and when",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db);
+        const actor = await addTestActor(db, "Pegawai Uji", [role]);
+
+        const removed = await removePpksActivity(db, actor, id);
+
+        expect(removed).toEqual({ ok: true, value: null });
+        expect(await readPpksActivities(db)).toEqual([]);
+        const [kept] = await db.select().from(ppksActivities);
+        expect(kept?.id).toBe(id);
+        expect(kept?.deletedBy).toBe(actor.id);
+        expect(kept?.deletedAt).toBeInstanceOf(Date);
+      });
+    },
+  );
+
+  it.each(ROLE_IDS.filter((role) => !MAY_MANAGE.includes(role)))(
+    "refuses %s and removes nothing",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db);
+        const actor = await addTestActor(db, "Pegawai Uji", [role]);
+
+        const removed = await removePpksActivity(db, actor, id);
+
+        expect(removed).toEqual(ACTIVITIES_NOT_ALLOWED);
+        expect(await readPpksActivities(db)).toHaveLength(1);
+      });
+    },
+  );
+
+  it.each([UNKNOWN_ID, "", "bukan-id"])(
+    "finds no activity with the id '%s'",
+    async (id) => {
+      await inTestDatabase(async (db) => {
+        await addKept(db);
+        const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+
+        expect(await removePpksActivity(db, actor, id)).toEqual(
+          ACTIVITY_NOT_FOUND,
+        );
+        expect(await readPpksActivities(db)).toHaveLength(1);
+      });
+    },
+  );
+
+  it("keeps the first mark of an activity that is already removed", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db);
+      const first = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const second = await addTestActor(db, "Kepala Uji Dua", ["head_of_unit"]);
+      await removePpksActivity(db, first, id);
+
+      expect(await removePpksActivity(db, second, id)).toEqual(
+        ACTIVITY_NOT_FOUND,
+      );
+      const [kept] = await db.select().from(ppksActivities);
+      expect(kept?.deletedBy).toBe(first.id);
+    });
+  });
+
+  it("refuses a change to an activity that is removed", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      await removePpksActivity(db, actor, id);
+
+      expect(await changePpksActivity(db, actor, id, CHANGED)).toEqual(
+        ACTIVITY_NOT_FOUND,
+      );
     });
   });
 });

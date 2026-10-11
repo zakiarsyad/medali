@@ -9,7 +9,7 @@ import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addPpksActivity } from "./add-ppks-activity";
-import { changePpksActivity } from "./change-ppks-activity";
+import { changePpksActivity, removePpksActivity } from "./change-ppks-activity";
 import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
 
@@ -74,4 +74,12 @@ export async function savePpksActivityAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Kegiatan "${saved.value}" disimpan.` };
+}
+
+export async function removePpksActivityAction(id: string): Promise<FormState> {
+  const manager = await activityManager();
+  const removed = await removePpksActivity(database(), manager, id);
+  if (!removed.ok) return { error: removed.error, done: null };
+  revalidatePath(CURRICULUM_ADDRESS);
+  return { error: null, done: "Kegiatan dihapus dari daftar." };
 }
