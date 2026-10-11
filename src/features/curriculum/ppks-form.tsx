@@ -13,27 +13,30 @@ import { ValueSwatch } from "@/ui/value-swatch";
 import { savePpksActivityAction } from "./actions";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
-import { ticksOfValues, toggled } from "./ppks-activities";
+import { type PpksActivity, ticksOfValues, toggled } from "./ppks-activities";
 import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH } from "./ppks-activity-input";
 import { PpksIndicatorTicks } from "./ppks-indicator-ticks";
 
 const START: FormState = { error: null, done: null };
 
-/** The form that adds a PPKS activity to one semester. */
+/** The form that adds a PPKS activity to one semester, or changes one. */
 export function PpksForm({
   semester,
+  activity,
   values,
   onSaved,
   onCancel,
 }: {
   semester: number;
+  /** The activity to change, or null to add a new one. */
+  activity: PpksActivity | null;
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
   onSaved: (message: string) => void;
   onCancel: () => void;
 }) {
-  const [chosen, setChosen] = useState<ValueKey[]>([]);
-  const [ticked, setTicked] = useState<string[]>([]);
+  const [chosen, setChosen] = useState<ValueKey[]>(activity?.valueKeys ?? []);
+  const [ticked, setTicked] = useState(activity?.indicatorCodes ?? []);
 
   function toggleValue(key: ValueKey) {
     const left = toggled(chosen, key);
@@ -64,8 +67,11 @@ export function PpksForm({
       className={`${styles.box} ${styles.activityForm}`}
       noValidate
     >
-      <h3 className={styles.boxTitle}>Kegiatan PPKS semester {semester}</h3>
+      <h3 className={styles.boxTitle}>
+        {activity ? "Ubah kegiatan" : `Kegiatan PPKS semester ${semester}`}
+      </h3>
       <input type="hidden" name="semester" value={semester} />
+      {activity && <input type="hidden" name="id" value={activity.id} />}
       <div className={shared.form}>
         <label className={`${shared.field} ${styles.full}`}>
           Nama kegiatan
@@ -73,6 +79,7 @@ export function PpksForm({
             name="name"
             className={shared.input}
             maxLength={NAME_MAX_LENGTH}
+            defaultValue={activity?.name}
           />
         </label>
         <fieldset className={shared.roles}>
@@ -102,10 +109,20 @@ export function PpksForm({
         </fieldset>
         <label className={shared.field}>
           Target peserta
-          <input name="target" type="number" min={0} className={shared.input} />
+          <input
+            name="target"
+            type="number"
+            min={0}
+            className={shared.input}
+            defaultValue={activity?.targetParticipants ?? ""}
+          />
         </label>
         <label className={shared.role}>
-          <input type="checkbox" name="required" defaultChecked />
+          <input
+            type="checkbox"
+            name="required"
+            defaultChecked={activity?.isRequired ?? true}
+          />
           Wajib, dihitung dalam nilai kehadiran
         </label>
         <label className={`${shared.field} ${styles.full}`}>
@@ -114,6 +131,7 @@ export function PpksForm({
             name="description"
             className={shared.input}
             maxLength={DESCRIPTION_MAX_LENGTH}
+            defaultValue={activity?.description}
           />
         </label>
         {state.error && <FormMessage state={state} />}

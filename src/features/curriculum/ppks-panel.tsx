@@ -9,7 +9,10 @@ import type { PpksActivity } from "./ppks-activities";
 import { PpksForm } from "./ppks-form";
 import { PpksTable } from "./ppks-table";
 
-/** The PPKS activities of one semester, with the form to add one. */
+/** What the form is open for: a new activity, or one to change. */
+type Open = "new" | PpksActivity | null;
+
+/** The PPKS activities of one semester, with the form to add or change one. */
 export function PpksPanel({
   semester,
   note,
@@ -24,17 +27,17 @@ export function PpksPanel({
   values: ValueIndicators[];
   mayManage: boolean;
 }) {
-  const [adding, setAdding] = useState(false);
+  const [open, setOpen] = useState<Open>(null);
   const [saved, setSaved] = useState<string | null>(null);
 
-  function startAdding() {
+  function openFor(target: Open) {
     setSaved(null);
-    setAdding(true);
+    setOpen(target);
   }
 
   function showSaved(message: string) {
     setSaved(message);
-    setAdding(false);
+    setOpen(null);
   }
 
   return (
@@ -46,8 +49,12 @@ export function PpksPanel({
           </h2>
           <p className={shared.detail}>{note}</p>
         </div>
-        {mayManage && !adding && (
-          <button type="button" className={shared.button} onClick={startAdding}>
+        {mayManage && !open && (
+          <button
+            type="button"
+            className={shared.button}
+            onClick={() => openFor("new")}
+          >
             Tambah kegiatan PPKS
           </button>
         )}
@@ -57,15 +64,20 @@ export function PpksPanel({
           <FormMessage state={{ error: null, done: saved }} />
         </div>
       )}
-      {adding && (
+      {open && (
         <PpksForm
+          key={open === "new" ? "new" : open.id}
           semester={semester}
+          activity={open === "new" ? null : open}
           values={values}
           onSaved={showSaved}
-          onCancel={() => setAdding(false)}
+          onCancel={() => setOpen(null)}
         />
       )}
-      <PpksTable activities={activities} />
+      <PpksTable
+        activities={activities}
+        onChange={mayManage ? openFor : null}
+      />
     </section>
   );
 }

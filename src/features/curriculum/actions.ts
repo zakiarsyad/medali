@@ -9,6 +9,7 @@ import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addPpksActivity } from "./add-ppks-activity";
+import { changePpksActivity } from "./change-ppks-activity";
 import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
 
@@ -55,7 +56,7 @@ export async function savePpksActivityAction(
   form: FormData,
 ): Promise<FormState> {
   const manager = await activityManager();
-  const saved = await addPpksActivity(database(), manager, {
+  const sent = {
     semester: text(form, "semester"),
     name: text(form, "name"),
     valueKeys: texts(form, "value"),
@@ -63,7 +64,13 @@ export async function savePpksActivityAction(
     target: text(form, "target"),
     isRequired: text(form, "required") === "on",
     description: text(form, "description"),
-  });
+  };
+  // A form with an id changes that activity; one without adds a new one.
+  const id = text(form, "id");
+  const saved =
+    id === ""
+      ? await addPpksActivity(database(), manager, sent)
+      : await changePpksActivity(database(), manager, id, sent);
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Kegiatan "${saved.value}" disimpan.` };

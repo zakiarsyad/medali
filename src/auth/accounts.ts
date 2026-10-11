@@ -1,5 +1,6 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import type { Database } from "@/db/connect";
+import { isUuid } from "@/db/is-uuid";
 import { accountRoles, accounts, students, studyPrograms } from "@/db/schema";
 import { ROLE_IDS, type RoleId } from "./role-ids";
 
@@ -66,10 +67,8 @@ export async function activeAccounts(
   return rows.map((row) => ({ ...row, roles: roles.get(row.id) ?? [] }));
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export function isAccountId(id: string): boolean {
-  return UUID.test(id);
+  return isUuid(id);
 }
 
 /** One active account, or null when the id is unknown, removed or malformed. */

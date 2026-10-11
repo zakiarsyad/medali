@@ -14,8 +14,17 @@ function ValueTags({ keys }: { keys: PpksActivity["valueKeys"] }) {
   ));
 }
 
-/** The PPKS activities of one semester, or that there are none. */
-export function PpksTable({ activities }: { activities: PpksActivity[] }) {
+/**
+ * The PPKS activities of one semester, or that there are none. Each row
+ * has "Ubah" when `onChange` is given.
+ */
+export function PpksTable({
+  activities,
+  onChange,
+}: {
+  activities: PpksActivity[];
+  onChange: ((activity: PpksActivity) => void) | null;
+}) {
   if (activities.length === 0) {
     return (
       <p className={shared.empty}>
@@ -32,6 +41,11 @@ export function PpksTable({ activities }: { activities: PpksActivity[] }) {
             <th>Nilai</th>
             <th>Indikator utama</th>
             <th>Target peserta</th>
+            {onChange && (
+              <th>
+                <span className={shared.hidden}>Tindakan</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -54,6 +68,17 @@ export function PpksTable({ activities }: { activities: PpksActivity[] }) {
                 ))}
               </td>
               <td>{activity.targetParticipants ?? "-"}</td>
+              {onChange && (
+                <td>
+                  <button
+                    type="button"
+                    className={shared.link}
+                    onClick={() => onChange(activity)}
+                  >
+                    Ubah
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
