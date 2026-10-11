@@ -26,7 +26,7 @@ import {
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
-import { FORM_ANCHOR, newStudentsAddress } from "./new-students-address";
+import { newStudentsAddress } from "./new-students-address";
 import { SelectField } from "./select-field";
 import type { StudentInput } from "./student-input";
 import { useNotify } from "./student-notice";
@@ -82,7 +82,7 @@ function NimField({ nim, locked }: { nim: string; locked: boolean }) {
   );
 }
 
-interface StudentFormProps {
+export interface StudentFormProps {
   programs: StudyProgram[];
   /** The Angkatan choices, the newest first. */
   cohortYears: number[];
@@ -129,100 +129,90 @@ export function StudentForm({
   const [state, action, pending] = useActionState(send, START);
   const shown = formShows(state, start);
   return (
-    <section className={shared.panel} id={FORM_ANCHOR}>
-      <h2 className={shared.heading}>
-        {editing ? "Ubah data mahasiswa" : "Input data mahasiswa"}
-      </h2>
-      <p className={shared.detail}>
-        {editing ? `NIM ${editing.nim}` : "Satu per satu lewat formulir."}
-      </p>
-      <form action={action} className={shared.form}>
-        {/* Drawn anew each time the form is sent: the browser empties a
-            sent form, and this fills it again with what `shown` holds. */}
-        <Fragment key={state.attempt}>
-          <NimField nim={shown.nim} locked={editing !== null} />
-          <label className={shared.field}>
-            Nama lengkap
-            <input
-              name="name"
-              className={shared.input}
-              minLength={NAME_MIN_LENGTH}
-              maxLength={NAME_MAX_LENGTH}
-              defaultValue={shown.name}
-              required
-            />
-          </label>
-          <SelectField
-            label="Program studi"
-            name="studyProgramId"
-            choices={programs.map(
-              ({ id, name }) => [String(id), name] as const,
-            )}
-            chosen={shown.studyProgramId}
+    <form action={action} className={shared.form}>
+      {/* Drawn anew each time the form is sent: the browser empties a
+          sent form, and this fills it again with what `shown` holds. */}
+      <Fragment key={state.attempt}>
+        <NimField nim={shown.nim} locked={editing !== null} />
+        <label className={shared.field}>
+          Nama lengkap
+          <input
+            name="name"
+            className={shared.input}
+            minLength={NAME_MIN_LENGTH}
+            maxLength={NAME_MAX_LENGTH}
+            defaultValue={shown.name}
+            required
           />
-          <SelectField
-            label="Jalur"
-            name="entryPath"
-            choices={Object.entries(ENTRY_PATH_LABELS)}
-            chosen={entryPath}
-            onChoose={setEntryPath}
+        </label>
+        <SelectField
+          label="Program studi"
+          name="studyProgramId"
+          choices={programs.map(({ id, name }) => [String(id), name] as const)}
+          chosen={shown.studyProgramId}
+        />
+        <SelectField
+          label="Jalur"
+          name="entryPath"
+          choices={Object.entries(ENTRY_PATH_LABELS)}
+          chosen={entryPath}
+          onChoose={setEntryPath}
+        />
+        <SelectField
+          label="Jenis kelamin"
+          name="sex"
+          choices={Object.entries(SEX_LABELS)}
+          chosen={shown.sex}
+        />
+        <SelectField
+          label="Angkatan"
+          name="cohortYear"
+          choices={sameAsShown(cohortYears)}
+          chosen={shown.cohortYear}
+        />
+        <label className={shared.field}>
+          Kelas akademik (opsional)
+          <input
+            name="className"
+            className={shared.input}
+            maxLength={CLASS_MAX_LENGTH}
+            defaultValue={shown.className}
+            placeholder="Misalnya 1-01"
           />
+        </label>
+        <SelectField
+          label="Provinsi domisili"
+          name="province"
+          choices={[["", "Tidak diketahui"], ...sameAsShown(PROVINCES)]}
+          chosen={shown.province}
+        />
+        {entryPath === "transfer" && (
           <SelectField
-            label="Jenis kelamin"
-            name="sex"
-            choices={Object.entries(SEX_LABELS)}
-            chosen={shown.sex}
+            label="Instansi asal (alih program)"
+            name="originAgency"
+            choices={[["", "-"], ...sameAsShown(ORIGIN_AGENCIES)]}
+            chosen={shown.originAgency}
           />
-          <SelectField
-            label="Angkatan"
-            name="cohortYear"
-            choices={sameAsShown(cohortYears)}
-            chosen={shown.cohortYear}
-          />
-          <label className={shared.field}>
-            Kelas akademik (opsional)
-            <input
-              name="className"
-              className={shared.input}
-              maxLength={CLASS_MAX_LENGTH}
-              defaultValue={shown.className}
-              placeholder="Misalnya 1-01"
-            />
-          </label>
-          <SelectField
-            label="Provinsi domisili"
-            name="province"
-            choices={[["", "Tidak diketahui"], ...sameAsShown(PROVINCES)]}
-            chosen={shown.province}
-          />
-          {entryPath === "transfer" && (
-            <SelectField
-              label="Instansi asal (alih program)"
-              name="originAgency"
-              choices={[["", "-"], ...sameAsShown(ORIGIN_AGENCIES)]}
-              chosen={shown.originAgency}
-            />
-          )}
-          <SelectField
-            label="Status"
-            name="status"
-            choices={Object.entries(STATUS_LABELS)}
-            chosen={shown.status}
-          />
-          <Categories chosen={shown.categories} />
-        </Fragment>
-        {state.error && <FormMessage state={state} />}
-        <div className={shared.actions}>
-          <button type="submit" className={shared.button} disabled={pending}>
-            {editing ? "Simpan perubahan" : "Tambah mahasiswa"}
-          </button>
-          {editing && (
-            <Link href={newStudentsAddress(query)} className={shared.quiet}>
-              Batal
-            </Link>
-          )}
-        </div>
-      </form>
-    </section>
+        )}
+        <SelectField
+          label="Status"
+          name="status"
+          choices={Object.entries(STATUS_LABELS)}
+          chosen={shown.status}
+        />
+        <Categories chosen={shown.categories} />
+      </Fragment>
+      {state.error && <FormMessage state={state} />}
+      <div className={shared.actions}>
+        <button type="submit" className={shared.button} disabled={pending}>
+          {editing ? "Simpan perubahan" : "Tambah mahasiswa"}
+        </button>
+        {editing && (
+          <Link href={newStudentsAddress(query)} className={shared.quiet}>
+            Batal
+          </Link>
+        )}
+      </div>
+    </form>
   );
 }

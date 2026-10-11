@@ -13,8 +13,8 @@ import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
 } from "./new-students-address";
-import { StudentForm } from "./student-form";
 import { cohortChoices } from "./student-input";
+import { StudentInputPanel } from "./student-input-panel";
 import { StudentNotice } from "./student-notice";
 import { StudentNumbers } from "./student-numbers";
 import { StudentTable } from "./student-table";
@@ -72,7 +72,7 @@ export async function NewStudentsScreen({
       <TabLinks {...tabs} />
       <StudentNumbers counts={counts} />
       <StudentNotice>
-        <StudentForm
+        <StudentInputPanel
           key={editing?.nim ?? "new"}
           programs={programs}
           cohortYears={cohortChoices(thisYear, editing?.cohortYear)}

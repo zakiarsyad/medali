@@ -63,3 +63,48 @@
 .inactive {
   color: var(--muted);
 }
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.modes {
+  display: inline-flex;
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-3xs);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+}
+
+.mode {
+  padding: var(--space-2xs) var(--space-md);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.modeOn {
+  background: var(--surface);
+  color: var(--navy);
+  box-shadow: var(--shadow);
+}
+
+.uploadNote {
+  margin: var(--space-lg) 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.uploadNote b {
+  color: var(--ink);
+}

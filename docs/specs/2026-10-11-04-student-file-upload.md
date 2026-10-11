@@ -61,7 +61,7 @@ None.
 
 - [x] 1. The rules that read a CSV file and decide, row by row, ready or
   skipped and why.
-- [ ] 2. "Unggah berkas" shows next to "Formulir", with the column notes
+- [x] 2. "Unggah berkas" shows next to "Formulir", with the column notes
   and "Unduh templat CSV".
 - [ ] 3. Picking a file shows the preview: ready rows, skipped rows and
   reasons.
