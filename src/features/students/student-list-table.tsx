@@ -2,14 +2,6 @@ import shared from "@/ui/data-screen.module.css";
 import { CATEGORIES, ENTRY_PATH_LABELS, STATUS_LABELS } from "./labels";
 import type { ListedStudent } from "./student-list";
 
-/** The prototype shows no tag for Blended learning. */
-type Category = (typeof CATEGORIES)[number];
-type Tag = Exclude<Category, { field: "isBlended" }>;
-
-const TAGS = CATEGORIES.filter(
-  (category): category is Tag => category.field !== "isBlended",
-);
-
 /** The NIM, and the status when the student is not active. */
 function nimAndStatus(student: ListedStudent): string {
   if (student.status === "active") return student.nim;
@@ -22,7 +14,7 @@ function pathAndAgency(student: ListedStudent): string {
 }
 
 function StudentRow({ student }: { student: ListedStudent }) {
-  const tags = TAGS.filter(({ field }) => student[field]);
+  const tags = CATEGORIES.filter(({ field }) => student[field]);
   return (
     <tr>
       <td>

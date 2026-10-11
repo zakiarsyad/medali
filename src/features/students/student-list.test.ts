@@ -76,6 +76,7 @@ describe("listStudents", () => {
           isAffirmation: false,
           isSeedling: true,
           isInternational: false,
+          isBlended: false,
           studyProgram: "Prodi Uji Tabel",
           entryPath: "transfer",
           originAgency: "Direktorat Jenderal Pajak",

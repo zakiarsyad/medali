@@ -22,6 +22,7 @@ export interface ListedStudent {
   isAffirmation: boolean;
   isSeedling: boolean;
   isInternational: boolean;
+  isBlended: boolean;
   studyProgram: string;
   entryPath: Student["entryPath"];
   originAgency: string | null;
@@ -37,6 +38,7 @@ const ROW = {
   isAffirmation: students.isAffirmation,
   isSeedling: students.isSeedling,
   isInternational: students.isInternational,
+  isBlended: students.isBlended,
   studyProgram: studyPrograms.name,
   entryPath: students.entryPath,
   originAgency: students.originAgency,
