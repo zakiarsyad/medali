@@ -1,6 +1,6 @@
 # MEDALI
 
-The character-building app for PKN STAN: mentoring, activities, assessment,
+A character-building app for a campus: mentoring, activities, assessment,
 counselling, discipline and dormitory, in one place.
 
 ## Getting started
