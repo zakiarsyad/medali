@@ -1,5 +1,11 @@
-import { Fragment } from "react";
+"use client";
+
+import { Fragment, useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { previewStudentFileAction } from "./actions";
+import { FileDrop } from "./file-drop";
+import type { FilePreview } from "./file-preview";
+import { FilePreviewView } from "./file-preview-view";
 import styles from "./new-students.module.css";
 import {
   FILE_COLUMNS,
@@ -7,8 +13,15 @@ import {
   TEMPLATE_FILE_NAME,
   templateCsv,
 } from "./student-file-columns";
+import { checkFileShape } from "./uploaded-file";
 
 const TEMPLATE_LINK = `data:text/csv;charset=utf-8,${encodeURIComponent(templateCsv())}`;
+
+/** A picked file with what the server says it would do. */
+interface Checked {
+  file: File;
+  preview: FilePreview;
+}
 
 function ColumnNotes() {
   return (
@@ -29,6 +42,28 @@ function ColumnNotes() {
 }
 
 export function StudentUpload() {
+  const [checked, setChecked] = useState<Checked | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [reading, startReading] = useTransition();
+
+  function refuse(message: string) {
+    setChecked(null);
+    setError(message);
+  }
+
+  function pick(file: File) {
+    const wrongShape = checkFileShape(file.name, file.size);
+    if (wrongShape) return refuse(wrongShape);
+    startReading(async () => {
+      const form = new FormData();
+      form.set("file", file);
+      const preview = await previewStudentFileAction(form);
+      if (!preview.ok) return refuse(preview.error);
+      setError(null);
+      setChecked({ file, preview: preview.value });
+    });
+  }
+
   return (
     <>
       <ColumnNotes />
@@ -41,6 +76,28 @@ export function StudentUpload() {
           Unduh templat CSV
         </a>
       </div>
+      <FileDrop disabled={reading} onPick={pick} />
+      {reading && (
+        <p className={shared.detail} role="status">
+          Membaca berkas…
+        </p>
+      )}
+      {error && !reading && (
+        <p className={`${styles.fileResult} ${styles.fileWarn}`} role="alert">
+          {error}
+        </p>
+      )}
+      {checked && !reading && (
+        <FilePreviewView name={checked.file.name} preview={checked.preview}>
+          <button
+            type="button"
+            className={shared.quiet}
+            onClick={() => setChecked(null)}
+          >
+            Batal
+          </button>
+        </FilePreviewView>
+      )}
     </>
   );
 }
