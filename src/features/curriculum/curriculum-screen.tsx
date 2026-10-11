@@ -4,6 +4,7 @@ import { BaseScorePanel } from "./base-score-panel";
 import { changeNote } from "./change-note";
 import { GradeScalePanel } from "./grade-scale-panel";
 import { MainIndicatorsPanel } from "./main-indicators-panel";
+import { StagesSection } from "./stages-section";
 import { readBaseScore, STARTING_BASE_SCORE } from "./stored-base-score";
 import { readMainIndicators } from "./stored-main-indicators";
 
@@ -39,6 +40,7 @@ export async function CurriculumScreen({ mayChange }: { mayChange: boolean }) {
         )}
         mayChange={mayChange}
       />
+      <StagesSection />
       <GradeScalePanel />
     </>
   );

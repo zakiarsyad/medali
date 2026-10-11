@@ -76,7 +76,7 @@ None.
   and when. The list starts empty; sample data adds a few for the preview.
 - [x] 2. The right to manage activities is added to the permission list
   for Kepala Unit and Pegawai UPK, with its checks.
-- [ ] 3. The page shows the heading, the semester choice and the four
+- [x] 3. The page shows the heading, the semester choice and the four
   tahap boxes.
 - [ ] 4. The page shows the Program kegiatan PPKS table for the chosen
   semester.
