@@ -42,5 +42,5 @@ None.
   stored files are refreshed to match.
 - [x] 2. The check that lists the source files writes paths the same way
   on every computer.
-- [ ] 3. "Set up" refreshes the files on a computer that already has the
+- [x] 3. "Set up" refreshes the files on a computer that already has the
   repo.
