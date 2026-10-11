@@ -14,6 +14,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
+import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
 
@@ -146,4 +147,37 @@ export const sikuBaseScore = pgTable(
       .references(() => accounts.id),
   },
   (table) => [check("siku_base_score_one_row", sql`${table.id} = 1`)],
+);
+
+/**
+ * The PPKS activities of each semester, without dates. A removed one keeps
+ * its row, marked with who removed it and when.
+ */
+export const ppksActivities = pgTable(
+  "ppks_activities",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    semester: smallint().notNull(),
+    name: text().notNull(),
+    /** The letters of the MEDALI values the activity builds. */
+    valueKeys: text().array().$type<ValueKey[]>().notNull(),
+    /** The codes of the main indicators the activity aims at. */
+    indicatorCodes: text().array().notNull(),
+    /** Empty while no target is set. */
+    targetParticipants: integer(),
+    isRequired: boolean().notNull(),
+    description: text().notNull(),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    deletedAt: timestamp({ withTimezone: true }),
+    deletedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    check(
+      "ppks_activities_semester_1_to_8",
+      sql`${table.semester} between 1 and 8`,
+    ),
+  ],
 );

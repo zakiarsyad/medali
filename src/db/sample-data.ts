@@ -1,5 +1,6 @@
 import type { RoleId } from "@/auth/role-ids";
 import type { NewStudent } from "@/features/students/add-student";
+import type { ValueKey } from "@/ui/medali-values";
 
 /*
  * Made-up people only. Every name is a mix of common given names and
@@ -308,5 +309,91 @@ export const SAMPLE_STUDENTS: SampleStudent[] = [
     cohortYear: 2023,
     className: "4-03",
     province: "Sulawesi Utara",
+  },
+];
+
+export interface SamplePpksActivity {
+  semester: number;
+  name: string;
+  valueKeys: ValueKey[];
+  indicatorCodes: string[];
+  targetParticipants: number | null;
+  isRequired: boolean;
+  description: string;
+}
+
+/** A few made-up PPKS activities. Semester 8 has none, to show an empty list. */
+export const SAMPLE_PPKS_ACTIVITIES: SamplePpksActivity[] = [
+  {
+    semester: 1,
+    name: "Orientasi kehidupan kampus",
+    valueKeys: ["D", "A"],
+    indicatorCodes: ["D1", "A1"],
+    targetParticipants: 120,
+    isRequired: true,
+    description: "Pengenalan tata tertib kampus dan asrama.",
+  },
+  {
+    semester: 1,
+    name: "Pelatihan mengatur waktu dan keuangan pribadi",
+    valueKeys: ["M"],
+    indicatorCodes: ["M1"],
+    targetParticipants: null,
+    isRequired: true,
+    description: "",
+  },
+  {
+    semester: 2,
+    name: "Bakti sosial lingkungan kampus",
+    valueKeys: ["E", "L"],
+    indicatorCodes: ["E1", "L1"],
+    targetParticipants: 60,
+    isRequired: false,
+    description: "Kerja bakti bersama warga sekitar kampus.",
+  },
+  {
+    semester: 3,
+    name: "Latihan dasar kepemimpinan organisasi",
+    valueKeys: ["M", "D"],
+    indicatorCodes: ["M2", "D2"],
+    targetParticipants: 110,
+    isRequired: true,
+    description: "Latihan memimpin rapat dan membagi tugas.",
+  },
+  {
+    semester: 4,
+    name: "Kerja kelompok lintas program studi",
+    valueKeys: ["E", "A"],
+    indicatorCodes: ["E2", "A2"],
+    targetParticipants: null,
+    isRequired: true,
+    description: "Proyek kelompok dengan anggota dari program studi lain.",
+  },
+  {
+    semester: 5,
+    name: "Pembekalan praktik kerja lapangan",
+    valueKeys: ["D", "A"],
+    indicatorCodes: ["D3", "A3"],
+    targetParticipants: 100,
+    isRequired: true,
+    description: "Persiapan sikap kerja sebelum praktik di lapangan.",
+  },
+  {
+    semester: 6,
+    name: "Pengabdian kepada masyarakat",
+    valueKeys: ["E"],
+    indicatorCodes: ["E3"],
+    targetParticipants: 100,
+    isRequired: false,
+    description: "",
+  },
+  {
+    semester: 7,
+    name: "Seminar integritas dan antikorupsi",
+    valueKeys: ["I", "L"],
+    indicatorCodes: ["I4", "L4"],
+    targetParticipants: 95,
+    isRequired: true,
+    description: "Bekal integritas menjelang penempatan.",
   },
 ];

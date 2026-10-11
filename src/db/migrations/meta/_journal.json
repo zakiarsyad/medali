@@ -43,6 +43,13 @@
       "when": 1791719100562,
       "tag": "0005_main-indicators-and-siku-base-score",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791721353205,
+      "tag": "0006_ppks-activities",
+      "breakpoints": true
     }
   ]
 }

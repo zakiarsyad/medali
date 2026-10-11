@@ -74,6 +74,26 @@ describe("may", () => {
     }
   });
 
+  const activityRoles: RoleId[] = ["head_of_unit", "upk_staff"];
+
+  it.each(activityRoles)("lets %s manage activities", (role) => {
+    expect(may([role], "manage_activities")).toBe(true);
+  });
+
+  it("refuses every other role to manage activities", () => {
+    const others = ROLE_IDS.filter((role) => !activityRoles.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - activityRoles.length);
+    for (const role of others) {
+      expect(may([role], "manage_activities")).toBe(false);
+    }
+  });
+
+  it("lets every role that may manage activities open Kurikulum", () => {
+    for (const role of activityRoles) {
+      expect(mayOpenPage([role], "curriculum")).toBe(true);
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
