@@ -57,8 +57,9 @@ Only these five.
    the local database with the sample data, so on a computer that already
    has data, ask first. Then start the app with `pnpm dev`; it starts the
    database too, and brings its tables up to date.
-8. Open http://localhost:3000 and confirm the page shows. Signing in as a
-   sample role comes with later work, so skip that part for now.
+8. Open http://localhost:3000 and confirm the page shows with the menu.
+   Show the person "Ganti peran" under "Masuk sebagai" in the side menu:
+   it switches between the sample accounts, one per role.
 9. Tell the person in a few lines what was installed, what works, and what
    still needs them.
 

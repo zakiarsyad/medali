@@ -86,7 +86,7 @@ None.
   students and the role-change log are added.
 - [x] 2. The sample data command adds one account per role, one account
   with two roles, and made-up students.
-- [ ] 3. The permission list, the menu for each role and the "Ganti peran"
+- [x] 3. The permission list, the menu for each role and the "Ganti peran"
   picker are added. Each page appears as an empty page.
 - [ ] 4. Pengaturan > Pengguna dan peran lets Kepala Unit see, add, change
   and remove accounts and their roles, with every role change written to
