@@ -1,9 +1,9 @@
 "use client";
 
 import { type FormEvent, useActionState } from "react";
+import styles from "@/ui/data-screen.module.css";
 import { type FormState, removeAccountAction } from "./actions";
 import { FormMessage } from "./form-message";
-import styles from "./users-screen.module.css";
 
 const START: FormState = { error: null, done: null };
 

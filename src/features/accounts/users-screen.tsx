@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ROLES } from "@/auth/roles";
 import { database } from "@/db/database";
+import styles from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AccessMatrix } from "./access-matrix";
@@ -10,7 +11,6 @@ import { type ListParams, listAddress, USERS_ADDRESS } from "./list-address";
 import { listManagedAccounts, PAGE_SIZE } from "./manage-accounts";
 import { LISTED_ROLES } from "./managed-roles";
 import { listStudyPrograms } from "./study-programs";
-import styles from "./users-screen.module.css";
 
 function Filters({ params }: { params: ListParams }) {
   return (

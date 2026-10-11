@@ -14,6 +14,7 @@ import {
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
+import { containsPattern } from "@/db/contains-pattern";
 import {
   accountRoles,
   accounts,
@@ -53,10 +54,6 @@ function sameRoles(a: RoleId[], b: RoleId[]): boolean {
   return inRoleOrder(a).join() === inRoleOrder(b).join();
 }
 
-function escapeLike(text: string): string {
-  return text.replace(/[\\%_]/g, "\\$&");
-}
-
 function listCondition(db: Database, filter: AccountFilter): SQL | undefined {
   const wanted = filter.role ? [filter.role] : [...LISTED_ROLES];
   const hasWantedRole = exists(
@@ -71,7 +68,7 @@ function listCondition(db: Database, filter: AccountFilter): SQL | undefined {
       ),
   );
   const query = filter.query.trim();
-  const pattern = `%${escapeLike(query)}%`;
+  const pattern = containsPattern(query);
   const matches = query
     ? or(
         ilike(accounts.name, pattern),

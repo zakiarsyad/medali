@@ -1,5 +1,5 @@
+import styles from "@/ui/data-screen.module.css";
 import type { FormState } from "./actions";
-import styles from "./users-screen.module.css";
 
 export function FormMessage({ state }: { state: FormState }) {
   if (state.error) {

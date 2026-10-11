@@ -59,7 +59,7 @@ None.
   removal mark.
 - [x] 2. The right to input new students is added to the permission list
   for the three roles, with its checks.
-- [ ] 3. The tab shows the title, the two numbers and the list with
+- [x] 3. The tab shows the title, the two numbers and the list with
   search.
 - [ ] 4. The form adds a student with their account.
 - [ ] 5. Ubah and Hapus work from the list.

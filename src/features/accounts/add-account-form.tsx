@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
+import styles from "@/ui/data-screen.module.css";
 import { addAccountAction, type FormState } from "./actions";
 import { FormMessage } from "./form-message";
 import { ProgramChoice, RoleChoices } from "./role-choices";
 import type { StudyProgram } from "./study-programs";
-import styles from "./users-screen.module.css";
 
 const START: FormState = { error: null, done: null };
 
