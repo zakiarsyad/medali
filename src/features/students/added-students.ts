@@ -15,6 +15,7 @@ import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { accounts, students, studyPrograms } from "@/db/schema";
+import type { StudentInput } from "./student-input";
 
 /** The most rows the list shows. More than that is found by searching. */
 export const LIST_LIMIT = 100;
@@ -102,6 +103,39 @@ export async function listAddedStudents(
     .orderBy(desc(students.inputAt), asc(students.name))
     .limit(LIST_LIMIT);
   return { students: rows, matching: counted?.matching ?? 0 };
+}
+
+const INPUT = {
+  nim: students.nim,
+  name: students.name,
+  studyProgramId: students.studyProgramId,
+  entryPath: students.entryPath,
+  sex: students.sex,
+  cohortYear: students.cohortYear,
+  className: students.className,
+  province: students.province,
+  originAgency: students.originAgency,
+  status: students.status,
+  isAffirmation: students.isAffirmation,
+  isSeedling: students.isSeedling,
+  isInternational: students.isInternational,
+  isBlended: students.isBlended,
+};
+
+/**
+ * What the form holds for one student put in through Pengguna baru
+ * mahasiswa, or null when there is no such student or they were removed.
+ */
+export async function findAddedStudent(
+  db: Database,
+  nim: string,
+): Promise<StudentInput | null> {
+  const [found] = await db
+    .select(INPUT)
+    .from(students)
+    .where(and(eq(students.nim, nim), ADDED_HERE))
+    .limit(1);
+  return found ?? null;
 }
 
 function countWhere(condition: SQL): SQL<number> {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import type { AddedStudent } from "./added-students";
 import {
@@ -8,6 +9,8 @@ import {
   STATUS_LABELS,
 } from "./labels";
 import styles from "./new-students.module.css";
+import { newStudentsAddress } from "./new-students-address";
+import { RemoveStudentButton } from "./remove-student-button";
 
 const DAY = new Intl.DateTimeFormat("id-ID", {
   day: "numeric",
@@ -27,7 +30,13 @@ function pathAndClass(student: AddedStudent): string {
   return student.className ? `${path} · ${student.className}` : path;
 }
 
-function StudentRow({ student }: { student: AddedStudent }) {
+function StudentRow({
+  student,
+  query,
+}: {
+  student: AddedStudent;
+  query: string;
+}) {
   const categories = CATEGORIES.filter(({ field }) => student[field]);
   return (
     <tr>
@@ -61,11 +70,27 @@ function StudentRow({ student }: { student: AddedStudent }) {
           {student.inputSource ? INPUT_SOURCE_LABELS[student.inputSource] : ""}
         </small>
       </td>
+      <td className={shared.rowActions}>
+        <Link
+          href={newStudentsAddress(query, student.nim)}
+          className={shared.link}
+        >
+          Ubah
+        </Link>
+        <RemoveStudentButton nim={student.nim} name={student.name} />
+      </td>
     </tr>
   );
 }
 
-export function StudentTable({ students }: { students: AddedStudent[] }) {
+export function StudentTable({
+  students,
+  query,
+}: {
+  students: AddedStudent[];
+  /** The search of the list, kept by the link to change a student. */
+  query: string;
+}) {
   return (
     <div className={shared.tableWrap}>
       <table className={shared.table}>
@@ -76,11 +101,14 @@ export function StudentTable({ students }: { students: AddedStudent[] }) {
             <th>Angkatan</th>
             <th>Status</th>
             <th>Diinput</th>
+            <th>
+              <span className={shared.hidden}>Tindakan</span>
+            </th>
           </tr>
         </thead>
         <tbody>
           {students.map((student) => (
-            <StudentRow key={student.nim} student={student} />
+            <StudentRow key={student.nim} student={student} query={query} />
           ))}
         </tbody>
       </table>

@@ -3,7 +3,12 @@ import { listStudyPrograms } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
-import { countStudents, LIST_LIMIT, listAddedStudents } from "./added-students";
+import {
+  countStudents,
+  findAddedStudent,
+  LIST_LIMIT,
+  listAddedStudents,
+} from "./added-students";
 import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
@@ -48,11 +53,13 @@ export async function NewStudentsScreen({
   tabs: TabLinksProps;
 }) {
   const db = database();
-  const [counts, list, programs] = await Promise.all([
+  const [counts, list, programs, editing] = await Promise.all([
     countStudents(db),
     listAddedStudents(db, params.query),
     listStudyPrograms(db),
+    params.editing ? findAddedStudent(db, params.editing) : null,
   ]);
+  const thisYear = new Date().getFullYear();
   return (
     <>
       <PageHead title="Pengguna baru mahasiswa">
@@ -64,8 +71,11 @@ export async function NewStudentsScreen({
       <TabLinks {...tabs} />
       <StudentNumbers counts={counts} />
       <StudentForm
+        key={editing?.nim ?? "new"}
         programs={programs}
-        cohortYears={cohortChoices(new Date().getFullYear())}
+        cohortYears={cohortChoices(thisYear, editing?.cohortYear)}
+        editing={editing}
+        query={params.query}
       />
       <section className={shared.panel}>
         <h2 className={shared.heading}>Mahasiswa yang ditambahkan</h2>
@@ -76,7 +86,7 @@ export async function NewStudentsScreen({
         {list.students.length === 0 ? (
           <NothingListed anyAdded={counts.added > 0} />
         ) : (
-          <StudentTable students={list.students} />
+          <StudentTable students={list.students} query={params.query} />
         )}
         {list.matching > LIST_LIMIT && (
           <p className={shared.detail}>

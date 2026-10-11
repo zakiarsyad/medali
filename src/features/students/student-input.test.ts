@@ -31,6 +31,14 @@ describe("cohortChoices", () => {
   it("gives this year and the five before, the newest first", () => {
     expect(cohortChoices(2026)).toEqual([2026, 2025, 2024, 2023, 2022, 2021]);
   });
+
+  it("adds the year a student already has, in its place and only once", () => {
+    expect(cohortChoices(2026, 2019)).toEqual([
+      2026, 2025, 2024, 2023, 2022, 2021, 2019,
+    ]);
+    expect(cohortChoices(2026, 2027)[0]).toBe(2027);
+    expect(cohortChoices(2026, 2024)).toEqual(cohortChoices(2026));
+  });
 });
 
 describe("parseStudent", () => {

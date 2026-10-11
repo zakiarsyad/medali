@@ -4,6 +4,7 @@ import type { Parsed } from "@/parsed";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
   CLASS_MAX_LENGTH,
+  isNim,
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
   NIM_LENGTH,
@@ -44,20 +45,21 @@ export interface InputContext {
   cohortYears: number[];
 }
 
-const DIGITS_ONLY = /^\d+$/;
 const COHORT_YEARS_BACK = 5;
 
-/** The Angkatan choices: this year and the five before, the newest first. */
-export function cohortChoices(thisYear: number): number[] {
+/**
+ * The Angkatan choices: this year and the five before, the newest first.
+ * `keptYear` is the year a student already has, which stays a choice.
+ */
+export function cohortChoices(thisYear: number, keptYear?: number): number[] {
   const years: number[] = [];
   for (let back = 0; back <= COHORT_YEARS_BACK; back++) {
     years.push(thisYear - back);
   }
-  return years;
-}
-
-export function isNim(text: string): boolean {
-  return text.length === NIM_LENGTH && DIGITS_ONLY.test(text);
+  if (keptYear !== undefined && !years.includes(keptYear)) {
+    years.push(keptYear);
+  }
+  return years.sort((a, b) => b - a);
 }
 
 function refused(error: string): { ok: false; error: string } {

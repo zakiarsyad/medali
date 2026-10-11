@@ -62,4 +62,4 @@ None.
 - [x] 3. The tab shows the title, the two numbers and the list with
   search.
 - [x] 4. The form adds a student with their account.
-- [ ] 5. Ubah and Hapus work from the list.
+- [x] 5. Ubah and Hapus work from the list.
