@@ -2,13 +2,18 @@ import type { PageId, TabbedPageId, TabId } from "./pages";
 import type { RoleId } from "./role-ids";
 
 /** Every action a role may be allowed. Anything not here is refused. */
-export const ACTIONS = ["manage_users", "input_new_students"] as const;
+export const ACTIONS = [
+  "manage_users",
+  "input_new_students",
+  "change_curriculum",
+] as const;
 
 export type Action = (typeof ACTIONS)[number];
 
 export const ACTION_TITLES: Record<Action, string> = {
   manage_users: "Mengelola pengguna dan peran",
   input_new_students: "Menginput mahasiswa baru",
+  change_curriculum: "Mengubah kurikulum",
 };
 
 /**
@@ -83,7 +88,7 @@ export const ROLES: Record<RoleId, Role> = {
       dorm: ALL_DORM,
       settings: ["users", "new_students"],
     },
-    actions: ["manage_users", "input_new_students"],
+    actions: ["manage_users", "input_new_students", "change_curriculum"],
     rows: "all",
   },
   director: {
@@ -202,7 +207,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PU",
     pages: ["curriculum", "activities", "mentors", "settings"],
     tabs: { settings: ["new_students"] },
-    actions: ["input_new_students"],
+    actions: ["input_new_students", "change_curriculum"],
     rows: "all",
   },
   counsellor: {

@@ -36,6 +36,13 @@
       "when": 1791709170014,
       "tag": "0004_student-input-and-removal-marks",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791719100562,
+      "tag": "0005_main-indicators-and-siku-base-score",
+      "breakpoints": true
     }
   ]
 }
