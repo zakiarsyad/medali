@@ -47,6 +47,34 @@ describe("readCsv", () => {
     ]);
   });
 
+  it("finds the separator on the first line that is not empty", () => {
+    expect(readCsv("\n  \nnim;nama\n1;Uji, Contoh\n")).toEqual([
+      [""],
+      ["  "],
+      ["nim", "nama"],
+      ["1", "Uji, Contoh"],
+    ]);
+  });
+
+  it("leaves out the separators inside quotes when it finds the separator", () => {
+    expect(readCsv('"a;b;c",d,e\n')).toEqual([["a;b;c", "d", "e"]]);
+    expect(readCsv('"a,b,c";d;e\n')).toEqual([["a,b,c", "d", "e"]]);
+  });
+
+  it("reads a quote in the middle of a cell as an ordinary character", () => {
+    expect(readCsv('1,Uji 5" Contoh,x\n2,Uji Dua,y\n')).toEqual([
+      ["1", 'Uji 5" Contoh', "x"],
+      ["2", "Uji Dua", "y"],
+    ]);
+  });
+
+  it("opens a quoted cell only when the quote is its first character", () => {
+    expect(readCsv('a, "b,c"\n"d,e",f\n')).toEqual([
+      ["a", ' "b', 'c"'],
+      ["d,e", "f"],
+    ]);
+  });
+
   it("reads nothing from an empty text", () => {
     expect(readCsv("")).toEqual([]);
   });

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { MAX_FILE_BYTES } from "./student-file-columns";
-import { checkFileShape, readFileText, sourceName } from "./uploaded-file";
+import {
+  checkFileShape,
+  readFileText,
+  shortLine,
+  sourceName,
+} from "./uploaded-file";
 
 const NOT_CSV =
   "Berkas harus berformat CSV. Simpan berkas sebagai CSV sesuai templat, lalu unggah lagi.";
@@ -73,5 +78,11 @@ describe("sourceName", () => {
 
   it("cuts a long name short", () => {
     expect(sourceName(`${"a".repeat(200)}.csv`)).toBe("a".repeat(60));
+  });
+});
+
+describe("shortLine", () => {
+  it("puts a text on one line and cuts it to the length asked", () => {
+    expect(shortLine("  satu   dua tiga ", 8)).toBe("satu dua");
   });
 });

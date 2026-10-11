@@ -64,7 +64,7 @@ export function StudentInputPanel(props: StudentFormProps) {
         {!editing && <ModeSwitch mode={mode} onChoose={setMode} />}
       </div>
       {mode === "upload" && !editing ? (
-        <StudentUpload />
+        <StudentUpload cohortYears={props.cohortYears} />
       ) : (
         <StudentForm {...props} />
       )}

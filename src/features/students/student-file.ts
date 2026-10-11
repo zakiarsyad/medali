@@ -1,5 +1,6 @@
 import type { Parsed } from "@/parsed";
 import { readCsv } from "./csv-text";
+import { fileReason } from "./file-reasons";
 import {
   FILE_COLUMNS,
   type FileCells,
@@ -27,7 +28,10 @@ export interface SkippedRow {
 
 export interface FileRows {
   ready: ReadyRow[];
+  /** Rows that break a rule: the file must be corrected for these. */
   skipped: SkippedRow[];
+  /** Rows that are in order, but whose NIM a student already has. */
+  registered: SkippedRow[];
   /** Rows left out because a later row has the same NIM. */
   repeated: number;
 }
@@ -42,6 +46,10 @@ const REGISTERED = "NIM sudah terdaftar.";
 const EMPTY_FILE =
   "Berkas tidak berisi baris mahasiswa. Isi berkas sesuai templat, lalu unggah lagi.";
 const TEMPLATE_ORDER = FILE_COLUMNS.map((_, index) => index);
+const KNOWN_TITLES: string[] = FILE_COLUMNS.flatMap((column) => [
+  column.title,
+  ...column.others,
+]);
 
 function refused(error: string): { ok: false; error: string } {
   return { ok: false, error };
@@ -126,19 +134,25 @@ function checkRows(
       ready.push({ row: row.row, student: parsed.value });
     } else {
       const nim = cells.nim.slice(0, SHOWN_NIM_LENGTH);
-      skipped.push({ row: row.row, nim, reason: parsed.error });
+      const reason = fileReason(parsed.error, cells, context);
+      skipped.push({ row: row.row, nim, reason });
     }
   }
   const unique = lastOfEachNim(ready);
-  return { ready: unique, skipped, repeated: ready.length - unique.length };
+  return {
+    ready: unique,
+    skipped,
+    registered: [],
+    repeated: ready.length - unique.length,
+  };
 }
 
 /**
  * Reads a student file and decides, row by row, ready or skipped and why,
- * by the rules of the form. A first row that names the columns is
- * followed; without one the columns are read in the order of the template.
- * Whether a NIM is already registered is not known here: `skipRegistered`
- * adds that.
+ * by the rules of the form. A first row that holds a column title is
+ * followed, and must then name every column; without one the columns are
+ * read in the order of the template. Whether a NIM is already registered
+ * is not known here: `skipRegistered` adds that.
  */
 export function readStudentFile(
   text: string,
@@ -149,7 +163,7 @@ export function readStudentFile(
   if (!first) return refused(EMPTY_FILE);
 
   const titles = titlesOf(first);
-  const hasTitles = titles.includes("nim");
+  const hasTitles = titles.some((title) => KNOWN_TITLES.includes(title));
   const places: Parsed<number[]> = hasTitles
     ? placesByTitle(titles)
     : { ok: true, value: TEMPLATE_ORDER };
@@ -165,20 +179,23 @@ export function readStudentFile(
   return { ok: true, value: checkRows(studentRows, places.value, context) };
 }
 
-/** Moves the ready rows whose NIM is already registered to the skipped ones. */
+/**
+ * Takes the ready rows whose NIM is already registered out of the ready
+ * ones, and keeps them apart from the rows that break a rule.
+ */
 export function skipRegistered(
   rows: FileRows,
   registered: ReadonlySet<string>,
 ): FileRows {
   const taken = rows.ready.filter((row) => registered.has(row.student.nim));
-  const skipped = taken.map(({ row, student }) => ({
+  const added = taken.map(({ row, student }) => ({
     row,
     nim: student.nim,
     reason: REGISTERED,
   }));
   return {
+    ...rows,
     ready: rows.ready.filter((row) => !registered.has(row.student.nim)),
-    skipped: [...rows.skipped, ...skipped].sort((a, b) => a.row - b.row),
-    repeated: rows.repeated,
+    registered: [...rows.registered, ...added].sort((a, b) => a.row - b.row),
   };
 }

@@ -2,8 +2,10 @@ import { may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import type { Parsed } from "@/parsed";
 import { addStudents } from "./add-student";
+import { type FilePreview, previewOf } from "./file-preview";
 import { type Actor, NOT_ALLOWED } from "./input-student";
 import { uploadSource } from "./labels";
+import { skipRegistered } from "./student-file";
 import { checkStudentFile, type UploadedFile } from "./student-file-check";
 import type { InputContext } from "./student-input";
 import { sourceName } from "./uploaded-file";
@@ -16,8 +18,8 @@ const NOTHING_TO_SAVE = {
 
 export interface SavedFile {
   saved: number;
-  /** Ready rows left out because their NIM was taken a moment before. */
-  takenSince: number;
+  /** The file as it was at the save, for the rows that were skipped. */
+  preview: FilePreview;
 }
 
 function shown(amount: number): string {
@@ -27,8 +29,9 @@ function shown(amount: number): string {
 /** What the screen says after a file is saved. */
 export function savedMessage(fileName: string, result: SavedFile): string {
   const saved = `${shown(result.saved)} baris dari ${sourceName(fileName)} tersimpan.`;
-  if (result.takenSince === 0) return saved;
-  return `${saved} ${shown(result.takenSince)} baris dilewati karena NIM-nya baru saja terdaftar.`;
+  const skipped = result.preview.broken + result.preview.registered;
+  if (skipped === 0) return saved;
+  return `${saved} ${shown(skipped)} baris dilewati.`;
 }
 
 /**
@@ -60,8 +63,17 @@ export async function saveStudentFile(
     actor.id,
   );
   if (added.length === 0) return NOTHING_TO_SAVE;
+
+  // A NIM taken between the check and the save was left out by the database.
+  const saved = new Set(added.map((student) => student.nim));
+  const nims = ready.map((row) => row.student.nim);
+  const takenSince = new Set(nims.filter((nim) => !saved.has(nim)));
+  const result = skipRegistered(rows.value, takenSince);
   return {
     ok: true,
-    value: { saved: added.length, takenSince: ready.length - added.length },
+    value: {
+      saved: added.length,
+      preview: previewOf(result, context.programs),
+    },
   };
 }

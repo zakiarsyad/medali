@@ -14,13 +14,19 @@ const SEX_LETTERS: Record<StudentInput["sex"], string> = {
   female: "P",
 };
 
-/** What the screen shows of a checked file before anything is saved. */
+/** What the screen shows of a checked file. */
 export interface FilePreview {
   ready: number;
   /** The first ready rows, each as its cells in the order of the template. */
   firstRows: string[][];
-  skipped: number;
-  /** The first skipped rows. */
+  /** Rows skipped because they break a rule. */
+  broken: number;
+  /** Rows skipped only because their NIM is already registered. */
+  registered: number;
+  /**
+   * The first skipped rows: those that break a rule come first, because
+   * they are the ones to correct in the file.
+   */
   firstSkipped: SkippedRow[];
   repeated: number;
 }
@@ -53,11 +59,13 @@ export function previewOf(
   programs: StudyProgram[],
 ): FilePreview {
   const first = rows.ready.slice(0, PREVIEW_ROWS);
+  const skipped = [...rows.skipped, ...rows.registered];
   return {
     ready: rows.ready.length,
     firstRows: first.map(({ student }) => cellsOf(student, programs)),
-    skipped: rows.skipped.length,
-    firstSkipped: rows.skipped.slice(0, PREVIEW_SKIPPED),
+    broken: rows.skipped.length,
+    registered: rows.registered.length,
+    firstSkipped: skipped.slice(0, PREVIEW_SKIPPED),
     repeated: rows.repeated,
   };
 }

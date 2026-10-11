@@ -41,10 +41,15 @@ export function readFileText(bytes: Uint8Array): Parsed<string> {
 }
 
 /**
- * A file name as it is kept with a student and shown in the list: on one
- * line, without characters that are not for showing, and short.
+ * A text from outside as it is shown: on one line, without characters
+ * that are not for showing, and no longer than asked.
  */
+export function shortLine(text: string, maxLength: number): string {
+  const oneLine = text.replace(UNSHOWN, " ").replace(/\s+/g, " ").trim();
+  return oneLine.slice(0, maxLength).trim();
+}
+
+/** A file name as it is kept with a student and shown in the list. */
 export function sourceName(fileName: string): string {
-  const oneLine = fileName.replace(UNSHOWN, " ").replace(/\s+/g, " ").trim();
-  return oneLine.slice(0, SOURCE_NAME_MAX_LENGTH).trim();
+  return shortLine(fileName, SOURCE_NAME_MAX_LENGTH);
 }

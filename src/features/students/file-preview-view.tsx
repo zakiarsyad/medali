@@ -8,19 +8,26 @@ function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
 }
 
+function skippedIn(preview: FilePreview): number {
+  return preview.broken + preview.registered;
+}
+
 function Summary({ name, preview }: { name: string; preview: FilePreview }) {
-  const { ready, skipped, repeated } = preview;
+  const { ready, broken, registered, repeated } = preview;
   return (
     <p
       className={
-        skipped > 0
+        skippedIn(preview) > 0
           ? `${styles.fileResult} ${styles.fileWarn}`
           : styles.fileResult
       }
       role="status"
     >
       <b>{name}</b>: {shown(ready)} baris siap disimpan
-      {skipped > 0 && `, ${shown(skipped)} baris dilewati`}
+      {broken > 0 &&
+        `, ${shown(broken)} baris dilewati karena isinya perlu diperbaiki`}
+      {registered > 0 &&
+        `, ${shown(registered)} baris dilewati karena NIM sudah terdaftar`}
       {repeated > 0 &&
         `, ${shown(repeated)} NIM ganda (dipakai baris terakhir)`}
       .
@@ -59,9 +66,21 @@ function ReadyRows({ preview }: { preview: FilePreview }) {
   );
 }
 
-function SkippedRows({ preview }: { preview: FilePreview }) {
+/**
+ * The skipped rows with why: first those to correct in the file, then
+ * those whose NIM is already registered. Nothing when no row is skipped.
+ */
+export function SkippedRows({
+  preview,
+  open = false,
+}: {
+  preview: FilePreview;
+  open?: boolean;
+}) {
+  const skipped = skippedIn(preview);
+  if (skipped === 0) return null;
   return (
-    <details className={styles.skipped}>
+    <details className={styles.skipped} open={open}>
       <summary>Lihat baris yang dilewati</summary>
       <ul>
         {preview.firstSkipped.map(({ row, nim, reason }) => (
@@ -71,10 +90,10 @@ function SkippedRows({ preview }: { preview: FilePreview }) {
           </li>
         ))}
       </ul>
-      {preview.skipped > PREVIEW_SKIPPED && (
+      {skipped > PREVIEW_SKIPPED && (
         <p className={shared.detail}>
-          Menampilkan {PREVIEW_SKIPPED} dari {shown(preview.skipped)} baris yang
-          dilewati.
+          Menampilkan {PREVIEW_SKIPPED} dari {shown(skipped)} baris yang
+          dilewati, yang perlu diperbaiki lebih dulu.
         </p>
       )}
     </details>
@@ -98,7 +117,7 @@ export function FilePreviewView({
     <>
       <Summary name={name} preview={preview} />
       {preview.ready > 0 && <ReadyRows preview={preview} />}
-      {preview.skipped > 0 && <SkippedRows preview={preview} />}
+      <SkippedRows preview={preview} />
       {preview.ready > 0 && <div className={shared.actions}>{children}</div>}
     </>
   );

@@ -2,16 +2,21 @@
 
 import { Fragment, useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { previewStudentFileAction, saveStudentFileAction } from "./actions";
+import {
+  previewStudentFileAction,
+  type SavedFileShown,
+  saveStudentFileAction,
+} from "./actions";
 import { FileDrop } from "./file-drop";
 import type { FilePreview } from "./file-preview";
-import { FilePreviewView } from "./file-preview-view";
+import { FilePreviewView, SkippedRows } from "./file-preview-view";
 import styles from "./new-students.module.css";
 import {
   FILE_COLUMNS,
   MAX_FILE_ROWS,
   TEMPLATE_FILE_NAME,
   templateCsv,
+  yearRange,
 } from "./student-file-columns";
 import { useNotify } from "./student-notice";
 import { checkFileShape } from "./uploaded-file";
@@ -30,7 +35,7 @@ function formWith(file: File): FormData {
   return form;
 }
 
-function ColumnNotes() {
+function ColumnNotes({ cohortYears }: { cohortYears: number[] }) {
   return (
     <p className={styles.uploadNote}>
       Satu baris per mahasiswa. Kolom:{" "}
@@ -41,15 +46,34 @@ function ColumnNotes() {
         </Fragment>
       ))}
       . Prodi, provinsi, dan instansi harus sama dengan daftar di formulir.
-      Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Kolom kategori
-      diisi ya atau tidak. Status: Aktif, Cuti, atau Non Aktif. Satu berkas
-      paling banyak {MAX_FILE_ROWS.toLocaleString("id-ID")} baris dan 1 MB.
+      Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Angkatan:{" "}
+      {yearRange(cohortYears)}. Kolom kategori diisi ya atau tidak. Status:
+      Aktif, Cuti, atau Non Aktif. Satu berkas paling banyak{" "}
+      {MAX_FILE_ROWS.toLocaleString("id-ID")} baris dan 1 MB.
     </p>
   );
 }
 
-export function StudentUpload() {
+/** The message of a save, with the rows of the file that were skipped. */
+function SavedFile({ saved }: { saved: SavedFileShown }) {
+  return (
+    <>
+      <p className={styles.fileResult} role="status">
+        {saved.message}
+      </p>
+      <SkippedRows preview={saved.preview} open />
+    </>
+  );
+}
+
+export function StudentUpload({
+  cohortYears,
+}: {
+  /** The Angkatan choices of the form, which a file must keep to. */
+  cohortYears: number[];
+}) {
   const [checked, setChecked] = useState<Checked | null>(null);
+  const [saved, setSaved] = useState<SavedFileShown | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reading, startReading] = useTransition();
   const [saving, startSaving] = useTransition();
@@ -57,6 +81,7 @@ export function StudentUpload() {
 
   function refuse(message: string) {
     setChecked(null);
+    setSaved(null);
     setError(message);
   }
 
@@ -68,6 +93,7 @@ export function StudentUpload() {
       const preview = await previewStudentFileAction(formWith(file));
       if (!preview.ok) return refuse(preview.error);
       setError(null);
+      setSaved(null);
       setChecked({ file, preview: preview.value });
     });
   }
@@ -75,16 +101,16 @@ export function StudentUpload() {
   function save(file: File) {
     notify(null);
     startSaving(async () => {
-      const saved = await saveStudentFileAction(formWith(file));
-      if (!saved.ok) return refuse(saved.error);
+      const result = await saveStudentFileAction(formWith(file));
+      if (!result.ok) return refuse(result.error);
       setChecked(null);
-      notify(saved.value);
+      setSaved(result.value);
     });
   }
 
   return (
     <>
-      <ColumnNotes />
+      <ColumnNotes cohortYears={cohortYears} />
       <div className={shared.actions}>
         <a
           href={TEMPLATE_LINK}
@@ -105,6 +131,7 @@ export function StudentUpload() {
           {error}
         </p>
       )}
+      {saved && !reading && <SavedFile saved={saved} />}
       {checked && !reading && (
         <FilePreviewView name={checked.file.name} preview={checked.preview}>
           <button

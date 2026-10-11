@@ -35,6 +35,7 @@ function rows(ready: number, skipped: number): FileRows {
       nim: "",
       reason: "NIM harus 10 digit angka.",
     })),
+    registered: [],
     repeated: 2,
   };
 }
@@ -57,6 +58,7 @@ describe("previewOf", () => {
         { row: 3, student: filled },
       ],
       skipped: [],
+      registered: [],
       repeated: 0,
     };
 
@@ -97,7 +99,12 @@ describe("previewOf", () => {
   it("counts every row, and shows the first 6 ready and the first 30 skipped", () => {
     const preview = previewOf(rows(8, 31), programs);
 
-    expect(preview).toMatchObject({ ready: 8, skipped: 31, repeated: 2 });
+    expect(preview).toMatchObject({
+      ready: 8,
+      broken: 31,
+      registered: 0,
+      repeated: 2,
+    });
     expect(preview.firstRows.map((cells) => cells[0])).toEqual([
       "9900000600",
       "9900000601",
@@ -108,5 +115,21 @@ describe("previewOf", () => {
     ]);
     expect(preview.firstSkipped).toHaveLength(30);
     expect(preview.firstSkipped[0]?.row).toBe(10);
+  });
+
+  it("shows the rows to correct before the rows whose NIM is registered", () => {
+    const file = rows(1, 29);
+    const registered = [1, 40, 41].map((row) => ({
+      row,
+      nim: "9900000699",
+      reason: "NIM sudah terdaftar.",
+    }));
+
+    const preview = previewOf({ ...file, registered }, programs);
+
+    expect(preview).toMatchObject({ broken: 29, registered: 3 });
+    expect(preview.firstSkipped).toHaveLength(30);
+    expect(preview.firstSkipped.slice(0, 29)).toEqual(file.skipped);
+    expect(preview.firstSkipped[29]).toEqual(registered[0]);
   });
 });

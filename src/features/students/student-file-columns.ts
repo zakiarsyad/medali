@@ -51,3 +51,9 @@ export function templateCsv(): string {
   const example = titles.map((title) => TEMPLATE_EXAMPLE[title]);
   return `${titles.join(",")}\n${example.join(",")}\n`;
 }
+
+/** The Angkatan choices as the notes and the reasons say them. */
+export function yearRange(cohortYears: number[]): string {
+  const sorted = [...cohortYears].sort((a, b) => a - b);
+  return `${sorted[0]} sampai ${sorted.at(-1)}`;
+}

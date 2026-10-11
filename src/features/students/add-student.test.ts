@@ -160,7 +160,10 @@ describe("addStudents", () => {
         actor,
       );
 
-      expect(added).toHaveLength(2);
+      expect(added.map((student) => student.nim)).toEqual([
+        "9900000110",
+        "9900000112",
+      ]);
       expect(await db.$count(accounts)).toBe(accountsBefore + 2);
       expect(await db.$count(roleChanges)).toBe(linesBefore + 2);
       const kept = await db

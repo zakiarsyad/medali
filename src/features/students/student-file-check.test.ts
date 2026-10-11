@@ -47,7 +47,8 @@ describe("previewStudentFile", () => {
 
       expect(preview.ok && preview.value).toMatchObject({
         ready: 1,
-        skipped: 0,
+        broken: 0,
+        registered: 0,
       });
     });
   });
@@ -91,7 +92,8 @@ describe("previewStudentFile", () => {
 
       expect(preview.ok && preview.value).toMatchObject({
         ready: 1,
-        skipped: 2,
+        broken: 0,
+        registered: 2,
         firstSkipped: [
           { row: 2, nim: "9900000703", reason: "NIM sudah terdaftar." },
           { row: 3, nim: "9900000704", reason: "NIM sudah terdaftar." },

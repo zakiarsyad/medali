@@ -6,6 +6,7 @@ export type NewStudent = Omit<typeof students.$inferInsert, "id" | "createdAt">;
 export interface AddedStudent {
   studentId: string;
   accountId: string;
+  nim: string;
 }
 
 /**
@@ -29,7 +30,7 @@ export async function addStudents(
       .insert(students)
       .values(newStudents)
       .onConflictDoNothing({ target: students.nim })
-      .returning({ id: students.id, name: students.name });
+      .returning({ id: students.id, name: students.name, nim: students.nim });
     if (records.length === 0) return [];
 
     const added = await tx
@@ -54,9 +55,13 @@ export async function addStudents(
         rolesAfter: ["student" as const],
       })),
     );
+    const nims = new Map(records.map(({ id, nim }) => [id, nim]));
     return added.map(({ accountId, studentId }) => {
-      if (!studentId) throw new Error("A student account has no student.");
-      return { accountId, studentId };
+      const nim = studentId ? nims.get(studentId) : undefined;
+      if (!studentId || !nim) {
+        throw new Error("A student account has no student.");
+      }
+      return { accountId, studentId, nim };
     });
   });
 }

@@ -6,6 +6,7 @@ import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { listAddedStudents } from "./added-students";
+import type { FilePreview } from "./file-preview";
 import { NOT_ALLOWED } from "./input-student";
 import { savedMessage, saveStudentFile } from "./save-student-file";
 import type { UploadedFile } from "./student-file-check";
@@ -44,16 +45,31 @@ async function studentWithNim(db: Database, nim: string) {
   return found;
 }
 
+function skippedPreview(broken: number, registered: number): FilePreview {
+  return {
+    ready: 0,
+    firstRows: [],
+    broken,
+    registered,
+    firstSkipped: [],
+    repeated: 0,
+  };
+}
+
 describe("savedMessage", () => {
   it("says how many rows of which file were saved", () => {
-    expect(savedMessage("mahasiswa.csv", { saved: 1200, takenSince: 0 })).toBe(
+    const result = { saved: 1200, preview: skippedPreview(0, 0) };
+
+    expect(savedMessage("mahasiswa.csv", result)).toBe(
       "1.200 baris dari mahasiswa.csv tersimpan.",
     );
   });
 
-  it("says how many rows were left out because their NIM was just taken", () => {
-    expect(savedMessage("mahasiswa.csv", { saved: 3, takenSince: 2 })).toBe(
-      "3 baris dari mahasiswa.csv tersimpan. 2 baris dilewati karena NIM-nya baru saja terdaftar.",
+  it("says how many rows were skipped, whatever the reason", () => {
+    const result = { saved: 3, preview: skippedPreview(2, 5) };
+
+    expect(savedMessage("mahasiswa.csv", result)).toBe(
+      "3 baris dari mahasiswa.csv tersimpan. 7 baris dilewati.",
     );
   });
 });
@@ -73,9 +89,9 @@ describe("saveStudentFile", () => {
 
         const saved = await saveStudentFile(db, actor, file, context);
 
-        expect(saved).toEqual({
-          ok: true,
-          value: { saved: 2, takenSince: 0 },
+        expect(saved.ok && saved.value).toMatchObject({
+          saved: 2,
+          preview: { broken: 0, registered: 0, firstSkipped: [] },
         });
         const kept = await studentWithNim(db, "9900000802");
         expect(kept).toMatchObject({
@@ -162,11 +178,22 @@ describe("saveStudentFile", () => {
         "uji.csv",
         ["9900000805", "Simpan Uji Lima"],
         ["9900000806", "Simpan Uji Enam"],
+        ["12", "Simpan Uji Salah"],
       );
 
       const saved = await saveStudentFile(db, actor, file, context);
 
-      expect(saved).toEqual({ ok: true, value: { saved: 1, takenSince: 0 } });
+      expect(saved.ok && saved.value).toMatchObject({
+        saved: 1,
+        preview: {
+          broken: 1,
+          registered: 1,
+          firstSkipped: [
+            { row: 4, nim: "12", reason: "NIM harus 10 digit angka." },
+            { row: 2, nim: "9900000805", reason: "NIM sudah terdaftar." },
+          ],
+        },
+      });
       expect(await studentWithNim(db, "9900000805")).toEqual(before);
     });
   });

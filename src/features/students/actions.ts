@@ -143,10 +143,16 @@ export async function previewStudentFileAction(
   return previewStudentFile(db, inputter, file.value, context);
 }
 
-/** Saves the ready rows of a file, and gives what the screen then says. */
+/** What the screen shows after a file is saved. */
+export interface SavedFileShown {
+  message: string;
+  /** The file as it was at the save, for the rows that were skipped. */
+  preview: FilePreview;
+}
+
 export async function saveStudentFileAction(
   form: FormData,
-): Promise<Parsed<string>> {
+): Promise<Parsed<SavedFileShown>> {
   const inputter = await studentInputter();
   const file = await sentFile(form);
   if (!file.ok) return file;
@@ -155,5 +161,6 @@ export async function saveStudentFileAction(
   const saved = await saveStudentFile(db, inputter, file.value, context);
   if (!saved.ok) return saved;
   refreshScreens();
-  return { ok: true, value: savedMessage(file.value.name, saved.value) };
+  const message = savedMessage(file.value.name, saved.value);
+  return { ok: true, value: { message, preview: saved.value.preview } };
 }

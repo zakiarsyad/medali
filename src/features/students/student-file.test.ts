@@ -76,6 +76,7 @@ describe("readStudentFile", () => {
           },
         ],
         skipped: [],
+        registered: [],
         repeated: 0,
       },
     });
@@ -135,61 +136,85 @@ describe("readStudentFile", () => {
     [
       "an unknown program studi",
       { 2: "Prodi Lain" },
-      "Program studi tidak dikenal.",
+      "Program studi tidak dikenal: Prodi Lain.",
     ],
     [
       "an unknown jalur",
       { 3: "Mandiri" },
       "Jalur harus Reguler atau Alih program.",
     ],
-    [
-      "an unknown jenis kelamin",
-      { 4: "X" },
-      "Jenis kelamin harus Laki-laki atau Perempuan.",
-    ],
+    ["an unknown jenis kelamin", { 4: "X" }, "Jenis kelamin harus L atau P."],
     [
       "an angkatan outside the choices",
       { 5: "2019" },
-      "Angkatan tidak valid (contoh 2026).",
+      "Angkatan harus 2021 sampai 2026.",
     ],
     [
       "an angkatan that is no year",
       { 5: "baru" },
-      "Angkatan tidak valid (contoh 2026).",
+      "Angkatan harus 2021 sampai 2026.",
     ],
     [
       "a kelas that is too long",
       { 6: "x".repeat(21) },
       "Kelas akademik paling banyak 20 karakter.",
     ],
-    ["an unknown provinsi", { 7: "Atlantis" }, "Provinsi tidak dikenal."],
+    [
+      "an unknown provinsi",
+      { 7: "Atlantis" },
+      "Provinsi tidak dikenal: Atlantis.",
+    ],
     [
       "an unknown instansi asal",
       { 8: "Kantor Lain" },
-      "Instansi asal tidak dikenal.",
+      "Instansi asal tidak dikenal: Kantor Lain.",
     ],
     [
       "an unknown status",
       { 12: "Lulus" },
       "Status harus Aktif, Cuti, atau Non Aktif.",
     ],
-  ])(
-    "skips a row with %s, with the message of the form",
-    (_kind, changed, reason) => {
-      expect(reasonFor(changed)).toBe(reason);
-    },
-  );
+  ])("skips a row with %s, and says why", (_kind, changed, reason) => {
+    expect(reasonFor(changed)).toBe(reason);
+  });
 
   it("refuses the stored words of a choice: a file holds the words on screen", () => {
     expect(reasonFor({ 3: "transfer" })).toBe(
       "Jalur harus Reguler atau Alih program.",
     );
-    expect(reasonFor({ 4: "male" })).toBe(
-      "Jenis kelamin harus Laki-laki atau Perempuan.",
-    );
+    expect(reasonFor({ 4: "male" })).toBe("Jenis kelamin harus L atau P.");
     expect(reasonFor({ 12: "active" })).toBe(
       "Status harus Aktif, Cuti, atau Non Aktif.",
     );
+  });
+
+  it("names no text when the cell of a choice is empty", () => {
+    expect(reasonFor({ 2: "" })).toBe("Program studi tidak dikenal.");
+    expect(reasonFor({ 4: "" })).toBe("Jenis kelamin harus L atau P.");
+  });
+
+  it("names the text of a cell on one line and cut short", () => {
+    const long = `Prodi   ${"x".repeat(60)}`;
+
+    expect(reasonFor({ 2: long })).toBe(
+      `Program studi tidak dikenal: Prodi ${"x".repeat(34)}.`,
+    );
+  });
+
+  it("takes a first row with any known title as the titles, and names a missing nim", () => {
+    const titles = TITLES.replace("nim,", "nomor,");
+
+    expect(
+      readStudentFile([titles, row("9900000515")].join("\n"), context),
+    ).toEqual({
+      ok: false,
+      error: "Kolom tidak ditemukan: nim. Samakan judul kolom dengan templat.",
+    });
+    const other = readStudentFile(
+      ["no,jk,program studi", "1,L,Prodi Uji Satu"].join("\n"),
+      context,
+    );
+    expect(!other.ok && other.error).toContain("Kolom tidak ditemukan: nim,");
   });
 
   it("gives each skipped row its number in the file and its NIM, cut short", () => {
@@ -305,10 +330,22 @@ describe("skipRegistered", () => {
       "9900000512",
     ]);
     expect(checked.skipped).toEqual([
-      { row: 2, nim: "9900000511", reason: "NIM sudah terdaftar." },
       { row: 3, nim: "12", reason: "NIM harus 10 digit angka." },
+    ]);
+    expect(checked.registered).toEqual([
+      { row: 2, nim: "9900000511", reason: "NIM sudah terdaftar." },
       { row: 5, nim: "9900000513", reason: "NIM sudah terdaftar." },
     ]);
+  });
+
+  it("adds to the rows found registered before, in the order of the file", () => {
+    const rows = read(TITLES, row("9900000516"), row("9900000517"));
+
+    const first = skipRegistered(rows, new Set(["9900000517"]));
+    const second = skipRegistered(first, new Set(["9900000516"]));
+
+    expect(second.ready).toEqual([]);
+    expect(second.registered.map((skipped) => skipped.row)).toEqual([2, 3]);
   });
 
   it("changes nothing when no NIM is registered", () => {
