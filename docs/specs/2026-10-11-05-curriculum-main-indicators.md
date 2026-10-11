@@ -67,6 +67,6 @@ None.
   changed it and when, and start with the prototype's content.
 - [x] 2. The right to change the curriculum is added to the permission
   list for Kepala Unit and Pegawai UPK, with its checks.
-- [ ] 3. The page shows the title, the intro and the three panels.
+- [x] 3. The page shows the title, the intro and the three panels.
 - [ ] 4. "Ubah indikator utama" changes and saves the 24 texts.
 - [ ] 5. "Simpan nilai dasar" saves the base score.

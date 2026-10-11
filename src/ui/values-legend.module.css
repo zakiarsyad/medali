@@ -21,34 +21,3 @@
   align-items: center;
   color: var(--sideink);
 }
-
-.swatch {
-  display: inline-block;
-  width: var(--swatch-size);
-  height: var(--swatch-size);
-  border-radius: var(--radius-sm);
-}
-
-.mandiri {
-  background: var(--vM);
-}
-
-.empati {
-  background: var(--vE);
-}
-
-.disiplin {
-  background: var(--vD);
-}
-
-.adaptif {
-  background: var(--vA);
-}
-
-.loyal {
-  background: var(--vL);
-}
-
-.integritas {
-  background: var(--vI);
-}

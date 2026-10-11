@@ -1,5 +1,6 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
+import { DAY } from "@/ui/day";
 import type { AddedStudent } from "./added-students";
 import {
   CATEGORIES,
@@ -11,13 +12,6 @@ import {
 import styles from "./new-students.module.css";
 import { newStudentsAddress } from "./new-students-address";
 import { RemoveStudentButton } from "./remove-student-button";
-
-const DAY = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "Asia/Jakarta",
-});
 
 const STATUS_STYLES: Record<AddedStudent["status"], string | undefined> = {
   active: styles.active,
