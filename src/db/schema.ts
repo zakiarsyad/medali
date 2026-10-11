@@ -32,6 +32,9 @@ export const roleChangeAction = pgEnum("role_change_action", [
   "removed",
 ]);
 
+/** How a student's data last came in: the form, or a change to it. */
+export type StudentInputSource = "form" | "edit";
+
 export const studyPrograms = pgTable("study_programs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull().unique(),
@@ -56,6 +59,12 @@ export const students = pgTable("students", {
   isBlended: boolean().notNull().default(false),
   status: studentStatus().notNull().default("active"),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  /** Set only for a student put in through Pengguna baru mahasiswa. */
+  inputAt: timestamp({ withTimezone: true }),
+  inputBy: uuid().references((): AnyPgColumn => accounts.id),
+  inputSource: text().$type<StudentInputSource>(),
+  deletedAt: timestamp({ withTimezone: true }),
+  deletedBy: uuid().references((): AnyPgColumn => accounts.id),
 });
 
 export const accounts = pgTable(

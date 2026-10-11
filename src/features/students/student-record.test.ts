@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { students, studyPrograms } from "@/db/schema";
+import { accounts, students, studyPrograms } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 
 const inTestDatabase = withTestDatabase();
@@ -64,4 +64,62 @@ describe("a student record", () => {
       });
     },
   );
+
+  it("keeps who put it in, when and how, and a removal mark", async () => {
+    await inTestDatabase(async (db) => {
+      const studyProgramId = await addProgram(db, "Prodi Uji Tanda");
+      const [staff] = await db
+        .insert(accounts)
+        .values({ name: "Pegawai Uji" })
+        .returning();
+      if (!staff) throw new Error("The account was not added.");
+      const marks = {
+        inputAt: new Date("2026-10-11T03:00:00Z"),
+        inputBy: staff.id,
+        inputSource: "form" as const,
+        deletedAt: new Date("2026-10-12T03:00:00Z"),
+        deletedBy: staff.id,
+      };
+
+      const [kept] = await db
+        .insert(students)
+        .values({
+          nim: "9900000003",
+          name: "Mahasiswa Uji",
+          studyProgramId,
+          entryPath: "regular",
+          sex: "female",
+          cohortYear: 2026,
+          ...marks,
+        })
+        .returning();
+
+      expect(kept).toMatchObject(marks);
+    });
+  });
+
+  it("has no such marks unless they are given", async () => {
+    await inTestDatabase(async (db) => {
+      const studyProgramId = await addProgram(db, "Prodi Uji Tanpa Tanda");
+      const [kept] = await db
+        .insert(students)
+        .values({
+          nim: "9900000004",
+          name: "Mahasiswa Uji",
+          studyProgramId,
+          entryPath: "regular",
+          sex: "male",
+          cohortYear: 2026,
+        })
+        .returning();
+
+      expect(kept).toMatchObject({
+        inputAt: null,
+        inputBy: null,
+        inputSource: null,
+        deletedAt: null,
+        deletedBy: null,
+      });
+    });
+  });
 });

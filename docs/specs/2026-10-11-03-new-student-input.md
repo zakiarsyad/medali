@@ -55,7 +55,7 @@ None.
 
 ## Steps
 
-- [ ] 1. The student record keeps who added it, when and how, and a
+- [x] 1. The student record keeps who added it, when and how, and a
   removal mark.
 - [ ] 2. The right to input new students is added to the permission list
   for the three roles, with its checks.
