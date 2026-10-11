@@ -1,0 +1,15 @@
+# Installed packages and build output
+node_modules/
+.next/
+dist/
+coverage/
+
+# Local settings and keys
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Computer clutter
+.DS_Store
+Thumbs.db
