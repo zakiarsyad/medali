@@ -105,7 +105,7 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
   {
     name: "Yusuf Hidayat",
     title: "S.E., M.Si.",
-    roles: ["mentor", "assessor"],
+    roles: ["upk_staff", "counsellor"],
     unit: UPK,
   },
 ];
