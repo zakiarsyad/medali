@@ -8,6 +8,7 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
 
 const CURRICULUM_ADDRESS = "/kurikulum";
@@ -29,4 +30,15 @@ export async function saveMainIndicatorsAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: "Indikator utama disimpan." };
+}
+
+export async function saveBaseScoreAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const changer = await curriculumChanger();
+  const saved = await saveBaseScore(database(), changer, text(form, "score"));
+  if (!saved.ok) return { error: saved.error, done: null };
+  revalidatePath(CURRICULUM_ADDRESS);
+  return { error: null, done: `Nilai dasar SIKU menjadi ${saved.value}.` };
 }
