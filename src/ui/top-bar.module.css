@@ -1,0 +1,26 @@
+.top {
+  position: sticky;
+  top: 0;
+  z-index: var(--layer-top-bar);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--top-bar-padding);
+  border-bottom: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.menuButton {
+  display: var(--menu-button-display);
+  padding: var(--space-xs) var(--space-sm);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.unit {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
