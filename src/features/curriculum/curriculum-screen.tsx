@@ -28,6 +28,7 @@ export async function CurriculumScreen({ mayChange }: { mayChange: boolean }) {
           "Diperbarui",
           "Isi awal, dapat disesuaikan.",
         )}
+        mayChange={mayChange}
       />
       <BaseScorePanel
         score={baseScore.score}

@@ -4,7 +4,7 @@ import { ValueSwatch } from "@/ui/value-swatch";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
 
-function ValueBox({
+export function ValueBox({
   value,
   children,
 }: {
