@@ -2,8 +2,8 @@
 
 import { type FormEvent, useActionState } from "react";
 import styles from "@/ui/data-screen.module.css";
-import { type FormState, removeAccountAction } from "./actions";
-import { FormMessage } from "./form-message";
+import { FormMessage, type FormState } from "@/ui/form-message";
+import { removeAccountAction } from "./actions";
 
 const START: FormState = { error: null, done: null };
 

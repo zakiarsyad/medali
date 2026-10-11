@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ROLES } from "@/auth/roles";
+import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { listAddress } from "./list-address";
 import type { AccountFilter, ManagedAccount } from "./manage-accounts";
 import { isManagedRole } from "./managed-roles";
 import { RemoveAccountButton } from "./remove-account-button";
 import { RoleEditForm } from "./role-edit-form";
-import type { StudyProgram } from "./study-programs";
 
 interface AccountTableProps {
   accounts: ManagedAccount[];

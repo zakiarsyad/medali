@@ -1,7 +1,7 @@
 import { ROLES } from "@/auth/roles";
+import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { MANAGED_ROLES } from "./managed-roles";
-import type { StudyProgram } from "./study-programs";
 
 export function RoleChoices({ chosen }: { chosen: readonly string[] }) {
   return (

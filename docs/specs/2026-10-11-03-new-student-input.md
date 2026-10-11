@@ -61,5 +61,5 @@ None.
   for the three roles, with its checks.
 - [x] 3. The tab shows the title, the two numbers and the list with
   search.
-- [ ] 4. The form adds a student with their account.
+- [x] 4. The form adds a student with their account.
 - [ ] 5. Ubah and Hapus work from the list.

@@ -7,28 +7,16 @@ import { type Account, isAccountId } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { ROLES } from "@/auth/roles";
 import { database } from "@/db/database";
+import { text, texts } from "@/ui/form-data";
+import type { FormState } from "@/ui/form-message";
 import { parseNewAccount, parseRoleChange } from "./account-input";
 import { USERS_ADDRESS } from "./list-address";
 import { addAccount, changeRoles, removeAccount } from "./manage-accounts";
-
-export interface FormState {
-  error: string | null;
-  done: string | null;
-}
 
 async function userManager(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "manage_users")) forbidden();
   return account;
-}
-
-function text(form: FormData, name: string): string {
-  const value = form.get(name);
-  return typeof value === "string" ? value : "";
-}
-
-function texts(form: FormData, name: string): string[] {
-  return form.getAll(name).filter((value) => typeof value === "string");
 }
 
 /** Goes back to the list as it was, and never to an address outside it. */

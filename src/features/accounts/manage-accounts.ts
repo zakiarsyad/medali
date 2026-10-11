@@ -21,7 +21,8 @@ import {
   roleChanges,
   studyPrograms,
 } from "@/db/schema";
-import type { NewAccount, Parsed, RoleChange } from "./account-input";
+import type { Parsed } from "@/parsed";
+import type { NewAccount, RoleChange } from "./account-input";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
 
 export const PAGE_SIZE = 25;

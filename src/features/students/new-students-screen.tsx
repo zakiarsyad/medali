@@ -1,4 +1,5 @@
 import { database } from "@/db/database";
+import { listStudyPrograms } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
@@ -7,6 +8,8 @@ import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
 } from "./new-students-address";
+import { StudentForm } from "./student-form";
+import { cohortChoices } from "./student-input";
 import { StudentNumbers } from "./student-numbers";
 import { StudentTable } from "./student-table";
 
@@ -45,9 +48,10 @@ export async function NewStudentsScreen({
   tabs: TabLinksProps;
 }) {
   const db = database();
-  const [counts, list] = await Promise.all([
+  const [counts, list, programs] = await Promise.all([
     countStudents(db),
     listAddedStudents(db, params.query),
+    listStudyPrograms(db),
   ]);
   return (
     <>
@@ -59,6 +63,10 @@ export async function NewStudentsScreen({
       </PageHead>
       <TabLinks {...tabs} />
       <StudentNumbers counts={counts} />
+      <StudentForm
+        programs={programs}
+        cohortYears={cohortChoices(new Date().getFullYear())}
+      />
       <section className={shared.panel}>
         <h2 className={shared.heading}>Mahasiswa yang ditambahkan</h2>
         <p className={shared.detail}>
