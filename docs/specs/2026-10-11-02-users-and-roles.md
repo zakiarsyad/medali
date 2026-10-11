@@ -84,7 +84,7 @@ None.
 - [x] 1. Docker runs the database locally, an example settings file lists
   the keys needed, and the tables for accounts, roles, study programs,
   students and the role-change log are added.
-- [ ] 2. The sample data command adds one account per role, one account
+- [x] 2. The sample data command adds one account per role, one account
   with two roles, and made-up students.
 - [ ] 3. The permission list, the menu for each role and the "Ganti peran"
   picker are added. Each page appears as an empty page.

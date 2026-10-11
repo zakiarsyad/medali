@@ -51,10 +51,12 @@ Only these five.
 6. Create the local settings file: copy `.env.example` to `.env.local`,
    and fill in each value with the local one written above it in the
    example. A local run needs no real keys.
-7. Install the app's libraries with `pnpm install`, then start the app
-   with `pnpm dev`. It starts the database in Docker first, and brings its
-   tables up to date. The command that loads the sample data comes with
-   later work, so skip that part for now.
+7. Install the app's libraries with `pnpm install`. Then run
+   `pnpm db:setup`: it starts the database in Docker, brings its tables up
+   to date, and fills it with sample data. Filling rebuilds the tables and replaces all data in
+   the local database with the sample data, so on a computer that already
+   has data, ask first. Then start the app with `pnpm dev`; it starts the
+   database too, and brings its tables up to date.
 8. Open http://localhost:3000 and confirm the page shows. Signing in as a
    sample role comes with later work, so skip that part for now.
 9. Tell the person in a few lines what was installed, what works, and what
