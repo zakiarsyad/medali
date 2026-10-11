@@ -36,6 +36,11 @@ brings the PR up to date and sorts the conflict out.
    idea, a follow-up, a problem found elsewhere, or a discussion outside
    the spec is not done now. Claude suggests it as a new piece of work, in
    one line, at the end.
+7. A spec delivers one feature that can be tried from start to finish on
+   the preview, within one menu page, in about 8 steps at most. Work that
+   cannot be tried that way is joined to the feature that needs it. A
+   larger feature is split into features that can each be tried on their
+   own.
 
 ### Facts that last
 
