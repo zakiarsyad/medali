@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { findLooseValues } from "./loose-values";
 import { sourceFilesEndingWith } from "./source-files";
 
-const TOKENS_FILE = join("src", "ui", "tokens.css");
+const TOKENS_FILE = "src/ui/tokens.css";
 
 function screenStylesheets(): string[] {
   return sourceFilesEndingWith(".css").filter((path) => path !== TOKENS_FILE);

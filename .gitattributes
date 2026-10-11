@@ -1,0 +1,3 @@
+# Every text file keeps the same line ends on every computer. Without this,
+# Windows writes its own, and the style check and some tests fail there.
+* text=auto eol=lf

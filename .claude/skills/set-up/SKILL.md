@@ -48,19 +48,25 @@ Only these five.
    mode, where Claude works without asking permission at each step. If the
    session is not in auto mode, tell the person to press Shift+Tab until
    it says "auto". The repo cannot turn this on for them.
-6. Create the local settings file: copy `.env.example` to `.env.local`,
+6. Refresh the files if the computer already had the repo. Run
+   `git ls-files --eol`. If any line says `w/crlf` or `w/mixed`, those files have
+   Windows line ends, and the checks fail until they are refreshed:
+   - if there are changes not saved in a commit, save them as a commit on
+     their work branch first. On `main`, stop and tell the person.
+   - then run `git rm --cached -r -q .` and `git reset --hard`.
+7. Create the local settings file: copy `.env.example` to `.env.local`,
    and fill in each value with the local one written above it in the
    example. A local run needs no real keys.
-7. Install the app's libraries with `pnpm install`. Then run
+8. Install the app's libraries with `pnpm install`. Then run
    `pnpm db:setup`: it starts the database in Docker, brings its tables up
    to date, and fills it with sample data. Filling rebuilds the tables and replaces all data in
    the local database with the sample data, so on a computer that already
    has data, ask first. Then start the app with `pnpm dev`; it starts the
    database too, and brings its tables up to date.
-8. Open http://localhost:3000 and confirm the page shows with the menu.
+9. Open http://localhost:3000 and confirm the page shows with the menu.
    Show the person "Ganti peran" under "Masuk sebagai" in the side menu:
    it switches between the sample accounts, one per role.
-9. Tell the person in a few lines what was installed, what works, and what
+10. Tell the person in a few lines what was installed, what works, and what
    still needs them.
 
 ## Never
