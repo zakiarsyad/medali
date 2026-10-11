@@ -181,3 +181,29 @@ export const ppksActivities = pgTable(
     ),
   ],
 );
+
+/**
+ * What each MEDALI value means at each tahap, once it has been changed.
+ * A tahap and value without a row shows its starting content.
+ */
+export const stageBreakdowns = pgTable(
+  "stage_breakdowns",
+  {
+    tahap: smallint().notNull(),
+    /** The letter of the MEDALI value. */
+    valueKey: text().$type<ValueKey>().notNull(),
+    text: text().notNull(),
+    /** The names of the kegiatan acuan. */
+    activities: text().array().notNull(),
+    /** The codes of the main indicators chosen for the tahap. */
+    indicatorCodes: text().array().notNull(),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tahap, table.valueKey] }),
+    check("stage_breakdowns_tahap_1_to_4", sql`${table.tahap} between 1 and 4`),
+  ],
+);

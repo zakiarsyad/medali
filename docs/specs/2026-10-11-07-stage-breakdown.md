@@ -62,7 +62,7 @@ None.
 
 ## Steps
 
-- [ ] 1. The breakdown is stored per tahap and nilai, with who changed it
+- [x] 1. The breakdown is stored per tahap and nilai, with who changed it
   and when, and starts with the prototype's content.
 - [ ] 2. Indikator utama MEDALI marks the level of the chosen tahap.
 - [ ] 3. The page shows the "Penjabaran MEDALI tahap (name)" panel with

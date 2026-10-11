@@ -1,0 +1,46 @@
+import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
+import { STARTING_BREAKDOWNS } from "./starting-breakdowns";
+
+/** What one nilai means at one tahap. */
+export interface Breakdown {
+  text: string;
+  /** The names of the kegiatan acuan. */
+  activities: string[];
+  /** The codes of the main indicators chosen for the tahap. */
+  indicatorCodes: string[];
+}
+
+export interface ValueBreakdown extends Breakdown {
+  key: ValueKey;
+  name: string;
+}
+
+/** The codes of the four main indicators of one nilai, from level 1 to 4. */
+export function codesOf(key: ValueKey): string[] {
+  return [1, 2, 3, 4].map((level) => `${key}${level}`);
+}
+
+function startingBreakdown(tahapNo: number, key: ValueKey): Breakdown {
+  const start = STARTING_BREAKDOWNS[tahapNo - 1]?.[key];
+  return {
+    text: start?.[1] ?? "",
+    activities: start ? [start[0]] : [],
+    indicatorCodes: [`${key}${tahapNo}`],
+  };
+}
+
+/**
+ * The breakdown of every nilai at one tahap. A nilai shows its saved
+ * content, and its starting content while none is saved: one kegiatan
+ * acuan, and the main indicator of the tahap's own level.
+ */
+export function stageBreakdown(
+  tahapNo: number,
+  saved: ReadonlyMap<ValueKey, Breakdown>,
+): ValueBreakdown[] {
+  return MEDALI_VALUES.map(({ key, name }) => ({
+    key,
+    name,
+    ...(saved.get(key) ?? startingBreakdown(tahapNo, key)),
+  }));
+}
