@@ -6,16 +6,22 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "pnpm db:start && pnpm db:migrate && next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "biome check",
     "test": "vitest run",
-    "check": "pnpm typecheck && pnpm lint && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "db:start": "docker compose up --detach --wait db",
+    "db:stop": "docker compose stop db",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file-if-exists=.env.local src/db/migrate-command.ts"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.4",
     "next": "^16.4.0",
+    "postgres": "^3.4.9",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
@@ -24,6 +30,8 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }

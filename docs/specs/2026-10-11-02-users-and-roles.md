@@ -81,7 +81,7 @@ None.
 
 ## Steps
 
-- [ ] 1. Docker runs the database locally, an example settings file lists
+- [x] 1. Docker runs the database locally, an example settings file lists
   the keys needed, and the tables for accounts, roles, study programs,
   students and the role-change log are added.
 - [ ] 2. The sample data command adds one account per role, one account

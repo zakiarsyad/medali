@@ -10,16 +10,16 @@ with sample data.
 
 ## What the computer needs
 
-Only these four.
+Only these five.
 
 1. Claude Code
 2. Git
 3. The GitHub command-line tool (`gh`)
 4. Node.js, at the version the repo names in `.nvmrc`. It brings pnpm,
    the tool that installs the app's libraries.
-
-Docker is not needed yet. It will be needed once the database and the file
-storage arrive. Set up does not install it for now.
+5. Docker, which runs the database. Any app that runs Docker works, such
+   as Docker Desktop or OrbStack. If there is none, install Docker
+   Desktop.
 
 ## Steps
 
@@ -34,6 +34,8 @@ storage arrive. Set up does not install it for now.
      in the repo folder.
    - pnpm: run `corepack enable pnpm`. Corepack comes with Node.js and
      fetches the pnpm version the repo names.
+   - Docker: Docker Desktop, with the computer's installer. Open it once
+     so that it runs.
 3. Walk the person through the steps only they can do, one at a time, and
    wait for each:
    - sign in to GitHub by typing `! gh auth login`,
@@ -46,11 +48,12 @@ storage arrive. Set up does not install it for now.
    mode, where Claude works without asking permission at each step. If the
    session is not in auto mode, tell the person to press Shift+Tab until
    it says "auto". The repo cannot turn this on for them.
-6. Create the local settings file from the example in the repo. A local
-   run needs no real keys. The repo has no example file yet, so skip this
-   step for now.
+6. Create the local settings file: copy `.env.example` to `.env.local`,
+   and fill in each value with the local one written above it in the
+   example. A local run needs no real keys.
 7. Install the app's libraries with `pnpm install`, then start the app
-   with `pnpm dev`. The command that loads the sample data comes with
+   with `pnpm dev`. It starts the database in Docker first, and brings its
+   tables up to date. The command that loads the sample data comes with
    later work, so skip that part for now.
 8. Open http://localhost:3000 and confirm the page shows. Signing in as a
    sample role comes with later work, so skip that part for now.
@@ -60,6 +63,6 @@ storage arrive. Set up does not install it for now.
 ## Never
 
 - Never ask for a password or a key in the chat.
-- Never install anything beyond the four tools, and what step 2 names to
+- Never install anything beyond the five tools, and what step 2 names to
   get them, without the owner's OK.
 - Never change the computer's settings beyond these installs.

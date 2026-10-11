@@ -1,0 +1,24 @@
+name: medali
+
+# The local database. Only this computer can reach it, so it needs no
+# password; previews and the campus server use their own databases.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: medali
+      POSTGRES_DB: medali
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/create-test-database.sql:/docker-entrypoint-initdb.d/create-test-database.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "medali"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  db-data:

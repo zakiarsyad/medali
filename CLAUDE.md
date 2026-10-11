@@ -202,7 +202,8 @@ No pictures are taken as proof.
 1. The app and its checks run directly on the computer, with the Node.js
    version the repo names. The database and the file storage run inside
    Docker, so every computer has the same setup. One command starts the
-   app. One command fills it with sample data.
+   app. One command fills it with sample data. The checks also need the
+   database running.
 2. One piece of work at a time on one computer, in one local setup. Claude
    switches the repo folder to the branch being built, and back to `main`
    at clean up.

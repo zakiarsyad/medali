@@ -1,0 +1,492 @@
+{
+  "id": "70c5a173-de65-469d-bc6a-27ad7a4f6947",
+  "prevId": "370b6e66-9db9-443f-acc7-887abfe50c8f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account_roles": {
+      "name": "account_roles",
+      "schema": "",
+      "columns": {
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_roles_account_id_accounts_id_fk": {
+          "name": "account_roles_account_id_accounts_id_fk",
+          "tableFrom": "account_roles",
+          "columnsFrom": ["account_id"],
+          "tableTo": "accounts",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "account_roles_account_id_role_pk": {
+          "name": "account_roles_account_id_role_pk",
+          "columns": ["account_id", "role"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.accounts": {
+      "name": "accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nip": {
+          "name": "nip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "study_program_id": {
+          "name": "study_program_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_by": {
+          "name": "deleted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "accounts_email_in_use": {
+          "name": "accounts_email_in_use",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"accounts\".\"deleted_at\" is null",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "accounts_study_program_id_study_programs_id_fk": {
+          "name": "accounts_study_program_id_study_programs_id_fk",
+          "tableFrom": "accounts",
+          "columnsFrom": ["study_program_id"],
+          "tableTo": "study_programs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "accounts_student_id_students_id_fk": {
+          "name": "accounts_student_id_students_id_fk",
+          "tableFrom": "accounts",
+          "columnsFrom": ["student_id"],
+          "tableTo": "students",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "accounts_deleted_by_accounts_id_fk": {
+          "name": "accounts_deleted_by_accounts_id_fk",
+          "tableFrom": "accounts",
+          "columnsFrom": ["deleted_by"],
+          "tableTo": "accounts",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "accounts_studentId_unique": {
+          "name": "accounts_studentId_unique",
+          "columns": ["student_id"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.role_changes": {
+      "name": "role_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "action": {
+          "name": "action",
+          "type": "role_change_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "roles_before": {
+          "name": "roles_before",
+          "type": "role[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "roles_after": {
+          "name": "roles_after",
+          "type": "role[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "role_changes_account_id_accounts_id_fk": {
+          "name": "role_changes_account_id_accounts_id_fk",
+          "tableFrom": "role_changes",
+          "columnsFrom": ["account_id"],
+          "tableTo": "accounts",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "role_changes_changed_by_accounts_id_fk": {
+          "name": "role_changes_changed_by_accounts_id_fk",
+          "tableFrom": "role_changes",
+          "columnsFrom": ["changed_by"],
+          "tableTo": "accounts",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.students": {
+      "name": "students",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nim": {
+          "name": "nim",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "study_program_id": {
+          "name": "study_program_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entry_path": {
+          "name": "entry_path",
+          "type": "entry_path",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sex": {
+          "name": "sex",
+          "type": "sex",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cohort_year": {
+          "name": "cohort_year",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "province": {
+          "name": "province",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin_agency": {
+          "name": "origin_agency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_affirmation": {
+          "name": "is_affirmation",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_seedling": {
+          "name": "is_seedling",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_international": {
+          "name": "is_international",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_blended": {
+          "name": "is_blended",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "status": {
+          "name": "status",
+          "type": "student_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "students_study_program_id_study_programs_id_fk": {
+          "name": "students_study_program_id_study_programs_id_fk",
+          "tableFrom": "students",
+          "columnsFrom": ["study_program_id"],
+          "tableTo": "study_programs",
+          "columnsTo": ["id"],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "students_nim_unique": {
+          "name": "students_nim_unique",
+          "columns": ["nim"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.study_programs": {
+      "name": "study_programs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "name": "study_programs_id_seq",
+            "increment": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "startWith": "1",
+            "cache": "1",
+            "cycle": false,
+            "schema": "public",
+            "type": "always"
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "study_programs_name_unique": {
+          "name": "study_programs_name_unique",
+          "columns": ["name"],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.entry_path": {
+      "name": "entry_path",
+      "schema": "public",
+      "values": ["regular", "transfer"]
+    },
+    "public.role": {
+      "name": "role",
+      "schema": "public",
+      "values": [
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+        "student",
+        "dorm_manager",
+        "bam_bphk",
+        "bam_compliance",
+        "bam_household",
+        "bam_spiritual",
+        "bam_catering",
+        "bam_arts_sports",
+        "bam_health",
+        "upk_staff",
+        "counsellor",
+        "discipline_officer",
+        "assessor"
+      ]
+    },
+    "public.role_change_action": {
+      "name": "role_change_action",
+      "schema": "public",
+      "values": ["added", "roles_changed", "removed"]
+    },
+    "public.sex": {
+      "name": "sex",
+      "schema": "public",
+      "values": ["male", "female"]
+    },
+    "public.student_status": {
+      "name": "student_status",
+      "schema": "public",
+      "values": ["active", "on_leave", "inactive"]
+    }
+  },
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
