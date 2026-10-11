@@ -17,7 +17,7 @@ description: Use when the owner says "clean up", "tidy up", "stop everything" or
 5. Tell the owner in a few lines:
    - what was removed,
    - what was left, and why,
-   - for unfinished work: which spec, which step, the PR link, and what
+   - for unfinished work: which spec, which step, the branch or PR link, and what
      is still to do, so a new session can pick it up.
 
 When this runs quietly at the start of spec or build, do steps 1 to 3 only

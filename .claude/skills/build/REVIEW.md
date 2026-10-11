@@ -2,7 +2,7 @@
 
 1. A fresh helper agent does the review, not the one that built the change.
    Give it the change, the spec, and `docs/BUILDING-RULES.md`.
-2. Review only what this PR changes.
+2. Review only what this branch changes compared with `main`.
 3. Check it against the spec: every "When …, then …" case is met, for every
    role affected.
 4. Check it against the building rules.
@@ -13,13 +13,15 @@
    to a user. No opinions about style.
 7. Fix what is found, then review again. The next review reads only what
    changed since the last one. Stop when a review finds nothing.
-8. A problem outside this PR is not fixed here. Keep it for the hand-back,
+8. A problem outside this change is not fixed here. Keep it for the hand-back,
    as a suggested new piece of work.
 9. No review files. Show the findings in the chat.
 
-## The approval comment
+## The review part of the approval comment
 
-A short list in plain words:
+The approval comment is one comment. It starts with the review result, and
+the proof follows in the same comment. The review result is a short list
+in plain words:
 
 - what was checked,
 - what was found and fixed,

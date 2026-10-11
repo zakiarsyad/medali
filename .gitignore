@@ -13,3 +13,7 @@ coverage/
 # Computer clutter
 .DS_Store
 Thumbs.db
+
+# Files the tools write again on every run
+next-env.d.ts
+*.tsbuildinfo

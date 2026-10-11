@@ -1,0 +1,117 @@
+/*
+ * Every colour, size, spacing and font of the app is named here, once.
+ * Screen styles use these names only.
+ */
+:root {
+  color-scheme: light dark;
+
+  --navy: #13264a;
+  --navy2: #1d3767;
+  --navy3: #2a4a82;
+  --gold: #b8892a;
+  --gold2: #d9b45c;
+  --goldsoft: #f3e7c6;
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface2: #f8f9fb;
+  --line: #dce2eb;
+  --line2: #e9edf3;
+  --ink: #172033;
+  --muted: #5a6577;
+  --faint: #8a94a5;
+  --ok: #2e7d5b;
+  --warn: #c07a12;
+  --bad: #b23a48;
+  --emas: #b8892a;
+  --perak: #7c8899;
+  --perunggu: #a0643a;
+  --bina: #b23a48;
+  --vM: #2f6fb0;
+  --vE: #c2557a;
+  --vD: #2e7d5b;
+  --vA: #c9831c;
+  --vL: #6a4fb0;
+  --vI: #16858c;
+  --side: #13264a;
+  --sideink: #dce4f2;
+  --sidemuted: #8ea0c0;
+  --sidestrong: #ffffff;
+  --sideline: rgba(255, 255, 255, 0.08);
+  --scrim: rgba(10, 18, 34, 0.42);
+  --shadow: 0 1px 2px rgba(19, 38, 74, 0.06), 0 4px 14px rgba(19, 38, 74, 0.05);
+
+  /* --font-brand is set by the font loader on the page itself. */
+  --font-body:
+    var(--font-brand), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --text-sm: 12.5px;
+  --text-md: 13px;
+  --text-base: 15px;
+  --text-lg: 19px;
+  --weight-semibold: 600;
+  --weight-heavy: 800;
+  --leading-body: 1.5;
+  --tracking-brand: 0.06em;
+
+  --space-xs: 6px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 56px;
+
+  --radius-md: 8px;
+  --line-width: 1px;
+  --icon-size: 18px;
+  --icon-stroke: 2;
+  --layer-top-bar: 20;
+
+  /* dvh, not vh: the bar of a phone browser must not cover the bottom. */
+  --screen-height: 100dvh;
+  --content-max-width: 1360px;
+  --side-width: 248px;
+  --shell-columns: var(--side-width) 1fr;
+  --main-column: 2;
+  --side-position: sticky;
+  --side-closed-display: flex;
+  --scrim-display: none;
+  --menu-button-display: none;
+  --top-bar-padding: var(--space-md) var(--space-2xl);
+  --content-padding: var(--space-xl) var(--space-2xl) var(--space-3xl);
+}
+
+/*
+ * Phone width. A media query cannot read a named value, so the width is
+ * written here and nowhere else: screens change at phone width only
+ * through the names below.
+ */
+@media (max-width: 860px) {
+  :root {
+    --side-width: 264px;
+    --shell-columns: 1fr;
+    --main-column: 1;
+    --side-position: fixed;
+    --side-closed-display: none;
+    --scrim-display: block;
+    --menu-button-display: inline-flex;
+    --top-bar-padding: var(--space-md) var(--space-lg);
+    --content-padding: var(--space-lg) var(--space-lg) var(--space-3xl);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1626;
+    --surface: #152036;
+    --surface2: #1a2740;
+    --line: #2a3a57;
+    --line2: #223150;
+    --ink: #e6ecf5;
+    --muted: #a3b0c4;
+    --faint: #73819a;
+    --goldsoft: #3a3220;
+    --side: #0a1222;
+    --navy: #c9d6ee;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+}

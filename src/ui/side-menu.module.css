@@ -1,0 +1,42 @@
+/* A popover comes with the browser's own box styles; each one is set here. */
+.side {
+  position: var(--side-position);
+  inset: 0 auto 0 0;
+  display: var(--side-closed-display);
+  flex-direction: column;
+  width: var(--side-width);
+  height: var(--screen-height);
+  margin: 0;
+  padding: var(--space-xl) var(--space-lg);
+  overflow-y: auto;
+  border: 0;
+  background: var(--side);
+  color: var(--sideink);
+}
+
+.side:popover-open {
+  display: flex;
+}
+
+.side::backdrop {
+  display: var(--scrim-display);
+  background: var(--scrim);
+}
+
+.brand {
+  padding: 0 var(--space-xs) var(--space-xl);
+  border-bottom: var(--line-width) solid var(--sideline);
+}
+
+.name {
+  display: block;
+  color: var(--sidestrong);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+  letter-spacing: var(--tracking-brand);
+}
+
+.campus {
+  color: var(--sidemuted);
+  font-size: var(--text-sm);
+}

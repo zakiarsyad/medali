@@ -1,0 +1,24 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--shell-columns);
+  min-height: var(--screen-height);
+}
+
+/*
+ * The column is set by name, not left to the order of the parts: a menu
+ * opened at phone width leaves the grid, and stays out of it if the window
+ * then grows to laptop width.
+ */
+.main {
+  grid-row: 1;
+  grid-column: var(--main-column);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.content {
+  width: 100%;
+  max-width: var(--content-max-width);
+  padding: var(--content-padding);
+}

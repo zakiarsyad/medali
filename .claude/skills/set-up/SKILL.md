@@ -10,27 +10,32 @@ with sample data.
 
 ## What the computer needs
 
-Only these four. Everything else runs inside Docker at a fixed version.
+Only these four.
 
 1. Claude Code
 2. Git
-3. Docker
-4. The GitHub command-line tool (`gh`)
+3. The GitHub command-line tool (`gh`)
+4. Node.js, at the version the repo names in `.nvmrc`. It brings pnpm,
+   the tool that installs the app's libraries.
 
-Node.js is not needed on the computer. A developer may install it for
-faster checks or editor help. If they do, it must be the version the repo
-names.
+Docker is not needed yet. It will be needed once the database and the file
+storage arrive. Set up does not install it for now.
 
 ## Steps
 
-1. Check each tool: is it installed, is Docker running, is `gh` signed in.
-   Show the result as one short list.
+1. Check each tool: is it installed, is Node.js at the version the repo
+   names, is `gh` signed in. Show the result as one short list.
 2. Install what is missing. Say what and why in one line, and ask first.
    Use the computer's own installer: Homebrew on a Mac, winget on Windows.
    Install Homebrew first if a Mac does not have it.
+   - Node.js: if the computer already has a tool that switches Node.js
+     versions, use it to install the version in `.nvmrc`. If it has none,
+     install `fnm` with the computer's installer, then run `fnm install`
+     in the repo folder.
+   - pnpm: run `corepack enable pnpm`. Corepack comes with Node.js and
+     fetches the pnpm version the repo names.
 3. Walk the person through the steps only they can do, one at a time, and
    wait for each:
-   - open Docker the first time and accept its terms,
    - sign in to GitHub by typing `! gh auth login`,
    - type the computer password if an install asks for it.
 4. Install Superpowers if it is missing:
@@ -42,23 +47,19 @@ names.
    session is not in auto mode, tell the person to press Shift+Tab until
    it says "auto". The repo cannot turn this on for them.
 6. Create the local settings file from the example in the repo. A local
-   run needs no real keys.
-7. Start the app and load the sample data, with the two commands the repo
-   provides.
-8. Open the app and sign in as one sample role to confirm it works.
+   run needs no real keys. The repo has no example file yet, so skip this
+   step for now.
+7. Install the app's libraries with `pnpm install`, then start the app
+   with `pnpm dev`. The command that loads the sample data comes with
+   later work, so skip that part for now.
+8. Open http://localhost:3000 and confirm the page shows. Signing in as a
+   sample role comes with later work, so skip that part for now.
 9. Tell the person in a few lines what was installed, what works, and what
    still needs them.
-
-If the repo has nothing to start yet, say so and stop after step 6.
-
-## On Windows
-
-Docker needs a part of Windows called WSL. Docker's installer turns it on
-and may ask for a restart. After the restart, the person says "set up"
-again and the steps carry on from where they stopped.
 
 ## Never
 
 - Never ask for a password or a key in the chat.
-- Never install anything beyond the four tools without the owner's OK.
+- Never install anything beyond the four tools, and what step 2 names to
+  get them, without the owner's OK.
 - Never change the computer's settings beyond these installs.

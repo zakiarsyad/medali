@@ -59,6 +59,10 @@ Also:
 - Errors are never hidden. If something fails, say so clearly.
 - A comment gives a reason the code cannot show. It does not repeat the
   code.
+- Every colour, size, spacing and font is named once, in one place in
+  `src/ui/`. Screens use only those names, never a loose value. Tests
+  fail when a style file holds one, or when screen code sets a style or a
+  colour directly.
 
 ## Data and safety
 
