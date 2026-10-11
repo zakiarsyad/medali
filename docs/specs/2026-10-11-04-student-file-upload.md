@@ -65,5 +65,5 @@ None.
   and "Unduh templat CSV".
 - [x] 3. Picking a file shows the preview: ready rows, skipped rows and
   reasons.
-- [ ] 4. "Simpan … baris" saves the ready rows with their accounts and
+- [x] 4. "Simpan … baris" saves the ready rows with their accounts and
   shows them in the list.

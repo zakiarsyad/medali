@@ -32,8 +32,11 @@ export const roleChangeAction = pgEnum("role_change_action", [
   "removed",
 ]);
 
-/** How a student was put in through Pengguna baru mahasiswa. */
-export type StudentInputSource = "form";
+/**
+ * How a student was put in through Pengguna baru mahasiswa: by the form,
+ * or from a file, kept with the name of that file.
+ */
+export type StudentInputSource = "form" | `upload:${string}`;
 
 export const studyPrograms = pgTable("study_programs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

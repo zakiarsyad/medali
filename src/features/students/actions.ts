@@ -17,6 +17,7 @@ import type { FilePreview } from "./file-preview";
 import { refusedForm, type StudentFormState, savedForm } from "./form-values";
 import { isNim } from "./input-limits";
 import { inputStudent } from "./input-student";
+import { savedMessage, saveStudentFile } from "./save-student-file";
 import { previewStudentFile, type UploadedFile } from "./student-file-check";
 import {
   cohortChoices,
@@ -140,4 +141,19 @@ export async function previewStudentFileAction(
   const db = database();
   const context = await inputContext(db);
   return previewStudentFile(db, inputter, file.value, context);
+}
+
+/** Saves the ready rows of a file, and gives what the screen then says. */
+export async function saveStudentFileAction(
+  form: FormData,
+): Promise<Parsed<string>> {
+  const inputter = await studentInputter();
+  const file = await sentFile(form);
+  if (!file.ok) return file;
+  const db = database();
+  const context = await inputContext(db);
+  const saved = await saveStudentFile(db, inputter, file.value, context);
+  if (!saved.ok) return saved;
+  refreshScreens();
+  return { ok: true, value: savedMessage(file.value.name, saved.value) };
 }

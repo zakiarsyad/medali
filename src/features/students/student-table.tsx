@@ -4,7 +4,7 @@ import type { AddedStudent } from "./added-students";
 import {
   CATEGORIES,
   ENTRY_PATH_LABELS,
-  INPUT_SOURCE_LABELS,
+  inputSourceLabel,
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
@@ -67,7 +67,7 @@ function StudentRow({
           {student.inputBy ?? "-"}
         </span>
         <small className={shared.detail}>
-          {student.inputSource ? INPUT_SOURCE_LABELS[student.inputSource] : ""}
+          {student.inputSource ? inputSourceLabel(student.inputSource) : ""}
         </small>
       </td>
       <td className={shared.rowActions}>

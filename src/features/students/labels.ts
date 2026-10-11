@@ -19,9 +19,17 @@ export const STATUS_LABELS: Record<Student["status"], string> = {
   inactive: "Non Aktif",
 };
 
-export const INPUT_SOURCE_LABELS: Record<StudentInputSource, string> = {
-  form: "Formulir",
-};
+const UPLOAD = "upload:";
+
+/** How a student from a file is kept: with the name of that file. */
+export function uploadSource(fileName: string): StudentInputSource {
+  return `${UPLOAD}${fileName}`;
+}
+
+export function inputSourceLabel(source: StudentInputSource): string {
+  if (source === "form") return "Formulir";
+  return `Unggah ${source.slice(UPLOAD.length)}`;
+}
 
 export const CATEGORIES = [
   { field: "isAffirmation", label: "Afirmasi" },
