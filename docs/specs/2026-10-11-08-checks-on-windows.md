@@ -38,7 +38,7 @@ None.
 
 ## Steps
 
-- [ ] 1. The repo keeps the same line ends on every computer, and the
+- [x] 1. The repo keeps the same line ends on every computer, and the
   stored files are refreshed to match.
 - [ ] 2. The check that lists the source files writes paths the same way
   on every computer.
