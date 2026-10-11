@@ -11,7 +11,7 @@ The goal is one approved spec. No code is written here.
 
 1. Tidy first: do steps 1 to 3 of the clean-up skill, quietly.
 2. Understand what exists. Look at the names of the specs in `docs/specs/`,
-   the open PRs, the lasting facts in `docs/`, and the part of the app
+   the pushed branches and open PRs, the lasting facts in `docs/`, and the part of the app
    this touches. Search `docs/PROTOTYPE.html` for the screen in question.
    Search first; read only what is needed. If the work touches personal
    data or what a role may do, read those two parts of
@@ -22,13 +22,13 @@ The goal is one approved spec. No code is written here.
 5. Change it until the owner says OK. Keep every round short: show what
    changed, not the whole spec again.
 6. When the owner says OK:
-   - make a branch for the first step from the latest `main`, never from
+   - make a branch for the spec from the latest `main`, never from
      another branch,
    - save the spec there as `docs/specs/<date>-<number>-<short-name>.md`,
    - commit it as `docs: add spec for <short name>`,
-   - push the branch and open a draft PR, so the work is claimed and others
-     can see the spec.
-7. Tell the owner the spec is saved and that saying "build" starts step 1.
+   - push the branch, so the work is claimed and others can see the spec.
+     Open no PR yet; build opens it once the work is reviewed.
+7. Tell the owner the spec is saved and that saying "build" builds it.
 
 A saved spec is an approved spec. Nothing is saved before the owner's OK.
 
@@ -52,8 +52,8 @@ goes in `docs/specs/` in the shape below, and no plan file is written.
 5. **Open questions:** numbered, each with Claude's suggestion. A spec is
    not approved while a question here is still open.
 6. **Steps:** a short numbered list. Each step is one change that can be
-   checked on its own, and becomes one PR. The PR that does a step ticks
-   it.
+   checked on its own, and becomes one commit in the spec's PR. The commit
+   that does a step ticks it.
 
 ## How a spec is written
 

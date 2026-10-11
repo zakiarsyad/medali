@@ -9,7 +9,7 @@ anyone can read them, with or without a technical background.
   missing and starts the app with sample data.
 - **"Spec …"** or `/spec` starts a piece of work. Claude talks it through
   with you and writes a spec, until you say OK. No code is written.
-- **"Build"** or `/build` makes the next step of the approved spec. Claude
+- **"Build"** or `/build` makes everything in the approved spec. Claude
   builds it, reviews it, fixes what it finds, proves it works, and gives
   you a PR link and a preview link. You look at the proof, try the preview,
   and merge.
@@ -63,13 +63,15 @@ agreed version of the app.
 
 ### Making a change
 
-1. Never change `main` directly. Each step of a spec gets its own branch,
-   named by kind: `feat/`, `fix/`, `refactor/` or `chore/`.
-2. One PR per step of a spec: one screen or one feature. Do not touch
-   anything unrelated.
-3. Open the PR as a draft early, so the change can be tried on its preview
-   link. Claude may push to a draft PR without asking first.
-4. A few commits per PR, each covering one clear thing. A commit message is
+1. Never change `main` directly. Each spec gets its own branch, named by
+   kind: `feat/`, `fix/`, `refactor/` or `chore/`.
+2. One PR per spec. Do not touch anything unrelated.
+3. The PR is opened only when the whole spec is built, reviewed and fixed.
+   It opens as a draft, and becomes ready once its checks pass and the
+   approval comment is posted. Claude may push to a draft PR without asking
+   first.
+4. One commit per step of the spec, each covering one clear thing. Later
+   fixes and merges of `main` add their own commits. A commit message is
    one sentence that names the thing and the change, starting with `feat:`,
    `fix:`, `refactor:`, `chore:`, `docs:` or `test:`.
    Example: `fix: refuse sign-in from addresses outside the campus`.
@@ -92,12 +94,13 @@ commit on `main` when the PR is merged.
 1. Claude reviews the change and fixes what it finds, until a review finds
    nothing more.
 2. The PR is up to date with the latest `main`, and all checks pass.
-3. Claude posts two comments, in this order:
-   - **Approval:** the result of the review.
-   - **Proof:** evidence that it works.
+3. Claude posts one comment, the approval comment, with two parts in this
+   order:
+   - the result of the review,
+   - the proof: evidence that it works.
 4. Only then is the PR marked ready.
-5. A new change after that puts the PR back to draft, and the two comments
-   are updated to match.
+5. A new change after that puts the PR back to draft, and the approval
+   comment is updated to match.
 6. Claude never merges. The owner merges.
 
 ### Wording in PRs
@@ -111,12 +114,12 @@ More than one person may work on this repo at the same time.
 
 1. Every branch starts from the latest `main`, never from another branch.
    No PR is built on top of another PR.
-2. A step that needs work which is not merged yet waits for it. Pick up a
+2. A spec that needs work which is not merged yet waits for it. Pick up a
    different spec in the meantime.
 3. Each person works on a different spec, in a different area of the app.
-4. An open draft PR is the claim on a step. Before building, check the open
-   PRs. If one already covers the same step or the same area, stop and
-   tell the owner.
+4. A pushed branch that holds a spec is the claim on that work. Before
+   writing a spec or building, check the branches and the open PRs. If one
+   already covers the same area, stop and tell the owner.
 5. When two PRs both change database tables, the second to merge takes in
    `main` first and remakes its table change. While both are open they
    share the PR preview database, so only the one deployed last has a
@@ -133,8 +136,8 @@ More than one person may work on this repo at the same time.
 - Photos and other uploaded files go to file storage, not the database:
   MinIO locally and on the campus server.
 - Sign-in is with Google, limited to campus addresses.
-- Docker packages the app, so the same package runs locally and on the
-  campus server.
+- Docker runs the database and the file storage on a local computer. Later
+  it also packages the app for the campus server.
 - `main` has one fixed preview link, and each PR gets its own, on free
   hosting: Vercel for the app, Neon for the database. Previews hold sample
   data only.
@@ -173,7 +176,7 @@ is not already public.
 
 A review checks a change before it is called ready. A fresh helper agent
 does it, not the one that built the change, so nobody marks their own work.
-It looks only at what the PR changes, and checks it against the spec and
+It looks only at what the branch changes, and checks it against the spec and
 the building rules. There are no review files: findings are shown in the
 chat.
 
@@ -186,9 +189,10 @@ commits.
 
 ## Running the app on your own computer
 
-1. The app, its checks, its database and its file storage all run inside
-   Docker, so every computer has the same setup. One command starts
-   everything. One command fills it with sample data.
+1. The app and its checks run directly on the computer, with the Node.js
+   version the repo names. The database and the file storage run inside
+   Docker, so every computer has the same setup. One command starts the
+   app. One command fills it with sample data.
 2. One piece of work at a time on one computer, in one local setup. Claude
    switches the repo folder to the branch being built, and back to `main`
    at clean up.
@@ -211,7 +215,7 @@ Claude's work is paid for by how much it reads and writes. Keep both small.
    of checks once, before the PR is finished.
 5. A second review reads only what changed since the first.
 6. Keep answers short. Do not repeat what was already said.
-7. Use a helper agent for large jobs, such as building a step or reading
+7. Use a helper agent for large jobs, such as building a spec or reading
    many files. Do small jobs directly.
 8. Start a new session for each new piece of work. The spec carries what
    the next session needs to know.
@@ -245,14 +249,14 @@ Claude's work is paid for by how much it reads and writes. Keep both small.
 - **Owner:** the person responsible for this repo. Approves specs and
   merges PRs.
 - **Spec:** the short file that says what a piece of work must do.
-- **Step:** one part of a spec, built and checked on its own.
+- **Step:** one part of a spec. It becomes one commit in the spec's PR.
 - **PR:** a proposed change waiting for approval.
-- **Draft:** a PR still being worked on.
+- **Draft:** a PR that is not ready yet.
 - **Ready:** a PR that is up to date with `main`, where the review found
-  nothing more, all checks pass, and the approval and proof comments are
-  posted.
-- **Approval comment:** the review result, posted on the PR. It is not the
-  same as pressing "Approve" on GitHub.
+  nothing more, all checks pass, and the approval comment is posted.
+- **Approval comment:** the one comment posted on the PR, holding the
+  review result and the proof. It is not the same as pressing "Approve" on
+  GitHub.
 - **Proof:** evidence from really running the app that a change works.
 - **Check:** an automatic test of the code.
 - **Preview:** a separate copy of the app for one PR or for `main`, on its

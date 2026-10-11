@@ -36,7 +36,9 @@ branch name, so it cannot change later:
 
 `https://github.com/<owner>/<repo>/blob/<commit id>/pr-<number>/<file>?raw=true`
 
-## The proof comment
+## The proof part of the approval comment
+
+The proof goes in the approval comment, after the review result.
 
 - One line saying what was run.
 - Each picture gets a short title of about 12 words.
