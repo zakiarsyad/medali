@@ -51,7 +51,10 @@ goes in `docs/specs/` in the shape below, and no plan file is written.
 
 1. **What we want:** 2 to 4 sentences.
 2. **Who it is for:** the roles that will use it.
-3. **What should happen:** a list of cases, each as "When …, then …".
+3. **What should happen:** the acceptance criteria, as a list of cases,
+   each as "When …, then …". Each case names who acts, what they do and
+   what they see, and can be checked on the preview, or by a check when
+   nothing on screen shows it.
 4. **Not included:** what this work leaves out on purpose.
 5. **Open questions:** numbered, each with Claude's suggestion. A spec is
    not approved while a question here is still open.

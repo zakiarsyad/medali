@@ -104,7 +104,9 @@ commit on `main` when the PR is merged.
 3. Claude posts one comment, the approval comment, with two parts in this
    order:
    - the result of the review,
-   - the proof: the preview link and what was confirmed on it.
+   - the proof: the preview link, and each case under "What should
+     happen" in the spec, marked as confirmed on the preview or by a
+     check.
 4. Only then is the PR marked ready.
 5. A new change after that puts the PR back to draft, and the approval
    comment is updated to match.
