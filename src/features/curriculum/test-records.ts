@@ -1,6 +1,7 @@
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { accounts } from "@/db/schema";
+import type { SentBreakdown } from "./breakdown-input";
 import type { SentPpksActivity } from "./ppks-activity-input";
 
 /** A made-up account for the checks of this area. */
@@ -23,4 +24,13 @@ export const SENT_PPKS_ACTIVITY: SentPpksActivity = {
   target: "40",
   isRequired: true,
   description: "Deskripsi uji.",
+};
+
+/** A breakdown as a form sends it, with nothing wrong in it. */
+export const SENT_BREAKDOWN: SentBreakdown = {
+  tahap: "2",
+  valueKey: "M",
+  text: "Teks uji.",
+  activities: ["Kegiatan uji"],
+  indicatorCodes: ["M2", "M3"],
 };
