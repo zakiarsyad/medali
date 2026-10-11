@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
+  check,
   integer,
   pgEnum,
   pgTable,
@@ -119,3 +120,30 @@ export const roleChanges = pgTable("role_changes", {
   rolesBefore: role().array().notNull(),
   rolesAfter: role().array().notNull(),
 });
+
+/**
+ * The main indicators whose text was changed. One that is not here still
+ * has its starting text.
+ */
+export const mainIndicators = pgTable("main_indicators", {
+  code: text().primaryKey(),
+  text: text().notNull(),
+  changedAt: timestamp({ withTimezone: true }).notNull(),
+  changedBy: uuid()
+    .notNull()
+    .references(() => accounts.id),
+});
+
+/** One row at most: the SIKU base score, once it has been set. */
+export const sikuBaseScore = pgTable(
+  "siku_base_score",
+  {
+    id: smallint().primaryKey().default(1),
+    score: smallint().notNull(),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+  },
+  (table) => [check("siku_base_score_one_row", sql`${table.id} = 1`)],
+);
