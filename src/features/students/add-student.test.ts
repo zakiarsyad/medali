@@ -5,6 +5,7 @@ import {
   accountRoles,
   accounts,
   roleChanges,
+  students,
   studyPrograms,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -31,6 +32,38 @@ async function addProgram(db: Database): Promise<number> {
 }
 
 describe("addStudent", () => {
+  it("adds nothing when the NIM is already used", async () => {
+    await inTestDatabase(async (db) => {
+      const studyProgramId = await addProgram(db);
+      const actor = await addActor(db);
+      const student = {
+        nim: "9900000103",
+        name: "Mahasiswa Pertama Uji",
+        studyProgramId,
+        entryPath: "regular" as const,
+        sex: "female" as const,
+        cohortYear: 2026,
+      };
+      await addStudent(db, student, actor);
+      const before = await db.select({ id: accounts.id }).from(accounts);
+
+      const again = await addStudent(
+        db,
+        { ...student, name: "Mahasiswa Kedua Uji" },
+        actor,
+      );
+
+      expect(again).toBeNull();
+      const after = await db.select({ id: accounts.id }).from(accounts);
+      expect(after).toHaveLength(before.length);
+      const kept = await db
+        .select({ name: students.name })
+        .from(students)
+        .where(eq(students.nim, student.nim));
+      expect(kept).toEqual([{ name: "Mahasiswa Pertama Uji" }]);
+    });
+  });
+
   it("gives the student an account with the student role, linked to the record", async () => {
     await inTestDatabase(async (db) => {
       const studyProgramId = await addProgram(db);
@@ -48,6 +81,7 @@ describe("addStudent", () => {
         },
         actor,
       );
+      if (!added) throw new Error("The student was not added.");
 
       const [account] = await db
         .select()
@@ -81,6 +115,7 @@ describe("addStudent", () => {
         },
         actor,
       );
+      if (!added) throw new Error("The student was not added.");
 
       const lines = await db
         .select()

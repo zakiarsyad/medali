@@ -93,35 +93,40 @@ describe("findAddedStudent", () => {
 });
 
 describe("changeStudent", () => {
-  it.each(ALLOWED)("lets %s change a student", async (role) => {
-    await inTestDatabase(async (db) => {
-      const { program } = await addThroughTab(db, "9900000503");
-      const editor = await addTestActor(db, "Pengubah Uji", [role]);
-      const changed: StudentInput = {
-        ...student("9900000503", program),
-        name: "Ubah Uji Baru",
-        entryPath: "transfer",
-        sex: "male",
-        cohortYear: 2025,
-        className: "2-03",
-        province: "Bali",
-        originAgency: "Direktorat Jenderal Pajak",
-        status: "on_leave",
-        isBlended: true,
-      };
+  it.each(ALLOWED)(
+    "lets %s change a student, and keeps who put the student in, when and how",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { program, staff } = await addThroughTab(db, "9900000503");
+        const editor = await addTestActor(db, "Pengubah Uji", [role]);
+        const before = await recordOf(db, "9900000503");
+        const changed: StudentInput = {
+          ...student("9900000503", program),
+          name: "Ubah Uji Baru",
+          entryPath: "transfer",
+          sex: "male",
+          cohortYear: 2025,
+          className: "2-03",
+          province: "Bali",
+          originAgency: "Direktorat Jenderal Pajak",
+          status: "on_leave",
+          isBlended: true,
+        };
 
-      const done = await changeStudent(db, editor, changed);
+        const done = await changeStudent(db, editor, changed);
 
-      expect(done.ok).toBe(true);
-      const record = await recordOf(db, "9900000503");
-      expect(record).toMatchObject({
-        ...changed,
-        inputBy: editor.id,
-        inputSource: "edit",
+        expect(done.ok).toBe(true);
+        const record = await recordOf(db, "9900000503");
+        expect(record).toMatchObject({
+          ...changed,
+          inputAt: before.inputAt,
+          inputBy: staff.id,
+          inputSource: "form",
+        });
+        expect((await accountOf(db, record.id)).name).toBe("Ubah Uji Baru");
       });
-      expect((await accountOf(db, record.id)).name).toBe("Ubah Uji Baru");
-    });
-  });
+    },
+  );
 
   it("refuses a role without the right, and changes nothing", async () => {
     await inTestDatabase(async (db) => {

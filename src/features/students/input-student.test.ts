@@ -91,6 +91,7 @@ describe("inputStudent", () => {
       const program = await addTestProgram(db, "Prodi Uji Kembar");
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
       await addTestStudent(db, program, { nim: "9900000404", name: "Induk" });
+      const before = await db.select({ id: accounts.id }).from(accounts);
 
       const added = await inputStudent(
         db,
@@ -104,6 +105,8 @@ describe("inputStudent", () => {
       });
       const kept = await studentWithNim(db, "9900000404");
       expect(kept?.name).toBe("Induk");
+      const after = await db.select({ id: accounts.id }).from(accounts);
+      expect(after).toHaveLength(before.length);
     });
   });
 

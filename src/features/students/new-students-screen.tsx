@@ -15,6 +15,7 @@ import {
 } from "./new-students-address";
 import { StudentForm } from "./student-form";
 import { cohortChoices } from "./student-input";
+import { StudentNotice } from "./student-notice";
 import { StudentNumbers } from "./student-numbers";
 import { StudentTable } from "./student-table";
 
@@ -70,31 +71,33 @@ export async function NewStudentsScreen({
       </PageHead>
       <TabLinks {...tabs} />
       <StudentNumbers counts={counts} />
-      <StudentForm
-        key={editing?.nim ?? "new"}
-        programs={programs}
-        cohortYears={cohortChoices(thisYear, editing?.cohortYear)}
-        editing={editing}
-        query={params.query}
-      />
-      <section className={shared.panel}>
-        <h2 className={shared.heading}>Mahasiswa yang ditambahkan</h2>
-        <p className={shared.detail}>
-          Data induk awal tidak diubah dari menu ini.
-        </p>
-        <Search query={params.query} />
-        {list.students.length === 0 ? (
-          <NothingListed anyAdded={counts.added > 0} />
-        ) : (
-          <StudentTable students={list.students} query={params.query} />
-        )}
-        {list.matching > LIST_LIMIT && (
+      <StudentNotice>
+        <StudentForm
+          key={editing?.nim ?? "new"}
+          programs={programs}
+          cohortYears={cohortChoices(thisYear, editing?.cohortYear)}
+          editing={editing}
+          query={params.query}
+        />
+        <section className={shared.panel}>
+          <h2 className={shared.heading}>Mahasiswa yang ditambahkan</h2>
           <p className={shared.detail}>
-            Menampilkan {LIST_LIMIT} dari{" "}
-            {list.matching.toLocaleString("id-ID")}. Gunakan pencarian.
+            Data induk awal tidak diubah dari menu ini.
           </p>
-        )}
-      </section>
+          <Search query={params.query} />
+          {list.students.length === 0 ? (
+            <NothingListed anyAdded={counts.added > 0} />
+          ) : (
+            <StudentTable students={list.students} query={params.query} />
+          )}
+          {list.matching > LIST_LIMIT && (
+            <p className={shared.detail}>
+              Menampilkan {LIST_LIMIT} dari{" "}
+              {list.matching.toLocaleString("id-ID")}. Gunakan pencarian.
+            </p>
+          )}
+        </section>
+      </StudentNotice>
     </>
   );
 }

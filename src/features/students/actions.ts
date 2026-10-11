@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { forbidden, redirect } from "next/navigation";
+import { forbidden } from "next/navigation";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
@@ -12,9 +12,9 @@ import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { findAddedStudent } from "./added-students";
 import { changeStudent, NOT_FOUND, removeStudent } from "./change-student";
+import { refusedForm, type StudentFormState, savedForm } from "./form-values";
 import { isNim } from "./input-limits";
 import { inputStudent } from "./input-student";
-import { newStudentsAddress } from "./new-students-address";
 import {
   cohortChoices,
   type InputContext,
@@ -59,42 +59,43 @@ function refreshScreens(): void {
 }
 
 export async function addStudentAction(
-  _before: FormState,
+  before: StudentFormState,
   form: FormData,
-): Promise<FormState> {
-  const inputter = await studentInputter();
-  const db = database();
-  const parsed = parseStudent(readFields(form), await inputContext(db));
-  if (!parsed.ok) return { error: parsed.error, done: null };
-
-  const added = await inputStudent(db, inputter, parsed.value);
-  if (!added.ok) return { error: added.error, done: null };
-  refreshScreens();
-  return {
-    error: null,
-    done: `${parsed.value.name} ditambahkan sebagai mahasiswa.`,
-  };
-}
-
-export async function changeStudentAction(
-  _before: FormState,
-  form: FormData,
-): Promise<FormState> {
+): Promise<StudentFormState> {
   const inputter = await studentInputter();
   const db = database();
   const fields = readFields(form);
-  const before = isNim(fields.nim)
+  const parsed = parseStudent(fields, await inputContext(db));
+  if (!parsed.ok) return refusedForm(before, parsed.error, fields);
+
+  const added = await inputStudent(db, inputter, parsed.value);
+  if (!added.ok) return refusedForm(before, added.error, fields);
+  refreshScreens();
+  return savedForm(
+    before,
+    `${parsed.value.name} ditambahkan sebagai mahasiswa.`,
+  );
+}
+
+export async function changeStudentAction(
+  before: StudentFormState,
+  form: FormData,
+): Promise<StudentFormState> {
+  const inputter = await studentInputter();
+  const db = database();
+  const fields = readFields(form);
+  const kept = isNim(fields.nim)
     ? await findAddedStudent(db, fields.nim)
     : null;
-  if (!before) return { error: NOT_FOUND.error, done: null };
-  const context = await inputContext(db, before.cohortYear);
+  if (!kept) return refusedForm(before, NOT_FOUND.error, fields);
+  const context = await inputContext(db, kept.cohortYear);
   const parsed = parseStudent(fields, context);
-  if (!parsed.ok) return { error: parsed.error, done: null };
+  if (!parsed.ok) return refusedForm(before, parsed.error, fields);
 
   const changed = await changeStudent(db, inputter, parsed.value);
-  if (!changed.ok) return { error: changed.error, done: null };
+  if (!changed.ok) return refusedForm(before, changed.error, fields);
   refreshScreens();
-  redirect(newStudentsAddress(text(form, "q")));
+  return savedForm(before, `Data ${parsed.value.name} diperbarui.`);
 }
 
 export async function removeStudentAction(

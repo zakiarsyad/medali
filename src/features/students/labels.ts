@@ -21,7 +21,6 @@ export const STATUS_LABELS: Record<Student["status"], string> = {
 
 export const INPUT_SOURCE_LABELS: Record<StudentInputSource, string> = {
   form: "Formulir",
-  edit: "Ubah data",
 };
 
 export const CATEGORIES = [

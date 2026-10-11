@@ -32,8 +32,8 @@ export const roleChangeAction = pgEnum("role_change_action", [
   "removed",
 ]);
 
-/** How a student's data last came in: the form, or a change to it. */
-export type StudentInputSource = "form" | "edit";
+/** How a student was put in through Pengguna baru mahasiswa. */
+export type StudentInputSource = "form";
 
 export const studyPrograms = pgTable("study_programs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

@@ -15,7 +15,7 @@ export const NOT_FOUND = {
 
 /**
  * Changes a student put in through Pengguna baru mahasiswa, found by NIM.
- * The NIM itself stays. The record then says who changed it and when.
+ * The NIM itself stays, and so does who put the student in, when and how.
  */
 export async function changeStudent(
   db: Database,
@@ -27,12 +27,7 @@ export async function changeStudent(
   return db.transaction(async (tx) => {
     const [changed] = await tx
       .update(students)
-      .set({
-        ...fields,
-        inputAt: new Date(),
-        inputBy: actor.id,
-        inputSource: "edit",
-      })
+      .set(fields)
       .where(and(eq(students.nim, nim), ADDED_HERE))
       .returning({ id: students.id });
     if (!changed) return NOT_FOUND;

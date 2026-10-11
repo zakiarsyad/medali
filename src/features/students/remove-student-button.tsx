@@ -4,6 +4,7 @@ import { type FormEvent, useActionState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { removeStudentAction } from "./actions";
+import { useNotify } from "./student-notice";
 
 const START: FormState = { error: null, done: null };
 
@@ -14,7 +15,17 @@ export function RemoveStudentButton({
   nim: string;
   name: string;
 }) {
-  const [state, action, pending] = useActionState(removeStudentAction, START);
+  const notify = useNotify();
+
+  async function remove(before: FormState, form: FormData): Promise<FormState> {
+    notify(null);
+    const after = await removeStudentAction(before, form);
+    // The row is gone once removed, so the screen says it, not the row.
+    if (after.done) notify(after.done);
+    return { error: after.error, done: null };
+  }
+
+  const [state, action, pending] = useActionState(remove, START);
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {
     const sure = window.confirm(

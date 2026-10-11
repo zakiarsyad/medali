@@ -1,8 +1,6 @@
-import { eq } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { addStudent } from "./add-student";
 import type { StudentInput } from "./student-input";
@@ -18,15 +16,6 @@ export const NOT_ALLOWED = {
   error: "Anda tidak berhak menginput data mahasiswa.",
 } as const;
 
-async function nimInUse(db: Database, nim: string): Promise<boolean> {
-  const [found] = await db
-    .select({ id: students.id })
-    .from(students)
-    .where(eq(students.nim, nim))
-    .limit(1);
-  return found !== undefined;
-}
-
 /**
  * Adds a student through Pengguna baru mahasiswa, with their account. A
  * NIM stays taken after its student is removed, because the record is
@@ -38,10 +27,7 @@ export async function inputStudent(
   student: StudentInput,
 ): Promise<Parsed<null>> {
   if (!may(actor.roles, "input_new_students")) return NOT_ALLOWED;
-  if (await nimInUse(db, student.nim)) {
-    return { ok: false, error: `NIM ${student.nim} sudah terdaftar.` };
-  }
-  await addStudent(
+  const added = await addStudent(
     db,
     {
       ...student,
@@ -51,5 +37,8 @@ export async function inputStudent(
     },
     actor.id,
   );
+  if (!added) {
+    return { ok: false, error: `NIM ${student.nim} sudah terdaftar.` };
+  }
   return { ok: true, value: null };
 }
