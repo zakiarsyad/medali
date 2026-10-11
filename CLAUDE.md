@@ -36,6 +36,11 @@ brings the PR up to date and sorts the conflict out.
    idea, a follow-up, a problem found elsewhere, or a discussion outside
    the spec is not done now. Claude suggests it as a new piece of work, in
    one line, at the end.
+7. A spec delivers one feature that can be tried from start to finish on
+   the preview, within one menu page, in about 8 steps at most. Work that
+   cannot be tried that way is joined to the feature that needs it. A
+   larger feature is split into features that can each be tried on their
+   own.
 
 ### Facts that last
 
@@ -99,7 +104,9 @@ commit on `main` when the PR is merged.
 3. Claude posts one comment, the approval comment, with two parts in this
    order:
    - the result of the review,
-   - the proof: the preview link and what was confirmed on it.
+   - the proof: the preview link, and each case under "What should
+     happen" in the spec, marked as confirmed on the preview or by a
+     check.
 4. Only then is the PR marked ready.
 5. A new change after that puts the PR back to draft, and the approval
    comment is updated to match.
@@ -195,7 +202,8 @@ No pictures are taken as proof.
 1. The app and its checks run directly on the computer, with the Node.js
    version the repo names. The database and the file storage run inside
    Docker, so every computer has the same setup. One command starts the
-   app. One command fills it with sample data.
+   app. One command fills it with sample data. The checks also need the
+   database running.
 2. One piece of work at a time on one computer, in one local setup. Claude
    switches the repo folder to the branch being built, and back to `main`
    at clean up.

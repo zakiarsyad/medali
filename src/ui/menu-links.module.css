@@ -1,0 +1,27 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  margin: var(--space-lg) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  color: var(--sideink);
+  font-size: var(--text-nav);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--sidehover);
+}
+
+.link[aria-current="page"] {
+  background: var(--sideactive);
+  color: var(--sidestrong);
+}

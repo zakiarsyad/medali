@@ -1,0 +1,232 @@
+import { describe, expect, it } from "vitest";
+import {
+  type AccountForAccess,
+  may,
+  mayOpenPage,
+  mayOpenTab,
+  pagesFor,
+  rowLimitFor,
+  tabsFor,
+} from "./access";
+import { PAGES } from "./pages";
+import { ROLE_IDS } from "./role-ids";
+import { ACTIONS, type Action, ROLES } from "./roles";
+
+function paths(items: readonly { path: string }[]): string[] {
+  return items.map((item) => item.path);
+}
+
+describe("may", () => {
+  it("lets Kepala Unit manage users", () => {
+    expect(may(["head_of_unit"], "manage_users")).toBe(true);
+  });
+
+  it("refuses every other role to manage users", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    for (const role of others) {
+      expect(may([role], "manage_users")).toBe(false);
+    }
+  });
+
+  it("answers no to an action that is not on the list", () => {
+    // An action name that may arrive from outside the typed code.
+    const unknown = "delete_everything" as Action;
+    expect(may(["head_of_unit"], unknown)).toBe(false);
+  });
+
+  it("answers no to an account with no roles", () => {
+    expect(may([], "manage_users")).toBe(false);
+  });
+
+  it.each(ACTIONS)(
+    "has a role that may and a role that may not %s",
+    (action) => {
+      const allowed = ROLE_IDS.filter((role) => may([role], action));
+      expect(allowed.length).toBeGreaterThan(0);
+      expect(allowed.length).toBeLessThan(ROLE_IDS.length);
+    },
+  );
+});
+
+describe("pagesFor", () => {
+  it("gives a mentor the mentor's pages in menu order", () => {
+    expect(paths(pagesFor(["mentor"]))).toEqual([
+      "dashboard",
+      "kurikulum",
+      "kegiatan",
+      "pengasuhan",
+      "penilaian",
+      "pembinaan",
+      "asrama",
+    ]);
+  });
+
+  it("joins the pages of two roles, in menu order, without repeats", () => {
+    expect(paths(pagesFor(["counsellor", "discipline_officer"]))).toEqual([
+      "penilaian",
+      "konseling",
+      "pembinaan",
+    ]);
+  });
+
+  it("gives no pages to an account with no roles", () => {
+    expect(pagesFor([])).toEqual([]);
+  });
+});
+
+describe("tabsFor", () => {
+  it("gives a role only its own tabs, in the page's order", () => {
+    expect(paths(tabsFor(["bam_household"], "dorm"))).toEqual([
+      "dash",
+      "kegiatan",
+      "kamar",
+      "bersih",
+    ]);
+  });
+
+  it("joins the tabs of two roles", () => {
+    expect(paths(tabsFor(["counsellor", "assessor"], "assessment"))).toEqual([
+      "karakter",
+      "asesmen",
+      "jasmani",
+      "mental",
+      "skpm",
+      "siku",
+    ]);
+  });
+
+  it("gives Pengguna dan peran only to a role that manages users", () => {
+    expect(paths(tabsFor(["head_of_unit"], "settings"))).toContain("pengguna");
+    expect(paths(tabsFor(["upk_staff"], "settings"))).toEqual(["mahasiswa"]);
+  });
+});
+
+describe("mayOpenPage and mayOpenTab", () => {
+  it("lets a role open its own page and refuses another", () => {
+    expect(mayOpenPage(["counsellor"], "counselling")).toBe(true);
+    expect(mayOpenPage(["counsellor"], "settings")).toBe(false);
+  });
+
+  it("refuses a tab of an allowed page that the role does not have", () => {
+    expect(mayOpenTab(["upk_staff"], "settings", "new_students")).toBe(true);
+    expect(mayOpenTab(["upk_staff"], "settings", "users")).toBe(false);
+  });
+});
+
+describe("rowLimitFor", () => {
+  const nobody: AccountForAccess = {
+    id: "account-1",
+    roles: [],
+    studyProgramId: null,
+    studentId: null,
+  };
+
+  it("lets Kepala Unit see every row", () => {
+    expect(rowLimitFor({ ...nobody, roles: ["head_of_unit"] })).toEqual({
+      kind: "all",
+    });
+  });
+
+  it("limits a mentor to their own mentees", () => {
+    expect(rowLimitFor({ ...nobody, roles: ["mentor"] })).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["account-1"],
+      studentIds: [],
+    });
+  });
+
+  it("limits a head of study program to their program", () => {
+    const account = {
+      ...nobody,
+      roles: ["head_of_program" as const],
+      studyProgramId: 7,
+    };
+    expect(rowLimitFor(account)).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: [],
+      studentIds: [],
+    });
+  });
+
+  it("shows a head of study program with no program nothing", () => {
+    expect(rowLimitFor({ ...nobody, roles: ["head_of_program"] })).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: [],
+      studentIds: [],
+    });
+  });
+
+  it("limits a student to themselves", () => {
+    const account = {
+      ...nobody,
+      roles: ["student" as const],
+      studentId: "student-1",
+    };
+    expect(rowLimitFor(account)).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: [],
+      studentIds: ["student-1"],
+    });
+  });
+
+  it("joins the limits of two roles", () => {
+    const account = {
+      ...nobody,
+      roles: ["mentor" as const, "head_of_program" as const],
+      studyProgramId: 3,
+    };
+    expect(rowLimitFor(account)).toEqual({
+      kind: "some",
+      studyProgramIds: [3],
+      menteesOf: ["account-1"],
+      studentIds: [],
+    });
+  });
+
+  it("lets a role that sees every row win over a limited one", () => {
+    expect(rowLimitFor({ ...nobody, roles: ["mentor", "assessor"] })).toEqual({
+      kind: "all",
+    });
+  });
+
+  it("shows an account with no roles nothing", () => {
+    expect(rowLimitFor(nobody)).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: [],
+      studentIds: [],
+    });
+  });
+});
+
+describe("the permission list", () => {
+  const pageIds: string[] = PAGES.map((page) => page.id);
+
+  it.each(ROLE_IDS)("gives %s only pages that exist", (role) => {
+    for (const page of ROLES[role].pages) {
+      expect(pageIds).toContain(page);
+    }
+  });
+
+  it.each(ROLE_IDS)(
+    "gives %s at least one tab on each tabbed page it opens",
+    (role) => {
+      for (const page of pagesFor([role])) {
+        if (!("tabs" in page)) continue;
+        expect(tabsFor([role], page.id).length).toBeGreaterThan(0);
+      }
+    },
+  );
+
+  it.each(ROLE_IDS)("gives %s tabs only on pages it opens", (role) => {
+    const opened = pagesFor([role]).map((page) => page.id);
+    for (const page of PAGES) {
+      if (opened.includes(page.id)) continue;
+      expect(tabsFor([role], page.id)).toEqual([]);
+    }
+  });
+});

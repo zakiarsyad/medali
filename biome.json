@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!docs", "!.claude"]
+    "includes": ["**", "!docs", "!.claude", "!src/db/migrations"]
   },
   "formatter": {
     "indentStyle": "space"

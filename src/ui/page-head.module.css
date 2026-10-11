@@ -1,0 +1,18 @@
+.head {
+  margin-bottom: var(--space-xl);
+}
+
+.title {
+  margin: 0 0 var(--space-xs);
+  color: var(--navy);
+  font-size: var(--text-title);
+  font-weight: var(--weight-heavy);
+  line-height: var(--leading-title);
+  letter-spacing: var(--tracking-title);
+}
+
+.lede {
+  max-width: var(--lede-width);
+  margin: 0;
+  color: var(--muted);
+}
