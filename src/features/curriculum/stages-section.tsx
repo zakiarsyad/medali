@@ -18,17 +18,21 @@ const PARITIES: { parity: Parity; label: string; short: string }[] = [
  * chosen semester below.
  */
 export function StagesSection({
+  tahapNo,
+  onChoose,
   activities,
   values,
   mayManage,
 }: {
+  /** The chosen tahap, from 1 to 4. */
+  tahapNo: number;
+  onChoose: (tahapNo: number) => void;
   activities: PpksActivity[];
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
   mayManage: boolean;
 }) {
   const [parity, setParity] = useState<Parity>("odd");
-  const [tahapNo, setTahapNo] = useState(1);
   const semester = semesterOf(tahapNo, parity);
   const tahap = TAHAP.find((candidate) => candidate.no === tahapNo);
   const half = PARITIES.find((choice) => choice.parity === parity);
@@ -58,7 +62,7 @@ export function StagesSection({
             type="button"
             className={styles.stageBox}
             aria-pressed={tahap.no === tahapNo}
-            onClick={() => setTahapNo(tahap.no)}
+            onClick={() => onChoose(tahap.no)}
           >
             <span className={styles.stageNo}>
               Tahap {tahap.no} · tingkat {tahap.no} · semester{" "}

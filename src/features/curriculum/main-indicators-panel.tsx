@@ -10,10 +10,13 @@ import type { ValueIndicators } from "./main-indicators";
 
 export function MainIndicatorsPanel({
   values,
+  level,
   note,
   mayChange,
 }: {
   values: ValueIndicators[];
+  /** The level of the chosen tahap, marked in each box. */
+  level: number;
   /** Who changed the indicators last, or that they are the starting ones. */
   note: string;
   mayChange: boolean;
@@ -59,7 +62,7 @@ export function MainIndicatorsPanel({
           onCancel={() => setEditing(false)}
         />
       ) : (
-        <IndicatorBoxes values={values} />
+        <IndicatorBoxes values={values} level={level} />
       )}
     </section>
   );

@@ -43,6 +43,13 @@
   padding: var(--space-2xs) 0;
 }
 
+.indicator[aria-current="true"] {
+  margin: 0 calc(-1 * var(--space-xs));
+  padding: var(--space-2xs) var(--space-xs);
+  border-radius: var(--radius-md);
+  background: var(--goldsoft);
+}
+
 .level {
   display: block;
   color: var(--muted);
