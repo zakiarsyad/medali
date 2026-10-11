@@ -1,5 +1,10 @@
-import type { FormState } from "./actions";
-import styles from "./users-screen.module.css";
+import styles from "./data-screen.module.css";
+
+/** What a form says back after it is sent. */
+export interface FormState {
+  error: string | null;
+  done: string | null;
+}
 
 export function FormMessage({ state }: { state: FormState }) {
   if (state.error) {

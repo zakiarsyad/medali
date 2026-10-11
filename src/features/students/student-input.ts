@@ -1,0 +1,205 @@
+import { entryPath, sex, studentStatus } from "@/db/schema";
+import type { StudyProgram } from "@/db/study-programs";
+import type { Parsed } from "@/parsed";
+import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
+import {
+  CLASS_MAX_LENGTH,
+  isNim,
+  NAME_MAX_LENGTH,
+  NAME_MIN_LENGTH,
+  NIM_LENGTH,
+} from "./input-limits";
+import { CATEGORIES, type CategoryField } from "./labels";
+
+/** A student form as the browser sends it: nothing in it is trusted. */
+export interface StudentFields {
+  nim: string;
+  name: string;
+  studyProgramId: string;
+  entryPath: string;
+  sex: string;
+  cohortYear: string;
+  className: string;
+  province: string;
+  originAgency: string;
+  status: string;
+  categories: string[];
+}
+
+export interface StudentInput extends Record<CategoryField, boolean> {
+  nim: string;
+  name: string;
+  studyProgramId: number;
+  entryPath: (typeof entryPath.enumValues)[number];
+  sex: (typeof sex.enumValues)[number];
+  cohortYear: number;
+  className: string | null;
+  province: string | null;
+  originAgency: string | null;
+  status: (typeof studentStatus.enumValues)[number];
+}
+
+export interface InputContext {
+  programs: StudyProgram[];
+  /** The years that may be chosen as Angkatan. */
+  cohortYears: number[];
+}
+
+const COHORT_YEARS_BACK = 5;
+
+/**
+ * The Angkatan choices: this year and the five before, the newest first.
+ * `keptYear` is the year a student already has, which stays a choice.
+ */
+export function cohortChoices(thisYear: number, keptYear?: number): number[] {
+  const years: number[] = [];
+  for (let back = 0; back <= COHORT_YEARS_BACK; back++) {
+    years.push(thisYear - back);
+  }
+  if (keptYear !== undefined && !years.includes(keptYear)) {
+    years.push(keptYear);
+  }
+  return years.sort((a, b) => b - a);
+}
+
+function refused(error: string): { ok: false; error: string } {
+  return { ok: false, error };
+}
+
+function oneOf<T extends string>(
+  choices: readonly T[],
+  text: string,
+): T | null {
+  return choices.find((choice) => choice === text) ?? null;
+}
+
+function parseName(text: string): Parsed<string> {
+  const name = text.trim().replace(/\s+/g, " ");
+  if (name.length < NAME_MIN_LENGTH) return refused("Nama wajib diisi.");
+  if (name.length > NAME_MAX_LENGTH) {
+    return refused(`Nama paling banyak ${NAME_MAX_LENGTH} karakter.`);
+  }
+  return { ok: true, value: name };
+}
+
+function parseClassName(text: string): Parsed<string | null> {
+  const className = text.trim();
+  if (className.length > CLASS_MAX_LENGTH) {
+    return refused(
+      `Kelas akademik paling banyak ${CLASS_MAX_LENGTH} karakter.`,
+    );
+  }
+  return { ok: true, value: className === "" ? null : className };
+}
+
+/** An optional choice from a fixed list. Empty means it is not known. */
+function parseListed(
+  list: readonly string[],
+  text: string,
+  error: string,
+): Parsed<string | null> {
+  if (text === "") return { ok: true, value: null };
+  if (!list.includes(text)) return refused(error);
+  return { ok: true, value: text };
+}
+
+function parseCategories(
+  chosen: string[],
+): Parsed<Record<CategoryField, boolean>> {
+  const fields: string[] = CATEGORIES.map((category) => category.field);
+  if (!chosen.every((field) => fields.includes(field))) {
+    return refused("Kategori tidak dikenal.");
+  }
+  return {
+    ok: true,
+    value: {
+      isAffirmation: chosen.includes("isAffirmation"),
+      isSeedling: chosen.includes("isSeedling"),
+      isInternational: chosen.includes("isInternational"),
+      isBlended: chosen.includes("isBlended"),
+    },
+  };
+}
+
+type Choices = Pick<
+  StudentInput,
+  "studyProgramId" | "entryPath" | "sex" | "cohortYear" | "status"
+>;
+
+/** The fields that must be one of the choices the form offers. */
+function parseChoices(
+  fields: StudentFields,
+  context: InputContext,
+): Parsed<Choices> {
+  const program = context.programs.find(
+    (candidate) => String(candidate.id) === fields.studyProgramId,
+  );
+  if (!program) return refused("Program studi tidak dikenal.");
+  const path = oneOf(entryPath.enumValues, fields.entryPath);
+  if (!path) return refused("Jalur harus Reguler atau Alih program.");
+  const studentSex = oneOf(sex.enumValues, fields.sex);
+  if (!studentSex) {
+    return refused("Jenis kelamin harus Laki-laki atau Perempuan.");
+  }
+  const cohortYear = context.cohortYears.find(
+    (year) => String(year) === fields.cohortYear,
+  );
+  if (cohortYear === undefined) {
+    return refused(`Angkatan tidak valid (contoh ${context.cohortYears[0]}).`);
+  }
+  const status = oneOf(studentStatus.enumValues, fields.status);
+  if (!status) return refused("Status harus Aktif, Cuti, atau Non Aktif.");
+  return {
+    ok: true,
+    value: {
+      studyProgramId: program.id,
+      entryPath: path,
+      sex: studentSex,
+      cohortYear,
+      status,
+    },
+  };
+}
+
+export function parseStudent(
+  fields: StudentFields,
+  context: InputContext,
+): Parsed<StudentInput> {
+  if (!isNim(fields.nim)) {
+    return refused(`NIM harus ${NIM_LENGTH} digit angka.`);
+  }
+  const name = parseName(fields.name);
+  if (!name.ok) return name;
+  const choices = parseChoices(fields, context);
+  if (!choices.ok) return choices;
+  const className = parseClassName(fields.className);
+  if (!className.ok) return className;
+  const province = parseListed(
+    PROVINCES,
+    fields.province,
+    "Provinsi tidak dikenal.",
+  );
+  if (!province.ok) return province;
+  const agency = parseListed(
+    ORIGIN_AGENCIES,
+    fields.originAgency,
+    "Instansi asal tidak dikenal.",
+  );
+  if (!agency.ok) return agency;
+  const categories = parseCategories(fields.categories);
+  if (!categories.ok) return categories;
+
+  const isTransfer = choices.value.entryPath === "transfer";
+  return {
+    ok: true,
+    value: {
+      nim: fields.nim,
+      name: name.value,
+      ...choices.value,
+      className: className.value,
+      province: province.value,
+      originAgency: isTransfer ? agency.value : null,
+      ...categories.value,
+    },
+  };
+}

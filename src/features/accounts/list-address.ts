@@ -1,18 +1,12 @@
+import { firstParam, type SearchParams } from "@/ui/search-params";
 import type { AccountFilter } from "./manage-accounts";
 import { isListedRole } from "./managed-roles";
 
 export const USERS_ADDRESS = "/pengaturan/pengguna";
 
-type SearchParams = Record<string, string | string[] | undefined>;
-
 export interface ListParams extends AccountFilter {
   /** The account whose roles are being changed. */
   editing: string | null;
-}
-
-function first(value: string | string[] | undefined): string {
-  if (Array.isArray(value)) return value[0] ?? "";
-  return value ?? "";
 }
 
 function pageNumber(text: string): number {
@@ -23,12 +17,12 @@ function pageNumber(text: string): number {
 
 /** Reads the address of the account list. Pages start at 1 in the address. */
 export function readListParams(params: SearchParams): ListParams {
-  const role = first(params.peran);
-  const editing = first(params.ubah);
+  const role = firstParam(params.peran);
+  const editing = firstParam(params.ubah);
   return {
-    query: first(params.q).trim(),
+    query: firstParam(params.q).trim(),
     role: isListedRole(role) ? role : null,
-    page: pageNumber(first(params.hal)),
+    page: pageNumber(firstParam(params.hal)),
     editing: editing === "" ? null : editing,
   };
 }

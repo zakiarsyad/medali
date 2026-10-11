@@ -9,7 +9,7 @@ import {
   tabsFor,
 } from "./access";
 import { PAGES } from "./pages";
-import { ROLE_IDS } from "./role-ids";
+import { ROLE_IDS, type RoleId } from "./role-ids";
 import { ACTIONS, type Action, ROLES } from "./roles";
 
 function paths(items: readonly { path: string }[]): string[] {
@@ -25,6 +25,32 @@ describe("may", () => {
     const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
     for (const role of others) {
       expect(may([role], "manage_users")).toBe(false);
+    }
+  });
+
+  const studentInputRoles: RoleId[] = [
+    "head_of_unit",
+    "upk_staff",
+    "dorm_manager",
+  ];
+
+  it.each(studentInputRoles)("lets %s input new students", (role) => {
+    expect(may([role], "input_new_students")).toBe(true);
+  });
+
+  it("refuses every other role to input new students", () => {
+    const others = ROLE_IDS.filter((role) => !studentInputRoles.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - studentInputRoles.length);
+    for (const role of others) {
+      expect(may([role], "input_new_students")).toBe(false);
+    }
+  });
+
+  it("gives the right to input new students to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "input_new_students")).toBe(
+        mayOpenTab([role], "settings", "new_students"),
+      );
     }
   });
 

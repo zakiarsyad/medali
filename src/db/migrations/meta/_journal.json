@@ -29,6 +29,13 @@
       "when": 1791705510239,
       "tag": "0003_role-change-log-cannot-be-emptied",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791709170014,
+      "tag": "0004_student-input-and-removal-marks",
+      "breakpoints": true
     }
   ]
 }

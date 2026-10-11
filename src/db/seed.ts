@@ -98,7 +98,14 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     if (sampleActor === null) throw new Error("There are no sample accounts.");
     for (const { studyProgram, ...student } of SAMPLE_STUDENTS) {
       const studyProgramId = programId(programIds, studyProgram);
-      await addStudent(tx, { ...student, studyProgramId }, sampleActor);
+      const added = await addStudent(
+        tx,
+        { ...student, studyProgramId },
+        sampleActor,
+      );
+      if (!added) {
+        throw new Error(`The sample NIM ${student.nim} is used twice.`);
+      }
     }
   });
 }

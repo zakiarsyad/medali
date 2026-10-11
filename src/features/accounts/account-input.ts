@@ -1,7 +1,6 @@
 import { isAccountId } from "@/auth/accounts";
+import type { Parsed } from "@/parsed";
 import { isManagedRole, type ManagedRole } from "./managed-roles";
-
-export type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
 
 export interface NewAccountFields {
   name: string;

@@ -1,7 +1,7 @@
 import { PAGES } from "@/auth/pages";
 import { ROLE_IDS } from "@/auth/role-ids";
 import { ACTION_TITLES, ROLES } from "@/auth/roles";
-import styles from "./users-screen.module.css";
+import styles from "@/ui/data-screen.module.css";
 
 function pageTitles(pages: readonly string[]): string {
   return PAGES.filter((page) => pages.includes(page.id))

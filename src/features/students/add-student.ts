@@ -10,19 +10,23 @@ export interface AddedStudent {
 
 /**
  * Keeps a student record, and gives the student their own account. The
- * student role given is logged as the work of the account `by`.
+ * student role given is logged as the work of the account `by`. Adds
+ * nothing and gives null when the NIM is already used: the database
+ * decides that, so two people adding the same NIM at once cannot both
+ * succeed.
  */
 export async function addStudent(
   db: Database,
   student: NewStudent,
   by: string,
-): Promise<AddedStudent> {
+): Promise<AddedStudent | null> {
   return db.transaction(async (tx) => {
     const [record] = await tx
       .insert(students)
       .values(student)
+      .onConflictDoNothing({ target: students.nim })
       .returning({ id: students.id });
-    if (!record) throw new Error("The student record was not kept.");
+    if (!record) return null;
 
     const [account] = await tx
       .insert(accounts)

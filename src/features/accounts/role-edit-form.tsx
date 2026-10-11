@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { changeRolesAction, type FormState } from "./actions";
-import { FormMessage } from "./form-message";
+import type { StudyProgram } from "@/db/study-programs";
+import styles from "@/ui/data-screen.module.css";
+import { FormMessage, type FormState } from "@/ui/form-message";
+import { changeRolesAction } from "./actions";
 import type { ManagedAccount } from "./manage-accounts";
 import { ProgramChoice, RoleChoices } from "./role-choices";
-import type { StudyProgram } from "./study-programs";
-import styles from "./users-screen.module.css";
 
 const START: FormState = { error: null, done: null };
 
