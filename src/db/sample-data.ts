@@ -1,6 +1,6 @@
 import type { RoleId } from "@/auth/role-ids";
-import type { NewStudent } from "@/features/students/add-student";
 import type { ValueKey } from "@/ui/medali-values";
+import { MORE_SAMPLE_STUDENTS, type SampleStudent } from "./sample-students";
 
 /*
  * Made-up people only. Every name is a mix of common given names and
@@ -111,12 +111,7 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
   },
 ];
 
-type SampleStudent = Omit<NewStudent, "studyProgramId"> & {
-  /** The study program, by name, as the table changes add it. */
-  studyProgram: string;
-};
-
-/** Two made-up students in each study program. */
+/** Two made-up students in each study program, then the rest. */
 export const SAMPLE_STUDENTS: SampleStudent[] = [
   {
     nim: "9900230001",
@@ -310,6 +305,7 @@ export const SAMPLE_STUDENTS: SampleStudent[] = [
     className: "4-03",
     province: "Sulawesi Utara",
   },
+  ...MORE_SAMPLE_STUDENTS,
 ];
 
 export interface SamplePpksActivity {

@@ -61,7 +61,7 @@ None.
 
 ## Steps
 
-- [ ] 1. Add the made-up students to the sample data.
+- [x] 1. Add the made-up students to the sample data.
 - [ ] 2. Show the Mahasiswa page with the table, limited to what each
   role may see.
 - [ ] 3. Add "Cari nama atau NIM" and the Angkatan and Status filters.
