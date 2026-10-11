@@ -1,7 +1,9 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, ne, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students, studyPrograms } from "@/db/schema";
+import { matchesSearch } from "./student-conditions";
+import type { StatusChoice, StudentListFilters } from "./student-list-address";
 import { visibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
@@ -37,16 +39,50 @@ const ROW = {
   province: students.province,
 };
 
-/** The students an account may see, by name. */
+const WITH_STATUS: Record<StatusChoice, SQL | undefined> = {
+  current: ne(students.status, "inactive"),
+  all: undefined,
+  inactive: eq(students.status, "inactive"),
+};
+
+function inCohort(year: number | null): SQL | undefined {
+  return year === null ? undefined : eq(students.cohortYear, year);
+}
+
+/** The students an account may see that match every filter. */
+function found(limit: RowLimit, filters: StudentListFilters): SQL | undefined {
+  return and(
+    visibleTo(limit),
+    WITH_STATUS[filters.status],
+    inCohort(filters.cohortYear),
+    matchesSearch(filters.query),
+  );
+}
+
+/** The students an account may see that match the filters, by name. */
 export async function listStudents(
   db: Database,
   limit: RowLimit,
+  filters: StudentListFilters,
 ): Promise<{ students: ListedStudent[] }> {
   const rows = await db
     .select(ROW)
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(visibleTo(limit))
+    .where(found(limit, filters))
     .orderBy(asc(students.name), asc(students.nim));
   return { students: rows };
+}
+
+/** The angkatan of the students an account may see, the newest first. */
+export async function listCohortYears(
+  db: Database,
+  limit: RowLimit,
+): Promise<number[]> {
+  const rows = await db
+    .selectDistinct({ year: students.cohortYear })
+    .from(students)
+    .where(visibleTo(limit))
+    .orderBy(desc(students.cohortYear));
+  return rows.map((row) => row.year);
 }
