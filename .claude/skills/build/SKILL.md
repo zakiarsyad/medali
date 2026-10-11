@@ -28,12 +28,12 @@ link for the owner. Claude never merges.
    spec.
 8. Review and fix: follow `REVIEW.md` in this folder. Push no code until a
    review finds nothing more.
-9. Take the latest `main` into the branch, so the checks and the proof
+9. Take the latest `main` into the branch, so the checks and the preview
    show what `main` will look like after the merge.
 10. Run the full set of checks once. Fix what fails.
 11. Push, and open the PR as a draft. Write the PR description in its four
     parts.
-12. Take the proof: follow `PROOF.md` in this folder.
+12. Check the preview: follow `PROOF.md` in this folder.
 13. Post the approval comment: the review result, then the proof.
 14. Mark the PR ready.
 15. Hand back to the owner, in a few lines:
@@ -49,16 +49,18 @@ not guess. Keep going with any part that does not depend on the answer.
 ## When the owner reports a problem
 
 1. If it is part of this spec: fix it in the same PR. Put the PR back to
-   draft, review only what changed, update the proof for the screens
-   affected, update the approval comment, and mark it ready again.
+   draft. If the owner reports several problems, fix them all first.
+   Review only what changed, push once, check the preview again for the
+   screens affected, update the approval comment, and mark it ready again.
 2. If it is outside this spec: do not fix it here. Suggest it as a new
    piece of work.
 
 ## When a PR is behind `main` or conflicts with it
 
 1. Take the latest `main` into the branch. No rebase and no force push.
-2. If there is no conflict: run the full checks. Redo the proof only for
-   screens that the incoming changes also touch. Then mark the PR ready
+2. If there is no conflict: put the PR back to draft, run the full checks,
+   push once, check the preview again only for screens that the incoming
+   changes also touch, update the approval comment, and mark it ready
    again.
 3. If there is a conflict: keep what both changes meant to do. Never drop
    the other person's work to make the conflict go away.
@@ -67,8 +69,9 @@ not guess. Keep going with any part that does not depend on the answer.
 5. For a clash in database table changes, remake this PR's change file.
    Do not edit it by hand.
 6. After sorting out a conflict: put the PR back to draft, run the full
-   checks, review only what the merge changed, update the proof for the
-   screens affected, update the approval comment, and mark it ready again.
+   checks, review only what the merge changed, push once, check the
+   preview again for the screens affected, update the approval comment, and mark it ready
+   again.
 
 ## Scope
 

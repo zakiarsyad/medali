@@ -11,8 +11,7 @@ anyone can read them, with or without a technical background.
   with you and writes a spec, until you say OK. No code is written.
 - **"Build"** or `/build` makes everything in the approved spec. Claude
   builds it, reviews it, fixes what it finds, proves it works, and gives
-  you a PR link and a preview link. You look at the proof, try the preview,
-  and merge.
+  you a PR link and a preview link. You try the preview, and merge.
 - **"Clean up"** or `/clean-up` tidies away finished work and stops what is
   running.
 
@@ -79,6 +78,9 @@ agreed version of the app.
    co-author line and no "generated with" footer.
 6. To pick up new work from `main`, merge `main` into the branch. No rebase
    and no force push.
+7. Push as seldom as possible. Every push makes the hosting build the app
+   again, and the free plan allows a limited number of builds a day. Fixes
+   after a PR is open are gathered, reviewed, and pushed together.
 
 ### PR description
 
@@ -97,7 +99,7 @@ commit on `main` when the PR is merged.
 3. Claude posts one comment, the approval comment, with two parts in this
    order:
    - the result of the review,
-   - the proof: evidence that it works.
+   - the proof: the preview link and what was confirmed on it.
 4. Only then is the PR marked ready.
 5. A new change after that puts the PR back to draft, and the approval
    comment is updated to match.
@@ -123,7 +125,8 @@ More than one person may work on this repo at the same time.
 5. When two PRs both change database tables, the second to merge takes in
    `main` first and remakes its table change. While both are open they
    share the PR preview database, so only the one deployed last has a
-   working preview. Push again to get it back.
+   working preview. To get it back, build the preview again from the
+   hosting page, without a new push.
 6. Only the owner merges, whoever made the PR.
 
 ## What the app is built with
@@ -167,10 +170,10 @@ with Claude.
 
 ## This repo is public
 
-Anyone can see what is pushed here: code, specs, PRs, comments, proof
-pictures and preview links. Before every push, check that it holds no key
-or password, no real person's name or record, and no campus document that
-is not already public.
+Anyone can see what is pushed here: code, specs, PRs, comments and preview
+links. Before every push, check that it holds no key or password, no real
+person's name or record, and no campus document that is not already
+public.
 
 ## Review
 
@@ -183,9 +186,9 @@ chat.
 ## Proof
 
 Proof shows that a change works. It comes from really running the app,
-never from describing it: the preview of `main` next to the preview of the
-PR, with sample data only. Pictures are never added to the PR's own
-commits.
+never from describing it. The proof is the PR's preview link, with sample
+data only: Claude confirms the change works there, and the owner tries it.
+No pictures are taken as proof.
 
 ## Running the app on your own computer
 
@@ -209,8 +212,8 @@ Claude's work is paid for by how much it reads and writes. Keep both small.
 
 1. Search first, then read only the part of a file that is needed.
 2. Do not read the same file or picture twice without a reason.
-3. Take a screenshot only when it will be used as proof or to check a
-   visible problem. Look at each picture once.
+3. Take a screenshot only to check a visible problem. Look at each
+   picture once.
 4. While building, run only the checks for what changed. Run the full set
    of checks once, before the PR is finished.
 5. A second review reads only what changed since the first.
@@ -257,7 +260,8 @@ Claude's work is paid for by how much it reads and writes. Keep both small.
 - **Approval comment:** the one comment posted on the PR, holding the
   review result and the proof. It is not the same as pressing "Approve" on
   GitHub.
-- **Proof:** evidence from really running the app that a change works.
+- **Proof:** the PR's preview link, where the change was confirmed to work
+  and the owner can try it.
 - **Check:** an automatic test of the code.
 - **Preview:** a separate copy of the app for one PR or for `main`, on its
   own link, with sample data.

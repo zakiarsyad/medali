@@ -1,47 +1,30 @@
 # Proof
 
-1. Compare the two preview links: the preview of `main` is "before", the
-   preview of this PR is "after". Both hold the same sample data. Nothing
-   extra runs locally. If another open PR has deployed since, push again
-   first, so the shared PR database matches this PR.
-2. For a change on screen, take screenshots in pairs at laptop width
-   (1440 wide): `main` on the left, this PR on the right, same page,
-   same state.
-3. Add one phone-size picture (390 wide) of each changed screen on this
-   PR, to show it works on a phone. Split a long page into several
-   pictures.
-4. For a new screen there is no "before". Show the new screen only, at
-   both sizes.
-5. As few pictures as tell the story. No two pictures showing the same
-   thing. Save the pictures to files with a script, and look only at the
-   ones going into the comment, once each.
-6. For a change with no screen, show the request and the answer, and only
-   where the answer differs from `main`.
-7. Cover every role the change affects, and every tab and pop-up of the
+The proof is the PR's preview link. The owner tries the change there. No
+pictures are taken as proof.
+
+1. Open the PR's preview yourself first, and confirm the change works
+   there. Nothing extra runs locally. If another open PR has deployed
+   since, the preview's data no longer matches this PR. Build the preview
+   again from the hosting page, without a new push. This uses one of the
+   day's builds, so do it only when the owner is about to try the preview.
+2. Cover every role the change affects, and every tab and pop-up of the
    screen.
-8. Sample data only. Never real people's data.
-9. Proof covers this PR only.
-10. If there is no preview yet, or one is down, use the local setup: take
-    the `main` pictures, switch to the branch, then take the branch
-    pictures. Stop the app afterwards.
-
-## Where pictures go
-
-Pictures are never added to the PR's own commits. Put them on the
-`proof-pictures` branch, in a folder named `pr-<number>/`. That branch is
-never merged. Make it once, empty, if it does not exist yet.
-
-In the comment, point each picture at the exact saved version, not at the
-branch name, so it cannot change later:
-
-`https://github.com/<owner>/<repo>/blob/<commit id>/pr-<number>/<file>?raw=true`
+3. Look at the preview of `main` only where "before" matters, such as a
+   fix.
+4. For a change with no screen, show the request and the answer, and only
+   where the answer differs from `main`.
+5. Sample data only. Never real people's data.
+6. Proof covers this PR only.
+7. If the preview is down or did not build, say so and fix that first. If
+   the day's builds are used up, say so and wait for the next day. Do not
+   push again to try. A PR without a working preview is not ready.
 
 ## The proof part of the approval comment
 
 The proof goes in the approval comment, after the review result.
 
-- One line saying what was run.
-- Each picture gets a short title of about 12 words.
-- Pictures sit in a table inside a fold-out section: `main` | this PR for
-  the pairs, one column for the phone pictures.
-- Requests and answers go in their own fold-out section.
+- The preview link.
+- One line saying what was confirmed on it.
+- The result of the automatic checks.
+- Requests and answers go in a fold-out section.
