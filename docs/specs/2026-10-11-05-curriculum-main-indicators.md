@@ -65,7 +65,7 @@ None.
 
 - [x] 1. The main indicators and the base score are stored, each with who
   changed it and when, and start with the prototype's content.
-- [ ] 2. The right to change the curriculum is added to the permission
+- [x] 2. The right to change the curriculum is added to the permission
   list for Kepala Unit and Pegawai UPK, with its checks.
 - [ ] 3. The page shows the title, the intro and the three panels.
 - [ ] 4. "Ubah indikator utama" changes and saves the 24 texts.

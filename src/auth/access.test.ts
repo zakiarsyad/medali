@@ -54,6 +54,26 @@ describe("may", () => {
     }
   });
 
+  const curriculumRoles: RoleId[] = ["head_of_unit", "upk_staff"];
+
+  it.each(curriculumRoles)("lets %s change the curriculum", (role) => {
+    expect(may([role], "change_curriculum")).toBe(true);
+  });
+
+  it("refuses every other role to change the curriculum", () => {
+    const others = ROLE_IDS.filter((role) => !curriculumRoles.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - curriculumRoles.length);
+    for (const role of others) {
+      expect(may([role], "change_curriculum")).toBe(false);
+    }
+  });
+
+  it("lets every role that may change the curriculum open Kurikulum", () => {
+    for (const role of curriculumRoles) {
+      expect(mayOpenPage([role], "curriculum")).toBe(true);
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
