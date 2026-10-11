@@ -12,4 +12,8 @@ describe("isUuid", () => {
       expect(isUuid(text)).toBe(false);
     },
   );
+
+  it("refuses what is not a text, even when it holds a row id", () => {
+    expect(isUuid(["3f2b8c1e-9a4d-4e7b-8c1a-0d5e6f7a8b9c"])).toBe(false);
+  });
 });
