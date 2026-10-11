@@ -2,10 +2,17 @@ import { addStudent } from "@/features/students/add-student";
 import type { Database } from "./connect";
 import {
   SAMPLE_ACCOUNTS,
+  SAMPLE_PPKS_ACTIVITIES,
   SAMPLE_STUDENTS,
   type SampleAccount,
 } from "./sample-data";
-import { accountRoles, accounts, roleChanges, studyPrograms } from "./schema";
+import {
+  accountRoles,
+  accounts,
+  ppksActivities,
+  roleChanges,
+  studyPrograms,
+} from "./schema";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
 
@@ -107,5 +114,11 @@ export async function fillWithSampleData(db: Database): Promise<void> {
         throw new Error(`The sample NIM ${student.nim} is used twice.`);
       }
     }
+    const changed = { changedAt: new Date(), changedBy: sampleActor };
+    await tx
+      .insert(ppksActivities)
+      .values(
+        SAMPLE_PPKS_ACTIVITIES.map((activity) => ({ ...activity, ...changed })),
+      );
   });
 }

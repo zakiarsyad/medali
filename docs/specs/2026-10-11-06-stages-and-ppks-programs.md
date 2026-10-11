@@ -72,7 +72,7 @@ None.
 
 ## Steps
 
-- [ ] 1. PPKS activities are stored per semester, each with who changed it
+- [x] 1. PPKS activities are stored per semester, each with who changed it
   and when. The list starts empty; sample data adds a few for the preview.
 - [ ] 2. The right to manage activities is added to the permission list
   for Kepala Unit and Pegawai UPK, with its checks.
