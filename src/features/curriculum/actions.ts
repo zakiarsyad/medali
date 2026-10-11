@@ -12,6 +12,7 @@ import { addPpksActivity } from "./add-ppks-activity";
 import { changePpksActivity, removePpksActivity } from "./change-ppks-activity";
 import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
+import { saveStageBreakdown } from "./save-stage-breakdown";
 
 const CURRICULUM_ADDRESS = "/kurikulum";
 
@@ -43,6 +44,23 @@ export async function saveBaseScoreAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Nilai dasar SIKU menjadi ${saved.value}.` };
+}
+
+export async function saveStageBreakdownAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const changer = await curriculumChanger();
+  const saved = await saveStageBreakdown(database(), changer, {
+    tahap: text(form, "tahap"),
+    valueKey: text(form, "value"),
+    text: text(form, "text"),
+    activities: texts(form, "activity"),
+    indicatorCodes: texts(form, "indicator"),
+  });
+  if (!saved.ok) return { error: saved.error, done: null };
+  revalidatePath(CURRICULUM_ADDRESS);
+  return { error: null, done: `Penjabaran ${saved.value} disimpan.` };
 }
 
 async function activityManager(): Promise<Account> {

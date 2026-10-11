@@ -67,4 +67,4 @@ None.
 - [x] 2. Indikator utama MEDALI marks the level of the chosen tahap.
 - [x] 3. The page shows the "Penjabaran MEDALI tahap (name)" panel with
   its six boxes.
-- [ ] 4. "Ubah" changes and saves one box.
+- [x] 4. "Ubah" changes and saves one box.

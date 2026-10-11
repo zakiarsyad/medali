@@ -297,3 +297,23 @@
   background: var(--surface2);
   font-size: var(--text-md);
 }
+
+.changeBox {
+  margin-top: var(--space-sm);
+}
+
+.breakdownForm {
+  margin: var(--space-md) 0;
+}
+
+.activityRow {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  padding: var(--space-2xs) 0;
+}
+
+.activityName {
+  flex: 1;
+  min-width: 0;
+}

@@ -48,6 +48,7 @@ export function TahapPanels({
         activities={activities}
         breakdowns={breakdowns}
         values={values}
+        mayChange={mayChange}
         mayManage={mayManageActivities}
       />
     </>

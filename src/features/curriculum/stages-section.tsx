@@ -25,6 +25,7 @@ export function StagesSection({
   activities,
   breakdowns,
   values,
+  mayChange,
   mayManage,
 }: {
   /** The chosen tahap, from 1 to 4. */
@@ -35,6 +36,7 @@ export function StagesSection({
   breakdowns: TahapBreakdown[];
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
+  mayChange: boolean;
   mayManage: boolean;
 }) {
   const [parity, setParity] = useState<Parity>("odd");
@@ -90,11 +92,15 @@ export function StagesSection({
         values={values}
         mayManage={mayManage}
       />
+      {/* The key: an open form and its message belong to one tahap. It is
+          named, so it never equals the semester key of the panel above. */}
       {tahap && breakdown && (
         <BreakdownPanel
+          key={`tahap-${tahapNo}`}
           tahapName={tahap.name}
           breakdown={breakdown}
           values={values}
+          mayChange={mayChange}
         />
       )}
     </section>
