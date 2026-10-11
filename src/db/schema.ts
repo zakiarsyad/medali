@@ -14,6 +14,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
+import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
 
@@ -159,7 +160,7 @@ export const ppksActivities = pgTable(
     semester: smallint().notNull(),
     name: text().notNull(),
     /** The letters of the MEDALI values the activity builds. */
-    valueKeys: text().array().notNull(),
+    valueKeys: text().array().$type<ValueKey[]>().notNull(),
     /** The codes of the main indicators the activity aims at. */
     indicatorCodes: text().array().notNull(),
     /** Empty while no target is set. */

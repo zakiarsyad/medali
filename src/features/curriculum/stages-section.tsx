@@ -3,17 +3,25 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./curriculum.module.css";
+import type { PpksActivity } from "./ppks-activities";
+import { PpksTable } from "./ppks-table";
 import { type Parity, semesterOf, TAHAP } from "./stages";
 
-const PARITIES: { parity: Parity; label: string }[] = [
-  { parity: "odd", label: "Semester ganjil" },
-  { parity: "even", label: "Semester genap" },
+const PARITIES: { parity: Parity; label: string; short: string }[] = [
+  { parity: "odd", label: "Semester ganjil", short: "ganjil" },
+  { parity: "even", label: "Semester genap", short: "genap" },
 ];
 
-/** The semester choice and the four tahap, one of them chosen. */
-export function StagesSection() {
+/**
+ * The semester choice and the four tahap, with the PPKS activities of the
+ * chosen semester below.
+ */
+export function StagesSection({ activities }: { activities: PpksActivity[] }) {
   const [parity, setParity] = useState<Parity>("odd");
   const [tahapNo, setTahapNo] = useState(1);
+  const semester = semesterOf(tahapNo, parity);
+  const tahap = TAHAP.find((candidate) => candidate.no === tahapNo);
+  const half = PARITIES.find((choice) => choice.parity === parity);
 
   return (
     <section>
@@ -51,6 +59,20 @@ export function StagesSection() {
           </button>
         ))}
       </div>
+      <section className={shared.panel}>
+        <h2 className={shared.heading}>
+          Program kegiatan PPKS semester {semester}
+        </h2>
+        <p className={shared.detail}>
+          Tahap {tahap?.name.toLowerCase()}, semester {half?.short}. Daftar
+          kegiatan tanpa tanggal.
+        </p>
+        <PpksTable
+          activities={activities.filter(
+            (activity) => activity.semester === semester,
+          )}
+        />
+      </section>
     </section>
   );
 }

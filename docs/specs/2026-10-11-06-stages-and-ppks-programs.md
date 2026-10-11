@@ -78,7 +78,7 @@ None.
   for Kepala Unit and Pegawai UPK, with its checks.
 - [x] 3. The page shows the heading, the semester choice and the four
   tahap boxes.
-- [ ] 4. The page shows the Program kegiatan PPKS table for the chosen
+- [x] 4. The page shows the Program kegiatan PPKS table for the chosen
   semester.
 - [ ] 5. "Tambah kegiatan PPKS" adds an activity.
 - [ ] 6. "Ubah" changes an activity.

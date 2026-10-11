@@ -202,3 +202,11 @@
   color: var(--muted);
   font-size: var(--text-md);
 }
+
+.valueTag {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  margin-right: var(--space-md);
+  white-space: nowrap;
+}

@@ -7,12 +7,14 @@ import { MainIndicatorsPanel } from "./main-indicators-panel";
 import { StagesSection } from "./stages-section";
 import { readBaseScore, STARTING_BASE_SCORE } from "./stored-base-score";
 import { readMainIndicators } from "./stored-main-indicators";
+import { readPpksActivities } from "./stored-ppks-activities";
 
 export async function CurriculumScreen({ mayChange }: { mayChange: boolean }) {
   const db = database();
-  const [indicators, baseScore] = await Promise.all([
+  const [indicators, baseScore, activities] = await Promise.all([
     readMainIndicators(db),
     readBaseScore(db),
+    readPpksActivities(db),
   ]);
   return (
     <>
@@ -40,7 +42,7 @@ export async function CurriculumScreen({ mayChange }: { mayChange: boolean }) {
         )}
         mayChange={mayChange}
       />
-      <StagesSection />
+      <StagesSection activities={activities} />
       <GradeScalePanel />
     </>
   );
