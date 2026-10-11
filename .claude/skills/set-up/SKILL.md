@@ -49,7 +49,7 @@ Only these five.
    session is not in auto mode, tell the person to press Shift+Tab until
    it says "auto". The repo cannot turn this on for them.
 6. Refresh the files if the computer already had the repo. Run
-   `git ls-files --eol`. If any line says `w/crlf`, those files have
+   `git ls-files --eol`. If any line says `w/crlf` or `w/mixed`, those files have
    Windows line ends, and the checks fail until they are refreshed:
    - if there are changes not saved in a commit, save them as a commit on
      their work branch first. On `main`, stop and tell the person.
