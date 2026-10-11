@@ -5,6 +5,7 @@ import { withTestDatabase } from "@/db/test-database";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
+import { PAGE_SIZE } from "./student-list-pages";
 import { addTestProgram, addTestStudent } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -35,7 +36,8 @@ async function nimsFound(
   limit: RowLimit,
   filters: Partial<StudentListFilters>,
 ): Promise<string[]> {
-  const listed = await listStudents(db, limit, { ...NO_FILTERS, ...filters });
+  const all = { ...NO_FILTERS, ...filters };
+  const listed = await listStudents(db, limit, all, 1);
   return listed.students.map((student) => student.nim).sort();
 }
 
@@ -59,7 +61,12 @@ describe("listStudents", () => {
         isSeedling: true,
       });
 
-      const listed = await listStudents(db, onlyProgram(program), ALL_STATUSES);
+      const listed = await listStudents(
+        db,
+        onlyProgram(program),
+        ALL_STATUSES,
+        1,
+      );
 
       expect(listed.students).toEqual([
         {
@@ -93,8 +100,8 @@ describe("listStudents", () => {
         deletedAt: new Date("2026-10-11T03:00:00Z"),
       });
 
-      const forAll = await listStudents(db, EVERYONE, NO_FILTERS);
-      const forOwn = await listStudents(db, onlyProgram(own), NO_FILTERS);
+      const forAll = await listStudents(db, EVERYONE, NO_FILTERS, 1);
+      const forOwn = await listStudents(db, onlyProgram(own), NO_FILTERS, 1);
 
       const batas = forAll.students.filter((s) => s.name.startsWith("Batas"));
       expect(batas.map((s) => s.nim)).toEqual(["9900000314", "9900000313"]);
@@ -307,6 +314,64 @@ describe("countChoices", () => {
 
       expect(counts.programs).toEqual(new Map([[first, 2]]));
       expect(counts.entryPaths).toEqual({ regular: 1, transfer: 1 });
+    });
+  });
+});
+
+describe("the pages of listStudents", () => {
+  /** One more student than two pages hold, and one the filters leave out. */
+  async function addPagedRows(db: Database): Promise<RowLimit> {
+    const program = await addTestProgram(db, "Prodi Uji Halaman");
+    for (let place = 0; place <= 2 * PAGE_SIZE; place++) {
+      await addTestStudent(db, program, {
+        nim: String(9900200000 + place),
+        name: `Halaman Uji ${String(place).padStart(2, "0")}`,
+      });
+    }
+    await addTestStudent(db, program, {
+      nim: "9900200099",
+      name: "Halaman Uji Nonaktif",
+      status: "inactive",
+    });
+    return onlyProgram(program);
+  }
+
+  it("gives 25 rows a page, and how many match in all", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = await addPagedRows(db);
+
+      const first = await listStudents(db, limit, NO_FILTERS, 1);
+      const second = await listStudents(db, limit, NO_FILTERS, 2);
+      const third = await listStudents(db, limit, NO_FILTERS, 3);
+
+      expect(first.matching).toBe(2 * PAGE_SIZE + 1);
+      expect(first.students).toHaveLength(PAGE_SIZE);
+      expect(first.students[0]?.name).toBe("Halaman Uji 00");
+      expect(second.students[0]?.name).toBe("Halaman Uji 25");
+      expect(second.page).toBe(2);
+      expect(third.students.map((s) => s.name)).toEqual(["Halaman Uji 50"]);
+    });
+  });
+
+  it("gives the last page for a page past it", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = await addPagedRows(db);
+
+      const listed = await listStudents(db, limit, NO_FILTERS, 99);
+
+      expect(listed.page).toBe(3);
+      expect(listed.students).toHaveLength(1);
+    });
+  });
+
+  it("gives an empty first page when nothing matches", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = await addPagedRows(db);
+      const filters = { ...NO_FILTERS, query: "tidak ada yang begini" };
+
+      const listed = await listStudents(db, limit, filters, 2);
+
+      expect(listed).toEqual({ students: [], matching: 0, page: 1 });
     });
   });
 });

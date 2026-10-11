@@ -9,7 +9,10 @@ import {
 
 describe("readStudentListParams", () => {
   it("starts on Aktif dan cuti with nothing else chosen", () => {
-    expect(readStudentListParams({})).toEqual({ filters: NO_FILTERS });
+    expect(readStudentListParams({})).toEqual({
+      filters: NO_FILTERS,
+      page: 1,
+    });
     expect(NO_FILTERS).toEqual({
       query: "",
       cohortYear: null,
@@ -146,5 +149,26 @@ describe("the filters of the top bar", () => {
       query: "ayu",
       status: "all",
     });
+  });
+});
+
+describe("the page of the list", () => {
+  it("is read from the address", () => {
+    expect(readStudentListParams({ hal: "3" }).page).toBe(3);
+  });
+
+  it.each(["", "0", "-1", "1.5", "dua", "1234567", "2; drop"])(
+    "falls back to the first page for %j",
+    (hal) => {
+      expect(readStudentListParams({ hal }).page).toBe(1);
+    },
+  );
+
+  it("is in the address only after the first, next to the filters", () => {
+    const filters = { ...NO_FILTERS, query: "ayu" };
+
+    expect(studentListAddress(filters, 1)).toBe("/mahasiswa?q=ayu");
+    expect(studentListAddress(filters, 2)).toBe("/mahasiswa?q=ayu&hal=2");
+    expect(studentListAddress(NO_FILTERS, 3)).toBe("/mahasiswa?hal=3");
   });
 });

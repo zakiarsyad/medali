@@ -16,3 +16,8 @@
 .found b {
   color: var(--ink);
 }
+
+.off {
+  color: var(--faint);
+  cursor: default;
+}

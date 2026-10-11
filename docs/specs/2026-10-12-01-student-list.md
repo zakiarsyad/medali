@@ -67,4 +67,4 @@ None.
 - [x] 3. Add "Cari nama atau NIM" and the Angkatan and Status filters.
 - [x] 4. Add the Program studi, Jalur and Kategori filters with their
   counts and "Atur ulang filter".
-- [ ] 5. Add the pages of 25 and the empty message.
+- [x] 5. Add the pages of 25 and the empty message.

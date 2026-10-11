@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ne, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ne, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students, studyPrograms } from "@/db/schema";
@@ -9,6 +9,7 @@ import type {
   StatusChoice,
   StudentListFilters,
 } from "./student-list-address";
+import { PAGE_SIZE, pageWithin } from "./student-list-pages";
 import { visibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
@@ -82,19 +83,41 @@ export function found(
   );
 }
 
-/** The students an account may see that match the filters, by name. */
+export interface StudentPage {
+  students: ListedStudent[];
+  /** How many students match in all, on every page. */
+  matching: number;
+  /** The page given: the one asked for, or the last when it is past it. */
+  page: number;
+}
+
+/**
+ * One page of the students an account may see that match the filters, by
+ * name.
+ */
 export async function listStudents(
   db: Database,
   limit: RowLimit,
   filters: StudentListFilters,
-): Promise<{ students: ListedStudent[] }> {
+  page: number,
+): Promise<StudentPage> {
+  const condition = found(limit, filters);
+  const [counted] = await db
+    .select({ matching: count() })
+    .from(students)
+    .where(condition);
+  const matching = counted?.matching ?? 0;
+  const given = pageWithin(page, matching);
+  if (matching === 0) return { students: [], matching, page: given };
   const rows = await db
     .select(ROW)
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(found(limit, filters))
-    .orderBy(asc(students.name), asc(students.nim));
-  return { students: rows };
+    .where(condition)
+    .orderBy(asc(students.name), asc(students.nim))
+    .limit(PAGE_SIZE)
+    .offset((given - 1) * PAGE_SIZE);
+  return { students: rows, matching, page: given };
 }
 
 /** The angkatan of the students an account may see, the newest first. */

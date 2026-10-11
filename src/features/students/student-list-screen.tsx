@@ -13,6 +13,7 @@ import {
 } from "./student-list-address";
 import { StudentListBar } from "./student-list-bar";
 import { StudentListFilterRow } from "./student-list-filters";
+import { StudentListPager } from "./student-list-pager";
 import { StudentListTable } from "./student-list-table";
 
 export async function StudentListScreen({
@@ -26,7 +27,7 @@ export async function StudentListScreen({
   const db = database();
   const { filters } = params;
   const [list, cohortYears, programs, counts] = await Promise.all([
-    listStudents(db, limit, filters),
+    listStudents(db, limit, filters, params.page),
     listCohortYears(db, limit),
     listStudyPrograms(db),
     countChoices(db, limit, filters),
@@ -45,11 +46,24 @@ export async function StudentListScreen({
           filters={filters}
           programs={programs}
           counts={counts}
-          found={list.students.length}
+          found={list.matching}
         />
         <section className={shared.panel}>
           <StudentListFilterRow filters={filters} cohortYears={cohortYears} />
-          <StudentListTable students={list.students} />
+          {list.matching > 0 ? (
+            <>
+              <StudentListTable students={list.students} />
+              <StudentListPager
+                filters={filters}
+                page={list.page}
+                matching={list.matching}
+              />
+            </>
+          ) : (
+            <p className={shared.empty}>
+              Tidak ada mahasiswa yang cocok. Ubah kata kunci atau filter.
+            </p>
+          )}
         </section>
       </AutoSubmitForm>
     </>

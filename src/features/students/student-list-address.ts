@@ -26,6 +26,8 @@ export interface StudentListFilters extends TopFilters {
 
 export interface StudentListParams {
   filters: StudentListFilters;
+  /** The page of the list, counted from 1. */
+  page: number;
 }
 
 const NO_TOP_FILTERS: TopFilters = {
@@ -50,6 +52,7 @@ export const STATUS_IN_ADDRESS: Record<StatusChoice, string> = {
 };
 
 const YEAR = /^\d{4}$/;
+const PAGE = /^[1-9]\d{0,5}$/;
 /** Short enough to fit the number the database keeps for a program studi. */
 const PROGRAM_ID = /^[1-9]\d{0,8}$/;
 
@@ -76,7 +79,9 @@ function readTopFilters(params: SearchParams): TopFilters {
  */
 export function readStudentListParams(params: SearchParams): StudentListParams {
   const year = firstParam(params.angkatan);
+  const page = firstParam(params.hal);
   return {
+    page: PAGE.test(page) ? Number(page) : 1,
     filters: {
       query: firstParam(params.q).trim().slice(0, NAME_MAX_LENGTH),
       cohortYear: YEAR.test(year) ? Number(year) : null,
@@ -99,8 +104,14 @@ export function withoutTopFilters(
   return { ...filters, ...NO_TOP_FILTERS };
 }
 
-/** The address of the list with these filters. What is not chosen is left out. */
-export function studentListAddress(filters: StudentListFilters): string {
+/**
+ * The address of a page of the list with these filters. What is not chosen
+ * is left out, and so is the first page.
+ */
+export function studentListAddress(
+  filters: StudentListFilters,
+  page = 1,
+): string {
   const params = new URLSearchParams();
   if (filters.query) params.set("q", filters.query);
   if (filters.cohortYear !== null) {
@@ -114,5 +125,6 @@ export function studentListAddress(filters: StudentListFilters): string {
   }
   if (filters.entryPath) params.set("jalur", filters.entryPath);
   if (filters.category) params.set("kategori", filters.category);
+  if (page > 1) params.set("hal", String(page));
   return addressOf(STUDENT_LIST_ADDRESS, params.toString());
 }
