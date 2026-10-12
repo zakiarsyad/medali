@@ -1,4 +1,4 @@
-import { STAGES } from "./main-indicators";
+import { STAGES } from "@/academic-periods/stages";
 
 /** Semester ganjil or semester genap. */
 export type Parity = "odd" | "even";
@@ -28,9 +28,4 @@ export const TAHAP: Tahap[] = STAGES.map((name, place) => ({
 export function semesterOf(tahapNo: number, parity: Parity): number {
   const second = tahapNo * 2;
   return parity === "even" ? second : second - 1;
-}
-
-/** The indicator level, and the tahap, a semester belongs to. */
-export function levelOf(semester: number): number {
-  return Math.ceil(semester / 2);
 }

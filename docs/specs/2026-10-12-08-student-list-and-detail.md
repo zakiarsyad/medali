@@ -117,7 +117,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. Semester and tahap show in each row, read from the rule in
+- [x] 1. Semester and tahap show in each row, read from the rule in
   "Academic period".
 - [ ] 2. The Tahapan, Provinsi and Instansi filters with their counts,
   working with the filters already there.

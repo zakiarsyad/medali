@@ -1,3 +1,4 @@
+import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
@@ -26,11 +27,12 @@ export async function StudentListScreen({
 }) {
   const db = database();
   const { filters } = params;
-  const [list, cohortYears, programs, counts] = await Promise.all([
+  const [list, cohortYears, programs, counts, period] = await Promise.all([
     listStudents(db, limit, filters, params.page),
     listCohortYears(db, limit),
     listStudyPrograms(db),
     countChoices(db, limit, filters),
+    readRunningPeriod(db),
   ]);
   return (
     <>
@@ -52,7 +54,7 @@ export async function StudentListScreen({
           <StudentListFilterRow filters={filters} cohortYears={cohortYears} />
           {list.matching > 0 ? (
             <>
-              <StudentListTable students={list.students} />
+              <StudentListTable students={list.students} period={period} />
               <StudentListPager
                 filters={filters}
                 page={list.page}
