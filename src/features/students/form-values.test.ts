@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001800 to 9900001899.
 import { describe, expect, it } from "vitest";
 import {
   formShows,
@@ -11,7 +12,7 @@ import type { StudentFields, StudentInput } from "./student-input";
 const first = { studyProgramId: "3", cohortYear: "2026" };
 
 const student: StudentInput = {
-  nim: "9900000601",
+  nim: "9900001801",
   name: "Mahasiswa Contoh",
   studyProgramId: 7,
   entryPath: "transfer",
@@ -28,7 +29,7 @@ const student: StudentInput = {
 };
 
 const typed: StudentFields = {
-  nim: "99000006",
+  nim: "99000018",
   name: "Ma",
   studyProgramId: "7",
   entryPath: "transfer",
@@ -60,7 +61,7 @@ describe("formValues", () => {
 
   it("fills the form with the student being changed", () => {
     expect(formValues(student, first)).toEqual({
-      nim: "9900000601",
+      nim: "9900001801",
       name: "Mahasiswa Contoh",
       studyProgramId: "7",
       entryPath: "transfer",

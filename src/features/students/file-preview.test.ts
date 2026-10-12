@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000600 to 9900000699.
 import { describe, expect, it } from "vitest";
 import { previewOf } from "./file-preview";
 import type { FileRows } from "./student-file";

@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001500 to 9900001599.
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
@@ -37,7 +38,7 @@ async function addRows(db: Database) {
   const own = await addTestProgram(db, "Prodi Uji Detail Sendiri");
   const other = await addTestProgram(db, "Prodi Uji Detail Lain");
   const inOwn = await addTestStudent(db, own, {
-    nim: "9900000501",
+    nim: "9900001501",
     name: "Detail Uji Ani",
     entryPath: "transfer",
     originAgency: "Direktorat Jenderal Pajak",
@@ -48,7 +49,7 @@ async function addRows(db: Database) {
     status: "on_leave",
   });
   const inOther = await addTestStudent(db, other, {
-    nim: "9900000502",
+    nim: "9900001502",
     name: "Detail Uji Budi",
   });
   return { own, other, inOwn, inOther };
@@ -69,7 +70,7 @@ describe("readStudentDetail", () => {
         kind: "found",
         student: {
           id: inOwn,
-          nim: "9900000501",
+          nim: "9900001501",
           name: "Detail Uji Ani",
           status: "on_leave",
           isAffirmation: false,
@@ -206,7 +207,7 @@ describe("readStudentDetail", () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Detail Hapus");
       const removed = await addTestStudent(db, program, {
-        nim: "9900000503",
+        nim: "9900001503",
         name: "Detail Uji Dihapus",
         deletedAt: new Date("2026-10-11T03:00:00Z"),
       });
@@ -219,7 +220,7 @@ describe("readStudentDetail", () => {
     });
   });
 
-  it.each(["", "9900000501", "abc", "' or 1=1 --", `${NO_SUCH_ID}x`])(
+  it.each(["", "9900001501", "abc", "' or 1=1 --", `${NO_SUCH_ID}x`])(
     "answers for the id %j as for a student who does not exist",
     async (id) => {
       await inTestDatabase(async (db) => {

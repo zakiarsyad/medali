@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000200 to 9900000299, and 9900100000 to 9900100199.
 import { describe, expect, it } from "vitest";
 import { studentBatches, studentBatchFiles } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";

@@ -79,10 +79,15 @@ Decided while building, because the issue did not say:
    check through that first number only. Each such file is given room
    after its first number.
 6. The line at the top that names the range is added to the test
-   files of the Mahasiswa area, as the issue says. The check does not
-   read that line; it reads the NIMs themselves.
+   files of the Mahasiswa area, as the issue says. The check reads
+   the two ends written in that line like any other NIM, so a range
+   named there is kept for its file. It does not compare the line
+   with the NIMs below it.
+7. A test file of the Mahasiswa area that only reads a NIM and already
+   had it to itself keeps its NIMs. The files renumbered are those
+   that shared a block.
 
 ## Steps
 
-- [ ] 1. Each test file of the Mahasiswa area has its own range of
+- [x] 1. Each test file of the Mahasiswa area has its own range of
   sample NIMs, with a check that no NIM is used by two test files.

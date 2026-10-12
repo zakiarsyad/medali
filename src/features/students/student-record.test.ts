@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000000 to 9900000099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";

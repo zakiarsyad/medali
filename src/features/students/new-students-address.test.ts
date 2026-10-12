@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900002100 to 9900002199.
 import { describe, expect, it } from "vitest";
 import {
   addressOf,
@@ -8,9 +9,9 @@ import {
 
 describe("readNewStudentsParams", () => {
   it("reads the search and the NIM of the student being changed", () => {
-    expect(readNewStudentsParams({ q: " ayu ", ubah: "9900000001" })).toEqual({
+    expect(readNewStudentsParams({ q: " ayu ", ubah: "9900002101" })).toEqual({
       query: "ayu",
-      editing: "9900000001",
+      editing: "9900002101",
     });
   });
 
@@ -18,7 +19,7 @@ describe("readNewStudentsParams", () => {
     [{}],
     [{ q: "" }],
     [{ q: [] }],
-    [{ ubah: "990000000" }],
+    [{ ubah: "990000210" }],
     [{ ubah: "abc" }],
   ])("reads no search and no student from %o", (params) => {
     expect(readNewStudentsParams(params)).toEqual({ query: "", editing: null });
@@ -62,8 +63,8 @@ describe("newStudentsAddress", () => {
   });
 
   it("points at the form when a student is being changed", () => {
-    expect(newStudentsAddress("ayu", "9900000001")).toBe(
-      "/pengaturan/mahasiswa?q=ayu&ubah=9900000001#formulir",
+    expect(newStudentsAddress("ayu", "9900002101")).toBe(
+      "/pengaturan/mahasiswa?q=ayu&ubah=9900002101#formulir",
     );
   });
 });

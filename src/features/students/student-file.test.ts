@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001600 to 9900001699, and 9900300000 to 9900301099.
 import { describe, expect, it } from "vitest";
 import { readStudentFile, skipRegistered } from "./student-file";
 import { MAX_FILE_ROWS, templateCsv } from "./student-file-columns";
@@ -44,7 +45,7 @@ function read(...lines: string[]) {
 }
 
 function reasonFor(changed: Record<number, string>): string | undefined {
-  return read(TITLES, row("9900000501", changed)).skipped[0]?.reason;
+  return read(TITLES, row("9900001601", changed)).skipped[0]?.reason;
 }
 
 describe("readStudentFile", () => {
@@ -83,7 +84,7 @@ describe("readStudentFile", () => {
   });
 
   it("reads each column in the spellings the notes allow", () => {
-    const line = row("9900000502", {
+    const line = row("9900001602", {
       1: "  Berkas   Uji Dua ",
       2: "prodi  uji SATU",
       3: "alih program",
@@ -99,7 +100,7 @@ describe("readStudentFile", () => {
     });
 
     expect(read(TITLES, line).ready[0]?.student).toEqual({
-      nim: "9900000502",
+      nim: "9900001602",
       name: "Berkas Uji Dua",
       studyProgramId: 3,
       entryPath: "transfer",
@@ -117,7 +118,7 @@ describe("readStudentFile", () => {
   });
 
   it("takes an empty jalur as Reguler and an empty status as Aktif", () => {
-    const line = row("9900000503", { 3: "", 4: "pria", 12: "cuti" });
+    const line = row("9900001603", { 3: "", 4: "pria", 12: "cuti" });
 
     expect(read(TITLES, line).ready[0]?.student).toMatchObject({
       entryPath: "regular",
@@ -129,7 +130,7 @@ describe("readStudentFile", () => {
   it.each([
     [
       "a NIM that is not 10 digits",
-      { 0: "99000005" },
+      { 0: "99000016" },
       "NIM harus 10 digit angka.",
     ],
     ["a missing name", { 1: "" }, "Nama wajib diisi."],
@@ -205,7 +206,7 @@ describe("readStudentFile", () => {
     const titles = TITLES.replace("nim,", "nomor,");
 
     expect(
-      readStudentFile([titles, row("9900000515")].join("\n"), context),
+      readStudentFile([titles, row("9900001615")].join("\n"), context),
     ).toEqual({
       ok: false,
       error: "Kolom tidak ditemukan: nim. Samakan judul kolom dengan templat.",
@@ -218,21 +219,21 @@ describe("readStudentFile", () => {
   });
 
   it("reads a first row that starts with a NIM as a student, whatever its cells say", () => {
-    const rows = read(row("9900000518", { 1: "Status" }), row("9900000519"));
+    const rows = read(row("9900001618", { 1: "Status" }), row("9900001619"));
 
     expect(rows.skipped).toEqual([]);
     expect(rows.ready.map(({ row, student }) => [row, student.nim])).toEqual([
-      [1, "9900000518"],
-      [2, "9900000519"],
+      [1, "9900001618"],
+      [2, "9900001619"],
     ]);
   });
 
   it("refuses a file with a quote that is never closed, and reads no row of it", () => {
     const text = [
       TITLES,
-      row("9900000520"),
-      row("9900000521", { 1: '"Berkas Uji' }),
-      row("9900000522"),
+      row("9900001620"),
+      row("9900001621", { 1: '"Berkas Uji' }),
+      row("9900001622"),
     ].join("\n");
 
     expect(readStudentFile(text, context)).toEqual({
@@ -245,7 +246,7 @@ describe("readStudentFile", () => {
   it("gives each skipped row its number in the file and its NIM, cut short", () => {
     const rows = read(
       TITLES,
-      row("9900000504"),
+      row("9900001604"),
       "",
       row("12", { 1: "Berkas Uji Tiga" }),
       row("9".repeat(40)),
@@ -261,9 +262,9 @@ describe("readStudentFile", () => {
   it("uses the last row of a NIM that is in the file twice, and counts the others", () => {
     const rows = read(
       TITLES,
-      row("9900000505", { 1: "Berkas Uji Awal" }),
-      row("9900000506"),
-      row("9900000505", { 1: "Berkas Uji Akhir" }),
+      row("9900001605", { 1: "Berkas Uji Awal" }),
+      row("9900001606"),
+      row("9900001605", { 1: "Berkas Uji Akhir" }),
     );
 
     expect(rows.repeated).toBe(1);
@@ -276,12 +277,12 @@ describe("readStudentFile", () => {
   it("follows the titles of the first row, in any order and spelling", () => {
     const rows = read(
       "Status;JK;Program Studi;Nama;NIM;angkatan;jalur;kelas;provinsi;instansi;afirmasi;pembibitan;internasional;catatan",
-      "Cuti;P;Prodi Uji Satu;Berkas Uji Empat;9900000507;2026;;;;;;;;abaikan",
+      "Cuti;P;Prodi Uji Satu;Berkas Uji Empat;9900001607;2026;;;;;;;;abaikan",
     );
 
     expect(rows.skipped).toEqual([]);
     expect(rows.ready[0]?.student).toMatchObject({
-      nim: "9900000507",
+      nim: "9900001607",
       name: "Berkas Uji Empat",
       sex: "female",
       status: "on_leave",
@@ -289,17 +290,17 @@ describe("readStudentFile", () => {
   });
 
   it("reads the columns in the order of the template when no row names them", () => {
-    const rows = read(row("9900000508"), row("9900000509"));
+    const rows = read(row("9900001608"), row("9900001609"));
 
     expect(rows.ready.map(({ row, student }) => [row, student.nim])).toEqual([
-      [1, "9900000508"],
-      [2, "9900000509"],
+      [1, "9900001608"],
+      [2, "9900001609"],
     ]);
   });
 
   it("refuses a file whose titles lack a column, and names it", () => {
     const result = readStudentFile(
-      `nim,nama,prodi,jalur,angkatan\n${row("9900000510")}`,
+      `nim,nama,prodi,jalur,angkatan\n${row("9900001610")}`,
       context,
     );
 
@@ -324,7 +325,7 @@ describe("readStudentFile", () => {
 
   it("reads a file with the most rows allowed, and refuses one row more", () => {
     const rows = Array.from({ length: MAX_FILE_ROWS + 1 }, (_, index) =>
-      row(String(9900100000 + index)),
+      row(String(9900300000 + index)),
     );
     const full = [TITLES, ...rows.slice(0, MAX_FILE_ROWS)].join("\n");
     const tooLong = [TITLES, ...rows].join("\n");
@@ -343,38 +344,38 @@ describe("skipRegistered", () => {
   it("skips the rows whose NIM is registered, in the order of the file", () => {
     const rows = read(
       TITLES,
-      row("9900000511"),
+      row("9900001611"),
       row("12"),
-      row("9900000512"),
-      row("9900000513"),
+      row("9900001612"),
+      row("9900001613"),
     );
 
-    const checked = skipRegistered(rows, new Set(["9900000511", "9900000513"]));
+    const checked = skipRegistered(rows, new Set(["9900001611", "9900001613"]));
 
     expect(checked.ready.map((ready) => ready.student.nim)).toEqual([
-      "9900000512",
+      "9900001612",
     ]);
     expect(checked.skipped).toEqual([
       { row: 3, nim: "12", reason: "NIM harus 10 digit angka." },
     ]);
     expect(checked.registered).toEqual([
-      { row: 2, nim: "9900000511", reason: "NIM sudah terdaftar." },
-      { row: 5, nim: "9900000513", reason: "NIM sudah terdaftar." },
+      { row: 2, nim: "9900001611", reason: "NIM sudah terdaftar." },
+      { row: 5, nim: "9900001613", reason: "NIM sudah terdaftar." },
     ]);
   });
 
   it("adds to the rows found registered before, in the order of the file", () => {
-    const rows = read(TITLES, row("9900000516"), row("9900000517"));
+    const rows = read(TITLES, row("9900001616"), row("9900001617"));
 
-    const first = skipRegistered(rows, new Set(["9900000517"]));
-    const second = skipRegistered(first, new Set(["9900000516"]));
+    const first = skipRegistered(rows, new Set(["9900001617"]));
+    const second = skipRegistered(first, new Set(["9900001616"]));
 
     expect(second.ready).toEqual([]);
     expect(second.registered.map((skipped) => skipped.row)).toEqual([2, 3]);
   });
 
   it("changes nothing when no NIM is registered", () => {
-    const rows = read(TITLES, row("9900000514"));
+    const rows = read(TITLES, row("9900001614"));
 
     expect(skipRegistered(rows, new Set())).toEqual(rows);
   });

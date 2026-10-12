@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001700 to 9900001799.
 import { describe, expect, it } from "vitest";
 import {
   NO_AGENCY,
@@ -246,8 +247,8 @@ describe("the student whose detail is open", () => {
   });
 
   it("is kept as asked when it is no id, and cut when it is long", () => {
-    expect(readStudentListParams({ profil: "9900000501" }).detailId).toBe(
-      "9900000501",
+    expect(readStudentListParams({ profil: "9900001701" }).detailId).toBe(
+      "9900001701",
     );
     expect(
       readStudentListParams({ profil: "x".repeat(500) }).detailId,
