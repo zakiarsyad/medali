@@ -118,7 +118,7 @@ None.
 - [x] 2. The panel "Badan Asrama Mahasiswa" with its list and empty
   state.
 - [x] 3. "Tambah pengurus BAM": search, pick, tick roles and save.
-- [ ] 4. "Edit peran" and "Hapus", with the log lines.
+- [x] 4. "Edit peran" and "Hapus", with the log lines.
 - [ ] 5. Roles stop for a student who is not Aktif or was removed, with
   the check.
 - [ ] 6. Double press, the phone layout and the speed check.

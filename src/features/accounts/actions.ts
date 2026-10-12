@@ -12,6 +12,7 @@ import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { parseNewAccount, parseRoleChange } from "./account-input";
 import { parseBamRoles } from "./bam-role-input";
+import { changeBamRoles, removeBamRoles } from "./change-bam-roles";
 import { giveBamRoles } from "./give-bam-roles";
 import { USERS_ADDRESS } from "./list-address";
 import { addAccount, changeRoles, removeAccount } from "./manage-accounts";
@@ -123,4 +124,36 @@ export async function giveBamRolesAction(
   refreshScreens();
   const roles = parsed.value.roles.map((role) => ROLES[role].title).join(", ");
   return { error: null, done: `${given.value} ditambahkan sebagai ${roles}.` };
+}
+
+export async function changeBamRolesAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await userManager();
+  const parsed = parseBamRoles({
+    accountId: text(form, "accountId"),
+    roles: texts(form, "roles"),
+  });
+  if (!parsed.ok) return { error: parsed.error, done: null };
+
+  const changed = await changeBamRoles(database(), manager, parsed.value);
+  if (!changed.ok) return { error: changed.error, done: null };
+  refreshScreens();
+  redirect(backToList(form));
+}
+
+export async function removeBamRolesAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await userManager();
+  const accountId = text(form, "accountId");
+  if (!isAccountId(accountId)) {
+    return { error: "Mahasiswa tidak ditemukan.", done: null };
+  }
+  const removed = await removeBamRoles(database(), manager, accountId);
+  if (!removed.ok) return { error: removed.error, done: null };
+  refreshScreens();
+  return { error: null, done: `Peran BAM ${removed.value} dihapus.` };
 }

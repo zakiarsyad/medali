@@ -23,7 +23,11 @@ export function BamPanel({ list, params }: BamPanelProps) {
         Mahasiswa, selama mahasiswa berstatus aktif.
       </p>
       <AddBamForm />
-      <BamStudentList students={list.students} />
+      <BamStudentList
+        students={list.students}
+        view={params}
+        editing={params.bamEditing}
+      />
       {list.total > 0 && (
         <ListPager
           page={list.page}
