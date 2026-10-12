@@ -129,7 +129,8 @@ export function StudentForm({
   const [state, action, pending] = useActionState(send, START);
   const shown = formShows(state, start);
   return (
-    <form action={action} className={shared.form}>
+    // noValidate: a wrong NIM or a short name gets the app's own message.
+    <form action={action} className={shared.form} noValidate>
       {/* Drawn anew each time the form is sent: the browser empties a
           sent form, and this fills it again with what `shown` holds. */}
       <Fragment key={state.attempt}>
