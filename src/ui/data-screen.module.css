@@ -159,6 +159,71 @@
   vertical-align: top;
 }
 
+/*
+ * A list that adds `stacked` to `table` shows each row as one block at
+ * phone width: its values one under another, each beside the title its
+ * cell carries in `data-title`. A cell without a title, such as the one
+ * with the buttons of a row, takes the full width.
+ */
+.stacked {
+  display: var(--stacked-table-display);
+}
+
+.stacked thead {
+  display: var(--stacked-head-display);
+}
+
+.stacked tbody {
+  display: var(--stacked-body-display);
+}
+
+/*
+ * As a grid the row turns every cell into a block, whatever the cell's own
+ * class makes of it at computer width. On a phone the line sits under the
+ * row and its cells drop theirs; at computer width it is the other way.
+ */
+.stacked tbody tr {
+  display: var(--stacked-row-display);
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--stacked-row-padding);
+  border-bottom: var(--stacked-row-line) solid var(--line2);
+}
+
+.stacked td {
+  border-bottom-width: var(--stacked-cell-line);
+  overflow-wrap: break-word;
+}
+
+.stacked td[data-title] {
+  padding: var(--stacked-cell-padding);
+}
+
+/* Floated into the cell's left padding, so a long value never runs under it. */
+.stacked td[data-title]::before {
+  display: var(--stacked-title-display);
+  float: left;
+  width: var(--stacked-title-width);
+  margin-left: calc(-1 * var(--stacked-title-width));
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  content: attr(data-title);
+}
+
+.stacked td:not([data-title]) {
+  padding: var(--stacked-actions-padding);
+  justify-content: var(--stacked-actions-justify);
+}
+
+/* A value a row does not have, or buttons a row does not show, take no room. */
+.stacked td:empty {
+  padding: var(--stacked-empty-padding);
+}
+
+.stacked td:empty::before {
+  display: none;
+}
+
 .badge {
   display: inline-block;
   margin: 0 var(--space-2xs) var(--space-2xs) 0;
@@ -169,6 +234,11 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   white-space: nowrap;
+}
+
+/* A long role name must fold, or it pushes the list wider than a phone. */
+.stacked .badge {
+  white-space: var(--stacked-badge-wrap);
 }
 
 .detail {
