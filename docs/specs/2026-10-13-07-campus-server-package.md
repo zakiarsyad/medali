@@ -132,7 +132,7 @@ change any of these.
 
 ## Steps
 
-- [ ] 1. The app is packaged as one image, with the campus mark built in.
+- [x] 1. The app is packaged as one image, with the campus mark built in.
 - [ ] 2. One command starts the app, the database and MinIO together,
   with only the app reachable and data kept between restarts.
 - [ ] 3. With the campus mark, Ganti peran and the sample data command
