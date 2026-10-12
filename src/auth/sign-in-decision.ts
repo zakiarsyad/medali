@@ -1,10 +1,11 @@
 import { isCampusEmail } from "./campus-email";
 import type { ConfirmedAddress } from "./google-token";
-import type { SignInRefusal } from "./sign-in-results";
+import type { ConfirmedRefusal } from "./sign-in-results";
 
 export type SignInDecision =
   | { result: "signed_in"; accountId: string }
-  | { result: SignInRefusal };
+  | { result: ConfirmedRefusal }
+  | { result: "failed" };
 
 /**
  * Whether Google's answer stands for a campus account. The address alone

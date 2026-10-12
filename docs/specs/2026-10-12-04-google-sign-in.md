@@ -134,8 +134,7 @@ change any of these.
    has not verified is refused like an outside address.
 4. When Google's answer cannot be trusted, or the person cancels at
    Google, they return to the sign-in page with "Masuk dengan Google
-   gagal. Coba lagi." and a line is written to the log, when it was this
-   browser that pressed the button (see 23).
+   gagal. Coba lagi." Nothing is written to the log for it (see 23).
 5. The campus address ending is the part after the name, such as
    `@kampus.example`. It is compared without regard to capital letters,
    and an address at a longer ending, such as `@mail.kampus.example`,
@@ -186,10 +185,15 @@ change any of these.
     because it is no longer true once the settings are filled.
 22. Where Ganti peran is off, its page sends someone who is not signed in
     to the sign-in page, and stays "not found" for someone signed in.
-23. A return from Google that this browser never started, such as the
-    return address opened by hand, is sent back to the sign-in page with
-    "Masuk dengan Google gagal. Coba lagi." and is not written to the
-    log. Otherwise anyone could fill a log that can never be emptied.
+23. A line is written to the sign-in log only for what a stranger cannot
+    bring about by sending requests by hand: a sign-in, a refusal of an
+    address that Google itself confirmed (outside the campus, or no
+    account), and a sign-out. A sign-in that never got an answer from
+    Google that can be trusted is not written: the return address opened
+    by hand, with or without made-up cookies, a cancel at Google, a press
+    not finished in time, or a code Google rejects. The person still sees
+    "Masuk dengan Google gagal. Coba lagi." Otherwise anyone could fill a
+    log that can never be emptied. The log has no "failed" result.
 24. A sign-in and its log line are saved together or not at all, and so
     are a sign-out and its line.
 25. Google must also say that the account is run by the campus itself:

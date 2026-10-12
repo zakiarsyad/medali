@@ -1,4 +1,4 @@
-CREATE TYPE "public"."sign_in_result" AS ENUM('signed_in', 'signed_out', 'refused_outside_campus', 'refused_no_account', 'failed');--> statement-breakpoint
+CREATE TYPE "public"."sign_in_result" AS ENUM('signed_in', 'signed_out', 'refused_outside_campus', 'refused_no_account');--> statement-breakpoint
 CREATE TABLE "sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"token_hash" text NOT NULL,

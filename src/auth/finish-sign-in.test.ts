@@ -141,8 +141,7 @@ describe("finishSignIn", () => {
       },
       "refused_no_account",
     ],
-    ["an answer that cannot be trusted", null, "failed"],
-  ])(
+  ] as const)(
     "refuses %s, signs nobody in, and logs it without naming anyone",
     async (_kind, answer, result) => {
       await inTestDatabase(async (db) => {
@@ -164,61 +163,73 @@ describe("finishSignIn", () => {
 
   it.each([
     ["no code, as when the person cancels at Google", { code: null }],
+    ["no attempt kept for the state", { attempt: null }],
     ["no address to come back to", { returnAddress: null }],
-  ])("fails without asking Google when there is %s", async (_kind, missing) => {
-    await inTestDatabase(async (db) => {
-      const { google, asked } = googleSaying({
-        email: "budi@kampus.example",
-        verified: true,
-        hostedDomain: "kampus.example",
+  ])(
+    "fails without asking Google or writing a log line when there is %s",
+    async (_kind, missing) => {
+      await inTestDatabase(async (db) => {
+        const { google, asked } = googleSaying({
+          email: "budi@kampus.example",
+          verified: true,
+          hostedDomain: "kampus.example",
+        });
+        await addTestAccount(db, { email: "budi@kampus.example" });
+        const back = { ...backFromGoogle(), ...missing };
+
+        const finished = await finishSignIn(
+          db,
+          { google, campusEnding: ENDING },
+          back,
+          NOW,
+        );
+
+        expect(finished).toEqual({ result: "failed" });
+        expect(asked).toEqual([]);
+        expect(await logLines(db)).toEqual([]);
+        expect(await db.select().from(sessions)).toEqual([]);
       });
-      await addTestAccount(db, { email: "budi@kampus.example" });
-      const back = { ...backFromGoogle(), ...missing };
+    },
+  );
+
+  it("writes no log line for a hand-made return with a made-up attempt cookie and no code", async () => {
+    await inTestDatabase(async (db) => {
+      // What anyone can send: a state and a cookie of the right shape,
+      // both made up, and nothing from Google.
+      const forged = {
+        code: null,
+        attempt: newSignInAttempt(),
+        returnAddress: RETURN_ADDRESS,
+      };
 
       const finished = await finishSignIn(
         db,
-        { google, campusEnding: ENDING },
-        back,
+        { google: googleSaying(null).google, campusEnding: ENDING },
+        forged,
         NOW,
       );
 
       expect(finished).toEqual({ result: "failed" });
-      expect(asked).toEqual([]);
-      expect(await logLines(db)).toEqual([
-        { result: "failed", accountId: null, happenedAt: NOW },
-      ]);
+      expect(await logLines(db)).toEqual([]);
     });
   });
 
-  it("fails a return this browser never started, and writes no log line", async () => {
+  it("writes no log line when Google gives no answer that can be trusted, as for a made-up code", async () => {
     await inTestDatabase(async (db) => {
-      const { google, asked } = googleSaying({
-        email: "budi@kampus.example",
-        verified: true,
-        hostedDomain: "kampus.example",
-      });
       await addTestAccount(db, { email: "budi@kampus.example" });
-      const back = { ...backFromGoogle(), attempt: null };
 
-      const finished = await finishSignIn(
-        db,
-        { google, campusEnding: ENDING },
-        back,
-        NOW,
-      );
-
-      expect(finished).toEqual({ result: "failed" });
-      expect(asked).toEqual([]);
+      expect(await finish(db, null)).toEqual({ result: "failed" });
       expect(await logLines(db)).toEqual([]);
       expect(await db.select().from(sessions)).toEqual([]);
     });
   });
 
-  it("fails while Google sign-in is not set up", async () => {
+  it("fails while Google sign-in is not set up, and writes no log line", async () => {
     await inTestDatabase(async (db) => {
       expect(await finishSignIn(db, null, backFromGoogle(), NOW)).toEqual({
         result: "failed",
       });
+      expect(await logLines(db)).toEqual([]);
     });
   });
 

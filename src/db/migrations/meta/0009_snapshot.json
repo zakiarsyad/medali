@@ -1,5 +1,5 @@
 {
-  "id": "256cedb5-826b-480e-9bfe-4dffe22e7582",
+  "id": "56ebd52a-e961-4363-82ac-2b4c75f9e13e",
   "prevId": "c268d17a-87ca-47d8-8ac8-385e8ad8c2e0",
   "version": "7",
   "dialect": "postgresql",
@@ -1173,8 +1173,7 @@
         "signed_in",
         "signed_out",
         "refused_outside_campus",
-        "refused_no_account",
-        "failed"
+        "refused_no_account"
       ]
     },
     "public.student_status": {

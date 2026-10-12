@@ -1,6 +1,6 @@
 import type { Database } from "@/db/connect";
 import { signInLog } from "@/db/schema";
-import type { SignInRefusal } from "./sign-in-results";
+import type { ConfirmedRefusal } from "./sign-in-results";
 
 /**
  * One line of the sign-in log. A sign-in or a sign-out names its
@@ -9,7 +9,7 @@ import type { SignInRefusal } from "./sign-in-results";
  */
 export type SignInLogLine =
   | { result: "signed_in" | "signed_out"; accountId: string }
-  | { result: SignInRefusal };
+  | { result: ConfirmedRefusal };
 
 export async function logSignIn(
   db: Database,

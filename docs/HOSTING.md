@@ -199,8 +199,10 @@ itself keeps running, as with the "Ganti peran" check above. The address
 to register at Google is then the campus server's own link, followed by
 `/masuk/google/kembali`.
 
-Signing in or out and every refused sign-in adds a line to a sign-in log
-in the database, with the time and the result. A refused line holds no
-address and no account. The lines cannot be changed or deleted. A return
-from Google that the browser never started, such as the return address
-opened by hand, is not written.
+Signing in, signing out, and every refusal of an address that Google
+confirmed adds a line to a sign-in log in the database, with the time and
+the result. A refused line holds no address and no account. The lines
+cannot be changed or deleted. A sign-in that got no answer from Google
+that can be trusted is not written, because anyone could cause one by
+hand: the return address opened directly, a cancel at Google, or a code
+Google rejects.
