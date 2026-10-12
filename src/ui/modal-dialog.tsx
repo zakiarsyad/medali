@@ -4,11 +4,14 @@ import { useRouter } from "next/navigation";
 import { type MouseEvent, type ReactNode, useEffect, useRef } from "react";
 import shared from "./data-screen.module.css";
 import styles from "./modal-dialog.module.css";
+import { closesByGoingBack, pressedBox } from "./pressed-box";
 
 /**
  * A box over the screen, which the address of the page opens. "Tutup",
- * Escape and a press outside the box all close it by going to the address
- * of the screen without the box.
+ * Escape and a press outside the box all close it. A box that a press on
+ * the screen opened closes by going back, so the browser's history keeps
+ * no entry of it; any other box closes by putting the address of the
+ * screen without the box in its place.
  */
 export function ModalDialog({
   label,
@@ -32,6 +35,11 @@ export function ModalDialog({
   }, []);
 
   function leave() {
+    const shown = window.location.pathname + window.location.search;
+    if (closesByGoingBack(pressedBox(), shown)) {
+      router.back();
+      return;
+    }
     router.replace(closeAddress, { scroll: false });
   }
 

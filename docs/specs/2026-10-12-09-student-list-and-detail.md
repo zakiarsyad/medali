@@ -131,6 +131,11 @@ Decided while building, because the issue did not say:
 15. A detail that is not found opens over the list as a box titled
     "Mahasiswa tidak ditemukan", which says the student does not exist
     or may not be seen, with "Tutup" to go back to the list.
+16. Closing a detail that was opened by a press in the list leaves no
+    step of it in the browser's history: Back then leaves the list, as
+    if the detail was never opened. A detail opened from a typed
+    address, or shown again after the page is loaded anew, closes to the
+    list with the same page and filters.
 
 ## Steps
 
