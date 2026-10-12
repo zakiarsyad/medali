@@ -140,6 +140,12 @@ change any of these.
     to upload the file again. Read again, the file skips that row.
 19. The preview of a file shows the address of its first rows, to the
     same three roles.
+20. Google sign-in already signs in whichever account holds the
+    confirmed address, and a student's first page is Profil saya, so
+    sign-in itself is not changed. Checks now cover the student.
+21. Sign-ins ended because the address was changed or cleared leave no
+    line in the sign-in log: the student did not sign out. The address
+    change log says who ended them and when.
 
 ## Steps
 
@@ -149,6 +155,6 @@ change any of these.
   with its messages.
 - [x] 3. The address line in the list.
 - [x] 4. The column "email" in "Unggah berkas" and in the template.
-- [ ] 5. A student signs in with that address, checked with a stand-in
+- [x] 5. A student signs in with that address, checked with a stand-in
   for Google.
 - [ ] 6. The log lines, the refusals and the phone layout.

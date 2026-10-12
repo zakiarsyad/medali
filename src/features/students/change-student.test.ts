@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { accountsInRoleOrder } from "@/auth/accounts";
+import { accountsInRoleOrder, activeAccountIdByEmail } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
+import { sessionAccount, startSession } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -24,6 +25,7 @@ const inTestDatabase = withTestDatabase();
 
 const ALLOWED: RoleId[] = ["head_of_unit", "upk_staff", "dorm_manager"];
 const OTHERS = ROLE_IDS.filter((role) => !ALLOWED.includes(role));
+const NOW = new Date("2026-10-12T08:00:00Z");
 
 function student(
   nim: string,
@@ -186,6 +188,47 @@ describe("changeStudent", () => {
         name: "Ubah Uji Tetap",
         email,
       });
+    });
+  });
+
+  it.each([
+    ["changed", "baru.uji@kampus.example"],
+    ["cleared", null],
+  ])(
+    "ends the student's sign-ins at once when the address is %s, and the old address signs nobody in",
+    async (_kind, after) => {
+      await inTestDatabase(async (db) => {
+        const { program, staff } = await addThroughTab(db, "9900000525");
+        const before = "lama.uji@kampus.example";
+        await changeStudent(db, staff, student("9900000525", program, before));
+        const record = await recordOf(db, "9900000525");
+        const account = await accountOf(db, record.id);
+        const token = await startSession(db, account.id, NOW);
+
+        await changeStudent(db, staff, student("9900000525", program, after));
+
+        expect(await sessionAccount(db, token, NOW)).toBeNull();
+        expect(await activeAccountIdByEmail(db, before)).toBeNull();
+      });
+    },
+  );
+
+  it("keeps the student signed in when the address stays as it is", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000526");
+      const email = "masuk.tetap@kampus.example";
+      await changeStudent(db, staff, student("9900000526", program, email));
+      const record = await recordOf(db, "9900000526");
+      const account = await accountOf(db, record.id);
+      const token = await startSession(db, account.id, NOW);
+
+      await changeStudent(db, staff, {
+        ...student("9900000526", program, email),
+        name: "Ubah Uji Masuk",
+      });
+
+      expect((await sessionAccount(db, token, NOW))?.id).toBe(account.id);
+      expect(await activeAccountIdByEmail(db, email)).toBe(account.id);
     });
   });
 

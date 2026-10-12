@@ -2,6 +2,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
 import { refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
+import { endSessionsOf } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
@@ -13,6 +14,31 @@ export const NOT_FOUND = {
   ok: false,
   error: "Mahasiswa tidak ditemukan.",
 } as const;
+
+/**
+ * Puts the name and the address on the account of a student. When the
+ * address they sign in with is changed or taken away, their open
+ * sign-ins end at once, so whoever signed in with the old address is
+ * asked to sign in again.
+ */
+async function changeAccountOf(
+  db: Database,
+  studentId: string,
+  name: string,
+  email: string | null,
+): Promise<void> {
+  const [before] = await db
+    .select({ id: accounts.id, email: accounts.email })
+    .from(accounts)
+    .where(eq(accounts.studentId, studentId));
+  if (!before) throw new Error("A student put in here has no account.");
+  await db
+    .update(accounts)
+    .set({ name, email })
+    .where(eq(accounts.id, before.id));
+  if (before.email === null || before.email === email) return;
+  await endSessionsOf(db, before.id);
+}
 
 /**
  * Changes a student put in through Pengguna baru mahasiswa, found by NIM.
@@ -35,10 +61,7 @@ export async function changeStudent(
         .where(and(eq(students.nim, nim), ADDED_HERE))
         .returning({ id: students.id });
       if (!changed) return NOT_FOUND;
-      await tx
-        .update(accounts)
-        .set({ name: fields.name, email })
-        .where(eq(accounts.studentId, changed.id));
+      await changeAccountOf(tx, changed.id, fields.name, email);
       return { ok: true, value: null };
     }),
   );
