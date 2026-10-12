@@ -113,6 +113,36 @@ is built here.
 5. The sample data gets a new angkatan of about 60 made-up students in
    two programs with no groups, and two spare mentors.
 
+Decided while building, where the issue gave no answer:
+
+6. Every change to a draft is saved at once: forming, a mentor choice,
+   the automatic fill, a move, and the decree number and day. Each adds
+   its line to "Riwayat proses".
+7. Direktur / Wakil Direktur and Ketua Program Studi see the groups,
+   their counts and the chosen mentors. They do not see member names or
+   "Riwayat proses". Member names show only under "Anggota", to those
+   who prepare.
+8. Pegawai UPK sees "Ajukan ke Kepala UPK" and Kepala Unit sees
+   "Tetapkan". Submitting needs no decree number; fixing does.
+9. The one permission to fix also covers cancelling.
+10. A draft cannot be submitted or fixed while a group has no members, a
+    waiting student of the angkatan is in none of its groups, or a
+    member's program or jalur changed after forming. The note says how
+    many, and "Bentuk ulang" is the way out.
+11. Fixing is refused, with counts only, when a member got a group some
+    other way or a chosen mentor can no longer be chosen.
+12. "Removed" also covers a student who is no longer Aktif. Such
+    students are left out when the draft is read, and are taken out of
+    it at the next save, with their own line in "Riwayat proses". The
+    note gives a count, no names.
+13. A "Berlaku mulai" in the future still takes effect at once, so
+    "sejak" can show a day that has not come yet.
+14. A target size outside 25–35 is brought to the nearest of the two.
+15. The sample new angkatan has 68 students: 51 in D3 Pajak, which gives
+    two groups, and 17 in D3 Akuntansi, which gives one group with a
+    size warning. One sample mentor gave up a group so that three
+    mentors can be chosen.
+
 ## Steps
 
 - [x] 1. Penetapan drafts and their process log are stored, with the
