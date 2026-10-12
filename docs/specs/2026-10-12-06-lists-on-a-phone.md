@@ -66,10 +66,13 @@ Decided while building, because the issue did not say:
    values, in every list.
 5. A check fails when a list that asks for the stacked view has a column
    whose title its rows do not carry.
+6. On a phone a value that a row does not have takes no line: a staff
+   member with nothing under "Keterangan" shows no "Keterangan" line. A
+   value shown as "-" on a computer still shows as "-".
 
 ## Steps
 
-- [ ] 1. The shared list style shows each row as a stacked block at phone
+- [x] 1. The shared list style shows each row as a stacked block at phone
   width, with the column title beside each value.
 - [ ] 2. The four lists carry their column titles for that view, and
   their buttons show at the end of each row.
