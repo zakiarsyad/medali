@@ -37,8 +37,8 @@ export function saveDecree(
 
 /**
  * "Ajukan ke Kepala UPK": saves the number and the day and makes the
- * draft Diajukan. A draft with a group without a mentor, or with one
- * mentor chosen twice, is refused and stays as it was.
+ * draft Diajukan. A draft that is not complete (see `readCompleteDraft`)
+ * is refused and stays as it was.
  */
 export function submitDraft(
   db: Database,

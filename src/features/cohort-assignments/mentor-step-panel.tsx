@@ -4,6 +4,7 @@ import { groupCode } from "@/ui/group-code";
 import { cohortAddress } from "./assignment-address";
 import styles from "./cohort-assignments.module.css";
 import type { DraftKey } from "./draft-change-input";
+import type { DraftCheck } from "./draft-check";
 import { DraftCheckNote } from "./draft-check-note";
 import { FillMentorsButton } from "./fill-mentors-button";
 import { GroupFactCells, GroupFactTitles } from "./group-fact-cells";
@@ -74,10 +75,13 @@ function chosenCount(groups: DraftGroup[]): number {
  */
 export function MentorStepPanel({
   assignment,
+  check,
   pool,
   openGroupId,
 }: {
   assignment: Pick<StoredAssignment, "cohortYear" | "version" | "groups">;
+  /** What the note under the groups says of the draft. */
+  check: DraftCheck;
   pool: PoolMentor[];
   openGroupId: string | null;
 }) {
@@ -113,7 +117,7 @@ export function MentorStepPanel({
           </tbody>
         </table>
       </div>
-      <DraftCheckNote groups={groups} />
+      <DraftCheckNote check={check} />
       <p className={styles.hint}>
         Tanda {SAME_JURUSAN_MARK} berarti pengasuh dari jurusan yang sama dengan
         program studi kelompok. Setiap pilihan pengasuh dan perpindahan anggota

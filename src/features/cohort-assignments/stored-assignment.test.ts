@@ -83,6 +83,17 @@ describe("readAssignment", () => {
     });
   });
 
+  it("leaves the log unread for a caller that does not show it", async () => {
+    await inTestDatabase(async (db) => {
+      await addDraft(db);
+
+      const draft = await readAssignment(db, EVERY_ROW, YEAR, false);
+
+      expect(draft?.groups).toHaveLength(2);
+      expect(draft?.log).toEqual([]);
+    });
+  });
+
   it("gives a head of a study program the groups and members of that program only", async () => {
     await inTestDatabase(async (db) => {
       const { own } = await addDraft(db);

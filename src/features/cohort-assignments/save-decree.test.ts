@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { chooseMentor } from "./choose-mentor";
 import {
@@ -14,8 +16,9 @@ import {
   addTestDraft,
   fixTestDraft,
   testDraftOf,
+  testGroupsOf,
 } from "./test-drafts";
-import { addTestActor } from "./test-records";
+import { addTestActor, addTestStudents } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -189,6 +192,58 @@ describe("submitDraft", () => {
       const draft = await testDraftOf(db, YEAR);
       expect(draft).toMatchObject({ status: "draft", version: 3 });
       expect(draft.log.map((line) => line.action)).not.toContain("submitted");
+    });
+  });
+
+  it("refuses a draft that leaves out a waiting student of the angkatan", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, large } = await addCompleteTestDraft(
+        db,
+        YEAR,
+        "UJIAJUKAN",
+      );
+      await addTestStudents(db, large, 1, 9951000900, { cohortYear: YEAR });
+
+      const submitted = await submitDraft(db, actor, INPUT);
+
+      expect(submitted).toEqual({
+        ok: false,
+        error:
+          'Draf belum bisa diajukan atau ditetapkan. 1 mahasiswa angkatan ini belum masuk kelompok mana pun pada draf. Tekan "Bentuk ulang" agar ikut dibagi ke kelompok.',
+      });
+      expect(await testDraftOf(db, YEAR)).toMatchObject({
+        status: "draft",
+        version: 2,
+      });
+    });
+  });
+
+  it("refuses a draft with a group without a member, and one with a member of another program studi", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, large, small } = await addCompleteTestDraft(
+        db,
+        YEAR,
+        "UJIAJUKAN",
+      );
+      const [group] = await testGroupsOf(db, YEAR, large);
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.studyProgramId, small));
+      await db
+        .update(students)
+        .set({ studyProgramId: small })
+        .where(eq(students.id, group?.members[0]?.id ?? ""));
+
+      const submitted = await submitDraft(db, actor, INPUT);
+
+      expect(submitted).toMatchObject({
+        ok: false,
+        error: expect.stringMatching(
+          /1 kelompok tidak punya anggota\..*1 mahasiswa pada draf sudah berganti program studi atau jalur\./,
+        ),
+      });
+      expect(await testDraftOf(db, YEAR)).toMatchObject({ status: "draft" });
     });
   });
 

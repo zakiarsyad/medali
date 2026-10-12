@@ -1,6 +1,5 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import shared from "@/ui/data-screen.module.css";
-import { checkOfGroups } from "./draft-check";
 import { FixingForm } from "./fixing-form";
 import { ProcessLog } from "./process-log";
 import type { DraftGroup, StoredAssignment } from "./stored-assignment";
@@ -18,9 +17,12 @@ function studentsIn(groups: DraftGroup[]): number {
  */
 export function FixingPanel({
   assignment,
+  isComplete,
   mayFix,
 }: {
   assignment: StoredAssignment;
+  /** Whether nothing holds the draft back from being submitted and fixed. */
+  isComplete: boolean;
   /** Whether the account may fix the penetapan, or only submits it. */
   mayFix: boolean;
 }) {
@@ -40,7 +42,7 @@ export function FixingPanel({
           groups: groups.length,
           students: studentsIn(groups),
         }}
-        isComplete={checkOfGroups(groups).isComplete}
+        isComplete={isComplete}
         mayFix={mayFix}
       />
       <ProcessLog log={assignment.log} />

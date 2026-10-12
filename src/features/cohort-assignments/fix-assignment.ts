@@ -68,9 +68,9 @@ async function readWhatStops(
  * and that day. All of it is one transaction, so a penetapan is fixed
  * whole or not at all, and of two sent at once the second is refused.
  *
- * Refused without a decree number or a day, for a draft with a group
- * without a mentor or one mentor chosen twice, and when a member or a
- * mentor of the draft cannot be placed any more: see `whatStopsFix`.
+ * Refused without a decree number or a day, for a draft that is not
+ * complete (see `readCompleteDraft`), and when a member or a mentor of
+ * the draft cannot be placed any more: see `whatStopsFix`.
  */
 export function fixAssignment(
   db: Database,

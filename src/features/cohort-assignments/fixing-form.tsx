@@ -38,7 +38,7 @@ export function FixingForm({
   /** What the fields open with: what the draft holds, the day never empty. */
   start: WholeDecree;
   size: FixSize;
-  /** Whether every group has a mentor of its own. */
+  /** Whether nothing in the note of step 3 holds the draft back. */
   isComplete: boolean;
   mayFix: boolean;
 }) {
@@ -140,7 +140,7 @@ export function FixingForm({
       {!isComplete && (
         <p className={`${styles.hint} ${styles.whole}`}>
           {mayFix ? "Tetapkan" : "Ajukan ke Kepala UPK"} bisa ditekan setelah
-          setiap kelompok punya pengasuh yang berbeda.
+          semua yang disebut pada catatan di langkah 3 diselesaikan.
         </p>
       )}
       <FormMessage state={answer} />

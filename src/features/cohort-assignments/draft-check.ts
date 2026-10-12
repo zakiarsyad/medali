@@ -1,4 +1,10 @@
 import { isUsualSize, USUAL_SIZE_WORDS } from "@/ui/group-size";
+import {
+  countDraftStudents,
+  type DraftStudentCounts,
+  type PlacedGroup,
+  type PlacedStudent,
+} from "./draft-students";
 
 /** What the check reads of a group being prepared. */
 export interface GroupToCheck {
@@ -13,6 +19,12 @@ export interface DraftCheck {
   withoutMentor: number;
   /** How many mentors are chosen for more than one group. */
   mentorsChosenTwice: number;
+  /** How many groups hold no student. */
+  withoutMembers: number;
+  /** How many waiting students of the angkatan are in no group. */
+  studentsOutside: number;
+  /** How many members are of another program studi or jalur than their group. */
+  membersInWrongGroup: number;
   /** How many groups hold fewer than 25 or more than 35: a warning only. */
   outsideUsualSize: number;
   /** Whether the penetapan may be submitted and fixed. */
@@ -32,34 +44,50 @@ function mentorsChosenTwice(groups: GroupToCheck[]): number {
 
 /**
  * Checks the groups of a penetapan. It may be submitted and fixed only
- * when it has groups, every group has a mentor and no mentor is chosen
- * for two groups. A group of an unusual size holds nothing back: a small
- * program studi cannot fill one.
+ * when it has groups, every group has a mentor and at least one member,
+ * no mentor is chosen for two groups, every waiting student of the
+ * angkatan is in a group, and every member is in a group of their own
+ * program studi and jalur. A group of an unusual size holds nothing back:
+ * a small program studi cannot fill one.
  */
-export function checkDraft(groups: GroupToCheck[]): DraftCheck {
-  const withoutMentor = groups.filter((g) => g.mentorId === null).length;
-  const chosenTwice = mentorsChosenTwice(groups);
+export function checkDraft(
+  groups: GroupToCheck[],
+  students: DraftStudentCounts,
+): DraftCheck {
+  const found = {
+    withoutMentor: groups.filter((g) => g.mentorId === null).length,
+    mentorsChosenTwice: mentorsChosenTwice(groups),
+    withoutMembers: groups.filter((g) => g.members === 0).length,
+    studentsOutside: students.outsideDraft,
+    membersInWrongGroup: students.inWrongGroup,
+  };
+  const nothingFound = Object.values(found).every((count) => count === 0);
   return {
-    withoutMentor,
-    mentorsChosenTwice: chosenTwice,
+    ...found,
     outsideUsualSize: groups.filter((g) => !isUsualSize(g.members)).length,
-    isComplete: groups.length > 0 && withoutMentor === 0 && chosenTwice === 0,
+    isComplete: groups.length > 0 && nothingFound,
   };
 }
 
 /** A group as it is stored, with the mentor chosen for it and its members. */
-interface StoredGroup {
+interface StoredGroup extends PlacedGroup {
   mentor: { id: string } | null;
-  members: unknown[];
 }
 
-/** The check of the groups of a draft as they are saved. */
-export function checkOfGroups(groups: StoredGroup[]): DraftCheck {
+/**
+ * The check of the groups of a draft as they are saved, against the
+ * students of the angkatan who wait for a group today.
+ */
+export function checkOfGroups(
+  groups: StoredGroup[],
+  waiting: PlacedStudent[],
+): DraftCheck {
   return checkDraft(
     groups.map((group) => ({
       mentorId: group.mentor?.id ?? null,
       members: group.members.length,
     })),
+    countDraftStudents(groups, waiting),
   );
 }
 
@@ -76,6 +104,21 @@ function heldBackWords(check: DraftCheck): string[] {
   if (check.mentorsChosenTwice > 0) {
     words.push(
       `${check.mentorsChosenTwice} pengasuh dipilih untuk lebih dari satu kelompok.`,
+    );
+  }
+  if (check.withoutMembers > 0) {
+    words.push(
+      `${check.withoutMembers} kelompok tidak punya anggota. Pindahkan anggota ke kelompok itu atau tekan "Bentuk ulang".`,
+    );
+  }
+  if (check.studentsOutside > 0) {
+    words.push(
+      `${check.studentsOutside} mahasiswa angkatan ini belum masuk kelompok mana pun pada draf. Tekan "Bentuk ulang" agar ikut dibagi ke kelompok.`,
+    );
+  }
+  if (check.membersInWrongGroup > 0) {
+    words.push(
+      `${check.membersInWrongGroup} mahasiswa pada draf sudah berganti program studi atau jalur. Tekan "Bentuk ulang" agar masuk kelompok yang sesuai.`,
     );
   }
   return words;

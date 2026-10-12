@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { checkOfGroups } from "./draft-check";
 import { DraftGroupsPanel } from "./draft-groups-panel";
 import type { PoolMentor } from "./mentor-options";
 import { MentorStepPanel } from "./mentor-step-panel";
@@ -53,11 +54,24 @@ const POOL: PoolMentor[] = [
   { ...YUNI, unit: "Jurusan Pajak", hasMentorRole: true, heldCohortYears: [] },
 ];
 
+/** Every member waits in their group's program studi, and one more in none. */
+const WAITING = [
+  ...GROUPS.flatMap((g) =>
+    g.members.map(({ id }) => ({
+      id,
+      studyProgramId: g.studyProgramId,
+      entryPath: g.entryPath,
+    })),
+  ),
+  { id: "late", studyProgramId: 1, entryPath: "regular" as const },
+];
+
 function step(openGroupId: string | null): string {
   return renderToStaticMarkup(
     <OneSaveAtATime>
       <MentorStepPanel
         assignment={{ cohortYear: 2026, version: 4, groups: GROUPS }}
+        check={checkOfGroups(GROUPS, WAITING)}
         pool={POOL}
         openGroupId={openGroupId}
       />
@@ -85,6 +99,9 @@ describe("MentorStepPanel", () => {
     expect(panel).toContain("di luar ukuran 25–35");
     expect(panel).toContain("2 kelompok belum punya pengasuh.");
     expect(panel).toContain("1 kelompok di luar ukuran 25–35");
+    expect(panel).toContain(
+      "1 mahasiswa angkatan ini belum masuk kelompok mana pun pada draf.",
+    );
   });
 
   it("lists the members of the open group, each with the other groups of its program studi to move to", () => {

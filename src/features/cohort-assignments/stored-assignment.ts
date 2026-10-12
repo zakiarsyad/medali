@@ -71,7 +71,7 @@ export interface StoredAssignment {
    * are not Aktif any more. No group here lists them.
    */
   dropped: number;
-  /** The newest first. */
+  /** The newest first. Empty when it was not read. */
   log: LogLine[];
 }
 
@@ -201,12 +201,14 @@ function draftGroup(
  * log, or null for an angkatan that has none. An account held to its
  * study programs is given the groups of those programs only. A student
  * who was removed or is not Aktif any more is in no group here, only
- * counted: the next save takes them out of what is stored.
+ * counted: the next save takes them out of what is stored. The log is
+ * left unread, and given empty, when the caller says it is not shown.
  */
 export async function readAssignment(
   db: Database,
   limit: RowLimit,
   cohortYear: number,
+  withLog = true,
 ): Promise<StoredAssignment | null> {
   const [assignment] = await db
     .select(ASSIGNMENT)
@@ -217,7 +219,7 @@ export async function readAssignment(
   const [groups, members, log] = await Promise.all([
     readGroupRows(db, limit, assignment.id),
     readMemberRows(db, limit, assignment.id),
-    readLog(db, assignment.id),
+    withLog ? readLog(db, assignment.id) : [],
   ]);
   return {
     ...assignment,

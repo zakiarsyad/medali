@@ -12,13 +12,19 @@ import { withTestDatabase } from "@/db/test-database";
 import { ASK_FOR_DAY, ASK_FOR_NUMBER } from "./decree-input";
 import { fixAssignment } from "./fix-assignment";
 import { ALREADY_FIXED, DRAFT_CHANGED, NOT_ALLOWED_TO_FIX } from "./refusals";
-import { addCompleteTestDraft, addTestDraft, testDraftOf } from "./test-drafts";
+import {
+  addCompleteTestDraft,
+  addTestDraft,
+  testDraftOf,
+  testGroupsOf,
+} from "./test-drafts";
 import { testLiveGroupsOf } from "./test-live-groups";
 import {
   addTestActor,
   addTestGroupMembers,
   addTestLiveGroup,
   addTestMentorOfToday,
+  addTestStudents,
 } from "./test-records";
 import { EVERY_ROW } from "./visible-assignments";
 import { readWaitingStudents } from "./waiting-students";
@@ -226,6 +232,66 @@ describe("fixAssignment, when something changed after the draft was saved", () =
       expect(fixed).toMatchObject({
         ok: false,
         error: expect.stringContaining("2 mahasiswa pada draf"),
+      });
+      await expectNothingFixed(db);
+    });
+  });
+
+  it("refuses when the program studi or the jalur of a member was changed", async () => {
+    await inTestDatabase(async (db) => {
+      const { head, large, small } = await addDraftAndHead(db);
+      const [group] = await testGroupsOf(db, YEAR, large);
+      const [first, second] = group?.members.map((m) => m.id) ?? [];
+      await db
+        .update(students)
+        .set({ studyProgramId: small })
+        .where(eq(students.id, first ?? ""));
+      await db
+        .update(students)
+        .set({ entryPath: "transfer" })
+        .where(eq(students.id, second ?? ""));
+
+      const fixed = await fixAssignment(db, head, INPUT);
+
+      expect(fixed).toEqual({
+        ok: false,
+        error:
+          'Draf belum bisa diajukan atau ditetapkan. 2 mahasiswa pada draf sudah berganti program studi atau jalur. Tekan "Bentuk ulang" agar masuk kelompok yang sesuai.',
+      });
+      await expectNothingFixed(db);
+    });
+  });
+
+  it("refuses when a student of the angkatan waits for a group and is in none of the draft", async () => {
+    await inTestDatabase(async (db) => {
+      const { head, large } = await addDraftAndHead(db);
+      await addTestStudents(db, large, 1, 9952000900, { cohortYear: YEAR });
+
+      const fixed = await fixAssignment(db, head, INPUT);
+
+      expect(fixed).toEqual({
+        ok: false,
+        error:
+          'Draf belum bisa diajukan atau ditetapkan. 1 mahasiswa angkatan ini belum masuk kelompok mana pun pada draf. Tekan "Bentuk ulang" agar ikut dibagi ke kelompok.',
+      });
+      await expectNothingFixed(db);
+    });
+  });
+
+  it("refuses when a group lost its last member", async () => {
+    await inTestDatabase(async (db) => {
+      const { head, small } = await addDraftAndHead(db);
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.studyProgramId, small));
+
+      const fixed = await fixAssignment(db, head, INPUT);
+
+      expect(fixed).toEqual({
+        ok: false,
+        error:
+          'Draf belum bisa diajukan atau ditetapkan. 1 kelompok tidak punya anggota. Pindahkan anggota ke kelompok itu atau tekan "Bentuk ulang".',
       });
       await expectNothingFixed(db);
     });
