@@ -161,7 +161,7 @@ Decided while building, because the issue did not say:
 - [x] 4. The group page with mentor, history and members.
 - [x] 5. The Pengasuh line in the student detail and the column on
   Mahasiswa.
-- [ ] 6. Refusals for other roles and other programs, and the phone
+- [x] 6. Refusals for other roles and other programs, and the phone
   layout.
 - [ ] 7. Pengguna dan peran refuses to remove a mentor who holds a
   group, with its check.

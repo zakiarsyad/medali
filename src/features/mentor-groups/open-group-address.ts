@@ -1,7 +1,7 @@
-import { type AccountForAccess, may, rowLimitFor } from "@/auth/access";
+import type { AccountForAccess } from "@/auth/access";
 import type { mentorGroups } from "@/db/schema";
 import { groupAddress } from "./group-list-address";
-import { maySeeGroup } from "./visible-groups";
+import { groupRowsFor, maySeeGroup } from "./visible-groups";
 
 type MentorGroup = typeof mentorGroups.$inferSelect;
 
@@ -14,7 +14,8 @@ export function openGroupAddress(
   account: AccountForAccess,
   group: Pick<MentorGroup, "id" | "studyProgramId">,
 ): string | null {
-  if (!may(account.roles, "view_mentor_groups")) return null;
-  if (!maySeeGroup(rowLimitFor(account), group.studyProgramId)) return null;
+  const limit = groupRowsFor(account);
+  if (limit === null) return null;
+  if (!maySeeGroup(limit, group.studyProgramId)) return null;
   return groupAddress(group.id);
 }

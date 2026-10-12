@@ -1,17 +1,18 @@
 import { forbidden } from "next/navigation";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
-import { may, rowLimitFor } from "@/auth/access";
+import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import {
   groupAddress,
-  groupMemberAddress,
   readGroupListParams,
 } from "@/features/mentor-groups/group-list-address";
 import { GroupListScreen } from "@/features/mentor-groups/group-list-screen";
 import { GroupScreen } from "@/features/mentor-groups/group-screen";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMemberAddresses } from "@/features/mentor-groups/open-member-address";
+import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
 import { askedDetail } from "@/features/students/asked-detail";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 
@@ -22,25 +23,23 @@ import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
  */
 async function GroupPage({
   account,
+  limit,
   groupId,
   detailId,
 }: {
   account: Account;
+  /** Which groups the account may read. */
+  limit: RowLimit;
   groupId: string;
   detailId: string | null;
 }) {
-  const mayOpenMember = may(account.roles, "view_student_detail");
   const detail = await askedDetail(account, detailId);
   return (
     <>
       <GroupScreen
-        limit={rowLimitFor(account)}
+        limit={limit}
         groupId={groupId}
-        memberAddressOf={
-          mayOpenMember
-            ? (studentId) => groupMemberAddress(groupId, studentId)
-            : null
-        }
+        memberAddressOf={openMemberAddresses(account.roles, groupId)}
       />
       {detail && (
         <StudentDetailDialog
@@ -59,12 +58,14 @@ export default async function MentorGroupsPage(
 ) {
   const opened = await openPage("pengasuh", "kelompok");
   const { account } = opened;
-  if (!may(account.roles, "view_mentor_groups")) forbidden();
+  const limit = groupRowsFor(account);
+  if (limit === null) forbidden();
   const params = readGroupListParams(await props.searchParams);
   if (params.groupId !== null) {
     return (
       <GroupPage
         account={account}
+        limit={limit}
         groupId={params.groupId}
         detailId={params.detailId}
       />
@@ -73,7 +74,7 @@ export default async function MentorGroupsPage(
   return (
     <GroupListScreen
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "kelompok" }}
-      limit={rowLimitFor(account)}
+      limit={limit}
       params={params}
     />
   );
