@@ -103,15 +103,6 @@
   --top-bar-padding: var(--space-md) var(--space-2xl);
   --content-padding: var(--space-xl) var(--space-2xl) var(--space-3xl);
 
-  /* A table whose rows become cards at phone width. */
-  --stack-table-display: table;
-  --stack-head-display: table-header-group;
-  --stack-row-display: table-row;
-  --stack-cell-display: table-cell;
-  --stack-label-display: none;
-  --stack-row-space: 0;
-  --stack-row-line: 0;
-  --stack-cell-line: var(--line-width);
   /* A stacked list is a plain table here, and one block per row on a phone. */
   --stacked-table-display: table;
   --stacked-head-display: table-header-group;
@@ -146,14 +137,6 @@
     --top-bar-padding: var(--space-md) var(--space-lg);
     --content-padding: var(--space-lg) var(--space-lg) var(--space-3xl);
     --text-title: 25px;
-    --stack-table-display: block;
-    --stack-head-display: none;
-    --stack-row-display: block;
-    --stack-cell-display: block;
-    --stack-label-display: block;
-    --stack-row-space: var(--space-md);
-    --stack-row-line: var(--line-width);
-    --stack-cell-line: 0;
     --stacked-table-display: block;
     --stacked-head-display: none;
     --stacked-body-display: block;

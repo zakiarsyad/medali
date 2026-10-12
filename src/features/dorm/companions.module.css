@@ -1,36 +1,6 @@
-/*
- * A table on a laptop. On a phone every row is a card and every cell a
- * line of it with its own label, so nothing scrolls sideways.
- */
-.list {
-  display: var(--stack-table-display);
-  margin-top: var(--space-md);
-}
-
-.list thead {
-  display: var(--stack-head-display);
-}
-
-.list tr {
-  display: var(--stack-row-display);
-  margin-bottom: var(--stack-row-space);
-  padding: var(--stack-row-space);
-  border: var(--stack-row-line) solid var(--line2);
-  border-radius: var(--radius-md);
-}
-
-.list td {
-  display: var(--stack-cell-display);
-  border-bottom-width: var(--stack-cell-line);
-  overflow-wrap: anywhere;
-}
-
-.list td::before {
-  display: var(--stack-label-display);
-  color: var(--muted);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  content: attr(data-label);
+/* What a button answers folds, so it never makes the list wider than a phone. */
+.duty p {
+  white-space: normal;
 }
 
 .quiet {
