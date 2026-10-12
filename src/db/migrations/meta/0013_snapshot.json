@@ -1,5 +1,5 @@
 {
-  "id": "04007c7d-381d-4a98-b84e-abb4b1fb8fdb",
+  "id": "240f5f14-44d7-4221-af8f-505cabd30629",
   "prevId": "549d2db9-4864-4ea9-8b82-32af2f5fb583",
   "version": "7",
   "dialect": "postgresql",
@@ -354,6 +354,103 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.dorm_companions": {
+      "name": "dorm_companions",
+      "schema": "",
+      "columns": {
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dorm": {
+          "name": "dorm",
+          "type": "dorm",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dorm_companions_room": {
+          "name": "dorm_companions_room",
+          "columns": [
+            {
+              "expression": "room_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_companions_student_id_students_id_fk": {
+          "name": "dorm_companions_student_id_students_id_fk",
+          "tableFrom": "dorm_companions",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_companions_room_id_dorm_rooms_id_fk": {
+          "name": "dorm_companions_room_id_dorm_rooms_id_fk",
+          "tableFrom": "dorm_companions",
+          "tableTo": "dorm_rooms",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "dorm_companions_dorm_has_companions": {
+          "name": "dorm_companions_dorm_has_companions",
+          "value": "\"dorm_companions\".\"dorm\" in ('dana_rakca', 'cipta_bakti')"
+        },
+        "dorm_companions_room_only_while_active": {
+          "name": "dorm_companions_room_only_while_active",
+          "value": "\"dorm_companions\".\"is_active\" or \"dorm_companions\".\"room_id\" is null"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.dorm_room_places": {
       "name": "dorm_room_places",
       "schema": "",
@@ -483,91 +580,6 @@
           "value": "\"dorm_rooms\".\"capacity\" between 1 and 12"
         }
       },
-      "isRLSEnabled": false
-    },
-    "public.email_changes": {
-      "name": "email_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "action": {
-          "name": "action",
-          "type": "email_change_action",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email_before": {
-          "name": "email_before",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email_after": {
-          "name": "email_after",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "email_changes_account_id_accounts_id_fk": {
-          "name": "email_changes_account_id_accounts_id_fk",
-          "tableFrom": "email_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "email_changes_changed_by_accounts_id_fk": {
-          "name": "email_changes_changed_by_accounts_id_fk",
-          "tableFrom": "email_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.main_indicators": {
@@ -1514,15 +1526,6 @@
         "wismantara_putri",
         "dana_rakca",
         "cipta_bakti"
-      ]
-    },
-    "public.email_change_action": {
-      "name": "email_change_action",
-      "schema": "public",
-      "values": [
-        "added",
-        "changed",
-        "cleared"
       ]
     },
     "public.entry_path": {

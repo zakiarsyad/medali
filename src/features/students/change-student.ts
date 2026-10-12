@@ -3,6 +3,7 @@ import { may } from "@/auth/access";
 import { refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import { endSessionsOf } from "@/auth/sessions";
+import { endCompanionDuty, settleCompanionDuty } from "@/db/companion-duty";
 import type { Database } from "@/db/connect";
 import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
@@ -53,6 +54,9 @@ async function changeAccountOf(
  * The NIM itself stays, and so does who put the student in, when and how.
  * The address goes on the student's account; one that another account
  * holds is refused, and nothing is changed.
+ * A kakak pendamping whose changed data no longer fits the duty stops
+ * being one: no longer active, living in a dorm now, or not of the jenis
+ * kelamin of the dorm they serve.
  */
 export async function changeStudent(
   db: Database,
@@ -69,6 +73,7 @@ export async function changeStudent(
         .where(and(eq(students.nim, nim), ADDED_HERE))
         .returning({ id: students.id });
       if (!changed) return NOT_FOUND;
+      await settleCompanionDuty(tx, changed.id);
       await changeAccountOf(tx, changed.id, fields.name, email, actor.id);
       return { ok: true, value: null };
     }),
@@ -100,6 +105,7 @@ async function removeAccountOf(
 /**
  * Marks a student put in through Pengguna baru mahasiswa as removed, and
  * their account with them. Nothing is erased. Gives the student's name.
+ * A removed student stops being kakak pendamping.
  */
 export async function removeStudent(
   db: Database,
@@ -115,6 +121,7 @@ export async function removeStudent(
       .where(and(eq(students.nim, nim), ADDED_HERE))
       .returning({ id: students.id, name: students.name });
     if (!removed) return NOT_FOUND;
+    await endCompanionDuty(tx, removed.id);
     await removeAccountOf(tx, removed.id, actor.id, at);
     return { ok: true, value: removed.name };
   });

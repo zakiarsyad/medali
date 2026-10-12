@@ -1,6 +1,8 @@
 import type { SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
+import { hasCompanions } from "./companion-dorms";
 import { readDormCohorts } from "./dorm-cohorts";
+import { type RoomCompanions, readRoomCompanions } from "./room-companions";
 import {
   countResidents,
   listUnplaced,
@@ -24,6 +26,18 @@ export interface RoomsView {
   residents: PlacedResident[];
   counts: ResidentCounts;
   unplaced: UnplacedResidents;
+  /** The kakak pendamping of the dorm. Null for a dorm that has none. */
+  companions: RoomCompanions | null;
+}
+
+function readCompanions(
+  db: Database,
+  params: RoomsParams,
+  visible: SQL,
+): Promise<RoomCompanions | null> {
+  const { dorm, floor } = params;
+  if (!hasCompanions(dorm)) return Promise.resolve(null);
+  return readRoomCompanions(db, { dorm, visible }, floor);
 }
 
 /**
@@ -40,11 +54,19 @@ export async function loadRooms(
   const cohorts = await readDormCohorts(db, day);
   const dormCohorts = cohorts ?? [];
   const scope: ResidentScope = { dorm: params.dorm, dormCohorts, visible };
-  const [rooms, residents, counts, unplaced] = await Promise.all([
+  const [rooms, residents, counts, unplaced, companions] = await Promise.all([
     readRooms(db, params.dorm, dormCohorts),
     readFloorResidents(db, scope, params.floor),
     countResidents(db, scope),
     listUnplaced(db, scope, params.query),
+    readCompanions(db, params, visible),
   ]);
-  return { periodRuns: cohorts !== null, rooms, residents, counts, unplaced };
+  return {
+    periodRuns: cohorts !== null,
+    rooms,
+    residents,
+    counts,
+    unplaced,
+    companions,
+  };
 }

@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, ne, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students, studyPrograms } from "@/db/schema";
+import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { CategoryField } from "./labels";
 import { matchesSearch } from "./student-conditions";
 import type {
@@ -9,7 +10,6 @@ import type {
   StatusChoice,
   StudentListFilters,
 } from "./student-list-address";
-import { PAGE_SIZE, pageWithin } from "./student-list-pages";
 import { visibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;

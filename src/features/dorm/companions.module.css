@@ -1,0 +1,16 @@
+/* What a button answers folds, so it never makes the list wider than a phone. */
+.duty p {
+  white-space: normal;
+}
+
+.quiet {
+  color: var(--muted);
+}
+
+.on {
+  composes: full from "./rooms.module.css";
+}
+
+.stopped {
+  composes: taken from "./rooms.module.css";
+}

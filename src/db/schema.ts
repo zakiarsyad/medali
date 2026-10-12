@@ -391,3 +391,32 @@ export const dormRoomPlaces = pgTable(
   },
   (table) => [index("dorm_room_places_room").on(table.roomId)],
 );
+
+/**
+ * A senior student named kakak pendamping of a dorm. The student is the
+ * key, so a student is kakak pendamping once at most. Only Dana Rakca and
+ * Cipta Bakti have them, and only an active one has a room.
+ */
+export const dormCompanions = pgTable(
+  "dorm_companions",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    dorm: dorm().notNull(),
+    note: text(),
+    isActive: boolean().notNull().default(true),
+    roomId: uuid().references(() => dormRooms.id),
+  },
+  (table) => [
+    index("dorm_companions_room").on(table.roomId),
+    check(
+      "dorm_companions_dorm_has_companions",
+      sql`${table.dorm} in ('dana_rakca', 'cipta_bakti')`,
+    ),
+    check(
+      "dorm_companions_room_only_while_active",
+      sql`${table.isActive} or ${table.roomId} is null`,
+    ),
+  ],
+);

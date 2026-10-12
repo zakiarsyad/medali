@@ -1,3 +1,4 @@
+import type { CompanionDormId } from "@/features/dorm/companion-dorms";
 import type { DormId } from "@/features/dorm/dorms";
 import type { SampleStudent } from "./sample-students";
 
@@ -125,3 +126,28 @@ export function samplePlaces(nims: string[]): SamplePlace[] {
 export function sampleRoomKey(dorm: DormId, roomNumber: string): string {
   return `${dorm} ${roomNumber}`;
 }
+
+export interface SampleCompanion {
+  /** The NIM of a sample student who does not live in a dorm. */
+  nim: string;
+  dorm: CompanionDormId;
+  note: string | null;
+  isActive: boolean;
+}
+
+/** The kakak pendamping the sample data starts with, none in a room yet. */
+export const SAMPLE_COMPANIONS: SampleCompanion[] = [
+  {
+    nim: "9900230032",
+    dorm: "dana_rakca",
+    note: "Pendamping lantai 1",
+    isActive: true,
+  },
+  { nim: "9900220019", dorm: "cipta_bakti", note: null, isActive: true },
+  {
+    nim: "9900230045",
+    dorm: "cipta_bakti",
+    note: "Pendamping lantai 2",
+    isActive: false,
+  },
+];
