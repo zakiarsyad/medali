@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { accountRoles, accounts, sessions, signInLog } from "@/db/schema";
@@ -29,6 +29,17 @@ async function lastSeenOf(db: Database, accountId: string): Promise<Date[]> {
 
 function signOutLines(db: Database) {
   return db.select().from(signInLog).where(eq(signInLog.result, "signed_out"));
+}
+
+/**
+ * Makes every write to the sign-in log fail from here on, to see what a
+ * failed log line leaves behind. Undone with the check's transaction.
+ */
+async function refuseNewLogLines(db: Database): Promise<void> {
+  await db.execute(
+    sql`alter table sign_in_log
+        add constraint refuses_new_lines check (false) not valid`,
+  );
 }
 
 describe("startSession", () => {
@@ -67,6 +78,17 @@ describe("startSession", () => {
 
       expect(await db.select().from(signInLog)).toEqual([]);
       expect(await db.select().from(sessions)).toEqual([]);
+    });
+  });
+
+  it("saves no session when its sign-in line cannot be written", async () => {
+    await inTestDatabase(async (db) => {
+      const accountId = await addBudi(db);
+      await refuseNewLogLines(db);
+
+      await expect(startSession(db, accountId, NOW)).rejects.toThrow();
+
+      expect(await lastSeenOf(db, accountId)).toEqual([]);
     });
   });
 
@@ -203,6 +225,19 @@ describe("endSession", () => {
       expect(await signOutLines(db)).toMatchObject([
         { result: "signed_out", accountId, happenedAt: later(1) },
       ]);
+    });
+  });
+
+  it("keeps the session open when its sign-out line cannot be written", async () => {
+    await inTestDatabase(async (db) => {
+      const accountId = await addBudi(db);
+      const token = await startSession(db, accountId, NOW);
+      await refuseNewLogLines(db);
+
+      await expect(endSession(db, token, NOW)).rejects.toThrow();
+
+      expect(await lastSeenOf(db, accountId)).toEqual([NOW]);
+      expect((await sessionAccount(db, token, NOW))?.id).toBe(accountId);
     });
   });
 
