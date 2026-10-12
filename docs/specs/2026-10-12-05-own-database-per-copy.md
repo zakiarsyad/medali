@@ -83,6 +83,9 @@ Decided while building, because the issue did not say:
     instructions themselves are unchanged: the unattended builder is not
     allowed to edit them. They already send the reader to the example
     settings file.
+11. The checks refuse whenever the two addresses carry the same database
+    name, whatever server each one names. One computer can be written as
+    an address in too many ways to tell two servers apart safely.
 
 ## Steps
 

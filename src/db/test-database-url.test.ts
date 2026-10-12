@@ -20,6 +20,7 @@ describe("testDatabaseUrlOf", () => {
     [{ DATABASE_URL: APP }],
     [{ DATABASE_URL: APP, TEST_DATABASE_URL: "" }],
     [{ DATABASE_URL: OWN_APP }],
+    [{ DATABASE_URL: "not a url" }],
   ])("is today's address when only the app's is set: %o", (env) => {
     expect(testDatabaseUrlOf(env)).toBe(DEFAULT_TEST_DATABASE_URL);
   });
@@ -33,7 +34,10 @@ describe("testDatabaseUrlOf", () => {
     [APP, APP, "the same address"],
     [OWN_APP, OWN_APP, "the same own address"],
     [APP, "postgres://medali@127.0.0.1:5432/medali", "another local name"],
+    [APP, "postgres://medali@[::1]:5432/medali", "a third local name"],
+    [APP, "postgres://medali@LOCALHOST.:5432/medali", "capital letters"],
     [APP, "postgres://medali@localhost/medali", "the port left out"],
+    [APP, "postgres://medali@localhost:5433/medali", "another port"],
     [APP, "postgres://other@localhost:5432/medali?sslmode=disable", "extras"],
     [
       "postgres://medali@localhost:5432/medali_test",
@@ -45,12 +49,31 @@ describe("testDatabaseUrlOf", () => {
     expect(() => testDatabaseUrlOf(env)).toThrow(/app's own database/);
   });
 
-  it("allows the same name on another server", () => {
-    const env = {
-      DATABASE_URL: "postgres://u@db.example.com:5432/medali_test",
-      TEST_DATABASE_URL: DEFAULT_TEST_DATABASE_URL,
-    };
-    expect(testDatabaseUrlOf(env)).toBe(DEFAULT_TEST_DATABASE_URL);
+  it.each([
+    ["postgres://medali@localhost:5432", "no name"],
+    ["postgres://medali@localhost:5432/", "no name"],
+    [
+      "postgres://medali@localhost:5432/medali_test?database=medali",
+      "a part that replaces the name",
+    ],
+  ])("refuses %s as the checks' address: %s", (url, _kind) => {
+    const env = { DATABASE_URL: APP, TEST_DATABASE_URL: url };
+    expect(() => testDatabaseUrlOf(env)).toThrow(
+      /TEST_DATABASE_URL must end with the name/,
+    );
+  });
+
+  it.each([
+    ["postgres://medali@localhost:5432", "no name"],
+    [
+      "postgres://medali@localhost:5432/medali_126?database=medali_126_test",
+      "a part that replaces the name",
+    ],
+  ])("refuses %s as the app's address: %s", (url, _kind) => {
+    const env = { DATABASE_URL: url, TEST_DATABASE_URL: OWN_TEST };
+    expect(() => testDatabaseUrlOf(env)).toThrow(
+      /DATABASE_URL must end with the name/,
+    );
   });
 
   it("refuses a setting that is not an address", () => {

@@ -47,11 +47,18 @@ describe("copyDatabasesOf", () => {
     ["medali 126"],
     ['medali"; drop database medali; --'],
     ["126_medali"],
-    [""],
   ])("refuses the database name %j", (name) => {
     const env = { DATABASE_URL: `${LOCAL}/${encodeURIComponent(name)}` };
     expect(() => copyDatabasesOf(env)).toThrow(/Use only small letters/);
   });
+
+  it.each([[`${LOCAL}`], [`${LOCAL}/medali_126?database=medali`]])(
+    "refuses %s, whose name is not the database it reaches",
+    (url) => {
+      const env = { DATABASE_URL: url, TEST_DATABASE_URL: OWN_TEST };
+      expect(() => copyDatabasesOf(env)).toThrow(/must end with the name/);
+    },
+  );
 
   it.each([["postgres"], ["template0"], ["template1"]])(
     "refuses %s, which the database server keeps for itself",
