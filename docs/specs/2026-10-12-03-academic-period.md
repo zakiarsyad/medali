@@ -75,7 +75,7 @@ get their own log.
 
 - [x] 1. The tables for academic periods and for the log of period
   changes are added, with sample periods.
-- [ ] 2. The right to set periods is added to the permission list, with
+- [x] 2. The right to set periods is added to the permission list, with
   its checks.
 - [ ] 3. One rule answers "which period runs on a given date" (today or
   any other date) and "which semester is this student in", with checks.

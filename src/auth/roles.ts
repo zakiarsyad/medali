@@ -7,6 +7,7 @@ export const ACTIONS = [
   "input_new_students",
   "change_curriculum",
   "manage_activities",
+  "set_academic_periods",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -16,6 +17,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   input_new_students: "Menginput mahasiswa baru",
   change_curriculum: "Mengubah kurikulum",
   manage_activities: "Mengelola kegiatan",
+  set_academic_periods: "Mengatur periode akademik",
 };
 
 /**
@@ -95,6 +97,7 @@ export const ROLES: Record<RoleId, Role> = {
       "input_new_students",
       "change_curriculum",
       "manage_activities",
+      "set_academic_periods",
     ],
     rows: "all",
   },

@@ -94,6 +94,18 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit set the academic periods", () => {
+    expect(may(["head_of_unit"], "set_academic_periods")).toBe(true);
+  });
+
+  it("refuses every other role to set the academic periods", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "set_academic_periods")).toBe(false);
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
