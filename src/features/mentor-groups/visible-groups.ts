@@ -3,7 +3,7 @@ import {
   type AccountForAccess,
   may,
   type RowLimit,
-  rowLimitFor,
+  rowLimitForAction,
 } from "@/auth/access";
 import { mentorGroups } from "@/db/schema";
 
@@ -12,11 +12,12 @@ const NO_GROUP = sql`false`;
 /**
  * Which groups an account may read, or null for an account without the
  * right to see groups. Every read of groups takes its limit from here, so
- * that a role which sees every student row but not Pengasuh reads none.
+ * that a role which sees every student row but not Pengasuh reads none,
+ * and adds none to what another role of the account reads.
  */
 export function groupRowsFor(account: AccountForAccess): RowLimit | null {
   if (!may(account.roles, "view_mentor_groups")) return null;
-  return rowLimitFor(account);
+  return rowLimitForAction(account, "view_mentor_groups");
 }
 
 /**

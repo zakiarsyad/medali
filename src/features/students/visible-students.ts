@@ -1,5 +1,10 @@
 import { and, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
-import type { RowLimit } from "@/auth/access";
+import {
+  type AccountForAccess,
+  may,
+  type RowLimit,
+  rowLimitForAction,
+} from "@/auth/access";
 import { mentorGroupMembers, mentorGroupMentors, students } from "@/db/schema";
 import { NOT_REMOVED } from "./student-conditions";
 
@@ -43,4 +48,15 @@ export function visibleTo(limit: RowLimit): SQL {
     themselves(limit.studentIds),
   );
   return and(NOT_REMOVED, allowed ?? NOBODY) ?? NOBODY;
+}
+
+/**
+ * The students whose detail an account may open, or null for an account
+ * without the right to a detail. Only the roles that give that right
+ * count: a role that sees every student on its own screens opens no
+ * detail here.
+ */
+export function detailVisibleTo(account: AccountForAccess): SQL | null {
+  if (!may(account.roles, "view_student_detail")) return null;
+  return visibleTo(rowLimitForAction(account, "view_student_detail"));
 }

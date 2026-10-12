@@ -105,11 +105,6 @@ function rowLimitOf(
   return { kind: "some", studyProgramIds, menteesOf, studentIds };
 }
 
-/** Which student rows an account may see: the limits of its roles together. */
-export function rowLimitFor(account: AccountForAccess): RowLimit {
-  return rowLimitOf(account, account.roles);
-}
-
 /**
  * Which student rows an account may see through an action: the limits of
  * only those of its roles that allow the action. Another role of the

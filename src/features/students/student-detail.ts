@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { type AccountForAccess, may, rowLimitFor } from "@/auth/access";
+import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
@@ -7,7 +7,7 @@ import {
   readStudentMentorGroup,
   type StudentMentorGroup,
 } from "./student-mentor-group";
-import { visibleTo } from "./visible-students";
+import { detailVisibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
 
@@ -69,14 +69,15 @@ export async function readStudentDetail(
   account: AccountForAccess,
   id: string,
 ): Promise<StudentDetailAnswer> {
-  if (!may(account.roles, "view_student_detail")) return { kind: "refused" };
+  const visible = detailVisibleTo(account);
+  if (visible === null) return { kind: "refused" };
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(id)) return NOT_FOUND;
   const [student] = await db
     .select(DETAIL)
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(and(eq(students.id, id), visibleTo(rowLimitFor(account))));
+    .where(and(eq(students.id, id), visible));
   if (!student) return NOT_FOUND;
   const mentorGroup = await readStudentMentorGroup(db, student.id);
   return { kind: "found", student: { ...student, mentorGroup } };

@@ -109,7 +109,9 @@ The rule about real people's data is in `CLAUDE.md`. These add to it.
 5. One person can have several roles at once, for example a student who is
    also a BAM member, or a staff member who is both mentor and assessor.
    They may do everything that any of their roles allows. Never create a
-   combined role to cover a mix.
+   combined role to cover a mix. On each screen or action they see the
+   rows of only those roles that allow it: a role that sees every
+   student on its own screens adds no rows to another role's screen.
 6. If the list does not say a role may do something, the answer is no.
 7. Every permission has a test with a role that may and a role that may
    not. Another test checks that every screen and every action is in the
