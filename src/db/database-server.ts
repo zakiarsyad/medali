@@ -40,3 +40,18 @@ export function createDatabaseIfMissing(url: string): Promise<boolean> {
     return true;
   });
 }
+
+/** Removes the database an address names. False when there was none. */
+export function removeDatabaseIfThere(url: string): Promise<boolean> {
+  return onServerOf(url, async (server, name) => {
+    const found = await server.execute(
+      sql`select 1 from pg_database where datname = ${name}`,
+    );
+    if (found.length === 0) return false;
+    // A copy's app or checks may still hold a connection to it.
+    await server.execute(
+      sql`drop database ${sql.identifier(name)} with (force)`,
+    );
+    return true;
+  });
+}

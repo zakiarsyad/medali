@@ -85,7 +85,7 @@ Decided while building, because the issue did not say:
   database.
 - [x] 2. A command makes the two databases a copy's settings name, with
   tables and sample data, and is safe to run twice.
-- [ ] 3. A command removes a copy's two databases, never the default two
+- [x] 3. A command removes a copy's two databases, never the default two
   and never one outside the local computer.
 - [ ] 4. The set-up instructions and the rules on running the app locally
   say how to work in more than one copy.
