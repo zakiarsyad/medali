@@ -114,6 +114,10 @@ Decided while building, because the issue did not say:
    of them are in use. The search, Angkatan and Status stay in view
    above the list, with the number found.
 9. A student with no provinsi kept is found under no Provinsi choice.
+10. "Tanpa instansi (reguler)" finds every student with no instansi
+    kept, whatever their jalur, as the prototype's filter does. So an
+    alih program student whose instansi was left empty is found and
+    counted there too.
 
 ## Steps
 

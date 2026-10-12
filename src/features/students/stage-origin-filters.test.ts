@@ -66,6 +66,31 @@ async function addRows(db: Database): Promise<RowLimit> {
   };
 }
 
+/**
+ * One program with a reguler student, and two alih program students: one
+ * with no instansi kept, which the input rules allow, and one with one.
+ */
+async function addRowsWithBlankAgency(db: Database): Promise<RowLimit> {
+  const program = await addTestProgram(db, "Prodi Uji Instansi");
+  const rows = [
+    { nim: "9900000406", name: "Alih Tanpa Instansi", entryPath: "transfer" },
+    { nim: "9900000407", name: "Reguler Tanpa Instansi" },
+    {
+      nim: "9900000408",
+      name: "Alih Dengan Instansi",
+      entryPath: "transfer",
+      originAgency: TAX,
+    },
+  ] as const;
+  for (const row of rows) await addTestStudent(db, program, row);
+  return {
+    kind: "some",
+    studyProgramIds: [program],
+    menteesOf: [],
+    studentIds: [],
+  };
+}
+
 async function nimsFound(
   db: Database,
   limit: RowLimit,
@@ -142,6 +167,17 @@ describe("the Provinsi and Instansi filters", () => {
     });
   });
 
+  it("find every student with no instansi under Tanpa instansi, alih program too", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = await addRowsWithBlankAgency(db);
+
+      expect(await nimsFound(db, limit, { originAgency: NO_AGENCY })).toEqual([
+        "9900000406",
+        "9900000407",
+      ]);
+    });
+  });
+
   it("work together with the filters already there and the search", async () => {
     await inTestDatabase(async (db) => {
       const limit = await addRows(db);
@@ -190,6 +226,21 @@ describe("the counts of Tahapan, Provinsi and Instansi", () => {
           [NO_AGENCY, 2],
           [TAX, 1],
           [CUSTOMS, 1],
+        ]),
+      );
+    });
+  });
+
+  it("count every student with no instansi under Tanpa instansi, alih program too", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = await addRowsWithBlankAgency(db);
+
+      const counts = await countChoices(db, limit, NO_FILTERS, COHORTS);
+
+      expect(counts.agencies).toEqual(
+        new Map([
+          [NO_AGENCY, 2],
+          [TAX, 1],
         ]),
       );
     });
