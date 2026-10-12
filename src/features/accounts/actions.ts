@@ -102,10 +102,10 @@ export async function removeAccountAction(
 export async function searchStudentsAction(
   query: string,
 ): Promise<FoundStudent[]> {
-  await userManager();
+  const manager = await userManager();
   // A hand-made request may send anything in place of the text.
   if (typeof query !== "string") return [];
-  return searchActiveStudents(database(), query);
+  return searchActiveStudents(database(), manager, query);
 }
 
 export async function giveBamRolesAction(

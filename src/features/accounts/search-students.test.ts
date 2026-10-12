@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import type { RoleId } from "@/auth/role-ids";
+import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import type { Manager } from "./save-bam-roles";
 import { SEARCH_LIMIT, searchActiveStudents } from "./search-students";
+import { SEARCH_TEXT_MAX } from "./search-text";
 import {
   addTestProgram,
   addTestStudentAccount,
@@ -14,13 +16,16 @@ import {
 const inTestDatabase = withTestDatabase();
 
 const PROGRAM = "Prodi Uji Cari BAM";
+/** The search reads only the roles, so no account is saved for the sender. */
+const SENDER_ID = "00000000-0000-4000-8000-000000000128";
+const HEAD: Manager = { id: SENDER_ID, roles: ["head_of_unit"] };
 
 function nim(place: number): string {
   return `99128003${String(place).padStart(2, "0")}`;
 }
 
 async function names(db: Database, query: string): Promise<string[]> {
-  const found = await searchActiveStudents(db, query);
+  const found = await searchActiveStudents(db, HEAD, query);
   return found.map((student) => student.name);
 }
 
@@ -33,8 +38,8 @@ describe("searchActiveStudents", () => {
         name: "Laras Uji Cari",
       });
 
-      const byName = await searchActiveStudents(db, " laras uji ");
-      const byNim = await searchActiveStudents(db, nim(1).slice(2));
+      const byName = await searchActiveStudents(db, HEAD, " laras uji ");
+      const byNim = await searchActiveStudents(db, HEAD, nim(1).slice(2));
 
       expect(byName).toEqual([
         {
@@ -48,6 +53,39 @@ describe("searchActiveStudents", () => {
     });
   });
 
+  it.each(ROLE_IDS.filter((role) => role !== "head_of_unit"))(
+    "offers nobody to a hand-made search sent by %s",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const program = await addTestProgram(db, PROGRAM);
+        await addTestStudentAccount(db, program, {
+          nim: nim(1),
+          name: "Laras Uji Cari",
+        });
+        const sender: Manager = { id: SENDER_ID, roles: [role] };
+
+        const forSender = await searchActiveStudents(db, sender, "laras uji");
+        const forHead = await searchActiveStudents(db, HEAD, "laras uji");
+
+        expect(forSender).toEqual([]);
+        expect(forHead).toHaveLength(1);
+      });
+    },
+  );
+
+  it("offers nobody for a text longer than the search field takes", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, PROGRAM);
+      const name = "Panjang Uji Cari ".repeat(7).trim();
+      await addTestStudentAccount(db, program, { nim: nim(1), name });
+      const fits = name.slice(0, SEARCH_TEXT_MAX);
+
+      expect(name.length).toBeGreaterThan(SEARCH_TEXT_MAX);
+      expect(await names(db, fits)).toEqual([name]);
+      expect(await names(db, name)).toEqual([]);
+    });
+  });
+
   it("offers nobody for an empty search", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, PROGRAM);
@@ -56,7 +94,7 @@ describe("searchActiveStudents", () => {
         name: "Laras Uji Cari",
       });
 
-      expect(await searchActiveStudents(db, "   ")).toEqual([]);
+      expect(await searchActiveStudents(db, HEAD, "   ")).toEqual([]);
     });
   });
 
@@ -128,8 +166,8 @@ describe("searchActiveStudents", () => {
         name: "Tanda Uji Cari",
       });
 
-      expect(await searchActiveStudents(db, "%")).toEqual([]);
-      expect(await searchActiveStudents(db, "_")).toEqual([]);
+      expect(await searchActiveStudents(db, HEAD, "%")).toEqual([]);
+      expect(await searchActiveStudents(db, HEAD, "_")).toEqual([]);
     });
   });
 });

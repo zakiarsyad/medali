@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "@/ui/data-screen.module.css";
 import { searchStudentsAction } from "./actions";
 import type { FoundStudent } from "./search-students";
+import { SEARCH_TEXT_MAX } from "./search-text";
 
 /** Waits for a pause in the typing, so not every letter asks the server. */
 const SEARCH_DELAY_MS = 250;
@@ -62,7 +63,7 @@ export function StudentSearch() {
           className={styles.input}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          maxLength={100}
+          maxLength={SEARCH_TEXT_MAX}
           autoComplete="off"
         />
       </label>
