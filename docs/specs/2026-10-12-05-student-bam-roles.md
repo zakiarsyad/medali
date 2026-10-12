@@ -113,7 +113,7 @@ None.
 
 ## Steps
 
-- [ ] 1. The right to give BAM roles to student accounts, limited to the
+- [x] 1. The right to give BAM roles to student accounts, limited to the
   seven BAM roles, with its checks.
 - [ ] 2. The panel "Badan Asrama Mahasiswa" with its list and empty
   state.
