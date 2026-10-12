@@ -5,6 +5,7 @@ import { listStudyPrograms } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { AutoSubmitForm } from "./auto-submit-form";
+import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import {
@@ -27,12 +28,15 @@ export async function StudentListScreen({
 }) {
   const db = database();
   const { filters } = params;
-  const [list, cohortYears, programs, counts, period] = await Promise.all([
-    listStudents(db, limit, filters, params.page),
+  const [cohortYears, programs, period] = await Promise.all([
     listCohortYears(db, limit),
     listStudyPrograms(db),
-    countChoices(db, limit, filters),
     readRunningPeriod(db),
+  ]);
+  const cohorts = stageCohorts(cohortYears, period);
+  const [list, counts] = await Promise.all([
+    listStudents(db, limit, filters, params.page, cohorts),
+    countChoices(db, limit, filters, cohorts),
   ]);
   return (
     <>

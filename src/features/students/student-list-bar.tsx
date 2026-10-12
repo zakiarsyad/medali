@@ -4,6 +4,11 @@ import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
+import {
+  agencyChoices,
+  provinceChoices,
+  stageChoices,
+} from "./stage-origin-choices";
 import type { ChoiceCounts } from "./student-choice-counts";
 import styles from "./student-list.module.css";
 import {
@@ -47,7 +52,10 @@ function foundWords(filters: StudentListFilters): string {
   return filters.status === "current" ? "mahasiswa aktif" : "mahasiswa";
 }
 
-/** The top bar: the Program studi, Jalur and Kategori filters. */
+/**
+ * The top bar: the Program studi, Jalur, Kategori, Tahapan, Provinsi and
+ * Instansi filters.
+ */
 export function StudentListBar({
   filters,
   programs,
@@ -83,6 +91,27 @@ export function StudentListBar({
           every="Semua kategori"
           choices={categoryChoices(counts)}
           chosen={filters.category ?? ""}
+        />
+        <CountedSelect
+          label="Tahapan"
+          name="tahap"
+          every="Semua tahap"
+          choices={stageChoices(counts)}
+          chosen={String(filters.stageNo ?? "")}
+        />
+        <CountedSelect
+          label="Provinsi"
+          name="provinsi"
+          every="Semua provinsi"
+          choices={provinceChoices(counts)}
+          chosen={filters.province ?? ""}
+        />
+        <CountedSelect
+          label="Instansi"
+          name="instansi"
+          every="Semua instansi"
+          choices={agencyChoices(counts)}
+          chosen={filters.originAgency ?? ""}
         />
       </div>
       <p className={styles.found}>

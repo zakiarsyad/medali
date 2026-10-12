@@ -3,6 +3,7 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { PAGE_SIZE } from "@/ui/list-pages";
+import type { StageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
@@ -11,6 +12,9 @@ import { addTestProgram, addTestStudent } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const EVERYONE: RowLimit = { kind: "all" };
+
+/** No academic period runs in these checks, so no angkatan is in a tahap. */
+const NO_STAGES: StageCohorts = new Map();
 
 function onlyProgram(id: number): RowLimit {
   return { kind: "some", studyProgramIds: [id], menteesOf: [], studentIds: [] };
@@ -37,7 +41,7 @@ async function nimsFound(
   filters: Partial<StudentListFilters>,
 ): Promise<string[]> {
   const all = { ...NO_FILTERS, ...filters };
-  const listed = await listStudents(db, limit, all, 1);
+  const listed = await listStudents(db, limit, all, 1, NO_STAGES);
   return listed.students.map((student) => student.nim).sort();
 }
 
@@ -66,6 +70,7 @@ describe("listStudents", () => {
         onlyProgram(program),
         ALL_STATUSES,
         1,
+        NO_STAGES,
       );
 
       expect(listed.students).toEqual([
@@ -101,8 +106,14 @@ describe("listStudents", () => {
         deletedAt: new Date("2026-10-11T03:00:00Z"),
       });
 
-      const forAll = await listStudents(db, EVERYONE, NO_FILTERS, 1);
-      const forOwn = await listStudents(db, onlyProgram(own), NO_FILTERS, 1);
+      const forAll = await listStudents(db, EVERYONE, NO_FILTERS, 1, NO_STAGES);
+      const forOwn = await listStudents(
+        db,
+        onlyProgram(own),
+        NO_FILTERS,
+        1,
+        NO_STAGES,
+      );
 
       const batas = forAll.students.filter((s) => s.name.startsWith("Batas"));
       expect(batas.map((s) => s.nim)).toEqual(["9900000314", "9900000313"]);
@@ -262,7 +273,7 @@ describe("countChoices", () => {
     await inTestDatabase(async (db) => {
       const { first, second, limit } = await addChoiceRows(db);
 
-      const counts = await countChoices(db, limit, NO_FILTERS);
+      const counts = await countChoices(db, limit, NO_FILTERS, NO_STAGES);
 
       expect(counts.programs).toEqual(
         new Map([
@@ -284,12 +295,17 @@ describe("countChoices", () => {
     await inTestDatabase(async (db) => {
       const { first, second, limit } = await addChoiceRows(db);
 
-      const counts = await countChoices(db, limit, {
-        ...NO_FILTERS,
-        status: "all",
-        studyProgramId: second,
-        entryPath: "regular",
-      });
+      const counts = await countChoices(
+        db,
+        limit,
+        {
+          ...NO_FILTERS,
+          status: "all",
+          studyProgramId: second,
+          entryPath: "regular",
+        },
+        NO_STAGES,
+      );
 
       expect(counts.programs).toEqual(
         new Map([
@@ -311,7 +327,12 @@ describe("countChoices", () => {
     await inTestDatabase(async (db) => {
       const { first } = await addChoiceRows(db);
 
-      const counts = await countChoices(db, onlyProgram(first), NO_FILTERS);
+      const counts = await countChoices(
+        db,
+        onlyProgram(first),
+        NO_FILTERS,
+        NO_STAGES,
+      );
 
       expect(counts.programs).toEqual(new Map([[first, 2]]));
       expect(counts.entryPaths).toEqual({ regular: 1, transfer: 1 });
@@ -341,9 +362,9 @@ describe("the pages of listStudents", () => {
     await inTestDatabase(async (db) => {
       const limit = await addPagedRows(db);
 
-      const first = await listStudents(db, limit, NO_FILTERS, 1);
-      const second = await listStudents(db, limit, NO_FILTERS, 2);
-      const third = await listStudents(db, limit, NO_FILTERS, 3);
+      const first = await listStudents(db, limit, NO_FILTERS, 1, NO_STAGES);
+      const second = await listStudents(db, limit, NO_FILTERS, 2, NO_STAGES);
+      const third = await listStudents(db, limit, NO_FILTERS, 3, NO_STAGES);
 
       expect(first.matching).toBe(2 * PAGE_SIZE + 1);
       expect(first.students).toHaveLength(PAGE_SIZE);
@@ -358,7 +379,7 @@ describe("the pages of listStudents", () => {
     await inTestDatabase(async (db) => {
       const limit = await addPagedRows(db);
 
-      const listed = await listStudents(db, limit, NO_FILTERS, 99);
+      const listed = await listStudents(db, limit, NO_FILTERS, 99, NO_STAGES);
 
       expect(listed.page).toBe(3);
       expect(listed.students).toHaveLength(1);
@@ -370,7 +391,7 @@ describe("the pages of listStudents", () => {
       const limit = await addPagedRows(db);
       const filters = { ...NO_FILTERS, query: "tidak ada yang begini" };
 
-      const listed = await listStudents(db, limit, filters, 2);
+      const listed = await listStudents(db, limit, filters, 2, NO_STAGES);
 
       expect(listed).toEqual({ students: [], matching: 0, page: 1 });
     });

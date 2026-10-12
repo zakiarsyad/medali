@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  NO_AGENCY,
   NO_FILTERS,
   readStudentListParams,
   studentListAddress,
@@ -20,7 +21,45 @@ describe("readStudentListParams", () => {
       studyProgramId: null,
       entryPath: null,
       category: null,
+      stageNo: null,
+      province: null,
+      originAgency: null,
     });
+  });
+
+  it("reads the tahap, the provinsi and the instansi", () => {
+    const read = readStudentListParams({
+      tahap: "3",
+      provinsi: "Jawa Barat",
+      instansi: "Direktorat Jenderal Pajak",
+    });
+
+    expect(read.filters).toEqual({
+      ...NO_FILTERS,
+      stageNo: 3,
+      province: "Jawa Barat",
+      originAgency: "Direktorat Jenderal Pajak",
+    });
+    expect(
+      readStudentListParams({ instansi: "tanpa" }).filters.originAgency,
+    ).toBe(NO_AGENCY);
+  });
+
+  it.each(["", "0", "5", "1.5", "satu", "12", "1 or 1=1"])(
+    "falls back to every tahap for %j",
+    (tahap) => {
+      expect(readStudentListParams({ tahap }).filters.stageNo).toBeNull();
+    },
+  );
+
+  it("falls back to every provinsi and instansi for one that is not listed", () => {
+    const read = readStudentListParams({
+      provinsi: "jawa barat",
+      instansi: "Kantor Yang Tidak Ada",
+    });
+
+    expect(read.filters.province).toBeNull();
+    expect(read.filters.originAgency).toBeNull();
   });
 
   it("reads the program studi, the jalur and the kategori", () => {
@@ -112,12 +151,15 @@ describe("studentListAddress", () => {
       studyProgramId: 4,
       entryPath: "regular" as const,
       category: "isBlended" as const,
+      stageNo: 2,
+      province: "DKI Jakarta",
+      originAgency: NO_AGENCY,
     };
 
     const address = studentListAddress(filters);
 
     expect(address).toBe(
-      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended",
+      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended&tahap=2&provinsi=DKI+Jakarta&instansi=tanpa",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readStudentListParams(Object.fromEntries(search)).filters).toEqual(
@@ -141,6 +183,18 @@ describe("the filters of the top bar", () => {
     expect(topFiltersInUse(searched)).toBe(0);
     expect(topFiltersInUse(chosen)).toBe(2);
     expect(topFiltersInUse({ ...chosen, entryPath: "regular" })).toBe(3);
+  });
+
+  it("count the tahap, the provinsi and the instansi too", () => {
+    const more = {
+      ...chosen,
+      stageNo: 1,
+      province: "Bali",
+      originAgency: NO_AGENCY,
+    };
+
+    expect(topFiltersInUse(more)).toBe(5);
+    expect(withoutTopFilters(more)).toEqual(withoutTopFilters(chosen));
   });
 
   it("are cleared alone, and the search and the status stay", () => {

@@ -1,5 +1,6 @@
 import { entryPath } from "@/db/schema";
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import { NAME_MAX_LENGTH } from "./input-limits";
 import { CATEGORIES, type CategoryField } from "./labels";
 import { addressOf } from "./new-students-address";
@@ -11,11 +12,19 @@ export type StatusChoice = "current" | "all" | "inactive";
 
 export type EntryPath = (typeof entryPath.enumValues)[number];
 
+/** The Instansi choice that finds the students who came from no instansi. */
+export const NO_AGENCY = "tanpa";
+
 /** The filters of the top bar. Null means every choice. */
 export interface TopFilters {
   studyProgramId: number | null;
   entryPath: EntryPath | null;
   category: CategoryField | null;
+  /** The number of a tahap, 1 to 4. */
+  stageNo: number | null;
+  province: string | null;
+  /** The name of an instansi, or `NO_AGENCY`. */
+  originAgency: string | null;
 }
 
 export interface StudentListFilters extends TopFilters {
@@ -34,6 +43,9 @@ const NO_TOP_FILTERS: TopFilters = {
   studyProgramId: null,
   entryPath: null,
   category: null,
+  stageNo: null,
+  province: null,
+  originAgency: null,
 };
 
 /** How the list opens: Aktif dan cuti, and nothing else chosen. */
@@ -55,6 +67,7 @@ const YEAR = /^\d{4}$/;
 const PAGE = /^[1-9]\d{0,5}$/;
 /** Short enough to fit the number the database keeps for a program studi. */
 const PROGRAM_ID = /^[1-9]\d{0,8}$/;
+const STAGE_NO = /^[1-4]$/;
 
 function readStatus(text: string): StatusChoice {
   if (text === STATUS_IN_ADDRESS.all) return "all";
@@ -62,14 +75,24 @@ function readStatus(text: string): StatusChoice {
   return NO_FILTERS.status;
 }
 
+function readAgency(text: string): string | null {
+  if (text === NO_AGENCY) return NO_AGENCY;
+  return ORIGIN_AGENCIES.find((one) => one === text) ?? null;
+}
+
 function readTopFilters(params: SearchParams): TopFilters {
   const program = firstParam(params.prodi);
   const path = firstParam(params.jalur);
   const category = firstParam(params.kategori);
+  const stage = firstParam(params.tahap);
+  const province = firstParam(params.provinsi);
   return {
     studyProgramId: PROGRAM_ID.test(program) ? Number(program) : null,
     entryPath: entryPath.enumValues.find((one) => one === path) ?? null,
     category: CATEGORIES.find((one) => one.field === category)?.field ?? null,
+    stageNo: STAGE_NO.test(stage) ? Number(stage) : null,
+    province: PROVINCES.find((one) => one === province) ?? null,
+    originAgency: readAgency(firstParam(params.instansi)),
   };
 }
 
@@ -93,7 +116,14 @@ export function readStudentListParams(params: SearchParams): StudentListParams {
 
 /** How many filters of the top bar are in use. */
 export function topFiltersInUse(filters: TopFilters): number {
-  const chosen = [filters.studyProgramId, filters.entryPath, filters.category];
+  const chosen = [
+    filters.studyProgramId,
+    filters.entryPath,
+    filters.category,
+    filters.stageNo,
+    filters.province,
+    filters.originAgency,
+  ];
   return chosen.filter((choice) => choice !== null).length;
 }
 
@@ -102,6 +132,17 @@ export function withoutTopFilters(
   filters: StudentListFilters,
 ): StudentListFilters {
   return { ...filters, ...NO_TOP_FILTERS };
+}
+
+function setTopFilters(params: URLSearchParams, filters: TopFilters): void {
+  if (filters.studyProgramId !== null) {
+    params.set("prodi", String(filters.studyProgramId));
+  }
+  if (filters.entryPath) params.set("jalur", filters.entryPath);
+  if (filters.category) params.set("kategori", filters.category);
+  if (filters.stageNo !== null) params.set("tahap", String(filters.stageNo));
+  if (filters.province) params.set("provinsi", filters.province);
+  if (filters.originAgency) params.set("instansi", filters.originAgency);
 }
 
 /**
@@ -120,11 +161,7 @@ export function studentListAddress(
   if (filters.status !== NO_FILTERS.status) {
     params.set("status", STATUS_IN_ADDRESS[filters.status]);
   }
-  if (filters.studyProgramId !== null) {
-    params.set("prodi", String(filters.studyProgramId));
-  }
-  if (filters.entryPath) params.set("jalur", filters.entryPath);
-  if (filters.category) params.set("kategori", filters.category);
+  setTopFilters(params, filters);
   if (page > 1) params.set("hal", String(page));
   return addressOf(STUDENT_LIST_ADDRESS, params.toString());
 }

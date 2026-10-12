@@ -4,6 +4,8 @@ import type { Database } from "@/db/connect";
 import { students, studyPrograms } from "@/db/schema";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { CategoryField } from "./labels";
+import type { StageCohorts } from "./stage-cohorts";
+import { fromAgency, fromProvince, inStage } from "./stage-origin-conditions";
 import { matchesSearch } from "./student-conditions";
 import type {
   EntryPath,
@@ -69,10 +71,14 @@ function inCategory(field: CategoryField | null): SQL | undefined {
   return field === null ? undefined : eq(students[field], true);
 }
 
-/** The students an account may see that match every filter. */
+/**
+ * The students an account may see that match every filter. The Tahapan
+ * filter reads which angkatan is in which tahap now from `cohorts`.
+ */
 export function found(
   limit: RowLimit,
   filters: StudentListFilters,
+  cohorts: StageCohorts,
 ): SQL | undefined {
   return and(
     visibleTo(limit),
@@ -82,6 +88,9 @@ export function found(
     inProgram(filters.studyProgramId),
     byPath(filters.entryPath),
     inCategory(filters.category),
+    inStage(filters.stageNo, cohorts),
+    fromProvince(filters.province),
+    fromAgency(filters.originAgency),
   );
 }
 
@@ -102,8 +111,9 @@ export async function listStudents(
   limit: RowLimit,
   filters: StudentListFilters,
   page: number,
+  cohorts: StageCohorts,
 ): Promise<StudentPage> {
-  const condition = found(limit, filters);
+  const condition = found(limit, filters, cohorts);
   const [counted] = await db
     .select({ matching: count() })
     .from(students)
