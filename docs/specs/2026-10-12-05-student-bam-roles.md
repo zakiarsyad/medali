@@ -117,7 +117,7 @@ None.
   seven BAM roles, with its checks.
 - [x] 2. The panel "Badan Asrama Mahasiswa" with its list and empty
   state.
-- [ ] 3. "Tambah pengurus BAM": search, pick, tick roles and save.
+- [x] 3. "Tambah pengurus BAM": search, pick, tick roles and save.
 - [ ] 4. "Edit peran" and "Hapus", with the log lines.
 - [ ] 5. Roles stop for a student who is not Aktif or was removed, with
   the check.

@@ -11,8 +11,11 @@ import { readCampusEmailEnding } from "@/settings";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { parseNewAccount, parseRoleChange } from "./account-input";
+import { parseBamRoles } from "./bam-role-input";
+import { giveBamRoles } from "./give-bam-roles";
 import { USERS_ADDRESS } from "./list-address";
 import { addAccount, changeRoles, removeAccount } from "./manage-accounts";
+import { type FoundStudent, searchActiveStudents } from "./search-students";
 
 async function userManager(): Promise<Account> {
   const account = await currentAccount();
@@ -92,4 +95,32 @@ export async function removeAccountAction(
   if (!removed.ok) return { error: removed.error, done: null };
   refreshScreens();
   return { error: null, done: `Akun ${text(form, "name")} dihapus.` };
+}
+
+/** The students offered in "Tambah pengurus BAM" for what was typed. */
+export async function searchStudentsAction(
+  query: string,
+): Promise<FoundStudent[]> {
+  await userManager();
+  // A hand-made request may send anything in place of the text.
+  if (typeof query !== "string") return [];
+  return searchActiveStudents(database(), query);
+}
+
+export async function giveBamRolesAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await userManager();
+  const parsed = parseBamRoles({
+    accountId: text(form, "accountId"),
+    roles: texts(form, "roles"),
+  });
+  if (!parsed.ok) return { error: parsed.error, done: null };
+
+  const given = await giveBamRoles(database(), manager, parsed.value);
+  if (!given.ok) return { error: given.error, done: null };
+  refreshScreens();
+  const roles = parsed.value.roles.map((role) => ROLES[role].title).join(", ");
+  return { error: null, done: `${given.value} ditambahkan sebagai ${roles}.` };
 }

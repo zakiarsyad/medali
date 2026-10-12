@@ -1,4 +1,5 @@
 import styles from "@/ui/data-screen.module.css";
+import { AddBamForm } from "./add-bam-form";
 import { BamStudentList } from "./bam-student-list";
 import { type ListParams, listAddress } from "./list-address";
 import {
@@ -21,6 +22,7 @@ export function BamPanel({ list, params }: BamPanelProps) {
         Mahasiswa yang memegang peran BAM. Perannya berlaku di samping peran
         Mahasiswa, selama mahasiswa berstatus aktif.
       </p>
+      <AddBamForm />
       <BamStudentList students={list.students} />
       {list.total > 0 && (
         <ListPager

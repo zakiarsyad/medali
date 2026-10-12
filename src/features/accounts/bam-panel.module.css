@@ -18,3 +18,11 @@
   background: var(--surface2);
   font-size: var(--text-md);
 }
+
+.add {
+  margin-top: var(--space-md);
+}
+
+.add > summary {
+  list-style: none;
+}
