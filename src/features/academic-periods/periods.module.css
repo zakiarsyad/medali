@@ -1,0 +1,46 @@
+.list {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A row on a wide screen; its parts wrap into a card on a narrow one. */
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-xl);
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+}
+
+.name {
+  display: flex;
+  flex: 1 1 var(--box-min-width);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  font-weight: var(--weight-heavy);
+}
+
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-xl);
+  margin: 0;
+}
+
+.dates dd {
+  margin: 0;
+}
+
+.running {
+  margin: 0 0 var(--space-xs);
+  color: var(--navy);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+}

@@ -106,6 +106,14 @@ describe("may", () => {
     }
   });
 
+  it("gives the right to set the academic periods to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "set_academic_periods")).toBe(
+        mayOpenTab([role], "settings", "academic_periods"),
+      );
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -176,6 +184,14 @@ describe("tabsFor", () => {
   it("gives Pengguna dan peran only to a role that manages users", () => {
     expect(paths(tabsFor(["head_of_unit"], "settings"))).toContain("pengguna");
     expect(paths(tabsFor(["upk_staff"], "settings"))).toEqual(["mahasiswa"]);
+  });
+
+  it("gives Periode akademik to Kepala Unit only", () => {
+    expect(paths(tabsFor(["head_of_unit"], "settings"))).toContain("periode");
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    for (const role of others) {
+      expect(paths(tabsFor([role], "settings"))).not.toContain("periode");
+    }
   });
 });
 

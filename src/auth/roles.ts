@@ -90,7 +90,7 @@ export const ROLES: Record<RoleId, Role> = {
     tabs: {
       ...VIEW_ALL_TABS,
       dorm: ALL_DORM,
-      settings: ["users", "new_students"],
+      settings: ["users", "new_students", "academic_periods"],
     },
     actions: [
       "manage_users",
