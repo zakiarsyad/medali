@@ -6,7 +6,6 @@ import { currentStage, readGoogleSignInSettings } from "@/settings";
 import type { FormState } from "@/ui/form-message";
 import { appOriginOf } from "./app-origin";
 import {
-  ATTEMPT_COOKIE_PATH,
   ATTEMPT_SECONDS,
   attemptCookieName,
   attemptCookieValue,
@@ -34,11 +33,10 @@ export async function startGoogleSignIn(
 
   const attempt = newSignInAttempt();
   (await cookies()).set(
-    attemptCookieName(attempt.state),
+    attemptCookieName(attempt.state, stage),
     attemptCookieValue(attempt),
     {
       ...signInCookieOptions(stage),
-      path: ATTEMPT_COOKIE_PATH,
       maxAge: ATTEMPT_SECONDS,
     },
   );

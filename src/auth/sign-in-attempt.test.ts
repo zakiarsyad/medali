@@ -45,9 +45,32 @@ describe("the cookie of an attempt", () => {
     const first = newSignInAttempt();
     const second = newSignInAttempt();
 
-    expect(attemptCookieName(first.state)).toContain(first.state);
-    expect(attemptCookieName(first.state)).not.toBe(
-      attemptCookieName(second.state),
+    expect(attemptCookieName(first.state, "local")).toContain(first.state);
+    expect(attemptCookieName(first.state, "local")).not.toBe(
+      attemptCookieName(second.state, "local"),
+    );
+  });
+
+  it.each(["pr-preview", "main-preview", "campus"] as const)(
+    "has the name only the site itself can set in %s, still one per state",
+    (stage) => {
+      const first = newSignInAttempt();
+      const second = newSignInAttempt();
+
+      expect(attemptCookieName(first.state, stage)).toBe(
+        `__Host-medali-masuk-${first.state}`,
+      );
+      expect(attemptCookieName(second.state, stage)).toBe(
+        `__Host-medali-masuk-${second.state}`,
+      );
+    },
+  );
+
+  it("has the plain name on a local computer", () => {
+    const attempt = newSignInAttempt();
+
+    expect(attemptCookieName(attempt.state, "local")).toBe(
+      `medali-masuk-${attempt.state}`,
     );
   });
 

@@ -1,13 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { database } from "@/db/database";
-import { currentStage, readGoogleSignInSettings } from "@/settings";
+import { currentStage, readGoogleSignInSettings, type Stage } from "@/settings";
 import { appOriginOf } from "./app-origin";
 import { finishSignIn, type SignInSetup } from "./finish-sign-in";
 import { googleOf } from "./google";
-import { SESSION_COOKIE } from "./session-token";
+import { sessionCookieName } from "./session-token";
 import {
-  ATTEMPT_COOKIE_PATH,
   attemptCookieName,
   googleCodeIn,
   isAttemptState,
@@ -15,17 +14,20 @@ import {
   readSignInAttempt,
   type SignInAttempt,
 } from "./sign-in-attempt";
-import { signInCookieOptions } from "./sign-in-cookies";
+import { removedCookieOptions, signInCookieOptions } from "./sign-in-cookies";
 import { refusalAddress } from "./sign-in-messages";
 
 /** The attempt kept for a state. Its cookie is removed: it is used once. */
-async function takeAttempt(state: string): Promise<SignInAttempt | null> {
+async function takeAttempt(
+  state: string,
+  stage: Stage,
+): Promise<SignInAttempt | null> {
   if (!isAttemptState(state)) return null;
   const jar = await cookies();
-  const name = attemptCookieName(state);
-  const attempt = readSignInAttempt(state, jar.get(name)?.value);
-  jar.delete({ name, path: ATTEMPT_COOKIE_PATH });
-  return attempt;
+  const name = attemptCookieName(state, stage);
+  const kept = jar.get(name)?.value;
+  if (kept !== undefined) jar.set(name, "", removedCookieOptions(stage));
+  return readSignInAttempt(state, kept);
 }
 
 function signInSetup(): SignInSetup {
@@ -49,7 +51,7 @@ export async function returnFromGoogle(request: Request): Promise<never> {
     signInSetup(),
     {
       code: googleCodeIn(sent),
-      attempt: await takeAttempt(sent.get("state") ?? ""),
+      attempt: await takeAttempt(sent.get("state") ?? "", stage),
       returnAddress: origin ? `${origin}${RETURN_PATH}` : null,
     },
     new Date(),
@@ -59,9 +61,10 @@ export async function returnFromGoogle(request: Request): Promise<never> {
   }
 
   // No lifetime is set, so the browser forgets the cookie when it closes.
-  (await cookies()).set(SESSION_COOKIE, finished.sessionToken, {
-    ...signInCookieOptions(stage),
-    path: "/",
-  });
+  (await cookies()).set(
+    sessionCookieName(stage),
+    finished.sessionToken,
+    signInCookieOptions(stage),
+  );
   redirect("/");
 }

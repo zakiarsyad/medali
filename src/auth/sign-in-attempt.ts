@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { GoogleSignInSettings } from "@/settings";
+import type { GoogleSignInSettings, Stage } from "@/settings";
+import { signInCookieName } from "./sign-in-cookies";
 
 /**
  * One press of "Masuk dengan Google", kept in the browser until Google
@@ -15,8 +16,6 @@ export interface SignInAttempt {
 
 /** Where Google sends the person back to, below the app's own address. */
 export const RETURN_PATH = "/masuk/google/kembali";
-/** The attempt's cookie is sent only to the addresses that finish it. */
-export const ATTEMPT_COOKIE_PATH = "/masuk/google";
 export const ATTEMPT_SECONDS = 10 * 60;
 
 const GOOGLE_PAGE = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -39,8 +38,8 @@ export function isAttemptState(text: string): boolean {
   return RANDOM_TEXT.test(text);
 }
 
-export function attemptCookieName(state: string): string {
-  return `${COOKIE_NAME_START}${state}`;
+export function attemptCookieName(state: string, stage: Stage): string {
+  return signInCookieName(`${COOKIE_NAME_START}${state}`, stage);
 }
 
 export function attemptCookieValue(attempt: SignInAttempt): string {

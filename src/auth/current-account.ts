@@ -8,7 +8,7 @@ import {
   findActiveAccount,
   firstAccountWithRole,
 } from "./accounts";
-import { SESSION_COOKIE } from "./session-token";
+import { sessionCookieName } from "./session-token";
 import { sessionAccount } from "./sessions";
 import { type SignedIn, whoIsSignedIn } from "./who-is-signed-in";
 
@@ -23,9 +23,9 @@ export const currentSignIn = cache(async (): Promise<SignedIn | null> => {
   // Read before anything else, so that every page asking for the account
   // is built per request and never frozen at build time.
   const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
-  const picked = jar.get(ACCOUNT_COOKIE)?.value;
   const stage = currentStage();
+  const token = jar.get(sessionCookieName(stage))?.value;
+  const picked = jar.get(ACCOUNT_COOKIE)?.value;
 
   const own = token
     ? await sessionAccount(database(), token, new Date())

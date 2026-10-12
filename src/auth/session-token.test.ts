@@ -2,8 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   isSessionToken,
   newSessionToken,
+  sessionCookieName,
   sessionTokenHash,
 } from "./session-token";
+
+describe("sessionCookieName", () => {
+  it("is the name only the site itself can set, where the cookie is secure", () => {
+    expect(sessionCookieName("campus")).toBe("__Host-medali-session");
+    expect(sessionCookieName("main-preview")).toBe("__Host-medali-session");
+  });
+
+  it("is the plain name on a local computer", () => {
+    expect(sessionCookieName("local")).toBe("medali-session");
+  });
+});
 
 describe("a session token", () => {
   it("differs every time", () => {

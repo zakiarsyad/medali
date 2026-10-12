@@ -1,6 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
+import type { Stage } from "@/settings";
+import { signInCookieName } from "./sign-in-cookies";
 
-export const SESSION_COOKIE = "medali-session";
+/** The name of the cookie that holds the token of a Google session. */
+export function sessionCookieName(stage: Stage): string {
+  return signInCookieName("medali-session", stage);
+}
 
 const TOKEN_BYTES = 32;
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
