@@ -36,16 +36,18 @@ export function parseAccountEmail(
  * the screen shows when another account holds that address. The database
  * is what keeps one address to one active account: a look beforehand
  * would miss two saves of one address at one moment. The write must be
- * all or nothing, so that a refused one leaves nothing behind.
+ * all or nothing, so that a refused one leaves nothing behind. `message`
+ * replaces the usual words where the write saves more than one account.
  */
 export async function refusedWhenEmailInUse<T>(
   write: () => Promise<Parsed<T>>,
+  message: string = EMAIL_IN_USE,
 ): Promise<Parsed<T>> {
   try {
     return await write();
   } catch (error) {
     if (brokeUniqueRule(error, EMAIL_IN_USE_RULE)) {
-      return { ok: false, error: EMAIL_IN_USE };
+      return { ok: false, error: message };
     }
     throw error;
   }

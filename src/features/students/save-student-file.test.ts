@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
@@ -21,12 +21,15 @@ const ALLOWED: RoleId[] = ["head_of_unit", "upk_staff", "dorm_manager"];
 const OTHERS = ROLE_IDS.filter((role) => !ALLOWED.includes(role));
 const PROGRAM = "Prodi Uji Simpan";
 
-/** A file of made-up students, each row a NIM and a name. */
-function csvFile(name: string, ...rows: [nim: string, name: string][]) {
+/** A file of made-up students, each row a NIM, a name and maybe an address. */
+function csvFile(
+  name: string,
+  ...rows: [nim: string, name: string, email?: string][]
+) {
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const lines = rows.map(
-    ([nim, studentName]) =>
-      `${nim},${studentName},${PROGRAM},Alih program,P,2026,1-02,Riau,Direktorat Jenderal Pajak,ya,,,Cuti`,
+    ([nim, studentName, email = ""]) =>
+      `${nim},${studentName},${PROGRAM},Alih program,P,2026,1-02,Riau,Direktorat Jenderal Pajak,ya,,,Cuti,${email}`,
   );
   const text = [titles, ...lines].join("\n");
   const file: UploadedFile = { name, bytes: new TextEncoder().encode(text) };
@@ -45,6 +48,17 @@ async function contextWithProgram(db: Database): Promise<InputContext> {
 async function studentWithNim(db: Database, nim: string) {
   const [found] = await db.select().from(students).where(eq(students.nim, nim));
   return found;
+}
+
+/** The address on the account of each of these students, by NIM. */
+async function emailsByNim(db: Database, nims: string[]) {
+  const found = await db
+    .select({ nim: students.nim, email: accounts.email })
+    .from(students)
+    .innerJoin(accounts, eq(accounts.studentId, students.id))
+    .where(inArray(students.nim, nims))
+    .orderBy(asc(students.nim));
+  return found.map(({ nim, email }) => [nim, email]);
 }
 
 function skippedPreview(broken: number, registered: number): FilePreview {
@@ -209,6 +223,120 @@ describe("saveStudentFile", () => {
         },
       });
       expect(await studentWithNim(db, "9900000805")).toEqual(before);
+    });
+  });
+
+  it("keeps the address of a row on the student's account, and saves a row with none without one", async () => {
+    await inTestDatabase(async (db) => {
+      const context = await contextWithProgram(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const file = csvFile(
+        "uji.csv",
+        ["9900000811", "Alamat Berkas Satu", "Berkas.Satu@Kampus.Example"],
+        ["9900000812", "Alamat Berkas Dua"],
+      );
+
+      const saved = await saveStudentFile(
+        db,
+        memoryStore(),
+        actor,
+        file,
+        context,
+      );
+
+      expect(saved.ok && saved.value.saved).toBe(2);
+      expect(await emailsByNim(db, ["9900000811", "9900000812"])).toEqual([
+        ["9900000811", "berkas.satu@kampus.example"],
+        ["9900000812", null],
+      ]);
+    });
+  });
+
+  it("skips a row with a wrong, a used or a repeated address, and saves the others", async () => {
+    await inTestDatabase(async (db) => {
+      const context = await contextWithProgram(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      await db.insert(accounts).values({
+        name: "Pegawai Lain",
+        email: "dipakai.berkas@kampus.example",
+      });
+      const file = csvFile(
+        "uji.csv",
+        ["9900000813", "Alamat Berkas Tiga", "dipakai.berkas@kampus.example"],
+        ["9900000814", "Alamat Berkas Empat", "berkas.empat"],
+        ["9900000815", "Alamat Berkas Lima", "berkas.lima@luar.example"],
+        ["9900000816", "Alamat Berkas Enam", "kembar.berkas@kampus.example"],
+        ["9900000817", "Alamat Berkas Tujuh", "kembar.berkas@kampus.example"],
+      );
+
+      const saved = await saveStudentFile(
+        db,
+        memoryStore(),
+        actor,
+        file,
+        context,
+      );
+
+      expect(saved.ok && saved.value).toMatchObject({
+        saved: 1,
+        preview: {
+          broken: 4,
+          registered: 0,
+          firstSkipped: [
+            {
+              row: 2,
+              nim: "9900000813",
+              reason: "Email sudah dipakai akun lain.",
+            },
+            { row: 3, nim: "9900000814", reason: "Alamat email tidak valid." },
+            {
+              row: 4,
+              nim: "9900000815",
+              reason: "Gunakan alamat email kampus.",
+            },
+            {
+              row: 6,
+              nim: "9900000817",
+              reason: "Email sudah dipakai akun lain.",
+            },
+          ],
+        },
+      });
+      expect(await studentWithNim(db, "9900000813")).toBeUndefined();
+      expect(await emailsByNim(db, ["9900000816", "9900000817"])).toEqual([
+        ["9900000816", "kembar.berkas@kampus.example"],
+      ]);
+    });
+  });
+
+  it("never gives an address to a student who is already there", async () => {
+    await inTestDatabase(async (db) => {
+      const context = await contextWithProgram(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const first = csvFile("uji.csv", ["9900000818", "Alamat Berkas Lama"]);
+      await saveStudentFile(db, memoryStore(), actor, first, context);
+      const again = csvFile(
+        "uji.csv",
+        ["9900000818", "Alamat Berkas Lama", "berkas.lama@kampus.example"],
+        ["9900000819", "Alamat Berkas Baru", "berkas.lama@kampus.example"],
+      );
+
+      const saved = await saveStudentFile(
+        db,
+        memoryStore(),
+        actor,
+        again,
+        context,
+      );
+
+      expect(saved.ok && saved.value).toMatchObject({
+        saved: 1,
+        preview: { broken: 0, registered: 1 },
+      });
+      expect(await emailsByNim(db, ["9900000818", "9900000819"])).toEqual([
+        ["9900000818", null],
+        ["9900000819", "berkas.lama@kampus.example"],
+      ]);
     });
   });
 

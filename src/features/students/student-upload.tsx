@@ -14,6 +14,7 @@ import styles from "./new-students.module.css";
 import {
   FILE_COLUMNS,
   MAX_FILE_ROWS,
+  OPTIONAL_COLUMNS,
   TEMPLATE_FILE_NAME,
   templateCsv,
   yearRange,
@@ -43,12 +44,14 @@ function ColumnNotes({ cohortYears }: { cohortYears: number[] }) {
         <Fragment key={title}>
           {place > 0 && ", "}
           <b>{title}</b>
+          {OPTIONAL_COLUMNS.includes(title) && " (opsional)"}
         </Fragment>
       ))}
       . Prodi, provinsi, dan instansi harus sama dengan daftar di formulir.
       Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Angkatan:{" "}
       {yearRange(cohortYears)}. Kolom kategori diisi ya atau tidak. Status:
-      Aktif, Cuti, atau Non Aktif. Satu berkas paling banyak{" "}
+      Aktif, Cuti, atau Non Aktif. Email: alamat email kampus mahasiswa, boleh
+      dikosongkan. Satu berkas paling banyak{" "}
       {MAX_FILE_ROWS.toLocaleString("id-ID")} baris dan 1 MB.
     </p>
   );

@@ -1,3 +1,4 @@
+import { EMAIL_IN_USE } from "@/auth/account-email";
 import type { Parsed } from "@/parsed";
 import { readCsv } from "./csv-text";
 import { fileReason } from "./file-reasons";
@@ -6,6 +7,7 @@ import {
   FILE_COLUMNS,
   type FileCells,
   MAX_FILE_ROWS,
+  OPTIONAL_COLUMNS,
 } from "./student-file-columns";
 import {
   type InputContext,
@@ -87,7 +89,10 @@ function placesByTitle(titles: string[]): Parsed<number[]> {
     const accepted: string[] = [column.title, ...column.others];
     return titles.findIndex((title) => accepted.includes(title));
   });
-  const missing = FILE_COLUMNS.filter((_, index) => places[index] === -1);
+  const missing = FILE_COLUMNS.filter(
+    (column, index) =>
+      places[index] === -1 && !OPTIONAL_COLUMNS.includes(column.title),
+  );
   if (missing.length > 0) {
     const names = missing.map((column) => column.title).join(", ");
     return refused(
@@ -97,7 +102,10 @@ function placesByTitle(titles: string[]): Parsed<number[]> {
   return { ok: true, value: places };
 }
 
-/** `places` holds, in the order of the template, where each column is. */
+/**
+ * `places` holds, in the order of the template, where each column is. A
+ * column the file does not have gives empty cells.
+ */
 function cellsOf(row: NumberedRow, places: number[]): FileCells {
   function cell(templatePlace: number): string {
     const place = places[templatePlace] ?? -1;
@@ -117,6 +125,7 @@ function cellsOf(row: NumberedRow, places: number[]): FileCells {
     pembibitan: cell(10),
     internasional: cell(11),
     status: cell(12),
+    email: cell(13),
   };
 }
 
@@ -206,5 +215,48 @@ export function skipRegistered(
     ...rows,
     ready: rows.ready.filter((row) => !registered.has(row.student.nim)),
     registered: [...rows.registered, ...added].sort((a, b) => a.row - b.row),
+  };
+}
+
+/**
+ * The ready rows whose address cannot be saved: one that an account
+ * holds already (`inUse`), and one that an earlier row of the file
+ * carries, so that the first row with an address keeps it.
+ */
+function rowsWithUsedEmail(
+  ready: ReadyRow[],
+  inUse: ReadonlySet<string>,
+): Set<number> {
+  const taken = new Set(inUse);
+  const refusedRows = new Set<number>();
+  const inFileOrder = [...ready].sort((a, b) => a.row - b.row);
+  for (const { row, student } of inFileOrder) {
+    if (student.email === null) continue;
+    if (taken.has(student.email)) refusedRows.add(row);
+    taken.add(student.email);
+  }
+  return refusedRows;
+}
+
+/**
+ * Takes the ready rows whose address is already used out of the ready
+ * ones, and puts them with the rows that break a rule: the file must be
+ * corrected for them. A row with no address is never taken out.
+ */
+export function skipUsedEmails(
+  rows: FileRows,
+  inUse: ReadonlySet<string>,
+): FileRows {
+  const refusedRows = rowsWithUsedEmail(rows.ready, inUse);
+  const taken = rows.ready.filter(({ row }) => refusedRows.has(row));
+  const added = taken.map(({ row, student }) => ({
+    row,
+    nim: student.nim,
+    reason: EMAIL_IN_USE,
+  }));
+  return {
+    ...rows,
+    ready: rows.ready.filter(({ row }) => !refusedRows.has(row)),
+    skipped: [...rows.skipped, ...added].sort((a, b) => a.row - b.row),
   };
 }

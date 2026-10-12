@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { readStudentFile, skipRegistered } from "./student-file";
+import {
+  readStudentFile,
+  skipRegistered,
+  skipUsedEmails,
+} from "./student-file";
 import { MAX_FILE_ROWS, templateCsv } from "./student-file-columns";
 import { cohortChoices } from "./student-input";
 
@@ -300,6 +304,53 @@ describe("readStudentFile", () => {
     ]);
   });
 
+  it("reads the column email wherever the titles put it, kept in small letters", () => {
+    const rows = read(
+      `email,${TITLES}`,
+      `Berkas.Uji@Kampus.Example,${row("9900000523")}`,
+      `,${row("9900000524")}`,
+    );
+
+    expect(rows.skipped).toEqual([]);
+    expect(
+      rows.ready.map(({ student }) => [student.nim, student.email]),
+    ).toEqual([
+      ["9900000523", "berkas.uji@kampus.example"],
+      ["9900000524", null],
+    ]);
+  });
+
+  it("reads email as the last column when no row names the columns", () => {
+    const rows = read(
+      `${row("9900000525")},berkas.uji@kampus.example`,
+      row("9900000526"),
+    );
+
+    expect(
+      rows.ready.map(({ student }) => [student.nim, student.email]),
+    ).toEqual([
+      ["9900000525", "berkas.uji@kampus.example"],
+      ["9900000526", null],
+    ]);
+  });
+
+  it("skips a row with a wrong address, in the words of the form", () => {
+    const rows = read(
+      `${TITLES},email`,
+      `${row("9900000527")},berkas.uji`,
+      `${row("9900000528")},berkas.uji@luar.example`,
+      `${row("9900000529")},`,
+    );
+
+    expect(rows.ready.map(({ student }) => student.nim)).toEqual([
+      "9900000529",
+    ]);
+    expect(rows.skipped).toEqual([
+      { row: 2, nim: "9900000527", reason: "Alamat email tidak valid." },
+      { row: 3, nim: "9900000528", reason: "Gunakan alamat email kampus." },
+    ]);
+  });
+
   it("refuses a file whose titles lack a column, and names it", () => {
     const result = readStudentFile(
       `nim,nama,prodi,jalur,angkatan\n${row("9900000510")}`,
@@ -380,5 +431,61 @@ describe("skipRegistered", () => {
     const rows = read(TITLES, row("9900000514"));
 
     expect(skipRegistered(rows, new Set())).toEqual(rows);
+  });
+});
+
+describe("skipUsedEmails", () => {
+  const IN_USE = "Email sudah dipakai akun lain.";
+
+  function withEmail(nim: string, email: string): string {
+    return `${row(nim)},${email}`;
+  }
+
+  it("skips a row whose address an account holds, with the rows to correct", () => {
+    const rows = read(
+      `${TITLES},email`,
+      withEmail("9900000531", "dipakai.uji@kampus.example"),
+      row("12"),
+      withEmail("9900000532", "bebas.uji@kampus.example"),
+    );
+
+    const checked = skipUsedEmails(
+      rows,
+      new Set(["dipakai.uji@kampus.example"]),
+    );
+
+    expect(checked.ready.map(({ student }) => student.nim)).toEqual([
+      "9900000532",
+    ]);
+    expect(checked.skipped).toEqual([
+      { row: 2, nim: "9900000531", reason: IN_USE },
+      { row: 3, nim: "12", reason: "NIM harus 10 digit angka." },
+    ]);
+    expect(checked.registered).toEqual([]);
+  });
+
+  it("keeps the first row of an address that is in the file twice, and skips the later ones", () => {
+    const rows = read(
+      `${TITLES},email`,
+      withEmail("9900000533", "kembar.uji@kampus.example"),
+      withEmail("9900000534", "Kembar.Uji@kampus.example"),
+      withEmail("9900000535", "kembar.uji@kampus.example"),
+    );
+
+    const checked = skipUsedEmails(rows, new Set());
+
+    expect(checked.ready.map(({ student }) => student.nim)).toEqual([
+      "9900000533",
+    ]);
+    expect(checked.skipped).toEqual([
+      { row: 3, nim: "9900000534", reason: IN_USE },
+      { row: 4, nim: "9900000535", reason: IN_USE },
+    ]);
+  });
+
+  it("never skips a row with no address", () => {
+    const rows = read(TITLES, row("9900000536"), row("9900000537"));
+
+    expect(skipUsedEmails(rows, new Set())).toEqual(rows);
   });
 });

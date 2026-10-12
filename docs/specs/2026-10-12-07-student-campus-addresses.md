@@ -126,6 +126,20 @@ change any of these.
     get none when they are built.
 13. The search of the list still looks at the name and the NIM only,
     not at the address.
+14. In a file the column "email" comes last. A file with no row of
+    titles, made from the earlier template, is then still read in the
+    right order.
+15. The example row of the template has no address: any made-up one
+    would be refused where the campus address ending is set.
+16. A row skipped for its address is counted with the rows to correct
+    in the file. The reason names no address.
+17. A row whose NIM is already registered is set apart first, so its
+    address takes none away from a row that can be saved.
+18. When an address is taken by another account between the check of a
+    file and its save, no row of the file is saved and the message asks
+    to upload the file again. Read again, the file skips that row.
+19. The preview of a file shows the address of its first rows, to the
+    same three roles.
 
 ## Steps
 
@@ -134,7 +148,7 @@ change any of these.
 - [x] 2. "Email kampus" in the form for a new student and for "Ubah",
   with its messages.
 - [x] 3. The address line in the list.
-- [ ] 4. The column "email" in "Unggah berkas" and in the template.
+- [x] 4. The column "email" in "Unggah berkas" and in the template.
 - [ ] 5. A student signs in with that address, checked with a stand-in
   for Google.
 - [ ] 6. The log lines, the refusals and the phone layout.

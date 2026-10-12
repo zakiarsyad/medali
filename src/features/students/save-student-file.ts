@@ -1,4 +1,5 @@
 import { may } from "@/auth/access";
+import { refusedWhenEmailInUse } from "@/auth/account-email";
 import type { Database } from "@/db/connect";
 import type { FileStore } from "@/files/file-store";
 import type { Parsed } from "@/parsed";
@@ -17,6 +18,13 @@ const NOTHING_TO_SAVE = {
   error:
     "Tidak ada baris yang bisa disimpan. Periksa berkas, lalu unggah lagi.",
 } as const;
+
+/**
+ * Said when an address was free at the check and taken at the save. The
+ * whole file is then left unsaved; read again, it skips that row.
+ */
+const EMAIL_TAKEN_SINCE =
+  "Sebuah email di berkas baru saja dipakai akun lain, sehingga tidak ada baris yang disimpan. Unggah berkas lagi.";
 
 export interface SavedFile {
   saved: number;
@@ -65,9 +73,13 @@ export async function saveStudentFile(
   };
   const students = ready.map(({ student }) => ({ ...student, ...input }));
   const batch = { inputAt: input.inputAt, inputBy: actor.id, students };
-  const adding = store
-    ? await addStudentsWithFile(db, store, file, batch)
-    : { ok: true as const, value: await addStudents(db, students, actor.id) };
+  const adding = await refusedWhenEmailInUse(
+    async () =>
+      store
+        ? addStudentsWithFile(db, store, file, batch)
+        : { ok: true, value: await addStudents(db, students, actor.id) },
+    EMAIL_TAKEN_SINCE,
+  );
   if (!adding.ok) return adding;
   const added = adding.value;
   if (added.length === 0) return NOTHING_TO_SAVE;
