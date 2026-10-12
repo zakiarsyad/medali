@@ -11,7 +11,7 @@ import {
   or,
   type SQL,
 } from "drizzle-orm";
-import { EMAIL_IN_USE, EMAIL_IN_USE_RULE } from "@/auth/account-email";
+import { refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -22,7 +22,6 @@ import {
   roleChanges,
   studyPrograms,
 } from "@/db/schema";
-import { brokeUniqueRule } from "@/db/unique-violation";
 import type { Parsed } from "@/parsed";
 import type { NewAccount, RoleChange } from "./account-input";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
@@ -198,16 +197,10 @@ export async function addAccount(
   if (!(await programIsKnown(db, account.studyProgramId))) {
     return UNKNOWN_PROGRAM;
   }
-  try {
-    return { ok: true, value: await saveNewAccount(db, account, by) };
-  } catch (error) {
-    // The database is what keeps one address to one active account. A
-    // look beforehand would miss two saves of one address at one moment.
-    if (brokeUniqueRule(error, EMAIL_IN_USE_RULE)) {
-      return { ok: false, error: EMAIL_IN_USE };
-    }
-    throw error;
-  }
+  return refusedWhenEmailInUse(async () => ({
+    ok: true,
+    value: await saveNewAccount(db, account, by),
+  }));
 }
 
 /**

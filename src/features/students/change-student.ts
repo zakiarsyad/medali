@@ -1,5 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
+import { refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
@@ -16,6 +17,8 @@ export const NOT_FOUND = {
 /**
  * Changes a student put in through Pengguna baru mahasiswa, found by NIM.
  * The NIM itself stays, and so does who put the student in, when and how.
+ * The address goes on the student's account; one that another account
+ * holds is refused, and nothing is changed.
  */
 export async function changeStudent(
   db: Database,
@@ -23,20 +26,22 @@ export async function changeStudent(
   student: StudentInput,
 ): Promise<Parsed<null>> {
   if (!may(actor.roles, "input_new_students")) return NOT_ALLOWED;
-  const { nim, ...fields } = student;
-  return db.transaction(async (tx) => {
-    const [changed] = await tx
-      .update(students)
-      .set(fields)
-      .where(and(eq(students.nim, nim), ADDED_HERE))
-      .returning({ id: students.id });
-    if (!changed) return NOT_FOUND;
-    await tx
-      .update(accounts)
-      .set({ name: fields.name })
-      .where(eq(accounts.studentId, changed.id));
-    return { ok: true, value: null };
-  });
+  const { nim, email, ...fields } = student;
+  return refusedWhenEmailInUse(() =>
+    db.transaction(async (tx) => {
+      const [changed] = await tx
+        .update(students)
+        .set(fields)
+        .where(and(eq(students.nim, nim), ADDED_HERE))
+        .returning({ id: students.id });
+      if (!changed) return NOT_FOUND;
+      await tx
+        .update(accounts)
+        .set({ name: fields.name, email })
+        .where(eq(accounts.studentId, changed.id));
+      return { ok: true, value: null };
+    }),
+  );
 }
 
 async function removeAccountOf(

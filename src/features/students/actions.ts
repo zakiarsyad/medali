@@ -10,6 +10,7 @@ import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
 import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
+import { readCampusEmailEnding } from "@/settings";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { findAddedStudent } from "./added-students";
@@ -38,6 +39,7 @@ function readFields(form: FormData): StudentFields {
   return {
     nim: text(form, "nim"),
     name: text(form, "name"),
+    email: text(form, "email"),
     studyProgramId: text(form, "studyProgramId"),
     entryPath: text(form, "entryPath"),
     sex: text(form, "sex"),
@@ -56,7 +58,11 @@ async function inputContext(
   keptYear?: number,
 ): Promise<InputContext> {
   const cohortYears = cohortChoices(new Date().getFullYear(), keptYear);
-  return { programs: await listStudyPrograms(db), cohortYears };
+  return {
+    programs: await listStudyPrograms(db),
+    cohortYears,
+    campusEnding: readCampusEmailEnding(),
+  };
 }
 
 function refreshScreens(): void {

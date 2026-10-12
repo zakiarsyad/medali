@@ -115,12 +115,17 @@ change any of these.
    added.
 9. Sample students get no address, so they are still tried with Ganti
    peran only.
+10. The field takes any text, and the app itself says what is wrong
+    with an address. A browser would word that its own way, and the
+    three messages must read the same everywhere.
+11. An address longer than 254 characters, the longest a mailbox can
+    have, gets "Alamat email tidak valid."
 
 ## Steps
 
 - [x] 1. The student account keeps one campus address, unique across
   all accounts.
-- [ ] 2. "Email kampus" in the form for a new student and for "Ubah",
+- [x] 2. "Email kampus" in the form for a new student and for "Ubah",
   with its messages.
 - [ ] 3. The address line in the list.
 - [ ] 4. The column "email" in "Unggah berkas" and in the template.

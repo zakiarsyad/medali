@@ -11,11 +11,13 @@ const context = {
     { id: 7, name: "Prodi Uji Dua" },
   ],
   cohortYears: cohortChoices(2026),
+  campusEnding: "@kampus.example",
 };
 
 const valid: StudentFields = {
   nim: "9900000301",
   name: "  Mahasiswa   Contoh ",
+  email: "  Mahasiswa.Contoh@Kampus.Example ",
   studyProgramId: "7",
   entryPath: "transfer",
   sex: "female",
@@ -48,6 +50,7 @@ describe("parseStudent", () => {
       value: {
         nim: "9900000301",
         name: "Mahasiswa Contoh",
+        email: "mahasiswa.contoh@kampus.example",
         studyProgramId: 7,
         entryPath: "transfer",
         sex: "female",
@@ -68,6 +71,7 @@ describe("parseStudent", () => {
     const parsed = parseStudent(
       {
         ...valid,
+        email: " ",
         entryPath: "regular",
         className: "",
         province: "",
@@ -79,12 +83,24 @@ describe("parseStudent", () => {
     expect(parsed).toMatchObject({
       ok: true,
       value: {
+        email: null,
         className: null,
         province: null,
         originAgency: null,
         isAffirmation: false,
         isBlended: false,
       },
+    });
+  });
+
+  it("accepts any well-formed address while the campus ending is empty", () => {
+    const parsed = parseStudent(
+      { ...valid, email: "mahasiswa.contoh@luar.example" },
+      { ...context, campusEnding: "" },
+    );
+    expect(parsed).toMatchObject({
+      ok: true,
+      value: { email: "mahasiswa.contoh@luar.example" },
     });
   });
 
@@ -103,6 +119,21 @@ describe("parseStudent", () => {
       "a name that is too long",
       { name: "a".repeat(101) },
       "Nama paling banyak 100 karakter.",
+    ],
+    [
+      "an address that is not well formed",
+      { email: "mahasiswa.contoh" },
+      "Alamat email tidak valid.",
+    ],
+    [
+      "an address that is too long",
+      { email: `${"a".repeat(250)}@kampus.example` },
+      "Alamat email tidak valid.",
+    ],
+    [
+      "an address outside the campus",
+      { email: "mahasiswa.contoh@luar.example" },
+      "Gunakan alamat email kampus.",
     ],
     [
       "an unknown study program",

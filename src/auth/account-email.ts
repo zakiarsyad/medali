@@ -1,3 +1,4 @@
+import { brokeUniqueRule } from "@/db/unique-violation";
 import type { Parsed } from "@/parsed";
 import { isCampusEmail } from "./campus-email";
 
@@ -28,4 +29,24 @@ export function parseAccountEmail(
     return { ok: false, error: NOT_CAMPUS_EMAIL };
   }
   return { ok: true, value: email };
+}
+
+/**
+ * Runs a write that puts an address on an account, and gives the refusal
+ * the screen shows when another account holds that address. The database
+ * is what keeps one address to one active account: a look beforehand
+ * would miss two saves of one address at one moment. The write must be
+ * all or nothing, so that a refused one leaves nothing behind.
+ */
+export async function refusedWhenEmailInUse<T>(
+  write: () => Promise<Parsed<T>>,
+): Promise<Parsed<T>> {
+  try {
+    return await write();
+  } catch (error) {
+    if (brokeUniqueRule(error, EMAIL_IN_USE_RULE)) {
+      return { ok: false, error: EMAIL_IN_USE };
+    }
+    throw error;
+  }
 }

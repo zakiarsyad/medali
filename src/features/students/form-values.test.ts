@@ -13,6 +13,7 @@ const first = { studyProgramId: "3", cohortYear: "2026" };
 const student: StudentInput = {
   nim: "9900000601",
   name: "Mahasiswa Contoh",
+  email: "mahasiswa.contoh@kampus.example",
   studyProgramId: 7,
   entryPath: "transfer",
   sex: "female",
@@ -30,6 +31,7 @@ const student: StudentInput = {
 const typed: StudentFields = {
   nim: "99000006",
   name: "Ma",
+  email: "ma@",
   studyProgramId: "7",
   entryPath: "transfer",
   sex: "female",
@@ -46,6 +48,7 @@ describe("formValues", () => {
     expect(formValues(null, first)).toEqual({
       nim: "",
       name: "",
+      email: "",
       studyProgramId: "3",
       entryPath: "regular",
       sex: "male",
@@ -62,6 +65,7 @@ describe("formValues", () => {
     expect(formValues(student, first)).toEqual({
       nim: "9900000601",
       name: "Mahasiswa Contoh",
+      email: "mahasiswa.contoh@kampus.example",
       studyProgramId: "7",
       entryPath: "transfer",
       sex: "female",
@@ -72,6 +76,10 @@ describe("formValues", () => {
       status: "on_leave",
       categories: ["isAffirmation", "isBlended"],
     });
+  });
+
+  it("leaves the address empty for a student who has none", () => {
+    expect(formValues({ ...student, email: null }, first).email).toBe("");
   });
 });
 

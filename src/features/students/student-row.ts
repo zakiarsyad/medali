@@ -76,6 +76,7 @@ export function rowFields(
   return {
     nim: cells.nim,
     name: cells.nama,
+    email: "",
     studyProgramId: programId(cells.prodi, programs),
     entryPath: entryPath(cells.jalur),
     sex: sex(cells.jenis_kelamin),

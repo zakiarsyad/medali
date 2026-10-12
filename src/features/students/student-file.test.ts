@@ -9,6 +9,7 @@ const context = {
     { id: 7, name: "Manajemen Keuangan Negara STR" },
   ],
   cohortYears: cohortChoices(2026),
+  campusEnding: "@kampus.example",
 };
 
 const TITLES =
@@ -60,6 +61,7 @@ describe("readStudentFile", () => {
             student: {
               nim: "4121260001",
               name: "Nama Mahasiswa",
+              email: null,
               studyProgramId: 7,
               entryPath: "regular",
               sex: "female",
@@ -101,6 +103,7 @@ describe("readStudentFile", () => {
     expect(read(TITLES, line).ready[0]?.student).toEqual({
       nim: "9900000502",
       name: "Berkas Uji Dua",
+      email: null,
       studyProgramId: 3,
       entryPath: "transfer",
       sex: "female",

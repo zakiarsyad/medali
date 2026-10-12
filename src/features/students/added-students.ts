@@ -100,6 +100,7 @@ export async function listAddedStudents(
 const INPUT = {
   nim: students.nim,
   name: students.name,
+  email: accounts.email,
   studyProgramId: students.studyProgramId,
   entryPath: students.entryPath,
   sex: students.sex,
@@ -125,6 +126,7 @@ export async function findAddedStudent(
   const [found] = await db
     .select(INPUT)
     .from(students)
+    .leftJoin(accounts, eq(accounts.studentId, students.id))
     .where(and(eq(students.nim, nim), ADDED_HERE))
     .limit(1);
   return found ?? null;

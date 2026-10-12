@@ -25,10 +25,15 @@ const inTestDatabase = withTestDatabase();
 const ALLOWED: RoleId[] = ["head_of_unit", "upk_staff", "dorm_manager"];
 const OTHERS = ROLE_IDS.filter((role) => !ALLOWED.includes(role));
 
-function student(nim: string, studyProgramId: number): StudentInput {
+function student(
+  nim: string,
+  studyProgramId: number,
+  email: string | null = null,
+): StudentInput {
   return {
     nim,
     name: "Ubah Uji",
+    email,
     studyProgramId,
     entryPath: "regular",
     sex: "female",
@@ -82,6 +87,21 @@ describe("findAddedStudent", () => {
     });
   });
 
+  it("gives the address the student's account holds", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000521");
+      await changeStudent(
+        db,
+        staff,
+        student("9900000521", program, "ubah.uji@kampus.example"),
+      );
+
+      const found = await findAddedStudent(db, "9900000521");
+
+      expect(found?.email).toBe("ubah.uji@kampus.example");
+    });
+  });
+
   it("gives nothing for a student of the first records", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Induk");
@@ -117,8 +137,9 @@ describe("changeStudent", () => {
 
         expect(done.ok).toBe(true);
         const record = await recordOf(db, "9900000503");
+        const { email: _onTheAccount, ...fields } = changed;
         expect(record).toMatchObject({
-          ...changed,
+          ...fields,
           inputAt: before.inputAt,
           inputBy: staff.id,
           inputSource: "form",
@@ -127,6 +148,70 @@ describe("changeStudent", () => {
       });
     },
   );
+
+  it("adds an address, changes it and clears it on the student's account", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000522");
+      const record = await recordOf(db, "9900000522");
+      const saveWith = (email: string | null) =>
+        changeStudent(db, staff, student("9900000522", program, email));
+
+      expect((await saveWith("satu.uji@kampus.example")).ok).toBe(true);
+      expect((await accountOf(db, record.id)).email).toBe(
+        "satu.uji@kampus.example",
+      );
+      expect((await saveWith("dua.uji@kampus.example")).ok).toBe(true);
+      expect((await accountOf(db, record.id)).email).toBe(
+        "dua.uji@kampus.example",
+      );
+      expect((await saveWith(null)).ok).toBe(true);
+      expect((await accountOf(db, record.id)).email).toBeNull();
+    });
+  });
+
+  it("keeps the address a student already has when the form sends it again", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000523");
+      const email = "tetap.uji@kampus.example";
+      await changeStudent(db, staff, student("9900000523", program, email));
+
+      const done = await changeStudent(db, staff, {
+        ...student("9900000523", program, email),
+        name: "Ubah Uji Tetap",
+      });
+
+      expect(done.ok).toBe(true);
+      const record = await recordOf(db, "9900000523");
+      expect(await accountOf(db, record.id)).toMatchObject({
+        name: "Ubah Uji Tetap",
+        email,
+      });
+    });
+  });
+
+  it("refuses an address another account holds, and changes nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000524");
+      const email = "dipakai.ubah@kampus.example";
+      await db.insert(accounts).values({ name: "Pegawai Lain", email });
+
+      const done = await changeStudent(db, staff, {
+        ...student("9900000524", program, email),
+        name: "Tidak Tersimpan",
+      });
+
+      expect(done).toEqual({
+        ok: false,
+        error: "Email sudah dipakai akun lain.",
+      });
+      const record = await recordOf(db, "9900000524");
+      expect(record.name).toBe("Ubah Uji");
+      expect(await accountOf(db, record.id)).toMatchObject({
+        name: "Ubah Uji",
+        email: null,
+      });
+    });
+  });
 
   it("refuses a role without the right, and changes nothing", async () => {
     await inTestDatabase(async (db) => {

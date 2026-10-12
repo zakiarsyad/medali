@@ -12,10 +12,15 @@ import { addTestActor, addTestProgram, addTestStudent } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
-function newStudent(nim: string, studyProgramId: number): StudentInput {
+function newStudent(
+  nim: string,
+  studyProgramId: number,
+  email: string | null = null,
+): StudentInput {
   return {
     nim,
     name: "Masuk Uji",
+    email,
     studyProgramId,
     entryPath: "transfer",
     sex: "male",
@@ -49,8 +54,9 @@ describe("inputStudent", () => {
 
         expect(added.ok).toBe(true);
         const kept = await studentWithNim(db, "9900000401");
+        const { email: _onTheAccount, ...record } = student;
         expect(kept).toMatchObject({
-          ...student,
+          ...record,
           inputBy: actor.id,
           inputSource: "form",
           deletedAt: null,
@@ -85,6 +91,61 @@ describe("inputStudent", () => {
       ]);
     });
   });
+
+  it("keeps the address on the student's account", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Alamat");
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+
+      const added = await inputStudent(
+        db,
+        actor,
+        newStudent("9900000411", program, "masuk.uji@kampus.example"),
+      );
+
+      expect(added.ok).toBe(true);
+      const kept = await studentWithNim(db, "9900000411");
+      const [account] = await db
+        .select({ email: accounts.email })
+        .from(accounts)
+        .where(eq(accounts.studentId, kept?.id ?? ""));
+      expect(account?.email).toBe("masuk.uji@kampus.example");
+    });
+  });
+
+  it.each([
+    ["a staff account", null],
+    ["another student's account", "9900000412"],
+  ])(
+    "refuses an address that %s holds, and saves nothing",
+    async (_kind, holderNim) => {
+      await inTestDatabase(async (db) => {
+        const program = await addTestProgram(db, "Prodi Uji Alamat Kembar");
+        const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+        const email = "dipakai.uji@kampus.example";
+        if (holderNim) {
+          await inputStudent(db, actor, newStudent(holderNim, program, email));
+        } else {
+          await db.insert(accounts).values({ name: "Pegawai Lain", email });
+        }
+        const before = await db.select({ id: accounts.id }).from(accounts);
+
+        const added = await inputStudent(
+          db,
+          actor,
+          newStudent("9900000413", program, email),
+        );
+
+        expect(added).toEqual({
+          ok: false,
+          error: "Email sudah dipakai akun lain.",
+        });
+        expect(await studentWithNim(db, "9900000413")).toBeUndefined();
+        const after = await db.select({ id: accounts.id }).from(accounts);
+        expect(after).toHaveLength(before.length);
+      });
+    },
+  );
 
   it("refuses a NIM that is already used, and saves nothing", async () => {
     await inTestDatabase(async (db) => {

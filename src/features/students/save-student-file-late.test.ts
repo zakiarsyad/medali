@@ -34,6 +34,7 @@ function contextWith(program: number): InputContext {
   return {
     programs: [{ id: program, name: "Prodi Uji Telat" }],
     cohortYears: cohortChoices(2026),
+    campusEnding: "@kampus.example",
   };
 }
 
@@ -41,6 +42,7 @@ function student(nim: string, studyProgramId: number): StudentInput {
   return {
     nim,
     name: "Simpan Uji Telat",
+    email: null,
     studyProgramId,
     entryPath: "regular",
     sex: "female",

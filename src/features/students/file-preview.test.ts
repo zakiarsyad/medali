@@ -9,6 +9,7 @@ function student(nim: string): StudentInput {
   return {
     nim,
     name: "Pratinjau Uji",
+    email: null,
     studyProgramId: 3,
     entryPath: "regular",
     sex: "male",
