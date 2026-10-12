@@ -75,6 +75,7 @@ describe("listStudents", () => {
 
       expect(listed.students).toEqual([
         {
+          id: expect.any(String),
           nim: "9900000311",
           name: "Tabel Uji Ani",
           status: "active",

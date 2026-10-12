@@ -118,6 +118,12 @@
   --stacked-actions-justify: flex-end;
   --stacked-empty-padding: var(--space-sm);
   --stacked-badge-wrap: nowrap;
+
+  /* A box over the screen, with the dimmed page showing around it. */
+  --dialog-width: 640px;
+  --dialog-height: auto;
+  --dialog-max-size: calc(100% - 2 * var(--space-xl));
+  --dialog-radius: var(--radius-lg);
 }
 
 /*

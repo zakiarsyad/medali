@@ -3,6 +3,7 @@ import {
   NO_AGENCY,
   NO_FILTERS,
   readStudentListParams,
+  studentDetailAddress,
   studentListAddress,
   topFiltersInUse,
   withoutTopFilters,
@@ -13,6 +14,7 @@ describe("readStudentListParams", () => {
     expect(readStudentListParams({})).toEqual({
       filters: NO_FILTERS,
       page: 1,
+      detailId: null,
     });
     expect(NO_FILTERS).toEqual({
       query: "",
@@ -224,5 +226,42 @@ describe("the page of the list", () => {
     expect(studentListAddress(filters, 1)).toBe("/mahasiswa?q=ayu");
     expect(studentListAddress(filters, 2)).toBe("/mahasiswa?q=ayu&hal=2");
     expect(studentListAddress(NO_FILTERS, 3)).toBe("/mahasiswa?hal=3");
+  });
+});
+
+describe("the student whose detail is open", () => {
+  const ID = "0b7c1f4e-3a52-4d0c-9e8f-6a1b2c3d4e5f";
+
+  it("is none when the address names none", () => {
+    expect(readStudentListParams({}).detailId).toBeNull();
+    expect(readStudentListParams({ profil: "  " }).detailId).toBeNull();
+  });
+
+  it("is read from the address, next to the filters and the page", () => {
+    const read = readStudentListParams({ q: "ayu", hal: "2", profil: ID });
+
+    expect(read.detailId).toBe(ID);
+    expect(read.page).toBe(2);
+    expect(read.filters.query).toBe("ayu");
+  });
+
+  it("is kept as asked when it is no id, and cut when it is long", () => {
+    expect(readStudentListParams({ profil: "9900000501" }).detailId).toBe(
+      "9900000501",
+    );
+    expect(
+      readStudentListParams({ profil: "x".repeat(500) }).detailId,
+    ).toHaveLength(36);
+  });
+
+  it("is added to the address of the list it opens over", () => {
+    const filters = { ...NO_FILTERS, query: "ayu" };
+
+    expect(studentDetailAddress(filters, 2, ID)).toBe(
+      `/mahasiswa?q=ayu&hal=2&profil=${ID}`,
+    );
+    expect(studentDetailAddress(NO_FILTERS, 1, ID)).toBe(
+      `/mahasiswa?profil=${ID}`,
+    );
   });
 });

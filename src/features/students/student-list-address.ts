@@ -37,6 +37,12 @@ export interface StudentListParams {
   filters: StudentListFilters;
   /** The page of the list, counted from 1. */
   page: number;
+  /**
+   * What the address gives as the id of the student whose detail is open
+   * over the list, or null when it names none. It is not checked here: the
+   * read of the detail answers "not found" for what is no id.
+   */
+  detailId: string | null;
 }
 
 const NO_TOP_FILTERS: TopFilters = {
@@ -68,6 +74,8 @@ const PAGE = /^[1-9]\d{0,5}$/;
 /** Short enough to fit the number the database keeps for a program studi. */
 const PROGRAM_ID = /^[1-9]\d{0,8}$/;
 const STAGE_NO = /^[1-4]$/;
+/** As long as the id of a record is. */
+const ID_LENGTH = 36;
 
 function readStatus(text: string): StatusChoice {
   if (text === STATUS_IN_ADDRESS.all) return "all";
@@ -103,8 +111,10 @@ function readTopFilters(params: SearchParams): TopFilters {
 export function readStudentListParams(params: SearchParams): StudentListParams {
   const year = firstParam(params.angkatan);
   const page = firstParam(params.hal);
+  const detail = firstParam(params.profil).trim().slice(0, ID_LENGTH);
   return {
     page: PAGE.test(page) ? Number(page) : 1,
+    detailId: detail === "" ? null : detail,
     filters: {
       query: firstParam(params.q).trim().slice(0, NAME_MAX_LENGTH),
       cohortYear: YEAR.test(year) ? Number(year) : null,
@@ -145,14 +155,7 @@ function setTopFilters(params: URLSearchParams, filters: TopFilters): void {
   if (filters.originAgency) params.set("instansi", filters.originAgency);
 }
 
-/**
- * The address of a page of the list with these filters. What is not chosen
- * is left out, and so is the first page.
- */
-export function studentListAddress(
-  filters: StudentListFilters,
-  page = 1,
-): string {
+function listParams(filters: StudentListFilters, page: number) {
   const params = new URLSearchParams();
   if (filters.query) params.set("q", filters.query);
   if (filters.cohortYear !== null) {
@@ -163,5 +166,32 @@ export function studentListAddress(
   }
   setTopFilters(params, filters);
   if (page > 1) params.set("hal", String(page));
+  return params;
+}
+
+/**
+ * The address of a page of the list with these filters. What is not chosen
+ * is left out, and so is the first page.
+ */
+export function studentListAddress(
+  filters: StudentListFilters,
+  page = 1,
+): string {
+  const params = listParams(filters, page);
+  return addressOf(STUDENT_LIST_ADDRESS, params.toString());
+}
+
+/**
+ * The address of a student's detail, open over a page of the list. It
+ * names the student by the id of the record, never by NIM, so that no NIM
+ * stays in the history of a browser or in the records of requests.
+ */
+export function studentDetailAddress(
+  filters: StudentListFilters,
+  page: number,
+  studentId: string,
+): string {
+  const params = listParams(filters, page);
+  params.set("profil", studentId);
   return addressOf(STUDENT_LIST_ADDRESS, params.toString());
 }

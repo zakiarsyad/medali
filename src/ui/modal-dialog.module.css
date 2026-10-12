@@ -1,0 +1,30 @@
+.dialog {
+  width: var(--dialog-width);
+  max-width: var(--dialog-max-size);
+  height: var(--dialog-height);
+  max-height: var(--dialog-max-size);
+  padding: 0;
+  border: 0;
+  border-radius: var(--dialog-radius);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.dialog::backdrop {
+  background: var(--scrim);
+}
+
+/*
+ * The box covers the whole dialog, padding included, so that a press on
+ * the dialog itself is always a press outside.
+ */
+.box {
+  min-height: 100%;
+  padding: var(--space-xl);
+}
+
+.close {
+  float: right;
+  margin-left: var(--space-md);
+}

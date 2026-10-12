@@ -16,3 +16,41 @@
 .found b {
   color: var(--ink);
 }
+
+.row {
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--surface2);
+}
+
+.open {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tags {
+  margin: var(--space-md) 0 0;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--box-min-width), 1fr));
+  gap: var(--space-md) var(--space-lg);
+  margin: var(--space-lg) 0 0;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+.wideFact {
+  grid-column: 1 / -1;
+}

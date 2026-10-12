@@ -18,6 +18,8 @@ type Student = typeof students.$inferSelect;
 
 /** One row of the Mahasiswa table. */
 export interface ListedStudent {
+  /** The id of the record, which the address of the detail names. */
+  id: string;
   nim: string;
   name: string;
   status: Student["status"];
@@ -34,6 +36,7 @@ export interface ListedStudent {
 }
 
 const ROW = {
+  id: students.id,
   nim: students.nim,
   name: students.name,
   status: students.status,
