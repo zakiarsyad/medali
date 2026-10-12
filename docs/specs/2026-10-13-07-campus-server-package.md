@@ -138,7 +138,7 @@ change any of these.
 - [x] 3. With the campus mark, Ganti peran and the sample data command
   refuse to run, and missing settings stop the start with a clear
   message.
-- [ ] 4. The first-account command makes the first Kepala Unit account,
+- [x] 4. The first-account command makes the first Kepala Unit account,
   once.
 - [ ] 5. Table changes are applied on start; a short guide in the existing
   hosting notes says how to start, make the first account, update and

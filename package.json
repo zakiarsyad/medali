@@ -28,7 +28,8 @@
     "files:setup": "pnpm files:start && pnpm files:prepare",
     "files:deploy": "tsx src/files/deploy-command.ts",
     "campus:start": "docker compose --file compose.campus.yaml --env-file .env.campus up --build --detach --wait",
-    "campus:stop": "docker compose --file compose.campus.yaml stop"
+    "campus:stop": "docker compose --file compose.campus.yaml stop",
+    "account:first": "tsx src/features/accounts/first-account-command.ts"
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",
