@@ -1,6 +1,7 @@
-import { like, sql } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
+import { settleCompanionDuty } from "@/db/companion-duty";
 import { type Connection, connect, type Database } from "@/db/connect";
 import { applyTableChanges } from "@/db/migrate";
 import {
@@ -16,6 +17,7 @@ import { readSetting } from "@/settings";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
 import { stopCompanion } from "./companion-duty";
+import { nameCompanion } from "./name-companion";
 import { placeCompanion } from "./place-companion";
 import { placeResident } from "./place-resident";
 import { readRooms } from "./room-list";
@@ -352,5 +354,57 @@ describe("a resident and a kakak pendamping taking the last place at the same mo
     expect(both.later).toEqual(FULL);
     expect(await residentsOfRoom(first.db, roomId)).toEqual([resident]);
     expect((await companionOf(first.db, companion))?.roomId).toBe(null);
+  });
+});
+
+describe("naming a kakak pendamping while the student goes on leave at the same moment", () => {
+  async function addSenior(): Promise<string> {
+    const program = await addTestProgram(first.db, PROGRAM);
+    return addTestStudent(first.db, program, {
+      nim: "9911240004",
+      name: "Calon Uji",
+      cohortYear: 2024,
+    });
+  }
+
+  function name(studentId: string): Save {
+    const sent = { studentId, dorm: "dana_rakca", note: "" };
+    return (db) => nameCompanion(db, MANAGER, sent, DAY);
+  }
+
+  /** What a change of the student data to Cuti does, in its own transaction. */
+  function goOnLeave(studentId: string): Save {
+    return (db) =>
+      db.transaction(async (tx) => {
+        await tx
+          .update(students)
+          .set({ status: "on_leave" })
+          .where(eq(students.id, studentId));
+        await settleCompanionDuty(tx, studentId, DAY);
+        return { ok: true, value: "Cuti" };
+      });
+  }
+
+  it("refuses the naming that comes second", async () => {
+    const studentId = await addSenior();
+
+    const both = await atOnce(goOnLeave(studentId), name(studentId));
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual({
+      ok: false,
+      error: "Mahasiswa tidak ditemukan atau tidak aktif. Muat ulang halaman.",
+    });
+    expect(await companionOf(first.db, studentId)).toBeUndefined();
+  });
+
+  it("ends the duty when the leave comes second", async () => {
+    const studentId = await addSenior();
+
+    const both = await atOnce(name(studentId), goOnLeave(studentId));
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later.ok).toBe(true);
+    expect((await companionOf(first.db, studentId))?.isActive).toBe(false);
   });
 });

@@ -72,12 +72,14 @@ export function parseCompanion(sent: SentCompanion): Parsed<NewCompanion> {
   };
 }
 
-async function save(
-  db: Database,
-  dormCohorts: number[],
-  companion: NewCompanion,
-): Promise<Parsed<string>> {
-  const [student] = await db
+/**
+ * Reads the student and holds the row until the transaction ends, as a
+ * change to the student data does before it settles the duty. So naming
+ * and such a change never run at the same moment: the second waits and
+ * then sees what the first one saved.
+ */
+function lockStudent(tx: Database, dormCohorts: number[], studentId: string) {
+  return tx
     .select({
       name: students.name,
       sex: students.sex,
@@ -86,8 +88,16 @@ async function save(
       livesIn: dormInSql(dormCohorts),
     })
     .from(students)
-    .where(eq(students.id, companion.studentId))
-    .limit(1);
+    .where(eq(students.id, studentId))
+    .for("update");
+}
+
+async function save(
+  tx: Database,
+  dormCohorts: number[],
+  companion: NewCompanion,
+): Promise<Parsed<string>> {
+  const [student] = await lockStudent(tx, dormCohorts, companion.studentId);
   if (!student || student.deletedAt !== null) return NOT_ACTIVE;
   if (student.status !== "active") return NOT_ACTIVE;
   if (student.livesIn !== null) return LIVES_IN_DORM;
@@ -95,7 +105,7 @@ async function save(
     return wrongDorm(companion.dorm);
   }
 
-  const named = await db
+  const named = await tx
     .insert(dormCompanions)
     .values(companion)
     .onConflictDoNothing()
@@ -113,6 +123,8 @@ async function save(
  * a dorm on the day, today when none is given, and only for the dorm that
  * fits their jenis kelamin. A student is named once: the database keeps
  * that, so two people naming the same student at once cannot both succeed.
+ * The student row is held while it is checked, so a change that makes the
+ * student unfit at the same moment cannot slip in between.
  */
 export async function nameCompanion(
   db: Database,
@@ -127,5 +139,5 @@ export async function nameCompanion(
   if (!companion.ok) return companion;
   const dormCohorts = await readDormCohorts(db, day);
   if (dormCohorts === null) return NO_PERIOD_TO_NAME;
-  return save(db, dormCohorts, companion.value);
+  return db.transaction((tx) => save(tx, dormCohorts, companion.value));
 }
