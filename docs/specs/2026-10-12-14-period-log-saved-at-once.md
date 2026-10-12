@@ -71,5 +71,5 @@ issue did not say:
 
 ## Steps
 
-- [ ] 1. A change of dates reads the period and writes its log line in
+- [x] 1. A change of dates reads the period and writes its log line in
   one go, with a check that sends two saves at once.

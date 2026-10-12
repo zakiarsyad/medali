@@ -10,7 +10,6 @@ import {
   notInArray,
   or,
   type SQL,
-  sql,
 } from "drizzle-orm";
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
@@ -23,6 +22,7 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { brokeUniqueRule } from "@/db/unique-violation";
+import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import type { NewAccount, RoleChange } from "./account-input";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
@@ -148,13 +148,6 @@ async function lockActive(
     .for("no key update");
   return found ?? null;
 }
-
-/**
- * The moment a log line is written. The database would otherwise give the
- * moment its transaction began, and a change that began first but waited
- * for another one would be logged as the earlier of the two.
- */
-const WRITTEN_NOW = sql<Date>`clock_timestamp()`;
 
 async function currentRoles(
   db: Database,
