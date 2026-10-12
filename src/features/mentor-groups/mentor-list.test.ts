@@ -3,9 +3,9 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { groupCode } from "@/ui/group-code";
+import { mentorStatus } from "@/ui/mentor-status";
 import { listMentors, MENTOR_PAGE_SIZE } from "./mentor-list";
 import { type MentorListFilters, NO_FILTERS } from "./mentor-list-address";
-import { mentorStatus } from "./mentor-status";
 import { listMentorUnits } from "./mentor-units";
 import {
   addTestEndedGroup,

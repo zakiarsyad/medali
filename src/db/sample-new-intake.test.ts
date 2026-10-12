@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { jurusanOf } from "@/features/cohort-assignments/jurusan";
 import { SAMPLE_ACCOUNTS, SAMPLE_STUDENTS } from "./sample-data";
 import { sampleFirstYears } from "./sample-dorms";
 import { SAMPLE_MENTORS_WITHOUT_GROUP } from "./sample-mentor-groups";
@@ -10,11 +11,6 @@ import {
 
 const YEAR = 2026;
 const newIntake = sampleNewIntake(YEAR);
-
-const JURUSAN_OF_PROGRAM: Record<string, string> = {
-  "D3 Pajak": "Jurusan Pajak",
-  "D3 Akuntansi": "Jurusan Akuntansi",
-};
 
 describe("the sample new angkatan", () => {
   it("is about 60 students of one angkatan in two program studi, all Reguler", () => {
@@ -78,7 +74,7 @@ describe("the sample new angkatan", () => {
     ).map((account) => account.unit);
     expect(spareUnits).toHaveLength(2);
     for (const program of SAMPLE_NEW_INTAKE_PROGRAMS) {
-      expect(spareUnits).toContain(JURUSAN_OF_PROGRAM[program]);
+      expect(spareUnits).toContain(jurusanOf(program));
     }
   });
 });

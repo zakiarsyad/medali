@@ -1,0 +1,60 @@
+import { describe, expect, it } from "vitest";
+import { checkDraft } from "./draft-check";
+
+function group(mentorId: string | null, members = 30) {
+  return { mentorId, members };
+}
+
+describe("checkDraft", () => {
+  it("passes groups that each have a mentor of their own", () => {
+    expect(checkDraft([group("ani"), group("budi")])).toEqual({
+      withoutMentor: 0,
+      mentorsChosenTwice: 0,
+      outsideUsualSize: 0,
+      isComplete: true,
+    });
+  });
+
+  it("counts the groups without a mentor, and holds the penetapan back", () => {
+    const check = checkDraft([group(null), group("ani"), group(null)]);
+
+    expect(check.withoutMentor).toBe(2);
+    expect(check.isComplete).toBe(false);
+  });
+
+  it("counts the mentors chosen for more than one group, each once, and holds the penetapan back", () => {
+    const check = checkDraft([
+      group("ani"),
+      group("ani"),
+      group("ani"),
+      group("budi"),
+      group("budi"),
+      group("candra"),
+    ]);
+
+    expect(check.mentorsChosenTwice).toBe(2);
+    expect(check.withoutMentor).toBe(0);
+    expect(check.isComplete).toBe(false);
+  });
+
+  it("counts the groups outside 25 to 35 as a warning only", () => {
+    const check = checkDraft([
+      group("ani", 24),
+      group("budi", 36),
+      group("candra", 25),
+      group("dewi", 35),
+    ]);
+
+    expect(check.outsideUsualSize).toBe(2);
+    expect(check.isComplete).toBe(true);
+  });
+
+  it("holds back a penetapan that has no group", () => {
+    expect(checkDraft([])).toEqual({
+      withoutMentor: 0,
+      mentorsChosenTwice: 0,
+      outsideUsualSize: 0,
+      isComplete: false,
+    });
+  });
+});

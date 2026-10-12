@@ -2,7 +2,7 @@ import { and, count, eq, sql } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { mentorGroupMembers, mentorGroups, students } from "@/db/schema";
-import { GROUP_MAX, GROUP_MIN } from "./group-size";
+import { GROUP_MAX, GROUP_MIN } from "@/ui/group-size";
 import { COUNTED_MEMBER } from "./member-conditions";
 import { groupsVisibleTo } from "./visible-groups";
 

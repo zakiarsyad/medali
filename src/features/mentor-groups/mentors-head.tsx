@@ -1,6 +1,6 @@
+import { USUAL_SIZE_WORDS } from "@/ui/group-size";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
-import { USUAL_SIZE_WORDS } from "./group-size";
 
 /** The head every tab of Pengasuh starts with, and the tabs under it. */
 export function MentorsHead({ tabs }: { tabs: TabLinksProps }) {

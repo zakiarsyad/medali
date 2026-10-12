@@ -3,8 +3,8 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import type { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { GROUP_MIN } from "@/ui/group-size";
 import { readGroupNumbers } from "./group-numbers";
-import { GROUP_MIN } from "./group-size";
 import {
   addTestEndedGroup,
   addTestGroup,

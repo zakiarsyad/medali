@@ -5,16 +5,16 @@ import { containsPattern } from "@/db/contains-pattern";
 import { accounts } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
 import {
+  inactiveSince,
+  MENTOR_STATUSES,
+  type MentorStatus,
+} from "@/ui/mentor-status";
+import {
   type HeldGroup,
   readGroupsHeld,
   studentsIn,
 } from "./mentor-held-groups";
 import type { MentorListFilters } from "./mentor-list-address";
-import {
-  inactiveSince,
-  MENTOR_STATUSES,
-  type MentorStatus,
-} from "./mentor-status";
 import {
   groupsHeldToday,
   HAS_MENTOR_ROLE,
