@@ -3,13 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { listCandidates } from "./companion-candidates";
-import {
-  addTestCompanion,
-  addTestProgram,
-  addTestStudent,
-  EVERYONE,
-} from "./test-records";
+import { addTestCompanion, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

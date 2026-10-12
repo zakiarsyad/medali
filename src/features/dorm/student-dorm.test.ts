@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { academicPeriods } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestProgram,
+  addTestStudent,
+  DAY,
+  ODD_2026,
+} from "@/dorms/test-records";
 import { readStudentDorm } from "./student-dorm";
-import { addTestProgram, addTestStudent, DAY, ODD_2026 } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 const NOBODY = "00000000-0000-4000-8000-000000000000";

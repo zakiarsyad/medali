@@ -3,15 +3,10 @@ import { describe, expect, it } from "vitest";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import {
-  addTestProgram,
-  addTestStudent,
-  DAY,
-  ODD_2026,
-} from "@/features/dorm/test-records";
 import { readDormCohorts } from "./dorm-cohorts";
 import { dormInSql, livesIn } from "./resident-condition";
 import { dormOf } from "./resident-rule";
+import { addTestProgram, addTestStudent, DAY, ODD_2026 } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

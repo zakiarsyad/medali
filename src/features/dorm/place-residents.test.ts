@@ -5,18 +5,17 @@ import type { Database } from "@/db/connect";
 import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { DormId } from "@/dorms/dorms";
-import { autoFillRoom } from "./auto-fill-room";
-import { placeResident, type SentPlace } from "./place-resident";
-import { listUnplaced, type ResidentScope } from "./room-list";
-import { takeOutResident } from "./take-out-resident";
 import {
   addTestProgram,
   addTestRoom,
   addTestStudent,
-  EVERYONE,
   placeTestResident,
-  residentsOfRoom,
-} from "./test-records";
+} from "@/dorms/test-records";
+import { autoFillRoom } from "./auto-fill-room";
+import { placeResident, type SentPlace } from "./place-resident";
+import { listUnplaced, type ResidentScope } from "./room-list";
+import { takeOutResident } from "./take-out-resident";
+import { EVERYONE, residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

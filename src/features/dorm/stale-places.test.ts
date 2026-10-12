@@ -4,17 +4,16 @@ import type { Database } from "@/db/connect";
 import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { DormId } from "@/dorms/dorms";
-import type { RoomsParams } from "./rooms-address";
-import { loadRooms, type RoomsView } from "./rooms-view";
-import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
 import {
   addTestProgram,
   addTestRoom,
   addTestStudent,
-  EVERYONE,
   placeTestResident,
-  residentsOfRoom,
-} from "./test-records";
+} from "@/dorms/test-records";
+import type { RoomsParams } from "./rooms-address";
+import { loadRooms, type RoomsView } from "./rooms-view";
+import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
+import { EVERYONE, residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
