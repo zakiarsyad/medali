@@ -6,7 +6,6 @@ import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { changeBamRolesAction } from "./actions";
-import panel from "./bam-panel.module.css";
 import { BamRoleChoices } from "./bam-role-choices";
 import type { BamStudent } from "./list-bam-students";
 
@@ -21,7 +20,7 @@ interface BamEditFormProps {
 export function BamEditForm({ student, back }: BamEditFormProps) {
   const [state, save, pending] = useActionState(changeBamRolesAction, START);
   return (
-    <form onSubmit={(event) => sendForm(event, save)} className={panel.edit}>
+    <form onSubmit={(event) => sendForm(event, save)} className={styles.form}>
       <input type="hidden" name="accountId" value={student.accountId} />
       <input type="hidden" name="back" value={back} />
       <BamRoleChoices chosen={student.roles} />

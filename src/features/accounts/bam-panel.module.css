@@ -1,26 +1,5 @@
-.cards {
-  display: grid;
-  gap: var(--space-sm);
-  margin: var(--space-md) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.card {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm) var(--space-lg);
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line2);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  font-size: var(--text-md);
-}
-
 .add {
-  margin-top: var(--space-md);
+  margin: var(--space-md) 0;
 }
 
 .add > summary {
@@ -36,14 +15,4 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   white-space: nowrap;
-}
-
-/*
- * Under the card's own parts, over its whole width and in one column: the
- * shared form keeps a column width that is wider than a card on a phone.
- */
-.edit {
-  display: grid;
-  flex: 1 1 100%;
-  gap: var(--space-md);
 }

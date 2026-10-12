@@ -18,7 +18,7 @@ function roleTitles(student: BamStudent): string {
   return student.roles.map((role) => ROLES[role].title).join(", ");
 }
 
-function CardActions({
+function RowActions({
   student,
   view,
 }: {
@@ -26,7 +26,7 @@ function CardActions({
   view: ListView;
 }) {
   return (
-    <div className={styles.rowActions}>
+    <>
       {student.isActive && (
         <Link
           href={listAddress(view, { bamEdit: student.accountId })}
@@ -40,11 +40,31 @@ function CardActions({
         name={student.name}
         roles={roleTitles(student)}
       />
-    </div>
+    </>
   );
 }
 
-function BamStudentCard({
+function BamRoles({ student }: { student: BamStudent }) {
+  return (
+    <>
+      {student.roles.map((role) => (
+        <span key={role} className={styles.badge}>
+          {ROLES[role].title}
+        </span>
+      ))}
+      {!student.isActive && (
+        <span
+          className={panel.off}
+          title="Mahasiswa tidak lagi aktif, sehingga peran BAM-nya tidak berlaku."
+        >
+          Tidak aktif
+        </span>
+      )}
+    </>
+  );
+}
+
+function BamStudentRow({
   student,
   view,
   isEditing,
@@ -54,34 +74,28 @@ function BamStudentCard({
   isEditing: boolean;
 }) {
   return (
-    <li className={panel.card}>
-      <div>
-        <b>{student.name}</b>
-        <small className={styles.detail}>
-          NIM {student.nim} · {student.studyProgram}
-        </small>
-      </div>
-      <div>
-        {student.roles.map((role) => (
-          <span key={role} className={styles.badge}>
-            {ROLES[role].title}
-          </span>
-        ))}
-        {!student.isActive && (
-          <span
-            className={panel.off}
-            title="Mahasiswa tidak lagi aktif, sehingga peran BAM-nya tidak berlaku."
-          >
-            Tidak aktif
-          </span>
-        )}
-      </div>
-      {isEditing ? (
-        <BamEditForm student={student} back={listAddress(view)} />
-      ) : (
-        <CardActions student={student} view={view} />
+    <>
+      <tr>
+        <td data-title="Mahasiswa">
+          <b>{student.name}</b>
+          <small className={styles.detail}>NIM {student.nim}</small>
+        </td>
+        <td data-title="Program studi">{student.studyProgram}</td>
+        <td data-title="Peran">
+          <BamRoles student={student} />
+        </td>
+        <td className={styles.rowActions}>
+          {!isEditing && <RowActions student={student} view={view} />}
+        </td>
+      </tr>
+      {isEditing && (
+        <tr>
+          <td colSpan={4}>
+            <BamEditForm student={student} back={listAddress(view)} />
+          </td>
+        </tr>
       )}
-    </li>
+    </>
   );
 }
 
@@ -96,15 +110,29 @@ export function BamStudentList({
     );
   }
   return (
-    <ul className={panel.cards}>
-      {students.map((student) => (
-        <BamStudentCard
-          key={student.accountId}
-          student={student}
-          view={view}
-          isEditing={student.isActive && student.accountId === editing}
-        />
-      ))}
-    </ul>
+    <div className={styles.tableWrap}>
+      <table className={`${styles.table} ${styles.stacked}`}>
+        <thead>
+          <tr>
+            <th>Mahasiswa</th>
+            <th>Program studi</th>
+            <th>Peran</th>
+            <th>
+              <span className={styles.hidden}>Tindakan</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((student) => (
+            <BamStudentRow
+              key={student.accountId}
+              student={student}
+              view={view}
+              isEditing={student.isActive && student.accountId === editing}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

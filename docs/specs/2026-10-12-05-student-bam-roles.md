@@ -109,8 +109,9 @@ Decided while building, where the issue did not say:
 - A second press of "Simpan peran" or "Hapus" waits for the first and
   then finds nothing left to change: one row and one line in the log.
   The button is also off while a save runs.
-- On a card, "Edit peran" opens under the student, over the whole width
-  of the card, so it fits a phone.
+- The list is built as the staff list above it. On a phone each student
+  is one block with the values one under another, each beside its title,
+  and the buttons at the end. "Edit peran" opens under the student.
 - The speed has no check of its own, as in the specs before this one.
   The panel reads one page of 25 students in three database requests,
   and it is timed on the preview.
