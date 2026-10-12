@@ -88,7 +88,7 @@ automatically, and "Isi otomatis" places residents only.
 
 ## Steps
 
-- [ ] 1. The table for kakak pendamping is added, with sample data of
+- [x] 1. The table for kakak pendamping is added, with sample data of
   two active and one inactive kakak pendamping.
 - [ ] 2. The rights to see and to manage kakak pendamping are added to
   the permission list, with their checks.

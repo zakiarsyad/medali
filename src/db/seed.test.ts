@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { DORM_IDS } from "@/features/dorm/dorms";
@@ -9,11 +9,16 @@ import {
   SAMPLE_STUDENTS,
   samplePeriods,
 } from "./sample-data";
-import { SAMPLE_ROOMS, sampleFirstYears } from "./sample-dorms";
+import {
+  SAMPLE_COMPANIONS,
+  SAMPLE_ROOMS,
+  sampleFirstYears,
+} from "./sample-dorms";
 import {
   academicPeriodChanges,
   academicPeriods,
   accounts,
+  dormCompanions,
   dormRoomPlaces,
   dormRooms,
   ppksActivities,
@@ -66,6 +71,28 @@ describe("fillWithSampleData", { timeout: 20_000 }, () => {
         );
         expect(livesIn).toEqual(placedInDorm.map(() => dorm));
       }
+    });
+  });
+
+  it("names the sample kakak pendamping, none of them in a room", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const named = await db
+        .select({
+          nim: students.nim,
+          dorm: dormCompanions.dorm,
+          note: dormCompanions.note,
+          isActive: dormCompanions.isActive,
+          roomId: dormCompanions.roomId,
+        })
+        .from(dormCompanions)
+        .innerJoin(students, eq(students.id, dormCompanions.studentId))
+        .orderBy(asc(students.nim));
+      const sample = SAMPLE_COMPANIONS.map((one) => ({ ...one, roomId: null }));
+      expect(named).toEqual(
+        sample.sort((one, other) => one.nim.localeCompare(other.nim)),
+      );
     });
   });
 
