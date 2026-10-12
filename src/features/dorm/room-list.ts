@@ -16,6 +16,13 @@ import type { DormId } from "./dorms";
 import { livesIn } from "./resident-condition";
 import { UNPLACED_SHOWN } from "./room-limits";
 
+/*
+ * A place counts only while its student lives in the dorm of the room. A
+ * place left behind by a student who stopped being a resident, or who now
+ * lives in another dorm, is left out by every read here, so it shows as
+ * free. No read deletes anything.
+ */
+
 /** One room with the number of its places that are taken. */
 export interface Room {
   id: string;
@@ -53,18 +60,37 @@ function inScope(scope: ResidentScope): SQL | undefined {
   return and(scope.visible, livesIn(scope.dorm, scope.dormCohorts));
 }
 
-/** Every room of a dorm, by floor and number, in one request. */
-export async function readRooms(db: Database, dorm: DormId): Promise<Room[]> {
+/** The join that finds the room a student has in one dorm, if any. */
+function roomIn(dorm: DormId): SQL | undefined {
+  return and(eq(dormRooms.id, dormRoomPlaces.roomId), eq(dormRooms.dorm, dorm));
+}
+
+/**
+ * Every room of a dorm, by floor and number, in one request. The places
+ * taken are those of students who live in the dorm now.
+ */
+export async function readRooms(
+  db: Database,
+  dorm: DormId,
+  dormCohorts: number[],
+): Promise<Room[]> {
   return db
     .select({
       id: dormRooms.id,
       floor: dormRooms.floor,
       number: dormRooms.number,
       capacity: dormRooms.capacity,
-      taken: count(dormRoomPlaces.studentId),
+      taken: count(students.id),
     })
     .from(dormRooms)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.roomId, dormRooms.id))
+    .leftJoin(
+      students,
+      and(
+        eq(students.id, dormRoomPlaces.studentId),
+        livesIn(dorm, dormCohorts),
+      ),
+    )
     .where(eq(dormRooms.dorm, dorm))
     .groupBy(dormRooms.id)
     .orderBy(asc(dormRooms.floor), asc(dormRooms.number));
@@ -83,7 +109,7 @@ export async function readFloorResidents(
     .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
     .where(
       and(
-        scope.visible,
+        inScope(scope),
         eq(dormRooms.dorm, scope.dorm),
         eq(dormRooms.floor, floor),
       ),
@@ -96,18 +122,16 @@ export interface ResidentCounts {
   placed: number;
 }
 
-/** How many residents a dorm has, and how many of them have a room. */
+/** How many residents a dorm has, and how many of them have a room in it. */
 export async function countResidents(
   db: Database,
   scope: ResidentScope,
 ): Promise<ResidentCounts> {
   const [counted] = await db
-    .select({
-      residents: count(),
-      placed: count(dormRoomPlaces.studentId),
-    })
+    .select({ residents: count(), placed: count(dormRooms.id) })
     .from(students)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
+    .leftJoin(dormRooms, roomIn(scope.dorm))
     .where(inScope(scope));
   return counted ?? { residents: 0, placed: 0 };
 }
@@ -126,8 +150,8 @@ export interface UnplacedResidents {
 }
 
 /**
- * The residents of a dorm without a room whose name or NIM holds the
- * search text: the first of them in NIM order, and how many there are.
+ * The residents of a dorm without a room in it whose name or NIM holds
+ * the search text: the first of them in NIM order, and how many there are.
  */
 export async function listUnplaced(
   db: Database,
@@ -138,13 +162,8 @@ export async function listUnplaced(
     .select({ ...RESIDENT, matching: sql<number>`count(*) over ()` })
     .from(students)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
-    .where(
-      and(
-        inScope(scope),
-        isNull(dormRoomPlaces.studentId),
-        matchesSearch(query),
-      ),
-    )
+    .leftJoin(dormRooms, roomIn(scope.dorm))
+    .where(and(inScope(scope), isNull(dormRooms.id), matchesSearch(query)))
     .orderBy(asc(students.nim))
     .limit(UNPLACED_SHOWN);
   return {

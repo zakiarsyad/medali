@@ -2,19 +2,11 @@ import type { SQL } from "drizzle-orm";
 import { database } from "@/db/database";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
-import { readDormCohorts } from "./dorm-cohorts";
 import { DormNumbers, DormSwitch } from "./dorm-summary";
 import { FloorPanel } from "./floor-panel";
-import {
-  countResidents,
-  listUnplaced,
-  type ResidentScope,
-  readFloorResidents,
-  readRooms,
-} from "./room-list";
 import styles from "./rooms.module.css";
 import type { RoomsParams } from "./rooms-address";
-import { freeStalePlaces } from "./stale-places";
+import { loadRooms } from "./rooms-view";
 import { UnplacedPanel } from "./unplaced-panel";
 
 export async function RoomsScreen({
@@ -30,16 +22,11 @@ export async function RoomsScreen({
   /** Whether the account may change rooms, or only see them. */
   mayManage: boolean;
 }) {
-  const db = database();
-  const dormCohorts = await readDormCohorts(db);
-  await freeStalePlaces(db, dormCohorts);
-  const scope: ResidentScope = { dorm: params.dorm, dormCohorts, visible };
-  const [rooms, residents, counts, unplaced] = await Promise.all([
-    readRooms(db, params.dorm),
-    readFloorResidents(db, scope, params.floor),
-    countResidents(db, scope),
-    listUnplaced(db, scope, params.query),
-  ]);
+  const { rooms, residents, counts, unplaced } = await loadRooms(
+    database(),
+    params,
+    visible,
+  );
   return (
     <>
       <PageHead title="Ploting kamar">

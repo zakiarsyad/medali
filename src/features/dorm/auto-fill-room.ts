@@ -7,15 +7,20 @@ import type { Parsed } from "@/parsed";
 import { readDormCohorts } from "./dorm-cohorts";
 import type { DormId } from "./dorms";
 import { NOT_ALLOWED } from "./not-allowed";
-import { ROOM_FULL } from "./place-resident";
+import { NO_PERIOD, ROOM_FULL } from "./place-resident";
 import { livesIn } from "./resident-condition";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, lockRoom } from "./room-lock";
 import { freeStalePlaces } from "./stale-places";
 
-const NOBODY_WAITING = {
+/**
+ * What a fill answers when it placed nobody: no resident is without a
+ * room, or another save gave those found a room at the same moment.
+ */
+const NOBODY_PLACED = {
   ok: false,
-  error: "Tidak ada penghuni yang belum diplot di asrama ini.",
+  error:
+    "Tidak ada penghuni yang ditempatkan. Muat ulang halaman untuk melihat daftar terbaru.",
 } as const;
 
 /** The first residents of a dorm without a room, in NIM order. */
@@ -40,19 +45,20 @@ async function fill(
   dormCohorts: number[],
   roomId: string,
 ): Promise<Parsed<string>> {
-  await freeStalePlaces(tx, dormCohorts);
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
+  await freeStalePlaces(tx, dormCohorts);
   const free = room.capacity - (await countTaken(tx, room.id));
   if (free <= 0) return ROOM_FULL;
   const waiting = await firstWaiting(tx, room.dorm, dormCohorts, free);
-  if (waiting.length === 0) return NOBODY_WAITING;
+  if (waiting.length === 0) return NOBODY_PLACED;
 
   const placed = await tx
     .insert(dormRoomPlaces)
     .values(waiting.map((studentId) => ({ roomId: room.id, studentId })))
     .onConflictDoNothing()
     .returning({ studentId: dormRoomPlaces.studentId });
+  if (placed.length === 0) return NOBODY_PLACED;
   return {
     ok: true,
     value: `${placed.length} penghuni diplot ke kamar ${room.number}.`,
@@ -73,5 +79,6 @@ export async function autoFillRoom(
   const roomId = parseId(sentRoomId);
   if (!roomId.ok) return roomId;
   const dormCohorts = await readDormCohorts(db, day);
+  if (dormCohorts === null) return NO_PERIOD;
   return db.transaction((tx) => fill(tx, dormCohorts, roomId.value));
 }

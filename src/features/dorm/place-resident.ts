@@ -18,6 +18,16 @@ export const ROOM_FULL = {
   error: "Kamar sudah penuh. Pilih kamar lain.",
 } as const;
 
+/**
+ * What placing answers while no academic period runs. No semester is
+ * known then, so who lives where cannot be told and nothing is placed.
+ */
+export const NO_PERIOD = {
+  ok: false,
+  error:
+    "Belum ada periode akademik yang berjalan, jadi penghuni belum bisa diplot. Minta Kepala Unit mengatur periode akademik.",
+} as const;
+
 const HAS_ROOM = {
   ok: false,
   error: "Penghuni ini sudah punya kamar. Keluarkan dari kamarnya dulu.",
@@ -42,9 +52,9 @@ async function place(
   roomId: string,
   studentId: string,
 ): Promise<Parsed<string>> {
-  await freeStalePlaces(tx, dormCohorts);
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
+  await freeStalePlaces(tx, dormCohorts);
   const [resident] = await tx
     .select({ name: students.name })
     .from(students)
@@ -68,7 +78,8 @@ async function place(
 /**
  * Puts a resident into a room, and gives back what to tell the staff.
  * Refused for a student who does not live in the dorm of the room, for a
- * resident who has a room, and for a full room. The room is held while its
+ * resident who has a room, for a full room, and while no academic period
+ * runs. The room is held while its
  * places are counted, so two people filling the last place at the same
  * moment cannot both succeed.
  */
@@ -84,6 +95,7 @@ export async function placeResident(
   const studentId = parseId(sent.studentId);
   if (!studentId.ok) return studentId;
   const dormCohorts = await readDormCohorts(db, day);
+  if (dormCohorts === null) return NO_PERIOD;
   return db.transaction((tx) =>
     place(tx, dormCohorts, roomId.value, studentId.value),
   );

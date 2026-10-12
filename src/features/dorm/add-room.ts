@@ -7,6 +7,25 @@ import { DORM_NAMES, type DormId } from "./dorms";
 import { NOT_ALLOWED } from "./not-allowed";
 import { parseNewRoom, type SentRoom } from "./room-input";
 
+/** The rule the database keeps: a room number is used once in its dorm. */
+const NUMBER_RULE = "dorm_rooms_number_in_dorm";
+
+/**
+ * Whether the database refused a save because the room number is used in
+ * the dorm, as happens when two saves take one number at the same moment.
+ * The error of the database may be wrapped in another.
+ */
+export function brokeNumberRule(error: unknown): boolean {
+  let current = error;
+  while (typeof current === "object" && current !== null) {
+    if ("constraint_name" in current) {
+      return current.constraint_name === NUMBER_RULE;
+    }
+    current = "cause" in current ? current.cause : null;
+  }
+  return false;
+}
+
 /** What a save answers when the number is already used in the dorm. */
 export function numberTaken(dorm: DormId, number: string) {
   return {

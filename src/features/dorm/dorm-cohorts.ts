@@ -6,15 +6,15 @@ import { isDormSemester } from "./resident-rule";
 
 /**
  * The angkatan years whose students are, on a day, in a semester that
- * lives in the dorm. Today when no day is given. None when no academic
- * period runs.
+ * lives in the dorm. Today when no day is given. Null when no academic
+ * period runs, so that this is never taken for "no angkatan lives there".
  */
 export async function readDormCohorts(
   db: Database,
   day?: string,
-): Promise<number[]> {
+): Promise<number[] | null> {
   const period = await readRunningPeriod(db, day);
-  if (!period) return [];
+  if (!period) return null;
   const cohorts = await db
     .selectDistinct({ year: students.cohortYear })
     .from(students);

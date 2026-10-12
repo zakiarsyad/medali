@@ -66,12 +66,12 @@ describe("readDormCohorts", () => {
     });
   });
 
-  it("gives no angkatan when no period runs", async () => {
+  it("gives null, not an empty list, when no period runs", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Asrama B");
       await addTestStudent(db, program, { nim: "9922260001", name: "Uji A" });
 
-      expect(await readDormCohorts(db, DAY)).toEqual([]);
+      expect(await readDormCohorts(db, DAY)).toBeNull();
     });
   });
 });
@@ -85,7 +85,7 @@ describe("dormInSql", () => {
       await db
         .insert(students)
         .values(kinds.map((kind) => ({ ...kind, studyProgramId })));
-      const cohorts = await readDormCohorts(db, DAY);
+      const cohorts = (await readDormCohorts(db, DAY)) ?? [];
 
       const rows = await db
         .select({ student: students, dorm: dormInSql(cohorts) })

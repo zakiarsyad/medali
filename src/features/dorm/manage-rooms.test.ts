@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
-import { dormRooms } from "@/db/schema";
+import type { Database } from "@/db/connect";
+import { academicPeriods, dormRooms } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addRoom } from "./add-room";
 import { changeRoom } from "./change-room";
@@ -13,6 +14,7 @@ import {
   addTestRoom,
   addTestStudent,
   placeTestResident,
+  residentsOfRoom,
 } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -41,13 +43,92 @@ const SENT: SentRoom = {
   capacity: "4",
 };
 
+/*
+ * A period far from those of any other file of checks, so these wait for
+ * none of them. Angkatan 2070 is in semester 1 in it.
+ */
+const ODD_2070 = {
+  startYear: 2070,
+  term: "odd",
+  startsOn: "2070-08-01",
+  endsOn: "2071-01-31",
+} as const;
+const DAY = "2070-10-12";
+
+interface LeftBehind {
+  roomId: string;
+  /** A resident of the room who went on leave, and still has the place. */
+  left: string;
+}
+
+/** A room whose only place belongs to a student who went on leave. */
+async function addRoomLeftBehind(db: Database): Promise<LeftBehind> {
+  const program = await addTestProgram(db, "Prodi Uji Asrama M");
+  const left = await addTestStudent(db, program, {
+    nim: "9925700001",
+    name: "Penghuni Uji Cuti",
+    cohortYear: 2070,
+    status: "on_leave",
+  });
+  const roomId = await addTestRoom(db, { number: "M101" });
+  await placeTestResident(db, roomId, left);
+  return { roomId, left };
+}
+
+describe("a room with a place left behind", () => {
+  const SMALLER = { number: "M101", capacity: "1" };
+
+  it("is removed while a period runs, as the screen shows it empty", async () => {
+    await inTestDatabase(async (db) => {
+      await db.insert(academicPeriods).values(ODD_2070);
+      const { roomId } = await addRoomLeftBehind(db);
+
+      const removed = await removeRoom(db, MANAGER, roomId, DAY);
+
+      expect(removed).toEqual({ ok: true, value: "M101" });
+    });
+  });
+
+  it("does not count the place left behind against a smaller kapasitas", async () => {
+    await inTestDatabase(async (db) => {
+      await db.insert(academicPeriods).values(ODD_2070);
+      const { roomId } = await addRoomLeftBehind(db);
+      const program = await addTestProgram(db, "Prodi Uji Asrama M Dua");
+      const stays = await addTestStudent(db, program, {
+        nim: "9925700002",
+        name: "Penghuni Uji",
+        cohortYear: 2070,
+      });
+      await placeTestResident(db, roomId, stays);
+
+      const changed = await changeRoom(db, MANAGER, roomId, SMALLER, DAY);
+
+      expect(changed).toEqual({ ok: true, value: "M101" });
+      expect(await residentsOfRoom(db, roomId)).toEqual([stays]);
+    });
+  });
+
+  it("is kept, with its place, when no academic period runs", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, left } = await addRoomLeftBehind(db);
+
+      const removed = await removeRoom(db, MANAGER, roomId, DAY);
+      const changed = await changeRoom(db, MANAGER, roomId, SMALLER, DAY);
+
+      expect(removed.ok).toBe(false);
+      expect(changed).toEqual({ ok: true, value: "M101" });
+      expect(await residentsOfRoom(db, roomId)).toEqual([left]);
+    });
+  });
+});
+
 describe("addRoom", () => {
   it.each([MANAGER, HOUSEHOLD])("adds a room for $roles", async (actor) => {
     await inTestDatabase(async (db) => {
       const added = await addRoom(db, actor, SENT);
 
       expect(added).toEqual({ ok: true, value: "M201" });
-      expect(await readRooms(db, "dana_rakca")).toMatchObject([
+      expect(await readRooms(db, "dana_rakca", [2026])).toMatchObject([
         { floor: 2, number: "M201", capacity: 4, taken: 0 },
       ]);
     });
@@ -56,7 +137,7 @@ describe("addRoom", () => {
   it.each(READ_ONLY)("refuses %s, and adds nothing", async (role) => {
     await inTestDatabase(async (db) => {
       expect(await addRoom(db, { roles: [role] }, SENT)).toEqual(NOT_ALLOWED);
-      expect(await readRooms(db, "dana_rakca")).toEqual([]);
+      expect(await readRooms(db, "dana_rakca", [2026])).toEqual([]);
     });
   });
 
@@ -75,7 +156,7 @@ describe("addRoom", () => {
         error:
           "Nomor kamar M2A sudah dipakai di Asrama Dana Rakca. Pakai nomor lain.",
       });
-      expect(await readRooms(db, "dana_rakca")).toHaveLength(1);
+      expect(await readRooms(db, "dana_rakca", [2026])).toHaveLength(1);
     });
   });
 
@@ -97,7 +178,7 @@ describe("addRoom", () => {
       const added = await addRoom(db, MANAGER, { ...SENT, capacity: "13" });
 
       expect(added.ok).toBe(false);
-      expect(await readRooms(db, "dana_rakca")).toEqual([]);
+      expect(await readRooms(db, "dana_rakca", [2026])).toEqual([]);
     });
   });
 });
@@ -112,7 +193,7 @@ describe("changeRoom", () => {
       const changed = await changeRoom(db, MANAGER, roomId, CHANGED);
 
       expect(changed).toEqual({ ok: true, value: "M105" });
-      expect(await readRooms(db, "dana_rakca")).toMatchObject([
+      expect(await readRooms(db, "dana_rakca", [2026])).toMatchObject([
         { id: roomId, number: "M105", capacity: 6 },
       ]);
     });
@@ -125,7 +206,7 @@ describe("changeRoom", () => {
       const changed = await changeRoom(db, { roles: [role] }, roomId, CHANGED);
 
       expect(changed).toEqual(NOT_ALLOWED);
-      expect(await readRooms(db, "dana_rakca")).toMatchObject([
+      expect(await readRooms(db, "dana_rakca", [2026])).toMatchObject([
         { number: "M101", capacity: 4 },
       ]);
     });
@@ -172,7 +253,7 @@ describe("changeRoom", () => {
       });
 
       expect(changed.ok).toBe(false);
-      expect(await readRooms(db, "dana_rakca")).toMatchObject([
+      expect(await readRooms(db, "dana_rakca", [2026])).toMatchObject([
         { number: "M101" },
         { number: "M102" },
       ]);
@@ -207,7 +288,7 @@ describe("removeRoom", () => {
       const removed = await removeRoom(db, MANAGER, roomId);
 
       expect(removed).toEqual({ ok: true, value: "M101" });
-      expect(await readRooms(db, "dana_rakca")).toEqual([]);
+      expect(await readRooms(db, "dana_rakca", [2026])).toEqual([]);
     });
   });
 
@@ -218,7 +299,7 @@ describe("removeRoom", () => {
       expect(await removeRoom(db, { roles: [role] }, roomId)).toEqual(
         NOT_ALLOWED,
       );
-      expect(await readRooms(db, "dana_rakca")).toHaveLength(1);
+      expect(await readRooms(db, "dana_rakca", [2026])).toHaveLength(1);
     });
   });
 

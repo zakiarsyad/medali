@@ -79,7 +79,7 @@ describe("readRooms", () => {
       await addTestRoom(db, { number: "L100" });
       await addTestRoom(db, { number: "L101", dorm: "cipta_bakti" });
 
-      const rooms = await readRooms(db, "dana_rakca");
+      const rooms = await readRooms(db, "dana_rakca", [2026]);
 
       expect(rooms.map((room) => room.number)).toEqual([
         "L100",

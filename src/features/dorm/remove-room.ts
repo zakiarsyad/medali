@@ -4,9 +4,11 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { dormRooms } from "@/db/schema";
 import type { Parsed } from "@/parsed";
+import { readDormCohorts } from "./dorm-cohorts";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, lockRoom } from "./room-lock";
+import { freeStalePlaces } from "./stale-places";
 
 function stillLivedIn(number: string) {
   return {
@@ -17,10 +19,12 @@ function stillLivedIn(number: string) {
 
 async function removeEmpty(
   tx: Database,
+  dormCohorts: number[] | null,
   roomId: string,
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
+  await freeStalePlaces(tx, dormCohorts);
   if ((await countTaken(tx, room.id)) > 0) return stillLivedIn(room.number);
   await tx.delete(dormRooms).where(eq(dormRooms.id, room.id));
   return { ok: true, value: room.number };
@@ -28,15 +32,18 @@ async function removeEmpty(
 
 /**
  * Removes a room that has no residents, and gives back its number. A room
- * with residents is refused.
+ * with residents is refused. The residents counted are those who live in
+ * the dorm on the day, today when none is given.
  */
 export async function removeRoom(
   db: Database,
   actor: Pick<Account, "roles">,
   sentRoomId: string,
+  day?: string,
 ): Promise<Parsed<string>> {
   if (!may(actor.roles, "manage_dorm_rooms")) return NOT_ALLOWED;
   const roomId = parseId(sentRoomId);
   if (!roomId.ok) return roomId;
-  return db.transaction((tx) => removeEmpty(tx, roomId.value));
+  const dormCohorts = await readDormCohorts(db, day);
+  return db.transaction((tx) => removeEmpty(tx, dormCohorts, roomId.value));
 }
