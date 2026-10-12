@@ -12,6 +12,14 @@ const MEMBER: GroupMember = {
   className: "3-02",
   cohortYear: 2024,
   status: "active",
+  opensDetail: true,
+};
+
+const CLOSED_MEMBER: GroupMember = {
+  ...MEMBER,
+  id: "00000000-0000-4000-8000-000000000003",
+  name: "Anggota Uji Budi",
+  opensDetail: false,
 };
 
 describe("GroupMembersTable", () => {
@@ -64,5 +72,19 @@ describe("GroupMembersTable", () => {
 
     expect(table).toContain("<th>Kelompok</th>");
     expect(table).toContain('<td data-title="Kelompok">KP 24-UJI-01</td>');
+  });
+
+  it("links only the members whose detail the account may open", () => {
+    const table = renderToStaticMarkup(
+      <GroupMembersTable
+        members={[MEMBER, CLOSED_MEMBER]}
+        period={null}
+        detailAddressOf={(studentId) => `/uji?profil=${studentId}`}
+      />,
+    );
+
+    expect(table).toContain(`href="/uji?profil=${MEMBER.id}"`);
+    expect(table).toContain("Anggota Uji Budi");
+    expect(table).not.toContain(CLOSED_MEMBER.id);
   });
 });

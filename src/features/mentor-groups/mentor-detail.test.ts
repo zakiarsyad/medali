@@ -1,6 +1,8 @@
+import { inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { groupCode } from "@/ui/group-code";
 import { type MentorDetail, readMentor } from "./mentor-detail";
@@ -29,7 +31,7 @@ async function found(
   limit: RowLimit,
   id: string,
 ): Promise<MentorDetail> {
-  const answer = await readMentor(db, limit, id);
+  const answer = await readMentor(db, limit, id, null);
   if (answer.kind !== "found") throw new Error("The mentor was not found.");
   return answer.mentor;
 }
@@ -89,7 +91,7 @@ describe("readMentor", () => {
       const { id, own, foreign, past, studentIds, elsewhere } =
         await addBusyMentor(db);
 
-      const answer = await readMentor(db, EVERYONE, id);
+      const answer = await readMentor(db, EVERYONE, id, null);
 
       const ownCode = {
         cohortYear: 2025,
@@ -151,6 +153,7 @@ describe("readMentor", () => {
               className: null,
               cohortYear: 2025,
               status: "active",
+              opensDetail: false,
               group: ownCode,
             },
             {
@@ -160,6 +163,7 @@ describe("readMentor", () => {
               className: "3-02",
               cohortYear: 2026,
               status: "active",
+              opensDetail: false,
               group: ownCode,
             },
             {
@@ -169,6 +173,7 @@ describe("readMentor", () => {
               className: null,
               cohortYear: 2026,
               status: "on_leave",
+              opensDetail: false,
               group: ownCode,
             },
             {
@@ -178,6 +183,7 @@ describe("readMentor", () => {
               className: null,
               cohortYear: 2026,
               status: "active",
+              opensDetail: false,
               group: foreignCode,
             },
           ],
@@ -186,11 +192,30 @@ describe("readMentor", () => {
     });
   });
 
+  it("marks only the students whose detail the account may open, and still lists the others", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, program } = await addBusyMentor(db);
+      const ofProgram = inArray(students.studyProgramId, [program]);
+
+      const answer = await readMentor(db, EVERYONE, id, ofProgram);
+
+      if (answer.kind !== "found") throw new Error("The mentor was not found.");
+      const { members } = answer.mentor;
+      const opening = members.filter((member) => member.opensDetail);
+      expect(opening.map((member) => member.nim)).toEqual([
+        "9900020001",
+        "9900020002",
+        "9900020003",
+      ]);
+      expect(members.map((member) => member.nim)).toContain("9900020006");
+    });
+  });
+
   it("does not give the NIP of the mentor", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addBusyMentor(db);
 
-      const answer = await readMentor(db, EVERYONE, id);
+      const answer = await readMentor(db, EVERYONE, id, null);
 
       expect(JSON.stringify(answer)).not.toContain("990000000000000002");
     });
@@ -232,8 +257,12 @@ describe("readMentor", () => {
       await addTestMentorLine(db, group, before, { endsOn: "2026-09-30" });
       const limit = onlyPrograms([third]);
 
-      expect(await readMentor(db, limit, id)).toEqual({ kind: "refused" });
-      expect(await readMentor(db, limit, before)).toEqual({ kind: "refused" });
+      expect(await readMentor(db, limit, id, null)).toEqual({
+        kind: "refused",
+      });
+      expect(await readMentor(db, limit, before, null)).toEqual({
+        kind: "refused",
+      });
     });
   });
 
@@ -241,7 +270,7 @@ describe("readMentor", () => {
     await inTestDatabase(async (db) => {
       const { id } = await addBusyMentor(db);
 
-      expect(await readMentor(db, onlyPrograms([]), id)).toEqual({
+      expect(await readMentor(db, onlyPrograms([]), id, null)).toEqual({
         kind: "refused",
       });
     });
@@ -297,7 +326,9 @@ describe("readMentor", () => {
     await inTestDatabase(async (db) => {
       const id = await addTestMentor(db, { name: "Pegawai Uji Biasa" });
 
-      expect(await readMentor(db, EVERYONE, id)).toEqual({ kind: "not_found" });
+      expect(await readMentor(db, EVERYONE, id, null)).toEqual({
+        kind: "not_found",
+      });
     });
   });
 
@@ -314,7 +345,9 @@ describe("readMentor", () => {
       });
       await addTestMentorRole(db, id);
 
-      expect(await readMentor(db, EVERYONE, id)).toEqual({ kind: "not_found" });
+      expect(await readMentor(db, EVERYONE, id, null)).toEqual({
+        kind: "not_found",
+      });
     });
   });
 
@@ -322,7 +355,7 @@ describe("readMentor", () => {
     await inTestDatabase(async (db) => {
       const missing = "00000000-0000-4000-8000-000000000000";
 
-      expect(await readMentor(db, EVERYONE, missing)).toEqual({
+      expect(await readMentor(db, EVERYONE, missing, null)).toEqual({
         kind: "not_found",
       });
     });
@@ -330,7 +363,7 @@ describe("readMentor", () => {
 
   it("answers not found for what is no id, without asking the database", async () => {
     await inTestDatabase(async (db) => {
-      expect(await readMentor(db, EVERYONE, "bukan-id")).toEqual({
+      expect(await readMentor(db, EVERYONE, "bukan-id", null)).toEqual({
         kind: "not_found",
       });
     });

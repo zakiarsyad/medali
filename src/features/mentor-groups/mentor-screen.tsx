@@ -1,3 +1,4 @@
+import type { SQL } from "drizzle-orm";
 import Link from "next/link";
 import { forbidden, notFound } from "next/navigation";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
@@ -21,11 +22,14 @@ import { mentorLede } from "./mentor-words";
 export async function MentorScreen({
   limit,
   mentorId,
+  detailVisible,
   studentAddressOf,
 }: {
   /** Which mentors the account that opened the page may see. */
   limit: RowLimit;
   mentorId: string;
+  /** The students whose detail the account may open, or null for none. */
+  detailVisible: SQL | null;
   /**
    * The address that opens the detail of a student over this page, or null
    * for an account that may not open a student's detail.
@@ -34,7 +38,7 @@ export async function MentorScreen({
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
-    readMentor(db, limit, mentorId),
+    readMentor(db, limit, mentorId, detailVisible),
     readRunningPeriod(db),
   ]);
   if (answer.kind === "not_found") notFound();

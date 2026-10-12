@@ -15,6 +15,7 @@ import { openMemberAddresses } from "@/features/mentor-groups/open-member-addres
 import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
 import { askedDetail } from "@/features/students/asked-detail";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
+import { detailVisibleTo } from "@/features/students/visible-students";
 
 /**
  * The page of one group, with the detail of a member over it when the
@@ -39,6 +40,7 @@ async function GroupPage({
       <GroupScreen
         limit={limit}
         groupId={groupId}
+        detailVisible={detailVisibleTo(account)}
         memberAddressOf={openMemberAddresses(account.roles, groupId)}
       />
       {detail && (

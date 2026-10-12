@@ -54,6 +54,26 @@ describe("mentorRowsFor", () => {
     }
   });
 
+  it("gives Ketua Program Studi who is also Pegawai UPK every mentor", () => {
+    expect(mentorRowsFor(account(["head_of_program", "upk_staff"], 7))).toEqual(
+      { kind: "all" },
+    );
+  });
+
+  it("keeps Ketua Program Studi to the mentors of their program, whatever role without the right they also hold", () => {
+    const others = ROLE_IDS.filter((role) => !may([role], "view_mentors"));
+
+    expect(others).toContain("counsellor");
+    for (const role of others) {
+      const both = account(["head_of_program", role], 7);
+
+      expect(mentorRowsFor(both)).toMatchObject({
+        kind: "some",
+        studyProgramIds: [7],
+      });
+    }
+  });
+
   it("gives a mentor who is also Pegawai UPK every mentor", () => {
     expect(mentorRowsFor(account(["mentor", "upk_staff"]))).toEqual({
       kind: "all",

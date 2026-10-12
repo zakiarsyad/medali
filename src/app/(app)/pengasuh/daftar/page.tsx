@@ -17,6 +17,7 @@ import { openMentorStudentAddresses } from "@/features/mentor-groups/open-member
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
 import { askedDetail } from "@/features/students/asked-detail";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
+import { detailVisibleTo } from "@/features/students/visible-students";
 
 /**
  * The page of one mentor, with the detail of a student over it when the
@@ -41,6 +42,7 @@ async function MentorPage({
       <MentorScreen
         limit={limit}
         mentorId={mentorId}
+        detailVisible={detailVisibleTo(account)}
         studentAddressOf={openMentorStudentAddresses(account.roles, mentorId)}
       />
       {detail && (

@@ -3,7 +3,7 @@ import {
   type AccountForAccess,
   may,
   type RowLimit,
-  rowLimitFor,
+  rowLimitForAction,
 } from "@/auth/access";
 import {
   accountRoles,
@@ -21,7 +21,7 @@ import { groupsVisibleTo } from "./visible-groups";
  */
 export function mentorRowsFor(account: AccountForAccess): RowLimit | null {
   if (!may(account.roles, "view_mentors")) return null;
-  return rowLimitFor(account);
+  return rowLimitForAction(account, "view_mentors");
 }
 
 const HOLDS_ROLE_LINE = sql`exists (

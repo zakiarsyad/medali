@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
@@ -11,7 +11,7 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import type { GroupCodeParts } from "@/ui/group-code";
-import { type GroupMember, MEMBER } from "./group-detail";
+import { type GroupMember, MEMBER, opensDetailOf } from "./group-detail";
 import { LISTED_MEMBER } from "./member-conditions";
 import {
   type HeldGroup,
@@ -129,9 +129,14 @@ function readStudents(
   db: Database,
   limit: RowLimit,
   mentorId: string,
+  detailVisible: SQL | null,
 ): Promise<MentorStudent[]> {
   return db
-    .select({ ...MEMBER, group: GROUP_CODE })
+    .select({
+      ...MEMBER,
+      opensDetail: opensDetailOf(detailVisible),
+      group: GROUP_CODE,
+    })
     .from(mentorGroupMentors)
     .innerJoin(mentorGroups, eq(mentorGroups.id, mentorGroupMentors.groupId))
     .innerJoin(studyPrograms, eq(studyPrograms.id, mentorGroups.studyProgramId))
@@ -154,11 +159,15 @@ function readStudents(
  * One mentor with their groups, history and students, for an account with
  * this row limit. An id that names no mentor is not found. A mentor
  * outside the account's rows is refused, and nothing more is read of them.
+ * `detailVisible` holds the students whose detail the account may open,
+ * or null for none: an account may see a mentor and still not open the
+ * detail of each of their students.
  */
 export async function readMentor(
   db: Database,
   limit: RowLimit,
   id: string,
+  detailVisible: SQL | null,
 ): Promise<MentorAnswer> {
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(id)) return NOT_FOUND;
@@ -169,7 +178,7 @@ export async function readMentor(
   const [groups, assignments, members] = await Promise.all([
     readGroupsHeld(db, limit, [id]),
     readAssignments(db, limit, id),
-    readStudents(db, limit, id),
+    readStudents(db, limit, id, detailVisible),
   ]);
   const isInactive = mentor.status === "inactive";
   return {

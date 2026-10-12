@@ -1,6 +1,8 @@
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readGroup } from "./group-detail";
 import {
@@ -57,7 +59,7 @@ describe("readGroup", () => {
     await inTestDatabase(async (db) => {
       const { id, studentIds } = await addFullGroup(db);
 
-      const answer = await readGroup(db, EVERYONE, id);
+      const answer = await readGroup(db, EVERYONE, id, null);
 
       expect(answer).toEqual({
         kind: "found",
@@ -97,6 +99,7 @@ describe("readGroup", () => {
               className: null,
               cohortYear: 2024,
               status: "active",
+              opensDetail: false,
             },
             {
               id: studentIds[0],
@@ -105,6 +108,7 @@ describe("readGroup", () => {
               className: "3-02",
               cohortYear: 2026,
               status: "active",
+              opensDetail: false,
             },
             {
               id: studentIds[2],
@@ -113,6 +117,7 @@ describe("readGroup", () => {
               className: null,
               cohortYear: 2026,
               status: "on_leave",
+              opensDetail: false,
             },
           ],
         },
@@ -120,11 +125,28 @@ describe("readGroup", () => {
     });
   });
 
+  it("marks only the members whose detail the account may open", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addFullGroup(db);
+      const [budi, ani] = studentIds;
+      if (!budi || !ani) throw new Error("The members were not added.");
+
+      const answer = await readGroup(db, EVERYONE, id, eq(students.id, ani));
+
+      if (answer.kind !== "found") throw new Error("The group was not found.");
+      const opening = answer.group.members.filter(
+        (member) => member.opensDetail,
+      );
+      expect(opening.map((member) => member.id)).toEqual([ani]);
+      expect(answer.group.members.map((member) => member.id)).toContain(budi);
+    });
+  });
+
   it("does not give the NIP of a mentor", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addFullGroup(db);
 
-      const answer = await readGroup(db, EVERYONE, id);
+      const answer = await readGroup(db, EVERYONE, id, null);
 
       expect(JSON.stringify(answer)).not.toContain("990000000000000001");
     });
@@ -140,7 +162,7 @@ describe("readGroup", () => {
       });
       await addTestMembers(db, other, [outsider]);
 
-      const answer = await readGroup(db, EVERYONE, id);
+      const answer = await readGroup(db, EVERYONE, id, null);
 
       if (answer.kind !== "found") throw new Error("The group was not found.");
       expect(answer.group.members.map((member) => member.nim)).toEqual([
@@ -155,7 +177,7 @@ describe("readGroup", () => {
     await inTestDatabase(async (db) => {
       const { id, program } = await addFullGroup(db);
 
-      const answer = await readGroup(db, onlyPrograms([program]), id);
+      const answer = await readGroup(db, onlyPrograms([program]), id, null);
 
       expect(answer.kind).toBe("found");
     });
@@ -166,7 +188,7 @@ describe("readGroup", () => {
       const { id } = await addFullGroup(db);
       const other = await addTestProgram(db, "UJIRINCILAIN");
 
-      const answer = await readGroup(db, onlyPrograms([other]), id);
+      const answer = await readGroup(db, onlyPrograms([other]), id, null);
 
       expect(answer).toEqual({ kind: "refused" });
     });
@@ -176,7 +198,7 @@ describe("readGroup", () => {
     await inTestDatabase(async (db) => {
       const { id } = await addFullGroup(db);
 
-      expect(await readGroup(db, onlyPrograms([]), id)).toEqual({
+      expect(await readGroup(db, onlyPrograms([]), id, null)).toEqual({
         kind: "refused",
       });
     });
@@ -186,7 +208,7 @@ describe("readGroup", () => {
     await inTestDatabase(async (db) => {
       const missing = "00000000-0000-4000-8000-000000000000";
 
-      expect(await readGroup(db, EVERYONE, missing)).toEqual({
+      expect(await readGroup(db, EVERYONE, missing, null)).toEqual({
         kind: "not_found",
       });
     });
@@ -194,7 +216,7 @@ describe("readGroup", () => {
 
   it("answers not found for what is no id, without asking the database", async () => {
     await inTestDatabase(async (db) => {
-      expect(await readGroup(db, EVERYONE, "bukan-id")).toEqual({
+      expect(await readGroup(db, EVERYONE, "bukan-id", null)).toEqual({
         kind: "not_found",
       });
     });

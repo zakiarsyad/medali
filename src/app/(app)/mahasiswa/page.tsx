@@ -1,4 +1,4 @@
-import { rowLimitFor } from "@/auth/access";
+import { rowLimitForPage } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { askedDetail } from "@/features/students/asked-detail";
@@ -10,7 +10,7 @@ export default async function StudentsPage(props: PageProps<"/mahasiswa">) {
   const params = readStudentListParams(await props.searchParams);
   return (
     <StudentListScreen
-      limit={rowLimitFor(account)}
+      limit={rowLimitForPage(account, "students")}
       params={params}
       detail={await askedDetail(account, params.detailId)}
       groupAddressOf={(group) => openGroupAddress(account, group)}
