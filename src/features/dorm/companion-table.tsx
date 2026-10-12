@@ -1,7 +1,12 @@
 import shared from "@/ui/data-screen.module.css";
+import {
+  restartCompanionAction,
+  stopCompanionAction,
+} from "./companion-actions";
 import type { ListedCompanion } from "./companion-list";
 import styles from "./companions.module.css";
 import { DORM_NAMES } from "./dorms";
+import { RoomButton } from "./room-button";
 
 /** The NIM, the study program, and the semester when it is known. */
 function details(companion: ListedCompanion): string {
@@ -16,7 +21,40 @@ function Room({ companion }: { companion: ListedCompanion }) {
   return `Lantai ${room.floor}, kamar ${room.number}`;
 }
 
-function CompanionRow({ companion }: { companion: ListedCompanion }) {
+/** What "Nonaktifkan" asks first: stopping also takes them out of their room. */
+function stopQuestion(companion: ListedCompanion): string {
+  const question = `Nonaktifkan ${companion.name} sebagai kakak pendamping?`;
+  if (!companion.room) return question;
+  return `${question} Ia juga dikeluarkan dari kamar ${companion.room.number}.`;
+}
+
+function DutyButton({ companion }: { companion: ListedCompanion }) {
+  const { studentId } = companion;
+  if (!companion.isActive) {
+    return (
+      <RoomButton action={restartCompanionAction} ids={{ studentId }}>
+        Aktifkan
+      </RoomButton>
+    );
+  }
+  return (
+    <RoomButton
+      action={stopCompanionAction}
+      ids={{ studentId, roomId: companion.room?.id ?? "" }}
+      confirm={stopQuestion(companion)}
+    >
+      Nonaktifkan
+    </RoomButton>
+  );
+}
+
+function CompanionRow({
+  companion,
+  mayManage,
+}: {
+  companion: ListedCompanion;
+  mayManage: boolean;
+}) {
   return (
     <tr>
       <td data-label="Mahasiswa">
@@ -33,6 +71,11 @@ function CompanionRow({ companion }: { companion: ListedCompanion }) {
           {companion.isActive ? "Aktif" : "Tidak aktif"}
         </span>
       </td>
+      {mayManage && (
+        <td>
+          <DutyButton companion={companion} />
+        </td>
+      )}
     </tr>
   );
 }
@@ -40,8 +83,11 @@ function CompanionRow({ companion }: { companion: ListedCompanion }) {
 /** Daftar kakak pendamping: a table on a laptop, cards on a phone. */
 export function CompanionTable({
   companions,
+  mayManage,
 }: {
   companions: ListedCompanion[];
+  /** Whether the account may stop and restart a duty, or only see the list. */
+  mayManage: boolean;
 }) {
   return (
     <table className={`${shared.table} ${styles.list}`}>
@@ -52,11 +98,20 @@ export function CompanionTable({
           <th>Kamar</th>
           <th>Keterangan</th>
           <th>Status</th>
+          {mayManage && (
+            <th>
+              <span className={shared.hidden}>Tindakan</span>
+            </th>
+          )}
         </tr>
       </thead>
       <tbody>
         {companions.map((companion) => (
-          <CompanionRow key={companion.studentId} companion={companion} />
+          <CompanionRow
+            key={companion.studentId}
+            companion={companion}
+            mayManage={mayManage}
+          />
         ))}
       </tbody>
     </table>

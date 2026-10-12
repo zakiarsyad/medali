@@ -68,7 +68,10 @@ export async function CompanionsScreen({
           <p className={shared.empty}>Belum ada kakak pendamping.</p>
         ) : (
           <>
-            <CompanionTable companions={list.companions} />
+            <CompanionTable
+              companions={list.companions}
+              mayManage={mayManage}
+            />
             <ListPager
               page={list.page}
               matching={list.matching}
