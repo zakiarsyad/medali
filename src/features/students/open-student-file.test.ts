@@ -3,7 +3,11 @@ import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { studentBatches, studentBatchFiles } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { type MemoryStore, memoryStore } from "@/files/memory-store";
+import {
+  type MemoryStore,
+  memoryStore,
+  unreachableStore,
+} from "@/files/memory-store";
 import { openStudentFile, studentFileRefusal } from "./open-student-file";
 import { addTestActor } from "./test-records";
 
@@ -160,6 +164,17 @@ describe("openStudentFile", () => {
       const opened = await openStudentFile(db, store, actor, id);
 
       expect(opened).toEqual({ ok: false, refusal: "not-found" });
+    });
+  });
+
+  it("says the file cannot be opened now when the file storage cannot be reached", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKeptFile(db, memoryStore());
+      const actor = await addTestActor(db, "Pembuka Uji", ["head_of_unit"]);
+
+      const opened = await openStudentFile(db, unreachableStore(), actor, id);
+
+      expect(opened).toEqual({ ok: false, refusal: "unreachable" });
     });
   });
 

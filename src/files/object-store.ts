@@ -13,13 +13,25 @@ type Send = (
   file?: StoredFile,
 ) => Promise<Response>;
 
-/** The address of the place for files, or of one file in it. */
+function stepsOut(part: string): boolean {
+  return part === "." || part === "..";
+}
+
+/**
+ * The address of the place for files, or of one file in it. An address
+ * is shortened where it holds "." or "..", which would carry a key out
+ * of its own part of the storage, so such a key is refused.
+ */
 export function objectAddress(
   settings: Pick<FileStorageSettings, "url" | "bucket">,
   key = "",
 ): string {
+  const keyParts = key.split("/");
+  if (keyParts.some(stepsOut)) {
+    throw new Error('A key of the file storage may not hold "." or "..".');
+  }
   const base = settings.url.replace(/\/+$/, "");
-  const path = [settings.bucket, ...key.split("/")]
+  const path = [settings.bucket, ...keyParts]
     .filter((part) => part !== "")
     .map(encodeURIComponent)
     .join("/");

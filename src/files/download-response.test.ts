@@ -64,6 +64,7 @@ describe("refusalResponse", () => {
     ["not-signed-in", 401],
     ["not-allowed", 403],
     ["not-found", 404],
+    ["unreachable", 503],
   ] as const)("answers %s with %i and nothing of a file", (refusal, status) => {
     const response = refusalResponse(refusal);
 

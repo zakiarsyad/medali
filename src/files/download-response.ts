@@ -5,12 +5,17 @@ export interface Download {
   bytes: Uint8Array;
 }
 
-export type Refusal = "not-signed-in" | "not-allowed" | "not-found";
+export type Refusal =
+  | "not-signed-in"
+  | "not-allowed"
+  | "not-found"
+  | "unreachable";
 
 const REFUSALS: Record<Refusal, { status: number; says: string }> = {
   "not-signed-in": { status: 401, says: "Masuk dulu untuk membuka berkas." },
   "not-allowed": { status: 403, says: "Anda tidak berhak membuka berkas ini." },
   "not-found": { status: 404, says: "Berkas tidak ditemukan." },
+  unreachable: { status: 503, says: "Berkas tidak dapat dibuka. Coba lagi." },
 };
 
 const FALLBACK_NAME = "berkas";

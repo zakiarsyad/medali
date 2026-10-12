@@ -154,6 +154,10 @@ change any of these.
 15. Until sign-in is built, "not signed in" exists only where "Ganti
     peran" is off. Where it is on, a visitor with no account picked is
     Kepala Unit, as on every other screen, so that visitor can download.
+16. When the file storage cannot be reached during a download, the
+    person reads "Berkas tidak dapat dibuka. Coba lagi."
+17. A file's place in the storage can never be named in a way that steps
+    out of its own part; such a name is refused.
 
 ## Steps
 

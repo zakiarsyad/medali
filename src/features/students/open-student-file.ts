@@ -53,10 +53,28 @@ export async function openStudentFile(
     .where(eq(studentBatchFiles.id, id))
     .limit(1);
   if (!record) return refused("not-found");
-  const bytes = await store.get(record.objectKey);
+  const bytes = await keptBytes(store, record.objectKey);
+  if (bytes === "unreachable") return refused("unreachable");
   if (!bytes) return refused("not-found");
   return {
     ok: true,
     file: { name: record.name, contentType: record.contentType, bytes },
   };
+}
+
+/**
+ * A storage that fails or cannot be reached is not an error to pass on:
+ * the person is told to try again, and the cause is logged, which names
+ * no person and no key.
+ */
+async function keptBytes(
+  store: FileStore,
+  objectKey: string,
+): Promise<Uint8Array | "unreachable" | null> {
+  try {
+    return await store.get(objectKey);
+  } catch (error) {
+    console.error("A kept student file was not opened.", error);
+    return "unreachable";
+  }
 }

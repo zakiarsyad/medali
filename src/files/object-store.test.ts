@@ -60,4 +60,13 @@ describe("objectAddress", () => {
       "http://localhost:9000/medali/uji/a%20b%3Fc%23d",
     );
   });
+
+  it.each(["local/../main-preview/a", "../a", "uji/./a", "uji/.."])(
+    "refuses the key %s, which would step out of its own part",
+    (key) => {
+      expect(() => objectAddress(LOCAL, key)).toThrow(
+        "A key of the file storage may not hold",
+      );
+    },
+  );
 });
