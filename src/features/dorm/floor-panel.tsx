@@ -1,5 +1,6 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
+import { AddRoomForm } from "./add-room-form";
 import type { DormId } from "./dorms";
 import { RoomCard } from "./room-card";
 import { FLOORS } from "./room-limits";
@@ -58,6 +59,9 @@ export function FloorPanel({
         <h2 className={`${shared.heading} ${styles.title}`}>Lantai</h2>
         <FloorChips dorm={dorm} open={floor} rooms={rooms} />
       </div>
+      {mayManage && (
+        <AddRoomForm key={`${dorm} ${floor}`} dorm={dorm} floor={floor} />
+      )}
       {onFloor.length === 0 ? (
         <p className={shared.empty}>
           Belum ada kamar di lantai {floor}.
@@ -70,6 +74,7 @@ export function FloorPanel({
               key={room.id}
               room={room}
               residents={residents.filter((one) => one.roomId === room.id)}
+              mayManage={mayManage}
             />
           ))}
         </ul>
