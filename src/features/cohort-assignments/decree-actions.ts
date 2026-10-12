@@ -5,12 +5,14 @@ import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { ASSIGNMENT_ADDRESS } from "./assignment-address";
+import { cancelAssignment } from "./cancel-assignment";
 import {
   type DecreeInput,
   type DecreeStep,
   decreeStepOf,
   parseDecree,
 } from "./decree-input";
+import { parseDraftKey } from "./draft-change-input";
 import { fixAssignment } from "./fix-assignment";
 import { preparer } from "./preparer";
 import { NOT_UNDERSTOOD } from "./refusals";
@@ -49,4 +51,19 @@ export async function decreeStepAction(form: FormData): Promise<FormState> {
   revalidatePath(ASSIGNMENT_ADDRESS);
   if (!taken.ok) return { error: taken.error, done: null };
   return { error: null, done: doneWords(step, parsed.value) };
+}
+
+/** "Batalkan penetapan", for the fixed penetapan that is shown. */
+export async function cancelAction(form: FormData): Promise<FormState> {
+  const actor = await preparer();
+  const parsed = parseDraftKey({
+    cohortYear: text(form, "cohortYear"),
+    version: text(form, "version"),
+  });
+  if (!parsed.ok) return { error: parsed.error, done: null };
+
+  const cancelled = await cancelAssignment(database(), actor, parsed.value);
+  revalidatePath(ASSIGNMENT_ADDRESS);
+  if (!cancelled.ok) return { error: cancelled.error, done: null };
+  return { error: null, done: "Penetapan dibatalkan." };
 }

@@ -122,6 +122,6 @@ is built here.
 - [x] 4. The tab with the angkatan list, step 1 and step 2.
 - [x] 5. Step 3: mentor choice, automatic fill and moving members.
 - [x] 6. Step 4: save, submit, fix, and the fixed view with the log.
-- [ ] 7. "Batalkan penetapan" for Kepala Unit, with its check.
+- [x] 7. "Batalkan penetapan" for Kepala Unit, with its check.
 - [ ] 8. Concurrent edits, removed students, refusals and phone
   layout.

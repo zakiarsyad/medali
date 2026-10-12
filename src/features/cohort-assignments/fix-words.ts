@@ -13,6 +13,11 @@ export function fixQuestion(size: FixSize, effectiveOn: string): string {
   return `Tetapkan ${size.groups} kelompok pengasuhan angkatan ${size.cohortYear}? Seluruh ${students} mahasiswa masuk ke kelompok dan pengasuhnya mulai ${shownDay(effectiveOn)}.`;
 }
 
+/** What "Batalkan penetapan" asks before the groups are ended. */
+export function cancelQuestion(cohortYear: number): string {
+  return `Batalkan penetapan angkatan ${cohortYear}? Mahasiswa angkatan ini kembali belum punya kelompok pengasuhan dan tidak lagi terlihat oleh pengasuhnya. Susunan kelompok dan pilihan pengasuh tetap tersimpan sebagai draf.`;
+}
+
 /** What stands under the heading of a fixed angkatan. */
 export function fixedWords(fixed: {
   decreeNumber: string | null;

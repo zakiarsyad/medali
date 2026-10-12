@@ -1,6 +1,7 @@
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { statusAfter } from "./assignment-steps";
+import { CancelButton } from "./cancel-button";
 import styles from "./cohort-assignments.module.css";
 import { DraftGroupsPanel } from "./draft-groups-panel";
 import { FixingPanel } from "./fixing-panel";
@@ -72,17 +73,27 @@ async function MentorStep({
 
 /**
  * The groups to read only. "Riwayat proses" names the staff who prepared
- * the penetapan, so only an account that prepares one sees it.
+ * the penetapan, so only an account that prepares one sees it. A fixed
+ * one has "Batalkan penetapan" for an account that may fix.
  */
 function SavedGroups({
   assignment,
   mayPrepare,
+  mayFix,
 }: {
   assignment: StoredAssignment;
   mayPrepare: boolean;
+  mayFix: boolean;
 }) {
+  const { cohortYear, version, status } = assignment;
+  const mayCancel = mayFix && statusAfter(status, "cancel") !== null;
   return (
-    <DraftGroupsPanel assignment={assignment}>
+    <DraftGroupsPanel
+      assignment={assignment}
+      action={
+        mayCancel ? <CancelButton shown={{ cohortYear, version }} /> : undefined
+      }
+    >
       {mayPrepare && <ProcessLog log={assignment.log} />}
     </DraftGroupsPanel>
   );
@@ -137,7 +148,11 @@ export async function OpenCohort({
         </>
       )}
       {formed && !showsSteps && (
-        <SavedGroups assignment={formed} mayPrepare={mayPrepare} />
+        <SavedGroups
+          assignment={formed}
+          mayPrepare={mayPrepare}
+          mayFix={mayFix}
+        />
       )}
     </OneSaveAtATime>
   );
