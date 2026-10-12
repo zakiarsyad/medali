@@ -225,7 +225,7 @@ describe("two people changing one room at the same moment", () => {
     expect(both.later).toEqual({
       ok: false,
       error:
-        "Kapasitas tidak boleh kurang dari jumlah penghuni kamar (2). Keluarkan penghuni dulu.",
+        "Kapasitas tidak boleh kurang dari jumlah orang di kamar (2). Keluarkan sebagian dulu.",
     });
     expect(await residentsOfRoom(first.db, roomId)).toHaveLength(2);
     expect(await capacityOf(roomId)).toBe(2);

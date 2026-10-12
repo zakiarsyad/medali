@@ -14,7 +14,7 @@ import { freeStalePlacesIn } from "./stale-places";
 function stillLivedIn(number: string) {
   return {
     ok: false,
-    error: `Kamar ${number} masih berpenghuni. Keluarkan semua penghuni dulu.`,
+    error: `Kamar ${number} masih terisi. Kosongkan kamar dulu.`,
   } as const;
 }
 

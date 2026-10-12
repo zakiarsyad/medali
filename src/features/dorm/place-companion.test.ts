@@ -390,7 +390,7 @@ describe("a room with a kakak pendamping in it", () => {
 
       expect(removed).toEqual({
         ok: false,
-        error: "Kamar KP101 masih berpenghuni. Keluarkan semua penghuni dulu.",
+        error: "Kamar KP101 masih terisi. Kosongkan kamar dulu.",
       });
     });
   });
@@ -413,7 +413,7 @@ describe("a room with a kakak pendamping in it", () => {
       expect(changed).toEqual({
         ok: false,
         error:
-          "Kapasitas tidak boleh kurang dari jumlah penghuni kamar (2). Keluarkan penghuni dulu.",
+          "Kapasitas tidak boleh kurang dari jumlah orang di kamar (2). Keluarkan sebagian dulu.",
       });
     });
   });

@@ -78,7 +78,7 @@ function Residents({ room, residents, offered, companions }: RoomCardProps) {
       {hidden > 0 && (
         <p className={styles.quietLine}>
           {residents.length + companions.length > 0 ? "dan " : ""}
-          {hidden} penghuni dari program studi lain
+          {hidden} orang dari program studi lain
         </p>
       )}
     </>
