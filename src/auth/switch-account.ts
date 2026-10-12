@@ -7,6 +7,7 @@ import { currentStage } from "@/settings";
 import { accountSwitcherOn } from "./account-switcher";
 import { findActiveAccount } from "./accounts";
 import { ACCOUNT_COOKIE } from "./current-account";
+import { signOut } from "./sign-out";
 
 export async function switchAccount(formData: FormData): Promise<void> {
   if (!accountSwitcherOn(currentStage())) forbidden();
@@ -15,6 +16,9 @@ export async function switchAccount(formData: FormData): Promise<void> {
   const account = await findActiveAccount(database(), picked);
   if (!account) throw new Error("The picked account was not found.");
 
+  // Someone signed in with Google uses their own account, so the pick
+  // would change nothing while that sign-in lasts.
+  await signOut();
   (await cookies()).set(ACCOUNT_COOKIE, account.id, {
     httpOnly: true,
     sameSite: "lax",

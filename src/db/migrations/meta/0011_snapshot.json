@@ -1,5 +1,5 @@
 {
-  "id": "cb8e2be4-1b08-44dd-b1a1-fc28f4025b25",
+  "id": "21bfb6c8-5081-4940-9707-0ab457b0084d",
   "prevId": "b5b88478-76cc-4f45-a6cc-a2f52d0c8271",
   "version": "7",
   "dialect": "postgresql",
@@ -354,137 +354,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.dorm_room_places": {
-      "name": "dorm_room_places",
-      "schema": "",
-      "columns": {
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "room_id": {
-          "name": "room_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "dorm_room_places_room": {
-          "name": "dorm_room_places_room",
-          "columns": [
-            {
-              "expression": "room_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "dorm_room_places_student_id_students_id_fk": {
-          "name": "dorm_room_places_student_id_students_id_fk",
-          "tableFrom": "dorm_room_places",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "dorm_room_places_room_id_dorm_rooms_id_fk": {
-          "name": "dorm_room_places_room_id_dorm_rooms_id_fk",
-          "tableFrom": "dorm_room_places",
-          "tableTo": "dorm_rooms",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.dorm_rooms": {
-      "name": "dorm_rooms",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "dorm": {
-          "name": "dorm",
-          "type": "dorm",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "floor": {
-          "name": "floor",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "number": {
-          "name": "number",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "capacity": {
-          "name": "capacity",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "dorm_rooms_number_in_dorm": {
-          "name": "dorm_rooms_number_in_dorm",
-          "nullsNotDistinct": false,
-          "columns": [
-            "dorm",
-            "number"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "dorm_rooms_floor_in_range": {
-          "name": "dorm_rooms_floor_in_range",
-          "value": "\"dorm_rooms\".\"floor\" between 1 and 8"
-        },
-        "dorm_rooms_capacity_in_range": {
-          "name": "dorm_rooms_capacity_in_range",
-          "value": "\"dorm_rooms\".\"capacity\" between 1 and 12"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.main_indicators": {
       "name": "main_indicators",
       "schema": "",
@@ -727,6 +596,119 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sessions": {
+      "name": "sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessions_account_id_accounts_id_fk": {
+          "name": "sessions_account_id_accounts_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sessions_tokenHash_unique": {
+          "name": "sessions_tokenHash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sign_in_log": {
+      "name": "sign_in_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "happened_at": {
+          "name": "happened_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "sign_in_result",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sign_in_log_account_id_accounts_id_fk": {
+          "name": "sign_in_log_account_id_accounts_id_fk",
+          "tableFrom": "sign_in_log",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account_id"
           ],
           "columnsTo": [
             "id"
@@ -1308,16 +1290,6 @@
         "even"
       ]
     },
-    "public.dorm": {
-      "name": "dorm",
-      "schema": "public",
-      "values": [
-        "wismantara_putra",
-        "wismantara_putri",
-        "dana_rakca",
-        "cipta_bakti"
-      ]
-    },
     "public.entry_path": {
       "name": "entry_path",
       "schema": "public",
@@ -1364,6 +1336,16 @@
       "values": [
         "male",
         "female"
+      ]
+    },
+    "public.sign_in_result": {
+      "name": "sign_in_result",
+      "schema": "public",
+      "values": [
+        "signed_in",
+        "signed_out",
+        "refused_outside_campus",
+        "refused_no_account"
       ]
     },
     "public.student_status": {

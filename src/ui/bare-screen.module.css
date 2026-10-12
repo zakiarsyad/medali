@@ -1,0 +1,17 @@
+.screen {
+  display: grid;
+  place-items: center;
+  min-height: var(--screen-height);
+  padding: var(--space-lg);
+}
+
+.box {
+  width: 100%;
+  max-width: var(--bare-box-width);
+  padding: var(--space-2xl) var(--space-xl);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: center;
+}

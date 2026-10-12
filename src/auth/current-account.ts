@@ -8,20 +8,48 @@ import {
   findActiveAccount,
   firstAccountWithRole,
 } from "./accounts";
+import { sessionCookieName } from "./session-token";
+import { sessionAccount } from "./sessions";
+import { type SignedIn, whoIsSignedIn } from "./who-is-signed-in";
 
 export const ACCOUNT_COOKIE = "medali-account";
 
 /**
- * The account using the app. Until sign-in is built, it is the account
- * picked in "Ganti peran", or Kepala Unit when none is picked. Where the
- * switcher is off, nobody is signed in.
+ * Who is using the app: see `whoIsSignedIn`, which decides. This only
+ * gathers what it decides from. A Google session ends when the person
+ * signs out, stays away for 8 hours, or the account is removed.
  */
-export const currentAccount = cache(async (): Promise<Account | null> => {
+export const currentSignIn = cache(async (): Promise<SignedIn | null> => {
   // Read before anything else, so that every page asking for the account
   // is built per request and never frozen at build time.
-  const picked = (await cookies()).get(ACCOUNT_COOKIE)?.value;
-  if (!accountSwitcherOn(currentStage())) return null;
-  const db = database();
-  const account = picked ? await findActiveAccount(db, picked) : null;
-  return account ?? firstAccountWithRole(db, "head_of_unit");
+  const jar = await cookies();
+  const stage = currentStage();
+  const token = jar.get(sessionCookieName(stage))?.value;
+  const picked = jar.get(ACCOUNT_COOKIE)?.value;
+
+  const own = token
+    ? await sessionAccount(database(), token, new Date())
+    : null;
+  // The accounts of "Ganti peran" are read only where they can count, to
+  // spare the database. Whether they count is still decided below.
+  const switcherCounts = !own && accountSwitcherOn(stage);
+  const pickedAccount =
+    switcherCounts && picked
+      ? await findActiveAccount(database(), picked)
+      : null;
+  const defaultAccount =
+    switcherCounts && !pickedAccount
+      ? await firstAccountWithRole(database(), "head_of_unit")
+      : null;
+  return whoIsSignedIn({
+    stage,
+    sessionAccount: own,
+    pickedAccount,
+    defaultAccount,
+  });
+});
+
+export const currentAccount = cache(async (): Promise<Account | null> => {
+  const signedIn = await currentSignIn();
+  return signedIn?.account ?? null;
 });

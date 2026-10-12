@@ -24,8 +24,22 @@
   text-decoration: none;
 }
 
-.me:hover {
+a.me:hover,
+.out:hover {
   background: var(--sidehover);
+}
+
+.out {
+  width: 100%;
+  margin-top: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: var(--line-width) solid var(--sideboxline);
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--sideink);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
 }
 
 .avatar {

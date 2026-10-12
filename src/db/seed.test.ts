@@ -35,8 +35,10 @@ const PLACED_IN_A_DORM = SAMPLE_ROOMS.reduce(
   0,
 );
 
-describe("fillWithSampleData", () => {
-  it("adds every sample student, and those in their first year today", async () => {
+// Loading the whole sample set takes seconds when every check runs at
+// once, and it waits behind other checks that write the same tables.
+describe("fillWithSampleData", { timeout: 20_000 }, () => {
+  it("adds every sample student, those in their first year today, and rooms on a few floors of each dorm with some of its residents placed", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
@@ -45,37 +47,24 @@ describe("fillWithSampleData", () => {
       expect(added.map((student) => student.nim).sort()).toEqual(
         sample.map((student) => student.nim).sort(),
       );
-    });
-  });
-
-  it("gives each of the four dorms rooms on a few floors", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
 
       const rooms = await db.select().from(dormRooms);
-      for (const dorm of DORM_IDS) {
-        const inDorm = rooms.filter((room) => room.dorm === dorm);
-        expect(inDorm).toHaveLength(SAMPLE_ROOMS.length);
-        const floors = new Set(inDorm.map((room) => room.floor));
-        expect(floors.size).toBeGreaterThanOrEqual(3);
-      }
-    });
-  });
-
-  it("places some residents of each dorm, in a room of their own dorm", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-
       const placed = await db
         .select({ studentId: dormRoomPlaces.studentId, dorm: dormRooms.dorm })
         .from(dormRoomPlaces)
         .innerJoin(dormRooms, eq(dormRooms.id, dormRoomPlaces.roomId));
       for (const dorm of DORM_IDS) {
-        const inDorm = placed.filter((place) => place.dorm === dorm);
-        expect(inDorm).toHaveLength(PLACED_IN_A_DORM);
-        for (const place of inDorm) {
-          expect(await readStudentDorm(db, place.studentId)).toBe(dorm);
-        }
+        const inDorm = rooms.filter((room) => room.dorm === dorm);
+        expect(inDorm).toHaveLength(SAMPLE_ROOMS.length);
+        const floors = new Set(inDorm.map((room) => room.floor));
+        expect(floors.size).toBeGreaterThanOrEqual(3);
+
+        const placedInDorm = placed.filter((place) => place.dorm === dorm);
+        expect(placedInDorm).toHaveLength(PLACED_IN_A_DORM);
+        const livesIn = await Promise.all(
+          placedInDorm.map((place) => readStudentDorm(db, place.studentId)),
+        );
+        expect(livesIn).toEqual(placedInDorm.map(() => dorm));
       }
     });
   });
