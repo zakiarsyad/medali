@@ -152,7 +152,7 @@ describe("whatHoldsBack", () => {
     });
 
     expect(whatHoldsBack(found)).toBe(
-      'Draf belum bisa diajukan atau ditetapkan. 1 kelompok tidak punya anggota. Pindahkan anggota ke kelompok itu atau tekan "Bentuk ulang". 1 mahasiswa angkatan ini belum masuk kelompok mana pun pada draf. Tekan "Bentuk ulang" agar ikut dibagi ke kelompok. 2 mahasiswa pada draf sudah berganti program studi atau jalur. Tekan "Bentuk ulang" agar masuk kelompok yang sesuai.',
+      'Draf belum bisa diajukan atau ditetapkan. 1 kelompok tidak punya anggota. Tekan "Bentuk ulang", atau pindahkan anggota dari kelompok lain pada program studi dan jalur yang sama bila ada. 1 mahasiswa angkatan ini belum masuk kelompok mana pun pada draf. Tekan "Bentuk ulang" agar ikut dibagi ke kelompok. 2 mahasiswa pada draf sudah berganti program studi atau jalur. Tekan "Bentuk ulang" agar masuk kelompok yang sesuai.',
     );
   });
 });

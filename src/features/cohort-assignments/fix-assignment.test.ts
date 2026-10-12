@@ -291,7 +291,7 @@ describe("fixAssignment, when something changed after the draft was saved", () =
       expect(fixed).toEqual({
         ok: false,
         error:
-          'Draf belum bisa diajukan atau ditetapkan. 1 kelompok tidak punya anggota. Pindahkan anggota ke kelompok itu atau tekan "Bentuk ulang".',
+          'Draf belum bisa diajukan atau ditetapkan. 1 kelompok tidak punya anggota. Tekan "Bentuk ulang", atau pindahkan anggota dari kelompok lain pada program studi dan jalur yang sama bila ada.',
       });
       await expectNothingFixed(db);
     });

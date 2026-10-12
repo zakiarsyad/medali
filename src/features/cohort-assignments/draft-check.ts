@@ -108,7 +108,7 @@ function heldBackWords(check: DraftCheck): string[] {
   }
   if (check.withoutMembers > 0) {
     words.push(
-      `${check.withoutMembers} kelompok tidak punya anggota. Pindahkan anggota ke kelompok itu atau tekan "Bentuk ulang".`,
+      `${check.withoutMembers} kelompok tidak punya anggota. Tekan "Bentuk ulang", atau pindahkan anggota dari kelompok lain pada program studi dan jalur yang sama bila ada.`,
     );
   }
   if (check.studentsOutside > 0) {

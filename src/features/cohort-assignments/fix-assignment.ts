@@ -80,10 +80,10 @@ export function fixAssignment(
   return takeStep(db, actor, input, "fix", async (tx, stored) => {
     const decree = wholeDecree(input);
     if (!decree.ok) return decree;
+    await waitForOtherFixes(tx);
     const draft = await readCompleteDraft(tx, stored.cohortYear);
     if (!draft.ok) return draft;
     const groups = draft.value.groups.map(groupToStart);
-    await waitForOtherFixes(tx);
     const stopped = await readWhatStops(tx, stored.cohortYear, groups);
     if (stopped !== null) return { ok: false, error: stopped };
 
