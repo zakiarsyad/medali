@@ -11,6 +11,7 @@ import {
   or,
   type SQL,
 } from "drizzle-orm";
+import { EMAIL_IN_USE, EMAIL_IN_USE_RULE } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -45,9 +46,6 @@ export interface AccountFilter {
   role: ListedRole | null;
   page: number;
 }
-
-/** The database's rule that an address belongs to one active account. */
-const EMAIL_IN_USE_RULE = "accounts_email_in_use";
 
 const NOT_FOUND = { ok: false, error: "Akun tidak ditemukan." } as const;
 
@@ -206,7 +204,7 @@ export async function addAccount(
     // The database is what keeps one address to one active account. A
     // look beforehand would miss two saves of one address at one moment.
     if (brokeUniqueRule(error, EMAIL_IN_USE_RULE)) {
-      return { ok: false, error: "Email sudah dipakai akun lain." };
+      return { ok: false, error: EMAIL_IN_USE };
     }
     throw error;
   }

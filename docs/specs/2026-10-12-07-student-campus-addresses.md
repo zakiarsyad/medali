@@ -118,7 +118,7 @@ change any of these.
 
 ## Steps
 
-- [ ] 1. The student account keeps one campus address, unique across
+- [x] 1. The student account keeps one campus address, unique across
   all accounts.
 - [ ] 2. "Email kampus" in the form for a new student and for "Ubah",
   with its messages.

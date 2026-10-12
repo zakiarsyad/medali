@@ -1,12 +1,28 @@
 import type { Database } from "@/db/connect";
 import { accountRoles, accounts, roleChanges, students } from "@/db/schema";
 
-export type NewStudent = Omit<typeof students.$inferInsert, "id" | "createdAt">;
+type StudentRecord = Omit<typeof students.$inferInsert, "id" | "createdAt">;
+
+export interface NewStudent extends StudentRecord {
+  /**
+   * The campus address the student's account is to hold, already checked
+   * and in small letters. Without one the student cannot sign in yet.
+   */
+  email?: string | null;
+}
 
 export interface AddedStudent {
   studentId: string;
   accountId: string;
   nim: string;
+}
+
+function recordOf({ email: _onTheAccount, ...record }: NewStudent) {
+  return record satisfies StudentRecord;
+}
+
+function emailsByNim(newStudents: NewStudent[]): Map<string, string | null> {
+  return new Map(newStudents.map(({ nim, email }) => [nim, email ?? null]));
 }
 
 /**
@@ -15,6 +31,10 @@ export interface AddedStudent {
  * whose NIM is already used is left out and gets nothing: the database
  * decides that, so two people adding the same NIM at once cannot both
  * succeed. Gives the students that were added.
+ *
+ * An address goes on the student's account. The database keeps one
+ * address to one active account: when another account holds one of them
+ * the write fails, and nobody is added.
  *
  * Every student is added whole or not at all, in four requests to the
  * database however many students there are.
@@ -28,14 +48,21 @@ export async function addStudents(
   return db.transaction(async (tx) => {
     const records = await tx
       .insert(students)
-      .values(newStudents)
+      .values(newStudents.map(recordOf))
       .onConflictDoNothing({ target: students.nim })
       .returning({ id: students.id, name: students.name, nim: students.nim });
     if (records.length === 0) return [];
 
+    const emails = emailsByNim(newStudents);
     const added = await tx
       .insert(accounts)
-      .values(records.map(({ id, name }) => ({ name, studentId: id })))
+      .values(
+        records.map(({ id, name, nim }) => ({
+          name,
+          studentId: id,
+          email: emails.get(nim) ?? null,
+        })),
+      )
       .returning({ accountId: accounts.id, studentId: accounts.studentId });
     if (added.length !== records.length) {
       throw new Error("Not every student account was added.");
