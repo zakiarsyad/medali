@@ -1,7 +1,7 @@
-/** How many students one page of the list shows. */
+/** How many rows one page of a list shows. */
 export const PAGE_SIZE = 25;
 
-/** How many pages a number of students fills. An empty list has one. */
+/** How many pages a number of rows fills. An empty list has one. */
 export function pageCount(matching: number): number {
   return Math.max(1, Math.ceil(matching / PAGE_SIZE));
 }

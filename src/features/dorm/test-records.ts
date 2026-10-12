@@ -3,6 +3,7 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import {
   accounts,
+  dormCompanions,
   dormRoomPlaces,
   dormRooms,
   students,
@@ -116,4 +117,26 @@ export async function residentsOfRoom(
     .from(dormRoomPlaces)
     .where(eq(dormRoomPlaces.roomId, roomId));
   return places.map((place) => place.studentId);
+}
+
+type TestCompanion = Partial<typeof dormCompanions.$inferInsert>;
+
+/** An active kakak pendamping of Dana Rakca without a room, unless told otherwise. */
+export async function addTestCompanion(
+  db: Database,
+  studentId: string,
+  companion: TestCompanion = {},
+): Promise<void> {
+  await db
+    .insert(dormCompanions)
+    .values({ studentId, dorm: "dana_rakca", ...companion });
+}
+
+/** A kakak pendamping as kept, or undefined for a student who is not one. */
+export async function companionOf(db: Database, studentId: string) {
+  const [companion] = await db
+    .select()
+    .from(dormCompanions)
+    .where(eq(dormCompanions.studentId, studentId));
+  return companion;
 }
