@@ -4,12 +4,14 @@ import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
+import { USERS_ADDRESS } from "@/features/accounts/list-address";
 import {
   mentorAddress,
   readMentorListParams,
 } from "@/features/mentor-groups/mentor-list-address";
 import { MentorListScreen } from "@/features/mentor-groups/mentor-list-screen";
 import { MentorScreen } from "@/features/mentor-groups/mentor-screen";
+import { newMentorsAddress } from "@/features/mentor-groups/new-mentors-address";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorStudentAddresses } from "@/features/mentor-groups/open-member-address";
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
@@ -76,6 +78,7 @@ export default async function MentorsPage(
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "daftar" }}
       limit={limit}
       params={params}
+      usersAddress={newMentorsAddress(account.roles, USERS_ADDRESS)}
     />
   );
 }

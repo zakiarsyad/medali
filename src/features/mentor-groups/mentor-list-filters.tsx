@@ -1,4 +1,5 @@
 import shared from "@/ui/data-screen.module.css";
+import styles from "./mentor-groups.module.css";
 import {
   type MentorListFilters,
   STATUS_IN_ADDRESS,
@@ -40,7 +41,7 @@ export function MentorListFilterRow({
       </select>
       <select
         name="unit"
-        className={shared.input}
+        className={`${shared.input} ${styles.fit}`}
         defaultValue={filters.unit ?? ""}
         aria-label="Unit"
       >
