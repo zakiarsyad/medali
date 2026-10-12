@@ -72,19 +72,24 @@ export async function addTestStudent(
 /** The student rows an account that sees every student may see. */
 export const EVERYONE = isNull(students.deletedAt);
 
-type TestRoom = Partial<typeof dormRooms.$inferInsert>;
+type TestRoom = Pick<typeof dormRooms.$inferInsert, "number"> &
+  Partial<typeof dormRooms.$inferInsert>;
 
-/** Room 101 of Dana Rakca on floor 1 for 4 people, unless told otherwise. */
+/**
+ * A room of Dana Rakca on floor 1 for 4 people, unless told otherwise.
+ * Each file of checks uses room numbers, NIMs and program names of its
+ * own: the database makes two checks that add the same one wait for each
+ * other.
+ */
 export async function addTestRoom(
   db: Database,
-  room: TestRoom = {},
+  room: TestRoom,
 ): Promise<string> {
   const [added] = await db
     .insert(dormRooms)
     .values({
       dorm: "dana_rakca",
       floor: 1,
-      number: "101",
       capacity: 4,
       ...room,
     })

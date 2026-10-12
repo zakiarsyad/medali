@@ -40,26 +40,26 @@ interface TestRows {
 
 /** One room of Dana Rakca with two residents, and one resident without. */
 async function addTestRows(db: Database): Promise<TestRows> {
-  const ownProgram = await addTestProgram(db, "Prodi Uji Sendiri");
-  const otherProgram = await addTestProgram(db, "Prodi Uji Lain");
+  const ownProgram = await addTestProgram(db, "Prodi Uji Daftar Kamar Sendiri");
+  const otherProgram = await addTestProgram(db, "Prodi Uji Daftar Kamar Lain");
   const placed = await addTestStudent(db, ownProgram, {
-    nim: "9911260002",
+    nim: "9924260002",
     name: "Sari Uji",
   });
   const placedOther = await addTestStudent(db, otherProgram, {
-    nim: "9911260001",
+    nim: "9924260001",
     name: "Tari Uji",
   });
   const waiting = await addTestStudent(db, ownProgram, {
-    nim: "9911260003",
+    nim: "9924260003",
     name: "Umi Uji",
   });
   await addTestStudent(db, ownProgram, {
-    nim: "9911260004",
+    nim: "9924260004",
     name: "Bukan Penghuni Uji",
     cohortYear: 2024,
   });
-  const roomId = await addTestRoom(db);
+  const roomId = await addTestRoom(db, { number: "L101" });
   await placeTestResident(db, roomId, placed);
   await placeTestResident(db, roomId, placedOther);
   return { ownProgram, roomId, placed, placedOther, waiting };
@@ -75,17 +75,21 @@ describe("readRooms", () => {
   it("lists the rooms of one dorm by floor and number, with places taken", async () => {
     await inTestDatabase(async (db) => {
       const { roomId } = await addTestRows(db);
-      await addTestRoom(db, { floor: 2, number: "201", capacity: 6 });
-      await addTestRoom(db, { number: "100" });
-      await addTestRoom(db, { dorm: "cipta_bakti" });
+      await addTestRoom(db, { floor: 2, number: "L201", capacity: 6 });
+      await addTestRoom(db, { number: "L100" });
+      await addTestRoom(db, { number: "L101", dorm: "cipta_bakti" });
 
       const rooms = await readRooms(db, "dana_rakca");
 
-      expect(rooms.map((room) => room.number)).toEqual(["100", "101", "201"]);
+      expect(rooms.map((room) => room.number)).toEqual([
+        "L100",
+        "L101",
+        "L201",
+      ]);
       expect(rooms[1]).toEqual({
         id: roomId,
         floor: 1,
-        number: "101",
+        number: "L101",
         capacity: 4,
         taken: 2,
       });
@@ -102,8 +106,8 @@ describe("readFloorResidents", () => {
       const residents = await readFloorResidents(db, DANA_RAKCA, 1);
 
       expect(residents).toEqual([
-        { id: placedOther, name: "Tari Uji", nim: "9911260001", roomId },
-        { id: placed, name: "Sari Uji", nim: "9911260002", roomId },
+        { id: placedOther, name: "Tari Uji", nim: "9924260001", roomId },
+        { id: placed, name: "Sari Uji", nim: "9924260002", roomId },
       ]);
     });
   });
@@ -175,7 +179,7 @@ describe("listUnplaced", () => {
       const unplaced = await listUnplaced(db, DANA_RAKCA, "");
 
       expect(unplaced).toEqual({
-        shown: [{ id: waiting, name: "Umi Uji", nim: "9911260003" }],
+        shown: [{ id: waiting, name: "Umi Uji", nim: "9924260003" }],
         matching: 1,
       });
     });
@@ -184,7 +188,7 @@ describe("listUnplaced", () => {
   it("lists nobody for a program without residents waiting", async () => {
     await inTestDatabase(async (db) => {
       await addTestRows(db);
-      const other = await addTestProgram(db, "Prodi Uji Kosong");
+      const other = await addTestProgram(db, "Prodi Uji Daftar Kamar Kosong");
 
       expect(await listUnplaced(db, onlyProgram(other), "")).toEqual({
         shown: [],
@@ -195,11 +199,11 @@ describe("listUnplaced", () => {
 
   it("shows at most 60, counts them all, and finds one past the 60 by search", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Ramai");
+      const program = await addTestProgram(db, "Prodi Uji Daftar Kamar Ramai");
       const more = UNPLACED_SHOWN + 5;
       await db.insert(students).values(
         Array.from({ length: more }, (_, place) => ({
-          nim: `99112601${String(place).padStart(2, "0")}`,
+          nim: `99242601${String(place).padStart(2, "0")}`,
           name: `Ramai Uji ${String(place).padStart(2, "0")}`,
           studyProgramId: program,
           entryPath: "regular" as const,
@@ -211,13 +215,13 @@ describe("listUnplaced", () => {
 
       const unplaced = await listUnplaced(db, scope, "");
       const last = await listUnplaced(db, scope, "uji 64");
-      const byNim = await listUnplaced(db, scope, "9911260164");
+      const byNim = await listUnplaced(db, scope, "9924260164");
 
       expect(unplaced.shown).toHaveLength(UNPLACED_SHOWN);
       expect(unplaced.matching).toBe(more);
-      expect(unplaced.shown[0]?.nim).toBe("9911260100");
-      expect(unplaced.shown.map((one) => one.nim)).not.toContain("9911260164");
-      expect(last.shown.map((one) => one.nim)).toEqual(["9911260164"]);
+      expect(unplaced.shown[0]?.nim).toBe("9924260100");
+      expect(unplaced.shown.map((one) => one.nim)).not.toContain("9924260164");
+      expect(last.shown.map((one) => one.nim)).toEqual(["9924260164"]);
       expect(last.matching).toBe(1);
       expect(byNim.shown.map((one) => one.name)).toEqual(["Ramai Uji 64"]);
     });

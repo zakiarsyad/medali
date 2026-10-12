@@ -11,9 +11,9 @@ describe("readStudentDorm", () => {
   it("gives the dorm of a student in semester 1 of the running period", async () => {
     await inTestDatabase(async (db) => {
       await db.insert(academicPeriods).values(ODD_2026);
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama A");
       const id = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9921260001",
         name: "Mahasiswi Uji",
       });
 
@@ -24,9 +24,9 @@ describe("readStudentDorm", () => {
   it("gives no dorm to a student in semester 3 of the running period", async () => {
     await inTestDatabase(async (db) => {
       await db.insert(academicPeriods).values(ODD_2026);
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama A");
       const id = await addTestStudent(db, program, {
-        nim: "9911250001",
+        nim: "9921250001",
         name: "Mahasiswi Uji",
         cohortYear: 2025,
       });
@@ -37,9 +37,9 @@ describe("readStudentDorm", () => {
 
   it("gives no dorm to a Reguler student when no period runs", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama A");
       const id = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9921260001",
         name: "Mahasiswi Uji",
       });
 
@@ -50,9 +50,9 @@ describe("readStudentDorm", () => {
   it("gives no dorm to a removed student", async () => {
     await inTestDatabase(async (db) => {
       await db.insert(academicPeriods).values(ODD_2026);
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama A");
       const id = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9921260001",
         name: "Mahasiswi Uji",
         deletedAt: new Date(),
       });

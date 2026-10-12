@@ -32,21 +32,21 @@ interface Placed {
   studentId: string;
 }
 
-/** A Reguler woman of semester 1 with a place in a room of Dana Rakca. */
+/** A Reguler woman of angkatan 2026 with a place in a room of Dana Rakca. */
 async function addPlacedResident(db: Database): Promise<Placed> {
-  await db.insert(academicPeriods).values(ODD_2026);
-  const program = await addTestProgram(db, "Prodi Uji Asrama");
+  const program = await addTestProgram(db, "Prodi Uji Asrama S");
   const studentId = await addTestStudent(db, program, {
-    nim: "9911260001",
+    nim: "9923260001",
     name: "Penghuni Uji",
   });
-  const roomId = await addTestRoom(db, { capacity: 1 });
+  const roomId = await addTestRoom(db, { number: "S101", capacity: 1 });
   await placeTestResident(db, roomId, studentId);
   return { roomId, studentId };
 }
 
-async function loadOn(db: Database, day: string): Promise<void> {
-  await freeStalePlaces(db, await readDormCohorts(db, day));
+/** A load while angkatan 2026 is in a semester that lives in the dorm. */
+async function load(db: Database): Promise<void> {
+  await freeStalePlaces(db, [2026]);
 }
 
 async function takenIn(db: Database, roomId: string): Promise<number> {
@@ -59,7 +59,7 @@ describe("freeStalePlaces", () => {
     await inTestDatabase(async (db) => {
       const { roomId, studentId } = await addPlacedResident(db);
 
-      await loadOn(db, DAY);
+      await load(db);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
       expect(await takenIn(db, roomId)).toBe(1);
@@ -76,7 +76,7 @@ describe("freeStalePlaces", () => {
           .set({ status })
           .where(eq(students.id, studentId));
 
-        await loadOn(db, DAY);
+        await load(db);
 
         expect(await residentsOfRoom(db, roomId)).toEqual([]);
         expect(await takenIn(db, roomId)).toBe(0);
@@ -86,10 +86,14 @@ describe("freeStalePlaces", () => {
 
   it("frees the place of a Reguler resident who reaches semester 3", async () => {
     await inTestDatabase(async (db) => {
-      const { roomId } = await addPlacedResident(db);
-      await db.insert(academicPeriods).values(ODD_2027);
+      const { roomId, studentId } = await addPlacedResident(db);
+      await db.insert(academicPeriods).values([ODD_2026, ODD_2027]);
 
-      await loadOn(db, A_YEAR_LATER);
+      await freeStalePlaces(db, await readDormCohorts(db, DAY));
+      const before = await residentsOfRoom(db, roomId);
+      await freeStalePlaces(db, await readDormCohorts(db, A_YEAR_LATER));
+
+      expect(before).toEqual([studentId]);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
       expect(await takenIn(db, roomId)).toBe(0);
@@ -98,17 +102,19 @@ describe("freeStalePlaces", () => {
 
   it("keeps the place of a Pembibitan resident who reaches semester 3", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values([ODD_2026, ODD_2027]);
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama S");
       const studentId = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9923260001",
         name: "Penghuni Uji",
         isSeedling: true,
       });
-      const roomId = await addTestRoom(db, { dorm: "wismantara_putri" });
+      const roomId = await addTestRoom(db, {
+        number: "S101",
+        dorm: "wismantara_putri",
+      });
       await placeTestResident(db, roomId, studentId);
 
-      await loadOn(db, A_YEAR_LATER);
+      await freeStalePlaces(db, [2027]);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
     });
@@ -122,7 +128,7 @@ describe("freeStalePlaces", () => {
         .set({ isInternational: true })
         .where(eq(students.id, studentId));
 
-      await loadOn(db, DAY);
+      await load(db);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
     });
@@ -136,7 +142,7 @@ describe("freeStalePlaces", () => {
         .set({ deletedAt: new Date() })
         .where(eq(students.id, studentId));
 
-      await loadOn(db, DAY);
+      await load(db);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
     });

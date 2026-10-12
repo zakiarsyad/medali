@@ -29,7 +29,7 @@ function everyKindOfStudent(): NewStudent[] {
             for (const isSeedling of YES_NO) {
               const place = String(kinds.length).padStart(4, "0");
               kinds.push({
-                nim: `991126${place}`,
+                nim: `992226${place}`,
                 name: `Mahasiswa Uji ${place}`,
                 status,
                 entryPath,
@@ -51,10 +51,10 @@ describe("readDormCohorts", () => {
   it("gives the angkatan in semester 1 or 2 of the running period", async () => {
     await inTestDatabase(async (db) => {
       await db.insert(academicPeriods).values(ODD_2026);
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
-      await addTestStudent(db, program, { nim: "9911260001", name: "Uji A" });
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
+      await addTestStudent(db, program, { nim: "9922260001", name: "Uji A" });
       await addTestStudent(db, program, {
-        nim: "9911250001",
+        nim: "9922250001",
         name: "Uji B",
         cohortYear: 2025,
       });
@@ -68,8 +68,8 @@ describe("readDormCohorts", () => {
 
   it("gives no angkatan when no period runs", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
-      await addTestStudent(db, program, { nim: "9911260001", name: "Uji A" });
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
+      await addTestStudent(db, program, { nim: "9922260001", name: "Uji A" });
 
       expect(await readDormCohorts(db, DAY)).toEqual([]);
     });
@@ -80,7 +80,7 @@ describe("dormInSql", () => {
   it("gives every kind of student the dorm the rule gives", async () => {
     await inTestDatabase(async (db) => {
       await db.insert(academicPeriods).values(ODD_2026);
-      const studyProgramId = await addTestProgram(db, "Prodi Uji Asrama");
+      const studyProgramId = await addTestProgram(db, "Prodi Uji Asrama B");
       const kinds = everyKindOfStudent();
       await db
         .insert(students)
@@ -102,9 +102,9 @@ describe("dormInSql", () => {
 
   it("gives a removed student no dorm", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
       const id = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9922260001",
         name: "Uji A",
         deletedAt: new Date(),
       });
@@ -120,9 +120,9 @@ describe("dormInSql", () => {
 
   it("gives a Reguler student no dorm when no angkatan lives there", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
       const id = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9922260001",
         name: "Uji A",
       });
 
@@ -139,13 +139,13 @@ describe("dormInSql", () => {
 describe("livesIn", () => {
   it("finds only the residents of the dorm asked for", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
       const woman = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9922260001",
         name: "Uji A",
       });
       const man = await addTestStudent(db, program, {
-        nim: "9911260002",
+        nim: "9922260002",
         name: "Uji B",
         sex: "male",
       });

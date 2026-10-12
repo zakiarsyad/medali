@@ -37,7 +37,7 @@ const NO_ROOM = "00000000-0000-4000-8000-000000000000";
 const SENT: SentRoom = {
   dorm: "dana_rakca",
   floor: "2",
-  number: "201",
+  number: "M201",
   capacity: "4",
 };
 
@@ -46,9 +46,9 @@ describe("addRoom", () => {
     await inTestDatabase(async (db) => {
       const added = await addRoom(db, actor, SENT);
 
-      expect(added).toEqual({ ok: true, value: "201" });
+      expect(added).toEqual({ ok: true, value: "M201" });
       expect(await readRooms(db, "dana_rakca")).toMatchObject([
-        { floor: 2, number: "201", capacity: 4, taken: 0 },
+        { floor: 2, number: "M201", capacity: 4, taken: 0 },
       ]);
     });
   });
@@ -62,18 +62,18 @@ describe("addRoom", () => {
 
   it("refuses a number already used in the dorm, whatever the letters", async () => {
     await inTestDatabase(async (db) => {
-      await addRoom(db, MANAGER, { ...SENT, number: "2A" });
+      await addRoom(db, MANAGER, { ...SENT, number: "M2A" });
 
       const again = await addRoom(db, MANAGER, {
         ...SENT,
         floor: "3",
-        number: " 2a ",
+        number: " m2a ",
       });
 
       expect(again).toEqual({
         ok: false,
         error:
-          "Nomor kamar 2A sudah dipakai di Asrama Dana Rakca. Pakai nomor lain.",
+          "Nomor kamar M2A sudah dipakai di Asrama Dana Rakca. Pakai nomor lain.",
       });
       expect(await readRooms(db, "dana_rakca")).toHaveLength(1);
     });
@@ -103,39 +103,39 @@ describe("addRoom", () => {
 });
 
 describe("changeRoom", () => {
-  const CHANGED = { number: "105", capacity: "6" };
+  const CHANGED = { number: "M105", capacity: "6" };
 
   it("changes the number and the kapasitas", async () => {
     await inTestDatabase(async (db) => {
-      const roomId = await addTestRoom(db);
+      const roomId = await addTestRoom(db, { number: "M101" });
 
       const changed = await changeRoom(db, MANAGER, roomId, CHANGED);
 
-      expect(changed).toEqual({ ok: true, value: "105" });
+      expect(changed).toEqual({ ok: true, value: "M105" });
       expect(await readRooms(db, "dana_rakca")).toMatchObject([
-        { id: roomId, number: "105", capacity: 6 },
+        { id: roomId, number: "M105", capacity: 6 },
       ]);
     });
   });
 
   it.each(READ_ONLY)("refuses %s, and changes nothing", async (role) => {
     await inTestDatabase(async (db) => {
-      const roomId = await addTestRoom(db);
+      const roomId = await addTestRoom(db, { number: "M101" });
 
       const changed = await changeRoom(db, { roles: [role] }, roomId, CHANGED);
 
       expect(changed).toEqual(NOT_ALLOWED);
       expect(await readRooms(db, "dana_rakca")).toMatchObject([
-        { number: "101", capacity: 4 },
+        { number: "M101", capacity: 4 },
       ]);
     });
   });
 
   it("refuses a kapasitas below the number of residents", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
-      const roomId = await addTestRoom(db);
-      for (const nim of ["9911260001", "9911260002"]) {
+      const program = await addTestProgram(db, "Prodi Uji Asrama M");
+      const roomId = await addTestRoom(db, { number: "M101" });
+      for (const nim of ["9925260001", "9925260002"]) {
         const id = await addTestStudent(db, program, {
           nim,
           name: `Uji ${nim}`,
@@ -144,11 +144,11 @@ describe("changeRoom", () => {
       }
 
       const changed = await changeRoom(db, MANAGER, roomId, {
-        number: "101",
+        number: "M101",
         capacity: "1",
       });
       const same = await changeRoom(db, MANAGER, roomId, {
-        number: "101",
+        number: "M101",
         capacity: "2",
       });
 
@@ -163,32 +163,32 @@ describe("changeRoom", () => {
 
   it("refuses a number another room of the dorm has", async () => {
     await inTestDatabase(async (db) => {
-      const roomId = await addTestRoom(db);
-      await addTestRoom(db, { number: "102" });
+      const roomId = await addTestRoom(db, { number: "M101" });
+      await addTestRoom(db, { number: "M102" });
 
       const changed = await changeRoom(db, MANAGER, roomId, {
-        number: "102",
+        number: "M102",
         capacity: "4",
       });
 
       expect(changed.ok).toBe(false);
       expect(await readRooms(db, "dana_rakca")).toMatchObject([
-        { number: "101" },
-        { number: "102" },
+        { number: "M101" },
+        { number: "M102" },
       ]);
     });
   });
 
   it("keeps its own number when only the kapasitas changes", async () => {
     await inTestDatabase(async (db) => {
-      const roomId = await addTestRoom(db);
+      const roomId = await addTestRoom(db, { number: "M101" });
 
       const changed = await changeRoom(db, MANAGER, roomId, {
-        number: "101",
+        number: "M101",
         capacity: "12",
       });
 
-      expect(changed).toEqual({ ok: true, value: "101" });
+      expect(changed).toEqual({ ok: true, value: "M101" });
     });
   });
 
@@ -202,18 +202,18 @@ describe("changeRoom", () => {
 describe("removeRoom", () => {
   it("removes an empty room", async () => {
     await inTestDatabase(async (db) => {
-      const roomId = await addTestRoom(db);
+      const roomId = await addTestRoom(db, { number: "M101" });
 
       const removed = await removeRoom(db, MANAGER, roomId);
 
-      expect(removed).toEqual({ ok: true, value: "101" });
+      expect(removed).toEqual({ ok: true, value: "M101" });
       expect(await readRooms(db, "dana_rakca")).toEqual([]);
     });
   });
 
   it.each(READ_ONLY)("refuses %s, and removes nothing", async (role) => {
     await inTestDatabase(async (db) => {
-      const roomId = await addTestRoom(db);
+      const roomId = await addTestRoom(db, { number: "M101" });
 
       expect(await removeRoom(db, { roles: [role] }, roomId)).toEqual(
         NOT_ALLOWED,
@@ -224,10 +224,10 @@ describe("removeRoom", () => {
 
   it("refuses a room with a resident, and keeps it", async () => {
     await inTestDatabase(async (db) => {
-      const program = await addTestProgram(db, "Prodi Uji Asrama");
-      const roomId = await addTestRoom(db);
+      const program = await addTestProgram(db, "Prodi Uji Asrama M");
+      const roomId = await addTestRoom(db, { number: "M101" });
       const id = await addTestStudent(db, program, {
-        nim: "9911260001",
+        nim: "9925260001",
         name: "Penghuni Uji",
       });
       await placeTestResident(db, roomId, id);
@@ -236,7 +236,7 @@ describe("removeRoom", () => {
 
       expect(removed).toEqual({
         ok: false,
-        error: "Kamar 101 masih berpenghuni. Keluarkan semua penghuni dulu.",
+        error: "Kamar M101 masih berpenghuni. Keluarkan semua penghuni dulu.",
       });
       const kept = await db
         .select()

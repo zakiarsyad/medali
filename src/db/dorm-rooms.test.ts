@@ -8,7 +8,7 @@ const inTestDatabase = withTestDatabase();
 const ROOM = {
   dorm: "dana_rakca",
   floor: 1,
-  number: "101",
+  number: "D101",
   capacity: 4,
 } as const;
 
@@ -24,13 +24,13 @@ async function addRoom(
 async function addStudent(db: Database): Promise<string> {
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: "Prodi Uji Kamar" })
+    .values({ name: "Prodi Uji Tabel Kamar" })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   const [student] = await db
     .insert(students)
     .values({
-      nim: "9911260001",
+      nim: "9928260001",
       name: "Mahasiswi Uji",
       studyProgramId: program.id,
       entryPath: "regular",
@@ -75,7 +75,7 @@ describe("the dorm rooms", () => {
   it("refuse a resident a place in a second room", async () => {
     await inTestDatabase(async (db) => {
       const first = await addRoom(db, ROOM);
-      const second = await addRoom(db, { ...ROOM, number: "102" });
+      const second = await addRoom(db, { ...ROOM, number: "D102" });
       const studentId = await addStudent(db);
       await db.insert(dormRoomPlaces).values({ studentId, roomId: first });
 

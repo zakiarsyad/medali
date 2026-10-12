@@ -2,19 +2,18 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, students } from "@/db/schema";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { autoFillRoom } from "./auto-fill-room";
+import type { DormId } from "./dorms";
 import { placeResident } from "./place-resident";
-import { listUnplaced } from "./room-list";
+import { listUnplaced, type ResidentScope } from "./room-list";
 import { takeOutResident } from "./take-out-resident";
 import {
   addTestProgram,
   addTestRoom,
   addTestStudent,
-  DAY,
   EVERYONE,
-  ODD_2026,
   placeTestResident,
   residentsOfRoom,
 } from "./test-records";
@@ -38,34 +37,43 @@ const NOT_ALLOWED = {
 };
 const FULL = { ok: false, error: "Kamar sudah penuh. Pilih kamar lain." };
 const NO_ROW = "00000000-0000-4000-8000-000000000000";
+const DORM: DormId = "wismantara_putri";
 
 interface TestRows {
   program: number;
   roomId: string;
-  /** Three women of Dana Rakca without a room, in NIM order. */
+  /** Three women of Wismantara Putri without a room, in NIM order. */
   women: string[];
 }
 
-/** The running period, a room of Dana Rakca for 2, and three residents. */
+/**
+ * A room of Wismantara Putri for 2, and three residents. They are
+ * Pembibitan, who live in the dorm in any semester, so these checks need
+ * no academic period.
+ */
 async function addTestRows(db: Database): Promise<TestRows> {
-  await db.insert(academicPeriods).values(ODD_2026);
-  const program = await addTestProgram(db, "Prodi Uji Asrama");
+  const program = await addTestProgram(db, "Prodi Uji Asrama P");
   const women: string[] = [];
   for (const place of [1, 2, 3]) {
     const id = await addTestStudent(db, program, {
-      nim: `991126000${place}`,
+      nim: `992626000${place}`,
       name: `Penghuni Uji ${place}`,
+      isSeedling: true,
     });
     women.push(id);
   }
-  const roomId = await addTestRoom(db, { capacity: 2 });
+  const roomId = await addTestRoom(db, {
+    number: "P101",
+    dorm: DORM,
+    capacity: 2,
+  });
   return { program, roomId, women };
 }
 
 async function waitingIn(db: Database): Promise<string[]> {
-  const scope = {
-    dorm: "dana_rakca" as const,
-    dormCohorts: [2026],
+  const scope: ResidentScope = {
+    dorm: DORM,
+    dormCohorts: [],
     visible: EVERYONE,
   };
   const unplaced = await listUnplaced(db, scope, "");
@@ -80,16 +88,11 @@ describe("placeResident", () => {
         const { roomId, women } = await addTestRows(db);
         const [studentId = ""] = women;
 
-        const placed = await placeResident(
-          db,
-          actor,
-          { roomId, studentId },
-          DAY,
-        );
+        const placed = await placeResident(db, actor, { roomId, studentId });
 
         expect(placed).toEqual({
           ok: true,
-          value: "Penghuni Uji 1 diplot ke kamar 101.",
+          value: "Penghuni Uji 1 diplot ke kamar P101.",
         });
         expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
         expect(await waitingIn(db)).toEqual(women.slice(1));
@@ -102,7 +105,7 @@ describe("placeResident", () => {
       const { roomId, women } = await addTestRows(db);
       const sent = { roomId, studentId: women[0] ?? "" };
 
-      const placed = await placeResident(db, { roles: [role] }, sent, DAY);
+      const placed = await placeResident(db, { roles: [role] }, sent);
 
       expect(placed).toEqual(NOT_ALLOWED);
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
@@ -117,7 +120,7 @@ describe("placeResident", () => {
       await placeTestResident(db, roomId, second);
 
       const sent = { roomId, studentId: third };
-      const placed = await placeResident(db, MANAGER, sent, DAY);
+      const placed = await placeResident(db, MANAGER, sent);
 
       expect(placed).toEqual(FULL);
       expect(await residentsOfRoom(db, roomId)).toHaveLength(2);
@@ -129,15 +132,10 @@ describe("placeResident", () => {
     await inTestDatabase(async (db) => {
       const { roomId, women } = await addTestRows(db);
       const [studentId = ""] = women;
-      const other = await addTestRoom(db, { number: "102" });
+      const other = await addTestRoom(db, { dorm: DORM, number: "P102" });
       await placeTestResident(db, other, studentId);
 
-      const placed = await placeResident(
-        db,
-        MANAGER,
-        { roomId, studentId },
-        DAY,
-      );
+      const placed = await placeResident(db, MANAGER, { roomId, studentId });
 
       expect(placed).toEqual({
         ok: false,
@@ -152,24 +150,25 @@ describe("placeResident", () => {
     await inTestDatabase(async (db) => {
       const { program, roomId } = await addTestRows(db);
       const man = await addTestStudent(db, program, {
-        nim: "9911260009",
+        nim: "9926260009",
         name: "Penghuni Uji Putra",
         sex: "male",
+        isSeedling: true,
       });
 
       const sent = { roomId, studentId: man };
-      const placed = await placeResident(db, MANAGER, sent, DAY);
+      const placed = await placeResident(db, MANAGER, sent);
 
       expect(placed).toEqual({
         ok: false,
-        error: "Mahasiswa ini bukan penghuni Asrama Dana Rakca.",
+        error: "Mahasiswa ini bukan penghuni Asrama Wismantara Putri.",
       });
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
     });
   });
 
   it.each([
-    { cohortYear: 2025 },
+    { isSeedling: false },
     { status: "on_leave" as const },
     { deletedAt: new Date() },
   ])("refuses a student who is no resident: %j", async (change) => {
@@ -178,12 +177,7 @@ describe("placeResident", () => {
       const [studentId = ""] = women;
       await db.update(students).set(change).where(eq(students.id, studentId));
 
-      const placed = await placeResident(
-        db,
-        MANAGER,
-        { roomId, studentId },
-        DAY,
-      );
+      const placed = await placeResident(db, MANAGER, { roomId, studentId });
 
       expect(placed.ok).toBe(false);
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
@@ -197,12 +191,15 @@ describe("placeResident", () => {
       await placeTestResident(db, roomId, studentId);
       await db
         .update(students)
-        .set({ isSeedling: true })
+        .set({ sex: "male" })
         .where(eq(students.id, studentId));
-      const newRoom = await addTestRoom(db, { dorm: "wismantara_putri" });
+      const newRoom = await addTestRoom(db, {
+        number: "P101",
+        dorm: "wismantara_putra",
+      });
 
       const sent = { roomId: newRoom, studentId };
-      const placed = await placeResident(db, MANAGER, sent, DAY);
+      const placed = await placeResident(db, MANAGER, sent);
 
       expect(placed.ok).toBe(true);
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
@@ -220,7 +217,7 @@ describe("placeResident", () => {
       const { roomId, women } = await addTestRows(db);
       const sent = { roomId, studentId: women[0] ?? "", ...wrong };
 
-      expect((await placeResident(db, MANAGER, sent, DAY)).ok).toBe(false);
+      expect((await placeResident(db, MANAGER, sent)).ok).toBe(false);
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
     });
   });
@@ -232,11 +229,11 @@ describe("autoFillRoom", () => {
       const { roomId, women } = await addTestRows(db);
       const [first = "", second = "", third = ""] = women;
 
-      const filled = await autoFillRoom(db, MANAGER, roomId, DAY);
+      const filled = await autoFillRoom(db, MANAGER, roomId);
 
       expect(filled).toEqual({
         ok: true,
-        value: "2 penghuni diplot ke kamar 101.",
+        value: "2 penghuni diplot ke kamar P101.",
       });
       expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
         [first, second].sort(),
@@ -251,11 +248,11 @@ describe("autoFillRoom", () => {
       const [first = "", second = "", third = ""] = women;
       await placeTestResident(db, roomId, third);
 
-      const filled = await autoFillRoom(db, MANAGER, roomId, DAY);
+      const filled = await autoFillRoom(db, MANAGER, roomId);
 
       expect(filled).toEqual({
         ok: true,
-        value: "1 penghuni diplot ke kamar 101.",
+        value: "1 penghuni diplot ke kamar P101.",
       });
       expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
         [first, third].sort(),
@@ -267,9 +264,12 @@ describe("autoFillRoom", () => {
   it("takes only residents of the dorm of the room", async () => {
     await inTestDatabase(async (db) => {
       const { women } = await addTestRows(db);
-      const menRoom = await addTestRoom(db, { dorm: "cipta_bakti" });
+      const menRoom = await addTestRoom(db, {
+        number: "P101",
+        dorm: "wismantara_putra",
+      });
 
-      const filled = await autoFillRoom(db, MANAGER, menRoom, DAY);
+      const filled = await autoFillRoom(db, MANAGER, menRoom);
 
       expect(filled).toEqual({
         ok: false,
@@ -287,7 +287,7 @@ describe("autoFillRoom", () => {
       await placeTestResident(db, roomId, first);
       await placeTestResident(db, roomId, second);
 
-      expect(await autoFillRoom(db, MANAGER, roomId, DAY)).toEqual(FULL);
+      expect(await autoFillRoom(db, MANAGER, roomId)).toEqual(FULL);
       expect(await residentsOfRoom(db, roomId)).toHaveLength(2);
     });
   });
@@ -296,7 +296,7 @@ describe("autoFillRoom", () => {
     await inTestDatabase(async (db) => {
       const { roomId } = await addTestRows(db);
 
-      const filled = await autoFillRoom(db, { roles: [role] }, roomId, DAY);
+      const filled = await autoFillRoom(db, { roles: [role] }, roomId);
 
       expect(filled).toEqual(NOT_ALLOWED);
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
@@ -307,7 +307,7 @@ describe("autoFillRoom", () => {
     await inTestDatabase(async (db) => {
       await addTestRows(db);
 
-      expect((await autoFillRoom(db, MANAGER, id, DAY)).ok).toBe(false);
+      expect((await autoFillRoom(db, MANAGER, id)).ok).toBe(false);
     });
   });
 });
@@ -348,7 +348,7 @@ describe("takeOutResident", () => {
     await inTestDatabase(async (db) => {
       const { roomId, women } = await addTestRows(db);
       const [studentId = ""] = women;
-      const other = await addTestRoom(db, { number: "102" });
+      const other = await addTestRoom(db, { dorm: DORM, number: "P102" });
       await placeTestResident(db, other, studentId);
 
       const out = await takeOutResident(db, MANAGER, { roomId, studentId });

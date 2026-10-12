@@ -70,6 +70,7 @@ describe("two people filling the last free place of a room at once", () => {
     );
     if (!one || !two) throw new Error("The residents were not added.");
     const roomId = await addTestRoom(first.db, {
+      number: "T101",
       dorm: "wismantara_putri",
       capacity: 1,
     });
