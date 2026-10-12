@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   attemptCookieName,
   attemptCookieValue,
+  googleCodeIn,
   googleSignInAddress,
   isAttemptState,
   newSignInAttempt,
@@ -72,6 +73,26 @@ describe("the cookie of an attempt", () => {
     const attempt = newSignInAttempt();
 
     expect(readSignInAttempt("../x", attemptCookieValue(attempt))).toBeNull();
+  });
+});
+
+describe("googleCodeIn", () => {
+  it("reads the code Google put in the return address", () => {
+    const sent = new URLSearchParams({ code: "4/kode-uji_1", state: "x" });
+
+    expect(googleCodeIn(sent)).toBe("4/kode-uji_1");
+  });
+
+  it.each([
+    ["no code", {}],
+    ["an empty code", { code: "" }],
+    ["an error from Google", { error: "access_denied" }],
+    ["a code beside an error", { code: "kode", error: "access_denied" }],
+    ["a code with a space", { code: "kode uji" }],
+    ["a code with a line break", { code: "kode\nuji" }],
+    ["a code far too long", { code: "k".repeat(2049) }],
+  ])("gives nothing for %s", (_kind, values) => {
+    expect(googleCodeIn(new URLSearchParams(values))).toBeNull();
   });
 });
 

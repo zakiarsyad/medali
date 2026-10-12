@@ -156,6 +156,20 @@ export const roleChanges = pgTable("role_changes", {
 });
 
 /**
+ * Who is signed in with Google. The browser holds a random token and this
+ * table only its hash, so a copy of the table opens nobody's session.
+ */
+export const sessions = pgTable("sessions", {
+  id: uuid().primaryKey().defaultRandom(),
+  tokenHash: text().notNull().unique(),
+  accountId: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  createdAt: timestamp({ withTimezone: true }).notNull(),
+  lastSeenAt: timestamp({ withTimezone: true }).notNull(),
+});
+
+/**
  * The main indicators whose text was changed. One that is not here still
  * has its starting text.
  */

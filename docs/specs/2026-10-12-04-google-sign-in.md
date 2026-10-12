@@ -166,7 +166,7 @@ change any of these.
 - [x] 1. The sign-in page and "Masuk dengan Google", with the campus
   address ending and the Google keys as settings, and what happens while
   they are empty.
-- [ ] 2. A confirmed address is matched to its account and roles, and
+- [x] 2. A confirmed address is matched to its account and roles, and
   every page and action uses that account.
 - [ ] 3. "Keluar", session expiry, and removed accounts lose access.
 - [ ] 4. Refusal messages and the sign-in log.

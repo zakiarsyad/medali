@@ -23,6 +23,8 @@ const GOOGLE_PAGE = "https://accounts.google.com/o/oauth2/v2/auth";
 const COOKIE_NAME_START = "medali-masuk-";
 const RANDOM_BYTES = 32;
 const RANDOM_TEXT = /^[A-Za-z0-9_-]{43}$/;
+/** Visible characters only, and far longer than any code Google gives. */
+const GOOGLE_CODE = /^[\x21-\x7e]{1,2048}$/;
 
 function randomText(): string {
   return randomBytes(RANDOM_BYTES).toString("base64url");
@@ -58,6 +60,17 @@ export function readSignInAttempt(
   if (rest.length > 0) return null;
   if (!RANDOM_TEXT.test(nonce) || !RANDOM_TEXT.test(verifier)) return null;
   return { state, nonce, verifier };
+}
+
+/**
+ * The code Google put in the return address, or null: when the person
+ * cancelled or Google reports an error there is none, and a text of
+ * another shape is not one.
+ */
+export function googleCodeIn(sent: URLSearchParams): string | null {
+  const code = sent.get("code");
+  if (sent.has("error") || !code) return null;
+  return GOOGLE_CODE.test(code) ? code : null;
 }
 
 function verifierHash(verifier: string): string {

@@ -40,6 +40,16 @@ function answerAddresses(): string[] {
     .map((path) => addressOf(path, /\/route\.ts$/));
 }
 
+/**
+ * The addresses of sign-in itself. They are below no page, because
+ * someone who is not signed in must reach them.
+ */
+const SIGN_IN_ANSWERS = ["masuk/google/kembali"];
+
+function isSignInAnswer(address: string): boolean {
+  return SIGN_IN_ANSWERS.includes(address);
+}
+
 /** Whether an address sits below a page, or a tab of a tabbed page. */
 function isBelowListed(address: string): boolean {
   const [pagePath = "", tabPath, ...rest] = address.split("/");
@@ -51,11 +61,24 @@ function isBelowListed(address: string): boolean {
 
 describe("every address the server answers itself", () => {
   it.each(answerAddresses())(
-    "/%s is below a page or tab in the list",
+    "/%s is below a page or tab in the list, or is part of sign-in",
     (address) => {
-      expect(isBelowListed(address)).toBe(true);
+      expect(isBelowListed(address) || isSignInAnswer(address)).toBe(true);
     },
   );
+
+  it("takes only the addresses of sign-in as part of sign-in", () => {
+    expect(isSignInAnswer("masuk/google/kembali")).toBe(true);
+    expect(isSignInAnswer("masuk/google")).toBe(false);
+    expect(isSignInAnswer("masuk/rahasia")).toBe(false);
+    expect(isSignInAnswer("rahasia/berkas")).toBe(false);
+  });
+
+  it("finds the addresses of sign-in", () => {
+    for (const address of SIGN_IN_ANSWERS) {
+      expect(answerAddresses()).toContain(address);
+    }
+  });
 
   it("finds the download of a kept student file", () => {
     expect(answerAddresses()).toContain("pengaturan/mahasiswa/berkas/[id]");
