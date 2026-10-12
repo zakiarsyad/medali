@@ -1,3 +1,4 @@
+import { pointsAtThisComputer } from "@/db/database-address";
 import { type Stage, stageOf } from "@/settings";
 
 const SAMPLE_DATA_STAGES: readonly Stage[] = [
@@ -19,13 +20,6 @@ interface StartupEnv {
   VERCEL_ENV?: string | undefined;
   VERCEL?: string | undefined;
   DATABASE_URL?: string | undefined;
-}
-
-const LOCAL_HOSTS = ["localhost", "127.0.0.1"];
-
-function pointsAtThisComputer(url: string | undefined): boolean {
-  if (!url || !URL.canParse(url)) return false;
-  return LOCAL_HOSTS.includes(new URL(url).hostname);
 }
 
 /**
