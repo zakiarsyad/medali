@@ -32,6 +32,30 @@ export function pagesFor(roles: readonly RoleId[]): Page[] {
   return PAGES.filter((page) => mayOpenPage(roles, page.id));
 }
 
+/**
+ * Whether a page is open to these roles only while the account's student
+ * lives in the dorm: every role that opens it asks for a resident.
+ */
+export function needsDormResident(
+  roles: readonly RoleId[],
+  page: PageId,
+): boolean {
+  const openers = roles.filter((role) => ROLES[role].pages.includes(page));
+  if (openers.length === 0) return false;
+  return openers.every(
+    (role) => ROLES[role].residentPages?.includes(page) ?? false,
+  );
+}
+
+/** The pages for the menu of an account that lives in the dorm or not. */
+export function pagesForAccount(
+  roles: readonly RoleId[],
+  livesInDorm: boolean,
+): Page[] {
+  if (livesInDorm) return pagesFor(roles);
+  return pagesFor(roles).filter((page) => !needsDormResident(roles, page.id));
+}
+
 function roleHasTab(role: RoleId, page: PageId, tab: string): boolean {
   const tabs: Partial<Record<PageId, readonly string[]>> = ROLES[role].tabs;
   return tabs[page]?.includes(tab) ?? false;

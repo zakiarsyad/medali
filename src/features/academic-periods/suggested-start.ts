@@ -1,4 +1,4 @@
-import type { Term } from "./academic-period";
+import type { Term } from "@/academic-periods/academic-period";
 
 const FIRST_MONTH_OF_GANJIL = 8;
 

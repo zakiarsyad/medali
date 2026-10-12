@@ -4,7 +4,9 @@ import {
   may,
   mayOpenPage,
   mayOpenTab,
+  needsDormResident,
   pagesFor,
+  pagesForAccount,
   rowLimitFor,
   tabsFor,
 } from "./access";
@@ -114,6 +116,63 @@ describe("may", () => {
     }
   });
 
+  const roomViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "dorm_manager",
+    "bam_bphk",
+    "bam_household",
+  ];
+
+  it.each(roomViewers)("lets %s see the dorm rooms", (role) => {
+    expect(may([role], "view_dorm_rooms")).toBe(true);
+  });
+
+  it("refuses every other role to see the dorm rooms", () => {
+    const others = ROLE_IDS.filter((role) => !roomViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - roomViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_dorm_rooms")).toBe(false);
+    }
+  });
+
+  it.each(["student", "mentor", "bam_compliance"] as const)(
+    "refuses %s to see the dorm rooms",
+    (role) => {
+      expect(may([role], "view_dorm_rooms")).toBe(false);
+      expect(mayOpenTab([role], "dorm", "rooms")).toBe(false);
+    },
+  );
+
+  it("gives the right to see the dorm rooms to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_dorm_rooms")).toBe(
+        mayOpenTab([role], "dorm", "rooms"),
+      );
+    }
+  });
+
+  const roomManagers: RoleId[] = ["dorm_manager", "bam_household"];
+
+  it.each(roomManagers)("lets %s manage the dorm rooms", (role) => {
+    expect(may([role], "manage_dorm_rooms")).toBe(true);
+  });
+
+  it("refuses every other role to manage the dorm rooms", () => {
+    const others = ROLE_IDS.filter((role) => !roomManagers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - roomManagers.length);
+    for (const role of others) {
+      expect(may([role], "manage_dorm_rooms")).toBe(false);
+    }
+  });
+
+  it("lets every role that may manage the dorm rooms see them", () => {
+    for (const role of roomManagers) {
+      expect(may([role], "view_dorm_rooms")).toBe(true);
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -157,6 +216,52 @@ describe("pagesFor", () => {
 
   it("gives no pages to an account with no roles", () => {
     expect(pagesFor([])).toEqual([]);
+  });
+});
+
+describe("needsDormResident", () => {
+  it("opens Asrama to Mahasiswa only for a dorm resident", () => {
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+  });
+
+  it("opens the other pages of Mahasiswa to every student", () => {
+    for (const page of ROLES.student.pages) {
+      if (page === "dorm") continue;
+      expect(needsDormResident(["student"], page)).toBe(false);
+    }
+  });
+
+  it("asks no other role to live in the dorm", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    for (const role of others) {
+      expect(needsDormResident([role], "dorm")).toBe(false);
+    }
+  });
+
+  it("opens Asrama to a student who also holds a dorm role", () => {
+    expect(needsDormResident(["student", "bam_bphk"], "dorm")).toBe(false);
+  });
+});
+
+describe("pagesForAccount", () => {
+  it("shows Asrama to a student who lives in the dorm", () => {
+    expect(paths(pagesForAccount(["student"], true))).toContain("asrama");
+  });
+
+  it("hides Asrama from a student who does not live in the dorm", () => {
+    expect(paths(pagesForAccount(["student"], false))).toEqual([
+      "saya",
+      "kegiatan",
+      "penilaian",
+      "konseling",
+    ]);
+  });
+
+  it("shows Asrama to a dorm role wherever the account lives", () => {
+    expect(paths(pagesForAccount(["dorm_manager"], false))).toContain("asrama");
+    expect(
+      paths(pagesForAccount(["student", "bam_household"], false)),
+    ).toContain("asrama");
   });
 });
 

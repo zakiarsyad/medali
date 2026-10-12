@@ -1,5 +1,5 @@
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import shared from "@/ui/data-screen.module.css";
-import type { AcademicPeriod } from "./academic-period";
 import { hasEnded } from "./change-period-dates";
 import { PeriodDatesForm } from "./period-dates-form";
 import { periodTitle, shownDay } from "./period-labels";

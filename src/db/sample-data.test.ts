@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pagesFor } from "@/auth/access";
+import { DORM_IDS, type DormId } from "@/features/dorm/dorms";
+import { dormOf } from "@/features/dorm/resident-rule";
 import { ORIGIN_AGENCIES, PROVINCES } from "@/features/students/fixed-lists";
 import { isNim } from "@/features/students/input-limits";
 import { CATEGORIES } from "@/features/students/labels";
@@ -9,6 +11,7 @@ import {
   SAMPLE_STUDENTS,
   samplePeriods,
 } from "./sample-data";
+import { SAMPLE_ROOMS, sampleFirstYears, samplePlaces } from "./sample-dorms";
 import { studentStatus } from "./schema";
 
 describe("the sample account with two roles", () => {
@@ -135,5 +138,74 @@ describe("the sample students", () => {
         expect(student.originAgency).toBeUndefined();
       }
     }
+  });
+});
+
+describe("the sample students of a first year", () => {
+  const firstYears = sampleFirstYears(2026);
+  const placed = SAMPLE_ROOMS.reduce((sum, room) => sum + room.placed, 0);
+
+  function residentsOf(dorm: DormId) {
+    return firstYears.filter((student) => {
+      const facts = {
+        status: "active" as const,
+        entryPath: student.entryPath,
+        sex: student.sex,
+        isInternational: student.isInternational ?? false,
+        isSeedling: student.isSeedling ?? false,
+      };
+      return dormOf(facts, 1) === dorm;
+    });
+  }
+
+  it("each have their own 10-digit NIM and name, used by no other sample", () => {
+    const everyone = [...SAMPLE_STUDENTS, ...firstYears];
+    for (const student of firstYears) {
+      expect(isNim(student.nim)).toBe(true);
+    }
+    expect(new Set(everyone.map((s) => s.nim)).size).toBe(everyone.length);
+    expect(new Set(everyone.map((s) => s.name)).size).toBe(everyone.length);
+  });
+
+  it("are all of the angkatan asked for, on the Reguler jalur", () => {
+    for (const student of firstYears) {
+      expect(student.cohortYear).toBe(2026);
+      expect(student.entryPath).toBe("regular");
+      expect(PROVINCES).toContain(student.province);
+    }
+  });
+
+  it.each(DORM_IDS)("leave residents of %s without a room", (dorm) => {
+    expect(residentsOf(dorm).length).toBeGreaterThan(placed);
+  });
+
+  it("leave more than 60 residents of one dorm without a room", () => {
+    expect(residentsOf("dana_rakca").length - placed).toBeGreaterThan(60);
+  });
+});
+
+describe("samplePlaces", () => {
+  it("puts the first residents in NIM order into the rooms", () => {
+    const [first, second] = SAMPLE_ROOMS;
+    const nims = ["9900261009", "9900261003", "9900261001", "9900261002"];
+
+    const places = samplePlaces(nims);
+
+    expect(first?.placed).toBe(2);
+    expect(places.slice(0, 3)).toEqual([
+      { roomNumber: first?.number, nim: "9900261001" },
+      { roomNumber: first?.number, nim: "9900261002" },
+      { roomNumber: second?.number, nim: "9900261003" },
+    ]);
+  });
+
+  it("never puts more residents in a room than it holds", () => {
+    for (const room of SAMPLE_ROOMS) {
+      expect(room.placed).toBeLessThanOrEqual(room.capacity);
+    }
+  });
+
+  it("places nobody when a dorm has no residents", () => {
+    expect(samplePlaces([])).toEqual([]);
   });
 });
