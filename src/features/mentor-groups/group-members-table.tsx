@@ -44,7 +44,8 @@ export function GroupMembersTable({
   period: AcademicPeriod | null;
   /**
    * The address that opens the detail of a member, or null for an account
-   * that may not open it: its rows are then no links.
+   * that may not open any: its rows are then no links. Neither is the row
+   * of a member whose detail the account may not open.
    */
   detailAddressOf: ((studentId: string) => string) | null;
 }) {
@@ -60,7 +61,9 @@ export function GroupMembersTable({
         </thead>
         <tbody>
           {members.map((member) => {
-            const detailAddress = detailAddressOf?.(member.id) ?? null;
+            const detailAddress = member.opensDetail
+              ? (detailAddressOf?.(member.id) ?? null)
+              : null;
             return (
               <MemberRow key={member.id} detailAddress={detailAddress}>
                 <td data-title="Mahasiswa">

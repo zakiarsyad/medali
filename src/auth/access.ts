@@ -82,9 +82,12 @@ export function mayOpenTab(
   return roles.some((role) => roleHasTab(role, page, tab));
 }
 
-/** Which student rows an account may see: the limits of its roles together. */
-export function rowLimitFor(account: AccountForAccess): RowLimit {
-  const rules = account.roles.map((role) => ROLES[role].rows);
+/** The limits of these roles of an account together. */
+function rowLimitOf(
+  account: AccountForAccess,
+  roles: readonly RoleId[],
+): RowLimit {
+  const rules = roles.map((role) => ROLES[role].rows);
   if (rules.includes("all")) return { kind: "all" };
 
   const studyProgramIds: number[] = [];
@@ -100,4 +103,33 @@ export function rowLimitFor(account: AccountForAccess): RowLimit {
     studentIds.push(account.studentId);
   }
   return { kind: "some", studyProgramIds, menteesOf, studentIds };
+}
+
+/**
+ * Which student rows an account may see through an action: the limits of
+ * only those of its roles that allow the action. Another role of the
+ * account adds no rows, however many it sees on its own screens.
+ */
+export function rowLimitForAction(
+  account: AccountForAccess,
+  action: Action,
+): RowLimit {
+  const allowing = account.roles.filter((role) =>
+    ROLES[role].actions.includes(action),
+  );
+  return rowLimitOf(account, allowing);
+}
+
+/**
+ * The same for a page that no action guards: the limits of only those
+ * roles of the account that open the page.
+ */
+export function rowLimitForPage(
+  account: AccountForAccess,
+  page: PageId,
+): RowLimit {
+  const opening = account.roles.filter((role) =>
+    ROLES[role].pages.includes(page),
+  );
+  return rowLimitOf(account, opening);
 }

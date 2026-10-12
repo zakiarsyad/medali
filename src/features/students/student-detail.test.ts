@@ -16,6 +16,15 @@ const inTestDatabase = withTestDatabase();
 const NOT_FOUND = { kind: "not_found" };
 const NO_SUCH_ID = "00000000-0000-4000-8000-000000000000";
 
+/** Roles that see every student on their own screens and open no detail. */
+const WIDE_WITHOUT_DETAIL = [
+  "upk_staff",
+  "counsellor",
+  "assessor",
+  "discipline_officer",
+  "dorm_manager",
+] as const;
+
 function account(
   roles: RoleId[],
   studyProgramId: number | null = null,
@@ -121,6 +130,22 @@ describe("readStudentDetail", () => {
       );
     });
   });
+
+  it.each(WIDE_WITHOUT_DETAIL)(
+    "keeps Ketua Program Studi who is also %s to their own program",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { own, inOwn, inOther } = await addRows(db);
+        const asking = account(["head_of_program", role], own);
+
+        const first = await readStudentDetail(db, asking, inOwn);
+        const second = await readStudentDetail(db, asking, inOther);
+
+        expect(first.kind).toBe("found");
+        expect(second).toEqual(NOT_FOUND);
+      });
+    },
+  );
 
   it("answers a Ketua Program Studi without a program as for no student", async () => {
     await inTestDatabase(async (db) => {
