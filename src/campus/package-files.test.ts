@@ -181,3 +181,141 @@ describe("the recipe of the campus server package", () => {
     expect(recipe).toContain(`FROM node:${version}-slim AS base`);
   });
 });
+
+const PACKAGE_FILE = "compose.campus.yaml";
+const SERVICE_START = /^ {2}([a-z-]+):$/;
+const TOP_LEVEL_START = /^[a-z-]+:/;
+
+/** The lines of each service of a compose file, by the service's name. */
+function servicesOf(file: string): Map<string, string[]> {
+  const lines = readFileSync(file, "utf8").split("\n");
+  const services = new Map<string, string[]>();
+  let inServices = false;
+  let current: string[] | undefined;
+  for (const line of lines) {
+    if (TOP_LEVEL_START.test(line)) {
+      inServices = line === "services:";
+      continue;
+    }
+    if (!inServices) continue;
+    const name = line.match(SERVICE_START)?.[1];
+    if (name) {
+      current = [];
+      services.set(name, current);
+      continue;
+    }
+    current?.push(line.trim());
+  }
+  return services;
+}
+
+function settingNamesIn(text: string): string[] {
+  return [...text.matchAll(/\$\{([A-Z_]+)/g)].map((match) => match[1] ?? "");
+}
+
+describe("the campus server package", () => {
+  const text = readFileSync(PACKAGE_FILE, "utf8");
+  const services = servicesOf(PACKAGE_FILE);
+  const INSIDE_ONLY = ["db", "files"];
+
+  it("has the app, the database and the file storage", () => {
+    expect([...services.keys()]).toEqual(
+      expect.arrayContaining(["app", ...INSIDE_ONLY]),
+    );
+  });
+
+  it("lets only the app be reached from outside", () => {
+    const reachable = [...services].filter(([, lines]) =>
+      lines.some((line) => /^(ports|network_mode|expose):/.test(line)),
+    );
+
+    expect(reachable.map(([name]) => name)).toEqual(["app"]);
+  });
+
+  it.each(INSIDE_ONLY)("gives %s no port of the server", (name) => {
+    const lines = services.get(name) ?? [];
+
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.join("\n")).not.toMatch(/ports|network_mode|expose/);
+    expect(lines.join("\n")).not.toMatch(/\d+:\d+/);
+  });
+
+  it("opens one port, the app's own", () => {
+    const published = (services.get("app") ?? []).filter((line) =>
+      /^- "[^"]*:\d+"$/.test(line),
+    );
+
+    expect(published).toEqual(['- "$' + '{APP_PORT:-3000}:3000"']);
+  });
+
+  it.each([
+    ["db", "db-data"],
+    ["files", "files-data"],
+  ])("keeps what %s holds in %s, outside the container", (name, volume) => {
+    expect(services.get(name)?.join("\n")).toContain(`- ${volume}:/`);
+    expect(text).toMatch(new RegExp(`\\nvolumes:\\n(.*\\n)*? {2}${volume}:`));
+  });
+
+  it("never shares a name with the local database and file storage", () => {
+    const local = readFileSync("compose.yaml", "utf8");
+
+    expect(text).toMatch(/^name: medali-campus$/m);
+    expect(local).toMatch(/^name: medali$/m);
+  });
+
+  it("writes no key and no password itself", () => {
+    const secrets = text
+      .split("\n")
+      .filter((line) => /^\s+(POSTGRES_PASSWORD|MINIO_ROOT_\w+):/.test(line));
+
+    expect(secrets.length).toBe(3);
+    for (const line of secrets) {
+      expect(line).toMatch(/: \$\{[A-Z_]+:-\}$/);
+    }
+  });
+
+  it("takes the local file storage's own image", () => {
+    const image = /image: (pgsty\/minio:\S+)/;
+    const local = readFileSync("compose.yaml", "utf8").match(image)?.[1];
+
+    expect(local).toBeDefined();
+    expect(text.match(image)?.[1]).toBe(local);
+  });
+});
+
+describe("the example settings file of the package", () => {
+  const SETTING_LINE = /^([A-Z][A-Z0-9_]*)=(.*)$/;
+  const example = linesOf(".env.campus.example").map(
+    (line) => line.match(SETTING_LINE) ?? [],
+  );
+  const names = example.map((match) => match[1]);
+
+  it("lists every setting the package takes from the server", () => {
+    const taken = settingNamesIn(readFileSync(PACKAGE_FILE, "utf8"));
+
+    expect(taken.length).toBeGreaterThan(0);
+    expect(names).toEqual(expect.arrayContaining(taken));
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "CAMPUS_EMAIL_ENDING",
+      ]),
+    );
+  });
+
+  it("holds names only, no values", () => {
+    expect(example.length).toBeGreaterThan(0);
+    for (const match of example) {
+      expect(match[2]).toBe("");
+    }
+  });
+
+  it("is the only settings file of the package that goes into the repo", () => {
+    const kept = linesOf(".gitignore");
+
+    expect(kept).toContain(".env.*");
+    expect(kept).toContain("!.env.campus.example");
+    expect(kept).not.toContain("!.env.campus");
+  });
+});
