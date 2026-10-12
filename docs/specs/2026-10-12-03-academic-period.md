@@ -77,7 +77,7 @@ get their own log.
   changes are added, with sample periods.
 - [x] 2. The right to set periods is added to the permission list, with
   its checks.
-- [ ] 3. One rule answers "which period runs on a given date" (today or
+- [x] 3. One rule answers "which period runs on a given date" (today or
   any other date) and "which semester is this student in", with checks.
 - [ ] 4. Pengaturan > Periode akademik shows the running period and the
   list.
