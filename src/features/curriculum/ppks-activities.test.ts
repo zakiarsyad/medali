@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { activityNote, ticksOfValues, toggled } from "./ppks-activities";
+import {
+  activityNote,
+  removalQuestion,
+  ticksOfValues,
+  toggled,
+} from "./ppks-activities";
 
 describe("activityNote", () => {
   it("gives the description alone for a required activity", () => {
@@ -18,6 +23,14 @@ describe("activityNote", () => {
 
   it("gives nothing for a required activity with no description", () => {
     expect(activityNote("", true)).toBe("");
+  });
+});
+
+describe("removalQuestion", () => {
+  it("asks about the activity by its name", () => {
+    expect(removalQuestion("Latihan uji")).toBe(
+      'Hapus kegiatan "Latihan uji" dari daftar?',
+    );
   });
 });
 

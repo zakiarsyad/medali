@@ -46,5 +46,5 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. "Hapus" in the form of a PPKS activity asks first and removes
+- [x] 1. "Hapus" in the form of a PPKS activity asks first and removes
   only after a yes.
