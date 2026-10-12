@@ -163,7 +163,7 @@ change any of these.
 
 ## Steps
 
-- [ ] 1. The sign-in page and "Masuk dengan Google", with the campus
+- [x] 1. The sign-in page and "Masuk dengan Google", with the campus
   address ending and the Google keys as settings, and what happens while
   they are empty.
 - [ ] 2. A confirmed address is matched to its account and roles, and

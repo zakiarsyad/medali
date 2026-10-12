@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { fileStorageSettingsOf, SETTING_NAMES, stageOf } from "./settings";
+import {
+  campusEmailEndingOf,
+  fileStorageSettingsOf,
+  googleSignInSettingsOf,
+  SETTING_NAMES,
+  stageOf,
+} from "./settings";
 import { sourceFilesEndingWith } from "./ui/source-files";
 
 const SETTING_LINE = /^([A-Z][A-Z0-9_]*)=(.*)$/;
@@ -119,6 +125,50 @@ describe("fileStorageSettingsOf", () => {
     expect(() => fileStorageSettingsOf(partly, "pr-preview")).toThrow(
       /^The setting FILE_STORAGE_BUCKET is missing\. Copy \.env\.example to \.env\.local and fill it in\.$/,
     );
+  });
+});
+
+describe("campusEmailEndingOf", () => {
+  it.each([
+    ["@kampus.example", "@kampus.example"],
+    ["kampus.example", "@kampus.example"],
+    ["  @Kampus.Example ", "@kampus.example"],
+  ])("reads %o as %s", (written, ending) => {
+    expect(campusEmailEndingOf({ CAMPUS_EMAIL_ENDING: written })).toBe(ending);
+  });
+
+  it.each([
+    [{}],
+    [{ CAMPUS_EMAIL_ENDING: "" }],
+    [{ CAMPUS_EMAIL_ENDING: " " }],
+    [{ CAMPUS_EMAIL_ENDING: "@" }],
+  ])("is empty for %o", (env) => {
+    expect(campusEmailEndingOf(env)).toBe("");
+  });
+});
+
+describe("googleSignInSettingsOf", () => {
+  const FILLED = {
+    GOOGLE_CLIENT_ID: "nomor-uji",
+    GOOGLE_CLIENT_SECRET: "rahasia-uji",
+    CAMPUS_EMAIL_ENDING: "Kampus.Example",
+  };
+  const NAMES = Object.keys(FILLED) as (keyof typeof FILLED)[];
+
+  it("reads the three settings, with the ending as it is compared", () => {
+    expect(googleSignInSettingsOf(FILLED)).toEqual({
+      clientId: "nomor-uji",
+      clientSecret: "rahasia-uji",
+      campusEnding: "@kampus.example",
+    });
+  });
+
+  it("is off while all three are empty", () => {
+    expect(googleSignInSettingsOf({})).toBeNull();
+  });
+
+  it.each(NAMES)("is off when only %s is left empty", (name) => {
+    expect(googleSignInSettingsOf({ ...FILLED, [name]: "" })).toBeNull();
   });
 });
 

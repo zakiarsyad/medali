@@ -5,6 +5,9 @@ export const SETTING_NAMES = [
   "FILE_STORAGE_BUCKET",
   "FILE_STORAGE_ACCESS_KEY",
   "FILE_STORAGE_SECRET_KEY",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "CAMPUS_EMAIL_ENDING",
 ] as const;
 
 export type SettingName = (typeof SETTING_NAMES)[number];
@@ -67,6 +70,46 @@ export function fileStorageSettingsOf(
 
 export function readFileStorageSettings(): FileStorageSettings | null {
   return fileStorageSettingsOf(process.env, currentStage());
+}
+
+/**
+ * The campus address ending as it is compared: in small letters, starting
+ * with "@". Empty while the setting is not filled in.
+ */
+export function campusEmailEndingOf(env: SettingsEnv): string {
+  const written = (env.CAMPUS_EMAIL_ENDING ?? "").trim().toLowerCase();
+  const domain = written.startsWith("@") ? written.slice(1) : written;
+  return domain === "" ? "" : `@${domain}`;
+}
+
+export function readCampusEmailEnding(): string {
+  return campusEmailEndingOf(process.env);
+}
+
+/** What sign-in with Google needs: the two Google keys and the ending. */
+export interface GoogleSignInSettings {
+  clientId: string;
+  clientSecret: string;
+  campusEnding: string;
+}
+
+/**
+ * The settings of sign-in with Google, or null while Google sign-in is
+ * off: any of the three is empty. With only some filled it stays off, so
+ * nobody is sent to Google with half a setup.
+ */
+export function googleSignInSettingsOf(
+  env: SettingsEnv,
+): GoogleSignInSettings | null {
+  const clientId = env.GOOGLE_CLIENT_ID;
+  const clientSecret = env.GOOGLE_CLIENT_SECRET;
+  const campusEnding = campusEmailEndingOf(env);
+  if (!clientId || !clientSecret || campusEnding === "") return null;
+  return { clientId, clientSecret, campusEnding };
+}
+
+export function readGoogleSignInSettings(): GoogleSignInSettings | null {
+  return googleSignInSettingsOf(process.env);
 }
 
 /**

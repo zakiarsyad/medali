@@ -2,15 +2,26 @@ import { describe, expect, it } from "vitest";
 import { sourceFilesEndingWith } from "@/ui/source-files";
 import { pageAt } from "./pages";
 
-/** Screens that are not menu pages, and are open to every account. */
-const OUTSIDE_THE_MENU = ["", "[page]", "[page]/[tab]", "ganti-peran"];
+/**
+ * Screens that are not menu pages. The sign-in page is open to anyone;
+ * the others are open to every account.
+ */
+const OUTSIDE_THE_MENU = ["", "[page]", "[page]/[tab]", "ganti-peran", "masuk"];
+
+/** A folder in brackets only groups screens; it is not in the address. */
+const GROUP_FOLDER = /\([^/]+\)\//g;
+
+function addressOf(path: string, fileName: RegExp): string {
+  return path
+    .replace(/^src\/app\//, "")
+    .replace(GROUP_FOLDER, "")
+    .replace(fileName, "");
+}
 
 function screenAddresses(): string[] {
   return sourceFilesEndingWith("page.tsx")
     .filter((path) => path.startsWith("src/app/"))
-    .map((path) =>
-      path.replace(/^src\/app\/?/, "").replace(/\/?page\.tsx$/, ""),
-    )
+    .map((path) => addressOf(path, /\/?page\.tsx$/))
     .filter((address) => !OUTSIDE_THE_MENU.includes(address));
 }
 
@@ -26,7 +37,7 @@ function isListed(address: string): boolean {
 function answerAddresses(): string[] {
   return sourceFilesEndingWith("/route.ts")
     .filter((path) => path.startsWith("src/app/"))
-    .map((path) => path.replace(/^src\/app\//, "").replace(/\/route\.ts$/, ""));
+    .map((path) => addressOf(path, /\/route\.ts$/));
 }
 
 /** Whether an address sits below a page, or a tab of a tabbed page. */
@@ -60,6 +71,12 @@ describe("every address the server answers itself", () => {
 describe("every screen", () => {
   it.each(screenAddresses())("/%s is a page or tab in the list", (address) => {
     expect(isListed(address)).toBe(true);
+  });
+
+  it("finds the screens inside a group folder, by their address", () => {
+    expect(addressOf("src/app/(app)/page.tsx", /\/?page\.tsx$/)).toBe("");
+    expect(screenAddresses()).toContain("kurikulum");
+    expect(screenAddresses()).toContain("pengaturan/pengguna");
   });
 
   it("finds a screen that is not in the list", () => {
