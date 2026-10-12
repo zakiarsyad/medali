@@ -64,6 +64,20 @@
       "when": 1791789021505,
       "tag": "0008_student-batches-and-kept-files",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791790531215,
+      "tag": "0009_academic-periods",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791790535406,
+      "tag": "0010_academic-period-rules",
+      "breakpoints": true
     }
   ]
 }

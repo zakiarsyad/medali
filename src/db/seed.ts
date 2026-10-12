@@ -1,3 +1,4 @@
+import { campusDay } from "@/features/academic-periods/campus-day";
 import { addStudent } from "@/features/students/add-student";
 import type { Database } from "./connect";
 import {
@@ -5,8 +6,11 @@ import {
   SAMPLE_PPKS_ACTIVITIES,
   SAMPLE_STUDENTS,
   type SampleAccount,
+  samplePeriods,
 } from "./sample-data";
 import {
+  academicPeriodChanges,
+  academicPeriods,
   accountRoles,
   accounts,
   ppksActivities,
@@ -79,6 +83,22 @@ async function hasAccounts(db: Database): Promise<boolean> {
   return found !== undefined;
 }
 
+async function addSamplePeriods(db: Database, by: string): Promise<void> {
+  const added = await db
+    .insert(academicPeriods)
+    .values(samplePeriods(campusDay()))
+    .returning();
+  await db.insert(academicPeriodChanges).values(
+    added.map((period) => ({
+      periodId: period.id,
+      changedBy: by,
+      action: "added" as const,
+      startsOnAfter: period.startsOn,
+      endsOnAfter: period.endsOn,
+    })),
+  );
+}
+
 /**
  * Fills a freshly built database with the sample data. Every role given is
  * logged as the work of the first sample account, the sample Kepala Unit,
@@ -120,5 +140,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       .values(
         SAMPLE_PPKS_ACTIVITIES.map((activity) => ({ ...activity, ...changed })),
       );
+    await addSamplePeriods(tx, sampleActor);
   });
 }
