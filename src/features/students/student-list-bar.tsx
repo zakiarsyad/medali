@@ -3,6 +3,7 @@ import { entryPath } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
+import { foundWords } from "./found-words";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
 import type { ChoiceCounts } from "./student-choice-counts";
 import styles from "./student-list.module.css";
@@ -38,13 +39,6 @@ function categoryChoices(counts: ChoiceCounts): CountedChoice[] {
     shown: label,
     held: counts.categories[field],
   }));
-}
-
-/** What the number found is a number of, in the words of the prototype. */
-function foundWords(filters: StudentListFilters): string {
-  const inUse = topFiltersInUse(filters);
-  if (inUse > 0) return `mahasiswa sesuai ${inUse} filter`;
-  return filters.status === "current" ? "mahasiswa aktif" : "mahasiswa";
 }
 
 /** The top bar: the Program studi, Jalur and Kategori filters. */
