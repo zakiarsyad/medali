@@ -261,6 +261,42 @@ describe("may", () => {
     }
   });
 
+  const groupViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(groupViewers)("lets %s see the kelompok pengasuhan", (role) => {
+    expect(may([role], "view_mentor_groups")).toBe(true);
+  });
+
+  it("refuses every other role to see the kelompok pengasuhan", () => {
+    const others = ROLE_IDS.filter((role) => !groupViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - groupViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_mentor_groups")).toBe(false);
+    }
+  });
+
+  it.each(["mentor", "student"] as const)(
+    "refuses %s to see the kelompok pengasuhan and to open Pengasuh",
+    (role) => {
+      expect(may([role], "view_mentor_groups")).toBe(false);
+      expect(mayOpenPage([role], "mentors")).toBe(false);
+      expect(mayOpenTab([role], "mentors", "groups")).toBe(false);
+    },
+  );
+
+  it("gives the right to see the kelompok pengasuhan to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentor_groups")).toBe(
+        mayOpenTab([role], "mentors", "groups"),
+      );
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;

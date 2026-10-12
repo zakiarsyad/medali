@@ -119,6 +119,18 @@ Decided while building, because the issue did not say:
 8. The start date of a sample group is 1 September of its angkatan
    year, as in the prototype.
 9. One mentor may hold more than one group, as in the prototype.
+10. The numbers above the list count every group the account may see,
+    whatever the list is filtered by. "Mahasiswa aktif" there is the
+    Aktif members of those groups.
+11. The list shows the newest angkatan first, then by program studi and
+    group number. The search by mentor name looks at the mentor of today,
+    not at earlier mentors.
+12. "Semua prodi" and "Semua angkatan" offer only the program studi and
+    the angkatan that have a group the account may see.
+13. The other four tabs show the title and the tabs over an empty area,
+    as every page that is not built yet does.
+14. Dates are written short, such as "1 Sep 2025", as on the other
+    screens, not long as in the prototype.
 
 ## Steps
 
@@ -126,7 +138,7 @@ Decided while building, because the issue did not say:
   the database rules and the sample groups.
 - [x] 2. The mentor row rule (own mentees) reads from the groups, with
   tests.
-- [ ] 3. The Kelompok pengasuhan tab with its numbers, filters and
+- [x] 3. The Kelompok pengasuhan tab with its numbers, filters and
   paging.
 - [ ] 4. The group page with mentor, history and members.
 - [ ] 5. The Pengasuh line in the student detail and the column on

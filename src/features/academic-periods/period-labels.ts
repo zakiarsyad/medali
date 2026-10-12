@@ -1,5 +1,4 @@
 import type { AcademicPeriod, Term } from "@/academic-periods/academic-period";
-import { DAY } from "@/ui/day";
 
 export const TERM_LABELS: Record<Term, string> = {
   odd: "Ganjil",
@@ -16,9 +15,4 @@ export function periodTitle(
   period: Pick<AcademicPeriod, "startYear" | "term">,
 ): string {
   return `${TERM_LABELS[period.term]} ${academicYear(period.startYear)}`;
-}
-
-/** A stored day as the screens show it, such as 1 Agu 2026. */
-export function shownDay(day: string): string {
-  return DAY.format(new Date(`${day}T00:00:00+07:00`));
 }

@@ -9,7 +9,22 @@ export const PAGES = [
   { id: "curriculum", path: "kurikulum", title: "Kurikulum" },
   { id: "activities", path: "kegiatan", title: "Kegiatan karakter" },
   { id: "students", path: "mahasiswa", title: "Mahasiswa" },
-  { id: "mentors", path: "pengasuh", title: "Pengasuh" },
+  {
+    id: "mentors",
+    path: "pengasuh",
+    title: "Pengasuh",
+    tabs: [
+      { id: "groups", path: "kelompok", title: "Kelompok pengasuhan" },
+      { id: "mentors", path: "daftar", title: "Pengasuh" },
+      {
+        id: "student_survey",
+        path: "survei",
+        title: "Evaluasi oleh mahasiswa",
+      },
+      { id: "replacement", path: "ganti", title: "Evaluasi dan penggantian" },
+      { id: "new_cohort", path: "tetap", title: "Penetapan angkatan baru" },
+    ],
+  },
   { id: "mentoring", path: "pengasuhan", title: "Pengasuhan" },
   {
     id: "assessment",
