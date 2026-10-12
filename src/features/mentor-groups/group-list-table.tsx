@@ -6,7 +6,7 @@ import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import type { ListedGroup } from "./group-list";
 import { groupAddress } from "./group-list-address";
-import { historyWords } from "./mentor-history";
+import { historyWords, NO_MENTOR } from "./mentor-history";
 
 const BETWEEN = " · ";
 
@@ -28,7 +28,7 @@ function GroupRow({ group }: { group: ListedGroup }) {
         <small className={shared.detail}>{programAndCohort(group)}</small>
       </td>
       <td data-title="Pengasuh">
-        <b>{group.mentorName ?? "-"}</b>
+        <b>{group.mentorName ?? NO_MENTOR}</b>
         {group.mentorSince && (
           <small className={shared.detail}>
             sejak {shownDay(group.mentorSince)}
@@ -36,7 +36,9 @@ function GroupRow({ group }: { group: ListedGroup }) {
         )}
       </td>
       <td data-title="Anggota">{group.members.toLocaleString("id-ID")}</td>
-      <td data-title="Riwayat">{historyWords(group.mentorLines)}</td>
+      <td data-title="Riwayat">
+        {historyWords(group.mentorLines, group.mentorName !== null)}
+      </td>
     </PressableRow>
   );
 }

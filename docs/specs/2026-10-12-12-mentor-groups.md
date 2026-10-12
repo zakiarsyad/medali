@@ -137,8 +137,9 @@ Decided while building, because the issue did not say:
     app's usual "Akses ditolak" page.
 17. Members are listed by name and the mentor history newest first. The
     number of academic classes counts the kelas of Aktif members only.
-18. A group left without a mentor shows "-" in the list, and its page
-    says it has no mentor yet.
+18. A group left without a mentor shows "-" in the list, both as its
+    mentor and in place of "Pengasuh awal" or "(n) kali diganti", and
+    its page says it has no mentor yet.
 19. In the student detail the mentor's name is the link to the group's
     page, and the group code under it is plain words. The prototype
     links the name to the mentor's own page, which is not built yet.
