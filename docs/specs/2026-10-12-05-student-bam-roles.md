@@ -115,7 +115,7 @@ None.
 
 - [x] 1. The right to give BAM roles to student accounts, limited to the
   seven BAM roles, with its checks.
-- [ ] 2. The panel "Badan Asrama Mahasiswa" with its list and empty
+- [x] 2. The panel "Badan Asrama Mahasiswa" with its list and empty
   state.
 - [ ] 3. "Tambah pengurus BAM": search, pick, tick roles and save.
 - [ ] 4. "Edit peran" and "Hapus", with the log lines.

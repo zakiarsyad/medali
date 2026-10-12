@@ -32,11 +32,18 @@ export async function lockStudentAccount(
     .where(eq(accounts.id, accountId))
     .for("update", { of: accounts });
   if (!found) return null;
-  const isRemoved =
-    found.accountRemovedAt !== null || found.studentRemovedAt !== null;
-  return {
-    id: found.id,
-    name: found.name,
-    isActive: found.status === "active" && !isRemoved,
-  };
+  return { id: found.id, name: found.name, isActive: isActiveStudent(found) };
+}
+
+interface StudentState {
+  status: (typeof students.$inferSelect)["status"];
+  accountRemovedAt: Date | null;
+  studentRemovedAt: Date | null;
+}
+
+/** Whether a student is Aktif, with neither the student nor the account removed. */
+export function isActiveStudent(student: StudentState): boolean {
+  if (student.accountRemovedAt !== null) return false;
+  if (student.studentRemovedAt !== null) return false;
+  return student.status === "active";
 }
