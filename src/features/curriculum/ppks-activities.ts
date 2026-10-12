@@ -19,6 +19,11 @@ export function activityNote(description: string, isRequired: boolean): string {
   return parts.filter((part) => part !== "").join(" · ");
 }
 
+/** The question asked before an activity is removed from the list. */
+export function removalQuestion(name: string): string {
+  return `Hapus kegiatan "${name}" dari daftar?`;
+}
+
 /** The list with the item taken out when it is in, and put in when not. */
 export function toggled<Item>(list: readonly Item[], item: Item): Item[] {
   if (list.includes(item)) return list.filter((kept) => kept !== item);
