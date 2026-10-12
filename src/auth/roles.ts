@@ -10,6 +10,8 @@ export const ACTIONS = [
   "set_academic_periods",
   "view_dorm_rooms",
   "manage_dorm_rooms",
+  "view_dorm_companions",
+  "manage_dorm_companions",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -22,6 +24,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   set_academic_periods: "Mengatur periode akademik",
   view_dorm_rooms: "Melihat ploting kamar",
   manage_dorm_rooms: "Mengelola ploting kamar",
+  view_dorm_companions: "Melihat kakak pendamping",
+  manage_dorm_companions: "Mengelola kakak pendamping",
 };
 
 /**
@@ -105,6 +109,7 @@ export const ROLES: Record<RoleId, Role> = {
       "manage_activities",
       "set_academic_periods",
       "view_dorm_rooms",
+      "view_dorm_companions",
     ],
     rows: "all",
   },
@@ -113,7 +118,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "DR",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms"],
+    actions: ["view_dorm_rooms", "view_dorm_companions"],
     rows: "all",
   },
   head_of_program: {
@@ -121,7 +126,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KP",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms"],
+    actions: ["view_dorm_rooms", "view_dorm_companions"],
     rows: "own_program",
   },
   mentor: {
@@ -161,7 +166,13 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PA",
     pages: ["tasks", "dorm", "settings"],
     tabs: { dorm: ALL_DORM, settings: ["new_students"] },
-    actions: ["input_new_students", "view_dorm_rooms", "manage_dorm_rooms"],
+    actions: [
+      "input_new_students",
+      "view_dorm_rooms",
+      "manage_dorm_rooms",
+      "view_dorm_companions",
+      "manage_dorm_companions",
+    ],
     rows: "all",
   },
   bam_bphk: {
@@ -169,7 +180,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BA",
     pages: ["dorm"],
     tabs: { dorm: ALL_DORM },
-    actions: ["view_dorm_rooms"],
+    actions: ["view_dorm_rooms", "view_dorm_companions"],
     rows: "all",
   },
   bam_compliance: {

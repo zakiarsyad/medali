@@ -11,7 +11,12 @@ import {
 } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
-import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
+import {
+  dormCompanions,
+  dormRoomPlaces,
+  dormRooms,
+  students,
+} from "@/db/schema";
 import type { DormId } from "./dorms";
 import { livesIn } from "./resident-condition";
 import { UNPLACED_SHOWN } from "./room-limits";
@@ -65,9 +70,16 @@ export function roomIn(dorm: DormId): SQL | undefined {
   return and(eq(dormRooms.id, dormRoomPlaces.roomId), eq(dormRooms.dorm, dorm));
 }
 
+/** How many kakak pendamping are placed in the room of a row. */
+const COMPANIONS_IN_ROOM = sql`(
+  select count(*) from ${dormCompanions}
+  where ${dormCompanions.roomId} = ${dormRooms.id}
+)`;
+
 /**
  * Every room of a dorm, by floor and number, in one request. The places
- * taken are those of students who live in the dorm now.
+ * taken are those of students who live in the dorm now, and of the kakak
+ * pendamping placed in the room.
  */
 export async function readRooms(
   db: Database,
@@ -80,7 +92,7 @@ export async function readRooms(
       floor: dormRooms.floor,
       number: dormRooms.number,
       capacity: dormRooms.capacity,
-      taken: count(students.id),
+      taken: sql`${count(students.id)} + ${COMPANIONS_IN_ROOM}`.mapWith(Number),
     })
     .from(dormRooms)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.roomId, dormRooms.id))
@@ -136,7 +148,8 @@ export async function countResidents(
   return counted ?? { residents: 0, placed: 0 };
 }
 
-function matchesSearch(query: string): SQL | undefined {
+/** Students whose name or NIM holds the text. No text finds everyone. */
+export function matchesSearch(query: string): SQL | undefined {
   if (query === "") return undefined;
   const pattern = containsPattern(query);
   return or(ilike(students.name, pattern), ilike(students.nim, pattern));

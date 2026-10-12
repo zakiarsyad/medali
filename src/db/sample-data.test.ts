@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { campusDay } from "@/academic-periods/campus-day";
+import { studentSemester } from "@/academic-periods/student-semester";
 import { pagesFor } from "@/auth/access";
+import { companionDormOf } from "@/features/dorm/companion-dorms";
 import { DORM_IDS, type DormId } from "@/features/dorm/dorms";
 import { dormOf } from "@/features/dorm/resident-rule";
 import { ORIGIN_AGENCIES, PROVINCES } from "@/features/students/fixed-lists";
@@ -11,7 +14,12 @@ import {
   SAMPLE_STUDENTS,
   samplePeriods,
 } from "./sample-data";
-import { SAMPLE_ROOMS, sampleFirstYears, samplePlaces } from "./sample-dorms";
+import {
+  SAMPLE_COMPANIONS,
+  SAMPLE_ROOMS,
+  sampleFirstYears,
+  samplePlaces,
+} from "./sample-dorms";
 import { studentStatus } from "./schema";
 
 describe("the sample account with two roles", () => {
@@ -207,5 +215,49 @@ describe("samplePlaces", () => {
 
   it("places nobody when a dorm has no residents", () => {
     expect(samplePlaces([])).toEqual([]);
+  });
+});
+
+describe("the sample kakak pendamping", () => {
+  const [running] = samplePeriods(campusDay());
+
+  function studentOf(nim: string) {
+    const student = SAMPLE_STUDENTS.find((one) => one.nim === nim);
+    if (!student) throw new Error(`No sample student has the NIM ${nim}.`);
+    return student;
+  }
+
+  it("are two active ones and one who is not", () => {
+    const active = SAMPLE_COMPANIONS.filter((companion) => companion.isActive);
+    expect(active).toHaveLength(2);
+    expect(SAMPLE_COMPANIONS).toHaveLength(3);
+  });
+
+  it("are each a different active student who does not live in a dorm", () => {
+    if (!running) throw new Error("There are no sample periods.");
+    const nims = SAMPLE_COMPANIONS.map((companion) => companion.nim);
+    expect(new Set(nims).size).toBe(nims.length);
+    for (const nim of nims) {
+      const student = studentOf(nim);
+      const facts = {
+        status: student.status ?? ("active" as const),
+        entryPath: student.entryPath,
+        sex: student.sex,
+        isInternational: student.isInternational ?? false,
+        isSeedling: student.isSeedling ?? false,
+      };
+      expect(facts.status).toBe("active");
+      expect(dormOf(facts, studentSemester(student.cohortYear, running))).toBe(
+        null,
+      );
+    }
+  });
+
+  it("are each of the dorm that fits their jenis kelamin", () => {
+    for (const companion of SAMPLE_COMPANIONS) {
+      expect(companion.dorm).toBe(
+        companionDormOf(studentOf(companion.nim).sex),
+      );
+    }
   });
 });

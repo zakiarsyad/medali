@@ -173,6 +173,61 @@ describe("may", () => {
     }
   });
 
+  const companionViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "dorm_manager",
+    "bam_bphk",
+  ];
+
+  it.each(companionViewers)("lets %s see the kakak pendamping", (role) => {
+    expect(may([role], "view_dorm_companions")).toBe(true);
+  });
+
+  it("refuses every other role to see the kakak pendamping", () => {
+    const others = ROLE_IDS.filter((role) => !companionViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - companionViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_dorm_companions")).toBe(false);
+    }
+  });
+
+  it.each(["student", "mentor", "bam_compliance", "bam_household"] as const)(
+    "refuses %s to see the kakak pendamping",
+    (role) => {
+      expect(may([role], "view_dorm_companions")).toBe(false);
+      expect(mayOpenTab([role], "dorm", "companions")).toBe(false);
+    },
+  );
+
+  it("gives the right to see the kakak pendamping to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_dorm_companions")).toBe(
+        mayOpenTab([role], "dorm", "companions"),
+      );
+    }
+  });
+
+  it("lets dorm_manager manage the kakak pendamping", () => {
+    expect(may(["dorm_manager"], "manage_dorm_companions")).toBe(true);
+  });
+
+  it("refuses every other role to manage the kakak pendamping", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "manage_dorm_companions")).toBe(false);
+    }
+  });
+
+  it.each(["head_of_unit", "bam_household"] as const)(
+    "refuses %s to manage the kakak pendamping",
+    (role) => {
+      expect(may([role], "manage_dorm_companions")).toBe(false);
+    },
+  );
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;

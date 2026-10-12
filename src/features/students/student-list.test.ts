@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { PAGE_SIZE } from "@/ui/list-pages";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
-import { PAGE_SIZE } from "./student-list-pages";
 import { addTestProgram, addTestStudent } from "./test-records";
 
 const inTestDatabase = withTestDatabase();

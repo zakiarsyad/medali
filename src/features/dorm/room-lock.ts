@@ -1,6 +1,6 @@
 import { count, eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { dormRoomPlaces, dormRooms } from "@/db/schema";
+import { dormCompanions, dormRoomPlaces, dormRooms } from "@/db/schema";
 
 export type LockedRoom = typeof dormRooms.$inferSelect;
 
@@ -21,14 +21,21 @@ export async function lockRoom(
   return room ?? null;
 }
 
-/** How many places of a room are taken. */
+/**
+ * How many places of a room are taken: by its residents, and by the kakak
+ * pendamping placed in it.
+ */
 export async function countTaken(
   tx: Database,
   roomId: string,
 ): Promise<number> {
-  const [counted] = await tx
+  const [residents] = await tx
     .select({ taken: count() })
     .from(dormRoomPlaces)
     .where(eq(dormRoomPlaces.roomId, roomId));
-  return counted?.taken ?? 0;
+  const [companions] = await tx
+    .select({ taken: count() })
+    .from(dormCompanions)
+    .where(eq(dormCompanions.roomId, roomId));
+  return (residents?.taken ?? 0) + (companions?.taken ?? 0);
 }

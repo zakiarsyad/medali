@@ -12,6 +12,8 @@ import type { FormState } from "@/ui/form-message";
 import { addRoom } from "./add-room";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
+import { COMPANIONS_ADDRESS } from "./companions-address";
+import { placeCompanion, takeOutCompanion } from "./place-companion";
 import { placeResident, type SentPlace } from "./place-resident";
 import { removeRoom } from "./remove-room";
 import { ROOMS_ADDRESS } from "./rooms-address";
@@ -30,6 +32,8 @@ function answer(
 ): FormState {
   if (!changed.ok) return { error: changed.error, done: null };
   revalidatePath(ROOMS_ADDRESS);
+  // Kakak pendamping shows the room of each one, so it is read anew too.
+  revalidatePath(COMPANIONS_ADDRESS);
   return { error: null, done: done(changed.value) };
 }
 
@@ -96,5 +100,23 @@ export async function takeOutResidentAction(
 ): Promise<FormState> {
   const manager = await roomManager();
   const out = await takeOutResident(database(), manager, sentPlace(form));
+  return answer(out, (done) => done);
+}
+
+export async function placeCompanionAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await roomManager();
+  const placed = await placeCompanion(database(), manager, sentPlace(form));
+  return answer(placed, (done) => done);
+}
+
+export async function takeOutCompanionAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await roomManager();
+  const out = await takeOutCompanion(database(), manager, sentPlace(form));
   return answer(out, (done) => done);
 }
