@@ -7,10 +7,8 @@ import { runningPeriodNow } from "@/features/students/running-period-now";
 
 export default async function OwnProfilePage() {
   const { account } = await openPage("saya");
-  const [answer, period] = await Promise.all([
-    readOwnProfile(database(), account),
-    runningPeriodNow(),
-  ]);
+  const period = await runningPeriodNow();
+  const answer = await readOwnProfile(database(), account, period);
   if (answer.kind === "refused") forbidden();
   return <OwnProfileScreen student={answer.student} period={period} />;
 }
