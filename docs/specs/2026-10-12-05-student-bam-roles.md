@@ -106,6 +106,14 @@ Decided while building, where the issue did not say:
   the roles before and after. The account itself is not removed.
 - The sample data gets no student with a BAM role. The role is given on
   screen to try it.
+- A second press of "Simpan peran" or "Hapus" waits for the first and
+  then finds nothing left to change: one row and one line in the log.
+  The button is also off while a save runs.
+- On a card, "Edit peran" opens under the student, over the whole width
+  of the card, so it fits a phone.
+- The speed has no check of its own, as in the specs before this one.
+  The panel reads one page of 25 students in three database requests,
+  and it is timed on the preview.
 
 ## Open questions
 
@@ -121,4 +129,4 @@ None.
 - [x] 4. "Edit peran" and "Hapus", with the log lines.
 - [x] 5. Roles stop for a student who is not Aktif or was removed, with
   the check.
-- [ ] 6. Double press, the phone layout and the speed check.
+- [x] 6. Double press, the phone layout and the speed check.

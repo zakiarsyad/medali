@@ -37,3 +37,13 @@
   font-weight: var(--weight-semibold);
   white-space: nowrap;
 }
+
+/*
+ * Under the card's own parts, over its whole width and in one column: the
+ * shared form keeps a column width that is wider than a card on a phone.
+ */
+.edit {
+  display: grid;
+  flex: 1 1 100%;
+  gap: var(--space-md);
+}
