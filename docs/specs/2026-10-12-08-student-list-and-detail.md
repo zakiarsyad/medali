@@ -121,7 +121,7 @@ Decided while building, because the issue did not say:
   "Academic period".
 - [x] 2. The Tahapan, Provinsi and Instansi filters with their counts,
   working with the filters already there.
-- [ ] 3. The right to read one student's detail, limited to each role's
+- [x] 3. The right to read one student's detail, limited to each role's
   rows, with its checks.
 - [ ] 4. The student detail panel opens from a row and closes back to
   the same list.
