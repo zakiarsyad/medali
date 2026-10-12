@@ -4,7 +4,12 @@ import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addTestProgram, addTestStudent } from "./test-records";
+import {
+  addTestActor,
+  addTestMentorGroup,
+  addTestProgram,
+  addTestStudent,
+} from "./test-records";
 import { visibleTo } from "./visible-students";
 
 const inTestDatabase = withTestDatabase();
@@ -45,6 +50,62 @@ async function addTestRows(db: Database): Promise<TestRows> {
     deletedAt: new Date("2026-10-11T03:00:00Z"),
   });
   return { ownProgram, ownId };
+}
+
+const OTHER_MENTOR_NIM = "9900000313";
+const HELD_BEFORE_NIM = "9900000314";
+const REMOVED_MEMBER_NIM = "9900000315";
+const NO_GROUP_NIM = "9900000316";
+
+interface MentorRows {
+  mentorId: string;
+  otherMentorId: string;
+  ownProgram: number;
+}
+
+/**
+ * A Pengasuh who holds a group in each of two programs, and another who
+ * holds two groups of the first program, one of them taken over from the
+ * first Pengasuh. One member is removed and one student has no group.
+ */
+async function addMentorRows(db: Database): Promise<MentorRows> {
+  const ownProgram = await addTestProgram(db, "Prodi Uji Asuh Sendiri");
+  const otherProgram = await addTestProgram(db, "Prodi Uji Asuh Lain");
+  const mentor = await addTestActor(db, "Pengasuh Uji Sendiri", ["mentor"]);
+  const other = await addTestActor(db, "Pengasuh Uji Lain", ["mentor"]);
+  const add = (programId: number, nim: string, removed = false) =>
+    addTestStudent(db, programId, {
+      nim,
+      name: `Asuhan Uji ${nim}`,
+      deletedAt: removed ? new Date("2026-10-11T03:00:00Z") : null,
+    });
+
+  await addTestMentorGroup(db, ownProgram, {
+    number: 1,
+    memberIds: [
+      await add(ownProgram, "9900000311"),
+      await add(ownProgram, REMOVED_MEMBER_NIM, true),
+    ],
+    mentorId: mentor.id,
+  });
+  await addTestMentorGroup(db, otherProgram, {
+    number: 1,
+    memberIds: [await add(otherProgram, "9900000312")],
+    mentorId: mentor.id,
+  });
+  await addTestMentorGroup(db, ownProgram, {
+    number: 2,
+    memberIds: [await add(ownProgram, OTHER_MENTOR_NIM)],
+    mentorId: other.id,
+  });
+  await addTestMentorGroup(db, ownProgram, {
+    number: 3,
+    memberIds: [await add(ownProgram, HELD_BEFORE_NIM)],
+    mentorId: other.id,
+    earlierMentorId: mentor.id,
+  });
+  await add(otherProgram, NO_GROUP_NIM);
+  return { mentorId: mentor.id, otherMentorId: other.id, ownProgram };
 }
 
 async function nimsSeenBy(
@@ -114,11 +175,69 @@ describe("visibleTo", () => {
     });
   });
 
-  it("shows nobody to Pengasuh while no mentees are kept", async () => {
+  it("shows Pengasuh the members of the groups they hold today", async () => {
     await inTestDatabase(async (db) => {
-      await addTestRows(db);
+      const { mentorId } = await addMentorRows(db);
 
-      expect(await nimsSeenBy(db, account(["mentor"]))).toEqual([]);
+      expect(
+        await nimsSeenBy(db, account(["mentor"], { id: mentorId })),
+      ).toEqual(["9900000311", "9900000312"]);
+    });
+  });
+
+  it("hides from Pengasuh the members of a group they held before", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentorId } = await addMentorRows(db);
+
+      const seen = await nimsSeenBy(db, account(["mentor"], { id: mentorId }));
+      expect(seen).not.toContain(HELD_BEFORE_NIM);
+    });
+  });
+
+  it("hides from Pengasuh the group of another Pengasuh, a student in no group and a removed member", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentorId, otherMentorId } = await addMentorRows(db);
+      const mentor = account(["mentor"], { id: mentorId });
+      const other = account(["mentor"], { id: otherMentorId });
+
+      const seen = await nimsSeenBy(db, mentor);
+      expect(seen).not.toContain(OTHER_MENTOR_NIM);
+      expect(seen).not.toContain(NO_GROUP_NIM);
+      expect(seen).not.toContain(REMOVED_MEMBER_NIM);
+      expect(await nimsSeenBy(db, other)).toEqual([
+        OTHER_MENTOR_NIM,
+        HELD_BEFORE_NIM,
+      ]);
+    });
+  });
+
+  it("shows nobody to Pengasuh who holds no group", async () => {
+    await inTestDatabase(async (db) => {
+      await addMentorRows(db);
+      const idle = await addTestActor(db, "Pengasuh Uji Tanpa Kelompok", [
+        "mentor",
+      ]);
+
+      expect(
+        await nimsSeenBy(db, account(["mentor"], { id: idle.id })),
+      ).toEqual([]);
+    });
+  });
+
+  it("shows Pengasuh who is also Ketua Program Studi their groups and their program studi", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentorId, ownProgram } = await addMentorRows(db);
+      const both = account(["mentor", "head_of_program"], {
+        id: mentorId,
+        studyProgramId: ownProgram,
+      });
+
+      expect(await nimsSeenBy(db, both)).toEqual([
+        "9900000311",
+        "9900000312",
+        OTHER_MENTOR_NIM,
+        HELD_BEFORE_NIM,
+      ]);
     });
   });
 });

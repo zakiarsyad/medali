@@ -124,7 +124,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. Groups, their members and their mentor history are stored, with
   the database rules and the sample groups.
-- [ ] 2. The mentor row rule (own mentees) reads from the groups, with
+- [x] 2. The mentor row rule (own mentees) reads from the groups, with
   tests.
 - [ ] 3. The Kelompok pengasuhan tab with its numbers, filters and
   paging.
