@@ -1,7 +1,7 @@
 import Form from "next/form";
 import Link from "next/link";
+import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
-import { DORM_NAMES } from "./dorms";
 import type { UnplacedResidents } from "./room-list";
 import styles from "./rooms.module.css";
 import { ROOMS_ADDRESS, type RoomsParams, roomsAddress } from "./rooms-address";

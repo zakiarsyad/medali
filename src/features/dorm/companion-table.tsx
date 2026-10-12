@@ -1,3 +1,4 @@
+import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import {
   restartCompanionAction,
@@ -5,7 +6,6 @@ import {
 } from "./companion-actions";
 import type { ListedCompanion } from "./companion-list";
 import styles from "./companions.module.css";
-import { DORM_NAMES } from "./dorms";
 import { RoomButton } from "./room-button";
 
 /** The NIM, the study program, and the semester when it is known. */

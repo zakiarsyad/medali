@@ -262,6 +262,25 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit see the floor and the room of a student", () => {
+    expect(may(["head_of_unit"], "view_student_room")).toBe(true);
+  });
+
+  it("refuses every other role the floor and the room of a student", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "view_student_room")).toBe(false);
+    }
+  });
+
+  it.each(["director", "head_of_program", "dorm_manager"] as const)(
+    "refuses %s the floor and the room of a student",
+    (role) => {
+      expect(may([role], "view_student_room")).toBe(false);
+    },
+  );
+
   const groupViewers: RoleId[] = [
     "head_of_unit",
     "director",

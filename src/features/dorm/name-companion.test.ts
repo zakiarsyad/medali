@@ -4,13 +4,9 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { academicPeriods, dormCompanions, type students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { nameCompanion, type SentCompanion } from "./name-companion";
-import {
-  addTestCompanion,
-  addTestProgram,
-  addTestStudent,
-  companionOf,
-} from "./test-records";
+import { addTestCompanion, companionOf } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

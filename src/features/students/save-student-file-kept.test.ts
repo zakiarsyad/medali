@@ -255,7 +255,7 @@ describe("saveStudentFile, where file keeping is off", () => {
       expect(saved.ok && saved.value.saved).toBe(2);
       expect(await db.$count(studentBatches)).toBe(0);
       expect(await db.$count(studentBatchFiles)).toBe(0);
-      const listed = await listAddedStudents(db, "9900001011");
+      const listed = await listAddedStudents(db, "9900001011", []);
       expect(listed.students).toMatchObject([
         {
           nim: "9900001011",

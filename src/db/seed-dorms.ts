@@ -1,7 +1,7 @@
 import { inArray } from "drizzle-orm";
 import { studentSemester } from "@/academic-periods/student-semester";
-import { DORM_IDS, type DormId } from "@/features/dorm/dorms";
-import { dormOf } from "@/features/dorm/resident-rule";
+import { DORM_IDS, type DormId } from "@/dorms/dorms";
+import { dormOf } from "@/dorms/resident-rule";
 import type { Database } from "./connect";
 import type { SamplePeriod } from "./sample-data";
 import {

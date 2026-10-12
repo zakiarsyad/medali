@@ -17,8 +17,8 @@ import {
   dormRooms,
   students,
 } from "@/db/schema";
-import type { DormId } from "./dorms";
-import { livesIn } from "./resident-condition";
+import type { DormId } from "@/dorms/dorms";
+import { livesIn } from "@/dorms/resident-condition";
 import { UNPLACED_SHOWN } from "./room-limits";
 
 /*

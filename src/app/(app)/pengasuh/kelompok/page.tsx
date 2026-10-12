@@ -1,9 +1,7 @@
 import { forbidden } from "next/navigation";
-import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
-import { database } from "@/db/database";
 import {
   groupAddress,
   readGroupListParams,
@@ -14,6 +12,7 @@ import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMemberAddresses } from "@/features/mentor-groups/open-member-address";
 import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
 import { askedDetail } from "@/features/students/asked-detail";
+import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 import { detailVisibleTo } from "@/features/students/visible-students";
 
@@ -46,7 +45,7 @@ async function GroupPage({
       {detail && (
         <StudentDetailDialog
           detail={detail}
-          period={await readRunningPeriod(database())}
+          period={await runningPeriodNow()}
           closeAddress={groupAddress(groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
         />

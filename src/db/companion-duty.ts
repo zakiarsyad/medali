@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { studentSemester } from "@/academic-periods/student-semester";
+import type { DormId } from "@/dorms/dorms";
+import { dormOf, type ResidentFacts } from "@/dorms/resident-rule";
 import { companionDormOf } from "@/features/dorm/companion-dorms";
-import type { DormId } from "@/features/dorm/dorms";
-import { dormOf, type ResidentFacts } from "@/features/dorm/resident-rule";
 import type { Database } from "./connect";
 import { dormCompanions, students } from "./schema";
 

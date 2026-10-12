@@ -3,10 +3,15 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
+import type { RunningPeriod } from "./semester-now";
 import {
   readStudentMentorGroup,
   type StudentMentorGroup,
 } from "./student-mentor-group";
+import {
+  readStudentResidence,
+  type StudentResidence,
+} from "./student-residence";
 import { detailVisibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
@@ -30,6 +35,8 @@ export interface StudentDetail {
   sex: Student["sex"];
   /** Null for a student who is in no kelompok pengasuhan. */
   mentorGroup: StudentMentorGroup | null;
+  /** Null for a student who lives in no dorm. */
+  residence: StudentResidence | null;
 }
 
 const DETAIL = {
@@ -62,12 +69,14 @@ const NOT_FOUND = { kind: "not_found" } as const;
  * is refused. Every student the account cannot be shown gets the one
  * answer "not found": one who does not exist, one who was removed, and one
  * outside the account's rows, so that nobody learns from the answer
- * whether a student they may not see exists.
+ * whether a student they may not see exists. The running academic period
+ * says whether the student lives in the dorm.
  */
 export async function readStudentDetail(
   db: Database,
   account: AccountForAccess,
   id: string,
+  period: RunningPeriod,
 ): Promise<StudentDetailAnswer> {
   const visible = detailVisibleTo(account);
   if (visible === null) return { kind: "refused" };
@@ -79,6 +88,9 @@ export async function readStudentDetail(
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .where(and(eq(students.id, id), visible));
   if (!student) return NOT_FOUND;
-  const mentorGroup = await readStudentMentorGroup(db, student.id);
-  return { kind: "found", student: { ...student, mentorGroup } };
+  const [mentorGroup, residence] = await Promise.all([
+    readStudentMentorGroup(db, student.id),
+    readStudentResidence(db, account, student, period),
+  ]);
+  return { kind: "found", student: { ...student, mentorGroup, residence } };
 }

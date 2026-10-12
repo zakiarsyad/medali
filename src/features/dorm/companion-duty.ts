@@ -10,9 +10,9 @@ import {
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { dormCompanions, students } from "@/db/schema";
+import { DORM_NAMES, DORM_RESIDENTS, type DormId } from "@/dorms/dorms";
 import type { Parsed } from "@/parsed";
 import { COMPANIONS_NOT_ALLOWED } from "./companion-messages";
-import { DORM_NAMES, DORM_RESIDENTS, type DormId } from "./dorms";
 
 export type LockedCompanion = typeof dormCompanions.$inferSelect;
 

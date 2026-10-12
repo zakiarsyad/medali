@@ -1,5 +1,5 @@
+import type { DormId } from "@/dorms/dorms";
 import type { CompanionDormId } from "@/features/dorm/companion-dorms";
-import type { DormId } from "@/features/dorm/dorms";
 import type { SampleStudent } from "./sample-students";
 
 /*

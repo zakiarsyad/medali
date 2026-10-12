@@ -18,7 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
-import { DORM_IDS } from "@/features/dorm/dorms";
+import { DORM_IDS } from "@/dorms/dorms";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);

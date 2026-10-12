@@ -11,6 +11,14 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { type Save, withOwnTestDatabase } from "@/db/test-database-at-once";
+import {
+  addTestProgram,
+  addTestRoom,
+  addTestStudent,
+  DAY,
+  ODD_2026,
+  placeTestResident,
+} from "@/dorms/test-records";
 import type { Parsed } from "@/parsed";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
@@ -19,17 +27,7 @@ import { nameCompanion } from "./name-companion";
 import { placeCompanion } from "./place-companion";
 import { placeResident } from "./place-resident";
 import { readRooms } from "./room-list";
-import {
-  addTestCompanion,
-  addTestProgram,
-  addTestRoom,
-  addTestStudent,
-  companionOf,
-  DAY,
-  ODD_2026,
-  placeTestResident,
-  residentsOfRoom,
-} from "./test-records";
+import { addTestCompanion, companionOf, residentsOfRoom } from "./test-records";
 
 const own = withOwnTestDatabase("rooms");
 const MANAGER = { roles: ["dorm_manager"] as RoleId[] };

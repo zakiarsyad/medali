@@ -3,17 +3,17 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { dormCompanions, students } from "@/db/schema";
+import { readDormCohorts } from "@/dorms/dorm-cohorts";
+import { DORM_NAMES } from "@/dorms/dorms";
+import { dormInSql } from "@/dorms/resident-condition";
 import type { Parsed } from "@/parsed";
 import {
   COMPANION_NOT_FOUND,
   type LockedCompanion,
   lockCompanion,
 } from "./companion-duty";
-import { readDormCohorts } from "./dorm-cohorts";
-import { DORM_NAMES } from "./dorms";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL, type SentPlace } from "./place-resident";
-import { dormInSql } from "./resident-condition";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, type LockedRoom, lockRoom } from "./room-lock";
 import { freeStalePlacesIn } from "./stale-places";
