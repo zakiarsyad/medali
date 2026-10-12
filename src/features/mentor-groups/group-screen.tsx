@@ -7,12 +7,12 @@ import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
+import { GROUP_MIN, isSmallGroup } from "@/ui/group-size";
 import { PageHead } from "@/ui/page-head";
 import { type GroupDetail, readGroup } from "./group-detail";
 import { GROUP_LIST_ADDRESS } from "./group-list-address";
 import { GroupMembersTable } from "./group-members-table";
 import { GroupMentorPanel } from "./group-mentor-panel";
-import { GROUP_MIN, isSmallGroup } from "./group-size";
 import { academicClasses, countedMembers } from "./member-rules";
 import styles from "./mentor-groups.module.css";
 

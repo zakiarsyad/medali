@@ -1,4 +1,5 @@
 import type { AcademicPeriod, Term } from "@/academic-periods/academic-period";
+import { isDay } from "@/db/is-day";
 import type { Parsed } from "@/parsed";
 
 export type PeriodDates = Pick<AcademicPeriod, "startsOn" | "endsOn">;
@@ -20,7 +21,6 @@ export interface SentPeriod extends SentPeriodDates {
 const EARLIEST_YEAR = 2000;
 const LATEST_YEAR = 2100;
 const BOTH_YEARS = /^(\d{4})\/(\d{4})$/;
-const YEAR_MONTH_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 const YEAR_REFUSED = {
   ok: false,
@@ -58,14 +58,6 @@ export function parseStartYear(sent: string): number | null {
 
 function isTerm(sent: string): sent is Term {
   return sent === "odd" || sent === "even";
-}
-
-function isDay(sent: string): boolean {
-  if (!YEAR_MONTH_DAY.test(sent)) return false;
-  const at = new Date(`${sent}T00:00:00Z`);
-  if (Number.isNaN(at.getTime())) return false;
-  // A day that does not exist, such as 30 February, rolls into the next month.
-  return at.toISOString().startsWith(sent);
 }
 
 function isInRange(day: string): boolean {

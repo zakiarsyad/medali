@@ -1,11 +1,11 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
+import { INACTIVE_REASON, MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
 import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import { MentorGroupLinks } from "./mentor-group-links";
 import type { ListedMentor } from "./mentor-list";
 import { mentorAddress } from "./mentor-list-address";
-import { INACTIVE_REASON, MENTOR_STATUS_TITLES } from "./mentor-status";
 import { titleAndUnit } from "./mentor-words";
 
 /** What a row shows where a mentor has no group or no student. */

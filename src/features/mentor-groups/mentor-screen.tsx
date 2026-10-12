@@ -6,13 +6,13 @@ import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
 import { groupCode } from "@/ui/group-code";
+import { MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
 import { PageHead } from "@/ui/page-head";
 import { GroupMembersTable } from "./group-members-table";
 import { MentorAssignmentsPanel } from "./mentor-assignments-panel";
 import { readMentor } from "./mentor-detail";
 import styles from "./mentor-groups.module.css";
 import { MENTOR_LIST_ADDRESS } from "./mentor-list-address";
-import { MENTOR_STATUS_TITLES } from "./mentor-status";
 import { mentorLede } from "./mentor-words";
 
 /**

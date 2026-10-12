@@ -7,6 +7,7 @@ import { PAGE_SIZE } from "@/ui/list-pages";
 import { listGroups } from "./group-list";
 import { type GroupListFilters, NO_FILTERS } from "./group-list-address";
 import {
+  addTestEndedGroup,
   addTestGroup,
   addTestMembers,
   addTestMembersWithStatus,
@@ -52,6 +53,23 @@ async function addFilterGroups(db: Database): Promise<number> {
 }
 
 describe("listGroups", () => {
+  it("leaves out an ended group, for every account", async () => {
+    await inTestDatabase(async (db) => {
+      const everyone: RowLimit = { kind: "all" };
+      const before = await listGroups(db, everyone, NO_FILTERS, 1);
+      const program = await addTestProgram(db, "UJIAKHIR");
+      await addTestEndedGroup(db, program);
+      await addTestGroup(db, program, { number: 2 });
+
+      const whole = await listGroups(db, everyone, NO_FILTERS, 1);
+
+      expect(whole.matching).toBe(before.matching + 1);
+      expect(await codesFound(db, onlyProgram(program), {})).toEqual([
+        "KP 26-UJIAKHIR-02",
+      ]);
+    });
+  });
+
   it("gives what a row shows", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "UJIBARIS");

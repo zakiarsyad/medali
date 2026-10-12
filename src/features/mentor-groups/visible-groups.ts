@@ -1,4 +1,4 @@
-import { inArray, type SQL, sql } from "drizzle-orm";
+import { and, inArray, isNull, type SQL, sql } from "drizzle-orm";
 import {
   type AccountForAccess,
   may,
@@ -31,11 +31,20 @@ export function maySeeGroup(limit: RowLimit, studyProgramId: number): boolean {
 }
 
 /**
- * The same rule for the `where` of every read of groups. Nothing to add
- * for an account that sees every group.
+ * A group that is in force. One whose penetapan was cancelled is ended:
+ * it stays stored, and no read of groups shows it.
+ */
+export const NOT_ENDED = isNull(mentorGroups.endedAt);
+
+/**
+ * The same rule for the `where` of every read of groups, which also
+ * leaves out the groups that are ended.
  */
 export function groupsVisibleTo(limit: RowLimit): SQL | undefined {
-  if (limit.kind === "all") return undefined;
+  if (limit.kind === "all") return NOT_ENDED;
   if (limit.studyProgramIds.length === 0) return NO_GROUP;
-  return inArray(mentorGroups.studyProgramId, limit.studyProgramIds);
+  return and(
+    NOT_ENDED,
+    inArray(mentorGroups.studyProgramId, limit.studyProgramIds),
+  );
 }

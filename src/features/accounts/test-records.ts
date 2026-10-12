@@ -105,7 +105,7 @@ export async function addTestGroupHeldBy(
   studyProgramId: number,
   mentorId: string,
   endsOn: string | null = null,
-): Promise<void> {
+): Promise<string> {
   const [group] = await db
     .insert(mentorGroups)
     .values({
@@ -124,6 +124,7 @@ export async function addTestGroupHeldBy(
     endsOn,
     endReason: endsOn === null ? null : "Uji penggantian",
   });
+  return group.id;
 }
 
 /** The lines of the log of role changes for one account, oldest first. */

@@ -2,6 +2,7 @@ import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
+import { MentorsHead } from "@/ui/mentors-head";
 import type { TabLinksProps } from "@/ui/tab-links";
 import { listMentors } from "./mentor-list";
 import {
@@ -13,7 +14,6 @@ import { MentorListFilterRow } from "./mentor-list-filters";
 import { MentorListFoot } from "./mentor-list-foot";
 import { MentorListTable } from "./mentor-list-table";
 import { listMentorUnits } from "./mentor-units";
-import { MentorsHead } from "./mentors-head";
 import { NewMentorsNote } from "./new-mentors-note";
 
 export async function MentorListScreen({

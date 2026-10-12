@@ -11,6 +11,7 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import type { GroupCodeParts } from "@/ui/group-code";
+import { inactiveSince, type MentorStatus } from "@/ui/mentor-status";
 import { type GroupMember, MEMBER, opensDetailOf } from "./group-detail";
 import { LISTED_MEMBER } from "./member-conditions";
 import {
@@ -19,7 +20,6 @@ import {
   studentsIn,
 } from "./mentor-held-groups";
 import { shownStatus } from "./mentor-list";
-import { inactiveSince, type MentorStatus } from "./mentor-status";
 import { groupsVisibleTo } from "./visible-groups";
 import {
   heldTodayBy,

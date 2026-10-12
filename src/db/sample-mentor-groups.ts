@@ -5,7 +5,11 @@ import type { SampleStudent } from "./sample-students";
  * Made-up people only. Every group, date and reason here is invented.
  */
 
-/** The sample Pengasuh who hold no group, to show a mentor without one. */
+/**
+ * The sample Pengasuh who hold no group, to show a mentor without one.
+ * They are the spare mentors of the sample new angkatan: one of the
+ * jurusan of each of its program studi.
+ */
 export const SAMPLE_MENTORS_WITHOUT_GROUP = ["Taufik Rahmadi", "Yuni Astutik"];
 
 export interface SampleGroupMentor {
@@ -37,6 +41,17 @@ export const SAMPLE_REPLACED_GROUP = {
   endsOn: "2025-08-31",
   endReason: "Mutasi ke unit lain",
   replacedOn: "2025-09-01",
+} as const;
+
+/**
+ * The sample Pengasuh whose only group is of the newest angkatan, in the
+ * program studi named. Penetapan angkatan baru offers a mentor who holds
+ * no group of another angkatan, so this one is offered beside the two
+ * without a group.
+ */
+export const SAMPLE_MENTOR_OF_NEWEST_ONLY = {
+  name: "Dian Kusumaningrum",
+  studyProgram: "D3 Kepabeanan dan Cukai",
 } as const;
 
 /** The names of the sample Pengasuh who hold groups, Hendra Wijaya first. */
@@ -123,20 +138,45 @@ function mentorsOf(
   ];
 }
 
+function isOfNewestOnly(group: GroupWithoutMentors, newest: number): boolean {
+  return (
+    group.cohortYear === newest &&
+    group.studyProgram === SAMPLE_MENTOR_OF_NEWEST_ONLY.studyProgram
+  );
+}
+
+function heldByNewestOnly(group: GroupWithoutMentors): SampleMentorGroup {
+  const mentor = {
+    name: SAMPLE_MENTOR_OF_NEWEST_ONLY.name,
+    startsOn: group.startsOn,
+    endsOn: null,
+    endReason: null,
+  };
+  return { ...group, mentors: [mentor] };
+}
+
 /**
- * Puts every sample student into the made-up group of their angkatan,
+ * Puts every student given into the made-up group of their angkatan,
  * program studi and jalur, which starts on 1 September of that angkatan.
- * The groups go to the sample Pengasuh in turn, the newest angkatan
- * first, so the first of them holds one of its large groups.
+ * One group of the newest angkatan goes to the Pengasuh who holds no
+ * other. The rest go to the other sample Pengasuh in turn, the newest
+ * angkatan first, so the first of them holds one of its large groups.
  */
 export function sampleMentorGroups(
   students: SampleStudent[],
 ): SampleMentorGroup[] {
-  const holders = sampleGroupHolders();
-  return groupsOf(students)
-    .sort(newestFirst)
-    .map((group, place) => ({
+  const groups = groupsOf(students).sort(newestFirst);
+  const newest = groups[0]?.cohortYear ?? 0;
+  const apart = groups.filter((group) => isOfNewestOnly(group, newest));
+  const inTurn = groups.filter((group) => !isOfNewestOnly(group, newest));
+  const holders = sampleGroupHolders().filter(
+    (name) => name !== SAMPLE_MENTOR_OF_NEWEST_ONLY.name,
+  );
+  return [
+    ...apart.map(heldByNewestOnly),
+    ...inTurn.map((group, place) => ({
       ...group,
       mentors: mentorsOf(group, place, holders),
-    }));
+    })),
+  ];
 }
