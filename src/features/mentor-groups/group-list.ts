@@ -45,7 +45,8 @@ export interface ListedGroup extends GroupCodeParts {
 /** The mentor line of today, named apart from the lines that are counted. */
 const mentorToday = alias(mentorGroupMentors, "mentor_today");
 
-const MEMBERS = sql`(
+/** How many Aktif students a group holds, in a read of groups. */
+export const MEMBERS = sql`(
   select count(*) from ${mentorGroupMembers}
   inner join ${students} on ${students.id} = ${mentorGroupMembers.studentId}
   where ${mentorGroupMembers.groupId} = ${mentorGroups.id}
