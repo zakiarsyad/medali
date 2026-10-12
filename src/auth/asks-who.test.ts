@@ -201,6 +201,33 @@ describe("screenFault", () => {
     const source = MADE_UP_SCREEN_AT_A_FIXED_ADDRESS;
     expect(screenFault(source, "pengaturan/baris")).toBeNull();
     expect(screenFault(source, "pengaturan/pengguna")).not.toBeNull();
+    expect(screenFault(source, "pengaturan/[tab]")).not.toBeNull();
+    expect(screenFault(source, "[page]/[tab]")).not.toBeNull();
+  });
+
+  it("finds a made-up screen that opens a page without its tab", () => {
+    const source = MADE_UP_SCREEN_AT_A_FIXED_ADDRESS.replace(', "baris"', "");
+    expect(screenFault(source, "pengaturan")).toBeNull();
+    expect(screenFault(source, "pengaturan/baris")).not.toBeNull();
+  });
+
+  it("still reads what follows a text that looks like the start of a note", () => {
+    const source = `
+import { openPage } from "@/auth/open-page";
+import { database } from "@/db/database";
+import { readRowName } from "@/features/rows/read-rows";
+
+export default async function RowsPage() {
+  await openPage("baris");
+  return <input accept="image/*" />;
+}
+
+/** The title of the screen. */
+export async function generateMetadata() {
+  return { title: await readRowName(database()) };
+}
+`;
+    expect(screenFault(source, "baris")).toContain("generateMetadata");
   });
 
   it("does not count openPage in a note", () => {

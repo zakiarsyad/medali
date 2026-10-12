@@ -74,9 +74,9 @@ Decided while building, because the issue did not say:
    among the screens fails the check until it is named in the list
    with a reason.
 4. A screen or an address may read its own address before it asks who
-   is using it. It may read nothing else first. A screen at a fixed
-   address must ask for the page of that same address, so a screen
-   copied from another one cannot keep asking for the other page.
+   is using it. It may read nothing else first. A screen must ask
+   for the page and the tab of its own address, so a screen copied
+   from another one cannot keep asking for the other page.
 5. An action counts as asking only when the first thing it does is to
    ask whether the account may do a named action, and to refuse when
    there is no account or the account may not. An action written

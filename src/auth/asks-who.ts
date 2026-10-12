@@ -6,7 +6,10 @@
  * a new shape fails the check and is never passed by mistake.
  */
 
-const NOTES = /\/\*[\s\S]*?\*\/|\/\/.*$/gm;
+// A note starts a line or follows a space or an opening bracket. Inside a
+// text, as in "image/*" or "https://", the same signs start no note:
+// taking them for one would hide the code that follows from the check.
+const NOTES = /(?<![^\s{(])(?:\/\*[\s\S]*?\*\/|\/\/.*$)/gm;
 const TOP_LEVEL_FUNCTION =
   /^(export )?(default )?(?:async )?function (\w+)\([\s\S]*?^\}$/gm;
 const EXPORTED_FUNCTION = /^export (?:default )?(?:async )?function (\w+)\(/gm;
@@ -21,7 +24,7 @@ const DIRECTIVE = /^\s*["']use server["'];?\s*$/;
 const READS_OWN_ADDRESS =
   /^const (?:\w+|\{[^}]*\}) = await (?:props|context)\.(?:params|searchParams);$/;
 const OPENS_PAGE =
-  /^(?:const (?:\w+|\{[^}]*\}) = )?await (openPage\([^()]*\));$/;
+  /^(?:const (?:\w+|\{[^}]*\}) = )?await openPage\(([^()]*)\);$/;
 const ASKS_ACCOUNT = /^const \w+ = await currentAccount\(\);$/;
 const ASKS_FIRST = /^(?:const \w+ = )?await (\w+)\(\);$/;
 const ASKS_AND_REFUSES =
@@ -134,19 +137,26 @@ export function addressOfScreen(path: string): string {
     .replace(/\/?page\.tsx$/, "");
 }
 
-/** The call that opens the page at an address, such as "asrama/kakak". */
-function callThatOpens(address: string): string {
-  const parts = address.split("/").map((part) => `"${part}"`);
-  return `openPage(${parts.join(", ")})`;
+/**
+ * Whether what a screen gives to `openPage` is the page and the tab of
+ * its own address: a fixed part as that same text, and a part taken
+ * from the address, such as "[page]", as a name and never a text.
+ */
+function opensOwnAddress(given: string, address: string): boolean {
+  const asked = given.split(", ");
+  const parts = address.split("/").slice(0, 2);
+  if (asked.length !== parts.length) return false;
+  return parts.every((part, at) => {
+    if (part.startsWith("[")) return /^\w+$/.test(asked[at] ?? "");
+    return asked[at] === `"${part}"`;
+  });
 }
 
 /**
  * What is wrong with the screen at an address, or null. A screen goes
  * through `openPage`, the one place that checks the account and the
- * page, before it reads anything but its own address. A screen at a
- * fixed address opens the page of that address and no other; one that
- * takes its page from the address, such as "[page]/[tab]", opens what
- * it was given.
+ * page, before it reads anything but its own address, and opens the
+ * page of that address and no other.
  */
 export function screenFault(source: string, address: string): string | null {
   if (!takes(source, "openPage", "@/auth/open-page")) {
@@ -155,11 +165,9 @@ export function screenFault(source: string, address: string): string | null {
   if (!topLevelFunctions(source).some((each) => each.isDefault)) {
     return "holds no screen that can be read here";
   }
-  const takesPageFromAddress = address.includes("[");
   const notAsking = exportedNotAsking(source, (firstLine) => {
-    const opened = OPENS_PAGE.exec(firstLine)?.[1];
-    if (opened === undefined) return false;
-    return takesPageFromAddress || opened === callThatOpens(address);
+    const given = OPENS_PAGE.exec(firstLine)?.[1];
+    return given !== undefined && opensOwnAddress(given, address);
   });
   if (notAsking.length > 0) {
     return `${notAsking.join(", ")} does not start with openPage for its own address, which checks the account and the page`;
