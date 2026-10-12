@@ -8,7 +8,7 @@ import type { DatabaseKind, DeployTarget } from "./deploy-plan";
  */
 
 function isDatabaseKind(kind: unknown): kind is DatabaseKind {
-  return kind === "pr-preview" || kind === "main-preview";
+  return kind === "pr-preview" || kind === "main-preview" || kind === "campus";
 }
 
 async function readMark(db: PostgresJsDatabase): Promise<string | null> {

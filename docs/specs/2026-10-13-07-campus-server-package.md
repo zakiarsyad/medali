@@ -135,7 +135,7 @@ change any of these.
 - [x] 1. The app is packaged as one image, with the campus mark built in.
 - [x] 2. One command starts the app, the database and MinIO together,
   with only the app reachable and data kept between restarts.
-- [ ] 3. With the campus mark, Ganti peran and the sample data command
+- [x] 3. With the campus mark, Ganti peran and the sample data command
   refuse to run, and missing settings stop the start with a clear
   message.
 - [ ] 4. The first-account command makes the first Kepala Unit account,

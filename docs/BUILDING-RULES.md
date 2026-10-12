@@ -17,6 +17,8 @@ while building.
 - `src/dorms/`: the four dorms, the rule for who lives in which, and a
   resident's room, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
+- `src/campus/`: what the campus server package checks and does when it
+  starts.
 - `src/ui/`: screen parts shared by more than one area.
 - `docs/`: specs and lasting facts.
 

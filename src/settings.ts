@@ -37,7 +37,7 @@ export interface FileStorageSettings {
   secretKey: string;
 }
 
-const FILE_STORAGE_NAMES = [
+export const FILE_STORAGE_NAMES = [
   "FILE_STORAGE_URL",
   "FILE_STORAGE_BUCKET",
   "FILE_STORAGE_ACCESS_KEY",

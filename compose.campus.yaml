@@ -6,18 +6,31 @@ name: medali-campus
 # .env.campus.example lists what it holds. docs/HOSTING.md says how to
 # start, update and stop the package.
 
+x-app: &app
+  build: .
+  image: medali-campus-app
+  # Without the file the package still gets as far as its own check, which
+  # names each missing setting.
+  env_file:
+    - path: .env.campus
+      required: false
+  environment:
+    # Left empty while the password is, so the check names it as missing.
+    DATABASE_URL: ${DATABASE_PASSWORD:+postgres://medali:${DATABASE_PASSWORD}@db:5432/medali}
+    FILE_STORAGE_URL: http://files:9000
+    FILE_STORAGE_BUCKET: medali
+
 services:
+  # Runs once, before anything else starts: with a missing setting, or one
+  # that would turn Ganti peran on, nothing of the package starts.
+  check:
+    <<: *app
+    command: ["node_modules/.bin/tsx", "src/campus/start-check-command.ts"]
+    restart: "no"
+
   # The only part that can be reached from outside the server.
   app:
-    build: .
-    image: medali-campus-app
-    env_file:
-      - path: .env.campus
-        required: false
-    environment:
-      DATABASE_URL: ${DATABASE_PASSWORD:+postgres://medali:${DATABASE_PASSWORD}@db:5432/medali}
-      FILE_STORAGE_URL: http://files:9000
-      FILE_STORAGE_BUCKET: medali
+    <<: *app
     ports:
       - "${APP_PORT:-3000}:3000"
     depends_on:
@@ -46,6 +59,9 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-}
     volumes:
       - db-data:/var/lib/postgresql/data
+    depends_on:
+      check:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "medali"]
@@ -64,6 +80,9 @@ services:
       MINIO_ROOT_PASSWORD: ${FILE_STORAGE_SECRET_KEY:-}
     volumes:
       - files-data:/data
+    depends_on:
+      check:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]

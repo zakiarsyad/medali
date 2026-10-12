@@ -274,6 +274,36 @@ describe("the campus server package", () => {
     }
   });
 
+  it.each(INSIDE_ONLY)(
+    "starts %s only after the check of the settings passed",
+    (name) => {
+      const waitsFor = services.get(name)?.join("\n");
+
+      expect(services.get("check")?.join("\n")).toContain(
+        "src/campus/start-check-command.ts",
+      );
+      expect(waitsFor).toContain(
+        "depends_on:\ncheck:\ncondition: service_completed_successfully",
+      );
+    },
+  );
+
+  it("starts the app only once the database and the file storage answer", () => {
+    expect(services.get("app")?.join("\n")).toContain(
+      "depends_on:\ndb:\ncondition: service_healthy\nfiles:\ncondition: service_healthy",
+    );
+  });
+
+  it("checks the settings before anything else when the app starts", () => {
+    const steps = linesOf("docker/campus-start.sh");
+    const check = steps.findIndex((line) => line.includes("start-check"));
+    const app = steps.findIndex((line) => line.includes("next start"));
+
+    expect(steps[0]).toBe("set -e");
+    expect(check).toBe(1);
+    expect(app).toBe(steps.length - 1);
+  });
+
   it("takes the local file storage's own image", () => {
     const image = /image: (pgsty\/minio:\S+)/;
     const local = readFileSync("compose.yaml", "utf8").match(image)?.[1];
