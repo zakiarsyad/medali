@@ -12,7 +12,7 @@ export const SETTING_NAMES = [
 
 export type SettingName = (typeof SETTING_NAMES)[number];
 
-type SettingsEnv = Readonly<Record<string, string | undefined>>;
+export type SettingsEnv = Readonly<Record<string, string | undefined>>;
 
 function settingIn(env: SettingsEnv, name: SettingName): string {
   const value = env[name];
@@ -106,6 +106,15 @@ export function googleSignInSettingsOf(
   const campusEnding = campusEmailEndingOf(env);
   if (!clientId || !clientSecret || campusEnding === "") return null;
   return { clientId, clientSecret, campusEnding };
+}
+
+/** The names of the Google sign-in settings that are still empty. */
+export function missingGoogleSignInNames(env: SettingsEnv): SettingName[] {
+  const missing: SettingName[] = [];
+  if (!env.GOOGLE_CLIENT_ID) missing.push("GOOGLE_CLIENT_ID");
+  if (!env.GOOGLE_CLIENT_SECRET) missing.push("GOOGLE_CLIENT_SECRET");
+  if (campusEmailEndingOf(env) === "") missing.push("CAMPUS_EMAIL_ENDING");
+  return missing;
 }
 
 export function readGoogleSignInSettings(): GoogleSignInSettings | null {

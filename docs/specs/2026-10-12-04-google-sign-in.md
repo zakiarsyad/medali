@@ -160,6 +160,29 @@ change any of these.
 13. The Google keys and the campus address ending are filled all together
     or all left empty. With only some filled, Google sign-in stays off
     on a preview and the button says it is not set up.
+14. An address inside the app that does not exist is answered inside the
+    menu, as before, now with "Halaman tidak ditemukan" in Bahasa
+    Indonesia. Someone who is not signed in is sent to the sign-in page
+    before the app says whether an address exists.
+15. Before Google's page, the person is always asked which Google account
+    to use, so someone refused with a private address can pick the campus
+    one.
+16. A press of "Masuk dengan Google" must be finished within 10 minutes.
+    After that the person returns to the sign-in page with "Masuk dengan
+    Google gagal. Coba lagi."
+17. "Last used" of a session is written at most once every 5 minutes, so
+    the 8 hours may count from up to 5 minutes before the last page.
+    Sessions that have expired are cleared away when someone signs in.
+18. "Keluar" signs out the browser it is pressed in. The same person's
+    sessions in other browsers stay open until they expire.
+19. Pressing "Keluar" or picking an account in Ganti peran writes a
+    sign-out line only when a Google session really ended.
+20. Whether an address is already used by an account is decided by the
+    database alone, so two saves at the same moment cannot both pass.
+21. The sentence "Login belum aktif" is taken off the Ganti peran page,
+    because it is no longer true once the settings are filled.
+22. Where Ganti peran is off, its page sends someone who is not signed in
+    to the sign-in page, and stays "not found" for someone signed in.
 
 ## Steps
 
@@ -172,6 +195,6 @@ change any of these.
 - [x] 4. Refusal messages and the sign-in log.
 - [x] 5. Pengguna dan peran accepts campus addresses only, once the
   ending is set.
-- [ ] 6. Where Ganti peran is off, pages need sign-in and the app refuses
+- [x] 6. Where Ganti peran is off, pages need sign-in and the app refuses
   to start without its settings; where it is on, both ways work. The
   hosting notes say what the owner fills in.
