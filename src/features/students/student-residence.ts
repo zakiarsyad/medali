@@ -24,11 +24,6 @@ export interface StudentResidence {
  */
 const DORMS_WITH_ROOM_SHOWN: readonly DormId[] = ["dana_rakca", "cipta_bakti"];
 
-function showsRoom(account: AccountForAccess, dorm: DormId): boolean {
-  if (!may(account.roles, "view_student_room")) return false;
-  return DORMS_WITH_ROOM_SHOWN.includes(dorm);
-}
-
 async function readResidentRoom(
   db: Database,
   studentId: string,
@@ -41,19 +36,44 @@ async function readResidentRoom(
 type StudentToPlace = ResidentFacts & { id: string; cohortYear: number };
 
 /**
- * Where a student lives in the running academic period, for the account
- * that asks. Null for a student who lives in no dorm. While no period
- * runs no semester is known, as everywhere the resident rule is read.
+ * Where a student lives in the running academic period. Null for a student
+ * who lives in no dorm. While no period runs no semester is known, as
+ * everywhere the resident rule is read.
  */
-export async function readStudentResidence(
+async function readResidence(
+  db: Database,
+  student: StudentToPlace,
+  period: RunningPeriod,
+  mayBeShownRoom: boolean,
+): Promise<StudentResidence | null> {
+  const semester = period ? studentSemester(student.cohortYear, period) : null;
+  const dorm = dormOf(student, semester);
+  if (dorm === null) return null;
+  const showsRoom = mayBeShownRoom && DORMS_WITH_ROOM_SHOWN.includes(dorm);
+  if (!showsRoom) return { dorm, room: null };
+  return { dorm, room: await readResidentRoom(db, student.id, dorm) };
+}
+
+/** Where a student lives, as far as the account that asks is shown. */
+export function readStudentResidence(
   db: Database,
   account: AccountForAccess,
   student: StudentToPlace,
   period: RunningPeriod,
 ): Promise<StudentResidence | null> {
-  const semester = period ? studentSemester(student.cohortYear, period) : null;
-  const dorm = dormOf(student, semester);
-  if (dorm === null) return null;
-  if (!showsRoom(account, dorm)) return { dorm, room: null };
-  return { dorm, room: await readResidentRoom(db, student.id, dorm) };
+  const mayBeShownRoom = may(account.roles, "view_student_room");
+  return readResidence(db, student, period, mayBeShownRoom);
+}
+
+/**
+ * Where a student lives, with their room. It does not ask who is reading:
+ * call it only for the student record of the account itself. The right to
+ * see the floor and the room is about other students, not one's own.
+ */
+export function readOwnResidence(
+  db: Database,
+  student: StudentToPlace,
+  period: RunningPeriod,
+): Promise<StudentResidence | null> {
+  return readResidence(db, student, period, true);
 }

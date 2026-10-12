@@ -29,6 +29,27 @@ export interface StudentMentorGroup extends GroupCodeParts {
 }
 
 /**
+ * What the Pengasuh line says of a group. The id and the program studi are
+ * left out: they only serve the link to the group's page.
+ */
+export type ShownMentorGroup = Omit<
+  StudentMentorGroup,
+  "id" | "studyProgramId"
+>;
+
+/** A group with only what the Pengasuh line says of it. */
+export function shownPartOf(group: StudentMentorGroup): ShownMentorGroup {
+  return {
+    cohortYear: group.cohortYear,
+    entryPath: group.entryPath,
+    number: group.number,
+    programCode: group.programCode,
+    mentor: group.mentor,
+    earlierMentors: group.earlierMentors,
+  };
+}
+
+/**
  * The address of the page of a student's group, or null for an account
  * that may not open it. The group is then named without a link.
  */
