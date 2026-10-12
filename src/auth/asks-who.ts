@@ -11,15 +11,22 @@ const TOP_LEVEL_FUNCTION =
   /^(export )?(default )?(?:async )?function (\w+)\([\s\S]*?^\}$/gm;
 const EXPORTED_FUNCTION = /^export (?:default )?(?:async )?function (\w+)\(/gm;
 const SIGNATURE_END = /^\S.*\{$/;
-const EXPORT = /^export .*$/gm;
+// Also an export that does not start its line, as one after a note does:
+// it is found here and read nowhere, so it counts as unreadable.
+const EXPORT = /^[ \t]*export\b.*$/gm;
 /** A function, a type, or a plain value such as a text or a number. */
 const READABLE_EXPORT =
   /^export (?:(?:default )?(?:async )?function \w+\(|interface |type |const \w+ = (?:"[^"]*"|\d+|true|false);$)/;
 const DIRECTIVE = /^\s*["']use server["'];?\s*$/;
-const ADDRESS_READ = /await (?:props|context)\.(?:params|searchParams)\b/g;
+const READS_OWN_ADDRESS =
+  /^const (?:\w+|\{[^}]*\}) = await (?:props|context)\.(?:params|searchParams);$/;
+const OPENS_PAGE =
+  /^(?:const (?:\w+|\{[^}]*\}) = )?await (openPage\([^()]*\));$/;
+const ASKS_ACCOUNT = /^const \w+ = await currentAccount\(\);$/;
 const ASKS_FIRST = /^(?:const \w+ = )?await (\w+)\(\);$/;
 const ASKS_AND_REFUSES =
   /^const account = await currentAccount\(\); if \(!account \|\| !may\(account\.roles, "\w+"\)\) forbidden\(\); return account;$/;
+const GROUP_FOLDER = /\([^/]+\)\//g;
 
 interface TopLevelFunction {
   name: string;
@@ -59,6 +66,14 @@ function topLevelFunctions(source: string): TopLevelFunction[] {
   return found;
 }
 
+/** The lines inside one function of a file, without notes. */
+export function linesOf(source: string, functionName: string): string[] {
+  const named = topLevelFunctions(source).find(
+    (each) => each.name === functionName,
+  );
+  return named?.body ?? [];
+}
+
 /** The functions a file hands out, by name. */
 export function exportedFunctionNames(source: string): string[] {
   const names: string[] = [];
@@ -68,30 +83,36 @@ export function exportedFunctionNames(source: string): string[] {
   return names;
 }
 
-/** Whether a file takes a thing from the file that defines it. */
+/**
+ * Whether a file takes a thing from the file that defines it, under its
+ * own name, and from nowhere else.
+ */
 function takes(source: string, name: string, from: string): boolean {
   const imports = new RegExp(
-    `import \\{[^}]*(?<!\\bas )\\b${name}\\b[^}]*\\} from "${from}";`,
+    `import \\{[^}]*\\b${name}\\b[^}]*\\} from "([^"]+)";`,
+    "g",
   );
-  return imports.test(withoutNotes(source));
+  const renamed = new RegExp(`\\b${name} as\\b|\\bas ${name}\\b`);
+  const found = [...withoutNotes(source).matchAll(imports)];
+  const [only] = found;
+  if (found.length !== 1 || only === undefined) return false;
+  return only[1] === from && !renamed.test(only[0]);
 }
 
 /**
- * Whether the first thing a function waits for is the given call. Its
- * own address is all it may read before that.
+ * The exported functions of a file whose first line does not ask. Its
+ * own address is all a function may read before that line.
  */
-function waitsFirstFor(body: string[], call: string): boolean {
-  const firstWait = body
-    .map((line) => line.replace(ADDRESS_READ, ""))
-    .find((line) => line.includes("await "));
-  return firstWait?.includes(`await ${call}`) ?? false;
-}
-
-/** The exported functions of a file that do not start with the call. */
-function notStartingWith(source: string, call: string): string[] {
-  const read = topLevelFunctions(source).filter((each) => each.isExported);
-  const asking = read
-    .filter((each) => waitsFirstFor(each.body, call))
+function exportedNotAsking(
+  source: string,
+  asks: (firstLine: string) => boolean,
+): string[] {
+  const asking = topLevelFunctions(source)
+    .filter((each) => each.isExported)
+    .filter((each) => {
+      const first = each.body.find((line) => !READS_OWN_ADDRESS.test(line));
+      return asks(first ?? "");
+    })
     .map((each) => each.name);
   return exportedFunctionNames(source).filter((name) => !asking.includes(name));
 }
@@ -105,21 +126,43 @@ export function unreadableExports(source: string): string[] {
   return exports.filter((line) => !READABLE_EXPORT.test(line));
 }
 
+/** The address of a screen file: "asrama/kakak", or "[page]/[tab]". */
+export function addressOfScreen(path: string): string {
+  return path
+    .replace(/^src\/app\//, "")
+    .replace(GROUP_FOLDER, "")
+    .replace(/\/?page\.tsx$/, "");
+}
+
+/** The call that opens the page at an address, such as "asrama/kakak". */
+function callThatOpens(address: string): string {
+  const parts = address.split("/").map((part) => `"${part}"`);
+  return `openPage(${parts.join(", ")})`;
+}
+
 /**
- * What is wrong with a screen, or null. A screen goes through
- * `openPage`, the one place that checks the account and the page,
- * before it reads anything but its own address.
+ * What is wrong with the screen at an address, or null. A screen goes
+ * through `openPage`, the one place that checks the account and the
+ * page, before it reads anything but its own address. A screen at a
+ * fixed address opens the page of that address and no other; one that
+ * takes its page from the address, such as "[page]/[tab]", opens what
+ * it was given.
  */
-export function screenFault(source: string): string | null {
+export function screenFault(source: string, address: string): string | null {
   if (!takes(source, "openPage", "@/auth/open-page")) {
     return "does not go through openPage, which checks the account and the page";
   }
   if (!topLevelFunctions(source).some((each) => each.isDefault)) {
     return "holds no screen that can be read here";
   }
-  const notAsking = notStartingWith(source, "openPage(");
+  const takesPageFromAddress = address.includes("[");
+  const notAsking = exportedNotAsking(source, (firstLine) => {
+    const opened = OPENS_PAGE.exec(firstLine)?.[1];
+    if (opened === undefined) return false;
+    return takesPageFromAddress || opened === callThatOpens(address);
+  });
   if (notAsking.length > 0) {
-    return `${notAsking.join(", ")} reads something before openPage has checked the account and the page`;
+    return `${notAsking.join(", ")} does not start with openPage for its own address, which checks the account and the page`;
   }
   return null;
 }
@@ -136,9 +179,11 @@ export function answerFault(source: string): string | null {
   if (exportedFunctionNames(source).length === 0) {
     return "holds no answer that can be read here";
   }
-  const notAsking = notStartingWith(source, "currentAccount()");
+  const notAsking = exportedNotAsking(source, (firstLine) =>
+    ASKS_ACCOUNT.test(firstLine),
+  );
   if (notAsking.length > 0) {
-    return `${notAsking.join(", ")} reads something before it asks who is using it`;
+    return `${notAsking.join(", ")} does not start by asking who is using it`;
   }
   return null;
 }

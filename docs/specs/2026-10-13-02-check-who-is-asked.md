@@ -74,16 +74,26 @@ Decided while building, because the issue did not say:
    among the screens fails the check until it is named in the list
    with a reason.
 4. A screen or an address may read its own address before it asks who
-   is using it. It may read nothing else first.
+   is using it. It may read nothing else first. A screen at a fixed
+   address must ask for the page of that same address, so a screen
+   copied from another one cannot keep asking for the other page.
 5. An action counts as asking only when the first thing it does is to
    ask whether the account may do a named action, and to refuse when
    there is no account or the account may not. An action written
    inside another file, where the check cannot see it, fails the
    check.
 6. "Ganti peran" is in the list with its screen and its action. The
-   check also confirms that both ask whether "Ganti peran" is on.
+   check also confirms that the action refuses first where "Ganti
+   peran" is off, and that the screen is not found there before it
+   reads the accounts.
 7. Each name in the list must still exist. A name left behind after
    its screen or action is gone fails the check.
+8. The check reads the kinds of file the app is written in today. A
+   screen, an address or an action written in another kind of file, or
+   in a folder the check does not read, fails the check.
+9. For an address the server answers itself, the check confirms that
+   it asks who is using it first. Whether it then refuses is left to
+   each area's own checks, as it is today for the file download.
 
 ## Steps
 

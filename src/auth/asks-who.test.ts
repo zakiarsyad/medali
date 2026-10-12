@@ -1,12 +1,14 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { sourceFilesEndingWith } from "@/ui/source-files";
 import {
   actionsNotAsking,
+  addressOfScreen,
   answerFault,
   exportedFunctionNames,
   holdsActionInside,
   isActionFile,
+  linesOf,
   screenFault,
   unreadableExports,
 } from "./asks-who";
@@ -41,12 +43,6 @@ const NEEDS_NO_SIGN_IN: Record<string, string> = {
   "src/app/(app)/layout.tsx":
     "The frame with the menu, part of every screen: it shows the menu to a signed-in account and nothing to anyone else.",
 };
-
-/** Of the list, what must ask whether "Ganti peran" is on. */
-const ONLY_WHERE_GANTI_PERAN_IS_ON = [
-  "src/app/(app)/ganti-peran/page.tsx",
-  "src/auth/switch-account.ts switchAccount",
-];
 
 function needsNoSignIn(name: string): boolean {
   return name in NEEDS_NO_SIGN_IN;
@@ -132,9 +128,55 @@ export default async function RowsPage() {
 }
 `;
 
+const MADE_UP_SCREEN_THAT_ASKS_ONLY_SOMETIMES = `
+import { openPage } from "@/auth/open-page";
+import { database } from "@/db/database";
+import { readRows } from "@/features/rows/read-rows";
+
+export default async function RowsPage(props: PageProps<"/[page]">) {
+  const { page } = await props.params;
+  if (page !== "publik") await openPage(page);
+  return <RowsScreen rows={await readRows(database())} />;
+}
+`;
+
+const MADE_UP_SCREEN_AT_A_FIXED_ADDRESS = `
+import { openPage } from "@/auth/open-page";
+
+export default async function RowsPage() {
+  const opened = await openPage("pengaturan", "baris");
+  return <RowsScreen account={opened.account} />;
+}
+`;
+
+const MADE_UP_SCREEN_WITH_OPEN_PAGE_RENAMED = `
+import { openPage as checked } from "@/auth/open-page";
+import { openPage } from "@/features/rows/open-page";
+
+export default async function RowsPage() {
+  await openPage("baris");
+  return <RowsScreen />;
+}
+`;
+
+const MADE_UP_SCREEN_WITH_A_TITLE_AFTER_A_NOTE = `
+import { openPage } from "@/auth/open-page";
+import { database } from "@/db/database";
+import { readRowName } from "@/features/rows/read-rows";
+
+/* the title */ export async function generateMetadata() {
+  return { title: await readRowName(database()) };
+}
+
+export default async function RowsPage() {
+  await openPage("baris");
+  return <RowsScreen />;
+}
+`;
+
 describe("screenFault", () => {
   it("finds nothing in a screen that goes through openPage first", () => {
-    expect(screenFault(MADE_UP_SCREEN_THAT_ASKS)).toBeNull();
+    expect(screenFault(MADE_UP_SCREEN_THAT_ASKS, "[page]/[tab]")).toBeNull();
   });
 
   it.each([
@@ -142,16 +184,45 @@ describe("screenFault", () => {
     ["that reads before it asks", MADE_UP_SCREEN_THAT_ASKS_TOO_LATE],
     ["that asks a place of its own", MADE_UP_SCREEN_WITH_ITS_OWN_GATE],
     ["whose title does not ask", MADE_UP_SCREEN_WITH_A_TITLE_THAT_DOES_NOT_ASK],
+    [
+      "that takes openPage under another name",
+      MADE_UP_SCREEN_WITH_OPEN_PAGE_RENAMED,
+    ],
   ])("finds a made-up screen %s", (_kind, source) => {
-    expect(screenFault(source)).not.toBeNull();
+    expect(screenFault(source, "baris")).not.toBeNull();
+  });
+
+  it("finds a made-up screen that asks only sometimes", () => {
+    const source = MADE_UP_SCREEN_THAT_ASKS_ONLY_SOMETIMES;
+    expect(screenFault(source, "[page]")).not.toBeNull();
+  });
+
+  it("finds a made-up screen that opens the page of another address", () => {
+    const source = MADE_UP_SCREEN_AT_A_FIXED_ADDRESS;
+    expect(screenFault(source, "pengaturan/baris")).toBeNull();
+    expect(screenFault(source, "pengaturan/pengguna")).not.toBeNull();
   });
 
   it("does not count openPage in a note", () => {
-    const source = MADE_UP_SCREEN_THAT_ASKS_TOO_LATE.replace(
-      "const rows",
-      "// await openPage()\n  const rows",
+    const source = MADE_UP_SCREEN_THAT_DOES_NOT_ASK.replace(
+      "return <RowsScreen",
+      'await openPage("baris"); // await openPage("baris");\n  return <RowsScreen',
     );
-    expect(screenFault(source)).not.toBeNull();
+    expect(screenFault(source, "baris")).not.toBeNull();
+  });
+
+  it("takes an export after a note as one it cannot read", () => {
+    const source = MADE_UP_SCREEN_WITH_A_TITLE_AFTER_A_NOTE;
+    expect(unreadableExports(source)).toHaveLength(1);
+  });
+});
+
+describe("addressOfScreen", () => {
+  it("leaves out the folders that only group screens", () => {
+    expect(addressOfScreen("src/app/(app)/asrama/kakak/page.tsx")).toBe(
+      "asrama/kakak",
+    );
+    expect(addressOfScreen("src/app/(app)/[page]/page.tsx")).toBe("[page]");
   });
 });
 
@@ -327,7 +398,7 @@ describe("every screen", () => {
   it.each(screens.filter((path) => !needsNoSignIn(path)))(
     "%s goes through the place that checks the account and the page",
     (path) => {
-      expect(screenFault(read(path))).toBeNull();
+      expect(screenFault(read(path), addressOfScreen(path))).toBeNull();
       expect(unreadableExports(read(path))).toEqual([]);
     },
   );
@@ -390,12 +461,43 @@ describe("what needs no sign-in", () => {
     }
   });
 
-  it.each(ONLY_WHERE_GANTI_PERAN_IS_ON)(
-    '%s asks whether "Ganti peran" is on',
-    (name) => {
-      const [path = ""] = name.split(" ");
-      expect(needsNoSignIn(name)).toBe(true);
-      expect(read(path)).toContain("accountSwitcherOn(currentStage())");
+  it('refuses the pick on "Ganti peran" first where it is off', () => {
+    const lines = linesOf(read("src/auth/switch-account.ts"), "switchAccount");
+    expect(lines[0]).toBe(
+      "if (!accountSwitcherOn(currentStage())) forbidden();",
+    );
+  });
+
+  it('does not find "Ganti peran" where it is off, before the accounts are read', () => {
+    const lines = linesOf(
+      read("src/app/(app)/ganti-peran/page.tsx"),
+      "SwitchAccountPage",
+    );
+    const readsAccounts = lines.findIndex((line) => line.includes("database("));
+    const before = lines.slice(0, readsAccounts);
+    expect(readsAccounts).toBeGreaterThan(0);
+    expect(before).toContain(
+      "const switcherOn = accountSwitcherOn(currentStage());",
+    );
+    expect(before).toContain("if (!switcherOn) notFound();");
+  });
+});
+
+/** The other endings the app would also serve, which are not read here. */
+const UNREAD_ENDING = /\.(?:js|jsx|mjs|cjs|mts|cts)$/;
+
+describe("where screens, addresses and actions are written", () => {
+  it("is only in files the check reads", () => {
+    const unread = sourceFilesEndingWith("").filter((path) =>
+      UNREAD_ENDING.test(path),
+    );
+    expect(unread).toEqual([]);
+  });
+
+  it.each(["app", "pages", "src/pages"])(
+    "is never the folder %s, which the check does not read",
+    (folder) => {
+      expect(existsSync(folder)).toBe(false);
     },
   );
 });
