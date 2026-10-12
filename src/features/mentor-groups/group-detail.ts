@@ -75,7 +75,7 @@ const MENTOR_LINE = {
   endReason: mentorGroupMentors.endReason,
 };
 
-const MEMBER = {
+export const MEMBER = {
   id: students.id,
   nim: students.nim,
   name: students.name,
