@@ -1,25 +1,30 @@
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { CATEGORIES, STATUS_LABELS } from "./labels";
+import type { OwnProfile } from "./own-profile";
 import { ownProfileLine } from "./own-profile-words";
+import { residenceWords } from "./residence-words";
 import { type RunningPeriod, semesterNow } from "./semester-now";
 import {
   CategoryTags,
+  Fact,
   MainFacts,
   OriginAgencyFact,
 } from "./student-fact-parts";
-import type { StudentFacts } from "./student-facts";
 import styles from "./student-list.module.css";
+import { StudentMentorFact } from "./student-mentor-fact";
 
 /**
  * Profil saya: a student's own record, to read only. It holds nothing
- * that changes the record, which only the campus corrects.
+ * that changes the record, which only the campus corrects. The pengasuh
+ * and the group are named without a link: the Pengasuh menu is not a
+ * student's to open.
  */
 export function OwnProfileScreen({
   student,
   period,
 }: {
-  student: StudentFacts;
+  student: OwnProfile;
   /** The academic period that runs now, which says the semester. */
   period: RunningPeriod;
 }) {
@@ -39,7 +44,9 @@ export function OwnProfileScreen({
         )}
         <dl className={styles.facts}>
           <MainFacts student={student} semester={semester} />
+          <Fact title="Asrama">{residenceWords(student.residence)}</Fact>
           <OriginAgencyFact student={student} />
+          <StudentMentorFact group={student.mentorGroup} />
         </dl>
       </section>
       <p className={styles.source}>

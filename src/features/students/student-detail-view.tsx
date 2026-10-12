@@ -11,7 +11,18 @@ import {
 } from "./student-fact-parts";
 import styles from "./student-list.module.css";
 import { StudentMentorFact } from "./student-mentor-fact";
-import type { GroupAddressOf } from "./student-mentor-group";
+import type {
+  GroupAddressOf,
+  StudentMentorGroup,
+} from "./student-mentor-group";
+
+function addressOfGroup(
+  group: StudentMentorGroup | null,
+  groupAddressOf: GroupAddressOf,
+): string | null {
+  if (group === null) return null;
+  return groupAddressOf(group);
+}
 
 /** What the detail of one student shows. */
 export function StudentDetailView({
@@ -40,7 +51,7 @@ export function StudentDetailView({
         <OriginAgencyFact student={student} />
         <StudentMentorFact
           group={student.mentorGroup}
-          groupAddressOf={groupAddressOf}
+          address={addressOfGroup(student.mentorGroup, groupAddressOf)}
         />
       </dl>
     </>

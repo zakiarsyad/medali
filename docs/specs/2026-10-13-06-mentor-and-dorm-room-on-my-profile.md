@@ -76,5 +76,5 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The server adds the student's own mentor, group and room to
   their profile, limited to the fields shown, with its checks.
-- [ ] 2. The first card shows the Pengasuh and Asrama lines, with the
+- [x] 2. The first card shows the Pengasuh and Asrama lines, with the
   empty cases.
