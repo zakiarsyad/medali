@@ -1,13 +1,15 @@
 import { campusDay } from "@/academic-periods/campus-day";
-import { addStudent } from "@/features/students/add-student";
+import { addStudent, addStudents } from "@/features/students/add-student";
 import type { Database } from "./connect";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
   SAMPLE_STUDENTS,
   type SampleAccount,
+  type SamplePeriod,
   samplePeriods,
 } from "./sample-data";
+import { sampleFirstYears } from "./sample-dorms";
 import {
   academicPeriodChanges,
   academicPeriods,
@@ -17,6 +19,7 @@ import {
   roleChanges,
   studyPrograms,
 } from "./schema";
+import { addSampleDorms } from "./seed-dorms";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
 
@@ -83,11 +86,12 @@ async function hasAccounts(db: Database): Promise<boolean> {
   return found !== undefined;
 }
 
-async function addSamplePeriods(db: Database, by: string): Promise<void> {
-  const added = await db
-    .insert(academicPeriods)
-    .values(samplePeriods(campusDay()))
-    .returning();
+async function addSamplePeriods(
+  db: Database,
+  periods: SamplePeriod[],
+  by: string,
+): Promise<void> {
+  const added = await db.insert(academicPeriods).values(periods).returning();
   await db.insert(academicPeriodChanges).values(
     added.map((period) => ({
       periodId: period.id,
@@ -99,8 +103,31 @@ async function addSamplePeriods(db: Database, by: string): Promise<void> {
   );
 }
 
+/** Adds the students in their first year of a period, who fill the dorms. */
+async function addSampleFirstYears(
+  db: Database,
+  period: SamplePeriod,
+  programIds: Map<string, number>,
+  by: string,
+): Promise<void> {
+  const firstYears = sampleFirstYears(period.startYear);
+  const added = await addStudents(
+    db,
+    firstYears.map(({ studyProgram, ...student }) => ({
+      ...student,
+      studyProgramId: programId(programIds, studyProgram),
+    })),
+    by,
+  );
+  if (added.length !== firstYears.length) {
+    throw new Error("A sample NIM of the first year is used twice.");
+  }
+}
+
 /**
- * Fills a freshly built database with the sample data. Every role given is
+ * Fills a freshly built database with the sample data, among it the
+ * students in their first year of the running period and the dorm rooms
+ * with some of the residents in them. Every role given is
  * logged as the work of the first sample account, the sample Kepala Unit,
  * who is logged as adding themselves.
  */
@@ -140,6 +167,11 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       .values(
         SAMPLE_PPKS_ACTIVITIES.map((activity) => ({ ...activity, ...changed })),
       );
-    await addSamplePeriods(tx, sampleActor);
+    const periods = samplePeriods(campusDay());
+    const [running] = periods;
+    if (!running) throw new Error("There are no sample periods.");
+    await addSamplePeriods(tx, periods, sampleActor);
+    await addSampleFirstYears(tx, running, programIds, sampleActor);
+    await addSampleDorms(tx, running);
   });
 }

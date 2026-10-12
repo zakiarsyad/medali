@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   date,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -16,6 +17,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
+import { DORM_IDS } from "@/features/dorm/dorms";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -42,6 +44,8 @@ export const academicPeriodChangeAction = pgEnum(
   "academic_period_change_action",
   ["added", "dates_changed"],
 );
+
+export const dorm = pgEnum("dorm", DORM_IDS);
 
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
@@ -292,3 +296,43 @@ export const academicPeriodChanges = pgTable("academic_period_changes", {
   startsOnAfter: date().notNull(),
   endsOnAfter: date().notNull(),
 });
+
+/**
+ * One room of a dorm. Its number is used once in its dorm, its floor is 1
+ * to 8 and it holds 1 to 12 people.
+ */
+export const dormRooms = pgTable(
+  "dorm_rooms",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    dorm: dorm().notNull(),
+    floor: smallint().notNull(),
+    number: text().notNull(),
+    capacity: smallint().notNull(),
+  },
+  (table) => [
+    unique("dorm_rooms_number_in_dorm").on(table.dorm, table.number),
+    check("dorm_rooms_floor_in_range", sql`${table.floor} between 1 and 8`),
+    check(
+      "dorm_rooms_capacity_in_range",
+      sql`${table.capacity} between 1 and 12`,
+    ),
+  ],
+);
+
+/**
+ * The place a resident has in a room. The student is the key, so a
+ * resident is in one room at most.
+ */
+export const dormRoomPlaces = pgTable(
+  "dorm_room_places",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    roomId: uuid()
+      .notNull()
+      .references(() => dormRooms.id),
+  },
+  (table) => [index("dorm_room_places_room").on(table.roomId)],
+);

@@ -1,15 +1,21 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
+import { DORM_IDS } from "@/features/dorm/dorms";
+import { readStudentDorm } from "@/features/dorm/student-dorm";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
   SAMPLE_STUDENTS,
+  samplePeriods,
 } from "./sample-data";
+import { SAMPLE_ROOMS, sampleFirstYears } from "./sample-dorms";
 import {
   academicPeriodChanges,
   academicPeriods,
   accounts,
+  dormRoomPlaces,
+  dormRooms,
   ppksActivities,
   students,
 } from "./schema";
@@ -18,15 +24,59 @@ import { withTestDatabase } from "./test-database";
 
 const inTestDatabase = withTestDatabase();
 
+function firstYearsOfToday() {
+  const [running] = samplePeriods(campusDay());
+  if (!running) throw new Error("There are no sample periods.");
+  return sampleFirstYears(running.startYear);
+}
+
+const PLACED_IN_A_DORM = SAMPLE_ROOMS.reduce(
+  (sum, room) => sum + room.placed,
+  0,
+);
+
 describe("fillWithSampleData", () => {
-  it("adds every sample student", async () => {
+  it("adds every sample student, and those in their first year today", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
       const added = await db.select({ nim: students.nim }).from(students);
+      const sample = [...SAMPLE_STUDENTS, ...firstYearsOfToday()];
       expect(added.map((student) => student.nim).sort()).toEqual(
-        SAMPLE_STUDENTS.map((student) => student.nim).sort(),
+        sample.map((student) => student.nim).sort(),
       );
+    });
+  });
+
+  it("gives each of the four dorms rooms on a few floors", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const rooms = await db.select().from(dormRooms);
+      for (const dorm of DORM_IDS) {
+        const inDorm = rooms.filter((room) => room.dorm === dorm);
+        expect(inDorm).toHaveLength(SAMPLE_ROOMS.length);
+        const floors = new Set(inDorm.map((room) => room.floor));
+        expect(floors.size).toBeGreaterThanOrEqual(3);
+      }
+    });
+  });
+
+  it("places some residents of each dorm, in a room of their own dorm", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const placed = await db
+        .select({ studentId: dormRoomPlaces.studentId, dorm: dormRooms.dorm })
+        .from(dormRoomPlaces)
+        .innerJoin(dormRooms, eq(dormRooms.id, dormRoomPlaces.roomId));
+      for (const dorm of DORM_IDS) {
+        const inDorm = placed.filter((place) => place.dorm === dorm);
+        expect(inDorm).toHaveLength(PLACED_IN_A_DORM);
+        for (const place of inDorm) {
+          expect(await readStudentDorm(db, place.studentId)).toBe(dorm);
+        }
+      }
     });
   });
 
