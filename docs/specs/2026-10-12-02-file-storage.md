@@ -165,7 +165,7 @@ change any of these.
 - [x] 3. "Simpan … baris" keeps the uploaded CSV with the saved batch.
 - [x] 4. The file name under "Diinput" downloads the original file, and
   stays plain text where no file was kept.
-- [ ] 5. Previews read the file storage from settings, keep no file while
+- [x] 5. Previews read the file storage from settings, keep no file while
   they are empty, keep PR previews apart from `main` and empty their
   place on each PR deploy, and the hosting notes say which settings the
   owner fills in.

@@ -1,7 +1,13 @@
+import type { Database } from "@/db/connect";
 import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
-import type { BatchFile } from "./add-student-batch";
+import type { AddedStudent } from "./add-student";
+import {
+  addStudentBatch,
+  type BatchFile,
+  type NewBatch,
+} from "./add-student-batch";
 import type { UploadedFile } from "./student-file-check";
 import { FAULT_MESSAGES, STUDENT_FILE_RULE, shortLine } from "./uploaded-file";
 
@@ -19,7 +25,7 @@ export const FILE_NOT_KEPT = {
  * the person is told to try again, and the cause is logged, which names
  * no person and no key.
  */
-export async function keepStudentFile(
+async function keepStudentFile(
   store: FileStore,
   file: UploadedFile,
 ): Promise<Parsed<BatchFile>> {
@@ -46,7 +52,7 @@ export async function keepStudentFile(
  * the save is not made to fail for it: the file stays, unreachable by
  * anyone, and the log says which one.
  */
-export async function dropStudentFile(
+async function dropStudentFile(
   store: FileStore,
   objectKey: string,
 ): Promise<void> {
@@ -55,4 +61,30 @@ export async function dropStudentFile(
   } catch (error) {
     console.error(`The kept file ${objectKey} has no batch.`, error);
   }
+}
+
+/**
+ * Keeps a student file and saves its students, together or not at all.
+ * The file goes to the file storage first, so a storage that cannot be
+ * reached saves no student. Then a kept file always has its batch: when
+ * the save fails, or finds no student to add, the file is removed again.
+ */
+export async function addStudentsWithFile(
+  db: Database,
+  store: FileStore,
+  file: UploadedFile,
+  batch: Omit<NewBatch, "file">,
+): Promise<Parsed<AddedStudent[]>> {
+  const kept = await keepStudentFile(store, file);
+  if (!kept.ok) return kept;
+
+  let added: AddedStudent[] = [];
+  try {
+    added = await addStudentBatch(db, { ...batch, file: kept.value });
+  } finally {
+    if (added.length === 0) {
+      await dropStudentFile(store, kept.value.objectKey);
+    }
+  }
+  return { ok: true, value: added };
 }

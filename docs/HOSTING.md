@@ -59,7 +59,7 @@ Their keys are kept by Vercel. They are never written in the repo.
 ### What a deploy does to its database
 
 `vercel.json` sets the build command: first the database step, then the
-app build. Vercel tells the build which environment it is in, so the step
+file storage step, then the app build. Vercel tells the build which environment it is in, so the step
 knows which database it has:
 
 - **A PR deploy** (preview environment) empties `medali-preview`, adds the
@@ -95,3 +95,51 @@ Someone recreating the project, or checking it, makes sure that:
   preview deploy. All PR previews share `medali-preview`.
 - The project has no build command set in the dashboard that overrides
   `vercel.json`.
+
+## File storage
+
+The previews keep uploaded files at a service that works like MinIO. No
+service is chosen yet. Until the owner opens an account at one and fills
+in the settings below, a preview keeps no file: students from a file are
+saved as before, and the file name under "Diinput" stays plain text.
+
+### Set only in the Vercel dashboard
+
+Four settings, under the project's environment variables. They must be
+there at build time too, which is the default.
+
+- `FILE_STORAGE_URL`: the address of the service.
+- `FILE_STORAGE_BUCKET`: the name of the place for files there. It is made
+  by hand at the service, once; the app does not make it.
+- `FILE_STORAGE_ACCESS_KEY` and `FILE_STORAGE_SECRET_KEY`: the two keys of
+  an account that may read, write, list and remove files in that place.
+
+Fill them in for the preview environment and for the production
+environment. Both may hold the same four values: the app keeps each
+kind of preview in its own part of the place. The keys are kept by
+Vercel. They are never written in the repo.
+
+All four are filled, or all four are left empty. With only some filled,
+the build stops and names the missing one.
+
+### Where each preview keeps its files
+
+- **PR previews** keep theirs in the part named `pr-previews`, shared by
+  all PR previews, like their database.
+- **The preview of `main`** keeps its in the part named `main-preview`.
+
+The app picks the part from the environment Vercel says it is in, the
+same way the database step does. A preview cannot read or remove a file
+of the other part.
+
+### What a deploy does to the files
+
+- **A PR deploy** removes every file in `pr-previews`, right after it
+  has started the PR preview database over. Sample files only are ever
+  there.
+- **A `main` deploy** removes nothing.
+
+The step that empties refuses any part other than `pr-previews`, and a
+production deploy that does not come from `main` is refused before
+anything is touched. While the four settings are empty the step does
+nothing and says so in the build log.

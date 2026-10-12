@@ -163,6 +163,23 @@ describe("openStudentFile", () => {
     });
   });
 
+  it("finds nothing where file keeping is off, and still refuses a role without the right", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKeptFile(db, memoryStore());
+      const head = await addTestActor(db, "Pembuka Uji", ["head_of_unit"]);
+      const mentor = await addTestActor(db, "Pengasuh Uji", ["mentor"]);
+
+      expect(await openStudentFile(db, null, head, id)).toEqual({
+        ok: false,
+        refusal: "not-found",
+      });
+      expect(await openStudentFile(db, null, mentor, id)).toEqual({
+        ok: false,
+        refusal: "not-allowed",
+      });
+    });
+  });
+
   it("refuses a kept file without its batch: the database holds them together", async () => {
     await inTestDatabase(async (db) => {
       const keeper = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);

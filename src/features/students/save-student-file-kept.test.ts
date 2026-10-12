@@ -5,6 +5,7 @@ import { studentBatches, studentBatchFiles, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { FileStore } from "@/files/file-store";
 import { memoryStore, unreachableStore } from "@/files/memory-store";
+import { listAddedStudents } from "./added-students";
 import { saveStudentFile } from "./save-student-file";
 import type { UploadedFile } from "./student-file-check";
 import { FILE_COLUMNS } from "./student-file-columns";
@@ -237,6 +238,31 @@ describe("saveStudentFile, keeping the file", () => {
       expect(saved.ok).toBe(false);
       expect(store.files.size).toBe(0);
       expect(await db.$count(studentBatches)).toBe(0);
+    });
+  });
+});
+
+describe("saveStudentFile, where file keeping is off", () => {
+  it("saves the students as before, with no batch and no file, so the list shows no link", async () => {
+    await inTestDatabase(async (db) => {
+      const context = await contextWithProgram(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const file = csvFile("mahasiswa uji.csv", "9900001011", "9900001012");
+
+      const saved = await saveStudentFile(db, null, actor, file, context);
+
+      expect(saved.ok && saved.value.saved).toBe(2);
+      expect(await db.$count(studentBatches)).toBe(0);
+      expect(await db.$count(studentBatchFiles)).toBe(0);
+      const listed = await listAddedStudents(db, "9900001011");
+      expect(listed.students).toMatchObject([
+        {
+          nim: "9900001011",
+          inputBy: "Pegawai Uji",
+          inputSource: "upload:mahasiswa uji.csv",
+          fileId: null,
+        },
+      ]);
     });
   });
 });

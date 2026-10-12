@@ -19,6 +19,9 @@ export function memoryStore(): MemoryStore {
     async remove(key) {
       files.delete(key);
     },
+    async list(prefix) {
+      return [...files.keys()].filter((key) => key.startsWith(prefix));
+    },
   };
 }
 
@@ -27,5 +30,5 @@ export function unreachableStore(): FileStore {
   async function fail(): Promise<never> {
     throw new Error("The file storage cannot be reached.");
   }
-  return { put: fail, get: fail, remove: fail };
+  return { put: fail, get: fail, remove: fail, list: fail };
 }

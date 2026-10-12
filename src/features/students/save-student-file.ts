@@ -2,11 +2,10 @@ import { may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import type { FileStore } from "@/files/file-store";
 import type { Parsed } from "@/parsed";
-import type { AddedStudent } from "./add-student";
-import { addStudentBatch, type NewBatch } from "./add-student-batch";
+import { addStudents } from "./add-student";
 import { type FilePreview, previewOf } from "./file-preview";
 import { type Actor, NOT_ALLOWED } from "./input-student";
-import { dropStudentFile, keepStudentFile } from "./keep-student-file";
+import { addStudentsWithFile } from "./keep-student-file";
 import { uploadSource } from "./labels";
 import { skipRegistered } from "./student-file";
 import { checkStudentFile, type UploadedFile } from "./student-file-check";
@@ -38,38 +37,17 @@ export function savedMessage(fileName: string, result: SavedFile): string {
 }
 
 /**
- * Saves a batch whose file is already in the file storage. A kept file
- * always has its batch: when the save fails, or finds no student to add,
- * the file is removed again.
- */
-async function addBatchOrDropFile(
-  db: Database,
-  store: FileStore,
-  batch: NewBatch,
-): Promise<AddedStudent[]> {
-  let added: AddedStudent[] = [];
-  try {
-    added = await addStudentBatch(db, batch);
-  } finally {
-    if (added.length === 0) {
-      await dropStudentFile(store, batch.file.objectKey);
-    }
-  }
-  return added;
-}
-
-/**
  * Saves the ready rows of a sent file as students, each with an account,
  * as the form does, and keeps the file with them. The file is read and
  * checked here from the start: what the screen showed before is not
  * trusted. A student who is already there is never changed.
  *
- * The file goes to the file storage first, so a storage that cannot be
- * reached saves no student. A file with no row to save is not kept.
+ * A file with no row to save is not kept. `store` is null where file
+ * keeping is off: the students are saved all the same, without a file.
  */
 export async function saveStudentFile(
   db: Database,
-  store: FileStore,
+  store: FileStore | null,
   actor: Actor,
   file: UploadedFile,
   context: InputContext,
@@ -80,19 +58,18 @@ export async function saveStudentFile(
   const { ready } = rows.value;
   if (ready.length === 0) return NOTHING_TO_SAVE;
 
-  const kept = await keepStudentFile(store, file);
-  if (!kept.ok) return kept;
   const input = {
     inputAt: new Date(),
     inputBy: actor.id,
     inputSource: uploadSource(sourceName(file.name)),
   };
-  const added = await addBatchOrDropFile(db, store, {
-    inputAt: input.inputAt,
-    inputBy: actor.id,
-    students: ready.map(({ student }) => ({ ...student, ...input })),
-    file: kept.value,
-  });
+  const students = ready.map(({ student }) => ({ ...student, ...input }));
+  const batch = { inputAt: input.inputAt, inputBy: actor.id, students };
+  const adding = store
+    ? await addStudentsWithFile(db, store, file, batch)
+    : { ok: true as const, value: await addStudents(db, students, actor.id) };
+  if (!adding.ok) return adding;
+  const added = adding.value;
   if (added.length === 0) return NOTHING_TO_SAVE;
 
   // A NIM taken between the check and the save was left out by the database.

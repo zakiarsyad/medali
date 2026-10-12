@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { SETTING_NAMES, stageOf } from "./settings";
+import { fileStorageSettingsOf, SETTING_NAMES, stageOf } from "./settings";
 import { sourceFilesEndingWith } from "./ui/source-files";
 
 const SETTING_LINE = /^([A-Z][A-Z0-9_]*)=(.*)$/;
@@ -59,6 +59,66 @@ describe("source code", () => {
 
   it.each(code)("%s reads settings only through the settings file", (path) => {
     expect(readFileSync(path, "utf8")).not.toMatch(/process\.env\.[A-Z]/);
+  });
+});
+
+describe("fileStorageSettingsOf", () => {
+  const FILLED = {
+    FILE_STORAGE_URL: "http://localhost:9000",
+    FILE_STORAGE_BUCKET: "uji",
+    FILE_STORAGE_ACCESS_KEY: "kunci-uji",
+    FILE_STORAGE_SECRET_KEY: "rahasia-uji",
+  };
+  const STAGES = ["local", "pr-preview", "main-preview", "campus"] as const;
+  const NAMES = Object.keys(FILLED) as (keyof typeof FILLED)[];
+
+  it.each(STAGES)("reads the four settings in %s", (stage) => {
+    expect(fileStorageSettingsOf(FILLED, stage)).toEqual({
+      url: "http://localhost:9000",
+      bucket: "uji",
+      accessKey: "kunci-uji",
+      secretKey: "rahasia-uji",
+    });
+  });
+
+  it.each(["pr-preview", "main-preview"] as const)(
+    "turns file keeping off in %s while all four are empty",
+    (stage) => {
+      expect(fileStorageSettingsOf({}, stage)).toBeNull();
+      expect(
+        fileStorageSettingsOf(
+          { FILE_STORAGE_URL: "", FILE_STORAGE_BUCKET: "" },
+          stage,
+        ),
+      ).toBeNull();
+    },
+  );
+
+  it.each(["local", "campus"] as const)(
+    "names the missing setting in %s when all four are empty, as for the database",
+    (stage) => {
+      expect(() => fileStorageSettingsOf({}, stage)).toThrow(
+        "The setting FILE_STORAGE_URL is missing.",
+      );
+    },
+  );
+
+  describe.each(STAGES)("in %s, with only some filled", (stage) => {
+    it.each(NAMES)("names %s when it is the one left empty", (name) => {
+      const partly = { ...FILLED, [name]: "" };
+
+      expect(() => fileStorageSettingsOf(partly, stage)).toThrow(
+        `The setting ${name} is missing.`,
+      );
+    });
+  });
+
+  it("never writes a key in what it says is missing", () => {
+    const partly = { ...FILLED, FILE_STORAGE_BUCKET: undefined };
+
+    expect(() => fileStorageSettingsOf(partly, "pr-preview")).toThrow(
+      /^The setting FILE_STORAGE_BUCKET is missing\. Copy \.env\.example to \.env\.local and fill it in\.$/,
+    );
   });
 });
 

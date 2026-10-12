@@ -34,13 +34,14 @@ export function studentFileRefusal(actor: Actor | null): Refusal | null {
  */
 export async function openStudentFile(
   db: Database,
-  store: FileStore,
+  store: FileStore | null,
   actor: Actor | null,
   id: string,
 ): Promise<OpenedStudentFile> {
   const refusal = studentFileRefusal(actor);
   if (refusal) return refused(refusal);
-  if (!isUuid(id)) return refused("not-found");
+  // Where file keeping is off, no file was kept.
+  if (!store || !isUuid(id)) return refused("not-found");
 
   const [record] = await db
     .select({

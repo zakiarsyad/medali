@@ -14,4 +14,6 @@ export interface FileStore {
   /** The bytes kept under a key, or null when nothing is kept there. */
   get(key: string): Promise<Uint8Array | null>;
   remove(key: string): Promise<void>;
+  /** Every key that starts with the prefix. */
+  list(prefix: string): Promise<string[]>;
 }

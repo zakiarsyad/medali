@@ -49,6 +49,51 @@ function sender(settings: FileStorageSettings): Send {
   };
 }
 
+const KEY = /<Key>([^<]*)<\/Key>/g;
+const NEXT_PAGE = /<NextContinuationToken>([^<]*)<\/NextContinuationToken>/;
+
+export interface Listing {
+  keys: string[];
+  /** What to ask the next page with, or null on the last page. */
+  next: string | null;
+}
+
+/**
+ * Reads one page of the storage's list of keys. The keys the app makes
+ * hold only letters, digits, "-" and "/", so none needs decoding.
+ */
+export function readListing(xml: string): Listing {
+  const keys = [...xml.matchAll(KEY)].map((match) => match[1] ?? "");
+  return { keys, next: xml.match(NEXT_PAGE)?.[1] ?? null };
+}
+
+function listAddress(
+  settings: FileStorageSettings,
+  prefix: string,
+  page: string | null,
+): string {
+  const query = new URLSearchParams({ "list-type": "2", prefix });
+  if (page) query.set("continuation-token", page);
+  return `${objectAddress(settings)}?${query}`;
+}
+
+async function listKeys(
+  settings: FileStorageSettings,
+  send: Send,
+  prefix: string,
+): Promise<string[]> {
+  const keys: string[] = [];
+  let page: string | null = null;
+  do {
+    const response = await send("GET", listAddress(settings, prefix, page));
+    if (!response.ok) throw refused("GET", response);
+    const listing = readListing(await response.text());
+    keys.push(...listing.keys);
+    page = listing.next;
+  } while (page);
+  return keys;
+}
+
 /** Fails without the address or the answer's text: either may name a file. */
 function refused(method: string, response: Response): Error {
   return new Error(
@@ -76,6 +121,7 @@ export function objectStore(settings: FileStorageSettings): FileStore {
         throw refused("DELETE", response);
       }
     },
+    list: (prefix) => listKeys(settings, send, prefix),
   };
 }
 

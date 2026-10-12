@@ -9,7 +9,9 @@ async function prepare(): Promise<string> {
       `The place for files is made only on a local computer, not in ${stage}.`,
     );
   }
-  const made = await ensureBucket(readFileStorageSettings());
+  const settings = readFileStorageSettings();
+  if (!settings) throw new Error("The file storage settings are empty.");
+  const made = await ensureBucket(settings);
   if (made === "already-there") return "The place for files is already there.";
   return "The place for files was made.";
 }
