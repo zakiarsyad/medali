@@ -29,6 +29,23 @@ export async function addTestManager(
   return { id: account.id, roles };
 }
 
+/** A staff account as Pengguna dan peran lists it. */
+export async function addTestStaffAccount(
+  db: Database,
+  name: string,
+  roles: RoleId[],
+): Promise<string> {
+  const [account] = await db
+    .insert(accounts)
+    .values({ name })
+    .returning({ id: accounts.id });
+  if (!account) throw new Error("The account was not added.");
+  await db
+    .insert(accountRoles)
+    .values(roles.map((role) => ({ accountId: account.id, role })));
+  return account.id;
+}
+
 /**
  * Each file of checks uses a program name and NIMs of its own: the
  * database makes two checks that add the same one wait for each other.

@@ -109,6 +109,10 @@ export function withOwnTestDatabase(name: string) {
     get db(): Database {
       return connections().first.db;
     },
+    /** A second connection, for a save that must not wait for the first. */
+    get otherDb(): Database {
+      return connections().second.db;
+    },
     atOnce<Answer>(
       soonerSave: Save<Answer>,
       laterSave: Save<Answer>,
