@@ -119,6 +119,6 @@ None.
   state.
 - [x] 3. "Tambah pengurus BAM": search, pick, tick roles and save.
 - [x] 4. "Edit peran" and "Hapus", with the log lines.
-- [ ] 5. Roles stop for a student who is not Aktif or was removed, with
+- [x] 5. Roles stop for a student who is not Aktif or was removed, with
   the check.
 - [ ] 6. Double press, the phone layout and the speed check.

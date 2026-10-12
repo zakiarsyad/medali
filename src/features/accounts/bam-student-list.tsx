@@ -67,6 +67,14 @@ function BamStudentCard({
             {ROLES[role].title}
           </span>
         ))}
+        {!student.isActive && (
+          <span
+            className={panel.off}
+            title="Mahasiswa tidak lagi aktif, sehingga peran BAM-nya tidak berlaku."
+          >
+            Tidak aktif
+          </span>
+        )}
       </div>
       {isEditing ? (
         <BamEditForm student={student} back={listAddress(view)} />
