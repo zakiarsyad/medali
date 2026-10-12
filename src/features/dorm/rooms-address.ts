@@ -1,5 +1,5 @@
+import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { firstParam, type SearchParams } from "@/ui/search-params";
-import { DORM_IDS, type DormId } from "./dorms";
 import { FIRST_FLOOR, FLOORS, SEARCH_MAX_LENGTH } from "./room-limits";
 
 export const ROOMS_ADDRESS = "/asrama/kamar";

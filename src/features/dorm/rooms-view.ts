@@ -1,7 +1,7 @@
 import type { SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
+import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { hasCompanions } from "./companion-dorms";
-import { readDormCohorts } from "./dorm-cohorts";
 import { type RoomCompanions, readRoomCompanions } from "./room-companions";
 import {
   countResidents,

@@ -1,6 +1,6 @@
 import { isUuid } from "@/db/is-uuid";
+import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import type { Parsed } from "@/parsed";
-import { DORM_IDS, type DormId } from "./dorms";
 import {
   FLOORS,
   MAX_CAPACITY,

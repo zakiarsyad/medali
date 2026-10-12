@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import type { DormId } from "./dorms";
+import type { DormId } from "@/dorms/dorms";
 import type { RoomsParams } from "./rooms-address";
 import { loadRooms, type RoomsView } from "./rooms-view";
 import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";

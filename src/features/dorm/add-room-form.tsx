@@ -1,10 +1,10 @@
 "use client";
 
 import { type FormEvent, startTransition, useActionState, useRef } from "react";
+import type { DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { addRoomAction } from "./actions";
-import type { DormId } from "./dorms";
 import {
   MAX_CAPACITY,
   MIN_CAPACITY,

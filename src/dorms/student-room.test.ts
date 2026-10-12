@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { withTestDatabase } from "@/db/test-database";
-import { readStudentRoom, roomHeader } from "./student-room";
 import {
   addTestProgram,
   addTestRoom,
   addTestStudent,
   placeTestResident,
-} from "./test-records";
+} from "@/features/dorm/test-records";
+import { readStudentRoom, roomHeader } from "./student-room";
 
 const inTestDatabase = withTestDatabase();
 

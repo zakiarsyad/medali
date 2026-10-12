@@ -4,9 +4,9 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { dormRooms } from "@/db/schema";
 import { brokeUniqueRule } from "@/db/unique-violation";
+import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { Parsed } from "@/parsed";
 import { NUMBER_RULE, numberTaken } from "./add-room";
-import { readDormCohorts } from "./dorm-cohorts";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD } from "./place-resident";
 import {

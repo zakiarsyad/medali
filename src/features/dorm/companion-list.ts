@@ -8,8 +8,8 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import type { DormId } from "@/dorms/dorms";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
-import type { DormId } from "./dorms";
 
 /** The room a kakak pendamping is placed in. */
 export interface CompanionRoom {

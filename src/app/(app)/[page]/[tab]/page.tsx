@@ -1,5 +1,5 @@
 import { openPage } from "@/auth/open-page";
-import { residentHeader } from "@/features/dorm/student-room";
+import { residentHeader } from "@/features/dorm/resident-header";
 import { EmptyPage } from "@/ui/empty-page";
 
 export default async function TabPage(props: PageProps<"/[page]/[tab]">) {

@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { nameCompanionAction } from "./companion-actions";
@@ -18,7 +19,6 @@ import {
   companionDormOf,
 } from "./companion-dorms";
 import { NOTE_MAX_LENGTH } from "./companion-limits";
-import { DORM_NAMES } from "./dorms";
 
 const START: FormState = { error: null, done: null };
 const FIRST_DORM: CompanionDormId = "dana_rakca";
