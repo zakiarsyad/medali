@@ -1,9 +1,165 @@
 {
-  "id": "56ebd52a-e961-4363-82ac-2b4c75f9e13e",
+  "id": "98b4897f-0a61-44df-87b6-176175ffeb57",
   "prevId": "c268d17a-87ca-47d8-8ac8-385e8ad8c2e0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.academic_period_changes": {
+      "name": "academic_period_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "period_id": {
+          "name": "period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "action": {
+          "name": "action",
+          "type": "academic_period_change_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "starts_on_before": {
+          "name": "starts_on_before",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ends_on_before": {
+          "name": "ends_on_before",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "starts_on_after": {
+          "name": "starts_on_after",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ends_on_after": {
+          "name": "ends_on_after",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "academic_period_changes_period_id_academic_periods_id_fk": {
+          "name": "academic_period_changes_period_id_academic_periods_id_fk",
+          "tableFrom": "academic_period_changes",
+          "tableTo": "academic_periods",
+          "columnsFrom": [
+            "period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "academic_period_changes_changed_by_accounts_id_fk": {
+          "name": "academic_period_changes_changed_by_accounts_id_fk",
+          "tableFrom": "academic_period_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.academic_periods": {
+      "name": "academic_periods",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "start_year": {
+          "name": "start_year",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "term": {
+          "name": "term",
+          "type": "academic_term",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "starts_on": {
+          "name": "starts_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ends_on": {
+          "name": "ends_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "academic_periods_year_and_term": {
+          "name": "academic_periods_year_and_term",
+          "nullsNotDistinct": false,
+          "columns": [
+            "start_year",
+            "term"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "academic_periods_ends_after_start": {
+          "name": "academic_periods_ends_after_start",
+          "value": "\"academic_periods\".\"ends_on\" > \"academic_periods\".\"starts_on\""
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.account_roles": {
       "name": "account_roles",
       "schema": "",
@@ -440,119 +596,6 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.sessions": {
-      "name": "sessions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "token_hash": {
-          "name": "token_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "last_seen_at": {
-          "name": "last_seen_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "sessions_account_id_accounts_id_fk": {
-          "name": "sessions_account_id_accounts_id_fk",
-          "tableFrom": "sessions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sessions_tokenHash_unique": {
-          "name": "sessions_tokenHash_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.sign_in_log": {
-      "name": "sign_in_log",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "happened_at": {
-          "name": "happened_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "result": {
-          "name": "result",
-          "type": "sign_in_result",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "sign_in_log_account_id_accounts_id_fk": {
-          "name": "sign_in_log_account_id_accounts_id_fk",
-          "tableFrom": "sign_in_log",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
           ],
           "columnsTo": [
             "id"
@@ -1118,6 +1161,22 @@
     }
   },
   "enums": {
+    "public.academic_period_change_action": {
+      "name": "academic_period_change_action",
+      "schema": "public",
+      "values": [
+        "added",
+        "dates_changed"
+      ]
+    },
+    "public.academic_term": {
+      "name": "academic_term",
+      "schema": "public",
+      "values": [
+        "odd",
+        "even"
+      ]
+    },
     "public.entry_path": {
       "name": "entry_path",
       "schema": "public",
@@ -1164,16 +1223,6 @@
       "values": [
         "male",
         "female"
-      ]
-    },
-    "public.sign_in_result": {
-      "name": "sign_in_result",
-      "schema": "public",
-      "values": [
-        "signed_in",
-        "signed_out",
-        "refused_outside_campus",
-        "refused_no_account"
       ]
     },
     "public.student_status": {

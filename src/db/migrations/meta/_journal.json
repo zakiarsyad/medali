@@ -68,8 +68,22 @@
     {
       "idx": 9,
       "version": "7",
-      "when": 1791793254430,
-      "tag": "0009_sessions-and-sign-in-log",
+      "when": 1791790531215,
+      "tag": "0009_academic-periods",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791790535406,
+      "tag": "0010_academic-period-rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791793576435,
+      "tag": "0011_sessions-and-sign-in-log",
       "breakpoints": true
     }
   ]

@@ -393,3 +393,59 @@ export const SAMPLE_PPKS_ACTIVITIES: SamplePpksActivity[] = [
     description: "Bekal integritas menjelang penempatan.",
   },
 ];
+
+export interface SamplePeriod {
+  /** The first year of the Tahun akademik. */
+  startYear: number;
+  term: "odd" | "even";
+  startsOn: string;
+  endsOn: string;
+}
+
+function oddPeriod(startYear: number): SamplePeriod {
+  return {
+    startYear,
+    term: "odd",
+    startsOn: `${startYear}-08-01`,
+    endsOn: `${startYear + 1}-01-31`,
+  };
+}
+
+function evenPeriod(startYear: number): SamplePeriod {
+  return {
+    startYear,
+    term: "even",
+    startsOn: `${startYear + 1}-02-01`,
+    endsOn: `${startYear + 1}-07-31`,
+  };
+}
+
+function periodOn(day: string): SamplePeriod {
+  const year = Number(day.slice(0, 4));
+  const month = Number(day.slice(5, 7));
+  if (month >= 8) return oddPeriod(year);
+  if (month === 1) return oddPeriod(year - 1);
+  return evenPeriod(year - 1);
+}
+
+function periodBefore(period: SamplePeriod): SamplePeriod {
+  return period.term === "odd"
+    ? evenPeriod(period.startYear - 1)
+    : oddPeriod(period.startYear);
+}
+
+const SAMPLE_PERIOD_COUNT = 4;
+
+/**
+ * The made-up period a day falls in and the three before it, newest
+ * first. Ganjil runs from August to January, Genap from February to July.
+ */
+export function samplePeriods(day: string): SamplePeriod[] {
+  const periods = [periodOn(day)];
+  while (periods.length < SAMPLE_PERIOD_COUNT) {
+    const oldest = periods.at(-1);
+    if (!oldest) break;
+    periods.push(periodBefore(oldest));
+  }
+  return periods;
+}

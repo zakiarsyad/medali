@@ -62,6 +62,7 @@ export const PAGES = [
         path: "mahasiswa",
         title: "Pengguna baru mahasiswa",
       },
+      { id: "academic_periods", path: "periode", title: "Periode akademik" },
     ],
   },
 ] as const satisfies readonly PageDefinition[];

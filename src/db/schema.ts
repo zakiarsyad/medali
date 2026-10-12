@@ -3,6 +3,7 @@ import {
   type AnyPgColumn,
   boolean,
   check,
+  date,
   integer,
   pgEnum,
   pgTable,
@@ -10,6 +11,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -36,6 +38,13 @@ export const roleChangeAction = pgEnum("role_change_action", [
 ]);
 
 export const signInResult = pgEnum("sign_in_result", SIGN_IN_RESULTS);
+
+export const academicTerm = pgEnum("academic_term", ["odd", "even"]);
+
+export const academicPeriodChangeAction = pgEnum(
+  "academic_period_change_action",
+  ["added", "dates_changed"],
+);
 
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
@@ -269,3 +278,46 @@ export const stageBreakdowns = pgTable(
     check("stage_breakdowns_tahap_1_to_4", sql`${table.tahap} between 1 and 4`),
   ],
 );
+
+/**
+ * The academic periods, each with its first and its last day. The
+ * database also refuses two periods whose days overlap.
+ */
+export const academicPeriods = pgTable(
+  "academic_periods",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    /** The first year of the Tahun akademik: 2026 for 2026/2027. */
+    startYear: smallint().notNull(),
+    term: academicTerm().notNull(),
+    startsOn: date().notNull(),
+    endsOn: date().notNull(),
+  },
+  (table) => [
+    unique("academic_periods_year_and_term").on(table.startYear, table.term),
+    check(
+      "academic_periods_ends_after_start",
+      sql`${table.endsOn} > ${table.startsOn}`,
+    ),
+  ],
+);
+
+/**
+ * Rows here cannot be changed or deleted; the database refuses it. A
+ * period that was added has no days before.
+ */
+export const academicPeriodChanges = pgTable("academic_period_changes", {
+  id: uuid().primaryKey().defaultRandom(),
+  periodId: uuid()
+    .notNull()
+    .references(() => academicPeriods.id),
+  changedBy: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  action: academicPeriodChangeAction().notNull(),
+  startsOnBefore: date(),
+  endsOnBefore: date(),
+  startsOnAfter: date().notNull(),
+  endsOnAfter: date().notNull(),
+});
