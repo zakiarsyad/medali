@@ -165,7 +165,7 @@ describe("saveStudentFile", () => {
         rolesBefore: [],
         rolesAfter: ["student"],
       });
-      const listed = await listAddedStudents(db, "Simpan Uji");
+      const listed = await listAddedStudents(db, "Simpan Uji", []);
       expect(
         listed.students.map((student) => [student.nim, student.inputSource]),
       ).toEqual([

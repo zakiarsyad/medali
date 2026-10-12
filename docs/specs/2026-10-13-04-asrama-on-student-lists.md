@@ -95,7 +95,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The Asrama column, the number "Penghuni asrama" and the form's
+- [x] 1. The Asrama column, the number "Penghuni asrama" and the form's
   note on Pengguna baru mahasiswa.
 - [ ] 2. The Asrama filter and tag on the Mahasiswa list, with checks.
 - [ ] 3. The Asrama line in the student detail.

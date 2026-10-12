@@ -178,7 +178,7 @@ describe("removeStudent", () => {
       await inTestDatabase(async (db) => {
         await addThroughTab(db, "9900000507");
         const remover = await addTestActor(db, "Penghapus Uji", [role]);
-        const before = await countStudents(db);
+        const before = await countStudents(db, []);
 
         const removed = await removeStudent(db, remover, "9900000507");
 
@@ -186,13 +186,14 @@ describe("removeStudent", () => {
         const record = await recordOf(db, "9900000507");
         expect(record.deletedBy).toBe(remover.id);
         expect(record.deletedAt).toBeInstanceOf(Date);
-        const listed = await listAddedStudents(db, "9900000507");
+        const listed = await listAddedStudents(db, "9900000507", []);
         expect(listed).toEqual({ students: [], matching: 0 });
-        expect(await countStudents(db)).toEqual({
+        expect(await countStudents(db, [])).toEqual({
           total: before.total - 1,
           active: before.active - 1,
           added: before.added - 1,
           addedActive: before.addedActive - 1,
+          addedResidents: before.addedResidents,
         });
       });
     },

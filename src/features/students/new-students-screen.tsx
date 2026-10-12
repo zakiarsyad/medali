@@ -1,3 +1,4 @@
+import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
@@ -9,6 +10,7 @@ import {
   LIST_LIMIT,
   listAddedStudents,
 } from "./added-students";
+import { dormCohortsNow } from "./dorm-cohorts-now";
 import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
@@ -54,11 +56,15 @@ export async function NewStudentsScreen({
   tabs: TabLinksProps;
 }) {
   const db = database();
-  const [counts, list, programs, editing] = await Promise.all([
-    countStudents(db),
-    listAddedStudents(db, params.query),
+  const [dormCohorts, period, programs, editing] = await Promise.all([
+    dormCohortsNow(db),
+    readRunningPeriod(db),
     listStudyPrograms(db),
     params.editing ? findAddedStudent(db, params.editing) : null,
+  ]);
+  const [counts, list] = await Promise.all([
+    countStudents(db, dormCohorts),
+    listAddedStudents(db, params.query, dormCohorts),
   ]);
   const thisYear = new Date().getFullYear();
   return (
@@ -78,6 +84,7 @@ export async function NewStudentsScreen({
           cohortYears={cohortChoices(thisYear, editing?.cohortYear)}
           editing={editing}
           query={params.query}
+          period={period}
         />
         <section className={shared.panel}>
           <h2 className={shared.heading}>Mahasiswa yang ditambahkan</h2>
