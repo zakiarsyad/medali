@@ -1,9 +1,14 @@
+import { type FileFault, type FileRule, shapeFault } from "@/files/file-check";
+import { CSV, readText } from "@/files/file-kinds";
 import type { Parsed } from "@/parsed";
 import { MAX_FILE_BYTES } from "./student-file-columns";
 
-const CSV_NAME = /\.csv$/i;
-/** A spreadsheet file renamed to .csv holds this; CSV text never does. */
-const NOT_TEXT = "\u0000";
+/** A student file is CSV only, and no larger than the template says. */
+export const STUDENT_FILE_RULE: FileRule = {
+  kinds: [CSV],
+  maxBytes: MAX_FILE_BYTES,
+};
+
 const SOURCE_NAME_MAX_LENGTH = 60;
 /** Line breaks, tabs and the other characters that are not for showing. */
 const UNSHOWN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu;
@@ -22,22 +27,24 @@ const UNREADABLE =
  * nothing the browser sends. Gives what is wrong, or null.
  */
 export function checkFileShape(name: string, bytes: number): string | null {
-  if (!CSV_NAME.test(name)) return NOT_CSV;
-  if (bytes === 0) return EMPTY;
-  if (bytes > MAX_FILE_BYTES) return TOO_LARGE;
-  return null;
+  const fault = shapeFault(name, bytes, STUDENT_FILE_RULE);
+  return fault ? FAULT_MESSAGES[fault] : null;
 }
+
+/** What the screen says for each thing wrong with a student file. */
+export const FAULT_MESSAGES: Record<FileFault, string> = {
+  "wrong-kind": NOT_CSV,
+  empty: EMPTY,
+  "too-large": TOO_LARGE,
+  "wrong-content": NOT_CSV,
+};
 
 /** The text of a file, refused when what it holds is not text. */
 export function readFileText(bytes: Uint8Array): Parsed<string> {
-  let text: string;
-  try {
-    text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  } catch {
-    return { ok: false, error: UNREADABLE };
-  }
-  if (text.includes(NOT_TEXT)) return { ok: false, error: NOT_CSV };
-  return { ok: true, value: text };
+  const read = readText(bytes);
+  if (read.ok) return { ok: true, value: read.text };
+  if (read.fault === "not-utf8") return { ok: false, error: UNREADABLE };
+  return { ok: false, error: NOT_CSV };
 }
 
 /**

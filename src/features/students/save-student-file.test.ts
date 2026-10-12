@@ -5,6 +5,7 @@ import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { memoryStore } from "@/files/memory-store";
 import { listAddedStudents } from "./added-students";
 import type { FilePreview } from "./file-preview";
 import { NOT_ALLOWED } from "./input-student";
@@ -87,7 +88,13 @@ describe("saveStudentFile", () => {
           ["9900000802", "Simpan Uji Dua"],
         );
 
-        const saved = await saveStudentFile(db, actor, file, context);
+        const saved = await saveStudentFile(
+          db,
+          memoryStore(),
+          actor,
+          file,
+          context,
+        );
 
         expect(saved.ok && saved.value).toMatchObject({
           saved: 2,
@@ -125,7 +132,7 @@ describe("saveStudentFile", () => {
         ["9900000804", "Simpan Uji Empat"],
       );
 
-      await saveStudentFile(db, actor, file, context);
+      await saveStudentFile(db, memoryStore(), actor, file, context);
 
       const switchable = await accountsInRoleOrder(db);
       const kept = await db
@@ -181,7 +188,13 @@ describe("saveStudentFile", () => {
         ["12", "Simpan Uji Salah"],
       );
 
-      const saved = await saveStudentFile(db, actor, file, context);
+      const saved = await saveStudentFile(
+        db,
+        memoryStore(),
+        actor,
+        file,
+        context,
+      );
 
       expect(saved.ok && saved.value).toMatchObject({
         saved: 1,
@@ -206,6 +219,7 @@ describe("saveStudentFile", () => {
 
       const saved = await saveStudentFile(
         db,
+        memoryStore(),
         actor,
         csvFile("uji.csv", ["12", "Simpan Uji Tujuh"]),
         context,
@@ -228,6 +242,7 @@ describe("saveStudentFile", () => {
 
       const saved = await saveStudentFile(
         db,
+        memoryStore(),
         actor,
         csvFile("uji.csv", ["9900000808", "Simpan Uji Delapan"]),
         context,

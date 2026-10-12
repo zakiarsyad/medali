@@ -20,5 +20,27 @@ services:
       timeout: 3s
       retries: 15
 
+  # The local file storage. Only this computer can reach it, so its two
+  # keys below are no secret; previews and the campus server use their own
+  # storage, with keys kept outside the repo.
+  files:
+    # MinIO's own images are no longer published; this is the same server,
+    # built by the community that maintains it.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: medali-local
+      MINIO_ROOT_PASSWORD: medali-local-only
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - files-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
 volumes:
   db-data:
+  files-data:

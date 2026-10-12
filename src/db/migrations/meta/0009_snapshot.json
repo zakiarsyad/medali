@@ -1,6 +1,6 @@
 {
-  "id": "1db5c1ef-cb01-4e00-813f-d410805c4816",
-  "prevId": "03c15c30-f652-4fd4-a5b0-4d76bce2210c",
+  "id": "98b4897f-0a61-44df-87b6-176175ffeb57",
+  "prevId": "c268d17a-87ca-47d8-8ac8-385e8ad8c2e0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -71,28 +71,28 @@
         "academic_period_changes_period_id_academic_periods_id_fk": {
           "name": "academic_period_changes_period_id_academic_periods_id_fk",
           "tableFrom": "academic_period_changes",
+          "tableTo": "academic_periods",
           "columnsFrom": [
             "period_id"
           ],
-          "tableTo": "academic_periods",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "academic_period_changes_changed_by_accounts_id_fk": {
           "name": "academic_period_changes_changed_by_accounts_id_fk",
           "tableFrom": "academic_period_changes",
+          "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -144,11 +144,11 @@
       "uniqueConstraints": {
         "academic_periods_year_and_term": {
           "name": "academic_periods_year_and_term",
+          "nullsNotDistinct": false,
           "columns": [
             "start_year",
             "term"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -183,15 +183,15 @@
         "account_roles_account_id_accounts_id_fk": {
           "name": "account_roles_account_id_accounts_id_fk",
           "tableFrom": "account_roles",
+          "tableTo": "accounts",
           "columnsFrom": [
             "account_id"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -293,61 +293,61 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "\"accounts\".\"deleted_at\" is null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
         "accounts_study_program_id_study_programs_id_fk": {
           "name": "accounts_study_program_id_study_programs_id_fk",
           "tableFrom": "accounts",
+          "tableTo": "study_programs",
           "columnsFrom": [
             "study_program_id"
           ],
-          "tableTo": "study_programs",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "accounts_student_id_students_id_fk": {
           "name": "accounts_student_id_students_id_fk",
           "tableFrom": "accounts",
+          "tableTo": "students",
           "columnsFrom": [
             "student_id"
           ],
-          "tableTo": "students",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "accounts_deleted_by_accounts_id_fk": {
           "name": "accounts_deleted_by_accounts_id_fk",
           "tableFrom": "accounts",
+          "tableTo": "accounts",
           "columnsFrom": [
             "deleted_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "accounts_studentId_unique": {
           "name": "accounts_studentId_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "student_id"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -388,15 +388,15 @@
         "main_indicators_changed_by_accounts_id_fk": {
           "name": "main_indicators_changed_by_accounts_id_fk",
           "tableFrom": "main_indicators",
+          "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -488,28 +488,28 @@
         "ppks_activities_changed_by_accounts_id_fk": {
           "name": "ppks_activities_changed_by_accounts_id_fk",
           "tableFrom": "ppks_activities",
+          "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "ppks_activities_deleted_by_accounts_id_fk": {
           "name": "ppks_activities_deleted_by_accounts_id_fk",
           "tableFrom": "ppks_activities",
+          "tableTo": "accounts",
           "columnsFrom": [
             "deleted_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -580,28 +580,28 @@
         "role_changes_account_id_accounts_id_fk": {
           "name": "role_changes_account_id_accounts_id_fk",
           "tableFrom": "role_changes",
+          "tableTo": "accounts",
           "columnsFrom": [
             "account_id"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "role_changes_changed_by_accounts_id_fk": {
           "name": "role_changes_changed_by_accounts_id_fk",
           "tableFrom": "role_changes",
+          "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -645,15 +645,15 @@
         "siku_base_score_set_by_accounts_id_fk": {
           "name": "siku_base_score_set_by_accounts_id_fk",
           "tableFrom": "siku_base_score",
+          "tableTo": "accounts",
           "columnsFrom": [
             "set_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -719,15 +719,15 @@
         "stage_breakdowns_changed_by_accounts_id_fk": {
           "name": "stage_breakdowns_changed_by_accounts_id_fk",
           "tableFrom": "stage_breakdowns",
+          "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -747,6 +747,156 @@
           "value": "\"stage_breakdowns\".\"tahap\" between 1 and 4"
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.student_batch_files": {
+      "name": "student_batch_files",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "batch_id": {
+          "name": "batch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "object_key": {
+          "name": "object_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_name": {
+          "name": "file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "byte_size": {
+          "name": "byte_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kept_at": {
+          "name": "kept_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kept_by": {
+          "name": "kept_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "student_batch_files_batch_id_student_batches_id_fk": {
+          "name": "student_batch_files_batch_id_student_batches_id_fk",
+          "tableFrom": "student_batch_files",
+          "tableTo": "student_batches",
+          "columnsFrom": [
+            "batch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_batch_files_kept_by_accounts_id_fk": {
+          "name": "student_batch_files_kept_by_accounts_id_fk",
+          "tableFrom": "student_batch_files",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "kept_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "student_batch_files_batchId_unique": {
+          "name": "student_batch_files_batchId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "batch_id"
+          ]
+        },
+        "student_batch_files_objectKey_unique": {
+          "name": "student_batch_files_objectKey_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "object_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.student_batches": {
+      "name": "student_batches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "input_at": {
+          "name": "input_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "input_by": {
+          "name": "input_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "student_batches_input_by_accounts_id_fk": {
+          "name": "student_batches_input_by_accounts_id_fk",
+          "tableFrom": "student_batches",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "input_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.students": {
@@ -877,6 +1027,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "input_batch_id": {
+          "name": "input_batch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
@@ -895,51 +1051,64 @@
         "students_study_program_id_study_programs_id_fk": {
           "name": "students_study_program_id_study_programs_id_fk",
           "tableFrom": "students",
+          "tableTo": "study_programs",
           "columnsFrom": [
             "study_program_id"
           ],
-          "tableTo": "study_programs",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "students_input_by_accounts_id_fk": {
           "name": "students_input_by_accounts_id_fk",
           "tableFrom": "students",
+          "tableTo": "accounts",
           "columnsFrom": [
             "input_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "students_input_batch_id_student_batches_id_fk": {
+          "name": "students_input_batch_id_student_batches_id_fk",
+          "tableFrom": "students",
+          "tableTo": "student_batches",
+          "columnsFrom": [
+            "input_batch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "students_deleted_by_accounts_id_fk": {
           "name": "students_deleted_by_accounts_id_fk",
           "tableFrom": "students",
+          "tableTo": "accounts",
           "columnsFrom": [
             "deleted_by"
           ],
-          "tableTo": "accounts",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "students_nim_unique": {
           "name": "students_nim_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "nim"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -956,15 +1125,15 @@
           "primaryKey": true,
           "notNull": true,
           "identity": {
+            "type": "always",
             "name": "study_programs_id_seq",
+            "schema": "public",
             "increment": "1",
+            "startWith": "1",
             "minValue": "1",
             "maxValue": "2147483647",
-            "startWith": "1",
             "cache": "1",
-            "cycle": false,
-            "schema": "public",
-            "type": "always"
+            "cycle": false
           }
         },
         "name": {
@@ -980,10 +1149,10 @@
       "uniqueConstraints": {
         "study_programs_name_unique": {
           "name": "study_programs_name_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "name"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
@@ -1067,10 +1236,10 @@
     }
   },
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

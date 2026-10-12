@@ -1,16 +1,72 @@
 /** The settings that come from outside the repo. `.env.example` lists them. */
-export const SETTING_NAMES = ["DATABASE_URL"] as const;
+export const SETTING_NAMES = [
+  "DATABASE_URL",
+  "FILE_STORAGE_URL",
+  "FILE_STORAGE_BUCKET",
+  "FILE_STORAGE_ACCESS_KEY",
+  "FILE_STORAGE_SECRET_KEY",
+] as const;
 
 export type SettingName = (typeof SETTING_NAMES)[number];
 
-export function readSetting(name: SettingName): string {
-  const value = process.env[name];
+type SettingsEnv = Readonly<Record<string, string | undefined>>;
+
+function settingIn(env: SettingsEnv, name: SettingName): string {
+  const value = env[name];
   if (!value) {
     throw new Error(
       `The setting ${name} is missing. Copy .env.example to .env.local and fill it in.`,
     );
   }
   return value;
+}
+
+export function readSetting(name: SettingName): string {
+  return settingIn(process.env, name);
+}
+
+/** How to reach the file storage: MinIO, or a service that works like it. */
+export interface FileStorageSettings {
+  url: string;
+  bucket: string;
+  accessKey: string;
+  secretKey: string;
+}
+
+const FILE_STORAGE_NAMES = [
+  "FILE_STORAGE_URL",
+  "FILE_STORAGE_BUCKET",
+  "FILE_STORAGE_ACCESS_KEY",
+  "FILE_STORAGE_SECRET_KEY",
+] as const satisfies readonly SettingName[];
+
+function isPreview(stage: Stage): boolean {
+  return stage === "pr-preview" || stage === "main-preview";
+}
+
+/**
+ * The four settings of the file storage, or null where file keeping is
+ * off: a preview with all four empty, until the owner fills them in.
+ * Anywhere else an empty setting is an error, as for the database. So is
+ * a setup that is only partly filled, on a preview too: it is a mistake,
+ * and silently keeping no file would hide it.
+ */
+export function fileStorageSettingsOf(
+  env: SettingsEnv,
+  stage: Stage,
+): FileStorageSettings | null {
+  const allEmpty = FILE_STORAGE_NAMES.every((name) => !env[name]);
+  if (allEmpty && isPreview(stage)) return null;
+  return {
+    url: settingIn(env, "FILE_STORAGE_URL"),
+    bucket: settingIn(env, "FILE_STORAGE_BUCKET"),
+    accessKey: settingIn(env, "FILE_STORAGE_ACCESS_KEY"),
+    secretKey: settingIn(env, "FILE_STORAGE_SECRET_KEY"),
+  };
+}
+
+export function readFileStorageSettings(): FileStorageSettings | null {
+  return fileStorageSettingsOf(process.env, currentStage());
 }
 
 /**

@@ -20,6 +20,11 @@ export function readNewStudentsParams(params: SearchParams): NewStudentsParams {
   };
 }
 
+/** The address that downloads the kept file a batch was saved from. */
+export function studentFileAddress(fileId: string): string {
+  return `${NEW_STUDENTS_ADDRESS}/berkas/${encodeURIComponent(fileId)}`;
+}
+
 /** An address as one text: the path, and what comes after the `?` if any. */
 export function addressOf(path: string, search: string): string {
   return search ? `${path}?${search}` : path;

@@ -1,165 +1,9 @@
 {
-  "id": "03c15c30-f652-4fd4-a5b0-4d76bce2210c",
+  "id": "c268d17a-87ca-47d8-8ac8-385e8ad8c2e0",
   "prevId": "23ba1da5-b97b-4541-aab0-488f9628e5aa",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.academic_period_changes": {
-      "name": "academic_period_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "period_id": {
-          "name": "period_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "action": {
-          "name": "action",
-          "type": "academic_period_change_action",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "starts_on_before": {
-          "name": "starts_on_before",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ends_on_before": {
-          "name": "ends_on_before",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "starts_on_after": {
-          "name": "starts_on_after",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ends_on_after": {
-          "name": "ends_on_after",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "academic_period_changes_period_id_academic_periods_id_fk": {
-          "name": "academic_period_changes_period_id_academic_periods_id_fk",
-          "tableFrom": "academic_period_changes",
-          "tableTo": "academic_periods",
-          "columnsFrom": [
-            "period_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "academic_period_changes_changed_by_accounts_id_fk": {
-          "name": "academic_period_changes_changed_by_accounts_id_fk",
-          "tableFrom": "academic_period_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.academic_periods": {
-      "name": "academic_periods",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "start_year": {
-          "name": "start_year",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "term": {
-          "name": "term",
-          "type": "academic_term",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "starts_on": {
-          "name": "starts_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ends_on": {
-          "name": "ends_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "academic_periods_year_and_term": {
-          "name": "academic_periods_year_and_term",
-          "nullsNotDistinct": false,
-          "columns": [
-            "start_year",
-            "term"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "academic_periods_ends_after_start": {
-          "name": "academic_periods_ends_after_start",
-          "value": "\"academic_periods\".\"ends_on\" > \"academic_periods\".\"starts_on\""
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.account_roles": {
       "name": "account_roles",
       "schema": "",
@@ -749,6 +593,156 @@
       },
       "isRLSEnabled": false
     },
+    "public.student_batch_files": {
+      "name": "student_batch_files",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "batch_id": {
+          "name": "batch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "object_key": {
+          "name": "object_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_name": {
+          "name": "file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "byte_size": {
+          "name": "byte_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kept_at": {
+          "name": "kept_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kept_by": {
+          "name": "kept_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "student_batch_files_batch_id_student_batches_id_fk": {
+          "name": "student_batch_files_batch_id_student_batches_id_fk",
+          "tableFrom": "student_batch_files",
+          "tableTo": "student_batches",
+          "columnsFrom": [
+            "batch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_batch_files_kept_by_accounts_id_fk": {
+          "name": "student_batch_files_kept_by_accounts_id_fk",
+          "tableFrom": "student_batch_files",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "kept_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "student_batch_files_batchId_unique": {
+          "name": "student_batch_files_batchId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "batch_id"
+          ]
+        },
+        "student_batch_files_objectKey_unique": {
+          "name": "student_batch_files_objectKey_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "object_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.student_batches": {
+      "name": "student_batches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "input_at": {
+          "name": "input_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "input_by": {
+          "name": "input_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "student_batches_input_by_accounts_id_fk": {
+          "name": "student_batches_input_by_accounts_id_fk",
+          "tableFrom": "student_batches",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "input_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.students": {
       "name": "students",
       "schema": "",
@@ -877,6 +871,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "input_batch_id": {
+          "name": "input_batch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
@@ -911,6 +911,19 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "input_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "students_input_batch_id_student_batches_id_fk": {
+          "name": "students_input_batch_id_student_batches_id_fk",
+          "tableFrom": "students",
+          "tableTo": "student_batches",
+          "columnsFrom": [
+            "input_batch_id"
           ],
           "columnsTo": [
             "id"
@@ -992,22 +1005,6 @@
     }
   },
   "enums": {
-    "public.academic_period_change_action": {
-      "name": "academic_period_change_action",
-      "schema": "public",
-      "values": [
-        "added",
-        "dates_changed"
-      ]
-    },
-    "public.academic_term": {
-      "name": "academic_term",
-      "schema": "public",
-      "values": [
-        "odd",
-        "even"
-      ]
-    },
     "public.entry_path": {
       "name": "entry_path",
       "schema": "public",
