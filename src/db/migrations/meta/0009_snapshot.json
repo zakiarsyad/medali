@@ -1,5 +1,5 @@
 {
-  "id": "6b515344-2276-44fc-8920-48065584d1d6",
+  "id": "256cedb5-826b-480e-9bfe-4dffe22e7582",
   "prevId": "c268d17a-87ca-47d8-8ac8-385e8ad8c2e0",
   "version": "7",
   "dialect": "postgresql",
@@ -477,12 +477,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
         "last_seen_at": {
           "name": "last_seen_at",
           "type": "timestamp with time zone",
@@ -516,6 +510,59 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.sign_in_log": {
+      "name": "sign_in_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "happened_at": {
+          "name": "happened_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "sign_in_result",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sign_in_log_account_id_accounts_id_fk": {
+          "name": "sign_in_log_account_id_accounts_id_fk",
+          "tableFrom": "sign_in_log",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1117,6 +1164,17 @@
       "values": [
         "male",
         "female"
+      ]
+    },
+    "public.sign_in_result": {
+      "name": "sign_in_result",
+      "schema": "public",
+      "values": [
+        "signed_in",
+        "signed_out",
+        "refused_outside_campus",
+        "refused_no_account",
+        "failed"
       ]
     },
     "public.student_status": {

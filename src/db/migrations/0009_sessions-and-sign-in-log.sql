@@ -1,4 +1,12 @@
 CREATE TYPE "public"."sign_in_result" AS ENUM('signed_in', 'signed_out', 'refused_outside_campus', 'refused_no_account', 'failed');--> statement-breakpoint
+CREATE TABLE "sessions" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"token_hash" text NOT NULL,
+	"account_id" uuid NOT NULL,
+	"last_seen_at" timestamp with time zone NOT NULL,
+	CONSTRAINT "sessions_tokenHash_unique" UNIQUE("token_hash")
+);
+--> statement-breakpoint
 CREATE TABLE "sign_in_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"happened_at" timestamp with time zone NOT NULL,
@@ -6,6 +14,7 @@ CREATE TABLE "sign_in_log" (
 	"account_id" uuid
 );
 --> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sign_in_log" ADD CONSTRAINT "sign_in_log_account_id_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- Added by hand. The sign-in log is a record that must always be trusted,
 -- so the database itself refuses to change or delete a line of it. Row

@@ -168,7 +168,6 @@ export const sessions = pgTable("sessions", {
   accountId: uuid()
     .notNull()
     .references(() => accounts.id),
-  createdAt: timestamp({ withTimezone: true }).notNull(),
   lastSeenAt: timestamp({ withTimezone: true }).notNull(),
 });
 

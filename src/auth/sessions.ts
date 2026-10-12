@@ -29,7 +29,6 @@ export async function startSession(
   await db.insert(sessions).values({
     tokenHash: sessionTokenHash(token),
     accountId,
-    createdAt: now,
     lastSeenAt: now,
   });
   return token;
