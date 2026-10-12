@@ -51,11 +51,11 @@ const EMAIL_IN_USE_RULE = "accounts_email_in_use";
 
 const NOT_FOUND = { ok: false, error: "Akun tidak ditemukan." } as const;
 
-function inRoleOrder(roles: RoleId[]): RoleId[] {
+export function inRoleOrder(roles: RoleId[]): RoleId[] {
   return [...roles].sort((a, b) => ROLE_IDS.indexOf(a) - ROLE_IDS.indexOf(b));
 }
 
-function sameRoles(a: RoleId[], b: RoleId[]): boolean {
+export function sameRoles(a: RoleId[], b: RoleId[]): boolean {
   return inRoleOrder(a).join() === inRoleOrder(b).join();
 }
 
@@ -81,7 +81,12 @@ function listCondition(db: Database, filter: AccountFilter): SQL | undefined {
         ilike(accounts.email, pattern),
       )
     : undefined;
-  return and(isNull(accounts.deletedAt), hasWantedRole, matches);
+  return and(
+    isNull(accounts.deletedAt),
+    isNull(accounts.studentId),
+    hasWantedRole,
+    matches,
+  );
 }
 
 /** The staff accounts listed in Pengguna dan peran, one page at a time. */
@@ -121,13 +126,17 @@ export async function listManagedAccounts(
   };
 }
 
-async function isActive(db: Database, accountId: string): Promise<boolean> {
+/** The account when it is not removed, with the student it belongs to. */
+async function findActive(
+  db: Database,
+  accountId: string,
+): Promise<{ studentId: string | null } | null> {
   const [found] = await db
-    .select({ id: accounts.id })
+    .select({ studentId: accounts.studentId })
     .from(accounts)
     .where(and(eq(accounts.id, accountId), isNull(accounts.deletedAt)))
     .limit(1);
-  return found !== undefined;
+  return found ?? null;
 }
 
 async function currentRoles(
@@ -204,8 +213,9 @@ export async function addAccount(
 }
 
 /**
- * Sets the managed roles of an account. Roles not managed here, such as
- * Kepala Unit or Mahasiswa, stay as they are.
+ * Sets the managed roles of a staff account. Roles not managed here, such
+ * as Kepala Unit, stay as they are. A student's account is refused: it
+ * may only get BAM roles, in the panel Badan Asrama Mahasiswa.
  */
 export async function changeRoles(
   db: Database,
@@ -213,7 +223,15 @@ export async function changeRoles(
   by: string,
 ): Promise<Parsed<RoleId[]>> {
   return db.transaction(async (tx) => {
-    if (!(await isActive(tx, change.accountId))) return NOT_FOUND;
+    const account = await findActive(tx, change.accountId);
+    if (!account) return NOT_FOUND;
+    if (account.studentId !== null) {
+      return {
+        ok: false,
+        error:
+          "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
+      };
+    }
     if (!(await programIsKnown(tx, change.studyProgramId))) {
       return UNKNOWN_PROGRAM;
     }
@@ -262,9 +280,9 @@ export async function changeRoles(
 }
 
 /**
- * Marks an account removed. It is never erased. An account that holds a
- * role not managed here, such as Kepala Unit or Mahasiswa, is not removed
- * here; nor is the manager's own account.
+ * Marks an account removed. It is never erased. A student's account and
+ * an account that holds a role not managed here, such as Kepala Unit, are
+ * not removed here; nor is the manager's own account.
  */
 export async function removeAccount(
   db: Database,
@@ -272,12 +290,13 @@ export async function removeAccount(
   by: string,
 ): Promise<Parsed<null>> {
   return db.transaction(async (tx) => {
-    if (!(await isActive(tx, accountId))) return NOT_FOUND;
+    const account = await findActive(tx, accountId);
+    if (!account) return NOT_FOUND;
     if (accountId === by) {
       return { ok: false, error: "Akun Anda sendiri tidak bisa dihapus." };
     }
     const before = await currentRoles(tx, accountId);
-    if (!before.every(isManagedRole)) {
+    if (account.studentId !== null || !before.every(isManagedRole)) {
       return {
         ok: false,
         error: "Akun ini tidak dikelola di sini, sehingga tidak bisa dihapus.",
