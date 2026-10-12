@@ -37,21 +37,21 @@ function AccountRow({
   return (
     <>
       <tr>
-        <td>
+        <td data-title="Pengguna">
           <b>{fullName(account)}</b>
           <small className={styles.detail}>
             NIP {account.nip ?? "-"} · {account.email ?? "-"}
           </small>
         </td>
-        <td>
+        <td data-title="Peran">
           {account.roles.map((role) => (
             <span key={role} className={styles.badge}>
               {ROLES[role].title}
             </span>
           ))}
         </td>
-        <td>{account.unit ?? "-"}</td>
-        <td className={styles.detail}>
+        <td data-title="Unit atau jabatan">{account.unit ?? "-"}</td>
+        <td className={styles.detail} data-title="Keterangan">
           {account.studyProgram ? `Kaprodi ${account.studyProgram}` : ""}
         </td>
         <td className={styles.rowActions}>
@@ -100,7 +100,7 @@ export function AccountTable({
   }
   return (
     <div className={styles.tableWrap}>
-      <table className={styles.table}>
+      <table className={`${styles.table} ${styles.stacked}`}>
         <thead>
           <tr>
             <th>Pengguna</th>

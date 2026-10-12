@@ -102,6 +102,22 @@
   --menu-button-display: none;
   --top-bar-padding: var(--space-md) var(--space-2xl);
   --content-padding: var(--space-xl) var(--space-2xl) var(--space-3xl);
+
+  /* A stacked list is a plain table here, and one block per row on a phone. */
+  --stacked-table-display: table;
+  --stacked-head-display: table-header-group;
+  --stacked-body-display: table-row-group;
+  --stacked-row-display: table-row;
+  --stacked-row-padding: 0;
+  --stacked-row-line: 0;
+  --stacked-cell-line: var(--line-width);
+  --stacked-cell-padding: var(--space-sm);
+  --stacked-title-display: none;
+  --stacked-title-width: 112px;
+  --stacked-actions-padding: var(--space-sm);
+  --stacked-actions-justify: flex-end;
+  --stacked-empty-padding: var(--space-sm);
+  --stacked-badge-wrap: nowrap;
 }
 
 /*
@@ -121,6 +137,20 @@
     --top-bar-padding: var(--space-md) var(--space-lg);
     --content-padding: var(--space-lg) var(--space-lg) var(--space-3xl);
     --text-title: 25px;
+    --stacked-table-display: block;
+    --stacked-head-display: none;
+    --stacked-body-display: block;
+    --stacked-row-display: grid;
+    --stacked-row-padding: var(--space-sm) 0;
+    --stacked-row-line: var(--line-width);
+    --stacked-cell-line: 0;
+    --stacked-cell-padding: var(--space-2xs) 0 var(--space-2xs)
+      var(--stacked-title-width);
+    --stacked-title-display: block;
+    --stacked-actions-padding: var(--space-xs) 0;
+    --stacked-actions-justify: flex-start;
+    --stacked-empty-padding: 0;
+    --stacked-badge-wrap: normal;
   }
 }
 

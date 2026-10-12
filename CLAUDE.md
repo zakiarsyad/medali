@@ -204,9 +204,16 @@ No pictures are taken as proof.
    Docker, so every computer has the same setup. One command starts the
    app. One command fills it with sample data. The checks also need the
    database running.
-2. One piece of work at a time on one computer, in one local setup. Claude
-   switches the repo folder to the branch being built, and back to `main`
-   at clean up.
+2. One piece of work at a time in one copy of the repo. Claude switches
+   the repo folder to the branch being built, and back to `main` at clean
+   up. To work on more than one piece at the same time on one computer,
+   use one copy of the repo per piece, each with its own two databases:
+   one for the app's sample data and one for the checks. A copy names
+   them in its local settings file, as `DATABASE_URL` and
+   `TEST_DATABASE_URL`, makes them with `pnpm db:create`, and removes them
+   with `pnpm db:remove` when its work is done. A copy that names nothing
+   uses the default two. All copies share the one Docker database and the
+   one file storage.
 3. Before switching branch, save unfinished work as a commit on its
    branch. Do not use `git stash`; work left there is easy to lose.
 4. Never wipe a database unless that is the goal, and say so first.
