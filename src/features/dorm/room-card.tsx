@@ -1,6 +1,10 @@
+import shared from "@/ui/data-screen.module.css";
 import {
   autoFillRoomAction,
+  placeCompanionAction,
+  placeResidentAction,
   removeRoomAction,
+  takeOutCompanionAction,
   takeOutResidentAction,
 } from "./actions";
 import { ChangeRoomForm } from "./change-room-form";
@@ -15,18 +19,24 @@ interface RoomCardProps {
   residents: PlacedResident[];
   /** The residents without a room to choose from. Null for a read-only role. */
   offered: Resident[] | null;
+  /** The kakak pendamping of the room that the account may see. */
+  companions: PlacedResident[];
+  /** The kakak pendamping without a room to choose from. */
+  offeredCompanions: Resident[];
 }
 
 function TakeOutButton({
   room,
   resident,
+  isCompanion = false,
 }: {
   room: Room;
   resident: PlacedResident;
+  isCompanion?: boolean;
 }) {
   return (
     <RoomButton
-      action={takeOutResidentAction}
+      action={isCompanion ? takeOutCompanionAction : takeOutResidentAction}
       ids={{ roomId: room.id, studentId: resident.id }}
       confirm={`Keluarkan ${resident.name} dari kamar ${room.number}?`}
     >
@@ -35,8 +45,8 @@ function TakeOutButton({
   );
 }
 
-function Residents({ room, residents, offered }: RoomCardProps) {
-  const hidden = room.taken - residents.length;
+function Residents({ room, residents, offered, companions }: RoomCardProps) {
+  const hidden = room.taken - residents.length - companions.length;
   if (room.taken === 0) {
     return <p className={styles.quietLine}>Belum ada penghuni.</p>;
   }
@@ -52,10 +62,22 @@ function Residents({ room, residents, offered }: RoomCardProps) {
             {offered && <TakeOutButton room={room} resident={resident} />}
           </li>
         ))}
+        {companions.map((companion) => (
+          <li key={companion.id} className={styles.resident}>
+            <span>
+              <b>{companion.name}</b>{" "}
+              <span className={styles.nim}>{companion.nim}</span>{" "}
+              <span className={shared.badge}>Kakak pendamping</span>
+            </span>
+            {offered && (
+              <TakeOutButton room={room} resident={companion} isCompanion />
+            )}
+          </li>
+        ))}
       </ul>
       {hidden > 0 && (
         <p className={styles.quietLine}>
-          {residents.length > 0 ? "dan " : ""}
+          {residents.length + companions.length > 0 ? "dan " : ""}
           {hidden} penghuni dari program studi lain
         </p>
       )}
@@ -63,11 +85,37 @@ function Residents({ room, residents, offered }: RoomCardProps) {
   );
 }
 
-/** Filling the free places of a room: by choosing a resident, or by itself. */
-function FreePlaces({ room, offered }: { room: Room; offered: Resident[] }) {
+/**
+ * Filling the free places of a room: by choosing a resident or a kakak
+ * pendamping, or by itself, which takes residents only.
+ */
+function FreePlaces({
+  room,
+  offered,
+  offeredCompanions,
+}: {
+  room: Room;
+  offered: Resident[];
+  offeredCompanions: Resident[];
+}) {
   return (
     <div className={styles.cardActions}>
-      <PlaceForm roomId={room.id} roomNumber={room.number} offered={offered} />
+      <PlaceForm
+        action={placeResidentAction}
+        what="penghuni"
+        roomId={room.id}
+        roomNumber={room.number}
+        offered={offered}
+      />
+      {offeredCompanions.length > 0 && (
+        <PlaceForm
+          action={placeCompanionAction}
+          what="kakak pendamping"
+          roomId={room.id}
+          roomNumber={room.number}
+          offered={offeredCompanions}
+        />
+      )}
       <RoomButton action={autoFillRoomAction} ids={{ roomId: room.id }}>
         Isi otomatis
       </RoomButton>
@@ -95,8 +143,9 @@ function RoomActions({ room }: { room: Room }) {
   );
 }
 
-/** One room: its number, its places taken, and its residents. */
-export function RoomCard({ room, residents, offered }: RoomCardProps) {
+/** One room: its number, its places taken, and who is in it. */
+export function RoomCard(props: RoomCardProps) {
+  const { room, offered, offeredCompanions } = props;
   const isFull = room.taken >= room.capacity;
   return (
     <li className={styles.card}>
@@ -106,8 +155,14 @@ export function RoomCard({ room, residents, offered }: RoomCardProps) {
           {room.taken}/{room.capacity}
         </span>
       </div>
-      <Residents room={room} residents={residents} offered={offered} />
-      {offered && !isFull && <FreePlaces room={room} offered={offered} />}
+      <Residents {...props} />
+      {offered && !isFull && (
+        <FreePlaces
+          room={room}
+          offered={offered}
+          offeredCompanions={offeredCompanions}
+        />
+      )}
       {offered && <RoomActions room={room} />}
     </li>
   );

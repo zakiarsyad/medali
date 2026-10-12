@@ -24,7 +24,7 @@ export async function RoomsScreen({
   mayManage: boolean;
 }) {
   const view = await loadRooms(database(), params, visible);
-  const { rooms, residents, counts, unplaced } = view;
+  const { rooms, residents, counts, unplaced, companions } = view;
   return (
     <>
       <PageHead title="Ploting kamar">
@@ -43,13 +43,19 @@ export async function RoomsScreen({
         </p>
       )}
       <DormSwitch open={params.dorm} floor={params.floor} />
-      <DormNumbers dorm={params.dorm} counts={counts} rooms={rooms} />
+      <DormNumbers
+        dorm={params.dorm}
+        counts={counts}
+        rooms={rooms}
+        companions={companions?.counts ?? null}
+      />
       <FloorPanel
         dorm={params.dorm}
         floor={params.floor}
         rooms={rooms}
         residents={residents}
         offered={mayManage ? unplaced.shown : null}
+        companions={companions}
       />
       <UnplacedPanel
         params={params}

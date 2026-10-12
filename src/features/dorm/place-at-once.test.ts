@@ -5,6 +5,7 @@ import { type Connection, connect, type Database } from "@/db/connect";
 import { applyTableChanges } from "@/db/migrate";
 import {
   academicPeriods,
+  dormCompanions,
   dormRoomPlaces,
   dormRooms,
   students,
@@ -14,12 +15,16 @@ import type { Parsed } from "@/parsed";
 import { readSetting } from "@/settings";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
+import { stopCompanion } from "./companion-duty";
+import { placeCompanion } from "./place-companion";
 import { placeResident } from "./place-resident";
 import { readRooms } from "./room-list";
 import {
+  addTestCompanion,
   addTestProgram,
   addTestRoom,
   addTestStudent,
+  companionOf,
   DAY,
   ODD_2026,
   placeTestResident,
@@ -60,6 +65,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
+  await first.db.delete(dormCompanions);
   await first.db.delete(dormRoomPlaces);
   await first.db.delete(dormRooms);
   await first.db.delete(students);
@@ -260,5 +266,91 @@ describe("Isi otomatis while its only waiting resident gets another room", () =>
         "Tidak ada penghuni yang ditempatkan. Muat ulang halaman untuk melihat daftar terbaru.",
     });
     expect(await residentsOfRoom(first.db, filled)).toEqual([]);
+  });
+});
+
+describe("Nonaktifkan and placing the same kakak pendamping at the same moment", () => {
+  const STOPPED = {
+    ok: false,
+    error: "Kakak pendamping ini sudah tidak aktif. Muat ulang halaman.",
+  };
+  const ROOM_CHANGED = {
+    ok: false,
+    error:
+      "Kamar kakak pendamping ini baru saja berubah. Muat ulang halaman, lalu coba lagi.",
+  };
+
+  /** A kakak pendamping of Dana Rakca without a room, and a room there. */
+  async function addCompanionAndRoom() {
+    const program = await addTestProgram(first.db, PROGRAM);
+    const studentId = await addTestStudent(first.db, program, {
+      nim: "9911240001",
+      name: "Kakak Uji",
+      cohortYear: 2024,
+    });
+    await addTestCompanion(first.db, studentId);
+    const roomId = await addTestRoom(first.db, { number: "T201" });
+    return { studentId, roomId };
+  }
+
+  /** "Nonaktifkan" pressed on a screen that showed "Belum diplot". */
+  function stop(studentId: string): Save {
+    return (db) => stopCompanion(db, MANAGER, { studentId, roomId: "" });
+  }
+
+  function placeIn(roomId: string, studentId: string): Save {
+    return (db) => placeCompanion(db, MANAGER, { roomId, studentId }, DAY);
+  }
+
+  it("refuses the placing that comes second, and the duty stays stopped", async () => {
+    const { studentId, roomId } = await addCompanionAndRoom();
+
+    const both = await atOnce(stop(studentId), placeIn(roomId, studentId));
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual(STOPPED);
+    expect(await companionOf(first.db, studentId)).toMatchObject({
+      isActive: false,
+      roomId: null,
+    });
+  });
+
+  it("refuses the Nonaktifkan that comes second, and the room is kept", async () => {
+    const { studentId, roomId } = await addCompanionAndRoom();
+
+    const both = await atOnce(placeIn(roomId, studentId), stop(studentId));
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual(ROOM_CHANGED);
+    expect(await companionOf(first.db, studentId)).toMatchObject({
+      isActive: true,
+      roomId,
+    });
+  });
+});
+
+describe("a resident and a kakak pendamping taking the last place at the same moment", () => {
+  it("saves one of them, and tells the other the room is full", async () => {
+    const program = await addTestProgram(first.db, PROGRAM);
+    const companion = await addTestStudent(first.db, program, {
+      nim: "9911240002",
+      name: "Kakak Uji",
+      cohortYear: 2024,
+    });
+    await addTestCompanion(first.db, companion);
+    const resident = await addTestStudent(first.db, program, {
+      nim: "9911260003",
+      name: "Penghuni Uji",
+    });
+    const roomId = await addTestRoom(first.db, { number: "T202", capacity: 1 });
+
+    const both = await atOnce(place(roomId, resident), (db) =>
+      placeCompanion(db, MANAGER, { roomId, studentId: companion }, DAY),
+    );
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual(FULL);
+    expect(await residentsOfRoom(first.db, roomId)).toEqual([resident]);
+    expect((await companionOf(first.db, companion))?.roomId).toBe(null);
   });
 });

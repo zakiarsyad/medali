@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DORM_IDS, DORM_NAMES, DORM_RESIDENTS, type DormId } from "./dorms";
+import type { CompanionCounts } from "./room-companions";
 import type { ResidentCounts, Room } from "./room-list";
 import styles from "./rooms.module.css";
 import { roomsAddress } from "./rooms-address";
@@ -44,15 +45,21 @@ function DormNumber({
   );
 }
 
-/** The numbers of one dorm: its residents, those with a room, and its rooms. */
+/**
+ * The numbers of one dorm: its residents, those with a room, its rooms,
+ * and its kakak pendamping when the dorm has them.
+ */
 export function DormNumbers({
   dorm,
   counts,
   rooms,
+  companions,
 }: {
   dorm: DormId;
   counts: ResidentCounts;
   rooms: Room[];
+  /** Null for a dorm that has no kakak pendamping. */
+  companions: CompanionCounts | null;
 }) {
   const places = rooms.reduce((sum, room) => sum + room.capacity, 0);
   return (
@@ -72,6 +79,13 @@ export function DormNumbers({
         amount={rooms.length}
         note={`kapasitas ${shown(places)} orang`}
       />
+      {companions && (
+        <DormNumber
+          label="Kakak pendamping"
+          amount={companions.active}
+          note={`${shown(companions.placed)} sudah diplot`}
+        />
+      )}
     </dl>
   );
 }

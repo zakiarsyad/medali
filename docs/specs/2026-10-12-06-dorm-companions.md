@@ -95,4 +95,4 @@ automatically, and "Isi otomatis" places residents only.
 - [x] 3. The tab shows the note and the list, read only.
 - [x] 4. The form names a kakak pendamping, with the Asrama check.
 - [x] 5. "Nonaktifkan" and "Aktifkan" work, and stopping leaves the room.
-- [ ] 6. Ploting kamar offers, labels and counts kakak pendamping.
+- [x] 6. Ploting kamar offers, labels and counts kakak pendamping.
