@@ -1,20 +1,36 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sendForm } from "@/ui/send-form";
 import { addAccountAction } from "./actions";
 import { ProgramChoice, RoleChoices } from "./role-choices";
 
 const START: FormState = { error: null, done: null };
 
 export function AddAccountForm({ programs }: { programs: StudyProgram[] }) {
-  const [state, action, pending] = useActionState(addAccountAction, START);
+  const fields = useRef<HTMLFormElement>(null);
+
+  async function add(before: FormState, form: FormData): Promise<FormState> {
+    const after = await addAccountAction(before, form);
+    if (after.done) fields.current?.reset();
+    return after;
+  }
+
+  const [state, save, pending] = useActionState(add, START);
+
   return (
     <details className={styles.panel}>
       <summary className={styles.button}>Tambah pengguna</summary>
-      <form action={action} className={styles.form}>
+      {/* noValidate: a short name or a wrong email gets the app's own message. */}
+      <form
+        ref={fields}
+        onSubmit={(event) => sendForm(event, save)}
+        className={styles.form}
+        noValidate
+      >
         <h2 className={styles.heading}>Pengguna baru</h2>
         <label className={styles.field}>
           Nama lengkap

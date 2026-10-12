@@ -64,5 +64,5 @@ Decided while building, because the issue did not say:
 
 - [x] 1. "Formulir" on Pengguna baru mahasiswa shows the app's own
   message for a wrong NIM and a short name.
-- [ ] 2. "Tambah pengguna" on Pengguna dan peran shows the app's own
+- [x] 2. "Tambah pengguna" on Pengguna dan peran shows the app's own
   message for a short name and a wrong email.
