@@ -20,6 +20,7 @@ import {
   studyPrograms,
 } from "./schema";
 import { addSampleDorms } from "./seed-dorms";
+import { addSampleMentorGroups } from "./seed-mentor-groups";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
 
@@ -126,8 +127,9 @@ async function addSampleFirstYears(
 
 /**
  * Fills a freshly built database with the sample data, among it the
- * students in their first year of the running period and the dorm rooms
- * with some of the residents in them. Every role given is
+ * students in their first year of the running period, the dorm rooms
+ * with some of the residents in them, and the kelompok pengasuhan of
+ * every sample student. Every role given is
  * logged as the work of the first sample account, the sample Kepala Unit,
  * who is logged as adding themselves.
  */
@@ -173,5 +175,9 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSamplePeriods(tx, periods, sampleActor);
     await addSampleFirstYears(tx, running, programIds, sampleActor);
     await addSampleDorms(tx, running);
+    await addSampleMentorGroups(tx, [
+      ...SAMPLE_STUDENTS,
+      ...sampleFirstYears(running.startYear),
+    ]);
   });
 }

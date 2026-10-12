@@ -38,7 +38,10 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
   await db.insert(academicPeriods).values(ODD_2063);
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: "Prodi Uji Tugas Selesai" })
+    .values({
+      name: "Prodi Uji Tugas Selesai",
+      code: "Prodi Uji Tugas Selesai",
+    })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   const [student] = await db

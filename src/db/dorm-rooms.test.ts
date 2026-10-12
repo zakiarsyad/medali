@@ -24,7 +24,7 @@ async function addRoom(
 async function addStudent(db: Database): Promise<string> {
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: "Prodi Uji Tabel Kamar" })
+    .values({ name: "Prodi Uji Tabel Kamar", code: "Prodi Uji Tabel Kamar" })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   const [student] = await db

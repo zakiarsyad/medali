@@ -7,7 +7,10 @@ import { withTestDatabase } from "@/db/test-database";
 const inTestDatabase = withTestDatabase();
 
 async function addProgram(db: Database, name: string): Promise<number> {
-  const [program] = await db.insert(studyPrograms).values({ name }).returning();
+  const [program] = await db
+    .insert(studyPrograms)
+    .values({ name, code: name })
+    .returning();
   if (!program) throw new Error("The study program was not added.");
   return program.id;
 }
