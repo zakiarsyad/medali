@@ -1,9 +1,11 @@
 import { may } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import type { FileStore } from "@/files/file-store";
 import type { Parsed } from "@/parsed";
 import { addStudents } from "./add-student";
 import { type FilePreview, previewOf } from "./file-preview";
 import { type Actor, NOT_ALLOWED } from "./input-student";
+import { addStudentsWithFile } from "./keep-student-file";
 import { uploadSource } from "./labels";
 import { skipRegistered } from "./student-file";
 import { checkStudentFile, type UploadedFile } from "./student-file-check";
@@ -36,12 +38,16 @@ export function savedMessage(fileName: string, result: SavedFile): string {
 
 /**
  * Saves the ready rows of a sent file as students, each with an account,
- * as the form does. The file is read and checked here from the start: what
- * the screen showed before is not trusted. A student who is already there
- * is never changed.
+ * as the form does, and keeps the file with them. The file is read and
+ * checked here from the start: what the screen showed before is not
+ * trusted. A student who is already there is never changed.
+ *
+ * A file with no row to save is not kept. `store` is null where file
+ * keeping is off: the students are saved all the same, without a file.
  */
 export async function saveStudentFile(
   db: Database,
+  store: FileStore | null,
   actor: Actor,
   file: UploadedFile,
   context: InputContext,
@@ -57,11 +63,13 @@ export async function saveStudentFile(
     inputBy: actor.id,
     inputSource: uploadSource(sourceName(file.name)),
   };
-  const added = await addStudents(
-    db,
-    ready.map(({ student }) => ({ ...student, ...input })),
-    actor.id,
-  );
+  const students = ready.map(({ student }) => ({ ...student, ...input }));
+  const batch = { inputAt: input.inputAt, inputBy: actor.id, students };
+  const adding = store
+    ? await addStudentsWithFile(db, store, file, batch)
+    : { ok: true as const, value: await addStudents(db, students, actor.id) };
+  if (!adding.ok) return adding;
+  const added = adding.value;
   if (added.length === 0) return NOTHING_TO_SAVE;
 
   // A NIM taken between the check and the save was left out by the database.

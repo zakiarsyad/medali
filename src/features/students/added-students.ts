@@ -1,7 +1,12 @@
 import { and, asc, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
-import { accounts, students, studyPrograms } from "@/db/schema";
+import {
+  accounts,
+  studentBatchFiles,
+  students,
+  studyPrograms,
+} from "@/db/schema";
 import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
 import type { StudentInput } from "./student-input";
 
@@ -26,6 +31,7 @@ const ROW = {
   inputAt: students.inputAt,
   inputBy: inputter.name,
   inputSource: students.inputSource,
+  fileId: studentBatchFiles.id,
 };
 
 export interface AddedStudent {
@@ -45,6 +51,8 @@ export interface AddedStudent {
   /** The name of the account that put the data in. */
   inputBy: string | null;
   inputSource: typeof students.$inferSelect.inputSource;
+  /** The kept file the student was saved from, when one was kept. */
+  fileId: string | null;
 }
 
 export interface StudentCounts {
@@ -79,6 +87,10 @@ export async function listAddedStudents(
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .leftJoin(inputter, eq(inputter.id, students.inputBy))
+    .leftJoin(
+      studentBatchFiles,
+      eq(studentBatchFiles.batchId, students.inputBatchId),
+    )
     .where(condition)
     .orderBy(desc(students.inputAt), asc(students.name))
     .limit(LIST_LIMIT);

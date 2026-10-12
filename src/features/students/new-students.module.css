@@ -64,6 +64,12 @@
   color: var(--muted);
 }
 
+/* A file name is one long word: it breaks anywhere, so it never makes
+   the list wider than a phone. */
+.source {
+  overflow-wrap: anywhere;
+}
+
 .panelHead {
   display: flex;
   flex-wrap: wrap;
