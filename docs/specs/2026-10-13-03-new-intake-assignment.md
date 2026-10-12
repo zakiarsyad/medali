@@ -119,7 +119,7 @@ is built here.
   sample new angkatan.
 - [x] 2. The permissions for preparing and fixing, with their checks.
 - [x] 3. The rule that forms groups by the three methods, with tests.
-- [ ] 4. The tab with the angkatan list, step 1 and step 2.
+- [x] 4. The tab with the angkatan list, step 1 and step 2.
 - [ ] 5. Step 3: mentor choice, automatic fill and moving members.
 - [ ] 6. Step 4: save, submit, fix, and the fixed view with the log.
 - [ ] 7. "Batalkan penetapan" for Kepala Unit, with its check.
