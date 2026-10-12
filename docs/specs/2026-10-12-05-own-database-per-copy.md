@@ -78,6 +78,12 @@ Decided while building, because the issue did not say:
 9. The checks never read the other local settings, such as the file
    storage, so they run the same on every computer and on GitHub.
 
+10. How to work in more than one copy is written in the rules on running
+    the app locally and in the example settings file. The set-up
+    instructions themselves are unchanged: the unattended builder is not
+    allowed to edit them. They already send the reader to the example
+    settings file.
+
 ## Steps
 
 - [x] 1. The checks read the address of their database from a setting,
@@ -87,5 +93,5 @@ Decided while building, because the issue did not say:
   tables and sample data, and is safe to run twice.
 - [x] 3. A command removes a copy's two databases, never the default two
   and never one outside the local computer.
-- [ ] 4. The set-up instructions and the rules on running the app locally
+- [x] 4. The set-up instructions and the rules on running the app locally
   say how to work in more than one copy.
