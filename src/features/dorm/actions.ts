@@ -10,9 +10,12 @@ import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addRoom } from "./add-room";
+import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
+import { placeResident, type SentPlace } from "./place-resident";
 import { removeRoom } from "./remove-room";
 import { ROOMS_ADDRESS } from "./rooms-address";
+import { takeOutResident } from "./take-out-resident";
 
 async function roomManager(): Promise<Account> {
   const account = await currentAccount();
@@ -63,4 +66,35 @@ export async function removeRoomAction(
   const manager = await roomManager();
   const removed = await removeRoom(database(), manager, text(form, "roomId"));
   return answer(removed, (number) => `Kamar ${number} dihapus.`);
+}
+
+function sentPlace(form: FormData): SentPlace {
+  return { roomId: text(form, "roomId"), studentId: text(form, "studentId") };
+}
+
+export async function placeResidentAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await roomManager();
+  const placed = await placeResident(database(), manager, sentPlace(form));
+  return answer(placed, (done) => done);
+}
+
+export async function autoFillRoomAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await roomManager();
+  const filled = await autoFillRoom(database(), manager, text(form, "roomId"));
+  return answer(filled, (done) => done);
+}
+
+export async function takeOutResidentAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await roomManager();
+  const out = await takeOutResident(database(), manager, sentPlace(form));
+  return answer(out, (done) => done);
 }

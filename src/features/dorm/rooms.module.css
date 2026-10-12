@@ -212,3 +212,15 @@
   align-items: baseline;
   font-size: var(--text-md);
 }
+
+.place {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+
+.place select {
+  width: 100%;
+}

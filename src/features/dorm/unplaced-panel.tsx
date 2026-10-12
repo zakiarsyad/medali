@@ -48,11 +48,13 @@ export function UnplacedPanel({
   params,
   unplaced,
   residents,
+  mayManage,
 }: {
   params: RoomsParams;
   unplaced: UnplacedResidents;
   /** How many residents the dorm has in all. */
   residents: number;
+  mayManage: boolean;
 }) {
   const more = unplaced.matching - unplaced.shown.length;
   return (
@@ -65,6 +67,11 @@ export function UnplacedPanel({
       </div>
       {/* Made anew for each address, so the field shows what was searched. */}
       <Search key={params.query} params={params} />
+      {mayManage && unplaced.matching > 0 && (
+        <p className={styles.quietLine}>
+          Pilihan penghuni di kartu kamar mengikuti daftar ini.
+        </p>
+      )}
       {unplaced.matching === 0 ? (
         <p className={shared.empty}>{emptyWords(params, residents)}</p>
       ) : (

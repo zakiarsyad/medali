@@ -4,7 +4,7 @@ import { AddRoomForm } from "./add-room-form";
 import type { DormId } from "./dorms";
 import { RoomCard } from "./room-card";
 import { FLOORS } from "./room-limits";
-import type { PlacedResident, Room } from "./room-list";
+import type { PlacedResident, Resident, Room } from "./room-list";
 import styles from "./rooms.module.css";
 import { roomsAddress } from "./rooms-address";
 
@@ -42,7 +42,7 @@ export function FloorPanel({
   floor,
   rooms,
   residents,
-  mayManage,
+  offered,
 }: {
   dorm: DormId;
   floor: number;
@@ -50,8 +50,10 @@ export function FloorPanel({
   rooms: Room[];
   /** The residents in the rooms of the open floor. */
   residents: PlacedResident[];
-  mayManage: boolean;
+  /** The residents without a room to choose from. Null for a read-only role. */
+  offered: Resident[] | null;
 }) {
+  const mayManage = offered !== null;
   const onFloor = rooms.filter((room) => room.floor === floor);
   return (
     <section className={shared.panel}>
@@ -74,7 +76,7 @@ export function FloorPanel({
               key={room.id}
               room={room}
               residents={residents.filter((one) => one.roomId === room.id)}
-              mayManage={mayManage}
+              offered={offered}
             />
           ))}
         </ul>
