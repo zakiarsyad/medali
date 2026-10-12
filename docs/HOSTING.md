@@ -159,7 +159,9 @@ Three settings, under the project's environment variables:
   for the app, from a "web application" client in the Google Cloud
   console.
 - `CAMPUS_EMAIL_ENDING`: the ending of a campus email address, from the
-  "@" on. Only an address that ends with exactly this may sign in.
+  "@" on. Only an address that ends with exactly this may sign in, and
+  only from a Google account that the campus itself runs at Google: a
+  personal Google account made with a campus address is refused.
 
 Fill them in for the production environment only, which is the preview of
 `main`. A PR preview gets a new link with every PR, and Google sends a
@@ -190,11 +192,15 @@ that is registered.
 ### On the campus server
 
 There is no "Ganti peran" there, so Google sign-in is the only way in.
-The app refuses to start while any of the three settings is empty, and
-names the empty ones without showing a value. The address to register at
-Google is then the campus server's own link, followed by
+The app refuses to start while any of the three settings is empty: it
+writes the names of the empty ones to its log, without showing a value,
+and answers every address with an error instead of the app. The program
+itself keeps running, as with the "Ganti peran" check above. The address
+to register at Google is then the campus server's own link, followed by
 `/masuk/google/kembali`.
 
 Signing in or out and every refused sign-in adds a line to a sign-in log
 in the database, with the time and the result. A refused line holds no
-address and no account. The lines cannot be changed or deleted.
+address and no account. The lines cannot be changed or deleted. A return
+from Google that the browser never started, such as the return address
+opened by hand, is not written.

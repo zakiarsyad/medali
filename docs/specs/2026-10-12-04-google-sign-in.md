@@ -163,8 +163,10 @@ change any of these.
     on a preview and the button says it is not set up.
 14. An address inside the app that does not exist is answered inside the
     menu, as before, now with "Halaman tidak ditemukan" in Bahasa
-    Indonesia. Someone who is not signed in is sent to the sign-in page
-    before the app says whether an address exists.
+    Indonesia. An address with more parts than a page and a tab gets the
+    same words without the menu, with a link to the first page. Someone
+    who is not signed in is sent to the sign-in page before the app says
+    whether an address exists.
 15. Before Google's page, the person is always asked which Google account
     to use, so someone refused with a private address can pick the campus
     one.
@@ -197,6 +199,14 @@ change any of these.
     "Gunakan akun Google kampus." Otherwise such an account would keep
     getting in after the campus closes that mailbox or gives it to
     someone else.
+26. "Refuses to start" means: the app writes the name of the missing
+    setting to its log and answers every address with an error instead
+    of the app. The program itself keeps running. The existing check for
+    Ganti peran at startup behaves the same way.
+27. Where the connection is secure, which is everywhere but a local
+    computer, the browser is told to take the sign-in cookies only from
+    the app's own site, so another site under the same campus name
+    cannot plant one.
 
 ## Steps
 
