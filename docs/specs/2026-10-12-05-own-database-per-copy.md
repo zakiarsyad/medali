@@ -80,7 +80,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The checks read the address of their database from a setting,
+- [x] 1. The checks read the address of their database from a setting,
   fall back to today's address, and refuse to run against the app's own
   database.
 - [ ] 2. A command makes the two databases a copy's settings name, with

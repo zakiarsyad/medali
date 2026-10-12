@@ -1,6 +1,7 @@
 /** The settings that come from outside the repo. `.env.example` lists them. */
 export const SETTING_NAMES = [
   "DATABASE_URL",
+  "TEST_DATABASE_URL",
   "FILE_STORAGE_URL",
   "FILE_STORAGE_BUCKET",
   "FILE_STORAGE_ACCESS_KEY",
