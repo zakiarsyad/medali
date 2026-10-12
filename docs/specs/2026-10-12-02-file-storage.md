@@ -163,7 +163,7 @@ change any of these.
 - [x] 2. Opening a file goes through the server, which checks the
   permission of the record it belongs to.
 - [x] 3. "Simpan … baris" keeps the uploaded CSV with the saved batch.
-- [ ] 4. The file name under "Diinput" downloads the original file, and
+- [x] 4. The file name under "Diinput" downloads the original file, and
   stays plain text where no file was kept.
 - [ ] 5. Previews read the file storage from settings, keep no file while
   they are empty, keep PR previews apart from `main` and empty their

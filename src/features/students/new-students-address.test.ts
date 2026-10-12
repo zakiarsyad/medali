@@ -3,6 +3,7 @@ import {
   addressOf,
   newStudentsAddress,
   readNewStudentsParams,
+  studentFileAddress,
 } from "./new-students-address";
 
 describe("readNewStudentsParams", () => {
@@ -44,6 +45,14 @@ describe("addressOf", () => {
       );
     },
   );
+});
+
+describe("studentFileAddress", () => {
+  it("gives the address that downloads a kept file", () => {
+    expect(studentFileAddress("7c9e6679-7425-40de-944b-e07fc1f90ae7")).toBe(
+      "/pengaturan/mahasiswa/berkas/7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    );
+  });
 });
 
 describe("newStudentsAddress", () => {

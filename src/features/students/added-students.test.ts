@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { studentBatches, studentBatchFiles } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { countStudents, LIST_LIMIT, listAddedStudents } from "./added-students";
 import { addTestActor, addTestProgram, addTestStudent } from "./test-records";
@@ -9,6 +10,64 @@ const EARLIER = new Date("2026-10-10T03:00:00Z");
 const LATER = new Date("2026-10-11T03:00:00Z");
 
 describe("listAddedStudents", () => {
+  it("names the kept file of a student saved from one, and none for the others", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Daftar");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const [batch] = await db
+        .insert(studentBatches)
+        .values({ inputAt: LATER, inputBy: staff.id })
+        .returning({ id: studentBatches.id });
+      const [file] = await db
+        .insert(studentBatchFiles)
+        .values({
+          batchId: batch?.id ?? "",
+          objectKey: "uji/daftar-1",
+          fileName: "daftar uji.csv",
+          byteSize: 10,
+          contentType: "text/csv",
+          keptAt: LATER,
+          keptBy: staff.id,
+        })
+        .returning({ id: studentBatchFiles.id });
+      const fromFile = {
+        inputBy: staff.id,
+        inputSource: "upload:daftar uji.csv" as const,
+        inputAt: LATER,
+      };
+      await addTestStudent(db, program, {
+        nim: "9900000211",
+        name: "Daftar Uji Berkas A",
+        ...fromFile,
+        inputBatchId: batch?.id ?? null,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000212",
+        name: "Daftar Uji Berkas B",
+        ...fromFile,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000213",
+        name: "Daftar Uji Berkas C",
+        inputBy: staff.id,
+        inputSource: "form",
+        inputAt: LATER,
+      });
+
+      const listed = await listAddedStudents(db, "Daftar Uji Berkas");
+
+      expect(file?.id).toBeTruthy();
+      expect(
+        listed.students.map((student) => [student.nim, student.fileId]),
+      ).toEqual([
+        ["9900000211", file?.id],
+        ["9900000212", null],
+        ["9900000213", null],
+      ]);
+      expect(listed.matching).toBe(3);
+    });
+  });
+
   it("lists only students put in through the tab, the newest first", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Daftar");

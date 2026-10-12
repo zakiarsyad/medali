@@ -10,7 +10,7 @@ import {
   STATUS_LABELS,
 } from "./labels";
 import styles from "./new-students.module.css";
-import { newStudentsAddress } from "./new-students-address";
+import { newStudentsAddress, studentFileAddress } from "./new-students-address";
 import { RemoveStudentButton } from "./remove-student-button";
 
 const STATUS_STYLES: Record<AddedStudent["status"], string | undefined> = {
@@ -22,6 +22,23 @@ const STATUS_STYLES: Record<AddedStudent["status"], string | undefined> = {
 function pathAndClass(student: AddedStudent): string {
   const path = ENTRY_PATH_LABELS[student.entryPath];
   return student.className ? `${path} · ${student.className}` : path;
+}
+
+/** How a student was put in; a link to the file when one was kept. */
+function InputSource({ student }: { student: AddedStudent }) {
+  if (!student.inputSource) return null;
+  const label = inputSourceLabel(student.inputSource);
+  if (!student.fileId) return label;
+  return (
+    // A plain link: the server answers with the file, not with a screen.
+    <a
+      href={studentFileAddress(student.fileId)}
+      className={shared.link}
+      download
+    >
+      {label}
+    </a>
+  );
 }
 
 function StudentRow({
@@ -60,8 +77,8 @@ function StudentRow({
           {student.inputAt ? DAY.format(student.inputAt) : "-"} ·{" "}
           {student.inputBy ?? "-"}
         </span>
-        <small className={shared.detail}>
-          {student.inputSource ? inputSourceLabel(student.inputSource) : ""}
+        <small className={`${shared.detail} ${styles.source}`}>
+          <InputSource student={student} />
         </small>
       </td>
       <td className={shared.rowActions}>
