@@ -160,7 +160,7 @@ change any of these.
 - [x] 1. Docker runs the file storage locally, the example settings file
   lists its settings, and the app has one shared way to keep and fetch a
   file with a type and size check.
-- [ ] 2. Opening a file goes through the server, which checks the
+- [x] 2. Opening a file goes through the server, which checks the
   permission of the record it belongs to.
 - [ ] 3. "Simpan … baris" keeps the uploaded CSV with the saved batch.
 - [ ] 4. The file name under "Diinput" downloads the original file, and

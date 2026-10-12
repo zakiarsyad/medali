@@ -68,8 +68,41 @@ export const students = pgTable("students", {
   inputAt: timestamp({ withTimezone: true }),
   inputBy: uuid().references((): AnyPgColumn => accounts.id),
   inputSource: text().$type<StudentInputSource>(),
+  /** Set only for a student saved from a file, once files are kept. */
+  inputBatchId: uuid().references((): AnyPgColumn => studentBatches.id),
   deletedAt: timestamp({ withTimezone: true }),
   deletedBy: uuid().references((): AnyPgColumn => accounts.id),
+});
+
+/** One save of a student file: the students it added point here. */
+export const studentBatches = pgTable("student_batches", {
+  id: uuid().primaryKey().defaultRandom(),
+  inputAt: timestamp({ withTimezone: true }).notNull(),
+  inputBy: uuid()
+    .notNull()
+    .references((): AnyPgColumn => accounts.id),
+});
+
+/**
+ * The file a batch of students was saved from, as kept in the file
+ * storage. A batch has one file at most, and a file always has its batch.
+ */
+export const studentBatchFiles = pgTable("student_batch_files", {
+  id: uuid().primaryKey().defaultRandom(),
+  batchId: uuid()
+    .notNull()
+    .unique()
+    .references(() => studentBatches.id),
+  /** Where the file is in the file storage. */
+  objectKey: text().notNull().unique(),
+  /** The name the file had when it was sent. */
+  fileName: text().notNull(),
+  byteSize: integer().notNull(),
+  contentType: text().notNull(),
+  keptAt: timestamp({ withTimezone: true }).notNull(),
+  keptBy: uuid()
+    .notNull()
+    .references((): AnyPgColumn => accounts.id),
 });
 
 export const accounts = pgTable(

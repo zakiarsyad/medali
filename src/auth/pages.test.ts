@@ -22,6 +22,41 @@ function isListed(address: string): boolean {
   return "tabs" in page && page.tabs.some((tab) => tab.path === tabPath);
 }
 
+/** The addresses the server answers itself, without a screen. */
+function answerAddresses(): string[] {
+  return sourceFilesEndingWith("/route.ts")
+    .filter((path) => path.startsWith("src/app/"))
+    .map((path) => path.replace(/^src\/app\//, "").replace(/\/route\.ts$/, ""));
+}
+
+/** Whether an address sits below a page, or a tab of a tabbed page. */
+function isBelowListed(address: string): boolean {
+  const [pagePath = "", tabPath, ...rest] = address.split("/");
+  const page = pageAt(pagePath);
+  if (!page) return false;
+  if (!("tabs" in page)) return tabPath !== undefined;
+  return rest.length > 0 && isListed(`${pagePath}/${tabPath}`);
+}
+
+describe("every address the server answers itself", () => {
+  it.each(answerAddresses())(
+    "/%s is below a page or tab in the list",
+    (address) => {
+      expect(isBelowListed(address)).toBe(true);
+    },
+  );
+
+  it("finds the download of a kept student file", () => {
+    expect(answerAddresses()).toContain("pengaturan/mahasiswa/berkas/[id]");
+  });
+
+  it("finds an address that is below nothing in the list", () => {
+    expect(isBelowListed("rahasia/berkas")).toBe(false);
+    expect(isBelowListed("pengaturan/rahasia/berkas")).toBe(false);
+    expect(isBelowListed("pengaturan/mahasiswa")).toBe(false);
+  });
+});
+
 describe("every screen", () => {
   it.each(screenAddresses())("/%s is a page or tab in the list", (address) => {
     expect(isListed(address)).toBe(true);
