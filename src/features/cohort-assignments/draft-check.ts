@@ -47,15 +47,28 @@ export function checkDraft(groups: GroupToCheck[]): DraftCheck {
   };
 }
 
+/** A group as it is stored, with the mentor chosen for it and its members. */
+interface StoredGroup {
+  mentor: { id: string } | null;
+  members: unknown[];
+}
+
+/** The check of the groups of a draft as they are saved. */
+export function checkOfGroups(groups: StoredGroup[]): DraftCheck {
+  return checkDraft(
+    groups.map((group) => ({
+      mentorId: group.mentor?.id ?? null,
+      members: group.members.length,
+    })),
+  );
+}
+
 /** What the draft says when nothing stands in the way of its penetapan. */
 export const READY_WORDS =
   "Semua kelompok sudah punya pengasuh yang berbeda dan siap ditetapkan.";
 
-/**
- * What the note under the groups says of a check, one sentence for each
- * thing found: first what holds the penetapan back, then the warning.
- */
-export function checkWords(check: DraftCheck): string[] {
+/** One sentence for each thing that holds the penetapan back. */
+function heldBackWords(check: DraftCheck): string[] {
   const words: string[] = [];
   if (check.withoutMentor > 0) {
     words.push(`${check.withoutMentor} kelompok belum punya pengasuh.`);
@@ -65,6 +78,26 @@ export function checkWords(check: DraftCheck): string[] {
       `${check.mentorsChosenTwice} pengasuh dipilih untuk lebih dari satu kelompok.`,
     );
   }
+  return words;
+}
+
+const HELD_BACK = "Draf belum bisa diajukan atau ditetapkan.";
+
+/**
+ * What a submit or a penetapan of a draft that is not complete is told,
+ * or null for a draft that may be submitted and fixed.
+ */
+export function whatHoldsBack(check: DraftCheck): string | null {
+  if (check.isComplete) return null;
+  return [HELD_BACK, ...heldBackWords(check)].join(" ");
+}
+
+/**
+ * What the note under the groups says of a check, one sentence for each
+ * thing found: first what holds the penetapan back, then the warning.
+ */
+export function checkWords(check: DraftCheck): string[] {
+  const words = heldBackWords(check);
   if (check.outsideUsualSize > 0) {
     words.push(
       `${check.outsideUsualSize} kelompok di luar ukuran ${USUAL_SIZE_WORDS} (boleh, misalnya prodi kecil).`,

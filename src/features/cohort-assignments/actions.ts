@@ -1,16 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { forbidden } from "next/navigation";
-import { may } from "@/auth/access";
-import type { Account } from "@/auth/accounts";
-import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { ASSIGNMENT_ADDRESS } from "./assignment-address";
-import { STEP_ACTIONS } from "./assignment-steps";
 import { chooseMentor } from "./choose-mentor";
 import {
   parseDraftKey,
@@ -22,12 +17,7 @@ import { fillDraftMentors } from "./fill-draft-mentors";
 import { formAssignment } from "./form-assignment";
 import { parseForming } from "./forming-input";
 import { moveDraftMember } from "./move-draft-member";
-
-async function preparer(): Promise<Account> {
-  const account = await currentAccount();
-  if (!account || !may(account.roles, STEP_ACTIONS.form)) forbidden();
-  return account;
-}
+import { preparer } from "./preparer";
 
 /** "Bentuk kelompok" and "Bentuk ulang". */
 export async function formGroupsAction(

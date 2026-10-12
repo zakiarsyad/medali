@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DraftGroupsPanel } from "./draft-groups-panel";
 import type { PoolMentor } from "./mentor-options";
 import { MentorStepPanel } from "./mentor-step-panel";
+import { OneSaveAtATime } from "./one-save";
 import type { DraftGroup, DraftMember } from "./stored-assignment";
 
 const FIRST = "11111111-1111-4111-8111-111111111111";
@@ -54,11 +55,13 @@ const POOL: PoolMentor[] = [
 
 function step(openGroupId: string | null): string {
   return renderToStaticMarkup(
-    <MentorStepPanel
-      assignment={{ cohortYear: 2026, version: 4, groups: GROUPS }}
-      pool={POOL}
-      openGroupId={openGroupId}
-    />,
+    <OneSaveAtATime>
+      <MentorStepPanel
+        assignment={{ cohortYear: 2026, version: 4, groups: GROUPS }}
+        pool={POOL}
+        openGroupId={openGroupId}
+      />
+    </OneSaveAtATime>,
   );
 }
 
@@ -103,13 +106,23 @@ describe("MentorStepPanel", () => {
   });
 });
 
+const SAVED = {
+  cohortYear: 2026,
+  groups: GROUPS,
+  decreeNumber: "KEP-12/UJI/2026",
+  effectiveOn: "2026-09-01",
+  savedBy: "Kepala Uji",
+};
+
 describe("DraftGroupsPanel", () => {
   it("shows the groups and their mentors to read only: no member, no choice, no Anggota", () => {
     const panel = renderToStaticMarkup(
-      <DraftGroupsPanel
-        assignment={{ cohortYear: 2026, status: "draft", groups: GROUPS }}
-      />,
+      <DraftGroupsPanel assignment={{ ...SAVED, status: "draft" }} />,
     );
+
+    expect(panel).toContain("Draf penetapan");
+    expect(panel).not.toContain("KEP-12/UJI/2026");
+    expect(panel).not.toContain("sejak");
 
     expect(panel).toContain("KP 26-D3PJK-01");
     expect(panel).toContain("Yuni Contoh, M.Si.");
@@ -118,5 +131,19 @@ describe("DraftGroupsPanel", () => {
     expect(panel).not.toContain("<select");
     expect(panel).not.toContain("<button");
     expect(panel).not.toContain("<a ");
+  });
+
+  it("says a fixed angkatan is fixed, with its decree, who fixed it and since when each mentor holds the group", () => {
+    const panel = renderToStaticMarkup(
+      <DraftGroupsPanel assignment={{ ...SAVED, status: "fixed" }} />,
+    );
+
+    expect(panel).toContain("Angkatan 2026 sudah ditetapkan");
+    expect(panel).toContain(
+      "KEP-12/UJI/2026 · berlaku 1 Sep 2026 · ditetapkan Kepala Uji",
+    );
+    expect(panel).toContain("sejak 1 Sep 2026");
+    expect(panel).not.toContain("Anggota Uji");
+    expect(panel).not.toContain("<button");
   });
 });

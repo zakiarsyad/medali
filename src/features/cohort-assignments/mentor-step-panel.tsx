@@ -14,7 +14,6 @@ import {
   SAME_JURUSAN_MARK,
 } from "./mentor-options";
 import { MentorSelect } from "./mentor-select";
-import { OneSaveAtATime } from "./one-save";
 import type { DraftGroup, StoredAssignment } from "./stored-assignment";
 
 const COLUMNS = 5;
@@ -71,7 +70,7 @@ function chosenCount(groups: DraftGroup[]): number {
  * "3. Pengasuh setiap kelompok", for an account that prepares the
  * penetapan: the mentor of each group, "Isi otomatis yang kosong", and
  * "Anggota" to see the members of a group and move one. Every change is
- * saved as soon as it is made.
+ * saved as soon as it is made, so it stands inside `OneSaveAtATime`.
  */
 export function MentorStepPanel({
   assignment,
@@ -86,42 +85,40 @@ export function MentorStepPanel({
   const step = { shown: { cohortYear, version }, groups, pool, openGroupId };
   return (
     <section className={shared.panel}>
-      <OneSaveAtATime>
-        <div className={styles.panelHead}>
-          <div>
-            <h2 className={shared.heading}>3. Pengasuh setiap kelompok</h2>
-            <p className={styles.sub}>
-              {groups.length} kelompok · {chosenCount(groups)} sudah punya
-              pengasuh
-            </p>
-          </div>
-          <FillMentorsButton shown={step.shown} />
+      <div className={styles.panelHead}>
+        <div>
+          <h2 className={shared.heading}>3. Pengasuh setiap kelompok</h2>
+          <p className={styles.sub}>
+            {groups.length} kelompok · {chosenCount(groups)} sudah punya
+            pengasuh
+          </p>
         </div>
-        <div className={shared.tableWrap}>
-          <table className={`${shared.table} ${shared.stacked}`}>
-            <thead>
-              <tr>
-                <GroupFactTitles />
-                <th>Pengasuh</th>
-                <th>
-                  <span className={shared.hidden}>Tindakan</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group) => (
-                <GroupRow key={group.id} group={group} {...step} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <DraftCheckNote groups={groups} />
-        <p className={styles.hint}>
-          Tanda {SAME_JURUSAN_MARK} berarti pengasuh dari jurusan yang sama
-          dengan program studi kelompok. Setiap pilihan pengasuh dan perpindahan
-          anggota langsung disimpan pada draf.
-        </p>
-      </OneSaveAtATime>
+        <FillMentorsButton shown={step.shown} />
+      </div>
+      <div className={shared.tableWrap}>
+        <table className={`${shared.table} ${shared.stacked}`}>
+          <thead>
+            <tr>
+              <GroupFactTitles />
+              <th>Pengasuh</th>
+              <th>
+                <span className={shared.hidden}>Tindakan</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {groups.map((group) => (
+              <GroupRow key={group.id} group={group} {...step} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <DraftCheckNote groups={groups} />
+      <p className={styles.hint}>
+        Tanda {SAME_JURUSAN_MARK} berarti pengasuh dari jurusan yang sama dengan
+        program studi kelompok. Setiap pilihan pengasuh dan perpindahan anggota
+        langsung disimpan pada draf.
+      </p>
     </section>
   );
 }

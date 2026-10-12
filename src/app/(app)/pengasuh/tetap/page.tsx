@@ -22,6 +22,7 @@ export default async function CohortAssignmentsPage(
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "tetap" }}
       limit={limit}
       mayPrepare={may(account.roles, STEP_ACTIONS.form)}
+      mayFix={may(account.roles, STEP_ACTIONS.fix)}
       askedYear={readAskedCohort(params)}
       askedGroupId={readAskedGroup(params)}
     />

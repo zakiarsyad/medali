@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { cohortAssignments } from "@/db/schema";
+import { fillDraftMentors } from "./fill-draft-mentors";
 import { formAssignment } from "./form-assignment";
 import {
   type DraftGroup,
@@ -9,6 +10,7 @@ import {
 } from "./stored-assignment";
 import {
   addTestActor,
+  addTestMentor,
   addTestProgram,
   addTestStudents,
   type TestActor,
@@ -48,6 +50,28 @@ export async function addTestDraft(
   });
   if (!formed.ok) throw new Error(formed.error);
   return { actor, large, small };
+}
+
+/**
+ * The same draft with a mentor of its own chosen for each of its three
+ * groups, which leaves it at version 2: one that may be submitted and
+ * fixed.
+ */
+export async function addCompleteTestDraft(
+  db: Database,
+  cohortYear: number,
+  tag: string,
+): Promise<TestDraft> {
+  const draft = await addTestDraft(db, cohortYear, tag);
+  for (const name of ["Adi", "Budi", "Citra"]) {
+    await addTestMentor(db, { name: `Pengasuh ${tag} ${name}` });
+  }
+  const filled = await fillDraftMentors(db, draft.actor, {
+    cohortYear,
+    version: 1,
+  });
+  if (!filled.ok) throw new Error(filled.error);
+  return draft;
 }
 
 export async function testDraftOf(

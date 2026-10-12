@@ -85,6 +85,34 @@
   font-size: var(--text-md);
 }
 
+/* What a step did, said above the panels of the angkatan. */
+.announced {
+  margin-top: var(--space-lg);
+}
+
+/* A line of a form that takes its whole width. */
+.whole {
+  grid-column: 1 / -1;
+}
+
+.log {
+  margin-top: var(--space-md);
+}
+
+.logTitle {
+  color: var(--muted);
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+.logLines {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
 /* A choice with a long name must not be wider than a phone. */
 .fit {
   max-width: 100%;

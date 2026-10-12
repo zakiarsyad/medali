@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { checkDraft, checkWords, READY_WORDS } from "./draft-check";
+import {
+  checkDraft,
+  checkWords,
+  READY_WORDS,
+  whatHoldsBack,
+} from "./draft-check";
 
 function group(mentorId: string | null, members = 30) {
   return { mentorId, members };
@@ -56,6 +61,20 @@ describe("checkDraft", () => {
       outsideUsualSize: 0,
       isComplete: false,
     });
+  });
+});
+
+describe("whatHoldsBack", () => {
+  it("is null for a draft that may be submitted and fixed, also with a warning", () => {
+    expect(whatHoldsBack(checkDraft([group("ani", 17)]))).toBe(null);
+  });
+
+  it("says what holds the penetapan back, without the warning", () => {
+    const check = checkDraft([group(null, 17), group("ani"), group("ani")]);
+
+    expect(whatHoldsBack(check)).toBe(
+      "Draf belum bisa diajukan atau ditetapkan. 1 kelompok belum punya pengasuh. 1 pengasuh dipilih untuk lebih dari satu kelompok.",
+    );
   });
 });
 

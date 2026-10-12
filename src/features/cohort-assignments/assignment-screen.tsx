@@ -15,6 +15,7 @@ export async function AssignmentScreen({
   tabs,
   limit,
   mayPrepare,
+  mayFix,
   askedYear,
   askedGroupId,
 }: {
@@ -23,6 +24,8 @@ export async function AssignmentScreen({
   limit: RowLimit;
   /** Whether the account may form groups, or only reads. */
   mayPrepare: boolean;
+  /** Whether the account may fix a penetapan and cancel a fixed one. */
+  mayFix: boolean;
   /** The angkatan the address asks for, if any. */
   askedYear: number | null;
   /** The group whose members the address asks to show, if any. */
@@ -48,6 +51,7 @@ export async function AssignmentScreen({
           cohortYear={chosen.cohortYear}
           limit={limit}
           mayPrepare={mayPrepare}
+          mayFix={mayFix}
           openGroupId={askedGroupId}
         />
       )}

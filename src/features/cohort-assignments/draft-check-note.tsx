@@ -1,16 +1,6 @@
 import styles from "./cohort-assignments.module.css";
-import { checkDraft, checkWords } from "./draft-check";
+import { checkOfGroups, checkWords } from "./draft-check";
 import type { DraftGroup } from "./stored-assignment";
-
-/** The check of the groups of a draft as they are saved. */
-export function checkOfGroups(groups: DraftGroup[]) {
-  return checkDraft(
-    groups.map((group) => ({
-      mentorId: group.mentor?.id ?? null,
-      members: group.members.length,
-    })),
-  );
-}
 
 /**
  * The note that says what the draft still needs before its penetapan: a
