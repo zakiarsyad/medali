@@ -94,6 +94,9 @@ Decided while building, because the issue did not say:
 9. For an address the server answers itself, the check confirms that
    it asks who is using it first. Whether it then refuses is left to
    each area's own checks, as it is today for the file download.
+10. Notes in the code are left out before it is read. Where a text in
+    the code would be taken for the start of a note, so that an action
+    after it is not read, the check fails.
 
 ## Steps
 

@@ -21,6 +21,8 @@ const EXPORT = /^[ \t]*export\b.*$/gm;
 const READABLE_EXPORT =
   /^export (?:(?:default )?(?:async )?function \w+\(|interface |type |const \w+ = (?:"[^"]*"|\d+|true|false);$)/;
 const DIRECTIVE = /^\s*["']use server["'];?\s*$/;
+const DIRECTIVE_LINE = /^[ \t]*["']use server["'];?[ \t]*$/gm;
+const EXPORT_AT_LINE_START = /^export\b/gm;
 const READS_OWN_ADDRESS =
   /^const (?:\w+|\{[^}]*\}) = await (?:props|context)\.(?:params|searchParams);$/;
 const OPENS_PAGE =
@@ -127,6 +129,24 @@ function exportedNotAsking(
 export function unreadableExports(source: string): string[] {
   const exports = withoutNotes(source).match(EXPORT) ?? [];
   return exports.filter((line) => !READABLE_EXPORT.test(line));
+}
+
+function count(source: string, lines: RegExp): number {
+  return (source.match(lines) ?? []).length;
+}
+
+/**
+ * Whether taking the notes out of a file also takes out an export or
+ * the mark of an action. A text that holds the sign a note starts with
+ * reads as the start of one, and the code after it, up to the next sign
+ * that ends a note, would be lost to the check.
+ */
+export function holdsCodeLostInANote(source: string): boolean {
+  const read = withoutNotes(source);
+  return (
+    count(read, EXPORT_AT_LINE_START) < count(source, EXPORT_AT_LINE_START) ||
+    count(read, DIRECTIVE_LINE) < count(source, DIRECTIVE_LINE)
+  );
 }
 
 /** The address of a screen file: "asrama/kakak", or "[page]/[tab]". */

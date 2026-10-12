@@ -7,6 +7,7 @@ import {
   answerFault,
   exportedFunctionNames,
   holdsActionInside,
+  holdsCodeLostInANote,
   isActionFile,
   linesOf,
   screenFault,
@@ -222,25 +223,102 @@ export default async function RowsPage() {
   return <input accept="image/*" />;
 }
 
-/** The title of the screen. */
 export async function generateMetadata() {
   return { title: await readRowName(database()) };
 }
+
+/** The name shown above the rows. */
+function heading() {
+  return "Baris";
+}
 `;
     expect(screenFault(source, "baris")).toContain("generateMetadata");
-  });
-
-  it("does not count openPage in a note", () => {
-    const source = MADE_UP_SCREEN_THAT_DOES_NOT_ASK.replace(
-      "return <RowsScreen",
-      'await openPage("baris"); // await openPage("baris");\n  return <RowsScreen',
-    );
-    expect(screenFault(source, "baris")).not.toBeNull();
+    expect(holdsCodeLostInANote(source)).toBe(false);
   });
 
   it("takes an export after a note as one it cannot read", () => {
     const source = MADE_UP_SCREEN_WITH_A_TITLE_AFTER_A_NOTE;
     expect(unreadableExports(source)).toHaveLength(1);
+  });
+});
+
+describe("holdsCodeLostInANote", () => {
+  it("finds code after a text that reads as the start of a note", () => {
+    const source = `
+export default async function RowsPage() {
+  await openPage("baris");
+  const hint = "pisahkan dengan /* atau";
+  async function save() {
+    "use server";
+    await saveRows(database());
+  }
+  return <form action={save} title={hint} />;
+}
+
+/** The name shown above the rows. */
+function heading() {
+  return "Baris";
+}
+`;
+    expect(holdsCodeLostInANote(source)).toBe(true);
+  });
+
+  it("finds none in real notes", () => {
+    const source = `
+/**
+ * The rows of a page. Its upload takes "image/*" only.
+ */
+export default async function RowsPage() {
+  const opened = await openPage("baris"); /* checked first */
+  return (
+    <>
+      {/* A plain link,
+          so the page loads anew. */}
+      <a href="/baris">Baris</a>
+    </>
+  );
+}
+`;
+    expect(holdsCodeLostInANote(source)).toBe(false);
+  });
+
+  it("finds code after a text that starts its own line", () => {
+    const source = `
+export default async function RowsPage() {
+  await openPage("baris");
+  return (
+    <p>
+      /* atau garis miring
+    </p>
+  );
+}
+
+export async function generateMetadata() {
+  return { title: await readRowName(database()) };
+}
+
+/** The name shown above the rows. */
+function heading() {
+  return "Baris";
+}
+`;
+    expect(holdsCodeLostInANote(source)).toBe(true);
+  });
+
+  it("finds code lost up to a sign that ends no real note", () => {
+    const source = `
+export default async function RowsPage() {
+  await openPage("baris");
+  return <p title="Berkas /* gambar">Baris</p>;
+}
+
+export async function generateMetadata() {
+  return { title: await readRowName(database()) };
+}
+
+// The browser sends "*/*" when it takes anything.
+`;
+    expect(holdsCodeLostInANote(source)).toBe(true);
   });
 });
 
@@ -474,9 +552,13 @@ describe("every action", () => {
     },
   );
 
-  it.each(sourceFiles())("%s holds no action inside a function", (path) => {
-    expect(holdsActionInside(read(path))).toBe(false);
-  });
+  it.each(sourceFiles())(
+    "%s holds no action or code the check cannot see",
+    (path) => {
+      expect(holdsActionInside(read(path))).toBe(false);
+      expect(holdsCodeLostInANote(read(path))).toBe(false);
+    },
+  );
 });
 
 describe("what needs no sign-in", () => {
