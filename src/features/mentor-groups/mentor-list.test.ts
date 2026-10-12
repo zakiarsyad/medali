@@ -8,6 +8,7 @@ import { type MentorListFilters, NO_FILTERS } from "./mentor-list-address";
 import { mentorStatus } from "./mentor-status";
 import { listMentorUnits } from "./mentor-units";
 import {
+  addTestEndedGroup,
   addTestGroup,
   addTestMembersWithStatus,
   addTestMentor,
@@ -215,6 +216,23 @@ describe("listMentors", () => {
       expect(listed.mentors).toMatchObject([
         { status: "reserve", inactiveSince: null },
       ]);
+    });
+  });
+
+  it("lists one whose only group is ended as Cadangan, with no group", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "UJIDAFTARAKHIR");
+      const id = await addMentorWithRole(db, "Pengasuh Uji Batal");
+      const ended = await addTestEndedGroup(db, program);
+      await addTestMentorLine(db, ended, id);
+
+      const listed = await listMentors(db, EVERYONE, inTestUnit(), 1);
+      const ofProgram = await namesFound(db, onlyPrograms([program]));
+
+      expect(listed.mentors).toMatchObject([
+        { id, status: "reserve", groups: [], students: 0 },
+      ]);
+      expect(ofProgram).toEqual([]);
     });
   });
 

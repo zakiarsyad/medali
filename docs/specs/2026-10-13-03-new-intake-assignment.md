@@ -115,7 +115,7 @@ is built here.
 
 ## Steps
 
-- [ ] 1. Penetapan drafts and their process log are stored, with the
+- [x] 1. Penetapan drafts and their process log are stored, with the
   sample new angkatan.
 - [ ] 2. The permissions for preparing and fixing, with their checks.
 - [ ] 3. The rule that forms groups by the three methods, with tests.

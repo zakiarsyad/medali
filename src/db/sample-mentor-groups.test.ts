@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { SAMPLE_ACCOUNTS, SAMPLE_STUDENTS } from "./sample-data";
-import { sampleFirstYears } from "./sample-dorms";
 import {
   SAMPLE_MENTORS_WITHOUT_GROUP,
   SAMPLE_REPLACED_GROUP,
@@ -8,9 +7,10 @@ import {
   sampleGroupHolders,
   sampleMentorGroups,
 } from "./sample-mentor-groups";
+import { sampleGroupedFirstYears } from "./sample-new-intake";
 
 const FIRST_YEAR = 2026;
-const everyone = [...SAMPLE_STUDENTS, ...sampleFirstYears(FIRST_YEAR)];
+const everyone = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(FIRST_YEAR)];
 const groups = sampleMentorGroups(everyone);
 
 const mentorNames = SAMPLE_ACCOUNTS.filter((account) =>

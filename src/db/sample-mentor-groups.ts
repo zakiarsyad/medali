@@ -5,7 +5,11 @@ import type { SampleStudent } from "./sample-students";
  * Made-up people only. Every group, date and reason here is invented.
  */
 
-/** The sample Pengasuh who hold no group, to show a mentor without one. */
+/**
+ * The sample Pengasuh who hold no group, to show a mentor without one.
+ * They are the spare mentors of the sample new angkatan: one of the
+ * jurusan of each of its program studi.
+ */
 export const SAMPLE_MENTORS_WITHOUT_GROUP = ["Taufik Rahmadi", "Yuni Astutik"];
 
 export interface SampleGroupMentor {
@@ -124,7 +128,7 @@ function mentorsOf(
 }
 
 /**
- * Puts every sample student into the made-up group of their angkatan,
+ * Puts every student given into the made-up group of their angkatan,
  * program studi and jalur, which starts on 1 September of that angkatan.
  * The groups go to the sample Pengasuh in turn, the newest angkatan
  * first, so the first of them holds one of its large groups.

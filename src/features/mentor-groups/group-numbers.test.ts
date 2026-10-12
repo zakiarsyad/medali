@@ -6,6 +6,7 @@ import { withTestDatabase } from "@/db/test-database";
 import { readGroupNumbers } from "./group-numbers";
 import { GROUP_MIN } from "./group-size";
 import {
+  addTestEndedGroup,
   addTestGroup,
   addTestMembersWithStatus,
   addTestProgram,
@@ -86,6 +87,22 @@ describe("readGroupNumbers", () => {
         members: before.members + 28,
         usualSize: before.usualSize + 1,
       });
+    });
+  });
+
+  it("leaves out an ended group, for every account", async () => {
+    await inTestDatabase(async (db) => {
+      const everyone: RowLimit = { kind: "all" };
+      const before = await readGroupNumbers(db, everyone);
+      const program = await addTestProgram(db, "UJIANGKAAKHIR");
+      await addTestEndedGroup(db, program);
+      await addTestGroup(db, program);
+
+      const whole = await readGroupNumbers(db, everyone);
+      const own = await readGroupNumbers(db, onlyProgram(program));
+
+      expect(whole.groups).toBe(before.groups + 1);
+      expect(own.groups).toBe(1);
     });
   });
 
