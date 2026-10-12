@@ -13,6 +13,7 @@ export const ACTIONS = [
   "view_dorm_companions",
   "manage_dorm_companions",
   "view_student_detail",
+  "view_student_room",
   "view_mentor_groups",
   "view_mentors",
 ] as const;
@@ -30,6 +31,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_dorm_companions: "Melihat kakak pendamping",
   manage_dorm_companions: "Mengelola kakak pendamping",
   view_student_detail: "Melihat detail mahasiswa",
+  view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
   view_mentors: "Melihat daftar pengasuh",
 };
@@ -126,6 +128,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_rooms",
       "view_dorm_companions",
       "view_student_detail",
+      "view_student_room",
       "view_mentor_groups",
       "view_mentors",
     ],

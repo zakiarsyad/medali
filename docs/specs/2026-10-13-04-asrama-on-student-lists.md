@@ -98,4 +98,4 @@ Decided while building, because the issue did not say:
 - [x] 1. The Asrama column, the number "Penghuni asrama" and the form's
   note on Pengguna baru mahasiswa.
 - [x] 2. The Asrama filter and tag on the Mahasiswa list, with checks.
-- [ ] 3. The Asrama line in the student detail.
+- [x] 3. The Asrama line in the student detail.

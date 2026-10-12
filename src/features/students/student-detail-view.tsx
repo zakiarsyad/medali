@@ -5,6 +5,7 @@ import {
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
+import { residenceWords } from "./residence-words";
 import { type RunningPeriod, semesterNow } from "./semester-now";
 import { detailSemesterWords } from "./semester-words";
 import type { StudentDetail } from "./student-detail";
@@ -68,6 +69,7 @@ export function StudentDetailView({
         </Fact>
         <Fact title="Kelas">{student.className ?? "Belum tercatat"}</Fact>
         <Fact title="Jenis kelamin">{SEX_LABELS[student.sex]}</Fact>
+        <Fact title="Asrama">{residenceWords(student.residence)}</Fact>
         {student.entryPath === "transfer" && (
           <Fact title="Instansi asal" wide>
             {student.originAgency ?? "-"}

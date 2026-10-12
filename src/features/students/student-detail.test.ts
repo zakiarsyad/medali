@@ -85,6 +85,7 @@ describe("readStudentDetail", () => {
           province: "Bali",
           sex: "female",
           mentorGroup: null,
+          residence: null,
         },
       });
     });
