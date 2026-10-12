@@ -44,3 +44,8 @@
   font-size: var(--text-lg);
   font-weight: var(--weight-heavy);
 }
+
+/* Under the row, over its whole width, so the dates have room to be typed. */
+.change {
+  flex: 1 1 100%;
+}

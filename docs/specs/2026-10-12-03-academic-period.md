@@ -81,5 +81,5 @@ get their own log.
   any other date) and "which semester is this student in", with checks.
 - [x] 4. Pengaturan > Periode akademik shows the running period and the
   list.
-- [ ] 5. Kepala Unit adds a period and changes one that has not ended,
+- [x] 5. Kepala Unit adds a period and changes one that has not ended,
   and each change goes to the log.

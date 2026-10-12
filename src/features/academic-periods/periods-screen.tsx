@@ -3,12 +3,14 @@ import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import type { AcademicPeriod } from "./academic-period";
+import { AddPeriodForm } from "./add-period-form";
 import { campusDay } from "./campus-day";
 import { periodTitle } from "./period-labels";
 import { PeriodDates, PeriodList } from "./period-list";
 import styles from "./periods.module.css";
 import { runningPeriodOn } from "./running-period";
 import { readAcademicPeriods } from "./stored-periods";
+import { academicYearOn } from "./suggested-start";
 
 function RunningPeriod({ running }: { running: AcademicPeriod | null }) {
   if (!running) {
@@ -24,7 +26,8 @@ function RunningPeriod({ running }: { running: AcademicPeriod | null }) {
 
 export async function PeriodsScreen({ tabs }: { tabs: TabLinksProps }) {
   const periods = await readAcademicPeriods(database());
-  const running = runningPeriodOn(periods, campusDay());
+  const today = campusDay();
+  const running = runningPeriodOn(periods, today);
   return (
     <>
       <PageHead title="Periode akademik">
@@ -39,9 +42,10 @@ export async function PeriodsScreen({ tabs }: { tabs: TabLinksProps }) {
           <RunningPeriod running={running} />
         </section>
       )}
+      <AddPeriodForm startYear={academicYearOn(today)} />
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar periode</h2>
-        <PeriodList periods={periods} running={running} />
+        <PeriodList periods={periods} running={running} today={today} />
       </section>
     </>
   );
