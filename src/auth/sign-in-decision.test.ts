@@ -3,7 +3,12 @@ import { decideSignIn } from "./sign-in-decision";
 
 const ENDING = "@kampus.example";
 const ACCOUNT_ID = "6f1c1f8e-3b7a-4c55-9a51-2f7d3c8b9e10";
-const CAMPUS = { email: "budi@kampus.example", verified: true };
+const CAMPUS = {
+  email: "budi@kampus.example",
+  verified: true,
+  hostedDomain: "kampus.example",
+};
+const OUTSIDE = { result: "refused_outside_campus" };
 
 describe("decideSignIn", () => {
   it("signs in a verified campus address that has an account", () => {
@@ -14,25 +19,37 @@ describe("decideSignIn", () => {
   });
 
   it("refuses an address outside the campus, even one with an account", () => {
-    const outside = { email: "orang@luar.example", verified: true };
+    const outside = { ...CAMPUS, email: "orang@luar.example" };
 
-    expect(decideSignIn(outside, ENDING, ACCOUNT_ID)).toEqual({
-      result: "refused_outside_campus",
-    });
+    expect(decideSignIn(outside, ENDING, ACCOUNT_ID)).toEqual(OUTSIDE);
   });
 
   it("refuses a campus address Google has not verified, like an outside one", () => {
     const unverified = { ...CAMPUS, verified: false };
 
-    expect(decideSignIn(unverified, ENDING, ACCOUNT_ID)).toEqual({
-      result: "refused_outside_campus",
-    });
+    expect(decideSignIn(unverified, ENDING, ACCOUNT_ID)).toEqual(OUTSIDE);
   });
 
+  it.each([
+    ["no campus named by Google, as for a personal account", null],
+    ["another campus named by Google", "luar.example"],
+    ["a longer name than the campus", "mail.kampus.example"],
+    ["the ending with its @", "@kampus.example"],
+    ["an empty name", ""],
+  ])(
+    "refuses a campus address with %s, like an outside one",
+    (_kind, hostedDomain) => {
+      const personal = { ...CAMPUS, hostedDomain };
+
+      expect(decideSignIn(personal, ENDING, ACCOUNT_ID)).toEqual(OUTSIDE);
+    },
+  );
+
   it("refuses every address while the campus ending is empty", () => {
-    expect(decideSignIn(CAMPUS, "", ACCOUNT_ID)).toEqual({
-      result: "refused_outside_campus",
-    });
+    expect(decideSignIn(CAMPUS, "", ACCOUNT_ID)).toEqual(OUTSIDE);
+    expect(
+      decideSignIn({ ...CAMPUS, hostedDomain: "" }, "", ACCOUNT_ID),
+    ).toEqual(OUTSIDE);
   });
 
   it("refuses a campus address that has no account", () => {

@@ -11,6 +11,7 @@ const CLAIMS = {
   nonce: NONCE,
   email: "Budi@Kampus.Example",
   email_verified: true,
+  hd: "Kampus.Example",
 };
 
 const google = await generateKeyPair("RS256");
@@ -34,7 +35,25 @@ describe("readGoogleToken", () => {
     expect(await readGoogleToken(token, googleKeys, EXPECTED)).toEqual({
       email: "budi@kampus.example",
       verified: true,
+      hostedDomain: "kampus.example",
     });
+  });
+
+  it.each([
+    ["names no campus, as for a personal account", undefined],
+    ["names something that is not text", 7],
+  ])("reads no campus when the answer %s", async (_kind, hd) => {
+    const token = await signed({ ...CLAIMS, hd });
+
+    const answer = await readGoogleToken(token, googleKeys, EXPECTED);
+    expect(answer?.hostedDomain).toBeNull();
+  });
+
+  it("reads another campus as it is named, for the decision to refuse", async () => {
+    const token = await signed({ ...CLAIMS, hd: "luar.example" });
+
+    const answer = await readGoogleToken(token, googleKeys, EXPECTED);
+    expect(answer?.hostedDomain).toBe("luar.example");
   });
 
   it("takes Google's other way of writing its own name", async () => {
@@ -93,6 +112,7 @@ describe("readGoogleToken", () => {
       expect(await readGoogleToken(token, googleKeys, EXPECTED)).toEqual({
         email: "budi@kampus.example",
         verified: false,
+        hostedDomain: "kampus.example",
       });
     },
   );

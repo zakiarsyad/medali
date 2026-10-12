@@ -5,6 +5,11 @@ export interface ConfirmedAddress {
   email: string;
   /** Whether Google says the address really belongs to the person. */
   verified: boolean;
+  /**
+   * The campus or company that runs the account at Google, in small
+   * letters. Null for a personal Google account, which names none.
+   */
+  hostedDomain: string | null;
 }
 
 /** What an answer must name to belong to this app and this attempt. */
@@ -55,5 +60,7 @@ export async function readGoogleToken(
   return {
     email: content.email.toLowerCase(),
     verified: content.email_verified === true,
+    hostedDomain:
+      typeof content.hd === "string" ? content.hd.toLowerCase() : null,
   };
 }

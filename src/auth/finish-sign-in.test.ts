@@ -68,6 +68,7 @@ describe("finishSignIn", () => {
       const finished = await finish(db, {
         email: "budi@kampus.example",
         verified: true,
+        hostedDomain: "kampus.example",
       });
 
       if (finished.result !== "signed_in") throw new Error(finished.result);
@@ -101,22 +102,43 @@ describe("finishSignIn", () => {
   it.each([
     [
       "an address outside the campus",
-      { email: "orang@luar.example", verified: true },
+      {
+        email: "orang@luar.example",
+        verified: true,
+        hostedDomain: "kampus.example",
+      },
       "refused_outside_campus",
     ],
     [
       "a campus address Google has not verified",
-      { email: "budi@kampus.example", verified: false },
+      {
+        email: "budi@kampus.example",
+        verified: false,
+        hostedDomain: "kampus.example",
+      },
+      "refused_outside_campus",
+    ],
+    [
+      "a campus address on a personal Google account",
+      { email: "budi@kampus.example", verified: true, hostedDomain: null },
       "refused_outside_campus",
     ],
     [
       "a campus address that has no account",
-      { email: "tamu@kampus.example", verified: true },
+      {
+        email: "tamu@kampus.example",
+        verified: true,
+        hostedDomain: "kampus.example",
+      },
       "refused_no_account",
     ],
     [
       "a campus address whose account was removed",
-      { email: "lama@kampus.example", verified: true },
+      {
+        email: "lama@kampus.example",
+        verified: true,
+        hostedDomain: "kampus.example",
+      },
       "refused_no_account",
     ],
     ["an answer that cannot be trusted", null, "failed"],
@@ -148,6 +170,7 @@ describe("finishSignIn", () => {
       const { google, asked } = googleSaying({
         email: "budi@kampus.example",
         verified: true,
+        hostedDomain: "kampus.example",
       });
       await addTestAccount(db, { email: "budi@kampus.example" });
       const back = { ...backFromGoogle(), ...missing };
@@ -172,6 +195,7 @@ describe("finishSignIn", () => {
       const { google, asked } = googleSaying({
         email: "budi@kampus.example",
         verified: true,
+        hostedDomain: "kampus.example",
       });
       await addTestAccount(db, { email: "budi@kampus.example" });
       const back = { ...backFromGoogle(), attempt: null };
@@ -204,6 +228,7 @@ describe("finishSignIn", () => {
       const { google } = googleSaying({
         email: "budi@kampus.example",
         verified: true,
+        hostedDomain: "kampus.example",
       });
 
       const finished = await finishSignIn(
@@ -222,7 +247,11 @@ describe("finishSignIn", () => {
       const accountId = await addTestAccount(db, {
         email: "budi@kampus.example",
       });
-      const answer = { email: "budi@kampus.example", verified: true };
+      const answer = {
+        email: "budi@kampus.example",
+        verified: true,
+        hostedDomain: "kampus.example",
+      };
 
       const first = await finish(db, answer);
       const second = await finish(db, answer);

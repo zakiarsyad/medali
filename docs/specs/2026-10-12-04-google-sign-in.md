@@ -190,6 +190,13 @@ change any of these.
     log. Otherwise anyone could fill a log that can never be emptied.
 24. A sign-in and its log line are saved together or not at all, and so
     are a sign-out and its line.
+25. Google must also say that the account is run by the campus itself:
+    the campus named in its answer must be the campus address ending
+    without the "@". A personal Google account made with a campus address
+    names no campus, and is refused like an outside address, with
+    "Gunakan akun Google kampus." Otherwise such an account would keep
+    getting in after the campus closes that mailbox or gives it to
+    someone else.
 
 ## Steps
 
