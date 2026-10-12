@@ -1,9 +1,9 @@
 "use client";
 
 import { type FormEvent, startTransition, useActionState } from "react";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import type { AcademicPeriod } from "./academic-period";
 import { changePeriodDatesAction } from "./actions";
 import styles from "./periods.module.css";
 

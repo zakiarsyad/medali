@@ -4,7 +4,9 @@ import {
   may,
   mayOpenPage,
   mayOpenTab,
+  needsDormResident,
   pagesFor,
+  pagesForAccount,
   rowLimitFor,
   tabsFor,
 } from "./access";
@@ -157,6 +159,52 @@ describe("pagesFor", () => {
 
   it("gives no pages to an account with no roles", () => {
     expect(pagesFor([])).toEqual([]);
+  });
+});
+
+describe("needsDormResident", () => {
+  it("opens Asrama to Mahasiswa only for a dorm resident", () => {
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+  });
+
+  it("opens the other pages of Mahasiswa to every student", () => {
+    for (const page of ROLES.student.pages) {
+      if (page === "dorm") continue;
+      expect(needsDormResident(["student"], page)).toBe(false);
+    }
+  });
+
+  it("asks no other role to live in the dorm", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    for (const role of others) {
+      expect(needsDormResident([role], "dorm")).toBe(false);
+    }
+  });
+
+  it("opens Asrama to a student who also holds a dorm role", () => {
+    expect(needsDormResident(["student", "bam_bphk"], "dorm")).toBe(false);
+  });
+});
+
+describe("pagesForAccount", () => {
+  it("shows Asrama to a student who lives in the dorm", () => {
+    expect(paths(pagesForAccount(["student"], true))).toContain("asrama");
+  });
+
+  it("hides Asrama from a student who does not live in the dorm", () => {
+    expect(paths(pagesForAccount(["student"], false))).toEqual([
+      "saya",
+      "kegiatan",
+      "penilaian",
+      "konseling",
+    ]);
+  });
+
+  it("shows Asrama to a dorm role wherever the account lives", () => {
+    expect(paths(pagesForAccount(["dorm_manager"], false))).toContain("asrama");
+    expect(
+      paths(pagesForAccount(["student", "bam_household"], false)),
+    ).toContain("asrama");
   });
 });
 

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { campusDay } from "@/features/academic-periods/campus-day";
+import { campusDay } from "@/academic-periods/campus-day";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,

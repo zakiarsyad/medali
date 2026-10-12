@@ -1,5 +1,5 @@
+import type { AcademicPeriod, Term } from "@/academic-periods/academic-period";
 import type { Parsed } from "@/parsed";
-import type { AcademicPeriod, Term } from "./academic-period";
 
 export type PeriodDates = Pick<AcademicPeriod, "startsOn" | "endsOn">;
 export type NewPeriod = Omit<AcademicPeriod, "id">;

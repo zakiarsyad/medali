@@ -32,6 +32,8 @@ export interface Role {
   title: string;
   initials: string;
   pages: readonly PageId[];
+  /** Those of its pages the role opens only for a student who lives in the dorm. */
+  residentPages?: readonly PageId[];
   tabs: RoleTabs;
   actions: readonly Action[];
   rows: RowRule;
@@ -141,6 +143,7 @@ export const ROLES: Record<RoleId, Role> = {
     title: "Mahasiswa",
     initials: "MH",
     pages: ["profile", "activities", "assessment", "counselling", "dorm"],
+    residentPages: ["dorm"],
     tabs: {
       assessment: ["siku"],
       dorm: ["activities", "leave", "cleaning", "violations"],

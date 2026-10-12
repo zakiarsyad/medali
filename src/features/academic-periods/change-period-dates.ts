@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -6,7 +7,6 @@ import { isUuid } from "@/db/is-uuid";
 import { academicPeriodChanges, academicPeriods } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { refusalAfterError } from "./broken-rule";
-import { campusDay } from "./campus-day";
 import { NOT_ALLOWED } from "./not-allowed";
 import { parsePeriodDates, type SentPeriodDates } from "./period-input";
 import { periodTitle } from "./period-labels";

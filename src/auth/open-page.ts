@@ -1,5 +1,6 @@
 import { forbidden, notFound, redirect } from "next/navigation";
-import { mayOpenPage, mayOpenTab, tabsFor } from "./access";
+import { currentDorm } from "@/features/dorm/current-dorm";
+import { mayOpenPage, mayOpenTab, needsDormResident, tabsFor } from "./access";
 import type { Account } from "./accounts";
 import { currentAccount } from "./current-account";
 import { type Page, pageAt, type TabDefinition } from "./pages";
@@ -13,7 +14,8 @@ export interface OpenedPage {
 
 /**
  * Checks that the current account may open a page, and one of its tabs.
- * Refuses it otherwise. A tabbed page opened without a tab goes to the
+ * Refuses it otherwise, and refuses a student who does not live in the
+ * dorm a page that is for residents. A tabbed page opened without a tab goes to the
  * account's first tab there.
  */
 export async function openPage(
@@ -24,6 +26,9 @@ export async function openPage(
   if (!page) notFound();
   const account = await currentAccount();
   if (!account || !mayOpenPage(account.roles, page.id)) forbidden();
+  if (needsDormResident(account.roles, page.id)) {
+    if ((await currentDorm(account.studentId)) === null) forbidden();
+  }
 
   const tabs = tabsFor(account.roles, page.id);
   if (tabPath === undefined) {

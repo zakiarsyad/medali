@@ -6,9 +6,9 @@ import {
   useActionState,
   useState,
 } from "react";
+import type { Term } from "@/academic-periods/academic-period";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import type { Term } from "./academic-period";
 import { addPeriodAction } from "./actions";
 import { parseStartYear } from "./period-input";
 import { academicYear, TERM_LABELS } from "./period-labels";

@@ -1,7 +1,7 @@
 import { and, gte, lte, ne } from "drizzle-orm";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { Database } from "@/db/connect";
 import { academicPeriods } from "@/db/schema";
-import type { AcademicPeriod } from "./academic-period";
 import type { PeriodDates } from "./period-input";
 import { periodTitle, shownDay } from "./period-labels";
 

@@ -1,4 +1,4 @@
-import { campusDay } from "@/features/academic-periods/campus-day";
+import { campusDay } from "@/academic-periods/campus-day";
 import { addStudent } from "@/features/students/add-student";
 import type { Database } from "./connect";
 import {
