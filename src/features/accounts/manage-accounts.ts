@@ -132,7 +132,10 @@ export async function listManagedAccounts(
  * to, and holds it until the transaction ends. Every change to the roles
  * of a staff account and every removal starts here, so two of them never
  * run at the same moment: the second waits and then sees what the first
- * one saved.
+ * one saved. The hold is the weaker one, which lets other rows still name
+ * this account: a log line names the manager who saved, so with the full
+ * hold two managers saving each other's roles would block each other, and
+ * the database would refuse one of the saves.
  */
 async function lockActive(
   tx: Database,
@@ -142,7 +145,7 @@ async function lockActive(
     .select({ studentId: accounts.studentId })
     .from(accounts)
     .where(and(eq(accounts.id, accountId), isNull(accounts.deletedAt)))
-    .for("update");
+    .for("no key update");
   return found ?? null;
 }
 

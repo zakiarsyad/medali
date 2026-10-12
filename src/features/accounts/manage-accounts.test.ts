@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder, findActiveAccount } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -14,7 +14,6 @@ import {
   addTestProgram,
   addTestStaffAccount,
   addTestStudentAccount,
-  roleLogOf,
 } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -193,15 +192,14 @@ describe("changeRoles", () => {
       await changeRoles(db, { ...change, roles: ["assessor"] }, head);
       await removeAccount(db, id, head);
 
-      const log = await roleLogOf(db, id);
-      expect(log.map((line) => line.action)).toEqual([
-        "roles_changed",
-        "removed",
-      ]);
-      const [changed, removed] = log;
-      expect(removed?.changedAt.getTime()).toBeGreaterThan(
-        changed?.changedAt.getTime() ?? Number.NaN,
-      );
+      // Compared in the database: it keeps a finer time than a Date holds.
+      const [times] = await db
+        .select({
+          removedLater: sql<boolean>`max(${roleChanges.changedAt}) filter (where ${roleChanges.action} = 'removed') > max(${roleChanges.changedAt}) filter (where ${roleChanges.action} = 'roles_changed')`,
+        })
+        .from(roleChanges)
+        .where(eq(roleChanges.accountId, id));
+      expect(times?.removedLater).toBe(true);
     });
   });
 

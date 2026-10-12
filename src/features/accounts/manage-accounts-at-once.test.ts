@@ -114,6 +114,29 @@ describe("two changes to one staff account sent at the same moment", () => {
     ]);
   });
 
+  it("lets a manager save another account while their own roles are being saved", async () => {
+    const manager = await addTestStaffAccount(own.db, "Serentak Uji Kepala", [
+      "head_of_unit",
+      "mentor",
+    ]);
+    const accountId = await addCounsellor("Serentak Uji Staf Lain");
+    const WAITING = "waiting";
+
+    const saved = await own.db.transaction(async (tx) => {
+      await save(manager, ["assessor"])(tx);
+      return Promise.race([
+        changeRoles(
+          own.otherDb,
+          { accountId, roles: ["mentor"], studyProgramId: null, unit: null },
+          manager,
+        ),
+        new Promise((resolve) => setTimeout(resolve, 2000, WAITING)),
+      ]);
+    });
+
+    expect(saved).toEqual({ ok: true, value: ["mentor"] });
+  });
+
   it("removes the account once when Hapus is confirmed twice", async () => {
     const accountId = await addCounsellor("Serentak Uji Dua Hapus");
 
