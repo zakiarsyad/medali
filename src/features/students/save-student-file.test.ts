@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accounts, roleChanges, students } from "@/db/schema";
+import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { memoryStore } from "@/files/memory-store";
 import { listAddedStudents } from "./added-students";
@@ -248,6 +248,17 @@ describe("saveStudentFile", () => {
       expect(await emailsByNim(db, ["9900000811", "9900000812"])).toEqual([
         ["9900000811", "berkas.satu@kampus.example"],
         ["9900000812", null],
+      ]);
+      const lines = await db
+        .select()
+        .from(emailChanges)
+        .where(eq(emailChanges.changedBy, actor.id));
+      expect(lines).toMatchObject([
+        {
+          action: "added",
+          emailBefore: null,
+          emailAfter: "berkas.satu@kampus.example",
+        },
       ]);
     });
   });

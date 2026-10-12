@@ -39,6 +39,12 @@ export const roleChangeAction = pgEnum("role_change_action", [
   "removed",
 ]);
 
+export const emailChangeAction = pgEnum("email_change_action", [
+  "added",
+  "changed",
+  "cleared",
+]);
+
 export const signInResult = pgEnum("sign_in_result", SIGN_IN_RESULTS);
 
 export const academicTerm = pgEnum("academic_term", ["odd", "even"]);
@@ -169,6 +175,26 @@ export const roleChanges = pgTable("role_changes", {
   action: roleChangeAction().notNull(),
   rolesBefore: role().array().notNull(),
   rolesAfter: role().array().notNull(),
+});
+
+/**
+ * Every change to the campus address a student's account holds, so that
+ * a wrong one can be traced and put back. An address that was added has
+ * none before, and one that was cleared has none after. Rows here cannot
+ * be changed or deleted; the database refuses it.
+ */
+export const emailChanges = pgTable("email_changes", {
+  id: uuid().primaryKey().defaultRandom(),
+  accountId: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  changedBy: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  action: emailChangeAction().notNull(),
+  emailBefore: text(),
+  emailAfter: text(),
 });
 
 /**

@@ -4,9 +4,10 @@ import { refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import { endSessionsOf } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
-import { accounts, roleChanges, students } from "@/db/schema";
+import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { ADDED_HERE } from "./added-students";
+import { emailChangeOf } from "./email-change";
 import { type Actor, NOT_ALLOWED } from "./input-student";
 import type { StudentInput } from "./student-input";
 
@@ -16,7 +17,8 @@ export const NOT_FOUND = {
 } as const;
 
 /**
- * Puts the name and the address on the account of a student. When the
+ * Puts the name and the address on the account of a student. A change
+ * of the address is logged as the work of the account `by`. When the
  * address they sign in with is changed or taken away, their open
  * sign-ins end at once, so whoever signed in with the old address is
  * asked to sign in again.
@@ -26,6 +28,7 @@ async function changeAccountOf(
   studentId: string,
   name: string,
   email: string | null,
+  by: string,
 ): Promise<void> {
   const [before] = await db
     .select({ id: accounts.id, email: accounts.email })
@@ -36,7 +39,12 @@ async function changeAccountOf(
     .update(accounts)
     .set({ name, email })
     .where(eq(accounts.id, before.id));
-  if (before.email === null || before.email === email) return;
+  const change = emailChangeOf(before.email, email);
+  if (!change) return;
+  await db
+    .insert(emailChanges)
+    .values({ accountId: before.id, changedBy: by, ...change });
+  if (change.action === "added") return;
   await endSessionsOf(db, before.id);
 }
 
@@ -61,7 +69,7 @@ export async function changeStudent(
         .where(and(eq(students.nim, nim), ADDED_HERE))
         .returning({ id: students.id });
       if (!changed) return NOT_FOUND;
-      await changeAccountOf(tx, changed.id, fields.name, email);
+      await changeAccountOf(tx, changed.id, fields.name, email, actor.id);
       return { ok: true, value: null };
     }),
   );

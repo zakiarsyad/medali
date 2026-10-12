@@ -92,6 +92,13 @@
       "when": 1791794823277,
       "tag": "0012_dorm-rooms",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791808247462,
+      "tag": "0013_student-email-change-log",
+      "breakpoints": true
     }
   ]
 }

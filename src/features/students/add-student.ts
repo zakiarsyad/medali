@@ -1,5 +1,12 @@
 import type { Database } from "@/db/connect";
-import { accountRoles, accounts, roleChanges, students } from "@/db/schema";
+import {
+  accountRoles,
+  accounts,
+  emailChanges,
+  roleChanges,
+  students,
+} from "@/db/schema";
+import { emailChangeOf } from "./email-change";
 
 type StudentRecord = Omit<typeof students.$inferInsert, "id" | "createdAt">;
 
@@ -25,6 +32,20 @@ function emailsByNim(newStudents: NewStudent[]): Map<string, string | null> {
   return new Map(newStudents.map(({ nim, email }) => [nim, email ?? null]));
 }
 
+/** Writes the address each new account came with to the address change log. */
+async function logAddedEmails(
+  db: Database,
+  added: { accountId: string; email: string | null }[],
+  by: string,
+): Promise<void> {
+  const lines = added.flatMap(({ accountId, email }) => {
+    const change = emailChangeOf(null, email);
+    return change ? [{ accountId, changedBy: by, ...change }] : [];
+  });
+  if (lines.length === 0) return;
+  await db.insert(emailChanges).values(lines);
+}
+
 /**
  * Keeps student records, and gives each student their own account. The
  * student role given is logged as the work of the account `by`. A student
@@ -34,10 +55,11 @@ function emailsByNim(newStudents: NewStudent[]): Map<string, string | null> {
  *
  * An address goes on the student's account. The database keeps one
  * address to one active account: when another account holds one of them
- * the write fails, and nobody is added.
+ * the write fails, and nobody is added. Each address is logged as added,
+ * as the work of the account `by`.
  *
- * Every student is added whole or not at all, in four requests to the
- * database however many students there are.
+ * Every student is added whole or not at all, in at most five requests
+ * to the database however many students there are.
  */
 export async function addStudents(
   db: Database,
@@ -63,10 +85,15 @@ export async function addStudents(
           email: emails.get(nim) ?? null,
         })),
       )
-      .returning({ accountId: accounts.id, studentId: accounts.studentId });
+      .returning({
+        accountId: accounts.id,
+        studentId: accounts.studentId,
+        email: accounts.email,
+      });
     if (added.length !== records.length) {
       throw new Error("Not every student account was added.");
     }
+    await logAddedEmails(tx, added, by);
 
     await tx
       .insert(accountRoles)

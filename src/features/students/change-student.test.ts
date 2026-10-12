@@ -4,7 +4,7 @@ import { accountsInRoleOrder, activeAccountIdByEmail } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import { sessionAccount, startSession } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
-import { accounts, roleChanges, students } from "@/db/schema";
+import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   countStudents,
@@ -26,6 +26,20 @@ const inTestDatabase = withTestDatabase();
 const ALLOWED: RoleId[] = ["head_of_unit", "upk_staff", "dorm_manager"];
 const OTHERS = ROLE_IDS.filter((role) => !ALLOWED.includes(role));
 const NOW = new Date("2026-10-12T08:00:00Z");
+
+/** The lines of the address change log for one account, each as a row. */
+async function emailLinesOf(db: Database, accountId: string) {
+  const lines = await db
+    .select()
+    .from(emailChanges)
+    .where(eq(emailChanges.accountId, accountId));
+  return lines.map((line) => [
+    line.action,
+    line.emailBefore,
+    line.emailAfter,
+    line.changedBy,
+  ]);
+}
 
 function student(
   nim: string,
@@ -253,6 +267,93 @@ describe("changeStudent", () => {
         name: "Ubah Uji",
         email: null,
       });
+    });
+  });
+
+  it("logs the address as added, changed and cleared, with who did it and the address before and after", async () => {
+    await inTestDatabase(async (db) => {
+      const { program } = await addThroughTab(db, "9900000527");
+      const changer = await addTestActor(db, "Pengubah Uji", ["dorm_manager"]);
+      const record = await recordOf(db, "9900000527");
+      const account = await accountOf(db, record.id);
+      const first = "catat.satu@kampus.example";
+      const second = "catat.dua@kampus.example";
+      const saveWith = (email: string | null) =>
+        changeStudent(db, changer, student("9900000527", program, email));
+
+      await saveWith(first);
+      await saveWith(first);
+      await saveWith(second);
+      await saveWith(null);
+      await saveWith(null);
+
+      const lines = await emailLinesOf(db, account.id);
+      expect(lines).toHaveLength(3);
+      expect(lines).toEqual(
+        expect.arrayContaining([
+          ["added", null, first, changer.id],
+          ["changed", first, second, changer.id],
+          ["cleared", second, null, changer.id],
+        ]),
+      );
+    });
+  });
+
+  it("writes no log line when the address is refused", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000528");
+      const email = "dipakai.catat@kampus.example";
+      await db.insert(accounts).values({ name: "Pegawai Lain", email });
+      const record = await recordOf(db, "9900000528");
+      const account = await accountOf(db, record.id);
+
+      await changeStudent(db, staff, student("9900000528", program, email));
+
+      expect(await emailLinesOf(db, account.id)).toEqual([]);
+    });
+  });
+
+  it("refuses an address sent by a role without the right, and neither saves nor logs it", async () => {
+    await inTestDatabase(async (db) => {
+      const { program } = await addThroughTab(db, "9900000529");
+      const other = await addTestActor(db, "Tanpa Hak Uji", OTHERS);
+      const record = await recordOf(db, "9900000529");
+      const account = await accountOf(db, record.id);
+
+      const done = await changeStudent(
+        db,
+        other,
+        student("9900000529", program, "tanpa.hak@kampus.example"),
+      );
+
+      expect(done).toEqual(NOT_ALLOWED);
+      expect((await accountOf(db, record.id)).email).toBeNull();
+      expect(await emailLinesOf(db, account.id)).toEqual([]);
+    });
+  });
+
+  it("refuses a student who sends an address for their own account", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff } = await addThroughTab(db, "9900000530");
+      const kept = "milik.uji@kampus.example";
+      await changeStudent(db, staff, student("9900000530", program, kept));
+      const record = await recordOf(db, "9900000530");
+      const account = await accountOf(db, record.id);
+      const [own] = (await accountsInRoleOrder(db)).filter(
+        (one) => one.id === account.id,
+      );
+      if (!own) throw new Error("The student account is gone.");
+
+      const done = await changeStudent(
+        db,
+        own,
+        student("9900000530", program, "ganti.sendiri@kampus.example"),
+      );
+
+      expect(own.roles).toEqual(["student"]);
+      expect(done).toEqual(NOT_ALLOWED);
+      expect((await accountOf(db, record.id)).email).toBe(kept);
+      expect(await emailLinesOf(db, account.id)).toHaveLength(1);
     });
   });
 

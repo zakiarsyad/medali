@@ -1,10 +1,11 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { EMAIL_IN_USE_RULE } from "@/auth/account-email";
 import type { Database } from "@/db/connect";
 import {
   accountRoles,
   accounts,
+  emailChanges,
   roleChanges,
   students,
   studyPrograms,
@@ -237,6 +238,42 @@ describe("the campus address of a student account", () => {
         "alamat.satu@kampus.example",
       );
       expect(await emailOf(db, without.accountId)).toBeNull();
+    });
+  });
+
+  it("is logged as added, by whom, and a student without one gets no line", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addProgram(db);
+      const actor = await addActor(db);
+
+      const [withOne, without] = await addStudents(
+        db,
+        [
+          student("9900000116", program, "catat.satu@kampus.example"),
+          student("9900000117", program, null),
+        ],
+        actor,
+      );
+      if (!withOne || !without) throw new Error("A student was not added.");
+
+      const lines = await db
+        .select()
+        .from(emailChanges)
+        .where(
+          inArray(emailChanges.accountId, [
+            withOne.accountId,
+            without.accountId,
+          ]),
+        );
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatchObject({
+        accountId: withOne.accountId,
+        changedBy: actor,
+        action: "added",
+        emailBefore: null,
+        emailAfter: "catat.satu@kampus.example",
+      });
+      expect(lines[0]?.changedAt).toBeInstanceOf(Date);
     });
   });
 

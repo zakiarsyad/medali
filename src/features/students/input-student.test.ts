@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder } from "@/auth/accounts";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accounts, students } from "@/db/schema";
+import { accounts, emailChanges, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { listAddedStudents } from "./added-students";
 import { inputStudent, NOT_ALLOWED } from "./input-student";
@@ -110,6 +110,52 @@ describe("inputStudent", () => {
         .from(accounts)
         .where(eq(accounts.studentId, kept?.id ?? ""));
       expect(account?.email).toBe("masuk.uji@kampus.example");
+    });
+  });
+
+  it("logs the address as added by the one who put the student in", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Catat");
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const email = "catat.masuk@kampus.example";
+
+      await inputStudent(db, actor, newStudent("9900000414", program, email));
+
+      const lines = await db
+        .select()
+        .from(emailChanges)
+        .where(eq(emailChanges.emailAfter, email));
+      expect(lines).toMatchObject([
+        { changedBy: actor.id, action: "added", emailBefore: null },
+      ]);
+    });
+  });
+
+  it("refuses an address sent by a role without the right, and neither saves nor logs it", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Tolak Alamat");
+      const allowed = ["head_of_unit", "upk_staff", "dorm_manager"];
+      const others = ROLE_IDS.filter((role) => !allowed.includes(role));
+      const actor = await addTestActor(db, "Tanpa Hak Uji", others);
+      const email = "tanpa.hak@kampus.example";
+
+      const added = await inputStudent(
+        db,
+        actor,
+        newStudent("9900000415", program, email),
+      );
+
+      expect(added).toEqual(NOT_ALLOWED);
+      const held = await db
+        .select({ id: accounts.id })
+        .from(accounts)
+        .where(eq(accounts.email, email));
+      expect(held).toEqual([]);
+      const lines = await db
+        .select({ id: emailChanges.id })
+        .from(emailChanges)
+        .where(eq(emailChanges.emailAfter, email));
+      expect(lines).toEqual([]);
     });
   });
 

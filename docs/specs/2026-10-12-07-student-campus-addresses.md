@@ -146,6 +146,11 @@ change any of these.
 21. Sign-ins ended because the address was changed or cleared leave no
     line in the sign-in log: the student did not sign out. The address
     change log says who ended them and when.
+22. Removing a student writes no line to the address change log: the
+    address stays on the removed account as it was, and the role change
+    log already says who removed it and when.
+23. A long address in the list breaks onto the next line at any
+    character, so it never makes the list wider than a phone.
 
 ## Steps
 
@@ -157,4 +162,4 @@ change any of these.
 - [x] 4. The column "email" in "Unggah berkas" and in the template.
 - [x] 5. A student signs in with that address, checked with a stand-in
   for Google.
-- [ ] 6. The log lines, the refusals and the phone layout.
+- [x] 6. The log lines, the refusals and the phone layout.
