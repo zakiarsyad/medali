@@ -112,7 +112,7 @@ describe("changeActionOf", () => {
     }
   });
 
-  it("has the words of the prototype for every line of the log", () => {
+  it("has the words of the prototype for every line of the log, and its own for students who left a draft", () => {
     const actions = cohortAssignmentChangeAction.enumValues;
     expect(actions.map((action) => CHANGE_TITLES[action])).toEqual([
       "Membentuk kelompok",
@@ -121,6 +121,7 @@ describe("changeActionOf", () => {
       "Mengajukan ke Kepala UPK",
       "Menetapkan",
       "Membatalkan",
+      "Mengeluarkan mahasiswa yang sudah dihapus atau tidak aktif lagi",
     ]);
   });
 });

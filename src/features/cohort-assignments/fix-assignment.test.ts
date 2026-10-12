@@ -209,15 +209,15 @@ describe("fixAssignment, when something changed after the draft was saved", () =
     });
   });
 
-  it("refuses when a member is not Aktif any more", async () => {
+  it("refuses when a member moved to another angkatan", async () => {
     await inTestDatabase(async (db) => {
       const { head } = await addDraftAndHead(db);
       const [group] = (await testDraftOf(db, YEAR)).groups;
-      const onLeave = group?.members.slice(0, 2).map((m) => m.id) ?? [];
-      for (const id of onLeave) {
+      const moved = group?.members.slice(0, 2).map((m) => m.id) ?? [];
+      for (const id of moved) {
         await db
           .update(students)
-          .set({ status: "on_leave" })
+          .set({ cohortYear: YEAR - 1 })
           .where(eq(students.id, id));
       }
 

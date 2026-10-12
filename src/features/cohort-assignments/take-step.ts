@@ -17,6 +17,7 @@ import {
   lockAssignment,
 } from "./assignment-writes";
 import type { DraftKey } from "./draft-change-input";
+import { dropLeftMembers } from "./dropped-members";
 import {
   ALREADY_FIXED,
   DRAFT_CHANGED,
@@ -52,7 +53,8 @@ function isFixing(step: StoredStep): boolean {
  * groups, for a step that cannot be taken from where the penetapan
  * stands, and for one sent from an older version of it. A step that is
  * taken raises the version, moves the status and adds a line to "Riwayat
- * proses".
+ * proses". It also takes out of the stored groups the students who have
+ * left the draft, which the step itself no longer read.
  */
 export async function takeStep<T>(
   db: Database,
@@ -74,6 +76,7 @@ export async function takeStep<T>(
 
     const done = await work(tx, stored);
     if (!done.ok) return done;
+    await dropLeftMembers(tx, stored.id, actor.id);
     await tx
       .update(cohortAssignments)
       .set({

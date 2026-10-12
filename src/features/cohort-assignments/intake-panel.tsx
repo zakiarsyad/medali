@@ -30,7 +30,7 @@ export function IntakePanel({
           <span className={shared.badge}>{STATUS_TITLES[status]}</span>
         )}
       </div>
-      <div>
+      <div className={styles.batches}>
         {summary.batches.map((batch) => (
           <span key={batch.label} className={shared.badge}>
             {batch.label} {batch.students}

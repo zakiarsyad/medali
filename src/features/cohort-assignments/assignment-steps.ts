@@ -28,6 +28,8 @@ export const CHANGE_TITLES: Record<ChangeAction, string> = {
   submitted: "Mengajukan ke Kepala UPK",
   fixed: "Menetapkan",
   cancelled: "Membatalkan",
+  members_dropped:
+    "Mengeluarkan mahasiswa yang sudah dihapus atau tidak aktif lagi",
 };
 
 /** What can be done to the penetapan of an angkatan. */

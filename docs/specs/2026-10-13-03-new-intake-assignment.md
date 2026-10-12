@@ -123,5 +123,5 @@ is built here.
 - [x] 5. Step 3: mentor choice, automatic fill and moving members.
 - [x] 6. Step 4: save, submit, fix, and the fixed view with the log.
 - [x] 7. "Batalkan penetapan" for Kepala Unit, with its check.
-- [ ] 8. Concurrent edits, removed students, refusals and phone
+- [x] 8. Concurrent edits, removed students, refusals and phone
   layout.

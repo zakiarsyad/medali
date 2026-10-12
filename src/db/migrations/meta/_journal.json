@@ -113,6 +113,13 @@
       "when": 1791828945412,
       "tag": "0015_cohort-assignments",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791843002675,
+      "tag": "0016_cohort-assignment-dropped-members",
+      "breakpoints": true
     }
   ]
 }

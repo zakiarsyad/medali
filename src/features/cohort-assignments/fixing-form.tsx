@@ -46,8 +46,21 @@ export function FixingForm({
   const [decreeNumber, setDecreeNumber] = useState(start.decreeNumber);
   const [effectiveOn, setEffectiveOn] = useState(start.effectiveOn);
   const [answer, setAnswer] = useState(START);
+  const [held, setHeld] = useState(start);
   const numberField = useRef<HTMLInputElement>(null);
   const isOff = isSaving || !isComplete;
+
+  // When the draft comes back holding another number or day, someone else
+  // saved them: the fields show those, or "Simpan draf" from here would
+  // put the older ones back without anyone seeing it.
+  const holdsOther =
+    held.decreeNumber !== start.decreeNumber ||
+    held.effectiveOn !== start.effectiveOn;
+  if (holdsOther) {
+    setHeld(start);
+    setDecreeNumber(start.decreeNumber);
+    setEffectiveOn(start.effectiveOn);
+  }
 
   function take(step: DecreeStep) {
     const form = changeForm(shown, { step, decreeNumber, effectiveOn });

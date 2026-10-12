@@ -4,6 +4,7 @@ import { statusAfter } from "./assignment-steps";
 import { CancelButton } from "./cancel-button";
 import styles from "./cohort-assignments.module.css";
 import { DraftGroupsPanel } from "./draft-groups-panel";
+import { droppedWords } from "./dropped-members";
 import { FixingPanel } from "./fixing-panel";
 import type { FormingStart } from "./forming-form";
 import { FormingPanel } from "./forming-panel";
@@ -102,7 +103,8 @@ function SavedGroups({
 /**
  * What the tab shows of the chosen angkatan. An account that prepares
  * gets the steps while the angkatan is not fixed, with the groups to
- * change in step 3 and the penetapan in step 4. Any other is told who
+ * change in step 3 and the penetapan in step 4, and a note when students
+ * left the draft. Any other is told who
  * prepares, and sees the groups that are saved to read only, as far as
  * the limit lets the account see them; so does everyone once the
  * angkatan is fixed.
@@ -143,6 +145,11 @@ export async function OpenCohort({
       )}
       {formed && showsSteps && (
         <>
+          {formed.dropped > 0 && (
+            <p className={`${styles.note} ${styles.held}`} role="status">
+              {droppedWords(formed.dropped)}
+            </p>
+          )}
           <MentorStep assignment={formed} openGroupId={openGroupId} />
           <FixingPanel assignment={formed} mayFix={mayFix} />
         </>

@@ -15,10 +15,17 @@
   margin-bottom: var(--space-sm);
 }
 
+/* A decree number has no blanks to fold at, and may be 100 characters long. */
 .sub {
   margin: 0;
   color: var(--muted);
   font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+/* A long program studi name must fold, or it pushes the panel wider than a phone. */
+.batches span {
+  white-space: var(--stacked-badge-wrap);
 }
 
 .flow {

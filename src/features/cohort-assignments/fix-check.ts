@@ -55,15 +55,16 @@ function numbersTaken(facts: FixFacts): number {
 /**
  * What stops the penetapan of a complete draft because of something that
  * changed after the draft was saved, or null when nothing does. A member
- * who got a group some other way, is not Aktif any more or was removed
- * would be put in a group wrongly; so would a mentor who became Tidak
- * aktif or took a group of another angkatan; and a number that a group in
- * force holds cannot be given twice. No one is named.
+ * who got a group some other way or moved to another angkatan would be
+ * put in a group wrongly; so would a mentor who became Tidak aktif or
+ * took a group of another angkatan; and a number that a group in force
+ * holds cannot be given twice. No one is named. A member who was removed
+ * or is not Aktif any more stops nothing: the draft is read without them.
  */
 export function whatStopsFix(facts: FixFacts): string | null {
   const notWaiting = membersNotWaiting(facts);
   if (notWaiting > 0) {
-    return `${notWaiting} mahasiswa pada draf sudah punya kelompok pengasuhan, tidak aktif lagi, atau sudah dihapus. ${FORM_AGAIN}`;
+    return `${notWaiting} mahasiswa pada draf sudah punya kelompok pengasuhan atau sudah pindah angkatan. ${FORM_AGAIN}`;
   }
   const notOffered = mentorsNotOffered(facts);
   if (notOffered > 0) {

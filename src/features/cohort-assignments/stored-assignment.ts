@@ -13,6 +13,7 @@ import {
 } from "@/db/schema";
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { AssignmentStatus, ChangeAction } from "./assignment-steps";
+import { LEFT_DRAFT } from "./dropped-members";
 import type { AssignmentMethod } from "./methods";
 import { inProgramsOf } from "./visible-assignments";
 
@@ -65,6 +66,11 @@ export interface StoredAssignment {
   savedBy: string;
   /** The Reguler jalur first, then by program studi and number. */
   groups: DraftGroup[];
+  /**
+   * How many students its stored groups still name who were removed or
+   * are not Aktif any more. No group here lists them.
+   */
+  dropped: number;
   /** The newest first. */
   log: LogLine[];
 }
@@ -103,6 +109,7 @@ const MEMBER = {
   sex: students.sex,
   province: students.province,
   className: students.className,
+  hasLeft: LEFT_DRAFT,
 };
 
 function readGroupRows(db: Database, limit: RowLimit, assignmentId: string) {
@@ -169,8 +176,8 @@ function chosenMentor(row: GroupRow): ChosenMentor | null {
 
 function membersOf(rows: MemberRow[], groupId: string): DraftMember[] {
   const members: DraftMember[] = [];
-  for (const { groupId: inGroup, ...member } of rows) {
-    if (inGroup === groupId) members.push(member);
+  for (const { groupId: inGroup, hasLeft, ...member } of rows) {
+    if (inGroup === groupId && !hasLeft) members.push(member);
   }
   return members;
 }
@@ -192,7 +199,9 @@ function draftGroup(
 /**
  * The penetapan of an angkatan with its groups, their members and its
  * log, or null for an angkatan that has none. An account held to its
- * study programs is given the groups of those programs only.
+ * study programs is given the groups of those programs only. A student
+ * who was removed or is not Aktif any more is in no group here, only
+ * counted: the next save takes them out of what is stored.
  */
 export async function readAssignment(
   db: Database,
@@ -213,6 +222,7 @@ export async function readAssignment(
   return {
     ...assignment,
     groups: groups.map((group) => draftGroup(group, cohortYear, members)),
+    dropped: members.filter((member) => member.hasLeft).length,
     log,
   };
 }

@@ -72,6 +72,7 @@ export const cohortAssignmentChangeAction = pgEnum(
     "submitted",
     "fixed",
     "cancelled",
+    "members_dropped",
   ],
 );
 
