@@ -87,6 +87,6 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. A check that every screen, every address the server answers
+- [x] 1. A check that every screen, every address the server answers
   itself and every action asks who is using it, with the short list of
   those that need no sign-in.
