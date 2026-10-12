@@ -53,4 +53,4 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. "Ganti peran" lists staff accounts first, then students.
+- [x] 1. "Ganti peran" lists staff accounts first, then students.
