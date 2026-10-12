@@ -3,6 +3,10 @@ import { type AccountForAccess, may, rowLimitFor } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
+import {
+  readStudentMentorGroup,
+  type StudentMentorGroup,
+} from "./student-mentor-group";
 import { visibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
@@ -24,6 +28,8 @@ export interface StudentDetail {
   className: string | null;
   province: string | null;
   sex: Student["sex"];
+  /** Null for a student who is in no kelompok pengasuhan. */
+  mentorGroup: StudentMentorGroup | null;
 }
 
 const DETAIL = {
@@ -72,5 +78,6 @@ export async function readStudentDetail(
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .where(and(eq(students.id, id), visibleTo(rowLimitFor(account))));
   if (!student) return NOT_FOUND;
-  return { kind: "found", student };
+  const mentorGroup = await readStudentMentorGroup(db, student.id);
+  return { kind: "found", student: { ...student, mentorGroup } };
 }

@@ -5,3 +5,8 @@ export const DAY = new Intl.DateTimeFormat("id-ID", {
   year: "numeric",
   timeZone: "Asia/Jakarta",
 });
+
+/** A stored day as the screens show it, such as 1 Agu 2026. */
+export function shownDay(day: string): string {
+  return DAY.format(new Date(`${day}T00:00:00+07:00`));
+}

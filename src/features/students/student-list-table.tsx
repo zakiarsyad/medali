@@ -1,11 +1,11 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
+import { PressableRow } from "@/ui/pressable-row";
+import pressable from "@/ui/pressable-row.module.css";
 import { CATEGORIES, ENTRY_PATH_LABELS, STATUS_LABELS } from "./labels";
-import { PressableRow } from "./pressable-row";
 import { type RunningPeriod, semesterNow } from "./semester-now";
 import { rowSemesterWords } from "./semester-words";
 import type { ListedStudent } from "./student-list";
-import styles from "./student-list.module.css";
 
 /** The NIM, and the status when the student is not active. */
 function nimAndStatus(student: ListedStudent): string {
@@ -30,9 +30,9 @@ function StudentRow({
   const tags = CATEGORIES.filter(({ field }) => student[field]);
   const semester = semesterNow(student, period);
   return (
-    <PressableRow address={detailAddress} className={styles.row}>
+    <PressableRow address={detailAddress}>
       <td data-title="Mahasiswa">
-        <Link href={detailAddress} scroll={false} className={styles.open}>
+        <Link href={detailAddress} scroll={false} className={pressable.open}>
           <b>{student.name}</b>
         </Link>
         <small className={shared.detail}>{nimAndStatus(student)}</small>
@@ -53,6 +53,7 @@ function StudentRow({
         </small>
       </td>
       <td data-title="Provinsi">{student.province ?? "-"}</td>
+      <td data-title="Pengasuh">{student.mentorName ?? "-"}</td>
     </PressableRow>
   );
 }
@@ -77,6 +78,7 @@ export function StudentListTable({
             <th>Program studi</th>
             <th>Angkatan</th>
             <th>Provinsi</th>
+            <th>Pengasuh</th>
           </tr>
         </thead>
         <tbody>

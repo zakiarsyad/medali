@@ -7,7 +7,12 @@ import type { StageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
-import { addTestProgram, addTestStudent } from "./test-records";
+import {
+  addTestActor,
+  addTestMentorGroup,
+  addTestProgram,
+  addTestStudent,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -89,9 +94,48 @@ describe("listStudents", () => {
           cohortYear: 2024,
           className: "2-01",
           province: "Bali",
+          mentorName: null,
         },
         expect.objectContaining({ nim: "9900000312", status: "on_leave" }),
       ]);
+    });
+  });
+
+  it("names the mentor of today of each student's group, and none without one", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Kolom Pengasuh");
+      const inGroup = await addTestStudent(db, program, {
+        nim: "9900000316",
+        name: "Kolom Uji Ani",
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000317",
+        name: "Kolom Uji Budi",
+      });
+      const mentor = await addTestActor(db, "Kolom Uji Kini", ["mentor"]);
+      const earlier = await addTestActor(db, "Kolom Uji Awal", ["mentor"]);
+      await addTestMentorGroup(db, program, {
+        number: 1,
+        memberIds: [inGroup],
+        mentorId: mentor.id,
+        earlierMentorId: earlier.id,
+      });
+
+      const listed = await listStudents(
+        db,
+        onlyProgram(program),
+        NO_FILTERS,
+        1,
+        NO_STAGES,
+      );
+
+      expect(
+        listed.students.map((student) => [student.nim, student.mentorName]),
+      ).toEqual([
+        ["9900000316", "Kolom Uji Kini"],
+        ["9900000317", null],
+      ]);
+      expect(listed.matching).toBe(2);
     });
   });
 

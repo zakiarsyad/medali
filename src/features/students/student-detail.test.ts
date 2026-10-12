@@ -4,7 +4,12 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { readStudentDetail } from "./student-detail";
-import { addTestProgram, addTestStudent } from "./test-records";
+import {
+  addTestActor,
+  addTestMentorGroup,
+  addTestProgram,
+  addTestStudent,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -69,6 +74,37 @@ describe("readStudentDetail", () => {
           className: "2-01",
           province: "Bali",
           sex: "female",
+          mentorGroup: null,
+        },
+      });
+    });
+  });
+
+  it("gives the student's kelompok pengasuhan with its mentor", async () => {
+    await inTestDatabase(async (db) => {
+      const { own, inOwn } = await addRows(db);
+      const mentor = await addTestActor(db, "Detail Uji Pengasuh", ["mentor"]);
+      const groupId = await addTestMentorGroup(db, own, {
+        number: 2,
+        memberIds: [inOwn],
+        mentorId: mentor.id,
+      });
+
+      const answer = await readStudentDetail(
+        db,
+        account(["head_of_program"], own),
+        inOwn,
+      );
+
+      expect(answer).toMatchObject({
+        kind: "found",
+        student: {
+          mentorGroup: {
+            id: groupId,
+            number: 2,
+            mentor: { name: "Detail Uji Pengasuh", since: "2026-09-01" },
+            earlierMentors: [],
+          },
         },
       });
     });

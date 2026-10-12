@@ -117,6 +117,6 @@ The rule about real people's data is in `CLAUDE.md`. These add to it.
 8. The app shows the list on a screen for the head of unit, built from the
    same list, so there is no second copy to keep up to date.
 9. Changing what a role may do needs a spec and the owner's OK.
-10. Sample data has one account per role. The "sign in as" shortcut exists
-    only locally and on previews. The live app refuses to start with it
-    turned on.
+10. Sample data has at least one account per role. The "sign in as"
+    shortcut exists only locally and on previews. The live app refuses
+    to start with it turned on.

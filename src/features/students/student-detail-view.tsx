@@ -9,6 +9,8 @@ import { type RunningPeriod, semesterNow } from "./semester-now";
 import { detailSemesterWords } from "./semester-words";
 import type { StudentDetail } from "./student-detail";
 import styles from "./student-list.module.css";
+import { StudentMentorFact } from "./student-mentor-fact";
+import type { GroupAddressOf } from "./student-mentor-group";
 
 function Fact({
   title,
@@ -32,10 +34,12 @@ function Fact({
 export function StudentDetailView({
   student,
   period,
+  groupAddressOf,
 }: {
   student: StudentDetail;
   /** The academic period that runs now, which says the semester. */
   period: RunningPeriod;
+  groupAddressOf: GroupAddressOf;
 }) {
   const tags = CATEGORIES.filter(({ field }) => student[field]);
   const semester = semesterNow(student, period);
@@ -69,6 +73,10 @@ export function StudentDetailView({
             {student.originAgency ?? "-"}
           </Fact>
         )}
+        <StudentMentorFact
+          group={student.mentorGroup}
+          groupAddressOf={groupAddressOf}
+        />
       </dl>
     </>
   );

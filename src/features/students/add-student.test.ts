@@ -25,7 +25,7 @@ async function addActor(db: Database): Promise<string> {
 async function addProgram(db: Database): Promise<number> {
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: "Prodi Uji Tambah" })
+    .values({ name: "Prodi Uji Tambah", code: "Prodi Uji Tambah" })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   return program.id;

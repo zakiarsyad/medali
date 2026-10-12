@@ -25,6 +25,12 @@ import { brokeUniqueRule } from "@/db/unique-violation";
 import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import type { NewAccount, RoleChange } from "./account-input";
+import {
+  holdsGroupToday,
+  REMOVAL_REFUSED_FOR_GROUP,
+  ROLE_REFUSED_FOR_GROUP,
+  takesMentorRole,
+} from "./held-groups";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
 
 export const PAGE_SIZE = 25;
@@ -225,7 +231,8 @@ export async function addAccount(
 /**
  * Sets the managed roles of a staff account. Roles not managed here, such
  * as Kepala Unit, stay as they are. A student's account is refused: it
- * may only get BAM roles, in the panel Badan Asrama Mahasiswa.
+ * may only get BAM roles, in the panel Badan Asrama Mahasiswa. So is
+ * taking the Pengasuh role from the mentor of today of a group.
  */
 export async function changeRoles(
   db: Database,
@@ -251,6 +258,10 @@ export async function changeRoles(
     if (after.length === 0) {
       return { ok: false, error: "Pilih minimal satu peran." };
     }
+    const leavesGroup =
+      takesMentorRole(before, after) &&
+      (await holdsGroupToday(tx, change.accountId));
+    if (leavesGroup) return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
 
     await tx
       .delete(accountRoles)
@@ -293,7 +304,8 @@ export async function changeRoles(
 /**
  * Marks an account removed. It is never erased. A student's account and
  * an account that holds a role not managed here, such as Kepala Unit, are
- * not removed here; nor is the manager's own account.
+ * not removed here; nor is the manager's own account, nor the mentor of
+ * today of a group, which would be left without one.
  */
 export async function removeAccount(
   db: Database,
@@ -312,6 +324,9 @@ export async function removeAccount(
         ok: false,
         error: "Akun ini tidak dikelola di sini, sehingga tidak bisa dihapus.",
       };
+    }
+    if (await holdsGroupToday(tx, accountId)) {
+      return { ok: false, error: REMOVAL_REFUSED_FOR_GROUP };
     }
     await tx
       .update(accounts)

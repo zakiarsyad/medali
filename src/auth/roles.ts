@@ -13,6 +13,7 @@ export const ACTIONS = [
   "view_dorm_companions",
   "manage_dorm_companions",
   "view_student_detail",
+  "view_mentor_groups",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -28,6 +29,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_dorm_companions: "Melihat kakak pendamping",
   manage_dorm_companions: "Mengelola kakak pendamping",
   view_student_detail: "Melihat detail mahasiswa",
+  view_mentor_groups: "Melihat kelompok pengasuhan",
 };
 
 /**
@@ -84,7 +86,16 @@ const ALL_DORM = [
 
 const ALL_DORM_BUT_VIOLATIONS = ALL_DORM.filter((tab) => tab !== "violations");
 
+const ALL_MENTORS = [
+  "groups",
+  "mentors",
+  "student_survey",
+  "replacement",
+  "new_cohort",
+] as const;
+
 const VIEW_ALL_TABS: RoleTabs = {
+  mentors: ALL_MENTORS,
   assessment: ALL_ASSESSMENT,
   guidance: ["character", "discipline", "violation_notes"],
   dorm: ALL_DORM_BUT_VIOLATIONS,
@@ -113,6 +124,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_rooms",
       "view_dorm_companions",
       "view_student_detail",
+      "view_mentor_groups",
     ],
     rows: "all",
   },
@@ -121,7 +133,12 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "DR",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms", "view_dorm_companions", "view_student_detail"],
+    actions: [
+      "view_dorm_rooms",
+      "view_dorm_companions",
+      "view_student_detail",
+      "view_mentor_groups",
+    ],
     rows: "all",
   },
   head_of_program: {
@@ -129,7 +146,12 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KP",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms", "view_dorm_companions", "view_student_detail"],
+    actions: [
+      "view_dorm_rooms",
+      "view_dorm_companions",
+      "view_student_detail",
+      "view_mentor_groups",
+    ],
     rows: "own_program",
   },
   mentor: {
@@ -238,8 +260,13 @@ export const ROLES: Record<RoleId, Role> = {
     title: "Pegawai UPK",
     initials: "PU",
     pages: ["curriculum", "activities", "mentors", "settings"],
-    tabs: { settings: ["new_students"] },
-    actions: ["input_new_students", "change_curriculum", "manage_activities"],
+    tabs: { mentors: ALL_MENTORS, settings: ["new_students"] },
+    actions: [
+      "input_new_students",
+      "change_curriculum",
+      "manage_activities",
+      "view_mentor_groups",
+    ],
     rows: "all",
   },
   counsellor: {

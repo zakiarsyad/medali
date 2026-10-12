@@ -59,6 +59,8 @@ export type StudentInputSource = "form" | `upload:${string}`;
 export const studyPrograms = pgTable("study_programs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull().unique(),
+  /** The short name a mentor group's code is made with, such as D3PJK. */
+  code: text().notNull().unique(),
 });
 
 export const students = pgTable("students", {
@@ -391,6 +393,85 @@ export const dormCompanions = pgTable(
     check(
       "dorm_companions_room_only_while_active",
       sql`${table.isActive} or ${table.roomId} is null`,
+    ),
+  ],
+);
+
+/**
+ * A kelompok pengasuhan: students of one program studi, angkatan and
+ * jalur, formed when they enter. Its number is used once among those.
+ */
+export const mentorGroups = pgTable(
+  "mentor_groups",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studyProgramId: integer()
+      .notNull()
+      .references(() => studyPrograms.id),
+    cohortYear: smallint().notNull(),
+    entryPath: entryPath().notNull(),
+    number: smallint().notNull(),
+    startsOn: date().notNull(),
+  },
+  (table) => [
+    unique("mentor_groups_number_in_cohort").on(
+      table.studyProgramId,
+      table.cohortYear,
+      table.entryPath,
+      table.number,
+    ),
+    check("mentor_groups_number_from_1", sql`${table.number} >= 1`),
+  ],
+);
+
+/**
+ * The students of a group. The student is the key, so a student is in one
+ * group at most, and a group that still has members cannot be erased.
+ */
+export const mentorGroupMembers = pgTable(
+  "mentor_group_members",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+  },
+  (table) => [index("mentor_group_members_group").on(table.groupId)],
+);
+
+/**
+ * Who has looked after a group, one line per mentor and time. The line
+ * without a last day is the mentor of today, and a group has one such
+ * line at most. Only a line that has ended carries a reason.
+ */
+export const mentorGroupMentors = pgTable(
+  "mentor_group_mentors",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    mentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    startsOn: date().notNull(),
+    endsOn: date(),
+    endReason: text(),
+  },
+  (table) => [
+    uniqueIndex("mentor_group_mentors_one_current")
+      .on(table.groupId)
+      .where(sql`${table.endsOn} is null`),
+    index("mentor_group_mentors_mentor").on(table.mentorId),
+    check(
+      "mentor_group_mentors_ends_after_start",
+      sql`${table.endsOn} >= ${table.startsOn}`,
+    ),
+    check(
+      "mentor_group_mentors_reason_only_when_ended",
+      sql`${table.endReason} is null or ${table.endsOn} is not null`,
     ),
   ],
 );
