@@ -73,7 +73,7 @@ get their own log.
 
 ## Steps
 
-- [ ] 1. The tables for academic periods and for the log of period
+- [x] 1. The tables for academic periods and for the log of period
   changes are added, with sample periods.
 - [ ] 2. The right to set periods is added to the permission list, with
   its checks.

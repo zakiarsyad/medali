@@ -7,6 +7,7 @@ import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
   SAMPLE_STUDENTS,
+  samplePeriods,
 } from "./sample-data";
 import { studentStatus } from "./schema";
 
@@ -40,6 +41,50 @@ describe("the sample PPKS activities", () => {
         expect(code).toMatch(/^[MEDALI][1-4]$/);
       }
     }
+  });
+});
+
+describe("the sample periods", () => {
+  it("are the period of the day and the three before it, newest first", () => {
+    expect(samplePeriods("2026-10-12")).toEqual([
+      {
+        startYear: 2026,
+        term: "odd",
+        startsOn: "2026-08-01",
+        endsOn: "2027-01-31",
+      },
+      {
+        startYear: 2025,
+        term: "even",
+        startsOn: "2026-02-01",
+        endsOn: "2026-07-31",
+      },
+      {
+        startYear: 2025,
+        term: "odd",
+        startsOn: "2025-08-01",
+        endsOn: "2026-01-31",
+      },
+      {
+        startYear: 2024,
+        term: "even",
+        startsOn: "2025-02-01",
+        endsOn: "2025-07-31",
+      },
+    ]);
+  });
+
+  it.each([
+    ["2027-01-31", 2026, "odd"],
+    ["2027-02-01", 2026, "even"],
+    ["2027-07-31", 2026, "even"],
+    ["2027-08-01", 2027, "odd"],
+  ])("put %s in the period of %i, %s", (day, startYear, term) => {
+    const [running] = samplePeriods(day);
+    expect(running).toMatchObject({ startYear, term });
+    expect(running && running.startsOn <= day && day <= running.endsOn).toBe(
+      true,
+    );
   });
 });
 
