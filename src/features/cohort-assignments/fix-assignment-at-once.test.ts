@@ -30,7 +30,12 @@ const OTHER_YEAR = 2056;
  * three groups of a complete draft. Each choice raises its version by 1.
  */
 async function addDraftWithMentorsOf(db: Database, cohortYear: number) {
-  const { actor } = await addTestDraft(db, OTHER_YEAR, "UJIDUAANGKATAN");
+  const { actor } = await addTestDraft(
+    db,
+    OTHER_YEAR,
+    9956000001,
+    "UJIDUAANGKATAN",
+  );
   const taken = (await testDraftOf(db, cohortYear)).groups;
   const groups = (await testDraftOf(db, OTHER_YEAR)).groups;
   let version = 1;
@@ -49,7 +54,7 @@ async function addDraftWithMentorsOf(db: Database, cohortYear: number) {
 
 describe("two people who fix one penetapan at the same moment", () => {
   it("fixes it once: the second waits, is refused, and adds no group", async () => {
-    await addCompleteTestDraft(own.db, YEAR, "UJISERENTAK");
+    await addCompleteTestDraft(own.db, YEAR, 9953000001, "UJISERENTAK");
     const head = await addTestActor(own.db, ["head_of_unit"], "Kepala Satu");
     const other = await addTestActor(own.db, ["head_of_unit"], "Kepala Dua");
 
@@ -71,7 +76,7 @@ describe("two people who fix one penetapan at the same moment", () => {
 describe("two angkatan with the same mentors that are fixed at the same moment", () => {
   it("fixes the first: the second waits, is refused, and gives no mentor a group of two angkatan", async () => {
     const year = 2055;
-    await addCompleteTestDraft(own.db, year, "UJIDUA");
+    await addCompleteTestDraft(own.db, year, 9955000001, "UJIDUA");
     const version = await addDraftWithMentorsOf(own.db, year);
     const head = await addTestActor(own.db, ["head_of_unit"], "Kepala Tiga");
     const decree = {

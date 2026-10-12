@@ -11,6 +11,7 @@ import { addTestActor, addTestMentor } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2050;
+const FIRST_NIM = 9950000001;
 const KEY = { cohortYear: YEAR, version: 1 };
 
 /** The mentor of each group, in the order of the tab: Akuntansi, Pajak 1 and 2. */
@@ -22,7 +23,7 @@ async function mentorNames(db: Database): Promise<(string | null)[]> {
 describe("fillDraftMentors", () => {
   it("gives every group without a mentor one, the same jurusan first, in one save", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJIISI");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJIISI");
       await addTestMentor(db, { name: "Isi Adi", unit: "Jurusan Pajak" });
       await addTestMentor(db, { name: "Isi Budi", unit: "Jurusan Akuntansi" });
       await addTestMentor(db, { name: "Isi Citra", unit: "Jurusan Pajak" });
@@ -46,7 +47,7 @@ describe("fillDraftMentors", () => {
 
   it("keeps a mentor already chosen, and leaves a group empty once nobody is left", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJIISI");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJIISI");
       const adi = await addTestMentor(db, { name: "Isi Adi" });
       await addTestMentor(db, { name: "Isi Budi" });
       const [, , last] = (await testDraftOf(db, YEAR)).groups;
@@ -68,7 +69,7 @@ describe("fillDraftMentors", () => {
 
   it("saves nothing when no mentor is left, or no group is empty", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJIISI");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJIISI");
 
       const nobody = await fillDraftMentors(db, actor, KEY);
 
@@ -94,7 +95,7 @@ describe("fillDraftMentors", () => {
 
   it("refuses a fill made from an older draft", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJIISI");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJIISI");
       await addTestMentor(db, { name: "Isi Adi" });
 
       const stale = await fillDraftMentors(db, actor, {
@@ -111,7 +112,7 @@ describe("fillDraftMentors", () => {
     "refuses %s, and fills nothing",
     async (role) => {
       await inTestDatabase(async (db) => {
-        await addTestDraft(db, YEAR, "UJIISI");
+        await addTestDraft(db, YEAR, FIRST_NIM, "UJIISI");
         await addTestMentor(db, { name: "Isi Adi" });
         const other = await addTestActor(db, [role], "Akun Uji Ditolak");
 

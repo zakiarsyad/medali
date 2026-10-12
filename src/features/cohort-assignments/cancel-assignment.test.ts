@@ -22,13 +22,14 @@ import { readWaitingStudents } from "./waiting-students";
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2054;
+const FIRST_NIM = 9960000001;
 const DECREE = { decreeNumber: "KEP-54/UJI/2054", effectiveOn: "2054-09-01" };
 /** A fixed penetapan stands at version 3: formed, mentors filled, fixed. */
 const KEY = { cohortYear: YEAR, version: 3 };
 
 /** A fixed penetapan of 80 students in 3 groups, and who fixed it. */
 async function addFixed(db: Database) {
-  await addCompleteTestDraft(db, YEAR, "UJIBATAL");
+  await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJIBATAL");
   const head = await addTestActor(db, ["head_of_unit"], "Kepala Uji Batal");
   const fixed = await fixAssignment(db, head, {
     cohortYear: YEAR,

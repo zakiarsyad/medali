@@ -15,11 +15,12 @@ import { addTestActor, addTestProgram, addTestStudents } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2051;
+const FIRST_NIM = 9942000001;
 const KEY = { cohortYear: YEAR, version: 1 };
 
 /** A draft with a student of its first group and the groups to move to. */
 async function addDraftToMoveIn(db: Database) {
-  const draft = await addTestDraft(db, YEAR, "UJIPINDAH");
+  const draft = await addTestDraft(db, YEAR, FIRST_NIM, "UJIPINDAH");
   const [from, sameProgram] = await testGroupsOf(db, YEAR, draft.large);
   const [otherProgram] = await testGroupsOf(db, YEAR, draft.small);
   const studentId = from?.members[0]?.id;
@@ -108,7 +109,7 @@ describe("moveDraftMember", () => {
     await inTestDatabase(async (db) => {
       const { actor, sameProgram } = await addDraftToMoveIn(db);
       const elsewhere = await addTestProgram(db, "UJIPINDAH Lain");
-      const [outsider] = await addTestStudents(db, elsewhere, 1, 9951000901, {
+      const [outsider] = await addTestStudents(db, elsewhere, 1, 9942000901, {
         cohortYear: YEAR,
       });
 

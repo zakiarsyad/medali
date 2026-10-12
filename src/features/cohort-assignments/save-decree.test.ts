@@ -23,6 +23,7 @@ import { addTestActor, addTestStudents } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2051;
+const FIRST_NIM = 9951000001;
 const DECREE = { decreeNumber: "KEP-51/UJI/2051", effectiveOn: "2051-09-01" };
 /** A complete draft stands at version 2: formed, then its mentors filled. */
 const INPUT = { cohortYear: YEAR, version: 2, ...DECREE };
@@ -30,7 +31,7 @@ const INPUT = { cohortYear: YEAR, version: 2, ...DECREE };
 describe("saveDecree", () => {
   it("saves the number and the day, and submits nothing", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJISIMPAN");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJISIMPAN");
 
       const saved = await saveDecree(db, actor, { ...INPUT, version: 1 });
 
@@ -46,7 +47,7 @@ describe("saveDecree", () => {
 
   it("takes the number and the day off again when they are sent empty", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJISIMPAN");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJISIMPAN");
       await saveDecree(db, actor, { ...INPUT, version: 1 });
 
       await saveDecree(db, actor, {
@@ -65,7 +66,12 @@ describe("saveDecree", () => {
 
   it("keeps a submitted draft submitted, for Kepala Unit who changes it", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addCompleteTestDraft(db, YEAR, "UJISIMPAN");
+      const { actor } = await addCompleteTestDraft(
+        db,
+        YEAR,
+        FIRST_NIM,
+        "UJISIMPAN",
+      );
       await submitDraft(db, actor, INPUT);
       const head = await addTestActor(db, ["head_of_unit"], "Kepala Simpan");
 
@@ -81,7 +87,7 @@ describe("saveDecree", () => {
 
   it("refuses a save made from an older draft, a fixed angkatan and one without groups", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJISIMPAN");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJISIMPAN");
 
       const stale = await saveDecree(db, actor, { ...INPUT, version: 0 });
       const unformed = await saveDecree(db, actor, {
@@ -102,7 +108,7 @@ describe("saveDecree", () => {
     "refuses %s, and saves nothing",
     async (role) => {
       await inTestDatabase(async (db) => {
-        await addTestDraft(db, YEAR, "UJISIMPAN");
+        await addTestDraft(db, YEAR, FIRST_NIM, "UJISIMPAN");
         const other = await addTestActor(db, [role], "Akun Uji Ditolak");
 
         const saved = await saveDecree(db, other, { ...INPUT, version: 1 });
@@ -122,7 +128,7 @@ describe("submitDraft", () => {
     "makes the draft Diajukan for %s, with the number, the day and a line in the log",
     async (role) => {
       await inTestDatabase(async (db) => {
-        await addCompleteTestDraft(db, YEAR, "UJIAJUKAN");
+        await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJIAJUKAN");
         const sender = await addTestActor(db, [role], "Pengaju Uji");
 
         const submitted = await submitDraft(db, sender, INPUT);
@@ -145,7 +151,12 @@ describe("submitDraft", () => {
 
   it("submits without a decree number, which only the penetapan asks for", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addCompleteTestDraft(db, YEAR, "UJIAJUKAN");
+      const { actor } = await addCompleteTestDraft(
+        db,
+        YEAR,
+        FIRST_NIM,
+        "UJIAJUKAN",
+      );
 
       const submitted = await submitDraft(db, actor, {
         ...INPUT,
@@ -158,7 +169,7 @@ describe("submitDraft", () => {
 
   it("refuses a draft with a group without a mentor, sent past the switched-off button", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addTestDraft(db, YEAR, "UJIAJUKAN");
+      const { actor } = await addTestDraft(db, YEAR, FIRST_NIM, "UJIAJUKAN");
 
       const submitted = await submitDraft(db, actor, { ...INPUT, version: 1 });
 
@@ -177,7 +188,12 @@ describe("submitDraft", () => {
 
   it("refuses a draft with one mentor chosen for two groups", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addCompleteTestDraft(db, YEAR, "UJIAJUKAN");
+      const { actor } = await addCompleteTestDraft(
+        db,
+        YEAR,
+        FIRST_NIM,
+        "UJIAJUKAN",
+      );
       const [first, second] = (await testDraftOf(db, YEAR)).groups;
       await chooseMentor(db, actor, {
         cohortYear: YEAR,
@@ -200,6 +216,7 @@ describe("submitDraft", () => {
       const { actor, large } = await addCompleteTestDraft(
         db,
         YEAR,
+        FIRST_NIM,
         "UJIAJUKAN",
       );
       await addTestStudents(db, large, 1, 9951000900, { cohortYear: YEAR });
@@ -223,6 +240,7 @@ describe("submitDraft", () => {
       const { actor, large, small } = await addCompleteTestDraft(
         db,
         YEAR,
+        FIRST_NIM,
         "UJIAJUKAN",
       );
       const [group] = await testGroupsOf(db, YEAR, large);
@@ -249,7 +267,12 @@ describe("submitDraft", () => {
 
   it("refuses a submit made from an older draft, and a fixed angkatan", async () => {
     await inTestDatabase(async (db) => {
-      const { actor } = await addCompleteTestDraft(db, YEAR, "UJIAJUKAN");
+      const { actor } = await addCompleteTestDraft(
+        db,
+        YEAR,
+        FIRST_NIM,
+        "UJIAJUKAN",
+      );
 
       const stale = await submitDraft(db, actor, { ...INPUT, version: 1 });
       await fixTestDraft(db, YEAR);
@@ -264,7 +287,7 @@ describe("submitDraft", () => {
     "refuses %s, and submits nothing",
     async (role) => {
       await inTestDatabase(async (db) => {
-        await addCompleteTestDraft(db, YEAR, "UJIAJUKAN");
+        await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJIAJUKAN");
         const other = await addTestActor(db, [role], "Akun Uji Ditolak");
 
         expect(await submitDraft(db, other, INPUT)).toEqual(NOT_ALLOWED);

@@ -32,13 +32,14 @@ import { readWaitingStudents } from "./waiting-students";
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2052;
+const FIRST_NIM = 9952000001;
 const DECREE = { decreeNumber: "KEP-52/UJI/2052", effectiveOn: "2052-09-01" };
 /** A complete draft stands at version 2: formed, then its mentors filled. */
 const INPUT = { cohortYear: YEAR, version: 2, ...DECREE };
 
 /** A complete draft and the Kepala Unit who fixes it. */
 async function addDraftAndHead(db: Database) {
-  const draft = await addCompleteTestDraft(db, YEAR, "UJITETAP");
+  const draft = await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJITETAP");
   const head = await addTestActor(db, ["head_of_unit"], "Kepala Uji Tetap");
   return { ...draft, head };
 }
@@ -147,7 +148,7 @@ describe("fixAssignment", () => {
 
   it("refuses a draft with a group without a mentor, sent past the switched-off button", async () => {
     await inTestDatabase(async (db) => {
-      await addTestDraft(db, YEAR, "UJITETAP");
+      await addTestDraft(db, YEAR, FIRST_NIM, "UJITETAP");
       const head = await addTestActor(db, ["head_of_unit"]);
 
       const fixed = await fixAssignment(db, head, { ...INPUT, version: 1 });
@@ -184,7 +185,7 @@ describe("fixAssignment", () => {
     "student",
   ])("refuses %s, and fixes nothing", async (role) => {
     await inTestDatabase(async (db) => {
-      await addCompleteTestDraft(db, YEAR, "UJITETAP");
+      await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJITETAP");
       const other = await addTestActor(db, [role], "Akun Uji Ditolak");
 
       expect(await fixAssignment(db, other, INPUT)).toEqual(NOT_ALLOWED_TO_FIX);

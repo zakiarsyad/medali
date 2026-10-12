@@ -22,11 +22,12 @@ import {
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2049;
+const FIRST_NIM = 9949000001;
 const KEY = { cohortYear: YEAR, version: 1 };
 
 /** A draft, its first group and a mentor that may be chosen for it. */
 async function addDraftAndMentor(db: Database) {
-  const draft = await addTestDraft(db, YEAR, "UJIPENGASUH");
+  const draft = await addTestDraft(db, YEAR, FIRST_NIM, "UJIPENGASUH");
   const [group] = await testGroupsOf(db, YEAR, draft.large);
   if (!group) throw new Error("The draft has no group.");
   const mentorId = await addTestMentor(db, { name: "Pengasuh Uji Pilihan" });

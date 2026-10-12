@@ -21,8 +21,13 @@ import {
 const own = withOwnTestDatabase("ubahdraf");
 
 /** A draft at version 1, its first group and two mentors to choose from. */
-async function addDraftAndMentors(db: Database, year: number, tag: string) {
-  const { actor } = await addTestDraft(db, year, tag);
+async function addDraftAndMentors(
+  db: Database,
+  year: number,
+  firstNim: number,
+  tag: string,
+) {
+  const { actor } = await addTestDraft(db, year, firstNim, tag);
   const [group] = (await testDraftOf(db, year)).groups;
   if (!group) throw new Error("The draft has no group.");
   const first = await addTestMentor(db, { name: `Pengasuh ${tag} Satu` });
@@ -40,7 +45,12 @@ function actionsOf(db: Database, year: number): Promise<string[]> {
 describe("two people who change one draft at the same moment", () => {
   it("saves the first choice of a mentor: the second waits and is told the draft changed", async () => {
     const year = 2057;
-    const made = await addDraftAndMentors(own.db, year, "UJIBARENG");
+    const made = await addDraftAndMentors(
+      own.db,
+      year,
+      9957000001,
+      "UJIBARENG",
+    );
     const choice = { cohortYear: year, version: 1, groupId: made.groupId };
 
     const both = await own.atOnce(
@@ -63,7 +73,7 @@ describe("two people who change one draft at the same moment", () => {
 
   it("forms the groups again once: a choice sent at the same moment waits and is told the draft changed", async () => {
     const year = 2058;
-    const made = await addDraftAndMentors(own.db, year, "UJIULANG");
+    const made = await addDraftAndMentors(own.db, year, 9958000001, "UJIULANG");
     const forming: Forming = {
       cohortYear: year,
       targetSize: 25,

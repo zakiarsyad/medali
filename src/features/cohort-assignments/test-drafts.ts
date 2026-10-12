@@ -29,14 +29,17 @@ export interface TestDraft {
 
 /**
  * Forms the groups of an angkatan of 60 students in one program studi
- * and 20 in another, by NIM. The NIMs start at `99<yy>000001`.
+ * and 20 in another, by NIM. The 60 take the NIMs from the first one
+ * given and the 20 those from 100 after it. Each file of checks writes
+ * its first NIM out, so the check of sample NIMs sees that no two share
+ * one.
  */
 export async function addTestDraft(
   db: Database,
   cohortYear: number,
+  firstNim: number,
   tag: string,
 ): Promise<TestDraft> {
-  const firstNim = Number(`99${String(cohortYear).slice(2)}000001`);
   const large = await addTestProgram(db, `${tag} Pajak`);
   const small = await addTestProgram(db, `${tag} Akuntansi`);
   await addTestStudents(db, large, 60, firstNim, { cohortYear });
@@ -60,9 +63,10 @@ export async function addTestDraft(
 export async function addCompleteTestDraft(
   db: Database,
   cohortYear: number,
+  firstNim: number,
   tag: string,
 ): Promise<TestDraft> {
-  const draft = await addTestDraft(db, cohortYear, tag);
+  const draft = await addTestDraft(db, cohortYear, firstNim, tag);
   for (const name of ["Adi", "Budi", "Citra"]) {
     await addTestMentor(db, { name: `Pengasuh ${tag} ${name}` });
   }

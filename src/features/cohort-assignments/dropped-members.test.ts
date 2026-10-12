@@ -18,6 +18,7 @@ import { addTestActor } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const YEAR = 2054;
+const FIRST_NIM = 9954000001;
 /** A complete draft stands at version 2: formed, then its mentors filled. */
 const INPUT = {
   cohortYear: YEAR,
@@ -31,7 +32,7 @@ const INPUT = {
  * on Cuti after it was saved, with the Kepala Unit who saves next.
  */
 async function addDraftWithGoneMembers(db: Database) {
-  await addCompleteTestDraft(db, YEAR, "UJIKELUAR");
+  await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJIKELUAR");
   const head = await addTestActor(db, ["head_of_unit"], "Kepala Uji Keluar");
   const [group] = (await testDraftOf(db, YEAR)).groups;
   const [removed, ...onLeave] =
@@ -142,7 +143,7 @@ describe("a draft that names a student who was removed or is not Aktif any more"
 
   it("adds no line of its own to a save of a draft that lost nobody", async () => {
     await inTestDatabase(async (db) => {
-      await addCompleteTestDraft(db, YEAR, "UJIKELUAR");
+      await addCompleteTestDraft(db, YEAR, FIRST_NIM, "UJIKELUAR");
       const head = await addTestActor(db, ["head_of_unit"]);
 
       await saveDecree(db, head, INPUT);
