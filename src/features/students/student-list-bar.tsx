@@ -4,6 +4,7 @@ import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
 import { FilterFold } from "./filter-fold";
+import { foundWords } from "./found-words";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
 import {
   agencyChoices,
@@ -44,13 +45,6 @@ function categoryChoices(counts: ChoiceCounts): CountedChoice[] {
     shown: label,
     held: counts.categories[field],
   }));
-}
-
-/** What the number found is a number of, in the words of the prototype. */
-function foundWords(filters: StudentListFilters): string {
-  const inUse = topFiltersInUse(filters);
-  if (inUse > 0) return `mahasiswa sesuai ${inUse} filter`;
-  return filters.status === "current" ? "mahasiswa aktif" : "mahasiswa";
 }
 
 /**

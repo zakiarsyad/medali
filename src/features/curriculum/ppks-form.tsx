@@ -144,7 +144,11 @@ export function PpksForm({
             Batal
           </button>
           {activity && (
-            <RemovePpksButton id={activity.id} onRemoved={onSaved} />
+            <RemovePpksButton
+              id={activity.id}
+              name={activity.name}
+              onRemoved={onSaved}
+            />
           )}
         </div>
       </div>
