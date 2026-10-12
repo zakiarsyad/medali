@@ -11,6 +11,7 @@ import {
   rowLimitForPage,
   tabsFor,
 } from "./access";
+import { BAM_ROLES } from "./bam-roles";
 import { PAGES } from "./pages";
 import { ROLE_IDS, type RoleId } from "./role-ids";
 import { ACTIONS, type Action, ROLES } from "./roles";
@@ -431,6 +432,20 @@ describe("pagesFor", () => {
   it("gives no pages to an account with no roles", () => {
     expect(pagesFor([])).toEqual([]);
   });
+
+  it("puts Profil saya first for a student, the page they land on", () => {
+    expect(pagesFor(["student"])[0]?.path).toBe("saya");
+  });
+
+  it.each(BAM_ROLES)(
+    "puts Profil saya first for a student who is also %s, with that role's pages after it",
+    (role) => {
+      const pages = paths(pagesFor(["student", role]));
+
+      expect(pages[0]).toBe("saya");
+      expect(pages).toEqual(expect.arrayContaining(paths(pagesFor([role]))));
+    },
+  );
 });
 
 describe("needsDormResident", () => {
