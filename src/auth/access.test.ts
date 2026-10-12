@@ -353,6 +353,40 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa read their own student record", () => {
+    expect(may(["student"], "view_own_profile")).toBe(true);
+    expect(mayOpenPage(["student"], "profile")).toBe(true);
+  });
+
+  it("refuses every other role to read their own student record", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "view_own_profile")).toBe(false);
+    }
+  });
+
+  it.each(["head_of_unit", "mentor", "bam_bphk"] as const)(
+    "refuses %s to read their own student record and to open Profil saya",
+    (role) => {
+      expect(may([role], "view_own_profile")).toBe(false);
+      expect(mayOpenPage([role], "profile")).toBe(false);
+    },
+  );
+
+  it("gives the right to read one's own student record to every role with Profil saya", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_own_profile")).toBe(
+        mayOpenPage([role], "profile"),
+      );
+    }
+  });
+
+  it("gives Mahasiswa no right that changes a student record", () => {
+    expect(ROLES.student.actions).toEqual(["view_own_profile"]);
+    expect(may(["student"], "input_new_students")).toBe(false);
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -621,6 +655,28 @@ describe("rowLimitForAction and rowLimitForPage", () => {
 
     expect(rowLimitForPage(head, "students")).toEqual(NO_ROW);
     expect(rowLimitForAction(head, "view_student_detail")).toEqual(NO_ROW);
+  });
+
+  it("keeps a student to their own record on Profil saya, whatever wide role they also hold", () => {
+    const wideRoles = ROLE_IDS.filter((role) => ROLES[role].rows === "all");
+    const onlyThemselves = { ...NO_ROW, studentIds: ["student-1"] };
+
+    expect(wideRoles).toEqual(
+      expect.arrayContaining(["bam_bphk", "head_of_unit", "dorm_manager"]),
+    );
+    for (const role of wideRoles) {
+      const both = { ...account(["student", role]), studentId: "student-1" };
+
+      expect(rowLimitForAction(both, "view_own_profile")).toEqual(
+        onlyThemselves,
+      );
+    }
+  });
+
+  it("gives a wide role no row on Profil saya, even with a student record", () => {
+    const staff = { ...account(["head_of_unit"]), studentId: "student-1" };
+
+    expect(rowLimitForAction(staff, "view_own_profile")).toEqual(NO_ROW);
   });
 
   it("shows an account with no roles nothing", () => {
