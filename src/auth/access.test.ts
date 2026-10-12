@@ -334,6 +334,80 @@ describe("may", () => {
     }
   });
 
+  const assignmentViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(assignmentViewers)("lets %s see the penetapan", (role) => {
+    expect(may([role], "view_cohort_assignments")).toBe(true);
+  });
+
+  it("refuses every other role to see the penetapan", () => {
+    const others = ROLE_IDS.filter((role) => !assignmentViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - assignmentViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_cohort_assignments")).toBe(false);
+    }
+  });
+
+  it("gives the right to see the penetapan to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_cohort_assignments")).toBe(
+        mayOpenTab([role], "mentors", "new_cohort"),
+      );
+    }
+  });
+
+  const assignmentPreparers: RoleId[] = ["head_of_unit", "upk_staff"];
+
+  it.each(assignmentPreparers)("lets %s prepare a penetapan", (role) => {
+    expect(may([role], "prepare_cohort_assignments")).toBe(true);
+  });
+
+  it("refuses every other role to prepare a penetapan", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !assignmentPreparers.includes(role),
+    );
+    expect(others.length).toBe(ROLE_IDS.length - assignmentPreparers.length);
+    for (const role of others) {
+      expect(may([role], "prepare_cohort_assignments")).toBe(false);
+    }
+  });
+
+  it.each(["director", "head_of_program", "mentor"] as const)(
+    "refuses %s to prepare and to fix a penetapan",
+    (role) => {
+      expect(may([role], "prepare_cohort_assignments")).toBe(false);
+      expect(may([role], "fix_cohort_assignments")).toBe(false);
+    },
+  );
+
+  it("lets Kepala Unit fix and cancel a penetapan", () => {
+    expect(may(["head_of_unit"], "fix_cohort_assignments")).toBe(true);
+  });
+
+  it("refuses every other role to fix and cancel a penetapan, Pegawai UPK among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toContain("upk_staff");
+    for (const role of others) {
+      expect(may([role], "fix_cohort_assignments")).toBe(false);
+    }
+  });
+
+  it("lets every role that may fix a penetapan prepare it, and every role that may prepare it see it", () => {
+    for (const role of ROLE_IDS) {
+      if (may([role], "fix_cohort_assignments")) {
+        expect(may([role], "prepare_cohort_assignments")).toBe(true);
+      }
+      if (may([role], "prepare_cohort_assignments")) {
+        expect(may([role], "view_cohort_assignments")).toBe(true);
+      }
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -548,6 +622,38 @@ describe("rowLimitForAction and rowLimitForPage", () => {
 
     expect(rowLimitForAction(both, "view_mentor_groups")).toEqual(
       onlyPrograms([7]),
+    );
+  });
+
+  it("shows the penetapan to Ketua Program Studi for their program only, and none without a program", () => {
+    const head = account(["head_of_program"], 7);
+    const withoutProgram = account(["head_of_program"]);
+
+    expect(rowLimitForAction(head, "view_cohort_assignments")).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(
+      rowLimitForAction(withoutProgram, "view_cohort_assignments"),
+    ).toEqual(NO_ROW);
+  });
+
+  it.each(["head_of_unit", "director", "upk_staff"] as const)(
+    "shows %s the penetapan of every program studi",
+    (role) => {
+      expect(
+        rowLimitForAction(account([role]), "view_cohort_assignments"),
+      ).toEqual(EVERY_ROW);
+    },
+  );
+
+  it("gives Ketua Program Studi who is also Pegawai UPK every penetapan, to see and to prepare", () => {
+    const both = account(["head_of_program", "upk_staff"], 7);
+
+    expect(rowLimitForAction(both, "view_cohort_assignments")).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(both, "prepare_cohort_assignments")).toEqual(
+      EVERY_ROW,
     );
   });
 

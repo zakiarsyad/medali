@@ -117,7 +117,7 @@ is built here.
 
 - [x] 1. Penetapan drafts and their process log are stored, with the
   sample new angkatan.
-- [ ] 2. The permissions for preparing and fixing, with their checks.
+- [x] 2. The permissions for preparing and fixing, with their checks.
 - [ ] 3. The rule that forms groups by the three methods, with tests.
 - [ ] 4. The tab with the angkatan list, step 1 and step 2.
 - [ ] 5. Step 3: mentor choice, automatic fill and moving members.
