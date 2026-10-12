@@ -1,6 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { forbidden } from "next/navigation";
+import { may } from "@/auth/access";
+import type { Account } from "@/auth/accounts";
+import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
@@ -14,9 +18,21 @@ import {
 } from "./decree-input";
 import { parseDraftKey } from "./draft-change-input";
 import { fixAssignment } from "./fix-assignment";
-import { preparer } from "./preparer";
 import { NOT_UNDERSTOOD } from "./refusals";
 import { saveDecree, submitDraft } from "./save-decree";
+
+/**
+ * The signed-in account when it may prepare a penetapan. Any other is
+ * refused before anything of what it sent is read. Each step then checks
+ * the right of its own, so preparing does not open "Tetapkan" or
+ * "Batalkan penetapan" itself.
+ */
+async function preparer(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "prepare_cohort_assignments"))
+    forbidden();
+  return account;
+}
 
 const STEP_WRITES = {
   save: saveDecree,

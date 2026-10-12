@@ -1,6 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { forbidden } from "next/navigation";
+import { may } from "@/auth/access";
+import type { Account } from "@/auth/accounts";
+import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
@@ -17,7 +21,18 @@ import { fillDraftMentors } from "./fill-draft-mentors";
 import { formAssignment } from "./form-assignment";
 import { parseForming } from "./forming-input";
 import { moveDraftMember } from "./move-draft-member";
-import { preparer } from "./preparer";
+
+/**
+ * The signed-in account when it may prepare a penetapan. Any other is
+ * refused before anything of what it sent is read. Each step then checks
+ * the right of its own.
+ */
+async function preparer(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "prepare_cohort_assignments"))
+    forbidden();
+  return account;
+}
 
 /** "Bentuk kelompok" and "Bentuk ulang". */
 export async function formGroupsAction(
