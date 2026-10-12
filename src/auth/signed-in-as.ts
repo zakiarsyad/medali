@@ -1,7 +1,7 @@
 import type { SignedInAs } from "@/ui/menu-types";
 import type { Account } from "./accounts";
-import type { SignedIn } from "./current-account";
 import { ROLES } from "./roles";
+import type { SignedIn } from "./who-is-signed-in";
 
 export function accountLabel(account: Account): string {
   return account.title ? `${account.name}, ${account.title}` : account.name;

@@ -10,27 +10,14 @@ import {
 } from "./accounts";
 import { SESSION_COOKIE } from "./session-token";
 import { sessionAccount } from "./sessions";
+import { type SignedIn, whoIsSignedIn } from "./who-is-signed-in";
 
 export const ACCOUNT_COOKIE = "medali-account";
 
-/** An account using the app, and the way it got in. */
-export interface SignedIn {
-  account: Account;
-  way: "google" | "switcher";
-}
-
-async function switcherAccount(picked: string | undefined) {
-  const db = database();
-  const account = picked ? await findActiveAccount(db, picked) : null;
-  return account ?? firstAccountWithRole(db, "head_of_unit");
-}
-
 /**
- * Who is using the app. Someone signed in with Google uses their own
- * account, until they sign out, stay away for 8 hours, or the account is
- * removed. Otherwise, only where "Ganti peran" is on, it is the account
- * picked there, or Kepala Unit when none is picked. Anywhere else nobody
- * is signed in.
+ * Who is using the app: see `whoIsSignedIn`, which decides. This only
+ * gathers what it decides from. A Google session ends when the person
+ * signs out, stays away for 8 hours, or the account is removed.
  */
 export const currentSignIn = cache(async (): Promise<SignedIn | null> => {
   // Read before anything else, so that every page asking for the account
@@ -38,14 +25,28 @@ export const currentSignIn = cache(async (): Promise<SignedIn | null> => {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   const picked = jar.get(ACCOUNT_COOKIE)?.value;
+  const stage = currentStage();
 
   const own = token
     ? await sessionAccount(database(), token, new Date())
     : null;
-  if (own) return { account: own, way: "google" };
-  if (!accountSwitcherOn(currentStage())) return null;
-  const account = await switcherAccount(picked);
-  return account ? { account, way: "switcher" } : null;
+  // The accounts of "Ganti peran" are read only where they can count, to
+  // spare the database. Whether they count is still decided below.
+  const switcherCounts = !own && accountSwitcherOn(stage);
+  const pickedAccount =
+    switcherCounts && picked
+      ? await findActiveAccount(database(), picked)
+      : null;
+  const defaultAccount =
+    switcherCounts && !pickedAccount
+      ? await firstAccountWithRole(database(), "head_of_unit")
+      : null;
+  return whoIsSignedIn({
+    stage,
+    sessionAccount: own,
+    pickedAccount,
+    defaultAccount,
+  });
 });
 
 export const currentAccount = cache(async (): Promise<Account | null> => {
