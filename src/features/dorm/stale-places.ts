@@ -1,31 +1,60 @@
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
 import { dormInSql } from "./resident-condition";
 
-/**
- * Deletes the room place of every student who no longer lives in the dorm
- * of their room: one who stopped being a resident, was removed, or now
- * lives in another dorm. Only a change that must count the places of a
- * room runs this, while it holds the room. A read never does: it leaves
- * those places out instead.
- *
- * Nothing is deleted when no academic period runs (the angkatan years are
- * null): nobody's semester is known then, and a mistake in the periods
- * must not empty the rooms.
+/*
+ * A stale place belongs to a student who no longer lives in the dorm of
+ * their room: one who stopped being a resident, was removed, or now lives
+ * in another dorm. A read never deletes one: it leaves it out instead.
+ * Only a change that must count the places of a room deletes them, and
+ * only those it needs gone, so two changes in two rooms never wait for
+ * each other.
  */
-export async function freeStalePlaces(
+
+async function deleteStale(
   db: Database,
-  dormCohorts: number[] | null,
+  dormCohorts: number[],
+  which: SQL,
 ): Promise<void> {
-  if (dormCohorts === null) return;
   const stale = db
     .select({ studentId: dormRoomPlaces.studentId })
     .from(dormRoomPlaces)
     .innerJoin(dormRooms, eq(dormRooms.id, dormRoomPlaces.roomId))
     .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
-    .where(sql`${dormInSql(dormCohorts)} is distinct from ${dormRooms.dorm}`);
+    .where(
+      and(
+        which,
+        sql`${dormInSql(dormCohorts)} is distinct from ${dormRooms.dorm}`,
+      ),
+    );
   await db
     .delete(dormRoomPlaces)
     .where(inArray(dormRoomPlaces.studentId, stale));
+}
+
+/** Deletes the stale places of one room, which the change holds. */
+export async function freeStalePlacesIn(
+  db: Database,
+  dormCohorts: number[],
+  roomId: string,
+): Promise<void> {
+  await deleteStale(db, dormCohorts, eq(dormRoomPlaces.roomId, roomId));
+}
+
+/**
+ * Deletes the stale places some students still have in any room, so that
+ * an old place does not keep them from getting a new one.
+ */
+export async function freeStalePlacesOf(
+  db: Database,
+  dormCohorts: number[],
+  studentIds: string[],
+): Promise<void> {
+  if (studentIds.length === 0) return;
+  await deleteStale(
+    db,
+    dormCohorts,
+    inArray(dormRoomPlaces.studentId, studentIds),
+  );
 }

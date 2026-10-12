@@ -1,12 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { academicPeriods, dormRoomPlaces, students } from "@/db/schema";
+import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { DormId } from "./dorms";
 import type { RoomsParams } from "./rooms-address";
 import { loadRooms, type RoomsView } from "./rooms-view";
-import { freeStalePlaces } from "./stale-places";
+import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
 import {
   addTestProgram,
   addTestRoom,
@@ -90,6 +90,7 @@ describe("a load of Ploting kamar", () => {
 
       const view = await load(db);
 
+      expect(view.periodRuns).toBe(true);
       expect(takenIn(view, roomId)).toBe(1);
       expect(shownIds(view)).toEqual([studentId]);
       expect(view.counts).toEqual({ residents: 1, placed: 1 });
@@ -192,6 +193,7 @@ describe("a load of Ploting kamar", () => {
 
       const view = await load(db);
 
+      expect(view.periodRuns).toBe(false);
       expect(takenIn(view, roomId)).toBe(0);
       expect(shownIds(view)).toEqual([]);
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
@@ -227,32 +229,57 @@ describe("a load of Ploting kamar", () => {
   });
 });
 
-describe("freeStalePlaces", () => {
-  it("deletes the place of a student who left, and keeps the others", async () => {
+describe("freeStalePlacesIn", () => {
+  it("deletes the stale places of the room, and leaves every other place", async () => {
     await inTestDatabase(async (db) => {
       const { program, roomId, studentId } = await addPlacedResident(db);
+      const more = { cohortYear: 2080, status: "on_leave" as const };
       const left = await addTestStudent(db, program, {
+        ...more,
         nim: "9923800002",
         name: "Penghuni Uji Cuti",
-        cohortYear: 2080,
-        status: "on_leave",
       });
+      const leftElsewhere = await addTestStudent(db, program, {
+        ...more,
+        nim: "9923800003",
+        name: "Penghuni Uji Cuti Lain",
+      });
+      const otherRoom = await addTestRoom(db, { number: "S102" });
       await placeTestResident(db, roomId, left);
+      await placeTestResident(db, otherRoom, leftElsewhere);
 
-      await freeStalePlaces(db, [2080]);
+      await freeStalePlacesIn(db, [2080], roomId);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
+      expect(await residentsOfRoom(db, otherRoom)).toEqual([leftElsewhere]);
     });
   });
+});
 
-  it("deletes nothing when no academic period runs", async () => {
+describe("freeStalePlacesOf", () => {
+  it("deletes the stale place of the students given only", async () => {
     await inTestDatabase(async (db) => {
-      const { studentId } = await addPlacedResident(db);
-      await change(db, studentId, { status: "on_leave" });
+      const { program, roomId, studentId } = await addPlacedResident(db);
+      const more = { cohortYear: 2080, status: "on_leave" as const };
+      const given = await addTestStudent(db, program, {
+        ...more,
+        nim: "9923800002",
+        name: "Penghuni Uji Cuti",
+      });
+      const notGiven = await addTestStudent(db, program, {
+        ...more,
+        nim: "9923800003",
+        name: "Penghuni Uji Cuti Lain",
+      });
+      await placeTestResident(db, roomId, given);
+      await placeTestResident(db, roomId, notGiven);
 
-      await freeStalePlaces(db, null);
+      await freeStalePlacesOf(db, [2080], [given, studentId]);
+      await freeStalePlacesOf(db, [2080], []);
 
-      expect(await db.select().from(dormRoomPlaces)).toHaveLength(1);
+      expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
+        [studentId, notGiven].sort(),
+      );
     });
   });
 });

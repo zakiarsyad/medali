@@ -10,7 +10,7 @@ import { NOT_ALLOWED } from "./not-allowed";
 import { livesIn } from "./resident-condition";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, lockRoom } from "./room-lock";
-import { freeStalePlaces } from "./stale-places";
+import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
 
 /** What a save answers when the room has no free place left. */
 export const ROOM_FULL = {
@@ -19,8 +19,8 @@ export const ROOM_FULL = {
 } as const;
 
 /**
- * What placing answers while no academic period runs. No semester is
- * known then, so who lives where cannot be told and nothing is placed.
+ * What a change answers, and the screen says, while no academic period
+ * runs. No semester is known then, so who lives where cannot be told.
  */
 export const NO_PERIOD = {
   ok: false,
@@ -54,7 +54,8 @@ async function place(
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
-  await freeStalePlaces(tx, dormCohorts);
+  await freeStalePlacesIn(tx, dormCohorts, room.id);
+  await freeStalePlacesOf(tx, dormCohorts, [studentId]);
   const [resident] = await tx
     .select({ name: students.name })
     .from(students)

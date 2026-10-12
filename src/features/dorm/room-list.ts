@@ -61,7 +61,7 @@ function inScope(scope: ResidentScope): SQL | undefined {
 }
 
 /** The join that finds the room a student has in one dorm, if any. */
-function roomIn(dorm: DormId): SQL | undefined {
+export function roomIn(dorm: DormId): SQL | undefined {
   return and(eq(dormRooms.id, dormRoomPlaces.roomId), eq(dormRooms.dorm, dorm));
 }
 

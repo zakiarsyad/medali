@@ -16,6 +16,8 @@ import type { RoomsParams } from "./rooms-address";
 
 /** What the Ploting kamar screen shows for one dorm and floor. */
 export interface RoomsView {
+  /** Whether an academic period runs. Without one no room can be plotted. */
+  periodRuns: boolean;
   /** Every room of the dorm. */
   rooms: Room[];
   /** The residents in the rooms of the open floor. */
@@ -35,7 +37,8 @@ export async function loadRooms(
   visible: SQL,
   day?: string,
 ): Promise<RoomsView> {
-  const dormCohorts = (await readDormCohorts(db, day)) ?? [];
+  const cohorts = await readDormCohorts(db, day);
+  const dormCohorts = cohorts ?? [];
   const scope: ResidentScope = { dorm: params.dorm, dormCohorts, visible };
   const [rooms, residents, counts, unplaced] = await Promise.all([
     readRooms(db, params.dorm, dormCohorts),
@@ -43,5 +46,5 @@ export async function loadRooms(
     countResidents(db, scope),
     listUnplaced(db, scope, params.query),
   ]);
-  return { rooms, residents, counts, unplaced };
+  return { periodRuns: cohorts !== null, rooms, residents, counts, unplaced };
 }

@@ -2,7 +2,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
-import { dormRoomPlaces, students } from "@/db/schema";
+import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { readDormCohorts } from "./dorm-cohorts";
 import type { DormId } from "./dorms";
@@ -10,12 +10,18 @@ import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL } from "./place-resident";
 import { livesIn } from "./resident-condition";
 import { NOT_FOUND, parseId } from "./room-input";
+import { roomIn } from "./room-list";
 import { countTaken, lockRoom } from "./room-lock";
-import { freeStalePlaces } from "./stale-places";
+import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
+
+const NOBODY_WAITING = {
+  ok: false,
+  error: "Tidak ada penghuni yang belum diplot di asrama ini.",
+} as const;
 
 /**
- * What a fill answers when it placed nobody: no resident is without a
- * room, or another save gave those found a room at the same moment.
+ * What a fill answers when residents were waiting, but another save gave
+ * every one of them a room at the same moment.
  */
 const NOBODY_PLACED = {
   ok: false,
@@ -23,7 +29,10 @@ const NOBODY_PLACED = {
     "Tidak ada penghuni yang ditempatkan. Muat ulang halaman untuk melihat daftar terbaru.",
 } as const;
 
-/** The first residents of a dorm without a room, in NIM order. */
+/**
+ * The first residents of a dorm without a room in it, in NIM order. A
+ * stale place in another dorm does not count as a room.
+ */
 async function firstWaiting(
   tx: Database,
   dorm: DormId,
@@ -34,7 +43,8 @@ async function firstWaiting(
     .select({ id: students.id })
     .from(students)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
-    .where(and(livesIn(dorm, dormCohorts), isNull(dormRoomPlaces.studentId)))
+    .leftJoin(dormRooms, roomIn(dorm))
+    .where(and(livesIn(dorm, dormCohorts), isNull(dormRooms.id)))
     .orderBy(asc(students.nim))
     .limit(howMany);
   return waiting.map((resident) => resident.id);
@@ -47,11 +57,12 @@ async function fill(
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
-  await freeStalePlaces(tx, dormCohorts);
+  await freeStalePlacesIn(tx, dormCohorts, room.id);
   const free = room.capacity - (await countTaken(tx, room.id));
   if (free <= 0) return ROOM_FULL;
   const waiting = await firstWaiting(tx, room.dorm, dormCohorts, free);
-  if (waiting.length === 0) return NOBODY_PLACED;
+  if (waiting.length === 0) return NOBODY_WAITING;
+  await freeStalePlacesOf(tx, dormCohorts, waiting);
 
   const placed = await tx
     .insert(dormRoomPlaces)

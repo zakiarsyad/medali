@@ -7,6 +7,7 @@ import type { Parsed } from "@/parsed";
 import { brokeNumberRule, numberTaken } from "./add-room";
 import { readDormCohorts } from "./dorm-cohorts";
 import { NOT_ALLOWED } from "./not-allowed";
+import { NO_PERIOD } from "./place-resident";
 import {
   NOT_FOUND,
   parseId,
@@ -15,7 +16,7 @@ import {
   type SentRoomDetails,
 } from "./room-input";
 import { countTaken, type LockedRoom, lockRoom } from "./room-lock";
-import { freeStalePlaces } from "./stale-places";
+import { freeStalePlacesIn } from "./stale-places";
 
 function tooSmall(taken: number) {
   return {
@@ -72,9 +73,12 @@ async function saveDetails(
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
-  await freeStalePlaces(tx, dormCohorts);
-  const taken = await countTaken(tx, room.id);
-  if (details.capacity < taken) return tooSmall(taken);
+  if (details.capacity !== room.capacity) {
+    if (dormCohorts === null) return NO_PERIOD;
+    await freeStalePlacesIn(tx, dormCohorts, room.id);
+    const taken = await countTaken(tx, room.id);
+    if (details.capacity < taken) return tooSmall(taken);
+  }
   if (await isNumberUsed(tx, room, details.number)) {
     return numberTaken(room.dorm, details.number);
   }
@@ -85,7 +89,9 @@ async function saveDetails(
  * Changes the number and the kapasitas of a room, and gives back its
  * number. A kapasitas below the number of residents is refused, and so is
  * a number another room of the dorm has. The residents counted are those
- * who live in the dorm on the day, today when none is given.
+ * who live in the dorm on the day, today when none is given. While no
+ * academic period runs they cannot be counted, so only the number can be
+ * changed then.
  */
 export async function changeRoom(
   db: Database,

@@ -4,6 +4,7 @@ import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { DormNumbers, DormSwitch } from "./dorm-summary";
 import { FloorPanel } from "./floor-panel";
+import { NO_PERIOD } from "./place-resident";
 import styles from "./rooms.module.css";
 import type { RoomsParams } from "./rooms-address";
 import { loadRooms } from "./rooms-view";
@@ -22,11 +23,8 @@ export async function RoomsScreen({
   /** Whether the account may change rooms, or only see them. */
   mayManage: boolean;
 }) {
-  const { rooms, residents, counts, unplaced } = await loadRooms(
-    database(),
-    params,
-    visible,
-  );
+  const view = await loadRooms(database(), params, visible);
+  const { rooms, residents, counts, unplaced } = view;
   return (
     <>
       <PageHead title="Ploting kamar">
@@ -37,6 +35,11 @@ export async function RoomsScreen({
         <p className={styles.note}>
           Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
           dan rinciannya.
+        </p>
+      )}
+      {!view.periodRuns && (
+        <p className={styles.note} role="status">
+          {NO_PERIOD.error}
         </p>
       )}
       <DormSwitch open={params.dorm} floor={params.floor} />

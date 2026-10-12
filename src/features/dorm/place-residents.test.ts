@@ -250,6 +250,76 @@ describe("placeResident", () => {
   });
 });
 
+describe("a stale place in another room", () => {
+  interface Stale {
+    roomId: string;
+    otherRoom: string;
+    /** On leave, with a place in the other room. */
+    left: string;
+    women: string[];
+  }
+
+  async function addStaleElsewhere(db: Database): Promise<Stale> {
+    const { program, roomId, women } = await addTestRows(db);
+    const left = await addTestStudent(db, program, {
+      nim: "9926260008",
+      name: "Penghuni Uji Cuti",
+      isSeedling: true,
+      status: "on_leave",
+    });
+    const otherRoom = await addTestRoom(db, { dorm: DORM, number: "P104" });
+    await placeTestResident(db, otherRoom, left);
+    return { roomId, otherRoom, left, women };
+  }
+
+  it("is left alone by a placement in this room", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, otherRoom, left, women } = await addStaleElsewhere(db);
+
+      const sent = { roomId, studentId: women[0] ?? "" };
+      const placed = await place(db, MANAGER, sent);
+
+      expect(placed.ok).toBe(true);
+      expect(await residentsOfRoom(db, otherRoom)).toEqual([left]);
+    });
+  });
+
+  it("is left alone by Isi otomatis in this room", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, otherRoom, left } = await addStaleElsewhere(db);
+
+      const filled = await fill(db, MANAGER, roomId);
+
+      expect(filled.ok).toBe(true);
+      expect(await residentsOfRoom(db, otherRoom)).toEqual([left]);
+    });
+  });
+
+  it("does not keep Isi otomatis from placing a resident who now lives in this dorm", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, roomId, women } = await addTestRows(db);
+      const menRoom = await addTestRoom(db, {
+        dorm: "wismantara_putra",
+        number: "P105",
+      });
+      const moved = await addTestStudent(db, program, {
+        nim: "9926260000",
+        name: "Penghuni Uji Pindah",
+        isSeedling: true,
+      });
+      await placeTestResident(db, menRoom, moved);
+
+      const filled = await fill(db, MANAGER, roomId);
+
+      expect(filled.ok).toBe(true);
+      expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
+        [moved, women[0] ?? ""].sort(),
+      );
+      expect(await residentsOfRoom(db, menRoom)).toEqual([]);
+    });
+  });
+});
+
 describe("placing while no academic period runs", () => {
   /** A resident who went on leave, still with their place in the room. */
   async function addRowsWithoutPeriod(db: Database) {
@@ -323,8 +393,7 @@ describe("autoFillRoom", () => {
 
       expect(await fill(db, MANAGER, roomId)).toEqual({
         ok: false,
-        error:
-          "Tidak ada penghuni yang ditempatkan. Muat ulang halaman untuk melihat daftar terbaru.",
+        error: "Tidak ada penghuni yang belum diplot di asrama ini.",
       });
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
     });
@@ -379,8 +448,7 @@ describe("autoFillRoom", () => {
 
       expect(filled).toEqual({
         ok: false,
-        error:
-          "Tidak ada penghuni yang ditempatkan. Muat ulang halaman untuk melihat daftar terbaru.",
+        error: "Tidak ada penghuni yang belum diplot di asrama ini.",
       });
       expect(await residentsOfRoom(db, menRoom)).toEqual([]);
       expect(await waitingIn(db)).toEqual(women);
