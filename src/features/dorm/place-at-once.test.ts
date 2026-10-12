@@ -16,7 +16,7 @@ import type { Parsed } from "@/parsed";
 import { readSetting } from "@/settings";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
-import { stopCompanion } from "./companion-duty";
+import { restartCompanion, stopCompanion } from "./companion-duty";
 import { nameCompanion } from "./name-companion";
 import { placeCompanion } from "./place-companion";
 import { placeResident } from "./place-resident";
@@ -357,6 +357,19 @@ describe("a resident and a kakak pendamping taking the last place at the same mo
   });
 });
 
+/** What a change of the student data to Cuti does, in its own transaction. */
+function goOnLeave(studentId: string): Save {
+  return (db) =>
+    db.transaction(async (tx) => {
+      await tx
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, studentId));
+      await settleCompanionDuty(tx, studentId, DAY);
+      return { ok: true, value: "Cuti" };
+    });
+}
+
 describe("naming a kakak pendamping while the student goes on leave at the same moment", () => {
   async function addSenior(): Promise<string> {
     const program = await addTestProgram(first.db, PROGRAM);
@@ -370,19 +383,6 @@ describe("naming a kakak pendamping while the student goes on leave at the same 
   function name(studentId: string): Save {
     const sent = { studentId, dorm: "dana_rakca", note: "" };
     return (db) => nameCompanion(db, MANAGER, sent, DAY);
-  }
-
-  /** What a change of the student data to Cuti does, in its own transaction. */
-  function goOnLeave(studentId: string): Save {
-    return (db) =>
-      db.transaction(async (tx) => {
-        await tx
-          .update(students)
-          .set({ status: "on_leave" })
-          .where(eq(students.id, studentId));
-        await settleCompanionDuty(tx, studentId, DAY);
-        return { ok: true, value: "Cuti" };
-      });
   }
 
   it("refuses the naming that comes second", async () => {
@@ -402,6 +402,47 @@ describe("naming a kakak pendamping while the student goes on leave at the same 
     const studentId = await addSenior();
 
     const both = await atOnce(name(studentId), goOnLeave(studentId));
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later.ok).toBe(true);
+    expect((await companionOf(first.db, studentId))?.isActive).toBe(false);
+  });
+});
+
+describe("Aktifkan while the student goes on leave at the same moment", () => {
+  async function addStopped(): Promise<string> {
+    const program = await addTestProgram(first.db, PROGRAM);
+    const studentId = await addTestStudent(first.db, program, {
+      nim: "9911240005",
+      name: "Kakak Uji",
+      cohortYear: 2024,
+    });
+    await addTestCompanion(first.db, studentId, { isActive: false });
+    return studentId;
+  }
+
+  function restart(studentId: string): Save {
+    return (db) => restartCompanion(db, MANAGER, studentId, DAY);
+  }
+
+  it("refuses the Aktifkan that comes second", async () => {
+    const studentId = await addStopped();
+
+    const both = await atOnce(goOnLeave(studentId), restart(studentId));
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual({
+      ok: false,
+      error:
+        "Mahasiswa ini tidak aktif, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
+    });
+    expect((await companionOf(first.db, studentId))?.isActive).toBe(false);
+  });
+
+  it("ends the duty again when the leave comes second", async () => {
+    const studentId = await addStopped();
+
+    const both = await atOnce(restart(studentId), goOnLeave(studentId));
 
     expect(both.sooner.ok).toBe(true);
     expect(both.later.ok).toBe(true);

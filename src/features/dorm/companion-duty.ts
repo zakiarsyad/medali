@@ -1,12 +1,18 @@
 import { eq } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
-import { endCompanionDuty } from "@/db/companion-duty";
+import {
+  type DutyBar,
+  dutyBar,
+  endCompanionDuty,
+  readSemester,
+} from "@/db/companion-duty";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { dormCompanions, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { COMPANIONS_NOT_ALLOWED } from "./companion-messages";
+import { DORM_NAMES, DORM_RESIDENTS, type DormId } from "./dorms";
 
 export type LockedCompanion = typeof dormCompanions.$inferSelect;
 
@@ -34,6 +40,22 @@ const STUDENT_NOT_ACTIVE = {
   error:
     "Mahasiswa ini tidak aktif, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
 } as const;
+const LIVES_IN_DORM = {
+  ok: false,
+  error:
+    "Mahasiswa ini sekarang tinggal di asrama, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
+} as const;
+
+/** What "Aktifkan" answers for each reason a student cannot have the duty. */
+function restartRefusal(bar: DutyBar, dorm: DormId): Parsed<never> {
+  if (bar === "removed") return COMPANION_NOT_FOUND;
+  if (bar === "not_active") return STUDENT_NOT_ACTIVE;
+  if (bar === "lives_in_dorm") return LIVES_IN_DORM;
+  return {
+    ok: false,
+    error: `${DORM_NAMES[dorm]} hanya untuk ${DORM_RESIDENTS[dorm]}, jadi kakak pendamping ini tidak bisa diaktifkan.`,
+  };
+}
 
 /**
  * Reads a kakak pendamping and holds the row until the transaction ends.
@@ -93,20 +115,43 @@ export async function stopCompanion(
   return db.transaction((tx) => stop(tx, sent));
 }
 
+/**
+ * Reads the student of a duty and holds the row until the transaction
+ * ends, as naming and a change to the student data do. The student is
+ * held before the kakak pendamping, in the same order everywhere.
+ */
+async function lockStudent(tx: Database, studentId: string) {
+  if (!isUuid(studentId)) return null;
+  const [student] = await tx
+    .select({
+      status: students.status,
+      entryPath: students.entryPath,
+      sex: students.sex,
+      isInternational: students.isInternational,
+      isSeedling: students.isSeedling,
+      cohortYear: students.cohortYear,
+      deletedAt: students.deletedAt,
+    })
+    .from(students)
+    .where(eq(students.id, studentId))
+    .for("update");
+  return student ?? null;
+}
+
 async function restart(
   tx: Database,
   studentId: string,
+  day?: string,
 ): Promise<Parsed<string>> {
+  const student = await lockStudent(tx, studentId);
+  if (!student) return COMPANION_NOT_FOUND;
   const companion = await lockCompanion(tx, studentId);
   if (!companion) return COMPANION_NOT_FOUND;
-  const [student] = await tx
-    .select({ status: students.status, deletedAt: students.deletedAt })
-    .from(students)
-    .where(eq(students.id, companion.studentId))
-    .limit(1);
-  if (!student || student.deletedAt !== null) return COMPANION_NOT_FOUND;
+  const semester = await readSemester(tx, student.cohortYear, day);
+  const bar = dutyBar(student, companion.dorm, semester);
+  if (bar === "removed") return COMPANION_NOT_FOUND;
   if (companion.isActive) return ALREADY_ACTIVE;
-  if (student.status !== "active") return STUDENT_NOT_ACTIVE;
+  if (bar) return restartRefusal(bar, companion.dorm);
   await tx
     .update(dormCompanions)
     .set({ isActive: true })
@@ -116,15 +161,18 @@ async function restart(
 
 /**
  * Starts the duty of a stopped kakak pendamping again: Aktif, without a
- * room. Refused for a student who is not active.
+ * room. Refused for a student the rule that ends a duty would stop: not
+ * active, living in a dorm on the day, today when none is given, or not
+ * of the jenis kelamin of the dorm they serve.
  */
 export async function restartCompanion(
   db: Database,
   actor: Pick<Account, "roles">,
   studentId: string,
+  day?: string,
 ): Promise<Parsed<string>> {
   if (!may(actor.roles, "manage_dorm_companions")) {
     return COMPANIONS_NOT_ALLOWED;
   }
-  return db.transaction((tx) => restart(tx, studentId));
+  return db.transaction((tx) => restart(tx, studentId, day));
 }

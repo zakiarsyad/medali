@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { students } from "@/db/schema";
+import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { restartCompanion, stopCompanion } from "./companion-duty";
 import {
@@ -249,6 +249,85 @@ describe("restartCompanion", () => {
       );
 
       expect(restarted).toEqual(NOT_ALLOWED);
+      expect((await companionOf(db, studentId))?.isActive).toBe(false);
+    });
+  });
+});
+
+describe("restartCompanion for a student who no longer fits the duty", () => {
+  /*
+   * A period far from those of any other file of checks, so these wait
+   * for none of them. Angkatan 2064 is in semester 1 in it, angkatan 2063
+   * in semester 3.
+   */
+  const ODD_2064 = {
+    startYear: 2064,
+    term: "odd",
+    startsOn: "2064-08-01",
+    endsOn: "2065-01-31",
+  } as const;
+  const DAY = "2064-10-12";
+
+  type Facts = Partial<typeof students.$inferInsert>;
+
+  /** A stopped kakak pendamping of Dana Rakca: a woman of semester 3, unless told otherwise. */
+  async function addStoppedWith(db: Database, facts: Facts): Promise<string> {
+    await db.insert(academicPeriods).values(ODD_2064);
+    const program = await addTestProgram(db, "Prodi Uji Aktifkan Kakak");
+    const studentId = await addTestStudent(db, program, {
+      nim: "9939630001",
+      name: "Sinta Uji",
+      cohortYear: 2063,
+      ...facts,
+    });
+    await addTestCompanion(db, studentId, { isActive: false });
+    return studentId;
+  }
+
+  it("still restarts a student who fits it", async () => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addStoppedWith(db, {});
+
+      const restarted = await restartCompanion(db, MANAGER, studentId, DAY);
+
+      expect(restarted.ok).toBe(true);
+      expect((await companionOf(db, studentId))?.isActive).toBe(true);
+    });
+  });
+
+  it.each([
+    ["in semester 1", { cohortYear: 2064 }],
+    ["Pembibitan", { isSeedling: true }],
+    ["Internasional", { isInternational: true }],
+  ] as [string, Facts][])(
+    "refuses a student who lives in a dorm now: %s",
+    async (_who, facts) => {
+      await inTestDatabase(async (db) => {
+        const studentId = await addStoppedWith(db, facts);
+
+        const restarted = await restartCompanion(db, MANAGER, studentId, DAY);
+
+        expect(restarted).toEqual({
+          ok: false,
+          error:
+            "Mahasiswa ini sekarang tinggal di asrama, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
+        });
+        expect((await companionOf(db, studentId))?.isActive).toBe(false);
+      });
+    },
+  );
+
+  it("refuses a student whose jenis kelamin does not fit the dorm they served", async () => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addStoppedWith(db, { sex: "male" });
+
+      const restarted = await restartCompanion(db, MANAGER, studentId, DAY);
+
+      expect(restarted).toEqual({
+        ok: false,
+        error:
+          "Asrama Dana Rakca hanya untuk mahasiswa perempuan, jadi kakak pendamping ini tidak bisa diaktifkan.",
+      });
       expect((await companionOf(db, studentId))?.isActive).toBe(false);
     });
   });

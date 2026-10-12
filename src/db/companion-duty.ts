@@ -2,7 +2,8 @@ import { and, eq } from "drizzle-orm";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { companionDormOf } from "@/features/dorm/companion-dorms";
-import { dormOf } from "@/features/dorm/resident-rule";
+import type { DormId } from "@/features/dorm/dorms";
+import { dormOf, type ResidentFacts } from "@/features/dorm/resident-rule";
 import type { Database } from "./connect";
 import { dormCompanions, students } from "./schema";
 
@@ -10,6 +11,42 @@ import { dormCompanions, students } from "./schema";
  * Kept here because two areas end a duty: the dorm, and the student data
  * when a student changes so that they can no longer be kakak pendamping.
  */
+
+/** What the rule needs to know of the student of a kakak pendamping. */
+export type DutyFacts = ResidentFacts & { deletedAt: Date | null };
+
+/** Why a student cannot be kakak pendamping of a dorm. */
+export type DutyBar = "removed" | "not_active" | "lives_in_dorm" | "wrong_dorm";
+
+/**
+ * Why a student cannot be, or go on being, kakak pendamping of a dorm in
+ * a semester, or null when they can: the one rule that ends a duty and
+ * that refuses to start one again.
+ */
+export function dutyBar(
+  student: DutyFacts,
+  dorm: DormId,
+  semester: number | null,
+): DutyBar | null {
+  if (student.deletedAt !== null) return "removed";
+  if (student.status !== "active") return "not_active";
+  if (dormOf(student, semester) !== null) return "lives_in_dorm";
+  if (dorm !== companionDormOf(student.sex)) return "wrong_dorm";
+  return null;
+}
+
+/**
+ * The semester a student of an angkatan is in on a day, today when none
+ * is given. Null while no academic period runs.
+ */
+export async function readSemester(
+  db: Database,
+  cohortYear: number,
+  day?: string,
+): Promise<number | null> {
+  const period = await readRunningPeriod(db, day);
+  return period ? studentSemester(cohortYear, period) : null;
+}
 
 /**
  * Ends the duty of a kakak pendamping: Tidak aktif, and out of their room.
@@ -69,12 +106,8 @@ export async function settleCompanionDuty(
 ): Promise<void> {
   const duty = await readActiveDuty(db, studentId);
   if (!duty) return;
-  const period = await readRunningPeriod(db, day);
-  const semester = period ? studentSemester(duty.cohortYear, period) : null;
-  const stillFits =
-    duty.deletedAt === null &&
-    duty.status === "active" &&
-    dormOf(duty, semester) === null &&
-    duty.dorm === companionDormOf(duty.sex);
-  if (!stillFits) await endCompanionDuty(db, studentId);
+  const semester = await readSemester(db, duty.cohortYear, day);
+  if (dutyBar(duty, duty.dorm, semester) !== null) {
+    await endCompanionDuty(db, studentId);
+  }
 }
