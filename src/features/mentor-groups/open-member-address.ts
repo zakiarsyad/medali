@@ -1,6 +1,9 @@
 import { may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import { groupMemberAddress } from "./group-list-address";
+import { mentorStudentAddress } from "./mentor-list-address";
+
+type AddressOfStudent = (studentId: string) => string;
 
 /**
  * The addresses that open a member's detail over the page of a group, or
@@ -10,7 +13,16 @@ import { groupMemberAddress } from "./group-list-address";
 export function openMemberAddresses(
   roles: readonly RoleId[],
   groupId: string,
-): ((studentId: string) => string) | null {
+): AddressOfStudent | null {
   if (!may(roles, "view_student_detail")) return null;
   return (studentId) => groupMemberAddress(groupId, studentId);
+}
+
+/** The same over the page of a mentor, for the students they look after. */
+export function openMentorStudentAddresses(
+  roles: readonly RoleId[],
+  mentorId: string,
+): AddressOfStudent | null {
+  if (!may(roles, "view_student_detail")) return null;
+  return (studentId) => mentorStudentAddress(mentorId, studentId);
 }

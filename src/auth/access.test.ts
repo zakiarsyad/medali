@@ -298,6 +298,42 @@ describe("may", () => {
     }
   });
 
+  const mentorViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(mentorViewers)("lets %s see the list of mentors", (role) => {
+    expect(may([role], "view_mentors")).toBe(true);
+  });
+
+  it("refuses every other role to see the list of mentors", () => {
+    const others = ROLE_IDS.filter((role) => !mentorViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - mentorViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_mentors")).toBe(false);
+    }
+  });
+
+  it.each(["mentor", "student"] as const)(
+    "refuses %s to see the list of mentors and to open its tab",
+    (role) => {
+      expect(may([role], "view_mentors")).toBe(false);
+      expect(mayOpenPage([role], "mentors")).toBe(false);
+      expect(mayOpenTab([role], "mentors", "mentors")).toBe(false);
+    },
+  );
+
+  it("gives the right to see the list of mentors to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentors")).toBe(
+        mayOpenTab([role], "mentors", "mentors"),
+      );
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;

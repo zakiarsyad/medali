@@ -34,12 +34,13 @@ function MemberRow({
   return <PressableRow address={detailAddress}>{children}</PressableRow>;
 }
 
-export function GroupMembersTable({
+export function GroupMembersTable<Member extends GroupMember>({
   members,
   period,
   detailAddressOf,
+  groupOf,
 }: {
-  members: GroupMember[];
+  members: Member[];
   /** The academic period that runs now, which says each member's semester. */
   period: AcademicPeriod | null;
   /**
@@ -48,6 +49,12 @@ export function GroupMembersTable({
    * of a member whose detail the account may not open.
    */
   detailAddressOf: ((studentId: string) => string) | null;
+  /**
+   * The code of the group a member is in, for a list that holds members
+   * of more than one group. Without it the list has no Kelompok column:
+   * the page of a group needs none.
+   */
+  groupOf?: (member: Member) => string;
 }) {
   return (
     <div className={shared.tableWrap}>
@@ -55,6 +62,7 @@ export function GroupMembersTable({
         <thead>
           <tr>
             <th>Mahasiswa</th>
+            {groupOf && <th>Kelompok</th>}
             <th>Kelas akademik</th>
             <th>Semester</th>
           </tr>
@@ -73,6 +81,7 @@ export function GroupMembersTable({
                     <span className={shared.badge}>Cuti</span>
                   )}
                 </td>
+                {groupOf && <td data-title="Kelompok">{groupOf(member)}</td>}
                 <td data-title="Kelas akademik">{member.className ?? "-"}</td>
                 <td data-title="Semester">
                   {memberSemester(member, period) ?? "-"}

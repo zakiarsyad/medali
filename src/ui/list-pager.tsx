@@ -1,6 +1,6 @@
 import Link from "next/link";
 import shared from "./data-screen.module.css";
-import { pageCount, rowRange } from "./list-pages";
+import { PAGE_SIZE, pageCount, rowRange } from "./list-pages";
 
 /** A step to another page, or its words alone when there is no such page. */
 function Step({ to, children }: { to: string | null; children: string }) {
@@ -22,20 +22,23 @@ function shown(count: number): string {
 export function ListPager({
   page,
   matching,
+  pageSize = PAGE_SIZE,
   noun,
   addressOf,
 }: {
   page: number;
   /** How many rows the list has in all. */
   matching: number;
+  /** How many rows a page of this list shows. */
+  pageSize?: number;
   /** What one row is, as the screen says it. */
   noun: string;
   /** The address of a page of the list. */
   addressOf: (page: number) => string;
 }) {
-  const { first, last } = rowRange(page, matching);
+  const { first, last } = rowRange(page, matching, pageSize);
   const hasEarlier = page > 1;
-  const hasLater = page < pageCount(matching);
+  const hasLater = page < pageCount(matching, pageSize);
   return (
     <div className={shared.pager}>
       <span>
