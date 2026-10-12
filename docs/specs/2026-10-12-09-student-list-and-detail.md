@@ -118,6 +118,19 @@ Decided while building, because the issue did not say:
     kept, whatever their jalur, as the prototype's filter does. So an
     alih program student whose instansi was left empty is found and
     counted there too.
+11. The "Filter" button on a phone says "Filter" while none of its
+    filters is in use, and "Filter · (n) dipakai" while (n) of them are.
+12. On a phone the filters under "Filter" start open while at least one
+    of them is in use, and closed otherwise. So they stay open for the
+    next choice, and close after "Atur ulang filter".
+13. "Instansi asal" shows in the detail of every alih program student,
+    with "-" when no instansi is kept. A reguler student has no such
+    line.
+14. While a Tahapan is chosen and no academic period runs, nobody is
+    found, and the empty message shows.
+15. A detail that is not found opens over the list as a box titled
+    "Mahasiswa tidak ditemukan", which says the student does not exist
+    or may not be seen, with "Tutup" to go back to the list.
 
 ## Steps
 

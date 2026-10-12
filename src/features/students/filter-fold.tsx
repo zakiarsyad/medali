@@ -2,6 +2,7 @@
 
 import { type ReactNode, useId, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { filterFoldStartsOpen } from "./filter-fold-start";
 import { filterFoldWords } from "./filter-fold-words";
 import styles from "./student-list.module.css";
 
@@ -19,7 +20,7 @@ export function FilterFold({
   inUse: number;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(filterFoldStartsOpen(inUse));
   const filtersId = useId();
   return (
     <>
