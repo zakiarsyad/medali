@@ -1,6 +1,13 @@
+import { eq, isNull } from "drizzle-orm";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accounts, students, studyPrograms } from "@/db/schema";
+import {
+  accounts,
+  dormRoomPlaces,
+  dormRooms,
+  students,
+  studyPrograms,
+} from "@/db/schema";
 
 /** Made-up records for the checks of this area. */
 
@@ -60,4 +67,48 @@ export async function addTestStudent(
     .returning({ id: students.id });
   if (!added) throw new Error("The student was not added.");
   return added.id;
+}
+
+/** The student rows an account that sees every student may see. */
+export const EVERYONE = isNull(students.deletedAt);
+
+type TestRoom = Partial<typeof dormRooms.$inferInsert>;
+
+/** Room 101 of Dana Rakca on floor 1 for 4 people, unless told otherwise. */
+export async function addTestRoom(
+  db: Database,
+  room: TestRoom = {},
+): Promise<string> {
+  const [added] = await db
+    .insert(dormRooms)
+    .values({
+      dorm: "dana_rakca",
+      floor: 1,
+      number: "101",
+      capacity: 4,
+      ...room,
+    })
+    .returning({ id: dormRooms.id });
+  if (!added) throw new Error("The room was not added.");
+  return added.id;
+}
+
+export async function placeTestResident(
+  db: Database,
+  roomId: string,
+  studentId: string,
+): Promise<void> {
+  await db.insert(dormRoomPlaces).values({ roomId, studentId });
+}
+
+/** The ids of the students who have a place in a room, in no order. */
+export async function residentsOfRoom(
+  db: Database,
+  roomId: string,
+): Promise<string[]> {
+  const places = await db
+    .select({ studentId: dormRoomPlaces.studentId })
+    .from(dormRoomPlaces)
+    .where(eq(dormRoomPlaces.roomId, roomId));
+  return places.map((place) => place.studentId);
 }

@@ -14,3 +14,11 @@ export const DORM_NAMES: Record<DormId, string> = {
   dana_rakca: "Asrama Dana Rakca",
   cipta_bakti: "Asrama Cipta Bakti",
 };
+
+/** Who lives in each dorm, as the screens say it. */
+export const DORM_RESIDENTS: Record<DormId, string> = {
+  wismantara_putra: "mahasiswa laki-laki",
+  wismantara_putri: "mahasiswa perempuan",
+  dana_rakca: "mahasiswa perempuan",
+  cipta_bakti: "mahasiswa laki-laki",
+};
