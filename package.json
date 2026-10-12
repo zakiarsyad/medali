@@ -19,6 +19,7 @@
     "db:migrate": "tsx --env-file-if-exists=.env.local src/db/migrate-command.ts",
     "db:seed": "tsx --env-file=src/db/local-commands.env --env-file-if-exists=.env.local src/db/seed-command.ts",
     "db:setup": "pnpm db:start && pnpm db:migrate && pnpm db:seed",
+    "db:create": "pnpm db:start && tsx --env-file=src/db/local-commands.env --env-file-if-exists=.env.local src/db/create-command.ts",
     "db:deploy": "tsx src/db/deploy-command.ts",
     "files:start": "docker compose up --detach --wait files",
     "files:stop": "docker compose stop files",

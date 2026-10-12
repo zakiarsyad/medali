@@ -83,7 +83,7 @@ Decided while building, because the issue did not say:
 - [x] 1. The checks read the address of their database from a setting,
   fall back to today's address, and refuse to run against the app's own
   database.
-- [ ] 2. A command makes the two databases a copy's settings name, with
+- [x] 2. A command makes the two databases a copy's settings name, with
   tables and sample data, and is safe to run twice.
 - [ ] 3. A command removes a copy's two databases, never the default two
   and never one outside the local computer.
