@@ -51,6 +51,34 @@
   font-size: var(--text-md);
 }
 
+/* The note while something still holds the penetapan back. */
+.held {
+  border-color: var(--warn);
+  color: var(--ink);
+}
+
+.unusual {
+  display: block;
+  color: var(--warn);
+  font-size: var(--text-sm);
+}
+
+.members {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  justify-content: space-between;
+  align-items: center;
+}
+
 .hint {
   margin: var(--space-sm) 0 0;
   color: var(--muted);

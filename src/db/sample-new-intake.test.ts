@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { jurusanOf } from "@/features/cohort-assignments/jurusan";
+import {
+  DEFAULT_TARGET_SIZE,
+  groupCount,
+} from "@/features/cohort-assignments/target-size";
+import { isUsualSize } from "@/ui/group-size";
 import { SAMPLE_ACCOUNTS, SAMPLE_STUDENTS } from "./sample-data";
 import { sampleFirstYears } from "./sample-dorms";
-import { SAMPLE_MENTORS_WITHOUT_GROUP } from "./sample-mentor-groups";
+import {
+  SAMPLE_MENTOR_OF_NEWEST_ONLY,
+  SAMPLE_MENTORS_WITHOUT_GROUP,
+} from "./sample-mentor-groups";
 import {
   SAMPLE_NEW_INTAKE_PROGRAMS,
   sampleGroupedFirstYears,
@@ -11,6 +19,12 @@ import {
 
 const YEAR = 2026;
 const newIntake = sampleNewIntake(YEAR);
+
+/** How many groups "Bentuk kelompok" makes of a program at the starting size. */
+function groupSizes(program: string) {
+  const students = newIntake.filter((s) => s.studyProgram === program).length;
+  return { groups: groupCount(students, DEFAULT_TARGET_SIZE), students };
+}
 
 describe("the sample new angkatan", () => {
   it("is about 60 students of one angkatan in two program studi, all Reguler", () => {
@@ -27,12 +41,28 @@ describe("the sample new angkatan", () => {
     }
   });
 
-  it("holds enough students of each program studi for one group of 25 to 35", () => {
-    for (const program of SAMPLE_NEW_INTAKE_PROGRAMS) {
-      const inProgram = newIntake.filter((s) => s.studyProgram === program);
-      expect(inProgram.length).toBeGreaterThanOrEqual(25);
-      expect(inProgram.length).toBeLessThanOrEqual(35);
-    }
+  it("forms two usual groups in one program studi, to move a member between, and a small one in the other", () => {
+    expect(groupSizes("D3 Pajak")).toEqual({ groups: 2, students: 51 });
+    expect(groupSizes("D3 Akuntansi")).toEqual({ groups: 1, students: 17 });
+    expect(isUsualSize(51 / 2)).toBe(true);
+    expect(isUsualSize(17)).toBe(false);
+  });
+
+  it("has students of more than one kelas akademik in the program studi with two groups", () => {
+    const classes = newIntake
+      .filter((student) => student.studyProgram === "D3 Pajak")
+      .map((student) => student.className);
+    expect(new Set(classes).size).toBeGreaterThan(1);
+  });
+
+  it("has a mentor to choose for every group that is formed", () => {
+    const groups =
+      groupSizes("D3 Pajak").groups + groupSizes("D3 Akuntansi").groups;
+    const toChoose = [
+      ...SAMPLE_MENTORS_WITHOUT_GROUP,
+      SAMPLE_MENTOR_OF_NEWEST_ONLY.name,
+    ];
+    expect(new Set(toChoose).size).toBe(groups);
   });
 
   it("gives every student what the three methods read", () => {

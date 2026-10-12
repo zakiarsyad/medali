@@ -16,6 +16,7 @@ export async function AssignmentScreen({
   limit,
   mayPrepare,
   askedYear,
+  askedGroupId,
 }: {
   tabs: TabLinksProps;
   /** Which penetapan rows the account that opened the tab may see. */
@@ -24,6 +25,8 @@ export async function AssignmentScreen({
   mayPrepare: boolean;
   /** The angkatan the address asks for, if any. */
   askedYear: number | null;
+  /** The group whose members the address asks to show, if any. */
+  askedGroupId: string | null;
 }) {
   const cohorts = await listCohorts(database(), limit);
   const chosen = chosenCohort(cohorts, askedYear);
@@ -45,6 +48,7 @@ export async function AssignmentScreen({
           cohortYear={chosen.cohortYear}
           limit={limit}
           mayPrepare={mayPrepare}
+          openGroupId={askedGroupId}
         />
       )}
     </>

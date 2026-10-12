@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkDraft } from "./draft-check";
+import { checkDraft, checkWords, READY_WORDS } from "./draft-check";
 
 function group(mentorId: string | null, members = 30) {
   return { mentorId, members };
@@ -56,5 +56,31 @@ describe("checkDraft", () => {
       outsideUsualSize: 0,
       isComplete: false,
     });
+  });
+});
+
+describe("checkWords", () => {
+  it("says the draft is ready when every group has a mentor of its own", () => {
+    const check = checkDraft([group("ani"), group("budi")]);
+
+    expect(checkWords(check)).toEqual([READY_WORDS]);
+  });
+
+  it("names the groups without a mentor and the mentors chosen twice, and not that it is ready", () => {
+    const check = checkDraft([group(null), group("ani"), group("ani")]);
+
+    expect(checkWords(check)).toEqual([
+      "1 kelompok belum punya pengasuh.",
+      "1 pengasuh dipilih untuk lebih dari satu kelompok.",
+    ]);
+  });
+
+  it("adds the groups of an unusual size as a warning beside being ready", () => {
+    const check = checkDraft([group("ani", 17), group("budi")]);
+
+    expect(checkWords(check)).toEqual([
+      "1 kelompok di luar ukuran 25–35 (boleh, misalnya prodi kecil).",
+      READY_WORDS,
+    ]);
   });
 });

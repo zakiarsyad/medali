@@ -1,32 +1,25 @@
 import shared from "@/ui/data-screen.module.css";
-import { groupCode } from "@/ui/group-code";
+import { mentorLabel } from "@/ui/mentor-label";
 import { STATUS_TITLES } from "./assignment-steps";
 import styles from "./cohort-assignments.module.css";
-import { batchLabel } from "./intake-summary";
-import { sexCounts } from "./sex-counts";
+import { GroupFactCells, GroupFactTitles } from "./group-fact-cells";
 import type { DraftGroup, StoredAssignment } from "./stored-assignment";
 
 function GroupRow({ group }: { group: DraftGroup }) {
-  const { male, female } = sexCounts(group.members);
   return (
     <tr>
-      <td data-title="Kelompok">
-        <b>{groupCode(group)}</b>
-      </td>
-      <td data-title="Program studi">{batchLabel(group)}</td>
-      <td data-title="Anggota">
-        {group.members.length}
-        <small className={shared.detail}>
-          {male} putra, {female} putri
-        </small>
+      <GroupFactCells group={group} />
+      <td data-title="Pengasuh">
+        {group.mentor ? mentorLabel(group.mentor) : "-"}
       </td>
     </tr>
   );
 }
 
 /**
- * The groups of a penetapan as they are saved: the code, the program
- * studi and how many members each one holds. No member is named here.
+ * The groups of a penetapan as they are saved, to read only: the code,
+ * the program studi, how many members each one holds and the mentor
+ * chosen for it. No member is named here, and nothing can be changed.
  */
 export function DraftGroupsPanel({
   assignment,
@@ -48,9 +41,8 @@ export function DraftGroupsPanel({
         <table className={`${shared.table} ${shared.stacked}`}>
           <thead>
             <tr>
-              <th>Kelompok</th>
-              <th>Program studi</th>
-              <th>Anggota</th>
+              <GroupFactTitles />
+              <th>Pengasuh</th>
             </tr>
           </thead>
           <tbody>

@@ -1,4 +1,4 @@
-import { isUsualSize } from "@/ui/group-size";
+import { isUsualSize, USUAL_SIZE_WORDS } from "@/ui/group-size";
 
 /** What the check reads of a group being prepared. */
 export interface GroupToCheck {
@@ -45,4 +45,31 @@ export function checkDraft(groups: GroupToCheck[]): DraftCheck {
     outsideUsualSize: groups.filter((g) => !isUsualSize(g.members)).length,
     isComplete: groups.length > 0 && withoutMentor === 0 && chosenTwice === 0,
   };
+}
+
+/** What the draft says when nothing stands in the way of its penetapan. */
+export const READY_WORDS =
+  "Semua kelompok sudah punya pengasuh yang berbeda dan siap ditetapkan.";
+
+/**
+ * What the note under the groups says of a check, one sentence for each
+ * thing found: first what holds the penetapan back, then the warning.
+ */
+export function checkWords(check: DraftCheck): string[] {
+  const words: string[] = [];
+  if (check.withoutMentor > 0) {
+    words.push(`${check.withoutMentor} kelompok belum punya pengasuh.`);
+  }
+  if (check.mentorsChosenTwice > 0) {
+    words.push(
+      `${check.mentorsChosenTwice} pengasuh dipilih untuk lebih dari satu kelompok.`,
+    );
+  }
+  if (check.outsideUsualSize > 0) {
+    words.push(
+      `${check.outsideUsualSize} kelompok di luar ukuran ${USUAL_SIZE_WORDS} (boleh, misalnya prodi kecil).`,
+    );
+  }
+  if (check.isComplete) words.push(READY_WORDS);
+  return words;
 }

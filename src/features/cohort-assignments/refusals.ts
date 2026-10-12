@@ -16,6 +16,19 @@ export const ALREADY_FIXED = {
   error: "Angkatan ini sudah ditetapkan, sehingga tidak bisa diubah lagi.",
 } as const;
 
+/** What a change is told for an angkatan whose groups are not formed. */
+export const NO_DRAFT = {
+  ok: false,
+  error: "Kelompok angkatan ini belum dibentuk. Bentuk kelompok lebih dulu.",
+} as const;
+
+/** What a change is told for a group that is not of the draft. */
+export const GROUP_NOT_IN_DRAFT = {
+  ok: false,
+  error:
+    "Kelompok ini tidak ada pada draf. Muat ulang halaman, lalu coba lagi.",
+} as const;
+
 /** What a form is told when it was not sent by the tab as it is. */
 export const NOT_UNDERSTOOD = {
   ok: false,
