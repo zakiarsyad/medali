@@ -4,14 +4,10 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import {
-  academicPeriods,
-  dormRoomPlaces,
-  dormRooms,
-  students,
-} from "@/db/schema";
+import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { DormId } from "@/dorms/dorms";
+import type { RunningPeriod } from "./semester-now";
 import { readStudentDetail } from "./student-detail";
 import type { StudentResidence } from "./student-residence";
 import { addTestProgram, addTestStudent } from "./test-records";
@@ -22,12 +18,7 @@ const inTestDatabase = withTestDatabase();
 const ODD_2026 = {
   startYear: 2026,
   term: "odd",
-  startsOn: "2026-08-01",
-  endsOn: "2027-01-31",
 } as const;
-
-/** A day in that period. */
-const DAY = "2026-10-12";
 
 const NO_SUCH_ID = "00000000-0000-4000-8000-000000000000";
 
@@ -57,7 +48,6 @@ async function placeInRoom(
 
 /** A program with a woman of angkatan 2026, who lives in Dana Rakca. */
 async function addResident(db: Database) {
-  await db.insert(academicPeriods).values(ODD_2026);
   const program = await addTestProgram(db, "Prodi Uji Asrama Detail");
   const id = await addTestStudent(db, program, {
     nim: "9900400301",
@@ -71,8 +61,9 @@ async function residenceFor(
   db: Database,
   asking: AccountForAccess,
   id: string,
+  period: RunningPeriod = ODD_2026,
 ): Promise<StudentResidence | null | undefined> {
-  const answer = await readStudentDetail(db, asking, id, DAY);
+  const answer = await readStudentDetail(db, asking, id, period);
   return answer.kind === "found" ? answer.student.residence : undefined;
 }
 
@@ -111,7 +102,7 @@ describe("the Asrama line of a student's detail", () => {
           db,
           account([role], program),
           id,
-          DAY,
+          ODD_2026,
         );
 
         expect(answer).toMatchObject({
@@ -142,7 +133,6 @@ describe("the Asrama line of a student's detail", () => {
 
   it("gives the dorm only for a resident of Asrama Wismantara, to Kepala Unit too", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2026);
       const program = await addTestProgram(db, "Prodi Uji Asrama Detail");
       const woman = await addTestStudent(db, program, {
         nim: "9900400302",
@@ -172,7 +162,6 @@ describe("the Asrama line of a student's detail", () => {
 
   it("gives no residence for a student who lives in no dorm", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2026);
       const program = await addTestProgram(db, "Prodi Uji Asrama Detail");
       const id = await addTestStudent(db, program, {
         nim: "9900400304",
@@ -215,8 +204,8 @@ describe("the Asrama line of a student's detail", () => {
       });
       const asking = account(["head_of_unit"]);
 
-      expect(await residenceFor(db, asking, regular)).toBeNull();
-      expect(await residenceFor(db, asking, seedling)).toEqual({
+      expect(await residenceFor(db, asking, regular, null)).toBeNull();
+      expect(await residenceFor(db, asking, seedling, null)).toEqual({
         dorm: "wismantara_putri",
         room: null,
       });

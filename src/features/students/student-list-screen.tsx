@@ -1,12 +1,12 @@
-import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
+import { dormCohortsOf } from "@/dorms/dorm-cohorts";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import type { AskedDetail } from "./asked-detail";
-import { dormCohortsNow } from "./dorm-cohorts-now";
+import { runningPeriodNow } from "./running-period-now";
 import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { StudentDetailDialog } from "./student-detail-dialog";
@@ -38,15 +38,16 @@ export async function StudentListScreen({
 }) {
   const db = database();
   const { filters } = params;
-  const [cohortYears, programs, period, dormCohorts] = await Promise.all([
+  const [cohortYears, programs, period] = await Promise.all([
     listCohortYears(db, limit),
     listStudyPrograms(db),
-    readRunningPeriod(db),
-    dormCohortsNow(db),
+    runningPeriodNow(),
   ]);
+  // The angkatan of the rows the account sees are enough: every filter
+  // finds within those rows only.
   const cohorts = {
     stages: stageCohorts(cohortYears, period),
-    dorms: dormCohorts,
+    dorms: dormCohortsOf(cohortYears, period),
   };
   const [list, counts] = await Promise.all([
     listStudents(db, limit, filters, params.page, cohorts),

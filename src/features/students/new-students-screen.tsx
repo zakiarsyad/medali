@@ -1,6 +1,8 @@
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
+import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
+import { dormCohortsOf } from "@/dorms/dorm-cohorts";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
@@ -10,16 +12,19 @@ import {
   LIST_LIMIT,
   listAddedStudents,
 } from "./added-students";
-import { dormCohortsNow } from "./dorm-cohorts-now";
 import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
 } from "./new-students-address";
 import { cohortChoices } from "./student-input";
 import { StudentInputPanel } from "./student-input-panel";
+import { listCohortYears } from "./student-list";
 import { StudentNotice } from "./student-notice";
 import { StudentNumbers } from "./student-numbers";
 import { StudentTable } from "./student-table";
+
+/** The list holds every student put in here, whoever opens it. */
+const EVERY_STUDENT: RowLimit = { kind: "all" };
 
 function Search({ query }: { query: string }) {
   return (
@@ -56,12 +61,13 @@ export async function NewStudentsScreen({
   tabs: TabLinksProps;
 }) {
   const db = database();
-  const [dormCohorts, period, programs, editing] = await Promise.all([
-    dormCohortsNow(db),
+  const [studentYears, period, programs, editing] = await Promise.all([
+    listCohortYears(db, EVERY_STUDENT),
     readRunningPeriod(db),
     listStudyPrograms(db),
     params.editing ? findAddedStudent(db, params.editing) : null,
   ]);
+  const dormCohorts = dormCohortsOf(studentYears, period);
   const [counts, list] = await Promise.all([
     countStudents(db, dormCohorts),
     listAddedStudents(db, params.query, dormCohorts),

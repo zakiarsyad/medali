@@ -1,10 +1,10 @@
-import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import type { DormId } from "@/dorms/dorms";
 import { dormOf, type ResidentFacts } from "@/dorms/resident-rule";
 import { readStudentRoom, type StudentRoom } from "@/dorms/student-room";
+import type { RunningPeriod } from "./semester-now";
 
 /** The room of a resident, or that they have none yet. */
 export type ResidentRoom =
@@ -41,18 +41,16 @@ async function readResidentRoom(
 type StudentToPlace = ResidentFacts & { id: string; cohortYear: number };
 
 /**
- * Where a student lives on a day, today when none is given, for the
- * account that asks. Null for a student who lives in no dorm. While no
- * academic period runs no semester is known, as everywhere the resident
- * rule is read.
+ * Where a student lives in the running academic period, for the account
+ * that asks. Null for a student who lives in no dorm. While no period
+ * runs no semester is known, as everywhere the resident rule is read.
  */
 export async function readStudentResidence(
   db: Database,
   account: AccountForAccess,
   student: StudentToPlace,
-  day?: string,
+  period: RunningPeriod,
 ): Promise<StudentResidence | null> {
-  const period = await readRunningPeriod(db, day);
   const semester = period ? studentSemester(student.cohortYear, period) : null;
   const dorm = dormOf(student, semester);
   if (dorm === null) return null;

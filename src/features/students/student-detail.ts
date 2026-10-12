@@ -3,6 +3,7 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
+import type { RunningPeriod } from "./semester-now";
 import {
   readStudentMentorGroup,
   type StudentMentorGroup,
@@ -68,14 +69,14 @@ const NOT_FOUND = { kind: "not_found" } as const;
  * is refused. Every student the account cannot be shown gets the one
  * answer "not found": one who does not exist, one who was removed, and one
  * outside the account's rows, so that nobody learns from the answer
- * whether a student they may not see exists. Where the student lives is
- * read for a day, today when none is given.
+ * whether a student they may not see exists. The running academic period
+ * says whether the student lives in the dorm.
  */
 export async function readStudentDetail(
   db: Database,
   account: AccountForAccess,
   id: string,
-  day?: string,
+  period: RunningPeriod,
 ): Promise<StudentDetailAnswer> {
   const visible = detailVisibleTo(account);
   if (visible === null) return { kind: "refused" };
@@ -89,7 +90,7 @@ export async function readStudentDetail(
   if (!student) return NOT_FOUND;
   const [mentorGroup, residence] = await Promise.all([
     readStudentMentorGroup(db, student.id),
-    readStudentResidence(db, account, student, day),
+    readStudentResidence(db, account, student, period),
   ]);
   return { kind: "found", student: { ...student, mentorGroup, residence } };
 }
