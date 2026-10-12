@@ -142,7 +142,6 @@ describe("finishSignIn", () => {
 
   it.each([
     ["no code, as when the person cancels at Google", { code: null }],
-    ["no attempt kept for the state", { attempt: null }],
     ["no address to come back to", { returnAddress: null }],
   ])("fails without asking Google when there is %s", async (_kind, missing) => {
     await inTestDatabase(async (db) => {
@@ -165,6 +164,29 @@ describe("finishSignIn", () => {
       expect(await logLines(db)).toEqual([
         { result: "failed", accountId: null, happenedAt: NOW },
       ]);
+    });
+  });
+
+  it("fails a return this browser never started, and writes no log line", async () => {
+    await inTestDatabase(async (db) => {
+      const { google, asked } = googleSaying({
+        email: "budi@kampus.example",
+        verified: true,
+      });
+      await addTestAccount(db, { email: "budi@kampus.example" });
+      const back = { ...backFromGoogle(), attempt: null };
+
+      const finished = await finishSignIn(
+        db,
+        { google, campusEnding: ENDING },
+        back,
+        NOW,
+      );
+
+      expect(finished).toEqual({ result: "failed" });
+      expect(asked).toEqual([]);
+      expect(await logLines(db)).toEqual([]);
+      expect(await db.select().from(sessions)).toEqual([]);
     });
   });
 

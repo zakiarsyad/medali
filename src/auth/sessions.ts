@@ -16,20 +16,27 @@ import { logSignIn } from "./sign-in-log";
 
 /**
  * Signs an account in, and gives the token its browser will hold. The
- * sessions that have expired are cleared away on the way, so those of
- * people who never came back do not pile up.
+ * session and its line in the sign-in log are written together or not at
+ * all, so the log never says "signed in" for a session that does not
+ * exist. The sessions that have expired are cleared away on the way, so
+ * those of people who never came back do not pile up.
  */
 export async function startSession(
   db: Database,
   accountId: string,
   now: Date,
 ): Promise<string> {
-  await db.delete(sessions).where(lte(sessions.lastSeenAt, expiredBefore(now)));
   const token = newSessionToken();
-  await db.insert(sessions).values({
-    tokenHash: sessionTokenHash(token),
-    accountId,
-    lastSeenAt: now,
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(sessions)
+      .where(lte(sessions.lastSeenAt, expiredBefore(now)));
+    await tx.insert(sessions).values({
+      tokenHash: sessionTokenHash(token),
+      accountId,
+      lastSeenAt: now,
+    });
+    await logSignIn(tx, { result: "signed_in", accountId }, now);
   });
   return token;
 }
@@ -71,7 +78,8 @@ export async function sessionAccount(
 /**
  * Ends the session of a token, and writes the sign-out to the sign-in
  * log. It gives the account that was signed in, or null when the token
- * opened no session; then nothing is written.
+ * opened no session; then nothing is written. The session ends and its
+ * line is written together or not at all.
  */
 export async function endSession(
   db: Database,
@@ -79,11 +87,13 @@ export async function endSession(
   now: Date,
 ): Promise<string | null> {
   if (!isSessionToken(token)) return null;
-  const [ended] = await db
-    .delete(sessions)
-    .where(eq(sessions.tokenHash, sessionTokenHash(token)))
-    .returning({ accountId: sessions.accountId });
-  if (!ended) return null;
-  await logSignIn(db, { result: "signed_out", ...ended }, now);
-  return ended.accountId;
+  return db.transaction(async (tx) => {
+    const [ended] = await tx
+      .delete(sessions)
+      .where(eq(sessions.tokenHash, sessionTokenHash(token)))
+      .returning({ accountId: sessions.accountId });
+    if (!ended) return null;
+    await logSignIn(tx, { result: "signed_out", ...ended }, now);
+    return ended.accountId;
+  });
 }

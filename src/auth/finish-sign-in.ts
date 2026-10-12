@@ -56,7 +56,8 @@ async function confirmedAddress(
 /**
  * Finishes a sign-in after Google sent the person back: signs in the
  * account that holds the confirmed address, or says why nobody is.
- * However it ends, one line goes to the sign-in log.
+ * However a sign-in this browser started ends, one line goes to the
+ * sign-in log.
  */
 export async function finishSignIn(
   db: Database,
@@ -64,13 +65,19 @@ export async function finishSignIn(
   back: ReturnFromGoogle,
   now: Date,
 ): Promise<FinishedSignIn> {
+  // Anyone can open the return address, and the log can never be emptied.
+  // A return without the cookie of a press of the button is not a
+  // sign-in, so it is answered and not logged.
+  if (!back.attempt) return { result: "failed" };
   const answer = await confirmedAddress(setup, back);
   const accountId = answer
     ? await activeAccountIdByEmail(db, answer.email)
     : null;
   const decision = decideSignIn(answer, setup?.campusEnding ?? "", accountId);
-  await logSignIn(db, decision, now);
-  if (decision.result !== "signed_in") return decision;
+  if (decision.result !== "signed_in") {
+    await logSignIn(db, decision, now);
+    return decision;
+  }
   const sessionToken = await startSession(db, decision.accountId, now);
   return { result: "signed_in", sessionToken };
 }

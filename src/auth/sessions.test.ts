@@ -27,6 +27,10 @@ async function lastSeenOf(db: Database, accountId: string): Promise<Date[]> {
   return kept.map((session) => session.lastSeenAt);
 }
 
+function signOutLines(db: Database) {
+  return db.select().from(signInLog).where(eq(signInLog.result, "signed_out"));
+}
+
 describe("startSession", () => {
   it("keeps the hash of the token, never the token", async () => {
     await inTestDatabase(async (db) => {
@@ -40,6 +44,29 @@ describe("startSession", () => {
         .where(eq(sessions.accountId, accountId));
       expect(kept).toHaveLength(1);
       expect(JSON.stringify(kept)).not.toContain(token);
+    });
+  });
+
+  it("writes the sign-in to the sign-in log, with the account", async () => {
+    await inTestDatabase(async (db) => {
+      const accountId = await addBudi(db);
+
+      await startSession(db, accountId, NOW);
+
+      expect(await db.select().from(signInLog)).toMatchObject([
+        { result: "signed_in", accountId, happenedAt: NOW },
+      ]);
+    });
+  });
+
+  it("writes no sign-in line when the session cannot be started", async () => {
+    await inTestDatabase(async (db) => {
+      const nobody = "6f1c1f8e-3b7a-4c55-9a51-2f7d3c8b9e10";
+
+      await expect(startSession(db, nobody, NOW)).rejects.toThrow();
+
+      expect(await db.select().from(signInLog)).toEqual([]);
+      expect(await db.select().from(sessions)).toEqual([]);
     });
   });
 
@@ -173,7 +200,7 @@ describe("endSession", () => {
 
       await endSession(db, token, later(1));
 
-      expect(await db.select().from(signInLog)).toMatchObject([
+      expect(await signOutLines(db)).toMatchObject([
         { result: "signed_out", accountId, happenedAt: later(1) },
       ]);
     });
@@ -201,7 +228,7 @@ describe("endSession", () => {
 
       expect(await endSession(db, token, NOW)).toBeNull();
       expect(await lastSeenOf(db, accountId)).toHaveLength(1);
-      expect(await db.select().from(signInLog)).toEqual([]);
+      expect(await signOutLines(db)).toEqual([]);
     });
   });
 });
