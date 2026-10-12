@@ -77,7 +77,7 @@ const MENTOR_LINE = {
   endReason: mentorGroupMentors.endReason,
 };
 
-const MEMBER = {
+export const MEMBER = {
   id: students.id,
   nim: students.nim,
   name: students.name,
@@ -100,16 +100,23 @@ function readMentorLines(
 
 const NO_DETAIL = sql<boolean>`false`;
 
+/**
+ * Whether the account may open the detail of the student a read is on,
+ * from the students whose detail it may open, or null for none. Every
+ * list of members marks its links with this, so a link never leads to
+ * "not found".
+ */
+export function opensDetailOf(detailVisible: SQL | null): SQL<boolean> {
+  return detailVisible ? sql<boolean>`(${detailVisible})` : NO_DETAIL;
+}
+
 function readMembers(
   db: Database,
   groupId: string,
   detailVisible: SQL | null,
 ): Promise<GroupMember[]> {
-  const opensDetail = detailVisible
-    ? sql<boolean>`(${detailVisible})`
-    : NO_DETAIL;
   return db
-    .select({ ...MEMBER, opensDetail })
+    .select({ ...MEMBER, opensDetail: opensDetailOf(detailVisible) })
     .from(mentorGroupMembers)
     .innerJoin(students, eq(students.id, mentorGroupMembers.studentId))
     .where(and(eq(mentorGroupMembers.groupId, groupId), LISTED_MEMBER))

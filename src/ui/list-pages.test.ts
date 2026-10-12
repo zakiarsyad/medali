@@ -23,4 +23,12 @@ describe("the pages of the list", () => {
     expect(rowRange(3, 62)).toEqual({ first: 51, last: 62 });
     expect(rowRange(1, 7)).toEqual({ first: 1, last: 7 });
   });
+
+  it("hold as many rows as a list asks for", () => {
+    expect(pageCount(50, 50)).toBe(1);
+    expect(pageCount(51, 50)).toBe(2);
+    expect(pageWithin(3, 51, 50)).toBe(2);
+    expect(rowRange(2, 120, 50)).toEqual({ first: 51, last: 100 });
+    expect(rowRange(3, 120, 50)).toEqual({ first: 101, last: 120 });
+  });
 });

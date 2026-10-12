@@ -3,8 +3,7 @@ import { database } from "@/db/database";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
 import { listGroupChoices } from "./group-choices";
 import { listGroups } from "./group-list";
 import {
@@ -16,7 +15,7 @@ import { GroupListFilterRow } from "./group-list-filters";
 import { GroupListTable } from "./group-list-table";
 import { readGroupNumbers } from "./group-numbers";
 import { GroupNumbersView } from "./group-numbers-view";
-import { USUAL_SIZE_WORDS } from "./group-size";
+import { MentorsHead } from "./mentors-head";
 
 export async function GroupListScreen({
   tabs,
@@ -37,13 +36,7 @@ export async function GroupListScreen({
   ]);
   return (
     <>
-      <PageHead title="Pengasuh">
-        Setiap pengasuh membina satu kelompok pengasuhan berisi{" "}
-        {USUAL_SIZE_WORDS} mahasiswa. Kelompok dibentuk saat mahasiswa pertama
-        kali masuk PKN STAN, tidak mengikuti kelas akademik, dan diasuh pengasuh
-        yang sama sampai lulus kecuali ada penggantian.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <MentorsHead tabs={tabs} />
       <GroupNumbersView numbers={numbers} />
       <section className={shared.panel}>
         {/* Made anew for each address, so its fields show what the address holds. */}

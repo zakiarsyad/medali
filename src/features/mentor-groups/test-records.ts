@@ -1,9 +1,11 @@
 import type { Database } from "@/db/connect";
 import {
+  accountRoles,
   accounts,
   mentorGroupMembers,
   mentorGroupMentors,
   mentorGroups,
+  roleChanges,
   students,
   studyPrograms,
 } from "@/db/schema";
@@ -25,6 +27,30 @@ export async function addTestMentor(
     .returning({ id: accounts.id });
   if (!added) throw new Error("The account was not added.");
   return added.id;
+}
+
+/** Gives an account the Pengasuh role, as Pengguna dan peran does. */
+export async function addTestMentorRole(
+  db: Database,
+  accountId: string,
+): Promise<void> {
+  await db.insert(accountRoles).values({ accountId, role: "mentor" });
+}
+
+/** A line of the log that says the Pengasuh role was taken from an account. */
+export async function addTestRoleTaken(
+  db: Database,
+  accountId: string,
+  changedAt: Date,
+): Promise<void> {
+  await db.insert(roleChanges).values({
+    accountId,
+    changedBy: accountId,
+    changedAt,
+    action: "roles_changed",
+    rolesBefore: ["mentor"],
+    rolesAfter: ["upk_staff"],
+  });
 }
 
 /** A study program whose name is also its code. */

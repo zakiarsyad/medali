@@ -41,6 +41,11 @@
   margin-bottom: var(--space-sm);
 }
 
+/* A choice with a long name, such as a unit, must not be wider than a phone. */
+.fit {
+  max-width: 100%;
+}
+
 .quiet {
   color: var(--muted);
   font-size: var(--text-sm);
