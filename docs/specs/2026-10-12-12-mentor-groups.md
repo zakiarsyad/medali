@@ -149,6 +149,10 @@ Decided while building, because the issue did not say:
 21. The Pengasuh column on Mahasiswa shows the mentor's name without
     the gelar and not as a link, and "-" for a student without a mentor,
     as in the prototype.
+22. Pengguna dan peran refuses only for the mentor of today of a group.
+    A mentor who held a group before can be removed, and other roles of
+    a mentor who holds a group can be given and taken while the Pengasuh
+    role stays. The message does not name the group.
 
 ## Steps
 
@@ -163,5 +167,5 @@ Decided while building, because the issue did not say:
   Mahasiswa.
 - [x] 6. Refusals for other roles and other programs, and the phone
   layout.
-- [ ] 7. Pengguna dan peran refuses to remove a mentor who holds a
+- [x] 7. Pengguna dan peran refuses to remove a mentor who holds a
   group, with its check.
