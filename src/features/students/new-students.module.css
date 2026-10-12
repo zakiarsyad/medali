@@ -64,9 +64,10 @@
   color: var(--muted);
 }
 
-/* A file name is one long word: it breaks anywhere, so it never makes
-   the list wider than a phone. */
-.source {
+/* A file name or an address is one long word: it breaks anywhere, so it
+   never makes the list wider than a phone. */
+.source,
+.email {
   overflow-wrap: anywhere;
 }
 

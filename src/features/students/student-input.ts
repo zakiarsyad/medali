@@ -1,9 +1,11 @@
+import { parseAccountEmail } from "@/auth/account-email";
 import { entryPath, sex, studentStatus } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import type { Parsed } from "@/parsed";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
   CLASS_MAX_LENGTH,
+  EMAIL_MAX_LENGTH,
   isNim,
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
@@ -15,6 +17,7 @@ import { CATEGORIES, type CategoryField } from "./labels";
 export interface StudentFields {
   nim: string;
   name: string;
+  email: string;
   studyProgramId: string;
   entryPath: string;
   sex: string;
@@ -29,6 +32,11 @@ export interface StudentFields {
 export interface StudentInput extends Record<CategoryField, boolean> {
   nim: string;
   name: string;
+  /**
+   * The campus address of the student's account, in small letters, or
+   * null when they have none. It is kept on the account, not the record.
+   */
+  email: string | null;
   studyProgramId: number;
   entryPath: (typeof entryPath.enumValues)[number];
   sex: (typeof sex.enumValues)[number];
@@ -43,9 +51,15 @@ export interface InputContext {
   programs: StudyProgram[];
   /** The years that may be chosen as Angkatan. */
   cohortYears: number[];
+  /**
+   * The campus address ending from the settings, starting with "@". While
+   * it is empty any well-formed address is taken.
+   */
+  campusEnding: string;
 }
 
 const COHORT_YEARS_BACK = 5;
+const MALFORMED_EMAIL = "Alamat email tidak valid.";
 
 /**
  * The refusals that a student file words in its own way, because a file
@@ -93,6 +107,13 @@ function parseName(text: string): Parsed<string> {
     return refused(`Nama paling banyak ${NAME_MAX_LENGTH} karakter.`);
   }
   return { ok: true, value: name };
+}
+
+/** The address is optional: empty means the student has none. */
+function parseEmail(text: string, campusEnding: string): Parsed<string | null> {
+  if (text.trim() === "") return { ok: true, value: null };
+  if (text.trim().length > EMAIL_MAX_LENGTH) return refused(MALFORMED_EMAIL);
+  return parseAccountEmail(text, campusEnding, MALFORMED_EMAIL);
 }
 
 function parseClassName(text: string): Parsed<string | null> {
@@ -181,6 +202,8 @@ export function parseStudent(
   }
   const name = parseName(fields.name);
   if (!name.ok) return name;
+  const email = parseEmail(fields.email, context.campusEnding);
+  if (!email.ok) return email;
   const choices = parseChoices(fields, context);
   if (!choices.ok) return choices;
   const className = parseClassName(fields.className);
@@ -202,6 +225,7 @@ export function parseStudent(
     value: {
       nim: fields.nim,
       name: name.value,
+      email: email.value,
       ...choices.value,
       className: className.value,
       province: province.value,

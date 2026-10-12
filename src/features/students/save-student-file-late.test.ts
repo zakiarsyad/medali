@@ -35,6 +35,7 @@ function contextWith(program: number): InputContext {
   return {
     programs: [{ id: program, name: "Prodi Uji Telat" }],
     cohortYears: cohortChoices(2026),
+    campusEnding: "@kampus.example",
   };
 }
 
@@ -42,6 +43,7 @@ function student(nim: string, studyProgramId: number): StudentInput {
   return {
     nim,
     name: "Simpan Uji Telat",
+    email: null,
     studyProgramId,
     entryPath: "regular",
     sex: "female",
@@ -105,6 +107,51 @@ describe("saveStudentFile, when a NIM is taken between the check and the save", 
         .where(eq(students.nim, "9900000902"));
       expect(kept).toEqual([{ name: "Induk", inputSource: null }]);
       expect(await db.$count(accounts)).toBe(accountsBefore + 2);
+    });
+  });
+});
+
+describe("saveStudentFile, when an address is taken between the check and the save", () => {
+  it("saves no row and keeps no file, and says to upload the file again", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Telat");
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const email = "telat.uji@kampus.example";
+      await db.insert(accounts).values({ name: "Pegawai Lain", email });
+      const store = memoryStore();
+      vi.mocked(checkStudentFile).mockResolvedValue({
+        ok: true,
+        value: {
+          ready: [
+            { row: 2, student: student("9900000921", program) },
+            { row: 3, student: { ...student("9900000922", program), email } },
+          ],
+          skipped: [],
+          registered: [],
+          repeated: 0,
+        },
+      });
+
+      const saved = await saveStudentFile(
+        db,
+        store,
+        actor,
+        FILE,
+        contextWith(program),
+      );
+
+      expect(saved).toEqual({
+        ok: false,
+        error:
+          "Sebuah email di berkas baru saja dipakai akun lain, sehingga tidak ada baris yang disimpan. Unggah berkas lagi.",
+      });
+      const kept = await db
+        .select({ nim: students.nim })
+        .from(students)
+        .where(inArray(students.nim, ["9900000921", "9900000922"]));
+      expect(kept).toEqual([]);
+      expect(store.files.size).toBe(0);
+      expect(await db.$count(studentBatches)).toBe(0);
     });
   });
 });

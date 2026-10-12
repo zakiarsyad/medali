@@ -27,6 +27,7 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
   const input: StudentInput = {
     nim: NIM,
     name: "Sinta Uji",
+    email: null,
     studyProgramId: program,
     entryPath: "regular",
     sex: "female",

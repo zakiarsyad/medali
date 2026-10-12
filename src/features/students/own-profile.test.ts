@@ -126,6 +126,26 @@ describe("readOwnProfile", () => {
     });
   });
 
+  it("carries no address of a student whose account holds one", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Profil Alamat");
+      const email = "profil.alamat@kampus.example";
+      const studentId = await addTestStudent(db, program, {
+        nim: "9900002208",
+        name: "Profil Uji Alamat",
+      });
+      await db
+        .insert(accounts)
+        .values({ name: "Profil Uji Alamat", studentId, email });
+
+      const profile = await ownProfileOf(db, studentId);
+
+      expect(profile).toMatchObject({ id: studentId });
+      expect(profile).not.toHaveProperty("email");
+      expect(JSON.stringify(profile)).not.toContain(email);
+    });
+  });
+
   it("gives no kelompok pengasuhan to a student who is in none", async () => {
     await inTestDatabase(async (db) => {
       const { program, own, other } = await addRows(db);

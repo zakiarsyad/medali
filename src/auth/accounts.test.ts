@@ -4,6 +4,7 @@ import { accountRoles, accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { findActiveAccount } from "./accounts";
 import type { RoleId } from "./role-ids";
+import { addTestStudentAccount } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -29,6 +30,19 @@ describe("findActiveAccount", () => {
       const id = await addAccount(db, ["assessor", "mentor"]);
       const account = await findActiveAccount(db, id);
       expect(account?.roles).toEqual(["mentor", "assessor"]);
+    });
+  });
+
+  it("carries no address, so no screen gets one from the signed-in account", async () => {
+    await inTestDatabase(async (db) => {
+      const email = "profil.uji@kampus.example";
+      const id = await addTestStudentAccount(db, { nim: "9900002601", email });
+
+      const account = await findActiveAccount(db, id);
+
+      expect(account?.roles).toEqual(["student"]);
+      expect(account).not.toHaveProperty("email");
+      expect(JSON.stringify(account)).not.toContain(email);
     });
   });
 

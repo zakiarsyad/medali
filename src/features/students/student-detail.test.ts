@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
+import { accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readStudentDetail } from "./student-detail";
 import {
@@ -123,6 +124,29 @@ describe("readStudentDetail", () => {
           },
         },
       });
+    });
+  });
+
+  it("carries no address of a student whose account holds one", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Detail Alamat");
+      const email = "detail.alamat@kampus.example";
+      const studentId = await addTestStudent(db, program, {
+        nim: "9900001504",
+        name: "Detail Uji Alamat",
+      });
+      await db
+        .insert(accounts)
+        .values({ name: "Detail Uji Alamat", studentId, email });
+
+      const answer = await readDetail(db, account(["head_of_unit"]), studentId);
+
+      expect(answer).toMatchObject({
+        kind: "found",
+        student: { id: studentId },
+      });
+      expect(answer).not.toHaveProperty("student.email");
+      expect(JSON.stringify(answer)).not.toContain(email);
     });
   });
 

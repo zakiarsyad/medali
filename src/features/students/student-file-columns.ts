@@ -4,7 +4,9 @@ export const MAX_FILE_BYTES = 1024 * 1024;
 
 /**
  * The columns of a student file, in the order of the template. `others`
- * are the titles a file may use instead.
+ * are the titles a file may use instead. A new column goes last, so that
+ * a file with no title row, made from an earlier template, is still read
+ * in the right order.
  */
 export const FILE_COLUMNS = [
   { title: "nim", others: [] },
@@ -20,16 +22,23 @@ export const FILE_COLUMNS = [
   { title: "pembibitan", others: [] },
   { title: "internasional", others: [] },
   { title: "status", others: [] },
+  { title: "email", others: [] },
 ] as const satisfies readonly { title: string; others: readonly string[] }[];
 
 export type FileColumn = (typeof FILE_COLUMNS)[number]["title"];
+
+/** The columns a file may leave out altogether: their cells are then empty. */
+export const OPTIONAL_COLUMNS: readonly FileColumn[] = ["email"];
 
 /** One row of a student file: the text under each column. */
 export type FileCells = Record<FileColumn, string>;
 
 export const TEMPLATE_FILE_NAME = "templat-mahasiswa-baru.csv";
 
-/** A made-up student that shows how a row is filled. */
+/**
+ * A made-up student that shows how a row is filled. It has no address:
+ * any made-up one would be refused where the campus ending is set.
+ */
 const TEMPLATE_EXAMPLE: FileCells = {
   nim: "4121260001",
   nama: "Nama Mahasiswa",
@@ -44,6 +53,7 @@ const TEMPLATE_EXAMPLE: FileCells = {
   pembibitan: "tidak",
   internasional: "tidak",
   status: "Aktif",
+  email: "",
 };
 
 export function templateCsv(): string {

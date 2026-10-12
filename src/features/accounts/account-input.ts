@@ -1,5 +1,5 @@
+import { parseAccountEmail } from "@/auth/account-email";
 import { isAccountId } from "@/auth/accounts";
-import { isCampusEmail } from "@/auth/campus-email";
 import type { Parsed } from "@/parsed";
 import { isManagedRole, type ManagedRole } from "./managed-roles";
 
@@ -37,7 +37,6 @@ export interface RoleChange {
   unit: string | null;
 }
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NIP = /^\d{1,18}$/;
 const PROGRAM_ID = /^[1-9]\d*$/;
 /** The largest id the database can hold. */
@@ -87,13 +86,12 @@ export function parseNewAccount(
 ): Parsed<NewAccount> {
   const name = fields.name.trim();
   if (name.length < 3) return { ok: false, error: "Isi nama lengkap." };
-  const email = fields.email.trim().toLowerCase();
-  if (!EMAIL.test(email)) {
-    return { ok: false, error: "Isi email kedinasan yang benar." };
-  }
-  if (campusEnding !== "" && !isCampusEmail(email, campusEnding)) {
-    return { ok: false, error: "Gunakan alamat email kampus." };
-  }
+  const email = parseAccountEmail(
+    fields.email,
+    campusEnding,
+    "Isi email kedinasan yang benar.",
+  );
+  if (!email.ok) return email;
   const nip = optional(fields.nip);
   if (nip !== null && !NIP.test(nip)) {
     return {
@@ -112,7 +110,7 @@ export function parseNewAccount(
       name,
       title: optional(fields.title),
       nip,
-      email,
+      email: email.value,
       roles: roles.value,
       studyProgramId: program.value,
       unit: optional(fields.unit),

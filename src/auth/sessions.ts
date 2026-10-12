@@ -76,6 +76,19 @@ export async function sessionAccount(
 }
 
 /**
+ * Ends every session of an account at once, as when the address it signs
+ * in with is changed or taken away. No sign-out goes to the sign-in log:
+ * the person did not sign out, and what ended their sessions has its own
+ * log line.
+ */
+export async function endSessionsOf(
+  db: Database,
+  accountId: string,
+): Promise<void> {
+  await db.delete(sessions).where(eq(sessions.accountId, accountId));
+}
+
+/**
  * Ends the session of a token, and writes the sign-out to the sign-in
  * log. It gives the account that was signed in, or null when the token
  * opened no session; then nothing is written. The session ends and its

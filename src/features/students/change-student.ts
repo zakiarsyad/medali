@@ -1,11 +1,14 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
+import { refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
+import { endSessionsOf } from "@/auth/sessions";
 import { endCompanionDuty, settleCompanionDuty } from "@/db/companion-duty";
 import type { Database } from "@/db/connect";
-import { accounts, roleChanges, students } from "@/db/schema";
+import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { ADDED_HERE } from "./added-students";
+import { emailChangeOf } from "./email-change";
 import { type Actor, NOT_ALLOWED } from "./input-student";
 import type { StudentInput } from "./student-input";
 
@@ -15,8 +18,42 @@ export const NOT_FOUND = {
 } as const;
 
 /**
+ * Puts the name and the address on the account of a student. A change
+ * of the address is logged as the work of the account `by`. When the
+ * address they sign in with is changed or taken away, their open
+ * sign-ins end at once, so whoever signed in with the old address is
+ * asked to sign in again.
+ */
+async function changeAccountOf(
+  db: Database,
+  studentId: string,
+  name: string,
+  email: string | null,
+  by: string,
+): Promise<void> {
+  const [before] = await db
+    .select({ id: accounts.id, email: accounts.email })
+    .from(accounts)
+    .where(eq(accounts.studentId, studentId));
+  if (!before) throw new Error("A student put in here has no account.");
+  await db
+    .update(accounts)
+    .set({ name, email })
+    .where(eq(accounts.id, before.id));
+  const change = emailChangeOf(before.email, email);
+  if (!change) return;
+  await db
+    .insert(emailChanges)
+    .values({ accountId: before.id, changedBy: by, ...change });
+  if (change.action === "added") return;
+  await endSessionsOf(db, before.id);
+}
+
+/**
  * Changes a student put in through Pengguna baru mahasiswa, found by NIM.
  * The NIM itself stays, and so does who put the student in, when and how.
+ * The address goes on the student's account; one that another account
+ * holds is refused, and nothing is changed.
  * A kakak pendamping whose changed data no longer fits the duty stops
  * being one: no longer active, living in a dorm now, or not of the jenis
  * kelamin of the dorm they serve.
@@ -27,21 +64,20 @@ export async function changeStudent(
   student: StudentInput,
 ): Promise<Parsed<null>> {
   if (!may(actor.roles, "input_new_students")) return NOT_ALLOWED;
-  const { nim, ...fields } = student;
-  return db.transaction(async (tx) => {
-    const [changed] = await tx
-      .update(students)
-      .set(fields)
-      .where(and(eq(students.nim, nim), ADDED_HERE))
-      .returning({ id: students.id });
-    if (!changed) return NOT_FOUND;
-    await settleCompanionDuty(tx, changed.id);
-    await tx
-      .update(accounts)
-      .set({ name: fields.name })
-      .where(eq(accounts.studentId, changed.id));
-    return { ok: true, value: null };
-  });
+  const { nim, email, ...fields } = student;
+  return refusedWhenEmailInUse(() =>
+    db.transaction(async (tx) => {
+      const [changed] = await tx
+        .update(students)
+        .set(fields)
+        .where(and(eq(students.nim, nim), ADDED_HERE))
+        .returning({ id: students.id });
+      if (!changed) return NOT_FOUND;
+      await settleCompanionDuty(tx, changed.id);
+      await changeAccountOf(tx, changed.id, fields.name, email, actor.id);
+      return { ok: true, value: null };
+    }),
+  );
 }
 
 async function removeAccountOf(

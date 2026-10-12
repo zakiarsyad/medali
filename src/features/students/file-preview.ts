@@ -51,6 +51,7 @@ function cellsOf(student: StudentInput, programs: StudyProgram[]): string[] {
     ticked(student.isSeedling),
     ticked(student.isInternational),
     STATUS_LABELS[student.status],
+    student.email ?? NOT_FILLED,
   ];
 }
 

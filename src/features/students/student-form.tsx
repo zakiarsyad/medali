@@ -17,6 +17,7 @@ import {
 } from "./form-values";
 import {
   CLASS_MAX_LENGTH,
+  EMAIL_MAX_LENGTH,
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
   NIM_LENGTH,
@@ -172,6 +173,19 @@ export function StudentForm({
             maxLength={NAME_MAX_LENGTH}
             defaultValue={shown.name}
             required
+          />
+        </label>
+        <label className={shared.field}>
+          Email kampus (opsional)
+          {/* A plain text field: the server words what is wrong with an
+              address, where the browser would word it its own way. */}
+          <input
+            name="email"
+            className={shared.input}
+            inputMode="email"
+            autoComplete="off"
+            maxLength={EMAIL_MAX_LENGTH}
+            defaultValue={shown.email}
           />
         </label>
         <SelectField

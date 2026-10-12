@@ -30,6 +30,7 @@ async function contextWithProgram(db: Database): Promise<InputContext> {
   return {
     programs: [{ id, name: PROGRAM }],
     cohortYears: cohortChoices(2026),
+    campusEnding: "@kampus.example",
   };
 }
 
