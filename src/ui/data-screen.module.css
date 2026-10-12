@@ -179,14 +179,14 @@
 
 /*
  * As a grid the row turns every cell into a block, whatever the cell's own
- * class makes of it at computer width. The line under the row is the same
- * as the line under its cells, so it shows only when the cells drop theirs.
+ * class makes of it at computer width. On a phone the line sits under the
+ * row and its cells drop theirs; at computer width it is the other way.
  */
 .stacked tbody tr {
   display: var(--stacked-row-display);
   grid-template-columns: minmax(0, 1fr);
   padding: var(--stacked-row-padding);
-  border-bottom: var(--line-width) solid var(--line2);
+  border-bottom: var(--stacked-row-line) solid var(--line2);
 }
 
 .stacked td {
@@ -230,6 +230,11 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   white-space: nowrap;
+}
+
+/* A long role name must fold, or it pushes the list wider than a phone. */
+.stacked .badge {
+  white-space: var(--stacked-badge-wrap);
 }
 
 .detail {
