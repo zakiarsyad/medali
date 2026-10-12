@@ -11,8 +11,9 @@ while building.
 - `src/features/<area>/`: one folder per area of the app. It holds that
   area's rules, its database reads and writes, and its screen parts.
 - `src/db/`: the table definitions and the changes to them.
-- `src/academic-periods/`: the running academic period and a student's
-  semester, read by every area that needs them.
+- `src/academic-periods/`: the running academic period, a student's
+  semester and the tahap a semester belongs to, read by every area that
+  needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/ui/`: screen parts shared by more than one area.
 - `docs/`: specs and lasting facts.

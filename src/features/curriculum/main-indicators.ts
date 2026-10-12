@@ -1,12 +1,5 @@
+import { STAGES } from "@/academic-periods/stages";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
-
-/** The tahap of each level, from level 1 to level 4. */
-export const STAGES = [
-  "Penanaman",
-  "Penumbuhan",
-  "Pengembangan",
-  "Pematangan",
-] as const;
 
 type LevelTexts = readonly [string, string, string, string];
 

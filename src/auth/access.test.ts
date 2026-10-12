@@ -228,6 +228,39 @@ describe("may", () => {
     },
   );
 
+  const detailReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+  ];
+
+  it.each(detailReaders)("lets %s read a student's detail", (role) => {
+    expect(may([role], "view_student_detail")).toBe(true);
+  });
+
+  it("refuses every other role to read a student's detail", () => {
+    const others = ROLE_IDS.filter((role) => !detailReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - detailReaders.length);
+    for (const role of others) {
+      expect(may([role], "view_student_detail")).toBe(false);
+    }
+  });
+
+  it.each(["mentor", "upk_staff", "student"] as const)(
+    "refuses %s to read a student's detail",
+    (role) => {
+      expect(may([role], "view_student_detail")).toBe(false);
+    },
+  );
+
+  it("gives the right to read a student's detail to every role with Mahasiswa", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_student_detail")).toBe(
+        mayOpenPage([role], "students"),
+      );
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;

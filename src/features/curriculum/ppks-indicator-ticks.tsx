@@ -1,8 +1,8 @@
+import { levelOf } from "@/academic-periods/stages";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./curriculum.module.css";
 import { IndicatorTick } from "./indicator-tick";
 import type { ValueIndicators } from "./main-indicators";
-import { levelOf } from "./stages";
 
 /** The main indicators of the chosen nilai, each to tick. */
 export function PpksIndicatorTicks({

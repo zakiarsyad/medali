@@ -12,6 +12,7 @@ export const ACTIONS = [
   "manage_dorm_rooms",
   "view_dorm_companions",
   "manage_dorm_companions",
+  "view_student_detail",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -26,6 +27,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   manage_dorm_rooms: "Mengelola ploting kamar",
   view_dorm_companions: "Melihat kakak pendamping",
   manage_dorm_companions: "Mengelola kakak pendamping",
+  view_student_detail: "Melihat detail mahasiswa",
 };
 
 /**
@@ -110,6 +112,7 @@ export const ROLES: Record<RoleId, Role> = {
       "set_academic_periods",
       "view_dorm_rooms",
       "view_dorm_companions",
+      "view_student_detail",
     ],
     rows: "all",
   },
@@ -118,7 +121,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "DR",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms", "view_dorm_companions"],
+    actions: ["view_dorm_rooms", "view_dorm_companions", "view_student_detail"],
     rows: "all",
   },
   head_of_program: {
@@ -126,7 +129,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KP",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms", "view_dorm_companions"],
+    actions: ["view_dorm_rooms", "view_dorm_companions", "view_student_detail"],
     rows: "own_program",
   },
   mentor: {

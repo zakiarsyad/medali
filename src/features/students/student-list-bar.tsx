@@ -3,8 +3,14 @@ import { entryPath } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
+import { FilterFold } from "./filter-fold";
 import { foundWords } from "./found-words";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
+import {
+  agencyChoices,
+  provinceChoices,
+  stageChoices,
+} from "./stage-origin-choices";
 import type { ChoiceCounts } from "./student-choice-counts";
 import styles from "./student-list.module.css";
 import {
@@ -41,7 +47,10 @@ function categoryChoices(counts: ChoiceCounts): CountedChoice[] {
   }));
 }
 
-/** The top bar: the Program studi, Jalur and Kategori filters. */
+/**
+ * The top bar: the Program studi, Jalur, Kategori, Tahapan, Provinsi and
+ * Instansi filters.
+ */
 export function StudentListBar({
   filters,
   programs,
@@ -56,7 +65,7 @@ export function StudentListBar({
 }) {
   return (
     <section className={shared.panel} aria-label="Filter">
-      <div className={shared.form}>
+      <FilterFold inUse={topFiltersInUse(filters)}>
         <CountedSelect
           label="Program studi"
           name="prodi"
@@ -78,7 +87,28 @@ export function StudentListBar({
           choices={categoryChoices(counts)}
           chosen={filters.category ?? ""}
         />
-      </div>
+        <CountedSelect
+          label="Tahapan"
+          name="tahap"
+          every="Semua tahap"
+          choices={stageChoices(counts)}
+          chosen={String(filters.stageNo ?? "")}
+        />
+        <CountedSelect
+          label="Provinsi"
+          name="provinsi"
+          every="Semua provinsi"
+          choices={provinceChoices(counts)}
+          chosen={filters.province ?? ""}
+        />
+        <CountedSelect
+          label="Instansi"
+          name="instansi"
+          every="Semua instansi"
+          choices={agencyChoices(counts)}
+          chosen={filters.originAgency ?? ""}
+        />
+      </FilterFold>
       <p className={styles.found}>
         <span>
           <b>{found.toLocaleString("id-ID")}</b> {foundWords(filters)}

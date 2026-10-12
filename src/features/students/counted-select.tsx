@@ -32,7 +32,7 @@ export function CountedSelect({
   );
   const look = chosen ? `${shared.input} ${styles.chosen}` : shared.input;
   return (
-    <label className={shared.field}>
+    <label className={`${shared.field} ${styles.counted}`}>
       {label}
       <select name={name} className={look} defaultValue={chosen}>
         <option value="">{every}</option>
