@@ -86,6 +86,14 @@ Decided while building, because the issue did not say:
 7. A test file of the Mahasiswa area that only reads a NIM and already
    had it to itself keeps its NIMs. The files renumbered are those
    that shared a block.
+8. Two test files load the app's own sample data, so both add its
+   students. They stay as they are: changing the sample data is not
+   included, both load it in the same order, so one waits for the
+   other and neither is stopped, and no test file uses a block of the
+   sample data. The check does not read the sample data.
+9. The check sees a NIM only when at least its first 8 digits are
+   written out in one piece. A test file that puts every NIM together
+   from a shorter start is not seen. No test file does that today.
 
 ## Steps
 
