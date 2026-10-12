@@ -294,14 +294,16 @@ describe("the campus server package", () => {
     );
   });
 
-  it("checks the settings before anything else when the app starts", () => {
+  it("checks the settings, then the database, then the files, before the app starts", () => {
     const steps = linesOf("docker/campus-start.sh");
-    const check = steps.findIndex((line) => line.includes("start-check"));
-    const app = steps.findIndex((line) => line.includes("next start"));
 
-    expect(steps[0]).toBe("set -e");
-    expect(check).toBe(1);
-    expect(app).toBe(steps.length - 1);
+    expect(steps).toEqual([
+      "set -e",
+      "node_modules/.bin/tsx src/campus/start-check-command.ts",
+      "node_modules/.bin/tsx src/campus/database-command.ts",
+      "node_modules/.bin/tsx src/files/prepare-command.ts",
+      "exec node_modules/.bin/next start",
+    ]);
   });
 
   it("takes the local file storage's own image", () => {

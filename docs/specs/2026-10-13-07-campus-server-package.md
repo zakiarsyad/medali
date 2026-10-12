@@ -129,6 +129,9 @@ change any of these.
     account already uses.
 11. The app is reached at one port of the server, 3000 unless the
     settings file names another.
+12. Two runs of the first-account command at the same moment make one
+    account: the second waits, then refuses.
+13. On each start the package says how many table changes were new.
 
 ## Steps
 
@@ -140,6 +143,6 @@ change any of these.
   message.
 - [x] 4. The first-account command makes the first Kepala Unit account,
   once.
-- [ ] 5. Table changes are applied on start; a short guide in the existing
+- [x] 5. Table changes are applied on start; a short guide in the existing
   hosting notes says how to start, make the first account, update and
   stop the package.

@@ -1,12 +1,16 @@
 import { currentStage, readFileStorageSettings } from "@/settings";
+import { makesOwnPlace } from "./file-places";
 import { ensureBucket } from "./object-store";
 
-/** Makes the place for files in the local file storage, and fails loudly. */
+/**
+ * Makes the place for files in the file storage of a local computer or of
+ * the campus server package, and fails loudly.
+ */
 async function prepare(): Promise<string> {
   const stage = currentStage();
-  if (stage !== "local") {
+  if (!makesOwnPlace(stage)) {
     throw new Error(
-      `The place for files is made only on a local computer, not in ${stage}.`,
+      `The place for files is made by hand at the previews' service, not in ${stage}.`,
     );
   }
   const settings = readFileStorageSettings();

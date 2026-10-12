@@ -5,6 +5,7 @@ set -e
 
 node_modules/.bin/tsx src/campus/start-check-command.ts
 node_modules/.bin/tsx src/campus/database-command.ts
+node_modules/.bin/tsx src/files/prepare-command.ts
 
 # Takes the place of this script, so stopping the package stops the app.
 exec node_modules/.bin/next start
