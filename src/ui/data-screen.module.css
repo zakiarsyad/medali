@@ -217,7 +217,11 @@
 
 /* A value a row does not have, or buttons a row does not show, take no room. */
 .stacked td:empty {
-  display: var(--stacked-empty-display);
+  padding: var(--stacked-empty-padding);
+}
+
+.stacked td:empty::before {
+  display: none;
 }
 
 .badge {
