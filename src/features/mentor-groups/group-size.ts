@@ -12,6 +12,11 @@ export function isUsualSize(size: number): boolean {
   return size >= GROUP_MIN && size <= GROUP_MAX;
 }
 
+/** Whether a group holds fewer members than usual, which its page explains. */
+export function isSmallGroup(size: number): boolean {
+  return size < GROUP_MIN;
+}
+
 /** The members of one group on average, as a whole number. */
 export function averageSize(members: number, groups: number): number {
   if (groups === 0) return 0;

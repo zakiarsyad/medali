@@ -1,7 +1,11 @@
+import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { PressableRow } from "@/ui/pressable-row";
+import pressable from "@/ui/pressable-row.module.css";
 import { groupCode } from "./group-code";
 import type { ListedGroup } from "./group-list";
+import { groupAddress } from "./group-list-address";
 import { historyWords } from "./mentor-history";
 
 const BETWEEN = " · ";
@@ -14,10 +18,13 @@ function programAndCohort(group: ListedGroup): string {
 }
 
 function GroupRow({ group }: { group: ListedGroup }) {
+  const address = groupAddress(group.id);
   return (
-    <tr>
+    <PressableRow address={address} opens="page">
       <td data-title="Kelompok">
-        <b>{groupCode(group)}</b>
+        <Link href={address} className={pressable.open}>
+          <b>{groupCode(group)}</b>
+        </Link>
         <small className={shared.detail}>{programAndCohort(group)}</small>
       </td>
       <td data-title="Pengasuh">
@@ -30,7 +37,7 @@ function GroupRow({ group }: { group: ListedGroup }) {
       </td>
       <td data-title="Anggota">{group.members.toLocaleString("id-ID")}</td>
       <td data-title="Riwayat">{historyWords(group.mentorLines)}</td>
-    </tr>
+    </PressableRow>
   );
 }
 

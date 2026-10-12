@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import type { MouseEvent, ReactNode } from "react";
-import { rememberPressedBox } from "@/ui/pressed-box";
+import styles from "./pressable-row.module.css";
+import { rememberPressedBox } from "./pressed-box";
 
 /** Whether the press was on a link, which then opens by itself. */
 function onLink(event: MouseEvent<HTMLTableRowElement>): boolean {
@@ -19,32 +20,35 @@ function markedText(): boolean {
 /**
  * A row of a list that opens an address when it is pressed anywhere. The
  * row must also hold a link to the same address: that link is what the
- * keyboard and a screen reader use. Either way the address is remembered
- * as opened by a press, so the box it opens can close by going back.
+ * keyboard and a screen reader use. The address opens a box over the
+ * screen unless the row says it opens a page. A box is remembered as
+ * opened by a press, either way it was pressed, so it can close by going
+ * back; a page is opened from its top.
  */
 export function PressableRow({
   address,
-  className,
+  opens = "box",
   children,
 }: {
   address: string;
-  className: string | undefined;
+  opens?: "box" | "page";
   children: ReactNode;
 }) {
   const router = useRouter();
+  const opensBox = opens === "box";
 
   function open(event: MouseEvent<HTMLTableRowElement>) {
     if (onLink(event)) {
-      rememberPressedBox(address);
+      if (opensBox) rememberPressedBox(address);
       return;
     }
     if (markedText()) return;
-    rememberPressedBox(address);
-    router.push(address, { scroll: false });
+    if (opensBox) rememberPressedBox(address);
+    router.push(address, { scroll: !opensBox });
   }
 
   return (
-    <tr className={className} onClick={open}>
+    <tr className={styles.row} onClick={open}>
       {children}
     </tr>
   );

@@ -131,6 +131,14 @@ Decided while building, because the issue did not say:
     as every page that is not built yet does.
 14. Dates are written short, such as "1 Sep 2025", as on the other
     screens, not long as in the prototype.
+15. A member's detail opens in a box over the group's page, the same box
+    as on Mahasiswa, and closing it returns to the group.
+16. A Ketua Program Studi who opens a group of another program gets the
+    app's usual "Akses ditolak" page.
+17. Members are listed by name and the mentor history newest first. The
+    number of academic classes counts the kelas of Aktif members only.
+18. A group left without a mentor shows "-" in the list, and its page
+    says it has no mentor yet.
 
 ## Steps
 
@@ -140,7 +148,7 @@ Decided while building, because the issue did not say:
   tests.
 - [x] 3. The Kelompok pengasuhan tab with its numbers, filters and
   paging.
-- [ ] 4. The group page with mentor, history and members.
+- [x] 4. The group page with mentor, history and members.
 - [ ] 5. The Pengasuh line in the student detail and the column on
   Mahasiswa.
 - [ ] 6. Refusals for other roles and other programs, and the phone
