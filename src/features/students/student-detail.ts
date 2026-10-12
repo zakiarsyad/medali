@@ -2,8 +2,9 @@ import { and, eq } from "drizzle-orm";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
-import { students, studyPrograms } from "@/db/schema";
+import { students } from "@/db/schema";
 import type { RunningPeriod } from "./semester-now";
+import { type StudentFacts, selectStudentFacts } from "./student-facts";
 import {
   readStudentMentorGroup,
   type StudentMentorGroup,
@@ -14,48 +15,13 @@ import {
 } from "./student-residence";
 import { detailVisibleTo } from "./visible-students";
 
-type Student = typeof students.$inferSelect;
-
 /** What the detail of one student shows. */
-export interface StudentDetail {
-  id: string;
-  nim: string;
-  name: string;
-  status: Student["status"];
-  isAffirmation: boolean;
-  isSeedling: boolean;
-  isInternational: boolean;
-  isBlended: boolean;
-  studyProgram: string;
-  entryPath: Student["entryPath"];
-  originAgency: string | null;
-  cohortYear: number;
-  className: string | null;
-  province: string | null;
-  sex: Student["sex"];
+export interface StudentDetail extends StudentFacts {
   /** Null for a student who is in no kelompok pengasuhan. */
   mentorGroup: StudentMentorGroup | null;
   /** Null for a student who lives in no dorm. */
   residence: StudentResidence | null;
 }
-
-const DETAIL = {
-  id: students.id,
-  nim: students.nim,
-  name: students.name,
-  status: students.status,
-  isAffirmation: students.isAffirmation,
-  isSeedling: students.isSeedling,
-  isInternational: students.isInternational,
-  isBlended: students.isBlended,
-  studyProgram: studyPrograms.name,
-  entryPath: students.entryPath,
-  originAgency: students.originAgency,
-  cohortYear: students.cohortYear,
-  className: students.className,
-  province: students.province,
-  sex: students.sex,
-};
 
 export type StudentDetailAnswer =
   | { kind: "refused" }
@@ -82,11 +48,9 @@ export async function readStudentDetail(
   if (visible === null) return { kind: "refused" };
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(id)) return NOT_FOUND;
-  const [student] = await db
-    .select(DETAIL)
-    .from(students)
-    .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(and(eq(students.id, id), visible));
+  const [student] = await selectStudentFacts(db).where(
+    and(eq(students.id, id), visible),
+  );
   if (!student) return NOT_FOUND;
   const [mentorGroup, residence] = await Promise.all([
     readStudentMentorGroup(db, student.id),
