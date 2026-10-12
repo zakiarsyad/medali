@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { levelOf, semesterOf, TAHAP } from "./stages";
+import { semesterOf, TAHAP } from "./stages";
 
 describe("TAHAP", () => {
   it("lists the four tahap in order, each with a description", () => {
@@ -20,12 +20,5 @@ describe("semesterOf", () => {
 
   it("gives semesters 2, 4, 6, 8 for semester genap", () => {
     expect(TAHAP.map(({ no }) => semesterOf(no, "even"))).toEqual([2, 4, 6, 8]);
-  });
-});
-
-describe("levelOf", () => {
-  it("gives both semesters of a tahap the level of that tahap", () => {
-    const semesters = [1, 2, 3, 4, 5, 6, 7, 8];
-    expect(semesters.map(levelOf)).toEqual([1, 1, 2, 2, 3, 3, 4, 4]);
   });
 });

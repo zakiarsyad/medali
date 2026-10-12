@@ -3,6 +3,22 @@
   background: var(--surface2);
 }
 
+/*
+ * A list is as wide as its longest choice unless told otherwise, and the
+ * name of an instansi is longer than a phone is wide.
+ */
+.counted {
+  min-width: 0;
+}
+
+.foldButton {
+  display: var(--filter-fold-button-display);
+}
+
+.folded {
+  display: var(--filter-folded-display);
+}
+
 .found {
   display: flex;
   flex-wrap: wrap;
@@ -15,4 +31,42 @@
 
 .found b {
   color: var(--ink);
+}
+
+.row {
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--surface2);
+}
+
+.open {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tags {
+  margin: var(--space-md) 0 0;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--box-min-width), 1fr));
+  gap: var(--space-md) var(--space-lg);
+  margin: var(--space-lg) 0 0;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+.wideFact {
+  grid-column: 1 / -1;
 }

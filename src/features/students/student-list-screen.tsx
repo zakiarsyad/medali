@@ -1,14 +1,19 @@
+import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
+import type { AskedDetail } from "./asked-detail";
 import { AutoSubmitForm } from "./auto-submit-form";
+import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
+import { StudentDetailDialog } from "./student-detail-dialog";
 import { listCohortYears, listStudents } from "./student-list";
 import {
   STUDENT_LIST_ADDRESS,
   type StudentListParams,
+  studentDetailAddress,
   studentListAddress,
 } from "./student-list-address";
 import { StudentListBar } from "./student-list-bar";
@@ -19,23 +24,31 @@ import { StudentListTable } from "./student-list-table";
 export async function StudentListScreen({
   limit,
   params,
+  detail,
 }: {
   /** Which student rows the account that opened the page may see. */
   limit: RowLimit;
   params: StudentListParams;
+  /** The detail the address asks to open over the list, or null for none. */
+  detail: AskedDetail | null;
 }) {
   const db = database();
   const { filters } = params;
-  const [list, cohortYears, programs, counts] = await Promise.all([
-    listStudents(db, limit, filters, params.page),
+  const [cohortYears, programs, period] = await Promise.all([
     listCohortYears(db, limit),
     listStudyPrograms(db),
-    countChoices(db, limit, filters),
+    readRunningPeriod(db),
+  ]);
+  const cohorts = stageCohorts(cohortYears, period);
+  const [list, counts] = await Promise.all([
+    listStudents(db, limit, filters, params.page, cohorts),
+    countChoices(db, limit, filters, cohorts),
   ]);
   return (
     <>
       <PageHead title="Mahasiswa">
         Data mahasiswa beserta program studi, angkatan, dan provinsi domisili.
+        Pilih nama untuk melihat profil lengkap.
       </PageHead>
       {/* Made anew for each address, so its fields show what the address holds. */}
       <AutoSubmitForm
@@ -52,7 +65,13 @@ export async function StudentListScreen({
           <StudentListFilterRow filters={filters} cohortYears={cohortYears} />
           {list.matching > 0 ? (
             <>
-              <StudentListTable students={list.students} />
+              <StudentListTable
+                students={list.students}
+                period={period}
+                detailAddressOf={(studentId) =>
+                  studentDetailAddress(filters, list.page, studentId)
+                }
+              />
               <StudentListPager
                 filters={filters}
                 page={list.page}
@@ -66,6 +85,13 @@ export async function StudentListScreen({
           )}
         </section>
       </AutoSubmitForm>
+      {detail && (
+        <StudentDetailDialog
+          detail={detail}
+          period={period}
+          closeAddress={studentListAddress(filters, list.page)}
+        />
+      )}
     </>
   );
 }
