@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
 import { pagesFor } from "@/auth/access";
-import { currentAccount } from "@/auth/current-account";
+import { accountSwitcherOn } from "@/auth/account-switcher";
+import { currentSignIn } from "@/auth/current-account";
 import { signedInAs } from "@/auth/signed-in-as";
+import { currentStage } from "@/settings";
 import { AppShell } from "@/ui/app-shell";
 
 /** The pages inside the menu. The sign-in page stays outside it. */
 export default async function AppLayout({ children }: { children: ReactNode }) {
-  const account = await currentAccount();
+  const signedIn = await currentSignIn();
+  const switcherOn = accountSwitcherOn(currentStage());
   return (
     <AppShell
-      menu={account ? pagesFor(account.roles) : []}
-      signedInAs={account ? signedInAs(account) : null}
+      menu={signedIn ? pagesFor(signedIn.account.roles) : []}
+      signedInAs={signedIn ? signedInAs(signedIn, switcherOn) : null}
     >
       {children}
     </AppShell>

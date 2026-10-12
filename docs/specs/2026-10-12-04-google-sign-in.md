@@ -168,7 +168,7 @@ change any of these.
   they are empty.
 - [x] 2. A confirmed address is matched to its account and roles, and
   every page and action uses that account.
-- [ ] 3. "Keluar", session expiry, and removed accounts lose access.
+- [x] 3. "Keluar", session expiry, and removed accounts lose access.
 - [ ] 4. Refusal messages and the sign-in log.
 - [ ] 5. Pengguna dan peran accepts campus addresses only, once the
   ending is set.

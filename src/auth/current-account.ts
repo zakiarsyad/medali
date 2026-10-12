@@ -27,7 +27,8 @@ async function switcherAccount(picked: string | undefined) {
 
 /**
  * Who is using the app. Someone signed in with Google uses their own
- * account. Otherwise, only where "Ganti peran" is on, it is the account
+ * account, until they sign out, stay away for 8 hours, or the account is
+ * removed. Otherwise, only where "Ganti peran" is on, it is the account
  * picked there, or Kepala Unit when none is picked. Anywhere else nobody
  * is signed in.
  */
@@ -38,7 +39,9 @@ export const currentSignIn = cache(async (): Promise<SignedIn | null> => {
   const token = jar.get(SESSION_COOKIE)?.value;
   const picked = jar.get(ACCOUNT_COOKIE)?.value;
 
-  const own = token ? await sessionAccount(database(), token) : null;
+  const own = token
+    ? await sessionAccount(database(), token, new Date())
+    : null;
   if (own) return { account: own, way: "google" };
   if (!accountSwitcherOn(currentStage())) return null;
   const account = await switcherAccount(picked);

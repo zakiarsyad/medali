@@ -44,7 +44,7 @@ function answerAddresses(): string[] {
  * The addresses of sign-in itself. They are below no page, because
  * someone who is not signed in must reach them.
  */
-const SIGN_IN_ANSWERS = ["masuk/google/kembali"];
+const SIGN_IN_ANSWERS = ["masuk/google/kembali", "keluar"];
 
 function isSignInAnswer(address: string): boolean {
   return SIGN_IN_ANSWERS.includes(address);
@@ -69,6 +69,8 @@ describe("every address the server answers itself", () => {
 
   it("takes only the addresses of sign-in as part of sign-in", () => {
     expect(isSignInAnswer("masuk/google/kembali")).toBe(true);
+    expect(isSignInAnswer("keluar")).toBe(true);
+    expect(isSignInAnswer("keluar/rahasia")).toBe(false);
     expect(isSignInAnswer("masuk/google")).toBe(false);
     expect(isSignInAnswer("masuk/rahasia")).toBe(false);
     expect(isSignInAnswer("rahasia/berkas")).toBe(false);

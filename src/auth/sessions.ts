@@ -1,19 +1,29 @@
-import { eq } from "drizzle-orm";
+import { eq, lte } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { sessions } from "@/db/schema";
 import { type Account, findActiveAccount } from "./accounts";
+import {
+  expiredBefore,
+  lastSeenNeedsWriting,
+  sessionExpired,
+} from "./session-rules";
 import {
   isSessionToken,
   newSessionToken,
   sessionTokenHash,
 } from "./session-token";
 
-/** Signs an account in, and gives the token its browser will hold. */
+/**
+ * Signs an account in, and gives the token its browser will hold. The
+ * sessions that have expired are cleared away on the way, so those of
+ * people who never came back do not pile up.
+ */
 export async function startSession(
   db: Database,
   accountId: string,
   now: Date,
 ): Promise<string> {
+  await db.delete(sessions).where(lte(sessions.lastSeenAt, expiredBefore(now)));
   const token = newSessionToken();
   await db.insert(sessions).values({
     tokenHash: sessionTokenHash(token),
@@ -24,22 +34,52 @@ export async function startSession(
   return token;
 }
 
+async function noteSeen(db: Database, id: string, now: Date): Promise<void> {
+  await db.update(sessions).set({ lastSeenAt: now }).where(eq(sessions.id, id));
+}
+
 /**
- * The account signed in with a token, or null when the token is unknown
- * or its account was removed. The account and its roles are read on every
- * request, so a change to them shows on the person's next page. `token`
- * comes from a cookie and is not trusted.
+ * The account signed in with a token, or null when the token is unknown,
+ * the session has expired, or its account was removed. The account and
+ * its roles are read on every request, so a change to them shows on the
+ * person's next page. `token` comes from a cookie and is not trusted.
  */
 export async function sessionAccount(
   db: Database,
   token: string,
+  now: Date,
 ): Promise<Account | null> {
   if (!isSessionToken(token)) return null;
   const [session] = await db
-    .select({ accountId: sessions.accountId })
+    .select({
+      id: sessions.id,
+      accountId: sessions.accountId,
+      lastSeenAt: sessions.lastSeenAt,
+    })
     .from(sessions)
     .where(eq(sessions.tokenHash, sessionTokenHash(token)))
     .limit(1);
-  if (!session) return null;
-  return findActiveAccount(db, session.accountId);
+  if (!session || sessionExpired(session.lastSeenAt, now)) return null;
+  const account = await findActiveAccount(db, session.accountId);
+  if (!account) return null;
+  if (lastSeenNeedsWriting(session.lastSeenAt, now)) {
+    await noteSeen(db, session.id, now);
+  }
+  return account;
+}
+
+/**
+ * Ends the session of a token. It gives the account that was signed in,
+ * or null when the token opened no session.
+ */
+export async function endSession(
+  db: Database,
+  token: string,
+): Promise<string | null> {
+  if (!isSessionToken(token)) return null;
+  const [ended] = await db
+    .delete(sessions)
+    .where(eq(sessions.tokenHash, sessionTokenHash(token)))
+    .returning({ accountId: sessions.accountId });
+  return ended?.accountId ?? null;
 }

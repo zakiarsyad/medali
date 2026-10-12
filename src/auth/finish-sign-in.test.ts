@@ -61,7 +61,7 @@ describe("finishSignIn", () => {
       });
 
       if (finished.result !== "signed_in") throw new Error(finished.result);
-      const account = await sessionAccount(db, finished.sessionToken);
+      const account = await sessionAccount(db, finished.sessionToken, NOW);
       expect(account?.id).toBe(accountId);
       expect(account?.roles).toEqual(["mentor", "assessor"]);
     });
@@ -186,10 +186,10 @@ describe("finishSignIn", () => {
       if (first.result !== "signed_in") throw new Error(first.result);
       if (second.result !== "signed_in") throw new Error(second.result);
       expect(first.sessionToken).not.toBe(second.sessionToken);
-      expect((await sessionAccount(db, first.sessionToken))?.id).toBe(
+      expect((await sessionAccount(db, first.sessionToken, NOW))?.id).toBe(
         accountId,
       );
-      expect((await sessionAccount(db, second.sessionToken))?.id).toBe(
+      expect((await sessionAccount(db, second.sessionToken, NOW))?.id).toBe(
         accountId,
       );
     });
