@@ -2,15 +2,15 @@ import Link from "next/link";
 import { ROLES } from "@/auth/roles";
 import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
-import { listAddress } from "./list-address";
-import type { AccountFilter, ManagedAccount } from "./manage-accounts";
+import { type ListView, listAddress } from "./list-address";
+import type { ManagedAccount } from "./manage-accounts";
 import { isManagedRole } from "./managed-roles";
 import { RemoveAccountButton } from "./remove-account-button";
 import { RoleEditForm } from "./role-edit-form";
 
 interface AccountTableProps {
   accounts: ManagedAccount[];
-  filter: AccountFilter;
+  filter: ListView;
   editing: string | null;
   programs: StudyProgram[];
 }
@@ -30,7 +30,7 @@ function AccountRow({
   programs,
 }: {
   account: ManagedAccount;
-  filter: AccountFilter;
+  filter: ListView;
   isEditing: boolean;
   programs: StudyProgram[];
 }) {
