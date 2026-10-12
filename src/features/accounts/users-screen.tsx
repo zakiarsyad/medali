@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ROLES } from "@/auth/roles";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
@@ -8,7 +7,15 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AccessMatrix } from "./access-matrix";
 import { AccountTable } from "./account-table";
 import { AddAccountForm } from "./add-account-form";
-import { type ListParams, listAddress, USERS_ADDRESS } from "./list-address";
+import { BamPanel } from "./bam-panel";
+import {
+  BAM_PAGE_PARAM,
+  type ListParams,
+  listAddress,
+  USERS_ADDRESS,
+} from "./list-address";
+import { listBamStudents } from "./list-bam-students";
+import { ListPager } from "./list-pager";
 import { listManagedAccounts, PAGE_SIZE } from "./manage-accounts";
 import { LISTED_ROLES } from "./managed-roles";
 
@@ -35,41 +42,13 @@ function Filters({ params }: { params: ListParams }) {
           </option>
         ))}
       </select>
+      {params.bamPage > 0 && (
+        <input type="hidden" name={BAM_PAGE_PARAM} value={params.bamPage + 1} />
+      )}
       <button type="submit" className={styles.quiet}>
         Cari
       </button>
     </form>
-  );
-}
-
-function Pager({ params, total }: { params: ListParams; total: number }) {
-  const from = params.page * PAGE_SIZE + 1;
-  const to = Math.min(total, (params.page + 1) * PAGE_SIZE);
-  const hasNext = to < total;
-  return (
-    <div className={styles.pager}>
-      <span>
-        {from}–{to} dari {total} pengguna
-      </span>
-      <span className={styles.actions}>
-        {params.page > 0 && (
-          <Link
-            href={listAddress({ ...params, page: params.page - 1 })}
-            className={styles.quiet}
-          >
-            Sebelumnya
-          </Link>
-        )}
-        {hasNext && (
-          <Link
-            href={listAddress({ ...params, page: params.page + 1 })}
-            className={styles.quiet}
-          >
-            Berikutnya
-          </Link>
-        )}
-      </span>
-    </div>
   );
 }
 
@@ -81,9 +60,10 @@ export async function UsersScreen({
   tabs: TabLinksProps;
 }) {
   const db = database();
-  const [list, programs] = await Promise.all([
+  const [list, programs, bamList] = await Promise.all([
     listManagedAccounts(db, params),
     listStudyPrograms(db),
+    listBamStudents(db, params.bamPage),
   ]);
   return (
     <>
@@ -103,13 +83,23 @@ export async function UsersScreen({
           editing={params.editing}
           programs={programs}
         />
-        {list.total > 0 && <Pager params={params} total={list.total} />}
+        {list.total > 0 && (
+          <ListPager
+            page={params.page}
+            pageSize={PAGE_SIZE}
+            total={list.total}
+            unit="pengguna"
+            addressOf={(page) => listAddress({ ...params, page })}
+          />
+        )}
         <p className={styles.detail}>
           Peran Kepala Unit Pembangunan Karakter tidak diberikan atau dilepas di
           sini, dan akunnya tidak bisa dihapus. Akun mahasiswa mengikuti data
-          akademik dan tidak ditampilkan.
+          akademik dan tidak ditampilkan; peran BAM mahasiswa diatur pada panel
+          Badan Asrama Mahasiswa di bawah.
         </p>
       </section>
+      <BamPanel list={bamList} params={params} />
       <section className={styles.panel}>
         <h2 className={styles.heading}>Hak akses tiap peran</h2>
         <p className={styles.detail}>

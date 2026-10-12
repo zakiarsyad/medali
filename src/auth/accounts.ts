@@ -3,6 +3,7 @@ import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { accountRoles, accounts, students, studyPrograms } from "@/db/schema";
 import { ROLE_IDS, type RoleId } from "./role-ids";
+import { workingRoles } from "./working-roles";
 
 export interface Account {
   id: string;
@@ -39,7 +40,11 @@ export async function rolesByAccount(
   return found;
 }
 
-/** Active accounts, those not removed, with their roles. */
+/**
+ * Active accounts, those not removed, with the roles that work right
+ * now: see `workingRoles`. Both the signed-in account of every request
+ * and the accounts of Ganti peran are read here, so neither can skip it.
+ */
 export async function activeAccounts(
   db: Database,
   onlyId?: string,
@@ -54,6 +59,8 @@ export async function activeAccounts(
       studyProgramId: accounts.studyProgramId,
       studentId: accounts.studentId,
       studentProgram: studyPrograms.name,
+      studentStatus: students.status,
+      studentRemovedAt: students.deletedAt,
     })
     .from(accounts)
     .leftJoin(students, eq(students.id, accounts.studentId))
@@ -64,7 +71,16 @@ export async function activeAccounts(
     db,
     rows.map((row) => row.id),
   );
-  return rows.map((row) => ({ ...row, roles: roles.get(row.id) ?? [] }));
+  return rows.map(({ studentStatus, studentRemovedAt, ...account }) => {
+    const student =
+      studentStatus === null
+        ? null
+        : { status: studentStatus, deletedAt: studentRemovedAt };
+    return {
+      ...account,
+      roles: workingRoles(roles.get(account.id) ?? [], student),
+    };
+  });
 }
 
 export function isAccountId(id: string): boolean {

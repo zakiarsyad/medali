@@ -11,8 +11,11 @@ import {
   listManagedAccounts,
   removeAccount,
 } from "./manage-accounts";
+import { addTestProgram, addTestStudentAccount } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
+
+const PROGRAM = "Prodi Uji Daftar Staf";
 
 async function addHead(db: Database): Promise<string> {
   return addRawAccount(db, "Kepala Uji", ["head_of_unit"]);
@@ -317,6 +320,59 @@ describe("changeRoles on a Kepala Unit account", () => {
   });
 });
 
+describe("a student's account in the staff list's changes", () => {
+  it("is refused a staff role by Edit peran", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const program = await addTestProgram(db, PROGRAM);
+      const id = await addTestStudentAccount(
+        db,
+        program,
+        { nim: "9912800103", name: "Mahasiswa Uji Staf" },
+        ["student", "bam_bphk"],
+      );
+
+      const changed = await changeRoles(
+        db,
+        { accountId: id, roles: ["mentor"], studyProgramId: null, unit: null },
+        head,
+      );
+
+      expect(changed).toEqual({
+        ok: false,
+        error:
+          "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
+      });
+      expect((await findActiveAccount(db, id))?.roles).toEqual([
+        "student",
+        "bam_bphk",
+      ]);
+      expect(await logOf(db, id)).toEqual([]);
+    });
+  });
+
+  it("is not removed by Hapus, even with only roles managed there", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const program = await addTestProgram(db, PROGRAM);
+      const id = await addTestStudentAccount(
+        db,
+        program,
+        { nim: "9912800104", name: "Mahasiswa Uji Hapus" },
+        ["bam_bphk"],
+      );
+
+      const removed = await removeAccount(db, id, head);
+
+      expect(removed).toEqual({
+        ok: false,
+        error: "Akun ini tidak dikelola di sini, sehingga tidak bisa dihapus.",
+      });
+      expect(await findActiveAccount(db, id)).not.toBeNull();
+    });
+  });
+});
+
 describe("removeAccount refuses", () => {
   it.each([
     ["a Kepala Unit account", ["head_of_unit", "mentor"]],
@@ -375,10 +431,20 @@ describe("listManagedAccounts", () => {
     });
   });
 
-  it("leaves student-only accounts out", async () => {
+  it("leaves every student's account out, also one with a BAM role", async () => {
     await inTestDatabase(async (db) => {
-      await addRawAccount(db, "Daftar Uji Mahasiswa", ["student"]);
-      await addRawAccount(db, "Daftar Uji BAM", ["student", "bam_bphk"]);
+      const program = await addTestProgram(db, PROGRAM);
+      await addTestStudentAccount(db, program, {
+        nim: "9912800101",
+        name: "Daftar Uji Mahasiswa",
+      });
+      await addTestStudentAccount(
+        db,
+        program,
+        { nim: "9912800102", name: "Daftar Uji BAM" },
+        ["student", "bam_bphk"],
+      );
+      await addRawAccount(db, "Daftar Uji Staf BAM", ["bam_bphk"]);
 
       const listed = await listManagedAccounts(db, {
         query: "daftar uji",
@@ -387,7 +453,7 @@ describe("listManagedAccounts", () => {
       });
 
       expect(listed.accounts.map((account) => account.name)).toEqual([
-        "Daftar Uji BAM",
+        "Daftar Uji Staf BAM",
       ]);
     });
   });
