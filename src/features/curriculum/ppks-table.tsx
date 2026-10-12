@@ -34,7 +34,7 @@ export function PpksTable({
   }
   return (
     <div className={shared.tableWrap}>
-      <table className={shared.table}>
+      <table className={`${shared.table} ${shared.stacked}`}>
         <thead>
           <tr>
             <th>Kegiatan</th>
@@ -51,23 +51,25 @@ export function PpksTable({
         <tbody>
           {activities.map((activity) => (
             <tr key={activity.id}>
-              <td>
+              <td data-title="Kegiatan">
                 <b>{activity.name}</b>
                 <span className={shared.detail}>
                   {activityNote(activity.description, activity.isRequired)}
                 </span>
               </td>
-              <td>
+              <td data-title="Nilai">
                 <ValueTags keys={activity.valueKeys} />
               </td>
-              <td>
+              <td data-title="Indikator utama">
                 {activity.indicatorCodes.map((code) => (
                   <span key={code} className={shared.badge}>
                     {code}
                   </span>
                 ))}
               </td>
-              <td>{activity.targetParticipants ?? "-"}</td>
+              <td data-title="Target peserta">
+                {activity.targetParticipants ?? "-"}
+              </td>
               {onChange && (
                 <td>
                   <button

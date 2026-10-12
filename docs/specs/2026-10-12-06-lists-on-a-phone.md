@@ -74,5 +74,5 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The shared list style shows each row as a stacked block at phone
   width, with the column title beside each value.
-- [ ] 2. The four lists carry their column titles for that view, and
+- [x] 2. The four lists carry their column titles for that view, and
   their buttons show at the end of each row.
