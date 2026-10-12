@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import type { ListCohorts } from "./list-cohorts";
 import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listStudents } from "./student-list";
@@ -19,11 +20,14 @@ const TAX = "Direktorat Jenderal Pajak";
 const CUSTOMS = "Direktorat Jenderal Bea dan Cukai";
 
 /** In this period angkatan 2026 is in tahap 1, 2025 in 2 and 2023 in 4. */
-const COHORTS = stageCohorts([2026, 2025, 2023], {
-  startYear: 2026,
-  term: "odd",
-});
-const NO_PERIOD = stageCohorts([2026, 2025, 2023], null);
+const COHORTS: ListCohorts = {
+  stages: stageCohorts([2026, 2025, 2023], { startYear: 2026, term: "odd" }),
+  dorms: [2026],
+};
+const NO_PERIOD: ListCohorts = {
+  stages: stageCohorts([2026, 2025, 2023], null),
+  dorms: [],
+};
 
 /** One program with students of three tahap, of every status. */
 async function addRows(db: Database): Promise<RowLimit> {

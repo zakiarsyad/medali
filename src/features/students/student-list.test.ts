@@ -4,7 +4,7 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { PAGE_SIZE } from "@/ui/list-pages";
-import type { StageCohorts } from "./stage-cohorts";
+import type { ListCohorts } from "./list-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
@@ -19,8 +19,11 @@ const inTestDatabase = withTestDatabase();
 
 const EVERYONE: RowLimit = { kind: "all" };
 
-/** No academic period runs in these checks, so no angkatan is in a tahap. */
-const NO_STAGES: StageCohorts = new Map();
+/**
+ * No academic period runs in these checks, so no angkatan is in a tahap
+ * and none lives in the dorm.
+ */
+const NO_STAGES: ListCohorts = { stages: new Map(), dorms: [] };
 
 function onlyProgram(id: number): RowLimit {
   return { kind: "some", studyProgramIds: [id], menteesOf: [], studentIds: [] };
@@ -96,6 +99,7 @@ describe("listStudents", () => {
           className: "2-01",
           province: "Bali",
           mentorName: null,
+          dorm: "wismantara_putri",
         },
         expect.objectContaining({ nim: "9900001312", status: "on_leave" }),
       ]);

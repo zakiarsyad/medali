@@ -2,7 +2,8 @@ import { and, count } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
-import { heldByStage, type StageCohorts } from "./stage-cohorts";
+import type { ListCohorts } from "./list-cohorts";
+import { heldByStage } from "./stage-cohorts";
 import { HAS_STAGE } from "./stage-origin-conditions";
 import { found } from "./student-list";
 import { NO_AGENCY, type StudentListFilters } from "./student-list-address";
@@ -12,7 +13,7 @@ export async function countStages(
   db: Database,
   limit: RowLimit,
   filters: StudentListFilters,
-  cohorts: StageCohorts,
+  cohorts: ListCohorts,
 ): Promise<Map<number, number>> {
   const others = found(limit, { ...filters, stageNo: null }, cohorts);
   const rows = await db
@@ -21,7 +22,7 @@ export async function countStages(
     .where(and(others, HAS_STAGE))
     .groupBy(students.cohortYear);
   const heldByCohort = new Map(rows.map((row) => [row.year, row.held]));
-  return heldByStage(heldByCohort, cohorts);
+  return heldByStage(heldByCohort, cohorts.stages);
 }
 
 /** By the name of the provinsi. Students without one are under none. */
@@ -29,7 +30,7 @@ export async function countProvinces(
   db: Database,
   limit: RowLimit,
   filters: StudentListFilters,
-  cohorts: StageCohorts,
+  cohorts: ListCohorts,
 ): Promise<Map<string, number>> {
   const rows = await db
     .select({ province: students.province, held: count() })
@@ -48,7 +49,7 @@ export async function countAgencies(
   db: Database,
   limit: RowLimit,
   filters: StudentListFilters,
-  cohorts: StageCohorts,
+  cohorts: ListCohorts,
 ): Promise<Map<string, number>> {
   const rows = await db
     .select({ agency: students.originAgency, held: count() })

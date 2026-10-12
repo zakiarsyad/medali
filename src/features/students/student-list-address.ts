@@ -1,4 +1,5 @@
 import { entryPath } from "@/db/schema";
+import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import { NAME_MAX_LENGTH } from "./input-limits";
@@ -15,6 +16,11 @@ export type EntryPath = (typeof entryPath.enumValues)[number];
 /** The Instansi choice that finds the students who came from no instansi. */
 export const NO_AGENCY = "tanpa";
 
+/** The Asrama choice that finds the students who live in no dorm. */
+export const NO_DORM = "non";
+
+export type DormChoice = DormId | typeof NO_DORM;
+
 /** The filters of the top bar. Null means every choice. */
 export interface TopFilters {
   studyProgramId: number | null;
@@ -25,6 +31,8 @@ export interface TopFilters {
   province: string | null;
   /** The name of an instansi, or `NO_AGENCY`. */
   originAgency: string | null;
+  /** A dorm, or `NO_DORM`. */
+  dorm: DormChoice | null;
 }
 
 export interface StudentListFilters extends TopFilters {
@@ -52,6 +60,7 @@ const NO_TOP_FILTERS: TopFilters = {
   stageNo: null,
   province: null,
   originAgency: null,
+  dorm: null,
 };
 
 /** How the list opens: Aktif dan cuti, and nothing else chosen. */
@@ -88,6 +97,11 @@ function readAgency(text: string): string | null {
   return ORIGIN_AGENCIES.find((one) => one === text) ?? null;
 }
 
+function readDorm(text: string): DormChoice | null {
+  if (text === NO_DORM) return NO_DORM;
+  return DORM_IDS.find((one) => one === text) ?? null;
+}
+
 function readTopFilters(params: SearchParams): TopFilters {
   const program = firstParam(params.prodi);
   const path = firstParam(params.jalur);
@@ -101,6 +115,7 @@ function readTopFilters(params: SearchParams): TopFilters {
     stageNo: STAGE_NO.test(stage) ? Number(stage) : null,
     province: PROVINCES.find((one) => one === province) ?? null,
     originAgency: readAgency(firstParam(params.instansi)),
+    dorm: readDorm(firstParam(params.asrama)),
   };
 }
 
@@ -133,6 +148,7 @@ export function topFiltersInUse(filters: TopFilters): number {
     filters.stageNo,
     filters.province,
     filters.originAgency,
+    filters.dorm,
   ];
   return chosen.filter((choice) => choice !== null).length;
 }
@@ -153,6 +169,7 @@ function setTopFilters(params: URLSearchParams, filters: TopFilters): void {
   if (filters.stageNo !== null) params.set("tahap", String(filters.stageNo));
   if (filters.province) params.set("provinsi", filters.province);
   if (filters.originAgency) params.set("instansi", filters.originAgency);
+  if (filters.dorm) params.set("asrama", filters.dorm);
 }
 
 function listParams(filters: StudentListFilters, page: number) {
