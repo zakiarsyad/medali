@@ -105,7 +105,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The row limit is asked for a named action and counts only the
+- [x] 1. The row limit is asked for a named action and counts only the
   roles that allow it, with tests for each mix above.
 - [ ] 2. The Mahasiswa list, the student detail, the mentor groups and
   the Asrama lists ask the row limit for their own action, with checks
