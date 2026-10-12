@@ -18,3 +18,13 @@ body {
   line-height: var(--leading-body);
   -webkit-font-smoothing: antialiased;
 }
+
+/*
+ * Set on the tag, so a button looks switched off whatever style it has,
+ * also one added later. The tag makes this rule stronger than a style's
+ * own pressing hand.
+ */
+button:disabled {
+  opacity: var(--switched-off-opacity);
+  cursor: default;
+}
