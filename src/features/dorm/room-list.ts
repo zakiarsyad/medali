@@ -136,7 +136,8 @@ export async function countResidents(
   return counted ?? { residents: 0, placed: 0 };
 }
 
-function matchesSearch(query: string): SQL | undefined {
+/** Students whose name or NIM holds the text. No text finds everyone. */
+export function matchesSearch(query: string): SQL | undefined {
   if (query === "") return undefined;
   const pattern = containsPattern(query);
   return or(ilike(students.name, pattern), ilike(students.nim, pattern));

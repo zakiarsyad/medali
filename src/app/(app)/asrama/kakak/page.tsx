@@ -16,6 +16,7 @@ export default async function DormCompanionsPage(
       tabs={{ pagePath: "asrama", tabs: opened.tabs, open: "kakak" }}
       params={readCompanionsParams(await props.searchParams)}
       visible={visibleTo(rowLimitFor(account))}
+      mayManage={may(account.roles, "manage_dorm_companions")}
     />
   );
 }

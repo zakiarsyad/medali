@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 import { companionsAddress, readCompanionsParams } from "./companions-address";
 
 describe("readCompanionsParams", () => {
-  it("opens the first page", () => {
-    expect(readCompanionsParams({})).toEqual({ page: 1 });
+  it("opens the first page with no search", () => {
+    expect(readCompanionsParams({})).toEqual({ page: 1, query: "" });
   });
 
-  it("reads the page", () => {
-    expect(readCompanionsParams({ hal: "3" })).toEqual({ page: 3 });
+  it("reads the page and the search", () => {
+    expect(readCompanionsParams({ hal: "3", q: "  sari " })).toEqual({
+      page: 3,
+      query: "sari",
+    });
   });
 
   it.each(["0", "-1", "2.5", "dua", "02", "1234567"])(
@@ -20,17 +23,24 @@ describe("readCompanionsParams", () => {
   it("takes the first of a page that is given twice", () => {
     expect(readCompanionsParams({ hal: ["2", "5"] }).page).toBe(2);
   });
+
+  it("cuts a search that is too long", () => {
+    expect(readCompanionsParams({ q: "a".repeat(500) }).query).toHaveLength(
+      100,
+    );
+  });
 });
 
 describe("companionsAddress", () => {
-  it("leaves the first page out", () => {
-    expect(companionsAddress(1)).toBe("/asrama/kakak");
+  it("leaves the first page and an empty search out", () => {
+    expect(companionsAddress({ page: 1, query: "" })).toBe("/asrama/kakak");
   });
 
-  it("writes a later page the way it is read", () => {
-    const address = companionsAddress(4);
-    expect(address).toBe("/asrama/kakak?hal=4");
+  it("writes the page and the search the way they are read", () => {
+    const params = { page: 4, query: "sari uji" };
+    const address = companionsAddress(params);
+    expect(address).toBe("/asrama/kakak?q=sari+uji&hal=4");
     const query = new URLSearchParams(address.split("?")[1]);
-    expect(readCompanionsParams(Object.fromEntries(query)).page).toBe(4);
+    expect(readCompanionsParams(Object.fromEntries(query))).toEqual(params);
   });
 });
