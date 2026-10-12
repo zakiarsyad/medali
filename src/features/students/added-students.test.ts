@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studentBatches, studentBatchFiles } from "@/db/schema";
+import { accounts, studentBatches, studentBatchFiles } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { countStudents, LIST_LIMIT, listAddedStudents } from "./added-students";
 import { addTestActor, addTestProgram, addTestStudent } from "./test-records";
@@ -113,6 +113,43 @@ describe("listAddedStudents", () => {
         inputBy: "Pegawai Uji",
         inputSource: "form",
       });
+    });
+  });
+
+  it("gives the address a student's account holds, and none for a student without one", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Alamat");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const input = { inputBy: staff.id, inputSource: "form" as const };
+      const withAddress = await addTestStudent(db, program, {
+        nim: "9900000207",
+        name: "Alamat Uji Satu",
+        ...input,
+        inputAt: LATER,
+      });
+      const without = await addTestStudent(db, program, {
+        nim: "9900000208",
+        name: "Alamat Uji Dua",
+        ...input,
+        inputAt: EARLIER,
+      });
+      await db.insert(accounts).values([
+        {
+          name: "Alamat Uji Satu",
+          studentId: withAddress,
+          email: "alamat.uji@kampus.example",
+        },
+        { name: "Alamat Uji Dua", studentId: without },
+      ]);
+
+      const listed = await listAddedStudents(db, "Alamat Uji");
+
+      expect(
+        listed.students.map((student) => [student.nim, student.email]),
+      ).toEqual([
+        ["9900000207", "alamat.uji@kampus.example"],
+        ["9900000208", null],
+      ]);
     });
   });
 

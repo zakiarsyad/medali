@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
@@ -86,6 +87,33 @@ describe("listStudents", () => {
         },
         expect.objectContaining({ nim: "9900000312", status: "on_leave" }),
       ]);
+    });
+  });
+
+  it("carries no address of a student whose account holds one", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Tanpa Alamat");
+      const email = "tanpa.alamat@kampus.example";
+      const studentId = await addTestStudent(db, program, {
+        nim: "9900000316",
+        name: "Tanpa Alamat Uji",
+      });
+      await db
+        .insert(accounts)
+        .values({ name: "Tanpa Alamat Uji", studentId, email });
+
+      const listed = await listStudents(
+        db,
+        onlyProgram(program),
+        NO_FILTERS,
+        1,
+      );
+
+      expect(listed.students.map((student) => student.nim)).toEqual([
+        "9900000316",
+      ]);
+      expect(listed.students[0]).not.toHaveProperty("email");
+      expect(JSON.stringify(listed)).not.toContain(email);
     });
   });
 

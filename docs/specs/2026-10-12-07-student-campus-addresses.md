@@ -120,6 +120,12 @@ change any of these.
     three messages must read the same everywhere.
 11. An address longer than 254 characters, the longest a mailbox can
     have, gets "Alamat email tidak valid."
+12. The student detail and Profil saya have no screen yet. The check
+    covers the Mahasiswa list and what every screen is told about the
+    person signed in: neither carries the address, so those two screens
+    get none when they are built.
+13. The search of the list still looks at the name and the NIM only,
+    not at the address.
 
 ## Steps
 
@@ -127,7 +133,7 @@ change any of these.
   all accounts.
 - [x] 2. "Email kampus" in the form for a new student and for "Ubah",
   with its messages.
-- [ ] 3. The address line in the list.
+- [x] 3. The address line in the list.
 - [ ] 4. The column "email" in "Unggah berkas" and in the template.
 - [ ] 5. A student signs in with that address, checked with a stand-in
   for Google.
