@@ -69,6 +69,8 @@ Decided while building, because the issue did not say:
 6. On a phone a value that a row does not have takes no line: a staff
    member with nothing under "Keterangan" shows no "Keterangan" line. A
    value shown as "-" on a computer still shows as "-".
+7. On a phone a long role name folds onto a second line inside its
+   badge, so it does not push the list wider than the screen.
 
 ## Steps
 
