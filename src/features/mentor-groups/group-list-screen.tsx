@@ -3,6 +3,7 @@ import { database } from "@/db/database";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
+import { MentorsHead } from "@/ui/mentors-head";
 import type { TabLinksProps } from "@/ui/tab-links";
 import { listGroupChoices } from "./group-choices";
 import { listGroups } from "./group-list";
@@ -15,7 +16,6 @@ import { GroupListFilterRow } from "./group-list-filters";
 import { GroupListTable } from "./group-list-table";
 import { readGroupNumbers } from "./group-numbers";
 import { GroupNumbersView } from "./group-numbers-view";
-import { MentorsHead } from "./mentors-head";
 
 export async function GroupListScreen({
   tabs,

@@ -1,0 +1,126 @@
+/* Two panels side by side, and one under the other where they do not fit. */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
+  gap: 0 var(--space-lg);
+  align-items: start;
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-sm);
+}
+
+/* A decree number has no blanks to fold at, and may be 100 characters long. */
+.sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+/* A long program studi name must fold, or it pushes the panel wider than a phone. */
+.batches span {
+  white-space: var(--stacked-badge-wrap);
+}
+
+.flow {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding-left: var(--space-xl);
+}
+
+.flow b {
+  display: block;
+}
+
+.flow span {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.cohorts tr:has([aria-current="true"]) {
+  background: var(--surface2);
+}
+
+.note {
+  margin: var(--space-lg) 0 0;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The note while something still holds the penetapan back. */
+.held {
+  border-color: var(--warn);
+  color: var(--ink);
+}
+
+.unusual {
+  display: block;
+  color: var(--warn);
+  font-size: var(--text-sm);
+}
+
+.members {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hint {
+  margin: var(--space-sm) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* What a step did, said above the panels of the angkatan. */
+.announced {
+  margin-top: var(--space-lg);
+}
+
+/* A line of a form that takes its whole width. */
+.whole {
+  grid-column: 1 / -1;
+}
+
+.log {
+  margin-top: var(--space-md);
+}
+
+.logTitle {
+  color: var(--muted);
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+.logLines {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A choice with a long name must not be wider than a phone. */
+.fit {
+  max-width: 100%;
+}

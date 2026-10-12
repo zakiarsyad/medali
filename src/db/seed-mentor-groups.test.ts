@@ -1,11 +1,14 @@
 import { count, eq, isNotNull, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { campusDay } from "@/academic-periods/campus-day";
 import { groupCode } from "@/ui/group-code";
 import type { Database } from "./connect";
+import { samplePeriods } from "./sample-data";
 import {
   SAMPLE_MENTORS_WITHOUT_GROUP,
   SAMPLE_REPLACED_GROUP,
 } from "./sample-mentor-groups";
+import { sampleNewIntake } from "./sample-new-intake";
 import {
   accountRoles,
   accounts,
@@ -66,6 +69,12 @@ async function mentorAccountNames(db: Database): Promise<string[]> {
   return rows.map((row) => row.name);
 }
 
+function newIntakeOfToday() {
+  const [running] = samplePeriods(campusDay());
+  if (!running) throw new Error("There are no sample periods.");
+  return sampleNewIntake(running.startYear);
+}
+
 function isLarge(group: HeldGroup): boolean {
   return group.members >= 25 && group.members <= 35;
 }
@@ -73,7 +82,7 @@ function isLarge(group: HeldGroup): boolean {
 // Loading the whole sample set takes seconds when every check runs at
 // once, and it waits behind other checks that write the same tables.
 describe("the sample mentor groups", { timeout: 20_000 }, () => {
-  it("put every sample student into a group that has a mentor of today", async () => {
+  it("put every sample student but the new angkatan into a group that has a mentor of today", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
@@ -88,7 +97,28 @@ describe("the sample mentor groups", { timeout: 20_000 }, () => {
       const [added] = await db.select({ students: count() }).from(students);
       const placed = groups.reduce((sum, group) => sum + group.members, 0);
       expect(placed).toBeGreaterThan(0);
-      expect(placed).toBe(added?.students);
+      const waiting = newIntakeOfToday().length;
+      expect(placed).toBe((added?.students ?? 0) - waiting);
+    });
+  });
+
+  it("leave the students of the new angkatan without a group", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const without = await db
+        .select({ nim: students.nim })
+        .from(students)
+        .leftJoin(
+          mentorGroupMembers,
+          eq(mentorGroupMembers.studentId, students.id),
+        )
+        .where(isNull(mentorGroupMembers.groupId));
+      const waiting = newIntakeOfToday().map((student) => student.nim);
+      expect(waiting.length).toBeGreaterThan(0);
+      expect(without.map((student) => student.nim).sort()).toEqual(
+        waiting.sort(),
+      );
     });
   });
 

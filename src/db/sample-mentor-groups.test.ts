@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { SAMPLE_ACCOUNTS, SAMPLE_STUDENTS } from "./sample-data";
-import { sampleFirstYears } from "./sample-dorms";
 import {
+  SAMPLE_MENTOR_OF_NEWEST_ONLY,
   SAMPLE_MENTORS_WITHOUT_GROUP,
   SAMPLE_REPLACED_GROUP,
   type SampleMentorGroup,
   sampleGroupHolders,
   sampleMentorGroups,
 } from "./sample-mentor-groups";
+import { sampleGroupedFirstYears } from "./sample-new-intake";
 
 const FIRST_YEAR = 2026;
-const everyone = [...SAMPLE_STUDENTS, ...sampleFirstYears(FIRST_YEAR)];
+const everyone = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(FIRST_YEAR)];
 const groups = sampleMentorGroups(everyone);
 
 const mentorNames = SAMPLE_ACCOUNTS.filter((account) =>
@@ -106,6 +107,15 @@ describe("sampleMentorGroups", () => {
     for (const name of SAMPLE_MENTORS_WITHOUT_GROUP) {
       expect(holding.has(name)).toBe(false);
     }
+  });
+
+  it("gives one Pengasuh a group of the newest angkatan and no other", () => {
+    const { name, studyProgram } = SAMPLE_MENTOR_OF_NEWEST_ONLY;
+    const held = groups.filter((group) =>
+      group.mentors.some((mentor) => mentor.name === name),
+    );
+    expect(held).toHaveLength(1);
+    expect(held[0]).toMatchObject({ cohortYear: FIRST_YEAR, studyProgram });
   });
 
   it("gives Hendra Wijaya one of the large groups", () => {

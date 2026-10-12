@@ -111,6 +111,17 @@ export async function addTestGroup(
   return added.id;
 }
 
+/** A group whose penetapan was cancelled: ended, by an account of its own. */
+export async function addTestEndedGroup(
+  db: Database,
+  studyProgramId: number,
+  group: TestGroup = {},
+): Promise<string> {
+  const endedBy = await addTestMentor(db, { name: "Akun Uji Pembatal" });
+  const ended = { endedAt: new Date(), endedBy };
+  return addTestGroup(db, studyProgramId, { ...group, ...ended });
+}
+
 export async function addTestMembers(
   db: Database,
   groupId: string,

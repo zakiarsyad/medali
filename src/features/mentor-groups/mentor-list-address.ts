@@ -1,5 +1,5 @@
+import { MENTOR_STATUSES, type MentorStatus } from "@/ui/mentor-status";
 import { firstParam, type SearchParams } from "@/ui/search-params";
-import { MENTOR_STATUSES, type MentorStatus } from "./mentor-status";
 
 export const MENTOR_LIST_ADDRESS = "/pengasuh/daftar";
 

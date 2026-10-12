@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import { withTestDatabase } from "@/db/test-database";
 import { listGroupChoices } from "./group-choices";
-import { addTestGroup, addTestProgram } from "./test-records";
+import {
+  addTestEndedGroup,
+  addTestGroup,
+  addTestProgram,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -43,6 +47,22 @@ describe("listGroupChoices", () => {
 
       expect(choices).toEqual({
         programs: [{ id: own, name: "UJIPILIH A" }],
+        cohortYears: [2025],
+      });
+    });
+  });
+
+  it("offers nothing that only an ended group holds", async () => {
+    await inTestDatabase(async (db) => {
+      const live = await addTestProgram(db, "UJIPILIH A");
+      const ended = await addTestProgram(db, "UJIPILIH B");
+      await addTestGroup(db, live, { cohortYear: 2025 });
+      await addTestEndedGroup(db, ended, { cohortYear: 2024 });
+
+      const choices = await listGroupChoices(db, onlyPrograms([live, ended]));
+
+      expect(choices).toEqual({
+        programs: [{ id: live, name: "UJIPILIH A" }],
         cohortYears: [2025],
       });
     });

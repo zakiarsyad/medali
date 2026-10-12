@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { rolesByAccount } from "@/auth/accounts";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accountRoles, accounts } from "@/db/schema";
+import { accountRoles, accounts, mentorGroups } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   holdsGroupToday,
@@ -98,6 +98,21 @@ describe("holdsGroupToday", () => {
         ["mentor"],
         REPLACED_ON,
       );
+
+      expect(await holdsGroupToday(db, mentorId)).toBe(false);
+    });
+  });
+
+  it("is false for the mentor of a group that is ended", async () => {
+    await inTestDatabase(async (db) => {
+      const manager = await addTestManager(db);
+      const mentorId = await addStaff(db, ["mentor"]);
+      const program = await addTestProgram(db, PROGRAM);
+      const groupId = await addTestGroupHeldBy(db, program, mentorId);
+      await db
+        .update(mentorGroups)
+        .set({ endedAt: new Date(), endedBy: manager.id })
+        .where(eq(mentorGroups.id, groupId));
 
       expect(await holdsGroupToday(db, mentorId)).toBe(false);
     });

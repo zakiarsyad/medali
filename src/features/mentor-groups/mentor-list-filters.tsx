@@ -1,10 +1,10 @@
 import shared from "@/ui/data-screen.module.css";
+import { MENTOR_STATUS_TITLES, MENTOR_STATUSES } from "@/ui/mentor-status";
 import styles from "./mentor-groups.module.css";
 import {
   type MentorListFilters,
   STATUS_IN_ADDRESS,
 } from "./mentor-list-address";
-import { MENTOR_STATUS_TITLES, MENTOR_STATUSES } from "./mentor-status";
 
 const SEARCH_WORDS = "Cari nama pengasuh";
 

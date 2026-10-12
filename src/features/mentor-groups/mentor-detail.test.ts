@@ -7,6 +7,7 @@ import { withTestDatabase } from "@/db/test-database";
 import { groupCode } from "@/ui/group-code";
 import { type MentorDetail, readMentor } from "./mentor-detail";
 import {
+  addTestEndedGroup,
   addTestGroup,
   addTestMembers,
   addTestMentor,
@@ -347,6 +348,31 @@ describe("readMentor", () => {
 
       expect(await readMentor(db, EVERYONE, id, null)).toEqual({
         kind: "not_found",
+      });
+    });
+  });
+
+  it("gives nothing of an ended group: no group held, no history line and no student", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "UJIPGAKHIR");
+      const id = await addTestMentor(db, { name: "Pengasuh Uji Batal" });
+      await addTestMentorRole(db, id);
+      const ended = await addTestEndedGroup(db, program);
+      await addTestMentorLine(db, ended, id);
+      const member = await addTestStudent(db, program, {
+        nim: "9900020101",
+        name: "Binaan Uji Batal",
+      });
+      await addTestMembers(db, ended, [member]);
+
+      const mentor = await found(db, EVERYONE, id);
+
+      expect(mentor).toMatchObject({
+        status: "reserve",
+        groups: [],
+        students: 0,
+        assignments: [],
+        members: [],
       });
     });
   });

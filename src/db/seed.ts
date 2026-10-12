@@ -10,6 +10,7 @@ import {
   samplePeriods,
 } from "./sample-data";
 import { sampleFirstYears } from "./sample-dorms";
+import { sampleGroupedFirstYears } from "./sample-new-intake";
 import {
   academicPeriodChanges,
   academicPeriods,
@@ -129,9 +130,10 @@ async function addSampleFirstYears(
  * Fills a freshly built database with the sample data, among it the
  * students in their first year of the running period, the dorm rooms
  * with some of the residents in them, and the kelompok pengasuhan of
- * every sample student. Every role given is
- * logged as the work of the first sample account, the sample Kepala Unit,
- * who is logged as adding themselves.
+ * every sample student but those of the new angkatan, whose groups are
+ * still to be formed. Every role given is logged as the work of the first
+ * sample account, the sample Kepala Unit, who is logged as adding
+ * themselves.
  */
 export async function fillWithSampleData(db: Database): Promise<void> {
   await db.transaction(async (tx) => {
@@ -177,7 +179,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleDorms(tx, running);
     await addSampleMentorGroups(tx, [
       ...SAMPLE_STUDENTS,
-      ...sampleFirstYears(running.startYear),
+      ...sampleGroupedFirstYears(running.startYear),
     ]);
   });
 }

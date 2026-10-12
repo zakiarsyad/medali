@@ -1,6 +1,6 @@
+import { averageSize, USUAL_SIZE_WORDS } from "@/ui/group-size";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import type { GroupNumbers } from "./group-numbers";
-import { averageSize, USUAL_SIZE_WORDS } from "./group-size";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");

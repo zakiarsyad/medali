@@ -139,7 +139,12 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
     roles: ["mentor"],
     unit: "Jurusan Akuntansi",
   },
-  { name: "Yuni Astutik", title: "S.E., M.Si.", roles: ["mentor"], unit: UPK },
+  {
+    name: "Yuni Astutik",
+    title: "S.E., M.Si.",
+    roles: ["mentor"],
+    unit: "Jurusan Pajak",
+  },
 ];
 
 /** Two made-up students in each study program, then the rest. */

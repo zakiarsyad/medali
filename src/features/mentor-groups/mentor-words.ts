@@ -1,7 +1,7 @@
 import type { accounts } from "@/db/schema";
 import { shownDay } from "@/ui/day";
 import { type GroupCodeParts, groupCode } from "@/ui/group-code";
-import { INACTIVE_REASON, type MentorStatus } from "./mentor-status";
+import { INACTIVE_REASON, type MentorStatus } from "@/ui/mentor-status";
 
 type Account = typeof accounts.$inferSelect;
 

@@ -1,7 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { mentorGroupMentors } from "@/db/schema";
+import { mentorGroupMentors, mentorGroups } from "@/db/schema";
 
 const REPLACE_FIRST =
   "Ganti pengasuh kelompok tersebut lebih dulu, lalu coba lagi.";
@@ -17,7 +17,8 @@ export function takesMentorRole(before: RoleId[], after: RoleId[]): boolean {
 
 /**
  * Whether an account is the mentor of today of any group. A group held
- * before does not count: its mentor line has ended.
+ * before does not count: its mentor line has ended. Neither does a group
+ * that is ended itself, which nobody can replace the mentor of.
  */
 export async function holdsGroupToday(
   db: Database,
@@ -26,10 +27,12 @@ export async function holdsGroupToday(
   const [held] = await db
     .select({ id: mentorGroupMentors.id })
     .from(mentorGroupMentors)
+    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorGroupMentors.groupId))
     .where(
       and(
         eq(mentorGroupMentors.mentorId, accountId),
         isNull(mentorGroupMentors.endsOn),
+        isNull(mentorGroups.endedAt),
       ),
     )
     .limit(1);

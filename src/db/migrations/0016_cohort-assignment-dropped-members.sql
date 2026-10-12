@@ -1,0 +1,1 @@
+ALTER TYPE "public"."cohort_assignment_change_action" ADD VALUE 'members_dropped';

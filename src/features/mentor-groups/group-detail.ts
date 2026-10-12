@@ -12,7 +12,7 @@ import {
 } from "@/db/schema";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { LISTED_MEMBER } from "./member-conditions";
-import { maySeeGroup } from "./visible-groups";
+import { maySeeGroup, NOT_ENDED } from "./visible-groups";
 
 /** One mentor line of a group. The NIP of the mentor is never read. */
 export interface GroupMentorLine {
@@ -125,7 +125,8 @@ function readMembers(
 
 /**
  * One group with its mentors and members, for an account with this row
- * limit. A group outside the account's rows is refused, and nothing of it
+ * limit. An ended group is not found, as one that never was. A group
+ * outside the account's rows is refused, and nothing of it
  * is read beyond its program studi. `detailVisible` holds the students
  * whose detail the account may open, or null for none: an account may
  * read a group and still not open the detail of each of its members.
@@ -142,7 +143,7 @@ export async function readGroup(
     .select(GROUP)
     .from(mentorGroups)
     .innerJoin(studyPrograms, eq(studyPrograms.id, mentorGroups.studyProgramId))
-    .where(eq(mentorGroups.id, id));
+    .where(and(eq(mentorGroups.id, id), NOT_ENDED));
   if (!found) return NOT_FOUND;
   const { studyProgramId, ...group } = found;
   if (!maySeeGroup(limit, studyProgramId)) return { kind: "refused" };

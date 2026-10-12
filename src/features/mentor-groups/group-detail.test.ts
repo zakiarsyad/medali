@@ -6,6 +6,7 @@ import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readGroup } from "./group-detail";
 import {
+  addTestEndedGroup,
   addTestGroup,
   addTestMembers,
   addTestMentor,
@@ -200,6 +201,17 @@ describe("readGroup", () => {
 
       expect(await readGroup(db, onlyPrograms([]), id, null)).toEqual({
         kind: "refused",
+      });
+    });
+  });
+
+  it("answers not found for an ended group", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "UJIRINCIAKHIR");
+      const ended = await addTestEndedGroup(db, program);
+
+      expect(await readGroup(db, EVERYONE, ended, null)).toEqual({
+        kind: "not_found",
       });
     });
   });
