@@ -170,7 +170,7 @@ change any of these.
   every page and action uses that account.
 - [x] 3. "Keluar", session expiry, and removed accounts lose access.
 - [x] 4. Refusal messages and the sign-in log.
-- [ ] 5. Pengguna dan peran accepts campus addresses only, once the
+- [x] 5. Pengguna dan peran accepts campus addresses only, once the
   ending is set.
 - [ ] 6. Where Ganti peran is off, pages need sign-in and the app refuses
   to start without its settings; where it is on, both ways work. The

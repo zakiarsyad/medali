@@ -7,6 +7,7 @@ import { type Account, isAccountId } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { ROLES } from "@/auth/roles";
 import { database } from "@/db/database";
+import { readCampusEmailEnding } from "@/settings";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { parseNewAccount, parseRoleChange } from "./account-input";
@@ -35,15 +36,18 @@ export async function addAccountAction(
   form: FormData,
 ): Promise<FormState> {
   const manager = await userManager();
-  const parsed = parseNewAccount({
-    name: text(form, "name"),
-    title: text(form, "title"),
-    nip: text(form, "nip"),
-    email: text(form, "email"),
-    roles: texts(form, "roles"),
-    studyProgramId: text(form, "studyProgramId"),
-    unit: text(form, "unit"),
-  });
+  const parsed = parseNewAccount(
+    {
+      name: text(form, "name"),
+      title: text(form, "title"),
+      nip: text(form, "nip"),
+      email: text(form, "email"),
+      roles: texts(form, "roles"),
+      studyProgramId: text(form, "studyProgramId"),
+      unit: text(form, "unit"),
+    },
+    readCampusEmailEnding(),
+  );
   if (!parsed.ok) return { error: parsed.error, done: null };
 
   const added = await addAccount(database(), parsed.value, manager.id);

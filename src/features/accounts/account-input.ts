@@ -1,4 +1,5 @@
 import { isAccountId } from "@/auth/accounts";
+import { isCampusEmail } from "@/auth/campus-email";
 import type { Parsed } from "@/parsed";
 import { isManagedRole, type ManagedRole } from "./managed-roles";
 
@@ -75,12 +76,23 @@ function parseProgram(
   return { ok: true, value: Number(studyProgramId) };
 }
 
-export function parseNewAccount(fields: NewAccountFields): Parsed<NewAccount> {
+/**
+ * Checks a new account. `campusEnding` is the campus address ending from
+ * the settings: once it is set the email must end with it, because no
+ * other address can sign in. While it is empty any address is taken.
+ */
+export function parseNewAccount(
+  fields: NewAccountFields,
+  campusEnding: string,
+): Parsed<NewAccount> {
   const name = fields.name.trim();
   if (name.length < 3) return { ok: false, error: "Isi nama lengkap." };
   const email = fields.email.trim().toLowerCase();
   if (!EMAIL.test(email)) {
     return { ok: false, error: "Isi email kedinasan yang benar." };
+  }
+  if (campusEnding !== "" && !isCampusEmail(email, campusEnding)) {
+    return { ok: false, error: "Gunakan alamat email kampus." };
   }
   const nip = optional(fields.nip);
   if (nip !== null && !NIP.test(nip)) {
