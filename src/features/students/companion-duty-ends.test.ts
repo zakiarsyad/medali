@@ -98,6 +98,34 @@ describe("the duty of a kakak pendamping", () => {
     },
   );
 
+  it.each([
+    ["Pembibitan", { isSeedling: true }],
+    ["Internasional", { isInternational: true }],
+  ])(
+    "ends, and the room is left, when the student becomes %s and so lives in a dorm",
+    async (_what, change) => {
+      await inTestDatabase(async (db) => {
+        const { staff, input, studentId } = await addPlacedCompanion(db);
+
+        const changed = await changeStudent(db, staff, { ...input, ...change });
+
+        expect(changed.ok).toBe(true);
+        expect(await dutyOf(db, studentId)).toEqual(ENDED);
+      });
+    },
+  );
+
+  it("ends, and the room is left, when the jenis kelamin no longer fits the dorm served", async () => {
+    await inTestDatabase(async (db) => {
+      const { staff, input, studentId } = await addPlacedCompanion(db);
+
+      const changed = await changeStudent(db, staff, { ...input, sex: "male" });
+
+      expect(changed.ok).toBe(true);
+      expect(await dutyOf(db, studentId)).toEqual(ENDED);
+    });
+  });
+
   it("goes on, in the same room, when a student who stays active is changed", async () => {
     await inTestDatabase(async (db) => {
       const { staff, input, studentId, roomId } = await addPlacedCompanion(db);

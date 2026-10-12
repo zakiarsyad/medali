@@ -1,7 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
 import { rolesByAccount } from "@/auth/accounts";
-import { endCompanionDuty } from "@/db/companion-duty";
+import { endCompanionDuty, settleCompanionDuty } from "@/db/companion-duty";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
@@ -17,7 +17,9 @@ export const NOT_FOUND = {
 /**
  * Changes a student put in through Pengguna baru mahasiswa, found by NIM.
  * The NIM itself stays, and so does who put the student in, when and how.
- * A student who is no longer active stops being kakak pendamping.
+ * A kakak pendamping whose changed data no longer fits the duty stops
+ * being one: no longer active, living in a dorm now, or not of the jenis
+ * kelamin of the dorm they serve.
  */
 export async function changeStudent(
   db: Database,
@@ -33,7 +35,7 @@ export async function changeStudent(
       .where(and(eq(students.nim, nim), ADDED_HERE))
       .returning({ id: students.id });
     if (!changed) return NOT_FOUND;
-    if (fields.status !== "active") await endCompanionDuty(tx, changed.id);
+    await settleCompanionDuty(tx, changed.id);
     await tx
       .update(accounts)
       .set({ name: fields.name })
