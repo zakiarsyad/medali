@@ -51,7 +51,7 @@ function StudentRow({
   const categories = CATEGORIES.filter(({ field }) => student[field]);
   return (
     <tr>
-      <td>
+      <td data-title="Mahasiswa">
         <b>{student.name}</b>
         <small className={shared.detail}>
           {student.nim} · {SEX_LABELS[student.sex]}
@@ -62,17 +62,17 @@ function StudentRow({
           </span>
         ))}
       </td>
-      <td>
+      <td data-title="Program studi">
         {student.studyProgram}
         <small className={shared.detail}>{pathAndClass(student)}</small>
       </td>
-      <td>{student.cohortYear}</td>
-      <td>
+      <td data-title="Angkatan">{student.cohortYear}</td>
+      <td data-title="Status">
         <span className={`${styles.status} ${STATUS_STYLES[student.status]}`}>
           {STATUS_LABELS[student.status]}
         </span>
       </td>
-      <td>
+      <td data-title="Diinput">
         <span className={shared.detail}>
           {student.inputAt ? DAY.format(student.inputAt) : "-"} ·{" "}
           {student.inputBy ?? "-"}
@@ -104,7 +104,7 @@ export function StudentTable({
 }) {
   return (
     <div className={shared.tableWrap}>
-      <table className={shared.table}>
+      <table className={`${shared.table} ${shared.stacked}`}>
         <thead>
           <tr>
             <th>Mahasiswa</th>
