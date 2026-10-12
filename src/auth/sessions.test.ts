@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { accountRoles, accounts, sessions } from "@/db/schema";
+import { accountRoles, accounts, sessions, signInLog } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { newSessionToken } from "./session-token";
 import { endSession, sessionAccount, startSession } from "./sessions";
@@ -161,8 +161,21 @@ describe("endSession", () => {
       const accountId = await addBudi(db);
       const token = await startSession(db, accountId, NOW);
 
-      expect(await endSession(db, token)).toBe(accountId);
+      expect(await endSession(db, token, NOW)).toBe(accountId);
       expect(await sessionAccount(db, token, NOW)).toBeNull();
+    });
+  });
+
+  it("writes the sign-out to the sign-in log, with the account", async () => {
+    await inTestDatabase(async (db) => {
+      const accountId = await addBudi(db);
+      const token = await startSession(db, accountId, NOW);
+
+      await endSession(db, token, later(1));
+
+      expect(await db.select().from(signInLog)).toMatchObject([
+        { result: "signed_out", accountId, happenedAt: later(1) },
+      ]);
     });
   });
 
@@ -172,7 +185,7 @@ describe("endSession", () => {
       const here = await startSession(db, accountId, NOW);
       const elsewhere = await startSession(db, accountId, NOW);
 
-      await endSession(db, here);
+      await endSession(db, here, NOW);
 
       expect(await sessionAccount(db, elsewhere, NOW)).not.toBeNull();
     });
@@ -186,8 +199,9 @@ describe("endSession", () => {
       const accountId = await addBudi(db);
       await startSession(db, accountId, NOW);
 
-      expect(await endSession(db, token)).toBeNull();
+      expect(await endSession(db, token, NOW)).toBeNull();
       expect(await lastSeenOf(db, accountId)).toHaveLength(1);
+      expect(await db.select().from(signInLog)).toEqual([]);
     });
   });
 });

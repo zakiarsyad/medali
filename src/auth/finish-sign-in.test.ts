@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { sessions } from "@/db/schema";
+import { sessions, signInLog } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   type AddressConfirmer,
@@ -47,6 +47,16 @@ function finish(
   return finishSignIn(db, setup, back, NOW);
 }
 
+function logLines(db: Database) {
+  return db
+    .select({
+      result: signInLog.result,
+      accountId: signInLog.accountId,
+      happenedAt: signInLog.happenedAt,
+    })
+    .from(signInLog);
+}
+
 describe("finishSignIn", () => {
   it("signs in the account that holds the confirmed campus address", async () => {
     await inTestDatabase(async (db) => {
@@ -64,6 +74,9 @@ describe("finishSignIn", () => {
       const account = await sessionAccount(db, finished.sessionToken, NOW);
       expect(account?.id).toBe(accountId);
       expect(account?.roles).toEqual(["mentor", "assessor"]);
+      expect(await logLines(db)).toEqual([
+        { result: "signed_in", accountId, happenedAt: NOW },
+      ]);
     });
   });
 
@@ -107,19 +120,25 @@ describe("finishSignIn", () => {
       "refused_no_account",
     ],
     ["an answer that cannot be trusted", null, "failed"],
-  ])("refuses %s and signs nobody in", async (_kind, answer, result) => {
-    await inTestDatabase(async (db) => {
-      await addTestAccount(db, { email: "budi@kampus.example" });
-      await addTestAccount(db, { email: "orang@luar.example" });
-      await addTestAccount(db, {
-        email: "lama@kampus.example",
-        deletedAt: NOW,
-      });
+  ])(
+    "refuses %s, signs nobody in, and logs it without naming anyone",
+    async (_kind, answer, result) => {
+      await inTestDatabase(async (db) => {
+        await addTestAccount(db, { email: "budi@kampus.example" });
+        await addTestAccount(db, { email: "orang@luar.example" });
+        await addTestAccount(db, {
+          email: "lama@kampus.example",
+          deletedAt: NOW,
+        });
 
-      expect(await finish(db, answer)).toEqual({ result });
-      expect(await db.select().from(sessions)).toEqual([]);
-    });
-  });
+        expect(await finish(db, answer)).toEqual({ result });
+        expect(await db.select().from(sessions)).toEqual([]);
+        expect(await logLines(db)).toEqual([
+          { result, accountId: null, happenedAt: NOW },
+        ]);
+      });
+    },
+  );
 
   it.each([
     ["no code, as when the person cancels at Google", { code: null }],
@@ -143,6 +162,9 @@ describe("finishSignIn", () => {
 
       expect(finished).toEqual({ result: "failed" });
       expect(asked).toEqual([]);
+      expect(await logLines(db)).toEqual([
+        { result: "failed", accountId: null, happenedAt: NOW },
+      ]);
     });
   });
 

@@ -8,6 +8,6 @@ export async function signOut(): Promise<void> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return;
-  await endSession(database(), token);
+  await endSession(database(), token, new Date());
   jar.delete(SESSION_COOKIE);
 }

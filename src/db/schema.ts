@@ -14,6 +14,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
+import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -33,6 +34,8 @@ export const roleChangeAction = pgEnum("role_change_action", [
   "roles_changed",
   "removed",
 ]);
+
+export const signInResult = pgEnum("sign_in_result", SIGN_IN_RESULTS);
 
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
@@ -167,6 +170,19 @@ export const sessions = pgTable("sessions", {
     .references(() => accounts.id),
   createdAt: timestamp({ withTimezone: true }).notNull(),
   lastSeenAt: timestamp({ withTimezone: true }).notNull(),
+});
+
+/**
+ * Every sign-in, sign-out and refusal. A refused line names no account
+ * and no address. Rows here cannot be changed or deleted; the database
+ * refuses it.
+ */
+export const signInLog = pgTable("sign_in_log", {
+  id: uuid().primaryKey().defaultRandom(),
+  happenedAt: timestamp({ withTimezone: true }).notNull(),
+  result: signInResult().notNull(),
+  /** Set for a sign-in and a sign-out only. */
+  accountId: uuid().references(() => accounts.id),
 });
 
 /**

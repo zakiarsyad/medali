@@ -4,6 +4,7 @@ import type { ConfirmedAddress } from "./google-token";
 import { startSession } from "./sessions";
 import type { SignInAttempt } from "./sign-in-attempt";
 import { decideSignIn } from "./sign-in-decision";
+import { logSignIn } from "./sign-in-log";
 import type { SignInRefusal } from "./sign-in-results";
 
 /** What Google is given to say whose sign-in a code stands for. */
@@ -55,6 +56,7 @@ async function confirmedAddress(
 /**
  * Finishes a sign-in after Google sent the person back: signs in the
  * account that holds the confirmed address, or says why nobody is.
+ * However it ends, one line goes to the sign-in log.
  */
 export async function finishSignIn(
   db: Database,
@@ -67,6 +69,7 @@ export async function finishSignIn(
     ? await activeAccountIdByEmail(db, answer.email)
     : null;
   const decision = decideSignIn(answer, setup?.campusEnding ?? "", accountId);
+  await logSignIn(db, decision, now);
   if (decision.result !== "signed_in") return decision;
   const sessionToken = await startSession(db, decision.accountId, now);
   return { result: "signed_in", sessionToken };

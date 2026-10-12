@@ -2,12 +2,13 @@ import { BareScreen } from "@/ui/bare-screen";
 import { SignInButton } from "./sign-in-button";
 import styles from "./sign-in-screen.module.css";
 
-export function SignInScreen() {
+/** `message` says why the last sign-in was refused, when one was. */
+export function SignInScreen({ message }: { message: string | null }) {
   return (
     <BareScreen>
       <h1 className={styles.name}>MEDALI</h1>
       <p className={styles.campus}>PKN STAN</p>
-      <SignInButton />
+      <SignInButton message={message} />
     </BareScreen>
   );
 }

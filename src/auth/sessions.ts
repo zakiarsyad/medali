@@ -12,6 +12,7 @@ import {
   newSessionToken,
   sessionTokenHash,
 } from "./session-token";
+import { logSignIn } from "./sign-in-log";
 
 /**
  * Signs an account in, and gives the token its browser will hold. The
@@ -69,17 +70,21 @@ export async function sessionAccount(
 }
 
 /**
- * Ends the session of a token. It gives the account that was signed in,
- * or null when the token opened no session.
+ * Ends the session of a token, and writes the sign-out to the sign-in
+ * log. It gives the account that was signed in, or null when the token
+ * opened no session; then nothing is written.
  */
 export async function endSession(
   db: Database,
   token: string,
+  now: Date,
 ): Promise<string | null> {
   if (!isSessionToken(token)) return null;
   const [ended] = await db
     .delete(sessions)
     .where(eq(sessions.tokenHash, sessionTokenHash(token)))
     .returning({ accountId: sessions.accountId });
-  return ended?.accountId ?? null;
+  if (!ended) return null;
+  await logSignIn(db, { result: "signed_out", ...ended }, now);
+  return ended.accountId;
 }
