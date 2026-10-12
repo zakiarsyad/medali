@@ -8,6 +8,7 @@ import { currentAccount } from "@/auth/current-account";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
+import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
@@ -158,7 +159,13 @@ export async function saveStudentFileAction(
   if (!file.ok) return file;
   const db = database();
   const context = await inputContext(db);
-  const saved = await saveStudentFile(db, inputter, file.value, context);
+  const saved = await saveStudentFile(
+    db,
+    fileStorage(),
+    inputter,
+    file.value,
+    context,
+  );
   if (!saved.ok) return saved;
   refreshScreens();
   const message = savedMessage(file.value.name, saved.value);
