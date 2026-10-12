@@ -1,4 +1,4 @@
-import type { accounts, mentorGroupMentors } from "@/db/schema";
+import type { mentorGroupMentors } from "@/db/schema";
 import { shownDay } from "@/ui/day";
 
 type MentorLine = Pick<
@@ -28,11 +28,4 @@ export function mentorLineWords(line: MentorLine): string {
   if (line.endsOn === null) return `Sejak ${from}. Sedang mengasuh.`;
   const reason = line.endReason ?? "-";
   return `${from} sampai ${shownDay(line.endsOn)}. Alasan: ${reason}.`;
-}
-
-/** A mentor's name, with the gelar after it when there is one. */
-export function mentorLabel(
-  mentor: Pick<typeof accounts.$inferSelect, "name" | "title">,
-): string {
-  return mentor.title ? `${mentor.name}, ${mentor.title}` : mentor.name;
 }

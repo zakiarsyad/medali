@@ -53,6 +53,7 @@ function StudentRow({
         </small>
       </td>
       <td data-title="Provinsi">{student.province ?? "-"}</td>
+      <td data-title="Pengasuh">{student.mentorName ?? "-"}</td>
     </PressableRow>
   );
 }
@@ -77,6 +78,7 @@ export function StudentListTable({
             <th>Program studi</th>
             <th>Angkatan</th>
             <th>Provinsi</th>
+            <th>Pengasuh</th>
           </tr>
         </thead>
         <tbody>

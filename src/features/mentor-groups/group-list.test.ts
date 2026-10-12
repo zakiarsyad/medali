@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { groupCode } from "@/ui/group-code";
 import { PAGE_SIZE } from "@/ui/list-pages";
-import { groupCode } from "./group-code";
 import { listGroups } from "./group-list";
 import { type GroupListFilters, NO_FILTERS } from "./group-list-address";
 import {

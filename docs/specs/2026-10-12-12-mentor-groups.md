@@ -139,6 +139,16 @@ Decided while building, because the issue did not say:
     number of academic classes counts the kelas of Aktif members only.
 18. A group left without a mentor shows "-" in the list, and its page
     says it has no mentor yet.
+19. In the student detail the mentor's name is the link to the group's
+    page, and the group code under it is plain words. The prototype
+    links the name to the mentor's own page, which is not built yet.
+    "Diasuh sejak" is the day the mentor of today took the group.
+20. A student whose group is left without a mentor shows "Belum
+    ditetapkan" with the group code under it, and the earlier mentors
+    when there are any.
+21. The Pengasuh column on Mahasiswa shows the mentor's name without
+    the gelar and not as a link, and "-" for a student without a mentor,
+    as in the prototype.
 
 ## Steps
 
@@ -149,7 +159,7 @@ Decided while building, because the issue did not say:
 - [x] 3. The Kelompok pengasuhan tab with its numbers, filters and
   paging.
 - [x] 4. The group page with mentor, history and members.
-- [ ] 5. The Pengasuh line in the student detail and the column on
+- [x] 5. The Pengasuh line in the student detail and the column on
   Mahasiswa.
 - [ ] 6. Refusals for other roles and other programs, and the phone
   layout.

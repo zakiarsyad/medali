@@ -3,17 +3,20 @@ import { ModalDialog } from "@/ui/modal-dialog";
 import type { AskedDetail } from "./asked-detail";
 import type { RunningPeriod } from "./semester-now";
 import { StudentDetailView } from "./student-detail-view";
+import type { GroupAddressOf } from "./student-mentor-group";
 
 /** The detail of one student, over the list it was opened from. */
 export function StudentDetailDialog({
   detail,
   period,
   closeAddress,
+  groupAddressOf,
 }: {
   detail: AskedDetail;
   period: RunningPeriod;
   /** The address of the list as it was left. */
   closeAddress: string;
+  groupAddressOf: GroupAddressOf;
 }) {
   if (detail.kind === "not_found") {
     return (
@@ -31,7 +34,11 @@ export function StudentDetailDialog({
   }
   return (
     <ModalDialog label="Profil mahasiswa" closeAddress={closeAddress}>
-      <StudentDetailView student={detail.student} period={period} />
+      <StudentDetailView
+        student={detail.student}
+        period={period}
+        groupAddressOf={groupAddressOf}
+      />
     </ModalDialog>
   );
 }

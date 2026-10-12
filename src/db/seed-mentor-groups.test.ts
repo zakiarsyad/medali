@@ -1,6 +1,6 @@
 import { count, eq, isNotNull, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { groupCode } from "@/features/mentor-groups/group-code";
+import { groupCode } from "@/ui/group-code";
 import type { Database } from "./connect";
 import {
   SAMPLE_MENTORS_WITHOUT_GROUP,

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { groupCode } from "@/ui/group-code";
 import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
-import { groupCode } from "./group-code";
 import type { ListedGroup } from "./group-list";
 import { groupAddress } from "./group-list-address";
 import { historyWords } from "./mentor-history";

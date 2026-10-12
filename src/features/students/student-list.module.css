@@ -54,6 +54,11 @@
   font-weight: var(--weight-semibold);
 }
 
+/* The line under a value is read as detail, not as the value itself. */
+.facts dd small {
+  font-weight: initial;
+}
+
 .wideFact {
   grid-column: 1 / -1;
 }

@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  currentMentor,
-  historyWords,
-  mentorLabel,
-  mentorLineWords,
-} from "./mentor-history";
+import { currentMentor, historyWords, mentorLineWords } from "./mentor-history";
 
 const ENDED = {
   startsOn: "2024-09-01",
@@ -39,19 +34,6 @@ describe("mentorLineWords", () => {
     expect(mentorLineWords({ ...ENDED, endReason: null })).toBe(
       "1 Sep 2024 sampai 31 Agu 2025. Alasan: -.",
     );
-  });
-});
-
-describe("mentorLabel", () => {
-  it("writes the gelar after the name when there is one", () => {
-    expect(mentorLabel({ name: "Sari Uji", title: "M.Si." })).toBe(
-      "Sari Uji, M.Si.",
-    );
-  });
-
-  it("writes the name alone without a gelar", () => {
-    expect(mentorLabel({ name: "Sari Uji", title: null })).toBe("Sari Uji");
-    expect(mentorLabel({ name: "Sari Uji", title: "" })).toBe("Sari Uji");
   });
 });
 

@@ -1,8 +1,9 @@
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { mentorLabel } from "@/ui/mentor-label";
 import type { GroupMentorLine } from "./group-detail";
 import styles from "./mentor-groups.module.css";
-import { currentMentor, mentorLabel, mentorLineWords } from "./mentor-history";
+import { currentMentor, mentorLineWords } from "./mentor-history";
 
 const BETWEEN = " · ";
 

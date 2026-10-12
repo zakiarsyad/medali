@@ -10,7 +10,7 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
-import type { GroupCodeParts } from "./group-code";
+import type { GroupCodeParts } from "@/ui/group-code";
 import { LISTED_MEMBER } from "./member-conditions";
 import { maySeeGroup } from "./visible-groups";
 

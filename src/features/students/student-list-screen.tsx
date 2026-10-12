@@ -20,17 +20,20 @@ import { StudentListBar } from "./student-list-bar";
 import { StudentListFilterRow } from "./student-list-filters";
 import { StudentListPager } from "./student-list-pager";
 import { StudentListTable } from "./student-list-table";
+import type { GroupAddressOf } from "./student-mentor-group";
 
 export async function StudentListScreen({
   limit,
   params,
   detail,
+  groupAddressOf,
 }: {
   /** Which student rows the account that opened the page may see. */
   limit: RowLimit;
   params: StudentListParams;
   /** The detail the address asks to open over the list, or null for none. */
   detail: AskedDetail | null;
+  groupAddressOf: GroupAddressOf;
 }) {
   const db = database();
   const { filters } = params;
@@ -90,6 +93,7 @@ export async function StudentListScreen({
           detail={detail}
           period={period}
           closeAddress={studentListAddress(filters, list.page)}
+          groupAddressOf={groupAddressOf}
         />
       )}
     </>

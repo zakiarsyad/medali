@@ -11,6 +11,7 @@ import {
 } from "@/features/mentor-groups/group-list-address";
 import { GroupListScreen } from "@/features/mentor-groups/group-list-screen";
 import { GroupScreen } from "@/features/mentor-groups/group-screen";
+import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { askedDetail } from "@/features/students/asked-detail";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 
@@ -46,6 +47,7 @@ async function GroupPage({
           detail={detail}
           period={await readRunningPeriod(database())}
           closeAddress={groupAddress(groupId)}
+          groupAddressOf={(group) => openGroupAddress(account, group)}
         />
       )}
     </>

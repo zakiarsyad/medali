@@ -22,8 +22,8 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import type { GroupCodeParts } from "@/ui/group-code";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
-import type { GroupCodeParts } from "./group-code";
 import type { GroupListFilters } from "./group-list-address";
 import { COUNTED_MEMBER } from "./member-conditions";
 import { groupsVisibleTo } from "./visible-groups";
