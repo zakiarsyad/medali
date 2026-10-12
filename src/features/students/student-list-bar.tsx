@@ -3,6 +3,7 @@ import { entryPath } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
+import { FilterFold } from "./filter-fold";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
 import {
   agencyChoices,
@@ -70,7 +71,7 @@ export function StudentListBar({
 }) {
   return (
     <section className={shared.panel} aria-label="Filter">
-      <div className={shared.form}>
+      <FilterFold inUse={topFiltersInUse(filters)}>
         <CountedSelect
           label="Program studi"
           name="prodi"
@@ -113,7 +114,7 @@ export function StudentListBar({
           choices={agencyChoices(counts)}
           chosen={filters.originAgency ?? ""}
         />
-      </div>
+      </FilterFold>
       <p className={styles.found}>
         <span>
           <b>{found.toLocaleString("id-ID")}</b> {foundWords(filters)}

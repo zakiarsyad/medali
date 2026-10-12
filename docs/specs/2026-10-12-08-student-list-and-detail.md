@@ -125,5 +125,5 @@ Decided while building, because the issue did not say:
   rows, with its checks.
 - [x] 4. The student detail panel opens from a row and closes back to
   the same list.
-- [ ] 5. Phone layout for the list, the filters and the detail.
+- [x] 5. Phone layout for the list, the filters and the detail.
 

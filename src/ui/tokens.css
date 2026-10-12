@@ -124,6 +124,10 @@
   --dialog-height: auto;
   --dialog-max-size: calc(100% - 2 * var(--space-xl));
   --dialog-radius: var(--radius-lg);
+
+  /* Filters that a phone folds under one button are always shown here. */
+  --filter-fold-button-display: none;
+  --filter-folded-display: block;
 }
 
 /*
@@ -157,6 +161,12 @@
     --stacked-actions-justify: flex-start;
     --stacked-empty-padding: 0;
     --stacked-badge-wrap: normal;
+    --dialog-width: 100%;
+    --dialog-height: 100%;
+    --dialog-max-size: 100%;
+    --dialog-radius: 0;
+    --filter-fold-button-display: inline-block;
+    --filter-folded-display: none;
   }
 }
 
