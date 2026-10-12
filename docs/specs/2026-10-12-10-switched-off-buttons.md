@@ -61,5 +61,5 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. A switched-off button has its own look, named once and used by
+- [x] 1. A switched-off button has its own look, named once and used by
   every button style.
