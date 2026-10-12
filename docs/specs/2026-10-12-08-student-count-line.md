@@ -49,5 +49,5 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The line with the number of students found names the status that
+- [x] 1. The line with the number of students found names the status that
   is counted.
