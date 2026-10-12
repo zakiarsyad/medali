@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { DORM_IDS, DORM_NAMES, DORM_RESIDENTS, type DormId } from "./dorms";
+import {
+  DORM_IDS,
+  DORM_NAMES,
+  DORM_RESIDENTS,
+  type DormId,
+} from "@/dorms/dorms";
 import type { CompanionCounts } from "./room-companions";
 import type { ResidentCounts, Room } from "./room-list";
 import styles from "./rooms.module.css";

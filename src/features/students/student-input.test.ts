@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001200 to 9900001299.
 import { describe, expect, it } from "vitest";
 import {
   cohortChoices,
@@ -14,7 +15,7 @@ const context = {
 };
 
 const valid: StudentFields = {
-  nim: "9900000301",
+  nim: "9900001201",
   name: "  Mahasiswa   Contoh ",
   studyProgramId: "7",
   entryPath: "transfer",
@@ -46,7 +47,7 @@ describe("parseStudent", () => {
     expect(parseStudent(valid, context)).toEqual({
       ok: true,
       value: {
-        nim: "9900000301",
+        nim: "9900001201",
         name: "Mahasiswa Contoh",
         studyProgramId: 7,
         entryPath: "transfer",
@@ -94,9 +95,9 @@ describe("parseStudent", () => {
   });
 
   it.each([
-    ["a NIM of 9 digits", { nim: "990000030" }, "NIM harus 10 digit angka."],
-    ["a NIM of 11 digits", { nim: "99000003011" }, "NIM harus 10 digit angka."],
-    ["a NIM with a letter", { nim: "99000003O1" }, "NIM harus 10 digit angka."],
+    ["a NIM of 9 digits", { nim: "990000120" }, "NIM harus 10 digit angka."],
+    ["a NIM of 11 digits", { nim: "99000012011" }, "NIM harus 10 digit angka."],
+    ["a NIM with a letter", { nim: "99000012O1" }, "NIM harus 10 digit angka."],
     ["a name of 2 letters", { name: " Al " }, "Nama wajib diisi."],
     ["no name", { name: "" }, "Nama wajib diisi."],
     [

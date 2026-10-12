@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
 const MEMBER: GroupMember = {
   id: "00000000-0000-4000-8000-000000000002",
-  nim: "9900019001",
+  nim: "9900019101",
   name: "Anggota Uji Ani",
   className: "3-02",
   cohortYear: 2024,

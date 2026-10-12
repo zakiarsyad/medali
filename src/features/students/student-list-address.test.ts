@@ -1,8 +1,11 @@
+// Sample NIMs of this file: 9900001700 to 9900001799.
 import { describe, expect, it } from "vitest";
 import {
   NO_AGENCY,
+  NO_DORM,
   NO_FILTERS,
   readStudentListParams,
+  type StudentListFilters,
   studentDetailAddress,
   studentListAddress,
   topFiltersInUse,
@@ -26,8 +29,23 @@ describe("readStudentListParams", () => {
       stageNo: null,
       province: null,
       originAgency: null,
+      dorm: null,
     });
   });
+
+  it("reads the asrama: a dorm, or the students of none", () => {
+    expect(readStudentListParams({ asrama: "cipta_bakti" }).filters.dorm).toBe(
+      "cipta_bakti",
+    );
+    expect(readStudentListParams({ asrama: "non" }).filters.dorm).toBe(NO_DORM);
+  });
+
+  it.each(["", "Asrama Dana Rakca", "dana", "non ", "1 or 1=1"])(
+    "falls back to every asrama for %j",
+    (asrama) => {
+      expect(readStudentListParams({ asrama }).filters.dorm).toBeNull();
+    },
+  );
 
   it("reads the tahap, the provinsi and the instansi", () => {
     const read = readStudentListParams({
@@ -156,12 +174,13 @@ describe("studentListAddress", () => {
       stageNo: 2,
       province: "DKI Jakarta",
       originAgency: NO_AGENCY,
+      dorm: "dana_rakca" as const,
     };
 
     const address = studentListAddress(filters);
 
     expect(address).toBe(
-      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended&tahap=2&provinsi=DKI+Jakarta&instansi=tanpa",
+      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended&tahap=2&provinsi=DKI+Jakarta&instansi=tanpa&asrama=dana_rakca",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readStudentListParams(Object.fromEntries(search)).filters).toEqual(
@@ -197,6 +216,13 @@ describe("the filters of the top bar", () => {
 
     expect(topFiltersInUse(more)).toBe(5);
     expect(withoutTopFilters(more)).toEqual(withoutTopFilters(chosen));
+  });
+
+  it("count the asrama too, and clear it with the others", () => {
+    const inDorm: StudentListFilters = { ...chosen, dorm: NO_DORM };
+
+    expect(topFiltersInUse(inDorm)).toBe(3);
+    expect(withoutTopFilters(inDorm)).toEqual(withoutTopFilters(chosen));
   });
 
   it("are cleared alone, and the search and the status stay", () => {
@@ -246,8 +272,8 @@ describe("the student whose detail is open", () => {
   });
 
   it("is kept as asked when it is no id, and cut when it is long", () => {
-    expect(readStudentListParams({ profil: "9900000501" }).detailId).toBe(
-      "9900000501",
+    expect(readStudentListParams({ profil: "9900001701" }).detailId).toBe(
+      "9900001701",
     );
     expect(
       readStudentListParams({ profil: "x".repeat(500) }).detailId,

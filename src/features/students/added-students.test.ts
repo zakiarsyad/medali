@@ -1,5 +1,7 @@
+// Sample NIMs of this file: 9900000200 to 9900000299, and 9900100000 to 9900100199.
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { studentBatches, studentBatchFiles } from "@/db/schema";
+import { studentBatches, studentBatchFiles, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { countStudents, LIST_LIMIT, listAddedStudents } from "./added-students";
 import { addTestActor, addTestProgram, addTestStudent } from "./test-records";
@@ -8,6 +10,8 @@ const inTestDatabase = withTestDatabase();
 
 const EARLIER = new Date("2026-10-10T03:00:00Z");
 const LATER = new Date("2026-10-11T03:00:00Z");
+/** The angkatan in semester 1 or 2, as the checks have it. */
+const DORM_COHORTS = [2026];
 
 describe("listAddedStudents", () => {
   it("names the kept file of a student saved from one, and none for the others", async () => {
@@ -54,7 +58,7 @@ describe("listAddedStudents", () => {
         inputAt: LATER,
       });
 
-      const listed = await listAddedStudents(db, "Daftar Uji Berkas");
+      const listed = await listAddedStudents(db, "Daftar Uji Berkas", []);
 
       expect(file?.id).toBeTruthy();
       expect(
@@ -92,7 +96,7 @@ describe("listAddedStudents", () => {
         name: "Daftar Uji Induk",
       });
 
-      const listed = await listAddedStudents(db, "Daftar Uji");
+      const listed = await listAddedStudents(db, "Daftar Uji", []);
 
       expect(listed.matching).toBe(2);
       expect(listed.students.map((student) => student.nim)).toEqual([
@@ -130,7 +134,7 @@ describe("listAddedStudents", () => {
         deletedBy: staff.id,
       });
 
-      const listed = await listAddedStudents(db, "Dihapus Uji");
+      const listed = await listAddedStudents(db, "Dihapus Uji", []);
 
       expect(listed).toEqual({ students: [], matching: 0 });
     });
@@ -156,9 +160,9 @@ describe("listAddedStudents", () => {
         ...input,
       });
 
-      const byName = await listAddedStudents(db, "uji dua");
-      const byNim = await listAddedStudents(db, "99000002");
-      const literal = await listAddedStudents(db, "Cari%Dua");
+      const byName = await listAddedStudents(db, "uji dua", []);
+      const byNim = await listAddedStudents(db, "99000002", []);
+      const literal = await listAddedStudents(db, "Cari%Dua", []);
 
       expect(byName.students.map((s) => s.nim)).toEqual(["9900000206"]);
       expect(byNim.students.map((s) => s.nim).sort()).toEqual([
@@ -183,10 +187,58 @@ describe("listAddedStudents", () => {
         });
       }
 
-      const listed = await listAddedStudents(db, "Batas Uji");
+      const listed = await listAddedStudents(db, "Batas Uji", []);
 
       expect(listed.students).toHaveLength(LIST_LIMIT);
       expect(listed.matching).toBe(LIST_LIMIT + 1);
+    });
+  });
+
+  it("gives each student the dorm they live in today, and none to the others", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Daftar");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const input = {
+        inputBy: staff.id,
+        inputSource: "form" as const,
+        inputAt: LATER,
+      };
+      await addTestStudent(db, program, {
+        nim: "9900000231",
+        name: "Asrama Uji A",
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000232",
+        name: "Asrama Uji B",
+        sex: "male",
+        cohortYear: 2023,
+        isInternational: true,
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000233",
+        name: "Asrama Uji C",
+        cohortYear: 2023,
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000234",
+        name: "Asrama Uji D",
+        status: "on_leave",
+        ...input,
+      });
+
+      const listed = await listAddedStudents(db, "Asrama Uji", DORM_COHORTS);
+
+      expect(
+        listed.students.map((student) => [student.nim, student.dorm]),
+      ).toEqual([
+        ["9900000231", "dana_rakca"],
+        ["9900000232", "wismantara_putra"],
+        ["9900000233", null],
+        ["9900000234", null],
+      ]);
     });
   });
 });
@@ -194,7 +246,7 @@ describe("listAddedStudents", () => {
 describe("countStudents", () => {
   it("counts all students and those put in through the tab, without the removed", async () => {
     await inTestDatabase(async (db) => {
-      const before = await countStudents(db);
+      const before = await countStudents(db, []);
       const program = await addTestProgram(db, "Prodi Uji Hitung");
       const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
       const input = {
@@ -227,14 +279,84 @@ describe("countStudents", () => {
         deletedBy: staff.id,
       });
 
-      const after = await countStudents(db);
+      const after = await countStudents(db, []);
 
       expect(after).toEqual({
         total: before.total + 4,
         active: before.active + 2,
         added: before.added + 2,
         addedActive: before.addedActive + 1,
+        addedResidents: before.addedResidents,
       });
+    });
+  });
+
+  it("counts the residents among those put in through the tab and not removed", async () => {
+    await inTestDatabase(async (db) => {
+      const before = await countStudents(db, DORM_COHORTS);
+      const program = await addTestProgram(db, "Prodi Uji Hitung");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const input = {
+        inputBy: staff.id,
+        inputSource: "form" as const,
+        inputAt: LATER,
+      };
+      await addTestStudent(db, program, {
+        nim: "9900000221",
+        name: "Induk Penghuni",
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000222",
+        name: "Masuk Penghuni",
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000223",
+        name: "Masuk Pembibitan",
+        cohortYear: 2023,
+        isSeedling: true,
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000224",
+        name: "Masuk Semester Lanjut",
+        cohortYear: 2023,
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000225",
+        name: "Masuk Penghuni Dihapus",
+        ...input,
+        deletedAt: LATER,
+        deletedBy: staff.id,
+      });
+
+      const after = await countStudents(db, DORM_COHORTS);
+
+      expect(after.addedResidents).toBe(before.addedResidents + 2);
+    });
+  });
+
+  it("leaves out a student who stops being a resident, on the next read", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Hitung");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      await addTestStudent(db, program, {
+        nim: "9900000226",
+        name: "Masuk Lalu Cuti",
+        inputBy: staff.id,
+        inputSource: "form",
+        inputAt: LATER,
+      });
+      const asResident = await countStudents(db, DORM_COHORTS);
+
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.nim, "9900000226"));
+      const onLeave = await countStudents(db, DORM_COHORTS);
+
+      expect(onLeave.addedResidents).toBe(asResident.addedResidents - 1);
     });
   });
 });

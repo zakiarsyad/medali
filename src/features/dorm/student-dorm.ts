@@ -3,8 +3,8 @@ import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { studentSemester } from "@/academic-periods/student-semester";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
-import type { DormId } from "./dorms";
-import { dormOf } from "./resident-rule";
+import type { DormId } from "@/dorms/dorms";
+import { dormOf } from "@/dorms/resident-rule";
 
 /**
  * The dorm one student lives in on a day, today when none is given. Null

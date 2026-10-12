@@ -1,4 +1,14 @@
-import { and, asc, count, desc, eq, isNull, ne, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  isNull,
+  ne,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import {
@@ -8,15 +18,19 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import type { DormId } from "@/dorms/dorms";
+import { dormInSql, livesIn } from "@/dorms/resident-condition";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { CategoryField } from "./labels";
-import type { StageCohorts } from "./stage-cohorts";
+import type { ListCohorts } from "./list-cohorts";
 import { fromAgency, fromProvince, inStage } from "./stage-origin-conditions";
 import { matchesSearch } from "./student-conditions";
-import type {
-  EntryPath,
-  StatusChoice,
-  StudentListFilters,
+import {
+  type DormChoice,
+  type EntryPath,
+  NO_DORM,
+  type StatusChoice,
+  type StudentListFilters,
 } from "./student-list-address";
 import { visibleTo } from "./visible-students";
 
@@ -41,6 +55,8 @@ export interface ListedStudent {
   province: string | null;
   /** The mentor of today of the student's group. Null without one. */
   mentorName: string | null;
+  /** The dorm the student lives in today. Null for one who lives in none. */
+  dorm: DormId | null;
 }
 
 const ROW = {
@@ -90,13 +106,29 @@ function inCategory(field: CategoryField | null): SQL | undefined {
 }
 
 /**
+ * The students of one Asrama choice: the residents of a dorm, or those
+ * who live in none.
+ */
+export function ofDormChoice(choice: DormChoice, dormCohorts: number[]): SQL {
+  if (choice === NO_DORM) return sql`${dormInSql(dormCohorts)} is null`;
+  return livesIn(choice, dormCohorts);
+}
+
+function inDorm(
+  choice: DormChoice | null,
+  dormCohorts: number[],
+): SQL | undefined {
+  return choice === null ? undefined : ofDormChoice(choice, dormCohorts);
+}
+
+/**
  * The students an account may see that match every filter. The Tahapan
- * filter reads which angkatan is in which tahap now from `cohorts`.
+ * and Asrama filters read which angkatan is where now from `cohorts`.
  */
 export function found(
   limit: RowLimit,
   filters: StudentListFilters,
-  cohorts: StageCohorts,
+  cohorts: ListCohorts,
 ): SQL | undefined {
   return and(
     visibleTo(limit),
@@ -106,9 +138,10 @@ export function found(
     inProgram(filters.studyProgramId),
     byPath(filters.entryPath),
     inCategory(filters.category),
-    inStage(filters.stageNo, cohorts),
+    inStage(filters.stageNo, cohorts.stages),
     fromProvince(filters.province),
     fromAgency(filters.originAgency),
+    inDorm(filters.dorm, cohorts.dorms),
   );
 }
 
@@ -130,7 +163,7 @@ export async function listStudents(
   limit: RowLimit,
   filters: StudentListFilters,
   page: number,
-  cohorts: StageCohorts,
+  cohorts: ListCohorts,
 ): Promise<StudentPage> {
   const condition = found(limit, filters, cohorts);
   const [counted] = await db
@@ -141,7 +174,7 @@ export async function listStudents(
   const given = pageWithin(page, matching);
   if (matching === 0) return { students: [], matching, page: given };
   const rows = await db
-    .select(ROW)
+    .select({ ...ROW, dorm: dormInSql(cohorts.dorms) })
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .leftJoin(mentorGroupMembers, eq(mentorGroupMembers.studentId, students.id))

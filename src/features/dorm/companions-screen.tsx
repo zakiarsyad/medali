@@ -1,6 +1,7 @@
 import type { SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
+import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { PageHead } from "@/ui/page-head";
@@ -9,7 +10,6 @@ import { type Candidates, listCandidates } from "./companion-candidates";
 import { listCompanions } from "./companion-list";
 import { CompanionTable } from "./companion-table";
 import { type CompanionsParams, companionsAddress } from "./companions-address";
-import { readDormCohorts } from "./dorm-cohorts";
 import { NameCompanionPanel } from "./name-companion-panel";
 import styles from "./rooms.module.css";
 

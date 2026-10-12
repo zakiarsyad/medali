@@ -1,7 +1,7 @@
 import Link from "next/link";
+import type { DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { AddRoomForm } from "./add-room-form";
-import type { DormId } from "./dorms";
 import { RoomCard } from "./room-card";
 import type { RoomCompanions } from "./room-companions";
 import { FLOORS } from "./room-limits";

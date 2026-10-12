@@ -1,9 +1,10 @@
+// Sample NIMs of this file: 9900001300 to 9900001399, and 9900200000 to 9900200099.
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { PAGE_SIZE } from "@/ui/list-pages";
-import type { StageCohorts } from "./stage-cohorts";
+import type { ListCohorts } from "./list-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
 import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
@@ -18,8 +19,11 @@ const inTestDatabase = withTestDatabase();
 
 const EVERYONE: RowLimit = { kind: "all" };
 
-/** No academic period runs in these checks, so no angkatan is in a tahap. */
-const NO_STAGES: StageCohorts = new Map();
+/**
+ * No academic period runs in these checks, so no angkatan is in a tahap
+ * and none lives in the dorm.
+ */
+const NO_STAGES: ListCohorts = { stages: new Map(), dorms: [] };
 
 function onlyProgram(id: number): RowLimit {
   return { kind: "some", studyProgramIds: [id], menteesOf: [], studentIds: [] };
@@ -31,10 +35,10 @@ const ALL_STATUSES: StudentListFilters = { ...NO_FILTERS, status: "all" };
 async function addFilterRows(db: Database): Promise<RowLimit> {
   const program = await addTestProgram(db, "Prodi Uji Saring");
   const rows = [
-    { nim: "9900000321", name: "Saring Aktif", cohortYear: 2024 },
-    { nim: "9900000322", name: "Saring Cuti", status: "on_leave" as const },
-    { nim: "9900000323", name: "Saring Nonaktif", status: "inactive" as const },
-    { nim: "9900000324", name: "Lain Aktif", cohortYear: 2024 },
+    { nim: "9900001321", name: "Saring Aktif", cohortYear: 2024 },
+    { nim: "9900001322", name: "Saring Cuti", status: "on_leave" as const },
+    { nim: "9900001323", name: "Saring Nonaktif", status: "inactive" as const },
+    { nim: "9900001324", name: "Lain Aktif", cohortYear: 2024 },
   ];
   for (const row of rows) await addTestStudent(db, program, row);
   return onlyProgram(program);
@@ -55,12 +59,12 @@ describe("listStudents", () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Tabel");
       await addTestStudent(db, program, {
-        nim: "9900000312",
+        nim: "9900001312",
         name: "Tabel Uji Budi",
         status: "on_leave",
       });
       await addTestStudent(db, program, {
-        nim: "9900000311",
+        nim: "9900001311",
         name: "Tabel Uji Ani",
         entryPath: "transfer",
         originAgency: "Direktorat Jenderal Pajak",
@@ -81,7 +85,7 @@ describe("listStudents", () => {
       expect(listed.students).toEqual([
         {
           id: expect.any(String),
-          nim: "9900000311",
+          nim: "9900001311",
           name: "Tabel Uji Ani",
           status: "active",
           isAffirmation: false,
@@ -95,8 +99,9 @@ describe("listStudents", () => {
           className: "2-01",
           province: "Bali",
           mentorName: null,
+          dorm: "wismantara_putri",
         },
-        expect.objectContaining({ nim: "9900000312", status: "on_leave" }),
+        expect.objectContaining({ nim: "9900001312", status: "on_leave" }),
       ]);
     });
   });
@@ -105,11 +110,11 @@ describe("listStudents", () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Kolom Pengasuh");
       const inGroup = await addTestStudent(db, program, {
-        nim: "9900000316",
+        nim: "9900001316",
         name: "Kolom Uji Ani",
       });
       await addTestStudent(db, program, {
-        nim: "9900000317",
+        nim: "9900001317",
         name: "Kolom Uji Budi",
       });
       const mentor = await addTestActor(db, "Kolom Uji Kini", ["mentor"]);
@@ -132,8 +137,8 @@ describe("listStudents", () => {
       expect(
         listed.students.map((student) => [student.nim, student.mentorName]),
       ).toEqual([
-        ["9900000316", "Kolom Uji Kini"],
-        ["9900000317", null],
+        ["9900001316", "Kolom Uji Kini"],
+        ["9900001317", null],
       ]);
       expect(listed.matching).toBe(2);
     });
@@ -143,10 +148,10 @@ describe("listStudents", () => {
     await inTestDatabase(async (db) => {
       const own = await addTestProgram(db, "Prodi Uji Batas Sendiri");
       const other = await addTestProgram(db, "Prodi Uji Batas Lain");
-      await addTestStudent(db, own, { nim: "9900000313", name: "Batas Satu" });
-      await addTestStudent(db, other, { nim: "9900000314", name: "Batas Dua" });
+      await addTestStudent(db, own, { nim: "9900001313", name: "Batas Satu" });
+      await addTestStudent(db, other, { nim: "9900001314", name: "Batas Dua" });
       await addTestStudent(db, own, {
-        nim: "9900000315",
+        nim: "9900001315",
         name: "Batas Dihapus",
         deletedAt: new Date("2026-10-11T03:00:00Z"),
       });
@@ -161,8 +166,8 @@ describe("listStudents", () => {
       );
 
       const batas = forAll.students.filter((s) => s.name.startsWith("Batas"));
-      expect(batas.map((s) => s.nim)).toEqual(["9900000314", "9900000313"]);
-      expect(forOwn.students.map((s) => s.nim)).toEqual(["9900000313"]);
+      expect(batas.map((s) => s.nim)).toEqual(["9900001314", "9900001313"]);
+      expect(forOwn.students.map((s) => s.nim)).toEqual(["9900001313"]);
     });
   });
 
@@ -171,13 +176,13 @@ describe("listStudents", () => {
       const limit = await addFilterRows(db);
 
       expect(await nimsFound(db, limit, {})).toEqual([
-        "9900000321",
-        "9900000322",
-        "9900000324",
+        "9900001321",
+        "9900001322",
+        "9900001324",
       ]);
       expect(await nimsFound(db, limit, { status: "all" })).toHaveLength(4);
       expect(await nimsFound(db, limit, { status: "inactive" })).toEqual([
-        "9900000323",
+        "9900001323",
       ]);
     });
   });
@@ -187,10 +192,10 @@ describe("listStudents", () => {
       const limit = await addFilterRows(db);
 
       expect(await nimsFound(db, limit, { query: "ring ak" })).toEqual([
-        "9900000321",
+        "9900001321",
       ]);
-      expect(await nimsFound(db, limit, { query: "0000324" })).toEqual([
-        "9900000324",
+      expect(await nimsFound(db, limit, { query: "0001324" })).toEqual([
+        "9900001324",
       ]);
       expect(await nimsFound(db, limit, { query: "Saring%" })).toEqual([]);
     });
@@ -201,12 +206,12 @@ describe("listStudents", () => {
       const limit = await addFilterRows(db);
 
       expect(await nimsFound(db, limit, { cohortYear: 2024 })).toEqual([
-        "9900000321",
-        "9900000324",
+        "9900001321",
+        "9900001324",
       ]);
       expect(
         await nimsFound(db, limit, { cohortYear: 2024, query: "saring" }),
-      ).toEqual(["9900000321"]);
+      ).toEqual(["9900001321"]);
       expect(
         await nimsFound(db, limit, { cohortYear: 2024, status: "inactive" }),
       ).toEqual([]);
@@ -234,7 +239,7 @@ describe("listCohortYears", () => {
       const limit = await addFilterRows(db);
       const other = await addTestProgram(db, "Prodi Uji Angkatan Lain");
       await addTestStudent(db, other, {
-        nim: "9900000325",
+        nim: "9900001325",
         name: "Angkatan Lain",
         cohortYear: 2021,
       });
@@ -249,24 +254,24 @@ async function addChoiceRows(db: Database) {
   const first = await addTestProgram(db, "Prodi Uji Pilih Satu");
   const second = await addTestProgram(db, "Prodi Uji Pilih Dua");
   await addTestStudent(db, first, {
-    nim: "9900000331",
+    nim: "9900001331",
     name: "Pilih Reguler Afirmasi",
     isAffirmation: true,
   });
   await addTestStudent(db, first, {
-    nim: "9900000332",
+    nim: "9900001332",
     name: "Pilih Alih Blended",
     entryPath: "transfer",
     isBlended: true,
   });
   await addTestStudent(db, second, {
-    nim: "9900000333",
+    nim: "9900001333",
     name: "Pilih Reguler Afirmasi Bibit",
     isAffirmation: true,
     isSeedling: true,
   });
   await addTestStudent(db, second, {
-    nim: "9900000334",
+    nim: "9900001334",
     name: "Pilih Nonaktif",
     status: "inactive",
     isInternational: true,
@@ -286,14 +291,14 @@ describe("the Program studi, Jalur and Kategori filters", () => {
       const { first, second, limit } = await addChoiceRows(db);
 
       expect(await nimsFound(db, limit, { studyProgramId: first })).toEqual([
-        "9900000331",
-        "9900000332",
+        "9900001331",
+        "9900001332",
       ]);
       expect(await nimsFound(db, limit, { entryPath: "transfer" })).toEqual([
-        "9900000332",
+        "9900001332",
       ]);
       expect(await nimsFound(db, limit, { category: "isAffirmation" })).toEqual(
-        ["9900000331", "9900000333"],
+        ["9900001331", "9900001333"],
       );
       expect(
         await nimsFound(db, limit, {
@@ -302,7 +307,7 @@ describe("the Program studi, Jalur and Kategori filters", () => {
           category: "isAffirmation",
           query: "bibit",
         }),
-      ).toEqual(["9900000333"]);
+      ).toEqual(["9900001333"]);
       expect(
         await nimsFound(db, limit, {
           studyProgramId: first,

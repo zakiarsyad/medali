@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000400 to 9900000499.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder } from "@/auth/accounts";
@@ -78,7 +79,7 @@ describe("inputStudent", () => {
       const switchable = await accountsInRoleOrder(db);
       const account = switchable.find((one) => one.studentId === kept?.id);
       expect(account).toMatchObject({ name: "Masuk Uji", roles: ["student"] });
-      const listed = await listAddedStudents(db, "Masuk Uji");
+      const listed = await listAddedStudents(db, "Masuk Uji", []);
       expect(listed.students.map((student) => student.nim)).toEqual([
         "9900000403",
         "9900000402",

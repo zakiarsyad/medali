@@ -1,9 +1,7 @@
 import { forbidden } from "next/navigation";
-import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
-import { database } from "@/db/database";
 import { USERS_ADDRESS } from "@/features/accounts/list-address";
 import {
   mentorAddress,
@@ -16,6 +14,7 @@ import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorStudentAddresses } from "@/features/mentor-groups/open-member-address";
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
 import { askedDetail } from "@/features/students/asked-detail";
+import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 import { detailVisibleTo } from "@/features/students/visible-students";
 
@@ -48,7 +47,7 @@ async function MentorPage({
       {detail && (
         <StudentDetailDialog
           detail={detail}
-          period={await readRunningPeriod(database())}
+          period={await runningPeriodNow()}
           closeAddress={mentorAddress(mentorId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
         />

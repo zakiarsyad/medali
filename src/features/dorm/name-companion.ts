@@ -4,6 +4,9 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { dormCompanions, students } from "@/db/schema";
+import { readDormCohorts } from "@/dorms/dorm-cohorts";
+import { DORM_NAMES, DORM_RESIDENTS } from "@/dorms/dorms";
+import { dormInSql } from "@/dorms/resident-condition";
 import type { Parsed } from "@/parsed";
 import {
   COMPANION_DORM_IDS,
@@ -15,9 +18,6 @@ import {
   COMPANIONS_NOT_ALLOWED,
   NO_PERIOD_TO_NAME,
 } from "./companion-messages";
-import { readDormCohorts } from "./dorm-cohorts";
-import { DORM_NAMES, DORM_RESIDENTS } from "./dorms";
-import { dormInSql } from "./resident-condition";
 
 /** A kakak pendamping as the form sends it. */
 export interface SentCompanion {

@@ -1,7 +1,9 @@
+// Sample NIMs of this file: 9900001400 to 9900001499.
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import type { ListCohorts } from "./list-cohorts";
 import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listStudents } from "./student-list";
@@ -18,31 +20,34 @@ const TAX = "Direktorat Jenderal Pajak";
 const CUSTOMS = "Direktorat Jenderal Bea dan Cukai";
 
 /** In this period angkatan 2026 is in tahap 1, 2025 in 2 and 2023 in 4. */
-const COHORTS = stageCohorts([2026, 2025, 2023], {
-  startYear: 2026,
-  term: "odd",
-});
-const NO_PERIOD = stageCohorts([2026, 2025, 2023], null);
+const COHORTS: ListCohorts = {
+  stages: stageCohorts([2026, 2025, 2023], { startYear: 2026, term: "odd" }),
+  dorms: [2026],
+};
+const NO_PERIOD: ListCohorts = {
+  stages: stageCohorts([2026, 2025, 2023], null),
+  dorms: [],
+};
 
 /** One program with students of three tahap, of every status. */
 async function addRows(db: Database): Promise<RowLimit> {
   const program = await addTestProgram(db, "Prodi Uji Tahap");
   const rows = [
-    { nim: "9900000401", name: "Tahap Satu Aktif", province: "Bali" },
+    { nim: "9900001401", name: "Tahap Satu Aktif", province: "Bali" },
     {
-      nim: "9900000402",
+      nim: "9900001402",
       name: "Tahap Satu Cuti",
       status: "on_leave" as const,
       province: "Aceh",
     },
     {
-      nim: "9900000403",
+      nim: "9900001403",
       name: "Tahap Satu Nonaktif",
       status: "inactive" as const,
       province: "Bali",
     },
     {
-      nim: "9900000404",
+      nim: "9900001404",
       name: "Tahap Dua Alih",
       cohortYear: 2025,
       entryPath: "transfer" as const,
@@ -50,7 +55,7 @@ async function addRows(db: Database): Promise<RowLimit> {
       province: "Bali",
     },
     {
-      nim: "9900000405",
+      nim: "9900001405",
       name: "Tahap Empat Alih",
       cohortYear: 2023,
       entryPath: "transfer" as const,
@@ -73,10 +78,10 @@ async function addRows(db: Database): Promise<RowLimit> {
 async function addRowsWithBlankAgency(db: Database): Promise<RowLimit> {
   const program = await addTestProgram(db, "Prodi Uji Instansi");
   const rows = [
-    { nim: "9900000406", name: "Alih Tanpa Instansi", entryPath: "transfer" },
-    { nim: "9900000407", name: "Reguler Tanpa Instansi" },
+    { nim: "9900001406", name: "Alih Tanpa Instansi", entryPath: "transfer" },
+    { nim: "9900001407", name: "Reguler Tanpa Instansi" },
     {
-      nim: "9900000408",
+      nim: "9900001408",
       name: "Alih Dengan Instansi",
       entryPath: "transfer",
       originAgency: TAX,
@@ -108,11 +113,11 @@ describe("the Tahapan filter", () => {
       const limit = await addRows(db);
 
       expect(await nimsFound(db, limit, { stageNo: 1 })).toEqual([
-        "9900000401",
-        "9900000402",
+        "9900001401",
+        "9900001402",
       ]);
       expect(await nimsFound(db, limit, { stageNo: 2 })).toEqual([
-        "9900000404",
+        "9900001404",
       ]);
       expect(await nimsFound(db, limit, { stageNo: 3 })).toEqual([]);
     });
@@ -123,7 +128,7 @@ describe("the Tahapan filter", () => {
       const limit = await addRows(db);
 
       expect(await nimsFound(db, limit, { stageNo: 1, status: "all" })).toEqual(
-        ["9900000401", "9900000402"],
+        ["9900001401", "9900001402"],
       );
       expect(
         await nimsFound(db, limit, { stageNo: 1, status: "inactive" }),
@@ -146,8 +151,8 @@ describe("the Provinsi and Instansi filters", () => {
       const limit = await addRows(db);
 
       expect(await nimsFound(db, limit, { province: "Bali" })).toEqual([
-        "9900000401",
-        "9900000404",
+        "9900001401",
+        "9900001404",
       ]);
       expect(await nimsFound(db, limit, { province: "Papua" })).toEqual([]);
     });
@@ -158,11 +163,11 @@ describe("the Provinsi and Instansi filters", () => {
       const limit = await addRows(db);
 
       expect(await nimsFound(db, limit, { originAgency: TAX })).toEqual([
-        "9900000404",
+        "9900001404",
       ]);
       expect(await nimsFound(db, limit, { originAgency: NO_AGENCY })).toEqual([
-        "9900000401",
-        "9900000402",
+        "9900001401",
+        "9900001402",
       ]);
     });
   });
@@ -172,8 +177,8 @@ describe("the Provinsi and Instansi filters", () => {
       const limit = await addRowsWithBlankAgency(db);
 
       expect(await nimsFound(db, limit, { originAgency: NO_AGENCY })).toEqual([
-        "9900000406",
-        "9900000407",
+        "9900001406",
+        "9900001407",
       ]);
     });
   });
@@ -190,10 +195,10 @@ describe("the Provinsi and Instansi filters", () => {
           entryPath: "transfer",
           query: "alih",
         }),
-      ).toEqual(["9900000404"]);
+      ).toEqual(["9900001404"]);
       expect(
         await nimsFound(db, limit, { stageNo: 1, province: "Bali" }),
-      ).toEqual(["9900000401"]);
+      ).toEqual(["9900001401"]);
       expect(
         await nimsFound(db, limit, { stageNo: 1, originAgency: TAX }),
       ).toEqual([]);

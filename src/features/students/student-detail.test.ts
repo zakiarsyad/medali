@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001500 to 9900001599.
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
@@ -32,12 +33,17 @@ function account(
   return { id: NO_SUCH_ID, roles, studyProgramId, studentId: null };
 }
 
+/** The detail while no academic period runs, which these checks do not read. */
+function readDetail(db: Database, asking: AccountForAccess, id: string) {
+  return readStudentDetail(db, asking, id, null);
+}
+
 /** Two programs, with one student in each. */
 async function addRows(db: Database) {
   const own = await addTestProgram(db, "Prodi Uji Detail Sendiri");
   const other = await addTestProgram(db, "Prodi Uji Detail Lain");
   const inOwn = await addTestStudent(db, own, {
-    nim: "9900000501",
+    nim: "9900001501",
     name: "Detail Uji Ani",
     entryPath: "transfer",
     originAgency: "Direktorat Jenderal Pajak",
@@ -48,7 +54,7 @@ async function addRows(db: Database) {
     status: "on_leave",
   });
   const inOther = await addTestStudent(db, other, {
-    nim: "9900000502",
+    nim: "9900001502",
     name: "Detail Uji Budi",
   });
   return { own, other, inOwn, inOther };
@@ -59,7 +65,7 @@ describe("readStudentDetail", () => {
     await inTestDatabase(async (db) => {
       const { own, inOwn } = await addRows(db);
 
-      const answer = await readStudentDetail(
+      const answer = await readDetail(
         db,
         account(["head_of_program"], own),
         inOwn,
@@ -69,7 +75,7 @@ describe("readStudentDetail", () => {
         kind: "found",
         student: {
           id: inOwn,
-          nim: "9900000501",
+          nim: "9900001501",
           name: "Detail Uji Ani",
           status: "on_leave",
           isAffirmation: false,
@@ -84,6 +90,7 @@ describe("readStudentDetail", () => {
           province: "Bali",
           sex: "female",
           mentorGroup: null,
+          residence: null,
         },
       });
     });
@@ -99,7 +106,7 @@ describe("readStudentDetail", () => {
         mentorId: mentor.id,
       });
 
-      const answer = await readStudentDetail(
+      const answer = await readDetail(
         db,
         account(["head_of_program"], own),
         inOwn,
@@ -124,10 +131,8 @@ describe("readStudentDetail", () => {
       const { own, inOther } = await addRows(db);
       const asking = account(["head_of_program"], own);
 
-      expect(await readStudentDetail(db, asking, inOther)).toEqual(NOT_FOUND);
-      expect(await readStudentDetail(db, asking, NO_SUCH_ID)).toEqual(
-        NOT_FOUND,
-      );
+      expect(await readDetail(db, asking, inOther)).toEqual(NOT_FOUND);
+      expect(await readDetail(db, asking, NO_SUCH_ID)).toEqual(NOT_FOUND);
     });
   });
 
@@ -138,8 +143,8 @@ describe("readStudentDetail", () => {
         const { own, inOwn, inOther } = await addRows(db);
         const asking = account(["head_of_program", role], own);
 
-        const first = await readStudentDetail(db, asking, inOwn);
-        const second = await readStudentDetail(db, asking, inOther);
+        const first = await readDetail(db, asking, inOwn);
+        const second = await readDetail(db, asking, inOther);
 
         expect(first.kind).toBe("found");
         expect(second).toEqual(NOT_FOUND);
@@ -151,11 +156,7 @@ describe("readStudentDetail", () => {
     await inTestDatabase(async (db) => {
       const { inOwn } = await addRows(db);
 
-      const answer = await readStudentDetail(
-        db,
-        account(["head_of_program"]),
-        inOwn,
-      );
+      const answer = await readDetail(db, account(["head_of_program"]), inOwn);
 
       expect(answer).toEqual(NOT_FOUND);
     });
@@ -167,8 +168,8 @@ describe("readStudentDetail", () => {
       await inTestDatabase(async (db) => {
         const { inOwn, inOther } = await addRows(db);
 
-        const first = await readStudentDetail(db, account([role]), inOwn);
-        const second = await readStudentDetail(db, account([role]), inOther);
+        const first = await readDetail(db, account([role]), inOwn);
+        const second = await readDetail(db, account([role]), inOther);
 
         expect(first.kind).toBe("found");
         expect(second.kind).toBe("found");
@@ -183,7 +184,7 @@ describe("readStudentDetail", () => {
         const { own, inOwn } = await addRows(db);
         const asking = { ...account([role], own), studentId: inOwn };
 
-        const answer = await readStudentDetail(db, asking, inOwn);
+        const answer = await readDetail(db, asking, inOwn);
 
         expect(answer).toEqual({ kind: "refused" });
       });
@@ -192,11 +193,7 @@ describe("readStudentDetail", () => {
 
   it("refuses a role without the right for a student who does not exist too", async () => {
     await inTestDatabase(async (db) => {
-      const answer = await readStudentDetail(
-        db,
-        account(["mentor"]),
-        NO_SUCH_ID,
-      );
+      const answer = await readDetail(db, account(["mentor"]), NO_SUCH_ID);
 
       expect(answer).toEqual({ kind: "refused" });
     });
@@ -206,30 +203,24 @@ describe("readStudentDetail", () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Detail Hapus");
       const removed = await addTestStudent(db, program, {
-        nim: "9900000503",
+        nim: "9900001503",
         name: "Detail Uji Dihapus",
         deletedAt: new Date("2026-10-11T03:00:00Z"),
       });
       const asking = account(["head_of_unit"]);
 
-      expect(await readStudentDetail(db, asking, removed)).toEqual(NOT_FOUND);
-      expect(await readStudentDetail(db, asking, NO_SUCH_ID)).toEqual(
-        NOT_FOUND,
-      );
+      expect(await readDetail(db, asking, removed)).toEqual(NOT_FOUND);
+      expect(await readDetail(db, asking, NO_SUCH_ID)).toEqual(NOT_FOUND);
     });
   });
 
-  it.each(["", "9900000501", "abc", "' or 1=1 --", `${NO_SUCH_ID}x`])(
+  it.each(["", "9900001501", "abc", "' or 1=1 --", `${NO_SUCH_ID}x`])(
     "answers for the id %j as for a student who does not exist",
     async (id) => {
       await inTestDatabase(async (db) => {
         await addRows(db);
 
-        const answer = await readStudentDetail(
-          db,
-          account(["head_of_unit"]),
-          id,
-        );
+        const answer = await readDetail(db, account(["head_of_unit"]), id);
 
         expect(answer).toEqual(NOT_FOUND);
       });

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { entryPath } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
+import { DORM_IDS, DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
 import { FilterFold } from "./filter-fold";
@@ -14,6 +15,7 @@ import {
 import type { ChoiceCounts } from "./student-choice-counts";
 import styles from "./student-list.module.css";
 import {
+  NO_DORM,
   type StudentListFilters,
   studentListAddress,
   topFiltersInUse,
@@ -47,9 +49,23 @@ function categoryChoices(counts: ChoiceCounts): CountedChoice[] {
   }));
 }
 
+function dormChoices(counts: ChoiceCounts): CountedChoice[] {
+  const dorms = DORM_IDS.map((dorm) => ({
+    value: dorm,
+    shown: DORM_NAMES[dorm],
+    held: counts.dorms[dorm],
+  }));
+  const none = {
+    value: NO_DORM,
+    shown: "Non asrama",
+    held: counts.dorms[NO_DORM],
+  };
+  return [...dorms, none];
+}
+
 /**
- * The top bar: the Program studi, Jalur, Kategori, Tahapan, Provinsi and
- * Instansi filters.
+ * The top bar: the Program studi, Jalur, Kategori, Tahapan, Provinsi,
+ * Instansi and Asrama filters.
  */
 export function StudentListBar({
   filters,
@@ -107,6 +123,13 @@ export function StudentListBar({
           every="Semua instansi"
           choices={agencyChoices(counts)}
           chosen={filters.originAgency ?? ""}
+        />
+        <CountedSelect
+          label="Asrama"
+          name="asrama"
+          every="Semua asrama"
+          choices={dormChoices(counts)}
+          chosen={filters.dorm ?? ""}
         />
       </FilterFold>
       <p className={styles.found}>

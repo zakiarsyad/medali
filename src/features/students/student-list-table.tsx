@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
@@ -41,6 +42,9 @@ function StudentRow({
             {label}
           </span>
         ))}
+        {student.dorm && (
+          <span className={shared.badge}>{DORM_NAMES[student.dorm]}</span>
+        )}
       </td>
       <td data-title="Program studi">
         {student.studyProgram}

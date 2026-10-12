@@ -14,6 +14,8 @@ while building.
 - `src/academic-periods/`: the running academic period, a student's
   semester and the tahap a semester belongs to, read by every area that
   needs them.
+- `src/dorms/`: the four dorms, the rule for who lives in which, and a
+  resident's room, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/ui/`: screen parts shared by more than one area.
 - `docs/`: specs and lasting facts.

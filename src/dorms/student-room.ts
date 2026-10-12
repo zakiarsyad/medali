@@ -1,8 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { database } from "@/db/database";
 import { dormRoomPlaces, dormRooms } from "@/db/schema";
-import { currentDorm } from "./current-dorm";
 import { DORM_NAMES, type DormId } from "./dorms";
 
 export interface StudentRoom {
@@ -34,16 +32,4 @@ export async function readStudentRoom(
 export function roomHeader(dorm: DormId, room: StudentRoom | null): string {
   if (!room) return "Belum diplot";
   return `${DORM_NAMES[dorm]}, lantai ${room.floor}, kamar ${room.number}`;
-}
-
-/**
- * The room line for the Asrama page header of the account's student. Null
- * for an account whose student does not live in a dorm, or that has none.
- */
-export async function residentHeader(
-  studentId: string | null,
-): Promise<string | null> {
-  const dorm = await currentDorm(studentId);
-  if (studentId === null || dorm === null) return null;
-  return roomHeader(dorm, await readStudentRoom(database(), studentId, dorm));
 }

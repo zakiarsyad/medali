@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useActionState, useState } from "react";
 import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
+import { text, texts } from "@/ui/form-data";
 import { FormMessage } from "@/ui/form-message";
 import { addStudentAction, changeStudentAction } from "./actions";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
@@ -27,7 +28,9 @@ import {
   STATUS_LABELS,
 } from "./labels";
 import { newStudentsAddress } from "./new-students-address";
+import { type ResidentFields, residentNote } from "./resident-note";
 import { SelectField } from "./select-field";
+import type { RunningPeriod } from "./semester-now";
 import type { StudentInput } from "./student-input";
 import { useNotify } from "./student-notice";
 
@@ -90,6 +93,18 @@ export interface StudentFormProps {
   editing: StudentInput | null;
   /** The search of the list, kept when the form is left. */
   query: string;
+  /** The academic period that runs now, which says the semester of an angkatan. */
+  period: RunningPeriod;
+}
+
+function residentFields(form: FormData): ResidentFields {
+  return {
+    entryPath: text(form, "entryPath"),
+    sex: text(form, "sex"),
+    cohortYear: text(form, "cohortYear"),
+    status: text(form, "status"),
+    categories: texts(form, "categories"),
+  };
 }
 
 export function StudentForm({
@@ -97,6 +112,7 @@ export function StudentForm({
   cohortYears,
   editing,
   query,
+  period,
 }: StudentFormProps) {
   const router = useRouter();
   const notify = useNotify();
@@ -105,6 +121,7 @@ export function StudentForm({
     cohortYear: String(cohortYears[0] ?? ""),
   });
   const [entryPath, setEntryPath] = useState(start.entryPath);
+  const [resident, setResident] = useState<ResidentFields>(start);
 
   async function send(
     before: StudentFormState,
@@ -114,8 +131,11 @@ export function StudentForm({
     const save = editing ? changeStudentAction : addStudentAction;
     const after = await save(before, form);
     // The browser puts a sent form back on its first choices; this keeps
-    // Instansi asal in step with the Jalur the form then shows.
-    setEntryPath(formShows(after, start).entryPath);
+    // Instansi asal and the note on the dorm in step with what the form
+    // then shows.
+    const shownAfter = formShows(after, start);
+    setEntryPath(shownAfter.entryPath);
+    setResident(shownAfter);
     if (after.done && editing) {
       const list = newStudentsAddress(query);
       notify(after.done, list);
@@ -128,9 +148,17 @@ export function StudentForm({
 
   const [state, action, pending] = useActionState(send, START);
   const shown = formShows(state, start);
+  const note = residentNote(resident, period);
   return (
     // noValidate: a wrong NIM or a short name gets the app's own message.
-    <form action={action} className={shared.form} noValidate>
+    <form
+      action={action}
+      className={shared.form}
+      noValidate
+      onChange={(event) =>
+        setResident(residentFields(new FormData(event.currentTarget)))
+      }
+    >
       {/* Drawn anew each time the form is sent: the browser empties a
           sent form, and this fills it again with what `shown` holds. */}
       <Fragment key={state.attempt}>
@@ -203,6 +231,11 @@ export function StudentForm({
         />
         <Categories chosen={shown.categories} />
       </Fragment>
+      {note && (
+        <p className={shared.detail} aria-live="polite">
+          {note}
+        </p>
+      )}
       {state.error && <FormMessage state={state} />}
       <div className={shared.actions}>
         <button type="submit" className={shared.button} disabled={pending}>

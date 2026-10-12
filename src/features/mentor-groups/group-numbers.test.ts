@@ -33,13 +33,13 @@ async function addGroupsOfThreeSizes(db: Database): Promise<number> {
   await addTestMembersWithStatus(
     db,
     { id: usual, studyProgramId },
-    9900018001,
+    9900018501,
     statuses(GROUP_MIN, ["on_leave", "inactive"]),
   );
   await addTestMembersWithStatus(
     db,
     { id: small, studyProgramId },
-    9900018101,
+    9900018601,
     statuses(3),
   );
   return studyProgramId;
@@ -64,7 +64,7 @@ describe("readGroupNumbers", () => {
       await addTestMembersWithStatus(
         db,
         { id, studyProgramId: other },
-        9900018201,
+        9900018701,
         statuses(2),
       );
 
