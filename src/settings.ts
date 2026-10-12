@@ -1,5 +1,11 @@
 /** The settings that come from outside the repo. `.env.example` lists them. */
-export const SETTING_NAMES = ["DATABASE_URL"] as const;
+export const SETTING_NAMES = [
+  "DATABASE_URL",
+  "FILE_STORAGE_URL",
+  "FILE_STORAGE_BUCKET",
+  "FILE_STORAGE_ACCESS_KEY",
+  "FILE_STORAGE_SECRET_KEY",
+] as const;
 
 export type SettingName = (typeof SETTING_NAMES)[number];
 
@@ -11,6 +17,23 @@ export function readSetting(name: SettingName): string {
     );
   }
   return value;
+}
+
+/** How to reach the file storage: MinIO, or a service that works like it. */
+export interface FileStorageSettings {
+  url: string;
+  bucket: string;
+  accessKey: string;
+  secretKey: string;
+}
+
+export function readFileStorageSettings(): FileStorageSettings {
+  return {
+    url: readSetting("FILE_STORAGE_URL"),
+    bucket: readSetting("FILE_STORAGE_BUCKET"),
+    accessKey: readSetting("FILE_STORAGE_ACCESS_KEY"),
+    secretKey: readSetting("FILE_STORAGE_SECRET_KEY"),
+  };
 }
 
 /**

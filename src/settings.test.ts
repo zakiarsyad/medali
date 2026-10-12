@@ -27,6 +27,28 @@ describe("the example settings file", () => {
       expect(setting.value).toBe("");
     }
   });
+
+  it("lists the two keys of the file storage by name, with no value", () => {
+    const keys = exampleSettings().filter((setting) =>
+      setting.name.endsWith("_KEY"),
+    );
+    expect(keys).toEqual([
+      { name: "FILE_STORAGE_ACCESS_KEY", value: "" },
+      { name: "FILE_STORAGE_SECRET_KEY", value: "" },
+    ]);
+  });
+
+  it("does not repeat the keys of the local file storage, not even in a note", () => {
+    const example = readFileSync(".env.example", "utf8");
+    const compose = readFileSync("compose.yaml", "utf8");
+    const localKeys = [...compose.matchAll(/MINIO_ROOT_\w+: (\S+)/g)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(localKeys.length).toBe(2);
+    for (const key of localKeys) {
+      expect(example).not.toContain(key);
+    }
+  });
 });
 
 describe("source code", () => {

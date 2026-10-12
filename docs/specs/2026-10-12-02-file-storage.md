@@ -107,9 +107,57 @@ The open questions, each with the answer that stands.
    each request to MinIO and to services that work like it. No other
    library is added.
 
+## Decided while building
+
+What the spec did not say, decided during the build. A new issue can
+change any of these.
+
+1. The four settings are all filled or all empty. When only some are
+   filled, the app stops and names the missing one, on a preview too.
+   Empty settings turn file keeping off only on a preview; anywhere else
+   they are an error, as for the database.
+2. On a local computer the two keys are the ones the Docker setup gives
+   its own file storage, which only that computer can reach. The example
+   settings file points to them without repeating them.
+3. MinIO no longer publishes its own Docker images. The local file
+   storage runs the same server from the image its community maintains.
+4. The start command starts the file storage and makes its place for
+   files. The command that fills the database with sample data is
+   unchanged.
+5. There is one place for files, with a separate part for each kind of
+   environment: PR previews, the preview of `main`, a local computer, and
+   the campus server. The app picks the part by itself, the same way the
+   database step tells a PR deploy from a `main` deploy. A PR deploy
+   empties only the part of the PR previews.
+6. A file is checked three ways: the end of its name, its size, and
+   whether what it holds really is text. The messages for a wrong type
+   and for a file that is too large are the ones already shown.
+7. A saved file is written to the file storage first. Then the students,
+   their batch and the file's record are saved in one go. If that fails,
+   the written file is removed again. If the file storage fails first,
+   nothing is saved.
+8. A batch is one press of "Simpan … baris". Each student saved from a
+   file points to its batch, and the kept file points to the same batch.
+   Students put in before this work, or with the form, have no batch.
+9. A second save of the same rows finds nothing new to save, so it keeps
+   no second file.
+10. The right to download a kept file is the right to put in students.
+    No new permission is added.
+11. A download is refused before the file is looked up, so someone
+    without the right cannot learn which files exist. A file that does
+    not exist answers "not found" with no detail.
+12. A downloaded file keeps its original name. The browser is told to
+    save it, never to show it, and not to keep a copy.
+13. A long file name under "Diinput" wraps onto the next line.
+14. A file storage that does not answer within 10 seconds counts as
+    unreachable.
+15. Until sign-in is built, "not signed in" exists only where "Ganti
+    peran" is off. Where it is on, a visitor with no account picked is
+    Kepala Unit, as on every other screen, so that visitor can download.
+
 ## Steps
 
-- [ ] 1. Docker runs the file storage locally, the example settings file
+- [x] 1. Docker runs the file storage locally, the example settings file
   lists its settings, and the app has one shared way to keep and fetch a
   file with a type and size check.
 - [ ] 2. Opening a file goes through the server, which checks the

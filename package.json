@@ -6,7 +6,7 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "pnpm db:start && pnpm db:migrate && next dev",
+    "dev": "pnpm db:start && pnpm db:migrate && pnpm files:setup && next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
@@ -19,9 +19,14 @@
     "db:migrate": "tsx --env-file-if-exists=.env.local src/db/migrate-command.ts",
     "db:seed": "tsx --env-file=src/db/local-commands.env --env-file-if-exists=.env.local src/db/seed-command.ts",
     "db:setup": "pnpm db:start && pnpm db:migrate && pnpm db:seed",
-    "db:deploy": "tsx src/db/deploy-command.ts"
+    "db:deploy": "tsx src/db/deploy-command.ts",
+    "files:start": "docker compose up --detach --wait files",
+    "files:stop": "docker compose stop files",
+    "files:prepare": "tsx --env-file=src/db/local-commands.env --env-file-if-exists=.env.local src/files/prepare-command.ts",
+    "files:setup": "pnpm files:start && pnpm files:prepare"
   },
   "dependencies": {
+    "aws4fetch": "^1.0.20",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.0",
     "postgres": "^3.4.9",
