@@ -1,6 +1,7 @@
 import { forbidden, notFound, redirect } from "next/navigation";
 import { mayOpenPage, mayOpenTab, tabsFor } from "./access";
 import type { Account } from "./accounts";
+import { askToSignIn } from "./ask-to-sign-in";
 import { currentAccount } from "./current-account";
 import { type Page, pageAt, type TabDefinition } from "./pages";
 
@@ -13,17 +14,21 @@ export interface OpenedPage {
 
 /**
  * Checks that the current account may open a page, and one of its tabs.
- * Refuses it otherwise. A tabbed page opened without a tab goes to the
+ * Refuses it otherwise, and sends someone who is not signed in to the
+ * sign-in page. A tabbed page opened without a tab goes to the
  * account's first tab there.
  */
 export async function openPage(
   pagePath: string,
   tabPath?: string,
 ): Promise<OpenedPage> {
+  // Before the page is looked up: someone who is not signed in learns
+  // nothing of the app, not even which addresses exist.
+  const account = await currentAccount();
+  if (!account) askToSignIn();
   const page = pageAt(pagePath);
   if (!page) notFound();
-  const account = await currentAccount();
-  if (!account || !mayOpenPage(account.roles, page.id)) forbidden();
+  if (!mayOpenPage(account.roles, page.id)) forbidden();
 
   const tabs = tabsFor(account.roles, page.id);
   if (tabPath === undefined) {

@@ -1,7 +1,7 @@
 # Hosting
 
 Where the previews of the app run, and how they are set up. The campus
-server is not covered here; it is not set up yet.
+server is not set up yet; it is covered here only where a part names it.
 
 ## What the hosting is
 
@@ -143,3 +143,66 @@ The step that empties refuses any part other than `pr-previews`, and a
 production deploy that does not come from `main` is refused before
 anything is touched. While the four settings are empty the step does
 nothing and says so in the build log.
+
+## Google sign-in
+
+People sign in with their Google account, and only campus addresses are
+let in. The owner makes the keys at Google and fills in the settings
+below. Until then nobody can sign in with Google, and the previews are
+used with "Ganti peran" as before.
+
+### Set only in the Vercel dashboard
+
+Three settings, under the project's environment variables:
+
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: the two keys Google gives
+  for the app, from a "web application" client in the Google Cloud
+  console.
+- `CAMPUS_EMAIL_ENDING`: the ending of a campus email address, from the
+  "@" on. Only an address that ends with exactly this may sign in, and
+  only from a Google account that the campus itself runs at Google: a
+  personal Google account made with a campus address is refused.
+
+Fill them in for the production environment only, which is the preview of
+`main`. A PR preview gets a new link with every PR, and Google sends a
+person back only to a link it was told about, so Google sign-in cannot
+work there. The keys are kept by Vercel. They are never written in the
+repo.
+
+All three are filled, or all three are left empty.
+
+### Set at Google
+
+The client at Google must hold the address Google sends a person back
+to, under "Authorized redirect URIs": the link of the preview of `main`,
+followed by `/masuk/google/kembali`. The app builds this address from the
+link it was opened at, so the preview must be opened at the same link
+that is registered.
+
+### While the settings are empty
+
+- The sign-in page, at `/masuk`, still opens. Pressing "Masuk dengan
+  Google" says "Masuk dengan Google belum diatur." and nothing else
+  happens. The same goes while only some of the three are filled.
+- "Ganti peran" works as before, on both previews and on a local
+  computer.
+- Pengguna dan peran accepts any well-formed email. Once
+  `CAMPUS_EMAIL_ENDING` is filled, a new account's email must end with it.
+
+### On the campus server
+
+There is no "Ganti peran" there, so Google sign-in is the only way in.
+The app refuses to start while any of the three settings is empty: it
+writes the names of the empty ones to its log, without showing a value,
+and answers every address with an error instead of the app. The program
+itself keeps running, as with the "Ganti peran" check above. The address
+to register at Google is then the campus server's own link, followed by
+`/masuk/google/kembali`.
+
+Signing in, signing out, and every refusal of an address that Google
+confirmed adds a line to a sign-in log in the database, with the time and
+the result. A refused line holds no address and no account. The lines
+cannot be changed or deleted. A sign-in that got no answer from Google
+that can be trusted is not written, because anyone could cause one by
+hand: the return address opened directly, a cancel at Google, or a code
+Google rejects.

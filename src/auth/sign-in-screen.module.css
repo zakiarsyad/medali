@@ -1,0 +1,19 @@
+.name {
+  margin: 0;
+  color: var(--navy);
+  font-size: var(--text-title);
+  font-weight: var(--weight-heavy);
+  line-height: var(--leading-title);
+  letter-spacing: var(--tracking-brand);
+}
+
+.campus {
+  margin: 0 0 var(--space-xl);
+  color: var(--muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-md);
+  justify-items: center;
+}

@@ -11,9 +11,12 @@ const valid = {
   unit: "Unit Pembangunan Karakter",
 };
 
+const NO_ENDING = "";
+const ENDING = "@kampus.example";
+
 describe("parseNewAccount", () => {
   it("accepts a filled form, with the email in lower case", () => {
-    expect(parseNewAccount(valid)).toEqual({
+    expect(parseNewAccount(valid, NO_ENDING)).toEqual({
       ok: true,
       value: {
         name: "Budi Contoh",
@@ -48,19 +51,58 @@ describe("parseNewAccount", () => {
       "Pilih program studi untuk Ketua Program Studi.",
     ],
   ])("refuses %s", (_kind, change, error) => {
-    expect(parseNewAccount({ ...valid, ...change })).toEqual({
+    expect(parseNewAccount({ ...valid, ...change }, NO_ENDING)).toEqual({
       ok: false,
       error,
     });
   });
 
+  it("accepts a campus email once the campus ending is set", () => {
+    const parsed = parseNewAccount(
+      { ...valid, email: "Budi@Kampus.Example" },
+      ENDING,
+    );
+
+    expect(parsed.ok && parsed.value.email).toBe("budi@kampus.example");
+  });
+
+  it.each([
+    ["an email outside the campus", "orang@luar.example"],
+    ["an email at a longer ending", "budi@mail.kampus.example"],
+    ["an email at a name that only ends alike", "budi@evilkampus.example"],
+  ])("refuses %s once the campus ending is set", (_kind, email) => {
+    expect(parseNewAccount({ ...valid, email }, ENDING)).toEqual({
+      ok: false,
+      error: "Gunakan alamat email kampus.",
+    });
+  });
+
+  it("accepts any well-formed email while the campus ending is empty", () => {
+    const parsed = parseNewAccount(
+      { ...valid, email: "orang@luar.example" },
+      NO_ENDING,
+    );
+
+    expect(parsed.ok && parsed.value.email).toBe("orang@luar.example");
+  });
+
+  it("still asks for a well-formed email once the campus ending is set", () => {
+    expect(parseNewAccount({ ...valid, email: "budi" }, ENDING)).toEqual({
+      ok: false,
+      error: "Isi email kedinasan yang benar.",
+    });
+  });
+
   it("refuses a program id too large to be one", () => {
     expect(
-      parseNewAccount({
-        ...valid,
-        roles: ["head_of_program"],
-        studyProgramId: "99999999999",
-      }),
+      parseNewAccount(
+        {
+          ...valid,
+          roles: ["head_of_program"],
+          studyProgramId: "99999999999",
+        },
+        NO_ENDING,
+      ),
     ).toEqual({
       ok: false,
       error: "Pilih program studi untuk Ketua Program Studi.",
@@ -68,16 +110,18 @@ describe("parseNewAccount", () => {
   });
 
   it("keeps the program of a head of program", () => {
-    const parsed = parseNewAccount({
-      ...valid,
-      roles: ["head_of_program", "mentor"],
-      studyProgramId: "4",
-    });
+    const parsed = parseNewAccount(
+      { ...valid, roles: ["head_of_program", "mentor"], studyProgramId: "4" },
+      NO_ENDING,
+    );
     expect(parsed.ok && parsed.value.studyProgramId).toBe(4);
   });
 
   it("drops the program of an account that is not a head of program", () => {
-    const parsed = parseNewAccount({ ...valid, studyProgramId: "4" });
+    const parsed = parseNewAccount(
+      { ...valid, studyProgramId: "4" },
+      NO_ENDING,
+    );
     expect(parsed.ok && parsed.value.studyProgramId).toBeNull();
   });
 });

@@ -16,6 +16,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
+import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -35,6 +36,8 @@ export const roleChangeAction = pgEnum("role_change_action", [
   "roles_changed",
   "removed",
 ]);
+
+export const signInResult = pgEnum("sign_in_result", SIGN_IN_RESULTS);
 
 export const academicTerm = pgEnum("academic_term", ["odd", "even"]);
 
@@ -162,6 +165,32 @@ export const roleChanges = pgTable("role_changes", {
   action: roleChangeAction().notNull(),
   rolesBefore: role().array().notNull(),
   rolesAfter: role().array().notNull(),
+});
+
+/**
+ * Who is signed in with Google. The browser holds a random token and this
+ * table only its hash, so a copy of the table opens nobody's session.
+ */
+export const sessions = pgTable("sessions", {
+  id: uuid().primaryKey().defaultRandom(),
+  tokenHash: text().notNull().unique(),
+  accountId: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  lastSeenAt: timestamp({ withTimezone: true }).notNull(),
+});
+
+/**
+ * Every sign-in, sign-out and refusal. A refused line names no account
+ * and no address. Rows here cannot be changed or deleted; the database
+ * refuses it.
+ */
+export const signInLog = pgTable("sign_in_log", {
+  id: uuid().primaryKey().defaultRandom(),
+  happenedAt: timestamp({ withTimezone: true }).notNull(),
+  result: signInResult().notNull(),
+  /** Set for a sign-in and a sign-out only. */
+  accountId: uuid().references(() => accounts.id),
 });
 
 /**

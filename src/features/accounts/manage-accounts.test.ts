@@ -76,8 +76,36 @@ describe("addAccount", () => {
       const again = await addAccount(db, newAccount("uji2@contoh.ac.id"), head);
       expect(again).toEqual({
         ok: false,
-        error: "Email sudah dipakai pengguna lain.",
+        error: "Email sudah dipakai akun lain.",
       });
+    });
+  });
+
+  it("leaves nothing of the refused account behind", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      await addAccount(db, newAccount("uji2@contoh.ac.id"), head);
+
+      await addAccount(db, newAccount("uji2@contoh.ac.id"), head);
+
+      const kept = await db
+        .select({ id: accounts.id })
+        .from(accounts)
+        .where(eq(accounts.email, "uji2@contoh.ac.id"));
+      expect(kept).toHaveLength(1);
+    });
+  });
+
+  it("lets the email of a removed account be given again", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const first = await addAccount(db, newAccount("uji3@contoh.ac.id"), head);
+      if (!first.ok) throw new Error(first.error);
+      await removeAccount(db, first.value, head);
+
+      const again = await addAccount(db, newAccount("uji3@contoh.ac.id"), head);
+
+      expect(again.ok).toBe(true);
     });
   });
 });

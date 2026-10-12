@@ -81,6 +81,22 @@ export async function findActiveAccount(
   return account ?? null;
 }
 
+/**
+ * The id of the active account that holds an address, or null. Addresses
+ * are kept in small letters, so `email` must be in small letters too.
+ */
+export async function activeAccountIdByEmail(
+  db: Database,
+  email: string,
+): Promise<string | null> {
+  const [found] = await db
+    .select({ id: accounts.id })
+    .from(accounts)
+    .where(and(eq(accounts.email, email), isNull(accounts.deletedAt)))
+    .limit(1);
+  return found?.id ?? null;
+}
+
 /** The first active account that holds a role, by name. */
 export async function firstAccountWithRole(
   db: Database,

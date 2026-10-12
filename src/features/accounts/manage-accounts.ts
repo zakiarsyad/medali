@@ -21,6 +21,7 @@ import {
   roleChanges,
   studyPrograms,
 } from "@/db/schema";
+import { brokeUniqueRule } from "@/db/unique-violation";
 import type { Parsed } from "@/parsed";
 import type { NewAccount, RoleChange } from "./account-input";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
@@ -44,6 +45,9 @@ export interface AccountFilter {
   role: ListedRole | null;
   page: number;
 }
+
+/** The database's rule that an address belongs to one active account. */
+const EMAIL_IN_USE_RULE = "accounts_email_in_use";
 
 const NOT_FOUND = { ok: false, error: "Akun tidak ditemukan." } as const;
 
@@ -117,15 +121,6 @@ export async function listManagedAccounts(
   };
 }
 
-async function emailInUse(db: Database, email: string): Promise<boolean> {
-  const [found] = await db
-    .select({ id: accounts.id })
-    .from(accounts)
-    .where(and(eq(accounts.email, email), isNull(accounts.deletedAt)))
-    .limit(1);
-  return found !== undefined;
-}
-
 async function isActive(db: Database, accountId: string): Promise<boolean> {
   const [found] = await db
     .select({ id: accounts.id })
@@ -161,17 +156,12 @@ async function programIsKnown(
   return found !== undefined;
 }
 
-export async function addAccount(
+/** Saves an account with its roles and its log line, or nothing at all. */
+async function saveNewAccount(
   db: Database,
   account: NewAccount,
   by: string,
-): Promise<Parsed<string>> {
-  if (!(await programIsKnown(db, account.studyProgramId))) {
-    return UNKNOWN_PROGRAM;
-  }
-  if (await emailInUse(db, account.email)) {
-    return { ok: false, error: "Email sudah dipakai pengguna lain." };
-  }
+): Promise<string> {
   return db.transaction(async (tx) => {
     const { roles, ...fields } = account;
     const [added] = await tx
@@ -189,8 +179,28 @@ export async function addAccount(
       rolesBefore: [],
       rolesAfter: inRoleOrder(roles),
     });
-    return { ok: true, value: added.id };
+    return added.id;
   });
+}
+
+export async function addAccount(
+  db: Database,
+  account: NewAccount,
+  by: string,
+): Promise<Parsed<string>> {
+  if (!(await programIsKnown(db, account.studyProgramId))) {
+    return UNKNOWN_PROGRAM;
+  }
+  try {
+    return { ok: true, value: await saveNewAccount(db, account, by) };
+  } catch (error) {
+    // The database is what keeps one address to one active account. A
+    // look beforehand would miss two saves of one address at one moment.
+    if (brokeUniqueRule(error, EMAIL_IN_USE_RULE)) {
+      return { ok: false, error: "Email sudah dipakai akun lain." };
+    }
+    throw error;
+  }
 }
 
 /**
