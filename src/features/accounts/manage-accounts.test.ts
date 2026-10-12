@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder, findActiveAccount } from "@/auth/accounts";
-import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accountRoles, accounts, roleChanges } from "@/db/schema";
+import { accounts, roleChanges } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addAccount,
@@ -11,27 +10,19 @@ import {
   listManagedAccounts,
   removeAccount,
 } from "./manage-accounts";
-import { addTestProgram, addTestStudentAccount } from "./test-records";
+import {
+  addTestProgram,
+  addTestStaffAccount,
+  addTestStudentAccount,
+  roleLogOf,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
 const PROGRAM = "Prodi Uji Daftar Staf";
 
 async function addHead(db: Database): Promise<string> {
-  return addRawAccount(db, "Kepala Uji", ["head_of_unit"]);
-}
-
-async function addRawAccount(
-  db: Database,
-  name: string,
-  roles: RoleId[],
-): Promise<string> {
-  const [account] = await db.insert(accounts).values({ name }).returning();
-  if (!account) throw new Error("The account was not added.");
-  await db
-    .insert(accountRoles)
-    .values(roles.map((role) => ({ accountId: account.id, role })));
-  return account.id;
+  return addTestStaffAccount(db, "Kepala Uji", ["head_of_unit"]);
 }
 
 function newAccount(email: string) {
@@ -117,7 +108,10 @@ describe("changeRoles", () => {
   it("gives and takes roles, and logs who, when, before and after", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Staf Uji", ["mentor", "counsellor"]);
+      const id = await addTestStaffAccount(db, "Staf Uji", [
+        "mentor",
+        "counsellor",
+      ]);
 
       const changed = await changeRoles(
         db,
@@ -149,7 +143,7 @@ describe("changeRoles", () => {
   it("keeps roles that are not managed in Pengguna dan peran", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Kepala Uji Dua", [
+      const id = await addTestStaffAccount(db, "Kepala Uji Dua", [
         "head_of_unit",
         "mentor",
       ]);
@@ -175,7 +169,7 @@ describe("changeRoles", () => {
   it("writes no log line when the roles stay the same", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
       await changeRoles(
         db,
         {
@@ -190,10 +184,31 @@ describe("changeRoles", () => {
     });
   });
 
+  it("times each log line when it is written, so lines of one moment keep their order", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
+      const change = { accountId: id, studyProgramId: null, unit: null };
+
+      await changeRoles(db, { ...change, roles: ["assessor"] }, head);
+      await removeAccount(db, id, head);
+
+      const log = await roleLogOf(db, id);
+      expect(log.map((line) => line.action)).toEqual([
+        "roles_changed",
+        "removed",
+      ]);
+      const [changed, removed] = log;
+      expect(removed?.changedAt.getTime()).toBeGreaterThan(
+        changed?.changedAt.getTime() ?? Number.NaN,
+      );
+    });
+  });
+
   it("refuses a removed account", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
       await removeAccount(db, id, head);
       const changed = await changeRoles(
         db,
@@ -214,7 +229,7 @@ describe("removeAccount", () => {
   it("hides the account from the list and from Ganti peran, but keeps it", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Staf Dihapus Uji", ["mentor"]);
+      const id = await addTestStaffAccount(db, "Staf Dihapus Uji", ["mentor"]);
 
       const removed = await removeAccount(db, id, head);
 
@@ -266,7 +281,7 @@ describe("an unknown study program", () => {
   it("is refused when changing roles", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
       const changed = await changeRoles(
         db,
         {
@@ -286,7 +301,7 @@ describe("changeRoles on a Kepala Unit account", () => {
   it("may take away every managed role, keeping Kepala Unit", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Kepala Lain Uji", [
+      const id = await addTestStaffAccount(db, "Kepala Lain Uji", [
         "head_of_unit",
         "mentor",
       ]);
@@ -304,7 +319,7 @@ describe("changeRoles on a Kepala Unit account", () => {
   it("refuses to leave an account with no role at all", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
-      const id = await addRawAccount(db, "Staf Uji", ["mentor"]);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
 
       const changed = await changeRoles(
         db,
@@ -382,7 +397,9 @@ describe("removeAccount refuses", () => {
     async (_kind, roles) => {
       await inTestDatabase(async (db) => {
         const head = await addHead(db);
-        const id = await addRawAccount(db, "Tidak Dikelola Uji", [...roles]);
+        const id = await addTestStaffAccount(db, "Tidak Dikelola Uji", [
+          ...roles,
+        ]);
 
         const removed = await removeAccount(db, id, head);
 
@@ -398,7 +415,7 @@ describe("removeAccount refuses", () => {
 
   it("the manager's own account", async () => {
     await inTestDatabase(async (db) => {
-      const id = await addRawAccount(db, "Pengelola Uji", ["mentor"]);
+      const id = await addTestStaffAccount(db, "Pengelola Uji", ["mentor"]);
 
       const removed = await removeAccount(db, id, id);
 
@@ -414,8 +431,8 @@ describe("removeAccount refuses", () => {
 describe("listManagedAccounts", () => {
   it("lists every staff account, Kepala Unit included, with its roles", async () => {
     await inTestDatabase(async (db) => {
-      await addRawAccount(db, "Daftar Uji Satu", ["mentor", "assessor"]);
-      await addRawAccount(db, "Daftar Uji Kepala", ["head_of_unit"]);
+      await addTestStaffAccount(db, "Daftar Uji Satu", ["mentor", "assessor"]);
+      await addTestStaffAccount(db, "Daftar Uji Kepala", ["head_of_unit"]);
 
       const listed = await listManagedAccounts(db, {
         query: "daftar uji",
@@ -444,7 +461,7 @@ describe("listManagedAccounts", () => {
         { nim: "9912800102", name: "Daftar Uji BAM" },
         ["student", "bam_bphk"],
       );
-      await addRawAccount(db, "Daftar Uji Staf BAM", ["bam_bphk"]);
+      await addTestStaffAccount(db, "Daftar Uji Staf BAM", ["bam_bphk"]);
 
       const listed = await listManagedAccounts(db, {
         query: "daftar uji",
@@ -460,8 +477,8 @@ describe("listManagedAccounts", () => {
 
   it("filters by role", async () => {
     await inTestDatabase(async (db) => {
-      await addRawAccount(db, "Saring Uji Satu", ["mentor"]);
-      await addRawAccount(db, "Saring Uji Dua", ["assessor"]);
+      await addTestStaffAccount(db, "Saring Uji Satu", ["mentor"]);
+      await addTestStaffAccount(db, "Saring Uji Dua", ["assessor"]);
 
       const listed = await listManagedAccounts(db, {
         query: "saring uji",

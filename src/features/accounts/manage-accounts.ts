@@ -10,6 +10,7 @@ import {
   notInArray,
   or,
   type SQL,
+  sql,
 } from "drizzle-orm";
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
@@ -126,18 +127,31 @@ export async function listManagedAccounts(
   };
 }
 
-/** The account when it is not removed, with the student it belongs to. */
-async function findActive(
-  db: Database,
+/**
+ * Reads the account when it is not removed, with the student it belongs
+ * to, and holds it until the transaction ends. Every change to the roles
+ * of a staff account and every removal starts here, so two of them never
+ * run at the same moment: the second waits and then sees what the first
+ * one saved.
+ */
+async function lockActive(
+  tx: Database,
   accountId: string,
 ): Promise<{ studentId: string | null } | null> {
-  const [found] = await db
+  const [found] = await tx
     .select({ studentId: accounts.studentId })
     .from(accounts)
     .where(and(eq(accounts.id, accountId), isNull(accounts.deletedAt)))
-    .limit(1);
+    .for("update");
   return found ?? null;
 }
+
+/**
+ * The moment a log line is written. The database would otherwise give the
+ * moment its transaction began, and a change that began first but waited
+ * for another one would be logged as the earlier of the two.
+ */
+const WRITTEN_NOW = sql<Date>`clock_timestamp()`;
 
 async function currentRoles(
   db: Database,
@@ -223,7 +237,7 @@ export async function changeRoles(
   by: string,
 ): Promise<Parsed<RoleId[]>> {
   return db.transaction(async (tx) => {
-    const account = await findActive(tx, change.accountId);
+    const account = await lockActive(tx, change.accountId);
     if (!account) return NOT_FOUND;
     if (account.studentId !== null) {
       return {
@@ -270,6 +284,7 @@ export async function changeRoles(
       await tx.insert(roleChanges).values({
         accountId: change.accountId,
         changedBy: by,
+        changedAt: WRITTEN_NOW,
         action: "roles_changed",
         rolesBefore: before,
         rolesAfter: after,
@@ -290,7 +305,7 @@ export async function removeAccount(
   by: string,
 ): Promise<Parsed<null>> {
   return db.transaction(async (tx) => {
-    const account = await findActive(tx, accountId);
+    const account = await lockActive(tx, accountId);
     if (!account) return NOT_FOUND;
     if (accountId === by) {
       return { ok: false, error: "Akun Anda sendiri tidak bisa dihapus." };
@@ -309,6 +324,7 @@ export async function removeAccount(
     await tx.insert(roleChanges).values({
       accountId,
       changedBy: by,
+      changedAt: WRITTEN_NOW,
       action: "removed",
       rolesBefore: before,
       rolesAfter: [],

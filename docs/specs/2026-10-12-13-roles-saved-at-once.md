@@ -70,5 +70,5 @@ issue did not say:
 
 ## Steps
 
-- [ ] 1. Saves and removals for one account are taken one after the
+- [x] 1. Saves and removals for one account are taken one after the
   other, with a check that sends two at once.
