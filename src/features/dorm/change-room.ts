@@ -3,8 +3,9 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { dormRooms } from "@/db/schema";
+import { brokeUniqueRule } from "@/db/unique-violation";
 import type { Parsed } from "@/parsed";
-import { brokeNumberRule, numberTaken } from "./add-room";
+import { NUMBER_RULE, numberTaken } from "./add-room";
 import { readDormCohorts } from "./dorm-cohorts";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD } from "./place-resident";
@@ -59,7 +60,7 @@ async function writeDetails(
       step.update(dormRooms).set(details).where(eq(dormRooms.id, room.id)),
     );
   } catch (error) {
-    if (!brokeNumberRule(error)) throw error;
+    if (!brokeUniqueRule(error, NUMBER_RULE)) throw error;
     return numberTaken(room.dorm, details.number);
   }
   return { ok: true, value: details.number };
