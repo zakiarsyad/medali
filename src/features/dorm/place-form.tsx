@@ -3,7 +3,6 @@
 import { type ChangeEvent, useActionState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { placeResidentAction } from "./actions";
 import type { Resident } from "./room-list";
 import styles from "./rooms.module.css";
 
@@ -13,18 +12,27 @@ function sendWhenChosen(event: ChangeEvent<HTMLSelectElement>) {
   if (event.target.value !== "") event.target.form?.requestSubmit();
 }
 
-/** The choice of a resident without a room, who moves in once chosen. */
+/**
+ * The choice of a resident or a kakak pendamping without a room, who moves
+ * in once chosen.
+ */
 export function PlaceForm({
+  action,
+  what,
   roomId,
   roomNumber,
   offered,
 }: {
+  /** The change that puts the one chosen into the room. */
+  action: (before: FormState, form: FormData) => Promise<FormState>;
+  /** Who is chosen, as the screen says it. */
+  what: "penghuni" | "kakak pendamping";
   roomId: string;
   roomNumber: string;
-  /** The residents of the dorm without a room that the screen lists. */
+  /** Those of the dorm without a room that the screen offers. */
   offered: Resident[];
 }) {
-  const [state, send] = useActionState(placeResidentAction, START);
+  const [state, send] = useActionState(action, START);
   return (
     <form action={send} className={styles.place}>
       <input type="hidden" name="roomId" value={roomId} />
@@ -33,9 +41,9 @@ export function PlaceForm({
         className={shared.input}
         defaultValue=""
         onChange={sendWhenChosen}
-        aria-label={`Pilih penghuni untuk kamar ${roomNumber}`}
+        aria-label={`Pilih ${what} untuk kamar ${roomNumber}`}
       >
-        <option value="">Pilih penghuni</option>
+        <option value="">Pilih {what}</option>
         {offered.map((resident) => (
           <option key={resident.id} value={resident.id}>
             {resident.name} ({resident.nim})

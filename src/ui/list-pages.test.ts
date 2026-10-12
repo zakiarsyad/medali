@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  PAGE_SIZE,
-  pageCount,
-  pageWithin,
-  rowRange,
-} from "./student-list-pages";
+import { PAGE_SIZE, pageCount, pageWithin, rowRange } from "./list-pages";
 
 describe("the pages of the list", () => {
   it("hold 25 students each", () => {

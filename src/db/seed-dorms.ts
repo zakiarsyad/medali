@@ -1,10 +1,16 @@
+import { inArray } from "drizzle-orm";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { DORM_IDS, type DormId } from "@/features/dorm/dorms";
 import { dormOf } from "@/features/dorm/resident-rule";
 import type { Database } from "./connect";
 import type { SamplePeriod } from "./sample-data";
-import { SAMPLE_ROOMS, samplePlaces, sampleRoomKey } from "./sample-dorms";
-import { dormRoomPlaces, dormRooms, students } from "./schema";
+import {
+  SAMPLE_COMPANIONS,
+  SAMPLE_ROOMS,
+  samplePlaces,
+  sampleRoomKey,
+} from "./sample-dorms";
+import { dormCompanions, dormRoomPlaces, dormRooms, students } from "./schema";
 
 type NewPlace = typeof dormRoomPlaces.$inferInsert;
 
@@ -57,9 +63,26 @@ function placesIn(
   });
 }
 
+async function addSampleCompanions(db: Database): Promise<void> {
+  const nims = SAMPLE_COMPANIONS.map((companion) => companion.nim);
+  const found = await db
+    .select({ id: students.id, nim: students.nim })
+    .from(students)
+    .where(inArray(students.nim, nims));
+  const idByNim = new Map(found.map((student) => [student.nim, student.id]));
+  const companions = SAMPLE_COMPANIONS.map(({ nim, ...companion }) => {
+    const studentId = idByNim.get(nim);
+    if (!studentId)
+      throw new Error("A sample kakak pendamping names no student.");
+    return { ...companion, studentId };
+  });
+  await db.insert(dormCompanions).values(companions);
+}
+
 /**
- * Adds the sample rooms to each of the four dorms, and puts some of the
- * residents of the running sample period into them.
+ * Adds the sample rooms to each of the four dorms, puts some of the
+ * residents of the running sample period into them, and names the sample
+ * kakak pendamping.
  */
 export async function addSampleDorms(
   db: Database,
@@ -71,4 +94,5 @@ export async function addSampleDorms(
     placesIn(dorm, residents.get(dorm) ?? new Map<string, string>(), roomIds),
   );
   if (places.length > 0) await db.insert(dormRoomPlaces).values(places);
+  await addSampleCompanions(db);
 }

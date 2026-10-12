@@ -323,7 +323,7 @@ describe("changeRoom", () => {
       expect(changed).toEqual({
         ok: false,
         error:
-          "Kapasitas tidak boleh kurang dari jumlah penghuni kamar (2). Keluarkan penghuni dulu.",
+          "Kapasitas tidak boleh kurang dari jumlah orang di kamar (2). Keluarkan sebagian dulu.",
       });
       expect(same.ok).toBe(true);
     });
@@ -403,7 +403,7 @@ describe("removeRoom", () => {
 
       expect(removed).toEqual({
         ok: false,
-        error: "Kamar M101 masih berpenghuni. Keluarkan semua penghuni dulu.",
+        error: "Kamar M101 masih terisi. Kosongkan kamar dulu.",
       });
       const kept = await db
         .select()

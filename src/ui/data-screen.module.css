@@ -263,6 +263,11 @@
   color: var(--muted);
 }
 
+.off {
+  color: var(--faint);
+  cursor: default;
+}
+
 .hidden {
   position: absolute;
   width: var(--line-width);

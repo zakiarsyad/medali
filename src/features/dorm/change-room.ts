@@ -22,7 +22,7 @@ import { freeStalePlacesIn } from "./stale-places";
 function tooSmall(taken: number) {
   return {
     ok: false,
-    error: `Kapasitas tidak boleh kurang dari jumlah penghuni kamar (${taken}). Keluarkan penghuni dulu.`,
+    error: `Kapasitas tidak boleh kurang dari jumlah orang di kamar (${taken}). Keluarkan sebagian dulu.`,
   } as const;
 }
 
