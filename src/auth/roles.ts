@@ -16,6 +16,7 @@ export const ACTIONS = [
   "view_student_room",
   "view_mentor_groups",
   "view_mentors",
+  "view_own_profile",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -34,6 +35,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
   view_mentors: "Melihat daftar pengasuh",
+  view_own_profile: "Melihat data diri sendiri",
 };
 
 /**
@@ -191,7 +193,7 @@ export const ROLES: Record<RoleId, Role> = {
       assessment: ["siku"],
       dorm: ["activities", "leave", "cleaning", "violations"],
     },
-    actions: [],
+    actions: ["view_own_profile"],
     rows: "self",
   },
   dorm_manager: {

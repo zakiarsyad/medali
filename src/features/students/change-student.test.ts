@@ -1,7 +1,7 @@
 // Sample NIMs of this file: 9900000500 to 9900000599.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { accountsInRoleOrder } from "@/auth/accounts";
+import { accountsInRoleOrder, findActiveAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges, students } from "@/db/schema";
@@ -145,6 +145,26 @@ describe("changeStudent", () => {
         inputBy: staff.id,
         inputSource: "form",
       });
+    });
+  });
+
+  it("refuses a student who tries to change their own record, and changes nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { program } = await addThroughTab(db, "9900000512");
+      const record = await recordOf(db, "9900000512");
+      const { id } = await accountOf(db, record.id);
+      const own = await findActiveAccount(db, id);
+      if (!own) throw new Error("The student account is not active.");
+
+      const done = await changeStudent(db, own, {
+        ...student("9900000512", program),
+        name: "Tidak Boleh",
+      });
+
+      expect(own.roles).toEqual(["student"]);
+      expect(own.studentId).toBe(record.id);
+      expect(done).toEqual(NOT_ALLOWED);
+      expect((await recordOf(db, "9900000512")).name).toBe("Ubah Uji");
     });
   });
 
