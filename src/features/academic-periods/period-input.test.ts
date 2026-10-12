@@ -76,6 +76,24 @@ describe("parsePeriodDates", () => {
   });
 
   it.each([
+    ["a hand-made year 0", "0000-01-01", "2027-01-31"],
+    ["a start before 2000", "1999-12-31", "2000-06-30"],
+    ["an end far ahead", "2026-08-01", "2207-01-31"],
+    ["an end after 2101", "2101-08-01", "2102-01-01"],
+  ])("refuses %s", (_what, startsOn, endsOn) => {
+    expect(parsePeriodDates({ startsOn, endsOn })).toEqual({
+      ok: false,
+      error: "Mulai dan Selesai harus di antara tahun 2000 dan 2101.",
+    });
+  });
+
+  it("takes the first and the last day allowed", () => {
+    expect(
+      parsePeriodDates({ startsOn: "2000-01-01", endsOn: "2101-12-31" }).ok,
+    ).toBe(true);
+  });
+
+  it.each([
     ["the same day as the start", "2026-08-01"],
     ["a day before the start", "2026-07-31"],
   ])("refuses an end on %s", (_what, endsOn) => {

@@ -4,6 +4,7 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { academicPeriodChanges, academicPeriods } from "@/db/schema";
 import type { Parsed } from "@/parsed";
+import { duplicateRefusal, refusalAfterError } from "./broken-rule";
 import { NOT_ALLOWED } from "./not-allowed";
 import {
   type NewPeriod,
@@ -30,6 +31,25 @@ async function alreadyExists(
   return found !== undefined;
 }
 
+async function writePeriod(
+  db: Database,
+  by: string,
+  period: NewPeriod,
+): Promise<void> {
+  const [added] = await db
+    .insert(academicPeriods)
+    .values(period)
+    .returning({ id: academicPeriods.id });
+  if (!added) throw new Error("The academic period was not added.");
+  await db.insert(academicPeriodChanges).values({
+    periodId: added.id,
+    changedBy: by,
+    action: "added",
+    startsOnAfter: period.startsOn,
+    endsOnAfter: period.endsOn,
+  });
+}
+
 /**
  * Adds an academic period, and a line to the log of period changes with
  * who added it and when. Gives back the name of the period.
@@ -43,27 +63,14 @@ export async function addPeriod(
   const parsed = parseNewPeriod(sent);
   if (!parsed.ok) return parsed;
   const period = parsed.value;
-  const title = periodTitle(period);
 
-  return db.transaction(async (tx) => {
-    if (await alreadyExists(tx, period)) {
-      return { ok: false, error: `Periode ${title} sudah ada.` };
-    }
-    const overlapped = await findOverlap(tx, period);
-    if (overlapped) return overlapRefusal(overlapped);
-
-    const [added] = await tx
-      .insert(academicPeriods)
-      .values(period)
-      .returning({ id: academicPeriods.id });
-    if (!added) throw new Error("The academic period was not added.");
-    await tx.insert(academicPeriodChanges).values({
-      periodId: added.id,
-      changedBy: actor.id,
-      action: "added",
-      startsOnAfter: period.startsOn,
-      endsOnAfter: period.endsOn,
-    });
-    return { ok: true, value: title };
-  });
+  if (await alreadyExists(db, period)) return duplicateRefusal(period);
+  const overlapped = await findOverlap(db, period);
+  if (overlapped) return overlapRefusal(overlapped);
+  try {
+    await db.transaction((tx) => writePeriod(tx, actor.id, period));
+  } catch (error) {
+    return refusalAfterError(db, error, period);
+  }
+  return { ok: true, value: periodTitle(period) };
 }

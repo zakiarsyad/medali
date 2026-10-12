@@ -63,7 +63,6 @@ export function AddPeriodForm({
             name="year"
             className={shared.input}
             placeholder="2026/2027"
-            inputMode="numeric"
             value={year}
             onChange={(event) => changeYear(event.target.value)}
           />

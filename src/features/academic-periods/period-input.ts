@@ -31,6 +31,12 @@ const DAYS_MISSING = {
   ok: false,
   error: "Isi tanggal Mulai dan Selesai.",
 } as const;
+const FIRST_DAY = "2000-01-01";
+const LAST_DAY = "2101-12-31";
+const DAYS_OUT_OF_RANGE = {
+  ok: false,
+  error: "Mulai dan Selesai harus di antara tahun 2000 dan 2101.",
+} as const;
 const END_NOT_AFTER_START = {
   ok: false,
   error: "Selesai harus setelah Mulai.",
@@ -62,10 +68,15 @@ function isDay(sent: string): boolean {
   return at.toISOString().startsWith(sent);
 }
 
+function isInRange(day: string): boolean {
+  return day >= FIRST_DAY && day <= LAST_DAY;
+}
+
 /** Checks the days of a period as sent: two real days, the end after the start. */
 export function parsePeriodDates(sent: SentPeriodDates): Parsed<PeriodDates> {
   const { startsOn, endsOn } = sent;
   if (!isDay(startsOn) || !isDay(endsOn)) return DAYS_MISSING;
+  if (!isInRange(startsOn) || !isInRange(endsOn)) return DAYS_OUT_OF_RANGE;
   if (endsOn <= startsOn) return END_NOT_AFTER_START;
   return { ok: true, value: { startsOn, endsOn } };
 }

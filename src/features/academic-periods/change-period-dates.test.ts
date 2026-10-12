@@ -122,6 +122,43 @@ describe("changePeriodDates", () => {
     });
   });
 
+  it("refuses a new end before today, which would lock the period", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, period } = await withOnePeriod(db);
+
+      const changed = await changePeriodDates(
+        db,
+        actor,
+        period.id,
+        { startsOn: "2026-08-01", endsOn: "2026-10-11" },
+        TODAY,
+      );
+
+      expect(changed).toEqual({
+        ok: false,
+        error: "Selesai tidak boleh sebelum hari ini.",
+      });
+      expect(await db.select().from(academicPeriods)).toEqual([period]);
+      expect(await db.select().from(academicPeriodChanges)).toHaveLength(1);
+    });
+  });
+
+  it("takes a new end on today", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, period } = await withOnePeriod(db);
+
+      const changed = await changePeriodDates(
+        db,
+        actor,
+        period.id,
+        { startsOn: "2026-08-01", endsOn: TODAY },
+        TODAY,
+      );
+
+      expect(changed.ok).toBe(true);
+    });
+  });
+
   it("changes nothing when the end is not after the start", async () => {
     await inTestDatabase(async (db) => {
       const { actor, period } = await withOnePeriod(db);
