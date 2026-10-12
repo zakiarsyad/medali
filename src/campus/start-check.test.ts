@@ -140,6 +140,59 @@ describe("startRefusals", () => {
     expect(refusal).toContain("DATABASE_PASSWORD");
   });
 
+  it.each([
+    "ab/cd9",
+    "ab#cd9",
+    "ab?cd9",
+    "ab%cd9",
+    "ab cd9",
+    "sandi-uji",
+    "@b:c",
+  ])(
+    "refuses the database password %o, which would break the database's address",
+    (password) => {
+      const refusals = startRefusals({
+        ...FILLED,
+        DATABASE_PASSWORD: password,
+        DATABASE_URL: `postgres://medali:${password}@db:5432/medali`,
+      });
+
+      expect(refusals).toHaveLength(1);
+      expect(refusals[0]).toContain("DATABASE_PASSWORD");
+      expect(refusals[0]).toContain("letters and digits only");
+      expect(refusals[0]).toContain("refused to start");
+      expect(refusals[0]).not.toContain(password);
+    },
+  );
+
+  it("takes a database password of letters and digits", () => {
+    const filled = { ...FILLED, DATABASE_PASSWORD: "sandiUjiCoba123" };
+
+    expect(startRefusals(filled)).toEqual([]);
+  });
+
+  it("leaves an empty database password to the refusal for what is missing", () => {
+    const refusals = startRefusals({
+      ...FILLED,
+      DATABASE_PASSWORD: "",
+      DATABASE_URL: "",
+    });
+
+    expect(refusals).toHaveLength(1);
+    expect(refusals[0]).toContain("These settings are empty: DATABASE_URL.");
+  });
+
+  it("refuses a database address that cannot be read, without showing it", () => {
+    const address = "postgres://medali:ab/cd9@db:5432/medali";
+    const refusals = startRefusals({ ...FILLED, DATABASE_URL: address });
+
+    expect(refusals).toHaveLength(1);
+    expect(refusals[0]).toContain("DATABASE_URL");
+    expect(refusals[0]).toContain("refused to start");
+    expect(refusals[0]).not.toContain("ab/cd9");
+    expect(refusals[0]).not.toContain("postgres://");
+  });
+
   it("gives both refusals when a setting is missing and another must go", () => {
     const refusals = startRefusals({
       ...FILLED,

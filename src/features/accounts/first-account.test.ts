@@ -71,4 +71,20 @@ describe("parseFirstAccount", () => {
 
     expect(refusal).toContain("CAMPUS_EMAIL_ENDING");
   });
+
+  it.each([
+    [["Ke", "kepala.uji@kampus.example"]],
+    [["Kepala Uji Pertama", "kepala uji@kampus.example"]],
+    [["Kepala Uji Pertama", "kepala.uji@contoh.example"]],
+    [["Kepala Uji Pertama", "kepala.uji@kampus.example", "lagi"]],
+  ])(
+    "never repeats what was typed, nor a setting's value, in refusing %o",
+    (args) => {
+      const refusal = refusalOf(args);
+
+      for (const typed of args) expect(refusal).not.toContain(typed);
+      expect(refusal).not.toContain("kepala");
+      expect(refusal).not.toContain(ENDING);
+    },
+  );
 });

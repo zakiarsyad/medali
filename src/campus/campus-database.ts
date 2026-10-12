@@ -1,4 +1,5 @@
 import type { DatabaseKind } from "@/db/deploy-plan";
+import { Refusal } from "@/db/refusal";
 
 /**
  * Checks the database the campus server package was given, before
@@ -10,7 +11,7 @@ export function checkCampusDatabase(
 ): "go" | "mark-and-go" {
   if (marker === "campus") return "go";
   if (marker === null) return "mark-and-go";
-  throw new Error(
+  throw new Refusal(
     `This database is marked ${marker}: it holds sample data and is not the campus server's; refused to start.`,
   );
 }

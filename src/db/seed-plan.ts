@@ -1,5 +1,6 @@
 import type { Stage } from "@/settings";
 import type { DatabaseKind } from "./deploy-plan";
+import { Refusal } from "./refusal";
 
 /** Refuses the sample data anywhere but on a local computer. */
 export function checkSeedStage(stage: Stage): void {
@@ -16,7 +17,7 @@ export function checkSeedStage(stage: Stage): void {
  */
 export function checkSeedTarget(marker: DatabaseKind | null): void {
   if (marker !== "campus") return;
-  throw new Error(
+  throw new Refusal(
     "This database is marked campus: it holds real data, which sample data would replace; refused.",
   );
 }

@@ -9,11 +9,10 @@ name: medali-campus
 x-app: &app
   build: .
   image: medali-campus-app
-  # Without the file the package still gets as far as its own check, which
-  # names each missing setting.
-  env_file:
-    - path: .env.campus
-      required: false
+  # The whole settings file reaches the app, so the check also sees a
+  # setting that should not be there. Without the file Docker Compose
+  # itself stops, saying the file is not found, before the check runs.
+  env_file: .env.campus
   environment:
     # Left empty while the password is, so the check names it as missing.
     DATABASE_URL: ${DATABASE_PASSWORD:+postgres://medali:${DATABASE_PASSWORD}@db:5432/medali}

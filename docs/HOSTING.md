@@ -209,8 +209,10 @@ Google rejects.
 ## The campus server package
 
 The package is the app, its database and its file storage (MinIO),
-started together with one command. It needs only Docker on the server.
-It holds no key, no password and no sample data.
+started together with one command. It needs only Docker on the server,
+with its Compose plugin in version 2 or newer: the `docker compose`
+command. It was tried with Docker Compose 5.1.2. It holds no key, no
+password and no sample data.
 
 The package carries a mark, `MEDALI_CAMPUS`, built into it. With the
 mark the app is on the campus server whatever the other settings say:
@@ -230,13 +232,17 @@ each one is. The file stays on the server and is never committed.
 
     docker compose --file compose.campus.yaml --env-file .env.campus up --build --detach --wait
 
+While `.env.campus` is not there, Docker Compose itself stops with
+"couldn't find env file" and nothing starts.
+
 On every start the package does, in this order:
 
-1. It checks the settings. With a setting empty, or with a setting that
-   would turn "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or
+1. It checks the settings. With a setting empty, with a database
+   password that holds anything but letters and digits, or with a setting
+   that would turn "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or
    `NODE_ENV` set to `development`), it stops there and nothing starts.
-   The reason, with the name of each setting to fill in or to remove and
-   never a value, is shown by:
+   The reason, with the name of each setting to fill in, to change or to
+   remove and never a value, is shown by:
 
        docker compose --file compose.campus.yaml logs check
 
@@ -255,11 +261,12 @@ log and answers every address with an error.
 The package starts with no account. One command makes the first Kepala
 Unit account, who then adds everyone else in Pengguna dan peran:
 
-    docker compose --file compose.campus.yaml exec app pnpm account:first "Nama Lengkap" nama@kampus.example
+    docker compose --file compose.campus.yaml exec app pnpm --silent account:first "Nama Lengkap" nama@kampus.example
 
-It adds a line to the log of role changes. It refuses, and says why,
-once a Kepala Unit account that is not removed exists, or when the
-address does not end with `CAMPUS_EMAIL_ENDING`.
+It adds a line to the log of role changes. It refuses, and says why in
+one line, once a Kepala Unit account that is not removed exists, or when
+the address does not end with `CAMPUS_EMAIL_ENDING`. It never prints the
+name or the address back.
 
 ### Update to a newer version
 
@@ -281,6 +288,12 @@ it removes both, and there is no backup yet.
 Only the app listens on the network. The database and the file storage
 have no port on the server; only the app reaches them, inside the
 package.
+
+Nobody can sign in until the app is opened over HTTPS: the browser keeps
+the sign-in cookies only on a secure connection. So the server needs a
+web certificate in front of the app, which is set up apart from this
+package. Once it is there, people use that secure address, and the
+app's own port should no longer be open to them directly.
 
 ### Trying it on a local computer
 

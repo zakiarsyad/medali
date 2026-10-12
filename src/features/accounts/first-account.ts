@@ -29,7 +29,7 @@ export function parseFirstAccount(
     more.length === 0;
   if (!isNameAndAddress) {
     return refused(
-      'Give a name and a campus address, the name in quotes: "Nama Lengkap" nama@kampus.example',
+      'Give a name and a campus address, the name in quotes: "Nama Lengkap" nama@contoh.example',
     );
   }
   if (campusEnding === "") {
@@ -45,7 +45,7 @@ export function parseFirstAccount(
   }
   if (!isCampusEmail(email, campusEnding)) {
     return refused(
-      `The address does not end with the campus address ending, ${campusEnding}.`,
+      "The address does not end with the campus address ending, the setting CAMPUS_EMAIL_ENDING.",
     );
   }
   return { ok: true, value: { name, email } };

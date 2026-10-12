@@ -132,6 +132,12 @@ change any of these.
 12. Two runs of the first-account command at the same moment make one
     account: the second waits, then refuses.
 13. On each start the package says how many table changes were new.
+14. The database password must be letters and digits only, because it
+    becomes part of the database's address. Any other is refused at the
+    start, by the name of the setting.
+15. A refusal of the package's commands is one plain line. It never
+    shows a setting's value, the database's address, or the name and
+    address typed for the first account.
 
 ## Steps
 

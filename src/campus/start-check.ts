@@ -1,3 +1,4 @@
+import { databaseAddressRefusal } from "@/db/database-address";
 import {
   FILE_STORAGE_NAMES,
   hasCampusMark,
@@ -39,6 +40,25 @@ function missingRefusal(missing: SettingName[]): string {
   return `These settings are empty: ${missing.join(", ")}. Fill them in the settings file of the package.${filledFrom} The package refused to start.`;
 }
 
+const LETTERS_AND_DIGITS = /^[A-Za-z0-9]+$/;
+
+/**
+ * Why the database cannot be reached as its settings are written, or
+ * null when it can. The package makes the database's address from the
+ * password, and any other character than a letter or a digit could break
+ * that address: the database would be made with the password, and the app
+ * could never reach it.
+ */
+export function databaseSettingRefusal(env: SettingsEnv): string | null {
+  const password = env.DATABASE_PASSWORD;
+  if (password && !LETTERS_AND_DIGITS.test(password)) {
+    return "The setting DATABASE_PASSWORD must be letters and digits only, because it becomes part of the database's address. Change it in the settings file of the package.";
+  }
+  // An empty address is already named with the settings that are missing.
+  if (!env.DATABASE_URL) return null;
+  return databaseAddressRefusal(env);
+}
+
 /**
  * Why the campus server package may not start, one line for each reason,
  * or nothing when it may. A line names settings and never shows a value.
@@ -58,5 +78,7 @@ export function startRefusals(env: SettingsEnv): string[] {
   }
   const missing = missingSettings(env);
   if (missing.length > 0) refusals.push(missingRefusal(missing));
+  const unusable = databaseSettingRefusal(env);
+  if (unusable) refusals.push(`${unusable} The package refused to start.`);
   return refusals;
 }

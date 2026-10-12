@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   checkNamesItsDatabase,
+  databaseAddressRefusal,
   databaseNameOf,
   pointsAtThisComputer,
 } from "./database-address";
@@ -23,6 +24,28 @@ describe("pointsAtThisComputer", () => {
     [undefined],
   ])("is false for %s", (url) => {
     expect(pointsAtThisComputer(url)).toBe(false);
+  });
+});
+
+describe("databaseAddressRefusal", () => {
+  it("finds nothing wrong with an address that can be read", () => {
+    expect(databaseAddressRefusal({ DATABASE_URL: LOCAL })).toBeNull();
+  });
+
+  it.each([[{}], [{ DATABASE_URL: "" }]])("says %o is empty", (env) => {
+    expect(databaseAddressRefusal(env)).toContain("DATABASE_URL is empty");
+  });
+
+  it.each([
+    "postgres://medali:ab/cd9@db:5432/medali",
+    "postgres://medali:ab#cd9@db:5432/medali",
+    "not a url",
+  ])("says %s cannot be read, and never shows it", (url) => {
+    const refusal = databaseAddressRefusal({ DATABASE_URL: url });
+
+    expect(refusal).toContain("DATABASE_URL");
+    expect(refusal).not.toContain(url);
+    expect(refusal).not.toContain("cd9");
   });
 });
 
