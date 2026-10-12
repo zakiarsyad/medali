@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000300 to 9900000399.
 import type { SQL } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import {

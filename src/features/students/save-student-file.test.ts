@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000800 to 9900000899.
 import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { accountsInRoleOrder } from "@/auth/accounts";

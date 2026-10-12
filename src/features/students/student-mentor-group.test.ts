@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900001900 to 9900001999.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { accounts } from "@/db/schema";
@@ -109,7 +110,7 @@ describe("readStudentMentorGroup", () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "UJIKP");
       const studentId = await addTestStudent(db, program, {
-        nim: "9900000601",
+        nim: "9900001901",
         name: "Kelompok Uji Ani",
       });
       const mentor = await addTestActor(db, "Kini Uji", ["mentor"]);
@@ -142,11 +143,11 @@ describe("readStudentMentorGroup", () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "UJIKP");
       const member = await addTestStudent(db, program, {
-        nim: "9900000602",
+        nim: "9900001902",
         name: "Kelompok Uji Budi",
       });
       const outside = await addTestStudent(db, program, {
-        nim: "9900000603",
+        nim: "9900001903",
         name: "Kelompok Uji Cici",
       });
       const mentor = await addTestActor(db, "Kini Uji", ["mentor"]);
