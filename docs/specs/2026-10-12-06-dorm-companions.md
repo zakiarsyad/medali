@@ -90,7 +90,7 @@ automatically, and "Isi otomatis" places residents only.
 
 - [x] 1. The table for kakak pendamping is added, with sample data of
   two active and one inactive kakak pendamping.
-- [ ] 2. The rights to see and to manage kakak pendamping are added to
+- [x] 2. The rights to see and to manage kakak pendamping are added to
   the permission list, with their checks.
 - [ ] 3. The tab shows the note and the list, read only.
 - [ ] 4. The form names a kakak pendamping, with the Asrama check.
