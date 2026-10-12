@@ -8,6 +8,8 @@ export const ACTIONS = [
   "change_curriculum",
   "manage_activities",
   "set_academic_periods",
+  "view_dorm_rooms",
+  "manage_dorm_rooms",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -18,6 +20,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   change_curriculum: "Mengubah kurikulum",
   manage_activities: "Mengelola kegiatan",
   set_academic_periods: "Mengatur periode akademik",
+  view_dorm_rooms: "Melihat ploting kamar",
+  manage_dorm_rooms: "Mengelola ploting kamar",
 };
 
 /**
@@ -100,6 +104,7 @@ export const ROLES: Record<RoleId, Role> = {
       "change_curriculum",
       "manage_activities",
       "set_academic_periods",
+      "view_dorm_rooms",
     ],
     rows: "all",
   },
@@ -108,7 +113,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "DR",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: [],
+    actions: ["view_dorm_rooms"],
     rows: "all",
   },
   head_of_program: {
@@ -116,7 +121,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KP",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: [],
+    actions: ["view_dorm_rooms"],
     rows: "own_program",
   },
   mentor: {
@@ -156,7 +161,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PA",
     pages: ["tasks", "dorm", "settings"],
     tabs: { dorm: ALL_DORM, settings: ["new_students"] },
-    actions: ["input_new_students"],
+    actions: ["input_new_students", "view_dorm_rooms", "manage_dorm_rooms"],
     rows: "all",
   },
   bam_bphk: {
@@ -164,7 +169,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BA",
     pages: ["dorm"],
     tabs: { dorm: ALL_DORM },
-    actions: [],
+    actions: ["view_dorm_rooms"],
     rows: "all",
   },
   bam_compliance: {
@@ -180,7 +185,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BR",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "rooms", "cleaning"] },
-    actions: [],
+    actions: ["view_dorm_rooms", "manage_dorm_rooms"],
     rows: "all",
   },
   bam_spiritual: {
