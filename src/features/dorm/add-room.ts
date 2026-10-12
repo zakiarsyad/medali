@@ -2,8 +2,8 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { dormRooms } from "@/db/schema";
+import { DORM_NAMES, type DormId } from "@/dorms/dorms";
 import type { Parsed } from "@/parsed";
-import { DORM_NAMES, type DormId } from "./dorms";
 import { NOT_ALLOWED } from "./not-allowed";
 import { parseNewRoom, type SentRoom } from "./room-input";
 

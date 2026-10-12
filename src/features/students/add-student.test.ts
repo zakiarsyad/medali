@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000100 to 9900000199.
 import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { EMAIL_IN_USE_RULE } from "@/auth/account-email";
@@ -28,7 +29,7 @@ async function addActor(db: Database): Promise<string> {
 async function addProgram(db: Database): Promise<number> {
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: "Prodi Uji Tambah" })
+    .values({ name: "Prodi Uji Tambah", code: "Prodi Uji Tambah" })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   return program.id;

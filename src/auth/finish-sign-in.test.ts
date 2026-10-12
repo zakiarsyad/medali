@@ -86,7 +86,7 @@ describe("finishSignIn", () => {
     await inTestDatabase(async (db) => {
       const email = "mahasiswa.uji@kampus.example";
       const accountId = await addTestStudentAccount(db, {
-        nim: "9900000811",
+        nim: "9900002711",
         email,
       });
 
@@ -106,7 +106,7 @@ describe("finishSignIn", () => {
 
   it("refuses a student whose account holds no address, as it refuses an unknown address", async () => {
     await inTestDatabase(async (db) => {
-      await addTestStudentAccount(db, { nim: "9900000812", email: null });
+      await addTestStudentAccount(db, { nim: "9900002712", email: null });
       const answer = { verified: true, hostedDomain: "kampus.example" };
 
       const student = await finish(db, {

@@ -3,6 +3,12 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestProgram,
+  addTestRoom,
+  addTestStudent,
+  placeTestResident,
+} from "@/dorms/test-records";
 import { UNPLACED_SHOWN } from "./room-limits";
 import {
   countResidents,
@@ -11,13 +17,7 @@ import {
   readFloorResidents,
   readRooms,
 } from "./room-list";
-import {
-  addTestProgram,
-  addTestRoom,
-  addTestStudent,
-  EVERYONE,
-  placeTestResident,
-} from "./test-records";
+import { EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

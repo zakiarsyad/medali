@@ -18,7 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
-import { DORM_IDS } from "@/features/dorm/dorms";
+import { DORM_IDS } from "@/dorms/dorms";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -56,6 +56,32 @@ export const academicPeriodChangeAction = pgEnum(
 
 export const dorm = pgEnum("dorm", DORM_IDS);
 
+export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
+  "draft",
+  "submitted",
+  "fixed",
+  "cancelled",
+]);
+
+export const cohortAssignmentMethod = pgEnum("cohort_assignment_method", [
+  "balanced",
+  "by_nim",
+  "by_class",
+]);
+
+export const cohortAssignmentChangeAction = pgEnum(
+  "cohort_assignment_change_action",
+  [
+    "groups_formed",
+    "groups_reformed",
+    "draft_saved",
+    "submitted",
+    "fixed",
+    "cancelled",
+    "members_dropped",
+  ],
+);
+
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
  * or from a file, kept with the name of that file.
@@ -65,6 +91,8 @@ export type StudentInputSource = "form" | `upload:${string}`;
 export const studyPrograms = pgTable("study_programs", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull().unique(),
+  /** The short name a mentor group's code is made with, such as D3PJK. */
+  code: text().notNull().unique(),
 });
 
 export const students = pgTable("students", {
@@ -418,5 +446,212 @@ export const dormCompanions = pgTable(
       "dorm_companions_room_only_while_active",
       sql`${table.isActive} or ${table.roomId} is null`,
     ),
+  ],
+);
+
+/**
+ * A kelompok pengasuhan: students of one program studi, angkatan and
+ * jalur, formed when they enter. A group is never erased: one whose
+ * penetapan was cancelled is ended, with who and when. Its number is used
+ * once among the groups of those three that are not ended.
+ */
+export const mentorGroups = pgTable(
+  "mentor_groups",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studyProgramId: integer()
+      .notNull()
+      .references(() => studyPrograms.id),
+    cohortYear: smallint().notNull(),
+    entryPath: entryPath().notNull(),
+    number: smallint().notNull(),
+    startsOn: date().notNull(),
+    endedAt: timestamp({ withTimezone: true }),
+    endedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    uniqueIndex("mentor_groups_number_in_cohort")
+      .on(table.studyProgramId, table.cohortYear, table.entryPath, table.number)
+      .where(sql`${table.endedAt} is null`),
+    check("mentor_groups_number_from_1", sql`${table.number} >= 1`),
+    check(
+      "mentor_groups_ended_with_who_and_when",
+      sql`(${table.endedAt} is null) = (${table.endedBy} is null)`,
+    ),
+  ],
+);
+
+/**
+ * The students of a group. The student is the key, so a student is in one
+ * group at most, and a group that still has members cannot be erased.
+ */
+export const mentorGroupMembers = pgTable(
+  "mentor_group_members",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+  },
+  (table) => [index("mentor_group_members_group").on(table.groupId)],
+);
+
+/**
+ * Who the members of an ended group were. Ending a group moves its
+ * members here, so each of them is free for a new group.
+ */
+export const mentorGroupPastMembers = pgTable(
+  "mentor_group_past_members",
+  {
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+  },
+  (table) => [primaryKey({ columns: [table.groupId, table.studentId] })],
+);
+
+/**
+ * Who has looked after a group, one line per mentor and time. The line
+ * without a last day is the mentor of today, and a group has one such
+ * line at most. Only a line that has ended carries a reason.
+ */
+export const mentorGroupMentors = pgTable(
+  "mentor_group_mentors",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    mentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    startsOn: date().notNull(),
+    endsOn: date(),
+    endReason: text(),
+  },
+  (table) => [
+    uniqueIndex("mentor_group_mentors_one_current")
+      .on(table.groupId)
+      .where(sql`${table.endsOn} is null`),
+    index("mentor_group_mentors_mentor").on(table.mentorId),
+    check(
+      "mentor_group_mentors_ends_after_start",
+      sql`${table.endsOn} >= ${table.startsOn}`,
+    ),
+    check(
+      "mentor_group_mentors_reason_only_when_ended",
+      sql`${table.endReason} is null or ${table.endsOn} is not null`,
+    ),
+  ],
+);
+
+/**
+ * The penetapan of one angkatan: the groups being prepared for its new
+ * students, until Kepala Unit fixes them. An angkatan has one at most. A
+ * fixed one carries its decree number and the day its groups start.
+ */
+export const cohortAssignments = pgTable(
+  "cohort_assignments",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    cohortYear: smallint().notNull(),
+    status: cohortAssignmentStatus().notNull().default("draft"),
+    targetSize: smallint().notNull(),
+    method: cohortAssignmentMethod().notNull(),
+    decreeNumber: text(),
+    /** "Berlaku mulai": the day the groups start once they are fixed. */
+    effectiveOn: date(),
+    /** Goes up with every save, so a save made from an older one is caught. */
+    version: integer().notNull().default(1),
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+  },
+  (table) => [
+    unique("cohort_assignments_one_per_cohort").on(table.cohortYear),
+    check(
+      "cohort_assignments_target_size_in_range",
+      sql`${table.targetSize} between 25 and 35`,
+    ),
+    check(
+      "cohort_assignments_fixed_with_decree_and_day",
+      sql`${table.status} <> 'fixed' or (${table.decreeNumber} is not null and ${table.effectiveOn} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * A group of a penetapan while it is prepared, with the mentor chosen for
+ * it. Its number is used once among the groups of its penetapan, program
+ * studi and jalur. While fixed it names the kelompok pengasuhan it became.
+ */
+export const cohortAssignmentGroups = pgTable(
+  "cohort_assignment_groups",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    assignmentId: uuid()
+      .notNull()
+      .references(() => cohortAssignments.id),
+    studyProgramId: integer()
+      .notNull()
+      .references(() => studyPrograms.id),
+    entryPath: entryPath().notNull(),
+    number: smallint().notNull(),
+    mentorId: uuid().references(() => accounts.id),
+    mentorGroupId: uuid().references(() => mentorGroups.id),
+  },
+  (table) => [
+    unique("cohort_assignment_groups_number_in_program").on(
+      table.assignmentId,
+      table.studyProgramId,
+      table.entryPath,
+      table.number,
+    ),
+    check("cohort_assignment_groups_number_from_1", sql`${table.number} >= 1`),
+  ],
+);
+
+/**
+ * The students of a group being prepared. The student is the key, so a
+ * student is in one such group at most.
+ */
+export const cohortAssignmentMembers = pgTable(
+  "cohort_assignment_members",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    groupId: uuid()
+      .notNull()
+      .references(() => cohortAssignmentGroups.id),
+  },
+  (table) => [index("cohort_assignment_members_group").on(table.groupId)],
+);
+
+/**
+ * "Riwayat proses": who did what to a penetapan and when. Rows here
+ * cannot be changed or deleted; the database refuses it.
+ */
+export const cohortAssignmentChanges = pgTable(
+  "cohort_assignment_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    assignmentId: uuid()
+      .notNull()
+      .references(() => cohortAssignments.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    action: cohortAssignmentChangeAction().notNull(),
+  },
+  (table) => [
+    index("cohort_assignment_changes_assignment").on(table.assignmentId),
   ],
 );

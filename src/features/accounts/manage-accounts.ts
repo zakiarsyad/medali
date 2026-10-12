@@ -22,8 +22,15 @@ import {
   roleChanges,
   studyPrograms,
 } from "@/db/schema";
+import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import type { NewAccount, RoleChange } from "./account-input";
+import {
+  holdsGroupToday,
+  REMOVAL_REFUSED_FOR_GROUP,
+  ROLE_REFUSED_FOR_GROUP,
+  takesMentorRole,
+} from "./held-groups";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
 
 export const PAGE_SIZE = 25;
@@ -123,16 +130,25 @@ export async function listManagedAccounts(
   };
 }
 
-/** The account when it is not removed, with the student it belongs to. */
-async function findActive(
-  db: Database,
+/**
+ * Reads the account when it is not removed, with the student it belongs
+ * to, and holds it until the transaction ends. Every change to the roles
+ * of a staff account and every removal starts here, so two of them never
+ * run at the same moment: the second waits and then sees what the first
+ * one saved. The hold is the weaker one, which lets other rows still name
+ * this account: a log line names the manager who saved, so with the full
+ * hold two managers saving each other's roles would block each other, and
+ * the database would refuse one of the saves.
+ */
+async function lockActive(
+  tx: Database,
   accountId: string,
 ): Promise<{ studentId: string | null } | null> {
-  const [found] = await db
+  const [found] = await tx
     .select({ studentId: accounts.studentId })
     .from(accounts)
     .where(and(eq(accounts.id, accountId), isNull(accounts.deletedAt)))
-    .limit(1);
+    .for("no key update");
   return found ?? null;
 }
 
@@ -206,7 +222,8 @@ export async function addAccount(
 /**
  * Sets the managed roles of a staff account. Roles not managed here, such
  * as Kepala Unit, stay as they are. A student's account is refused: it
- * may only get BAM roles, in the panel Badan Asrama Mahasiswa.
+ * may only get BAM roles, in the panel Badan Asrama Mahasiswa. So is
+ * taking the Pengasuh role from the mentor of today of a group.
  */
 export async function changeRoles(
   db: Database,
@@ -214,7 +231,7 @@ export async function changeRoles(
   by: string,
 ): Promise<Parsed<RoleId[]>> {
   return db.transaction(async (tx) => {
-    const account = await findActive(tx, change.accountId);
+    const account = await lockActive(tx, change.accountId);
     if (!account) return NOT_FOUND;
     if (account.studentId !== null) {
       return {
@@ -232,6 +249,10 @@ export async function changeRoles(
     if (after.length === 0) {
       return { ok: false, error: "Pilih minimal satu peran." };
     }
+    const leavesGroup =
+      takesMentorRole(before, after) &&
+      (await holdsGroupToday(tx, change.accountId));
+    if (leavesGroup) return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
 
     await tx
       .delete(accountRoles)
@@ -261,6 +282,7 @@ export async function changeRoles(
       await tx.insert(roleChanges).values({
         accountId: change.accountId,
         changedBy: by,
+        changedAt: WRITTEN_NOW,
         action: "roles_changed",
         rolesBefore: before,
         rolesAfter: after,
@@ -273,7 +295,8 @@ export async function changeRoles(
 /**
  * Marks an account removed. It is never erased. A student's account and
  * an account that holds a role not managed here, such as Kepala Unit, are
- * not removed here; nor is the manager's own account.
+ * not removed here; nor is the manager's own account, nor the mentor of
+ * today of a group, which would be left without one.
  */
 export async function removeAccount(
   db: Database,
@@ -281,7 +304,7 @@ export async function removeAccount(
   by: string,
 ): Promise<Parsed<null>> {
   return db.transaction(async (tx) => {
-    const account = await findActive(tx, accountId);
+    const account = await lockActive(tx, accountId);
     if (!account) return NOT_FOUND;
     if (accountId === by) {
       return { ok: false, error: "Akun Anda sendiri tidak bisa dihapus." };
@@ -293,6 +316,9 @@ export async function removeAccount(
         error: "Akun ini tidak dikelola di sini, sehingga tidak bisa dihapus.",
       };
     }
+    if (await holdsGroupToday(tx, accountId)) {
+      return { ok: false, error: REMOVAL_REFUSED_FOR_GROUP };
+    }
     await tx
       .update(accounts)
       .set({ deletedAt: new Date(), deletedBy: by })
@@ -300,6 +326,7 @@ export async function removeAccount(
     await tx.insert(roleChanges).values({
       accountId,
       changedBy: by,
+      changedAt: WRITTEN_NOW,
       action: "removed",
       rolesBefore: before,
       rolesAfter: [],

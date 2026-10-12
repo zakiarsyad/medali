@@ -2,6 +2,7 @@ import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { accountRoles, accounts, students, studyPrograms } from "@/db/schema";
+import { staffThenStudents } from "./account-order";
 import { ROLE_IDS, type RoleId } from "./role-ids";
 import { workingRoles } from "./working-roles";
 
@@ -129,16 +130,7 @@ export async function firstAccountWithRole(
   return findActiveAccount(db, first.id);
 }
 
-function firstRoleIndex(account: Account): number {
-  const first = account.roles[0];
-  return first ? ROLE_IDS.indexOf(first) : ROLE_IDS.length;
-}
-
-/** Every active account, grouped by its first role in role order. */
+/** Every active account, in the order of Ganti peran: see `staffThenStudents`. */
 export async function accountsInRoleOrder(db: Database): Promise<Account[]> {
-  const found = await activeAccounts(db);
-  return found.sort(
-    (a, b) =>
-      firstRoleIndex(a) - firstRoleIndex(b) || a.name.localeCompare(b.name),
-  );
+  return staffThenStudents(await activeAccounts(db));
 }

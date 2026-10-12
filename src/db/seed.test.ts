@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
-import { DORM_IDS } from "@/features/dorm/dorms";
+import { DORM_IDS } from "@/dorms/dorms";
 import { readStudentDorm } from "@/features/dorm/student-dorm";
 import {
   SAMPLE_ACCOUNTS,

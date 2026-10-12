@@ -120,10 +120,10 @@ change any of these.
     three messages must read the same everywhere.
 11. An address longer than 254 characters, the longest a mailbox can
     have, gets "Alamat email tidak valid."
-12. The student detail and Profil saya have no screen yet. The check
-    covers the Mahasiswa list and what every screen is told about the
-    person signed in: neither carries the address, so those two screens
-    get none when they are built.
+12. The student detail and Profil saya now exist. The check covers the
+    Mahasiswa list, the student detail, Profil saya and what every
+    screen is told about the person signed in: none of them carries
+    the address.
 13. The search of the list still looks at the name and the NIM only,
     not at the address.
 14. In a file the column "email" comes last. A file with no row of

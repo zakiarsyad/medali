@@ -1,6 +1,11 @@
+// Sample NIMs of this file: 9900000500 to 9900000599.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { accountsInRoleOrder, activeAccountIdByEmail } from "@/auth/accounts";
+import {
+  accountsInRoleOrder,
+  activeAccountIdByEmail,
+  findActiveAccount,
+} from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import { sessionAccount, startSession } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
@@ -376,6 +381,26 @@ describe("changeStudent", () => {
     });
   });
 
+  it("refuses a student who tries to change their own record, and changes nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { program } = await addThroughTab(db, "9900000512");
+      const record = await recordOf(db, "9900000512");
+      const { id } = await accountOf(db, record.id);
+      const own = await findActiveAccount(db, id);
+      if (!own) throw new Error("The student account is not active.");
+
+      const done = await changeStudent(db, own, {
+        ...student("9900000512", program),
+        name: "Tidak Boleh",
+      });
+
+      expect(own.roles).toEqual(["student"]);
+      expect(own.studentId).toBe(record.id);
+      expect(done).toEqual(NOT_ALLOWED);
+      expect((await recordOf(db, "9900000512")).name).toBe("Ubah Uji");
+    });
+  });
+
   it("refuses a student of the first records and a removed student", async () => {
     await inTestDatabase(async (db) => {
       const { program, staff } = await addThroughTab(db, "9900000505");
@@ -406,7 +431,7 @@ describe("removeStudent", () => {
       await inTestDatabase(async (db) => {
         await addThroughTab(db, "9900000507");
         const remover = await addTestActor(db, "Penghapus Uji", [role]);
-        const before = await countStudents(db);
+        const before = await countStudents(db, []);
 
         const removed = await removeStudent(db, remover, "9900000507");
 
@@ -414,13 +439,14 @@ describe("removeStudent", () => {
         const record = await recordOf(db, "9900000507");
         expect(record.deletedBy).toBe(remover.id);
         expect(record.deletedAt).toBeInstanceOf(Date);
-        const listed = await listAddedStudents(db, "9900000507");
+        const listed = await listAddedStudents(db, "9900000507", []);
         expect(listed).toEqual({ students: [], matching: 0 });
-        expect(await countStudents(db)).toEqual({
+        expect(await countStudents(db, [])).toEqual({
           total: before.total - 1,
           active: before.active - 1,
           added: before.added - 1,
           addedActive: before.addedActive - 1,
+          addedResidents: before.addedResidents,
         });
       });
     },

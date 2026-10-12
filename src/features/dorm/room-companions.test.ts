@@ -3,17 +3,16 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { readRoomCompanions } from "./room-companions";
-import { readRooms } from "./room-list";
-import { loadRooms } from "./rooms-view";
 import {
-  addTestCompanion,
   addTestProgram,
   addTestRoom,
   addTestStudent,
-  EVERYONE,
   placeTestResident,
-} from "./test-records";
+} from "@/dorms/test-records";
+import { readRoomCompanions } from "./room-companions";
+import { readRooms } from "./room-list";
+import { loadRooms } from "./rooms-view";
+import { addTestCompanion, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

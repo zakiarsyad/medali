@@ -3,15 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { PAGE_SIZE } from "@/ui/list-pages";
-import { listCompanions } from "./companion-list";
 import {
-  addTestCompanion,
   addTestProgram,
   addTestRoom,
   addTestStudent,
-  EVERYONE,
-} from "./test-records";
+} from "@/dorms/test-records";
+import { PAGE_SIZE } from "@/ui/list-pages";
+import { listCompanions } from "./companion-list";
+import { addTestCompanion, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

@@ -1,5 +1,5 @@
 import { forbidden } from "next/navigation";
-import { may, rowLimitFor } from "@/auth/access";
+import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { readRoomsParams } from "@/features/dorm/rooms-address";
 import { RoomsScreen } from "@/features/dorm/rooms-screen";
@@ -13,7 +13,7 @@ export default async function DormRoomsPage(props: PageProps<"/asrama/kamar">) {
     <RoomsScreen
       tabs={{ pagePath: "asrama", tabs: opened.tabs, open: "kamar" }}
       params={readRoomsParams(await props.searchParams)}
-      visible={visibleTo(rowLimitFor(account))}
+      visible={visibleTo(rowLimitForAction(account, "view_dorm_rooms"))}
       mayManage={may(account.roles, "manage_dorm_rooms")}
     />
   );

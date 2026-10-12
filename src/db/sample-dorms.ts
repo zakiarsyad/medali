@@ -1,5 +1,5 @@
+import type { DormId } from "@/dorms/dorms";
 import type { CompanionDormId } from "@/features/dorm/companion-dorms";
-import type { DormId } from "@/features/dorm/dorms";
 import type { SampleStudent } from "./sample-students";
 
 /*
@@ -31,10 +31,19 @@ const FAMILIES = [
   "Wardhana",
   "Yulianto",
 ];
+/**
+ * The program studi of the first years, taken in turn. D3 Pajak comes
+ * three times and D3 Akuntansi once, so the one has enough students for
+ * two kelompok pengasuhan and the other too few for a usual one.
+ */
 const PROGRAMS = [
   "D3 Pajak",
   "D3 Akuntansi",
   "D3 Kepabeanan dan Cukai",
+  "Akuntansi Sektor Publik STR",
+  "D3 Pajak",
+  "D3 Kepabeanan dan Cukai",
+  "D3 Pajak",
   "Akuntansi Sektor Publik STR",
 ];
 const PROVINCES = ["Jawa Barat", "Jawa Tengah", "Sumatera Utara", "Bali"];

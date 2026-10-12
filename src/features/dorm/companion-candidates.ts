@@ -1,8 +1,8 @@
 import { and, asc, eq, isNull, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormCompanions, students } from "@/db/schema";
+import { dormInSql } from "@/dorms/resident-condition";
 import { CANDIDATES_SHOWN } from "./companion-limits";
-import { dormInSql } from "./resident-condition";
 import { matchesSearch } from "./room-list";
 
 /** A student who can be named kakak pendamping, as the form offers them. */

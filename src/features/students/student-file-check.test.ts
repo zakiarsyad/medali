@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000700 to 9900000799.
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";

@@ -1,7 +1,7 @@
 import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
-import { dormInSql } from "./resident-condition";
+import { dormInSql } from "@/dorms/resident-condition";
 
 /*
  * A stale place belongs to a student who no longer lives in the dorm of

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import type { AddedStudent } from "./added-students";
@@ -43,6 +44,11 @@ function InputSource({ student }: { student: AddedStudent }) {
   );
 }
 
+function Dorm({ dorm }: { dorm: AddedStudent["dorm"] }) {
+  if (dorm === null) return <span className={shared.detail}>Non asrama</span>;
+  return DORM_NAMES[dorm];
+}
+
 function StudentRow({
   student,
   query,
@@ -72,6 +78,9 @@ function StudentRow({
         <small className={shared.detail}>{pathAndClass(student)}</small>
       </td>
       <td data-title="Angkatan">{student.cohortYear}</td>
+      <td data-title="Asrama">
+        <Dorm dorm={student.dorm} />
+      </td>
       <td data-title="Status">
         <span className={`${styles.status} ${STATUS_STYLES[student.status]}`}>
           {STATUS_LABELS[student.status]}
@@ -115,6 +124,7 @@ export function StudentTable({
             <th>Mahasiswa</th>
             <th>Program studi</th>
             <th>Angkatan</th>
+            <th>Asrama</th>
             <th>Status</th>
             <th>Diinput</th>
             <th>

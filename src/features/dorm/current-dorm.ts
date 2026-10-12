@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { database } from "@/db/database";
-import type { DormId } from "./dorms";
+import type { DormId } from "@/dorms/dorms";
 import { readStudentDorm } from "./student-dorm";
 
 /**

@@ -1,7 +1,12 @@
+// Sample NIMs of this file: 9900001700 to 9900001799.
 import { describe, expect, it } from "vitest";
 import {
+  NO_AGENCY,
+  NO_DORM,
   NO_FILTERS,
   readStudentListParams,
+  type StudentListFilters,
+  studentDetailAddress,
   studentListAddress,
   topFiltersInUse,
   withoutTopFilters,
@@ -12,6 +17,7 @@ describe("readStudentListParams", () => {
     expect(readStudentListParams({})).toEqual({
       filters: NO_FILTERS,
       page: 1,
+      detailId: null,
     });
     expect(NO_FILTERS).toEqual({
       query: "",
@@ -20,7 +26,60 @@ describe("readStudentListParams", () => {
       studyProgramId: null,
       entryPath: null,
       category: null,
+      stageNo: null,
+      province: null,
+      originAgency: null,
+      dorm: null,
     });
+  });
+
+  it("reads the asrama: a dorm, or the students of none", () => {
+    expect(readStudentListParams({ asrama: "cipta_bakti" }).filters.dorm).toBe(
+      "cipta_bakti",
+    );
+    expect(readStudentListParams({ asrama: "non" }).filters.dorm).toBe(NO_DORM);
+  });
+
+  it.each(["", "Asrama Dana Rakca", "dana", "non ", "1 or 1=1"])(
+    "falls back to every asrama for %j",
+    (asrama) => {
+      expect(readStudentListParams({ asrama }).filters.dorm).toBeNull();
+    },
+  );
+
+  it("reads the tahap, the provinsi and the instansi", () => {
+    const read = readStudentListParams({
+      tahap: "3",
+      provinsi: "Jawa Barat",
+      instansi: "Direktorat Jenderal Pajak",
+    });
+
+    expect(read.filters).toEqual({
+      ...NO_FILTERS,
+      stageNo: 3,
+      province: "Jawa Barat",
+      originAgency: "Direktorat Jenderal Pajak",
+    });
+    expect(
+      readStudentListParams({ instansi: "tanpa" }).filters.originAgency,
+    ).toBe(NO_AGENCY);
+  });
+
+  it.each(["", "0", "5", "1.5", "satu", "12", "1 or 1=1"])(
+    "falls back to every tahap for %j",
+    (tahap) => {
+      expect(readStudentListParams({ tahap }).filters.stageNo).toBeNull();
+    },
+  );
+
+  it("falls back to every provinsi and instansi for one that is not listed", () => {
+    const read = readStudentListParams({
+      provinsi: "jawa barat",
+      instansi: "Kantor Yang Tidak Ada",
+    });
+
+    expect(read.filters.province).toBeNull();
+    expect(read.filters.originAgency).toBeNull();
   });
 
   it("reads the program studi, the jalur and the kategori", () => {
@@ -112,12 +171,16 @@ describe("studentListAddress", () => {
       studyProgramId: 4,
       entryPath: "regular" as const,
       category: "isBlended" as const,
+      stageNo: 2,
+      province: "DKI Jakarta",
+      originAgency: NO_AGENCY,
+      dorm: "dana_rakca" as const,
     };
 
     const address = studentListAddress(filters);
 
     expect(address).toBe(
-      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended",
+      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended&tahap=2&provinsi=DKI+Jakarta&instansi=tanpa&asrama=dana_rakca",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readStudentListParams(Object.fromEntries(search)).filters).toEqual(
@@ -141,6 +204,25 @@ describe("the filters of the top bar", () => {
     expect(topFiltersInUse(searched)).toBe(0);
     expect(topFiltersInUse(chosen)).toBe(2);
     expect(topFiltersInUse({ ...chosen, entryPath: "regular" })).toBe(3);
+  });
+
+  it("count the tahap, the provinsi and the instansi too", () => {
+    const more = {
+      ...chosen,
+      stageNo: 1,
+      province: "Bali",
+      originAgency: NO_AGENCY,
+    };
+
+    expect(topFiltersInUse(more)).toBe(5);
+    expect(withoutTopFilters(more)).toEqual(withoutTopFilters(chosen));
+  });
+
+  it("count the asrama too, and clear it with the others", () => {
+    const inDorm: StudentListFilters = { ...chosen, dorm: NO_DORM };
+
+    expect(topFiltersInUse(inDorm)).toBe(3);
+    expect(withoutTopFilters(inDorm)).toEqual(withoutTopFilters(chosen));
   });
 
   it("are cleared alone, and the search and the status stay", () => {
@@ -170,5 +252,42 @@ describe("the page of the list", () => {
     expect(studentListAddress(filters, 1)).toBe("/mahasiswa?q=ayu");
     expect(studentListAddress(filters, 2)).toBe("/mahasiswa?q=ayu&hal=2");
     expect(studentListAddress(NO_FILTERS, 3)).toBe("/mahasiswa?hal=3");
+  });
+});
+
+describe("the student whose detail is open", () => {
+  const ID = "0b7c1f4e-3a52-4d0c-9e8f-6a1b2c3d4e5f";
+
+  it("is none when the address names none", () => {
+    expect(readStudentListParams({}).detailId).toBeNull();
+    expect(readStudentListParams({ profil: "  " }).detailId).toBeNull();
+  });
+
+  it("is read from the address, next to the filters and the page", () => {
+    const read = readStudentListParams({ q: "ayu", hal: "2", profil: ID });
+
+    expect(read.detailId).toBe(ID);
+    expect(read.page).toBe(2);
+    expect(read.filters.query).toBe("ayu");
+  });
+
+  it("is kept as asked when it is no id, and cut when it is long", () => {
+    expect(readStudentListParams({ profil: "9900001701" }).detailId).toBe(
+      "9900001701",
+    );
+    expect(
+      readStudentListParams({ profil: "x".repeat(500) }).detailId,
+    ).toHaveLength(36);
+  });
+
+  it("is added to the address of the list it opens over", () => {
+    const filters = { ...NO_FILTERS, query: "ayu" };
+
+    expect(studentDetailAddress(filters, 2, ID)).toBe(
+      `/mahasiswa?q=ayu&hal=2&profil=${ID}`,
+    );
+    expect(studentDetailAddress(NO_FILTERS, 1, ID)).toBe(
+      `/mahasiswa?profil=${ID}`,
+    );
   });
 });

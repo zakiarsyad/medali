@@ -1,5 +1,11 @@
+import Link from "next/link";
+import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
+import { PressableRow } from "@/ui/pressable-row";
+import pressable from "@/ui/pressable-row.module.css";
 import { CATEGORIES, ENTRY_PATH_LABELS, STATUS_LABELS } from "./labels";
+import { type RunningPeriod, semesterNow } from "./semester-now";
+import { rowSemesterWords } from "./semester-words";
 import type { ListedStudent } from "./student-list";
 
 /** The NIM, and the status when the student is not active. */
@@ -13,18 +19,32 @@ function pathAndAgency(student: ListedStudent): string {
   return student.originAgency ? `${path} · ${student.originAgency}` : path;
 }
 
-function StudentRow({ student }: { student: ListedStudent }) {
+function StudentRow({
+  student,
+  period,
+  detailAddress,
+}: {
+  student: ListedStudent;
+  period: RunningPeriod;
+  detailAddress: string;
+}) {
   const tags = CATEGORIES.filter(({ field }) => student[field]);
+  const semester = semesterNow(student, period);
   return (
-    <tr>
+    <PressableRow address={detailAddress}>
       <td data-title="Mahasiswa">
-        <b>{student.name}</b>
+        <Link href={detailAddress} scroll={false} className={pressable.open}>
+          <b>{student.name}</b>
+        </Link>
         <small className={shared.detail}>{nimAndStatus(student)}</small>
         {tags.map(({ field, label }) => (
           <span key={field} className={shared.badge}>
             {label}
           </span>
         ))}
+        {student.dorm && (
+          <span className={shared.badge}>{DORM_NAMES[student.dorm]}</span>
+        )}
       </td>
       <td data-title="Program studi">
         {student.studyProgram}
@@ -32,14 +52,27 @@ function StudentRow({ student }: { student: ListedStudent }) {
       </td>
       <td data-title="Angkatan">
         {student.cohortYear}
-        <small className={shared.detail}>{student.className}</small>
+        <small className={shared.detail}>
+          {rowSemesterWords(semester, student.className)}
+        </small>
       </td>
       <td data-title="Provinsi">{student.province ?? "-"}</td>
-    </tr>
+      <td data-title="Pengasuh">{student.mentorName ?? "-"}</td>
+    </PressableRow>
   );
 }
 
-export function StudentListTable({ students }: { students: ListedStudent[] }) {
+export function StudentListTable({
+  students,
+  period,
+  detailAddressOf,
+}: {
+  students: ListedStudent[];
+  /** The academic period that runs now, which says each row's semester. */
+  period: RunningPeriod;
+  /** The address that opens the detail of a student over this list. */
+  detailAddressOf: (studentId: string) => string;
+}) {
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -49,11 +82,17 @@ export function StudentListTable({ students }: { students: ListedStudent[] }) {
             <th>Program studi</th>
             <th>Angkatan</th>
             <th>Provinsi</th>
+            <th>Pengasuh</th>
           </tr>
         </thead>
         <tbody>
           {students.map((student) => (
-            <StudentRow key={student.nim} student={student} />
+            <StudentRow
+              key={student.nim}
+              student={student}
+              period={period}
+              detailAddress={detailAddressOf(student.id)}
+            />
           ))}
         </tbody>
       </table>

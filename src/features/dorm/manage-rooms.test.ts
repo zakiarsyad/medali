@@ -4,18 +4,18 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { academicPeriods, dormRooms } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addRoom } from "./add-room";
-import { changeRoom } from "./change-room";
-import { removeRoom } from "./remove-room";
-import type { SentRoom, SentRoomDetails } from "./room-input";
-import { readRooms } from "./room-list";
 import {
   addTestProgram,
   addTestRoom,
   addTestStudent,
   placeTestResident,
-  residentsOfRoom,
-} from "./test-records";
+} from "@/dorms/test-records";
+import { addRoom } from "./add-room";
+import { changeRoom } from "./change-room";
+import { removeRoom } from "./remove-room";
+import type { SentRoom, SentRoomDetails } from "./room-input";
+import { readRooms } from "./room-list";
+import { residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

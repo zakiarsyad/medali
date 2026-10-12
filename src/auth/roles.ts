@@ -12,6 +12,14 @@ export const ACTIONS = [
   "manage_dorm_rooms",
   "view_dorm_companions",
   "manage_dorm_companions",
+  "view_student_detail",
+  "view_student_room",
+  "view_mentor_groups",
+  "view_mentors",
+  "view_cohort_assignments",
+  "prepare_cohort_assignments",
+  "fix_cohort_assignments",
+  "view_own_profile",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -26,6 +34,15 @@ export const ACTION_TITLES: Record<Action, string> = {
   manage_dorm_rooms: "Mengelola ploting kamar",
   view_dorm_companions: "Melihat kakak pendamping",
   manage_dorm_companions: "Mengelola kakak pendamping",
+  view_student_detail: "Melihat detail mahasiswa",
+  view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
+  view_mentor_groups: "Melihat kelompok pengasuhan",
+  view_mentors: "Melihat daftar pengasuh",
+  view_cohort_assignments: "Melihat penetapan angkatan baru",
+  prepare_cohort_assignments:
+    "Menyiapkan dan mengajukan penetapan angkatan baru",
+  fix_cohort_assignments: "Menetapkan dan membatalkan penetapan angkatan baru",
+  view_own_profile: "Melihat data diri sendiri",
 };
 
 /**
@@ -82,7 +99,16 @@ const ALL_DORM = [
 
 const ALL_DORM_BUT_VIOLATIONS = ALL_DORM.filter((tab) => tab !== "violations");
 
+const ALL_MENTORS = [
+  "groups",
+  "mentors",
+  "student_survey",
+  "replacement",
+  "new_cohort",
+] as const;
+
 const VIEW_ALL_TABS: RoleTabs = {
+  mentors: ALL_MENTORS,
   assessment: ALL_ASSESSMENT,
   guidance: ["character", "discipline", "violation_notes"],
   dorm: ALL_DORM_BUT_VIOLATIONS,
@@ -110,6 +136,13 @@ export const ROLES: Record<RoleId, Role> = {
       "set_academic_periods",
       "view_dorm_rooms",
       "view_dorm_companions",
+      "view_student_detail",
+      "view_student_room",
+      "view_mentor_groups",
+      "view_mentors",
+      "view_cohort_assignments",
+      "prepare_cohort_assignments",
+      "fix_cohort_assignments",
     ],
     rows: "all",
   },
@@ -118,7 +151,14 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "DR",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms", "view_dorm_companions"],
+    actions: [
+      "view_dorm_rooms",
+      "view_dorm_companions",
+      "view_student_detail",
+      "view_mentor_groups",
+      "view_mentors",
+      "view_cohort_assignments",
+    ],
     rows: "all",
   },
   head_of_program: {
@@ -126,7 +166,14 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KP",
     pages: STAFF_PAGES,
     tabs: VIEW_ALL_TABS,
-    actions: ["view_dorm_rooms", "view_dorm_companions"],
+    actions: [
+      "view_dorm_rooms",
+      "view_dorm_companions",
+      "view_student_detail",
+      "view_mentor_groups",
+      "view_mentors",
+      "view_cohort_assignments",
+    ],
     rows: "own_program",
   },
   mentor: {
@@ -158,7 +205,7 @@ export const ROLES: Record<RoleId, Role> = {
       assessment: ["siku"],
       dorm: ["activities", "leave", "cleaning", "violations"],
     },
-    actions: [],
+    actions: ["view_own_profile"],
     rows: "self",
   },
   dorm_manager: {
@@ -235,8 +282,16 @@ export const ROLES: Record<RoleId, Role> = {
     title: "Pegawai UPK",
     initials: "PU",
     pages: ["curriculum", "activities", "mentors", "settings"],
-    tabs: { settings: ["new_students"] },
-    actions: ["input_new_students", "change_curriculum", "manage_activities"],
+    tabs: { mentors: ALL_MENTORS, settings: ["new_students"] },
+    actions: [
+      "input_new_students",
+      "change_curriculum",
+      "manage_activities",
+      "view_mentor_groups",
+      "view_mentors",
+      "view_cohort_assignments",
+      "prepare_cohort_assignments",
+    ],
     rows: "all",
   },
   counsellor: {

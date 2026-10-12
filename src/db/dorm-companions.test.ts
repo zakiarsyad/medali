@@ -8,7 +8,7 @@ const inTestDatabase = withTestDatabase();
 async function addStudent(db: Database): Promise<string> {
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: "Prodi Uji Tabel Kakak" })
+    .values({ name: "Prodi Uji Tabel Kakak", code: "Prodi Uji Tabel Kakak" })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   const [student] = await db

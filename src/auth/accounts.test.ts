@@ -36,7 +36,7 @@ describe("findActiveAccount", () => {
   it("carries no address, so no screen gets one from the signed-in account", async () => {
     await inTestDatabase(async (db) => {
       const email = "profil.uji@kampus.example";
-      const id = await addTestStudentAccount(db, { nim: "9900000801", email });
+      const id = await addTestStudentAccount(db, { nim: "9900002601", email });
 
       const account = await findActiveAccount(db, id);
 

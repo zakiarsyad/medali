@@ -36,6 +36,11 @@ export function StudentNumbers({ counts }: { counts: StudentCounts }) {
         amount={counts.added}
         note={`${shown(counts.addedActive)} berstatus aktif`}
       />
+      <StudentNumber
+        label="Penghuni asrama"
+        amount={counts.addedResidents}
+        note="dari mahasiswa yang ditambahkan"
+      />
     </dl>
   );
 }

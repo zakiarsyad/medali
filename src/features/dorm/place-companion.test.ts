@@ -3,19 +3,17 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { academicPeriods } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestProgram,
+  addTestRoom,
+  addTestStudent,
+} from "@/dorms/test-records";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
 import { placeCompanion, takeOutCompanion } from "./place-companion";
 import { placeResident } from "./place-resident";
 import { removeRoom } from "./remove-room";
-import {
-  addTestCompanion,
-  addTestProgram,
-  addTestRoom,
-  addTestStudent,
-  companionOf,
-  residentsOfRoom,
-} from "./test-records";
+import { addTestCompanion, companionOf, residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

@@ -33,9 +33,10 @@ export async function addTestStudentAccount(
   db: Database,
   { nim, email }: { nim: string; email: string | null },
 ): Promise<string> {
+  const programName = `Prodi Uji ${nim}`;
   const [program] = await db
     .insert(studyPrograms)
-    .values({ name: `Prodi Uji ${nim}` })
+    .values({ name: programName, code: programName })
     .returning();
   if (!program) throw new Error("The study program was not added.");
   const [student] = await db

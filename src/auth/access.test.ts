@@ -7,9 +7,11 @@ import {
   needsDormResident,
   pagesFor,
   pagesForAccount,
-  rowLimitFor,
+  rowLimitForAction,
+  rowLimitForPage,
   tabsFor,
 } from "./access";
+import { BAM_ROLES } from "./bam-roles";
 import { PAGES } from "./pages";
 import { ROLE_IDS, type RoleId } from "./role-ids";
 import { ACTIONS, type Action, ROLES } from "./roles";
@@ -228,6 +230,238 @@ describe("may", () => {
     },
   );
 
+  const detailReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+  ];
+
+  it.each(detailReaders)("lets %s read a student's detail", (role) => {
+    expect(may([role], "view_student_detail")).toBe(true);
+  });
+
+  it("refuses every other role to read a student's detail", () => {
+    const others = ROLE_IDS.filter((role) => !detailReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - detailReaders.length);
+    for (const role of others) {
+      expect(may([role], "view_student_detail")).toBe(false);
+    }
+  });
+
+  it.each(["mentor", "upk_staff", "student"] as const)(
+    "refuses %s to read a student's detail",
+    (role) => {
+      expect(may([role], "view_student_detail")).toBe(false);
+    },
+  );
+
+  it("gives the right to read a student's detail to every role with Mahasiswa", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_student_detail")).toBe(
+        mayOpenPage([role], "students"),
+      );
+    }
+  });
+
+  it("lets Kepala Unit see the floor and the room of a student", () => {
+    expect(may(["head_of_unit"], "view_student_room")).toBe(true);
+  });
+
+  it("refuses every other role the floor and the room of a student", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "view_student_room")).toBe(false);
+    }
+  });
+
+  it.each(["director", "head_of_program", "dorm_manager"] as const)(
+    "refuses %s the floor and the room of a student",
+    (role) => {
+      expect(may([role], "view_student_room")).toBe(false);
+    },
+  );
+
+  const groupViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(groupViewers)("lets %s see the kelompok pengasuhan", (role) => {
+    expect(may([role], "view_mentor_groups")).toBe(true);
+  });
+
+  it("refuses every other role to see the kelompok pengasuhan", () => {
+    const others = ROLE_IDS.filter((role) => !groupViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - groupViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_mentor_groups")).toBe(false);
+    }
+  });
+
+  it.each(["mentor", "student"] as const)(
+    "refuses %s to see the kelompok pengasuhan and to open Pengasuh",
+    (role) => {
+      expect(may([role], "view_mentor_groups")).toBe(false);
+      expect(mayOpenPage([role], "mentors")).toBe(false);
+      expect(mayOpenTab([role], "mentors", "groups")).toBe(false);
+    },
+  );
+
+  it("gives the right to see the kelompok pengasuhan to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentor_groups")).toBe(
+        mayOpenTab([role], "mentors", "groups"),
+      );
+    }
+  });
+
+  const mentorViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(mentorViewers)("lets %s see the list of mentors", (role) => {
+    expect(may([role], "view_mentors")).toBe(true);
+  });
+
+  it("refuses every other role to see the list of mentors", () => {
+    const others = ROLE_IDS.filter((role) => !mentorViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - mentorViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_mentors")).toBe(false);
+    }
+  });
+
+  it.each(["mentor", "student"] as const)(
+    "refuses %s to see the list of mentors and to open its tab",
+    (role) => {
+      expect(may([role], "view_mentors")).toBe(false);
+      expect(mayOpenPage([role], "mentors")).toBe(false);
+      expect(mayOpenTab([role], "mentors", "mentors")).toBe(false);
+    },
+  );
+
+  it("gives the right to see the list of mentors to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentors")).toBe(
+        mayOpenTab([role], "mentors", "mentors"),
+      );
+    }
+  });
+
+  const assignmentViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(assignmentViewers)("lets %s see the penetapan", (role) => {
+    expect(may([role], "view_cohort_assignments")).toBe(true);
+  });
+
+  it("refuses every other role to see the penetapan", () => {
+    const others = ROLE_IDS.filter((role) => !assignmentViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - assignmentViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_cohort_assignments")).toBe(false);
+    }
+  });
+
+  it("gives the right to see the penetapan to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_cohort_assignments")).toBe(
+        mayOpenTab([role], "mentors", "new_cohort"),
+      );
+    }
+  });
+
+  const assignmentPreparers: RoleId[] = ["head_of_unit", "upk_staff"];
+
+  it.each(assignmentPreparers)("lets %s prepare a penetapan", (role) => {
+    expect(may([role], "prepare_cohort_assignments")).toBe(true);
+  });
+
+  it("refuses every other role to prepare a penetapan", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !assignmentPreparers.includes(role),
+    );
+    expect(others.length).toBe(ROLE_IDS.length - assignmentPreparers.length);
+    for (const role of others) {
+      expect(may([role], "prepare_cohort_assignments")).toBe(false);
+    }
+  });
+
+  it.each(["director", "head_of_program", "mentor"] as const)(
+    "refuses %s to prepare and to fix a penetapan",
+    (role) => {
+      expect(may([role], "prepare_cohort_assignments")).toBe(false);
+      expect(may([role], "fix_cohort_assignments")).toBe(false);
+    },
+  );
+
+  it("lets Kepala Unit fix and cancel a penetapan", () => {
+    expect(may(["head_of_unit"], "fix_cohort_assignments")).toBe(true);
+  });
+
+  it("refuses every other role to fix and cancel a penetapan, Pegawai UPK among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toContain("upk_staff");
+    for (const role of others) {
+      expect(may([role], "fix_cohort_assignments")).toBe(false);
+    }
+  });
+
+  it("lets every role that may fix a penetapan prepare it, and every role that may prepare it see it", () => {
+    for (const role of ROLE_IDS) {
+      if (may([role], "fix_cohort_assignments")) {
+        expect(may([role], "prepare_cohort_assignments")).toBe(true);
+      }
+      if (may([role], "prepare_cohort_assignments")) {
+        expect(may([role], "view_cohort_assignments")).toBe(true);
+      }
+    }
+  });
+
+  it("lets Mahasiswa read their own student record", () => {
+    expect(may(["student"], "view_own_profile")).toBe(true);
+    expect(mayOpenPage(["student"], "profile")).toBe(true);
+  });
+
+  it("refuses every other role to read their own student record", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "view_own_profile")).toBe(false);
+    }
+  });
+
+  it.each(["head_of_unit", "mentor", "bam_bphk"] as const)(
+    "refuses %s to read their own student record and to open Profil saya",
+    (role) => {
+      expect(may([role], "view_own_profile")).toBe(false);
+      expect(mayOpenPage([role], "profile")).toBe(false);
+    },
+  );
+
+  it("gives the right to read one's own student record to every role with Profil saya", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_own_profile")).toBe(
+        mayOpenPage([role], "profile"),
+      );
+    }
+  });
+
+  it("gives Mahasiswa no right that changes a student record", () => {
+    expect(ROLES.student.actions).toEqual(["view_own_profile"]);
+    expect(may(["student"], "input_new_students")).toBe(false);
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -272,6 +506,20 @@ describe("pagesFor", () => {
   it("gives no pages to an account with no roles", () => {
     expect(pagesFor([])).toEqual([]);
   });
+
+  it("puts Profil saya first for a student, the page they land on", () => {
+    expect(pagesFor(["student"])[0]?.path).toBe("saya");
+  });
+
+  it.each(BAM_ROLES)(
+    "puts Profil saya first for a student who is also %s, with that role's pages after it",
+    (role) => {
+      const pages = paths(pagesFor(["student", role]));
+
+      expect(pages[0]).toBe("saya");
+      expect(pages).toEqual(expect.arrayContaining(paths(pagesFor([role]))));
+    },
+  );
 });
 
 describe("needsDormResident", () => {
@@ -367,93 +615,214 @@ describe("mayOpenPage and mayOpenTab", () => {
   });
 });
 
-describe("rowLimitFor", () => {
-  const nobody: AccountForAccess = {
-    id: "account-1",
-    roles: [],
-    studyProgramId: null,
-    studentId: null,
+describe("rowLimitForAction and rowLimitForPage", () => {
+  const EVERY_ROW = { kind: "all" };
+
+  function account(
+    roles: RoleId[],
+    studyProgramId: number | null = null,
+  ): AccountForAccess {
+    return { id: "account-1", roles, studyProgramId, studentId: null };
+  }
+
+  function onlyPrograms(studyProgramIds: number[]) {
+    return { kind: "some", studyProgramIds, menteesOf: [], studentIds: [] };
+  }
+
+  const OWN_MENTEES = {
+    kind: "some",
+    studyProgramIds: [],
+    menteesOf: ["account-1"],
+    studentIds: [],
   };
 
-  it("lets Kepala Unit see every row", () => {
-    expect(rowLimitFor({ ...nobody, roles: ["head_of_unit"] })).toEqual({
-      kind: "all",
-    });
+  const NO_ROW = onlyPrograms([]);
+
+  /** The roles that see every student row and may not open a student's detail. */
+  const WIDE_WITHOUT_DETAIL = ROLE_IDS.filter(
+    (role) => ROLES[role].rows === "all" && !may([role], "view_student_detail"),
+  );
+
+  it("gives one role its own rows for an action it allows", () => {
+    expect(
+      rowLimitForAction(account(["head_of_unit"]), "view_student_detail"),
+    ).toEqual(EVERY_ROW);
+    expect(
+      rowLimitForAction(account(["head_of_program"], 7), "view_student_detail"),
+    ).toEqual(onlyPrograms([7]));
   });
 
-  it("limits a mentor to their own mentees", () => {
-    expect(rowLimitFor({ ...nobody, roles: ["mentor"] })).toEqual({
-      kind: "some",
-      studyProgramIds: [],
-      menteesOf: ["account-1"],
-      studentIds: [],
-    });
+  it("gives no row for an action or a page none of the roles allows", () => {
+    const staff = account(["upk_staff"]);
+
+    expect(rowLimitForAction(staff, "view_student_detail")).toEqual(NO_ROW);
+    expect(rowLimitForPage(staff, "students")).toEqual(NO_ROW);
   });
 
-  it("limits a head of study program to their program", () => {
-    const account = {
-      ...nobody,
-      roles: ["head_of_program" as const],
-      studyProgramId: 7,
-    };
-    expect(rowLimitFor(account)).toEqual({
-      kind: "some",
-      studyProgramIds: [7],
-      menteesOf: [],
-      studentIds: [],
-    });
+  it("keeps Ketua Program Studi to their program for the Mahasiswa list and a student's detail, whatever wide role they also hold", () => {
+    expect(WIDE_WITHOUT_DETAIL).toEqual(
+      expect.arrayContaining([
+        "upk_staff",
+        "counsellor",
+        "assessor",
+        "discipline_officer",
+        "dorm_manager",
+      ]),
+    );
+    for (const role of WIDE_WITHOUT_DETAIL) {
+      const both = account(["head_of_program", role], 7);
+
+      expect(rowLimitForAction(both, "view_student_detail")).toEqual(
+        onlyPrograms([7]),
+      );
+      expect(rowLimitForPage(both, "students")).toEqual(onlyPrograms([7]));
+    }
   });
 
-  it("shows a head of study program with no program nothing", () => {
-    expect(rowLimitFor({ ...nobody, roles: ["head_of_program"] })).toEqual({
-      kind: "some",
-      studyProgramIds: [],
-      menteesOf: [],
-      studentIds: [],
-    });
+  it("gives Ketua Program Studi who is also Pegawai UPK every group", () => {
+    const both = account(["head_of_program", "upk_staff"], 7);
+
+    expect(rowLimitForAction(both, "view_mentor_groups")).toEqual(EVERY_ROW);
   });
 
-  it("limits a student to themselves", () => {
-    const account = {
-      ...nobody,
-      roles: ["student" as const],
-      studentId: "student-1",
-    };
-    expect(rowLimitFor(account)).toEqual({
-      kind: "some",
-      studyProgramIds: [],
-      menteesOf: [],
-      studentIds: ["student-1"],
-    });
+  it("keeps Ketua Program Studi who is also Konselor to the groups of their program", () => {
+    const both = account(["head_of_program", "counsellor"], 7);
+
+    expect(rowLimitForAction(both, "view_mentor_groups")).toEqual(
+      onlyPrograms([7]),
+    );
   });
 
-  it("joins the limits of two roles", () => {
-    const account = {
-      ...nobody,
-      roles: ["mentor" as const, "head_of_program" as const],
-      studyProgramId: 3,
-    };
-    expect(rowLimitFor(account)).toEqual({
-      kind: "some",
+  it("shows the penetapan to Ketua Program Studi for their program only, and none without a program", () => {
+    const head = account(["head_of_program"], 7);
+    const withoutProgram = account(["head_of_program"]);
+
+    expect(rowLimitForAction(head, "view_cohort_assignments")).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(
+      rowLimitForAction(withoutProgram, "view_cohort_assignments"),
+    ).toEqual(NO_ROW);
+  });
+
+  it.each(["head_of_unit", "director", "upk_staff"] as const)(
+    "shows %s the penetapan of every program studi",
+    (role) => {
+      expect(
+        rowLimitForAction(account([role]), "view_cohort_assignments"),
+      ).toEqual(EVERY_ROW);
+    },
+  );
+
+  it("gives Ketua Program Studi who is also Pegawai UPK every penetapan, to see and to prepare", () => {
+    const both = account(["head_of_program", "upk_staff"], 7);
+
+    expect(rowLimitForAction(both, "view_cohort_assignments")).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(both, "prepare_cohort_assignments")).toEqual(
+      EVERY_ROW,
+    );
+  });
+
+  it.each(["view_dorm_rooms", "view_dorm_companions"] as const)(
+    "keeps Ketua Program Studi who is also Konselor to their program for %s",
+    (action) => {
+      const both = account(["head_of_program", "counsellor"], 7);
+
+      expect(rowLimitForAction(both, action)).toEqual(onlyPrograms([7]));
+    },
+  );
+
+  it.each(["view_dorm_rooms", "view_dorm_companions"] as const)(
+    "joins the rows of two roles that both allow %s",
+    (action) => {
+      const both = account(["head_of_program", "dorm_manager"], 7);
+
+      expect(rowLimitForAction(both, action)).toEqual(EVERY_ROW);
+    },
+  );
+
+  it("joins the rows of two roles that both open a page", () => {
+    const both = account(["mentor", "head_of_program"], 3);
+
+    expect(rowLimitForPage(both, "mentoring")).toEqual({
+      ...OWN_MENTEES,
       studyProgramIds: [3],
-      menteesOf: ["account-1"],
-      studentIds: [],
     });
   });
 
-  it("lets a role that sees every row win over a limited one", () => {
-    expect(rowLimitFor({ ...nobody, roles: ["mentor", "assessor"] })).toEqual({
-      kind: "all",
-    });
+  it("keeps Pengasuh to their mentees on a page only Pengasuh opens, whatever wide role they also hold", () => {
+    const wideWithoutPage = ROLE_IDS.filter(
+      (role) => ROLES[role].rows === "all" && !mayOpenPage([role], "mentoring"),
+    );
+
+    expect(wideWithoutPage).toContain("assessor");
+    for (const role of wideWithoutPage) {
+      const both = account(["mentor", role]);
+
+      expect(rowLimitForPage(both, "mentoring")).toEqual(OWN_MENTEES);
+    }
+  });
+
+  it("lets a role that sees every row win over a limited one on a page both open", () => {
+    const both = account(["mentor", "assessor"]);
+
+    expect(rowLimitForPage(both, "assessment")).toEqual(EVERY_ROW);
+  });
+
+  it("shows Ketua Program Studi with no program nothing", () => {
+    const head = account(["head_of_program"]);
+
+    expect(rowLimitForPage(head, "students")).toEqual(NO_ROW);
+    expect(rowLimitForAction(head, "view_student_detail")).toEqual(NO_ROW);
+  });
+
+  it("keeps a student to their own record on Profil saya, whatever wide role they also hold", () => {
+    const wideRoles = ROLE_IDS.filter((role) => ROLES[role].rows === "all");
+    const onlyThemselves = { ...NO_ROW, studentIds: ["student-1"] };
+
+    expect(wideRoles).toEqual(
+      expect.arrayContaining(["bam_bphk", "head_of_unit", "dorm_manager"]),
+    );
+    for (const role of wideRoles) {
+      const both = { ...account(["student", role]), studentId: "student-1" };
+
+      expect(rowLimitForAction(both, "view_own_profile")).toEqual(
+        onlyThemselves,
+      );
+    }
+  });
+
+  it("gives a wide role no row on Profil saya, even with a student record", () => {
+    const staff = { ...account(["head_of_unit"]), studentId: "student-1" };
+
+    expect(rowLimitForAction(staff, "view_own_profile")).toEqual(NO_ROW);
   });
 
   it("shows an account with no roles nothing", () => {
-    expect(rowLimitFor(nobody)).toEqual({
-      kind: "some",
-      studyProgramIds: [],
-      menteesOf: [],
-      studentIds: [],
-    });
+    expect(rowLimitForPage(account([]), "students")).toEqual(NO_ROW);
+    expect(rowLimitForAction(account([]), "view_dorm_rooms")).toEqual(NO_ROW);
+  });
+
+  it("gives every single role the rows of its own rule, for each of its actions and pages", () => {
+    const rowsOfRule = {
+      all: EVERY_ROW,
+      own_program: onlyPrograms([7]),
+      own_mentees: OWN_MENTEES,
+      self: { ...NO_ROW, studentIds: ["student-1"] },
+    };
+    for (const role of ROLE_IDS) {
+      const alone = { ...account([role], 7), studentId: "student-1" };
+      const own = rowsOfRule[ROLES[role].rows];
+
+      for (const action of ROLES[role].actions) {
+        expect(rowLimitForAction(alone, action)).toEqual(own);
+      }
+      for (const page of ROLES[role].pages) {
+        expect(rowLimitForPage(alone, page)).toEqual(own);
+      }
+    }
   });
 });
 

@@ -109,6 +109,42 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
     roles: ["upk_staff", "counsellor"],
     unit: UPK,
   },
+  {
+    name: "Suryo Adinugroho",
+    title: "M.Ak.",
+    roles: ["mentor"],
+    unit: "Jurusan Akuntansi",
+  },
+  {
+    name: "Retno Wulansari",
+    title: "M.Si.",
+    roles: ["mentor"],
+    unit: "Jurusan Pajak",
+  },
+  {
+    name: "Anton Sudrajat",
+    title: "S.E., M.M.",
+    roles: ["mentor"],
+    unit: "Jurusan Manajemen Keuangan",
+  },
+  {
+    name: "Dian Kusumaningrum",
+    title: "M.H.",
+    roles: ["mentor"],
+    unit: "Jurusan Kepabeanan dan Cukai",
+  },
+  {
+    name: "Taufik Rahmadi",
+    title: "M.Ak.",
+    roles: ["mentor"],
+    unit: "Jurusan Akuntansi",
+  },
+  {
+    name: "Yuni Astutik",
+    title: "S.E., M.Si.",
+    roles: ["mentor"],
+    unit: "Jurusan Pajak",
+  },
 ];
 
 /** Two made-up students in each study program, then the rest. */

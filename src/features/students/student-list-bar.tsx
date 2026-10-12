@@ -1,12 +1,21 @@
 import Link from "next/link";
 import { entryPath } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
+import { DORM_IDS, DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { type CountedChoice, CountedSelect } from "./counted-select";
+import { FilterFold } from "./filter-fold";
+import { foundWords } from "./found-words";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
+import {
+  agencyChoices,
+  provinceChoices,
+  stageChoices,
+} from "./stage-origin-choices";
 import type { ChoiceCounts } from "./student-choice-counts";
 import styles from "./student-list.module.css";
 import {
+  NO_DORM,
   type StudentListFilters,
   studentListAddress,
   topFiltersInUse,
@@ -40,14 +49,24 @@ function categoryChoices(counts: ChoiceCounts): CountedChoice[] {
   }));
 }
 
-/** What the number found is a number of, in the words of the prototype. */
-function foundWords(filters: StudentListFilters): string {
-  const inUse = topFiltersInUse(filters);
-  if (inUse > 0) return `mahasiswa sesuai ${inUse} filter`;
-  return filters.status === "current" ? "mahasiswa aktif" : "mahasiswa";
+function dormChoices(counts: ChoiceCounts): CountedChoice[] {
+  const dorms = DORM_IDS.map((dorm) => ({
+    value: dorm,
+    shown: DORM_NAMES[dorm],
+    held: counts.dorms[dorm],
+  }));
+  const none = {
+    value: NO_DORM,
+    shown: "Non asrama",
+    held: counts.dorms[NO_DORM],
+  };
+  return [...dorms, none];
 }
 
-/** The top bar: the Program studi, Jalur and Kategori filters. */
+/**
+ * The top bar: the Program studi, Jalur, Kategori, Tahapan, Provinsi,
+ * Instansi and Asrama filters.
+ */
 export function StudentListBar({
   filters,
   programs,
@@ -62,7 +81,7 @@ export function StudentListBar({
 }) {
   return (
     <section className={shared.panel} aria-label="Filter">
-      <div className={shared.form}>
+      <FilterFold inUse={topFiltersInUse(filters)}>
         <CountedSelect
           label="Program studi"
           name="prodi"
@@ -84,7 +103,35 @@ export function StudentListBar({
           choices={categoryChoices(counts)}
           chosen={filters.category ?? ""}
         />
-      </div>
+        <CountedSelect
+          label="Tahapan"
+          name="tahap"
+          every="Semua tahap"
+          choices={stageChoices(counts)}
+          chosen={String(filters.stageNo ?? "")}
+        />
+        <CountedSelect
+          label="Provinsi"
+          name="provinsi"
+          every="Semua provinsi"
+          choices={provinceChoices(counts)}
+          chosen={filters.province ?? ""}
+        />
+        <CountedSelect
+          label="Instansi"
+          name="instansi"
+          every="Semua instansi"
+          choices={agencyChoices(counts)}
+          chosen={filters.originAgency ?? ""}
+        />
+        <CountedSelect
+          label="Asrama"
+          name="asrama"
+          every="Semua asrama"
+          choices={dormChoices(counts)}
+          chosen={filters.dorm ?? ""}
+        />
+      </FilterFold>
       <p className={styles.found}>
         <span>
           <b>{found.toLocaleString("id-ID")}</b> {foundWords(filters)}

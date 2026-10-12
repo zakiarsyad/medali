@@ -1,6 +1,14 @@
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accountRoles, accounts, students, studyPrograms } from "@/db/schema";
+import {
+  accountRoles,
+  accounts,
+  mentorGroupMembers,
+  mentorGroupMentors,
+  mentorGroups,
+  students,
+  studyPrograms,
+} from "@/db/schema";
 
 /** Made-up records for the checks of this area. */
 
@@ -26,7 +34,10 @@ export async function addTestProgram(
   db: Database,
   name: string,
 ): Promise<number> {
-  const [program] = await db.insert(studyPrograms).values({ name }).returning();
+  const [program] = await db
+    .insert(studyPrograms)
+    .values({ name, code: name })
+    .returning();
   if (!program) throw new Error("The study program was not added.");
   return program.id;
 }
@@ -50,5 +61,60 @@ export async function addTestStudent(
     })
     .returning({ id: students.id });
   if (!added) throw new Error("The student was not added.");
+  return added.id;
+}
+
+export interface TestMentorGroup {
+  /** Tells the group from the others of its program studi. */
+  number: number;
+  memberIds: string[];
+  mentorId: string;
+  /** The account that held the group before its mentor of today. */
+  earlierMentorId?: string;
+}
+
+const TEST_GROUP_STARTS_ON = "2026-09-01";
+const TEST_MENTOR_REPLACED_ON = "2026-10-01";
+
+function mentorLinesOf(groupId: string, group: TestMentorGroup) {
+  if (group.earlierMentorId === undefined) {
+    return [
+      { groupId, mentorId: group.mentorId, startsOn: TEST_GROUP_STARTS_ON },
+    ];
+  }
+  return [
+    {
+      groupId,
+      mentorId: group.earlierMentorId,
+      startsOn: TEST_GROUP_STARTS_ON,
+      endsOn: TEST_MENTOR_REPLACED_ON,
+      endReason: "Uji penggantian",
+    },
+    { groupId, mentorId: group.mentorId, startsOn: TEST_MENTOR_REPLACED_ON },
+  ];
+}
+
+export async function addTestMentorGroup(
+  db: Database,
+  studyProgramId: number,
+  group: TestMentorGroup,
+): Promise<string> {
+  const [added] = await db
+    .insert(mentorGroups)
+    .values({
+      studyProgramId,
+      cohortYear: 2026,
+      entryPath: "regular",
+      number: group.number,
+      startsOn: TEST_GROUP_STARTS_ON,
+    })
+    .returning({ id: mentorGroups.id });
+  if (!added) throw new Error("The mentor group was not added.");
+  const members = group.memberIds.map((studentId) => ({
+    studentId,
+    groupId: added.id,
+  }));
+  if (members.length > 0) await db.insert(mentorGroupMembers).values(members);
+  await db.insert(mentorGroupMentors).values(mentorLinesOf(added.id, group));
   return added.id;
 }

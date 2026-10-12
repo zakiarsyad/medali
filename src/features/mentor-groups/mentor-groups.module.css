@@ -1,0 +1,52 @@
+.back {
+  margin: 0 0 var(--space-md);
+}
+
+.note {
+  margin: 0;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.mentor {
+  display: block;
+  font-size: var(--text-base);
+}
+
+.subheading {
+  margin: var(--space-xl) 0 var(--space-sm);
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+.history {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-lg);
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+/* A choice with a long name, such as a unit, must not be wider than a phone. */
+.fit {
+  max-width: 100%;
+}
+
+.quiet {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}

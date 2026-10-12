@@ -1,5 +1,5 @@
 import type { students } from "@/db/schema";
-import type { DormId } from "./dorms";
+import type { DormId } from "@/dorms/dorms";
 
 /** The dorms that have kakak pendamping. The two Wismantara dorms have none. */
 export const COMPANION_DORM_IDS = [

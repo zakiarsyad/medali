@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9900000900 to 9900000999.
 import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it, vi } from "vitest";
 import {

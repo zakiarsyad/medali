@@ -4,14 +4,13 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { restartCompanion, stopCompanion } from "./companion-duty";
 import {
-  addTestCompanion,
   addTestProgram,
   addTestRoom,
   addTestStudent,
-  companionOf,
-} from "./test-records";
+} from "@/dorms/test-records";
+import { restartCompanion, stopCompanion } from "./companion-duty";
+import { addTestCompanion, companionOf } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 

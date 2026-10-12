@@ -11,8 +11,11 @@ while building.
 - `src/features/<area>/`: one folder per area of the app. It holds that
   area's rules, its database reads and writes, and its screen parts.
 - `src/db/`: the table definitions and the changes to them.
-- `src/academic-periods/`: the running academic period and a student's
-  semester, read by every area that needs them.
+- `src/academic-periods/`: the running academic period, a student's
+  semester and the tahap a semester belongs to, read by every area that
+  needs them.
+- `src/dorms/`: the four dorms, the rule for who lives in which, and a
+  resident's room, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/ui/`: screen parts shared by more than one area.
 - `docs/`: specs and lasting facts.
@@ -108,7 +111,9 @@ The rule about real people's data is in `CLAUDE.md`. These add to it.
 5. One person can have several roles at once, for example a student who is
    also a BAM member, or a staff member who is both mentor and assessor.
    They may do everything that any of their roles allows. Never create a
-   combined role to cover a mix.
+   combined role to cover a mix. On each screen or action they see the
+   rows of only those roles that allow it: a role that sees every
+   student on its own screens adds no rows to another role's screen.
 6. If the list does not say a role may do something, the answer is no.
 7. Every permission has a test with a role that may and a role that may
    not. Another test checks that every screen and every action is in the
@@ -116,6 +121,6 @@ The rule about real people's data is in `CLAUDE.md`. These add to it.
 8. The app shows the list on a screen for the head of unit, built from the
    same list, so there is no second copy to keep up to date.
 9. Changing what a role may do needs a spec and the owner's OK.
-10. Sample data has one account per role. The "sign in as" shortcut exists
-    only locally and on previews. The live app refuses to start with it
-    turned on.
+10. Sample data has at least one account per role. The "sign in as"
+    shortcut exists only locally and on previews. The live app refuses
+    to start with it turned on.

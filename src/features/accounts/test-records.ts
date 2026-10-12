@@ -4,6 +4,8 @@ import type { Database } from "@/db/connect";
 import {
   accountRoles,
   accounts,
+  mentorGroupMentors,
+  mentorGroups,
   roleChanges,
   students,
   studyPrograms,
@@ -27,6 +29,23 @@ export async function addTestManager(
   return { id: account.id, roles };
 }
 
+/** A staff account as Pengguna dan peran lists it. */
+export async function addTestStaffAccount(
+  db: Database,
+  name: string,
+  roles: RoleId[],
+): Promise<string> {
+  const [account] = await db
+    .insert(accounts)
+    .values({ name })
+    .returning({ id: accounts.id });
+  if (!account) throw new Error("The account was not added.");
+  await db
+    .insert(accountRoles)
+    .values(roles.map((role) => ({ accountId: account.id, role })));
+  return account.id;
+}
+
 /**
  * Each file of checks uses a program name and NIMs of its own: the
  * database makes two checks that add the same one wait for each other.
@@ -35,7 +54,10 @@ export async function addTestProgram(
   db: Database,
   name: string,
 ): Promise<number> {
-  const [program] = await db.insert(studyPrograms).values({ name }).returning();
+  const [program] = await db
+    .insert(studyPrograms)
+    .values({ name, code: name })
+    .returning();
   if (!program) throw new Error("The study program was not added.");
   return program.id;
 }
@@ -70,6 +92,39 @@ export async function addTestStudentAccount(
     .insert(accountRoles)
     .values(roles.map((role) => ({ accountId: account.id, role })));
   return account.id;
+}
+
+const TEST_GROUP_STARTS_ON = "2026-09-01";
+
+/**
+ * A kelompok pengasuhan with the account as its mentor: of today, or of
+ * before when the day the mentor left it is given.
+ */
+export async function addTestGroupHeldBy(
+  db: Database,
+  studyProgramId: number,
+  mentorId: string,
+  endsOn: string | null = null,
+): Promise<string> {
+  const [group] = await db
+    .insert(mentorGroups)
+    .values({
+      studyProgramId,
+      cohortYear: 2026,
+      entryPath: "regular",
+      number: 1,
+      startsOn: TEST_GROUP_STARTS_ON,
+    })
+    .returning({ id: mentorGroups.id });
+  if (!group) throw new Error("The mentor group was not added.");
+  await db.insert(mentorGroupMentors).values({
+    groupId: group.id,
+    mentorId,
+    startsOn: TEST_GROUP_STARTS_ON,
+    endsOn,
+    endReason: endsOn === null ? null : "Uji penggantian",
+  });
+  return group.id;
 }
 
 /** The lines of the log of role changes for one account, oldest first. */

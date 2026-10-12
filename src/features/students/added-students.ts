@@ -7,6 +7,8 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import type { DormId } from "@/dorms/dorms";
+import { dormInSql } from "@/dorms/resident-condition";
 import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
 import type { StudentInput } from "./student-input";
 
@@ -56,6 +58,8 @@ export interface AddedStudent {
   inputSource: typeof students.$inferSelect.inputSource;
   /** The kept file the student was saved from, when one was kept. */
   fileId: string | null;
+  /** The dorm the student lives in today. Null for one who lives in none. */
+  dorm: DormId | null;
 }
 
 export interface StudentCounts {
@@ -64,6 +68,8 @@ export interface StudentCounts {
   /** Put in through Pengguna baru mahasiswa. */
   added: number;
   addedActive: number;
+  /** Those put in here who live in a dorm today. */
+  addedResidents: number;
 }
 
 const putInHere = isNotNull(students.inputAt);
@@ -75,10 +81,12 @@ export const ADDED_HERE = and(putInHere, NOT_REMOVED);
 /**
  * The students put in through Pengguna baru mahasiswa that match a search,
  * the newest first: at most `LIST_LIMIT` rows, and how many match in all.
+ * `dormCohorts` are the angkatan years that live in the dorm today.
  */
 export async function listAddedStudents(
   db: Database,
   query: string,
+  dormCohorts: number[],
 ): Promise<{ students: AddedStudent[]; matching: number }> {
   const condition = and(ADDED_HERE, matchesSearch(query));
   const [counted] = await db
@@ -86,7 +94,7 @@ export async function listAddedStudents(
     .from(students)
     .where(condition);
   const rows = await db
-    .select(ROW)
+    .select({ ...ROW, dorm: dormInSql(dormCohorts) })
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .leftJoin(accounts, eq(accounts.studentId, students.id))
@@ -136,14 +144,22 @@ export async function findAddedStudent(
   return found ?? null;
 }
 
-/** The numbers at the top of Pengguna baru mahasiswa. Removed students are left out. */
-export async function countStudents(db: Database): Promise<StudentCounts> {
+/**
+ * The numbers at the top of Pengguna baru mahasiswa. Removed students are
+ * left out. `dormCohorts` are the angkatan years that live in the dorm today.
+ */
+export async function countStudents(
+  db: Database,
+  dormCohorts: number[],
+): Promise<StudentCounts> {
+  const isResident = sql`${dormInSql(dormCohorts)} is not null`;
   const [counted] = await db
     .select({
       total: count(),
       active: countWhere(isActive),
       added: countWhere(putInHere),
       addedActive: countWhere(sql`${putInHere} and ${isActive}`),
+      addedResidents: countWhere(sql`${putInHere} and ${isResident}`),
     })
     .from(students)
     .where(NOT_REMOVED);
