@@ -178,11 +178,18 @@ async function programIsKnown(
   return found !== undefined;
 }
 
-/** Saves an account with its roles and its log line, or nothing at all. */
-async function saveNewAccount(
+/** A new account with any roles, among them the ones not managed here. */
+export type AccountToSave = Omit<NewAccount, "roles"> & { roles: RoleId[] };
+
+/**
+ * Saves an account with its roles and its log line, or nothing at all.
+ * `by` is null only for the first account of all, which is logged as
+ * added by itself: nobody else exists yet to name.
+ */
+export async function saveNewAccount(
   db: Database,
-  account: NewAccount,
-  by: string,
+  account: AccountToSave,
+  by: string | null,
 ): Promise<string> {
   return db.transaction(async (tx) => {
     const { roles, ...fields } = account;
@@ -196,7 +203,7 @@ async function saveNewAccount(
       .values(roles.map((role) => ({ accountId: added.id, role })));
     await tx.insert(roleChanges).values({
       accountId: added.id,
-      changedBy: by,
+      changedBy: by ?? added.id,
       action: "added",
       rolesBefore: [],
       rolesAfter: inRoleOrder(roles),

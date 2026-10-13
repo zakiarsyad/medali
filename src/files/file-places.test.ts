@@ -1,8 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { FILE_PLACES, filePlaceOf, inPlace, placePrefix } from "./file-places";
+import {
+  FILE_PLACES,
+  filePlaceOf,
+  inPlace,
+  makesOwnPlace,
+  placePrefix,
+} from "./file-places";
 import { memoryStore } from "./memory-store";
 
 const FILE = { bytes: new Uint8Array([1, 2, 3]), contentType: "text/csv" };
+
+describe("makesOwnPlace", () => {
+  it.each(["local", "campus"] as const)(
+    "lets %s make the place for files: the file storage is its own",
+    (stage) => {
+      expect(makesOwnPlace(stage)).toBe(true);
+    },
+  );
+
+  it.each(["pr-preview", "main-preview"] as const)(
+    "does not let %s make it: at the previews' service it is made by hand",
+    (stage) => {
+      expect(makesOwnPlace(stage)).toBe(false);
+    },
+  );
+});
 
 describe("filePlaceOf", () => {
   it("keeps the files of PR previews apart from those of the preview of main", () => {

@@ -1,0 +1,101 @@
+name: medali-campus
+
+# The campus server package: the app, its database and its file storage,
+# started together. Its keys and passwords come from the settings file
+# .env.campus beside this file, which is never in the repo;
+# .env.campus.example lists what it holds. docs/HOSTING.md says how to
+# start, update and stop the package.
+
+x-app: &app
+  build: .
+  image: medali-campus-app
+  # The whole settings file reaches the app, so the check also sees a
+  # setting that should not be there. Without the file Docker Compose
+  # itself stops, saying the file is not found, before the check runs.
+  env_file: .env.campus
+  environment:
+    # Left empty while the password is, so the check names it as missing.
+    DATABASE_URL: ${DATABASE_PASSWORD:+postgres://medali:${DATABASE_PASSWORD}@db:5432/medali}
+    FILE_STORAGE_URL: http://files:9000
+    FILE_STORAGE_BUCKET: medali
+
+services:
+  # Runs once, before anything else starts: with a missing setting, or one
+  # that would turn Ganti peran on, nothing of the package starts.
+  check:
+    <<: *app
+    command: ["node_modules/.bin/tsx", "src/campus/start-check-command.ts"]
+    restart: "no"
+
+  # The only part that can be reached from outside the server.
+  app:
+    <<: *app
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      files:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - --eval
+        - 'fetch("http://127.0.0.1:3000/masuk").then((answer) => process.exit(answer.ok ? 0 : 1), () => process.exit(1))'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # Reached only by the app, inside the package.
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: medali
+      POSTGRES_DB: medali
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    depends_on:
+      check:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      # Asked over the network, as the app asks. On its very first start
+      # the database sets itself up with a server that answers only inside
+      # its own container, and the app must not start against that one.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "medali"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      # Time for that first set-up, which a slow server needs.
+      start_period: 60s
+
+  # Reached only by the app, inside the package.
+  files:
+    # The same file storage as on a local computer; compose.yaml says why
+    # this image.
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${FILE_STORAGE_ACCESS_KEY:-}
+      MINIO_ROOT_PASSWORD: ${FILE_STORAGE_SECRET_KEY:-}
+    volumes:
+      - files-data:/data
+    depends_on:
+      check:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+# Where the data and the files are kept, so they outlast a stop, a start
+# and a newer version of the package.
+volumes:
+  db-data:
+  files-data:

@@ -1,8 +1,12 @@
-import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, expect } from "vitest";
-import { readSetting } from "@/settings";
 import { type Connection, connect, type Database } from "./connect";
 import { applyTableChanges } from "./migrate";
+import {
+  dropOwnTestDatabase,
+  makeOwnTestDatabase,
+  ownTestDatabaseName,
+  ownTestDatabaseUrl,
+} from "./test-database-own";
 
 /** Long enough for the second save to reach the database and wait there. */
 const WAIT_MS = 400;
@@ -24,17 +28,10 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function urlOf(database: string): string {
-  const url = new URL(readSetting("DATABASE_URL"));
-  url.pathname = `/${database}`;
-  return url.href;
-}
-
 async function open(database: string): Promise<Opened> {
-  const admin = connect(readSetting("DATABASE_URL"));
-  await admin.db.execute(sql.raw(`create database ${database}`));
-  const first = connect(urlOf(database));
-  const second = connect(urlOf(database));
+  const admin = await makeOwnTestDatabase(database);
+  const first = connect(ownTestDatabaseUrl(database));
+  const second = connect(ownTestDatabaseUrl(database));
   await applyTableChanges(first.db);
   return { admin, first, second };
 }
@@ -42,10 +39,7 @@ async function open(database: string): Promise<Opened> {
 async function closeAndDrop(opened: Opened, database: string): Promise<void> {
   await opened.first.close();
   await opened.second.close();
-  await opened.admin.db.execute(
-    sql.raw(`drop database if exists ${database} with (force)`),
-  );
-  await opened.admin.close();
+  await dropOwnTestDatabase(opened.admin, database);
 }
 
 /**
@@ -89,7 +83,7 @@ async function runAtOnce<Answer>(
  * word, different for each file.
  */
 export function withOwnTestDatabase(name: string) {
-  const database = `medali_test_${name}_${process.pid}`;
+  const database = ownTestDatabaseName(name);
   let opened: Opened | undefined;
 
   beforeAll(async () => {

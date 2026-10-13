@@ -1,0 +1,51 @@
+# What stays out of the campus server package. No line here starts with
+# "!": nothing that is kept out is let back in.
+
+# Settings files. The package gets its settings on the server, never from
+# a file in the repo.
+.env*
+**/.env*
+**/*.env
+
+# Installed packages and build output: the package makes its own.
+node_modules
+.next
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+
+# The repo's history, its rules, its docs and the prototype.
+.git
+.github
+.claude
+docs
+*.md
+
+# Sample data and the commands that load it or start a database over.
+src/db/sample-*
+src/db/seed*
+src/db/rebuild.ts
+src/db/create-command.ts
+src/db/remove-command.ts
+src/db/removal-plan.ts
+src/db/copy-databases.ts
+src/db/database-server.ts
+src/db/deploy-command.ts
+src/files/deploy-command.ts
+src/files/deploy-files.ts
+
+# The checks and what only they use.
+**/*.test.ts
+**/*.test.tsx
+**/test-*.ts
+src/files/memory-store.ts
+vitest.config.mts
+biome.json
+drizzle.config.ts
+
+# The local database and file storage, and the package's own recipe.
+compose.yaml
+compose.campus.yaml
+docker/create-test-database.sql
+Dockerfile
+.dockerignore

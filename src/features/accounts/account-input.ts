@@ -42,6 +42,13 @@ const PROGRAM_ID = /^[1-9]\d*$/;
 /** The largest id the database can hold. */
 const MAX_ID = 2_147_483_647;
 
+const SHORTEST_NAME = 3;
+
+/** Whether a name, without spaces around it, is long enough to be one. */
+export function isFullName(name: string): boolean {
+  return name.length >= SHORTEST_NAME;
+}
+
 function optional(text: string): string | null {
   const trimmed = text.trim();
   return trimmed === "" ? null : trimmed;
@@ -85,7 +92,7 @@ export function parseNewAccount(
   campusEnding: string,
 ): Parsed<NewAccount> {
   const name = fields.name.trim();
-  if (name.length < 3) return { ok: false, error: "Isi nama lengkap." };
+  if (!isFullName(name)) return { ok: false, error: "Isi nama lengkap." };
   const email = parseAccountEmail(
     fields.email,
     campusEnding,

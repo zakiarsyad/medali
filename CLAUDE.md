@@ -146,8 +146,9 @@ More than one person may work on this repo at the same time.
 - Photos and other uploaded files go to file storage, not the database:
   MinIO locally and on the campus server.
 - Sign-in is with Google, limited to campus addresses.
-- Docker runs the database and the file storage on a local computer. Later
-  it also packages the app for the campus server.
+- Docker runs the database and the file storage on a local computer. It
+  also packages the app, with its database and its file storage, for the
+  campus server.
 - `main` has one fixed preview link, and each PR gets its own, on free
   hosting: Vercel for the app, Neon for the database. Previews hold sample
   data only.

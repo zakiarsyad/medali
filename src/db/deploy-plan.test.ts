@@ -73,4 +73,13 @@ describe("checkDeployTarget", () => {
       }),
     ).toThrow();
   });
+
+  it.each(["reset-to-sample-data", "apply-table-changes"] as const)(
+    "refuses to %s in the database of the campus server",
+    (plan) => {
+      const target = { marker: "campus" as const, hasTables: true };
+
+      expect(() => checkDeployTarget(plan, target)).toThrow(/marked campus/);
+    },
+  );
 });
