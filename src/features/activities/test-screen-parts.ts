@@ -1,5 +1,6 @@
 import type { ActivityChoice } from "./activity-choice";
 import type { FormParts } from "./form-values";
+import type { ListAttendance } from "./schedule-attendance";
 import type { ScheduleRow } from "./schedule-row";
 
 /* Made-up screen data for the checks of the screen parts of this area. */
@@ -62,3 +63,6 @@ export const TEST_SCHEDULE: ScheduleRow = {
   period: { startYear: 2026, term: "odd" },
   version: "2026-10-01T02:03:04.567Z",
 };
+
+/** A page of the list with no attendance read and no "Peserta" open. */
+export const TEST_NO_ATTENDANCE: ListAttendance = { counts: {}, absent: null };

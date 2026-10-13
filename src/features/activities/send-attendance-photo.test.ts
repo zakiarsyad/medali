@@ -432,7 +432,96 @@ describe("sendAttendancePhoto", () => {
     });
   });
 
-  it.each(["valid", "rejected", "dispensation"] as const)(
+  it("takes a photo again after a rejection: a new attendance that waits, while the rejected one stays stored", async () => {
+    await inTestDatabase(async (db) => {
+      const { student, scheduleId, staffId } = await addRecords(db);
+      const store = memoryStore();
+      const rejectedId = await addTestAttendance(db, staffId, {
+        scheduleId,
+        studentId: student.studentId,
+        status: "rejected",
+        note: "Wajah tidak terlihat jelas",
+        photoKey: "attendance-photos/uji-ditolak",
+      });
+      const send = (at: Date) =>
+        sendAttendancePhoto(db, store, student, scheduleId, PHOTO, at);
+
+      const again = await send(WHILE_OPEN);
+      // A second press while the new photo waits is the same send.
+      const twice = await send(new Date("2170-10-13T04:00:00Z"));
+
+      expect(again).toEqual(SENT);
+      expect(twice).toEqual(SENT);
+      const kept = await db.select().from(activityAttendances);
+      expect(kept).toHaveLength(2);
+      expect(kept.find(({ id }) => id === rejectedId)).toMatchObject({
+        status: "rejected",
+        note: "Wajah tidak terlihat jelas",
+        photoKey: "attendance-photos/uji-ditolak",
+      });
+      expect(kept.find(({ id }) => id !== rejectedId)).toMatchObject({
+        status: "waiting",
+        note: "",
+        sentAt: WHILE_OPEN,
+        decidedBy: null,
+      });
+      expect(store.files.size).toBe(1);
+    });
+  });
+
+  it("takes no photo after a rejection once the upload time has closed", async () => {
+    await inTestDatabase(async (db) => {
+      const { student, scheduleId, staffId } = await addRecords(db);
+      const store = memoryStore();
+      await addTestAttendance(db, staffId, {
+        scheduleId,
+        studentId: student.studentId,
+        status: "rejected",
+      });
+
+      const sent = await sendAttendancePhoto(
+        db,
+        store,
+        student,
+        scheduleId,
+        PHOTO,
+        // The first minute of 15 October on campus.
+        new Date("2170-10-14T17:00:00Z"),
+      );
+
+      expect(sent).toEqual(UPLOAD_CLOSED);
+      expect(await db.select().from(activityAttendances)).toHaveLength(1);
+      expect(store.files.size).toBe(0);
+    });
+  });
+
+  it("refuses a photo once the one sent again after a rejection was validated", async () => {
+    await inTestDatabase(async (db) => {
+      const { student, scheduleId, staffId } = await addRecords(db);
+      const store = memoryStore();
+      const of = { scheduleId, studentId: student.studentId };
+      await addTestAttendance(db, staffId, { ...of, status: "rejected" });
+      await addTestAttendance(db, staffId, {
+        ...of,
+        status: "valid",
+        sentAt: new Date("2170-10-13T02:00:00Z"),
+      });
+
+      const sent = await sendAttendancePhoto(
+        db,
+        store,
+        student,
+        scheduleId,
+        PHOTO,
+        WHILE_OPEN,
+      );
+
+      expect(sent).toEqual(ALREADY_DECIDED);
+      expect(await db.select().from(activityAttendances)).toHaveLength(2);
+    });
+  });
+
+  it.each(["valid", "dispensation"] as const)(
     "refuses a photo for a schedule where the student's attendance is %s, and keeps nothing new",
     async (status) => {
       await inTestDatabase(async (db) => {

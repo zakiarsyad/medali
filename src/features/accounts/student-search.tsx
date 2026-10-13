@@ -1,31 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "@/ui/data-screen.module.css";
+import { SEARCH_TEXT_MAX } from "@/ui/search-text";
+import { useFound } from "@/ui/use-found";
 import { searchStudentsAction } from "./actions";
 import type { FoundStudent } from "./search-students";
-import { SEARCH_TEXT_MAX } from "./search-text";
-
-/** Waits for a pause in the typing, so not every letter asks the server. */
-const SEARCH_DELAY_MS = 250;
-
-function useFoundStudents(query: string): FoundStudent[] {
-  const [found, setFound] = useState<FoundStudent[]>([]);
-  useEffect(() => {
-    let isLatest = true;
-    const timer = setTimeout(async () => {
-      const isBlank = query.trim() === "";
-      const students = isBlank ? [] : await searchStudentsAction(query);
-      // An answer to an earlier text must not replace a later one.
-      if (isLatest) setFound(students);
-    }, SEARCH_DELAY_MS);
-    return () => {
-      isLatest = false;
-      clearTimeout(timer);
-    };
-  }, [query]);
-  return found;
-}
 
 function Offered({ query, found }: { query: string; found: FoundStudent[] }) {
   if (query.trim() === "") return null;
@@ -53,7 +33,7 @@ function Offered({ query, found }: { query: string; found: FoundStudent[] }) {
 /** Finds a student on the server as the person types, and offers a pick. */
 export function StudentSearch() {
   const [query, setQuery] = useState("");
-  const found = useFoundStudents(query);
+  const found = useFound(query, searchStudentsAction);
   return (
     <>
       <label className={styles.field}>

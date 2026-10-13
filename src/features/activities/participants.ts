@@ -57,6 +57,21 @@ export function semestersByPeriod(
 }
 
 /**
+ * The angkatan, among those that have students, that a schedule of an
+ * activity of a semester is meant for: those in that semester during the
+ * period the schedule keeps.
+ */
+export function meantCohortYears(
+  counts: readonly CohortCount[],
+  semester: number,
+  period: PeriodParts,
+): number[] {
+  return counts
+    .map((count) => count.cohortYear)
+    .filter((cohortYear) => isInSemester(cohortYear, semester, period));
+}
+
+/**
  * How many students take part in a schedule of an activity of a semester:
  * those of every angkatan that is in that semester during the period the
  * schedule keeps. None while no period is known.

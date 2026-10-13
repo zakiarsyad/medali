@@ -68,7 +68,7 @@ function ofLevel(level: number | null): SQL | undefined {
  * every tahap. An activity that was removed from Kurikulum since still
  * counts: its schedules stay.
  */
-function found(level: number | null): SQL | undefined {
+export function listedSchedules(level: number | null): SQL | undefined {
   return and(
     isNull(activitySchedules.deletedAt),
     isNotNull(ppksActivities.semester),
@@ -76,7 +76,7 @@ function found(level: number | null): SQL | undefined {
   );
 }
 
-const OF_SCHEDULE = eq(ppksActivities.id, activitySchedules.activityId);
+export const OF_SCHEDULE = eq(ppksActivities.id, activitySchedules.activityId);
 
 async function countSchedules(
   db: Database,
@@ -138,7 +138,7 @@ export async function listSchedules(
   level: number | null,
   page: number,
 ): Promise<ScheduleList> {
-  const condition = found(level);
+  const condition = listedSchedules(level);
   const matching = await countSchedules(db, condition);
   const shownPage = pageWithin(page, matching);
   const rows = await readRows(db, condition, shownPage);

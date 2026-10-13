@@ -173,6 +173,15 @@ anything is touched. While the four settings are empty the step does
 nothing and says so in the build log; the files of `main-preview` are
 then removed once by the first `main` deploy after they are filled in.
 
+After that, the same step gives the sample attendance its photos: every
+attendance that has a time sent and no photo gets a copy of one drawn
+picture with no person in it. A deploy that kept its data finds none
+left without. The build log says "Sample attendance photos added", with
+how many. While the four settings are empty no photo is kept, and the
+cards of "Verifikasi presensi" say "Foto tidak tersimpan di sini."; the
+first deploy after they are filled in adds the photos. On a local
+computer `pnpm files:setup` does the same, after `pnpm db:setup`.
+
 ## Google sign-in
 
 People sign in with their Google account, and only campus addresses are

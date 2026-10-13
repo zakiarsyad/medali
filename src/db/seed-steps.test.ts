@@ -1,10 +1,11 @@
 import { count, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { memoryStore } from "@/files/memory-store";
 import { markDatabase, readDeployTarget } from "./deploy-target";
 import { applyTableChanges } from "./migrate";
 import { Refusal } from "./refusal";
 import { accounts } from "./schema";
-import { loadSampleData } from "./seed-steps";
+import { loadSampleData, loadSamplePhotos } from "./seed-steps";
 import { withEmptyTestDatabase } from "./test-database-alone";
 
 const own = withEmptyTestDatabase("seedsteps");
@@ -41,4 +42,27 @@ describe("the sample data command against the database of the campus server", ()
     expect(before.accounts).toBe(1);
     expect(await totals()).toEqual(before);
   });
+
+  it("refuses the sample photos too, and keeps no file", async () => {
+    const store = memoryStore();
+
+    const loading = loadSamplePhotos(own.db, store, "local");
+
+    await expect(loading).rejects.toThrow(/marked campus.*refused/);
+    expect(store.files.size).toBe(0);
+  });
+});
+
+describe("the sample photos command", () => {
+  it.each(["pr-preview", "main-preview", "campus"] as const)(
+    "is refused in %s before the database is asked, and keeps no file",
+    async (stage) => {
+      const store = memoryStore();
+
+      const loading = loadSamplePhotos(own.db, store, stage);
+
+      await expect(loading).rejects.toThrow(stage);
+      expect(store.files.size).toBe(0);
+    },
+  );
 });

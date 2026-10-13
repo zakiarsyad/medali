@@ -108,8 +108,43 @@ describe("openAttendancePhoto", () => {
     });
   });
 
+  it("gives Pegawai UPK the photo of any student, to verify it", async () => {
+    await inTestDatabase(async (db) => {
+      const { store, staffId, attendanceId } = await addRecords(db);
+      const staff = {
+        id: staffId,
+        roles: ["upk_staff"] as const,
+        studyProgramId: null,
+        studentId: null,
+      };
+
+      const opened = await openAttendancePhoto(db, store, staff, attendanceId);
+
+      expect(opened).toMatchObject({ ok: true, file: { bytes: PHOTO.bytes } });
+    });
+  });
+
+  it("does not open the photo of a removed schedule for Pegawai UPK either", async () => {
+    await inTestDatabase(async (db) => {
+      const { store, staffId, scheduleId, attendanceId } = await addRecords(db);
+      await db
+        .update(activitySchedules)
+        .set({ deletedAt: WHILE_OPEN, deletedBy: staffId })
+        .where(eq(activitySchedules.id, scheduleId));
+      const staff = {
+        id: staffId,
+        roles: ["upk_staff"] as const,
+        studyProgramId: null,
+        studentId: null,
+      };
+
+      const opened = await openAttendancePhoto(db, store, staff, attendanceId);
+
+      expect(opened).toEqual({ ok: false, refusal: "not-found" });
+    });
+  });
+
   it.each([
-    ["Pegawai UPK", ["upk_staff"]],
     ["Kepala Unit", ["head_of_unit"]],
     ["Direktur", ["director"]],
     ["Ketua Program Studi", ["head_of_program"]],

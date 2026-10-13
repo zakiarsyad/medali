@@ -1203,3 +1203,30 @@ export const activityAttendances = pgTable(
     ),
   ],
 );
+
+/**
+ * Every decision on an attendance and every record made by hand: who,
+ * when, and the status and Keterangan before and after. A first record
+ * made by hand has none before. Rows here cannot be changed or deleted;
+ * the database refuses it.
+ */
+export const activityAttendanceChanges = pgTable(
+  "activity_attendance_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    attendanceId: uuid()
+      .notNull()
+      .references(() => activityAttendances.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    statusBefore: activityAttendanceStatus(),
+    noteBefore: text(),
+    statusAfter: activityAttendanceStatus().notNull(),
+    noteAfter: text().notNull(),
+  },
+  (table) => [
+    index("activity_attendance_changes_attendance").on(table.attendanceId),
+  ],
+);

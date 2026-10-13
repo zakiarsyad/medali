@@ -87,7 +87,7 @@ describe("CurrentActivities", () => {
     expect(shown(TEST_STUDENT_SCHEDULE, early)).not.toContain(BUTTON);
   });
 
-  it.each(["waiting", "valid", "rejected", "dispensation"] as const)(
+  it.each(["waiting", "valid", "dispensation"] as const)(
     "offers no upload when the attendance is %s",
     (status) => {
       const attendance = { ...TEST_SENT_PHOTO, status };
@@ -97,6 +97,28 @@ describe("CurrentActivities", () => {
       );
     },
   );
+
+  const REJECTED = {
+    ...TEST_STUDENT_SCHEDULE,
+    attendance: {
+      ...TEST_SENT_PHOTO,
+      status: "rejected" as const,
+      note: "Wajah tidak terlihat jelas",
+    },
+  };
+
+  it("says why a photo was rejected and offers the upload again, while the upload time is open", () => {
+    const card = shown(REJECTED);
+
+    expect(card).toContain("Presensi ditolak: Wajah tidak terlihat jelas.");
+    expect(card).toContain(`${BUTTON}</button>`);
+  });
+
+  it("offers no upload for a rejected photo once the upload time has closed", () => {
+    const late = { day: "2026-10-15", time: "00:00" };
+
+    expect(shown(REJECTED, late)).not.toContain(BUTTON);
+  });
 });
 
 describe('pressing "Unggah foto kehadiran"', () => {

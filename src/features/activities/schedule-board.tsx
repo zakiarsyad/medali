@@ -7,6 +7,7 @@ import styles from "./activities.module.css";
 import type { FormParts } from "./form-values";
 import type { ScheduleList } from "./list-schedules";
 import type { CohortCount } from "./participants";
+import type { ListAttendance } from "./schedule-attendance";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleListPanel } from "./schedule-list-panel";
 import type { ScheduleRow } from "./schedule-row";
@@ -26,6 +27,7 @@ export function ScheduleBoard({
   level,
   counts,
   now,
+  attendance,
   form,
 }: {
   list: ScheduleList;
@@ -33,6 +35,7 @@ export function ScheduleBoard({
   level: number | null;
   counts: CohortCount[];
   now: CampusMoment;
+  attendance: ListAttendance;
   /** What the form needs, or null for an account that only reads. */
   form: FormParts | null;
 }) {
@@ -101,6 +104,7 @@ export function ScheduleBoard({
         level={level}
         counts={counts}
         now={now}
+        attendance={attendance}
         onChange={form ? change : null}
       />
     </>

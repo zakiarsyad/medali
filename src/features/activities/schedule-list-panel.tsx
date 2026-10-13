@@ -3,6 +3,7 @@ import { ListPager } from "@/ui/list-pager";
 import styles from "./activities.module.css";
 import type { ScheduleList } from "./list-schedules";
 import type { CohortCount } from "./participants";
+import type { ListAttendance } from "./schedule-attendance";
 import { scheduleListAddress } from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
 import type { CampusMoment } from "./schedule-status";
@@ -15,6 +16,7 @@ export function ScheduleListPanel({
   level,
   counts,
   now,
+  attendance,
   onChange,
 }: {
   list: ScheduleList;
@@ -22,6 +24,7 @@ export function ScheduleListPanel({
   level: number | null;
   counts: CohortCount[];
   now: CampusMoment;
+  attendance: ListAttendance;
   /** Opens the form of a schedule, or null for an account that only reads. */
   onChange: ((schedule: ScheduleRow) => void) | null;
 }) {
@@ -39,6 +42,8 @@ export function ScheduleListPanel({
             schedules={list.schedules}
             counts={counts}
             now={now}
+            attendance={attendance}
+            addressOf={(open) => scheduleListAddress(level, list.page, open)}
             onChange={onChange}
           />
           <ListPager
