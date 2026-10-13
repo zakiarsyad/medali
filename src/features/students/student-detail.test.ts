@@ -201,7 +201,90 @@ describe("readStudentDetail", () => {
     },
   );
 
-  it.each(["mentor", "upk_staff", "student", "dorm_manager"] as const)(
+  it("gives Pengasuh the detail of a student of a group they hold today, with the Pengasuh line", async () => {
+    await inTestDatabase(async (db) => {
+      const { own, inOwn } = await addRows(db);
+      const mentor = await addTestActor(db, "Detail Uji Pengasuh Sendiri", [
+        "mentor",
+      ]);
+      await addTestMentorGroup(db, own, {
+        number: 1,
+        memberIds: [inOwn],
+        mentorId: mentor.id,
+      });
+      const asking = { ...account(["mentor"]), id: mentor.id };
+
+      const answer = await readDetail(db, asking, inOwn);
+
+      expect(answer).toMatchObject({
+        kind: "found",
+        student: {
+          id: inOwn,
+          name: "Detail Uji Ani",
+          mentorGroup: { mentor: { name: "Detail Uji Pengasuh Sendiri" } },
+        },
+      });
+    });
+  });
+
+  it("answers Pengasuh as for no student when it is not their mentee: of another mentor's group, of a group held before, or in no group", async () => {
+    await inTestDatabase(async (db) => {
+      const { own, other, inOwn, inOther } = await addRows(db);
+      const mentor = await addTestActor(db, "Detail Uji Pengasuh Lama", [
+        "mentor",
+      ]);
+      const newMentor = await addTestActor(db, "Detail Uji Pengasuh Baru", [
+        "mentor",
+      ]);
+      const inNoGroup = await addTestStudent(db, other, {
+        nim: "9900001505",
+        name: "Detail Uji Tanpa Kelompok",
+      });
+      await addTestMentorGroup(db, own, {
+        number: 1,
+        memberIds: [inOwn],
+        mentorId: newMentor.id,
+        earlierMentorId: mentor.id,
+      });
+      await addTestMentorGroup(db, other, {
+        number: 1,
+        memberIds: [inOther],
+        mentorId: newMentor.id,
+      });
+      const asking = { ...account(["mentor"]), id: mentor.id };
+
+      for (const studentId of [inOwn, inOther, inNoGroup, NO_SUCH_ID]) {
+        expect(await readDetail(db, asking, studentId)).toEqual(NOT_FOUND);
+      }
+    });
+  });
+
+  it.each(WIDE_WITHOUT_DETAIL)(
+    "keeps Pengasuh who is also %s to the detail of their own mentees",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { own, inOwn, inOther } = await addRows(db);
+        const mentor = await addTestActor(db, "Detail Uji Pengasuh Rangkap", [
+          "mentor",
+          role,
+        ]);
+        await addTestMentorGroup(db, own, {
+          number: 1,
+          memberIds: [inOwn],
+          mentorId: mentor.id,
+        });
+        const asking = { ...account(["mentor", role]), id: mentor.id };
+
+        const first = await readDetail(db, asking, inOwn);
+        const second = await readDetail(db, asking, inOther);
+
+        expect(first.kind).toBe("found");
+        expect(second).toEqual(NOT_FOUND);
+      });
+    },
+  );
+
+  it.each(["upk_staff", "student", "dorm_manager", "counsellor"] as const)(
     "refuses %s, who has no right to a detail",
     async (role) => {
       await inTestDatabase(async (db) => {
@@ -217,7 +300,7 @@ describe("readStudentDetail", () => {
 
   it("refuses a role without the right for a student who does not exist too", async () => {
     await inTestDatabase(async (db) => {
-      const answer = await readDetail(db, account(["mentor"]), NO_SUCH_ID);
+      const answer = await readDetail(db, account(["upk_staff"]), NO_SUCH_ID);
 
       expect(answer).toEqual({ kind: "refused" });
     });

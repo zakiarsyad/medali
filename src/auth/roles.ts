@@ -212,7 +212,11 @@ export const ROLES: Record<RoleId, Role> = {
       assessment: ALL_ASSESSMENT,
       guidance: ["character", "discipline"],
     },
-    actions: ["view_mentoring_notes", "write_mentoring_notes"],
+    actions: [
+      "view_student_detail",
+      "view_mentoring_notes",
+      "write_mentoring_notes",
+    ],
     rows: "own_mentees",
   },
   student: {

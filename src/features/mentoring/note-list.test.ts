@@ -275,6 +275,32 @@ describe("listNotes", () => {
     });
   });
 
+  it("says of each note whether the account may open the student's detail", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentorA, programA } = await addRecords(db);
+      const everyNote = visibleFor(account(["head_of_unit"]));
+      const ownProgram = visibleTo({
+        kind: "some",
+        studyProgramIds: [programA],
+        menteesOf: [],
+        studentIds: [],
+      });
+
+      const linked = await listNotes(db, everyNote, null, 1, ownProgram);
+      const plain = await listNotes(db, visibleFor(mentorA), null, 1, null);
+
+      const opened = linked.notes
+        .filter((note) => note.opensDetail)
+        .map((note) => note.studentName);
+      expect(opened).toEqual(["Daftar Uji Kedua", "Daftar Uji Pertama"]);
+      expect(linked.notes.some((note) => !note.opensDetail)).toBe(true);
+      expect(plain.notes.map((note) => note.opensDetail)).toEqual([
+        false,
+        false,
+      ]);
+    });
+  });
+
   it("narrows the list to a kind, and keeps the count of every kind", async () => {
     await inTestDatabase(async (db) => {
       const { mentorA } = await addRecords(db);

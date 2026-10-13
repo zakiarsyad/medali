@@ -10,11 +10,18 @@ import { NoteForm } from "./note-form";
 /** The panel "Catatan baru", for an account that may write notes. */
 export async function NewNotePanel({
   limit,
+  startWithId,
 }: {
   /** The students the account may write a note for. */
   limit: RowLimit;
+  /**
+   * What the address gives as the id of the student the form opens with,
+   * or null. Only a student the account may write for is taken.
+   */
+  startWithId: string | null;
 }) {
   const mentees = await listMentees(database(), limit);
+  const startWith = mentees.find((mentee) => mentee.id === startWithId);
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Catatan baru</h2>
@@ -24,9 +31,12 @@ export async function NewNotePanel({
           belum ada mahasiswa yang dapat dicatat.
         </p>
       ) : (
+        // Made anew when the address names another student, so the form
+        // opens with the one it names.
         <NoteForm
+          key={startWith?.id ?? "none"}
           mentees={mentees}
-          startWith={null}
+          startWith={startWith ?? null}
           today={campusDay()}
           noteId={randomUUID()}
         />

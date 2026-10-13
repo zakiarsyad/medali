@@ -13,12 +13,15 @@ import type { NotesParams } from "./notes-address";
 export async function NotesScreen({
   tabs,
   visible,
+  detailVisible,
   writeLimit,
   params,
 }: {
   tabs: TabLinksProps;
   /** The students whose notes the account that opened the tab may read. */
   visible: SQL;
+  /** The students whose detail the account may open, or null for none. */
+  detailVisible: SQL | null;
   /**
    * The students the account may write a note for, or null for an
    * account that only reads: it gets no form.
@@ -26,7 +29,13 @@ export async function NotesScreen({
   writeLimit: RowLimit | null;
   params: NotesParams;
 }) {
-  const list = await listNotes(database(), visible, params.kind, params.page);
+  const list = await listNotes(
+    database(),
+    visible,
+    params.kind,
+    params.page,
+    detailVisible,
+  );
   return (
     <>
       <MentoringHead tabs={tabs} />
@@ -38,7 +47,9 @@ export async function NotesScreen({
         </p>
       )}
       <div className={styles.columns}>
-        {writeLimit !== null && <NewNotePanel limit={writeLimit} />}
+        {writeLimit !== null && (
+          <NewNotePanel limit={writeLimit} startWithId={params.writeForId} />
+        )}
         <NoteListPanel list={list} kind={params.kind} />
       </div>
     </>

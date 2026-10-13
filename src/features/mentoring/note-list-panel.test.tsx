@@ -1,11 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { ListedNote, NoteList } from "./note-list";
+import type { NoteInList, NoteList } from "./note-list";
 import { NoteListPanel } from "./note-list-panel";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
-const NOTE: ListedNote = {
+const NOTE: NoteInList = {
+  opensDetail: false,
   id: "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f4e01",
   happenedOn: "2026-10-09",
   kind: "discipline_guidance",
@@ -44,6 +45,25 @@ describe("NoteListPanel", () => {
     expect(panel).toContain("Terlambat apel pagi.");
     expect(panel).toContain("Tindak lanjut: Pantau dua pekan.");
     expect(panel).toContain("Dicatat oleh Pengasuh Uji, M.Si.");
+  });
+
+  it("makes the student's name a link to their detail over the same page of the list, for an account that may open it", () => {
+    const panel = panelOf({
+      notes: [{ ...NOTE, opensDetail: true }],
+      matching: 41,
+      page: 2,
+    });
+
+    expect(panel).toContain(
+      `href="/pengasuhan/catatan?hal=2&amp;profil=${NOTE.studentId}"`,
+    );
+  });
+
+  it("shows the name alone, as no link, for a student whose detail the account may not open", () => {
+    const panel = panelOf({ notes: [NOTE], matching: 1 });
+
+    expect(panel).toContain("<b>Mahasiswa Uji Daftar</b>");
+    expect(panel).not.toContain("profil=");
   });
 
   it("shows no follow-up for a note that needs none", () => {

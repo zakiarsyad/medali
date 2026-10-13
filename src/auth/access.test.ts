@@ -234,6 +234,7 @@ describe("may", () => {
     "head_of_unit",
     "director",
     "head_of_program",
+    "mentor",
   ];
 
   it.each(detailReaders)("lets %s read a student's detail", (role) => {
@@ -248,7 +249,7 @@ describe("may", () => {
     }
   });
 
-  it.each(["mentor", "upk_staff", "student"] as const)(
+  it.each(["upk_staff", "student", "counsellor"] as const)(
     "refuses %s to read a student's detail",
     (role) => {
       expect(may([role], "view_student_detail")).toBe(false);
@@ -257,9 +258,50 @@ describe("may", () => {
 
   it("gives the right to read a student's detail to every role with Mahasiswa", () => {
     for (const role of ROLE_IDS) {
-      expect(may([role], "view_student_detail")).toBe(
-        mayOpenPage([role], "students"),
-      );
+      if (!mayOpenPage([role], "students")) continue;
+      expect(may([role], "view_student_detail")).toBe(true);
+    }
+  });
+
+  it("gives Pengasuh a student's detail without the Mahasiswa menu, and no other role one without the other", () => {
+    const withoutMenu = ROLE_IDS.filter(
+      (role) =>
+        may([role], "view_student_detail") && !mayOpenPage([role], "students"),
+    );
+
+    expect(withoutMenu).toEqual(["mentor"]);
+    expect(paths(pagesFor(["mentor"]))).not.toContain("mahasiswa");
+  });
+
+  it("opens Pengasuh the detail of their own mentees only, whatever wide role they also hold", () => {
+    const own = {
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["account-1"],
+      studentIds: [],
+    };
+    const wideWithoutDetail = ROLE_IDS.filter(
+      (role) =>
+        ROLES[role].rows === "all" && !may([role], "view_student_detail"),
+    );
+
+    expect(wideWithoutDetail).toContain("upk_staff");
+    for (const role of ["mentor", ...wideWithoutDetail] as RoleId[]) {
+      const account = {
+        id: "account-1",
+        roles: ["mentor", role] as RoleId[],
+        studyProgramId: null,
+        studentId: null,
+      };
+
+      expect(rowLimitForAction(account, "view_student_detail")).toEqual(own);
+    }
+  });
+
+  it("gives every role that reads mentoring notes the detail the notes are shown in", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "view_mentoring_notes")) continue;
+      expect(may([role], "view_student_detail")).toBe(true);
     }
   });
 

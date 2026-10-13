@@ -1,4 +1,4 @@
-import { and, count, desc, eq, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { accounts, mentoringNotes, students } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
@@ -22,9 +22,15 @@ export interface ListedNote
 
 export type KindCounts = Record<NoteKind, number>;
 
+/** A note in the list of every student's notes. */
+export interface NoteInList extends ListedNote {
+  /** Whether the account that reads the list may open the student's detail. */
+  opensDetail: boolean;
+}
+
 export interface NoteList {
   /** The notes of the page, the one saved last first. */
-  notes: ListedNote[];
+  notes: NoteInList[];
   /** How many notes the list has in all, narrowed to the kind chosen. */
   matching: number;
   /** The page shown: the last one when the page asked for does not exist. */
@@ -78,6 +84,16 @@ function total(counts: KindCounts): number {
   return notes;
 }
 
+const NO_DETAIL = sql<boolean>`false`;
+
+/**
+ * Whether the account may open the detail of the student a note is about.
+ * The list marks its links with this, so a link never leads to "not found".
+ */
+function opensDetailOf(detailVisible: SQL | null): SQL<boolean> {
+  return detailVisible ? sql<boolean>`(${detailVisible})` : NO_DETAIL;
+}
+
 function ofKind(visible: SQL, kind: NoteKind | null): SQL | undefined {
   if (kind === null) return visible;
   return and(visible, eq(mentoringNotes.kind, kind));
@@ -88,18 +104,21 @@ function ofKind(visible: SQL, kind: NoteKind | null): SQL | undefined {
  * row limit of the account that asks, with the count of each kind. A note
  * is shown by whose student it is about, not by who wrote it: the mentor
  * of today reads what an earlier mentor wrote, under the earlier name.
+ * `detailVisible` holds the students whose detail the account may open,
+ * or null for none: each note says whether its student is one of them.
  */
 export async function listNotes(
   db: Database,
   visible: SQL,
   kind: NoteKind | null,
   page: number,
+  detailVisible: SQL | null = null,
 ): Promise<NoteList> {
   const counts = await countByKind(db, visible);
   const matching = kind === null ? total(counts) : counts[kind];
   const shown = pageWithin(page, matching, NOTES_PAGE_SIZE);
   const notes = await db
-    .select(LISTED_NOTE)
+    .select({ ...LISTED_NOTE, opensDetail: opensDetailOf(detailVisible) })
     .from(mentoringNotes)
     .innerJoin(students, eq(students.id, mentoringNotes.studentId))
     .innerJoin(accounts, eq(accounts.id, mentoringNotes.writtenBy))

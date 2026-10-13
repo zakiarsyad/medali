@@ -1,20 +1,28 @@
+import Link from "next/link";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import styles from "./mentoring.module.css";
 import { NoteItem } from "./note-item";
 import { KIND_TITLES, NOTE_KINDS, type NoteKind } from "./note-kinds";
-import { type KindCounts, NOTES_PAGE_SIZE, type NoteList } from "./note-list";
+import {
+  type KindCounts,
+  NOTES_PAGE_SIZE,
+  type NoteInList,
+  type NoteList,
+} from "./note-list";
 import {
   KIND_PARAM,
   KIND_PATHS,
   NOTES_ADDRESS,
+  noteStudentAddress,
   notesAddress,
 } from "./notes-address";
 
 function KindFilter({ kind }: { kind: NoteKind | null }) {
   return (
-    <AutoSubmitForm action={NOTES_ADDRESS}>
+    // Made anew for each kind, so the choice shows what the address holds.
+    <AutoSubmitForm key={kind ?? "all"} action={NOTES_ADDRESS}>
       <select
         name={KIND_PARAM}
         className={`${shared.input} ${styles.fit}`}
@@ -41,6 +49,19 @@ function CountsByKind({ counts }: { counts: KindCounts }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * The student a note is about: a link that opens their detail over the
+ * list for an account that may open it, and the name alone otherwise.
+ */
+function StudentName({ note, address }: { note: NoteInList; address: string }) {
+  if (!note.opensDetail) return <b>{note.studentName}</b>;
+  return (
+    <Link href={address} scroll={false} className={shared.link}>
+      {note.studentName}
+    </Link>
   );
 }
 
@@ -72,7 +93,16 @@ export function NoteListPanel({
               <NoteItem
                 key={note.id}
                 note={note}
-                student={<b>{note.studentName}</b>}
+                student={
+                  <StudentName
+                    note={note}
+                    address={noteStudentAddress(
+                      kind,
+                      list.page,
+                      note.studentId,
+                    )}
+                  />
+                }
               />
             ))}
           </ul>

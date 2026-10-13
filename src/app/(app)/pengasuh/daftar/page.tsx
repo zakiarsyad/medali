@@ -14,10 +14,15 @@ import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorStudentAddresses } from "@/features/mentor-groups/open-member-address";
 import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
+import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
+import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
-import { detailVisibleTo } from "@/features/students/visible-students";
+import {
+  detailVisibleTo,
+  visibleTo,
+} from "@/features/students/visible-students";
 
 /**
  * The page of one mentor, with the detail of a student over it when the
@@ -37,6 +42,8 @@ async function MentorPage({
   detailId: string | null;
 }) {
   const detail = await askedDetail(account, detailId);
+  const noteLimit = noteRowsFor(account);
+  const notesVisible = noteLimit === null ? null : visibleTo(noteLimit);
   return (
     <>
       <MentorScreen
@@ -52,6 +59,13 @@ async function MentorPage({
           period={await runningPeriodNow()}
           closeAddress={mentorAddress(mentorId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
+          morePanelsOf={(studentId) => (
+            <StudentNotesPanel
+              account={account}
+              visible={notesVisible}
+              studentId={studentId}
+            />
+          )}
         />
       )}
     </>

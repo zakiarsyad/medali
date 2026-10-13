@@ -1,13 +1,29 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
-import { readNotesParams } from "@/features/mentoring/notes-address";
+import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import {
+  notesAddress,
+  readNotesParams,
+} from "@/features/mentoring/notes-address";
 import { NotesScreen } from "@/features/mentoring/notes-screen";
+import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
 import {
   noteRowsFor,
   writtenRowsFor,
 } from "@/features/mentoring/visible-notes";
-import { visibleTo } from "@/features/students/visible-students";
+import { askedDetail } from "@/features/students/asked-detail";
+import { runningPeriodNow } from "@/features/students/running-period-now";
+import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
+import {
+  detailVisibleTo,
+  visibleTo,
+} from "@/features/students/visible-students";
 
+/**
+ * The tab "Catatan pendampingan", with the detail of a student over it
+ * when the address asks for one. The detail opens only for a student the
+ * account may open: for Pengasuh, a student of a group they hold today.
+ */
 export default async function MentoringNotesPage(
   props: PageProps<"/pengasuhan/catatan">,
 ) {
@@ -15,12 +31,33 @@ export default async function MentoringNotesPage(
   const { account } = opened;
   const limit = noteRowsFor(account);
   if (limit === null) forbidden();
+  const params = readNotesParams(await props.searchParams);
+  const visible = visibleTo(limit);
+  const detail = await askedDetail(account, params.detailId);
   return (
-    <NotesScreen
-      tabs={{ pagePath: "pengasuhan", tabs: opened.tabs, open: "catatan" }}
-      visible={visibleTo(limit)}
-      writeLimit={writtenRowsFor(account)}
-      params={readNotesParams(await props.searchParams)}
-    />
+    <>
+      <NotesScreen
+        tabs={{ pagePath: "pengasuhan", tabs: opened.tabs, open: "catatan" }}
+        visible={visible}
+        detailVisible={detailVisibleTo(account)}
+        writeLimit={writtenRowsFor(account)}
+        params={params}
+      />
+      {detail && (
+        <StudentDetailDialog
+          detail={detail}
+          period={await runningPeriodNow()}
+          closeAddress={notesAddress(params.kind, params.page)}
+          groupAddressOf={(group) => openGroupAddress(account, group)}
+          morePanelsOf={(studentId) => (
+            <StudentNotesPanel
+              account={account}
+              visible={visible}
+              studentId={studentId}
+            />
+          )}
+        />
+      )}
+    </>
   );
 }

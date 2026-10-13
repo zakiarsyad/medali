@@ -292,7 +292,22 @@ describe("visibleTo", () => {
 describe("detailVisibleTo", () => {
   it("gives none to an account without the right to a detail", () => {
     expect(detailVisibleTo(account(["upk_staff"]))).toBeNull();
-    expect(detailVisibleTo(account(["mentor", "assessor"]))).toBeNull();
+    expect(detailVisibleTo(account(["counsellor", "assessor"]))).toBeNull();
+  });
+
+  it("opens only their own mentees to Pengasuh, also to one who is Penilai Mahasiswa too", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentorId } = await addMentorRows(db);
+      for (const roles of [["mentor"], ["mentor", "assessor"]] as RoleId[][]) {
+        const visible = detailVisibleTo(account(roles, { id: mentorId }));
+        if (visible === null) throw new Error("The right was not given.");
+
+        expect(await testNimsWhere(db, visible)).toEqual([
+          "9900000311",
+          "9900000312",
+        ]);
+      }
+    });
   });
 
   it("opens every student to Kepala Unit", async () => {

@@ -1,6 +1,7 @@
-import { and, asc, inArray, isNull, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, type SQL, sql } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { isUuid } from "@/db/is-uuid";
 import { mentorGroupMembers, mentorGroupMentors, students } from "@/db/schema";
 
 const NOBODY = sql`false`;
@@ -36,6 +37,21 @@ export function writableFor(limit: RowLimit): SQL {
   if (limit.kind === "all") return ACTIVE;
   if (limit.menteesOf.length === 0) return NOBODY;
   return sql`${ACTIVE} and ${menteeOf(limit.menteesOf)}`;
+}
+
+/** Whether a note may be written for one student under a row limit. */
+export async function isWritableFor(
+  db: Database,
+  limit: RowLimit,
+  studentId: string,
+): Promise<boolean> {
+  // The database refuses to compare its ids with a text of another shape.
+  if (!isUuid(studentId)) return false;
+  const [student] = await db
+    .select({ id: students.id })
+    .from(students)
+    .where(and(eq(students.id, studentId), writableFor(limit)));
+  return student !== undefined;
 }
 
 /** A student the form "Catatan baru" offers. */

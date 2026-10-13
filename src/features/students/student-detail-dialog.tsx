@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ModalDialog } from "@/ui/modal-dialog";
 import type { AskedDetail } from "./asked-detail";
@@ -5,18 +6,26 @@ import type { RunningPeriod } from "./semester-now";
 import { StudentDetailView } from "./student-detail-view";
 import type { GroupAddressOf } from "./student-mentor-group";
 
+/**
+ * The panels another area adds under a student's own record, such as the
+ * notes of their mentor. Each area decides who is shown its panel.
+ */
+export type MorePanelsOf = (studentId: string) => ReactNode;
+
 /** The detail of one student, over the list it was opened from. */
 export function StudentDetailDialog({
   detail,
   period,
   closeAddress,
   groupAddressOf,
+  morePanelsOf,
 }: {
   detail: AskedDetail;
   period: RunningPeriod;
   /** The address of the list as it was left. */
   closeAddress: string;
   groupAddressOf: GroupAddressOf;
+  morePanelsOf: MorePanelsOf;
 }) {
   if (detail.kind === "not_found") {
     return (
@@ -39,6 +48,7 @@ export function StudentDetailDialog({
         period={period}
         groupAddressOf={groupAddressOf}
       />
+      {morePanelsOf(detail.student.id)}
     </ModalDialog>
   );
 }
