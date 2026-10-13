@@ -210,8 +210,9 @@ Google rejects.
 
 ## The campus server package
 
-The package is the app, its database and its file storage (MinIO),
-started together with one command. It needs only Docker on the server,
+The package is the app, its database, its file storage (MinIO) and the
+part that makes and restores backups, started together with one command.
+It needs only Docker on the server,
 with its Compose plugin: the `docker compose` command. It was tried with
 Docker Compose 5.1.2 only, so use that version or a newer one. It holds
 no key, no password and no sample data.
@@ -286,19 +287,141 @@ changes once. The data and the files are kept.
 The start command starts it again, with the data and the files as they
 were: they are kept in two Docker volumes, `medali-campus_db-data` and
 `medali-campus_files-data`. Never add `--volumes` to a `down` command:
-it removes both, and there is no backup yet.
+it removes both, and then only a backup brings the data back; "Backups"
+below says how.
 
 ### What can be reached
 
-Only the app listens on the network. The database and the file storage
-have no port on the server; only the app reaches them, inside the
-package.
+Only the app listens on the network. The database, the file storage and
+the backup part have no port on the server; they are reached only inside
+the package.
 
 Nobody can sign in until the app is opened over HTTPS: the browser keeps
 the sign-in cookies only on a secure connection. So the server needs a
 web certificate in front of the app, which is set up apart from this
 package. Once it is there, people use that secure address, and the
 app's own port should no longer be open to them directly.
+
+### Backups
+
+A backup is one file that holds the whole database and every uploaded
+file, as they were at one moment. It is locked with a password and
+cannot be read without it. Its name is the day and the time it was made,
+in campus time, such as `2026-10-13-020000.medali-backup`.
+
+#### The settings
+
+Four settings in `.env.campus`. After changing one, run the start
+command again.
+
+- `BACKUP_FOLDER`: the folder on the server where backups are kept, as a
+  full path. Point it at another disk or server than the one the app
+  runs on: a backup kept beside the data is lost together with it.
+  While it is empty no backup is made.
+- `BACKUP_PASSWORD`: the password every backup is locked with. Keep a
+  copy somewhere safe apart from the server. It cannot be recovered, and
+  without it no backup can be read. A backup opens only with the
+  password that was set when it was made.
+- `BACKUP_HOUR`: the hour of the nightly backup, in campus time, such as
+  `02:00`. Empty means 02:00.
+- `BACKUP_KEEP`: how many backups are kept. Empty means 14.
+
+Both commands below refuse, and name the setting, while the folder or
+the password is empty, or while the hour or the number cannot be read.
+
+#### Making a backup
+
+    docker compose --file compose.campus.yaml exec backup backup
+
+It says the name and the size of the backup it made. People can go on
+using the app meanwhile. A backup that fails leaves nothing behind in
+the folder, and says what to check.
+
+#### The nightly backup
+
+Once `BACKUP_FOLDER` is filled in, a backup is made every night at the
+hour of the settings. Each night's result, the name and size or the
+reason it failed, is read with:
+
+    docker compose --file compose.campus.yaml logs backup
+
+Look there now and then: a nightly backup that fails tells nobody else.
+While `BACKUP_FOLDER` is empty, that log says "Cadangan otomatis belum
+diatur." and no nightly backup runs.
+
+#### How many are kept
+
+After each new backup, the oldest are removed until the number to keep
+is left. Nothing is removed when a backup fails. Only files with a
+backup's name are counted and removed; any other file in the folder is
+left alone.
+
+#### Restoring into an empty package
+
+1. Start the package, with `BACKUP_PASSWORD` set to the password the
+   backup was made with, and the backup in the backup folder.
+2. Restore it, by its name:
+
+       docker compose --file compose.campus.yaml exec backup restore 2026-10-13-020000.medali-backup
+
+3. Start the app again, which also applies the table changes a newer
+   version of the package still needs:
+
+       docker compose --file compose.campus.yaml restart app
+
+The database and the files are then as they were when the backup was
+made, and the same accounts sign in. Only the backup password must be
+the same as before; the other settings may differ.
+
+#### Restoring into a package that holds data
+
+A package that has at least one account holds data, and the restore
+command refuses it and changes nothing. To replace everything it holds
+with the backup, add the word `GANTI-SEMUA` after the name:
+
+    docker compose --file compose.campus.yaml exec backup restore 2026-10-13-020000.medali-backup GANTI-SEMUA
+
+It then asks to type `GANTI-SEMUA` once more. With any other answer it
+changes nothing. With the word, everything entered after the backup was
+made is gone. Then start the app again, as in step 3 above.
+
+#### What the restore refuses
+
+- A wrong password: it says the backup does not open with
+  `BACKUP_PASSWORD`.
+- A backup that is broken or cut short, for example by a copy that did
+  not finish: it says so. Use another backup.
+
+In both cases nothing in the package is changed. A restore that fails
+later, half way, also leaves the database exactly as it was; files it
+had already added may stay as extra files, which harms nothing.
+
+One backup or restore runs at a time. A second one started meanwhile
+refuses.
+
+#### Trying a restore on another computer
+
+Do this before real data goes in, and again from time to time: a backup
+that was never restored is not known to work.
+
+1. Put a copy of the repo on the other computer, with Docker.
+2. Make its `.env.campus`, with the same `BACKUP_PASSWORD` as on the
+   server. The other values may be made up.
+3. Make a folder, put a copy of one backup in it, and set
+   `BACKUP_FOLDER` to that folder.
+4. Start the package, restore the backup, and start the app again, as
+   in "Restoring into an empty package".
+5. Open the app and check that the sign-in page opens. Signing in with
+   Google needs the real keys, and this computer's address registered
+   at Google, so the trial ends at the sign-in page unless both are
+   there.
+
+#### Room on the server
+
+While a backup or a restore runs, the server needs free room of about
+the size of the database and the files together, for a working copy
+that is removed when the command ends. That is besides the room the
+backups themselves take in the backup folder.
 
 ### Trying it on a local computer
 

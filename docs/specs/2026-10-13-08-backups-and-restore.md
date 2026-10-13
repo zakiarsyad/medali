@@ -158,4 +158,4 @@ change any of these.
   settings.
 - [x] 5. Failure handling: no half-written backup, and the app keeps
   running.
-- [ ] 6. The notes for the campus staff.
+- [x] 6. The notes for the campus staff.
