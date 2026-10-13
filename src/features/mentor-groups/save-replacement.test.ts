@@ -7,19 +7,22 @@ import {
   testMentorLinesOf,
   testReplacementsOf,
 } from "@/mentoring/test-replacements";
+import { cancelReplacement } from "./cancel-replacement";
 import { readLastGroupEvaluations } from "./last-evaluations";
 import { readMentor } from "./mentor-detail";
 import type { ReplacementInput } from "./replacement-input";
-import { GROUP_NOT_FOUND } from "./save-evaluation";
 import {
+  alreadyScheduled,
+  KEPT_FOR_ANOTHER_GROUP,
   NEEDS_POOR_EVALUATION,
   NO_MENTOR_TO_REPLACE,
   NOT_A_SPARE_MENTOR,
   NOT_ALLOWED_TO_REPLACE,
   STARTS_BEFORE_TODAY,
-  saveReplacement,
   startsBeforeOldMentor,
-} from "./save-replacement";
+} from "./replacement-refusals";
+import { GROUP_NOT_FOUND } from "./save-evaluation";
+import { saveReplacement } from "./save-replacement";
 import {
   addTestEvaluation,
   addTestEvaluator,
@@ -282,6 +285,74 @@ describe("saveReplacement", () => {
       expect(await send(noRole)).toEqual(NOT_A_SPARE_MENTOR);
       expect(await send(retired)).toEqual(NOT_A_SPARE_MENTOR);
       expect(await testReplacementsOf(db, made.groupId)).toEqual([]);
+    });
+  });
+
+  it("refuses a second replacement for a group that has one waiting, for today and for later, and names its date", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const other = await addSpare(db, "Pengasuh Uji Baru Dua");
+      await saveReplacement(db, made.head, made.input, TODAY);
+      const again = { ...made.input, newMentorId: other };
+
+      const later = await saveReplacement(db, made.head, again, TODAY);
+      const today = await saveReplacement(
+        db,
+        made.head,
+        { ...again, startsOn: TODAY },
+        TODAY,
+      );
+
+      expect(later).toEqual(alreadyScheduled(LATER));
+      expect(today).toEqual(alreadyScheduled(LATER));
+      expect(later).toEqual({
+        ok: false,
+        error:
+          "Kelompok ini sudah punya penggantian terjadwal pada 2 Nov 2082. Batalkan dulu di riwayat bila ingin mengubah.",
+      });
+      expect(await testReplacementsOf(db, made.groupId)).toHaveLength(1);
+      expect(await testMentorLinesOf(db, made.groupId)).toHaveLength(1);
+    });
+  });
+
+  it("refuses a new mentor who is named in the waiting replacement of another group", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const otherGroup = await addTestGroup(db, made.studyProgramId, {
+        number: 2,
+      });
+      const otherMentor = await addTestMentor(db, {
+        name: "Pengasuh Uji Lain",
+      });
+      await addTestMentorLine(db, otherGroup, otherMentor);
+      await saveReplacement(db, made.head, made.input, TODAY);
+      const forOther = { ...made.input, groupId: otherGroup };
+
+      const later = await saveReplacement(db, made.head, forOther, TODAY);
+      const today = await saveReplacement(
+        db,
+        made.head,
+        { ...forOther, startsOn: TODAY },
+        TODAY,
+      );
+
+      expect(later).toEqual(KEPT_FOR_ANOTHER_GROUP);
+      expect(today).toEqual(KEPT_FOR_ANOTHER_GROUP);
+      expect(await testReplacementsOf(db, otherGroup)).toEqual([]);
+    });
+  });
+
+  it("takes the group and the new mentor again once the waiting replacement is cancelled", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const first = await saveReplacement(db, made.head, made.input, TODAY);
+      if (!first.ok) throw new Error(first.error);
+      await cancelReplacement(db, made.head, first.value.id);
+
+      const again = await saveReplacement(db, made.head, made.input, TODAY);
+
+      expect(again).toMatchObject({ ok: true });
+      expect(await testReplacementsOf(db, made.groupId)).toHaveLength(2);
     });
   });
 

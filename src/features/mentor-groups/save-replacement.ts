@@ -8,63 +8,39 @@ import {
   mentorReplacements,
   studyPrograms,
 } from "@/db/schema";
+import { brokeUniqueRule } from "@/db/unique-violation";
 import { WRITTEN_NOW } from "@/db/written-now";
 import { carryOutReplacement } from "@/mentoring/carry-out-replacement";
 import { waitForOtherMentorChanges } from "@/mentoring/mentor-change-lock";
+import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
-import { shownDay } from "@/ui/day";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { evaluationResult } from "./evaluation-result";
 import { readLastGroupEvaluations } from "./last-evaluations";
 import { lockGroup, readMentorOfToday } from "./locked-group";
 import type { ReplacementInput } from "./replacement-input";
+import {
+  alreadyScheduled,
+  KEPT_FOR_ANOTHER_GROUP,
+  NEEDS_POOR_EVALUATION,
+  NO_MENTOR_TO_REPLACE,
+  NOT_A_SPARE_MENTOR,
+  NOT_ALLOWED_TO_REPLACE,
+  STARTS_BEFORE_TODAY,
+  startsBeforeOldMentor,
+} from "./replacement-refusals";
 import { GROUP_NOT_FOUND } from "./save-evaluation";
 import { findSpareMentor } from "./spare-mentors";
 import { maySeeGroup } from "./visible-groups";
 import { replacedRowsFor } from "./visible-replacements";
+import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
-/** What a save answers to any role but Kepala Unit. */
-export const NOT_ALLOWED_TO_REPLACE = {
-  ok: false,
-  error: "Anda tidak berhak menetapkan penggantian pengasuh.",
-} as const;
+/** The database's own rule: one waiting replacement for a group. */
+const ONE_PER_GROUP = "mentor_replacements_one_waiting_per_group";
+/** The database's own rule: a new mentor is named in one waiting replacement. */
+const ONE_PER_NEW_MENTOR = "mentor_replacements_one_waiting_per_new_mentor";
 
-export const NO_MENTOR_TO_REPLACE = {
-  ok: false,
-  error:
-    "Kelompok ini belum memiliki pengasuh, sehingga belum ada yang diganti.",
-} as const;
-
-export const STARTS_BEFORE_TODAY = {
-  ok: false,
-  error:
-    "Tanggal efektif tidak boleh sebelum hari ini. Pilih hari ini atau tanggal sesudahnya.",
-} as const;
-
-/**
- * What a save is told for a start date before the day the mentor of today
- * took the group: that mentor's time with the group cannot end before it
- * began.
- */
-export function startsBeforeOldMentor(since: string) {
-  return {
-    ok: false,
-    error: `Tanggal efektif tidak boleh sebelum pengasuh saat ini mulai mengasuh kelompok ini, ${shownDay(since)}.`,
-  } as const;
-}
-
-/** What a save is told when Hasil evaluasi kurang has no evaluation to stand on. */
-export const NEEDS_POOR_EVALUATION = {
-  ok: false,
-  error:
-    "Evaluasi terakhir pengasuh ini di kelompok tersebut bukan Kurang, sehingga alasan Hasil evaluasi kurang belum bisa dipakai. Lakukan evaluasi dulu, atau pilih alasan lain.",
-} as const;
-
-export const NOT_A_SPARE_MENTOR = {
-  ok: false,
-  error:
-    "Pengasuh pengganti ini bukan pengasuh cadangan lagi. Pilih pengasuh cadangan lain dari daftar.",
-} as const;
+type Refusal = { ok: false; error: string };
 
 /** What "Tetapkan penggantian" tells the one who saved. */
 export interface SavedReplacement {
@@ -74,6 +50,12 @@ export interface SavedReplacement {
   startsOn: string;
   /** Whether the group has its new mentor already. False while it waits. */
   isInForce: boolean;
+}
+
+/** A group that is held, and the mentor who holds it today. */
+interface HeldGroup {
+  id: string;
+  oldMentor: { id: string; since: string };
 }
 
 async function readGroupCode(
@@ -105,18 +87,21 @@ async function hasPoorEvaluation(
   return scores !== undefined && evaluationResult(scores) === "poor";
 }
 
-async function addReplacement(
+/** Why a group cannot get the replacement that was sent, or null when it can. */
+async function whatStopsGroup(
   tx: Database,
-  actorId: string,
-  oldMentorId: string,
+  limit: RowLimit,
+  group: HeldGroup,
   input: ReplacementInput,
-): Promise<string> {
-  const [added] = await tx
-    .insert(mentorReplacements)
-    .values({ ...input, oldMentorId, setBy: actorId, setAt: WRITTEN_NOW })
-    .returning({ id: mentorReplacements.id });
-  if (!added) throw new Error("The replacement was not added.");
-  return added.id;
+): Promise<Refusal | null> {
+  if (input.startsOn < group.oldMentor.since) {
+    return startsBeforeOldMentor(group.oldMentor.since);
+  }
+  const waiting = await readWaitingReplacementOf(tx, group.id);
+  if (waiting !== null) return alreadyScheduled(waiting.startsOn);
+  if (input.reason !== "poor_evaluation") return null;
+  if (await hasPoorEvaluation(tx, limit, group.id)) return null;
+  return NEEDS_POOR_EVALUATION;
 }
 
 /**
@@ -124,13 +109,61 @@ async function addReplacement(
  * transaction ends: its Pengasuh role is not taken and it is not removed
  * between this look and the save.
  */
-async function lockSpareMentor(tx: Database, id: string) {
+async function lockSpareMentor(
+  tx: Database,
+  id: string,
+): Promise<Parsed<{ name: string }>> {
   await tx
     .select({ id: accounts.id })
     .from(accounts)
     .where(eq(accounts.id, id))
     .for("share");
-  return findSpareMentor(tx, id);
+  if (await isKeptForReplacement(tx, id)) return KEPT_FOR_ANOTHER_GROUP;
+  const spare = await findSpareMentor(tx, id);
+  if (spare === null) return NOT_A_SPARE_MENTOR;
+  return { ok: true, value: spare };
+}
+
+/**
+ * What a save is told when the database's own rule refused it: another
+ * save took the group or the new mentor after the looks above found them
+ * free.
+ */
+async function refusedByRule(
+  tx: Database,
+  error: unknown,
+  groupId: string,
+): Promise<Refusal> {
+  if (brokeUniqueRule(error, ONE_PER_NEW_MENTOR)) return KEPT_FOR_ANOTHER_GROUP;
+  if (!brokeUniqueRule(error, ONE_PER_GROUP)) throw error;
+  const waiting = await readWaitingReplacementOf(tx, groupId);
+  if (waiting === null) throw error;
+  return alreadyScheduled(waiting.startsOn);
+}
+
+/**
+ * Adds the replacement in a step of its own, which alone is undone when
+ * the database refuses it.
+ */
+async function addReplacement(
+  tx: Database,
+  actorId: string,
+  oldMentorId: string,
+  input: ReplacementInput,
+): Promise<Parsed<string>> {
+  const values = { ...input, oldMentorId, setBy: actorId, setAt: WRITTEN_NOW };
+  try {
+    const [added] = await tx.transaction((step) =>
+      step
+        .insert(mentorReplacements)
+        .values(values)
+        .returning({ id: mentorReplacements.id }),
+    );
+    if (!added) throw new Error("The replacement was not added.");
+    return { ok: true, value: added.id };
+  } catch (error) {
+    return refusedByRule(tx, error, input.groupId);
+  }
 }
 
 /** Gives the group its new mentor at once, for a replacement that starts today. */
@@ -150,10 +183,11 @@ async function carryOutNow(
  * starts on `day` gives the group its new mentor at once, in the same
  * transaction; one for a later day waits for it. Refused for any role but
  * Kepala Unit, for a start date before `day` or before the old mentor
- * took the group, for a group that is ended or has no mentor, for Hasil
- * evaluasi kurang while the mentor's last evaluation for the group is not
- * Kurang, and for a new mentor who is not a spare mentor: all of it read
- * here, never taken from the browser.
+ * took the group, for a group that is ended, has no mentor, or has a
+ * replacement that waits already, for Hasil evaluasi kurang while the
+ * mentor's last evaluation for the group is not Kurang, and for a new
+ * mentor who is not a spare mentor or is kept for another group: all of
+ * it read here, never taken from the browser.
  */
 export async function saveReplacement(
   db: Database,
@@ -172,28 +206,25 @@ export async function saveReplacement(
     }
     const oldMentor = await readMentorOfToday(tx, group.id);
     if (!oldMentor) return NO_MENTOR_TO_REPLACE;
-    if (input.startsOn < oldMentor.since) {
-      return startsBeforeOldMentor(oldMentor.since);
-    }
     // Two replacements saved at the same moment would both read one
     // spare mentor as free.
     await waitForOtherMentorChanges(tx);
-    const needsEvaluation =
-      input.reason === "poor_evaluation" &&
-      !(await hasPoorEvaluation(tx, limit, group.id));
-    if (needsEvaluation) return NEEDS_POOR_EVALUATION;
+    const held = { id: group.id, oldMentor };
+    const stopped = await whatStopsGroup(tx, limit, held, input);
+    if (stopped !== null) return stopped;
     const newMentor = await lockSpareMentor(tx, input.newMentorId);
-    if (!newMentor) return NOT_A_SPARE_MENTOR;
+    if (!newMentor.ok) return newMentor;
 
-    const id = await addReplacement(tx, actor.id, oldMentor.id, input);
+    const added = await addReplacement(tx, actor.id, oldMentor.id, input);
+    if (!added.ok) return added;
     const isInForce = input.startsOn <= day;
-    if (isInForce) await carryOutNow(tx, id, oldMentor.id, input);
+    if (isInForce) await carryOutNow(tx, added.value, oldMentor.id, input);
     return {
       ok: true,
       value: {
-        id,
+        id: added.value,
         group: await readGroupCode(tx, group.id),
-        newMentorName: newMentor.name,
+        newMentorName: newMentor.value.name,
         startsOn: input.startsOn,
         isInForce,
       },

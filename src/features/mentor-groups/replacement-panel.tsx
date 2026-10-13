@@ -10,6 +10,7 @@ import styles from "./mentor-groups.module.css";
 import { ReplacementForm } from "./replacement-form";
 import { spareChoices } from "./spare-choices";
 import { listSpareMentors } from "./spare-mentors";
+import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
 /** No period is asked for: the form of a replacement shows no stored evaluation. */
 const NO_PERIODS: string[] = [];
@@ -29,11 +30,12 @@ export async function ReplacementPart({
 }) {
   if (chosenGroupId === null) return <ChooseGroupFirst />;
   const db = database();
-  const [group, spares] = await Promise.all([
-    readEvaluatedGroup(db, limit, chosenGroupId, NO_PERIODS),
-    listSpareMentors(db),
-  ]);
+  const group = await readEvaluatedGroup(db, limit, chosenGroupId, NO_PERIODS);
   if (group === null) return <ChooseGroupFirst />;
+  const [spares, waiting] = await Promise.all([
+    listSpareMentors(db),
+    readWaitingReplacementOf(db, group.id),
+  ]);
   const { mentor } = group;
   if (mentor === null) {
     return (
@@ -58,6 +60,7 @@ export async function ReplacementPart({
           oldMentorName: mentor.name,
           hasPoorEvaluation,
           evaluationAddress: evaluationAddress(group.id),
+          waitingFrom: waiting?.startsOn ?? null,
         }}
         choices={spareChoices(spares, mentor.unit)}
         today={campusDay()}

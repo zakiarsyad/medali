@@ -20,7 +20,11 @@ import {
   withOldStatus,
   withReason,
 } from "./replacement-typed";
-import { confirmWords, needsPoorEvaluationWords } from "./replacement-words";
+import {
+  alreadyScheduledWords,
+  confirmWords,
+  needsPoorEvaluationWords,
+} from "./replacement-words";
 import type { SpareChoice } from "./spare-choices";
 
 const START: FormState = { error: null, done: null };
@@ -39,6 +43,11 @@ export interface ReplacedGroup {
   hasPoorEvaluation: boolean;
   /** The address of the form that evaluates the old mentor. */
   evaluationAddress: string;
+  /**
+   * The start date of the replacement of the group that waits already,
+   * or null for a group without one.
+   */
+  waitingFrom: string | null;
 }
 
 function NewMentorField({
@@ -87,8 +96,9 @@ function NewMentorField({
  * the spare mentor, the letter number, what the old mentor becomes, the
  * note, and the tick box whose sentence says what the replacement does.
  * The button is off while a save is on its way, so two presses save once,
- * and while Hasil evaluasi kurang has no evaluation to stand on. After a
- * save the fields start again.
+ * while Hasil evaluasi kurang has no evaluation to stand on, and while
+ * the group has a replacement that waits already. After a save the fields
+ * start again.
  */
 export function ReplacementForm({
   group,
@@ -120,6 +130,11 @@ export function ReplacementForm({
       noValidate
     >
       <input type="hidden" name="groupId" value={group.id} />
+      {group.waitingFrom !== null && (
+        <p className={`${styles.outcome} ${styles.warned} ${styles.whole}`}>
+          {alreadyScheduledWords(group.waitingFrom)}
+        </p>
+      )}
       <label className={shared.field}>
         Alasan penggantian
         <select
@@ -228,7 +243,7 @@ export function ReplacementForm({
         <button
           type="submit"
           className={shared.button}
-          disabled={pending || needsEvaluation}
+          disabled={pending || needsEvaluation || group.waitingFrom !== null}
         >
           Tetapkan penggantian
         </button>

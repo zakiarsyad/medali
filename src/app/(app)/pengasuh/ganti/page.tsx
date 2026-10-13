@@ -9,6 +9,7 @@ import {
   evaluatedRowsFor,
   evaluationRowsFor,
 } from "@/features/mentor-groups/visible-evaluations";
+import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
 import { replacedRowsFor } from "@/features/mentor-groups/visible-replacements";
 
 export default async function MentorEvaluationsPage(
@@ -23,6 +24,7 @@ export default async function MentorEvaluationsPage(
     <EvaluationScreen
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "ganti" }}
       limit={limit}
+      groupLimit={groupRowsFor(account)}
       formLimits={{
         evaluation: evaluatedRowsFor(account),
         replacement: replacedRowsFor(account),

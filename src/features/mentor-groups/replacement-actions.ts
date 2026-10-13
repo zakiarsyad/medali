@@ -8,9 +8,10 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { cancelReplacement } from "./cancel-replacement";
 import { EVALUATION_ADDRESS } from "./evaluation-address";
 import { parseReplacement } from "./replacement-input";
-import { savedReplacementWords } from "./replacement-words";
+import { CANCELLED_WORDS, savedReplacementWords } from "./replacement-words";
 import { saveReplacement } from "./save-replacement";
 
 /**
@@ -45,4 +46,17 @@ export async function saveReplacementAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(EVALUATION_ADDRESS);
   return { error: null, done: savedReplacementWords(saved.value) };
+}
+
+/** "Batalkan" on a Terjadwal replacement. */
+export async function cancelReplacementAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const actor = await replacer();
+  const id = text(form, "replacementId");
+  const cancelled = await cancelReplacement(database(), actor, id);
+  if (!cancelled.ok) return { error: cancelled.error, done: null };
+  revalidatePath(EVALUATION_ADDRESS);
+  return { error: null, done: CANCELLED_WORDS };
 }

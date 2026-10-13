@@ -193,6 +193,24 @@ part only. All of it is built here.
     cancel keeps who did it.
 31. When one spare mentor is chosen for two groups at the same moment,
     the first gets them and the second is told to choose another.
+32. "Riwayat penggantian" shows the 20 replacements with the latest
+    start date, as "Evaluasi terbaru" shows 20. Each role sees the rows
+    of the same groups as in "Evaluasi terbaru". A replacement of a
+    group whose penetapan was cancelled is not listed, as for
+    evaluations.
+33. The number under the group code counts the Aktif students the group
+    holds today. The code opens the group page only for someone who may
+    open that group.
+34. A Dibatalkan row says who cancelled it and when, under its status.
+35. "Batalkan" asks with the browser's own question box, as every other
+    question in the app does: the app has no box of its own for this.
+    After it, the message stays in the row.
+36. A new mentor who is named in another Terjadwal replacement is
+    refused with "Pengasuh pengganti ini sudah ditetapkan pada
+    penggantian terjadwal kelompok lain. Pilih pengasuh cadangan lain,
+    atau batalkan penggantian itu dulu di riwayat." A cancel that comes
+    too late is told the replacement is already cancelled, or already
+    in force.
 
 ## Steps
 
@@ -202,7 +220,7 @@ part only. All of it is built here.
 - [x] 3. The Penggantian form with its rules and the tick box.
 - [x] 4. A replacement takes effect today or on its date, in the group,
   its history and the mentor row rule.
-- [ ] 5. "Riwayat penggantian", cancelling, and the two refusals.
+- [x] 5. "Riwayat penggantian", cancelling, and the two refusals.
 - [ ] 6. The note and button on the group page, the jump after Kurang,
   and "Penggantian tahun ini".
 - [ ] 7. Read-only view, double press and the phone layout.

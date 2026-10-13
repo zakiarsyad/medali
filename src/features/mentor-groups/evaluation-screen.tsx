@@ -10,18 +10,26 @@ import { FormPanel } from "./form-panel";
 import { type FormLimits, openPart } from "./form-parts";
 import styles from "./mentor-groups.module.css";
 import { ReplacementFlow } from "./replacement-flow";
+import { listReplacements } from "./replacement-rows";
+import { ReplacementTable } from "./replacement-table";
 
 /** The tab "Evaluasi dan penggantian". */
 export async function EvaluationScreen({
   tabs,
   limit,
+  groupLimit,
   formLimits,
   chosenPart,
   chosenGroupId,
 }: {
   tabs: TabLinksProps;
-  /** Which evaluations the account that opened the tab may see. */
+  /**
+   * The groups whose evaluations and replacements the account that opened
+   * the tab may see.
+   */
   limit: RowLimit;
+  /** The groups whose page the account may open, or null for none. */
+  groupLimit: RowLimit | null;
   /**
    * The groups the account may evaluate and may replace the mentor of. An
    * account that only reads has neither: it gets no form.
@@ -32,8 +40,13 @@ export async function EvaluationScreen({
   /** The group the address asks the form for, if any. */
   chosenGroupId: string | null;
 }) {
-  const latest = await listLatestEvaluations(database(), limit);
+  const db = database();
+  const [latest, replacements] = await Promise.all([
+    listLatestEvaluations(db, limit),
+    listReplacements(db, limit),
+  ]);
   const part = openPart(chosenPart, formLimits);
+  const rights = { groupLimit, mayCancel: formLimits.replacement !== null };
   return (
     <>
       <MentorsHead tabs={tabs} />
@@ -52,6 +65,10 @@ export async function EvaluationScreen({
           <ReplacementFlow />
         </div>
       )}
+      <section className={shared.panel}>
+        <h2 className={shared.heading}>Riwayat penggantian</h2>
+        <ReplacementTable replacements={replacements} rights={rights} />
+      </section>
       <section className={shared.panel}>
         <h2 className={shared.heading}>Evaluasi terbaru</h2>
         <EvaluationTable evaluations={latest} />

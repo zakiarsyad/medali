@@ -3,7 +3,8 @@ import type { Database } from "@/db/connect";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { testMentorLinesOf } from "@/mentoring/test-replacements";
 import type { ReplacementInput } from "./replacement-input";
-import { NOT_A_SPARE_MENTOR, saveReplacement } from "./save-replacement";
+import { NOT_A_SPARE_MENTOR } from "./replacement-refusals";
+import { saveReplacement } from "./save-replacement";
 import { addTestEvaluator, addTestHeldGroup } from "./test-evaluations";
 import { addTestMentor, addTestMentorRole } from "./test-records";
 

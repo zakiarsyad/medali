@@ -39,6 +39,23 @@ export function savedReplacementWords(saved: SavedReplacement): string {
   return `Pengasuh ${groupCode(saved.group)} kini ${saved.newMentorName}.`;
 }
 
+/** What the form and the server say of a group that has a Terjadwal replacement. */
+export function alreadyScheduledWords(startsOn: string): string {
+  return `Kelompok ini sudah punya penggantian terjadwal pada ${shownDay(startsOn)}. Batalkan dulu di riwayat bila ingin mengubah.`;
+}
+
+/** What "Batalkan" asks before it cancels a Terjadwal replacement. */
+export function cancelQuestion(replacement: {
+  groupCode: string;
+  newMentorName: string;
+  startsOn: string;
+}): string {
+  return `Batalkan penggantian terjadwal ${replacement.groupCode} ke ${replacement.newMentorName} mulai ${shownDay(replacement.startsOn)}? Pengasuh kelompok tidak berubah.`;
+}
+
+/** What "Batalkan" says once the replacement is cancelled. */
+export const CANCELLED_WORDS = "Penggantian terjadwal dibatalkan.";
+
 /** What the form says while Hasil evaluasi kurang has no evaluation to stand on. */
 export function needsPoorEvaluationWords(groupCode: string): string {
   return `Belum ada evaluasi dengan hasil kurang untuk pengasuh ini di kelompok ${groupCode}.`;
