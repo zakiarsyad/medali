@@ -12,8 +12,9 @@ import {
 } from "@/db/schema";
 import { opensDetailOf } from "@/mentoring/opens-detail";
 import type { GroupCodeParts } from "@/ui/group-code";
-import { inactiveSince, type MentorStatus } from "@/ui/mentor-status";
+import type { MentorStatus } from "@/ui/mentor-status";
 import { type GroupMember, MEMBER } from "./group-detail";
+import { type InactiveFacts, inactiveFacts } from "./inactive-facts";
 import { LISTED_MEMBER } from "./member-conditions";
 import {
   type HeldGroup,
@@ -22,11 +23,7 @@ import {
 } from "./mentor-held-groups";
 import { shownStatus } from "./mentor-list";
 import { groupsVisibleTo } from "./visible-groups";
-import {
-  heldTodayBy,
-  mentorsVisibleTo,
-  ROLE_TAKEN_AT,
-} from "./visible-mentors";
+import { heldTodayBy, MENTOR_END, mentorsVisibleTo } from "./visible-mentors";
 
 /** One time a mentor held a group. */
 export interface MentorAssignment extends GroupCodeParts {
@@ -44,14 +41,12 @@ export interface MentorStudent extends GroupMember {
 }
 
 /** What the page of one mentor shows. The NIP is never read. */
-export interface MentorDetail {
+export interface MentorDetail extends InactiveFacts {
   id: string;
   name: string;
   title: string | null;
   unit: string | null;
   status: MentorStatus;
-  /** The day since when a Tidak aktif mentor is so, when it is known. */
-  inactiveSince: string | null;
   /** The groups held today. */
   groups: HeldGroup[];
   /** How many Aktif students those groups hold. */
@@ -96,8 +91,7 @@ async function findMentor(db: Database, limit: RowLimit, id: string) {
       title: accounts.title,
       unit: accounts.unit,
       status: shownStatus(limit),
-      deletedAt: accounts.deletedAt,
-      roleTakenAt: ROLE_TAKEN_AT,
+      end: MENTOR_END,
       isVisible: mentorsVisibleTo(limit).mapWith(Boolean),
     })
     .from(accounts)
@@ -174,21 +168,18 @@ export async function readMentor(
   if (!isUuid(id)) return NOT_FOUND;
   const account = await findMentor(db, limit, id);
   if (!account) return NOT_FOUND;
-  const { isVisible, deletedAt, roleTakenAt, ...mentor } = account;
+  const { isVisible, end, ...mentor } = account;
   if (!isVisible) return { kind: "refused" };
   const [groups, assignments, members] = await Promise.all([
     readGroupsHeld(db, limit, [id]),
     readAssignments(db, limit, id),
     readStudents(db, limit, id, detailVisible),
   ]);
-  const isInactive = mentor.status === "inactive";
   return {
     kind: "found",
     mentor: {
       ...mentor,
-      inactiveSince: isInactive
-        ? inactiveSince({ roleTakenAt, deletedAt })
-        : null,
+      ...inactiveFacts(mentor.status, end),
       groups,
       students: studentsIn(groups),
       assignments,

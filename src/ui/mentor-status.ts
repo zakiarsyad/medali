@@ -11,7 +11,7 @@ export const MENTOR_STATUS_TITLES: Record<MentorStatus, string> = {
   inactive: "Tidak aktif",
 };
 
-/** Why a mentor is Tidak aktif. The only reason known so far. */
+/** Why a mentor is Tidak aktif when it is the account that says so. */
 export const INACTIVE_REASON = "Akun dihapus atau peran diganti";
 
 export interface MentorStanding {
@@ -19,17 +19,24 @@ export interface MentorStanding {
   groupsHeld: number;
   /** Whether the account has the Pengasuh role and is not removed. */
   hasMentorRole: boolean;
+  /**
+   * Whether the last replacement that took a group from the mentor set
+   * them Tidak aktif.
+   */
+  leftAsInactive: boolean;
 }
 
 /**
  * The status of a mentor. Holding a group comes first: a mentor of today
  * is Mengasuh whatever the account says. Without a group, the one who may
- * still take one is Cadangan, and the one who may not is Tidak aktif.
+ * still take one is Cadangan, and the one who may not is Tidak aktif: the
+ * account lost the role, or a replacement set the mentor so.
  */
 export function mentorStatus(standing: MentorStanding): MentorStatus {
   if (standing.groupsHeld > 0) return "mentoring";
-  if (standing.hasMentorRole) return "reserve";
-  return "inactive";
+  if (!standing.hasMentorRole) return "inactive";
+  if (standing.leftAsInactive) return "inactive";
+  return "reserve";
 }
 
 export interface MentorEnd {

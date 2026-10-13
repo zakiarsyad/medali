@@ -15,6 +15,8 @@ function mentor(
     name,
     unit: "Jurusan Pajak",
     hasMentorRole: true,
+    leftAsInactive: false,
+    isPromised: false,
     heldCohortYears: [],
     ...more,
   };
@@ -44,6 +46,16 @@ describe("mayBeChosen", () => {
     expect(mayBeChosen(mentor("Ani", { hasMentorRole: false }), 2026)).toBe(
       false,
     );
+  });
+
+  it("refuses a mentor a replacement set Tidak aktif, though the role is kept", () => {
+    expect(mayBeChosen(mentor("Ani", { leftAsInactive: true }), 2026)).toBe(
+      false,
+    );
+  });
+
+  it("refuses a mentor who is kept for a group whose replacement waits for its start date", () => {
+    expect(mayBeChosen(mentor("Ani", { isPromised: true }), 2026)).toBe(false);
   });
 
   it("takes a mentor who lost the role and still holds groups of this angkatan only, since that one is Mengasuh", () => {

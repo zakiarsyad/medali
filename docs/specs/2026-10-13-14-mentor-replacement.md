@@ -142,13 +142,42 @@ part only. All of it is built here.
 15. The list of rights that Kepala Unit sees names the new right
     "Menetapkan dan membatalkan penggantian pengasuh", worded like the
     right for penetapan angkatan baru.
+16. The address of the tab keeps which of the two forms is open and
+    which group is chosen, so a link can open the Penggantian form with
+    a group chosen. An address that names no form opens Evaluasi, as
+    before.
+17. A mentor who is named as the new mentor of a Terjadwal replacement
+    is kept for that group. Until its date they still show as Cadangan,
+    but they are offered neither in "Pengasuh pengganti" nor in the
+    mentor choice of Penetapan angkatan baru: otherwise the replacement
+    could not be carried out on its date.
+18. A mentor a replacement set Tidak aktif shows so since the start
+    date, with the replacement's reason, also when the account is
+    removed later. Nothing in this spec makes such a mentor Cadangan
+    again: that needs a new piece of work.
+19. A spare mentor is "unit sama" when their account has the same unit
+    as the current mentor's. A mentor without a unit matches nobody.
+20. The form opens with the first reason, Hasil evaluasi kurang, as the
+    prototype does. The note and the switched-off button show until a
+    Kurang evaluation exists or another reason is chosen.
+21. The box above the form and the sentence beside the tick box count
+    the Aktif students of the group, as the Evaluasi part does.
+22. The letter number takes 100 characters at most, as for penetapan.
+    Keterangan takes 1,000 at most, as Catatan evaluasi.
+23. With no spare mentor, the link to Pengguna dan peran reads "Beri
+    peran Pengasuh kepada akun pegawai di Pengguna dan peran."
+24. The form sends everything to the server, which says what is
+    missing in the form's own message: first the spare mentor, then the
+    tick. After a save the fields start again.
+25. Setting a replacement and fixing a penetapan wait for each other,
+    so one spare mentor cannot get a group from both at the same moment.
 
 ## Steps
 
 - [x] 1. Replacements are stored, with the old mentor's new status and
   reason, and one sample replacement.
 - [x] 2. The permission to replace, with its checks.
-- [ ] 3. The Penggantian form with its rules and the tick box.
+- [x] 3. The Penggantian form with its rules and the tick box.
 - [ ] 4. A replacement takes effect today or on its date, in the group,
   its history and the mentor row rule.
 - [ ] 5. "Riwayat penggantian", cancelling, and the two refusals.

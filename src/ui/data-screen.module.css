@@ -281,6 +281,23 @@
   white-space: nowrap;
 }
 
+/* The numbered steps of a flow, each a name with a line that explains it. */
+.flow {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding-left: var(--space-xl);
+}
+
+.flow b {
+  display: block;
+}
+
+.flow span {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
 details.panel > summary {
   list-style: none;
 }

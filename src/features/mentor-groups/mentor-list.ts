@@ -3,12 +3,10 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { accounts } from "@/db/schema";
+import { LEFT_AS_INACTIVE } from "@/mentoring/left-group";
 import { pageWithin } from "@/ui/list-pages";
-import {
-  inactiveSince,
-  MENTOR_STATUSES,
-  type MentorStatus,
-} from "@/ui/mentor-status";
+import { MENTOR_STATUSES, type MentorStatus } from "@/ui/mentor-status";
+import { type InactiveFacts, inactiveFacts } from "./inactive-facts";
 import {
   type HeldGroup,
   readGroupsHeld,
@@ -18,22 +16,20 @@ import type { MentorListFilters } from "./mentor-list-address";
 import {
   groupsHeldToday,
   HAS_MENTOR_ROLE,
+  MENTOR_END,
   mentorsVisibleTo,
-  ROLE_TAKEN_AT,
 } from "./visible-mentors";
 
 /** How many mentors one page of the list shows. */
 export const MENTOR_PAGE_SIZE = 50;
 
 /** One row of the Pengasuh list. The NIP of the mentor is never read. */
-export interface ListedMentor {
+export interface ListedMentor extends InactiveFacts {
   id: string;
   name: string;
   title: string | null;
   unit: string | null;
   status: MentorStatus;
-  /** The day since when a Tidak aktif mentor is so, when it is known. */
-  inactiveSince: string | null;
   /** The groups held today, among those the account may see. */
   groups: HeldGroup[];
   /** How many Aktif students those groups hold. */
@@ -48,7 +44,7 @@ export function shownStatus(limit: RowLimit): SQL<MentorStatus> {
   return sql<MentorStatus>`(
     case
       when ${groupsHeldToday(limit)} > 0 then 'mentoring'
-      when ${HAS_MENTOR_ROLE} then 'reserve'
+      when ${HAS_MENTOR_ROLE} and not ${LEFT_AS_INACTIVE} then 'reserve'
       else 'inactive'
     end
   )`;
@@ -103,8 +99,7 @@ function readRows(
       title: accounts.title,
       unit: accounts.unit,
       status: shown,
-      deletedAt: accounts.deletedAt,
-      roleTakenAt: ROLE_TAKEN_AT,
+      end: MENTOR_END,
     })
     .from(accounts)
     .where(condition)
@@ -116,14 +111,11 @@ function readRows(
 type MentorRow = Awaited<ReturnType<typeof readRows>>[number];
 
 function listed(row: MentorRow, held: HeldGroup[]): ListedMentor {
-  const { deletedAt, roleTakenAt, ...mentor } = row;
+  const { end, ...mentor } = row;
   const groups = held.filter((group) => group.mentorId === row.id);
-  const isInactive = row.status === "inactive";
   return {
     ...mentor,
-    inactiveSince: isInactive
-      ? inactiveSince({ roleTakenAt, deletedAt })
-      : null,
+    ...inactiveFacts(row.status, end),
     groups,
     students: studentsIn(groups),
   };

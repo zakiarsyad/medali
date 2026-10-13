@@ -84,7 +84,7 @@ function parseScores(sent: SentEvaluation): Parsed<EvaluationScores> {
  * and sends it as two, so each is put back to one before it is counted
  * and kept: a note the field allowed is never refused for its length.
  */
-function typedNote(sent: string): string {
+export function typedNote(sent: string): string {
   return sent.replaceAll("\r\n", "\n").trim();
 }
 

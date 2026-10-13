@@ -20,9 +20,11 @@ while building.
   in force, which members of a group are Aktif, how a list marks
   the students whose detail may be opened, the kinds and follow-ups of a
   mentoring note, how many meetings a period has with their marks and
-  suggested topics, the range a mentoring score lies in, and the reasons
-  for replacing a mentor with what the old mentor becomes, read by every
-  area that needs them.
+  suggested topics, the range a mentoring score lies in, the reasons for
+  replacing a mentor with what the old mentor becomes, which mentor a
+  replacement set Tidak aktif, which mentor is kept for a replacement
+  that waits for its date, and the wait that keeps two changes of who
+  holds which group apart, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/campus/`: what the campus server package checks and does when it
   starts.
