@@ -18,6 +18,7 @@ export const ACTIONS = [
   "view_mentors",
   "view_mentor_evaluations",
   "evaluate_mentors",
+  "replace_mentors",
   "view_cohort_assignments",
   "prepare_cohort_assignments",
   "fix_cohort_assignments",
@@ -48,6 +49,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_mentors: "Melihat daftar pengasuh",
   view_mentor_evaluations: "Melihat evaluasi pengasuh",
   evaluate_mentors: "Mengevaluasi pengasuh",
+  replace_mentors: "Menetapkan dan membatalkan penggantian pengasuh",
   view_cohort_assignments: "Melihat penetapan angkatan baru",
   prepare_cohort_assignments:
     "Menyiapkan dan mengajukan penetapan angkatan baru",
@@ -161,6 +163,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentors",
       "view_mentor_evaluations",
       "evaluate_mentors",
+      "replace_mentors",
       "view_cohort_assignments",
       "prepare_cohort_assignments",
       "fix_cohort_assignments",

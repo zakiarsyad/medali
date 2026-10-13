@@ -139,12 +139,15 @@ part only. All of it is built here.
 14. The sample group whose first mentor left in 2025 stays as it was,
     with its earlier mentor and no replacement record: that change is
     from before replacements were recorded.
+15. The list of rights that Kepala Unit sees names the new right
+    "Menetapkan dan membatalkan penggantian pengasuh", worded like the
+    right for penetapan angkatan baru.
 
 ## Steps
 
 - [x] 1. Replacements are stored, with the old mentor's new status and
   reason, and one sample replacement.
-- [ ] 2. The permission to replace, with its checks.
+- [x] 2. The permission to replace, with its checks.
 - [ ] 3. The Penggantian form with its rules and the tick box.
 - [ ] 4. A replacement takes effect today or on its date, in the group,
   its history and the mentor row rule.
