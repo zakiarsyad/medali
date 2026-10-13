@@ -1,3 +1,5 @@
+import { JPEG, PDF, PNG } from "./file-kinds";
+
 /** A kept file as it is sent back to the person who may open it. */
 export interface Download {
   name: string;
@@ -45,15 +47,41 @@ export function attachmentHeader(name: string): string {
  * browser may not guess another type than the one named.
  */
 export function downloadResponse(file: Download): Response {
+  return fileResponse(file, attachmentHeader(file.name));
+}
+
+function fileResponse(file: Download, disposition: string): Response {
   return new Response(new Blob([new Uint8Array(file.bytes)]), {
     headers: {
       "Content-Type": file.contentType,
       "Content-Length": String(file.bytes.length),
-      "Content-Disposition": attachmentHeader(file.name),
+      "Content-Disposition": disposition,
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
     },
   });
+}
+
+/**
+ * The kinds a browser may show inside a page of the app: a PDF and the
+ * two kinds of picture that hold no code. Anything else, such as a page
+ * or a drawing with code in it, would run as part of the app.
+ */
+const SHOWN_IN_PAGE: readonly string[] = [
+  PDF.contentType,
+  JPEG.contentType,
+  PNG.contentType,
+];
+
+/**
+ * The answer that lets a page of the app show a file, bytes unchanged
+ * and as private as a download. A file of a kind that is not safe to
+ * show is downloaded instead.
+ */
+export function viewResponse(file: Download): Response {
+  if (!SHOWN_IN_PAGE.includes(file.contentType)) return downloadResponse(file);
+  const saved = attachmentHeader(file.name);
+  return fileResponse(file, saved.replace(/^attachment/, "inline"));
 }
 
 /** The answer to a download that is refused, with no detail of the file. */

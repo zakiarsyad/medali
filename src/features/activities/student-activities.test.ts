@@ -10,6 +10,7 @@ import {
   addTestActivity,
   addTestActor,
   addTestAttendance,
+  addTestClarification,
   addTestPeriods,
   addTestProgram,
   addTestSchedule,
@@ -193,6 +194,45 @@ describe("readStudentActivities", () => {
       expect(first.history).toMatchObject({ matching: 21, page: 1 });
       expect(idsOf(beyond.history.schedules)).toEqual(added.slice(20));
       expect(beyond.history).toMatchObject({ matching: 21, page: 2 });
+    });
+  });
+
+  it("shows the student their own newest clarification for a schedule of the history, and never another student's", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staffId, student } = records;
+      const { studentId } = student;
+      const other = await addTestStudentAccount(db, records.programId, {
+        nim: "9972100003",
+        name: "Mahasiswa Uji Lain Klar",
+        cohortYear: 2159,
+      });
+      const askedAgain = await addTestSchedule(db, scheduleIn(records, -5));
+      const othersOnly = await addTestSchedule(db, scheduleIn(records, -6));
+      await addTestClarification(db, staffId, {
+        scheduleId: askedAgain,
+        studentId,
+        status: "rejected",
+        note: "Surat tidak terbaca.",
+        sentAt: new Date("2160-10-10T03:00:00Z"),
+      });
+      await addTestClarification(db, staffId, {
+        scheduleId: askedAgain,
+        studentId,
+        status: "submitted",
+        sentAt: new Date("2160-10-11T03:00:00Z"),
+      });
+      await addTestClarification(db, staffId, {
+        scheduleId: othersOnly,
+        studentId: other.studentId,
+        status: "accepted",
+      });
+
+      const { clarifications } = await shownTo(db, student);
+
+      expect(clarifications).toEqual({
+        [askedAgain]: { status: "submitted", note: "" },
+      });
     });
   });
 

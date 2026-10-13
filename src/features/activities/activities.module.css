@@ -79,6 +79,16 @@
   max-width: 100%;
 }
 
+/*
+ * A file chooser and a box for text have a width of their own too, wider
+ * than the room a phone leaves beside the edges of a card.
+ */
+.fits input,
+.fits textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .facts {
   display: flex;
   flex-wrap: wrap;

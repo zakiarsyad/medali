@@ -1,3 +1,4 @@
+import type { ClarificationStatus } from "./clarification-reasons";
 import type { HistoryStatus } from "./history-status";
 import type { ScheduleStatus } from "./schedule-status";
 
@@ -11,6 +12,12 @@ export const HISTORY_LOOKS: Record<HistoryStatus, BadgeLook> = {
   dispensation: "plain",
   absent: "bad",
   not_sent: "warn",
+};
+
+export const CLARIFICATION_LOOKS: Record<ClarificationStatus, BadgeLook> = {
+  submitted: "warn",
+  accepted: "ok",
+  rejected: "bad",
 };
 
 export const SCHEDULE_LOOKS: Record<ScheduleStatus, BadgeLook> = {

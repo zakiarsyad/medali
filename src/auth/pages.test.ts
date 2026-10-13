@@ -86,6 +86,10 @@ describe("every address the server answers itself", () => {
     expect(answerAddresses()).toContain("kegiatan/ppks/foto/[id]");
   });
 
+  it("finds the file of a clarification", () => {
+    expect(answerAddresses()).toContain("kegiatan/klarifikasi/lampiran/[id]");
+  });
+
   it("finds the download of a kept student file", () => {
     expect(answerAddresses()).toContain("pengaturan/mahasiswa/berkas/[id]");
   });

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { firstAccountWithRole } from "@/auth/accounts";
 import { acceptedNote } from "@/features/activities/clarification-reasons";
 import { PDF } from "@/files/file-kinds";
@@ -29,62 +29,121 @@ function found<Value>(value: Value | undefined, what: string): Value {
   return value;
 }
 
-/** An accepted sample clarification, with the rows it belongs to. */
-interface Acceptance {
-  scheduleId: string;
+/** A sample clarification with the keys of its student and its schedule. */
+interface Placed {
+  sample: SampleClarification;
   studentId: string;
+  scheduleId: string;
+}
+
+/** A sample student asks once for a schedule at most, so the two name one row. */
+function pairOf(row: { studentId: string; scheduleId: string }): string {
+  return `${row.studentId} ${row.scheduleId}`;
+}
+
+/** An accepted sample clarification, as far as the attendance needs it. */
+interface Acceptance extends Placed {
   status: "valid" | "dispensation";
-  note: string;
   decidedAt: Date;
-  decidedBy: string;
+}
+
+function acceptancesAmong(placed: Placed[]): Acceptance[] {
+  const accepted: Acceptance[] = [];
+  for (const each of placed) {
+    const { acceptedAs, decidedAt } = each.sample;
+    if (acceptedAs === null || decidedAt === null) continue;
+    accepted.push({ ...each, status: acceptedAs, decidedAt });
+  }
+  return accepted;
 }
 
 /**
- * Gives the attendance what an accepted clarification gives it: the
+ * Gives the attendance what each accepted clarification gives it: the
  * student's attendance for the schedule becomes Hadir or Dispensasi, or
  * one is recorded when nothing was sent, and the log of attendance
  * decisions gets its line. A sample student has one attendance for a
- * schedule at most.
+ * schedule at most. Everything that can be is written in one go: the
+ * checks load the sample data often.
  */
-async function acceptAttendance(db: Database, accepted: Acceptance) {
-  const { scheduleId, studentId, status, note, decidedAt, decidedBy } =
-    accepted;
-  const after = { status, note, decidedAt, decidedBy };
-  const [before] = await db
+async function acceptAttendances(
+  db: Database,
+  accepted: Acceptance[],
+  decidedBy: string,
+): Promise<void> {
+  if (accepted.length === 0) return;
+  const kept = await db
     .select()
     .from(activityAttendances)
     .where(
-      and(
-        eq(activityAttendances.scheduleId, scheduleId),
-        eq(activityAttendances.studentId, studentId),
+      inArray(
+        activityAttendances.studentId,
+        accepted.map(({ studentId }) => studentId),
       ),
     );
-  const log = {
-    changedBy: decidedBy,
-    changedAt: decidedAt,
-    statusAfter: status,
-    noteAfter: note,
-  };
-  if (before) {
+  const before = new Map(kept.map((each) => [pairOf(each), each]));
+  const given = accepted.map((each) => ({
+    scheduleId: each.scheduleId,
+    studentId: each.studentId,
+    status: each.status,
+    note: acceptedNote(each.sample.reason),
+    decidedAt: each.decidedAt,
+    decidedBy,
+  }));
+  const changed = given.filter((each) => before.has(pairOf(each)));
+  const recorded = given.filter((each) => !before.has(pairOf(each)));
+
+  for (const { scheduleId, studentId, ...after } of changed) {
+    const { id } = found(before.get(pairOf({ scheduleId, studentId })), "row");
     await db
       .update(activityAttendances)
       .set(after)
-      .where(eq(activityAttendances.id, before.id));
-    await db.insert(activityAttendanceChanges).values({
-      ...log,
-      attendanceId: before.id,
-      statusBefore: before.status,
-      noteBefore: before.note,
-    });
-    return;
+      .where(eq(activityAttendances.id, id));
   }
-  const [added] = await db
-    .insert(activityAttendances)
-    .values({ ...after, scheduleId, studentId })
-    .returning({ id: activityAttendances.id });
-  await db
-    .insert(activityAttendanceChanges)
-    .values({ ...log, attendanceId: found(added, "new attendance").id });
+  const added =
+    recorded.length === 0
+      ? []
+      : await db.insert(activityAttendances).values(recorded).returning();
+  const ids = new Map(added.map((each) => [pairOf(each), each.id]));
+
+  await db.insert(activityAttendanceChanges).values(
+    given.map((each) => {
+      const was = before.get(pairOf(each));
+      return {
+        attendanceId: was?.id ?? found(ids.get(pairOf(each)), "attendance"),
+        changedBy: decidedBy,
+        changedAt: each.decidedAt,
+        statusBefore: was?.status ?? null,
+        noteBefore: was?.note ?? null,
+        statusAfter: each.status,
+        noteAfter: each.note,
+      };
+    }),
+  );
+}
+
+/** The line each decided sample clarification has in the log of decisions. */
+async function addDecisionLines(
+  db: Database,
+  placed: Placed[],
+  ids: Map<string, string>,
+  decidedBy: string,
+): Promise<void> {
+  const lines = [];
+  for (const each of placed) {
+    const { status, acceptedAs, note, decidedAt } = each.sample;
+    if (decidedAt === null) continue;
+    lines.push({
+      clarificationId: found(ids.get(pairOf(each)), "clarification"),
+      changedBy: decidedBy,
+      changedAt: decidedAt,
+      statusBefore: "submitted" as const,
+      statusAfter: status,
+      acceptedAs,
+      note,
+    });
+  }
+  if (lines.length === 0) return;
+  await db.insert(activityClarificationChanges).values(lines);
 }
 
 /**
@@ -121,55 +180,27 @@ export async function addSampleClarifications(
     fileContentType: PDF.contentType,
     fileSize: samplePaperBytes().length,
   };
+  const placed: Placed[] = clarifications.map((sample) => ({
+    sample,
+    studentId: found(studentIds.get(sample.nim), "student"),
+    scheduleId: found(scheduleIds.get(sample.schedule), "schedule"),
+  }));
 
-  for (const clarification of clarifications) {
-    const { nim, schedule, ...asked } = clarification;
-    const studentId = found(studentIds.get(nim), "student");
-    const scheduleId = found(scheduleIds.get(schedule), "schedule");
-    const decidedBy = asked.decidedAt === null ? null : decider.id;
-    const [added] = await db
-      .insert(activityClarifications)
-      .values({ ...asked, ...paper, studentId, scheduleId, decidedBy })
-      .returning({ id: activityClarifications.id });
-    await addDecision(db, found(added, "new clarification").id, {
-      clarification,
-      studentId,
-      scheduleId,
-      decidedBy: decider.id,
+  const added = await db
+    .insert(activityClarifications)
+    .values(
+      placed.map(({ sample, studentId, scheduleId }) => {
+        const { nim, schedule, ...asked } = sample;
+        const decidedBy = asked.decidedAt === null ? null : decider.id;
+        return { ...asked, ...paper, studentId, scheduleId, decidedBy };
+      }),
+    )
+    .returning({
+      id: activityClarifications.id,
+      studentId: activityClarifications.studentId,
+      scheduleId: activityClarifications.scheduleId,
     });
-  }
-}
-
-/** What the decision of one sample clarification leaves behind, if it has one. */
-async function addDecision(
-  db: Database,
-  clarificationId: string,
-  decided: {
-    clarification: SampleClarification;
-    studentId: string;
-    scheduleId: string;
-    decidedBy: string;
-  },
-): Promise<void> {
-  const { clarification, studentId, scheduleId, decidedBy } = decided;
-  const { status, acceptedAs, note, reason, decidedAt } = clarification;
-  if (decidedAt === null) return;
-  await db.insert(activityClarificationChanges).values({
-    clarificationId,
-    changedBy: decidedBy,
-    changedAt: decidedAt,
-    statusBefore: "submitted",
-    statusAfter: status,
-    acceptedAs,
-    note,
-  });
-  if (acceptedAs === null) return;
-  await acceptAttendance(db, {
-    scheduleId,
-    studentId,
-    status: acceptedAs,
-    note: acceptedNote(reason),
-    decidedAt,
-    decidedBy,
-  });
+  const ids = new Map(added.map((each) => [pairOf(each), each.id]));
+  await addDecisionLines(db, placed, ids, decider.id);
+  await acceptAttendances(db, acceptancesAmong(placed), decider.id);
 }

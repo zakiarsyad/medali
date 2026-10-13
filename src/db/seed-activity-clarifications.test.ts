@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
+import type { Database } from "./connect";
 import { sampleActivityAttendances } from "./sample-activity-attendances";
 import { sampleClarifications } from "./sample-activity-clarifications";
 import { sampleActivitySchedules } from "./sample-activity-schedules";
@@ -28,20 +29,46 @@ function samplesToday() {
   return sampleClarifications(schedules, SAMPLE_STUDENTS, attendances, today);
 }
 
-// Loading the whole sample set takes seconds when every check runs at
-// once, and it waits behind other checks that write the same tables.
+type Clarification = typeof activityClarifications.$inferSelect;
+type Attendance = typeof activityAttendances.$inferSelect;
+
+async function assessorIds(db: Database): Promise<string[]> {
+  const assessors = await db
+    .select({ id: accountRoles.accountId })
+    .from(accountRoles)
+    .where(eq(accountRoles.role, "assessor"));
+  return assessors.map(({ id }) => id);
+}
+
+function attendancesOf(
+  attendances: Attendance[],
+  clarification: Clarification,
+): Attendance[] {
+  return attendances.filter(
+    (each) =>
+      each.studentId === clarification.studentId &&
+      each.scheduleId === clarification.scheduleId,
+  );
+}
+
+/*
+ * One load of the sample set for every check here: loading it takes
+ * seconds when every check runs at once, and each load waits behind the
+ * other checks that write the same tables.
+ */
 describe("the sample clarifications", { timeout: 20_000 }, () => {
-  it("are all added, in every status, without a file yet, and decided by Penilai Mahasiswa unless they wait", async () => {
+  it("are all added in every status without a file yet, decided by Penilai Mahasiswa unless they wait, each decision in the log, and each accepted one with the attendance it gives", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
       const samples = samplesToday();
       const added = await db.select().from(activityClarifications);
-      const assessors = await db
-        .select({ id: accountRoles.accountId })
-        .from(accountRoles)
-        .where(eq(accountRoles.role, "assessor"));
-      const assessorIds = assessors.map(({ id }) => id);
+      const deciders = await assessorIds(db);
+      const lines = await db.select().from(activityClarificationChanges);
+      const attendances = await db.select().from(activityAttendances);
+      const attendanceLines = await db.select().from(activityAttendanceChanges);
+      const decided = added.filter(({ status }) => status !== "submitted");
+      const accepted = added.filter(({ status }) => status === "accepted");
 
       expect(samples.length).toBeGreaterThan(0);
       expect(added).toHaveLength(samples.length);
@@ -52,19 +79,8 @@ describe("the sample clarifications", { timeout: 20_000 }, () => {
         expect(clarification.fileContentType).toBe("application/pdf");
         expect(clarification.fileSize).toBeGreaterThan(0);
         if (clarification.status === "submitted") continue;
-        expect(assessorIds).toContain(clarification.decidedBy);
+        expect(deciders).toContain(clarification.decidedBy);
       }
-    });
-  });
-
-  it("have a line in the log for every decision", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-
-      const decided = (await db.select().from(activityClarifications)).filter(
-        ({ status }) => status !== "submitted",
-      );
-      const lines = await db.select().from(activityClarificationChanges);
 
       expect(lines).toHaveLength(decided.length);
       for (const clarification of decided) {
@@ -80,28 +96,16 @@ describe("the sample clarifications", { timeout: 20_000 }, () => {
           note: clarification.note,
         });
       }
-    });
-  });
-
-  it("give each accepted one its attendance, Hadir or Dispensasi, with the Keterangan of a clarification and a line in the log of attendance decisions", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-
-      const clarifications = await db.select().from(activityClarifications);
-      const accepted = clarifications.filter(
-        ({ status }) => status === "accepted",
-      );
-      const attendances = await db.select().from(activityAttendances);
-      const lines = await db.select().from(activityAttendanceChanges);
 
       expect(accepted.length).toBeGreaterThan(1);
-      expect(lines).toHaveLength(accepted.length);
-      for (const clarification of accepted) {
-        const own = attendances.filter(
-          (each) =>
-            each.studentId === clarification.studentId &&
-            each.scheduleId === clarification.scheduleId,
-        );
+      expect(attendanceLines).toHaveLength(accepted.length);
+      for (const clarification of added) {
+        const own = attendancesOf(attendances, clarification);
+        if (clarification.status !== "accepted") {
+          // Left as it was: nothing sent, or a rejected photo.
+          expect(own.every(({ status }) => status === "rejected")).toBe(true);
+          continue;
+        }
         expect(own).toHaveLength(1);
         expect(own[0]).toMatchObject({
           status: clarification.acceptedAs,
@@ -109,7 +113,7 @@ describe("the sample clarifications", { timeout: 20_000 }, () => {
           decidedBy: clarification.decidedBy,
         });
         expect(own[0]?.note).toMatch(/^Klarifikasi: \S/);
-        const line = lines.find(
+        const line = attendanceLines.find(
           ({ attendanceId }) => attendanceId === own[0]?.id,
         );
         expect(line).toMatchObject({
@@ -120,28 +124,6 @@ describe("the sample clarifications", { timeout: 20_000 }, () => {
         // With nothing sent there was nothing before; a photo had been rejected.
         expect([null, "rejected"]).toContain(line?.statusBefore);
         expect(line?.statusBefore === null).toBe(own[0]?.sentAt === null);
-      }
-    });
-  });
-
-  it("leave the attendance of a waiting or rejected one as it was: none, or a rejected photo", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-
-      const clarifications = await db.select().from(activityClarifications);
-      const attendances = await db.select().from(activityAttendances);
-      const notAccepted = clarifications.filter(
-        ({ status }) => status !== "accepted",
-      );
-
-      expect(notAccepted.length).toBeGreaterThan(1);
-      for (const clarification of notAccepted) {
-        const own = attendances.filter(
-          (each) =>
-            each.studentId === clarification.studentId &&
-            each.scheduleId === clarification.scheduleId,
-        );
-        expect(own.every(({ status }) => status === "rejected")).toBe(true);
       }
     });
   });

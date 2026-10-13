@@ -6,6 +6,8 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { type AttendanceScore, attendanceScore } from "./attendance-score";
 import type { AttendanceStatus } from "./attendance-status";
+import type { ShownClarification } from "./clarification-time";
+import { readOwnClarifications } from "./own-clarifications";
 import { readOwnStudent } from "./own-student";
 import { semestersByPeriod } from "./participants";
 import { type CampusMoment, scheduleStatus } from "./schedule-status";
@@ -37,6 +39,11 @@ export interface StudentActivities {
   /** The next few schedules. */
   coming: StudentSchedule[];
   history: ScheduleHistory;
+  /**
+   * Their newest clarification for each schedule of the history shown, by
+   * the key of the schedule. A schedule they never asked about has none.
+   */
+  clarifications: Record<string, ShownClarification>;
 }
 
 export type StudentActivitiesAnswer =
@@ -98,11 +105,18 @@ export async function readStudentActivities(
   ]);
   const current = begun.filter((schedule) => isCurrent(schedule, now));
   const attended = [...current, ...history.schedules, ...counted];
-  const attendances = await readOwnAttendances(
-    db,
-    student.id,
-    attended.map((schedule) => schedule.id),
-  );
+  const [attendances, clarifications] = await Promise.all([
+    readOwnAttendances(
+      db,
+      student.id,
+      attended.map((schedule) => schedule.id),
+    ),
+    readOwnClarifications(
+      db,
+      student.id,
+      history.schedules.map((schedule) => schedule.id),
+    ),
+  ]);
   function withOwn(schedule: StudentSchedule): StudentSchedule {
     return { ...schedule, attendance: attendances.get(schedule.id) ?? null };
   }
@@ -119,6 +133,7 @@ export async function readStudentActivities(
       current: current.map(withOwn),
       coming,
       history: { ...history, schedules: history.schedules.map(withOwn) },
+      clarifications: Object.fromEntries(clarifications),
     },
   };
 }
