@@ -100,3 +100,37 @@ describe("the bar of Daftar hadir pertemuan", () => {
     expect(ON_A_PHONE).toMatch(/--above-save-bar: calc\([^;]+\);/);
   });
 });
+
+describe("the bar of Nilai anak asuh", () => {
+  const BAR = fromPart("score-form.tsx", "styles.saveBar");
+
+  it("holds the save button and the message of a save, under the scores", () => {
+    const form = readFileSync(`${FOLDER}/score-form.tsx`, "utf8");
+
+    expect(form.indexOf("<ScoreBoxes")).toBeLessThan(
+      form.indexOf("styles.saveBar"),
+    );
+    expect(BAR).toContain("saveButtonWords(sentIds.length)");
+    expect(BAR).toContain("<FormMessage state={state} />");
+  });
+
+  it("keeps the message beside the button, and takes its room above from the bar, so it is not counted twice", () => {
+    const row = ruleOf(".saveScores");
+
+    expect(BAR).toContain("styles.saveScores");
+    expect(row).toContain("display: flex;");
+    expect(row).not.toContain("margin-top");
+  });
+
+  it("folds a message with no room beside the button under it at any width, and above it on a phone, so the button does not move", () => {
+    expect(ruleOf(".saveScores")).toContain("flex-wrap: var(--save-bar-wrap);");
+    expect(AT_ANY_WIDTH).toContain("--save-bar-wrap: wrap;");
+    expect(ON_A_PHONE).toContain("--save-bar-wrap: wrap-reverse;");
+  });
+
+  it("keeps the box being typed in above the bar, not behind it", () => {
+    expect(ruleOf(".scoreBox")).toContain(
+      "scroll-margin-bottom: var(--above-save-bar);",
+    );
+  });
+});

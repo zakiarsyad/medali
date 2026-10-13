@@ -49,7 +49,7 @@ describe("the tab Nilai pengasuhan on a phone", () => {
 
   it("folds what a row says of its box, the button with its message, and the rubric instead of widening the page", () => {
     expect(ruleOf(".boxFault")).toContain("overflow-wrap: anywhere;");
-    expect(ruleOf(".saveScores")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".saveScores")).toContain("flex-wrap: var(--save-bar-wrap);");
     expect(ruleOf(".band")).toContain("flex-wrap: wrap;");
     expect(ruleOf(".bandSentence")).toContain("min-width: 0;");
   });

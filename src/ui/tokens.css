@@ -159,6 +159,7 @@
   --save-bar-padding: 0;
   --save-bar-line: 0;
   --save-bar-direction: column;
+  --save-bar-wrap: wrap;
 
   /*
    * The room a field brought into view keeps under itself, so it stops
@@ -211,6 +212,7 @@
     --save-bar-padding: var(--space-md) 0;
     --save-bar-line: var(--line-width);
     --save-bar-direction: column-reverse;
+    --save-bar-wrap: wrap-reverse;
     --above-save-bar: calc(3 * var(--space-3xl));
   }
 }

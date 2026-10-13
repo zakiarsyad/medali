@@ -348,6 +348,7 @@
 .scoreBox {
   width: var(--score-box-width);
   max-width: 100%;
+  scroll-margin-bottom: var(--above-save-bar);
 }
 
 /* Why what a box holds cannot be saved, on the row of that box. */
@@ -356,11 +357,14 @@
   overflow-wrap: anywhere;
 }
 
-/* The button under the scores, with what the save answered beside it. */
+/*
+ * The button under the scores, with what the save answered beside it.
+ * Where there is no room beside it, the answer folds under the button,
+ * and on a phone above it, so the button does not move.
+ */
 .saveScores {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: var(--save-bar-wrap);
   gap: var(--space-sm) var(--space-lg);
   align-items: center;
-  margin-top: var(--space-md);
 }

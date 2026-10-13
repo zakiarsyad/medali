@@ -95,8 +95,9 @@ Decided while building, because the issue did not say:
    width, so both forms change together.
 7. In "Daftar hadir pertemuan (n)" the message of a save stands above
    the buttons on a phone, so the buttons do not move when a message
-   comes. In "Nilai pengasuhan" it stays beside the button, and folds
-   under it when it is long, as today. On a laptop both stay as today.
+   comes. In "Nilai pengasuhan" it stays beside the button where there
+   is room, and on a phone folds above the button where there is none,
+   for the same reason. On a laptop both stay as today.
 8. On a phone the bar has a line above it and a little room above and
    below the button, so the button does not touch the edge of the
    screen. At the end of the form the bar keeps that room; no other
@@ -108,6 +109,6 @@ Decided while building, because the issue did not say:
 
 - [x] 1. On a phone the buttons, the running count and the message of
   "Daftar hadir pertemuan (n)" stay in view while the list scrolls.
-- [ ] 2. On a phone the button and the message of "Nilai anak asuh"
+- [x] 2. On a phone the button and the message of "Nilai anak asuh"
   stay in view while the list scrolls.
 
