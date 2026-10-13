@@ -102,7 +102,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The "Kelompok pengasuhan" choice in the form, with the server
+- [x] 1. The "Kelompok pengasuhan" choice in the form, with the server
   check that the group fits.
 - [ ] 2. The column in the list and the number "Belum punya kelompok
   pengasuhan".

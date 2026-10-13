@@ -5,13 +5,15 @@ import {
   formValues,
   refusedForm,
   START,
+  type StudentFormFields,
   savedForm,
 } from "./form-values";
-import type { StudentFields, StudentInput } from "./student-input";
+import type { StoredStudent } from "./student-input";
 
 const first = { studyProgramId: "3", cohortYear: "2026" };
+const GROUP_ID = "00000000-0000-4000-8000-000000000018";
 
-const student: StudentInput = {
+const student: StoredStudent = {
   nim: "9900001801",
   name: "Mahasiswa Contoh",
   email: "mahasiswa.contoh@kampus.example",
@@ -27,9 +29,10 @@ const student: StudentInput = {
   isSeedling: false,
   isInternational: false,
   isBlended: true,
+  mentorGroupId: GROUP_ID,
 };
 
-const typed: StudentFields = {
+const typed: StudentFormFields = {
   nim: "99000018",
   name: "Ma",
   email: "ma@",
@@ -42,6 +45,7 @@ const typed: StudentFields = {
   originAgency: "",
   status: "active",
   categories: ["isSeedling"],
+  mentorGroupId: GROUP_ID,
 };
 
 describe("formValues", () => {
@@ -59,6 +63,7 @@ describe("formValues", () => {
       originAgency: "",
       status: "active",
       categories: [],
+      mentorGroupId: "",
     });
   });
 
@@ -76,11 +81,18 @@ describe("formValues", () => {
       originAgency: "",
       status: "on_leave",
       categories: ["isAffirmation", "isBlended"],
+      mentorGroupId: GROUP_ID,
     });
   });
 
   it("leaves the address empty for a student who has none", () => {
     expect(formValues({ ...student, email: null }, first).email).toBe("");
+  });
+
+  it("stands on Belum ditetapkan for a student who is in no group", () => {
+    const inNone = formValues({ ...student, mentorGroupId: null }, first);
+
+    expect(inNone.mentorGroupId).toBe("");
   });
 });
 

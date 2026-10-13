@@ -104,7 +104,10 @@ describe("findAddedStudent", () => {
 
       const found = await findAddedStudent(db, "9900000501");
 
-      expect(found).toEqual(student("9900000501", program));
+      expect(found).toEqual({
+        ...student("9900000501", program),
+        mentorGroupId: null,
+      });
     });
   });
 

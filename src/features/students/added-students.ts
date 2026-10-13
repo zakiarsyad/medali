@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
 import {
   accounts,
+  mentorGroupMembers,
   studentBatchFiles,
   students,
   studyPrograms,
@@ -10,7 +11,7 @@ import {
 import type { DormId } from "@/dorms/dorms";
 import { dormInSql } from "@/dorms/resident-condition";
 import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
-import type { StudentInput } from "./student-input";
+import type { StoredStudent } from "./student-input";
 
 /** The most rows the list shows. More than that is found by searching. */
 export const LIST_LIMIT = 100;
@@ -125,20 +126,23 @@ const INPUT = {
   isSeedling: students.isSeedling,
   isInternational: students.isInternational,
   isBlended: students.isBlended,
+  mentorGroupId: mentorGroupMembers.groupId,
 };
 
 /**
  * What the form holds for one student put in through Pengguna baru
- * mahasiswa, or null when there is no such student or they were removed.
+ * mahasiswa, with the group they are in, or null when there is no such
+ * student or they were removed.
  */
 export async function findAddedStudent(
   db: Database,
   nim: string,
-): Promise<StudentInput | null> {
+): Promise<StoredStudent | null> {
   const [found] = await db
     .select(INPUT)
     .from(students)
     .leftJoin(accounts, eq(accounts.studentId, students.id))
+    .leftJoin(mentorGroupMembers, eq(mentorGroupMembers.studentId, students.id))
     .where(and(eq(students.nim, nim), ADDED_HERE))
     .limit(1);
   return found ?? null;

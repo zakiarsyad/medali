@@ -559,6 +559,35 @@ export const mentorGroupPastMembers = pgTable(
 );
 
 /**
+ * Every placement made on Pengguna baru mahasiswa: a student who joins a
+ * group has none before, one who goes back to no group or is removed has
+ * none after, and one who moves has both. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const mentorGroupMemberChanges = pgTable(
+  "mentor_group_member_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    groupBefore: uuid().references(() => mentorGroups.id),
+    groupAfter: uuid().references(() => mentorGroups.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("mentor_group_member_changes_student").on(table.studentId),
+    check(
+      "mentor_group_member_changes_group_differs",
+      sql`${table.groupBefore} is distinct from ${table.groupAfter}`,
+    ),
+  ],
+);
+
+/**
  * Who has looked after a group, one line per mentor and time. The line
  * without a last day is the mentor of today, and a group has one such
  * line at most. Only a line that has ended carries a reason.

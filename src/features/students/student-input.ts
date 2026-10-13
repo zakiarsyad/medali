@@ -47,6 +47,12 @@ export interface StudentInput extends Record<CategoryField, boolean> {
   status: (typeof studentStatus.enumValues)[number];
 }
 
+/** A student as stored, with what the form shows beside the record. */
+export interface StoredStudent extends StudentInput {
+  /** The kelompok pengasuhan the student is in, or null for none. */
+  mentorGroupId: string | null;
+}
+
 export interface InputContext {
   programs: StudyProgram[];
   /** The years that may be chosen as Angkatan. */

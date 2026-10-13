@@ -16,7 +16,13 @@ import type { FormState } from "@/ui/form-message";
 import { findAddedStudent } from "./added-students";
 import { changeStudent, NOT_FOUND, removeStudent } from "./change-student";
 import type { FilePreview } from "./file-preview";
-import { refusedForm, type StudentFormState, savedForm } from "./form-values";
+import { parseGroupChoice } from "./fitting-group";
+import {
+  refusedForm,
+  type StudentFormFields,
+  type StudentFormState,
+  savedForm,
+} from "./form-values";
 import { isNim } from "./input-limits";
 import { inputStudent } from "./input-student";
 import { savedMessage, saveStudentFile } from "./save-student-file";
@@ -25,7 +31,6 @@ import {
   cohortChoices,
   type InputContext,
   parseStudent,
-  type StudentFields,
 } from "./student-input";
 import { checkFileShape } from "./uploaded-file";
 
@@ -35,7 +40,7 @@ async function studentInputter(): Promise<Account> {
   return account;
 }
 
-function readFields(form: FormData): StudentFields {
+function readFields(form: FormData): StudentFormFields {
   return {
     nim: text(form, "nim"),
     name: text(form, "name"),
@@ -49,6 +54,7 @@ function readFields(form: FormData): StudentFields {
     originAgency: text(form, "originAgency"),
     status: text(form, "status"),
     categories: texts(form, "categories"),
+    mentorGroupId: text(form, "mentorGroupId"),
   };
 }
 
@@ -79,8 +85,10 @@ export async function addStudentAction(
   const fields = readFields(form);
   const parsed = parseStudent(fields, await inputContext(db));
   if (!parsed.ok) return refusedForm(before, parsed.error, fields);
+  const group = parseGroupChoice(fields.mentorGroupId);
+  if (!group.ok) return refusedForm(before, group.error, fields);
 
-  const added = await inputStudent(db, inputter, parsed.value);
+  const added = await inputStudent(db, inputter, parsed.value, group.value);
   if (!added.ok) return refusedForm(before, added.error, fields);
   refreshScreens();
   return savedForm(

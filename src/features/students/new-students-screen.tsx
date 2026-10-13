@@ -12,6 +12,7 @@ import {
   LIST_LIMIT,
   listAddedStudents,
 } from "./added-students";
+import { listGroupChoices } from "./mentor-group-choices";
 import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
@@ -61,11 +62,12 @@ export async function NewStudentsScreen({
   tabs: TabLinksProps;
 }) {
   const db = database();
-  const [studentYears, period, programs, editing] = await Promise.all([
+  const [studentYears, period, programs, editing, groups] = await Promise.all([
     listCohortYears(db, EVERY_STUDENT),
     readRunningPeriod(db),
     listStudyPrograms(db),
     params.editing ? findAddedStudent(db, params.editing) : null,
+    listGroupChoices(db),
   ]);
   const dormCohorts = dormCohortsOf(studentYears, period);
   const [counts, list] = await Promise.all([
@@ -89,6 +91,7 @@ export async function NewStudentsScreen({
           programs={programs}
           cohortYears={cohortChoices(thisYear, editing?.cohortYear)}
           editing={editing}
+          groups={groups}
           query={params.query}
           period={period}
         />
