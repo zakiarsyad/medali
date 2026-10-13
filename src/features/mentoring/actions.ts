@@ -9,9 +9,13 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
+import type { FormState } from "@/ui/form-message";
+import { parseAttendance, sentMarks } from "./attendance-input";
+import { MEETINGS_ADDRESS } from "./meetings-address";
 import type { NoteFormState } from "./note-form-state";
 import { parseNote } from "./note-input";
 import { NOTES_ADDRESS } from "./notes-address";
+import { saveAttendance } from "./save-attendance";
 import { saveNote } from "./save-note";
 
 /**
@@ -55,5 +59,42 @@ export async function saveNoteAction(
     error: null,
     done: `Catatan disimpan untuk ${saved.value.studentName}.`,
     noteId: randomUUID(),
+  };
+}
+
+/**
+ * The signed-in account when it may fill in an attendance list. Any other
+ * is refused before anything of what it sent is read.
+ */
+async function filler(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "fill_mentoring_attendance")) forbidden();
+  return account;
+}
+
+/**
+ * "Simpan daftar hadir". Who filled the list in is the signed-in account,
+ * never a field.
+ */
+export async function saveAttendanceAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const actor = await filler();
+  const parsed = parseAttendance({
+    groupId: text(form, "groupId"),
+    number: text(form, "number"),
+    heldOn: text(form, "heldOn"),
+    topic: text(form, "topic"),
+    marks: sentMarks(form),
+  });
+  if (!parsed.ok) return { error: parsed.error, done: null };
+
+  const saved = await saveAttendance(database(), actor, parsed.value);
+  if (!saved.ok) return { error: saved.error, done: null };
+  revalidatePath(MEETINGS_ADDRESS);
+  return {
+    error: null,
+    done: `Daftar hadir pertemuan ${saved.value.number} disimpan.`,
   };
 }

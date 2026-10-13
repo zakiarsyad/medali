@@ -204,3 +204,66 @@
   font-size: var(--text-md);
   overflow-wrap: anywhere;
 }
+
+.cardAction {
+  margin: var(--space-md) 0 0;
+}
+
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * One member: the name beside the choices where there is room for both.
+ * On a phone the choices fold under the name and take the whole width, so
+ * each member is a card of its own.
+ */
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: center;
+  padding: var(--space-md) 0;
+  border-top: var(--line-width) solid var(--line2);
+}
+
+.memberName {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The four choices of one member, side by side in equal parts. */
+.marks {
+  display: grid;
+  flex: 2 1 var(--card-min-width);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2xs);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* One choice: the whole box can be pressed, not only its small circle. */
+.mark {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-md) var(--space-2xs);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+.mark:has(input:checked) {
+  border-color: var(--navy3);
+  background: var(--surface2);
+  font-weight: var(--weight-semibold);
+}

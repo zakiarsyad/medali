@@ -151,6 +151,29 @@ The issue did not say, so these were decided:
 22. A role that only reads and has no group in its rows sees "Belum ada
     kelompok pengasuhan yang dapat Anda lihat."
 23. A group that has no mentor today shows "-" under "Pengasuh".
+24. A list is saved only when it holds a mark for every member who is
+    Aktif in the group at that moment, and for nobody else. A list that
+    names a student outside the group, a member on Cuti, or leaves a
+    member out, as when the group changed while the form was open, is
+    refused with one message that says to load the page again.
+25. A list sent for a group the sender does not hold today gets one
+    answer, the same for a group of another mentor, a group they held
+    before, a group that is ended and one that does not exist.
+26. Tanggal opens on today. Once the last day of the running period has
+    passed, it opens on that last day.
+27. After a save the form stays open with its message, and "Tutup"
+    closes it. The prototype closes the form and shows the message
+    apart from it.
+28. Each member is one row: name, NIM and kelas akademik, then the four
+    choices. The rows have no table head.
+29. Leaving with unsaved changes is asked about on "Tutup" and on every
+    other link of the app, such as a tab, another group, another meeting
+    or the menu. On loading the page again or closing it the browser
+    asks in its own words. The browser's own step back is not asked
+    about.
+30. A group without an Aktif member can still have a meeting saved, with
+    its date and topic and no marks. The form says the group has no
+    Aktif member.
 
 ## Steps
 
@@ -159,6 +182,6 @@ The issue did not say, so these were decided:
 - [x] 2. The rights to fill in and to read attendance are added to the
   permission list, with their checks.
 - [x] 3. The tab with the numbers, the group choice and the four cards.
-- [ ] 4. Pengasuh fills in and saves an attendance list.
+- [x] 4. Pengasuh fills in and saves an attendance list.
 - [ ] 5. Changing a saved list, with the log and the two-window case.
 - [ ] 6. Read-only view, refusals and the phone layout.

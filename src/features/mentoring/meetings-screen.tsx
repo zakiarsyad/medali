@@ -11,7 +11,9 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import {
   type AttendanceGroup,
   listAttendanceGroups,
+  mayFillInFor,
 } from "./attendance-groups";
+import { AttendancePanel } from "./attendance-panel";
 import { listActiveMembers, readMarks, readMeetings } from "./group-meetings";
 import { GroupPicker } from "./group-picker";
 import type { GroupChoice } from "./group-search";
@@ -36,9 +38,15 @@ function choiceOf(group: AttendanceGroup): GroupChoice {
 async function GroupMeetings({
   group,
   period,
+  mayFillIn,
+  openNumber,
 }: {
   group: GroupChoice;
   period: AcademicPeriod;
+  /** Whether the account may fill in the lists of this group. */
+  mayFillIn: boolean;
+  /** The meeting whose attendance list is open, or null for none. */
+  openNumber: number | null;
 }) {
   const db = database();
   const [members, meetings] = await Promise.all([
@@ -64,7 +72,19 @@ async function GroupMeetings({
         average={overview.average}
         mentor={group.mentor}
       />
-      <MeetingCards cards={overview.cards} />
+      <MeetingCards
+        cards={overview.cards}
+        groupId={group.id}
+        mayFillIn={mayFillIn}
+      />
+      {mayFillIn && openNumber !== null && (
+        <AttendancePanel
+          groupId={group.id}
+          period={period}
+          number={openNumber}
+          members={members}
+        />
+      )}
     </>
   );
 }
@@ -73,20 +93,20 @@ async function GroupMeetings({
 function Groups({
   groups,
   period,
-  mayFillIn,
+  fillLimit,
   params,
 }: {
   groups: AttendanceGroup[];
   period: AcademicPeriod | null;
-  /** Whether the account has the right to fill in at all. */
-  mayFillIn: boolean;
+  /** The groups the account may fill in for, or null for one that only reads. */
+  fillLimit: RowLimit | null;
   params: MeetingsParams;
 }) {
   const [first] = groups;
   if (first === undefined) {
     return (
       <p className={styles.quiet}>
-        {mayFillIn
+        {fillLimit !== null
           ? "Anda belum memegang kelompok pengasuhan."
           : "Belum ada kelompok pengasuhan yang dapat Anda lihat."}
       </p>
@@ -113,7 +133,12 @@ function Groups({
           chosen={chosen}
         />
       )}
-      <GroupMeetings group={chosen} period={period} />
+      <GroupMeetings
+        group={chosen}
+        period={period}
+        mayFillIn={mayFillInFor(fillLimit, shown.mentor?.id ?? null)}
+        openNumber={params.number}
+      />
     </>
   );
 }
@@ -153,7 +178,7 @@ export async function MeetingsScreen({
       <Groups
         groups={groups}
         period={period}
-        mayFillIn={fillLimit !== null}
+        fillLimit={fillLimit}
         params={params}
       />
     </>

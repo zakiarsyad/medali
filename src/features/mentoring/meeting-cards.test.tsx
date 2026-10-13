@@ -23,9 +23,13 @@ const CARDS: MeetingCard[] = [
   { number: 4, stored: null },
 ];
 
+const GROUP_ID = "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f7102";
+
 /** The cards as text, one for each meeting. */
-function cardsOf(cards: MeetingCard[]): string[] {
-  const shown = renderToStaticMarkup(<MeetingCards cards={cards} />);
+function cardsOf(cards: MeetingCard[], mayFillIn = false): string[] {
+  const shown = renderToStaticMarkup(
+    <MeetingCards cards={cards} groupId={GROUP_ID} mayFillIn={mayFillIn} />,
+  );
   return shown.split("<article").slice(1);
 }
 
@@ -55,6 +59,21 @@ describe("MeetingCards", () => {
     expect(card).toContain("Belum diisi");
     expect(card).toContain("Daftar hadir belum diisi.");
     expect(card).not.toContain("Terlaksana");
+  });
+
+  it("offers Isi daftar hadir on a meeting without a list, to an account that may fill in for the group", () => {
+    const [, card = ""] = cardsOf(CARDS, true);
+
+    expect(card).toContain("Isi daftar hadir");
+    expect(card).toContain(
+      `href="/pengasuhan/hadir?kelompok=${GROUP_ID}&amp;pertemuan=2#daftar-hadir"`,
+    );
+  });
+
+  it("offers an account that only reads nothing to fill in", () => {
+    for (const card of cardsOf(CARDS, false)) {
+      expect(card).not.toContain("Isi daftar hadir");
+    }
   });
 });
 
