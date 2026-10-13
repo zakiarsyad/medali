@@ -803,8 +803,24 @@ describe("may", () => {
   });
 
   it("gives Mahasiswa no right that changes a student record", () => {
-    expect(ROLES.student.actions).toEqual(["view_own_profile"]);
+    expect(ROLES.student.actions).toEqual([
+      "view_own_profile",
+      "send_attendance_photo",
+    ]);
     expect(may(["student"], "input_new_students")).toBe(false);
+  });
+
+  it("lets Mahasiswa send an attendance photo, on Kegiatan karakter", () => {
+    expect(may(["student"], "send_attendance_photo")).toBe(true);
+    expect(mayOpenPage(["student"], "activities")).toBe(true);
+  });
+
+  it("refuses every other role to send an attendance photo", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "send_attendance_photo")).toBe(false);
+    }
   });
 
   it("answers no to an action that is not on the list", () => {
@@ -1413,6 +1429,20 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     expect(rowLimitForAction(staff, "view_own_profile")).toEqual(NO_ROW);
   });
 
+  it("keeps a student to their own attendance, whatever wide role they also hold", () => {
+    const both = {
+      ...account(["student", "head_of_unit"]),
+      studentId: "student-1",
+    };
+    const staff = { ...account(["upk_staff"]), studentId: "student-1" };
+
+    expect(rowLimitForAction(both, "send_attendance_photo")).toEqual({
+      ...NO_ROW,
+      studentIds: ["student-1"],
+    });
+    expect(rowLimitForAction(staff, "send_attendance_photo")).toEqual(NO_ROW);
+  });
+
   it("shows an account with no roles nothing", () => {
     expect(rowLimitForPage(account([]), "students")).toEqual(NO_ROW);
     expect(rowLimitForAction(account([]), "view_dorm_rooms")).toEqual(NO_ROW);
@@ -1449,9 +1479,10 @@ describe("the permission list", () => {
   });
 
   /**
-   * The pages a role opens while none of their tabs is for that role yet.
-   * Kegiatan karakter stays the empty page for Mahasiswa and Penilai
-   * Mahasiswa until their own views of it are built.
+   * The pages a role opens while none of their tabs is for that role.
+   * Mahasiswa sees their own activities on Kegiatan karakter itself,
+   * without a tab. It stays the empty page for Penilai Mahasiswa until
+   * their own view of it is built.
    */
   const NO_TAB_YET: Partial<Record<RoleId, string[]>> = {
     student: ["activities"],

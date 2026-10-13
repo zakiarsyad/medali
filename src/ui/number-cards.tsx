@@ -27,11 +27,21 @@ export function NumberCard({
 }
 
 /** A fact that stands in the row of numbers and is words, such as a name. */
-export function WordsCard({ label, words }: { label: string; words: string }) {
+export function WordsCard({
+  label,
+  words,
+  note,
+}: {
+  label: string;
+  words: string;
+  /** A line under the words, when there is one. */
+  note?: string;
+}) {
   return (
     <div className={styles.number}>
       <dt className={styles.label}>{label}</dt>
       <dd className={styles.words}>{words}</dd>
+      {note !== undefined && <dd className={styles.note}>{note}</dd>}
     </div>
   );
 }

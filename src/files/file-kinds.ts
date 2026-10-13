@@ -31,3 +31,12 @@ export const CSV: FileKind = {
   contentType: "text/csv; charset=utf-8",
   holds: (bytes) => readText(bytes).ok,
 };
+
+/** Every JPEG picture starts with these three bytes. */
+const JPEG_START = [0xff, 0xd8, 0xff];
+
+export const JPEG: FileKind = {
+  extension: ".jpg",
+  contentType: "image/jpeg",
+  holds: (bytes) => JPEG_START.every((byte, place) => bytes[place] === byte),
+};

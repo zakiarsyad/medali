@@ -180,8 +180,15 @@
     {
       "idx": 25,
       "version": "7",
-      "when": 1791898229977,
-      "tag": "0025_student-survey-periods",
+      "when": 1791898485920,
+      "tag": "0025_activity-attendances",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1791899627346,
+      "tag": "0026_student-survey-periods",
       "breakpoints": true
     }
   ]

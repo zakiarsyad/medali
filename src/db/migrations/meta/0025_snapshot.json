@@ -1,5 +1,5 @@
 {
-  "id": "9ee42c16-85af-4e25-a6df-90c35d809dad",
+  "id": "176ac37b-3d1a-41ad-82c6-a165220e6ee6",
   "prevId": "d442a759-84fa-4eb5-ba02-e15a54227eed",
   "version": "7",
   "dialect": "postgresql",
@@ -352,6 +352,170 @@
       },
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.activity_attendances": {
+      "name": "activity_attendances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "schedule_id": {
+          "name": "schedule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "activity_attendance_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "photo_key": {
+          "name": "photo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decided_at": {
+          "name": "decided_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decided_by": {
+          "name": "decided_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "activity_attendances_one_waiting_or_valid": {
+          "name": "activity_attendances_one_waiting_or_valid",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"activity_attendances\".\"status\" in ('waiting', 'valid')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "activity_attendances_student": {
+          "name": "activity_attendances_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "activity_attendances_schedule_id_activity_schedules_id_fk": {
+          "name": "activity_attendances_schedule_id_activity_schedules_id_fk",
+          "tableFrom": "activity_attendances",
+          "tableTo": "activity_schedules",
+          "columnsFrom": [
+            "schedule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "activity_attendances_student_id_students_id_fk": {
+          "name": "activity_attendances_student_id_students_id_fk",
+          "tableFrom": "activity_attendances",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "activity_attendances_decided_by_accounts_id_fk": {
+          "name": "activity_attendances_decided_by_accounts_id_fk",
+          "tableFrom": "activity_attendances",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "decided_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "activity_attendances_photoKey_unique": {
+          "name": "activity_attendances_photoKey_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "photo_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "activity_attendances_waiting_is_sent": {
+          "name": "activity_attendances_waiting_is_sent",
+          "value": "\"activity_attendances\".\"status\" <> 'waiting' or \"activity_attendances\".\"sent_at\" is not null"
+        },
+        "activity_attendances_decided_unless_waiting": {
+          "name": "activity_attendances_decided_unless_waiting",
+          "value": "(\"activity_attendances\".\"status\" = 'waiting') = (\"activity_attendances\".\"decided_at\" is null) and (\"activity_attendances\".\"decided_at\" is null) = (\"activity_attendances\".\"decided_by\" is null)"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.activity_schedules": {
@@ -3439,166 +3603,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.student_survey_periods": {
-      "name": "student_survey_periods",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "period_id": {
-          "name": "period_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "starts_on": {
-          "name": "starts_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ends_on": {
-          "name": "ends_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "achievement_weight": {
-          "name": "achievement_weight",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "opened_by": {
-          "name": "opened_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "opened_at": {
-          "name": "opened_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "closed_by": {
-          "name": "closed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "closed_at": {
-          "name": "closed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelled_by": {
-          "name": "cancelled_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelled_at": {
-          "name": "cancelled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "student_survey_periods_period_id_academic_periods_id_fk": {
-          "name": "student_survey_periods_period_id_academic_periods_id_fk",
-          "tableFrom": "student_survey_periods",
-          "tableTo": "academic_periods",
-          "columnsFrom": [
-            "period_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "student_survey_periods_opened_by_accounts_id_fk": {
-          "name": "student_survey_periods_opened_by_accounts_id_fk",
-          "tableFrom": "student_survey_periods",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "opened_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "student_survey_periods_closed_by_accounts_id_fk": {
-          "name": "student_survey_periods_closed_by_accounts_id_fk",
-          "tableFrom": "student_survey_periods",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "closed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "student_survey_periods_cancelled_by_accounts_id_fk": {
-          "name": "student_survey_periods_cancelled_by_accounts_id_fk",
-          "tableFrom": "student_survey_periods",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "cancelled_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "student_survey_periods_ends_on_or_after_start": {
-          "name": "student_survey_periods_ends_on_or_after_start",
-          "value": "\"student_survey_periods\".\"ends_on\" >= \"student_survey_periods\".\"starts_on\""
-        },
-        "student_survey_periods_weight_0_to_100": {
-          "name": "student_survey_periods_weight_0_to_100",
-          "value": "\"student_survey_periods\".\"achievement_weight\" between 0 and 100"
-        },
-        "student_survey_periods_closed_with_who_and_when": {
-          "name": "student_survey_periods_closed_with_who_and_when",
-          "value": "(\"student_survey_periods\".\"closed_at\" is null) = (\"student_survey_periods\".\"closed_by\" is null)"
-        },
-        "student_survey_periods_cancelled_with_who_and_when": {
-          "name": "student_survey_periods_cancelled_with_who_and_when",
-          "value": "(\"student_survey_periods\".\"cancelled_at\" is null) = (\"student_survey_periods\".\"cancelled_by\" is null)"
-        },
-        "student_survey_periods_not_closed_and_cancelled": {
-          "name": "student_survey_periods_not_closed_and_cancelled",
-          "value": "\"student_survey_periods\".\"closed_at\" is null or \"student_survey_periods\".\"cancelled_at\" is null"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.students": {
       "name": "students",
       "schema": "",
@@ -3888,6 +3892,16 @@
       "values": [
         "odd",
         "even"
+      ]
+    },
+    "public.activity_attendance_status": {
+      "name": "activity_attendance_status",
+      "schema": "public",
+      "values": [
+        "waiting",
+        "valid",
+        "rejected",
+        "dispensation"
       ]
     },
     "public.attendance_mark": {
