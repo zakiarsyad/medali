@@ -49,3 +49,10 @@ compose.campus.yaml
 docker/create-test-database.sql
 Dockerfile
 .dockerignore
+
+# The backup part, which is a package of its own, and any backup, finished
+# or not, wherever the backup folder is.
+docker/backup
+docker/backup-check.yaml
+**/*.medali-backup
+**/*.medali-backup.part
