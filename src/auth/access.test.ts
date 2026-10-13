@@ -634,6 +634,57 @@ describe("may", () => {
     }
   });
 
+  const scoreReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it.each(scoreReaders)("lets %s read the mentoring scores", (role) => {
+    expect(may([role], "view_mentoring_scores")).toBe(true);
+  });
+
+  it("refuses every other role to read the mentoring scores, Pegawai UPK and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !scoreReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - scoreReaders.length);
+    expect(others).toContain("upk_staff");
+    expect(others).toContain("student");
+    expect(others).toContain("assessor");
+    for (const role of others) {
+      expect(may([role], "view_mentoring_scores")).toBe(false);
+    }
+  });
+
+  it("gives the right to read mentoring scores to every role with the tab Nilai pengasuhan", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentoring_scores")).toBe(
+        mayOpenTab([role], "mentoring", "scores"),
+      );
+    }
+  });
+
+  it("lets Pengasuh give a mentoring score", () => {
+    expect(may(["mentor"], "give_mentoring_scores")).toBe(true);
+  });
+
+  it("refuses every other role to give a mentoring score, Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "mentor");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    expect(others).toContain("head_of_unit");
+    expect(others).toContain("head_of_program");
+    for (const role of others) {
+      expect(may([role], "give_mentoring_scores")).toBe(false);
+    }
+  });
+
+  it("lets every role that may give a mentoring score read the scores", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "give_mentoring_scores")) continue;
+      expect(may([role], "view_mentoring_scores")).toBe(true);
+    }
+  });
+
   it("lets Mahasiswa read their own student record", () => {
     expect(may(["student"], "view_own_profile")).toBe(true);
     expect(mayOpenPage(["student"], "profile")).toBe(true);
@@ -1136,6 +1187,55 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       EVERY_ROW,
     );
     expect(rowLimitForAction(both, "fill_mentoring_attendance")).toEqual(
+      OWN_MENTEES,
+    );
+  });
+
+  it("gives each role that reads mentoring scores the scores of its own rows", () => {
+    const action = "view_mentoring_scores";
+
+    expect(rowLimitForAction(account(["head_of_unit"]), action)).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(account(["director"]), action)).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(account(["head_of_program"], 7), action)).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(rowLimitForAction(account(["mentor"]), action)).toEqual(OWN_MENTEES);
+  });
+
+  it("keeps Pengasuh to the scores of their own groups, whatever wide role without them they also hold", () => {
+    const wideWithoutScores = ROLE_IDS.filter(
+      (role) =>
+        ROLES[role].rows === "all" && !may([role], "view_mentoring_scores"),
+    );
+
+    expect(wideWithoutScores).toEqual(
+      expect.arrayContaining(["upk_staff", "counsellor", "assessor"]),
+    );
+    for (const role of wideWithoutScores) {
+      const both = account(["mentor", role]);
+
+      expect(rowLimitForAction(both, "view_mentoring_scores")).toEqual(
+        OWN_MENTEES,
+      );
+      expect(rowLimitForAction(both, "give_mentoring_scores")).toEqual(
+        OWN_MENTEES,
+      );
+    }
+  });
+
+  it("gives no group to score to an account that is not Pengasuh, whatever it reads", () => {
+    const readers = account(["head_of_unit", "director", "head_of_program"], 7);
+
+    expect(rowLimitForAction(readers, "give_mentoring_scores")).toEqual(NO_ROW);
+  });
+
+  it("lets Pengasuh who is also Kepala Unit read the scores of every group and give them only in their own", () => {
+    const both = account(["mentor", "head_of_unit"]);
+
+    expect(rowLimitForAction(both, "view_mentoring_scores")).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(both, "give_mentoring_scores")).toEqual(
       OWN_MENTEES,
     );
   });

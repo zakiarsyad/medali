@@ -1,5 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { choiceWords, type GroupChoice, matchingGroups } from "./group-search";
+import {
+  choiceWords,
+  type GroupChoice,
+  groupChoiceOf,
+  matchingGroups,
+} from "./group-search";
+
+describe("groupChoiceOf", () => {
+  const group = {
+    id: "1",
+    cohortYear: 2024,
+    entryPath: "regular",
+    number: 1,
+    programCode: "D3PJK",
+  } as const;
+
+  it("names a group by its code and its mentor of today with the gelar", () => {
+    const mentor = { id: "m", name: "Pengasuh Uji Satu", title: "M.Si." };
+
+    expect(groupChoiceOf({ ...group, mentor })).toEqual({
+      id: "1",
+      code: "KP 24-D3PJK-01",
+      mentor: "Pengasuh Uji Satu, M.Si.",
+    });
+  });
+
+  it("shows a dash for a group that has no mentor today", () => {
+    expect(groupChoiceOf({ ...group, mentor: null }).mentor).toBe("-");
+  });
+});
 
 const TAX: GroupChoice = {
   id: "1",

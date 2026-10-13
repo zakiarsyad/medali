@@ -27,7 +27,10 @@ function idOf<Key>(ids: Map<Key, string>, key: Key, what: string): string {
   return id;
 }
 
-async function periodIdOf(db: Database, period: SamplePeriod): Promise<string> {
+export async function periodIdOf(
+  db: Database,
+  period: SamplePeriod,
+): Promise<string> {
   const [stored] = await db
     .select({ id: academicPeriods.id })
     .from(academicPeriods)

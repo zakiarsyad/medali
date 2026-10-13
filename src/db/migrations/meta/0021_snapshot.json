@@ -1,5 +1,5 @@
 {
-  "id": "63125891-e471-4d7f-9b6b-52bc8b21b272",
+  "id": "3a9dff98-1fbc-42ed-9ebd-4bb7c1a37501",
   "prevId": "dd95e583-a50e-4a11-96f8-8a79195b260b",
   "version": "7",
   "dialect": "postgresql",
@@ -2232,6 +2232,204 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.mentoring_score_changes": {
+      "name": "mentoring_score_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "score_id": {
+          "name": "score_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "score_before": {
+          "name": "score_before",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "score_after": {
+          "name": "score_after",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "mentoring_score_changes_score": {
+          "name": "mentoring_score_changes_score",
+          "columns": [
+            {
+              "expression": "score_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mentoring_score_changes_score_id_mentoring_scores_id_fk": {
+          "name": "mentoring_score_changes_score_id_mentoring_scores_id_fk",
+          "tableFrom": "mentoring_score_changes",
+          "tableTo": "mentoring_scores",
+          "columnsFrom": [
+            "score_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mentoring_score_changes_changed_by_accounts_id_fk": {
+          "name": "mentoring_score_changes_changed_by_accounts_id_fk",
+          "tableFrom": "mentoring_score_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mentoring_scores": {
+      "name": "mentoring_scores",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period_id": {
+          "name": "period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scored_by": {
+          "name": "scored_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scored_at": {
+          "name": "scored_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "mentoring_scores_student_id_students_id_fk": {
+          "name": "mentoring_scores_student_id_students_id_fk",
+          "tableFrom": "mentoring_scores",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mentoring_scores_period_id_academic_periods_id_fk": {
+          "name": "mentoring_scores_period_id_academic_periods_id_fk",
+          "tableFrom": "mentoring_scores",
+          "tableTo": "academic_periods",
+          "columnsFrom": [
+            "period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mentoring_scores_scored_by_accounts_id_fk": {
+          "name": "mentoring_scores_scored_by_accounts_id_fk",
+          "tableFrom": "mentoring_scores",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "scored_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "mentoring_scores_one_per_student_and_period": {
+          "name": "mentoring_scores_one_per_student_and_period",
+          "nullsNotDistinct": false,
+          "columns": [
+            "student_id",
+            "period_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "mentoring_scores_score_in_range": {
+          "name": "mentoring_scores_score_in_range",
+          "value": "\"mentoring_scores\".\"score\" between 0 and 100"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.ppks_activities": {
       "name": "ppks_activities",
       "schema": "",
@@ -2247,7 +2445,7 @@
           "name": "semester",
           "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "name": {
           "name": "name",

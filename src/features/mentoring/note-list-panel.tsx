@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
@@ -19,6 +18,7 @@ import {
   noteStudentAddress,
   notesAddress,
 } from "./notes-address";
+import { StudentLink } from "./student-link";
 
 function KindFilter({ kind }: { kind: NoteKind | null }) {
   return (
@@ -53,17 +53,14 @@ function CountsByKind({ counts }: { counts: KindCounts }) {
   );
 }
 
-/**
- * The student a note is about: a link that opens their detail over the
- * list for an account that may open it, and the name alone otherwise.
- */
-function StudentName({ note, address }: { note: NoteInList; address: string }) {
-  if (!note.opensDetail) return <b>{note.studentName}</b>;
-  return (
-    <Link href={address} scroll={false} className={shared.link}>
-      {note.studentName}
-    </Link>
-  );
+/** The address that opens the detail of a note's student, or null for none. */
+function detailAddressOf(
+  note: NoteInList,
+  kind: NoteKind | null,
+  page: number,
+): string | null {
+  if (!note.opensDetail) return null;
+  return noteStudentAddress(kind, page, note.studentId);
 }
 
 /**
@@ -95,13 +92,9 @@ export function NoteListPanel({
                 key={note.id}
                 note={note}
                 student={
-                  <StudentName
-                    note={note}
-                    address={noteStudentAddress(
-                      kind,
-                      list.page,
-                      note.studentId,
-                    )}
+                  <StudentLink
+                    name={note.studentName}
+                    address={detailAddressOf(note, kind, list.page)}
                   />
                 }
               />

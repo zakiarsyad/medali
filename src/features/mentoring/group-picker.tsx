@@ -3,14 +3,20 @@
 import Link from "next/link";
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { groupTabAddress } from "./group-address";
 import { choiceWords, type GroupChoice, matchingGroups } from "./group-search";
-import { meetingsAddress } from "./meetings-address";
 import styles from "./mentoring.module.css";
 
 /** How many groups are offered at once; typing more narrows them. */
 const OFFERED_MAX = 8;
 
-function Offered({ found }: { found: GroupChoice[] }) {
+function Offered({
+  found,
+  tabAddress,
+}: {
+  found: GroupChoice[];
+  tabAddress: string;
+}) {
   if (found.length === 0) {
     return (
       <p className={shared.detail}>
@@ -24,7 +30,10 @@ function Offered({ found }: { found: GroupChoice[] }) {
       <ul className={styles.offered}>
         {found.slice(0, OFFERED_MAX).map((group) => (
           <li key={group.id}>
-            <Link href={meetingsAddress(group.id)} className={shared.quiet}>
+            <Link
+              href={groupTabAddress(tabAddress, group.id)}
+              className={shared.quiet}
+            >
               {choiceWords(group)}
             </Link>
           </li>
@@ -47,9 +56,12 @@ function Offered({ found }: { found: GroupChoice[] }) {
  * is chosen.
  */
 export function GroupPicker({
+  tabAddress,
   groups,
   chosen,
 }: {
+  /** The address of the tab the choice is on, which a chosen group opens. */
+  tabAddress: string;
   /** The groups the account may read, the one shown among them. */
   groups: GroupChoice[];
   chosen: GroupChoice;
@@ -87,7 +99,7 @@ export function GroupPicker({
           autoComplete="off"
         />
       </label>
-      <Offered found={matchingGroups(groups, query)} />
+      <Offered found={matchingGroups(groups, query)} tabAddress={tabAddress} />
       <div className={shared.actions}>
         <button
           type="button"

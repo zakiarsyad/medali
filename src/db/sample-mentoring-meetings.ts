@@ -53,10 +53,11 @@ function activeNims(students: SampleStudent[]): Set<string> {
 }
 
 /**
- * The day a sample meeting was held: so many days before `day`, but not
- * before the period began or before the group had its first mentor.
+ * The day a sample meeting was held or a sample score was given: so many
+ * days before `day`, but not before the period began or before the group
+ * had its first mentor.
  */
-function dayHeld(
+export function dayHeld(
   group: SampleMentorGroup,
   period: SamplePeriod,
   day: string,

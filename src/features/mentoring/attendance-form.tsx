@@ -34,6 +34,9 @@ import styles from "./mentoring.module.css";
 
 const TOPICS_ID = "topik-pertemuan";
 
+const LEAVE_QUESTION =
+  "Perubahan daftar hadir belum disimpan. Tinggalkan tanpa menyimpan?";
+
 /** Sets the mark of a student, or takes it away with null. */
 type OnMark = (studentId: string, mark: AttendanceMark | null) => void;
 
@@ -174,7 +177,7 @@ export function AttendanceForm({
 
   const first: AttendanceFormState = { error: null, done: null, version };
   const [state, save, pending] = useActionState(send, first);
-  useAskBeforeLeaving(hasUnsavedChanges(kept, values));
+  useAskBeforeLeaving(hasUnsavedChanges(kept, values), LEAVE_QUESTION);
 
   function setMark(studentId: string, mark: AttendanceMark | null) {
     setValues({ ...values, marks: withMark(values.marks, studentId, mark) });

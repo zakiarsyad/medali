@@ -1,11 +1,8 @@
-import { isUuid } from "@/db/is-uuid";
 import { isMeetingNumber } from "@/mentoring/meeting-ids";
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { askedGroupId, GROUP_PARAM, groupTabAddress } from "./group-address";
 
 export const MEETINGS_ADDRESS = "/pengasuhan/hadir";
-
-/** The part of the address that names the group shown. */
-export const GROUP_PARAM = "kelompok";
 
 /** The part of the address that names the meeting whose list is open. */
 export const MEETING_PARAM = "pertemuan";
@@ -34,17 +31,15 @@ function numberAt(value: string): number | null {
  * number of a meeting opens no list.
  */
 export function readMeetingsParams(params: SearchParams): MeetingsParams {
-  const groupId = firstParam(params[GROUP_PARAM]).trim();
   return {
-    groupId: isUuid(groupId) ? groupId : null,
+    groupId: askedGroupId(params),
     number: numberAt(firstParam(params[MEETING_PARAM]).trim()),
   };
 }
 
 /** The address of the tab showing one group, with no list open. */
 export function meetingsAddress(groupId: string): string {
-  const params = new URLSearchParams({ [GROUP_PARAM]: groupId });
-  return `${MEETINGS_ADDRESS}?${params}`;
+  return groupTabAddress(MEETINGS_ADDRESS, groupId);
 }
 
 /** The address of the attendance list of one meeting of a group. */

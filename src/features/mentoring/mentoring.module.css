@@ -281,3 +281,61 @@
   background: var(--surface2);
   font-weight: var(--weight-semibold);
 }
+
+/* "Panduan penilaian": the bands of scores, each with what it says. */
+.rubric {
+  margin-bottom: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  font-size: var(--text-md);
+}
+
+.bands {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: var(--space-sm) 0 0;
+}
+
+/* The scores of a band beside its sentence, which folds under them when narrow. */
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-md);
+}
+
+.bandRange {
+  flex: 0 0 var(--score-box-width);
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+.bandSentence {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+  margin: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* The box of one score: as wide as a score needs, never wider than its card. */
+.scoreBox {
+  width: var(--score-box-width);
+  max-width: 100%;
+}
+
+/* Why what a box holds cannot be saved, on the row of that box. */
+.boxFault {
+  color: var(--bad);
+  overflow-wrap: anywhere;
+}
+
+/* The button under the scores, with what the save answered beside it. */
+.saveScores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: center;
+  margin-top: var(--space-md);
+}

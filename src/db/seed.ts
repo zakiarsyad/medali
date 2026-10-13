@@ -26,6 +26,7 @@ import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
 import { addSampleMentoringMeetings } from "./seed-mentoring-meetings";
 import { addSampleMentoringNotes } from "./seed-mentoring-notes";
+import { addSampleMentoringScores } from "./seed-mentoring-scores";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
 
@@ -136,8 +137,9 @@ async function addSampleFirstYears(
  * with some of the residents in them, and the kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
  * still to be formed, with a few evaluations of their mentors, a few
- * notes their mentors wrote and the first two meetings of the running
- * period with their attendance lists. Every role given is logged as the
+ * notes their mentors wrote, the first two meetings of the running
+ * period with their attendance lists and the scores of that period for
+ * part of the groups. Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
  */
@@ -196,6 +198,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     const groups = await addSampleMentorGroups(tx, grouped);
     await addSampleMentoringNotes(tx, groups, grouped, today);
     await addSampleMentoringMeetings(tx, groups, grouped, running, today);
+    await addSampleMentoringScores(tx, groups, grouped, running, today);
     await addSampleMentorEvaluations(tx, groups, periods, sampleActor);
   });
 }

@@ -1,3 +1,7 @@
+import { groupCode } from "@/ui/group-code";
+import { mentorLabel } from "@/ui/mentor-label";
+import type { AttendanceGroup } from "./attendance-groups";
+
 /** A group as "Kelompok pengasuhan" offers it. */
 export interface GroupChoice {
   id: string;
@@ -5,6 +9,17 @@ export interface GroupChoice {
   code: string;
   /** The mentor of today with the gelar, or a dash for a group without one. */
   mentor: string;
+}
+
+const NO_MENTOR = "-";
+
+/** A group an account may read, as "Kelompok pengasuhan" offers it. */
+export function groupChoiceOf(group: AttendanceGroup): GroupChoice {
+  return {
+    id: group.id,
+    code: groupCode(group),
+    mentor: group.mentor ? mentorLabel(group.mentor) : NO_MENTOR,
+  };
 }
 
 /** A group as the choice names it: its code, then its mentor of today. */
