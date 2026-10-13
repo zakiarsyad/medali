@@ -48,7 +48,13 @@ export async function inputStudent(
       if (!added) {
         return { ok: false, error: `NIM ${student.nim} sudah terdaftar.` };
       }
-      await moveToGroup(tx, added.studentId, mentorGroupId, actor.id);
+      const placed = await moveToGroup(
+        tx,
+        added.studentId,
+        mentorGroupId,
+        actor.id,
+      );
+      if (!placed) throw new Error("A student just added was in a group.");
       return { ok: true, value: null };
     }),
   );

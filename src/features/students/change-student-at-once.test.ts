@@ -1,9 +1,15 @@
 // Sample NIMs of this file: 9900003600 to 9900003699.
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
+import { mentorGroupMembers, students } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { findAddedStudent } from "./added-students";
-import { changeStudent, STUDENT_CHANGED } from "./change-student";
+import {
+  changeStudent,
+  removeStudent,
+  STUDENT_CHANGED,
+} from "./change-student";
 import { inputStudent } from "./input-student";
 import type { StudentInput } from "./student-input";
 import { membersOf, placementsOf } from "./test-group-reads";
@@ -57,6 +63,68 @@ async function addStudentAndGroups(db: Database, nim: string) {
   const groups = { one: await groupOf(1), two: await groupOf(2) };
   return { first, second, student, groups };
 }
+
+async function idOf(db: Database, nim: string): Promise<string> {
+  const [student] = await db
+    .select({ id: students.id })
+    .from(students)
+    .where(eq(students.nim, nim));
+  if (!student) throw new Error("The student was not added.");
+  return student.id;
+}
+
+describe("a student changed while a penetapan moves the same student", () => {
+  it("refuses the change whole when a penetapan fixed first gave the student a group", async () => {
+    const made = await addStudentAndGroups(own.db, "9900003603");
+    const studentId = await idOf(own.db, made.student.nim);
+
+    const both = await own.atOnce<unknown>(
+      (db) =>
+        db
+          .insert(mentorGroupMembers)
+          .values({ studentId, groupId: made.groups.one }),
+      (db) =>
+        changeStudent(
+          db,
+          made.second,
+          { ...made.student, name: "Bareng Uji Kedua" },
+          { mentorGroupId: made.groups.two, version: OPENED_VERSION },
+        ),
+    );
+
+    expect(both.later).toEqual(STUDENT_CHANGED);
+    expect(await membersOf(own.db, made.groups.one)).toEqual([studentId]);
+    expect(await membersOf(own.db, made.groups.two)).toEqual([]);
+    expect(await placementsOf(own.db, studentId)).toEqual([]);
+    expect(await findAddedStudent(own.db, made.student.nim)).toMatchObject({
+      name: "Bareng Uji",
+      version: OPENED_VERSION,
+    });
+  });
+
+  it("logs no leaving for a removed student whom a cancelled penetapan took out first", async () => {
+    const made = await addStudentAndGroups(own.db, "9900003604");
+    const studentId = await idOf(own.db, made.student.nim);
+    const joined = await changeStudent(own.db, made.first, made.student, {
+      mentorGroupId: made.groups.one,
+      version: OPENED_VERSION,
+    });
+    expect(joined).toEqual(SAVED);
+
+    const both = await own.atOnce<unknown>(
+      (db) =>
+        db
+          .delete(mentorGroupMembers)
+          .where(eq(mentorGroupMembers.studentId, studentId)),
+      (db) => removeStudent(db, made.second, made.student.nim),
+    );
+
+    expect(both.later).toEqual({ ok: true, value: made.student.name });
+    expect(await placementsOf(own.db, studentId)).toEqual([
+      [null, made.groups.one, made.first.id],
+    ]);
+  });
+});
 
 describe("two people who change one student at the same moment", () => {
   it("saves the first change: the second waits and is told the record changed", async () => {

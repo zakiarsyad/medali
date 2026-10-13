@@ -37,7 +37,10 @@ async function holdStudent(tx: Database, nim: string) {
     .select({ id: students.id, version: students.version })
     .from(students)
     .where(and(eq(students.nim, nim), ADDED_HERE))
-    .for("update");
+    // Not the stronger "update": a penetapan cancelled at the same moment
+    // writes lines that point at this student, and each would wait for
+    // the other until the database gives one of them up.
+    .for("no key update");
   return stored;
 }
 
@@ -102,13 +105,19 @@ export async function changeStudent(
       if (stored.version !== sent.version) return STUDENT_CHANGED;
       const fits = await holdFittingGroup(tx, sent.mentorGroupId, student);
       if (!fits.ok) return fits;
+      const placed = await moveToGroup(
+        tx,
+        stored.id,
+        sent.mentorGroupId,
+        actor.id,
+      );
+      if (!placed) return STUDENT_CHANGED;
       await tx
         .update(students)
         .set({ ...fields, version: stored.version + 1 })
         .where(eq(students.id, stored.id));
       await settleCompanionDuty(tx, stored.id);
       await changeAccountOf(tx, stored.id, fields.name, email, actor.id);
-      await moveToGroup(tx, stored.id, sent.mentorGroupId, actor.id);
       return { ok: true, value: null };
     }),
   );
