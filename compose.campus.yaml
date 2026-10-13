@@ -63,7 +63,10 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "medali"]
+      # Asked over the network, as the app asks. On its very first start
+      # the database sets itself up with a server that answers only inside
+      # its own container, and the app must not start against that one.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "medali"]
       interval: 2s
       timeout: 3s
       retries: 15

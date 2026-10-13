@@ -137,7 +137,12 @@ change any of these.
     start, by the name of the setting.
 15. A refusal of the package's commands is one plain line. It never
     shows a setting's value, the database's address, or the name and
-    address typed for the first account.
+    address typed for the first account. A fault of the database during
+    the first-account command is shown by its code only, for the same
+    reason.
+16. A file storage key shorter than MinIO takes, 3 characters for the
+    first and 8 for the second, is refused at the start, by the name of
+    the setting.
 
 ## Steps
 

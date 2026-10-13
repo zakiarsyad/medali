@@ -203,6 +203,32 @@ describe("startRefusals", () => {
     expect(refusals).toHaveLength(2);
   });
 
+  it.each([
+    ["FILE_STORAGE_ACCESS_KEY", "ab", "3"],
+    ["FILE_STORAGE_SECRET_KEY", "pendek7", "8"],
+  ])(
+    "refuses a %s too short for the file storage to start, without showing it",
+    (name, key, shortest) => {
+      const refusals = startRefusals({ ...FILLED, [name]: key });
+
+      expect(refusals).toHaveLength(1);
+      expect(refusals[0]).toContain(name);
+      expect(refusals[0]).toContain(`at least ${shortest} characters`);
+      expect(refusals[0]).toContain("refused to start");
+      expect(refusals[0]).not.toContain(key);
+    },
+  );
+
+  it("takes file storage keys of the shortest length", () => {
+    const refusals = startRefusals({
+      ...FILLED,
+      FILE_STORAGE_ACCESS_KEY: "abc",
+      FILE_STORAGE_SECRET_KEY: "12345678",
+    });
+
+    expect(refusals).toEqual([]);
+  });
+
   it("never shows a value of a setting", () => {
     const refusals = startRefusals({
       ...FILLED,

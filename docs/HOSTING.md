@@ -212,9 +212,9 @@ Google rejects.
 
 The package is the app, its database and its file storage (MinIO),
 started together with one command. It needs only Docker on the server,
-with its Compose plugin in version 2 or newer: the `docker compose`
-command. It was tried with Docker Compose 5.1.2. It holds no key, no
-password and no sample data.
+with its Compose plugin: the `docker compose` command. It was tried with
+Docker Compose 5.1.2 only, so use that version or a newer one. It holds
+no key, no password and no sample data.
 
 The package carries a mark, `MEDALI_CAMPUS`, built into it. With the
 mark the app is on the campus server whatever the other settings say:
@@ -240,8 +240,8 @@ While `.env.campus` is not there, Docker Compose itself stops with
 On every start the package does, in this order:
 
 1. It checks the settings. With a setting empty, with a database
-   password that holds anything but letters and digits, or with a setting
-   that would turn "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or
+   password that holds anything but letters and digits, with a file
+   storage key that is too short, or with a setting that would turn "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or
    `NODE_ENV` set to `development`), it stops there and nothing starts.
    The reason, with the name of each setting to fill in, to change or to
    remove and never a value, is shown by:

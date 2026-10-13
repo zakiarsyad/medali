@@ -59,6 +59,30 @@ export function databaseSettingRefusal(env: SettingsEnv): string | null {
   return databaseAddressRefusal(env);
 }
 
+/** The shortest keys the file storage, MinIO, starts with. */
+const SHORTEST_FILE_STORAGE_KEYS = [
+  ["FILE_STORAGE_ACCESS_KEY", 3],
+  ["FILE_STORAGE_SECRET_KEY", 8],
+] as const;
+
+/**
+ * One line for each file storage key that is too short. With one, the
+ * file storage would stop long after this check, and say why only in its
+ * own log. An empty key is already named with the settings that are
+ * missing.
+ */
+export function shortFileStorageKeys(env: SettingsEnv): string[] {
+  const refusals: string[] = [];
+  for (const [name, shortest] of SHORTEST_FILE_STORAGE_KEYS) {
+    const key = env[name];
+    if (!key || key.length >= shortest) continue;
+    refusals.push(
+      `The setting ${name} must be at least ${shortest} characters, or the file storage does not start. Change it in the settings file of the package.`,
+    );
+  }
+  return refusals;
+}
+
 /**
  * Why the campus server package may not start, one line for each reason,
  * or nothing when it may. A line names settings and never shows a value.
@@ -80,5 +104,8 @@ export function startRefusals(env: SettingsEnv): string[] {
   if (missing.length > 0) refusals.push(missingRefusal(missing));
   const unusable = databaseSettingRefusal(env);
   if (unusable) refusals.push(`${unusable} The package refused to start.`);
+  for (const tooShort of shortFileStorageKeys(env)) {
+    refusals.push(`${tooShort} The package refused to start.`);
+  }
   return refusals;
 }
