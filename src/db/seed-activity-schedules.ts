@@ -1,6 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { isNotNull } from "drizzle-orm";
 import type { Database } from "./connect";
-import { sampleActivitySchedules } from "./sample-activity-schedules";
+import {
+  type SampleActivitySchedule,
+  sampleActivitySchedules,
+} from "./sample-activity-schedules";
 import type { SamplePeriod } from "./sample-data";
 import { activitySchedules, ppksActivities } from "./schema";
 import { periodIdOf } from "./seed-mentoring-meetings";
@@ -33,29 +37,38 @@ function idOf<Key>(ids: Map<Key, string>, key: Key, what: string): string {
   return id;
 }
 
+/** A sample schedule with the key it was stored under. */
+export interface AddedSchedule {
+  id: string;
+  sample: SampleActivitySchedule;
+}
+
 /**
- * Adds the sample schedules around a day, as the work of one account. The
- * sample PPKS activities and the sample periods must be there already.
- * `day` is today on campus.
+ * Adds the sample schedules around a day, as the work of one account, and
+ * gives them back with their keys. The sample PPKS activities and the
+ * sample periods must be there already. `day` is today on campus.
  */
 export async function addSampleActivitySchedules(
   db: Database,
   periods: SamplePeriod[],
   day: string,
   by: string,
-): Promise<void> {
-  const schedules = sampleActivitySchedules(day, periods);
-  if (schedules.length === 0) return;
+): Promise<AddedSchedule[]> {
+  const samples = sampleActivitySchedules(day, periods);
+  if (samples.length === 0) return [];
   const activityIds = await activityIdsByName(db);
   const periodIds = await periodIdsOf(db, periods);
   const changed = { changedAt: new Date(), changedBy: by };
+  const added = samples.map((sample) => ({ id: randomUUID(), sample }));
 
   await db.insert(activitySchedules).values(
-    schedules.map(({ activityName, period, ...schedule }) => ({
+    added.map(({ id, sample: { activityName, period, ...schedule } }) => ({
       ...schedule,
       ...changed,
+      id,
       activityId: idOf(activityIds, activityName, "PPKS activity"),
       academicPeriodId: idOf(periodIds, period, "period"),
     })),
   );
+  return added;
 }

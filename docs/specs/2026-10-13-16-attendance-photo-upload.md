@@ -98,9 +98,35 @@ Mahasiswa, for their own activities only.
    prototype.
 2. Attendance photos are kept. Nothing is removed now.
 
+## Decisions made while building
+
+Nothing of this was built before: Kegiatan karakter was an empty page
+for Mahasiswa. The issue did not say, so these were decided:
+
+3. The new right is named "Presensi swafoto", as the prototype's list of
+   rights names it, and only Mahasiswa has it. The rights of staff to
+   check photos come with "Attendance verification".
+4. Four statuses are stored: Menunggu verifikasi, Hadir, Ditolak and
+   Dispensasi. Giving the last three is not built here. "Tidak hadir"
+   and "Belum unggah" are not stored: they are told from a schedule with
+   nothing sent, by whether its upload time has closed.
+5. An attendance also keeps a short note, which the history shows as
+   Keterangan, such as the reason of a rejection.
+6. The database itself refuses a second waiting or validated attendance
+   of one student for one schedule.
+7. The attendance of a removed schedule stays stored. It is not shown
+   and not counted.
+8. Sample attendance has no photo at all, so no picture of anyone is
+   in the sample data. A photo exists only after a student sends one.
+   Drawn placeholders for the sample attendance come with "Attendance
+   verification", the first screen that shows photos.
+9. The sample data gets seven more schedules, all for the students in
+   their second year, so that one sample student has every status in
+   their history, an open upload and coming activities.
+
 ## Steps
 
-- [ ] 1. Attendance is stored per student and schedule, with status,
+- [x] 1. Attendance is stored per student and schedule, with status,
   photo, time sent, and who decided and when. The right "Presensi
   swafoto" is added for Mahasiswa, with its checks. Sample data adds
   attendance in every status.
