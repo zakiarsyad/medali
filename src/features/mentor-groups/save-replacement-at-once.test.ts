@@ -6,9 +6,17 @@ import {
   testReplacementsOf,
 } from "@/mentoring/test-replacements";
 import type { ReplacementInput } from "./replacement-input";
-import { alreadyScheduled, NOT_A_SPARE_MENTOR } from "./replacement-refusals";
+import {
+  alreadyScheduled,
+  MENTOR_CHANGED,
+  NOT_A_SPARE_MENTOR,
+} from "./replacement-refusals";
 import { saveReplacement } from "./save-replacement";
-import { addTestEvaluator, addTestHeldGroup } from "./test-evaluations";
+import {
+  addTestEvaluator,
+  addTestHeldGroup,
+  type TestHeldGroup,
+} from "./test-evaluations";
 import { addTestMentor, addTestMentorRole } from "./test-records";
 
 /*
@@ -26,9 +34,10 @@ async function addSpare(db: Database, name: string): Promise<string> {
   return id;
 }
 
-function inputFor(groupId: string, newMentorId: string): ReplacementInput {
+function inputFor(held: TestHeldGroup, newMentorId: string): ReplacementInput {
   return {
-    groupId,
+    groupId: held.groupId,
+    oldMentorId: held.mentorId,
     reason: "own_request",
     startsOn: TODAY,
     newMentorId,
@@ -47,7 +56,7 @@ describe("Tetapkan penggantian pressed twice at the same moment", () => {
     );
     const spare = await addSpare(own.db, "Pengasuh Uji Tekan A");
     const head = await addTestEvaluator(own.db, ["head_of_unit"]);
-    const input = { ...inputFor(held.groupId, spare), startsOn: LATER };
+    const input = { ...inputFor(held, spare), startsOn: LATER };
 
     const both = await own.atOnce(
       (db) => saveReplacement(db, head, input, TODAY),
@@ -63,7 +72,7 @@ describe("Tetapkan penggantian pressed twice at the same moment", () => {
     expect(await testMentorLinesOf(own.db, held.groupId)).toHaveLength(1);
   });
 
-  it("replaces the mentor once for today: the second save waits, then finds the mentor is no spare mentor any more", async () => {
+  it("replaces the mentor once for today: the second save waits, then finds the group has another mentor", async () => {
     const held = await addTestHeldGroup(
       own.db,
       "UJIGANTITEKANB",
@@ -71,7 +80,7 @@ describe("Tetapkan penggantian pressed twice at the same moment", () => {
     );
     const spare = await addSpare(own.db, "Pengasuh Uji Tekan B");
     const head = await addTestEvaluator(own.db, ["head_of_unit"]);
-    const input = inputFor(held.groupId, spare);
+    const input = inputFor(held, spare);
 
     const both = await own.atOnce(
       (db) => saveReplacement(db, head, input, TODAY),
@@ -79,7 +88,26 @@ describe("Tetapkan penggantian pressed twice at the same moment", () => {
     );
 
     expect(both.sooner).toMatchObject({ ok: true, value: { isInForce: true } });
-    expect(both.later).toEqual(NOT_A_SPARE_MENTOR);
+    expect(both.later).toEqual(MENTOR_CHANGED);
+    expect(await testReplacementsOf(own.db, held.groupId)).toHaveLength(1);
+    expect(await testMentorLinesOf(own.db, held.groupId)).toHaveLength(2);
+  });
+});
+
+describe("two spare mentors chosen for one group at the same moment", () => {
+  it("replaces the mentor the forms showed once: the second save waits, then finds the group has another mentor", async () => {
+    const held = await addTestHeldGroup(own.db, "UJIGANTISATU", "Lama Satu");
+    const first = await addSpare(own.db, "Pengasuh Uji Satu A");
+    const second = await addSpare(own.db, "Pengasuh Uji Satu B");
+    const head = await addTestEvaluator(own.db, ["head_of_unit"]);
+
+    const both = await own.atOnce(
+      (db) => saveReplacement(db, head, inputFor(held, first), TODAY),
+      (db) => saveReplacement(db, head, inputFor(held, second), TODAY),
+    );
+
+    expect(both.sooner).toMatchObject({ ok: true, value: { isInForce: true } });
+    expect(both.later).toEqual(MENTOR_CHANGED);
     expect(await testReplacementsOf(own.db, held.groupId)).toHaveLength(1);
     expect(await testMentorLinesOf(own.db, held.groupId)).toHaveLength(2);
   });
@@ -93,8 +121,8 @@ describe("one spare mentor chosen for two groups at the same moment", () => {
     const head = await addTestEvaluator(own.db, ["head_of_unit"]);
 
     const both = await own.atOnce(
-      (db) => saveReplacement(db, head, inputFor(first.groupId, spare), TODAY),
-      (db) => saveReplacement(db, head, inputFor(second.groupId, spare), TODAY),
+      (db) => saveReplacement(db, head, inputFor(first, spare), TODAY),
+      (db) => saveReplacement(db, head, inputFor(second, spare), TODAY),
     );
 
     expect(both.sooner).toMatchObject({ ok: true, value: { isInForce: true } });

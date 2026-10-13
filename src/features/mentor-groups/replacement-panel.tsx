@@ -71,6 +71,7 @@ export async function ReplacementPart({
           id: group.id,
           code: groupCode(group),
           members: group.members,
+          oldMentorId: mentor.id,
           oldMentorName: mentor.name,
           hasPoorEvaluation,
           evaluationAddress: evaluationAddress(group.id),

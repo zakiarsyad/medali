@@ -22,6 +22,7 @@ import type { ReplacementInput } from "./replacement-input";
 import {
   alreadyScheduled,
   KEPT_FOR_ANOTHER_GROUP,
+  MENTOR_CHANGED,
   NEEDS_POOR_EVALUATION,
   NO_MENTOR_TO_REPLACE,
   NOT_A_SPARE_MENTOR,
@@ -148,10 +149,9 @@ async function refusedByRule(
 async function addReplacement(
   tx: Database,
   actorId: string,
-  oldMentorId: string,
   input: ReplacementInput,
 ): Promise<Parsed<string>> {
-  const values = { ...input, oldMentorId, setBy: actorId, setAt: WRITTEN_NOW };
+  const values = { ...input, setBy: actorId, setAt: WRITTEN_NOW };
   try {
     const [added] = await tx.transaction((step) =>
       step
@@ -170,10 +170,9 @@ async function addReplacement(
 async function carryOutNow(
   tx: Database,
   id: string,
-  oldMentorId: string,
   input: ReplacementInput,
 ): Promise<void> {
-  const done = await carryOutReplacement(tx, { ...input, id, oldMentorId });
+  const done = await carryOutReplacement(tx, { ...input, id });
   if (!done) throw new Error("The mentor that was read holds no group now.");
 }
 
@@ -183,8 +182,9 @@ async function carryOutNow(
  * starts on `day` gives the group its new mentor at once, in the same
  * transaction; one for a later day waits for it. Refused for any role but
  * Kepala Unit, for a start date before `day` or before the old mentor
- * took the group, for a group that is ended, has no mentor, or has a
- * replacement that waits already, for Hasil evaluasi kurang while the
+ * took the group, for a group that is ended, has no mentor, has another
+ * mentor than the one the form was filled in for, or has a replacement
+ * that waits already, for Hasil evaluasi kurang while the
  * mentor's last evaluation for the group is not Kurang, and for a new
  * mentor who is not a spare mentor or is kept for another group: all of
  * it read here, never taken from the browser.
@@ -206,6 +206,7 @@ export async function saveReplacement(
     }
     const oldMentor = await readMentorOfToday(tx, group.id);
     if (!oldMentor) return NO_MENTOR_TO_REPLACE;
+    if (oldMentor.id !== input.oldMentorId) return MENTOR_CHANGED;
     // Two replacements saved at the same moment would both read one
     // spare mentor as free.
     await waitForOtherMentorChanges(tx);
@@ -215,10 +216,10 @@ export async function saveReplacement(
     const newMentor = await lockSpareMentor(tx, input.newMentorId);
     if (!newMentor.ok) return newMentor;
 
-    const added = await addReplacement(tx, actor.id, oldMentor.id, input);
+    const added = await addReplacement(tx, actor.id, input);
     if (!added.ok) return added;
     const isInForce = input.startsOn <= day;
-    if (isInForce) await carryOutNow(tx, added.value, oldMentor.id, input);
+    if (isInForce) await carryOutNow(tx, added.value, input);
     return {
       ok: true,
       value: {

@@ -255,6 +255,13 @@ part only. All of it is built here.
     replacement of the Penggantian form. The look for Terjadwal
     replacements whose date has come happens once for each request and
     reads only the replacements that still wait.
+45. The form names the mentor it was filled in for. When the group has
+    another mentor by the time it is saved, nothing is saved and the
+    message says "Pengasuh kelompok ini sudah berganti. Muat ulang
+    halaman, lalu periksa lagi.": the reason, the old mentor's new status
+    and the tick were chosen for the mentor the form showed. This refines
+    decision 43: a second "Tetapkan penggantian" for today is told this,
+    whichever spare mentor it names.
 
 ## Steps
 

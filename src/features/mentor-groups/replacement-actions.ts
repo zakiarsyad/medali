@@ -32,6 +32,7 @@ export async function saveReplacementAction(
   const actor = await replacer();
   const parsed = parseReplacement({
     groupId: text(form, "groupId"),
+    oldMentorId: text(form, "oldMentorId"),
     reason: text(form, "reason"),
     startsOn: text(form, "startsOn"),
     newMentorId: text(form, "newMentorId"),

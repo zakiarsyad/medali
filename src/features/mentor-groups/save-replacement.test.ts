@@ -14,6 +14,7 @@ import type { ReplacementInput } from "./replacement-input";
 import {
   alreadyScheduled,
   KEPT_FOR_ANOTHER_GROUP,
+  MENTOR_CHANGED,
   NEEDS_POOR_EVALUATION,
   NO_MENTOR_TO_REPLACE,
   NOT_A_SPARE_MENTOR,
@@ -58,6 +59,7 @@ async function addGroupToReplace(db: Database) {
   const head = await addTestEvaluator(db, ["head_of_unit"], "Kepala Uji Ganti");
   const input: ReplacementInput = {
     groupId: group.groupId,
+    oldMentorId: group.mentorId,
     reason: "own_request",
     startsOn: LATER,
     newMentorId,
@@ -288,6 +290,36 @@ describe("saveReplacement", () => {
     });
   });
 
+  it("refuses a form filled in for a mentor who holds the group no more, and keeps nothing of it", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const between = await addSpare(db, "Pengasuh Uji Di Antara");
+      const today = { ...made.input, startsOn: TODAY };
+      await saveReplacement(
+        db,
+        made.head,
+        { ...today, newMentorId: between },
+        TODAY,
+      );
+      const stale = {
+        ...today,
+        reason: "retirement",
+        oldMentorStatus: "inactive",
+      } as const;
+
+      const saved = await saveReplacement(db, made.head, stale, TODAY);
+
+      expect(saved).toEqual(MENTOR_CHANGED);
+      expect(saved).toEqual({
+        ok: false,
+        error:
+          "Pengasuh kelompok ini sudah berganti. Muat ulang halaman, lalu periksa lagi.",
+      });
+      expect(await testReplacementsOf(db, made.groupId)).toHaveLength(1);
+      expect(await testMentorLinesOf(db, made.groupId)).toHaveLength(2);
+    });
+  });
+
   it("refuses a second replacement for a group that has one waiting, for today and for later, and names its date", async () => {
     await inTestDatabase(async (db) => {
       const made = await addGroupToReplace(db);
@@ -326,7 +358,11 @@ describe("saveReplacement", () => {
       });
       await addTestMentorLine(db, otherGroup, otherMentor);
       await saveReplacement(db, made.head, made.input, TODAY);
-      const forOther = { ...made.input, groupId: otherGroup };
+      const forOther = {
+        ...made.input,
+        groupId: otherGroup,
+        oldMentorId: otherMentor,
+      };
 
       const later = await saveReplacement(db, made.head, forOther, TODAY);
       const today = await saveReplacement(

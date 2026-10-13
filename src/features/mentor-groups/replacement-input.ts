@@ -8,10 +8,12 @@ import {
 } from "@/mentoring/replacement-ids";
 import type { Parsed } from "@/parsed";
 import { NOTE_MAX_LENGTH, typedNote } from "./evaluation-input";
+import { MENTOR_CHANGED } from "./replacement-refusals";
 
 /** "Tetapkan penggantian" as the form sends it. */
 export interface SentReplacement {
   groupId: string;
+  oldMentorId: string;
   reason: string;
   startsOn: string;
   newMentorId: string;
@@ -24,6 +26,8 @@ export interface SentReplacement {
 
 export interface ReplacementInput {
   groupId: string;
+  /** The mentor the form showed as the one who is replaced. */
+  oldMentorId: string;
   reason: ReplacementReason;
   /** "Tanggal efektif". */
   startsOn: string;
@@ -80,12 +84,14 @@ function parseNote(sent: string): Parsed<string | null> {
 /**
  * Checks "Tetapkan penggantian" as sent, and says what is missing: every
  * field but Keterangan must be there, and the tick box ticked. Whether
- * the day is today or later is for the save to say, which knows the day.
+ * the day is today or later, and whether the old mentor still holds the
+ * group, is for the save to say, which knows both.
  */
 export function parseReplacement(
   sent: SentReplacement,
 ): Parsed<ReplacementInput> {
   if (!isUuid(sent.groupId)) return refused("Pilih kelompok pengasuhan.");
+  if (!isUuid(sent.oldMentorId)) return MENTOR_CHANGED;
   const reason = reasonOf(sent.reason);
   if (reason === null) return refused("Pilih alasan penggantian.");
   if (!isDay(sent.startsOn)) {
@@ -103,6 +109,7 @@ export function parseReplacement(
     ok: true,
     value: {
       groupId: sent.groupId,
+      oldMentorId: sent.oldMentorId,
       reason,
       startsOn: sent.startsOn,
       newMentorId: sent.newMentorId,

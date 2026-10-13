@@ -20,6 +20,17 @@ export const STARTS_BEFORE_TODAY = {
 } as const;
 
 /**
+ * What a save is told when the group has another mentor than the one the
+ * form was filled in for: the reason, the status and the tick were chosen
+ * for that mentor, not for the one who holds the group now.
+ */
+export const MENTOR_CHANGED = {
+  ok: false,
+  error:
+    "Pengasuh kelompok ini sudah berganti. Muat ulang halaman, lalu periksa lagi.",
+} as const;
+
+/**
  * What a save is told for a start date before the day the mentor of today
  * took the group: that mentor's time with the group cannot end before it
  * began.

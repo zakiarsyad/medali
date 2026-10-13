@@ -7,9 +7,11 @@ import {
 
 const GROUP_ID = "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f4a01";
 const MENTOR_ID = "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f4a02";
+const OLD_MENTOR_ID = "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f4a03";
 
 const SENT: SentReplacement = {
   groupId: GROUP_ID,
+  oldMentorId: OLD_MENTOR_ID,
   reason: "own_request",
   startsOn: "2026-10-13",
   newMentorId: MENTOR_ID,
@@ -30,6 +32,7 @@ describe("parseReplacement", () => {
       ok: true,
       value: {
         groupId: GROUP_ID,
+        oldMentorId: OLD_MENTOR_ID,
         reason: "own_request",
         startsOn: "2026-10-13",
         newMentorId: MENTOR_ID,
@@ -70,6 +73,14 @@ describe("parseReplacement", () => {
     expect(refusal({ newMentorId: "1 or 1=1" })).toBe(
       "Pilih pengasuh pengganti.",
     );
+  });
+
+  it("refuses a form that does not name the mentor it was filled in for", () => {
+    const reload =
+      "Pengasuh kelompok ini sudah berganti. Muat ulang halaman, lalu periksa lagi.";
+
+    expect(refusal({ oldMentorId: "" })).toBe(reload);
+    expect(refusal({ oldMentorId: "1 or 1=1" })).toBe(reload);
   });
 
   it("refuses a reason and a status the form does not offer", () => {

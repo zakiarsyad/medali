@@ -38,6 +38,11 @@ export interface ReplacedGroup {
   code: string;
   /** How many Aktif students the group holds. */
   members: number;
+  /**
+   * Sent back with the form, so a save is refused when the group has
+   * another mentor by then.
+   */
+  oldMentorId: string;
   oldMentorName: string;
   /** Whether the old mentor's last evaluation for the group is Kurang. */
   hasPoorEvaluation: boolean;
@@ -130,6 +135,7 @@ export function ReplacementForm({
       noValidate
     >
       <input type="hidden" name="groupId" value={group.id} />
+      <input type="hidden" name="oldMentorId" value={group.oldMentorId} />
       {group.waitingFrom !== null && (
         <p className={`${styles.outcome} ${styles.warned} ${styles.whole}`}>
           {alreadyScheduledWords(group.waitingFrom)}
