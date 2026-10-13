@@ -4,6 +4,7 @@ import {
   academicPeriods,
   accounts,
   activityAttendances,
+  activityClarifications,
   activitySchedules,
   ppksActivities,
   students,
@@ -240,5 +241,43 @@ export async function addTestAttendance(
     })
     .returning({ id: activityAttendances.id });
   if (!added) throw new Error("The attendance was not added.");
+  return added.id;
+}
+
+type TestClarification = Pick<
+  typeof activityClarifications.$inferInsert,
+  "scheduleId" | "studentId" | "status"
+> &
+  Partial<typeof activityClarifications.$inferInsert>;
+
+/**
+ * A stored clarification with the facts of a made-up paper: one that
+ * waits has only the time it was sent, an accepted one was accepted as
+ * present, and every decided one is decided by `byId`.
+ */
+export async function addTestClarification(
+  db: Database,
+  byId: string,
+  clarification: TestClarification,
+): Promise<string> {
+  const { status } = clarification;
+  const isWaiting = status === "submitted";
+  const [added] = await db
+    .insert(activityClarifications)
+    .values({
+      reason: "sick",
+      explanation: "Demam sejak malam sebelum kegiatan.",
+      fileName: "surat-keterangan.pdf",
+      fileContentType: "application/pdf",
+      fileSize: 64,
+      acceptedAs: status === "accepted" ? "valid" : null,
+      note: "",
+      sentAt: TEST_SENT_AT,
+      decidedAt: isWaiting ? null : TEST_DECIDED_AT,
+      decidedBy: isWaiting ? null : byId,
+      ...clarification,
+    })
+    .returning({ id: activityClarifications.id });
+  if (!added) throw new Error("The clarification was not added.");
   return added.id;
 }

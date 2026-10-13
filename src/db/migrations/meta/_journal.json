@@ -211,6 +211,13 @@
       "when": 1791919723381,
       "tag": "0029_attendance-decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1791931990912,
+      "tag": "0030_attendance-clarifications",
+      "breakpoints": true
     }
   ]
 }

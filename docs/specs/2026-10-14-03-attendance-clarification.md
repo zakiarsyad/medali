@@ -161,7 +161,7 @@ decided, from what the merged app does and then from the prototype:
 
 ## Steps
 
-- [ ] 1. Clarifications are stored with their file, status and decision.
+- [x] 1. Clarifications are stored with their file, status and decision.
   The right to decide is added for Penilai Mahasiswa, with its checks.
   Sample data adds some in every status.
 - [ ] 2. The rule for the clarification time, with checks.

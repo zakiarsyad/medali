@@ -22,6 +22,7 @@ import {
   studyPrograms,
 } from "./schema";
 import { addSampleActivityAttendances } from "./seed-activity-attendances";
+import { addSampleClarifications } from "./seed-activity-clarifications";
 import { addSampleActivitySchedules } from "./seed-activity-schedules";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
@@ -145,7 +146,8 @@ async function addSampleFirstYears(
  * meetings of the running period with their attendance lists and the
  * scores of that period for part of the groups, and schedules of the PPKS
  * activities that are over, open today and still to come, with the
- * attendance of the sample students at them in every status. Every role
+ * attendance of the sample students at them in every status and their
+ * clarifications of it in every status. Every role
  * given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -203,6 +205,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       sampleActor,
     );
     await addSampleActivityAttendances(tx, schedules, SAMPLE_STUDENTS, today);
+    await addSampleClarifications(tx, schedules, SAMPLE_STUDENTS, today);
     await addSampleFirstYears(tx, running, programIds, sampleActor);
     await addSampleDorms(tx, running);
     const grouped = [

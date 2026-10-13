@@ -123,6 +123,28 @@ export const activityAttendanceStatus = pgEnum("activity_attendance_status", [
 ]);
 
 /**
+ * Where a clarification of an attendance stands: it waits for Penilai
+ * Mahasiswa, or was accepted or rejected.
+ */
+export const activityClarificationStatus = pgEnum(
+  "activity_clarification_status",
+  ["submitted", "accepted", "rejected"],
+);
+
+/** Why a student says they were not recorded as present, as the form lists it. */
+export const activityClarificationReason = pgEnum(
+  "activity_clarification_reason",
+  [
+    "sick",
+    "family_matter",
+    "campus_duty",
+    "technical_trouble",
+    "present_not_recorded",
+    "other",
+  ],
+);
+
+/**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
  * or from a file, kept with the name of that file.
  */
@@ -1228,5 +1250,88 @@ export const activityAttendanceChanges = pgTable(
   },
   (table) => [
     index("activity_attendance_changes_attendance").on(table.attendanceId),
+  ],
+);
+
+/**
+ * What a student asks about an attendance they were not given: the
+ * reason, their explanation and the file that supports it, and what
+ * Penilai Mahasiswa decided, when and with which note. An accepted one
+ * keeps the status it gave the attendance: Hadir or Dispensasi. A student
+ * has one waiting clarification for a schedule at most; one asked again
+ * after a rejection is a new row. Nothing here is removed: the
+ * clarification of a removed schedule stays and is not shown.
+ */
+export const activityClarifications = pgTable(
+  "activity_clarifications",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    scheduleId: uuid()
+      .notNull()
+      .references(() => activitySchedules.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    reason: activityClarificationReason().notNull(),
+    explanation: text().notNull(),
+    /**
+     * Where the file is in the file storage. Empty only for sample data
+     * where no file storage is set.
+     */
+    fileKey: text().unique(),
+    fileName: text().notNull(),
+    fileContentType: text().notNull(),
+    /** In bytes. */
+    fileSize: integer().notNull(),
+    status: activityClarificationStatus().notNull(),
+    /** The status an accepted one gave the attendance. */
+    acceptedAs: activityAttendanceStatus(),
+    /** What Penilai Mahasiswa noted. Empty when nothing was noted. */
+    note: text().notNull(),
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+    decidedAt: timestamp({ withTimezone: true }),
+    decidedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    uniqueIndex("activity_clarifications_one_submitted")
+      .on(table.scheduleId, table.studentId)
+      .where(sql`${table.status} = 'submitted'`),
+    index("activity_clarifications_student").on(table.studentId),
+    check(
+      "activity_clarifications_decided_unless_submitted",
+      sql`(${table.status} = 'submitted') = (${table.decidedAt} is null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
+    ),
+    check(
+      "activity_clarifications_accepted_as_present_or_dispensation",
+      sql`(${table.status} = 'accepted') = (${table.acceptedAs} is not null) and (${table.acceptedAs} is null or ${table.acceptedAs} in ('valid', 'dispensation'))`,
+    ),
+  ],
+);
+
+/**
+ * Every decision on a clarification: who, when, the status before and
+ * after, how it was accepted and the note. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const activityClarificationChanges = pgTable(
+  "activity_clarification_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    clarificationId: uuid()
+      .notNull()
+      .references(() => activityClarifications.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    statusBefore: activityClarificationStatus().notNull(),
+    statusAfter: activityClarificationStatus().notNull(),
+    acceptedAs: activityAttendanceStatus(),
+    note: text().notNull(),
+  },
+  (table) => [
+    index("activity_clarification_changes_clarification").on(
+      table.clarificationId,
+    ),
   ],
 );

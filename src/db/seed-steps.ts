@@ -5,6 +5,7 @@ import { readDeployTarget } from "./deploy-target";
 import { rebuildTables } from "./rebuild";
 import { fillWithSampleData } from "./seed";
 import { samplePhotosAdded } from "./seed-attendance-photos";
+import { samplePapersAdded } from "./seed-clarification-papers";
 import { checkSeedStage, checkSeedTarget } from "./seed-plan";
 
 /**
@@ -25,7 +26,8 @@ export async function loadSampleData(
 
 /**
  * What the sample photos command does on a local computer, after the
- * sample data is in: it gives the sample attendance its drawn pictures.
+ * sample data is in: it gives the sample attendance its drawn pictures
+ * and the sample clarifications their drawn papers.
  * The previews get theirs from the deploy step, and the campus server
  * never does, whatever the computer the command runs on says about
  * itself. `store` is null while the file storage settings are empty.
@@ -42,5 +44,7 @@ export async function loadSamplePhotos(
   }
   const target = await readDeployTarget(db);
   checkSeedTarget(target.marker);
-  return samplePhotosAdded(db, store);
+  const photos = await samplePhotosAdded(db, store);
+  const papers = await samplePapersAdded(db, store);
+  return `${photos}\n${papers}`;
 }
