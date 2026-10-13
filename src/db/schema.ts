@@ -12,6 +12,7 @@ import {
   primaryKey,
   smallint,
   text,
+  time,
   timestamp,
   unique,
   uniqueIndex,
@@ -95,6 +96,9 @@ export const mentoringNoteKind = pgEnum("mentoring_note_kind", NOTE_KINDS);
 export const mentoringFollowUp = pgEnum("mentoring_follow_up", FOLLOW_UPS);
 
 export const attendanceMark = pgEnum("attendance_mark", ATTENDANCE_MARKS);
+
+/** What the time allowed to upload an attendance photo is counted in. */
+export const uploadUnit = pgEnum("upload_unit", ["day", "week"]);
 
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
@@ -922,4 +926,55 @@ export const mentoringScoreChanges = pgTable(
     scoreAfter: smallint().notNull(),
   },
   (table) => [index("mentoring_score_changes_score").on(table.scoreId)],
+);
+
+/**
+ * One holding of a PPKS activity of the curriculum: its days, its hours,
+ * its place and how long after its last day an attendance photo may be
+ * uploaded. It keeps the academic period that ran on its first day, which
+ * decides who its participants are. A removed one keeps its row, marked
+ * with who removed it and when.
+ */
+export const activitySchedules = pgTable(
+  "activity_schedules",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    activityId: uuid()
+      .notNull()
+      .references(() => ppksActivities.id),
+    academicPeriodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    startsOn: date().notNull(),
+    endsOn: date().notNull(),
+    startTime: time().notNull(),
+    endTime: time().notNull(),
+    /** How many days or weeks after the last day a photo may be uploaded. */
+    uploadCount: smallint().notNull(),
+    uploadUnit: uploadUnit().notNull(),
+    /** Empty when no place was given. */
+    location: text().notNull(),
+    /** Whether it counts in the attendance score, for this holding alone. */
+    isRequired: boolean().notNull(),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    deletedAt: timestamp({ withTimezone: true }),
+    deletedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    check(
+      "activity_schedules_ends_on_or_after_start",
+      sql`${table.endsOn} >= ${table.startsOn}`,
+    ),
+    check(
+      "activity_schedules_end_time_after_start",
+      sql`${table.endTime} > ${table.startTime}`,
+    ),
+    check(
+      "activity_schedules_upload_count_0_to_52",
+      sql`${table.uploadCount} between 0 and 52`,
+    ),
+  ],
 );
