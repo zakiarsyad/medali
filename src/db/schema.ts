@@ -26,6 +26,7 @@ import {
   MEETINGS_PER_PERIOD,
 } from "@/mentoring/meeting-ids";
 import { FOLLOW_UPS, NOTE_KINDS } from "@/mentoring/note-ids";
+import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -862,4 +863,60 @@ export const mentoringMeetingChanges = pgTable(
     marksAfter: jsonb().$type<MarksByStudent>().notNull(),
   },
   (table) => [index("mentoring_meeting_changes_meeting").on(table.meetingId)],
+);
+
+/**
+ * The score a mentor gave one student for how they took part in mentoring
+ * in an academic period. A student has one in a period at most. Giving it
+ * again changes it. Never deleted: its log lines hold it.
+ */
+export const mentoringScores = pgTable(
+  "mentoring_scores",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    score: smallint().notNull(),
+    scoredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** When it was saved last, the first time or as a change. */
+    scoredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("mentoring_scores_one_per_student_and_period").on(
+      table.studentId,
+      table.periodId,
+    ),
+    check(
+      "mentoring_scores_score_in_range",
+      sql`${table.score} between ${sql.raw(String(SCORE_MIN))} and ${sql.raw(String(SCORE_MAX))}`,
+    ),
+  ],
+);
+
+/**
+ * Every save of a mentoring score: who, when, and the score before and
+ * after. The first save has none before. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const mentoringScoreChanges = pgTable(
+  "mentoring_score_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    scoreId: uuid()
+      .notNull()
+      .references(() => mentoringScores.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    scoreBefore: smallint(),
+    scoreAfter: smallint().notNull(),
+  },
+  (table) => [index("mentoring_score_changes_score").on(table.scoreId)],
 );

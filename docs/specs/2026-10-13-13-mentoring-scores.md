@@ -86,9 +86,23 @@ it is built here.
 4. Kepala Unit cannot correct a mentor's score. They read only, as in
    the prototype.
 
+## Decisions made while building
+
+5. A score belongs to the student and the semester, not to a group. A
+   student who moves to another group keeps their score, and the mentor
+   who holds them then may change it.
+6. The log gets a line for the first save of a score too, with nothing
+   before, as the log of attendance lists does.
+7. The sample data has scores of the running period for part of the
+   sample groups: every Aktif member of one group, the first half of
+   the next, nobody of the third, and so on. They are given 5 days ago
+   by the mentor of that day, or on the first day of the period or of
+   the group's first mentor when that is later. A group that has no
+   mentor yet has none.
+
 ## Steps
 
-- [ ] 1. Scores and their change log are stored, one per student per
+- [x] 1. Scores and their change log are stored, one per student per
   semester, with sample scores for part of the sample groups.
 - [ ] 2. The rights to score and to read scores are added to the
   permission list, with their checks.
