@@ -9,7 +9,10 @@ import type { AskedDetail } from "./asked-detail";
 import { runningPeriodNow } from "./running-period-now";
 import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
-import { StudentDetailDialog } from "./student-detail-dialog";
+import {
+  type MorePanelsOf,
+  StudentDetailDialog,
+} from "./student-detail-dialog";
 import { listCohortYears, listStudents } from "./student-list";
 import {
   STUDENT_LIST_ADDRESS,
@@ -28,6 +31,7 @@ export async function StudentListScreen({
   params,
   detail,
   groupAddressOf,
+  morePanelsOf,
 }: {
   /** Which student rows the account that opened the page may see. */
   limit: RowLimit;
@@ -35,6 +39,8 @@ export async function StudentListScreen({
   /** The detail the address asks to open over the list, or null for none. */
   detail: AskedDetail | null;
   groupAddressOf: GroupAddressOf;
+  /** The panels other areas add to the detail. */
+  morePanelsOf: MorePanelsOf;
 }) {
   const db = database();
   const { filters } = params;
@@ -100,6 +106,7 @@ export async function StudentListScreen({
           period={period}
           closeAddress={studentListAddress(filters, list.page)}
           groupAddressOf={groupAddressOf}
+          morePanelsOf={morePanelsOf}
         />
       )}
     </>

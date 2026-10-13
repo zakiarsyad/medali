@@ -22,6 +22,8 @@ export const ACTIONS = [
   "prepare_cohort_assignments",
   "fix_cohort_assignments",
   "view_own_profile",
+  "view_mentoring_notes",
+  "write_mentoring_notes",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -47,6 +49,8 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Menyiapkan dan mengajukan penetapan angkatan baru",
   fix_cohort_assignments: "Menetapkan dan membatalkan penetapan angkatan baru",
   view_own_profile: "Melihat data diri sendiri",
+  view_mentoring_notes: "Melihat catatan pengasuhan",
+  write_mentoring_notes: "Menulis catatan pengasuhan",
 };
 
 /**
@@ -111,8 +115,11 @@ const ALL_MENTORS = [
   "new_cohort",
 ] as const;
 
+const ALL_MENTORING = ["notes", "meetings", "scores"] as const;
+
 const VIEW_ALL_TABS: RoleTabs = {
   mentors: ALL_MENTORS,
+  mentoring: ALL_MENTORING,
   assessment: ALL_ASSESSMENT,
   guidance: ["character", "discipline", "violation_notes"],
   dorm: ALL_DORM_BUT_VIOLATIONS,
@@ -149,6 +156,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_cohort_assignments",
       "prepare_cohort_assignments",
       "fix_cohort_assignments",
+      "view_mentoring_notes",
     ],
     rows: "all",
   },
@@ -165,6 +173,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentors",
       "view_mentor_evaluations",
       "view_cohort_assignments",
+      "view_mentoring_notes",
     ],
     rows: "all",
   },
@@ -181,6 +190,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentors",
       "view_mentor_evaluations",
       "view_cohort_assignments",
+      "view_mentoring_notes",
     ],
     rows: "own_program",
   },
@@ -197,11 +207,16 @@ export const ROLES: Record<RoleId, Role> = {
       "dorm",
     ],
     tabs: {
+      mentoring: ALL_MENTORING,
       dorm: ["health"],
       assessment: ALL_ASSESSMENT,
       guidance: ["character", "discipline"],
     },
-    actions: [],
+    actions: [
+      "view_student_detail",
+      "view_mentoring_notes",
+      "write_mentoring_notes",
+    ],
     rows: "own_mentees",
   },
   student: {

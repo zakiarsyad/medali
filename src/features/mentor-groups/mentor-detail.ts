@@ -10,9 +10,10 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { opensDetailOf } from "@/mentoring/opens-detail";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { inactiveSince, type MentorStatus } from "@/ui/mentor-status";
-import { type GroupMember, MEMBER, opensDetailOf } from "./group-detail";
+import { type GroupMember, MEMBER } from "./group-detail";
 import { LISTED_MEMBER } from "./member-conditions";
 import {
   type HeldGroup,

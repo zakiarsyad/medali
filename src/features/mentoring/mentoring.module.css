@@ -1,0 +1,144 @@
+/*
+ * The form and the list side by side. Each needs room for a column: a
+ * screen too narrow for two, such as a phone, shows one under the other.
+ */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: 0 var(--space-lg);
+  align-items: start;
+}
+
+/* A panel must never be wider than its column, whatever it holds. */
+.columns > * {
+  min-width: 0;
+}
+
+/* The line that tells a role which only reads who fills this in. */
+.readOnly {
+  margin: 0;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* A line of a form that takes its whole width. */
+.whole {
+  grid-column: 1 / -1;
+}
+
+/* A choice with a long name must not be wider than a phone. */
+.fit {
+  max-width: 100%;
+}
+
+/* The mentees that match what was typed, each a button to pick. */
+.offered {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chosen {
+  color: var(--ink);
+}
+
+.quiet {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-lg);
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+/* How many notes there are of each kind. */
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  margin: 0 0 var(--space-sm);
+  padding: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  list-style: none;
+}
+
+.counts b {
+  color: var(--ink);
+}
+
+.notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  padding: var(--space-md) 0;
+  border-top: var(--line-width) solid var(--line2);
+}
+
+/* The student, the kind and the values: they fold onto more lines when narrow. */
+.itemTitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+  align-items: center;
+  margin: var(--space-3xs) 0;
+  font-weight: var(--weight-semibold);
+}
+
+.values {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+}
+
+.value {
+  display: inline-flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: initial;
+}
+
+/* The text keeps its line breaks, and a long word folds instead of widening the page. */
+.text {
+  margin: 0 0 var(--space-2xs);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+/* "Catatan pengasuhan" under a student's own record, in the detail. */
+.inDetail {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: var(--line-width) solid var(--line);
+}
+
+.subheading {
+  margin: 0;
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+.detailActions {
+  margin: var(--space-lg) 0 0;
+}

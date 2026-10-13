@@ -13,10 +13,15 @@ import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMemberAddresses } from "@/features/mentor-groups/open-member-address";
 import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
+import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
+import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
-import { detailVisibleTo } from "@/features/students/visible-students";
+import {
+  detailVisibleTo,
+  visibleTo,
+} from "@/features/students/visible-students";
 
 /**
  * The page of one group, with the detail of a member over it when the
@@ -36,6 +41,11 @@ async function GroupPage({
   detailId: string | null;
 }) {
   const detail = await askedDetail(account, detailId);
+  // Only for the notes shown in a member's detail. The count on the page
+  // of the group does not ask for it: every account that opens the page
+  // sees that number.
+  const noteLimit = noteRowsFor(account);
+  const notesVisible = noteLimit === null ? null : visibleTo(noteLimit);
   return (
     <>
       <GroupScreen
@@ -52,6 +62,13 @@ async function GroupPage({
           period={await runningPeriodNow()}
           closeAddress={groupAddress(groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
+          morePanelsOf={(studentId) => (
+            <StudentNotesPanel
+              account={account}
+              visible={notesVisible}
+              studentId={studentId}
+            />
+          )}
         />
       )}
     </>
