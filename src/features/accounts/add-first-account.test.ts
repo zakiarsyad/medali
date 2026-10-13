@@ -4,7 +4,7 @@ import { findActiveAccount } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { accountRoles, accounts, roleChanges } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addFirstAccount } from "./add-first-account";
+import { addFirstAccount, firstAccountFault } from "./add-first-account";
 import { addTestStaffAccount } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -125,5 +125,33 @@ describe("addFirstAccount", () => {
       });
       expect(await totals(db)).toEqual(before);
     });
+  });
+
+  it("shows a fault of the database by its code, without the name or the address", async () => {
+    const fault = new Error(
+      `Failed query: insert into accounts params: ${FIRST.name},${FIRST.email}`,
+      { cause: Object.assign(new Error("Stopped."), { code: "57P01" }) },
+    );
+    // Only the one call that fails is needed of a database here.
+    const broken = {
+      transaction: () => Promise.reject(fault),
+    } as unknown as Database;
+
+    const added = await addFirstAccount(broken, FIRST);
+
+    if (added.ok) throw new Error("The fault was let through.");
+    expect(added.error).toContain("code 57P01");
+    expect(added.error).not.toContain(FIRST.name);
+    expect(added.error).not.toContain(FIRST.email);
+  });
+});
+
+describe("firstAccountFault", () => {
+  it("does not blame the database for a fault without a code", () => {
+    const shown = firstAccountFault(new Error(`Broke on ${FIRST.email}.`));
+
+    expect(shown).toContain("unexpected fault");
+    expect(shown).not.toContain("database");
+    expect(shown).not.toContain(FIRST.email);
   });
 });

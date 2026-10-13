@@ -241,8 +241,9 @@ On every start the package does, in this order:
 
 1. It checks the settings. With a setting empty, with a database
    password that holds anything but letters and digits, with a file
-   storage key that is too short, or with a setting that would turn "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or
-   `NODE_ENV` set to `development`), it stops there and nothing starts.
+   storage key that is too short, or with a setting that would turn
+   "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or `NODE_ENV` set
+   to `development`), it stops there and nothing starts.
    The reason, with the name of each setting to fill in, to change or to
    remove and never a value, is shown by:
 
@@ -268,7 +269,9 @@ Unit account, who then adds everyone else in Pengguna dan peran:
 It adds a line to the log of role changes. It refuses, and says why in
 one line, once a Kepala Unit account that is not removed exists, or when
 the address does not end with `CAMPUS_EMAIL_ENDING`. It never prints the
-name or the address back.
+name or the address back. For the same reason a fault of the database is
+shown by its code only: check that the package is started, then run the
+command again. If it fails again, report the code.
 
 ### Update to a newer version
 
