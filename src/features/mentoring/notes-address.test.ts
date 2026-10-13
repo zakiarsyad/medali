@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NOTE_KINDS } from "./note-kinds";
+import { NOTE_KINDS } from "@/mentoring/note-ids";
 import {
   KIND_PATHS,
   NOTES_ADDRESS,

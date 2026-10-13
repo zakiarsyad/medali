@@ -1,5 +1,5 @@
+import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
 import { firstParam, type SearchParams } from "@/ui/search-params";
-import { NOTE_KINDS, type NoteKind } from "./note-kinds";
 
 export const NOTES_ADDRESS = "/pengasuhan/catatan";
 

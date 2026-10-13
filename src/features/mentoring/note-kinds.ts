@@ -1,16 +1,10 @@
+import {
+  FOLLOW_UPS,
+  type FollowUp,
+  NOTE_KINDS,
+  type NoteKind,
+} from "@/mentoring/note-ids";
 import type { ValueKey } from "@/ui/medali-values";
-
-/** The kinds of contact a note can be about, in the order the form offers them. */
-export const NOTE_KINDS = [
-  "individual_counselling",
-  "group_mentoring",
-  "appreciation",
-  "attendance_monitoring",
-  "discipline_guidance",
-  "parent_visit",
-] as const;
-
-export type NoteKind = (typeof NOTE_KINDS)[number];
 
 export const KIND_TITLES: Record<NoteKind, string> = {
   individual_counselling: "Konseling individu",
@@ -33,17 +27,6 @@ export const KIND_VALUES: Record<NoteKind, readonly ValueKey[]> = {
   discipline_guidance: ["D", "I"],
   parent_visit: ["M", "E"],
 };
-
-/** What a mentor can choose to do next, the first being nothing. */
-export const FOLLOW_UPS = [
-  "none",
-  "watch_two_weeks",
-  "schedule_counselling",
-  "refer_to_psychologist",
-  "involve_parents",
-] as const;
-
-export type FollowUp = (typeof FOLLOW_UPS)[number];
 
 export const FOLLOW_UP_TITLES: Record<FollowUp, string> = {
   none: "Tidak perlu tindak lanjut",

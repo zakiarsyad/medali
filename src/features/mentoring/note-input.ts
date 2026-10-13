@@ -1,13 +1,9 @@
 import { isDay } from "@/db/is-day";
 import { isUuid } from "@/db/is-uuid";
+import type { FollowUp, NoteKind } from "@/mentoring/note-ids";
 import type { Parsed } from "@/parsed";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
-import {
-  type FollowUp,
-  isFollowUp,
-  isNoteKind,
-  type NoteKind,
-} from "./note-kinds";
+import { isFollowUp, isNoteKind } from "./note-kinds";
 
 /** "Simpan catatan" as the form sends it. */
 export interface SentNote {

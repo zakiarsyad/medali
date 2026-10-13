@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import styles from "./mentoring.module.css";
 import { NoteItem } from "./note-item";
-import { KIND_TITLES, NOTE_KINDS, type NoteKind } from "./note-kinds";
+import { KIND_TITLES } from "./note-kinds";
 import {
   type KindCounts,
   NOTES_PAGE_SIZE,

@@ -1,8 +1,8 @@
 import { and, count, desc, eq, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { accounts, mentoringNotes, students } from "@/db/schema";
+import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
 import { pageWithin } from "@/ui/list-pages";
-import { NOTE_KINDS, type NoteKind } from "./note-kinds";
 
 /** How many notes one page of the list shows. */
 export const NOTES_PAGE_SIZE = 20;
