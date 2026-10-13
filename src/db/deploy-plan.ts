@@ -18,8 +18,9 @@ const MAIN_BRANCH = "main";
 /**
  * What a Vercel build does to its database. A PR preview shares one
  * database with every other PR, so each deploy starts it over with its own
- * tables and the sample data. The preview of `main` keeps its data, and
- * only a build that says it comes from `main` may deploy to it; a deploy
+ * tables and the sample data. The preview of `main` is started over only
+ * when `startOverReasonFor` gives a reason, and keeps its data otherwise.
+ * Only a build that says it comes from `main` may deploy to it; a deploy
  * from the command line names no branch, and is refused.
  */
 export function deployPlanFor(
@@ -43,7 +44,8 @@ export function deployPlanFor(
 /**
  * Checks that the database is the one the plan expects, before anything is
  * changed. A database that is not marked yet is marked on its first
- * deploy, but only reset when it holds no tables at all.
+ * deploy, but only when it holds no tables at all: either plan may start
+ * it over, and nothing says its tables are a preview's.
  */
 export function checkDeployTarget(
   plan: DeployPlan,
@@ -57,10 +59,45 @@ export function checkDeployTarget(
       `This database is marked ${target.marker}, not ${expected}; refused.`,
     );
   }
-  if (plan === "reset-to-sample-data" && target.hasTables) {
+  if (target.hasTables) {
     throw new Error(
-      "This database is not marked as the PR preview one and holds tables; refused to empty it.",
+      `This database is not marked ${expected} and holds tables; refused to empty it.`,
     );
   }
   return "mark-and-go";
+}
+
+export interface MainPreviewState {
+  /** How many table changes the database says it has had applied. */
+  tableChangesApplied: number;
+  /** How many table changes the build brings. */
+  tableChangesInRepo: number;
+  holdsAnAccount: boolean;
+  /** Whether the last start of this database by a deploy of `main` finished. */
+  hasStartMark: boolean;
+}
+
+export type StartOverReason =
+  | "new-table-change"
+  | "no-account"
+  | "no-start-mark";
+
+/**
+ * Why a deploy of `main` starts its database over with sample data, or
+ * null when it keeps the data. A feature brings its sample data together
+ * with its tables, so a new table change means the sample data is old. A
+ * database with no account is empty, or was left so by a start that
+ * failed after the tables were made. One with no mark of a start was
+ * filled before the mark existed and never got the sample data merged
+ * since, or its last start failed before the mark was written.
+ */
+export function startOverReasonFor(
+  state: MainPreviewState,
+): StartOverReason | null {
+  if (state.tableChangesApplied < state.tableChangesInRepo) {
+    return "new-table-change";
+  }
+  if (!state.holdsAnAccount) return "no-account";
+  if (!state.hasStartMark) return "no-start-mark";
+  return null;
 }

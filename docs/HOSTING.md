@@ -66,17 +66,35 @@ knows which database it has:
 - **A PR deploy** (preview environment) empties `medali-preview`, adds the
   tables of that PR, and fills it with sample data. The PR deployed last
   is the one whose tables are there.
-- **A `main` deploy** (production environment) only applies new table
-  changes to `medali-main` and keeps its data. The first time, when the
-  database is still empty, it also fills it with sample data, once.
+- **A `main` deploy** (production environment) starts `medali-main` over
+  when it brings a table change that the database does not have yet: it
+  empties the database, makes every table again, and fills it with the
+  sample data of that `main`. A feature brings its sample data together
+  with its tables, so this is how the sample data of merged work gets
+  there. Whatever was added by hand on the preview of `main` is lost
+  then. A deploy with no new table change keeps the data as it is.
+
+A `main` deploy also starts the database over when it holds no account,
+which is the case the first time and after a start that failed half way.
+A start that finished leaves a mark in the database, and the marks of
+earlier starts are removed before a new start begins. So a database has
+no mark when it was filled before this mark existed, or when its last
+start failed before it finished. A `main` deploy starts such a database
+over, also with no new table change.
+
+The build log says which happened in one line: "Database of main started
+over with sample data", with the reason, or "No table change is new;
+data kept."
 
 Before it changes anything, the step checks that it has the right
 database. Each database carries a mark saying which preview it belongs
-to, set on its first deploy. A PR deploy refuses a database marked for
-`main`, or one with no mark that already holds tables. A `main` deploy
-refuses a database marked for PR previews, and refuses to run at all for
-a production deploy that does not come from `main`. A production deploy
-from the command line names no branch, so it is refused too.
+to, set on its first deploy. Either deploy refuses a database with no
+mark that already holds tables. A PR deploy refuses a database marked
+for `main`. A `main` deploy refuses a database marked for PR previews,
+and refuses to run at all for a production deploy that does not come
+from `main`. A production deploy from the command line names no branch,
+so it is refused too. Both refuse a database marked for the campus
+server.
 
 "Ganti peran", the switch between sample accounts, is on in both
 previews and in the local dev server, and off everywhere else, the campus
@@ -138,12 +156,22 @@ of the other part.
 - **A PR deploy** removes every file in `pr-previews`, right after it
   has started the PR preview database over. Sample files only are ever
   there.
-- **A `main` deploy** removes nothing.
+- **A `main` deploy** removes every file in `main-preview` once after
+  each time its database was started over, so no file is left without
+  its row. The mark of the start says whether its files were removed
+  yet: if the step fails, the next `main` deploy removes them. Until
+  then the app from before stays live on the new database, and a file
+  uploaded in that time is removed with the rest while its row is kept,
+  which is accepted because the preview holds sample data only. A `main`
+  deploy that follows no start removes nothing. The build log says
+  "Files of main emptied", with how many, or "Files of main kept."
 
-The step that empties refuses any part other than `pr-previews`, and a
+The step that empties refuses any part other than `pr-previews` and
+`main-preview`, so never the part of the campus server, and a
 production deploy that does not come from `main` is refused before
 anything is touched. While the four settings are empty the step does
-nothing and says so in the build log.
+nothing and says so in the build log; the files of `main-preview` are
+then removed once by the first `main` deploy after they are filled in.
 
 ## Google sign-in
 
