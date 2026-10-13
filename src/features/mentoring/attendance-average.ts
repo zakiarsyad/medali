@@ -1,5 +1,32 @@
 import type { AttendanceMark } from "@/mentoring/meeting-ids";
 
+/** How many of the meetings that count one member came to. */
+export interface AttendanceCount {
+  /** The meetings marked Hadir. */
+  present: number;
+  /** The meetings marked Hadir or Alpa. Izin and Sakit are left out. */
+  counted: number;
+}
+
+/** "Kehadiran pengasuhan" of one member, from the marks they have. */
+export function attendanceCount(
+  marks: readonly AttendanceMark[],
+): AttendanceCount {
+  let present = 0;
+  let absent = 0;
+  for (const mark of marks) {
+    if (mark === "present") present += 1;
+    if (mark === "absent") absent += 1;
+  }
+  return { present, counted: present + absent };
+}
+
+/** The count as a list shows it, such as 3/4, or a dash for none yet. */
+export function shownAttendance(count: AttendanceCount): string {
+  if (count.counted === 0) return "-";
+  return `${count.present}/${count.counted}`;
+}
+
 /**
  * The share of the meetings one member came to: hadir divided by hadir
  * plus alpa. Izin and Sakit are left out. Null for a member with no Hadir
@@ -8,13 +35,7 @@ import type { AttendanceMark } from "@/mentoring/meeting-ids";
 export function attendanceShare(
   marks: readonly AttendanceMark[],
 ): number | null {
-  let present = 0;
-  let absent = 0;
-  for (const mark of marks) {
-    if (mark === "present") present += 1;
-    if (mark === "absent") absent += 1;
-  }
-  const counted = present + absent;
+  const { present, counted } = attendanceCount(marks);
   if (counted === 0) return null;
   return present / counted;
 }

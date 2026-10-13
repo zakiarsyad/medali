@@ -104,6 +104,39 @@ it is built here.
    Pengasuh) and giving them (Pengasuh). Each reads within their own
    rows: Pengasuh the groups they hold today, Ketua Program Studi the
    groups of their program.
+9. The table holds the members who are Aktif, as the attendance list
+   does. A member on Cuti or Non aktif is not listed, and "Sudah dinilai
+   pengasuh" counts the same members, so the numbers agree with the
+   table.
+10. "Kehadiran pengasuhan" shows the meetings a member is marked Hadir
+    at, over the meetings they are marked Hadir or Alpa at, among the
+    saved meetings of the running period. Izin, Sakit and a meeting
+    without a mark for them are left out, as in the average of the
+    attendance tab, and it shows "-" while no meeting counts. The
+    prototype counts a member without a mark as Alpa.
+11. "Rerata nilai pengasuhan" is the average of the saved scores of the
+    members in the table, with one decimal, and "-" while none is saved.
+    The line under it says it is of the saved scores, where the
+    prototype says it includes sample data.
+12. The number "Bobot di nilai karakter" is left out, and so is the
+    weight in the intro, as "Not included" says. The intro is otherwise
+    the prototype's sentence, which says the score becomes a part of the
+    character grade. That use is not built here.
+13. "Diinput" shows the day with its year, as the other screens show a
+    day. The prototype leaves the year out.
+14. The group choice works as on the attendance tab: the first group is
+    shown, the newest angkatan first, until another is chosen; an
+    address that names a group the account may not read shows that
+    first group and nothing of the group it named; a Pengasuh with one
+    group sees no choice; a role that only reads and has no group in
+    its rows sees "Belum ada kelompok pengasuhan yang dapat Anda lihat."
+15. When no period is running, the tab says so and shows no scores, as
+    the attendance tab does.
+16. The student detail opened from a name shows the same as when it is
+    opened from "Catatan pendampingan", with the notes for those who may
+    read them. Closing it goes back to the scores of the same group. A
+    name is a link only for a student whose detail the account may
+    open.
 
 ## Steps
 
@@ -111,7 +144,7 @@ it is built here.
   semester, with sample scores for part of the sample groups.
 - [x] 2. The rights to score and to read scores are added to the
   permission list, with their checks.
-- [ ] 3. The tab with the numbers, the rubric and the table, read only.
+- [x] 3. The tab with the numbers, the rubric and the table, read only.
 - [ ] 4. Pengasuh types and saves scores.
 - [ ] 5. Changed scores, the log and the two-window case.
 - [ ] 6. Refusals and the phone layout.

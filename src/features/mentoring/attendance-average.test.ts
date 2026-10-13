@@ -1,9 +1,38 @@
 import { describe, expect, it } from "vitest";
 import {
+  attendanceCount,
   attendanceShare,
   averageAttendance,
+  shownAttendance,
   shownAverage,
 } from "./attendance-average";
+
+describe("attendanceCount", () => {
+  it("counts the meetings a member came to among those marked Hadir or Alpa", () => {
+    expect(
+      attendanceCount(["present", "present", "present", "absent"]),
+    ).toEqual({ present: 3, counted: 4 });
+  });
+
+  it("leaves Izin and Sakit out", () => {
+    expect(attendanceCount(["present", "excused", "sick", "absent"])).toEqual({
+      present: 1,
+      counted: 2,
+    });
+  });
+
+  it("counts nothing for a member without a mark", () => {
+    expect(attendanceCount([])).toEqual({ present: 0, counted: 0 });
+  });
+});
+
+describe("shownAttendance", () => {
+  it("shows the meetings come to over those that count, and a dash where none counts", () => {
+    expect(shownAttendance({ present: 3, counted: 4 })).toBe("3/4");
+    expect(shownAttendance({ present: 0, counted: 2 })).toBe("0/2");
+    expect(shownAttendance({ present: 0, counted: 0 })).toBe("-");
+  });
+});
 
 describe("attendanceShare", () => {
   it("is hadir divided by hadir plus alpa", () => {
