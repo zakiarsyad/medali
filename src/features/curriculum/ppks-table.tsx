@@ -15,22 +15,20 @@ function ValueTags({ keys }: { keys: PpksActivity["valueKeys"] }) {
 }
 
 /**
- * The PPKS activities of one semester, or that there are none. Each row
- * has "Ubah" when `onChange` is given.
+ * The activities of one list, or that there are none. Each row has "Ubah"
+ * when `onChange` is given.
  */
 export function PpksTable({
   activities,
+  emptyText,
   onChange,
 }: {
   activities: PpksActivity[];
+  emptyText: string;
   onChange: ((activity: PpksActivity) => void) | null;
 }) {
   if (activities.length === 0) {
-    return (
-      <p className={shared.empty}>
-        Belum ada kegiatan PPKS untuk semester ini.
-      </p>
-    );
+    return <p className={shared.empty}>{emptyText}</p>;
   }
   return (
     <div className={shared.tableWrap}>

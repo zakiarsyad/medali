@@ -1,0 +1,134 @@
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.choice {
+  padding: var(--space-xs) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.choice[aria-current="true"] {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--surface);
+}
+
+.open,
+.waiting,
+.plain {
+  border: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.open {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.waiting {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.plain {
+  color: var(--muted);
+}
+
+.message {
+  margin-top: var(--space-md);
+}
+
+/* A line of a form that takes its whole width. */
+.full {
+  grid-column: 1 / -1;
+}
+
+/*
+ * A list is as wide as its longest choice unless told otherwise, and the
+ * name of an activity is longer than a phone is wide.
+ */
+.fits {
+  min-width: 0;
+}
+
+.fits select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  font-size: var(--text-md);
+}
+
+.valueTag {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  white-space: nowrap;
+}
+
+.uploadRange {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.uploadRange legend {
+  margin-bottom: var(--space-2xs);
+}
+
+.uploadCount {
+  width: var(--score-box-width);
+  max-width: 100%;
+}
+
+.addHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.pushedEnd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-left: auto;
+}
+
+/* "Ubah" scrolls here: the panel must stop below the top bar, not under it. */
+.formPanel {
+  scroll-margin-top: var(--below-top-bar);
+}

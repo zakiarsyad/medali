@@ -12,6 +12,7 @@ const TARGET = /^\d{1,6}$/;
 
 /** An activity form as the browser sends it: nothing in it is trusted. */
 export interface SentPpksActivity {
+  /** Empty for a special or additional activity. */
   semester: string;
   name: string;
   valueKeys: string[];
@@ -23,7 +24,8 @@ export interface SentPpksActivity {
 
 /** A checked activity, ready to keep. */
 export interface PpksActivityInput {
-  semester: number;
+  /** Null for a special or additional activity. */
+  semester: number | null;
   name: string;
   valueKeys: ValueKey[];
   indicatorCodes: string[];
@@ -74,7 +76,9 @@ function parseIndicatorCodes(
   return { ok: true, value: codes };
 }
 
-function parseSemester(sent: string): Parsed<number> {
+/** No semester sent means a special or additional activity. */
+function parseSemester(sent: string): Parsed<number | null> {
+  if (sent === "") return { ok: true, value: null };
   if (!SEMESTER.test(sent)) return refused("Semester harus 1 sampai 8.");
   return { ok: true, value: Number(sent) };
 }
@@ -99,8 +103,8 @@ function parseDescription(sent: string): Parsed<string> {
 }
 
 /**
- * Checks a PPKS activity as sent. Every indicator must be a main indicator
- * of a chosen nilai.
+ * Checks an activity as sent, a PPKS one or a special or additional one.
+ * Every indicator must be a main indicator of a chosen nilai.
  */
 export function parsePpksActivity(
   sent: SentPpksActivity,

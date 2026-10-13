@@ -1,5 +1,5 @@
 {
-  "id": "dfb86222-2fc0-4716-b9d6-078c52845813",
+  "id": "f30c5ffb-597d-4e90-8db6-eb40887fc3ef",
   "prevId": "3a9dff98-1fbc-42ed-9ebd-4bb7c1a37501",
   "version": "7",
   "dialect": "postgresql",
@@ -1795,237 +1795,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.mentor_replacements": {
-      "name": "mentor_replacements",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "group_id": {
-          "name": "group_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "old_mentor_id": {
-          "name": "old_mentor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "new_mentor_id": {
-          "name": "new_mentor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "starts_on": {
-          "name": "starts_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "mentor_replacement_reason",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "letter_number": {
-          "name": "letter_number",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "old_mentor_status": {
-          "name": "old_mentor_status",
-          "type": "old_mentor_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "set_by": {
-          "name": "set_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "set_at": {
-          "name": "set_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "carried_out_at": {
-          "name": "carried_out_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelled_by": {
-          "name": "cancelled_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cancelled_at": {
-          "name": "cancelled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "mentor_replacements_one_waiting_per_group": {
-          "name": "mentor_replacements_one_waiting_per_group",
-          "columns": [
-            {
-              "expression": "group_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"mentor_replacements\".\"carried_out_at\" is null and \"mentor_replacements\".\"cancelled_at\" is null",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mentor_replacements_one_waiting_per_new_mentor": {
-          "name": "mentor_replacements_one_waiting_per_new_mentor",
-          "columns": [
-            {
-              "expression": "new_mentor_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"mentor_replacements\".\"carried_out_at\" is null and \"mentor_replacements\".\"cancelled_at\" is null",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mentor_replacements_old_mentor": {
-          "name": "mentor_replacements_old_mentor",
-          "columns": [
-            {
-              "expression": "old_mentor_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "mentor_replacements_group_id_mentor_groups_id_fk": {
-          "name": "mentor_replacements_group_id_mentor_groups_id_fk",
-          "tableFrom": "mentor_replacements",
-          "tableTo": "mentor_groups",
-          "columnsFrom": [
-            "group_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mentor_replacements_old_mentor_id_accounts_id_fk": {
-          "name": "mentor_replacements_old_mentor_id_accounts_id_fk",
-          "tableFrom": "mentor_replacements",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "old_mentor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mentor_replacements_new_mentor_id_accounts_id_fk": {
-          "name": "mentor_replacements_new_mentor_id_accounts_id_fk",
-          "tableFrom": "mentor_replacements",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "new_mentor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mentor_replacements_set_by_accounts_id_fk": {
-          "name": "mentor_replacements_set_by_accounts_id_fk",
-          "tableFrom": "mentor_replacements",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "set_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mentor_replacements_cancelled_by_accounts_id_fk": {
-          "name": "mentor_replacements_cancelled_by_accounts_id_fk",
-          "tableFrom": "mentor_replacements",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "cancelled_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "mentor_replacements_cancelled_with_who_and_when": {
-          "name": "mentor_replacements_cancelled_with_who_and_when",
-          "value": "(\"mentor_replacements\".\"cancelled_at\" is null) = (\"mentor_replacements\".\"cancelled_by\" is null)"
-        },
-        "mentor_replacements_not_carried_out_and_cancelled": {
-          "name": "mentor_replacements_not_carried_out_and_cancelled",
-          "value": "\"mentor_replacements\".\"carried_out_at\" is null or \"mentor_replacements\".\"cancelled_at\" is null"
-        },
-        "mentor_replacements_two_mentors": {
-          "name": "mentor_replacements_two_mentors",
-          "value": "\"mentor_replacements\".\"old_mentor_id\" <> \"mentor_replacements\".\"new_mentor_id\""
-        },
-        "mentor_replacements_letter_number_given": {
-          "name": "mentor_replacements_letter_number_given",
-          "value": "btrim(\"mentor_replacements\".\"letter_number\") <> ''"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.mentoring_attendance": {
       "name": "mentoring_attendance",
       "schema": "",
@@ -2676,7 +2445,7 @@
           "name": "semester",
           "type": "smallint",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -3628,18 +3397,6 @@
         "transfer"
       ]
     },
-    "public.mentor_replacement_reason": {
-      "name": "mentor_replacement_reason",
-      "schema": "public",
-      "values": [
-        "poor_evaluation",
-        "transfer",
-        "retirement",
-        "study_leave",
-        "own_request",
-        "other"
-      ]
-    },
     "public.mentoring_follow_up": {
       "name": "mentoring_follow_up",
       "schema": "public",
@@ -3661,14 +3418,6 @@
         "attendance_monitoring",
         "discipline_guidance",
         "parent_visit"
-      ]
-    },
-    "public.old_mentor_status": {
-      "name": "old_mentor_status",
-      "schema": "public",
-      "values": [
-        "reserve",
-        "inactive"
       ]
     },
     "public.role": {

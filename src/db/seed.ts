@@ -4,6 +4,7 @@ import type { Database } from "./connect";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
+  SAMPLE_SPECIAL_ACTIVITIES,
   SAMPLE_STUDENTS,
   type SampleAccount,
   type SamplePeriod,
@@ -20,6 +21,7 @@ import {
   roleChanges,
   studyPrograms,
 } from "./schema";
+import { addSampleActivitySchedules } from "./seed-activity-schedules";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
@@ -139,7 +141,9 @@ async function addSampleFirstYears(
  * still to be formed, with a few evaluations of their mentors, one
  * replacement of a mentor, a few notes their mentors wrote, the first two
  * meetings of the running period with their attendance lists and the
- * scores of that period for part of the groups. Every role given is logged as the
+ * scores of that period for part of the groups, and schedules of the PPKS
+ * activities that are over, open today and still to come. Every role given
+ * is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
  */
@@ -174,16 +178,22 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       }
     }
     const changed = { changedAt: new Date(), changedBy: sampleActor };
-    await tx
-      .insert(ppksActivities)
-      .values(
-        SAMPLE_PPKS_ACTIVITIES.map((activity) => ({ ...activity, ...changed })),
-      );
+    const special = SAMPLE_SPECIAL_ACTIVITIES.map((activity) => ({
+      ...activity,
+      semester: null,
+    }));
+    await tx.insert(ppksActivities).values(
+      [...SAMPLE_PPKS_ACTIVITIES, ...special].map((activity) => ({
+        ...activity,
+        ...changed,
+      })),
+    );
     const today = campusDay();
     const periods = samplePeriods(today);
     const [running] = periods;
     if (!running) throw new Error("There are no sample periods.");
     await addSamplePeriods(tx, periods, sampleActor);
+    await addSampleActivitySchedules(tx, periods, today, sampleActor);
     await addSampleFirstYears(tx, running, programIds, sampleActor);
     await addSampleDorms(tx, running);
     const grouped = [

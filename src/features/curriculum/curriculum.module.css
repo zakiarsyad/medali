@@ -130,6 +130,13 @@
   margin-top: var(--space-md);
 }
 
+.undo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: baseline;
+}
+
 .sectionHead {
   display: flex;
   flex-wrap: wrap;

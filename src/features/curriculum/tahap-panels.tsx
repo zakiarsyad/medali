@@ -19,6 +19,7 @@ export function TahapPanels({
   activities,
   breakdowns,
   mayManageActivities,
+  newActivityId,
   children,
 }: {
   /** Every nilai with its main indicators as they are now. */
@@ -30,6 +31,11 @@ export function TahapPanels({
   /** The breakdown of each of the four tahap. */
   breakdowns: TahapBreakdown[];
   mayManageActivities: boolean;
+  /**
+   * The key for the next activity a form adds. The page makes a new one
+   * each time it is read, so also after every save.
+   */
+  newActivityId: string;
   children: ReactNode;
 }) {
   const [tahapNo, setTahapNo] = useState(1);
@@ -50,6 +56,7 @@ export function TahapPanels({
         values={values}
         mayChange={mayChange}
         mayManage={mayManageActivities}
+        newActivityId={newActivityId}
       />
     </>
   );

@@ -45,7 +45,27 @@ describe("readPpksActivities", () => {
         "Aktivitas uji",
         "Kegiatan uji",
       ]);
-      expect(shown[1]).toEqual({ ...KEPT, id: expect.any(String) });
+      expect(shown[1]).toEqual({
+        ...KEPT,
+        id: expect.any(String),
+        version: changed.changedAt.toISOString(),
+      });
+    });
+  });
+
+  it("gives a special or additional activity with no semester", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      await db.insert(ppksActivities).values({
+        ...KEPT,
+        semester: null,
+        changedAt: new Date(),
+        changedBy: actor.id,
+      });
+
+      const [shown] = await readPpksActivities(db);
+
+      expect(shown?.semester).toBeNull();
     });
   });
 });

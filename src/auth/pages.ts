@@ -7,7 +7,12 @@ export const PAGES = [
   { id: "tasks", path: "tugas", title: "Tugas saya" },
   { id: "dashboard", path: "dashboard", title: "Dashboard" },
   { id: "curriculum", path: "kurikulum", title: "Kurikulum" },
-  { id: "activities", path: "kegiatan", title: "Kegiatan karakter" },
+  {
+    id: "activities",
+    path: "kegiatan",
+    title: "Kegiatan karakter",
+    tabs: [{ id: "ppks", path: "ppks", title: "Kegiatan PPKS" }],
+  },
   { id: "students", path: "mahasiswa", title: "Mahasiswa" },
   {
     id: "mentors",
