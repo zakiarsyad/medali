@@ -36,12 +36,14 @@ export async function ReplacementPart({
   if (chosenGroupId === null) return <ChooseGroupFirst />;
   const db = database();
   const periods = savedPeriodId === null ? NO_PERIODS : [savedPeriodId];
-  const group = await readEvaluatedGroup(db, limit, chosenGroupId, periods);
-  if (group === null) return <ChooseGroupFirst />;
-  const [spares, waiting] = await Promise.all([
+  // Read together: the panel of the forms has found the group among those
+  // the account may choose, and what is read for it is shown only with it.
+  const [group, spares, waiting] = await Promise.all([
+    readEvaluatedGroup(db, limit, chosenGroupId, periods),
     listSpareMentors(db),
-    readWaitingReplacementOf(db, group.id),
+    readWaitingReplacementOf(db, chosenGroupId),
   ]);
+  if (group === null) return <ChooseGroupFirst />;
   const { mentor } = group;
   if (mentor === null) {
     return (

@@ -242,6 +242,19 @@ part only. All of it is built here.
     the Pengasuh tab only the mentors who hold a group of their program,
     so no spare mentor: they are given no count, and the line under
     their number says "tidak termasuk yang dibatalkan" instead.
+42. A role that only reads the tab gets the line that says who does the
+    work in place of the form and of "Alur penggantian": the steps tell
+    how to fill in a form it does not have.
+43. When "Tetapkan penggantian" reaches the server twice at the same
+    moment, one replacement is saved. The second is told the group
+    already has a Terjadwal replacement, or, for one that starts today,
+    that the chosen mentor is no spare mentor any more. A second
+    "Batalkan" is told the replacement is already cancelled.
+44. The form and the two lists under it read what they show at the same
+    time, and so do the group, the spare mentors and the waiting
+    replacement of the Penggantian form. The look for Terjadwal
+    replacements whose date has come happens once for each request and
+    reads only the replacements that still wait.
 
 ## Steps
 
@@ -254,4 +267,4 @@ part only. All of it is built here.
 - [x] 5. "Riwayat penggantian", cancelling, and the two refusals.
 - [x] 6. The note and button on the group page, the jump after Kurang,
   and "Penggantian tahun ini".
-- [ ] 7. Read-only view, double press and the phone layout.
+- [x] 7. Read-only view, double press and the phone layout.

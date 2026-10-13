@@ -6,12 +6,9 @@ import {
   readSavedPeriod,
 } from "@/features/mentor-groups/evaluation-address";
 import { EvaluationScreen } from "@/features/mentor-groups/evaluation-screen";
-import {
-  evaluatedRowsFor,
-  evaluationRowsFor,
-} from "@/features/mentor-groups/visible-evaluations";
+import { formLimitsFor } from "@/features/mentor-groups/form-parts";
+import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
-import { replacedRowsFor } from "@/features/mentor-groups/visible-replacements";
 
 export default async function MentorEvaluationsPage(
   props: PageProps<"/pengasuh/ganti">,
@@ -26,10 +23,7 @@ export default async function MentorEvaluationsPage(
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "ganti" }}
       limit={limit}
       groupLimit={groupRowsFor(account)}
-      formLimits={{
-        evaluation: evaluatedRowsFor(account),
-        replacement: replacedRowsFor(account),
-      }}
+      formLimits={formLimitsFor(account)}
       chosenPart={readChosenPart(params)}
       chosenGroupId={readChosenGroup(params)}
       savedPeriodId={readSavedPeriod(params)}

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { testMentorLinesOf } from "@/mentoring/test-replacements";
+import {
+  testMentorLinesOf,
+  testReplacementsOf,
+} from "@/mentoring/test-replacements";
 import type { ReplacementInput } from "./replacement-input";
-import { NOT_A_SPARE_MENTOR } from "./replacement-refusals";
+import { alreadyScheduled, NOT_A_SPARE_MENTOR } from "./replacement-refusals";
 import { saveReplacement } from "./save-replacement";
 import { addTestEvaluator, addTestHeldGroup } from "./test-evaluations";
 import { addTestMentor, addTestMentorRole } from "./test-records";
@@ -15,6 +18,7 @@ import { addTestMentor, addTestMentorRole } from "./test-records";
 const own = withOwnTestDatabase("penggantian");
 
 const TODAY = "2084-10-13";
+const LATER = "2084-11-02";
 
 async function addSpare(db: Database, name: string): Promise<string> {
   const id = await addTestMentor(db, { name });
@@ -33,6 +37,53 @@ function inputFor(groupId: string, newMentorId: string): ReplacementInput {
     note: null,
   };
 }
+
+describe("Tetapkan penggantian pressed twice at the same moment", () => {
+  it("schedules one replacement for a later date: the second save waits, then is told the group has one already", async () => {
+    const held = await addTestHeldGroup(
+      own.db,
+      "UJIGANTITEKANA",
+      "Lama Tekan A",
+    );
+    const spare = await addSpare(own.db, "Pengasuh Uji Tekan A");
+    const head = await addTestEvaluator(own.db, ["head_of_unit"]);
+    const input = { ...inputFor(held.groupId, spare), startsOn: LATER };
+
+    const both = await own.atOnce(
+      (db) => saveReplacement(db, head, input, TODAY),
+      (db) => saveReplacement(db, head, input, TODAY),
+    );
+
+    expect(both.sooner).toMatchObject({
+      ok: true,
+      value: { isInForce: false },
+    });
+    expect(both.later).toEqual(alreadyScheduled(LATER));
+    expect(await testReplacementsOf(own.db, held.groupId)).toHaveLength(1);
+    expect(await testMentorLinesOf(own.db, held.groupId)).toHaveLength(1);
+  });
+
+  it("replaces the mentor once for today: the second save waits, then finds the mentor is no spare mentor any more", async () => {
+    const held = await addTestHeldGroup(
+      own.db,
+      "UJIGANTITEKANB",
+      "Lama Tekan B",
+    );
+    const spare = await addSpare(own.db, "Pengasuh Uji Tekan B");
+    const head = await addTestEvaluator(own.db, ["head_of_unit"]);
+    const input = inputFor(held.groupId, spare);
+
+    const both = await own.atOnce(
+      (db) => saveReplacement(db, head, input, TODAY),
+      (db) => saveReplacement(db, head, input, TODAY),
+    );
+
+    expect(both.sooner).toMatchObject({ ok: true, value: { isInForce: true } });
+    expect(both.later).toEqual(NOT_A_SPARE_MENTOR);
+    expect(await testReplacementsOf(own.db, held.groupId)).toHaveLength(1);
+    expect(await testMentorLinesOf(own.db, held.groupId)).toHaveLength(2);
+  });
+});
 
 describe("one spare mentor chosen for two groups at the same moment", () => {
   it("gets the first group only: the second save waits, then finds the mentor is no spare mentor any more", async () => {
