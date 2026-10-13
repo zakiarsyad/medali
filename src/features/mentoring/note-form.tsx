@@ -54,7 +54,9 @@ function ValueTicks({
 /**
  * The form "Catatan baru". Choosing a kind ticks the values that go with
  * it, and the mentor is free to change them. After a save the text is
- * emptied and the rest stays, for the next note.
+ * emptied and the rest stays, for the next note. The button is off while
+ * a save is on its way, and the form sends the key of its note, so two
+ * presses save once.
  */
 export function NoteForm({
   mentees,
@@ -88,7 +90,7 @@ export function NoteForm({
   }
 
   const start: NoteFormState = { error: null, done: null, noteId };
-  const [state, save] = useActionState(send, start);
+  const [state, save, pending] = useActionState(send, start);
 
   function chooseKind(event: ChangeEvent<HTMLSelectElement>) {
     if (!isNoteKind(event.target.value)) return;
@@ -165,7 +167,7 @@ export function NoteForm({
         </select>
       </label>
       <div className={shared.actions}>
-        <button type="submit" className={shared.button}>
+        <button type="submit" className={shared.button} disabled={pending}>
           Simpan catatan
         </button>
       </div>

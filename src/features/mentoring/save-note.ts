@@ -26,16 +26,63 @@ export const NOT_OWN_MENTEE = {
     "Mahasiswa ini bukan anak asuh aktif Anda. Pilih mahasiswa dari kelompok yang Anda asuh saat ini.",
 } as const;
 
+/** What a save answers when its key is that of another note. */
+export const FORM_ALREADY_SENT = {
+  ok: false,
+  error:
+    "Formulir ini sudah pernah terkirim. Muat ulang halaman, lalu isi catatan lagi.",
+} as const;
+
 /** What "Simpan catatan" tells the one who saved. */
 export interface SavedNote {
   studentName: string;
 }
 
 /**
+ * Adds the note unless one with its key is there already. Two saves of
+ * one key at the same moment do not both add it: the second waits for
+ * the first, then adds nothing.
+ */
+async function addOnce(
+  tx: Database,
+  actorId: string,
+  input: NoteInput,
+): Promise<boolean> {
+  const added = await tx
+    .insert(mentoringNotes)
+    .values({ ...input, writtenBy: actorId, writtenAt: WRITTEN_NOW })
+    .onConflictDoNothing({ target: mentoringNotes.id })
+    .returning({ id: mentoringNotes.id });
+  return added.length > 0;
+}
+
+/**
+ * Whether the note kept under a key is the one this form sent before: by
+ * the same writer, about the same student. A key of any other note is
+ * not the form's own, and nothing of that note is told or changed.
+ */
+async function isSameForm(
+  tx: Database,
+  actorId: string,
+  input: NoteInput,
+): Promise<boolean> {
+  const [kept] = await tx
+    .select({
+      writtenBy: mentoringNotes.writtenBy,
+      studentId: mentoringNotes.studentId,
+    })
+    .from(mentoringNotes)
+    .where(eq(mentoringNotes.id, input.id));
+  if (!kept) return false;
+  return kept.writtenBy === actorId && kept.studentId === input.studentId;
+}
+
+/**
  * "Simpan catatan": keeps a note about one student as the work of the
  * actor, who is its writer whatever the form sent. Refused for any role
  * but Pengasuh, and for a student who is not an Aktif member of a group
- * the actor holds today.
+ * the actor holds today. A form sent twice, as by a double press, is kept
+ * once, and the second answer is the same as the first.
  */
 export async function saveNote(
   db: Database,
@@ -51,9 +98,9 @@ export async function saveNote(
       .from(students)
       .where(and(eq(students.id, input.studentId), writableFor(limit)));
     if (!student) return NOT_OWN_MENTEE;
-    await tx
-      .insert(mentoringNotes)
-      .values({ ...input, writtenBy: actor.id, writtenAt: WRITTEN_NOW });
-    return { ok: true, value: { studentName: student.name } };
+    const saved = { ok: true, value: { studentName: student.name } } as const;
+    if (await addOnce(tx, actor.id, input)) return saved;
+    if (await isSameForm(tx, actor.id, input)) return saved;
+    return FORM_ALREADY_SENT;
   });
 }

@@ -1,3 +1,5 @@
+// Sample NIMs of this file: 9961000100 to 9961000199. None is added to
+// the database.
 import { describe, expect, it } from "vitest";
 import { matchingMentees } from "./mentee-search";
 

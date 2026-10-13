@@ -1,10 +1,16 @@
+// Sample NIMs of this file: 9961000000 to 9961000099.
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { listMentees } from "./mentees";
-import { NOT_ALLOWED_TO_WRITE, NOT_OWN_MENTEE, saveNote } from "./save-note";
+import {
+  FORM_ALREADY_SENT,
+  NOT_ALLOWED_TO_WRITE,
+  NOT_OWN_MENTEE,
+  saveNote,
+} from "./save-note";
 import {
   addTestAccount,
   addTestGroup,
@@ -216,6 +222,77 @@ describe("saveNote", () => {
 
       expect(own).toMatchObject({ ok: true });
       expect(foreign).toEqual(NOT_OWN_MENTEE);
+    });
+  });
+});
+
+describe("Simpan catatan pressed twice", () => {
+  it("saves one note: the second press sends the same form, and is told the note is saved", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, menteeId } = await addRecords(db);
+      const input = testNoteInput(menteeId);
+      const saved = { ok: true, value: { studentName: "Anak Asuh Uji" } };
+
+      const first = await saveNote(db, mentor, input);
+      const second = await saveNote(db, mentor, input);
+
+      expect(first).toEqual(saved);
+      expect(second).toEqual(saved);
+      expect(await testNotesOf(db, menteeId)).toHaveLength(1);
+    });
+  });
+
+  it("saves a second note from a form with a key of its own", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, menteeId } = await addRecords(db);
+
+      await saveNote(db, mentor, testNoteInput(menteeId));
+      await saveNote(db, mentor, testNoteInput(menteeId));
+
+      expect(await testNotesOf(db, menteeId)).toHaveLength(2);
+    });
+  });
+
+  it("refuses the key of a note another mentor wrote, and leaves that note as it is", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, otherMentor, menteeId, otherMenteeId } =
+        await addRecords(db);
+      const first = testNoteInput(menteeId, { note: "Catatan asli." });
+      await saveNote(db, mentor, first);
+
+      const taken = await saveNote(
+        db,
+        otherMentor,
+        testNoteInput(otherMenteeId, { id: first.id, note: "Menimpa." }),
+      );
+
+      expect(taken).toEqual(FORM_ALREADY_SENT);
+      expect(await testNotesOf(db, otherMenteeId)).toEqual([]);
+      const kept = await testNotesOf(db, menteeId);
+      expect(kept.map((note) => note.note)).toEqual(["Catatan asli."]);
+    });
+  });
+
+  it("refuses the key of a note about another student, and changes nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, programId, groupId, menteeId } = await addRecords(db);
+      const secondId = await addTestStudent(db, programId, {
+        nim: "9961000008",
+        name: "Anak Asuh Uji Lain",
+      });
+      await addTestMembers(db, groupId, [secondId]);
+      const first = testNoteInput(menteeId);
+      await saveNote(db, mentor, first);
+
+      const again = await saveNote(
+        db,
+        mentor,
+        testNoteInput(secondId, { id: first.id }),
+      );
+
+      expect(again).toEqual(FORM_ALREADY_SENT);
+      expect(await testNotesOf(db, secondId)).toEqual([]);
+      expect(await testNotesOf(db, menteeId)).toHaveLength(1);
     });
   });
 });

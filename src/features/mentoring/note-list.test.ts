@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9961000200 to 9961000299.
 import type { SQL } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
