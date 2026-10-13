@@ -125,13 +125,55 @@ menu and no screen. All of it is built here.
    no new right: whoever may open the tab reads it, which the list of
    pages already gives to Kepala Unit, Direktur / Wakil Direktur, Ketua
    Program Studi and Pegawai UPK, and to nobody else.
+10. Periode offers the running academic period first, already chosen,
+    then the one before it. The server reads both itself: any other
+    Periode is refused with "Pilih periode dari daftar."
+11. A first day before today is allowed, as in the prototype: the period
+    is then Dibuka at once. Only the last day may not have passed. A
+    period may start and end on the same day.
+12. What is wrong is said in this order, one message at a time: the
+    Periode, then "Isi tanggal dibuka dan tanggal ditutup dengan tanggal
+    yang benar.", "Tanggal ditutup tidak boleh sebelum tanggal dibuka.",
+    "Tanggal ditutup sudah lewat. Pilih hari ini atau tanggal
+    sesudahnya.", "Isi bobot capaian karakter dengan bilangan bulat 0
+    sampai 100.", and a Keterangan longer than 1,000 characters, the
+    length of the other notes of this menu. What was typed stays in the
+    form.
+13. A weight that is not a whole number of 0 to 100 is refused, never
+    brought into range as the prototype does. While the first weight
+    holds no such number, the second field is empty.
+14. The question "Periode (periode) sudah pernah dibuka. Buka lagi
+    sebagai periode baru?" is asked when a period of that Periode exists
+    that was not cancelled, as the prototype does. Unlike the prototype
+    the sample period counts, so the question can be tried by choosing
+    the earlier Periode. The screen asks it; the server opens a period
+    without it, because a second period of one Periode is allowed.
+15. A second period while one runs is refused with "Masih ada periode
+    evaluasi yang terjadwal atau dibuka. Tutup atau batalkan periode itu
+    dulu, lalu buka periode baru."
+16. After opening, the message reads "Periode evaluasi (periode) dibuka.
+    Mahasiswa dapat mengisi survei di Profil saya." For a period that
+    starts later it reads "Periode evaluasi (periode) dijadwalkan.
+    Mahasiswa dapat mengisi survei di Profil saya mulai (date)."
+17. Opening a period takes the form away, and closing or cancelling one
+    brings it back. What such a step did is said above whichever of the
+    two shows, until the next change, as Penetapan angkatan baru does.
+18. "Komponen evaluasi pengasuhan" is worded as in the prototype: the
+    two parts, then how they are joined into Nilai evaluasi, with the
+    eight statements folded under "Pernyataan survei (8)". Its last
+    sentence speaks of results that are fixed, which come with "Student
+    survey results".
+19. The tab's screen parts, its form checks and its saves stand with the
+    other tabs of the Pengasuh menu. Which survey period runs on a day
+    is kept with the shared mentoring rules, because Profil saya will
+    read it too.
 
 ## Steps
 
 - [x] 1. Survey periods are stored, one running at a time, with one
   closed sample period.
 - [x] 2. The permission to manage periods, with its checks.
-- [ ] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
+- [x] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
 - [ ] 4. The running period card with its status by date.
 - [ ] 5. Changing the end date, closing now and cancelling.
 - [ ] 6. Read-only view, double press and the phone layout.
