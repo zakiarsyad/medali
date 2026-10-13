@@ -71,5 +71,5 @@ Decided while building, because the issue did not say:
 ## Steps
 
 - [x] 1. See the fault on a 320px screen on the three forms named.
-- [ ] 2. The shared form grid fits its panel on a narrow screen, with a
+- [x] 2. The shared form grid fits its panel on a narrow screen, with a
   check.
