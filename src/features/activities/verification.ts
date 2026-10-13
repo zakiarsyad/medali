@@ -22,6 +22,11 @@ export interface Verification {
   numbers: VerificationNumbers;
   choices: ScheduleChoice[];
   filters: VerificationFilters;
+  /**
+   * The page of the cards the address asked for. The list may show an
+   * earlier one, when the page asked for holds no card any more.
+   */
+  askedPage: number;
   list: CardList;
 }
 
@@ -50,5 +55,8 @@ export async function readVerification(
     readScheduleChoices(db),
     readCards(db, filters, page, keepsPhotos),
   ]);
-  return { kind: "found", verification: { numbers, choices, filters, list } };
+  return {
+    kind: "found",
+    verification: { numbers, choices, filters, askedPage: page, list },
+  };
 }

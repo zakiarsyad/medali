@@ -24,5 +24,6 @@ export const TEST_EMPTY_VERIFICATION: Verification = {
   numbers: { waiting: 0, validToday: 0, rejected: 0, heldToday: 0, openNow: 0 },
   choices: [],
   filters: { scheduleId: null, status: "waiting" },
+  askedPage: 1,
   list: { cards: [], matching: 0, page: 1 },
 };

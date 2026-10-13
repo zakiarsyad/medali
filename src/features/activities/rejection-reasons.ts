@@ -28,16 +28,22 @@ function refusal(error: string): Parsed<string> {
   return { ok: false, error };
 }
 
+function isReason(reason: string): boolean {
+  return REJECTION_REASONS.includes(reason);
+}
+
 /**
  * The reason of a rejection as it is kept, and as the student reads it
  * as Keterangan. Only a reason of the list is taken. "Lainnya" is kept
  * with its note; the note of any other reason is not asked for and not
- * kept. Both come from outside and are not trusted.
+ * kept. Both come from outside and are not trusted: a request made by
+ * hand may send anything, and what is no text counts as not sent.
  */
-export function rejectionNote(reason: string, note: string): Parsed<string> {
-  if (!REJECTION_REASONS.includes(reason)) return refusal(NO_REASON);
+export function rejectionNote(reason: unknown, note: unknown): Parsed<string> {
+  const isListed = typeof reason === "string" && isReason(reason);
+  if (!isListed) return refusal(NO_REASON);
   if (reason !== OTHER_REASON) return { ok: true, value: reason };
-  const written = note.trim();
+  const written = typeof note === "string" ? note.trim() : "";
   if (written === "") return refusal(NO_OTHER_NOTE);
   const isTooShort = written.length < OTHER_NOTE_MIN;
   const isTooLong = written.length > OTHER_NOTE_MAX;

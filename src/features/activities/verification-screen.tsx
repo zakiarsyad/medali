@@ -35,7 +35,7 @@ export function VerificationScreen({
   tabs: TabLinksProps;
   verification: Verification;
 }) {
-  const { numbers, choices, filters, list } = verification;
+  const { numbers, choices, filters, askedPage, list } = verification;
   return (
     <>
       <PageHead title="Kegiatan karakter">
@@ -53,9 +53,15 @@ export function VerificationScreen({
         >
           <VerificationFilterRow filters={filters} choices={choices} />
         </AutoSubmitForm>
-        {/* Made anew for each address, so a decision made on one page of the cards is not shown on another. */}
+        {/*
+          Made anew for each address, so a decision made on one page of the
+          cards is not shown on another. By the page the address asked for,
+          not the one shown: when the last page is emptied the list falls
+          back to the page before, and the message and the decided cards
+          must stay.
+        */}
         <PhotoCards
-          key={verificationAddress(filters, list.page)}
+          key={verificationAddress(filters, askedPage)}
           cards={list.cards}
           emptyWords={emptyWords(filters)}
         />

@@ -4,6 +4,7 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { activityAttendanceChanges, activityAttendances } from "@/db/schema";
 import { brokeUniqueRule } from "@/db/unique-violation";
+import { waitForOtherAttendanceWrites } from "./attendance-lock";
 import type { AttendanceStatus } from "./attendance-status";
 import { VERIFY_NOT_ALLOWED } from "./decide-attendance";
 import {
@@ -112,6 +113,7 @@ function save(
   { byId, at, agreed }: Recording,
 ): Promise<RecordEnd> {
   return db.transaction(async (tx) => {
+    await waitForOtherAttendanceWrites(tx, target.studentId, target.scheduleId);
     const before = await holdNewest(tx, target);
     if (before !== undefined && mustConfirm(before.status, agreed)) {
       return { kind: "confirm", status: before.status };

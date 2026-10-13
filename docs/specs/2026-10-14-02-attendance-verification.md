@@ -286,6 +286,18 @@ decided, from what the merged app does and then from the prototype:
     this tab, such as Penilai Mahasiswa, still gets its own program
     only. The numbers of schedules are no student's data, and every
     role with the tab sees them.
+43. A record made by hand and a photo of the same student for the same
+    activity, sent at the same moment, wait for each other, also for a
+    dispensation. When the photo is first, "Simpan" asks to confirm
+    its status, as for any status found. When the record is first, the
+    photo is not kept and the student reads that their attendance was
+    already checked.
+44. When the last page of the cards is emptied by a decision, the list
+    shows the page before it, and the message and the cards decided
+    stay on the screen with it.
+45. A reason or a note of a rejection that is sent by hand and is no
+    text counts as not sent: "Pilih alasan penolakan." or "Isi catatan
+    untuk alasan Lainnya."
 
 ## Steps
 

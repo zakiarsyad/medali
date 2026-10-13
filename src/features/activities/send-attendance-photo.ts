@@ -8,6 +8,7 @@ import { fileFault, type SentFile } from "@/files/file-check";
 import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
+import { waitForOtherAttendanceWrites } from "./attendance-lock";
 import { PHOTO_FAULTS, PHOTO_FOLDER, PHOTO_RULE } from "./attendance-photo";
 import { takesNewPhoto } from "./attendance-status";
 import { readOwnSchedule } from "./own-schedule";
@@ -107,24 +108,31 @@ type NewAttendance = Pick<
 >;
 
 /**
- * Adds an attendance that waits, unless the student has a waiting or
- * valid one for the schedule: the database keeps one of those at most,
- * and a second add at the same moment waits for the first and then adds
- * nothing. Says whether it was added.
+ * Adds an attendance that waits, unless the schedule takes no new photo
+ * from the student by now. It waits for any other write of this
+ * student's attendance for the schedule and then looks again: a second
+ * add at the same moment, or a record made by hand at that moment, is
+ * saved first and seen here, and then nothing is added. The database
+ * also keeps one waiting or valid attendance at most. Says whether it
+ * was added.
  */
-async function addWaiting(
-  db: Database,
-  attendance: NewAttendance,
-): Promise<boolean> {
-  const added = await db
-    .insert(activityAttendances)
-    .values({ ...attendance, status: "waiting", note: "" })
-    .onConflictDoNothing({
-      target: [activityAttendances.scheduleId, activityAttendances.studentId],
-      where: sql`status in ('waiting', 'valid')`,
-    })
-    .returning({ id: activityAttendances.id });
-  return added.length > 0;
+function addWaiting(db: Database, attendance: NewAttendance): Promise<boolean> {
+  const { studentId, scheduleId } = attendance;
+  return db.transaction(async (tx) => {
+    await waitForOtherAttendanceWrites(tx, studentId, scheduleId);
+    const kept = await readOwnAttendances(tx, studentId, [scheduleId]);
+    const newest = kept.get(scheduleId)?.status ?? null;
+    if (!takesNewPhoto(newest)) return false;
+    const added = await tx
+      .insert(activityAttendances)
+      .values({ ...attendance, status: "waiting", note: "" })
+      .onConflictDoNothing({
+        target: [activityAttendances.scheduleId, activityAttendances.studentId],
+        where: sql`status in ('waiting', 'valid')`,
+      })
+      .returning({ id: activityAttendances.id });
+    return added.length > 0;
+  });
 }
 
 /**

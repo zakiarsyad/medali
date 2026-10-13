@@ -65,3 +65,32 @@ describe("rejectionNote", () => {
     });
   });
 });
+
+describe("rejectionNote sent by hand", () => {
+  it.each([undefined, null, 7, ["Foto buram"]])(
+    "counts the note %j, which is no text, as empty and asks for one",
+    (note) => {
+      expect(rejectionNote("Lainnya", note)).toEqual({
+        ok: false,
+        error: "Isi catatan untuk alasan Lainnya.",
+      });
+    },
+  );
+
+  it.each([undefined, null, 7, ["Lainnya"]])(
+    "asks for a reason when %j, which is no text, is sent as one",
+    (reason) => {
+      expect(rejectionNote(reason, "Foto buram")).toEqual({
+        ok: false,
+        error: "Pilih alasan penolakan.",
+      });
+    },
+  );
+
+  it("keeps a reason of the list whatever is sent as its note", () => {
+    expect(rejectionNote("Wajah tidak terlihat jelas", undefined)).toEqual({
+      ok: true,
+      value: "Wajah tidak terlihat jelas",
+    });
+  });
+});

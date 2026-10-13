@@ -1,8 +1,16 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { AutoSubmitForm } from "@/ui/auto-submit-form";
+import { ListPager } from "@/ui/list-pager";
+import { PageHead } from "@/ui/page-head";
+import { TabLinks } from "@/ui/tab-links";
+import { ManualRecordForm } from "./manual-record-form";
+import { PhotoCards } from "./photo-cards";
+import { draw } from "./test-press";
 import { TEST_CARD, TEST_EMPTY_VERIFICATION } from "./test-verification";
 import type { Verification } from "./verification";
 import type { VerificationCard } from "./verification-card";
+import { VerificationNumbersView } from "./verification-numbers-view";
 import { VerificationScreen } from "./verification-screen";
 
 vi.mock("./verification-actions", () => ({
@@ -162,5 +170,59 @@ describe("VerificationScreen", () => {
     expect(screen).toContain(
       'href="/kegiatan/verifikasi?status=semua&amp;hal=2"',
     );
+  });
+});
+
+describe("the photo cards of the screen", () => {
+  /** The parts that keep something themselves, left as they are. */
+  const KEPT = [
+    AutoSubmitForm,
+    ListPager,
+    ManualRecordForm,
+    PageHead,
+    PhotoCards,
+    TabLinks,
+    VerificationNumbersView,
+  ];
+
+  /** The key that tells React whether the cards part is kept or made anew. */
+  function cardsKey(more: Partial<Verification>): string | null {
+    const verification = { ...TEST_EMPTY_VERIFICATION, ...more };
+    const drawn = draw(
+      <VerificationScreen tabs={TABS} verification={verification} />,
+      KEPT,
+    );
+    const cards = drawn.find(({ type }) => type === PhotoCards);
+    if (!cards) throw new Error("The screen shows no photo cards.");
+    return cards.key;
+  }
+
+  it("are kept, with their message and their decided cards, when the last page is emptied and the list falls back to the page before", () => {
+    const onLastPage = cardsKey({
+      askedPage: 2,
+      list: { cards: [TEST_CARD], matching: 30, page: 2 },
+    });
+    const afterItWasEmptied = cardsKey({
+      askedPage: 2,
+      list: { cards: [TEST_CARD], matching: 24, page: 1 },
+    });
+
+    expect(afterItWasEmptied).toBe(onLastPage);
+  });
+
+  it("are made anew for another page or another filter", () => {
+    const list = { cards: [TEST_CARD], matching: 30, page: 1 };
+    const first = cardsKey({ askedPage: 1, list });
+
+    expect(cardsKey({ askedPage: 2, list: { ...list, page: 2 } })).not.toBe(
+      first,
+    );
+    expect(
+      cardsKey({
+        askedPage: 1,
+        list,
+        filters: { scheduleId: null, status: "all" },
+      }),
+    ).not.toBe(first);
   });
 });
