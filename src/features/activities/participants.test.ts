@@ -3,6 +3,7 @@ import {
   type CohortCount,
   countParticipants,
   isInSemester,
+  meantCohortYears,
   semestersByPeriod,
 } from "./participants";
 
@@ -67,6 +68,23 @@ describe("countParticipants", () => {
 
   it("counts nobody while no period is known", () => {
     expect(countParticipants(COUNTS, 1, null)).toBe(0);
+  });
+});
+
+describe("meantCohortYears", () => {
+  it("gives the angkatan that are in the semester during the period", () => {
+    expect(meantCohortYears(COUNTS, 3, ODD_2026)).toEqual([2025]);
+    expect(meantCohortYears(COUNTS, 2, EVEN_2025)).toEqual([2025]);
+  });
+
+  it("gives every angkatan that has reached the last semester", () => {
+    expect(meantCohortYears(COUNTS, 8, EVEN_2025)).toEqual([2022, 2021]);
+  });
+
+  it("gives none where no angkatan is in the semester, or was a student yet", () => {
+    expect(meantCohortYears(COUNTS, 4, ODD_2026)).toEqual([]);
+    expect(meantCohortYears(COUNTS, 1, EVEN_2025)).toEqual([]);
+    expect(meantCohortYears([], 1, ODD_2026)).toEqual([]);
   });
 });
 

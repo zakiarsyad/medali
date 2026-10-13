@@ -263,6 +263,29 @@ decided, from what the merged app does and then from the prototype:
 38. The search of students by name or NIM takes the same text, and
     waits the same moment while typing, as the search in "Tambah
     pengurus BAM": both now use one shared rule.
+39. "Peserta" is opened by the address of the page, so the names are
+    read only when it is open, and one is open at a time. It opens
+    under its schedule, "Tutup" stands where "Peserta" stood, and the
+    tahap and the page of the list stay. More than 40 students get
+    "Sebelumnya" and "Berikutnya". An address made by hand opens it
+    only for a schedule of the page shown that has started.
+40. Hadir, Menunggu, Kehadiran and "Peserta" go by the newest
+    attendance of each student for the schedule, as the student's own
+    page does. Hadir and Menunggu show 0 before the first day. In the
+    line of "Peserta", "(n) sasaran" counts the students the account
+    sees, while the Sasaran column counts all, as before.
+41. "Rerata nilai kehadiran" is shown like the student's own number,
+    such as "87,5%". Each student's score is counted by the same rule
+    as on their own page, over the Aktif students. "Terjadwal" counts
+    every schedule that starts after today, required or not, as in the
+    prototype. "Menunggu verifikasi" counts over every period and every
+    tahap.
+42. The students an account sees on "Kegiatan PPKS" follow only those
+    of its roles that open this tab. An account that is Ketua Program
+    Studi and also holds a role that opens Kegiatan karakter without
+    this tab, such as Penilai Mahasiswa, still gets its own program
+    only. The numbers of schedules are no student's data, and every
+    role with the tab sees them.
 
 ## Steps
 
@@ -272,6 +295,6 @@ decided, from what the merged app does and then from the prototype:
 - [x] 3. "Validasi" and "Tolak" with a reason; the student sends again.
 - [x] 4. Ticking many cards and "Validasi (n) terpilih".
 - [x] 5. "Catat kehadiran manual atau dispensasi".
-- [ ] 6. The Kegiatan PPKS table shows the attendance numbers and
+- [x] 6. The Kegiatan PPKS table shows the attendance numbers and
   "Peserta".
 

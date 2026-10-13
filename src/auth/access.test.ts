@@ -9,6 +9,7 @@ import {
   pagesForAccount,
   rowLimitForAction,
   rowLimitForPage,
+  rowLimitForTab,
   tabsFor,
 } from "./access";
 import { BAM_ROLES } from "./bam-roles";
@@ -1506,6 +1507,48 @@ describe("rowLimitForAction and rowLimitForPage", () => {
         expect(rowLimitForPage(alone, page)).toEqual(own);
       }
     }
+  });
+
+  it("shows the attendance on Kegiatan PPKS to Ketua Program Studi for their program and to Pengasuh for their mentees only", () => {
+    expect(
+      rowLimitForTab(account(["head_of_program"], 7), "activities", "ppks"),
+    ).toEqual(onlyPrograms([7]));
+    expect(rowLimitForTab(account(["mentor"]), "activities", "ppks")).toEqual(
+      OWN_MENTEES,
+    );
+  });
+
+  it.each(["head_of_unit", "director", "upk_staff"] as const)(
+    "shows %s the attendance on Kegiatan PPKS of every student",
+    (role) => {
+      expect(rowLimitForTab(account([role]), "activities", "ppks")).toEqual(
+        EVERY_ROW,
+      );
+    },
+  );
+
+  it("keeps Ketua Program Studi to their program on Kegiatan PPKS when their other role opens Kegiatan karakter but not that tab", () => {
+    const both = account(["head_of_program", "assessor"], 7);
+
+    expect(rowLimitForPage(both, "activities")).toEqual(EVERY_ROW);
+    expect(rowLimitForTab(both, "activities", "ppks")).toEqual(
+      onlyPrograms([7]),
+    );
+  });
+
+  it("gives no row on a tab to a role that does not open it", () => {
+    expect(rowLimitForTab(account(["assessor"]), "activities", "ppks")).toEqual(
+      NO_ROW,
+    );
+    expect(
+      rowLimitForTab(account(["upk_staff"]), "activities", "tidak-ada"),
+    ).toEqual(NO_ROW);
+  });
+
+  it("gives an account the rows of every role that opens the tab", () => {
+    const both = account(["head_of_program", "upk_staff"], 7);
+
+    expect(rowLimitForTab(both, "activities", "ppks")).toEqual(EVERY_ROW);
   });
 });
 
