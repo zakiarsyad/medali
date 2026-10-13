@@ -67,6 +67,7 @@ async function GroupPage({
         <StudentDetailDialog
           detail={detail}
           period={await runningPeriodNow()}
+          openedFrom="group_page"
           closeAddress={groupAddress(groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

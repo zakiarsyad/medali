@@ -106,6 +106,7 @@ export async function StudentListScreen({
         <StudentDetailDialog
           detail={detail}
           period={period}
+          openedFrom="student_list"
           closeAddress={studentListAddress(filters, list.page)}
           groupAddressOf={groupAddressOf}
           mentorAddressOf={mentorAddressOf}
