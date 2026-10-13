@@ -145,6 +145,19 @@ decided:
     file of the app can be there before that, so nothing is lost.
 11. The build log of the file storage step says in one line whether the
     files of `main` were emptied, with how many, or kept.
+12. A table change counts as new when the database says it has had
+    fewer table changes applied than the build brings. A database that
+    is ahead of the build, such as after an older `main` is deployed
+    again, keeps its data.
+13. One check that guards the step was made stricter. Before this work
+    a deploy of `main` took a database with no mark that already held
+    tables, marked it, and kept its rows. It would now mark it and then
+    empty it. So a deploy of `main` refuses such a database, as a PR
+    deploy always did. The database of the preview of `main` got its
+    mark on its first deploy, so this refuses only a database that was
+    never the preview's.
+14. A start by a PR deploy leaves no mark of a start. The mark is only
+    for the database of the preview of `main`.
 
 ## Steps
 
@@ -155,5 +168,5 @@ decided:
   mark in the database.
 - [x] 3. The files of the preview of `main` are started over together
   with its database.
-- [ ] 4. `docs/HOSTING.md` and `CLAUDE.md` say what a deploy of `main`
+- [x] 4. `docs/HOSTING.md` and `CLAUDE.md` say what a deploy of `main`
   does to its database.
