@@ -27,6 +27,11 @@ interface OpenForm {
   target: FormTarget;
 }
 
+function isSameTarget(one: FormTarget, other: FormTarget): boolean {
+  if (one === "new" || other === "new") return one === other;
+  return one.id === other.id;
+}
+
 /**
  * The semester choice and the four tahap, with the PPKS activities of the
  * chosen semester and the breakdown of the chosen tahap below. The special
@@ -64,10 +69,14 @@ export function StagesSection({
   const breakdown = breakdowns.find((shown) => shown.tahapNo === tahapNo);
   const [open, setOpen] = useState<OpenForm | null>(null);
 
-  // The form of a semester goes with its semester. The form of the special
-  // activities stays: they follow no semester.
-  function closeSemesterForm() {
-    if (open && open.semester !== null) setOpen(null);
+  // The form of a semester goes with its semester, so a press that keeps
+  // the semester keeps the form. The form of the special activities stays:
+  // they follow no semester.
+  function show(nextTahapNo: number, nextParity: Parity) {
+    const leavesSemester = semesterOf(nextTahapNo, nextParity) !== semester;
+    if (leavesSemester && open && open.semester !== null) setOpen(null);
+    setParity(nextParity);
+    onChoose(nextTahapNo);
   }
 
   /** What the list of one semester, or of the special activities, is given. */
@@ -82,8 +91,17 @@ export function StagesSection({
       newActivityId,
       open: open?.semester === listSemester ? open.target : null,
       isFormOpen: open !== null,
-      onOpen: (target: FormTarget | null) =>
-        setOpen(target && { semester: listSemester, target }),
+      // "Ubah" on the row whose form is open already keeps that opening, so
+      // an answer on its way still closes it.
+      onOpen: (target: FormTarget) =>
+        setOpen((now) =>
+          now?.semester === listSemester && isSameTarget(now.target, target)
+            ? now
+            : { semester: listSemester, target },
+        ),
+      // Only while it is still the form that asked: an answer that comes
+      // late must not close a form opened since.
+      onClose: () => setOpen((now) => (now === open ? null : now)),
     };
   }
 
@@ -98,10 +116,7 @@ export function StagesSection({
               type="button"
               className={styles.choiceButton}
               aria-pressed={choice.parity === parity}
-              onClick={() => {
-                closeSemesterForm();
-                setParity(choice.parity);
-              }}
+              onClick={() => show(tahapNo, choice.parity)}
             >
               {choice.label}
             </button>
@@ -115,10 +130,7 @@ export function StagesSection({
             type="button"
             className={styles.stageBox}
             aria-pressed={tahap.no === tahapNo}
-            onClick={() => {
-              closeSemesterForm();
-              onChoose(tahap.no);
-            }}
+            onClick={() => show(tahap.no, parity)}
           >
             <span className={styles.stageNo}>
               Tahap {tahap.no} · tingkat {tahap.no} · semester{" "}

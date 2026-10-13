@@ -36,6 +36,7 @@ export function PpksPanel({
   open,
   isFormOpen,
   onOpen,
+  onClose,
 }: {
   semester: number | null;
   /** The line under the heading. */
@@ -49,8 +50,10 @@ export function PpksPanel({
   open: FormTarget | null;
   /** Whether a form is open in any list of the page. */
   isFormOpen: boolean;
-  /** Opens the form of this list, or closes it with null. */
-  onOpen: (target: FormTarget | null) => void;
+  /** Opens the form of this list. */
+  onOpen: (target: FormTarget) => void;
+  /** Closes the form this list had open when it was last shown. */
+  onClose: () => void;
 }) {
   const [said, setSaid] = useState<Said | null>(null);
   const words = wordsOf(semester);
@@ -62,7 +65,7 @@ export function PpksPanel({
 
   function closeWith(text: string, removedId: string | null) {
     setSaid({ text, removedId });
-    onOpen(null);
+    onClose();
   }
 
   return (
@@ -102,7 +105,7 @@ export function PpksPanel({
           values={values}
           onSaved={(text) => closeWith(text, null)}
           onRemoved={closeWith}
-          onCancel={() => onOpen(null)}
+          onCancel={onClose}
         />
       )}
       <PpksTable

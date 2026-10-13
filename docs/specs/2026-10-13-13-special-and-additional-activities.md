@@ -112,6 +112,17 @@ The issue did not say, so these were decided:
    form closes on the first answer.
 9. The sample data's two examples are the prototype's: "Pelatihan
    kepemimpinan organisasi mahasiswa" and "Program mentor sebaya".
+10. A new activity sent a second time with other content, or by another
+    person, is refused and nothing is saved. The message says the form
+    was already sent and asks to load the page again and check the
+    list.
+11. "Hapus" from a form opened before someone else's change still
+    removes the activity. It can be brought back with "Urungkan".
+12. A form open in "Kegiatan khusus dan tambahan" stays open when the
+    semester or the tahap is changed. A PPKS form closes, as before,
+    and its "Urungkan" goes with it.
+13. Bringing an activity back does not count as a change: who changed it
+    last, and when, stay as they were.
 
 ## Steps
 
