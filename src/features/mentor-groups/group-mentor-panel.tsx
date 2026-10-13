@@ -37,12 +37,32 @@ function HistoryLine({ line }: { line: GroupMentorLine }) {
   );
 }
 
-/** The mentor of today, and every mentor the group has had, newest first. */
-export function GroupMentorPanel({ mentors }: { mentors: GroupMentorLine[] }) {
+/**
+ * The mentor of today, how many notes were written about the members
+ * lately, and every mentor the group has had, newest first.
+ */
+export function GroupMentorPanel({
+  mentors,
+  recentNotes,
+}: {
+  mentors: GroupMentorLine[];
+  /**
+   * How many mentoring notes of the last 90 days there are about the
+   * members, or null for an account that may not read notes: it gets no
+   * such number.
+   */
+  recentNotes: number | null;
+}) {
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Pengasuh saat ini</h2>
       <CurrentMentor mentor={currentMentor(mentors)} />
+      {recentNotes !== null && (
+        <p className={styles.facts}>
+          Catatan pengasuhan 90 hari:{" "}
+          <b>{recentNotes.toLocaleString("id-ID")}</b>
+        </p>
+      )}
       <h3 className={styles.subheading}>Riwayat pengasuh kelompok</h3>
       {mentors.length === 0 ? (
         <p className={styles.quiet}>Belum ada riwayat pengasuh.</p>

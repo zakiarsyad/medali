@@ -103,5 +103,5 @@ it is built here.
 - [x] 4. The list with counts, filter, paging and the read-only view.
 - [x] 5. Pengasuh opens the detail of their own mentees; the detail
   shows "Catatan pengasuhan" and "Tulis catatan".
-- [ ] 6. "Catatan pengasuhan 90 hari" on the group page.
+- [x] 6. "Catatan pengasuhan 90 hari" on the group page.
 - [ ] 7. Double press and the phone layout.

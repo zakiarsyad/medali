@@ -52,6 +52,7 @@ async function GroupPage({
         groupId={groupId}
         detailVisible={detailVisibleTo(account)}
         memberAddressOf={openMemberAddresses(account.roles, groupId)}
+        notesVisible={notesVisible}
       />
       {detail && (
         <StudentDetailDialog

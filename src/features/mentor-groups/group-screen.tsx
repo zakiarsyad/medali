@@ -18,6 +18,7 @@ import { GroupMentorPanel } from "./group-mentor-panel";
 import { academicClasses, countedMembers } from "./member-rules";
 import styles from "./mentor-groups.module.css";
 import { currentMentor } from "./mentor-history";
+import { countRecentNotes } from "./recent-notes";
 
 /** The line under the code: whose group it is, since when, and how large. */
 function groupLede(group: GroupDetail): string {
@@ -40,6 +41,7 @@ export async function GroupScreen({
   groupId,
   detailVisible,
   memberAddressOf,
+  notesVisible,
 }: {
   /** Which rows the account that opened the page may see. */
   limit: RowLimit;
@@ -61,6 +63,12 @@ export async function GroupScreen({
    * for an account that may not open a student's detail.
    */
   memberAddressOf: ((studentId: string) => string) | null;
+  /**
+   * The students whose mentoring notes the account may read, or null for
+   * an account that may read none: it gets no "Catatan pengasuhan 90
+   * hari".
+   */
+  notesVisible: SQL | null;
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
@@ -75,6 +83,10 @@ export async function GroupScreen({
     evaluationLimit === null
       ? null
       : await listGroupEvaluations(db, evaluationLimit, group.id);
+  const recentNotes =
+    notesVisible === null
+      ? null
+      : await countRecentNotes(db, group.id, notesVisible);
   const hasMentor = currentMentor(group.mentors) !== null;
   return (
     <>
@@ -98,7 +110,7 @@ export async function GroupScreen({
           prodi kecil.
         </p>
       )}
-      <GroupMentorPanel mentors={group.mentors} />
+      <GroupMentorPanel mentors={group.mentors} recentNotes={recentNotes} />
       {evaluations && (
         <section className={shared.panel}>
           <h2 className={shared.heading}>Evaluasi pengasuh</h2>
