@@ -1,32 +1,26 @@
-import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { afterAll, beforeAll } from "vitest";
-import { readSetting } from "@/settings";
 import { type Connection, connect } from "./connect";
+import {
+  dropOwnTestDatabase,
+  makeOwnTestDatabase,
+  ownTestDatabaseName,
+  ownTestDatabaseUrl,
+} from "./test-database-own";
 
 interface Opened {
   admin: Connection;
   own: Connection;
 }
 
-function urlOf(database: string): string {
-  const url = new URL(readSetting("DATABASE_URL"));
-  url.pathname = `/${database}`;
-  return url.href;
-}
-
 async function open(database: string): Promise<Opened> {
-  const admin = connect(readSetting("DATABASE_URL"));
-  await admin.db.execute(sql.raw(`create database ${database}`));
-  return { admin, own: connect(urlOf(database)) };
+  const admin = await makeOwnTestDatabase(database);
+  return { admin, own: connect(ownTestDatabaseUrl(database)) };
 }
 
 async function closeAndDrop(opened: Opened, database: string): Promise<void> {
   await opened.own.close();
-  await opened.admin.db.execute(
-    sql.raw(`drop database if exists ${database} with (force)`),
-  );
-  await opened.admin.close();
+  await dropOwnTestDatabase(opened.admin, database);
 }
 
 /**
@@ -38,7 +32,7 @@ async function closeAndDrop(opened: Opened, database: string): Promise<void> {
  * what it does. `name` is one lowercase word, different for each file.
  */
 export function withEmptyTestDatabase(name: string) {
-  const database = `medali_test_${name}_${process.pid}`;
+  const database = ownTestDatabaseName(name);
   let opened: Opened | undefined;
 
   beforeAll(async () => {
