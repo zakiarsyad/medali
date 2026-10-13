@@ -120,10 +120,25 @@ export async function listReplacements(
   db: Database,
   limit: RowLimit,
 ): Promise<ListedReplacement[]> {
-  const [waiting, others] = await Promise.all([
-    readRows(db, limit, IS_WAITING),
-    readRows(db, limit, WAITS_NO_MORE).limit(LISTED_REPLACEMENTS),
-  ]);
+  const waiting = await readRows(db, limit, IS_WAITING);
+  const others = await readRows(db, limit, WAITS_NO_MORE).limit(
+    LISTED_REPLACEMENTS,
+  );
+  return waitingThenOthers(waiting, others).map(listed);
+}
+
+/**
+ * The two reads do not see the same moment. The waiting ones are read
+ * first, so a replacement that is carried out or cancelled between the
+ * reads comes back in both and never in neither. It is listed once, as it
+ * was while it waited.
+ */
+export function waitingThenOthers<Row extends { id: unknown }>(
+  waiting: Row[],
+  others: Row[],
+): Row[] {
+  const waitingIds = new Set(waiting.map((row) => row.id));
   const room = Math.max(0, LISTED_REPLACEMENTS - waiting.length);
-  return [...waiting, ...others.slice(0, room)].map(listed);
+  const othersOnce = others.filter((row) => !waitingIds.has(row.id));
+  return [...waiting, ...othersOnce.slice(0, room)];
 }

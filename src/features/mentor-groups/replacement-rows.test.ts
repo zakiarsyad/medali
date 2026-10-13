@@ -3,7 +3,11 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestReplacement } from "@/mentoring/test-replacements";
-import { LISTED_REPLACEMENTS, listReplacements } from "./replacement-rows";
+import {
+  LISTED_REPLACEMENTS,
+  listReplacements,
+  waitingThenOthers,
+} from "./replacement-rows";
 import { addTestEvaluator, addTestHeldGroup } from "./test-evaluations";
 import {
   addTestEndedGroup,
@@ -235,5 +239,16 @@ describe("listReplacements", () => {
         new Set(["scheduled"]),
       );
     });
+  });
+});
+
+describe("waitingThenOthers", () => {
+  it("lists once a replacement that both reads returned", () => {
+    const rows = waitingThenOthers(
+      [{ id: "a" }, { id: "b" }],
+      [{ id: "b" }, { id: "c" }],
+    );
+
+    expect(rows.map((row) => row.id)).toEqual(["a", "b", "c"]);
   });
 });
