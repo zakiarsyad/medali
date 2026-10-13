@@ -30,3 +30,25 @@ describe("the tab Kegiatan PPKS on a phone", () => {
     expect(ruleOf(".choices")).toContain("flex-wrap: wrap;");
   });
 });
+
+describe("the schedule form on a phone", () => {
+  const FORM = readFileSync(`${FOLDER}/schedule-form.tsx`, "utf8");
+
+  it("lays its fields out on the shared form grid, which is one column at phone width", () => {
+    expect(FORM).toContain("<div className={shared.form}>");
+  });
+
+  it("never lets the list of activities be wider than its field, however long a name is", () => {
+    expect(FORM).toMatch(/htmlFor=\{ACTIVITY_FIELD_ID\}\s+className=.*fits/);
+    expect(ruleOf(".fits")).toContain("min-width: 0;");
+    expect(ruleOf(".fits select")).toContain("max-width: 100%;");
+  });
+
+  it("folds the upload range, the facts of the activity and the head of the panel instead of widening the page", () => {
+    expect(ruleOf(".uploadRange")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".uploadRange")).toContain("min-width: 0;");
+    expect(ruleOf(".uploadCount")).toContain("max-width: 100%;");
+    expect(ruleOf(".facts")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".addHead")).toContain("flex-wrap: wrap;");
+  });
+});

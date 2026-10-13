@@ -8,12 +8,32 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import type { SentSchedule } from "./schedule-input";
 
 /**
  * Made-up records for the checks of this area. Each file of checks uses
  * Tahun akademik, a program name and a block of NIMs of its own: the
  * database makes two checks that add the same one wait for each other.
  */
+
+/**
+ * A schedule as a form sends it, with nothing wrong in it. Its activity
+ * is a key no activity has: a check that saves gives its own.
+ */
+export const SENT_SCHEDULE: SentSchedule = {
+  activityId: "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+  startsOn: "2120-09-10",
+  endsOn: "2120-09-11",
+  startTime: "07:30",
+  endTime: "11:30",
+  uploadCount: "1",
+  uploadUnit: "day",
+  location: "Aula uji",
+  isRequired: true,
+};
+
+/** The key a form made for the schedule it adds. */
+export const NEW_SCHEDULE_ID = "5d4c3b2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a";
 
 export interface TestActor {
   id: string;

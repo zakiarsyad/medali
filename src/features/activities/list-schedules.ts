@@ -17,6 +17,7 @@ import {
 } from "@/db/schema";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { ScheduleRow } from "./schedule-row";
+import { hourAndMinute } from "./stored-time";
 
 /** One page of the list, and how many schedules the list has in all. */
 export interface ScheduleList {
@@ -78,11 +79,6 @@ async function countSchedules(
     .innerJoin(ppksActivities, OF_SCHEDULE)
     .where(condition);
   return counted?.matching ?? 0;
-}
-
-/** The database gives an hour with its seconds; the screens show none. */
-function hourAndMinute(time: string): string {
-  return time.slice(0, 5);
 }
 
 /** The earliest first; two that start together keep one order on every page. */

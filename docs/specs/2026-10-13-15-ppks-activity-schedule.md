@@ -148,6 +148,6 @@ The issue did not say, so these were decided:
 - [x] 2. The rule for a schedule's status and upload deadline, with
   checks.
 - [x] 3. The tab shows "Jadwal dan kehadiran" with the tahap choice.
-- [ ] 4. "Jadwalkan kegiatan PPKS" adds a schedule.
+- [x] 4. "Jadwalkan kegiatan PPKS" adds a schedule.
 - [ ] 5. "Ubah" changes a schedule.
 - [ ] 6. "Hapus jadwal" removes a schedule.
