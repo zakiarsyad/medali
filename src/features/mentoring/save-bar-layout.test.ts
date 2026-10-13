@@ -64,12 +64,15 @@ describe("the bar of Daftar hadir pertemuan", () => {
   it("is a part of the form beside its fields, not inside their grid, so it can stay in view while they scroll", () => {
     const form = readFileSync(`${FOLDER}/attendance-form.tsx`, "utf8");
     const grid = form.slice(form.indexOf("<div className={shared.form}>"));
-
-    expect(form).not.toMatch(/<form[^>]*className=\{shared\.form\}/);
-    expect(grid.indexOf("<MemberList")).toBeGreaterThan(-1);
-    expect(grid.indexOf("<MemberList")).toBeLessThan(
+    const listToBar = grid.slice(
+      grid.indexOf("<MemberList"),
       grid.indexOf("styles.saveBar"),
     );
+
+    expect(form).not.toMatch(/<form[^>]*className=\{shared\.form\}/);
+    expect(grid).toContain("<MemberList");
+    // Two parts end between the list and the bar: the line of the list, and the grid.
+    expect(listToBar.match(/<\/div>/g)).toHaveLength(2);
   });
 
   it("holds Simpan daftar hadir, Tutup, the running count and the message of a save", () => {
