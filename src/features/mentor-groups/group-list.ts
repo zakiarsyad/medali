@@ -16,13 +16,11 @@ import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import {
   accounts,
-  mentorGroupMembers,
   mentorGroupMentors,
   mentorGroups,
-  students,
   studyPrograms,
 } from "@/db/schema";
-import { ACTIVE_MEMBER } from "@/mentoring/active-member";
+import { MEMBERS } from "@/mentoring/member-count";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { GroupListFilters } from "./group-list-address";
@@ -44,14 +42,6 @@ export interface ListedGroup extends GroupCodeParts {
 
 /** The mentor line of today, named apart from the lines that are counted. */
 const mentorToday = alias(mentorGroupMentors, "mentor_today");
-
-/** How many Aktif students a group holds, in a read of groups. */
-export const MEMBERS = sql`(
-  select count(*) from ${mentorGroupMembers}
-  inner join ${students} on ${students.id} = ${mentorGroupMembers.studentId}
-  where ${mentorGroupMembers.groupId} = ${mentorGroups.id}
-    and ${ACTIVE_MEMBER}
-)`.mapWith(Number);
 
 const MENTOR_LINES = sql`(
   select count(*) from ${mentorGroupMentors}

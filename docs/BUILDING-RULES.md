@@ -17,7 +17,8 @@ while building.
 - `src/dorms/`: the four dorms, the rule for who lives in which, and a
   resident's room, read by every area that needs them.
 - `src/mentoring/`: who is a mentee of a mentor today, which groups are
-  in force, which members of a group are Aktif, how a list marks
+  in force, which members of a group are Aktif and how many it holds,
+  how a list marks
   the students whose detail may be opened, the kinds and follow-ups of a
   mentoring note, how many meetings a period has with their marks and
   suggested topics, the range a mentoring score lies in, the reasons for

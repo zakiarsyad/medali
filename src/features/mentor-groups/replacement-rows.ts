@@ -8,13 +8,13 @@ import {
   mentorReplacements,
   studyPrograms,
 } from "@/db/schema";
+import { MEMBERS } from "@/mentoring/member-count";
 import type {
   OldMentorStatus,
   ReplacementReason,
 } from "@/mentoring/replacement-ids";
 import { IS_WAITING } from "@/mentoring/waiting-replacement";
 import type { GroupCodeParts } from "@/ui/group-code";
-import { MEMBERS } from "./group-list";
 import {
   type ReplacementStatus,
   replacementStatus,

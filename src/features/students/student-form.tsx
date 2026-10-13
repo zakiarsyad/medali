@@ -16,6 +16,13 @@ import {
   type StudentFormState,
 } from "./form-values";
 import {
+  type ChosenCohort,
+  fittingGroups,
+  fullGroupWarning,
+  groupHint,
+  keptGroupId,
+} from "./group-choice-words";
+import {
   CLASS_MAX_LENGTH,
   EMAIL_MAX_LENGTH,
   NAME_MAX_LENGTH,
@@ -28,11 +35,13 @@ import {
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
+import type { GroupChoice } from "./mentor-group-choices";
+import { MentorGroupField } from "./mentor-group-field";
 import { newStudentsAddress } from "./new-students-address";
 import { type ResidentFields, residentNote } from "./resident-note";
 import { SelectField } from "./select-field";
 import type { RunningPeriod } from "./semester-now";
-import type { StudentInput } from "./student-input";
+import type { StoredStudent } from "./student-input";
 import { useNotify } from "./student-notice";
 
 function sameAsShown(values: readonly (string | number)[]) {
@@ -91,7 +100,9 @@ export interface StudentFormProps {
   /** The Angkatan choices, the newest first. */
   cohortYears: number[];
   /** The student being changed, or null to add a new one. */
-  editing: StudentInput | null;
+  editing: StoredStudent | null;
+  /** Every kelompok pengasuhan in force. The form offers the ones that fit. */
+  groups: GroupChoice[];
   /** The search of the list, kept when the form is left. */
   query: string;
   /** The academic period that runs now, which says the semester of an angkatan. */
@@ -108,10 +119,19 @@ function residentFields(form: FormData): ResidentFields {
   };
 }
 
+function chosenCohort(form: FormData): ChosenCohort {
+  return {
+    cohortYear: text(form, "cohortYear"),
+    studyProgramId: text(form, "studyProgramId"),
+    entryPath: text(form, "entryPath"),
+  };
+}
+
 export function StudentForm({
   programs,
   cohortYears,
   editing,
+  groups,
   query,
   period,
 }: StudentFormProps) {
@@ -123,6 +143,25 @@ export function StudentForm({
   });
   const [entryPath, setEntryPath] = useState(start.entryPath);
   const [resident, setResident] = useState<ResidentFields>(start);
+  const [cohort, setCohort] = useState<ChosenCohort>(start);
+  const [groupId, setGroupId] = useState(start.mentorGroupId);
+  // Kept from the first draw: the page is read again while the form stays
+  // open, such as after another row is removed, and the newer record must
+  // not pass for the one whose fields the form still shows.
+  const [opened] = useState({
+    version: editing?.version,
+    groupId: start.mentorGroupId,
+  });
+  const fitting = fittingGroups(groups, cohort);
+
+  /** A group that no longer fits what was just chosen is cleared for good. */
+  function followForm(form: FormData) {
+    const chosen = chosenCohort(form);
+    const stillFitting = fittingGroups(groups, chosen);
+    setResident(residentFields(form));
+    setCohort(chosen);
+    setGroupId(keptGroupId(text(form, "mentorGroupId"), stillFitting));
+  }
 
   async function send(
     before: StudentFormState,
@@ -132,11 +171,13 @@ export function StudentForm({
     const save = editing ? changeStudentAction : addStudentAction;
     const after = await save(before, form);
     // The browser puts a sent form back on its first choices; this keeps
-    // Instansi asal and the note on the dorm in step with what the form
-    // then shows.
+    // Instansi asal, the note on the dorm and the groups offered in step
+    // with what the form then shows.
     const shownAfter = formShows(after, start);
     setEntryPath(shownAfter.entryPath);
     setResident(shownAfter);
+    setCohort(shownAfter);
+    setGroupId(shownAfter.mentorGroupId);
     if (after.done && editing) {
       const list = newStudentsAddress(query);
       notify(after.done, list);
@@ -150,20 +191,29 @@ export function StudentForm({
   const [state, action, pending] = useActionState(send, START);
   const shown = formShows(state, start);
   const note = residentNote(resident, period);
+  const program = programs.find(
+    ({ id }) => String(id) === cohort.studyProgramId,
+  );
+  const chosenGroupId = keptGroupId(groupId, fitting);
+  const chosenGroup = fitting.find((group) => group.id === chosenGroupId);
   return (
     // noValidate: a wrong NIM or a short name gets the app's own message.
     <form
       action={action}
       className={shared.form}
       noValidate
-      onChange={(event) =>
-        setResident(residentFields(new FormData(event.currentTarget)))
-      }
+      onChange={(event) => followForm(new FormData(event.currentTarget))}
     >
       {/* Drawn anew each time the form is sent: the browser empties a
           sent form, and this fills it again with what `shown` holds. */}
       <Fragment key={state.attempt}>
         <NimField nim={shown.nim} locked={editing !== null} />
+        {editing && (
+          <>
+            <input type="hidden" name="version" value={opened.version} />
+            <input type="hidden" name="openedGroupId" value={opened.groupId} />
+          </>
+        )}
         <label className={shared.field}>
           Nama lengkap
           <input
@@ -244,6 +294,13 @@ export function StudentForm({
           chosen={shown.status}
         />
         <Categories chosen={shown.categories} />
+        <MentorGroupField
+          groups={fitting}
+          chosen={chosenGroupId}
+          hint={groupHint(fitting, cohort, program?.name ?? "")}
+          warning={fullGroupWarning(chosenGroup, start.mentorGroupId)}
+          onChoose={setGroupId}
+        />
       </Fragment>
       {note && (
         <p className={shared.detail} aria-live="polite">
