@@ -102,6 +102,7 @@ describe("startOverReasonFor", () => {
     tableChangesApplied: 5,
     tableChangesInRepo: 5,
     holdsAnAccount: true,
+    hasStartMark: true,
   };
 
   it("keeps the data when no table change is new", () => {
@@ -127,5 +128,11 @@ describe("startOverReasonFor", () => {
     const state = { ...UP_TO_DATE, holdsAnAccount: false };
 
     expect(startOverReasonFor(state)).toBe("no-account");
+  });
+
+  it("starts over a database with no mark of a start, also with no new table change", () => {
+    const state = { ...UP_TO_DATE, hasStartMark: false };
+
+    expect(startOverReasonFor(state)).toBe("no-start-mark");
   });
 });

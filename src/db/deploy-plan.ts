@@ -73,16 +73,22 @@ export interface MainPreviewState {
   /** How many table changes the build brings. */
   tableChangesInRepo: number;
   holdsAnAccount: boolean;
+  /** Whether a deploy of `main` already started this database over. */
+  hasStartMark: boolean;
 }
 
-export type StartOverReason = "new-table-change" | "no-account";
+export type StartOverReason =
+  | "new-table-change"
+  | "no-account"
+  | "no-start-mark";
 
 /**
  * Why a deploy of `main` starts its database over with sample data, or
  * null when it keeps the data. A feature brings its sample data together
  * with its tables, so a new table change means the sample data is old. A
  * database with no account is empty, or was left so by a start that
- * failed after the tables were made.
+ * failed after the tables were made. One with no mark of a start was
+ * filled once, long ago, and never got the sample data merged since.
  */
 export function startOverReasonFor(
   state: MainPreviewState,
@@ -91,5 +97,6 @@ export function startOverReasonFor(
     return "new-table-change";
   }
   if (!state.holdsAnAccount) return "no-account";
+  if (!state.hasStartMark) return "no-start-mark";
   return null;
 }

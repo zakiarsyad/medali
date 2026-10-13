@@ -151,7 +151,7 @@ decided:
 - [x] 1. A deploy of `main` that applied a new table change starts the
   database of the preview of `main` over with sample data, after the
   checks that guard it today.
-- [ ] 2. The first deploy after this work starts it over once, by a
+- [x] 2. The first deploy after this work starts it over once, by a
   mark in the database.
 - [ ] 3. The files of the preview of `main` are started over together
   with its database.

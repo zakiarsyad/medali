@@ -2,6 +2,7 @@ import { count, eq, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { describe, expect, it } from "vitest";
 import { deployDatabase } from "./deploy-database";
+import { hasStartMark } from "./deploy-start";
 import { markDatabase, readDeployTarget } from "./deploy-target";
 import { accounts } from "./schema";
 import { withEmptyTestDatabase } from "./test-database-alone";
@@ -68,14 +69,43 @@ describe("the database step of a deploy of main", { timeout: 120_000 }, () => {
     expect(await countAccounts(own.db)).toBeGreaterThan(0);
   });
 
-  it("refuses a build from another branch, and keeps the data", async () => {
+  it("starts a database from before the mark of a start over, once", async () => {
     await addByHand(own.db);
+    await own.db.execute(sql`drop table medali_deploy.sample_data_start`);
+
+    const first = await deployMain(own.db);
+
+    expect(first).toContain("started over");
+    expect(await countAddedByHand(own.db)).toBe(0);
+    expect(await hasStartMark(own.db)).toBe(true);
+    await addByHand(own.db);
+
+    const second = await deployMain(own.db);
+
+    expect(second).toContain("data kept");
+    expect(await countAddedByHand(own.db)).toBe(1);
+  });
+
+  it("refuses a build from another branch, and keeps the data", async () => {
     await forgetLastTableChange(own.db);
 
     const step = deployDatabase(own.db, "main-preview", "feat/uji");
 
     await expect(step).rejects.toThrow("refused");
     expect(await countAddedByHand(own.db)).toBe(1);
+  });
+});
+
+describe("the database step of a PR deploy", { timeout: 120_000 }, () => {
+  const own = withEmptyTestDatabase("deploypr");
+
+  it("fills the PR preview database, and leaves no mark of a start", async () => {
+    const done = await deployDatabase(own.db, "pr-preview", "feat/uji");
+
+    expect(done).toBe("PR preview database reset to sample data.");
+    expect((await readDeployTarget(own.db)).marker).toBe("pr-preview");
+    expect(await countAccounts(own.db)).toBeGreaterThan(0);
+    expect(await hasStartMark(own.db)).toBe(false);
   });
 });
 

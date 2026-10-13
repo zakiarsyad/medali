@@ -32,6 +32,7 @@ src/db/copy-databases.ts
 src/db/database-server.ts
 src/db/deploy-command.ts
 src/db/deploy-database.ts
+src/db/deploy-start.ts
 src/files/deploy-command.ts
 src/files/deploy-files.ts
 
