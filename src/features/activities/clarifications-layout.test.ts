@@ -48,6 +48,21 @@ describe("the tab Klarifikasi kehadiran on a phone", () => {
     expect(fields).toContain("min-width: 0;");
   });
 
+  it("gives the Catatan and each decision the whole width of the card and more height, by the look the photo cards already have for a phone", () => {
+    const view = readFileSync(
+      `${FOLDER}/clarification-decide-view.tsx`,
+      "utf8",
+    );
+    const shared = stylesOf("verification.module.css");
+
+    expect(view).toContain('import styles from "./verification.module.css";');
+    expect(view).toContain("className={styles.decide}");
+    expect(view.match(/styles\.decideControl/g)).toHaveLength(2);
+    expect(ruleOf(shared, ".decide .decideControl")).toContain(
+      "flex: 1 1 var(--decide-control-basis);",
+    );
+  });
+
   it("keeps a shown file inside its box", () => {
     expect(ruleOf(OWN, ".fileFrame")).toContain("width: 100%;");
     expect(ruleOf(OWN, ".filePicture")).toContain("max-width: 100%;");

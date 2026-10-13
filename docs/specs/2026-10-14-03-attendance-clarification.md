@@ -167,5 +167,5 @@ decided, from what the merged app does and then from the prototype:
 - [x] 2. The rule for the clarification time, with checks.
 - [x] 3. The student asks from "Riwayat kehadiran", and asks again.
 - [x] 4. Penilai Mahasiswa sees the page and opens files.
-- [ ] 5. Accept as present or as dispensation, or reject with a note.
+- [x] 5. Accept as present or as dispensation, or reject with a note.
 - [ ] 6. The Kegiatan PPKS tab shows the "Klarifikasi kehadiran" panel.

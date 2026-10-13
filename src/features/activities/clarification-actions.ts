@@ -9,6 +9,9 @@ import { database } from "@/db/database";
 import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
+import type { ClarificationAnswer } from "./clarification-decision";
+import { CLARIFICATIONS_ADDRESS } from "./clarification-list-address";
+import { decideClarification } from "./decide-clarification";
 import { STUDENT_ACTIVITIES_ADDRESS } from "./history-address";
 import { sendClarification } from "./send-clarification";
 
@@ -17,6 +20,36 @@ async function clarificationSender(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "send_attendance_photo")) forbidden();
   return account;
+}
+
+async function clarificationDecider(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "decide_activity_clarifications"))
+    forbidden();
+  return account;
+}
+
+/**
+ * "Terima sebagai hadir", "Terima sebagai dispensasi" or "Tolak" on a
+ * clarification card, with its Catatan. The numbers and the cards are
+ * read again whatever the answer: a refusal often means the card is out
+ * of date, as when someone else decided it first.
+ */
+export async function decideClarificationAction(
+  clarificationId: string,
+  kind: string,
+  note: string,
+): Promise<ClarificationAnswer> {
+  const decider = await clarificationDecider();
+  const answer = await decideClarification(
+    database(),
+    decider,
+    { clarificationId, kind, note },
+    new Date(),
+    fileStorage() !== null,
+  );
+  revalidatePath(CLARIFICATIONS_ADDRESS);
+  return answer;
 }
 
 /**

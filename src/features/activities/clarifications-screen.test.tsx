@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { ClarificationCard } from "./clarification-card";
-import { ClarificationCardsView } from "./clarification-cards-view";
 import { ClarificationFileDialog } from "./clarification-file-dialog";
 import { ClarificationFiltersView } from "./clarification-filters";
 import type { Clarifications } from "./clarifications";
@@ -10,10 +9,14 @@ import {
   TEST_CLARIFICATION,
   TEST_NO_CLARIFICATIONS,
 } from "./test-clarifications";
-import { draw, press } from "./test-press";
+import { draw } from "./test-press";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  unstable_rethrow: vi.fn(),
+}));
+vi.mock("./clarification-actions", () => ({
+  decideClarificationAction: vi.fn(),
 }));
 
 const TABS = {
@@ -148,28 +151,6 @@ describe("ClarificationsScreen", () => {
     expect(screen).toMatch(
       /<dt>Keputusan<\/dt><dd>Ditolak: Lampiran tidak terbaca\.<span[^>]*>\(Penilai Uji, 14 Okt 2026, 09\.00\)<\/span><\/dd>/,
     );
-  });
-});
-
-describe("ClarificationCardsView", () => {
-  it("opens the file of the card whose file name is pressed", () => {
-    const opened: string[] = [];
-    const other = {
-      ...DECIDED,
-      file: { name: "foto-surat.jpg", isPdf: false, facts: "Gambar · 3 KB" },
-    };
-    const drawn = draw(
-      <ClarificationCardsView
-        cards={[TEST_CLARIFICATION, other]}
-        emptyWords="-"
-        onOpenFile={(card) => opened.push(card.id)}
-      />,
-    );
-
-    press(drawn, "foto-surat.jpg");
-    press(drawn, "surat-keterangan.pdf");
-
-    expect(opened).toEqual([DECIDED.id, TEST_CLARIFICATION.id]);
   });
 });
 

@@ -46,10 +46,11 @@ export function ClarificationsScreen({
         <h2 className={shared.heading}>Klarifikasi kehadiran</h2>
         <ClarificationFilterRow filters={filters} />
         {/*
-          Made anew for each address, so a file opened on one page of the
-          cards is not shown on another. By the page the address asked
-          for, not the one shown: the list falls back to the page before
-          when the last page holds no card any more.
+          Made anew for each address, so a decision made on one page of the
+          cards is not shown on another. By the page the address asked for,
+          not the one shown: when the last page is emptied the list falls
+          back to the page before, and the message and the decided cards
+          must stay.
         */}
         <ClarificationCards
           key={clarificationListAddress(filters, askedPage)}
