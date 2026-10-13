@@ -14,7 +14,7 @@ import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import { EVALUATION_ASPECTS } from "./evaluation-aspects";
 import type { EvaluationInput } from "./evaluation-input";
-import { evaluationPeriods } from "./evaluation-periods";
+import { evaluationPeriods, heldDuring } from "./evaluation-periods";
 import { type EvaluationResult, evaluationResult } from "./evaluation-result";
 import { evaluatedRowsFor } from "./visible-evaluations";
 import { maySeeGroup, NOT_ENDED } from "./visible-groups";
@@ -41,6 +41,13 @@ export const PERIOD_NOT_OFFERED = {
   ok: false,
   error:
     "Periode ini tidak dapat dipilih. Pilih periode berjalan atau periode sebelumnya.",
+} as const;
+
+/** What a save is told for a period that ended before the mentor took the group. */
+export const NOT_HELD_THEN = {
+  ok: false,
+  error:
+    "Pengasuh kelompok ini belum mengasuh pada periode tersebut, sehingga tidak dapat dievaluasi untuk periode itu. Pilih periode sejak pengasuh ini mulai mengasuh.",
 } as const;
 
 /** What a correction is told when the group has another mentor by now. */
@@ -78,7 +85,11 @@ async function lockGroup(tx: Database, groupId: string) {
 
 async function readMentorOfToday(tx: Database, groupId: string) {
   const [mentor] = await tx
-    .select({ id: accounts.id, name: accounts.name })
+    .select({
+      id: accounts.id,
+      name: accounts.name,
+      since: mentorGroupMentors.startsOn,
+    })
     .from(mentorGroupMentors)
     .innerJoin(accounts, eq(accounts.id, mentorGroupMentors.mentorId))
     .where(
@@ -90,13 +101,10 @@ async function readMentorOfToday(tx: Database, groupId: string) {
   return mentor ?? null;
 }
 
-async function isOffered(
-  tx: Database,
-  periodId: string,
-  day: string,
-): Promise<boolean> {
+/** The period named when it is offered on a day. Null when it is not. */
+async function findOffered(tx: Database, periodId: string, day: string) {
   const offered = evaluationPeriods(await readAcademicPeriods(tx), day);
-  return offered.some((period) => period.id === periodId);
+  return offered.find((period) => period.id === periodId) ?? null;
 }
 
 async function findEvaluation(
@@ -205,7 +213,8 @@ function saved(
  * actor. The first save for a group and period adds it; a later one
  * corrects it. Each adds a line to the log with the values before and
  * after. Refused for any role but Kepala Unit, for a group that is ended
- * or has no mentor, and for a period that is not offered on `day`.
+ * or has no mentor, for a period that is not offered on `day`, and for a
+ * period that ended before the mentor took the group.
  */
 export async function saveEvaluation(
   db: Database,
@@ -223,7 +232,9 @@ export async function saveEvaluation(
     }
     const mentor = await readMentorOfToday(tx, group.id);
     if (!mentor) return GROUP_WITHOUT_MENTOR;
-    if (!(await isOffered(tx, input.periodId, day))) return PERIOD_NOT_OFFERED;
+    const period = await findOffered(tx, input.periodId, day);
+    if (period === null) return PERIOD_NOT_OFFERED;
+    if (!heldDuring(period, mentor.since)) return NOT_HELD_THEN;
 
     const stored = await findEvaluation(tx, input);
     if (stored === null) {

@@ -79,6 +79,16 @@ function parseScores(sent: SentEvaluation): Parsed<EvaluationScores> {
 }
 
 /**
+ * A note as it was typed, without the blanks around it. The browser
+ * counts a line break as one character against the limit of the field
+ * and sends it as two, so each is put back to one before it is counted
+ * and kept: a note the field allowed is never refused for its length.
+ */
+function typedNote(sent: string): string {
+  return sent.replaceAll("\r\n", "\n").trim();
+}
+
+/**
  * Checks "Simpan evaluasi" as sent. Every value must be there and be a
  * whole number of 0 to 100: one that is not is refused by name, never
  * brought into range.
@@ -90,7 +100,7 @@ export function parseEvaluation(sent: SentEvaluation): Parsed<EvaluationInput> {
   if (!isUuid(sent.periodId)) return { ok: false, error: "Pilih periode." };
   const scores = parseScores(sent);
   if (!scores.ok) return scores;
-  const note = sent.note.trim();
+  const note = typedNote(sent.note);
   if (note.length > NOTE_MAX_LENGTH) {
     return {
       ok: false,

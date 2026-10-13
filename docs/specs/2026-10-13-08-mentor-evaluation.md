@@ -139,6 +139,15 @@ Decided while building, where the issue gave no answer:
     groups of the angkatan before the newest for the period before
     (two Baik, one Cukup, one Kurang), and one of them also for the
     running period.
+22. A mentor is evaluated only for a period they held the group in:
+    the day they took the group is on the period's last day at the
+    latest. A mentor who took the group in the running period is
+    offered the running period only; one who took it inside the period
+    before is offered both. The server refuses any other period with a
+    message that asks for a period since the mentor started. When no
+    period is left, a line says so and no form is shown.
+23. A line break in "Catatan evaluasi" counts as one character against
+    the limit of 1,000, as the field counts it, and is kept as one.
 
 ## Steps
 

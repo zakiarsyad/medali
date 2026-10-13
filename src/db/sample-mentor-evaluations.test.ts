@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { heldDuring } from "@/features/mentor-groups/evaluation-periods";
 import { evaluationResult } from "@/features/mentor-groups/evaluation-result";
 import { SAMPLE_STUDENTS, samplePeriods } from "./sample-data";
 import { sampleMentorEvaluations } from "./sample-mentor-evaluations";
@@ -53,6 +54,15 @@ describe("sampleMentorEvaluations", () => {
         expect(value).toBeGreaterThanOrEqual(0);
         expect(value).toBeLessThanOrEqual(100);
       }
+    }
+  });
+
+  it("evaluates a mentor only for a period they held the group in", () => {
+    for (const { group, period } of evaluations) {
+      const since = group.mentors.at(-1)?.startsOn ?? "";
+
+      expect(since).not.toBe("");
+      expect(heldDuring(period, since)).toBe(true);
     }
   });
 

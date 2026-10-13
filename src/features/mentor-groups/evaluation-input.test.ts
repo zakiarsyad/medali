@@ -106,4 +106,22 @@ describe("parseEvaluation", () => {
     );
     expect(errorOf({ ...SENT, note: "a".repeat(1000) })).toBeNull();
   });
+
+  it("counts a line break as one character, as the field does, though the browser sends two", () => {
+    const lines = `${"a".repeat(499)}\r\n${"b".repeat(500)}`;
+
+    expect(parseEvaluation({ ...SENT, note: lines })).toMatchObject({
+      ok: true,
+      value: { note: `${"a".repeat(499)}\n${"b".repeat(500)}` },
+    });
+    expect(errorOf({ ...SENT, note: `${lines}c` })).toBe(
+      "Catatan evaluasi paling panjang 1.000 karakter.",
+    );
+  });
+
+  it("keeps the line breaks inside a note, as one character each, and drops those around it", () => {
+    const parsed = parseEvaluation({ ...SENT, note: "\r\nSatu.\r\nDua.\r\n" });
+
+    expect(parsed).toMatchObject({ ok: true, value: { note: "Satu.\nDua." } });
+  });
 });

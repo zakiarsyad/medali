@@ -1,3 +1,4 @@
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { campusDay } from "@/academic-periods/campus-day";
 import { periodTitle } from "@/academic-periods/period-labels";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
@@ -17,7 +18,7 @@ import {
   listEvaluationChoices,
 } from "./evaluation-choices";
 import { EvaluationForm, type PeriodChoice } from "./evaluation-form";
-import { evaluationPeriods } from "./evaluation-periods";
+import { evaluationPeriods, periodsHeldSince } from "./evaluation-periods";
 import { FAIR_FROM } from "./evaluation-result";
 import styles from "./mentor-groups.module.css";
 import { NO_MENTOR } from "./mentor-history";
@@ -82,19 +83,36 @@ function GroupFacts({ group }: { group: EvaluatedGroup }) {
 
 function ChosenGroup({
   group,
-  periods,
+  offered,
 }: {
   group: EvaluatedGroup;
-  periods: PeriodChoice[];
+  /** The periods offered today, the running one first. */
+  offered: AcademicPeriod[];
 }) {
   if (group.mentor === null) return <GroupFacts group={group} />;
-  if (periods.length === 0) {
+  if (offered.length === 0) {
     return (
       <>
         <GroupFacts group={group} />
         <p className={styles.quiet}>
           Belum ada periode akademik yang berjalan, sehingga evaluasi belum bisa
           disimpan. Atur periode di Pengaturan, tab Periode akademik.
+        </p>
+      </>
+    );
+  }
+  // Only the periods the mentor held the group in: the server refuses the rest.
+  const periods = periodsHeldSince(offered, group.mentor.since).map(
+    (period): PeriodChoice => ({ id: period.id, title: periodTitle(period) }),
+  );
+  if (periods.length === 0) {
+    return (
+      <>
+        <GroupFacts group={group} />
+        <p className={styles.quiet}>
+          Pengasuh ini baru mulai mengasuh setelah periode yang dapat dievaluasi
+          berakhir, sehingga belum ada periode untuk dievaluasi. Evaluasi dapat
+          diisi pada periode akademik berikutnya.
         </p>
       </>
     );
@@ -141,10 +159,6 @@ export async function EvaluationPanel({
           chosenGroupId,
           offered.map((period) => period.id),
         );
-  const periods = offered.map((period) => ({
-    id: period.id,
-    title: periodTitle(period),
-  }));
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Evaluasi pengasuh</h2>
@@ -162,7 +176,7 @@ export async function EvaluationPanel({
           kinerjanya.
         </p>
       ) : (
-        <ChosenGroup group={group} periods={periods} />
+        <ChosenGroup group={group} offered={offered} />
       )}
     </section>
   );

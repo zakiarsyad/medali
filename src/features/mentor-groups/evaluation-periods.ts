@@ -32,3 +32,22 @@ export function evaluationPeriods<P extends Started>(
   const before = periodBefore(periods, running);
   return before === null ? [running] : [running, before];
 }
+
+type Ended = Pick<AcademicPeriod, "endsOn">;
+
+/**
+ * Whether a mentor who took a group on a day held it during a period:
+ * their first day is on the last day of the period at the latest. A
+ * mentor is not evaluated for a period that ended before they came.
+ */
+export function heldDuring(period: Ended, mentorSince: string): boolean {
+  return mentorSince <= period.endsOn;
+}
+
+/** Those of the periods a mentor held the group in, in the order given. */
+export function periodsHeldSince<P extends Ended>(
+  periods: readonly P[],
+  mentorSince: string,
+): P[] {
+  return periods.filter((period) => heldDuring(period, mentorSince));
+}

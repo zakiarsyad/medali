@@ -8,6 +8,7 @@ import {
   GROUP_NOT_FOUND,
   GROUP_WITHOUT_MENTOR,
   NOT_ALLOWED_TO_EVALUATE,
+  NOT_HELD_THEN,
   OF_EARLIER_MENTOR,
   PERIOD_NOT_OFFERED,
   saveEvaluation,
@@ -317,6 +318,71 @@ describe("saveEvaluation", () => {
       expect(stored).toHaveLength(1);
       expect(stored[0]).toMatchObject({ mentorId, activity: 80 });
       expect(await testLogOf(db, groupId)).toHaveLength(1);
+    });
+  });
+
+  /** A second group of the program, whose mentor took it on a day. */
+  async function addGroupHeldSince(
+    db: Database,
+    studyProgramId: number,
+    startsOn: string,
+  ): Promise<string> {
+    const groupId = await addTestGroup(db, studyProgramId, { number: 5 });
+    const mentorId = await addTestMentor(db, { name: "Pengasuh Uji Baru" });
+    await addTestMentorLine(db, groupId, mentorId, { startsOn });
+    return groupId;
+  }
+
+  it("refuses the period before for a mentor who took the group in the running period, and takes the running one", async () => {
+    await inTestDatabase(async (db) => {
+      const { input, periods, studyProgramId } = await addGroupToEvaluate(db);
+      const head = await addTestEvaluator(db, ["head_of_unit"]);
+      const groupId = await addGroupHeldSince(
+        db,
+        studyProgramId,
+        `${YEAR + 1}-09-01`,
+      );
+
+      const before = await saveEvaluation(
+        db,
+        head,
+        { ...input, groupId, periodId: periods.beforeId },
+        periods.day,
+      );
+
+      expect(before).toEqual(NOT_HELD_THEN);
+      expect(await testEvaluationsOf(db, groupId)).toEqual([]);
+      expect(await testLogOf(db, groupId)).toEqual([]);
+
+      const running = await saveEvaluation(
+        db,
+        head,
+        { ...input, groupId },
+        periods.day,
+      );
+      expect(running.ok).toBe(true);
+    });
+  });
+
+  it("takes the period before for a mentor who took the group inside it, on its last day too", async () => {
+    await inTestDatabase(async (db) => {
+      const { input, periods, studyProgramId } = await addGroupToEvaluate(db);
+      const head = await addTestEvaluator(db, ["head_of_unit"]);
+      const groupId = await addGroupHeldSince(
+        db,
+        studyProgramId,
+        `${YEAR + 1}-07-31`,
+      );
+
+      const before = await saveEvaluation(
+        db,
+        head,
+        { ...input, groupId, periodId: periods.beforeId },
+        periods.day,
+      );
+
+      expect(before.ok).toBe(true);
+      expect(await testEvaluationsOf(db, groupId)).toHaveLength(1);
     });
   });
 });
