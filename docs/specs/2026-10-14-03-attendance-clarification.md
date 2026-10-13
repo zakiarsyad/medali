@@ -166,6 +166,6 @@ decided, from what the merged app does and then from the prototype:
   Sample data adds some in every status.
 - [x] 2. The rule for the clarification time, with checks.
 - [x] 3. The student asks from "Riwayat kehadiran", and asks again.
-- [ ] 4. Penilai Mahasiswa sees the page and opens files.
+- [x] 4. Penilai Mahasiswa sees the page and opens files.
 - [ ] 5. Accept as present or as dispensation, or reject with a note.
 - [ ] 6. The Kegiatan PPKS tab shows the "Klarifikasi kehadiran" panel.
