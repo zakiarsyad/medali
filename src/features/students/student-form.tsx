@@ -145,6 +145,13 @@ export function StudentForm({
   const [resident, setResident] = useState<ResidentFields>(start);
   const [cohort, setCohort] = useState<ChosenCohort>(start);
   const [groupId, setGroupId] = useState(start.mentorGroupId);
+  // Kept from the first draw: the page is read again while the form stays
+  // open, such as after another row is removed, and the newer record must
+  // not pass for the one whose fields the form still shows.
+  const [opened] = useState({
+    version: editing?.version,
+    groupId: start.mentorGroupId,
+  });
   const fitting = fittingGroups(groups, cohort);
 
   /** A group that no longer fits what was just chosen is cleared for good. */
@@ -203,12 +210,8 @@ export function StudentForm({
         <NimField nim={shown.nim} locked={editing !== null} />
         {editing && (
           <>
-            <input type="hidden" name="version" value={editing.version} />
-            <input
-              type="hidden"
-              name="openedGroupId"
-              value={start.mentorGroupId}
-            />
+            <input type="hidden" name="version" value={opened.version} />
+            <input type="hidden" name="openedGroupId" value={opened.groupId} />
           </>
         )}
         <label className={shared.field}>
