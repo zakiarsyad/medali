@@ -3,15 +3,14 @@ import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import { PhotoCards } from "./photo-cards";
 import type { Verification } from "./verification";
-import styles from "./verification.module.css";
 import {
   CARDS_PAGE_SIZE,
   VERIFICATION_ADDRESS,
   type VerificationFilters,
   verificationAddress,
 } from "./verification-address";
-import { VerificationCardView } from "./verification-card-view";
 import { VerificationFilterRow } from "./verification-filters";
 import { VerificationNumbersView } from "./verification-numbers-view";
 
@@ -52,23 +51,20 @@ export function VerificationScreen({
         >
           <VerificationFilterRow filters={filters} choices={choices} />
         </AutoSubmitForm>
-        {list.matching === 0 ? (
-          <p className={shared.empty}>{emptyWords(filters)}</p>
-        ) : (
-          <>
-            <div className={styles.photoCards}>
-              {list.cards.map((card) => (
-                <VerificationCardView key={card.id} card={card} />
-              ))}
-            </div>
-            <ListPager
-              page={list.page}
-              matching={list.matching}
-              pageSize={CARDS_PAGE_SIZE}
-              noun="foto"
-              addressOf={(page) => verificationAddress(filters, page)}
-            />
-          </>
+        {/* Made anew for each address, so a decision made on one page of the cards is not shown on another. */}
+        <PhotoCards
+          key={verificationAddress(filters, list.page)}
+          cards={list.cards}
+          emptyWords={emptyWords(filters)}
+        />
+        {list.matching > 0 && (
+          <ListPager
+            page={list.page}
+            matching={list.matching}
+            pageSize={CARDS_PAGE_SIZE}
+            noun="foto"
+            addressOf={(page) => verificationAddress(filters, page)}
+          />
         )}
       </section>
     </>

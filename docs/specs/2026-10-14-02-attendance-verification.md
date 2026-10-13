@@ -204,13 +204,34 @@ decided, from what the merged app does and then from the prototype:
 27. A card whose status is not Menunggu verifikasi shows "Hadir",
     "Ditolak" or "Dispensasi" with what was noted and the name of who
     decided, also when that was a record made by hand.
+28. A card that waits offers "Validasi", the list of reasons, which
+    starts at "Pilih alasan penolakan…", and "Tolak". The note for
+    "Lainnya" is asked for only once "Lainnya" is chosen. A note
+    shorter than 3 or longer than 200 characters is refused with
+    "Catatan untuk alasan Lainnya 3 sampai 200 karakter."
+29. A card decided on the screen stays in its place until another
+    filter or page is opened, also under Menunggu verifikasi, so it
+    shows "Hadir" or "Ditolak" with the name and the message below it.
+    The same goes for a card someone else decided first. The numbers
+    and the other cards are read again after every decision.
+30. A decision sent by hand without the right is refused, with "Anda
+    tidak berhak memverifikasi presensi." where words are answered. A
+    decision on a photo that is not there, or whose schedule was
+    removed, answers "Presensi ini tidak ditemukan. Muat ulang
+    halaman." A decision that does not reach the server says "Putusan
+    tidak terkirim. Periksa koneksi internet, lalu coba lagi."
+31. The newest attendance of a student for a schedule decides whether
+    a photo is taken: with nothing sent, and again after a rejection.
+    Sent twice after a rejection, one new photo is kept. Once the new
+    photo is validated, or a dispensation is recorded, no further photo
+    is taken.
 
 ## Steps
 
 - [x] 1. The right "Verifikasi presensi" is added for Pegawai UPK, with
   its checks, and the log for attendance decisions.
 - [x] 2. The tab shows the numbers, the filters and the photo cards.
-- [ ] 3. "Validasi" and "Tolak" with a reason; the student sends again.
+- [x] 3. "Validasi" and "Tolak" with a reason; the student sends again.
 - [ ] 4. Ticking many cards and "Validasi (n) terpilih".
 - [ ] 5. "Catat kehadiran manual atau dispensasi".
 - [ ] 6. The Kegiatan PPKS table shows the attendance numbers and

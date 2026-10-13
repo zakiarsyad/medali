@@ -72,3 +72,23 @@
   align-items: center;
   margin-top: var(--space-xs);
 }
+
+/* What a waiting card offers: "Validasi", the reason, and "Tolak". */
+.decide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+/*
+ * Named with its card part, so it counts for more than the shared look
+ * of a button or a field, whichever of the two style files comes last.
+ */
+.decide .decideControl {
+  flex: 1 1 var(--decide-control-basis);
+  min-width: 0;
+  max-width: 100%;
+  padding-top: var(--decide-control-padding);
+  padding-bottom: var(--decide-control-padding);
+}

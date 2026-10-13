@@ -1,9 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { TEST_CARD, TEST_EMPTY_VERIFICATION } from "./test-verification";
 import type { Verification } from "./verification";
 import type { VerificationCard } from "./verification-card";
 import { VerificationScreen } from "./verification-screen";
+
+vi.mock("./verification-actions", () => ({
+  validateAttendanceAction: vi.fn(),
+  rejectAttendanceAction: vi.fn(),
+}));
 
 const TABS = {
   pagePath: "kegiatan",

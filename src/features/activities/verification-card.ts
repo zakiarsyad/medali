@@ -1,4 +1,5 @@
 import { shownMoment } from "@/ui/day";
+import type { FormState } from "@/ui/form-message";
 import type { AttendanceStatus } from "./attendance-status";
 
 /*
@@ -29,6 +30,15 @@ export interface VerificationCard {
   note: string;
   /** The name of who decided it, or null while it waits. */
   decidedBy: string | null;
+}
+
+/**
+ * What a decision on a card answers: the words to show, and the card as
+ * it stands now, or null when there is no such card.
+ */
+export interface DecisionAnswer {
+  state: FormState;
+  card: VerificationCard | null;
 }
 
 export const NO_PHOTO_HERE = "Foto tidak tersimpan di sini.";

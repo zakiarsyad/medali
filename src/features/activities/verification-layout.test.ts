@@ -32,4 +32,19 @@ describe("the tab Verifikasi presensi on a phone", () => {
     expect(ruleOf(".filters select")).toContain("max-width: 100%;");
     expect(ruleOf(".filters select")).toContain("min-width: 0;");
   });
+
+  it("gives each thing a card offers to decide the whole width of the card and more height, through the names for phone width", () => {
+    const control = ruleOf(".decide .decideControl");
+    const tokens = readFileSync("src/ui/tokens.css", "utf8");
+    const atPhoneWidth = tokens.slice(tokens.indexOf("@media (max-width"));
+
+    expect(ruleOf(".decide")).toContain("flex-wrap: wrap;");
+    expect(control).toContain("flex: 1 1 var(--decide-control-basis);");
+    expect(control).toContain("padding-top: var(--decide-control-padding);");
+    expect(control).toContain("max-width: 100%;");
+    expect(atPhoneWidth).toContain("--decide-control-basis: 100%;");
+    expect(atPhoneWidth).toContain(
+      "--decide-control-padding: var(--space-md);",
+    );
+  });
 });

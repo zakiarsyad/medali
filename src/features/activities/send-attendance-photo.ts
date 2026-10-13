@@ -9,6 +9,7 @@ import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
 import { PHOTO_FAULTS, PHOTO_FOLDER, PHOTO_RULE } from "./attendance-photo";
+import { takesNewPhoto } from "./attendance-status";
 import { readOwnSchedule } from "./own-schedule";
 import { readOwnStudent } from "./own-student";
 import { scheduleStatus } from "./schedule-status";
@@ -50,10 +51,11 @@ export const PHOTO_SENT =
 const SENT = { ok: true, value: PHOTO_SENT } as const;
 
 /**
- * What a send answers when the student has an attendance at the schedule
- * already, or null when they have none. A photo that waits is not
- * replaced: the send is told its photo is there, as a second press of
- * "Kirim presensi" is the same send. Any other attendance was decided.
+ * What a send answers when the schedule takes no new photo from the
+ * student, or null when it does: with nothing sent, and after their
+ * newest photo was rejected. A photo that waits is not replaced: the
+ * send is told its photo is there, as a second press of "Kirim presensi"
+ * is the same send. A valid attendance or a dispensation stands.
  */
 async function answerOfKept(
   db: Database,
@@ -61,9 +63,9 @@ async function answerOfKept(
   scheduleId: string,
 ): Promise<Parsed<string> | null> {
   const kept = await readOwnAttendances(db, studentId, [scheduleId]);
-  const attendance = kept.get(scheduleId);
-  if (attendance === undefined) return null;
-  return attendance.status === "waiting" ? SENT : ALREADY_DECIDED;
+  const newest = kept.get(scheduleId)?.status ?? null;
+  if (takesNewPhoto(newest)) return null;
+  return newest === "waiting" ? SENT : ALREADY_DECIDED;
 }
 
 /**
