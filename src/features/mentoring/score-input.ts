@@ -73,6 +73,10 @@ export function readScore(text: string): number | null {
 /** What a row says of a box that holds no score. */
 export const NOT_A_SCORE = `Nilai harus bilangan bulat dari ${SCORE_MIN} sampai ${SCORE_MAX}.`;
 
+/** What a row says of an empty box where a score is kept: a saved score is only changed. */
+export const SCORE_NOT_EMPTIED =
+  "Nilai yang sudah disimpan tidak dapat dikosongkan. Isi nilai penggantinya.";
+
 const SOME_ARE_NO_SCORE = `Ada nilai yang bukan bilangan bulat dari ${SCORE_MIN} sampai ${SCORE_MAX}, jadi belum ada nilai yang disimpan. Perbaiki nilai yang ditandai, lalu simpan lagi.`;
 
 const INCOMPLETE =

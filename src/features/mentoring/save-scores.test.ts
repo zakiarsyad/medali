@@ -1,12 +1,17 @@
 // Sample NIMs of this file: 9962001000 to 9962001099.
+import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
+import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
+import { mentorGroups } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   changedSince,
   NO_PERIOD_TO_SCORE,
   NOT_ALLOWED_TO_SCORE,
+  NOT_MEMBERS_TO_SCORE,
   NOT_SCORES,
   SCORED_GROUP_NOT_HELD,
   saveScores,
@@ -24,6 +29,8 @@ import {
 import { testScoreLogOf, testScoresOf } from "./test-scores";
 
 const inTestDatabase = withTestDatabase();
+
+const OTHER_ROLES = ROLE_IDS.filter((role) => role !== "mentor");
 
 interface Records {
   program: number;
@@ -436,22 +443,150 @@ describe("saveScores refused", () => {
     });
   });
 
-  it("is refused to Kepala Unit, who only reads the scores", async () => {
+  it.each(OTHER_ROLES)("refuses %s, and saves nothing", async (role) => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const headOfUnit = await addTestAccount(db, "Kepala Unit Uji Nilai", [
-        "head_of_unit",
-      ]);
+      const other = await addTestAccount(db, `Akun Uji Nilai ${role}`, [role]);
 
       const saved = await saveScores(
         db,
-        headOfUnit,
+        other,
         scoresOf(records, { [records.ani]: 88 }),
         records.period.day,
       );
 
       expect(saved).toEqual(NOT_ALLOWED_TO_SCORE);
       expect(await keptScoreOf(db, records.ani)).toBeNull();
+    });
+  });
+
+  it("refuses Pengasuh who is also Kepala Unit a group they do not hold", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const both: AccountForAccess = {
+        ...records.otherMentor,
+        roles: ["mentor", "head_of_unit"],
+      };
+
+      const saved = await saveScores(
+        db,
+        both,
+        scoresOf(records, { [records.ani]: 88 }),
+        records.period.day,
+      );
+
+      expect(saved).toEqual(SCORED_GROUP_NOT_HELD);
+      expect(await keptScoreOf(db, records.ani)).toBeNull();
+    });
+  });
+
+  it("refuses the mentor who held the group before and was replaced", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const saved = await saveScores(
+        db,
+        records.earlierMentor,
+        scoresOf(records, { [records.ani]: 88 }),
+        records.period.day,
+      );
+
+      expect(saved).toEqual(SCORED_GROUP_NOT_HELD);
+      expect(await keptScoreOf(db, records.ani)).toBeNull();
+    });
+  });
+
+  it("gives the same answer for a group that does not exist and for one that is ended", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani } = records;
+      const missing = {
+        ...scoresOf(records, { [ani]: 88 }),
+        groupId: randomUUID(),
+      };
+
+      expect(await saveScores(db, mentor, missing, period.day)).toEqual(
+        SCORED_GROUP_NOT_HELD,
+      );
+
+      await db
+        .update(mentorGroups)
+        .set({ endedAt: new Date(), endedBy: mentor.id })
+        .where(eq(mentorGroups.id, records.groupId));
+
+      expect(
+        await saveScores(
+          db,
+          mentor,
+          scoresOf(records, { [ani]: 88 }),
+          period.day,
+        ),
+      ).toEqual(SCORED_GROUP_NOT_HELD);
+      expect(await keptScoreOf(db, ani)).toBeNull();
+    });
+  });
+
+  it("refuses a score for a student of another mentor's group sent under the own group, and saves nothing of that save", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { ani, outsider } = records;
+
+      const saved = await saveScores(
+        db,
+        records.mentor,
+        scoresOf(records, { [ani]: 88, [outsider]: 90 }),
+        records.period.day,
+      );
+
+      expect(saved).toEqual(NOT_MEMBERS_TO_SCORE);
+      expect(await keptScoreOf(db, outsider)).toBeNull();
+      expect(await keptScoreOf(db, ani)).toBeNull();
+    });
+  });
+
+  it("refuses a score for a student of another mentor's group sent under that group", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { outsider } = records;
+      const scores = {
+        ...scoresOf(records, { [outsider]: 90 }),
+        groupId: records.otherGroupId,
+      };
+
+      const saved = await saveScores(
+        db,
+        records.mentor,
+        scores,
+        records.period.day,
+      );
+
+      expect(saved).toEqual(SCORED_GROUP_NOT_HELD);
+      expect(await keptScoreOf(db, outsider)).toBeNull();
+    });
+  });
+
+  it("refuses a score for a member on Cuti, who is not listed, and for a student who does not exist", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, onLeave } = records;
+
+      expect(
+        await saveScores(
+          db,
+          mentor,
+          scoresOf(records, { [onLeave]: 75 }),
+          period.day,
+        ),
+      ).toEqual(NOT_MEMBERS_TO_SCORE);
+      expect(
+        await saveScores(
+          db,
+          mentor,
+          scoresOf(records, { [randomUUID()]: 75 }),
+          period.day,
+        ),
+      ).toEqual(NOT_MEMBERS_TO_SCORE);
+      expect(await keptScoreOf(db, onLeave)).toBeNull();
     });
   });
 

@@ -159,6 +159,16 @@ it is built here.
 22. A score sent that is the one kept writes nothing and adds no log
     line, as a save of an unchanged attendance list does.
 23. The log is kept in the database only. No screen shows it yet.
+24. The box takes any text, so what is no score stays to be read and
+    corrected. Its row says a score is a whole number from 0 to 100,
+    and one such box refuses the whole save.
+25. An emptied box where a score is saved is not sent. Its row says a
+    saved score cannot be emptied, and leaving is still asked about.
+26. A score for a student who is no Aktif member of the group named
+    refuses the whole save, with one answer for a student of another
+    group, one on Cuti and one who does not exist. A group the sender
+    does not hold today gets one answer too, whether it is another
+    mentor's, ended or missing.
 
 ## Steps
 
@@ -169,4 +179,4 @@ it is built here.
 - [x] 3. The tab with the numbers, the rubric and the table, read only.
 - [x] 4. Pengasuh types and saves scores.
 - [x] 5. Changed scores, the log and the two-window case.
-- [ ] 6. Refusals and the phone layout.
+- [x] 6. Refusals and the phone layout.

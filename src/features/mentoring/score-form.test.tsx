@@ -86,6 +86,32 @@ describe("ScoreBoxes", () => {
     expect(unscored).not.toContain("Belum dinilai");
   });
 
+  it.each(["101", "-1", "79.5", "abc"])(
+    "says on the row that %o is no whole number from 0 to 100, and marks its box",
+    (text) => {
+      const [scored, unscored] = rowsWith({ [SCORED.id]: text }, [SCORED.id]);
+
+      expect(scored).toContain("Nilai harus bilangan bulat dari 0 sampai 100.");
+      expect(scored).toMatch(/<input[^>]*aria-invalid="true"/);
+      expect(scored).not.toContain("Belum disimpan");
+      expect(scored).not.toContain("Diinput");
+      expect(scored).not.toContain("aktif");
+      expect(unscored).not.toContain("Nilai harus");
+      expect(unscored).not.toContain("aria-invalid");
+    },
+  );
+
+  it("says on the row that a saved score cannot be emptied, only changed", () => {
+    const [scored, unscored] = rowsWith({ [SCORED.id]: "", [UNSCORED.id]: "" });
+
+    expect(scored).toContain(
+      "Nilai yang sudah disimpan tidak dapat dikosongkan. Isi nilai penggantinya.",
+    );
+    expect(scored).toMatch(/<input[^>]*aria-invalid="true"/);
+    expect(unscored).toContain("Belum dinilai");
+    expect(unscored).not.toContain("dikosongkan");
+  });
+
   it("sends only the boxes that are to be saved, each under the id of its student", () => {
     const [scored, unscored] = rowsWith({ [UNSCORED.id]: "90" }, [UNSCORED.id]);
 

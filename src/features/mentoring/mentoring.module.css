@@ -325,6 +325,12 @@
   max-width: 100%;
 }
 
+/* Why what a box holds cannot be saved, on the row of that box. */
+.boxFault {
+  color: var(--bad);
+  overflow-wrap: anywhere;
+}
+
 /* The button under the scores, with what the save answered beside it. */
 .saveScores {
   display: flex;

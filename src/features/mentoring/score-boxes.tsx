@@ -6,17 +6,38 @@ import {
   spokenScore,
   type Typed,
 } from "./score-form-values";
-import { basedField, scoreField } from "./score-input";
+import {
+  basedField,
+  NOT_A_SCORE,
+  SCORE_NOT_EMPTIED,
+  scoreField,
+} from "./score-input";
 import type { ScoreRow } from "./score-rows";
 import { SavedState, ScoreRemark, ScoreTable } from "./score-table";
 
 /** Takes what was typed in the box of a student. */
 type OnType = (studentId: string, text: string) => void;
 
-/** The state of a row of the form: that its box is not saved yet, or what is saved. */
+/** Whether a box holds what cannot be saved. */
+function isFaulty(row: ScoreRow, typed: Typed): boolean {
+  const state = boxState(row, typed);
+  return state === "invalid" || state === "emptied";
+}
+
+/**
+ * The state of a row of the form: that its box is not saved yet, why
+ * what it holds cannot be saved, or what is saved.
+ */
 function BoxRemark({ row, typed }: { row: ScoreRow; typed: Typed }) {
-  if (boxState(row, typed) === "unsaved") {
+  const state = boxState(row, typed);
+  if (state === "unsaved") {
     return <span className={shared.badge}>Belum disimpan</span>;
+  }
+  if (state === "invalid") {
+    return <span className={styles.boxFault}>{NOT_A_SCORE}</span>;
+  }
+  if (state === "emptied") {
+    return <span className={styles.boxFault}>{SCORE_NOT_EMPTIED}</span>;
   }
   return <SavedState row={row} />;
 }
@@ -44,6 +65,7 @@ function ScoreBox({
         // Not a number box: what is no score stays to be read and corrected.
         inputMode="numeric"
         aria-label={`Nilai pengasuhan ${row.name}`}
+        aria-invalid={isFaulty(row, typed) || undefined}
         name={isSent ? scoreField(row.id) : undefined}
         value={boxText(row, typed)}
         onChange={(event) => onType(row.id, event.target.value)}
