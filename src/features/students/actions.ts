@@ -111,8 +111,11 @@ export async function changeStudentAction(
   const context = await inputContext(db, kept.cohortYear);
   const parsed = parseStudent(fields, context);
   if (!parsed.ok) return refusedForm(before, parsed.error, fields);
+  const group = parseGroupChoice(fields.mentorGroupId);
+  if (!group.ok) return refusedForm(before, group.error, fields);
 
-  const changed = await changeStudent(db, inputter, parsed.value);
+  const sent = { mentorGroupId: group.value };
+  const changed = await changeStudent(db, inputter, parsed.value, sent);
   if (!changed.ok) return refusedForm(before, changed.error, fields);
   refreshScreens();
   return savedForm(before, `Data ${parsed.value.name} diperbarui.`);

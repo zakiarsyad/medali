@@ -1,27 +1,26 @@
 // Sample NIMs of this file: 9900002700 to 9900002799.
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import {
-  mentorGroupMemberChanges,
-  mentorGroupMembers,
-  mentorGroups,
-  students,
-} from "@/db/schema";
+import { mentorGroups, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { findAddedStudent } from "./added-students";
 import { GROUP_DOES_NOT_FIT, GROUP_NOT_AVAILABLE } from "./fitting-group";
 import { inputStudent, NOT_ALLOWED } from "./input-student";
-import { listGroupChoices } from "./mentor-group-choices";
 import type { StudentInput } from "./student-input";
 import { readStudentMentorGroup } from "./student-mentor-group";
+import {
+  isSeenBy,
+  memberCount,
+  membersOf,
+  placementsOf,
+} from "./test-group-reads";
 import {
   addTestActor,
   addTestMentorGroup,
   addTestProgram,
 } from "./test-records";
-import { visibleTo } from "./visible-students";
 
 const inTestDatabase = withTestDatabase();
 
@@ -69,36 +68,6 @@ async function idOf(db: Database, nim: string): Promise<string | undefined> {
   return found?.id;
 }
 
-/** The students stored as members of a group, whatever their status. */
-async function membersOf(db: Database, groupId: string): Promise<string[]> {
-  const members = await db
-    .select({ studentId: mentorGroupMembers.studentId })
-    .from(mentorGroupMembers)
-    .where(eq(mentorGroupMembers.groupId, groupId));
-  return members.map((member) => member.studentId);
-}
-
-/** How many members the group's page counts: the Aktif ones. */
-async function memberCount(db: Database, groupId: string): Promise<number> {
-  const groups = await listGroupChoices(db);
-  return groups.find((group) => group.id === groupId)?.members ?? 0;
-}
-
-/** Whether the mentor's own read of students holds the student. */
-async function isSeenBy(db: Database, mentorId: string, studentId: string) {
-  const mentees = visibleTo({
-    kind: "some",
-    studyProgramIds: [],
-    menteesOf: [mentorId],
-    studentIds: [],
-  });
-  const seen = await db
-    .select({ id: students.id })
-    .from(students)
-    .where(and(eq(students.id, studentId), mentees));
-  return seen.length === 1;
-}
-
 describe("inputStudent with a kelompok pengasuhan chosen", () => {
   it.each(ALLOWED)(
     "lets %s put the new student in a group that fits",
@@ -122,12 +91,8 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
           id: groupId,
           mentor: { name: "Pengasuh Masuk" },
         });
-        const lines = await db
-          .select()
-          .from(mentorGroupMemberChanges)
-          .where(eq(mentorGroupMemberChanges.studentId, studentId));
-        expect(lines).toMatchObject([
-          { groupBefore: null, groupAfter: groupId, changedBy: actor.id },
+        expect(await placementsOf(db, studentId)).toEqual([
+          [null, groupId, actor.id],
         ]);
       });
     },
@@ -247,11 +212,7 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
       if (!studentId) throw new Error("The student was not added.");
       expect(await membersOf(db, groupId)).toEqual([]);
       expect(await readStudentMentorGroup(db, studentId)).toBeNull();
-      const lines = await db
-        .select()
-        .from(mentorGroupMemberChanges)
-        .where(eq(mentorGroupMemberChanges.studentId, studentId));
-      expect(lines).toEqual([]);
+      expect(await placementsOf(db, studentId)).toEqual([]);
     });
   });
 });

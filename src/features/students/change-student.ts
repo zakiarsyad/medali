@@ -9,13 +9,21 @@ import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { ADDED_HERE } from "./added-students";
 import { emailChangeOf } from "./email-change";
+import { holdFittingGroup } from "./fitting-group";
 import { type Actor, NOT_ALLOWED } from "./input-student";
+import { moveToGroup } from "./move-to-group";
 import type { StudentInput } from "./student-input";
 
 export const NOT_FOUND = {
   ok: false,
   error: "Mahasiswa tidak ditemukan.",
 } as const;
+
+/** What the change form sends beside the record. */
+export interface ChangeSent {
+  /** The kelompok pengasuhan chosen, or null for "Belum ditetapkan". */
+  mentorGroupId: string | null;
+}
 
 /**
  * Puts the name and the address on the account of a student. A change
@@ -57,16 +65,22 @@ async function changeAccountOf(
  * A kakak pendamping whose changed data no longer fits the duty stops
  * being one: no longer active, living in a dorm now, or not of the jenis
  * kelamin of the dorm they serve.
+ * The student leaves the group they were in for the one chosen, or for
+ * none, in the same save, and the move is logged. A group that does not
+ * fit the data being saved is refused, and nothing is changed.
  */
 export async function changeStudent(
   db: Database,
   actor: Actor,
   student: StudentInput,
+  sent: ChangeSent,
 ): Promise<Parsed<null>> {
   if (!may(actor.roles, "input_new_students")) return NOT_ALLOWED;
   const { nim, email, ...fields } = student;
   return refusedWhenEmailInUse(() =>
     db.transaction(async (tx) => {
+      const fits = await holdFittingGroup(tx, sent.mentorGroupId, student);
+      if (!fits.ok) return fits;
       const [changed] = await tx
         .update(students)
         .set(fields)
@@ -75,6 +89,7 @@ export async function changeStudent(
       if (!changed) return NOT_FOUND;
       await settleCompanionDuty(tx, changed.id);
       await changeAccountOf(tx, changed.id, fields.name, email, actor.id);
+      await moveToGroup(tx, changed.id, sent.mentorGroupId, actor.id);
       return { ok: true, value: null };
     }),
   );
@@ -105,7 +120,8 @@ async function removeAccountOf(
 /**
  * Marks a student put in through Pengguna baru mahasiswa as removed, and
  * their account with them. Nothing is erased. Gives the student's name.
- * A removed student stops being kakak pendamping.
+ * A removed student stops being kakak pendamping, and leaves their
+ * kelompok pengasuhan for good; the log keeps which group they left.
  */
 export async function removeStudent(
   db: Database,
@@ -123,6 +139,7 @@ export async function removeStudent(
     if (!removed) return NOT_FOUND;
     await endCompanionDuty(tx, removed.id);
     await removeAccountOf(tx, removed.id, actor.id, at);
+    await moveToGroup(tx, removed.id, null, actor.id);
     return { ok: true, value: removed.name };
   });
 }

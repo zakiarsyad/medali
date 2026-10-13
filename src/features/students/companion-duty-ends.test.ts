@@ -4,9 +4,10 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { dormCompanions, dormRooms, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { changeStudent, removeStudent } from "./change-student";
+import { removeStudent } from "./change-student";
 import { inputStudent } from "./input-student";
 import type { StudentInput } from "./student-input";
+import { changeTestStudent } from "./test-changes";
 import { addTestActor, addTestProgram, type TestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -78,7 +79,10 @@ describe("the duty of a kakak pendamping", () => {
       await inTestDatabase(async (db) => {
         const { staff, input, studentId } = await addPlacedCompanion(db);
 
-        const changed = await changeStudent(db, staff, { ...input, status });
+        const changed = await changeTestStudent(db, staff, {
+          ...input,
+          status,
+        });
 
         expect(changed.ok).toBe(true);
         expect(await dutyOf(db, studentId)).toEqual(ENDED);
@@ -91,9 +95,9 @@ describe("the duty of a kakak pendamping", () => {
     async (status) => {
       await inTestDatabase(async (db) => {
         const { staff, input, studentId } = await addPlacedCompanion(db);
-        await changeStudent(db, staff, { ...input, status });
+        await changeTestStudent(db, staff, { ...input, status });
 
-        await changeStudent(db, staff, { ...input, status: "active" });
+        await changeTestStudent(db, staff, { ...input, status: "active" });
 
         expect(await dutyOf(db, studentId)).toEqual(ENDED);
       });
@@ -109,7 +113,10 @@ describe("the duty of a kakak pendamping", () => {
       await inTestDatabase(async (db) => {
         const { staff, input, studentId } = await addPlacedCompanion(db);
 
-        const changed = await changeStudent(db, staff, { ...input, ...change });
+        const changed = await changeTestStudent(db, staff, {
+          ...input,
+          ...change,
+        });
 
         expect(changed.ok).toBe(true);
         expect(await dutyOf(db, studentId)).toEqual(ENDED);
@@ -121,7 +128,10 @@ describe("the duty of a kakak pendamping", () => {
     await inTestDatabase(async (db) => {
       const { staff, input, studentId } = await addPlacedCompanion(db);
 
-      const changed = await changeStudent(db, staff, { ...input, sex: "male" });
+      const changed = await changeTestStudent(db, staff, {
+        ...input,
+        sex: "male",
+      });
 
       expect(changed.ok).toBe(true);
       expect(await dutyOf(db, studentId)).toEqual(ENDED);
@@ -132,7 +142,7 @@ describe("the duty of a kakak pendamping", () => {
     await inTestDatabase(async (db) => {
       const { staff, input, studentId, roomId } = await addPlacedCompanion(db);
 
-      await changeStudent(db, staff, { ...input, name: "Sinta Uji Baru" });
+      await changeTestStudent(db, staff, { ...input, name: "Sinta Uji Baru" });
 
       expect(await dutyOf(db, studentId)).toEqual({ isActive: true, roomId });
     });
