@@ -10,6 +10,7 @@ import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addPpksActivity } from "./add-ppks-activity";
 import { changePpksActivity, removePpksActivity } from "./change-ppks-activity";
+import { restorePpksActivity } from "./restore-ppks-activity";
 import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
 import { saveStageBreakdown } from "./save-stage-breakdown";
@@ -102,4 +103,14 @@ export async function removePpksActivityAction(id: string): Promise<FormState> {
   if (!removed.ok) return { error: removed.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: "Kegiatan dihapus dari daftar." };
+}
+
+export async function restorePpksActivityAction(
+  id: string,
+): Promise<FormState> {
+  const manager = await activityManager();
+  const restored = await restorePpksActivity(database(), manager, id);
+  if (!restored.ok) return { error: restored.error, done: null };
+  revalidatePath(CURRICULUM_ADDRESS);
+  return { error: null, done: "Kegiatan dikembalikan ke daftar." };
 }

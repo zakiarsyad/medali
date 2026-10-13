@@ -8,9 +8,17 @@ import type { ValueIndicators } from "./main-indicators";
 import { type PpksActivity, wordsOf } from "./ppks-activities";
 import { PpksForm } from "./ppks-form";
 import { PpksTable } from "./ppks-table";
+import { RestorePpksButton } from "./restore-ppks-button";
 
 /** What an activity form is open for: a new activity, or one to change. */
 export type FormTarget = "new" | PpksActivity;
+
+/** What a list says after a save, a removal or a bringing back. */
+interface Said {
+  text: string;
+  /** The activity "Urungkan" brings back, after a removal only. */
+  removedId: string | null;
+}
 
 /**
  * One list of activities with the form to add or change one: the PPKS
@@ -44,16 +52,16 @@ export function PpksPanel({
   /** Opens the form of this list, or closes it with null. */
   onOpen: (target: FormTarget | null) => void;
 }) {
-  const [saved, setSaved] = useState<string | null>(null);
+  const [said, setSaid] = useState<Said | null>(null);
   const words = wordsOf(semester);
 
   function openFor(target: FormTarget) {
-    setSaved(null);
+    setSaid(null);
     onOpen(target);
   }
 
-  function showSaved(message: string) {
-    setSaved(message);
+  function closeWith(text: string, removedId: string | null) {
+    setSaid({ text, removedId });
     onOpen(null);
   }
 
@@ -74,9 +82,15 @@ export function PpksPanel({
           </button>
         )}
       </div>
-      {saved && (
-        <div className={styles.message}>
-          <FormMessage state={{ error: null, done: saved }} />
+      {said && (
+        <div className={`${styles.message} ${styles.undo}`}>
+          <FormMessage state={{ error: null, done: said.text }} />
+          {said.removedId && (
+            <RestorePpksButton
+              id={said.removedId}
+              onRestored={(text) => setSaid({ text, removedId: null })}
+            />
+          )}
         </div>
       )}
       {open && (
@@ -86,7 +100,8 @@ export function PpksPanel({
           activity={open === "new" ? null : open}
           newActivityId={newActivityId}
           values={values}
-          onSaved={showSaved}
+          onSaved={(text) => closeWith(text, null)}
+          onRemoved={closeWith}
           onCancel={() => onOpen(null)}
         />
       )}

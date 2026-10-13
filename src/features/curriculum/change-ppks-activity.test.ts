@@ -328,6 +328,42 @@ describe("changePpksActivity", () => {
 
 describe("removePpksActivity", () => {
   it.each(MAY_MANAGE)(
+    "lets %s remove a special activity: its row and its name stay, marked with who and when",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db, SENT_SPECIAL_ACTIVITY);
+        const actor = await addTestActor(db, "Pegawai Uji", [role]);
+
+        const removed = await removePpksActivity(db, actor, id);
+
+        expect(removed).toEqual({ ok: true, value: null });
+        expect(await readPpksActivities(db)).toEqual([]);
+        const [kept] = await db.select().from(ppksActivities);
+        expect(kept?.id).toBe(id);
+        expect(kept?.name).toBe("Kegiatan uji");
+        expect(kept?.semester).toBeNull();
+        expect(kept?.deletedBy).toBe(actor.id);
+        expect(kept?.deletedAt).toBeInstanceOf(Date);
+      });
+    },
+  );
+
+  it.each(MAY_NOT_MANAGE)(
+    "refuses %s for a special activity and removes nothing",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db, SENT_SPECIAL_ACTIVITY);
+        const actor = await addTestActor(db, "Pegawai Uji", [role]);
+
+        const removed = await removePpksActivity(db, actor, id);
+
+        expect(removed).toEqual(ACTIVITIES_NOT_ALLOWED);
+        expect(await readPpksActivities(db)).toHaveLength(1);
+      });
+    },
+  );
+
+  it.each(MAY_MANAGE)(
     "lets %s remove an activity, kept as a mark with who and when",
     async (role) => {
       await inTestDatabase(async (db) => {

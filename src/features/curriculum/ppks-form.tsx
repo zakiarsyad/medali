@@ -35,6 +35,7 @@ export function PpksForm({
   newActivityId,
   values,
   onSaved,
+  onRemoved,
   onCancel,
 }: {
   semester: number | null;
@@ -45,6 +46,8 @@ export function PpksForm({
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
   onSaved: (message: string) => void;
+  /** Told the message of the removal and which activity was removed. */
+  onRemoved: (message: string, id: string) => void;
   onCancel: () => void;
 }) {
   const [chosen, setChosen] = useState<ValueKey[]>(activity?.valueKeys ?? []);
@@ -164,7 +167,7 @@ export function PpksForm({
             <RemovePpksButton
               id={activity.id}
               name={activity.name}
-              onRemoved={onSaved}
+              onRemoved={(message) => onRemoved(message, activity.id)}
             />
           )}
         </div>

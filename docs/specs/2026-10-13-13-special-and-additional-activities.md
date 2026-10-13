@@ -122,5 +122,5 @@ The issue did not say, so these were decided:
 - [x] 3. "Tambah kegiatan khusus" adds an activity, reusing the PPKS
   form.
 - [x] 4. "Ubah" changes an activity.
-- [ ] 5. "Hapus" removes it after a confirm, with "Urungkan".
+- [x] 5. "Hapus" removes it after a confirm, with "Urungkan".
 
