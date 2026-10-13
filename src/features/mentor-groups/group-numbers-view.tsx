@@ -6,7 +6,17 @@ function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
 }
 
-export function GroupNumbersView({ numbers }: { numbers: GroupNumbers }) {
+export function GroupNumbersView({
+  numbers,
+  poorGroups,
+}: {
+  numbers: GroupNumbers;
+  /**
+   * How many groups have Kurang as their last evaluation, or null for an
+   * account that may not see evaluations: it gets no such number.
+   */
+  poorGroups: number | null;
+}) {
   const { groups, members, usualSize } = numbers;
   return (
     <NumberCards>
@@ -20,6 +30,13 @@ export function GroupNumbersView({ numbers }: { numbers: GroupNumbers }) {
         amount={averageSize(members, groups)}
         note={`rata-rata; ${shown(usualSize)} dari ${shown(groups)} kelompok berisi ${USUAL_SIZE_WORDS}`}
       />
+      {poorGroups !== null && (
+        <NumberCard
+          label="Evaluasi kurang"
+          amount={poorGroups}
+          note="kelompok, pertimbangkan penggantian"
+        />
+      )}
     </NumberCards>
   );
 }

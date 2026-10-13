@@ -655,3 +655,82 @@ export const cohortAssignmentChanges = pgTable(
     index("cohort_assignment_changes_assignment").on(table.assignmentId),
   ],
 );
+
+/**
+ * The evaluation of the mentor of a group for one academic period: four
+ * values of 0 to 100, by Kepala Unit. A group has one for each period at
+ * most; saving again corrects it. The mentor is the one who held the
+ * group when it was first saved. Never deleted: its log lines hold it.
+ */
+export const mentorEvaluations = pgTable(
+  "mentor_evaluations",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    mentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    /** "Keaktifan pendampingan". */
+    activity: smallint().notNull(),
+    /** "Kehadiran pada kegiatan kelompok". */
+    attendance: smallint().notNull(),
+    /** "Capaian karakter kelompok". */
+    achievement: smallint().notNull(),
+    /** "Umpan balik mahasiswa". */
+    feedback: smallint().notNull(),
+    note: text(),
+    evaluatedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** When it was saved last, the first time or as a correction. */
+    evaluatedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("mentor_evaluations_one_per_group_and_period").on(
+      table.groupId,
+      table.periodId,
+    ),
+    index("mentor_evaluations_mentor").on(table.mentorId),
+    check(
+      "mentor_evaluations_values_0_to_100",
+      sql`${table.activity} between 0 and 100 and ${table.attendance} between 0 and 100 and ${table.achievement} between 0 and 100 and ${table.feedback} between 0 and 100`,
+    ),
+  ],
+);
+
+/**
+ * Every save of an evaluation: who, when, and its values and note before
+ * and after. The first save has none before. Rows here cannot be changed
+ * or deleted; the database refuses it.
+ */
+export const mentorEvaluationChanges = pgTable(
+  "mentor_evaluation_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    evaluationId: uuid()
+      .notNull()
+      .references(() => mentorEvaluations.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    activityBefore: smallint(),
+    attendanceBefore: smallint(),
+    achievementBefore: smallint(),
+    feedbackBefore: smallint(),
+    noteBefore: text(),
+    activityAfter: smallint().notNull(),
+    attendanceAfter: smallint().notNull(),
+    achievementAfter: smallint().notNull(),
+    feedbackAfter: smallint().notNull(),
+    noteAfter: text(),
+  },
+  (table) => [
+    index("mentor_evaluation_changes_evaluation").on(table.evaluationId),
+  ],
+);

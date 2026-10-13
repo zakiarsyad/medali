@@ -1,5 +1,6 @@
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { campusDay } from "@/academic-periods/campus-day";
+import { periodTitle } from "@/academic-periods/period-labels";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import { database } from "@/db/database";
@@ -7,7 +8,6 @@ import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AddPeriodForm } from "./add-period-form";
-import { periodTitle } from "./period-labels";
 import { PeriodDates, PeriodList } from "./period-list";
 import styles from "./periods.module.css";
 import { academicYearOn } from "./suggested-start";

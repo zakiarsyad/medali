@@ -1,6 +1,6 @@
+import { periodTitle } from "@/academic-periods/period-labels";
 import type { Database } from "@/db/connect";
 import type { NewPeriod } from "./period-input";
-import { periodTitle } from "./period-labels";
 import { findOverlap, overlapRefusal } from "./period-overlap";
 
 export type BrokenRule = "same_year_and_term" | "overlap";

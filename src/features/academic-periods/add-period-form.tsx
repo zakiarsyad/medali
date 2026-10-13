@@ -7,11 +7,11 @@ import {
   useState,
 } from "react";
 import type { Term } from "@/academic-periods/academic-period";
+import { academicYear, TERM_LABELS } from "@/academic-periods/period-labels";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { addPeriodAction } from "./actions";
 import { parseStartYear } from "./period-input";
-import { academicYear, TERM_LABELS } from "./period-labels";
 import { suggestedStart } from "./suggested-start";
 
 const START: FormState = { error: null, done: null };

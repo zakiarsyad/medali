@@ -12,6 +12,7 @@ import { MentorScreen } from "@/features/mentor-groups/mentor-screen";
 import { newMentorsAddress } from "@/features/mentor-groups/new-mentors-address";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorStudentAddresses } from "@/features/mentor-groups/open-member-address";
+import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
@@ -40,6 +41,7 @@ async function MentorPage({
     <>
       <MentorScreen
         limit={limit}
+        evaluationLimit={evaluationRowsFor(account)}
         mentorId={mentorId}
         detailVisible={detailVisibleTo(account)}
         studentAddressOf={openMentorStudentAddresses(account.roles, mentorId)}
@@ -78,6 +80,7 @@ export default async function MentorsPage(
     <MentorListScreen
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "daftar" }}
       limit={limit}
+      evaluationLimit={evaluationRowsFor(account)}
       params={params}
       usersAddress={newMentorsAddress(account.roles, USERS_ADDRESS)}
     />
