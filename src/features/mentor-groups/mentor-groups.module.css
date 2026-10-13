@@ -134,6 +134,61 @@
   grid-column: 1 / -1;
 }
 
+/* The survey statements, folded away under the parts they belong to. */
+.folded {
+  margin-top: var(--space-md);
+}
+
+.folded summary {
+  font-weight: var(--weight-heavy);
+  cursor: pointer;
+}
+
+.statements {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: var(--space-sm) 0 0;
+  padding-left: var(--space-xl);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/*
+ * The facts of the running survey period, side by side where they fit.
+ * A column is never asked to be wider than the room a narrow phone leaves.
+ */
+.surveyFacts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(var(--box-min-width), 100%), 1fr)
+    );
+  gap: var(--space-md) var(--space-lg);
+  margin: var(--space-md) 0 0;
+}
+
+.surveyFacts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.surveyFacts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+/* A button beside a field of a form, level with the field and not with its label. */
+.fieldEnd {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* What a change of the survey period did, above whatever the panel shows next. */
+.said {
+  margin-bottom: var(--space-md);
+}
+
 .good,
 .fair,
 .poor {

@@ -68,6 +68,7 @@ describe("parsePeriodDates", () => {
     ["a day written another way", "01/08/2026", "2027-01-31"],
     ["a day that does not exist", "2026-08-01", "2027-02-30"],
     ["a month that does not exist", "2026-13-01", "2027-01-31"],
+    ["a hand-made year 0, which is no day", "0000-01-01", "2027-01-31"],
   ])("refuses %s", (_what, startsOn, endsOn) => {
     expect(parsePeriodDates({ startsOn, endsOn })).toEqual({
       ok: false,
@@ -76,7 +77,7 @@ describe("parsePeriodDates", () => {
   });
 
   it.each([
-    ["a hand-made year 0", "0000-01-01", "2027-01-31"],
+    ["a hand-made year 1", "0001-01-01", "2027-01-31"],
     ["a start before 2000", "1999-12-31", "2000-06-30"],
     ["an end far ahead", "2026-08-01", "2207-01-31"],
     ["an end after 2101", "2101-08-01", "2102-01-01"],
