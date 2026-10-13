@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import {
   accounts,
@@ -9,6 +9,7 @@ import {
 import { NOT_ENDED } from "@/mentoring/group-in-force";
 import { MEMBERS } from "@/mentoring/member-count";
 import type { GroupCodeParts } from "@/ui/group-code";
+import { HELD_TODAY } from "./listed-group";
 
 /** A kelompok pengasuhan the student form may offer. */
 export interface GroupChoice extends GroupCodeParts {
@@ -30,11 +31,6 @@ const CHOICE = {
   mentorName: accounts.name,
   members: MEMBERS,
 };
-
-const HELD_TODAY = and(
-  eq(mentorGroupMentors.groupId, mentorGroups.id),
-  isNull(mentorGroupMentors.endsOn),
-);
 
 /**
  * Every group in force, in the order of its number, in one read. The form

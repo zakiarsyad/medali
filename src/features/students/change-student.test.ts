@@ -450,6 +450,7 @@ describe("removeStudent", () => {
           added: before.added - 1,
           addedActive: before.addedActive - 1,
           addedResidents: before.addedResidents,
+          addedWithoutGroup: before.addedWithoutGroup - 1,
         });
       });
     },

@@ -30,6 +30,10 @@
   line-height: var(--leading-title);
 }
 
+.numberWarned {
+  color: var(--warn);
+}
+
 .numberNote {
   margin: 0;
   color: var(--muted);
@@ -56,7 +60,8 @@
   color: var(--ok);
 }
 
-.onLeave {
+.onLeave,
+.noGroup {
   color: var(--warn);
 }
 

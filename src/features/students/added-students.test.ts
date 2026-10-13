@@ -329,6 +329,7 @@ describe("countStudents", () => {
         added: before.added + 2,
         addedActive: before.addedActive + 1,
         addedResidents: before.addedResidents,
+        addedWithoutGroup: before.addedWithoutGroup + 1,
       });
     });
   });

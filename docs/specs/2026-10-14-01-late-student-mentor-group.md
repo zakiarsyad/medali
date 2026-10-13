@@ -104,7 +104,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The "Kelompok pengasuhan" choice in the form, with the server
   check that the group fits.
-- [ ] 2. The column in the list and the number "Belum punya kelompok
+- [x] 2. The column in the list and the number "Belum punya kelompok
   pengasuhan".
 - [ ] 3. Moving a student to another group or to none, and removal
   taking the student out of the group, with their checks.
