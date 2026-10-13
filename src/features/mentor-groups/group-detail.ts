@@ -19,6 +19,8 @@ import { maySeeGroup } from "./visible-groups";
 /** One mentor line of a group. The NIP of the mentor is never read. */
 export interface GroupMentorLine {
   id: string;
+  /** The mentor's account, which the address of their page names. */
+  mentorId: string;
   name: string;
   title: string | null;
   unit: string | null;
@@ -43,6 +45,8 @@ export interface GroupMember {
 /** What the page of one group shows. */
 export interface GroupDetail extends GroupCodeParts {
   id: string;
+  /** Decides which accounts may open the page of its mentor. */
+  studyProgramId: number;
   studyProgram: string;
   startsOn: string;
   /** The newest first. */
@@ -71,6 +75,7 @@ const GROUP = {
 
 const MENTOR_LINE = {
   id: mentorGroupMentors.id,
+  mentorId: mentorGroupMentors.mentorId,
   name: accounts.name,
   title: accounts.title,
   unit: accounts.unit,
@@ -135,11 +140,10 @@ export async function readGroup(
     .innerJoin(studyPrograms, eq(studyPrograms.id, mentorGroups.studyProgramId))
     .where(and(eq(mentorGroups.id, id), NOT_ENDED));
   if (!found) return NOT_FOUND;
-  const { studyProgramId, ...group } = found;
-  if (!maySeeGroup(limit, studyProgramId)) return { kind: "refused" };
+  if (!maySeeGroup(limit, found.studyProgramId)) return { kind: "refused" };
   const [mentors, members] = await Promise.all([
     readMentorLines(db, id),
     readMembers(db, id, detailVisible),
   ]);
-  return { kind: "found", group: { ...group, mentors, members } };
+  return { kind: "found", group: { ...found, mentors, members } };
 }

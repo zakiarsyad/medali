@@ -9,15 +9,22 @@ export function mentorWords(group: ShownMentorGroup | null): string {
   return mentorLabel(group.mentor);
 }
 
+/** What the line under the mentor says before the group's code. */
+export const BEFORE_GROUP_CODE = "Kelompok pengasuhan ";
+
 /**
- * The line under the mentor: the group, since when its mentor holds it,
- * and the mentors before when it has had any.
+ * What the line under the mentor says after the group's code: since when
+ * its mentor holds it, and the mentors before when it has had any.
  */
-export function mentorGroupWords(group: ShownMentorGroup): string {
-  const named = `Kelompok pengasuhan ${groupCode(group)}`;
+export function afterGroupCode(group: ShownMentorGroup): string {
   const held = group.mentor
-    ? `${named}, diasuh sejak ${shownDay(group.mentor.since)}.`
-    : `${named}.`;
+    ? `, diasuh sejak ${shownDay(group.mentor.since)}.`
+    : ".";
   if (group.earlierMentors.length === 0) return held;
   return `${held} Sebelumnya: ${group.earlierMentors.join(", ")}.`;
+}
+
+/** The line under the mentor, as plain words. */
+export function mentorGroupWords(group: ShownMentorGroup): string {
+  return `${BEFORE_GROUP_CODE}${groupCode(group)}${afterGroupCode(group)}`;
 }

@@ -52,13 +52,14 @@ async function addFullGroup(db: Database) {
     studentIds.push(await addTestStudent(db, program, row));
   }
   await addTestMembers(db, id, studentIds);
-  return { id, program, studentIds };
+  return { id, program, earlier, mentor, studentIds };
 }
 
 describe("readGroup", () => {
   it("gives what the page of a group shows", async () => {
     await inTestDatabase(async (db) => {
-      const { id, studentIds } = await addFullGroup(db);
+      const { id, program, earlier, mentor, studentIds } =
+        await addFullGroup(db);
 
       const answer = await readGroup(db, EVERYONE, id, null);
 
@@ -66,6 +67,7 @@ describe("readGroup", () => {
         kind: "found",
         group: {
           id,
+          studyProgramId: program,
           cohortYear: 2024,
           entryPath: "regular",
           number: 1,
@@ -75,6 +77,7 @@ describe("readGroup", () => {
           mentors: [
             {
               id: expect.any(String),
+              mentorId: mentor,
               name: "Pengasuh Uji Baru",
               title: "M.Si.",
               unit: "Unit Uji",
@@ -84,6 +87,7 @@ describe("readGroup", () => {
             },
             {
               id: expect.any(String),
+              mentorId: earlier,
               name: "Pengasuh Uji Lama",
               title: null,
               unit: null,
