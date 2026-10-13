@@ -151,6 +151,9 @@ The issue did not say, so these were decided:
 23. Mahasiswa and Penilai Mahasiswa who type the address of the tab are
     refused. Kegiatan karakter itself stays the empty page for them.
 24. An upload range of 0 ends on the last day of the schedule.
+25. When someone changes or removes a schedule that another person
+    removed in the meantime, they are told it is gone and to close the
+    form, and the table then shows the newest list.
 
 ## Steps
 

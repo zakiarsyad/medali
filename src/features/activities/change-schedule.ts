@@ -14,9 +14,11 @@ import {
 import { placeOf, type SavedSchedule } from "./schedule-place";
 import { momentOf } from "./schedule-version";
 
+/** What a change or a removal answers when the schedule is not there. */
 export const SCHEDULE_NOT_FOUND = {
   ok: false,
-  error: "Jadwal tidak ditemukan.",
+  error:
+    "Jadwal ini sudah tidak ada, mungkin baru saja dihapus orang lain. Tekan Batal; tabel di bawah sudah menampilkan daftar terbaru.",
 } as const;
 
 /** What a change answers when the schedule was changed after its form opened. */
@@ -25,6 +27,18 @@ export const SCHEDULE_CHANGED_BY_OTHER = {
   error:
     "Jadwal ini baru saja diubah orang lain, jadi perubahan Anda tidak disimpan. Tabel di bawah sudah menampilkan versi terbaru. Tekan Batal, lalu Ubah lagi bila masih perlu.",
 } as const;
+
+/**
+ * Whether a refusal means the list the form was opened from is out of
+ * date: someone else changed or removed the schedule since. The list is
+ * then read again, so the person sees what is there now.
+ */
+export function isOutdatedList(error: string): boolean {
+  return (
+    error === SCHEDULE_NOT_FOUND.error ||
+    error === SCHEDULE_CHANGED_BY_OTHER.error
+  );
+}
 
 /** Matches the schedule with that id when it is not removed. */
 export function keptSchedule(id: string): SQL | undefined {
@@ -98,9 +112,11 @@ async function whyNotChanged(
  * and gives it the academic period that runs on its first day as it is
  * now. `version` is the one the form was opened with: when the schedule
  * was changed since, by someone else or by the same form sent before, the
- * change is refused and nothing is overwritten. The activity the schedule
- * already holds may stay after it was removed from Kurikulum; any other
- * must be in the list. Gives back the activity that is scheduled.
+ * change is refused and nothing is overwritten. That is said before any
+ * fault in the form itself: the person must first see the newest version.
+ * The activity the schedule already holds may stay after it was removed
+ * from Kurikulum; any other must be in the list. Gives back the activity
+ * that is scheduled.
  */
 export async function changeSchedule(
   db: Database,
@@ -110,8 +126,6 @@ export async function changeSchedule(
   sent: SentSchedule,
 ): Promise<Parsed<SavedSchedule>> {
   if (!may(actor.roles, "manage_activities")) return SCHEDULES_NOT_ALLOWED;
-  const parsed = parseSchedule(sent);
-  if (!parsed.ok) return parsed;
   if (!isUuid(id)) return SCHEDULE_NOT_FOUND;
 
   const kept = await readKept(db, id);
@@ -120,6 +134,8 @@ export async function changeSchedule(
   const isAsOpened = openedAt?.getTime() === kept.changedAt.getTime();
   if (openedAt === null || !isAsOpened) return SCHEDULE_CHANGED_BY_OTHER;
 
+  const parsed = parseSchedule(sent);
+  if (!parsed.ok) return parsed;
   const place = await placeOf(db, parsed.value, kept.activityId);
   if (!place.ok) return place;
   const parts = {

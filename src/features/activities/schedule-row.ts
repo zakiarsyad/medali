@@ -1,4 +1,4 @@
-import type { ActivityChoice } from "./activity-choices";
+import type { ActivityChoice } from "./activity-choice";
 import type { PeriodParts } from "./participants";
 import type { StatusParts } from "./schedule-status";
 

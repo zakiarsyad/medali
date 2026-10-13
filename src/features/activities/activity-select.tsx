@@ -1,5 +1,5 @@
 import shared from "@/ui/data-screen.module.css";
-import { type ActivityChoice, choicesBySemester } from "./activity-choices";
+import { type ActivityChoice, choicesBySemester } from "./activity-choice";
 import { semesterGroupWords } from "./form-words";
 
 /** Ties the words "Kegiatan dari Kurikulum" to the list they name. */

@@ -270,6 +270,66 @@ describe("a schedule changed by two people from the same version", () => {
     });
   });
 
+  it.each([
+    ["a last day before the first", { endsOn: "2130-10-04" }],
+    ["hours out of order", { endTime: "13:00" }],
+    ["no activity", { activityId: "" }],
+    ["an upload range out of its limits", { uploadCount: "99" }],
+  ])(
+    "tells the second it has changed before it names %s in their form",
+    async (_kind, fault) => {
+      await inTestDatabase(async (db) => {
+        const { actor, id, version, sent } = await addRecords(db);
+        const other = await addTestActor(db, "Kepala Uji Jadwal", [
+          "head_of_unit",
+        ]);
+        await changeSchedule(db, actor, id, version, sent);
+        const before = await storedOf(db, id);
+
+        const second = await changeSchedule(db, other, id, version, {
+          ...sent,
+          ...fault,
+        });
+
+        expect(second).toEqual(SCHEDULE_CHANGED_BY_OTHER);
+        expect(await storedOf(db, id)).toEqual(before);
+      });
+    },
+  );
+
+  it("names the fault in a form that holds the newest version", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, id, version, sent } = await addRecords(db);
+
+      const changed = await changeSchedule(db, actor, id, version, {
+        ...sent,
+        endTime: "13:00",
+      });
+
+      expect(changed).toEqual({
+        ok: false,
+        error: "Jam selesai harus setelah jam mulai.",
+      });
+    });
+  });
+
+  it("says the schedule is gone, not what is wrong in the form, once someone else removed it", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, id, version, sent } = await addRecords(db);
+      await db
+        .update(activitySchedules)
+        .set({ deletedAt: new Date(), deletedBy: actor.id })
+        .where(eq(activitySchedules.id, id));
+
+      const changed = await changeSchedule(db, actor, id, version, {
+        ...sent,
+        endsOn: "2130-10-04",
+      });
+
+      expect(changed).toEqual(SCHEDULE_NOT_FOUND);
+    });
+  });
+
   it("lets the second through once their form holds the new version", async () => {
     await inTestDatabase(async (db) => {
       const { actor, id, version, sent } = await addRecords(db);

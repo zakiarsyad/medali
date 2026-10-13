@@ -56,3 +56,17 @@ describe("the schedule form on a phone", () => {
     expect(ruleOf(".pushedEnd")).toContain("flex-wrap: wrap;");
   });
 });
+
+describe('the form that "Ubah" scrolls into view', () => {
+  const BOARD = readFileSync(`${FOLDER}/schedule-board.tsx`, "utf8");
+  const TOKENS = readFileSync("src/ui/tokens.css", "utf8");
+
+  it("stops below the top bar, which stays at the top of the screen, not under it", () => {
+    expect(BOARD).toMatch(/styles\.formPanel\}`\} ref=\{panel\}/);
+    expect(BOARD).toContain("panel.current?.scrollIntoView(");
+    expect(ruleOf(".formPanel")).toContain(
+      "scroll-margin-top: var(--below-top-bar);",
+    );
+    expect(TOKENS).toMatch(/--below-top-bar: calc\([^;]+\);/);
+  });
+});

@@ -1,5 +1,5 @@
 import { runningPeriodOn } from "@/academic-periods/running-period";
-import type { ActivityChoice } from "./activity-choices";
+import type { ActivityChoice } from "./activity-choice";
 import {
   type CohortCount,
   countParticipants,

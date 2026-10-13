@@ -9,7 +9,7 @@ import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addSchedule } from "./add-schedule";
-import { changeSchedule, SCHEDULE_CHANGED_BY_OTHER } from "./change-schedule";
+import { changeSchedule, isOutdatedList } from "./change-schedule";
 import { REMOVED_WORDS, savedWords } from "./form-words";
 import { removeSchedule } from "./remove-schedule";
 import type { SentSchedule } from "./schedule-input";
@@ -35,6 +35,16 @@ function sentSchedule(form: FormData): SentSchedule {
   };
 }
 
+/**
+ * What a refused save or removal answers. When someone else changed or
+ * removed the schedule first, the list behind the form is read again, so
+ * it shows what is there now.
+ */
+function refusal(error: string): FormState {
+  if (isOutdatedList(error)) revalidatePath(SCHEDULES_ADDRESS);
+  return { error, done: null };
+}
+
 export async function saveScheduleAction(
   _before: FormState,
   form: FormData,
@@ -49,11 +59,8 @@ export async function saveScheduleAction(
     version === ""
       ? await addSchedule(database(), manager, id, sent)
       : await changeSchedule(database(), manager, id, version, sent);
-  // Also when someone else changed the schedule first: the list behind
-  // the form is read again, so it shows their version.
-  const isStale = !saved.ok && saved.error === SCHEDULE_CHANGED_BY_OTHER.error;
-  if (saved.ok || isStale) revalidatePath(SCHEDULES_ADDRESS);
-  if (!saved.ok) return { error: saved.error, done: null };
+  if (!saved.ok) return refusal(saved.error);
+  revalidatePath(SCHEDULES_ADDRESS);
   const { name, semester } = saved.value;
   return { error: null, done: savedWords(name, semester) };
 }
@@ -61,7 +68,7 @@ export async function saveScheduleAction(
 export async function removeScheduleAction(id: string): Promise<FormState> {
   const manager = await activityManager();
   const removed = await removeSchedule(database(), manager, id);
-  if (!removed.ok) return { error: removed.error, done: null };
+  if (!removed.ok) return refusal(removed.error);
   revalidatePath(SCHEDULES_ADDRESS);
   return { error: null, done: REMOVED_WORDS };
 }

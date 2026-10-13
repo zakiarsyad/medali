@@ -1,4 +1,4 @@
-import type { ActivityChoice } from "./activity-choices";
+import type { ActivityChoice } from "./activity-choice";
 import type { FormParts } from "./form-values";
 import type { ScheduleRow } from "./schedule-row";
 

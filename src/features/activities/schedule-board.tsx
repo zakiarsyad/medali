@@ -59,7 +59,7 @@ export function ScheduleBoard({
   return (
     <>
       {form && (
-        <section className={shared.panel} ref={panel}>
+        <section className={`${shared.panel} ${styles.formPanel}`} ref={panel}>
           {target ? (
             <ScheduleForm
               // Made anew for each schedule and each of its versions, so

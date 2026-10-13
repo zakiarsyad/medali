@@ -2,7 +2,7 @@ import shared from "@/ui/data-screen.module.css";
 import { MEDALI_VALUES } from "@/ui/medali-values";
 import { ValueSwatch } from "@/ui/value-swatch";
 import styles from "./activities.module.css";
-import type { ActivityChoice } from "./activity-choices";
+import type { ActivityChoice } from "./activity-choice";
 import { activityTargetWords } from "./form-words";
 
 /** What Kurikulum says of the chosen activity: nilai, indicators, target. */

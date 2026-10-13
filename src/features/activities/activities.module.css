@@ -127,3 +127,8 @@
   align-items: center;
   margin-left: auto;
 }
+
+/* "Ubah" scrolls here: the panel must stop below the top bar, not under it. */
+.formPanel {
+  scroll-margin-top: var(--below-top-bar);
+}
