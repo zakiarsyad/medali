@@ -146,6 +146,24 @@ change any of these.
 19. The check of backups runs the real tools in Docker, on a database
     and a file storage it makes for itself and removes again. So the
     checks need Docker, on a local computer and on GitHub.
+20. What the tools themselves say when they fail is never shown: it
+    could name the database's address, a file or a record. A failure is
+    one plain line by the command.
+21. The locking tool reports a wrong password and a backup damaged in
+    its first bytes in the same way. So that message says the backup
+    does not open with the password now in the settings. A backup
+    broken further on and one cut short share one other message.
+22. A backup's name is the moment it was finished.
+23. The backup folder setting is a full path on the server. A bare name
+    would be taken for a place inside Docker, not for a folder.
+24. The word `GANTI-SEMUA` given for a package that holds no data
+    restores without asking again: there is nothing to replace.
+25. When only the last part of a restore fails, the removal of files
+    the backup does not hold, the command says the database is in and
+    asks to run it again.
+26. The number to keep is a whole number from 1 to 999999.
+27. The app part is also handed the four backup settings, because it is
+    handed the whole settings file. It does not use them.
 
 ## Steps
 

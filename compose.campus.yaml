@@ -1,8 +1,8 @@
 name: medali-campus
 
 # The campus server package: the app, its database, its file storage and
-# the backup part, started together. Its keys and passwords come from the settings file
-# .env.campus beside this file, which is never in the repo;
+# the backup part, started together. Its keys and passwords come from the
+# settings file .env.campus beside this file, which is never in the repo;
 # .env.campus.example lists what it holds. docs/HOSTING.md says how to
 # start, update and stop the package.
 
