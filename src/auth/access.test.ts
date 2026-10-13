@@ -876,6 +876,47 @@ describe("tabsFor", () => {
       expect(paths(tabsFor([role], "settings"))).not.toContain("periode");
     }
   });
+
+  const scheduleReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+    "upk_staff",
+  ];
+
+  it.each(scheduleReaders)("gives %s the tab Kegiatan PPKS", (role) => {
+    expect(paths(tabsFor([role], "activities"))).toEqual(["ppks"]);
+    expect(mayOpenTab([role], "activities", "ppks")).toBe(true);
+  });
+
+  it("refuses the tab Kegiatan PPKS to every other role", () => {
+    const others = ROLE_IDS.filter((role) => !scheduleReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - scheduleReaders.length);
+    for (const role of others) {
+      expect(mayOpenTab([role], "activities", "ppks")).toBe(false);
+    }
+  });
+
+  it.each(["student", "assessor"] as const)(
+    "leaves %s on Kegiatan karakter without a tab, so the page stays empty",
+    (role) => {
+      expect(mayOpenPage([role], "activities")).toBe(true);
+      expect(tabsFor([role], "activities")).toEqual([]);
+      expect(mayOpenTab([role], "activities", "ppks")).toBe(false);
+    },
+  );
+
+  it("gives the tab Kegiatan PPKS to every role that may manage activities", () => {
+    const managers = ROLE_IDS.filter((role) =>
+      may([role], "manage_activities"),
+    );
+
+    expect(managers.length).toBeGreaterThan(0);
+    for (const role of managers) {
+      expect(mayOpenTab([role], "activities", "ppks")).toBe(true);
+    }
+  });
 });
 
 describe("mayOpenPage and mayOpenTab", () => {
@@ -1310,12 +1351,27 @@ describe("the permission list", () => {
     }
   });
 
+  /**
+   * The pages a role opens while none of their tabs is for that role yet.
+   * Kegiatan karakter stays the empty page for Mahasiswa and Penilai
+   * Mahasiswa until their own views of it are built.
+   */
+  const NO_TAB_YET: Partial<Record<RoleId, string[]>> = {
+    student: ["activities"],
+    assessor: ["activities"],
+  };
+
   it.each(ROLE_IDS)(
-    "gives %s at least one tab on each tabbed page it opens",
+    "gives %s at least one tab on each tabbed page it opens, but for a page whose tab for it is not built yet",
     (role) => {
       for (const page of pagesFor([role])) {
         if (!("tabs" in page)) continue;
-        expect(tabsFor([role], page.id).length).toBeGreaterThan(0);
+        const tabs = tabsFor([role], page.id);
+        if (NO_TAB_YET[role]?.includes(page.id)) {
+          expect(tabs).toEqual([]);
+          continue;
+        }
+        expect(tabs.length).toBeGreaterThan(0);
       }
     },
   );
