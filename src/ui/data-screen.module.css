@@ -16,7 +16,11 @@
 
 .form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
+  /* A column is never asked to be wider than the room a narrow phone leaves. */
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(var(--card-min-width), 100%), 1fr)
+    );
   gap: var(--space-md) var(--space-lg);
   margin-top: var(--space-lg);
 }
