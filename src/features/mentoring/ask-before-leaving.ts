@@ -1,8 +1,5 @@
 import { useEffect } from "react";
 
-const QUESTION =
-  "Perubahan daftar hadir belum disimpan. Tinggalkan tanpa menyimpan?";
-
 /** What tells whether a press on a link leaves the page shown. */
 export interface LinkPress {
   /** Which mouse button: 0 is the main one. */
@@ -38,9 +35,13 @@ function linkPressOf(event: MouseEvent): LinkPress | null {
  * by a link of the app, such as "Tutup", a tab, another group or the
  * menu, and by loading the page anew or closing it, where the browser
  * asks in its own words. A press that the person takes back goes nowhere.
- * The browser's own step back is not asked about.
+ * The browser's own step back is not asked about. `question` is what the
+ * form asks, in its own words.
  */
-export function useAskBeforeLeaving(isUnsaved: boolean): void {
+export function useAskBeforeLeaving(
+  isUnsaved: boolean,
+  question: string,
+): void {
   useEffect(() => {
     if (!isUnsaved) return;
     // A link that loads a whole page would be asked about twice.
@@ -49,7 +50,7 @@ export function useAskBeforeLeaving(isUnsaved: boolean): void {
     function askOnPress(event: MouseEvent) {
       const press = linkPressOf(event);
       if (press === null || !leavesPage(press)) return;
-      if (window.confirm(QUESTION)) {
+      if (window.confirm(question)) {
         isAnswered = true;
         return;
       }
@@ -68,5 +69,5 @@ export function useAskBeforeLeaving(isUnsaved: boolean): void {
       document.removeEventListener("click", askOnPress, true);
       window.removeEventListener("beforeunload", askOnUnload);
     };
-  }, [isUnsaved]);
+  }, [isUnsaved, question]);
 }

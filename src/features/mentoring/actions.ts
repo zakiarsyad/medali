@@ -17,6 +17,10 @@ import { parseNote } from "./note-input";
 import { NOTES_ADDRESS } from "./notes-address";
 import { saveAttendance } from "./save-attendance";
 import { saveNote } from "./save-note";
+import { saveScores } from "./save-scores";
+import type { ScoreFormState } from "./score-form-state";
+import { parseScores, sentScores } from "./score-input";
+import { SCORES_ADDRESS } from "./scores-address";
 
 /**
  * The signed-in account when it may write a mentoring note. Any other is
@@ -102,5 +106,45 @@ export async function saveAttendanceAction(
     error: null,
     done: `Daftar hadir pertemuan ${saved.value.number} disimpan.`,
     version: saved.value.version,
+  };
+}
+
+/**
+ * The signed-in account when it may give mentoring scores. Any other is
+ * refused before anything of what it sent is read.
+ */
+async function scorer(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "give_mentoring_scores")) forbidden();
+  return account;
+}
+
+/**
+ * "Simpan nilai". Who gives the scores is the signed-in account, never a
+ * field. A save refused for a score that was saved in between reads the
+ * tab anew too, so the form shows the score kept now.
+ */
+export async function saveScoresAction(
+  _before: ScoreFormState,
+  form: FormData,
+): Promise<ScoreFormState> {
+  const actor = await scorer();
+  const parsed = parseScores({
+    groupId: text(form, "groupId"),
+    scores: sentScores(form),
+  });
+  if (!parsed.ok) return { error: parsed.error, done: null, changedIds: [] };
+
+  const saved = await saveScores(database(), actor, parsed.value);
+  if (!saved.ok && "changedIds" in saved) {
+    revalidatePath(SCORES_ADDRESS);
+    return { error: saved.error, done: null, changedIds: saved.changedIds };
+  }
+  if (!saved.ok) return { error: saved.error, done: null, changedIds: [] };
+  revalidatePath(SCORES_ADDRESS);
+  return {
+    error: null,
+    done: `${saved.value.savedIds.length} nilai pengasuhan disimpan.`,
+    changedIds: [],
   };
 }

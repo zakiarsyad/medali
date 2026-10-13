@@ -1,14 +1,9 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import {
-  mentorGroupMentors,
-  mentorGroups,
-  mentoringMeetings,
-} from "@/db/schema";
-import { NOT_ENDED } from "@/mentoring/group-in-force";
+import { mentoringMeetings } from "@/db/schema";
 import {
   isMeetingNumber,
   type MarksByStudent,
@@ -19,6 +14,7 @@ import { mayFillInFor } from "./attendance-groups";
 import { type AttendanceInput, NOT_SAVED_YET } from "./attendance-input";
 import { withoutMark } from "./attendance-marks";
 import { listActiveMembers } from "./group-meetings";
+import { lockGroup, readMentorOfToday } from "./held-group";
 import { meetingDayFault } from "./meeting-day";
 import { filledRowsFor } from "./visible-attendance";
 import {
@@ -85,38 +81,6 @@ export interface SavedAttendance {
   number: number;
   /** Which save of the list is kept now, for the form to send next. */
   version: number;
-}
-
-/**
- * Reads a group that is in force and holds it until the transaction ends,
- * so two saves for one group never run at the same moment: the second
- * waits, and then sees what the first one saved. Held without its key, so
- * nothing that only names the group has to wait.
- */
-async function lockGroup(tx: Database, groupId: string): Promise<boolean> {
-  const [group] = await tx
-    .select({ id: mentorGroups.id })
-    .from(mentorGroups)
-    .where(and(eq(mentorGroups.id, groupId), NOT_ENDED))
-    .for("no key update");
-  return group !== undefined;
-}
-
-/** The account that holds a group today, or null for a group without a mentor. */
-async function readMentorOfToday(
-  tx: Database,
-  groupId: string,
-): Promise<string | null> {
-  const [line] = await tx
-    .select({ mentorId: mentorGroupMentors.mentorId })
-    .from(mentorGroupMentors)
-    .where(
-      and(
-        eq(mentorGroupMentors.groupId, groupId),
-        isNull(mentorGroupMentors.endsOn),
-      ),
-    );
-  return line?.mentorId ?? null;
 }
 
 /**

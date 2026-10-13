@@ -4,8 +4,6 @@ import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { MEETINGS_PER_PERIOD } from "@/mentoring/meeting-ids";
-import { groupCode } from "@/ui/group-code";
-import { mentorLabel } from "@/ui/mentor-label";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import {
@@ -23,10 +21,14 @@ import {
   readMeetings,
 } from "./group-meetings";
 import { GroupPicker } from "./group-picker";
-import type { GroupChoice } from "./group-search";
+import { type GroupChoice, groupChoiceOf } from "./group-search";
 import { MeetingCards } from "./meeting-cards";
 import { MeetingNumbers } from "./meeting-numbers";
-import { type MeetingsParams, meetingsAddress } from "./meetings-address";
+import {
+  MEETINGS_ADDRESS,
+  type MeetingsParams,
+  meetingsAddress,
+} from "./meetings-address";
 import {
   type KeptList,
   keptListOf,
@@ -34,16 +36,6 @@ import {
 } from "./meetings-overview";
 import styles from "./mentoring.module.css";
 import { ReadOnlyLine } from "./read-only-line";
-
-const NO_MENTOR = "-";
-
-function choiceOf(group: AttendanceGroup): GroupChoice {
-  return {
-    id: group.id,
-    code: groupCode(group),
-    mentor: group.mentor ? mentorLabel(group.mentor) : NO_MENTOR,
-  };
-}
 
 /** The numbers and the cards of one group in the running period. */
 async function GroupMeetings({
@@ -177,13 +169,14 @@ function Groups({
     );
   }
   const shown = groupToShow(groups, params.groupId) ?? first;
-  const chosen = choiceOf(shown);
+  const chosen = groupChoiceOf(shown);
   return (
     <>
       {groups.length > 1 && (
         <GroupPicker
           key={chosen.id}
-          groups={groups.map(choiceOf)}
+          tabAddress={MEETINGS_ADDRESS}
+          groups={groups.map(groupChoiceOf)}
           chosen={chosen}
         />
       )}

@@ -19,8 +19,9 @@ while building.
 - `src/mentoring/`: who is a mentee of a mentor today, which groups are
   in force, which members of a group are Aktif, how a list marks
   the students whose detail may be opened, the kinds and follow-ups of a
-  mentoring note, and how many meetings a period has with their marks
-  and suggested topics, read by every area that needs them.
+  mentoring note, how many meetings a period has with their marks and
+  suggested topics, and the range a mentoring score lies in, read by
+  every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/campus/`: what the campus server package checks and does when it
   starts.
