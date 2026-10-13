@@ -22,10 +22,10 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { GroupListFilters } from "./group-list-address";
-import { COUNTED_MEMBER } from "./member-conditions";
 import { groupsVisibleTo } from "./visible-groups";
 
 /** One row of the Kelompok pengasuhan list. */
@@ -50,7 +50,7 @@ export const MEMBERS = sql`(
   select count(*) from ${mentorGroupMembers}
   inner join ${students} on ${students.id} = ${mentorGroupMembers.studentId}
   where ${mentorGroupMembers.groupId} = ${mentorGroups.id}
-    and ${COUNTED_MEMBER}
+    and ${ACTIVE_MEMBER}
 )`.mapWith(Number);
 
 const MENTOR_LINES = sql`(

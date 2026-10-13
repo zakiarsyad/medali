@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import {
   mentorGroupMembers,
@@ -6,10 +6,8 @@ import {
   mentoringMeetings,
   students,
 } from "@/db/schema";
+import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { StoredMark, StoredMeeting } from "./meetings-overview";
-
-/** A member an attendance list holds: an Aktif student who was not removed. */
-const ACTIVE = sql`${students.status} = 'active' and ${students.deletedAt} is null`;
 
 /** A member as an attendance list names them. */
 export interface GroupMember {
@@ -37,7 +35,7 @@ export function listActiveMembers(
     })
     .from(mentorGroupMembers)
     .innerJoin(students, eq(students.id, mentorGroupMembers.studentId))
-    .where(and(eq(mentorGroupMembers.groupId, groupId), ACTIVE))
+    .where(and(eq(mentorGroupMembers.groupId, groupId), ACTIVE_MEMBER))
     .orderBy(asc(students.name), asc(students.nim));
 }
 
