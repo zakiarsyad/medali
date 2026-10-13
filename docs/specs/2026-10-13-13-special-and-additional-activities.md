@@ -115,7 +115,7 @@ The issue did not say, so these were decided:
 
 ## Steps
 
-- [ ] 1. Activities can be stored without a semester, as special or
+- [x] 1. Activities can be stored without a semester, as special or
   additional, with who changed them and when; sample data adds two.
 - [ ] 2. The page shows the "Kegiatan khusus dan tambahan" panel and its
   table.

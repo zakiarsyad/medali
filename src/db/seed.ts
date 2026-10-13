@@ -4,6 +4,7 @@ import type { Database } from "./connect";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
+  SAMPLE_SPECIAL_ACTIVITIES,
   SAMPLE_STUDENTS,
   type SampleAccount,
   type SamplePeriod,
@@ -171,11 +172,16 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       }
     }
     const changed = { changedAt: new Date(), changedBy: sampleActor };
-    await tx
-      .insert(ppksActivities)
-      .values(
-        SAMPLE_PPKS_ACTIVITIES.map((activity) => ({ ...activity, ...changed })),
-      );
+    const special = SAMPLE_SPECIAL_ACTIVITIES.map((activity) => ({
+      ...activity,
+      semester: null,
+    }));
+    await tx.insert(ppksActivities).values(
+      [...SAMPLE_PPKS_ACTIVITIES, ...special].map((activity) => ({
+        ...activity,
+        ...changed,
+      })),
+    );
     const today = campusDay();
     const periods = samplePeriods(today);
     const [running] = periods;

@@ -6,6 +6,7 @@ import { readStudentDorm } from "@/features/dorm/student-dorm";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
+  SAMPLE_SPECIAL_ACTIVITIES,
   SAMPLE_STUDENTS,
   samplePeriods,
 } from "./sample-data";
@@ -96,17 +97,26 @@ describe("fillWithSampleData", { timeout: 20_000 }, () => {
     });
   });
 
-  it("adds the sample PPKS activities, changed by the sample Kepala Unit", async () => {
+  it("adds the sample PPKS activities and the special ones, which have no semester, changed by the sample Kepala Unit", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
       const added = await db
-        .select({ name: ppksActivities.name, by: accounts.name })
+        .select({
+          name: ppksActivities.name,
+          semester: ppksActivities.semester,
+          by: accounts.name,
+        })
         .from(ppksActivities)
         .innerJoin(accounts, eq(accounts.id, ppksActivities.changedBy));
-      expect(added.map((activity) => activity.name).sort()).toEqual(
-        SAMPLE_PPKS_ACTIVITIES.map((activity) => activity.name).sort(),
-      );
+      const namesOf = (list: { name: string }[]) =>
+        list.map((activity) => activity.name).sort();
+      expect(
+        namesOf(added.filter(({ semester }) => semester !== null)),
+      ).toEqual(namesOf(SAMPLE_PPKS_ACTIVITIES));
+      expect(
+        namesOf(added.filter(({ semester }) => semester === null)),
+      ).toEqual(namesOf(SAMPLE_SPECIAL_ACTIVITIES));
       for (const activity of added) {
         expect(activity.by).toBe(SAMPLE_ACCOUNTS[0]?.name);
       }

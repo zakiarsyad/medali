@@ -4,7 +4,21 @@ import {
   removalQuestion,
   ticksOfValues,
   toggled,
+  versionOf,
 } from "./ppks-activities";
+
+describe("versionOf", () => {
+  it("differs for two moments one millisecond apart", () => {
+    const first = versionOf(new Date("2026-10-13T08:00:00.000Z"));
+    const next = versionOf(new Date("2026-10-13T08:00:00.001Z"));
+    expect(first).not.toBe(next);
+  });
+
+  it("is the same for the same moment", () => {
+    const moment = "2026-10-13T08:00:00.000Z";
+    expect(versionOf(new Date(moment))).toBe(versionOf(new Date(moment)));
+  });
+});
 
 describe("activityNote", () => {
   it("gives the description alone for a required activity", () => {

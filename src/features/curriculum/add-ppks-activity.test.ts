@@ -31,6 +31,7 @@ describe("addPpksActivity", () => {
             targetParticipants: 40,
             isRequired: true,
             description: "Deskripsi uji.",
+            version: expect.any(String),
           },
         ]);
         const [kept] = await db.select().from(ppksActivities);

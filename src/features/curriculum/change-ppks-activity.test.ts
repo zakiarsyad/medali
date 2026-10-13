@@ -57,6 +57,7 @@ describe("changePpksActivity", () => {
             targetParticipants: null,
             isRequired: false,
             description: "",
+            version: expect.any(String),
           },
         ]);
         const [kept] = await db.select().from(ppksActivities);

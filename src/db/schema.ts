@@ -292,14 +292,17 @@ export const sikuBaseScore = pgTable(
 );
 
 /**
- * The PPKS activities of each semester, without dates. A removed one keeps
- * its row, marked with who removed it and when.
+ * The activities of the curriculum, without dates: the PPKS activities of
+ * each semester, and the special and additional ones, which belong to no
+ * semester. A removed one keeps its row, marked with who removed it and
+ * when.
  */
 export const ppksActivities = pgTable(
   "ppks_activities",
   {
     id: uuid().primaryKey().defaultRandom(),
-    semester: smallint().notNull(),
+    /** Empty for a special or additional activity. */
+    semester: smallint(),
     name: text().notNull(),
     /** The letters of the MEDALI values the activity builds. */
     valueKeys: text().array().$type<ValueKey[]>().notNull(),

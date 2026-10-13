@@ -1,0 +1,1 @@
+ALTER TABLE "ppks_activities" ALTER COLUMN "semester" DROP NOT NULL;

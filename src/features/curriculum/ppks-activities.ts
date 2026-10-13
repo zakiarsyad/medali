@@ -1,9 +1,13 @@
 import type { ValueKey } from "@/ui/medali-values";
 
-/** One PPKS activity of a semester, as the list shows it. */
+/**
+ * One activity as its list shows it: a PPKS one of a semester, or a
+ * special or additional one.
+ */
 export interface PpksActivity {
   id: string;
-  semester: number;
+  /** Null for a special or additional activity. */
+  semester: number | null;
   name: string;
   valueKeys: ValueKey[];
   indicatorCodes: string[];
@@ -11,6 +15,16 @@ export interface PpksActivity {
   targetParticipants: number | null;
   isRequired: boolean;
   description: string;
+  /** Tells one saved state of the activity from the next one. */
+  version: string;
+}
+
+/**
+ * The version of an activity last changed at that moment. Every change
+ * sets a new moment, so a form opened before a change holds an old one.
+ */
+export function versionOf(changedAt: Date): string {
+  return changedAt.toISOString();
 }
 
 /** The small line under the name of an activity. */

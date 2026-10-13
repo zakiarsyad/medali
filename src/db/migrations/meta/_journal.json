@@ -148,6 +148,13 @@
       "when": 1791865481422,
       "tag": "0020_mentoring-meetings",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791880484078,
+      "tag": "0021_special-activities",
+      "breakpoints": true
     }
   ]
 }
