@@ -100,7 +100,7 @@ it is built here.
 - [x] 2. The rights to write and to read notes are added to the
   permission list, with their checks.
 - [x] 3. Pengasuh writes a note with "Catatan baru".
-- [ ] 4. The list with counts, filter, paging and the read-only view.
+- [x] 4. The list with counts, filter, paging and the read-only view.
 - [ ] 5. Pengasuh opens the detail of their own mentees; the detail
   shows "Catatan pengasuhan" and "Tulis catatan".
 - [ ] 6. "Catatan pengasuhan 90 hari" on the group page.

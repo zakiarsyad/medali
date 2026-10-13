@@ -84,6 +84,7 @@
   --empty-area-height: 240px;
   --lede-width: 62ch;
   --card-min-width: 260px;
+  --column-min-width: 360px;
   --box-min-width: 200px;
   --bare-box-width: 380px;
   --icon-size: 18px;
