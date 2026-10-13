@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { campusDay } from "@/academic-periods/campus-day";
+import { periodTitle } from "@/academic-periods/period-labels";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -15,7 +16,6 @@ import {
   parsePeriodDates,
   type SentPeriodDates,
 } from "./period-input";
-import { periodTitle } from "./period-labels";
 import { findOverlap, overlapRefusal } from "./period-overlap";
 
 const NOT_FOUND = { ok: false, error: "Periode tidak ditemukan." } as const;

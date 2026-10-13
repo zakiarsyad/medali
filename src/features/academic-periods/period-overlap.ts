@@ -1,10 +1,10 @@
 import { and, gte, lte, ne } from "drizzle-orm";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
+import { periodTitle } from "@/academic-periods/period-labels";
 import type { Database } from "@/db/connect";
 import { academicPeriods } from "@/db/schema";
 import { shownDay } from "@/ui/day";
 import type { PeriodDates } from "./period-input";
-import { periodTitle } from "./period-labels";
 
 /**
  * A stored period that shares a day with the days given, if there is one.

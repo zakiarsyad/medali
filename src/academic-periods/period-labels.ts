@@ -1,4 +1,4 @@
-import type { AcademicPeriod, Term } from "@/academic-periods/academic-period";
+import type { AcademicPeriod, Term } from "./academic-period";
 
 export const TERM_LABELS: Record<Term, string> = {
   odd: "Ganjil",

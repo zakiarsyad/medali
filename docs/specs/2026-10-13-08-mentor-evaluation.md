@@ -91,7 +91,7 @@ is built here.
 - [x] 1. Evaluations and their change log are stored; the periods rule
   and the predikat rule, with tests.
 - [x] 2. The permission to evaluate, with its checks.
-- [ ] 3. The tab with the form and "Evaluasi terbaru".
+- [x] 3. The tab with the form and "Evaluasi terbaru".
 - [ ] 4. Evaluations on the group page, the mentor page, both lists and
   the "Evaluasi kurang" number.
 - [ ] 5. Read-only view, double press and phone layout.

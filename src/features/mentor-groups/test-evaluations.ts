@@ -108,6 +108,27 @@ export async function addTestHeldGroup(
   return { groupId, mentorId, studyProgramId };
 }
 
+type NewEvaluation = typeof mentorEvaluations.$inferInsert;
+
+type TestEvaluation = Pick<
+  NewEvaluation,
+  "groupId" | "mentorId" | "periodId" | "evaluatedBy"
+> &
+  Partial<NewEvaluation>;
+
+/** A stored evaluation with the test values, saved now unless it says when. */
+export async function addTestEvaluation(
+  db: Database,
+  evaluation: TestEvaluation,
+): Promise<string> {
+  const [added] = await db
+    .insert(mentorEvaluations)
+    .values({ ...TEST_SCORES, evaluatedAt: new Date(), ...evaluation })
+    .returning({ id: mentorEvaluations.id });
+  if (!added) throw new Error("The evaluation was not added.");
+  return added.id;
+}
+
 export function testEvaluationsOf(db: Database, groupId: string) {
   return db
     .select()
