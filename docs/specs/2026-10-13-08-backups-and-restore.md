@@ -149,7 +149,7 @@ change any of these.
 
 ## Steps
 
-- [ ] 1. The backup command: database and files together, locked, with
+- [x] 1. The backup command: database and files together, locked, with
   its refusals.
 - [ ] 2. The restore command into an empty package, with its refusals.
 - [ ] 3. The check that makes a backup, restores it elsewhere and

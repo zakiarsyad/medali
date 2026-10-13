@@ -1,7 +1,7 @@
 name: medali-campus
 
-# The campus server package: the app, its database and its file storage,
-# started together. Its keys and passwords come from the settings file
+# The campus server package: the app, its database, its file storage and
+# the backup part, started together. Its keys and passwords come from the settings file
 # .env.campus beside this file, which is never in the repo;
 # .env.campus.example lists what it holds. docs/HOSTING.md says how to
 # start, update and stop the package.
@@ -94,8 +94,40 @@ services:
       timeout: 3s
       retries: 15
 
+  # Makes and restores the backups. It holds nothing of the app, and
+  # nothing reaches it from outside the server. It is given only the
+  # settings it needs, not the whole settings file.
+  backup:
+    build: docker/backup
+    image: medali-campus-backup
+    environment:
+      PGHOST: db
+      PGUSER: medali
+      PGDATABASE: medali
+      PGPASSWORD: ${DATABASE_PASSWORD:-}
+      FILE_STORAGE_URL: http://files:9000
+      FILE_STORAGE_BUCKET: medali
+      FILE_STORAGE_ACCESS_KEY: ${FILE_STORAGE_ACCESS_KEY:-}
+      FILE_STORAGE_SECRET_KEY: ${FILE_STORAGE_SECRET_KEY:-}
+      BACKUP_FOLDER: ${BACKUP_FOLDER:-}
+      BACKUP_PASSWORD: ${BACKUP_PASSWORD:-}
+      # Campus time: a backup's name is the day and the time it was made.
+      TZ: Asia/Jakarta
+    volumes:
+      # While the folder setting is empty the package must still start,
+      # so the part gets a place of its own that no backup is written to.
+      - ${BACKUP_FOLDER:-no-backup-folder}:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+      files:
+        condition: service_healthy
+    restart: unless-stopped
+
 # Where the data and the files are kept, so they outlast a stop, a start
-# and a newer version of the package.
+# and a newer version of the package. The last one stands in for the
+# backup folder while its setting is empty.
 volumes:
   db-data:
   files-data:
+  no-backup-folder:

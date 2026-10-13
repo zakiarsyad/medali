@@ -315,6 +315,72 @@ describe("the campus server package", () => {
   });
 });
 
+describe("the backup part of the campus server package", () => {
+  const part = servicesOf(PACKAGE_FILE).get("backup") ?? [];
+  const recipe = linesOf("docker/backup/Dockerfile");
+
+  function imageOf(name: string): string | undefined {
+    const lines = servicesOf(PACKAGE_FILE).get(name) ?? [];
+    return lines.join("\n").match(/^image: (\S+)$/m)?.[1];
+  }
+
+  /** How the package file writes "this setting, or this while it is empty". */
+  function fromSettings(name: string, whenEmpty = ""): string {
+    return `\${${name}:-${whenEmpty}}`;
+  }
+
+  it("is in the package, with no port of the server", () => {
+    expect(part).toContain("build: docker/backup");
+    expect(part.join("\n")).not.toMatch(/ports|network_mode|expose/);
+  });
+
+  it("takes the backup folder and the backup password only from the settings", () => {
+    const written = part.filter((line) => /BACKUP_|\/backups/.test(line));
+
+    expect(written).toEqual([
+      `BACKUP_FOLDER: ${fromSettings("BACKUP_FOLDER")}`,
+      `BACKUP_PASSWORD: ${fromSettings("BACKUP_PASSWORD")}`,
+      `- ${fromSettings("BACKUP_FOLDER", "no-backup-folder")}:/backups`,
+    ]);
+  });
+
+  it("is not given the whole settings file", () => {
+    expect(part.join("\n")).not.toContain("env_file");
+  });
+
+  it("is built with no value from whoever builds it and no setting", () => {
+    const set = recipe.filter((line) => /^(ARG|ENV)\b/.test(line));
+
+    expect(recipe.length).toBeGreaterThan(0);
+    expect(set).toEqual([]);
+  });
+
+  it("is built with no backup folder, no password and no key", () => {
+    expect(recipe.join("\n")).not.toMatch(/BACKUP_|\/backups/);
+    expect(recipe.join("\n")).not.toMatch(/password|secret|_key|token/i);
+  });
+
+  it("takes its tools from the images of the package's own database and file storage", () => {
+    const from = recipe
+      .filter((line) => line.startsWith("FROM "))
+      .map((line) => line.split(" ")[1]);
+
+    expect(imageOf("db")).toBeDefined();
+    expect(imageOf("files")).toBeDefined();
+    expect(from).toEqual([imageOf("files"), imageOf("db")]);
+  });
+
+  it.each([
+    "docker/backup/backup.sh",
+    "docker/backup/Dockerfile",
+    "x/2026-10-13-020000.medali-backup",
+    "x/2026-10-13-020000.medali-backup.part",
+    "2026-10-13-020000.medali-backup",
+  ])("stays out of the app's own package: %s", (path) => {
+    expect(isIgnored(path)).toBe(true);
+  });
+});
+
 describe("the example settings file of the package", () => {
   const SETTING_LINE = /^([A-Z][A-Z0-9_]*)=(.*)$/;
   const example = linesOf(".env.campus.example").map(
@@ -332,6 +398,8 @@ describe("the example settings file of the package", () => {
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
         "CAMPUS_EMAIL_ENDING",
+        "BACKUP_FOLDER",
+        "BACKUP_PASSWORD",
       ]),
     );
   });
