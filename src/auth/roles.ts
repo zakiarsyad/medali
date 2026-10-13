@@ -24,6 +24,8 @@ export const ACTIONS = [
   "view_own_profile",
   "view_mentoring_notes",
   "write_mentoring_notes",
+  "view_mentoring_attendance",
+  "fill_mentoring_attendance",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -51,6 +53,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_own_profile: "Melihat data diri sendiri",
   view_mentoring_notes: "Melihat catatan pengasuhan",
   write_mentoring_notes: "Menulis catatan pengasuhan",
+  view_mentoring_attendance: "Melihat daftar hadir pertemuan pengasuhan",
+  fill_mentoring_attendance: "Mengisi daftar hadir pertemuan pengasuhan",
 };
 
 /**
@@ -157,6 +161,7 @@ export const ROLES: Record<RoleId, Role> = {
       "prepare_cohort_assignments",
       "fix_cohort_assignments",
       "view_mentoring_notes",
+      "view_mentoring_attendance",
     ],
     rows: "all",
   },
@@ -174,6 +179,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentor_evaluations",
       "view_cohort_assignments",
       "view_mentoring_notes",
+      "view_mentoring_attendance",
     ],
     rows: "all",
   },
@@ -191,6 +197,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentor_evaluations",
       "view_cohort_assignments",
       "view_mentoring_notes",
+      "view_mentoring_attendance",
     ],
     rows: "own_program",
   },
@@ -216,6 +223,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_student_detail",
       "view_mentoring_notes",
       "write_mentoring_notes",
+      "view_mentoring_attendance",
+      "fill_mentoring_attendance",
     ],
     rows: "own_mentees",
   },

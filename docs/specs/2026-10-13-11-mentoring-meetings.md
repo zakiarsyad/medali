@@ -142,7 +142,7 @@ The issue did not say, so these were decided:
 
 - [x] 1. Meetings, their attendance and the change log are stored, with
   two sample meetings per sample group.
-- [ ] 2. The rights to fill in and to read attendance are added to the
+- [x] 2. The rights to fill in and to read attendance are added to the
   permission list, with their checks.
 - [ ] 3. The tab with the numbers, the group choice and the four cards.
 - [ ] 4. Pengasuh fills in and saves an attendance list.
