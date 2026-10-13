@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, type SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
@@ -10,6 +10,7 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { opensDetailOf } from "@/mentoring/opens-detail";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { LISTED_MEMBER } from "./member-conditions";
 import { maySeeGroup, NOT_ENDED } from "./visible-groups";
@@ -96,18 +97,6 @@ function readMentorLines(
     .innerJoin(accounts, eq(accounts.id, mentorGroupMentors.mentorId))
     .where(eq(mentorGroupMentors.groupId, groupId))
     .orderBy(desc(mentorGroupMentors.startsOn));
-}
-
-const NO_DETAIL = sql<boolean>`false`;
-
-/**
- * Whether the account may open the detail of the student a read is on,
- * from the students whose detail it may open, or null for none. Every
- * list of members marks its links with this, so a link never leads to
- * "not found".
- */
-export function opensDetailOf(detailVisible: SQL | null): SQL<boolean> {
-  return detailVisible ? sql<boolean>`(${detailVisible})` : NO_DETAIL;
 }
 
 function readMembers(

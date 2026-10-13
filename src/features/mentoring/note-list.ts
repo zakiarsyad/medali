@@ -1,7 +1,8 @@
-import { and, count, desc, eq, type SQL, sql } from "drizzle-orm";
+import { and, count, desc, eq, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { accounts, mentoringNotes, students } from "@/db/schema";
 import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
+import { opensDetailOf } from "@/mentoring/opens-detail";
 import { pageWithin } from "@/ui/list-pages";
 
 /** How many notes one page of the list shows. */
@@ -82,16 +83,6 @@ function total(counts: KindCounts): number {
   let notes = 0;
   for (const kind of NOTE_KINDS) notes += counts[kind];
   return notes;
-}
-
-const NO_DETAIL = sql<boolean>`false`;
-
-/**
- * Whether the account may open the detail of the student a note is about.
- * The list marks its links with this, so a link never leads to "not found".
- */
-function opensDetailOf(detailVisible: SQL | null): SQL<boolean> {
-  return detailVisible ? sql<boolean>`(${detailVisible})` : NO_DETAIL;
 }
 
 function ofKind(visible: SQL, kind: NoteKind | null): SQL | undefined {
