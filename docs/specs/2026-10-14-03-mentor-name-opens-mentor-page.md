@@ -67,7 +67,7 @@ page and the group code was plain words. All of it is built here.
 
 ## Steps
 
-- [ ] 1. One rule gives the address of a mentor's page for an account
+- [x] 1. One rule gives the address of a mentor's page for an account
   that may open it, or nothing, with tests.
 - [ ] 2. The name in "Pengasuh saat ini" on the group page links to
   the mentor's page.
