@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  forgetStarts,
   hasStartMark,
   noteFilesEmptied,
   noteStart,
@@ -41,6 +42,13 @@ describe("the mark of a start with sample data", () => {
 
     expect(await startWaitsForFiles(own.db)).toBe(true);
   });
+
+  it("is missing again once the starts are forgotten", async () => {
+    await forgetStarts(own.db);
+
+    expect(await hasStartMark(own.db)).toBe(false);
+    expect(await startWaitsForFiles(own.db)).toBe(false);
+  });
 });
 
 describe("a database with no mark of a start", () => {
@@ -48,5 +56,11 @@ describe("a database with no mark of a start", () => {
 
   it("has no start that waits for its files", async () => {
     expect(await startWaitsForFiles(own.db)).toBe(false);
+  });
+
+  it("has no start to forget, and forgetting fails nothing", async () => {
+    await forgetStarts(own.db);
+
+    expect(await hasStartMark(own.db)).toBe(false);
   });
 });

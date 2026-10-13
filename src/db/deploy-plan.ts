@@ -73,7 +73,7 @@ export interface MainPreviewState {
   /** How many table changes the build brings. */
   tableChangesInRepo: number;
   holdsAnAccount: boolean;
-  /** Whether a deploy of `main` already started this database over. */
+  /** Whether the last start of this database by a deploy of `main` finished. */
   hasStartMark: boolean;
 }
 
@@ -88,7 +88,8 @@ export type StartOverReason =
  * with its tables, so a new table change means the sample data is old. A
  * database with no account is empty, or was left so by a start that
  * failed after the tables were made. One with no mark of a start was
- * filled once, long ago, and never got the sample data merged since.
+ * filled before the mark existed and never got the sample data merged
+ * since, or its last start failed before the mark was written.
  */
 export function startOverReasonFor(
   state: MainPreviewState,

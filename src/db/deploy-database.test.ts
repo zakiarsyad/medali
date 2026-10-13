@@ -37,6 +37,19 @@ async function forgetLastTableChange(db: PostgresJsDatabase): Promise<void> {
     where id = (select max(id) from drizzle.__drizzle_migrations)`);
 }
 
+/** Makes a start fail at its last part, after the sample data is in. */
+async function refuseNewStartMarks(db: PostgresJsDatabase): Promise<void> {
+  await db.execute(sql`
+    alter table medali_deploy.sample_data_start
+    add constraint refuses_new_marks check (false) not valid`);
+}
+
+async function allowNewStartMarks(db: PostgresJsDatabase): Promise<void> {
+  await db.execute(sql`
+    alter table medali_deploy.sample_data_start
+    drop constraint refuses_new_marks`);
+}
+
 // Each start loads the whole sample set, which takes seconds.
 describe("the database step of a deploy of main", { timeout: 120_000 }, () => {
   const own = withEmptyTestDatabase("deploymain");
@@ -93,6 +106,26 @@ describe("the database step of a deploy of main", { timeout: 120_000 }, () => {
 
     await expect(step).rejects.toThrow("refused");
     expect(await countAddedByHand(own.db)).toBe(1);
+  });
+
+  it("starts over again after a start that failed before its mark was written", async () => {
+    expect(await hasStartMark(own.db)).toBe(true);
+    await forgetLastTableChange(own.db);
+    await refuseNewStartMarks(own.db);
+
+    await expect(deployMain(own.db)).rejects.toThrow(
+      "insert into medali_deploy.sample_data_start",
+    );
+
+    expect(await countAccounts(own.db)).toBeGreaterThan(0);
+    await allowNewStartMarks(own.db);
+    await addByHand(own.db);
+
+    const next = await deployMain(own.db);
+
+    expect(next).toContain("started over");
+    expect(await countAddedByHand(own.db)).toBe(0);
+    expect(await hasStartMark(own.db)).toBe(true);
   });
 });
 

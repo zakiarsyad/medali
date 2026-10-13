@@ -9,7 +9,7 @@ import {
   type StartOverReason,
   startOverReasonFor,
 } from "./deploy-plan";
-import { hasStartMark, noteStart } from "./deploy-start";
+import { forgetStarts, hasStartMark, noteStart } from "./deploy-start";
 import { markDatabase, readDeployTarget } from "./deploy-target";
 import {
   applyTableChanges,
@@ -23,7 +23,7 @@ import { fillWithSampleData } from "./seed";
 const SAID_FOR: Record<StartOverReason, string> = {
   "new-table-change": "a table change is new",
   "no-account": "it held no account",
-  "no-start-mark": "it was never started over before",
+  "no-start-mark": "it held no mark of a finished start",
 };
 
 /** A database with no table yet holds no account either. */
@@ -61,9 +61,11 @@ async function deployMainPreview(db: PostgresJsDatabase): Promise<string> {
   }
   // A new table change is not applied on top of the old rows first: they
   // could refuse it, and they are removed anyway.
+  // The marks of earlier starts go first and the new one is noted last,
+  // so a start that failed anywhere leaves no mark and is tried again by
+  // the next deploy.
+  await forgetStarts(db);
   await startOver(db);
-  // Noted only now, so a start that failed is tried again by the next
-  // deploy.
   await noteStart(db);
   return `Database of main started over with sample data: ${SAID_FOR[reason]}.`;
 }

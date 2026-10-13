@@ -130,15 +130,22 @@ decided:
 7. A database of the preview of `main` that holds no account is started
    over too, as before this work. That also repairs a start that failed
    half way, after the tables were made and before they were filled.
-8. The mark is written only after the sample data is in. A start that
-   fails before that is tried again by the next deploy.
+8. The mark is written only after the sample data is in, and the marks
+   of earlier starts are removed before the tables are made again. So a
+   start that fails at any point leaves the database with no mark, and
+   the next deploy starts it over again, also when the failed start had
+   already filled the tables and an older mark was there.
 9. The database step and the file storage step are two commands of the
    build, so the mark also says whether the files of that start were
    emptied yet. The file storage step empties the part of the preview
    of `main` only while the mark says a start still waits for it, and
    then notes it as done. If the file storage step fails after the
    database was started over, the next deploy of `main` empties the
-   files, also when that deploy keeps the data.
+   files, also when that deploy keeps the data. The build fails in
+   that case, so the app from before stays live on the new database
+   until the next deploy. A file uploaded on the preview in that time
+   is removed by the late emptying while its row is kept. That is
+   accepted: the previews hold sample data only.
 10. While the file storage settings are empty the step empties nothing
     and the start keeps waiting. The first deploy after the owner fills
     them in then empties the part of the preview of `main` once. No

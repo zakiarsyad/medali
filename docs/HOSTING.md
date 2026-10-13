@@ -76,9 +76,11 @@ knows which database it has:
 
 A `main` deploy also starts the database over when it holds no account,
 which is the case the first time and after a start that failed half way.
-Each start leaves a mark of its own in the database. A database that was
-filled before this mark existed has none, so its first `main` deploy
-starts it over once, also with no new table change.
+A start that finished leaves a mark in the database, and the marks of
+earlier starts are removed before a new start begins. So a database has
+no mark when it was filled before this mark existed, or when its last
+start failed before it finished. A `main` deploy starts such a database
+over, also with no new table change.
 
 The build log says which happened in one line: "Database of main started
 over with sample data", with the reason, or "No table change is new;
@@ -157,7 +159,10 @@ of the other part.
 - **A `main` deploy** removes every file in `main-preview` once after
   each time its database was started over, so no file is left without
   its row. The mark of the start says whether its files were removed
-  yet: if the step fails, the next `main` deploy removes them. A `main`
+  yet: if the step fails, the next `main` deploy removes them. Until
+  then the app from before stays live on the new database, and a file
+  uploaded in that time is removed with the rest while its row is kept,
+  which is accepted because the preview holds sample data only. A `main`
   deploy that follows no start removes nothing. The build log says
   "Files of main emptied", with how many, or "Files of main kept."
 
