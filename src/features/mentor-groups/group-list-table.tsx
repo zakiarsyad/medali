@@ -4,8 +4,10 @@ import { shownDay } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
 import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
+import { EvaluationBadge } from "./evaluation-badge";
 import type { ListedGroup } from "./group-list";
 import { groupAddress } from "./group-list-address";
+import type { LastEvaluations } from "./last-evaluations";
 import { historyWords, NO_MENTOR } from "./mentor-history";
 
 const BETWEEN = " · ";
@@ -17,7 +19,13 @@ function programAndCohort(group: ListedGroup): string {
   return words.join(BETWEEN);
 }
 
-function GroupRow({ group }: { group: ListedGroup }) {
+function GroupRow({
+  group,
+  lastEvaluations,
+}: {
+  group: ListedGroup;
+  lastEvaluations: LastEvaluations | null;
+}) {
   const address = groupAddress(group.id);
   return (
     <PressableRow address={address} opens="page">
@@ -36,6 +44,11 @@ function GroupRow({ group }: { group: ListedGroup }) {
         )}
       </td>
       <td data-title="Anggota">{group.members.toLocaleString("id-ID")}</td>
+      {lastEvaluations !== null && (
+        <td data-title="Evaluasi terakhir">
+          <EvaluationBadge scores={lastEvaluations.get(group.id) ?? null} />
+        </td>
+      )}
       <td data-title="Riwayat">
         {historyWords(group.mentorLines, group.mentorName !== null)}
       </td>
@@ -43,7 +56,17 @@ function GroupRow({ group }: { group: ListedGroup }) {
   );
 }
 
-export function GroupListTable({ groups }: { groups: ListedGroup[] }) {
+export function GroupListTable({
+  groups,
+  lastEvaluations,
+}: {
+  groups: ListedGroup[];
+  /**
+   * "Evaluasi terakhir" of the groups shown, or null for an account that
+   * may not see evaluations: it gets no such column.
+   */
+  lastEvaluations: LastEvaluations | null;
+}) {
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -52,12 +75,17 @@ export function GroupListTable({ groups }: { groups: ListedGroup[] }) {
             <th>Kelompok</th>
             <th>Pengasuh</th>
             <th>Anggota</th>
+            {lastEvaluations !== null && <th>Evaluasi terakhir</th>}
             <th>Riwayat</th>
           </tr>
         </thead>
         <tbody>
           {groups.map((group) => (
-            <GroupRow key={group.id} group={group} />
+            <GroupRow
+              key={group.id}
+              group={group}
+              lastEvaluations={lastEvaluations}
+            />
           ))}
         </tbody>
       </table>

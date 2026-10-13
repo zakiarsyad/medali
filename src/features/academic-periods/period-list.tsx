@@ -1,9 +1,9 @@
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
+import { periodTitle } from "@/academic-periods/period-labels";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { hasEnded } from "./change-period-dates";
 import { PeriodDatesForm } from "./period-dates-form";
-import { periodTitle } from "./period-labels";
 import styles from "./periods.module.css";
 
 export function PeriodDates({

@@ -68,7 +68,7 @@ function newGroup(
   };
 }
 
-interface AddedGroup {
+export interface AddedGroup {
   id: string;
   sample: SampleMentorGroup;
 }
@@ -114,15 +114,16 @@ async function addMentors(db: Database, groups: AddedGroup[]): Promise<void> {
 /**
  * Adds the sample kelompok pengasuhan of the sample students, each with
  * its members and its mentors. The students and the sample Pengasuh
- * accounts must be there already.
+ * accounts must be there already. Gives back the groups it added.
  */
 export async function addSampleMentorGroups(
   db: Database,
   sampleStudents: SampleStudent[],
-): Promise<void> {
+): Promise<AddedGroup[]> {
   const groups = sampleMentorGroups(sampleStudents);
-  if (groups.length === 0) return;
+  if (groups.length === 0) return [];
   const added = await addGroups(db, groups);
   await addMembers(db, added);
   await addMentors(db, added);
+  return added;
 }

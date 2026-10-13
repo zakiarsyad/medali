@@ -428,6 +428,65 @@ describe("may", () => {
     }
   });
 
+  const evaluationViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it.each(evaluationViewers)(
+    "lets %s see the evaluations of mentors",
+    (role) => {
+      expect(may([role], "view_mentor_evaluations")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to see the evaluations of mentors, Pengasuh among them", () => {
+    const others = ROLE_IDS.filter((role) => !evaluationViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - evaluationViewers.length);
+    expect(others).toContain("mentor");
+    for (const role of others) {
+      expect(may([role], "view_mentor_evaluations")).toBe(false);
+    }
+  });
+
+  it("gives the right to see the evaluations of mentors to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentor_evaluations")).toBe(
+        mayOpenTab([role], "mentors", "replacement"),
+      );
+    }
+  });
+
+  it("lets Kepala Unit evaluate a mentor", () => {
+    expect(may(["head_of_unit"], "evaluate_mentors")).toBe(true);
+  });
+
+  it("refuses every other role to evaluate a mentor, Pegawai UPK among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toContain("upk_staff");
+    expect(others).toContain("director");
+    for (const role of others) {
+      expect(may([role], "evaluate_mentors")).toBe(false);
+    }
+  });
+
+  it("lets every role that may evaluate a mentor see the evaluations", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "evaluate_mentors")) continue;
+      expect(may([role], "view_mentor_evaluations")).toBe(true);
+    }
+  });
+
+  it("lets every role that sees the evaluations of mentors see the groups and the mentors they are shown with", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "view_mentor_evaluations")) continue;
+      expect(may([role], "view_mentor_groups")).toBe(true);
+      expect(may([role], "view_mentors")).toBe(true);
+    }
+  });
+
   it("lets Mahasiswa read their own student record", () => {
     expect(may(["student"], "view_own_profile")).toBe(true);
     expect(mayOpenPage(["student"], "profile")).toBe(true);
@@ -723,6 +782,46 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     expect(rowLimitForAction(both, "prepare_cohort_assignments")).toEqual(
       EVERY_ROW,
     );
+  });
+
+  it("shows the evaluations of mentors to Ketua Program Studi for their program only, and none without a program", () => {
+    const head = account(["head_of_program"], 7);
+    const withoutProgram = account(["head_of_program"]);
+
+    expect(rowLimitForAction(head, "view_mentor_evaluations")).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(
+      rowLimitForAction(withoutProgram, "view_mentor_evaluations"),
+    ).toEqual(NO_ROW);
+  });
+
+  it.each(["head_of_unit", "director", "upk_staff"] as const)(
+    "shows %s the evaluations of mentors of every program studi",
+    (role) => {
+      expect(
+        rowLimitForAction(account([role]), "view_mentor_evaluations"),
+      ).toEqual(EVERY_ROW);
+    },
+  );
+
+  it("keeps Ketua Program Studi who is also Konselor or Pengasuh to the evaluations of their program", () => {
+    for (const other of ["counsellor", "mentor"] as const) {
+      const both = account(["head_of_program", other], 7);
+
+      expect(rowLimitForAction(both, "view_mentor_evaluations")).toEqual(
+        onlyPrograms([7]),
+      );
+    }
+  });
+
+  it("gives no row to evaluate to an account whose roles may not evaluate", () => {
+    const both = account(["head_of_program", "upk_staff"], 7);
+
+    expect(rowLimitForAction(both, "evaluate_mentors")).toEqual(NO_ROW);
+    expect(
+      rowLimitForAction(account(["head_of_unit"]), "evaluate_mentors"),
+    ).toEqual(EVERY_ROW);
   });
 
   it.each(["view_dorm_rooms", "view_dorm_companions"] as const)(

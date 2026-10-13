@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { periodTitle } from "@/academic-periods/period-labels";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -11,7 +12,6 @@ import {
   parseNewPeriod,
   type SentPeriod,
 } from "./period-input";
-import { periodTitle } from "./period-labels";
 import { findOverlap, overlapRefusal } from "./period-overlap";
 
 async function alreadyExists(

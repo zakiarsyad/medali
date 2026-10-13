@@ -8,6 +8,8 @@ import shared from "@/ui/data-screen.module.css";
 import { groupCode } from "@/ui/group-code";
 import { MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
 import { PageHead } from "@/ui/page-head";
+import { listMentorEvaluations } from "./evaluation-rows";
+import { EvaluationTable } from "./evaluation-table";
 import { GroupMembersTable } from "./group-members-table";
 import { MentorAssignmentsPanel } from "./mentor-assignments-panel";
 import { readMentor } from "./mentor-detail";
@@ -21,12 +23,18 @@ import { mentorLede } from "./mentor-words";
  */
 export async function MentorScreen({
   limit,
+  evaluationLimit,
   mentorId,
   detailVisible,
   studentAddressOf,
 }: {
   /** Which mentors the account that opened the page may see. */
   limit: RowLimit;
+  /**
+   * Which evaluations the account may see, or null for an account that
+   * may see none: it gets no "Evaluasi".
+   */
+  evaluationLimit: RowLimit | null;
   mentorId: string;
   /** The students whose detail the account may open, or null for none. */
   detailVisible: SQL | null;
@@ -44,6 +52,11 @@ export async function MentorScreen({
   if (answer.kind === "not_found") notFound();
   if (answer.kind === "refused") forbidden();
   const { mentor } = answer;
+  // Read once the mentor is found: their id is then known to be one.
+  const evaluations =
+    evaluationLimit === null
+      ? null
+      : await listMentorEvaluations(db, evaluationLimit, mentor.id);
   return (
     <>
       <p className={styles.back}>
@@ -58,6 +71,12 @@ export async function MentorScreen({
         </span>
       </PageHead>
       <MentorAssignmentsPanel assignments={mentor.assignments} />
+      {evaluations && (
+        <section className={shared.panel}>
+          <h2 className={shared.heading}>Evaluasi</h2>
+          <EvaluationTable evaluations={evaluations} />
+        </section>
+      )}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Mahasiswa binaan</h2>
         {mentor.members.length === 0 ? (

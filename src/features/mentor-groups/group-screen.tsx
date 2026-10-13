@@ -9,12 +9,15 @@ import { shownDay } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
 import { GROUP_MIN, isSmallGroup } from "@/ui/group-size";
 import { PageHead } from "@/ui/page-head";
+import { listGroupEvaluations } from "./evaluation-rows";
+import { EvaluationTable } from "./evaluation-table";
 import { type GroupDetail, readGroup } from "./group-detail";
 import { GROUP_LIST_ADDRESS } from "./group-list-address";
 import { GroupMembersTable } from "./group-members-table";
 import { GroupMentorPanel } from "./group-mentor-panel";
 import { academicClasses, countedMembers } from "./member-rules";
 import styles from "./mentor-groups.module.css";
+import { currentMentor } from "./mentor-history";
 
 /** The line under the code: whose group it is, since when, and how large. */
 function groupLede(group: GroupDetail): string {
@@ -32,12 +35,24 @@ function groupLede(group: GroupDetail): string {
  */
 export async function GroupScreen({
   limit,
+  evaluationLimit,
+  evaluateAddress,
   groupId,
   detailVisible,
   memberAddressOf,
 }: {
   /** Which rows the account that opened the page may see. */
   limit: RowLimit;
+  /**
+   * Which evaluations the account may see, or null for an account that
+   * may see none: it gets no "Evaluasi pengasuh".
+   */
+  evaluationLimit: RowLimit | null;
+  /**
+   * The address of the form that evaluates the mentor of this group, or
+   * null for an account that may not evaluate: it gets no button.
+   */
+  evaluateAddress: string | null;
   groupId: string;
   /** The students whose detail the account may open, or null for none. */
   detailVisible: SQL | null;
@@ -55,6 +70,12 @@ export async function GroupScreen({
   if (answer.kind === "not_found") notFound();
   if (answer.kind === "refused") forbidden();
   const { group } = answer;
+  // Read once the group is found: its id is then known to be one.
+  const evaluations =
+    evaluationLimit === null
+      ? null
+      : await listGroupEvaluations(db, evaluationLimit, group.id);
+  const hasMentor = currentMentor(group.mentors) !== null;
   return (
     <>
       <p className={styles.back}>
@@ -63,6 +84,13 @@ export async function GroupScreen({
         </Link>
       </p>
       <PageHead title={groupCode(group)}>{groupLede(group)}</PageHead>
+      {evaluateAddress && hasMentor && (
+        <p className={styles.headActions}>
+          <Link href={evaluateAddress} className={shared.quiet}>
+            Evaluasi pengasuh
+          </Link>
+        </p>
+      )}
       {isSmallGroup(countedMembers(group.members)) && (
         <p className={styles.note}>
           Anggota aktif kelompok ini kurang dari {GROUP_MIN} karena sebagian
@@ -71,6 +99,12 @@ export async function GroupScreen({
         </p>
       )}
       <GroupMentorPanel mentors={group.mentors} />
+      {evaluations && (
+        <section className={shared.panel}>
+          <h2 className={shared.heading}>Evaluasi pengasuh</h2>
+          <EvaluationTable evaluations={evaluations} />
+        </section>
+      )}
       <section className={shared.panel}>
         <div className={styles.panelHead}>
           <h2 className={shared.heading}>Anggota kelompok</h2>
