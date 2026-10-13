@@ -19,6 +19,7 @@ import {
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import { DORM_IDS } from "@/dorms/dorms";
+import { FOLLOW_UPS, NOTE_KINDS } from "@/features/mentoring/note-kinds";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -82,22 +83,9 @@ export const cohortAssignmentChangeAction = pgEnum(
   ],
 );
 
-export const mentoringNoteKind = pgEnum("mentoring_note_kind", [
-  "individual_counselling",
-  "group_mentoring",
-  "appreciation",
-  "attendance_monitoring",
-  "discipline_guidance",
-  "parent_visit",
-]);
+export const mentoringNoteKind = pgEnum("mentoring_note_kind", NOTE_KINDS);
 
-export const mentoringFollowUp = pgEnum("mentoring_follow_up", [
-  "none",
-  "watch_two_weeks",
-  "schedule_counselling",
-  "refer_to_psychologist",
-  "involve_parents",
-]);
+export const mentoringFollowUp = pgEnum("mentoring_follow_up", FOLLOW_UPS);
 
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,

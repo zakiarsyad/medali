@@ -1,0 +1,28 @@
+/* A line of a form that takes its whole width. */
+.whole {
+  grid-column: 1 / -1;
+}
+
+/* A choice with a long name must not be wider than a phone. */
+.fit {
+  max-width: 100%;
+}
+
+/* The mentees that match what was typed, each a button to pick. */
+.offered {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chosen {
+  color: var(--ink);
+}
+
+.quiet {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}

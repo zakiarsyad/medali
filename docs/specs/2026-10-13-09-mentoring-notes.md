@@ -99,7 +99,7 @@ it is built here.
 - [x] 1. Notes are stored, with sample notes for the sample groups.
 - [x] 2. The rights to write and to read notes are added to the
   permission list, with their checks.
-- [ ] 3. Pengasuh writes a note with "Catatan baru".
+- [x] 3. Pengasuh writes a note with "Catatan baru".
 - [ ] 4. The list with counts, filter, paging and the read-only view.
 - [ ] 5. Pengasuh opens the detail of their own mentees; the detail
   shows "Catatan pengasuhan" and "Tulis catatan".
