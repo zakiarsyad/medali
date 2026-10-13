@@ -99,12 +99,17 @@ it is built here.
    by the mentor of that day, or on the first day of the period or of
    the group's first mentor when that is later. A group that has no
    mentor yet has none.
+8. Two rights are added to the one list: reading mentoring scores
+   (Kepala Unit, Direktur / Wakil Direktur, Ketua Program Studi,
+   Pengasuh) and giving them (Pengasuh). Each reads within their own
+   rows: Pengasuh the groups they hold today, Ketua Program Studi the
+   groups of their program.
 
 ## Steps
 
 - [x] 1. Scores and their change log are stored, one per student per
   semester, with sample scores for part of the sample groups.
-- [ ] 2. The rights to score and to read scores are added to the
+- [x] 2. The rights to score and to read scores are added to the
   permission list, with their checks.
 - [ ] 3. The tab with the numbers, the rubric and the table, read only.
 - [ ] 4. Pengasuh types and saves scores.
