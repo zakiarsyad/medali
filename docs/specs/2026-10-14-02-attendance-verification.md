@@ -187,12 +187,29 @@ decided, from what the merged app does and then from the prototype:
     with "akan datang" below; both follow the tahap chosen. "Menunggu
     verifikasi" counts the waiting photos of the students the account
     sees, with "foto kehadiran" below.
+24. The tab keeps the title "Kegiatan karakter" and says under it:
+    "Periksa foto kehadiran yang diunggah mahasiswa. Presensi yang
+    divalidasi dihitung sebagai hadir dalam nilai kehadiran kegiatan."
+    The prototype's words about Penilaian karakter are left out, as
+    that is not built. The cards stand under the heading "Verifikasi
+    presensi", and the line below them counts "foto".
+25. "(n) sedang dibuka" counts every schedule whose upload time is open
+    now, also one held on an earlier day, as in the prototype.
+26. The sample picture is one drawn landscape with a sun and two hills.
+    Each sample attendance gets a copy of its own. It is given after
+    the sample data is in: on a local computer by the command that
+    makes the file storage ready, and on a preview by the file storage
+    step of a deploy. Where the file storage settings are empty none is
+    given, and the first deploy after they are filled in gives them.
+27. A card whose status is not Menunggu verifikasi shows "Hadir",
+    "Ditolak" or "Dispensasi" with what was noted and the name of who
+    decided, also when that was a record made by hand.
 
 ## Steps
 
 - [x] 1. The right "Verifikasi presensi" is added for Pegawai UPK, with
   its checks, and the log for attendance decisions.
-- [ ] 2. The tab shows the numbers, the filters and the photo cards.
+- [x] 2. The tab shows the numbers, the filters and the photo cards.
 - [ ] 3. "Validasi" and "Tolak" with a reason; the student sends again.
 - [ ] 4. Ticking many cards and "Validasi (n) terpilih".
 - [ ] 5. "Catat kehadiran manual atau dispensasi".

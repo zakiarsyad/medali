@@ -8,13 +8,11 @@ import { fileFault, type SentFile } from "@/files/file-check";
 import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
-import { PHOTO_FAULTS, PHOTO_RULE } from "./attendance-photo";
+import { PHOTO_FAULTS, PHOTO_FOLDER, PHOTO_RULE } from "./attendance-photo";
 import { readOwnSchedule } from "./own-schedule";
 import { readOwnStudent } from "./own-student";
 import { scheduleStatus } from "./schedule-status";
 import { readOwnAttendances } from "./student-schedules";
-
-const FOLDER = "attendance-photos";
 
 function refusal(error: string) {
   return { ok: false, error } as const;
@@ -79,7 +77,7 @@ async function keepPhoto(
   photo: SentFile,
 ): Promise<Parsed<string>> {
   try {
-    const kept = await keepFile(store, FOLDER, photo, PHOTO_RULE);
+    const kept = await keepFile(store, PHOTO_FOLDER, photo, PHOTO_RULE);
     if (!kept.ok) return refusal(PHOTO_FAULTS[kept.fault]);
     return { ok: true, value: kept.key };
   } catch (error) {

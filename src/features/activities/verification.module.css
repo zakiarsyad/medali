@@ -1,0 +1,74 @@
+/*
+ * A list is as wide as its longest choice unless told otherwise, and the
+ * name of an activity is longer than a phone is wide.
+ */
+.filters select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
+ * As many cards beside each other as fit. A card is never wider than the
+ * screen: on a phone its smallest width gives way and there is one column.
+ */
+.photoCards {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-lg);
+}
+
+.photoCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Every picture takes the same room, loaded or not: a card keeps its
+ * height while its picture is still on its way.
+ */
+.photo,
+.noPhoto {
+  width: 100%;
+  height: var(--photo-card-height);
+  background: var(--surface2);
+}
+
+.photo {
+  display: block;
+  object-fit: cover;
+}
+
+.noPhoto {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+  text-align: center;
+}
+
+.photoBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+}
+
+.decision {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-xs);
+  align-items: center;
+  margin-top: var(--space-xs);
+}

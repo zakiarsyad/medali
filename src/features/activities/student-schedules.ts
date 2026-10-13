@@ -34,7 +34,7 @@ export const HISTORY_PAGE_SIZE = 20;
 export const COMING_COUNT = 5;
 
 /** The longest an upload stays open after the last day: 52 weeks. */
-const LONGEST_UPLOAD_DAYS = UPLOAD_COUNT_MAX * 7;
+export const LONGEST_UPLOAD_DAYS = UPLOAD_COUNT_MAX * 7;
 
 const ROW = {
   id: activitySchedules.id,
