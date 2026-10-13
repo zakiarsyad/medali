@@ -123,6 +123,11 @@ for Mahasiswa. The issue did not say, so these were decided:
 9. The sample data gets seven more schedules, all for the students in
    their second year, so that one sample student has every status in
    their history, an open upload and coming activities.
+10. In Nilai kehadiran kegiatan, a required activity whose upload time
+    has closed counts as not attended while its photo still waits, was
+    rejected, or was never sent. An activity that is not required is
+    left out, attended or not. The upload time closes at the end of the
+    last upload day, as the status of a schedule already has it.
 
 ## Steps
 
@@ -130,7 +135,7 @@ for Mahasiswa. The issue did not say, so these were decided:
   photo, time sent, and who decided and when. The right "Presensi
   swafoto" is added for Mahasiswa, with its checks. Sample data adds
   attendance in every status.
-- [ ] 2. The rule for Nilai kehadiran kegiatan, with checks.
+- [x] 2. The rule for Nilai kehadiran kegiatan, with checks.
 - [ ] 3. The student page shows the numbers and the three parts.
 - [ ] 4. "Unggah foto kehadiran" takes or picks a photo and sends it.
 
