@@ -85,7 +85,7 @@ function wordsAt(place: number): Words {
 }
 
 /** The name of the mentor who held a group on a day, if anyone did. */
-function holderOn(group: SampleMentorGroup, day: string): string | null {
+export function holderOn(group: SampleMentorGroup, day: string): string | null {
   const line = group.mentors.find((mentor) => {
     const hasStarted = mentor.startsOn <= day;
     const hasEnded = mentor.endsOn !== null && mentor.endsOn < day;

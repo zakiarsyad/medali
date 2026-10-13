@@ -134,11 +134,13 @@ The issue did not say, so these were decided:
     meeting changed and to load the page again.
 17. A Pengasuh with one group sees no "Kelompok pengasuhan" choice.
 18. The sample data has meetings 1 and 2 of the running period for every
-    sample group, by the mentor of that day.
+    sample group, by the mentor of that day: 45 and 15 days ago, or the
+    first day of the period or of the group's first mentor when that is
+    later. A group that has no mentor yet has none.
 
 ## Steps
 
-- [ ] 1. Meetings, their attendance and the change log are stored, with
+- [x] 1. Meetings, their attendance and the change log are stored, with
   two sample meetings per sample group.
 - [ ] 2. The rights to fill in and to read attendance are added to the
   permission list, with their checks.

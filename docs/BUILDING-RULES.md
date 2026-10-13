@@ -17,8 +17,9 @@ while building.
 - `src/dorms/`: the four dorms, the rule for who lives in which, and a
   resident's room, read by every area that needs them.
 - `src/mentoring/`: who is a mentee of a mentor today, how a list marks
-  the students whose detail may be opened, and the kinds and follow-ups
-  of a mentoring note, read by every area that needs them.
+  the students whose detail may be opened, the kinds and follow-ups of a
+  mentoring note, and how many meetings a period has with their marks
+  and suggested topics, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/campus/`: what the campus server package checks and does when it
   starts.
