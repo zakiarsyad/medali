@@ -190,4 +190,22 @@ describe("stageOf", () => {
   ])("reads anything without a clear yes, such as %o, as campus", (env) => {
     expect(stageOf(env)).toBe("campus");
   });
+
+  it.each([
+    [{ VERCEL_ENV: "preview", VERCEL: "1" }],
+    [{ VERCEL_ENV: "production", VERCEL: "1" }],
+    [{ NODE_ENV: "development" }],
+    [{ VERCEL_ENV: "development", NODE_ENV: "development" }],
+  ])("reads %o as campus once the campus mark is there", (env) => {
+    expect(stageOf({ ...env, MEDALI_CAMPUS: "1" })).toBe("campus");
+  });
+
+  it.each(["0", "false", ""])(
+    "takes the campus mark whatever it holds, such as %o",
+    (value) => {
+      const env = { VERCEL_ENV: "preview", MEDALI_CAMPUS: value };
+
+      expect(stageOf(env)).toBe("campus");
+    },
+  );
 });

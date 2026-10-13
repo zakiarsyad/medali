@@ -17,6 +17,15 @@ export function filePlaceOf(stage: Stage): string {
   return FILE_PLACES[stage];
 }
 
+/**
+ * Whether the app makes the place for files itself. It does where the
+ * file storage is its own: on a local computer and in the campus server
+ * package. At the previews' service the place is made by hand, once.
+ */
+export function makesOwnPlace(stage: Stage): boolean {
+  return stage === "local" || stage === "campus";
+}
+
 /** Every key of a place starts with this; no other place's key does. */
 export function placePrefix(place: string): string {
   return `${place}/`;

@@ -2,8 +2,11 @@ import type { Stage } from "@/settings";
 
 export type DeployPlan = "reset-to-sample-data" | "apply-table-changes";
 
-/** Which preview a database belongs to, as marked in the database itself. */
-export type DatabaseKind = "pr-preview" | "main-preview";
+/**
+ * Which preview a database belongs to, or that it is the campus server's,
+ * as marked in the database itself.
+ */
+export type DatabaseKind = "pr-preview" | "main-preview" | "campus";
 
 export interface DeployTarget {
   marker: DatabaseKind | null;

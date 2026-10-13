@@ -37,7 +37,7 @@ export interface FileStorageSettings {
   secretKey: string;
 }
 
-const FILE_STORAGE_NAMES = [
+export const FILE_STORAGE_NAMES = [
   "FILE_STORAGE_URL",
   "FILE_STORAGE_BUCKET",
   "FILE_STORAGE_ACCESS_KEY",
@@ -126,16 +126,28 @@ export function readGoogleSignInSettings(): GoogleSignInSettings | null {
  * Where the app runs. Vercel names its environments: `production` is the
  * preview of `main`, and `preview` is a PR preview. A local computer says
  * so with NODE_ENV=development. Anything without such a clear yes is
- * treated as the campus server, where real data lives.
+ * treated as the campus server, where real data lives. The campus mark
+ * wins over all of them.
  */
 export type Stage = "local" | "pr-preview" | "main-preview" | "campus";
 
 interface StageEnv {
   NODE_ENV?: string | undefined;
   VERCEL_ENV?: string | undefined;
+  MEDALI_CAMPUS?: string | undefined;
+}
+
+/**
+ * Whether the campus mark is there. The campus server package sets it
+ * when it is built. It counts whatever it holds, so a setting on the
+ * server can give it another value but cannot switch it off.
+ */
+export function hasCampusMark(env: StageEnv): boolean {
+  return env.MEDALI_CAMPUS !== undefined;
 }
 
 export function stageOf(env: StageEnv): Stage {
+  if (hasCampusMark(env)) return "campus";
   if (env.VERCEL_ENV === "preview") return "pr-preview";
   if (env.VERCEL_ENV === "production") return "main-preview";
   const onVercelOrNowhere =
