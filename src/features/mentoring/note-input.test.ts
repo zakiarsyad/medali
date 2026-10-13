@@ -94,6 +94,28 @@ describe("parseNote", () => {
     },
   );
 
+  it.each(["0000-01-01", "0000-12-31"])(
+    "refuses a day of a year below 1 (%j), which the database cannot keep",
+    (happenedOn) => {
+      expect(errorOf({ ...SENT, happenedOn })).toBe(
+        "Isi tanggal kegiatan dengan benar.",
+      );
+    },
+  );
+
+  it("takes a day of year 1, the earliest the database keeps", () => {
+    expect(errorOf({ ...SENT, happenedOn: "0001-01-01" })).toBeNull();
+  });
+
+  it.each(["Membahas\u0000jadwal.", "\u0000Membahas jadwal.", "Hadir\u0000"])(
+    "refuses a text that holds a NUL character (%j), which the database cannot keep",
+    (note) => {
+      expect(errorOf({ ...SENT, note })).toBe(
+        "Catatan memuat karakter yang tidak dapat disimpan. Ketik ulang catatan tanpa menyalin dari tempat lain, lalu simpan lagi.",
+      );
+    },
+  );
+
   it("refuses a kind that is not offered", () => {
     expect(errorOf({ ...SENT, kind: "gossip" })).toBe("Pilih jenis kegiatan.");
   });

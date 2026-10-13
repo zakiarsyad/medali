@@ -30,6 +30,10 @@ export interface NoteInput {
 export const NOTE_MIN_LENGTH = 5;
 export const NOTE_MAX_LENGTH = 1000;
 
+/** The database keeps no day of a year below 1, and no text with this character. */
+const EARLIEST_DAY = "0001-01-01";
+const NUL = "\u0000";
+
 function refused(error: string): { ok: false; error: string } {
   return { ok: false, error };
 }
@@ -52,6 +56,9 @@ function tickedValues(sent: string[]): ValueKey[] | null {
 }
 
 function textFault(note: string): string | null {
+  if (note.includes(NUL)) {
+    return "Catatan memuat karakter yang tidak dapat disimpan. Ketik ulang catatan tanpa menyalin dari tempat lain, lalu simpan lagi.";
+  }
   if (note.length < NOTE_MIN_LENGTH) {
     return `Catatan terlalu pendek. Tulis paling sedikit ${NOTE_MIN_LENGTH} huruf tentang apa yang dibahas atau diamati.`;
   }
@@ -62,7 +69,8 @@ function textFault(note: string): string | null {
 }
 
 function dayFault(happenedOn: string, today: string): string | null {
-  if (!isDay(happenedOn)) return "Isi tanggal kegiatan dengan benar.";
+  const isKept = isDay(happenedOn) && happenedOn >= EARLIEST_DAY;
+  if (!isKept) return "Isi tanggal kegiatan dengan benar.";
   if (happenedOn > today) {
     return "Tanggal tidak boleh setelah hari ini. Pilih hari ini atau tanggal sebelumnya.";
   }

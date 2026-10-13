@@ -138,7 +138,9 @@ The issue did not say, so these were decided:
     rows.
 16. Catatan holds 5 to 1,000 characters, counted without the blanks
     around it. No value needs to be ticked. Any day up to today can be
-    chosen; there is no earliest day.
+    chosen; there is no earliest day, beyond what the database can keep.
+    A day of a year below 1 and a text with a NUL character, which the
+    database cannot keep, are refused with a message.
 17. A double press saves once in two ways: the button is off while a
     save is on its way, and the form sends the key of its note, so the
     same form is kept once also when both presses reach the server at
