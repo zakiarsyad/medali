@@ -1,20 +1,31 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ScheduleForm } from "./schedule-form";
-import { TEST_FORM_PARTS } from "./test-screen-parts";
+import type { ScheduleRow } from "./schedule-row";
+import { TEST_FORM_PARTS, TEST_SCHEDULE } from "./test-screen-parts";
 
 vi.mock("./actions", () => ({ saveScheduleAction: vi.fn() }));
 
 function nothing() {}
 
-function newForm(): string {
+function formFor(schedule: ScheduleRow | null): string {
   return renderToStaticMarkup(
     <ScheduleForm
+      schedule={schedule}
       parts={TEST_FORM_PARTS}
       onSaved={nothing}
       onCancel={nothing}
     />,
   );
+}
+
+function newForm(): string {
+  return formFor(null);
+}
+
+/** The field of that name as the form holds it. */
+function fieldOf(form: string, name: string): string {
+  return form.match(new RegExp(`<input[^>]*name="${name}"[^>]*>`))?.[0] ?? "";
 }
 
 describe("the form for a new schedule", () => {
@@ -87,5 +98,58 @@ describe("the form for a new schedule", () => {
 
   it("leaves the checks to the server, so the app's own message is the one shown", () => {
     expect(/<form[^>]* novalidate=""/i.test(newForm())).toBe(true);
+  });
+
+  it("sends no version, so the server adds a schedule", () => {
+    expect(newForm()).not.toContain('name="version"');
+  });
+});
+
+describe("the form that changes a schedule", () => {
+  const form = formFor(TEST_SCHEDULE);
+
+  it("is titled Ubah jadwal, with Simpan perubahan and Batal", () => {
+    expect(form).toContain("Ubah jadwal</h2>");
+    expect(form).toContain("Simpan perubahan</button>");
+    expect(form).toContain("Batal</button>");
+    expect(form).not.toContain("Simpan jadwal");
+    expect(form).not.toContain("Jadwalkan kegiatan PPKS");
+  });
+
+  it("opens filled in with what the schedule holds", () => {
+    expect(fieldOf(form, "startsOn")).toContain('value="2026-10-13"');
+    expect(fieldOf(form, "endsOn")).toContain('value="2026-10-14"');
+    expect(fieldOf(form, "startTime")).toContain('value="07:30"');
+    expect(fieldOf(form, "endTime")).toContain('value="11:30"');
+    expect(fieldOf(form, "uploadCount")).toContain('value="1"');
+    expect(form).toContain('<option value="week" selected="">minggu</option>');
+    expect(fieldOf(form, "location")).toContain('value="Aula asrama"');
+  });
+
+  it("keeps Wajib as the schedule has it, not as Kurikulum says of the activity", () => {
+    expect(TEST_SCHEDULE.activity.isRequired).toBe(true);
+    expect(fieldOf(form, "required")).not.toContain("checked");
+  });
+
+  it("still offers the activity the schedule holds after it was removed from Kurikulum, and has it chosen", () => {
+    expect(form).toContain(
+      `<option value="${TEST_SCHEDULE.activity.id}" selected="">Latihan dasar kepemimpinan organisasi</option>`,
+    );
+    expect(newForm()).not.toContain(TEST_SCHEDULE.activity.id);
+  });
+
+  it("shows the nilai, the indicators and the target of the activity, and whom the schedule is for", () => {
+    for (const words of ["Mandiri", "Disiplin", "target 110 peserta"]) {
+      expect(form).toContain(words);
+    }
+    expect(form).toContain(">M2</span>");
+    expect(form).toContain("Sasaran: 96 mahasiswa (target 110).");
+  });
+
+  it("sends the key and the version of the schedule it was opened for", () => {
+    expect(fieldOf(form, "id")).toContain(`value="${TEST_SCHEDULE.id}"`);
+    expect(fieldOf(form, "version")).toContain(
+      `value="${TEST_SCHEDULE.version}"`,
+    );
   });
 });

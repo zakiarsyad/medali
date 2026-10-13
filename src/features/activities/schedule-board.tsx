@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import styles from "./activities.module.css";
@@ -9,12 +9,17 @@ import type { ScheduleList } from "./list-schedules";
 import type { CohortCount } from "./participants";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleListPanel } from "./schedule-list-panel";
+import type { ScheduleRow } from "./schedule-row";
 import type { CampusMoment } from "./schedule-status";
+
+/** What the form is open for: a new schedule, or one to change. */
+type FormTarget = "new" | ScheduleRow;
 
 /**
  * The panel "Jadwalkan kegiatan" with its form, for an account that may
- * manage activities, and under it the list of schedules. It holds whether
- * the form is open, as the panel and the list both need to know.
+ * manage activities, and under it the list of schedules. It holds what
+ * the form is open for, as "Ubah" in the list opens the form in the
+ * panel, and only one form is open at a time.
  */
 export function ScheduleBoard({
   list,
@@ -31,28 +36,39 @@ export function ScheduleBoard({
   /** What the form needs, or null for an account that only reads. */
   form: FormParts | null;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [target, setTarget] = useState<FormTarget | null>(null);
   const [said, setSaid] = useState<string | null>(null);
+  const panel = useRef<HTMLElement>(null);
 
-  function open() {
+  function openFor(opened: FormTarget) {
     setSaid(null);
-    setIsOpen(true);
+    setTarget(opened);
+  }
+
+  /** The form is above the list, so "Ubah" far down brings it into view. */
+  function change(schedule: ScheduleRow) {
+    openFor(schedule);
+    panel.current?.scrollIntoView({ behavior: "smooth" });
   }
 
   function closeWith(message: string) {
     setSaid(message);
-    setIsOpen(false);
+    setTarget(null);
   }
 
   return (
     <>
       {form && (
-        <section className={shared.panel}>
-          {isOpen ? (
+        <section className={shared.panel} ref={panel}>
+          {target ? (
             <ScheduleForm
+              // Made anew for each schedule and each of its versions, so
+              // its fields hold what that one has.
+              key={target === "new" ? "new" : target.id + target.version}
+              schedule={target === "new" ? null : target}
               parts={form}
               onSaved={closeWith}
-              onCancel={() => setIsOpen(false)}
+              onCancel={() => setTarget(null)}
             />
           ) : (
             <div className={styles.addHead}>
@@ -63,7 +79,11 @@ export function ScheduleBoard({
                   tanggal dan jam.
                 </p>
               </div>
-              <button type="button" className={shared.button} onClick={open}>
+              <button
+                type="button"
+                className={shared.button}
+                onClick={() => openFor("new")}
+              >
                 Jadwalkan kegiatan PPKS
               </button>
             </div>
@@ -75,7 +95,13 @@ export function ScheduleBoard({
           )}
         </section>
       )}
-      <ScheduleListPanel list={list} level={level} counts={counts} now={now} />
+      <ScheduleListPanel
+        list={list}
+        level={level}
+        counts={counts}
+        now={now}
+        onChange={form ? change : null}
+      />
     </>
   );
 }

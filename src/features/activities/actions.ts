@@ -9,6 +9,7 @@ import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addSchedule } from "./add-schedule";
+import { changeSchedule, SCHEDULE_CHANGED_BY_OTHER } from "./change-schedule";
 import { savedWords } from "./form-words";
 import type { SentSchedule } from "./schedule-input";
 import { SCHEDULES_ADDRESS } from "./schedule-list-address";
@@ -38,14 +39,20 @@ export async function saveScheduleAction(
   form: FormData,
 ): Promise<FormState> {
   const manager = await activityManager();
-  const saved = await addSchedule(
-    database(),
-    manager,
-    text(form, "id"),
-    sentSchedule(form),
-  );
+  const sent = sentSchedule(form);
+  // A form with a version changes the schedule it was opened for; one
+  // without adds a new one under the key it made.
+  const id = text(form, "id");
+  const version = text(form, "version");
+  const saved =
+    version === ""
+      ? await addSchedule(database(), manager, id, sent)
+      : await changeSchedule(database(), manager, id, version, sent);
+  // Also when someone else changed the schedule first: the list behind
+  // the form is read again, so it shows their version.
+  const isStale = !saved.ok && saved.error === SCHEDULE_CHANGED_BY_OTHER.error;
+  if (saved.ok || isStale) revalidatePath(SCHEDULES_ADDRESS);
   if (!saved.ok) return { error: saved.error, done: null };
-  revalidatePath(SCHEDULES_ADDRESS);
   const { name, semester } = saved.value;
   return { error: null, done: savedWords(name, semester) };
 }

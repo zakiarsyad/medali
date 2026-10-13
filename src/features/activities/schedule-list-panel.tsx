@@ -4,6 +4,7 @@ import styles from "./activities.module.css";
 import type { ScheduleList } from "./list-schedules";
 import type { CohortCount } from "./participants";
 import { scheduleListAddress } from "./schedule-list-address";
+import type { ScheduleRow } from "./schedule-row";
 import type { CampusMoment } from "./schedule-status";
 import { ScheduleTable } from "./schedule-table";
 import { StageChoices } from "./stage-choices";
@@ -14,12 +15,15 @@ export function ScheduleListPanel({
   level,
   counts,
   now,
+  onChange,
 }: {
   list: ScheduleList;
   /** The tahap chosen, or null for every tahap. */
   level: number | null;
   counts: CohortCount[];
   now: CampusMoment;
+  /** Opens the form of a schedule, or null for an account that only reads. */
+  onChange: ((schedule: ScheduleRow) => void) | null;
 }) {
   return (
     <section className={shared.panel}>
@@ -31,7 +35,12 @@ export function ScheduleListPanel({
         <p className={shared.empty}>Belum ada jadwal kegiatan.</p>
       ) : (
         <>
-          <ScheduleTable schedules={list.schedules} counts={counts} now={now} />
+          <ScheduleTable
+            schedules={list.schedules}
+            counts={counts}
+            now={now}
+            onChange={onChange}
+          />
           <ListPager
             page={list.page}
             matching={list.matching}

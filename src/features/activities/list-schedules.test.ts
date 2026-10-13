@@ -98,12 +98,16 @@ describe("listSchedules", () => {
           location: "Aula uji",
           isRequired: false,
           activity: {
+            id: records.activityId,
             name: "Kegiatan uji jadwal",
             semester: 3,
+            valueKeys: ["M", "D"],
             indicatorCodes: ["M2", "D2"],
             targetParticipants: 40,
+            isRequired: true,
           },
           period: { startYear: 2110, term: "odd" },
+          version: expect.any(String),
         },
       ]);
     });

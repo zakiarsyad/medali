@@ -149,5 +149,5 @@ The issue did not say, so these were decided:
   checks.
 - [x] 3. The tab shows "Jadwal dan kehadiran" with the tahap choice.
 - [x] 4. "Jadwalkan kegiatan PPKS" adds a schedule.
-- [ ] 5. "Ubah" changes a schedule.
+- [x] 5. "Ubah" changes a schedule.
 - [ ] 6. "Hapus jadwal" removes a schedule.

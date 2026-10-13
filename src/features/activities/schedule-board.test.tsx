@@ -37,15 +37,20 @@ describe("ScheduleBoard for an account that may manage activities", () => {
     expect(shown).toContain("Jadwalkan kegiatan PPKS</button>");
     expect(shown).not.toContain("<form");
   });
+
+  it("shows Ubah on each schedule of the list", () => {
+    expect(board(TEST_FORM_PARTS)).toContain(">Ubah</button>");
+  });
 });
 
 describe("ScheduleBoard for an account that only reads", () => {
-  it("shows the schedules without any way to add one", () => {
+  it("shows the schedules without any way to add or change one", () => {
     const shown = board(null);
 
     expect(shown).toContain("Jadwal dan kehadiran");
     expect(shown).toContain("Latihan dasar kepemimpinan organisasi");
     expect(shown).not.toContain("Jadwalkan kegiatan");
+    expect(shown).not.toContain("Ubah");
     expect(shown).not.toContain("<button");
     expect(shown).not.toContain("<form");
   });

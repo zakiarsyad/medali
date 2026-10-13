@@ -8,24 +8,38 @@ import { saveScheduleAction } from "./actions";
 import styles from "./activities.module.css";
 import { ActivityFacts } from "./activity-facts";
 import { ACTIVITY_FIELD_ID, ActivitySelect } from "./activity-select";
-import { type FormParts, participantsOn, startingValues } from "./form-values";
+import {
+  choicesWith,
+  type FormParts,
+  participantsOn,
+  startingValues,
+  valuesOf,
+} from "./form-values";
 import { formTargetWords } from "./form-words";
 import { LOCATION_MAX_LENGTH } from "./schedule-input";
+import type { ScheduleRow } from "./schedule-row";
 import { UploadRangeField } from "./upload-range-field";
 
 const START: FormState = { error: null, done: null };
 
-/** The form that schedules a PPKS activity of the Kurikulum list. */
+/**
+ * The form that schedules a PPKS activity of the Kurikulum list, or
+ * changes a schedule.
+ */
 export function ScheduleForm({
+  schedule,
   parts,
   onSaved,
   onCancel,
 }: {
+  /** The schedule to change, or null to add a new one. */
+  schedule: ScheduleRow | null;
   parts: FormParts;
   onSaved: (message: string) => void;
   onCancel: () => void;
 }) {
-  const start = startingValues(parts.today);
+  const start = schedule ? valuesOf(schedule) : startingValues(parts.today);
+  const choices = choicesWith(parts.choices, schedule?.activity ?? null);
   const [activityId, setActivityId] = useState(start.activityId);
   const [startsOn, setStartsOn] = useState(start.startsOn);
   const [isRequired, setIsRequired] = useState(start.isRequired);
@@ -33,12 +47,11 @@ export function ScheduleForm({
   // it is read again, and two presses of "Simpan jadwal" must send the
   // same one.
   const [newId] = useState(parts.newScheduleId);
-  const activity =
-    parts.choices.find((choice) => choice.id === activityId) ?? null;
+  const activity = choices.find((choice) => choice.id === activityId) ?? null;
 
   function choose(id: string) {
     setActivityId(id);
-    const chosen = parts.choices.find((choice) => choice.id === id);
+    const chosen = choices.find((choice) => choice.id === id);
     if (chosen) setIsRequired(chosen.isRequired);
   }
 
@@ -53,8 +66,13 @@ export function ScheduleForm({
   return (
     // noValidate: the server says what is wrong, in the app's own words.
     <form onSubmit={(event) => sendForm(event, action)} noValidate>
-      <h2 className={shared.heading}>Jadwalkan kegiatan PPKS</h2>
-      <input type="hidden" name="id" value={newId} />
+      <h2 className={shared.heading}>
+        {schedule ? "Ubah jadwal" : "Jadwalkan kegiatan PPKS"}
+      </h2>
+      <input type="hidden" name="id" value={schedule?.id ?? newId} />
+      {schedule && (
+        <input type="hidden" name="version" value={schedule.version} />
+      )}
       <div className={shared.form}>
         <label
           htmlFor={ACTIVITY_FIELD_ID}
@@ -62,7 +80,7 @@ export function ScheduleForm({
         >
           Kegiatan dari Kurikulum
           <ActivitySelect
-            choices={parts.choices}
+            choices={choices}
             chosenId={activityId}
             onChoose={choose}
           />
@@ -133,7 +151,7 @@ export function ScheduleForm({
         {state.error && <FormMessage state={state} />}
         <div className={shared.actions}>
           <button type="submit" className={shared.button} disabled={pending}>
-            Simpan jadwal
+            {schedule ? "Simpan perubahan" : "Simpan jadwal"}
           </button>
           <button type="button" className={shared.quiet} onClick={onCancel}>
             Batal

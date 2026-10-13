@@ -1,39 +1,20 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { CohortCount } from "./participants";
 import type { ScheduleRow } from "./schedule-row";
 import { ScheduleTable } from "./schedule-table";
+import { TEST_FORM_PARTS, TEST_SCHEDULE } from "./test-screen-parts";
 
-const SCHEDULE: ScheduleRow = {
-  id: "00000000-0000-4000-8000-000000000001",
-  startsOn: "2026-10-13",
-  endsOn: "2026-10-14",
-  startTime: "07:30",
-  endTime: "11:30",
-  uploadCount: 1,
-  uploadUnit: "week",
-  location: "Aula asrama",
-  isRequired: false,
-  activity: {
-    name: "Latihan dasar kepemimpinan organisasi",
-    semester: 3,
-    indicatorCodes: ["M2", "D2"],
-    targetParticipants: 110,
-  },
-  period: { startYear: 2026, term: "odd" },
-};
-
-const COUNTS: CohortCount[] = [
-  { cohortYear: 2026, students: 120 },
-  { cohortYear: 2025, students: 96 },
-];
-
-function shown(day: string, time: string, schedule = SCHEDULE): string {
+function shown(
+  day: string,
+  time: string,
+  onChange: ((schedule: ScheduleRow) => void) | null = null,
+): string {
   return renderToStaticMarkup(
     <ScheduleTable
-      schedules={[schedule]}
-      counts={COUNTS}
+      schedules={[TEST_SCHEDULE]}
+      counts={TEST_FORM_PARTS.counts}
       now={{ day, time }}
+      onChange={onChange}
     />,
   );
 }
@@ -80,12 +61,25 @@ describe("ScheduleTable", () => {
     for (const other of others) expect(table).not.toContain(other);
   });
 
-  it("shows no attendance numbers and no way to change a schedule", () => {
+  it("shows no attendance numbers", () => {
     const table = shown("2026-10-13", "08:00");
 
     expect(table).not.toContain("Hadir");
     expect(table).not.toContain("Menunggu");
+  });
+
+  it("shows no Ubah to an account that only reads", () => {
+    const table = shown("2026-10-13", "08:00");
+
     expect(table).not.toContain("Ubah");
+    expect(table).not.toContain("Tindakan");
     expect(table).not.toContain("<button");
+  });
+
+  it("shows Ubah on each schedule to an account that may change it", () => {
+    const table = shown("2026-10-13", "08:00", () => {});
+
+    expect(table).toContain(">Ubah</button>");
+    expect(table).toContain("Tindakan");
   });
 });

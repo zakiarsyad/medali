@@ -36,7 +36,10 @@ export const TEST_FORM_PARTS: FormParts = {
   newScheduleId: "00000000-0000-4000-8000-0000000000f1",
 };
 
-/** A schedule of two days of the semester 3 activity, not required. */
+/**
+ * A schedule of two days, not required, of an activity of semester 3 that
+ * is not among the choices: it was removed from Kurikulum since.
+ */
 export const TEST_SCHEDULE: ScheduleRow = {
   id: "00000000-0000-4000-8000-000000000001",
   startsOn: "2026-10-13",
@@ -48,10 +51,14 @@ export const TEST_SCHEDULE: ScheduleRow = {
   location: "Aula asrama",
   isRequired: false,
   activity: {
+    id: "00000000-0000-4000-8000-0000000000b3",
     name: "Latihan dasar kepemimpinan organisasi",
     semester: 3,
+    valueKeys: ["M", "D"],
     indicatorCodes: ["M2", "D2"],
     targetParticipants: 110,
+    isRequired: true,
   },
   period: { startYear: 2026, term: "odd" },
+  version: "2026-10-01T02:03:04.567Z",
 };

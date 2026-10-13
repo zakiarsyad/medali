@@ -59,17 +59,23 @@ function ScheduleCells({
   );
 }
 
-/** The schedules of one page of the list: a table, and cards on a phone. */
+/**
+ * The schedules of one page of the list: a table, and cards on a phone.
+ * Each has "Ubah" when `onChange` is given.
+ */
 export function ScheduleTable({
   schedules,
   counts,
   now,
+  onChange,
 }: {
   schedules: ScheduleRow[];
   /** The Aktif students of each angkatan, to count the participants from. */
   counts: CohortCount[];
   /** The moment on campus the statuses are told at. */
   now: CampusMoment;
+  /** Opens the form of a schedule, or null for an account that only reads. */
+  onChange: ((schedule: ScheduleRow) => void) | null;
 }) {
   return (
     <div className={shared.tableWrap}>
@@ -80,12 +86,28 @@ export function ScheduleTable({
             <th>Kegiatan</th>
             <th>Sasaran</th>
             <th>Status</th>
+            {onChange && (
+              <th>
+                <span className={shared.hidden}>Tindakan</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {schedules.map((schedule) => (
             <tr key={schedule.id}>
               <ScheduleCells schedule={schedule} counts={counts} now={now} />
+              {onChange && (
+                <td>
+                  <button
+                    type="button"
+                    className={shared.link}
+                    onClick={() => onChange(schedule)}
+                  >
+                    Ubah
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

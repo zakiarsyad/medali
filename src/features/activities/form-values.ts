@@ -5,6 +5,7 @@ import {
   countParticipants,
   type PeriodParts,
 } from "./participants";
+import type { ScheduleRow } from "./schedule-row";
 import type { UploadUnit } from "./upload-range";
 
 /** A stored academic period, as far as the form reads it. */
@@ -67,4 +68,33 @@ export function participantsOn(
   if (activity === null || startsOn === "") return 0;
   const period = runningPeriodOn(parts.periods, startsOn);
   return countParticipants(parts.counts, activity.semester, period);
+}
+
+/** What the fields hold when the form opens to change a schedule. */
+export function valuesOf(schedule: ScheduleRow): FormValues {
+  return {
+    activityId: schedule.activity.id,
+    startsOn: schedule.startsOn,
+    endsOn: schedule.endsOn,
+    startTime: schedule.startTime,
+    endTime: schedule.endTime,
+    uploadCount: schedule.uploadCount,
+    uploadUnit: schedule.uploadUnit,
+    location: schedule.location,
+    isRequired: schedule.isRequired,
+  };
+}
+
+/**
+ * The activities the form offers: those in the Kurikulum list, and the
+ * one the schedule already holds when it was removed from the list since,
+ * so the schedule can be changed and keep it.
+ */
+export function choicesWith(
+  choices: ActivityChoice[],
+  kept: ActivityChoice | null,
+): ActivityChoice[] {
+  if (kept === null) return choices;
+  const isOffered = choices.some((choice) => choice.id === kept.id);
+  return isOffered ? choices : [...choices, kept];
 }

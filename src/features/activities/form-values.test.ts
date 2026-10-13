@@ -1,5 +1,47 @@
 import { describe, expect, it } from "vitest";
-import { type FormPeriod, participantsOn, startingValues } from "./form-values";
+import {
+  choicesWith,
+  type FormPeriod,
+  participantsOn,
+  startingValues,
+  valuesOf,
+} from "./form-values";
+import { TEST_CHOICES, TEST_SCHEDULE } from "./test-screen-parts";
+
+describe("valuesOf", () => {
+  it("fills the form with what the schedule holds, Wajib as the schedule has it", () => {
+    expect(valuesOf(TEST_SCHEDULE)).toEqual({
+      activityId: TEST_SCHEDULE.activity.id,
+      startsOn: "2026-10-13",
+      endsOn: "2026-10-14",
+      startTime: "07:30",
+      endTime: "11:30",
+      uploadCount: 1,
+      uploadUnit: "week",
+      location: "Aula asrama",
+      isRequired: false,
+    });
+  });
+});
+
+describe("choicesWith", () => {
+  it("offers only the activities in the list for a new schedule", () => {
+    expect(choicesWith(TEST_CHOICES, null)).toEqual(TEST_CHOICES);
+  });
+
+  it("adds the activity a schedule holds when it is no longer in the list", () => {
+    const offered = choicesWith(TEST_CHOICES, TEST_SCHEDULE.activity);
+
+    expect(offered).toEqual([...TEST_CHOICES, TEST_SCHEDULE.activity]);
+  });
+
+  it("does not offer an activity twice when the one held is still in the list", () => {
+    const [held] = TEST_CHOICES;
+    if (!held) throw new Error("There are no choices.");
+
+    expect(choicesWith(TEST_CHOICES, held)).toEqual(TEST_CHOICES);
+  });
+});
 
 const PERIODS: FormPeriod[] = [
   { startYear: 2026, term: "odd", startsOn: "2026-08-01" },

@@ -17,6 +17,7 @@ import {
 } from "@/db/schema";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { ScheduleRow } from "./schedule-row";
+import { versionOf } from "./schedule-version";
 import { hourAndMinute } from "./stored-time";
 
 /** One page of the list, and how many schedules the list has in all. */
@@ -39,12 +40,20 @@ const ROW = {
   uploadUnit: activitySchedules.uploadUnit,
   location: activitySchedules.location,
   isRequired: activitySchedules.isRequired,
-  name: ppksActivities.name,
-  semester: ppksActivities.semester,
-  indicatorCodes: ppksActivities.indicatorCodes,
-  targetParticipants: ppksActivities.targetParticipants,
-  startYear: academicPeriods.startYear,
-  term: academicPeriods.term,
+  changedAt: activitySchedules.changedAt,
+  activity: {
+    id: ppksActivities.id,
+    semester: ppksActivities.semester,
+    name: ppksActivities.name,
+    valueKeys: ppksActivities.valueKeys,
+    indicatorCodes: ppksActivities.indicatorCodes,
+    targetParticipants: ppksActivities.targetParticipants,
+    isRequired: ppksActivities.isRequired,
+  },
+  period: {
+    startYear: academicPeriods.startYear,
+    term: academicPeriods.term,
+  },
 };
 
 /** The activities of a tahap: those of its two semesters. */
@@ -104,9 +113,8 @@ function readRows(db: Database, condition: SQL | undefined, page: number) {
 type StoredRow = Awaited<ReturnType<typeof readRows>>[number];
 
 function rowOf(stored: StoredRow): ScheduleRow {
-  const { name, semester, indicatorCodes, targetParticipants, ...rest } =
-    stored;
-  const { startYear, term, ...schedule } = rest;
+  const { changedAt, activity, ...schedule } = stored;
+  const { semester } = activity;
   // The read asks for PPKS activities only, and each has a semester.
   if (semester === null) {
     throw new Error(`The schedule ${stored.id} is of no PPKS activity.`);
@@ -115,8 +123,8 @@ function rowOf(stored: StoredRow): ScheduleRow {
     ...schedule,
     startTime: hourAndMinute(schedule.startTime),
     endTime: hourAndMinute(schedule.endTime),
-    activity: { name, semester, indicatorCodes, targetParticipants },
-    period: { startYear, term },
+    activity: { ...activity, semester },
+    version: versionOf(changedAt),
   };
 }
 
