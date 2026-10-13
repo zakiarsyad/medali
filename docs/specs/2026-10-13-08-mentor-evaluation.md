@@ -92,6 +92,6 @@ is built here.
   and the predikat rule, with tests.
 - [x] 2. The permission to evaluate, with its checks.
 - [x] 3. The tab with the form and "Evaluasi terbaru".
-- [ ] 4. Evaluations on the group page, the mentor page, both lists and
+- [x] 4. Evaluations on the group page, the mentor page, both lists and
   the "Evaluasi kurang" number.
 - [ ] 5. Read-only view, double press and phone layout.

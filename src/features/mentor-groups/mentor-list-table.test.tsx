@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { groupAddress } from "./group-list-address";
+import type { LastEvaluations } from "./last-evaluations";
 import type { ListedMentor } from "./mentor-list";
 import { mentorAddress } from "./mentor-list-address";
 import { MentorListTable } from "./mentor-list-table";
@@ -40,9 +41,16 @@ const INACTIVE: ListedMentor = {
   groups: [],
 };
 
-function shown(mentor: ListedMentor): string {
-  return renderToStaticMarkup(<MentorListTable mentors={[mentor]} />);
+function shown(
+  mentor: ListedMentor,
+  lastEvaluations: LastEvaluations | null = null,
+): string {
+  return renderToStaticMarkup(
+    <MentorListTable mentors={[mentor]} lastEvaluations={lastEvaluations} />,
+  );
 }
+
+const POOR = { activity: 60, attendance: 60, achievement: 60, feedback: 59 };
 
 describe("MentorListTable", () => {
   it("shows the name as a link to the mentor's page, with gelar and unit", () => {
@@ -84,5 +92,22 @@ describe("MentorListTable", () => {
       expect(table).toContain(`<th>${title}</th>`);
       expect(table).toContain(`data-title="${title}"`);
     }
+  });
+
+  it("shows Evaluasi terakhir with the result and its average, or that there is none", () => {
+    const evaluated = shown(HOLDING, new Map([[HOLDING.id, POOR]]));
+    const without = shown(HOLDING, new Map());
+
+    expect(evaluated).toContain("<th>Evaluasi terakhir</th>");
+    expect(evaluated).toContain('data-title="Evaluasi terakhir"');
+    expect(evaluated).toContain("Kurang · 59,8");
+    expect(without).toContain("Belum dievaluasi");
+  });
+
+  it("shows no Evaluasi terakhir to an account that may not see evaluations", () => {
+    const table = shown(HOLDING, null);
+
+    expect(table).not.toContain("Evaluasi terakhir");
+    expect(table).not.toContain("Belum dievaluasi");
   });
 });

@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
-import { LATEST_EVALUATIONS, listLatestEvaluations } from "./evaluation-rows";
+import {
+  LATEST_EVALUATIONS,
+  listGroupEvaluations,
+  listLatestEvaluations,
+  listMentorEvaluations,
+} from "./evaluation-rows";
 import {
   addTestEvaluation,
   addTestEvaluator,
@@ -10,7 +15,7 @@ import {
   addTestPeriods,
   TEST_SCORES,
 } from "./test-evaluations";
-import { addTestEndedGroup, addTestGroup } from "./test-records";
+import { addTestEndedGroup, addTestGroup, addTestMentor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -150,6 +155,49 @@ describe("listLatestEvaluations", () => {
       const rows = await listLatestEvaluations(db, EVERY_ROW);
 
       expect(rows).toHaveLength(LATEST_EVALUATIONS);
+    });
+  });
+});
+
+describe("listGroupEvaluations and listMentorEvaluations", () => {
+  /** Two groups of one program, each evaluated once, of two mentors. */
+  async function addTwoEvaluatedGroups(db: Database) {
+    const { held, periods, head } = await addRecords(db);
+    const secondId = await addTestGroup(db, held.studyProgramId, { number: 2 });
+    const otherMentorId = await addTestMentor(db, { name: "Pengasuh Kedua" });
+    const of = { periodId: periods.runningId, evaluatedBy: head.id };
+    await addTestEvaluation(db, { ...held, ...of });
+    await addTestEvaluation(db, {
+      ...of,
+      groupId: secondId,
+      mentorId: otherMentorId,
+    });
+    const limit = onlyPrograms([held.studyProgramId]);
+    return { held, secondId, otherMentorId, limit };
+  }
+
+  it("list the evaluations of that group only, and of that mentor only", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, secondId, otherMentorId, limit } =
+        await addTwoEvaluatedGroups(db);
+
+      const ofGroup = await listGroupEvaluations(db, limit, secondId);
+      const ofMentor = await listMentorEvaluations(db, limit, held.mentorId);
+      const ofOther = await listMentorEvaluations(db, limit, otherMentorId);
+
+      expect(ofGroup.map((row) => row.mentorName)).toEqual(["Pengasuh Kedua"]);
+      expect(ofMentor.map((row) => row.group.number)).toEqual([1]);
+      expect(ofOther.map((row) => row.group.number)).toEqual([2]);
+    });
+  });
+
+  it("list nothing to an account whose limit leaves the group out", async () => {
+    await inTestDatabase(async (db) => {
+      const { held } = await addTwoEvaluatedGroups(db);
+      const none = onlyPrograms([]);
+
+      expect(await listGroupEvaluations(db, none, held.groupId)).toEqual([]);
+      expect(await listMentorEvaluations(db, none, held.mentorId)).toEqual([]);
     });
   });
 });

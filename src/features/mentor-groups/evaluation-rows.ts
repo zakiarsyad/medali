@@ -87,3 +87,21 @@ export function listLatestEvaluations(
 ): Promise<ListedEvaluation[]> {
   return readEvaluations(db, limit, undefined).limit(LATEST_EVALUATIONS);
 }
+
+/** Every evaluation of one group, whoever its mentor was then. */
+export function listGroupEvaluations(
+  db: Database,
+  limit: RowLimit,
+  groupId: string,
+): Promise<ListedEvaluation[]> {
+  return readEvaluations(db, limit, eq(mentorEvaluations.groupId, groupId));
+}
+
+/** Every evaluation of one mentor, in each group they were evaluated in. */
+export function listMentorEvaluations(
+  db: Database,
+  limit: RowLimit,
+  mentorId: string,
+): Promise<ListedEvaluation[]> {
+  return readEvaluations(db, limit, eq(mentorEvaluations.mentorId, mentorId));
+}

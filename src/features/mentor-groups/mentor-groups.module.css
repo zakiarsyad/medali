@@ -51,6 +51,11 @@
   font-size: var(--text-sm);
 }
 
+/* The buttons of a page, under its head. */
+.headActions {
+  margin: 0 0 var(--space-lg);
+}
+
 /* Who holds the group chosen for an evaluation, and the result of the values typed. */
 .facts,
 .outcome {
