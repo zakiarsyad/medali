@@ -190,6 +190,13 @@
       "when": 1791899627346,
       "tag": "0026_student-survey-periods",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1791915812629,
+      "tag": "0027_attendance-decisions",
+      "breakpoints": true
     }
   ]
 }

@@ -31,6 +31,7 @@ export const ACTIONS = [
   "view_mentoring_scores",
   "give_mentoring_scores",
   "send_attendance_photo",
+  "verify_attendance",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -66,6 +67,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_mentoring_scores: "Melihat nilai pengasuhan",
   give_mentoring_scores: "Mengisi nilai pengasuhan",
   send_attendance_photo: "Presensi swafoto",
+  verify_attendance: "Verifikasi presensi",
 };
 
 /**
@@ -335,7 +337,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PU",
     pages: ["curriculum", "activities", "mentors", "settings"],
     tabs: {
-      activities: ["ppks"],
+      activities: ["verification", "ppks"],
       mentors: ALL_MENTORS,
       settings: ["new_students"],
     },
@@ -343,6 +345,7 @@ export const ROLES: Record<RoleId, Role> = {
       "input_new_students",
       "change_curriculum",
       "manage_activities",
+      "verify_attendance",
       "view_mentor_groups",
       "view_mentors",
       "view_mentor_evaluations",

@@ -11,7 +11,10 @@ export const PAGES = [
     id: "activities",
     path: "kegiatan",
     title: "Kegiatan karakter",
-    tabs: [{ id: "ppks", path: "ppks", title: "Kegiatan PPKS" }],
+    tabs: [
+      { id: "verification", path: "verifikasi", title: "Verifikasi presensi" },
+      { id: "ppks", path: "ppks", title: "Kegiatan PPKS" },
+    ],
   },
   { id: "students", path: "mahasiswa", title: "Mahasiswa" },
   {

@@ -823,6 +823,21 @@ describe("may", () => {
     }
   });
 
+  it("lets Pegawai UPK verify attendance, under the name Verifikasi presensi", () => {
+    expect(may(["upk_staff"], "verify_attendance")).toBe(true);
+    expect(ACTION_TITLES.verify_attendance).toBe("Verifikasi presensi");
+  });
+
+  it("refuses every other role to verify attendance, Kepala Unit and Penilai Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "upk_staff");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    expect(others).toContain("head_of_unit");
+    expect(others).toContain("assessor");
+    for (const role of others) {
+      expect(may([role], "verify_attendance")).toBe(false);
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -990,8 +1005,33 @@ describe("tabsFor", () => {
   ];
 
   it.each(scheduleReaders)("gives %s the tab Kegiatan PPKS", (role) => {
-    expect(paths(tabsFor([role], "activities"))).toEqual(["ppks"]);
+    expect(paths(tabsFor([role], "activities"))).toContain("ppks");
     expect(mayOpenTab([role], "activities", "ppks")).toBe(true);
+  });
+
+  it("gives Pegawai UPK the tab Verifikasi presensi, as their first tab of Kegiatan karakter", () => {
+    expect(paths(tabsFor(["upk_staff"], "activities"))).toEqual([
+      "verifikasi",
+      "ppks",
+    ]);
+    expect(mayOpenTab(["upk_staff"], "activities", "verification")).toBe(true);
+  });
+
+  it("refuses the tab Verifikasi presensi to every other role", () => {
+    const others = ROLE_IDS.filter((role) => role !== "upk_staff");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(mayOpenTab([role], "activities", "verification")).toBe(false);
+      expect(paths(tabsFor([role], "activities"))).not.toContain("verifikasi");
+    }
+  });
+
+  it("gives the right to verify attendance to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "verify_attendance")).toBe(
+        mayOpenTab([role], "activities", "verification"),
+      );
+    }
   });
 
   it("refuses the tab Kegiatan PPKS to every other role", () => {

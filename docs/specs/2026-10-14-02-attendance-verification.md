@@ -190,7 +190,7 @@ decided, from what the merged app does and then from the prototype:
 
 ## Steps
 
-- [ ] 1. The right "Verifikasi presensi" is added for Pegawai UPK, with
+- [x] 1. The right "Verifikasi presensi" is added for Pegawai UPK, with
   its checks, and the log for attendance decisions.
 - [ ] 2. The tab shows the numbers, the filters and the photo cards.
 - [ ] 3. "Validasi" and "Tolak" with a reason; the student sends again.
