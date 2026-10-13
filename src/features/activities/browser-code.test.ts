@@ -64,8 +64,10 @@ const browserFiles = readdirSync(FOLDER)
   .filter((path) => RUNS_IN_BROWSER.test(readFileSync(path, "utf8")));
 
 describe("the screen parts of Kegiatan karakter that run in the browser", () => {
-  it("are found: the board, the form and the removal button", () => {
+  it("are found: the board, the form and the removal button, and the student's cards with their upload", () => {
     expect(browserFiles.sort()).toEqual([
+      `${FOLDER}/current-activities.tsx`,
+      `${FOLDER}/photo-sender.tsx`,
       `${FOLDER}/remove-schedule-button.tsx`,
       `${FOLDER}/schedule-board.tsx`,
       `${FOLDER}/schedule-form.tsx`,

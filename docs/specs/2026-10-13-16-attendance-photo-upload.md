@@ -155,6 +155,39 @@ for Mahasiswa. The issue did not say, so these were decided:
     semester.
 19. When a student has more than one attendance for a schedule, the page
     shows the newest.
+20. The upload offers "Ambil foto", which opens the front camera of a
+    phone at once, and "Pilih gambar", which picks a picture. On a
+    laptop both open the file chooser. There is no live camera view
+    inside the page.
+21. The phone makes the photo smaller, to 1,280 dots on its longest
+    side, and sends it as a JPEG picture. The server takes only that
+    kind, up to 8 MB, and answers "Berkas harus berupa gambar." to
+    anything else. The app's limit of 2 MB for one sent form is
+    unchanged: a made-smaller photo is far below it, and a larger
+    hand-made request fails before it is read.
+22. A photo sent again while the first still waits changes nothing: the
+    first is kept and the student reads the same message. Once an
+    attendance is decided, a new photo is refused with a message that
+    says so.
+23. Sent before the activity starts, a photo is refused with "Masa
+    unggah foto belum dibuka. Unggah foto setelah kegiatan dimulai."
+    For an activity that is unknown, removed or not meant for the
+    student there is one message, so nobody learns which activities
+    exist.
+24. Where photos cannot be stored yet, the message is "Foto belum dapat
+    disimpan di sini karena penyimpanan berkas belum diatur. Tidak ada
+    yang tersimpan." When the file storage does not answer: "Foto tidak
+    dapat disimpan. Coba lagi." When sending fails halfway: "Foto tidak
+    terkirim. Periksa koneksi internet, lalu tekan Kirim presensi
+    lagi.", and the photo stays ready to send.
+25. For now only the student who sent a photo can open it, as a
+    download through the server. Staff are refused until "Attendance
+    verification" gives them a right. Another student is told the file
+    does not exist. The card shows no link to the photo, as in the
+    prototype. The photo of a removed schedule cannot be opened.
+26. The photo's address sits under the tab "Kegiatan PPKS", because
+    every address the server answers must be under a page or tab of the
+    list. It checks the student itself and does not open the tab.
 
 ## Steps
 
@@ -164,5 +197,5 @@ for Mahasiswa. The issue did not say, so these were decided:
   attendance in every status.
 - [x] 2. The rule for Nilai kehadiran kegiatan, with checks.
 - [x] 3. The student page shows the numbers and the three parts.
-- [ ] 4. "Unggah foto kehadiran" takes or picks a photo and sends it.
+- [x] 4. "Unggah foto kehadiran" takes or picks a photo and sends it.
 
