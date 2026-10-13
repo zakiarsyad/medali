@@ -41,7 +41,6 @@ export async function GroupScreen({
   groupId,
   detailVisible,
   memberAddressOf,
-  notesVisible,
 }: {
   /** Which rows the account that opened the page may see. */
   limit: RowLimit;
@@ -63,12 +62,6 @@ export async function GroupScreen({
    * for an account that may not open a student's detail.
    */
   memberAddressOf: ((studentId: string) => string) | null;
-  /**
-   * The students whose mentoring notes the account may read, or null for
-   * an account that may read none: it gets no "Catatan pengasuhan 90
-   * hari".
-   */
-  notesVisible: SQL | null;
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
@@ -83,10 +76,9 @@ export async function GroupScreen({
     evaluationLimit === null
       ? null
       : await listGroupEvaluations(db, evaluationLimit, group.id);
-  const recentNotes =
-    notesVisible === null
-      ? null
-      : await countRecentNotes(db, group.id, notesVisible);
+  // Every account that opens the page gets this number, whatever notes
+  // it may read: it is the count of the group, not a note.
+  const recentNotes = await countRecentNotes(db, group.id);
   const hasMentor = currentMentor(group.mentors) !== null;
   return (
     <>

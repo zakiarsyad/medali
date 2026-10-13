@@ -1,4 +1,4 @@
-import { and, count, eq, gt, type SQL } from "drizzle-orm";
+import { and, count, eq, gt } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { daysBefore } from "@/academic-periods/days-before";
 import type { Database } from "@/db/connect";
@@ -10,14 +10,13 @@ export const RECENT_NOTE_DAYS = 90;
 
 /**
  * How many mentoring notes of the last 90 days there are about the
- * members the page of a group lists, whoever wrote them. `notesVisible`
- * holds the students whose notes the account that asks may read: notes
- * about any other student are not counted.
+ * members the page of a group lists, whoever wrote them. It is a number
+ * for every account that may open the page of the group, also one with
+ * no right to read a note: nothing of a note is read here but its day.
  */
 export async function countRecentNotes(
   db: Database,
   groupId: string,
-  notesVisible: SQL,
   day: string = campusDay(),
 ): Promise<number> {
   const [counted] = await db
@@ -32,7 +31,6 @@ export async function countRecentNotes(
       and(
         eq(mentorGroupMembers.groupId, groupId),
         LISTED_MEMBER,
-        notesVisible,
         gt(mentoringNotes.happenedOn, daysBefore(day, RECENT_NOTE_DAYS)),
       ),
     );

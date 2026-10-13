@@ -1,10 +1,11 @@
 // Sample NIMs of this file: 9961000500 to 9961000599.
 import { randomUUID } from "node:crypto";
-import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { mentoringNotes, students } from "@/db/schema";
+import { mentoringNotes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { readGroup } from "./group-detail";
 import { countRecentNotes, RECENT_NOTE_DAYS } from "./recent-notes";
 import {
   addTestGroup,
@@ -14,6 +15,7 @@ import {
   addTestProgram,
   addTestStudent,
 } from "./test-records";
+import { groupRowsFor } from "./visible-groups";
 
 const inTestDatabase = withTestDatabase();
 
@@ -21,8 +23,6 @@ const TODAY = "2026-10-13";
 /** The first day of the last 90 days, and the day before it. */
 const FIRST_DAY = "2026-07-16";
 const DAY_BEFORE = "2026-07-15";
-
-const EVERYONE = sql`true`;
 
 interface Records {
   programId: number;
@@ -76,7 +76,7 @@ describe("countRecentNotes", () => {
       await addNote(db, first, mentorId, "2026-09-01");
       await addNote(db, second, mentorId, FIRST_DAY);
 
-      expect(await countRecentNotes(db, groupId, EVERYONE, TODAY)).toBe(3);
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(3);
       expect(RECENT_NOTE_DAYS).toBe(90);
     });
   });
@@ -88,7 +88,7 @@ describe("countRecentNotes", () => {
       await addNote(db, first, mentorId, DAY_BEFORE);
       await addNote(db, first, mentorId, "2025-05-20");
 
-      expect(await countRecentNotes(db, groupId, EVERYONE, TODAY)).toBe(1);
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
     });
   });
 
@@ -98,7 +98,7 @@ describe("countRecentNotes", () => {
       const earlier = await addTestMentor(db, { name: "Pengasuh Uji 90 Lama" });
       await addNote(db, first, earlier, "2026-09-15");
 
-      expect(await countRecentNotes(db, groupId, EVERYONE, TODAY)).toBe(1);
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
     });
   });
 
@@ -114,8 +114,8 @@ describe("countRecentNotes", () => {
       await addNote(db, first, mentorId, TODAY);
       await addNote(db, outsider, mentorId, TODAY);
 
-      expect(await countRecentNotes(db, groupId, EVERYONE, TODAY)).toBe(1);
-      expect(await countRecentNotes(db, otherGroup, EVERYONE, TODAY)).toBe(1);
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
+      expect(await countRecentNotes(db, otherGroup, TODAY)).toBe(1);
     });
   });
 
@@ -142,20 +142,29 @@ describe("countRecentNotes", () => {
         await addNote(db, studentId, mentorId, TODAY);
       }
 
-      expect(await countRecentNotes(db, groupId, EVERYONE, TODAY)).toBe(1);
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
     });
   });
 
-  it("counts only the notes the account may read", async () => {
+  it("gives the count to Pegawai UPK, who opens the page of the group and has no right to a note or to a member's detail", async () => {
     await inTestDatabase(async (db) => {
-      const { programId, groupId, mentorId, first } = await addRecords(db);
-      const otherProgram = await addTestProgram(db, "UJICATATAN90-LAIN");
+      const { groupId, mentorId, first } = await addRecords(db);
       await addNote(db, first, mentorId, TODAY);
-      const ofOwn = eq(students.studyProgramId, programId);
-      const ofOther = eq(students.studyProgramId, otherProgram);
+      const upk: AccountForAccess = {
+        id: mentorId,
+        roles: ["upk_staff"],
+        studyProgramId: null,
+        studentId: null,
+      };
+      const limit = groupRowsFor(upk);
+      if (limit === null) throw new Error("Pegawai UPK may see groups.");
 
-      expect(await countRecentNotes(db, groupId, ofOwn, TODAY)).toBe(1);
-      expect(await countRecentNotes(db, groupId, ofOther, TODAY)).toBe(0);
+      const page = await readGroup(db, limit, groupId, null);
+
+      expect(page.kind).toBe("found");
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
+      expect(may(upk.roles, "view_mentoring_notes")).toBe(false);
+      expect(may(upk.roles, "view_student_detail")).toBe(false);
     });
   });
 
@@ -163,7 +172,7 @@ describe("countRecentNotes", () => {
     await inTestDatabase(async (db) => {
       const { groupId } = await addRecords(db);
 
-      expect(await countRecentNotes(db, groupId, EVERYONE, TODAY)).toBe(0);
+      expect(await countRecentNotes(db, groupId, TODAY)).toBe(0);
     });
   });
 });

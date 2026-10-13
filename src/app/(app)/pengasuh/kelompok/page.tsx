@@ -41,6 +41,9 @@ async function GroupPage({
   detailId: string | null;
 }) {
   const detail = await askedDetail(account, detailId);
+  // Only for the notes shown in a member's detail. The count on the page
+  // of the group does not ask for it: every account that opens the page
+  // sees that number.
   const noteLimit = noteRowsFor(account);
   const notesVisible = noteLimit === null ? null : visibleTo(noteLimit);
   return (
@@ -52,7 +55,6 @@ async function GroupPage({
         groupId={groupId}
         detailVisible={detailVisibleTo(account)}
         memberAddressOf={openMemberAddresses(account.roles, groupId)}
-        notesVisible={notesVisible}
       />
       {detail && (
         <StudentDetailDialog

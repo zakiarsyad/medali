@@ -128,11 +128,14 @@ The issue did not say, so these were decided:
     an Aktif mentee of Pengasuh.
 15. "Catatan pengasuhan 90 hari" counts the notes whose Tanggal is in
     the last 90 days, today included, about the members the group page
-    lists (Aktif and Cuti), whoever wrote them. It shows only to the
-    roles that read notes. Pegawai UPK opens group pages but reads no
-    notes, so sees no count: between two options the app shows less to
-    fewer people. An account that is Ketua Program Studi and Pegawai UPK
-    gets the count of its own program's students only.
+    lists (Aktif and Cuti), whoever wrote them. Every account that may
+    open the group page sees it, Pegawai UPK included, as the issue says
+    "when staff open a group page". The number is the same for all of
+    them: it is not narrowed by which notes the account may read. So a
+    role that reads no notes learns how many notes a group has, and
+    nothing else: the notes themselves, in the list and in a student's
+    detail, still go only to the roles that read notes, within their
+    rows.
 16. Catatan holds 5 to 1,000 characters, counted without the blanks
     around it. No value needs to be ticked. Any day up to today can be
     chosen; there is no earliest day.
