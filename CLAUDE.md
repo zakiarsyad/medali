@@ -153,8 +153,12 @@ More than one person may work on this repo at the same time.
   hosting: Vercel for the app, Neon for the database. Previews hold sample
   data only.
 - There are two preview databases. One is for `main`, and only merged
-  changes touch it. The other is shared by all PR previews, and is reset
-  to sample data with the PR's tables each time a PR deploys.
+  changes touch it. It is started over with the sample data of `main`,
+  and its uploaded files with it, each time a deploy of `main` brings a
+  new table change; what was added there by hand is lost then. A deploy
+  with no new table change keeps its data. The other is shared by all PR
+  previews, and is reset to sample data with the PR's tables each time a
+  PR deploys.
 
 ## Building rules
 

@@ -112,6 +112,11 @@ describe("what stays out of the campus server package", () => {
     "docs/PROTOTYPE.html",
     "docs/HOSTING.md",
     "src/db/rebuild.ts",
+    "src/db/deploy-command.ts",
+    "src/db/deploy-database.ts",
+    "src/db/deploy-start.ts",
+    "src/files/deploy-command.ts",
+    "src/files/deploy-files.ts",
   ])("keeps out %s", (path) => {
     expect(isIgnored(path)).toBe(true);
   });
