@@ -8,10 +8,10 @@ import { sampleGroupedFirstYears } from "./sample-new-intake";
 
 const DAY = "2026-10-13";
 const periods = samplePeriods(DAY);
-const groups = sampleMentorGroups([
-  ...SAMPLE_STUDENTS,
-  ...sampleGroupedFirstYears(2026),
-]);
+const groups = sampleMentorGroups(
+  [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(2026)],
+  DAY,
+);
 const evaluations = sampleMentorEvaluations(groups, periods);
 
 describe("sampleMentorEvaluations", () => {

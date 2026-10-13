@@ -12,6 +12,7 @@ import { PageHead } from "@/ui/page-head";
 import { listGroupEvaluations } from "./evaluation-rows";
 import { EvaluationTable } from "./evaluation-table";
 import type { GroupDetail } from "./group-detail";
+import { GroupHeadActions } from "./group-head-actions";
 import { GROUP_LIST_ADDRESS } from "./group-list-address";
 import { GroupMembersTable } from "./group-members-table";
 import { GroupMentorPanel } from "./group-mentor-panel";
@@ -19,6 +20,8 @@ import { readGroupPage } from "./group-page";
 import { academicClasses, countedMembers } from "./member-rules";
 import styles from "./mentor-groups.module.css";
 import { currentMentor } from "./mentor-history";
+import { scheduledWords } from "./replacement-words";
+import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
 /** The line under the code: whose group it is, since when, and how large. */
 function groupLede(group: GroupDetail): string {
@@ -38,6 +41,7 @@ export async function GroupScreen({
   limit,
   evaluationLimit,
   evaluateAddress,
+  replaceAddress,
   groupId,
   detailVisible,
   memberAddressOf,
@@ -54,6 +58,11 @@ export async function GroupScreen({
    * null for an account that may not evaluate: it gets no button.
    */
   evaluateAddress: string | null;
+  /**
+   * The address of the form that replaces the mentor of this group, or
+   * null for an account that may not set a replacement: it gets no button.
+   */
+  replaceAddress: string | null;
   groupId: string;
   /** The students whose detail the account may open, or null for none. */
   detailVisible: SQL | null;
@@ -72,10 +81,12 @@ export async function GroupScreen({
   if (answer.kind === "refused") forbidden();
   const { group, recentNotes } = answer;
   // Read once the group is found: its id is then known to be one.
-  const evaluations =
+  const [evaluations, waiting] = await Promise.all([
     evaluationLimit === null
       ? null
-      : await listGroupEvaluations(db, evaluationLimit, group.id);
+      : listGroupEvaluations(db, evaluationLimit, group.id),
+    readWaitingReplacementOf(db, group.id),
+  ]);
   const hasMentor = currentMentor(group.mentors) !== null;
   return (
     <>
@@ -85,18 +96,22 @@ export async function GroupScreen({
         </Link>
       </p>
       <PageHead title={groupCode(group)}>{groupLede(group)}</PageHead>
-      {evaluateAddress && hasMentor && (
-        <p className={styles.headActions}>
-          <Link href={evaluateAddress} className={shared.quiet}>
-            Evaluasi pengasuh
-          </Link>
-        </p>
+      {hasMentor && (
+        <GroupHeadActions
+          evaluateAddress={evaluateAddress}
+          replaceAddress={replaceAddress}
+        />
       )}
       {isSmallGroup(countedMembers(group.members)) && (
         <p className={styles.note}>
           Anggota aktif kelompok ini kurang dari {GROUP_MIN} karena sebagian
           anggota angkatannya sudah lulus, tidak aktif, atau jumlah penerimaan
           prodi kecil.
+        </p>
+      )}
+      {waiting !== null && (
+        <p className={`${styles.note} ${styles.warned}`}>
+          {scheduledWords(waiting)}
         </p>
       )}
       <GroupMentorPanel mentors={group.mentors} recentNotes={recentNotes} />

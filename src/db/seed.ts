@@ -25,6 +25,7 @@ import { addSampleActivitySchedules } from "./seed-activity-schedules";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
+import { addSampleMentorReplacements } from "./seed-mentor-replacements";
 import { addSampleMentoringMeetings } from "./seed-mentoring-meetings";
 import { addSampleMentoringNotes } from "./seed-mentoring-notes";
 import { addSampleMentoringScores } from "./seed-mentoring-scores";
@@ -137,11 +138,12 @@ async function addSampleFirstYears(
  * students in their first year of the running period, the dorm rooms
  * with some of the residents in them, and the kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
- * still to be formed, with a few evaluations of their mentors, a few
- * notes their mentors wrote, the first two meetings of the running
- * period with their attendance lists and the scores of that period for
- * part of the groups, and schedules of the PPKS activities that are over,
- * open today and still to come. Every role given is logged as the
+ * still to be formed, with a few evaluations of their mentors, one
+ * replacement of a mentor, a few notes their mentors wrote, the first two
+ * meetings of the running period with their attendance lists and the
+ * scores of that period for part of the groups, and schedules of the PPKS
+ * activities that are over, open today and still to come. Every role given
+ * is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
  */
@@ -198,10 +200,11 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       ...SAMPLE_STUDENTS,
       ...sampleGroupedFirstYears(running.startYear),
     ];
-    const groups = await addSampleMentorGroups(tx, grouped);
+    const groups = await addSampleMentorGroups(tx, grouped, today);
     await addSampleMentoringNotes(tx, groups, grouped, today);
     await addSampleMentoringMeetings(tx, groups, grouped, running, today);
     await addSampleMentoringScores(tx, groups, grouped, running, today);
     await addSampleMentorEvaluations(tx, groups, periods, sampleActor);
+    await addSampleMentorReplacements(tx, groups, sampleActor);
   });
 }

@@ -1,22 +1,16 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import {
-  accounts,
-  mentorEvaluationChanges,
-  mentorEvaluations,
-  mentorGroupMentors,
-  mentorGroups,
-} from "@/db/schema";
+import { mentorEvaluationChanges, mentorEvaluations } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
-import { NOT_ENDED } from "@/mentoring/group-in-force";
 import type { Parsed } from "@/parsed";
 import { EVALUATION_ASPECTS } from "./evaluation-aspects";
 import type { EvaluationInput } from "./evaluation-input";
 import { evaluationPeriods, heldDuring } from "./evaluation-periods";
 import { type EvaluationResult, evaluationResult } from "./evaluation-result";
+import { lockGroup, readMentorOfToday } from "./locked-group";
 import { evaluatedRowsFor } from "./visible-evaluations";
 import { maySeeGroup } from "./visible-groups";
 
@@ -65,42 +59,6 @@ export interface SavedEvaluation {
 }
 
 type StoredEvaluation = typeof mentorEvaluations.$inferSelect;
-
-/**
- * Reads a group that is in force and holds it until the transaction ends,
- * so two saves for one group never run at the same moment: the second
- * waits, and then sees what the first one saved. Held without its key, so
- * nothing that only names the group has to wait.
- */
-async function lockGroup(tx: Database, groupId: string) {
-  const [group] = await tx
-    .select({
-      id: mentorGroups.id,
-      studyProgramId: mentorGroups.studyProgramId,
-    })
-    .from(mentorGroups)
-    .where(and(eq(mentorGroups.id, groupId), NOT_ENDED))
-    .for("no key update");
-  return group ?? null;
-}
-
-async function readMentorOfToday(tx: Database, groupId: string) {
-  const [mentor] = await tx
-    .select({
-      id: accounts.id,
-      name: accounts.name,
-      since: mentorGroupMentors.startsOn,
-    })
-    .from(mentorGroupMentors)
-    .innerJoin(accounts, eq(accounts.id, mentorGroupMentors.mentorId))
-    .where(
-      and(
-        eq(mentorGroupMentors.groupId, groupId),
-        isNull(mentorGroupMentors.endsOn),
-      ),
-    );
-  return mentor ?? null;
-}
 
 /** The period named when it is offered on a day. Null when it is not. */
 async function findOffered(tx: Database, periodId: string, day: string) {

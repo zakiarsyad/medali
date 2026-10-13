@@ -12,6 +12,7 @@ import {
   mentorGroups,
   roleChanges,
 } from "@/db/schema";
+import { LEFT_AS_INACTIVE, LEFT_FOR, LEFT_ON } from "@/mentoring/left-group";
 import { groupsVisibleTo } from "./visible-groups";
 
 /**
@@ -62,6 +63,15 @@ export const ROLE_TAKEN_AT: SQL<Date | null> = sql`(
   select max(${roleChanges.changedAt}) from ${roleChanges}
   where ${TOOK_MENTOR_ROLE}
 )`.mapWith(roleChanges.changedAt);
+
+/** What a read of mentors takes to say since when and why one is Tidak aktif. */
+export const MENTOR_END = {
+  deletedAt: accounts.deletedAt,
+  roleTakenAt: ROLE_TAKEN_AT,
+  leftAsInactive: LEFT_AS_INACTIVE,
+  leftOn: LEFT_ON,
+  leftFor: LEFT_FOR,
+};
 
 /** A mentor line of today, of a group an account with this limit may see. */
 export function heldTodayBy(limit: RowLimit): SQL | undefined {

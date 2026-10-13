@@ -114,6 +114,7 @@ describe("readMentor", () => {
           unit: "Unit Uji",
           status: "mentoring",
           inactiveSince: null,
+          inactiveReason: null,
           students: 3,
           groups: [
             { id: own, mentorId: id, members: 2, ...ownCode },
@@ -287,6 +288,7 @@ describe("readMentor", () => {
       expect(mentor).toMatchObject({
         status: "reserve",
         inactiveSince: null,
+        inactiveReason: null,
         groups: [],
         students: 0,
         assignments: [],
@@ -313,6 +315,7 @@ describe("readMentor", () => {
       expect(mentor).toMatchObject({
         status: "inactive",
         inactiveSince: "2026-03-04",
+        inactiveReason: "Akun dihapus atau peran diganti",
         groups: [],
         students: 0,
         members: [],

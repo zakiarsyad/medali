@@ -1,6 +1,6 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
-import { INACTIVE_REASON, MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
+import { MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
 import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import { EvaluationBadge } from "./evaluation-badge";
@@ -33,8 +33,8 @@ function MentorRow({
         <span className={shared.badge}>
           {MENTOR_STATUS_TITLES[mentor.status]}
         </span>
-        {mentor.status === "inactive" && (
-          <small className={shared.detail}>{INACTIVE_REASON}</small>
+        {mentor.inactiveReason !== null && (
+          <small className={shared.detail}>{mentor.inactiveReason}</small>
         )}
       </td>
       <td data-title="Kelompok">

@@ -14,7 +14,7 @@ import {
 import { BAM_ROLES } from "./bam-roles";
 import { PAGES } from "./pages";
 import { ROLE_IDS, type RoleId } from "./role-ids";
-import { ACTIONS, type Action, ROLES } from "./roles";
+import { ACTION_TITLES, ACTIONS, type Action, ROLES } from "./roles";
 
 function paths(items: readonly { path: string }[]): string[] {
   return items.map((item) => item.path);
@@ -519,6 +519,37 @@ describe("may", () => {
       if (!may([role], "evaluate_mentors")) continue;
       expect(may([role], "view_mentor_evaluations")).toBe(true);
     }
+  });
+
+  it("lets Kepala Unit replace the mentor of a group", () => {
+    expect(may(["head_of_unit"], "replace_mentors")).toBe(true);
+  });
+
+  it("refuses every other role to replace a mentor, those who read the replacements among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toContain("director");
+    expect(others).toContain("head_of_program");
+    expect(others).toContain("upk_staff");
+    expect(others).toContain("mentor");
+    for (const role of others) {
+      expect(may([role], "replace_mentors")).toBe(false);
+    }
+  });
+
+  it("lets every role that may replace a mentor open the tab and see the groups, the mentors and their evaluations", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "replace_mentors")) continue;
+      expect(mayOpenTab([role], "mentors", "replacement")).toBe(true);
+      expect(may([role], "view_mentor_groups")).toBe(true);
+      expect(may([role], "view_mentors")).toBe(true);
+      expect(may([role], "view_mentor_evaluations")).toBe(true);
+    }
+  });
+
+  it("names the right to replace a mentor in words for the list of rights", () => {
+    expect(ACTION_TITLES.replace_mentors).toBe(
+      "Menetapkan dan membatalkan penggantian pengasuh",
+    );
   });
 
   it("lets every role that sees the evaluations of mentors see the groups and the mentors they are shown with", () => {
@@ -1078,6 +1109,15 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     expect(rowLimitForAction(both, "evaluate_mentors")).toEqual(NO_ROW);
     expect(
       rowLimitForAction(account(["head_of_unit"]), "evaluate_mentors"),
+    ).toEqual(EVERY_ROW);
+  });
+
+  it("gives no group to replace the mentor of to an account whose roles may not replace", () => {
+    const both = account(["head_of_program", "upk_staff"], 7);
+
+    expect(rowLimitForAction(both, "replace_mentors")).toEqual(NO_ROW);
+    expect(
+      rowLimitForAction(account(["head_of_unit"]), "replace_mentors"),
     ).toEqual(EVERY_ROW);
   });
 

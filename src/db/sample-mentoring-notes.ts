@@ -1,5 +1,6 @@
 import { daysBefore } from "@/academic-periods/days-before";
 import {
+  isGroupOf,
   SAMPLE_REPLACED_GROUP,
   type SampleMentorGroup,
 } from "./sample-mentor-groups";
@@ -84,22 +85,18 @@ function wordsAt(place: number): Words {
   return words;
 }
 
-/** The name of the mentor who held a group on a day, if anyone did. */
+/**
+ * The name of the mentor who held a group on a day, if anyone did. On the
+ * day of a replacement the line of the old mentor ends and the line of
+ * the new one starts: the group is the new mentor's from that day on.
+ */
 export function holderOn(group: SampleMentorGroup, day: string): string | null {
   const line = group.mentors.find((mentor) => {
     const hasStarted = mentor.startsOn <= day;
-    const hasEnded = mentor.endsOn !== null && mentor.endsOn < day;
+    const hasEnded = mentor.endsOn !== null && mentor.endsOn <= day;
     return hasStarted && !hasEnded;
   });
   return line?.name ?? null;
-}
-
-function isReplacedGroup(group: SampleMentorGroup): boolean {
-  return (
-    group.studyProgram === SAMPLE_REPLACED_GROUP.studyProgram &&
-    group.cohortYear === SAMPLE_REPLACED_GROUP.cohortYear &&
-    group.entryPath === SAMPLE_REPLACED_GROUP.entryPath
-  );
 }
 
 function activeNims(students: SampleStudent[]): Set<string> {
@@ -114,7 +111,8 @@ function earlierNote(
   group: SampleMentorGroup,
   nim: string | undefined,
 ): SampleMentoringNote[] {
-  if (!isReplacedGroup(group) || nim === undefined) return [];
+  if (nim === undefined) return [];
+  if (!isGroupOf(group, SAMPLE_REPLACED_GROUP)) return [];
   const writer = holderOn(group, SAMPLE_NOTE_BY_EARLIER_MENTOR.happenedOn);
   if (writer === null) return [];
   return [{ ...SAMPLE_NOTE_BY_EARLIER_MENTOR, nim, writer }];

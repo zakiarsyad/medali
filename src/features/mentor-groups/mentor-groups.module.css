@@ -53,7 +53,15 @@
 
 /* The buttons of a page, under its head. */
 .headActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
   margin: 0 0 var(--space-lg);
+}
+
+/* A second note of a page stands clear of the first. */
+.note + .note {
+  margin-top: var(--space-md);
 }
 
 /* Who holds the group chosen for an evaluation, and the result of the values typed. */
@@ -71,9 +79,54 @@
   margin: 0;
 }
 
-/* A result of Kurang. */
+/* A result of Kurang, and a note about what holds a replacement back. */
 .warned {
   border-color: var(--warn);
+}
+
+/*
+ * The form beside the steps of a replacement, and one under the other
+ * where they do not fit. A column is never asked to be wider than the
+ * room a narrow phone leaves.
+ */
+.sideBySide {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(var(--column-min-width), 100%), 1fr)
+    );
+  gap: 0 var(--space-lg);
+  align-items: start;
+}
+
+/* The switch between the two forms of the tab. */
+.parts {
+  display: flex;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.part {
+  padding: var(--space-2xs) var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.part[aria-current="true"] {
+  background: var(--navy);
+  color: var(--surface);
+}
+
+/* The tick box with the sentence that says what the replacement does. */
+.confirm {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+  grid-column: 1 / -1;
+  font-size: var(--text-md);
 }
 
 /* A line of a form that takes its whole width. */

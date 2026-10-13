@@ -28,22 +28,6 @@
   white-space: var(--stacked-badge-wrap);
 }
 
-.flow {
-  display: grid;
-  gap: var(--space-sm);
-  margin: 0;
-  padding-left: var(--space-xl);
-}
-
-.flow b {
-  display: block;
-}
-
-.flow span {
-  color: var(--muted);
-  font-size: var(--text-md);
-}
-
 .cohorts tr:has([aria-current="true"]) {
   background: var(--surface2);
 }

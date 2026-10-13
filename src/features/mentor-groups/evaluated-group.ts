@@ -20,6 +20,7 @@ export interface MentorOfToday {
   id: string;
   name: string;
   title: string | null;
+  unit: string | null;
   /** The day the mentor took the group. */
   since: string;
 }
@@ -60,6 +61,7 @@ async function findGroup(db: Database, limit: RowLimit, id: string) {
       mentorId: accounts.id,
       mentorName: accounts.name,
       mentorTitle: accounts.title,
+      mentorUnit: accounts.unit,
       mentorSince: mentorGroupMentors.startsOn,
     })
     .from(mentorGroups)
@@ -68,7 +70,14 @@ async function findGroup(db: Database, limit: RowLimit, id: string) {
     .leftJoin(accounts, eq(accounts.id, mentorGroupMentors.mentorId))
     .where(and(eq(mentorGroups.id, id), groupsVisibleTo(limit)));
   if (!group) return null;
-  const { mentorId, mentorName, mentorTitle, mentorSince, ...rest } = group;
+  const {
+    mentorId,
+    mentorName,
+    mentorTitle,
+    mentorUnit,
+    mentorSince,
+    ...rest
+  } = group;
   if (mentorId === null || mentorName === null || mentorSince === null) {
     return { group: rest, mentor: null };
   }
@@ -76,6 +85,7 @@ async function findGroup(db: Database, limit: RowLimit, id: string) {
     id: mentorId,
     name: mentorName,
     title: mentorTitle,
+    unit: mentorUnit,
     since: mentorSince,
   };
   return { group: rest, mentor };

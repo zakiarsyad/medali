@@ -6,6 +6,8 @@ import {
   mentorGroupMentors,
   mentorGroups,
 } from "@/db/schema";
+import { LEFT_AS_INACTIVE } from "@/mentoring/left-group";
+import { IS_PROMISED } from "@/mentoring/waiting-replacement";
 import { mentorsToChoose } from "./mentor-choices";
 import type { PoolMentor } from "./mentor-options";
 
@@ -53,6 +55,8 @@ function readMentors(db: Database) {
       title: accounts.title,
       unit: accounts.unit,
       hasMentorRole: HAS_MENTOR_ROLE,
+      leftAsInactive: LEFT_AS_INACTIVE,
+      isPromised: IS_PROMISED,
     })
     .from(accounts)
     .where(and(isNull(accounts.studentId), or(HAS_MENTOR_ROLE, HOLDS_A_GROUP)));

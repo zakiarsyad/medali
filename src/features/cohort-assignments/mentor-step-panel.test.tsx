@@ -51,7 +51,14 @@ const GROUPS = [
 ];
 
 const POOL: PoolMentor[] = [
-  { ...YUNI, unit: "Jurusan Pajak", hasMentorRole: true, heldCohortYears: [] },
+  {
+    ...YUNI,
+    unit: "Jurusan Pajak",
+    hasMentorRole: true,
+    leftAsInactive: false,
+    isPromised: false,
+    heldCohortYears: [],
+  },
 ];
 
 /** Every member waits in their group's program studi, and one more in none. */

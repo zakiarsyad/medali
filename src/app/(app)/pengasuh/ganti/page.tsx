@@ -1,11 +1,14 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
-import { readChosenGroup } from "@/features/mentor-groups/evaluation-address";
-import { EvaluationScreen } from "@/features/mentor-groups/evaluation-screen";
 import {
-  evaluatedRowsFor,
-  evaluationRowsFor,
-} from "@/features/mentor-groups/visible-evaluations";
+  readChosenGroup,
+  readChosenPart,
+  readSavedPeriod,
+} from "@/features/mentor-groups/evaluation-address";
+import { EvaluationScreen } from "@/features/mentor-groups/evaluation-screen";
+import { formLimitsFor } from "@/features/mentor-groups/form-parts";
+import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
+import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
 
 export default async function MentorEvaluationsPage(
   props: PageProps<"/pengasuh/ganti">,
@@ -19,8 +22,11 @@ export default async function MentorEvaluationsPage(
     <EvaluationScreen
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "ganti" }}
       limit={limit}
-      evaluatedLimit={evaluatedRowsFor(account)}
+      groupLimit={groupRowsFor(account)}
+      formLimits={formLimitsFor(account)}
+      chosenPart={readChosenPart(params)}
       chosenGroupId={readChosenGroup(params)}
+      savedPeriodId={readSavedPeriod(params)}
     />
   );
 }
