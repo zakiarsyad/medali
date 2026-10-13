@@ -213,6 +213,27 @@ menu and no screen. All of it is built here.
 29. Nothing here stops a student from answering, because there is no
     survey form yet. That form will ask which period runs, and a period
     that is closed, cancelled or past its last day does not.
+30. A role that only reads sees the line "Periode evaluasi pengasuhan
+    dibuka oleh Kepala Unit Pembangunan Karakter." above the two panels,
+    where the sibling tab puts its own such line; the prototype puts it
+    inside the panel. While no period runs, such a role sees the line
+    and "Komponen evaluasi pengasuhan" only. It sees who opened the
+    running period, as the prototype shows.
+31. When "Buka periode evaluasi" reaches the server twice at the same
+    moment, one period is opened and the second is told that a period
+    still runs, also when the two ask for different dates or another
+    Periode. A second "Tutup periode sekarang" or "Batalkan periode",
+    and a cancel that arrives while a close is on its way, is told the
+    period runs no more, and the record keeps who did it first. On the
+    screen every button of the panel is off while a change is on its
+    way.
+32. On a phone the panel of the period comes first and "Komponen
+    evaluasi pengasuhan" under it. The status drops under the heading of
+    the card where the two do not fit on one line, and a long note folds
+    inside the card.
+33. The period, the number of students who can answer and what the form
+    opens with are read at the same time. On a local computer the tab
+    answered in about 0.1 second for each of the four roles.
 
 ## Steps
 
@@ -222,4 +243,4 @@ menu and no screen. All of it is built here.
 - [x] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
 - [x] 4. The running period card with its status by date.
 - [x] 5. Changing the end date, closing now and cancelling.
-- [ ] 6. Read-only view, double press and the phone layout.
+- [x] 6. Read-only view, double press and the phone layout.
