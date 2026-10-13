@@ -21,6 +21,7 @@ import {
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import { DORM_IDS } from "@/dorms/dorms";
+import { ASSIGNMENT_METHODS } from "@/features/cohort-assignments/methods";
 import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
@@ -76,11 +77,10 @@ export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
   "cancelled",
 ]);
 
-export const cohortAssignmentMethod = pgEnum("cohort_assignment_method", [
-  "balanced",
-  "by_nim",
-  "by_class",
-]);
+export const cohortAssignmentMethod = pgEnum(
+  "cohort_assignment_method",
+  ASSIGNMENT_METHODS,
+);
 
 export const cohortAssignmentChangeAction = pgEnum(
   "cohort_assignment_change_action",
