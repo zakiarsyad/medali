@@ -1,0 +1,59 @@
+# Only for the check of backups: a database, a file storage and the backup
+# part of the campus server package, made for one run of the check and
+# removed after it. Each run gives the three its own name, and the two
+# ports are whichever are free, so it touches neither the local database
+# and file storage nor another run of the same check.
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: medali
+      POSTGRES_DB: medali
+      POSTGRES_HOST_AUTH_METHOD: trust
+    tmpfs:
+      - /var/lib/postgresql/data
+    ports:
+      - "127.0.0.1::5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "medali"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  files:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: server /data
+    # Made up for the check; nothing else uses these two keys.
+    environment:
+      MINIO_ROOT_USER: backup-check
+      MINIO_ROOT_PASSWORD: backup-check-only
+    ports:
+      - "127.0.0.1::9000"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  # What is left open here is given by the check, for each command it runs.
+  backup:
+    build: backup
+    environment:
+      TZ: Asia/Jakarta
+      PGHOST: db
+      PGUSER: medali
+      PGDATABASE: ${PGDATABASE:-}
+      FILE_STORAGE_URL: ${FILE_STORAGE_URL:-}
+      FILE_STORAGE_BUCKET: ${FILE_STORAGE_BUCKET:-}
+      FILE_STORAGE_ACCESS_KEY: backup-check
+      FILE_STORAGE_SECRET_KEY: backup-check-only
+      BACKUP_FOLDER: ${BACKUP_FOLDER:-}
+      BACKUP_PASSWORD: ${BACKUP_PASSWORD:-}
+      BACKUP_HOUR: ${BACKUP_HOUR:-}
+      BACKUP_KEEP: ${BACKUP_KEEP:-}
+    volumes:
+      - backups:/backups
+
+volumes:
+  backups:
