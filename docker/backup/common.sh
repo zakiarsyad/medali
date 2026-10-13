@@ -7,6 +7,13 @@
 BACKUPS=/backups
 BACKUP_ENDING=.medali-backup
 UNFINISHED_ENDING=.part
+# The day and the time a backup was made, and the ending. Only a file
+# with such a name is ever taken for a backup.
+BACKUP_NAME='^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}\.medali-backup$'
+
+is_backup_name() {
+  [[ "$1" =~ $BACKUP_NAME ]]
+}
 
 refuse() {
   echo "$1" >&2
@@ -25,7 +32,10 @@ require_backup_settings() {
   require_setting BACKUP_PASSWORD
 }
 
+# The locking tool leaves a helper running that would outlive the
+# command, so it is stopped first.
 remove_work_folder() {
+  gpgconf --homedir "$WORK/locking-tool" --kill gpg-agent 2>/dev/null || true
   rm -rf "$WORK"
 }
 
