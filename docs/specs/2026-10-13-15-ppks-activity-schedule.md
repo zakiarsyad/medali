@@ -145,7 +145,7 @@ The issue did not say, so these were decided:
 - [x] 1. Schedules are stored, each tied to a Kurikulum PPKS activity,
   with who changed it and when and a removal mark. Sample data adds
   past, current and coming schedules.
-- [ ] 2. The rule for a schedule's status and upload deadline, with
+- [x] 2. The rule for a schedule's status and upload deadline, with
   checks.
 - [ ] 3. The tab shows "Jadwal dan kehadiran" with the tahap choice.
 - [ ] 4. "Jadwalkan kegiatan PPKS" adds a schedule.
