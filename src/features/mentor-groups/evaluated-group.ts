@@ -9,9 +9,9 @@ import {
   mentorGroups,
   studyPrograms,
 } from "@/db/schema";
+import { MEMBERS } from "@/mentoring/member-count";
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { EvaluationScores } from "./evaluation-aspects";
-import { MEMBERS } from "./group-list";
 import { readLastGroupEvaluations, SCORES } from "./last-evaluations";
 import { groupsVisibleTo } from "./visible-groups";
 
