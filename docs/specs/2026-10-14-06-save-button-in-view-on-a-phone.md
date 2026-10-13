@@ -106,7 +106,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. On a phone the buttons, the running count and the message of
+- [x] 1. On a phone the buttons, the running count and the message of
   "Daftar hadir pertemuan (n)" stay in view while the list scrolls.
 - [ ] 2. On a phone the button and the message of "Nilai anak asuh"
   stay in view while the list scrolls.

@@ -276,6 +276,31 @@
   grid-column: 1 / -1;
 }
 
+.mark input {
+  scroll-margin-bottom: var(--above-save-bar);
+}
+
+/*
+ * The bar with the save button of a form with a card per mentee. On a
+ * phone it stays at the bottom of the screen while its form scrolls, and
+ * rests under the last mentee once the end of the form is reached.
+ */
+.saveBar {
+  position: var(--save-bar-position);
+  bottom: 0;
+  margin-top: var(--save-bar-margin);
+  padding: var(--save-bar-padding);
+  border-top: var(--save-bar-line) solid var(--line);
+  background: var(--surface);
+}
+
+/* The buttons and the count of "Daftar hadir pertemuan", with what the save answered. */
+.saveAttendance {
+  display: flex;
+  flex-direction: var(--save-bar-direction);
+  gap: var(--space-md);
+}
+
 .mark:has(input:checked) {
   border-color: var(--navy3);
   background: var(--surface2);

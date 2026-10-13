@@ -147,6 +147,24 @@
    */
   --decide-control-basis: auto;
   --decide-control-padding: var(--space-xs);
+
+  /*
+   * The bar with the save button of a form with a card per person rests
+   * under the form here. On a phone it stays at the bottom of the screen
+   * while its form scrolls, with a line above it, and a message stands
+   * above the buttons so they do not move when it comes.
+   */
+  --save-bar-position: static;
+  --save-bar-margin: var(--space-md);
+  --save-bar-padding: 0;
+  --save-bar-line: 0;
+  --save-bar-direction: column;
+
+  /*
+   * The room a field brought into view keeps under itself, so it stops
+   * above the save bar. More than the bar is high with a message in it.
+   */
+  --above-save-bar: 0;
 }
 
 /*
@@ -188,6 +206,12 @@
     --dialog-radius: 0;
     --filter-fold-button-display: inline-block;
     --filter-folded-display: none;
+    --save-bar-position: sticky;
+    --save-bar-margin: 0;
+    --save-bar-padding: var(--space-md) 0;
+    --save-bar-line: var(--line-width);
+    --save-bar-direction: column-reverse;
+    --above-save-bar: calc(3 * var(--space-3xl));
   }
 }
 
