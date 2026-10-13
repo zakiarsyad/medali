@@ -164,7 +164,7 @@ decided, from what the merged app does and then from the prototype:
 - [x] 1. Clarifications are stored with their file, status and decision.
   The right to decide is added for Penilai Mahasiswa, with its checks.
   Sample data adds some in every status.
-- [ ] 2. The rule for the clarification time, with checks.
+- [x] 2. The rule for the clarification time, with checks.
 - [ ] 3. The student asks from "Riwayat kehadiran", and asks again.
 - [ ] 4. Penilai Mahasiswa sees the page and opens files.
 - [ ] 5. Accept as present or as dispensation, or reject with a note.

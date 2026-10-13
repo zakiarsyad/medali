@@ -1,5 +1,5 @@
-import { daysAfter } from "@/academic-periods/days-after";
 import type { AttendanceStatus } from "@/features/activities/attendance-status";
+import { clarificationTimeOpen } from "@/features/activities/clarification-time";
 import { isInSemester } from "@/features/activities/participants";
 import { uploadDeadline } from "@/features/activities/upload-range";
 import type { SampleActivitySchedule } from "./sample-activity-schedules";
@@ -53,21 +53,15 @@ const WHILE_CLARIFYING: Turn[] = [
   "dispensation",
 ];
 
-/** How many days after the last upload day a clarification can be sent. */
-const DAYS_TO_CLARIFY = 7;
-
 /**
  * Whether a clarification can be sent for a schedule on a day: its upload
- * time has closed, and no more than seven days ago.
+ * time has closed, and its clarification time is still open.
  */
 export function takesClarifications(
   schedule: SampleActivitySchedule,
   day: string,
 ): boolean {
-  const lastUploadDay = uploadDeadline(schedule);
-  return (
-    lastUploadDay < day && day <= daysAfter(lastUploadDay, DAYS_TO_CLARIFY)
-  );
+  return uploadDeadline(schedule) < day && clarificationTimeOpen(schedule, day);
 }
 
 const NOTES: Record<AttendanceStatus, string> = {
