@@ -27,9 +27,46 @@ require_setting() {
   fi
 }
 
+HOUR_FORM='^([01][0-9]|2[0-3]):[0-5][0-9]$'
+HOUR_UNREADABLE="Pengaturan BACKUP_HOUR tidak bisa dibaca. Isi dengan jam dan menit, contoh 02:00, atau kosongkan."
+KEEP_FORM='^[1-9][0-9]{0,5}$'
+KEEP_UNREADABLE="Pengaturan BACKUP_KEEP tidak bisa dibaca. Isi dengan angka bulat, paling kecil 1, atau kosongkan."
+
+# The hour of the nightly backup, in campus time.
+backup_hour() {
+  echo "${BACKUP_HOUR:-02:00}"
+}
+
+# How many backups are kept.
+backup_keep() {
+  echo "${BACKUP_KEEP:-14}"
+}
+
+hour_is_readable() {
+  [[ "$(backup_hour)" =~ $HOUR_FORM ]]
+}
+
+keep_is_readable() {
+  [[ "$(backup_keep)" =~ $KEEP_FORM ]]
+}
+
 require_backup_settings() {
   require_setting BACKUP_FOLDER
   require_setting BACKUP_PASSWORD
+  hour_is_readable || refuse "$HOUR_UNREADABLE"
+  keep_is_readable || refuse "$KEEP_UNREADABLE"
+}
+
+# How many seconds from a moment, given in seconds since 1970, until the
+# clock next shows the hour and minute given.
+seconds_until() {
+  local hour=$1 now=$2 day next
+  day=$(date --date="@$now" +%F)
+  next=$(date --date="$day $hour" +%s)
+  if ((next <= now)); then
+    next=$(date --date="$day $hour tomorrow" +%s)
+  fi
+  echo $((next - now))
 }
 
 # The locking tool leaves a helper running that would outlive the

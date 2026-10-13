@@ -340,6 +340,8 @@ describe("the backup part of the campus server package", () => {
     expect(written).toEqual([
       `BACKUP_FOLDER: ${fromSettings("BACKUP_FOLDER")}`,
       `BACKUP_PASSWORD: ${fromSettings("BACKUP_PASSWORD")}`,
+      `BACKUP_HOUR: ${fromSettings("BACKUP_HOUR")}`,
+      `BACKUP_KEEP: ${fromSettings("BACKUP_KEEP")}`,
       `- ${fromSettings("BACKUP_FOLDER", "no-backup-folder")}:/backups`,
     ]);
   });
@@ -400,6 +402,8 @@ describe("the example settings file of the package", () => {
         "CAMPUS_EMAIL_ENDING",
         "BACKUP_FOLDER",
         "BACKUP_PASSWORD",
+        "BACKUP_HOUR",
+        "BACKUP_KEEP",
       ]),
     );
   });

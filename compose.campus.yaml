@@ -100,6 +100,8 @@ services:
   backup:
     build: docker/backup
     image: medali-campus-backup
+    # Makes the nightly backup; what it says is this part's log.
+    command: nightly
     environment:
       PGHOST: db
       PGUSER: medali
@@ -111,7 +113,10 @@ services:
       FILE_STORAGE_SECRET_KEY: ${FILE_STORAGE_SECRET_KEY:-}
       BACKUP_FOLDER: ${BACKUP_FOLDER:-}
       BACKUP_PASSWORD: ${BACKUP_PASSWORD:-}
-      # Campus time: a backup's name is the day and the time it was made.
+      BACKUP_HOUR: ${BACKUP_HOUR:-}
+      BACKUP_KEEP: ${BACKUP_KEEP:-}
+      # Campus time, for the hour of the nightly backup and for a
+      # backup's name, which is the day and the time it was made.
       TZ: Asia/Jakarta
     volumes:
       # While the folder setting is empty the package must still start,

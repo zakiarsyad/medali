@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { randomBytes, randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
@@ -28,7 +28,6 @@ const COMPOSE = [
 const START_TIMEOUT_MS = 600_000;
 const COMMAND_TIMEOUT_MS = 120_000;
 const CASE_TIMEOUT_MS = 180_000;
-const MOST_OUTPUT_BYTES = 256 * 1024 * 1024;
 
 const BACKUP_NAME = /\d{4}-\d{2}-\d{2}-\d{6}\.medali-backup/;
 const ONLY_A_BACKUP_NAME = new RegExp(`^${BACKUP_NAME.source}$`);
@@ -68,36 +67,47 @@ interface Outcome {
   said: string;
 }
 
-/** Runs one command in a backup part of its own, with the settings given. */
+/**
+ * Runs one command in a backup part of its own, with the settings given.
+ * It does not hold up the check meanwhile, so two can run side by side.
+ */
 function inBackupPart(
   command: string[],
   settings: Settings,
   typed = "",
-): Outcome {
-  const result = spawnSync(
+): Promise<Outcome> {
+  const running = spawn(
     "docker",
     [...COMPOSE, "run", "--rm", "-T", "backup", ...command],
     {
       env: { ...process.env, ...FILLED_IN, ...settings },
-      input: typed,
       timeout: COMMAND_TIMEOUT_MS,
-      maxBuffer: MOST_OUTPUT_BYTES,
     },
   );
-  return {
-    status: result.status,
-    output: result.stdout,
-    said: `${result.stdout.toString()}${result.stderr.toString()}`,
-  };
+  const output: Buffer[] = [];
+  const errors: Buffer[] = [];
+  running.stdout.on("data", (bytes: Buffer) => output.push(bytes));
+  running.stderr.on("data", (bytes: Buffer) => errors.push(bytes));
+  running.stdin.end(typed);
+  return new Promise((resolve, reject) => {
+    running.on("error", reject);
+    running.on("close", (status) => {
+      resolve({
+        status,
+        output: Buffer.concat(output),
+        said: Buffer.concat([...output, ...errors]).toString(),
+      });
+    });
+  });
 }
 
-function backup(settings: Settings = {}): Outcome {
+function backup(settings: Settings = {}): Promise<Outcome> {
   return inBackupPart(["backup"], settings);
 }
 
 /** The names of everything in the backup folder, sorted. */
-function backupFolder(): string[] {
-  const listed = inBackupPart(["ls", "-1A", "/backups"], {});
+async function backupFolder(): Promise<string[]> {
+  const listed = await inBackupPart(["ls", "-1A", "/backups"], {});
   expect(listed.status).toBe(0);
   return listed.output
     .toString()
@@ -106,8 +116,8 @@ function backupFolder(): string[] {
     .sort();
 }
 
-function bytesOfBackup(name: string): Buffer {
-  const read = inBackupPart(["cat", `/backups/${name}`], {});
+async function bytesOfBackup(name: string): Promise<Buffer> {
+  const read = await inBackupPart(["cat", `/backups/${name}`], {});
   expect(read.status).toBe(0);
   return read.output;
 }
@@ -271,7 +281,7 @@ interface RestoreWith {
 }
 
 /** Runs the restore command on the target. */
-function restore(name: string, options: RestoreWith = {}): Outcome {
+function restore(name: string, options: RestoreWith = {}): Promise<Outcome> {
   const { word, typed = "", settings = {} } = options;
   const command = word ? ["restore", name, word] : ["restore", name];
   return inBackupPart(command, { ...TARGET, ...settings }, typed);
@@ -281,8 +291,8 @@ function restore(name: string, options: RestoreWith = {}): Outcome {
 const REPLACING = { word: REPLACE_WORD, typed: `${REPLACE_WORD}\n` };
 
 /** Runs a script on the backup folder, which only Docker can reach. */
-function inBackupFolder(script: string, names: string[]): void {
-  const done = inBackupPart(["bash", "-euc", script, "--", ...names], {});
+async function inBackupFolder(script: string, names: string[]): Promise<void> {
+  const done = await inBackupPart(["bash", "-euc", script, "--", ...names], {});
   expect(done.said).toBe("");
   expect(done.status).toBe(0);
 }
@@ -304,6 +314,11 @@ const DAMAGED = [
   },
 ];
 
+/** The name of the backup a command says it made, or nothing. */
+function nameIn(outcome: Outcome): string {
+  return outcome.said.match(BACKUP_NAME)?.[0] ?? "";
+}
+
 /** The first backup of the source, which the cases below read. */
 let made: Outcome;
 let madeName = "";
@@ -314,8 +329,8 @@ beforeAll(async () => {
   databasePort = portOf("db", "5432");
   filesPort = portOf("files", "9000");
   await fillSource();
-  made = backup();
-  madeName = made.said.match(BACKUP_NAME)?.[0] ?? "";
+  made = await backup();
+  madeName = nameIn(made);
 }, START_TIMEOUT_MS);
 
 afterAll(() => {
@@ -325,13 +340,13 @@ afterAll(() => {
 describe("the backup command", () => {
   it(
     "makes one dated backup and says its name and size",
-    () => {
+    async () => {
       expect(made.status).toBe(0);
       expect(made.said).toMatch(
         /^Cadangan selesai: \d{4}-\d{2}-\d{2}-\d{6}\.medali-backup \(\d+(\.\d)?[KMG]?B\)\.$/m,
       );
       expect(madeName).toMatch(ONLY_A_BACKUP_NAME);
-      expect(backupFolder()).toEqual([madeName]);
+      expect(await backupFolder()).toEqual([madeName]);
     },
     CASE_TIMEOUT_MS,
   );
@@ -340,7 +355,7 @@ describe("the backup command", () => {
     "locks the backup: it shows neither an account nor an uploaded file",
     async () => {
       const email = await sampleEmail();
-      const bytes = bytesOfBackup(madeName);
+      const bytes = await bytesOfBackup(madeName);
 
       expect(email).toContain("@");
       expect(bytes.length).toBeGreaterThan(KEPT_FILE.bytes.length);
@@ -352,15 +367,15 @@ describe("the backup command", () => {
 
   it.each(["BACKUP_PASSWORD", "BACKUP_FOLDER"])(
     "refuses while %s is empty, names it, and writes nothing",
-    (name) => {
-      const before = backupFolder();
+    async (name) => {
+      const before = await backupFolder();
 
-      const refused = backup({ [name]: "" });
+      const refused = await backup({ [name]: "" });
 
       expect(refused.status).toBe(1);
       expect(refused.said).toContain(`Pengaturan ${name} masih kosong.`);
       expect(before).toContain(madeName);
-      expect(backupFolder()).toEqual(before);
+      expect(await backupFolder()).toEqual(before);
     },
     CASE_TIMEOUT_MS,
   );
@@ -373,7 +388,7 @@ describe("the restore command", () => {
       await makeTargetEmpty();
       const source = await rowCounts(SOURCE.PGDATABASE);
 
-      const restored = restore(madeName);
+      const restored = await restore(madeName);
 
       expect(restored.said).toContain("Pemulihan selesai");
       expect(restored.said).toContain(
@@ -389,9 +404,9 @@ describe("the restore command", () => {
 
   it(
     "refuses a name that is no backup in the folder",
-    () => {
-      const noBackupName = restore("../etc/passwd");
-      const notThere = restore("1999-01-01-000000.medali-backup");
+    async () => {
+      const noBackupName = await restore("../etc/passwd");
+      const notThere = await restore("1999-01-01-000000.medali-backup");
 
       expect(noBackupName.status).toBe(1);
       expect(noBackupName.said).toContain("Sebutkan nama cadangan");
@@ -406,7 +421,7 @@ describe("the restore command", () => {
     async () => {
       const before = await makeTargetHoldData();
 
-      const refused = restore(madeName, {
+      const refused = await restore(madeName, {
         ...REPLACING,
         settings: { BACKUP_PASSWORD: "not-the-password" },
       });
@@ -423,11 +438,11 @@ describe("the restore command", () => {
   it.each(DAMAGED)(
     "refuses a backup that is $kind, says so, and changes nothing",
     async ({ name, damage }) => {
-      inBackupFolder(damage, [madeName, name]);
+      await inBackupFolder(damage, [madeName, name]);
       const before = await makeTargetHoldData();
 
-      const refused = restore(name, REPLACING);
-      inBackupFolder('rm "/backups/$1"', [name]);
+      const refused = await restore(name, REPLACING);
+      await inBackupFolder('rm "/backups/$1"', [name]);
 
       expect(refused.status).toBe(1);
       expect(refused.said).toContain(`Cadangan ${name} rusak atau terpotong.`);
@@ -441,7 +456,7 @@ describe("the restore command", () => {
     async () => {
       const before = await makeTargetHoldData();
 
-      const refused = restore(madeName);
+      const refused = await restore(madeName);
 
       expect(refused.status).toBe(1);
       expect(refused.said).toContain("Paket ini sudah berisi data");
@@ -459,7 +474,7 @@ describe("the restore command", () => {
     async (_answer, typed) => {
       const before = await makeTargetHoldData();
 
-      const refused = restore(madeName, { word: REPLACE_WORD, typed });
+      const refused = await restore(madeName, { word: REPLACE_WORD, typed });
 
       expect(refused.status).toBe(1);
       expect(refused.said).toContain(`Ketik ${REPLACE_WORD} sekali lagi`);
@@ -474,7 +489,7 @@ describe("the restore command", () => {
     async () => {
       await makeTargetHoldData();
 
-      const restored = restore(madeName, REPLACING);
+      const restored = await restore(madeName, REPLACING);
 
       expect(restored.said).toContain("Pemulihan selesai");
       expect(restored.status).toBe(0);
@@ -506,7 +521,7 @@ async function accountEmails(database: string): Promise<string[]> {
 describe("a backup restored into another package that holds no data", () => {
   beforeAll(async () => {
     await makeTargetEmpty();
-    expect(restore(madeName).status).toBe(0);
+    expect((await restore(madeName)).status).toBe(0);
   }, CASE_TIMEOUT_MS);
 
   it("holds as many rows in every table as the package the backup was made of", async () => {
@@ -557,4 +572,171 @@ describe("a backup restored into another package that holds no data", () => {
     expect(added).toBe(0);
     expect(await rowCounts(TARGET.PGDATABASE)).toEqual(before);
   });
+});
+
+/** What `timeout` answers when it had to stop a command still running. */
+const STILL_RUNNING = 124;
+
+/** What the backup part runs while the package is up, stopped again soon. */
+function startUp(settings: Settings): Promise<Outcome> {
+  return inBackupPart(["timeout", "1", "nightly"], settings);
+}
+
+async function secondsUntil(hour: string, now: string): Promise<number> {
+  const script = `source /usr/local/lib/medali-backup/common.sh
+    seconds_until "$1" "$(date --date="$2" +%s)"`;
+  const counted = await inBackupPart(
+    ["bash", "-euc", script, "--", hour, now],
+    {},
+  );
+  return Number(counted.output.toString());
+}
+
+/**
+ * The nightly backup with its hour set to the minute that starts next,
+ * stopped five seconds after it. A minute about to end is skipped, so the
+ * hour is never missed.
+ */
+const NIGHTLY_AT_THE_NEXT_MINUTE = `now=$(date +%s)
+  left=$((60 - now % 60))
+  if ((left < 5)); then left=$((left + 60)); fi
+  export BACKUP_HOUR=$(date --date="@$((now + left))" +%H:%M)
+  exec timeout $((left + 5)) nightly`;
+
+function nightlyAtTheNextMinute(settings: Settings): Promise<Outcome> {
+  return inBackupPart(["bash", "-euc", NIGHTLY_AT_THE_NEXT_MINUTE], settings);
+}
+
+/** An address where no file storage answers. */
+const NO_FILE_STORAGE = { FILE_STORAGE_URL: "http://files:9" };
+
+describe("the nightly backup", () => {
+  it(
+    'says "Cadangan otomatis belum diatur." and makes no backup while BACKUP_FOLDER is empty',
+    async () => {
+      const before = await backupFolder();
+
+      const started = await startUp({ BACKUP_FOLDER: "" });
+
+      expect(started.said.trim()).toBe("Cadangan otomatis belum diatur.");
+      expect(started.status).toBe(STILL_RUNNING);
+      expect(await backupFolder()).toEqual(before);
+    },
+    CASE_TIMEOUT_MS,
+  );
+
+  it.each([
+    ["BACKUP_HOUR", "24:00"],
+    ["BACKUP_KEEP", "0"],
+  ])(
+    "names %s when it holds %s, and then neither it nor the backup command makes a backup",
+    async (name, value) => {
+      const before = await backupFolder();
+
+      const started = await startUp({ [name]: value });
+      const refused = await backup({ [name]: value });
+
+      expect(started.said).toContain(`Pengaturan ${name} tidak bisa dibaca.`);
+      expect(started.said).toContain("Cadangan otomatis tidak berjalan.");
+      expect(started.status).toBe(STILL_RUNNING);
+      expect(refused.said).toContain(`Pengaturan ${name} tidak bisa dibaca.`);
+      expect(refused.status).toBe(1);
+      expect(await backupFolder()).toEqual(before);
+    },
+    CASE_TIMEOUT_MS,
+  );
+
+  it(
+    "says at the start that BACKUP_PASSWORD is empty",
+    async () => {
+      const started = await startUp({ BACKUP_PASSWORD: "" });
+
+      expect(started.said).toContain(
+        "Pengaturan BACKUP_PASSWORD masih kosong: cadangan otomatis akan gagal",
+      );
+      expect(started.status).toBe(STILL_RUNNING);
+    },
+    CASE_TIMEOUT_MS,
+  );
+
+  it(
+    "says its hour and the number to keep: 02:00 and 14 while the two settings are empty",
+    async () => {
+      const atTheStart = await startUp({});
+      const changed = await startUp({ BACKUP_HOUR: "21:30", BACKUP_KEEP: "3" });
+
+      expect(atTheStart.said.trim()).toBe(
+        "Cadangan otomatis berjalan setiap hari pukul 02:00. Yang disimpan: 14 cadangan terbaru.",
+      );
+      expect(changed.said.trim()).toBe(
+        "Cadangan otomatis berjalan setiap hari pukul 21:30. Yang disimpan: 3 cadangan terbaru.",
+      );
+    },
+    CASE_TIMEOUT_MS,
+  );
+
+  it(
+    "waits until its hour today, or tomorrow once the hour has passed",
+    async () => {
+      const HOUR_SECONDS = 3600;
+
+      expect(await secondsUntil("02:00", "2026-10-13 01:00:00")).toBe(
+        HOUR_SECONDS,
+      );
+      expect(await secondsUntil("02:00", "2026-10-13 03:00:00")).toBe(
+        23 * HOUR_SECONDS,
+      );
+      expect(await secondsUntil("02:00", "2026-10-13 02:00:00")).toBe(
+        24 * HOUR_SECONDS,
+      );
+      expect(await secondsUntil("23:59", "2026-10-13 23:58:30")).toBe(30);
+    },
+    CASE_TIMEOUT_MS,
+  );
+
+  it(
+    "makes a backup at its hour and says the result, and goes on after one that failed",
+    async () => {
+      const [worked, failed] = await Promise.all([
+        nightlyAtTheNextMinute({}),
+        nightlyAtTheNextMinute(NO_FILE_STORAGE),
+      ]);
+
+      const name = nameIn(worked);
+      expect(worked.said).toContain(`Cadangan selesai: ${name}`);
+      expect(worked.status).toBe(STILL_RUNNING);
+      expect(await backupFolder()).toContain(name);
+      expect(failed.said).toContain(
+        "Cadangan gagal: berkas unggahan tidak bisa disalin.",
+      );
+      expect(failed.said).toContain("Cadangan otomatis gagal.");
+      expect(failed.status).toBe(STILL_RUNNING);
+    },
+    CASE_TIMEOUT_MS,
+  );
+});
+
+/** A name that is not a backup's, though it holds one. */
+const OTHER_FILES = ["catatan.txt", "2000-01-01-000000.medali-backup.txt"];
+
+// Last, because it removes the first backup, which the cases above read.
+describe("the number of backups to keep", () => {
+  it(
+    "removes the oldest once a new backup is made, and leaves any other file alone",
+    async () => {
+      await inBackupFolder('touch "/backups/$1" "/backups/$2"', OTHER_FILES);
+      const keepTwo = { BACKUP_KEEP: "2" };
+
+      const first = await backup(keepTwo);
+      const second = await backup(keepTwo);
+      const third = await backup(keepTwo);
+
+      const kept = [nameIn(second), nameIn(third), ...OTHER_FILES].sort();
+      expect(nameIn(first)).toMatch(ONLY_A_BACKUP_NAME);
+      expect(third.status).toBe(0);
+      expect(third.said).toContain(`Cadangan lama dihapus: ${nameIn(first)}`);
+      expect(await backupFolder()).toEqual(kept);
+    },
+    CASE_TIMEOUT_MS,
+  );
 });

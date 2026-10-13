@@ -50,6 +50,27 @@ size_of() {
   numfmt --to=iec --suffix=B "$(stat --format=%s "$1")"
 }
 
+# Only a file with a backup's name counts. A name starts with the day
+# and the time, so the order of the names is the order they were made in.
+backup_names_newest_first() {
+  local path name
+  for path in "$BACKUPS"/*; do
+    name=${path##*/}
+    if [[ -f "$path" ]] && is_backup_name "$name"; then
+      echo "$name"
+    fi
+  done | sort --reverse
+}
+
+remove_oldest_beyond() {
+  local keep=$1 names name
+  mapfile -t names < <(backup_names_newest_first)
+  for name in "${names[@]:keep}"; do
+    rm -f "$BACKUPS/$name"
+    echo "Cadangan lama dihapus: $name"
+  done
+}
+
 require_backup_settings
 make_work_folder
 # Written under a name that marks it as unfinished, and given its real
@@ -70,3 +91,5 @@ lock_into "$UNFINISHED" ||
 name=$(free_name)
 mv "$UNFINISHED" "$BACKUPS/$name"
 echo "Cadangan selesai: $name ($(size_of "$BACKUPS/$name"))."
+# Only now, after the new one is complete, and never before.
+remove_oldest_beyond "$(backup_keep)"

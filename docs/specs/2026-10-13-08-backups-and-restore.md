@@ -154,7 +154,7 @@ change any of these.
 - [x] 2. The restore command into an empty package, with its refusals.
 - [x] 3. The check that makes a backup, restores it elsewhere and
   compares.
-- [ ] 4. The nightly backup and the number to keep, with their
+- [x] 4. The nightly backup and the number to keep, with their
   settings.
 - [ ] 5. Failure handling: no half-written backup, and the app keeps
   running.
