@@ -25,7 +25,16 @@ export const PAGES = [
       { id: "new_cohort", path: "tetap", title: "Penetapan angkatan baru" },
     ],
   },
-  { id: "mentoring", path: "pengasuhan", title: "Pengasuhan" },
+  {
+    id: "mentoring",
+    path: "pengasuhan",
+    title: "Pengasuhan",
+    tabs: [
+      { id: "notes", path: "catatan", title: "Catatan pendampingan" },
+      { id: "meetings", path: "hadir", title: "Pertemuan dan daftar hadir" },
+      { id: "scores", path: "nilai", title: "Nilai pengasuhan" },
+    ],
+  },
   {
     id: "assessment",
     path: "penilaian",

@@ -487,6 +487,57 @@ describe("may", () => {
     }
   });
 
+  const noteReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it.each(noteReaders)("lets %s read mentoring notes", (role) => {
+    expect(may([role], "view_mentoring_notes")).toBe(true);
+  });
+
+  it("refuses every other role to read mentoring notes, Pegawai UPK and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !noteReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - noteReaders.length);
+    expect(others).toContain("upk_staff");
+    expect(others).toContain("student");
+    expect(others).toContain("counsellor");
+    for (const role of others) {
+      expect(may([role], "view_mentoring_notes")).toBe(false);
+    }
+  });
+
+  it("gives the right to read mentoring notes to every role with the tab Catatan pendampingan", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentoring_notes")).toBe(
+        mayOpenTab([role], "mentoring", "notes"),
+      );
+    }
+  });
+
+  it("lets Pengasuh write a mentoring note", () => {
+    expect(may(["mentor"], "write_mentoring_notes")).toBe(true);
+  });
+
+  it("refuses every other role to write a mentoring note, Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "mentor");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    expect(others).toContain("head_of_unit");
+    expect(others).toContain("head_of_program");
+    for (const role of others) {
+      expect(may([role], "write_mentoring_notes")).toBe(false);
+    }
+  });
+
+  it("lets every role that may write a mentoring note read the notes", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "write_mentoring_notes")) continue;
+      expect(may([role], "view_mentoring_notes")).toBe(true);
+    }
+  });
+
   it("lets Mahasiswa read their own student record", () => {
     expect(may(["student"], "view_own_profile")).toBe(true);
     expect(mayOpenPage(["student"], "profile")).toBe(true);
@@ -646,6 +697,24 @@ describe("tabsFor", () => {
       "skpm",
       "siku",
     ]);
+  });
+
+  it("gives every role that opens Pengasuhan its three tabs, Catatan pendampingan first", () => {
+    const openers = ROLE_IDS.filter((role) => mayOpenPage([role], "mentoring"));
+
+    expect(openers).toEqual([
+      "head_of_unit",
+      "director",
+      "head_of_program",
+      "mentor",
+    ]);
+    for (const role of openers) {
+      expect(paths(tabsFor([role], "mentoring"))).toEqual([
+        "catatan",
+        "hadir",
+        "nilai",
+      ]);
+    }
   });
 
   it("gives Pengguna dan peran only to a role that manages users", () => {
@@ -862,6 +931,64 @@ describe("rowLimitForAction and rowLimitForPage", () => {
 
       expect(rowLimitForPage(both, "mentoring")).toEqual(OWN_MENTEES);
     }
+  });
+
+  it("gives each role that reads mentoring notes the notes of its own rows", () => {
+    const action = "view_mentoring_notes";
+
+    expect(rowLimitForAction(account(["head_of_unit"]), action)).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(account(["director"]), action)).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(account(["head_of_program"], 7), action)).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(rowLimitForAction(account(["mentor"]), action)).toEqual(OWN_MENTEES);
+  });
+
+  it("joins the notes of Pengasuh who is also Ketua Program Studi: own mentees and own program", () => {
+    const both = account(["mentor", "head_of_program"], 3);
+
+    expect(rowLimitForAction(both, "view_mentoring_notes")).toEqual({
+      ...OWN_MENTEES,
+      studyProgramIds: [3],
+    });
+  });
+
+  it("keeps Pengasuh to the notes of their mentees, whatever wide role without the notes they also hold", () => {
+    const wideWithoutNotes = ROLE_IDS.filter(
+      (role) =>
+        ROLES[role].rows === "all" && !may([role], "view_mentoring_notes"),
+    );
+
+    expect(wideWithoutNotes).toEqual(
+      expect.arrayContaining(["upk_staff", "counsellor", "dorm_manager"]),
+    );
+    for (const role of wideWithoutNotes) {
+      const both = account(["mentor", role]);
+
+      expect(rowLimitForAction(both, "view_mentoring_notes")).toEqual(
+        OWN_MENTEES,
+      );
+      expect(rowLimitForAction(both, "write_mentoring_notes")).toEqual(
+        OWN_MENTEES,
+      );
+    }
+  });
+
+  it("gives no row to write a note for to an account that is not Pengasuh, whatever it reads", () => {
+    const readers = account(["head_of_unit", "director", "head_of_program"], 7);
+
+    expect(rowLimitForAction(readers, "write_mentoring_notes")).toEqual(NO_ROW);
+  });
+
+  it("lets Pengasuh who is also Kepala Unit write only for their own mentees", () => {
+    const both = account(["mentor", "head_of_unit"]);
+
+    expect(rowLimitForAction(both, "view_mentoring_notes")).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(both, "write_mentoring_notes")).toEqual(
+      OWN_MENTEES,
+    );
   });
 
   it("lets a role that sees every row win over a limited one on a page both open", () => {
