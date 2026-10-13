@@ -50,6 +50,7 @@ export default async function MentoringScoresPage(
         <StudentDetailDialog
           detail={detail}
           period={await runningPeriodNow()}
+          openedFrom="scores_list"
           closeAddress={scoresAddress(params.groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

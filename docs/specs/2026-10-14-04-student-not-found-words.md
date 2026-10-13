@@ -49,8 +49,13 @@ stay as they were. The second and the third are built here.
    There the box says "kembali ke daftar nilai", in the way the tab
    "Catatan pendampingan" is called "daftar catatan". Without this the
    box would still name the Mahasiswa list to Pengasuh.
+3. Found while building: in the merged app Pegawai UPK may not open a
+   student's detail, so that role never gets the box, and Pengasuh
+   opens a detail only from the tabs "Catatan pendampingan" and "Nilai
+   pengasuhan". This spec changes nothing about who may open what.
 
 ## Steps
 
-- [ ] 1. The box takes the name of the place it returns to from the
-  page that shows it, with a check for each of the four pages.
+- [x] 1. The box takes the name of the place it returns to from the
+  page that shows it, with a check for each of the four pages and for
+  the tab "Nilai pengasuhan".
