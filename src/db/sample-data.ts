@@ -435,16 +435,16 @@ export const SAMPLE_SPECIAL_ACTIVITIES: Omit<SamplePpksActivity, "semester">[] =
   [
     {
       name: "Pelatihan kepemimpinan organisasi mahasiswa",
-      valueKeys: ["L", "A"],
-      indicatorCodes: ["L3", "A2"],
+      valueKeys: ["A", "L"],
+      indicatorCodes: ["A2", "L3"],
       targetParticipants: 120,
       isRequired: true,
       description: "Untuk pengurus organisasi kemahasiswaan lintas angkatan.",
     },
     {
       name: "Program mentor sebaya",
-      valueKeys: ["E", "M"],
-      indicatorCodes: ["E3", "M3"],
+      valueKeys: ["M", "E"],
+      indicatorCodes: ["M3", "E3"],
       targetParticipants: 60,
       isRequired: false,
       description: "Mahasiswa senior mendampingi mahasiswa baru.",
