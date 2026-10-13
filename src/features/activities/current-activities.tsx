@@ -1,84 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
-import styles from "./activities.module.css";
+import { useReducer, useTransition } from "react";
 import type { ActivityCard } from "./activity-card";
-import { ActivityCardView } from "./activity-card-view";
-import { PhotoSender } from "./photo-sender";
-
-/** What the server answered to the photo of one card. */
-interface Answer {
-  cardId: string;
-  state: FormState;
-}
+import { cardsAfter, NO_CARD_OPEN } from "./cards-state";
+import { CurrentActivitiesView } from "./current-activities-view";
 
 /**
  * "Berlangsung dan masa unggah foto": a card for each running schedule.
- * It holds which card has its upload open, as only one is at a time, and
- * what the server last answered. The answer stays under its card after
- * the card has lost its upload, and above the cards when the card itself
- * is gone, as after the upload time has closed.
+ * It holds which card has its upload open and what the server last
+ * answered; what follows from a press is decided apart from it, and so
+ * is how the cards are drawn.
  */
 export function CurrentActivities({ cards }: { cards: ActivityCard[] }) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [answer, setAnswer] = useState<Answer | null>(null);
-  const answeredCardIsGone =
-    answer !== null && !cards.some((card) => card.id === answer.cardId);
-
-  function open(cardId: string) {
-    setAnswer(null);
-    setOpenId(cardId);
-  }
-
-  function answered(cardId: string, state: FormState) {
-    setAnswer({ cardId, state });
-    // A refused photo may be sent again; a kept one closes the upload.
-    if (state.done !== null) setOpenId(null);
-  }
-
+  const [state, tell] = useReducer(cardsAfter, NO_CARD_OPEN);
+  // Every send runs in a transition held here, not in its card: a card
+  // may close while its photo is on its way, and an answer that leads
+  // the student elsewhere, as when they were signed out since, is
+  // dropped when the part that started it has left the screen. Of two
+  // sends on their way at once, only the later one's is sure to arrive.
+  const [, startSend] = useTransition();
   return (
-    <section className={styles.part}>
-      <h2 className={shared.heading}>Berlangsung dan masa unggah foto</h2>
-      {answer !== null && answeredCardIsGone && (
-        <FormMessage state={answer.state} />
-      )}
-      {cards.length === 0 ? (
-        <div className={shared.panel}>
-          <p className={shared.empty}>
-            Tidak ada kegiatan yang sedang membuka unggah foto.
-          </p>
-        </div>
-      ) : (
-        <div className={styles.cards}>
-          {cards.map((card) => (
-            <ActivityCardView key={card.id} card={card}>
-              {card.maySend && openId === card.id && (
-                <PhotoSender
-                  scheduleId={card.id}
-                  onAnswer={(state) => answered(card.id, state)}
-                  onCancel={() => setOpenId(null)}
-                />
-              )}
-              {card.maySend && openId !== card.id && (
-                <div>
-                  <button
-                    type="button"
-                    className={shared.button}
-                    onClick={() => open(card.id)}
-                  >
-                    Unggah foto kehadiran
-                  </button>
-                </div>
-              )}
-              {answer?.cardId === card.id && (
-                <FormMessage state={answer.state} />
-              )}
-            </ActivityCardView>
-          ))}
-        </div>
-      )}
-    </section>
+    <CurrentActivitiesView
+      cards={cards}
+      state={state}
+      startSend={startSend}
+      onOpen={(cardId) => tell({ kind: "opened", cardId })}
+      onCancel={() => tell({ kind: "cancelled" })}
+      onAnswer={(cardId, answer) =>
+        tell({ kind: "answered", cardId, state: answer })
+      }
+    />
   );
 }
