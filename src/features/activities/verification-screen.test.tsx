@@ -8,6 +8,7 @@ import { VerificationScreen } from "./verification-screen";
 vi.mock("./verification-actions", () => ({
   validateAttendanceAction: vi.fn(),
   rejectAttendanceAction: vi.fn(),
+  validateTickedAction: vi.fn(),
 }));
 
 const TABS = {

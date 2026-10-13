@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   answersAfter,
+  answersAfterMany,
   answerTo,
   NO_ANSWERS,
   shownCards,
@@ -107,6 +108,29 @@ describe("answersAfter", () => {
 
     expect(after.a?.state.done).toBe("Presensi divalidasi.");
     expect(after.b).toBe(refused);
+  });
+});
+
+describe("answersAfterMany", () => {
+  it("keeps each card validated at once as it stands now, without words of its own, in place of its last answer", () => {
+    const refused = {
+      state: { error: "Pilih alasan penolakan.", done: null },
+      card: null,
+    };
+    const before = answersAfter(NO_ANSWERS, {
+      cardId: "card-1",
+      answer: refused,
+    });
+    const one = { ...cardAt(1), status: "valid" as const };
+    const two = { ...cardAt(2), status: "rejected" as const };
+
+    const after = answersAfterMany(before, [one, two]);
+
+    expect(after).toEqual({
+      "card-1": { state: { error: null, done: null }, card: one },
+      "card-2": { state: { error: null, done: null }, card: two },
+    });
+    expect(shownCards([], after)).toEqual([one, two]);
   });
 });
 

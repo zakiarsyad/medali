@@ -7,8 +7,10 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { fileStorage } from "@/files/file-storage";
+import type { BulkAnswer } from "./bulk-validation";
 import { type Decision, decideAttendance } from "./decide-attendance";
 import { rejectionNote } from "./rejection-reasons";
+import { validateTicked } from "./validate-ticked";
 import { VERIFICATION_ADDRESS } from "./verification-address";
 import type { DecisionAnswer } from "./verification-card";
 
@@ -46,6 +48,25 @@ export async function validateAttendanceAction(
 ): Promise<DecisionAnswer> {
   const verifier = await attendanceVerifier();
   return decide(verifier, attendanceId, { status: "valid" });
+}
+
+/**
+ * "Validasi (n) terpilih": the ticked cards of the page shown. The
+ * numbers and the cards are read again whatever the answer.
+ */
+export async function validateTickedAction(
+  attendanceIds: string[],
+): Promise<BulkAnswer> {
+  const verifier = await attendanceVerifier();
+  const answer = await validateTicked(
+    database(),
+    verifier,
+    attendanceIds,
+    new Date(),
+    fileStorage() !== null,
+  );
+  revalidatePath(VERIFICATION_ADDRESS);
+  return answer;
 }
 
 /** "Tolak" on a card, with the reason chosen and the note for "Lainnya". */

@@ -225,6 +225,17 @@ decided, from what the merged app does and then from the prototype:
     Sent twice after a rejection, one new photo is kept. Once the new
     photo is validated, or a dispensation is recorded, no further photo
     is taken.
+32. Each card that waits has a tick "Pilih". "Pilih semua" and the
+    button stand above the cards, and show only while a card of the
+    page waits or a message is there. With nothing ticked the button
+    says "Validasi terpilih" and cannot be pressed. A card decided
+    since it was ticked loses its tick. Cards validated at once stay
+    in their place like a card decided singly, and the message stands
+    beside the button.
+33. More than 24 sent by hand are refused whole, with "Paling banyak
+    24 presensi dapat divalidasi sekaligus." Nothing sent answers
+    "Pilih presensi yang akan divalidasi." Each photo validated at
+    once gets its own line in the log.
 
 ## Steps
 
@@ -232,7 +243,7 @@ decided, from what the merged app does and then from the prototype:
   its checks, and the log for attendance decisions.
 - [x] 2. The tab shows the numbers, the filters and the photo cards.
 - [x] 3. "Validasi" and "Tolak" with a reason; the student sends again.
-- [ ] 4. Ticking many cards and "Validasi (n) terpilih".
+- [x] 4. Ticking many cards and "Validasi (n) terpilih".
 - [ ] 5. "Catat kehadiran manual atau dispensasi".
 - [ ] 6. The Kegiatan PPKS table shows the attendance numbers and
   "Peserta".

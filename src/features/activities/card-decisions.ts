@@ -56,18 +56,50 @@ export function shownCards(
 }
 
 /**
- * The answer to a decision that was sent. One that did not arrive is an
- * answer too: the card stays as it is and says to try again. `rethrow`
- * throws again what is no failure, as an answer that leads elsewhere.
+ * What the server answered to what was sent, or `notSent` when it did
+ * not arrive. `rethrow` throws again what is no failure, as an answer
+ * that leads elsewhere.
  */
-export async function answerTo(
-  send: () => Promise<DecisionAnswer>,
+export async function answerOr<Answer>(
+  send: () => Promise<Answer>,
   rethrow: (error: unknown) => void,
-): Promise<DecisionAnswer> {
+  notSent: Answer,
+): Promise<Answer> {
   try {
     return await send();
   } catch (error) {
     rethrow(error);
-    return { state: { error: DECISION_NOT_SENT, done: null }, card: null };
+    return notSent;
   }
+}
+
+/**
+ * The answer to a decision that was sent. One that did not arrive is an
+ * answer too: the card stays as it is and says to try again.
+ */
+export function answerTo(
+  send: () => Promise<DecisionAnswer>,
+  rethrow: (error: unknown) => void,
+): Promise<DecisionAnswer> {
+  return answerOr(send, rethrow, {
+    state: { error: DECISION_NOT_SENT, done: null },
+    card: null,
+  });
+}
+
+/**
+ * The answers after many photos were validated at once: each card that
+ * came back is kept as it stands now, without words of its own, as the
+ * message of the press speaks for all of them.
+ */
+export function answersAfterMany(
+  answers: CardAnswers,
+  cards: readonly VerificationCard[],
+): CardAnswers {
+  let after = answers;
+  for (const card of cards) {
+    const answer = { state: { error: null, done: null }, card };
+    after = answersAfter(after, { cardId: card.id, answer });
+  }
+  return after;
 }

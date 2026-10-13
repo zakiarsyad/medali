@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { FormState } from "@/ui/form-message";
 import { CardDecision } from "./card-decision";
 import { CardDecisionView } from "./card-decision-view";
 import { type AnsweredCard, answersAfter, NO_ANSWERS } from "./card-decisions";
@@ -12,6 +13,7 @@ import type { DecisionAnswer, VerificationCard } from "./verification-card";
 vi.mock("./verification-actions", () => ({
   validateAttendanceAction: vi.fn(),
   rejectAttendanceAction: vi.fn(),
+  validateTickedAction: vi.fn(),
 }));
 
 const EMPTY_WORDS = "Tidak ada swafoto yang menunggu verifikasi.";
@@ -31,8 +33,10 @@ const VALIDATED: DecisionAnswer = {
  * every decision adds by the real rule. What a card offers to decide is
  * left undrawn here; its own checks press its buttons.
  */
-function board() {
+function board(more: { busy?: boolean; state?: FormState } = {}) {
   let answers = NO_ANSWERS;
+  let ticked: string[] = [];
+  const validated: string[][] = [];
   function tell(event: AnsweredCard): void {
     answers = answersAfter(answers, event);
   }
@@ -42,6 +46,15 @@ function board() {
         cards={cards}
         answers={answers}
         emptyWords={EMPTY_WORDS}
+        bulk={{
+          ticked,
+          busy: more.busy ?? false,
+          state: more.state ?? null,
+          onTicks: (after) => {
+            ticked = after;
+          },
+          onValidate: (cardIds) => validated.push(cardIds),
+        }}
         onAnswer={(cardId, answer) => tell({ cardId, answer })}
       />
     );
@@ -49,7 +62,22 @@ function board() {
   return {
     drawn: (cards: VerificationCard[]) => draw(view(cards), [CardDecision]),
     markup: (cards: VerificationCard[]) => renderToStaticMarkup(view(cards)),
+    /** The cards that each press of "Validasi (n) terpilih" asked for. */
+    validated,
   };
+}
+
+/** The tick boxes drawn, "Pilih semua" first. */
+function ticks(drawn: Drawn) {
+  return drawn.filter(({ props }) => props.type === "checkbox");
+}
+
+function tick(box: Drawn[number] | undefined, isTicked: boolean): void {
+  if (!box) throw new Error("No such tick is shown.");
+  if (box.props.disabled === true) return;
+  (box.props.onChange as (event: unknown) => void)({
+    target: { checked: isTicked },
+  });
 }
 
 function decisionsOf(drawn: Drawn) {
@@ -175,6 +203,94 @@ describe("a decision on a card", () => {
       'role="alert">Pilih alasan penolakan.</p>',
     );
     expect(decisionsOf(cards.drawn([TEST_CARD]))).toHaveLength(1);
+  });
+});
+
+describe("ticking cards to validate them at once", () => {
+  const DECIDED = {
+    ...TEST_CARD,
+    id: "00000000-0000-4000-8000-0000000000c3",
+    sentAt: "2026-10-13T07:00:00.000Z",
+    status: "rejected" as const,
+    decidedBy: "Pegawai Uji",
+  };
+  const PAGE = [TEST_CARD, OTHER_CARD, DECIDED];
+
+  it("offers a tick on each card that waits, and none on a decided one", () => {
+    const [all, ...ofCards] = ticks(board().drawn(PAGE));
+
+    expect(all?.props.checked).toBe(false);
+    expect(ofCards.map(({ props }) => props["aria-label"])).toEqual([
+      "Pilih presensi Mahasiswa Uji Kartu",
+      "Pilih presensi Mahasiswa Uji Kartu Dua",
+    ]);
+  });
+
+  it('keeps "Validasi terpilih" switched off while nothing is ticked, and names how many are', () => {
+    const cards = board();
+
+    expect(isPressable(cards.drawn(PAGE), "Validasi terpilih")).toBe(false);
+    tick(ticks(cards.drawn(PAGE))[1], true);
+
+    expect(isPressable(cards.drawn(PAGE), "Validasi 1 terpilih")).toBe(true);
+    expect(ticks(cards.drawn(PAGE))[1]?.props.checked).toBe(true);
+    expect(ticks(cards.drawn(PAGE))[0]?.props.checked).toBe(false);
+  });
+
+  it('ticks the waiting cards of the page with "Pilih semua", clears them again, and sends only those to be validated', () => {
+    const cards = board();
+    tick(ticks(cards.drawn(PAGE))[0], true);
+
+    const drawn = cards.drawn(PAGE);
+    expect(ticks(drawn).map(({ props }) => props.checked)).toEqual([
+      true,
+      true,
+      true,
+    ]);
+    press(drawn, "Validasi 2 terpilih");
+    expect(cards.validated).toEqual([[TEST_CARD.id, OTHER_CARD.id]]);
+
+    tick(ticks(cards.drawn(PAGE))[0], false);
+    expect(isPressable(cards.drawn(PAGE), "Validasi terpilih")).toBe(false);
+  });
+
+  it("drops the tick of a card that was decided since: it is not sent", () => {
+    const cards = board();
+    tick(ticks(cards.drawn(PAGE))[0], true);
+    answer(cards.drawn(PAGE), TEST_CARD.id, VALIDATED);
+    // The list as it is read again: the validated card waits no more.
+    const readAgain = [OTHER_CARD, DECIDED];
+
+    press(cards.drawn(readAgain), "Validasi 1 terpilih");
+
+    expect(cards.validated).toEqual([[OTHER_CARD.id]]);
+  });
+
+  it("switches the ticks and the button off while the press is on its way", () => {
+    const cards = board({ busy: true });
+
+    const drawn = cards.drawn(PAGE);
+    tick(ticks(drawn)[0], true);
+
+    expect(ticks(drawn).map(({ props }) => props.disabled)).toEqual([
+      true,
+      true,
+      true,
+    ]);
+    expect(isPressable(cards.drawn(PAGE), "Validasi terpilih")).toBe(false);
+  });
+
+  it("says how many were validated, also once no card waits any more", () => {
+    const said = { error: null, done: "2 presensi divalidasi." };
+
+    const markup = board({ state: said }).markup([DECIDED]);
+
+    expect(markup).toContain('role="status">2 presensi divalidasi.</p>');
+    expect(markup).toContain("Pilih semua");
+  });
+
+  it("shows no ticks on a page without a waiting card", () => {
+    expect(board().markup([DECIDED])).not.toContain("Pilih semua");
   });
 });
 

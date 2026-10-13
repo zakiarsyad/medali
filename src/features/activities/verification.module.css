@@ -73,6 +73,19 @@
   margin-top: var(--space-xs);
 }
 
+/* "Pilih semua", "Validasi (n) terpilih" and what the last press answered. */
+.bulkBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.tick {
+  margin-top: var(--space-xs);
+}
+
 /* What a waiting card offers: "Validasi", the reason, and "Tolak". */
 .decide {
   display: flex;
