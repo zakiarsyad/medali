@@ -4,11 +4,13 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import {
+  changedSince,
   NO_PERIOD_TO_SCORE,
   NOT_ALLOWED_TO_SCORE,
   NOT_SCORES,
   SCORED_GROUP_NOT_HELD,
   saveScores,
+  scoresChanged,
 } from "./save-scores";
 import type { ScoresInput } from "./score-input";
 import { addTestPeriod, type TestPeriod } from "./test-meetings";
@@ -17,6 +19,7 @@ import {
   addTestGroup,
   addTestProgram,
   addTestStudent,
+  replaceTestMentor,
 } from "./test-records";
 import { testScoreLogOf, testScoresOf } from "./test-scores";
 
@@ -99,13 +102,20 @@ async function addRecords(db: Database): Promise<Records> {
   };
 }
 
-/** Scores for members of the mentor's group. */
+/**
+ * Scores for members of the mentor's group. `openedOn` holds the score
+ * the form was opened on, for each student who had one then.
+ */
 function scoresOf(
   records: Records,
   scores: Record<string, number>,
-  more: Partial<ScoresInput> = {},
+  openedOn: Record<string, number> = {},
 ): ScoresInput {
-  return { groupId: records.groupId, scores, ...more };
+  const basedOn: Record<string, number | null> = {};
+  for (const studentId of Object.keys(scores)) {
+    basedOn[studentId] = openedOn[studentId] ?? null;
+  }
+  return { groupId: records.groupId, scores, basedOn };
 }
 
 /** The score kept for a student, or null for a student without one. */
@@ -210,7 +220,7 @@ describe("saveScores", () => {
       const saved = await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 85 }),
+        scoresOf(records, { [ani]: 85 }, { [ani]: 70 }),
         period.day,
       );
 
@@ -221,6 +231,173 @@ describe("saveScores", () => {
     });
   });
 
+  it("adds a log line for a changed score: who, when, and the score before and after", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 70 }),
+        period.day,
+      );
+
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 85 }, { [ani]: 70 }),
+        period.day,
+      );
+
+      const lines = await testScoreLogOf(db, ani);
+      expect(lines).toHaveLength(2);
+      expect(lines.map((line) => [line.scoreBefore, line.scoreAfter])).toEqual(
+        expect.arrayContaining([
+          [null, 70],
+          [70, 85],
+        ]),
+      );
+      for (const line of lines) {
+        expect(line.changedBy).toBe(mentor.id);
+        expect(line.changedAt).toBeInstanceOf(Date);
+      }
+    });
+  });
+
+  it("names the mentor who holds the group today in the log of a score another mentor gave", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, otherMentor, period, ani } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 70 }),
+        period.day,
+      );
+      await replaceTestMentor(db, records.groupId, otherMentor.id, period.day);
+
+      const saved = await saveScores(
+        db,
+        otherMentor,
+        scoresOf(records, { [ani]: 60 }, { [ani]: 70 }),
+        period.day,
+      );
+
+      expect(saved.ok).toBe(true);
+      expect(await testScoreLogOf(db, ani)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            changedBy: otherMentor.id,
+            scoreBefore: 70,
+            scoreAfter: 60,
+          }),
+        ]),
+      );
+    });
+  });
+
+  it("writes nothing for a score that is the one kept: no log line, and the day it was given stays", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, otherMentor, period, ani } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 70 }),
+        period.day,
+      );
+      await replaceTestMentor(db, records.groupId, otherMentor.id, period.day);
+
+      const saved = await saveScores(
+        db,
+        otherMentor,
+        scoresOf(records, { [ani]: 70 }, { [ani]: 70 }),
+        period.day,
+      );
+
+      expect(saved.ok).toBe(true);
+      expect(await testScoreLogOf(db, ani)).toHaveLength(1);
+      expect(await testScoresOf(db, ani)).toEqual([
+        expect.objectContaining({ score: 70, scoredBy: mentor.id }),
+      ]);
+    });
+  });
+
+  it("tells a second window its score changed, with the students it changed for, and keeps the score of the first", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani, budi } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 70 }),
+        period.day,
+      );
+      const fromFirstWindow = scoresOf(records, { [ani]: 85 }, { [ani]: 70 });
+      const fromSecondWindow = scoresOf(
+        records,
+        { [ani]: 60, [budi]: 90 },
+        { [ani]: 70 },
+      );
+      await saveScores(db, mentor, fromFirstWindow, period.day);
+
+      const saved = await saveScores(db, mentor, fromSecondWindow, period.day);
+
+      expect(saved).toEqual(scoresChanged([ani]));
+      expect(await keptScoreOf(db, ani)).toBe(85);
+      expect(await keptScoreOf(db, budi)).toBeNull();
+      expect(await testScoreLogOf(db, ani)).toHaveLength(2);
+    });
+  });
+
+  it("tells a second window that gives a first score that the student has one already", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 70 }),
+        period.day,
+      );
+
+      const saved = await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: 95 }),
+        period.day,
+      );
+
+      expect(saved).toEqual(scoresChanged([ani]));
+      expect(await testScoresOf(db, ani)).toEqual([
+        expect.objectContaining({ score: 70 }),
+      ]);
+    });
+  });
+});
+
+describe("changedSince", () => {
+  it("finds nobody while every score kept is the one the form was opened on", () => {
+    const kept = new Map([["ani", 70]]);
+
+    expect(changedSince({ ani: 70, budi: null }, kept)).toEqual([]);
+  });
+
+  it("finds a student whose score is another now, one who got a first score, and one whose box was opened on a score that is not kept", () => {
+    const kept = new Map([
+      ["ani", 85],
+      ["budi", 60],
+    ]);
+
+    expect(changedSince({ ani: 70, budi: null, cici: 50 }, kept)).toEqual([
+      "ani",
+      "budi",
+      "cici",
+    ]);
+  });
+});
+
+describe("saveScores refused", () => {
   it.each([101, -1, 79.5, Number.NaN])(
     "saves nothing when one score is %d, which is no whole number from 0 to 100",
     async (score) => {

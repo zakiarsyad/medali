@@ -7,6 +7,7 @@ import {
   idsToSend,
   saveButtonWords,
   spokenScore,
+  withoutBoxes,
   withTyped,
 } from "./score-form-values";
 
@@ -137,6 +138,15 @@ describe("afterSave", () => {
     const typed = { scored: "86" };
 
     expect(afterSave(typed, sent, ["scored"])).toEqual({ scored: "86" });
+  });
+});
+
+describe("withoutBoxes", () => {
+  it("forgets what was typed for these students and keeps the rest", () => {
+    const typed = { scored: "85", unscored: "70" };
+
+    expect(withoutBoxes(typed, ["scored", "gone"])).toEqual({ unscored: "70" });
+    expect(withoutBoxes(typed, [])).toEqual(typed);
   });
 });
 

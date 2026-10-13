@@ -9,7 +9,12 @@ import { listActiveMembers } from "./group-meetings";
 import { lockGroup, readMentorOfToday } from "./held-group";
 import { NOT_A_SCORE, type ScoresInput } from "./score-input";
 import { givenRowsFor } from "./visible-scores";
-import { addScore, changeScore, readKeptScores } from "./write-scores";
+import {
+  addScore,
+  changeScore,
+  type KeptScore,
+  readKeptScores,
+} from "./write-scores";
 
 /** What a save answers to any role but Pengasuh. */
 export const NOT_ALLOWED_TO_SCORE = {
@@ -48,6 +53,44 @@ export const NOT_MEMBERS_TO_SCORE = {
 
 export const NOT_SCORES = { ok: false, error: NOT_A_SCORE } as const;
 
+/**
+ * What a save answers when a score kept is not the one its box was
+ * opened on: it was saved in between, by a second press or from another
+ * window. Nothing of the save is kept.
+ */
+export interface ScoresChanged {
+  ok: false;
+  error: string;
+  /** The students whose score changed in between, for the form to show the latest. */
+  changedIds: string[];
+}
+
+export function scoresChanged(changedIds: string[]): ScoresChanged {
+  return {
+    ok: false,
+    error:
+      "Ada nilai yang sudah berubah sejak halaman dibuka, jadi belum ada nilai yang disimpan. Nilai terbarunya sekarang ditampilkan. Ubah lagi bila masih perlu, lalu simpan lagi.",
+    changedIds,
+  };
+}
+
+/**
+ * The students whose kept score is not the one the form was opened on.
+ * `basedOn` holds the score each box was opened on, null for none, and
+ * `kept` the score kept now for each student who has one.
+ */
+export function changedSince(
+  basedOn: Readonly<Record<string, number | null>>,
+  kept: ReadonlyMap<string, number>,
+): string[] {
+  const changedIds: string[] = [];
+  for (const [studentId, before] of Object.entries(basedOn)) {
+    const now = kept.get(studentId) ?? null;
+    if (now !== before) changedIds.push(studentId);
+  }
+  return changedIds;
+}
+
 /** What "Simpan nilai" tells the one who saved. */
 export interface SavedScores {
   /** The students whose score is kept now as it was sent. */
@@ -58,17 +101,19 @@ export interface SavedScores {
  * "Simpan nilai": keeps the scores sent for members of one group in the
  * period that runs on `day`, as the work of the actor, each with a line
  * in the log. A student without a score gets their first; a student who
- * has one gets the new score in its place. Refused, with nothing saved,
- * for any role but Pengasuh, for a group the actor does not hold today,
- * while no period runs, for what is no score, and for a score of someone
- * who is no Aktif member of the group today.
+ * has one gets the new score in its place, and a score that is the one
+ * kept writes nothing. Refused, with nothing saved, for any role but
+ * Pengasuh, for a group the actor does not hold today, while no period
+ * runs, for what is no score, for a score of someone who is no Aktif
+ * member of the group today, and for a form opened on another score than
+ * the one kept now, a second press or a second window.
  */
 export async function saveScores(
   db: Database,
   actor: AccountForAccess,
   input: ScoresInput,
   day: string = campusDay(),
-): Promise<Parsed<SavedScores>> {
+): Promise<Parsed<SavedScores> | ScoresChanged> {
   const limit = givenRowsFor(actor);
   if (limit === null) return NOT_ALLOWED_TO_SCORE;
   const studentIds = Object.keys(input.scores);
@@ -86,14 +131,24 @@ export async function saveScores(
       return NOT_MEMBERS_TO_SCORE;
     }
     const kept = await readKeptScores(tx, period.id, studentIds);
+    const changedIds = changedSince(input.basedOn, scoresOf(kept));
+    if (changedIds.length > 0) return scoresChanged(changedIds);
     for (const [studentId, score] of Object.entries(input.scores)) {
       const keptScore = kept.get(studentId);
       if (keptScore === undefined) {
         await addScore(tx, actor.id, { studentId, periodId: period.id, score });
-      } else {
-        await changeScore(tx, actor.id, keptScore, score);
+        continue;
       }
+      if (keptScore.score === score) continue;
+      await changeScore(tx, actor.id, keptScore, score);
     }
     return { ok: true, value: { savedIds: studentIds } };
   });
+}
+
+/** The score of each kept row, by the id of the student. */
+function scoresOf(kept: ReadonlyMap<string, KeptScore>): Map<string, number> {
+  const scores = new Map<string, number>();
+  for (const [studentId, row] of kept) scores.set(studentId, row.score);
+  return scores;
 }

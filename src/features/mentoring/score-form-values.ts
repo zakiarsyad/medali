@@ -73,6 +73,21 @@ export function withTyped(
   return { ...typed, [studentId]: text };
 }
 
+/**
+ * What was typed, without the boxes of these students: each goes back to
+ * the score kept for its student.
+ */
+export function withoutBoxes(
+  typed: Typed,
+  studentIds: readonly string[],
+): Typed {
+  const left: Record<string, string> = {};
+  for (const [studentId, text] of Object.entries(typed)) {
+    if (!studentIds.includes(studentId)) left[studentId] = text;
+  }
+  return left;
+}
+
 /** What the button reads: how many scores it saves, and no number while nothing is changed. */
 export function saveButtonWords(count: number): string {
   if (count === 0) return "Simpan nilai";

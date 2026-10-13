@@ -9,7 +9,6 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
-import type { FormState } from "@/ui/form-message";
 import type { AttendanceFormState } from "./attendance-form-state";
 import { parseAttendance, sentMarks } from "./attendance-input";
 import { MEETINGS_ADDRESS } from "./meetings-address";
@@ -19,6 +18,7 @@ import { NOTES_ADDRESS } from "./notes-address";
 import { saveAttendance } from "./save-attendance";
 import { saveNote } from "./save-note";
 import { saveScores } from "./save-scores";
+import type { ScoreFormState } from "./score-form-state";
 import { parseScores, sentScores } from "./score-input";
 import { SCORES_ADDRESS } from "./scores-address";
 
@@ -121,24 +121,30 @@ async function scorer(): Promise<Account> {
 
 /**
  * "Simpan nilai". Who gives the scores is the signed-in account, never a
- * field.
+ * field. A save refused for a score that was saved in between reads the
+ * tab anew too, so the form shows the score kept now.
  */
 export async function saveScoresAction(
-  _before: FormState,
+  _before: ScoreFormState,
   form: FormData,
-): Promise<FormState> {
+): Promise<ScoreFormState> {
   const actor = await scorer();
   const parsed = parseScores({
     groupId: text(form, "groupId"),
     scores: sentScores(form),
   });
-  if (!parsed.ok) return { error: parsed.error, done: null };
+  if (!parsed.ok) return { error: parsed.error, done: null, changedIds: [] };
 
   const saved = await saveScores(database(), actor, parsed.value);
-  if (!saved.ok) return { error: saved.error, done: null };
+  if (!saved.ok && "changedIds" in saved) {
+    revalidatePath(SCORES_ADDRESS);
+    return { error: saved.error, done: null, changedIds: saved.changedIds };
+  }
+  if (!saved.ok) return { error: saved.error, done: null, changedIds: [] };
   revalidatePath(SCORES_ADDRESS);
   return {
     error: null,
     done: `${saved.value.savedIds.length} nilai pengasuhan disimpan.`,
+    changedIds: [],
   };
 }

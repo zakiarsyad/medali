@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  basedField,
   parseScores,
   readScore,
   type SentScores,
@@ -15,8 +16,8 @@ function sent(more: Partial<SentScores> = {}): SentScores {
   return {
     groupId: GROUP_ID,
     scores: [
-      [ANI, "88"],
-      [BUDI, "0"],
+      [ANI, "88", ""],
+      [BUDI, "0", "70"],
     ],
     ...more,
   };
@@ -61,9 +62,29 @@ describe("sentScores", () => {
     form.set(scoreField(BUDI), "abc");
 
     expect(sentScores(form)).toEqual([
-      [ANI, "88"],
-      [BUDI, "abc"],
+      [ANI, "88", ""],
+      [BUDI, "abc", ""],
     ]);
+  });
+
+  it("reads beside each score the one its box was opened on, and none for a student without one", () => {
+    const form = new FormData();
+    form.set(scoreField(ANI), "88");
+    form.set(basedField(ANI), "70");
+    form.set(scoreField(BUDI), "60");
+    form.set(basedField(BUDI), "");
+
+    expect(sentScores(form)).toEqual([
+      [ANI, "88", "70"],
+      [BUDI, "60", ""],
+    ]);
+  });
+
+  it("reads no score from what a box was opened on alone", () => {
+    const form = new FormData();
+    form.set(basedField(ANI), "70");
+
+    expect(sentScores(form)).toEqual([]);
   });
 
   it("sends nothing for a box that is empty: a saved score cannot be emptied", () => {
@@ -79,9 +100,22 @@ describe("parseScores", () => {
   it("takes whole numbers from 0 to 100, one for each student", () => {
     expect(parseScores(sent())).toEqual({
       ok: true,
-      value: { groupId: GROUP_ID, scores: { [ANI]: 88, [BUDI]: 0 } },
+      value: {
+        groupId: GROUP_ID,
+        scores: { [ANI]: 88, [BUDI]: 0 },
+        basedOn: { [ANI]: null, [BUDI]: 70 },
+      },
     });
   });
+
+  it.each(["101", "abc", "7.5"])(
+    "refuses a save whose box was opened on %o, which is no score",
+    (basedOn) => {
+      const parsed = parseScores(sent({ scores: [[ANI, "88", basedOn]] }));
+
+      expect(parsed.ok).toBe(false);
+    },
+  );
 
   it.each(["101", "-5", "79.5", "abc", "1e2"])(
     "refuses the whole save when one score is %o, and says what a score is",
@@ -89,8 +123,8 @@ describe("parseScores", () => {
       const parsed = parseScores(
         sent({
           scores: [
-            [ANI, "88"],
-            [BUDI, score],
+            [ANI, "88", ""],
+            [BUDI, score, ""],
           ],
         }),
       );
@@ -119,7 +153,7 @@ describe("parseScores", () => {
   );
 
   it("refuses what is no id of a student", () => {
-    const parsed = parseScores(sent({ scores: [["1 or 1=1", "80"]] }));
+    const parsed = parseScores(sent({ scores: [["1 or 1=1", "80", ""]] }));
 
     expect(parsed.ok).toBe(false);
   });
@@ -128,8 +162,8 @@ describe("parseScores", () => {
     const parsed = parseScores(
       sent({
         scores: [
-          [ANI, "80"],
-          [ANI, "90"],
+          [ANI, "80", ""],
+          [ANI, "90", ""],
         ],
       }),
     );

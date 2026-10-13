@@ -6,7 +6,7 @@ import {
   spokenScore,
   type Typed,
 } from "./score-form-values";
-import { scoreField } from "./score-input";
+import { basedField, scoreField } from "./score-input";
 import type { ScoreRow } from "./score-rows";
 import { SavedState, ScoreRemark, ScoreTable } from "./score-table";
 
@@ -19,6 +19,44 @@ function BoxRemark({ row, typed }: { row: ScoreRow; typed: Typed }) {
     return <span className={shared.badge}>Belum disimpan</span>;
   }
   return <SavedState row={row} />;
+}
+
+/**
+ * The box of one member. A box that is sent carries its name, and with
+ * it goes the score it was opened on, so a score saved in between is
+ * not written over.
+ */
+function ScoreBox({
+  row,
+  typed,
+  isSent,
+  onType,
+}: {
+  row: ScoreRow;
+  typed: Typed;
+  isSent: boolean;
+  onType: OnType;
+}) {
+  return (
+    <>
+      <input
+        className={`${shared.input} ${styles.scoreBox}`}
+        // Not a number box: what is no score stays to be read and corrected.
+        inputMode="numeric"
+        aria-label={`Nilai pengasuhan ${row.name}`}
+        name={isSent ? scoreField(row.id) : undefined}
+        value={boxText(row, typed)}
+        onChange={(event) => onType(row.id, event.target.value)}
+      />
+      {isSent && (
+        <input
+          type="hidden"
+          name={basedField(row.id)}
+          value={row.score ?? ""}
+        />
+      )}
+    </>
+  );
 }
 
 /**
@@ -42,14 +80,11 @@ export function ScoreBoxes({
     <ScoreTable
       rows={rows}
       scoreOf={(row) => (
-        <input
-          className={`${shared.input} ${styles.scoreBox}`}
-          // Not a number box: what is no score stays to be read and corrected.
-          inputMode="numeric"
-          aria-label={`Nilai pengasuhan ${row.name}`}
-          name={sentIds.includes(row.id) ? scoreField(row.id) : undefined}
-          value={boxText(row, typed)}
-          onChange={(event) => onType(row.id, event.target.value)}
+        <ScoreBox
+          row={row}
+          typed={typed}
+          isSent={sentIds.includes(row.id)}
+          onType={onType}
         />
       )}
       remarkOf={(row) => (

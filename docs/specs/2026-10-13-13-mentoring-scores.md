@@ -151,6 +151,14 @@ it is built here.
     such as a tab, another group, the menu or a mentee's name, and
     loading the page anew or closing it. The browser's own step back is
     not asked about.
+21. A save tells which score each of its boxes was opened on. When one
+    of them was saved in between, from another window or by a second
+    press, nothing of that save is kept: the message says so, the boxes
+    it concerns show the score kept now, and what was typed in the
+    other boxes stays to be saved again.
+22. A score sent that is the one kept writes nothing and adds no log
+    line, as a save of an unchanged attendance list does.
+23. The log is kept in the database only. No screen shows it yet.
 
 ## Steps
 
@@ -160,5 +168,5 @@ it is built here.
   permission list, with their checks.
 - [x] 3. The tab with the numbers, the rubric and the table, read only.
 - [x] 4. Pengasuh types and saves scores.
-- [ ] 5. Changed scores, the log and the two-window case.
+- [x] 5. Changed scores, the log and the two-window case.
 - [ ] 6. Refusals and the phone layout.

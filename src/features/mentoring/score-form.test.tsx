@@ -92,6 +92,20 @@ describe("ScoreBoxes", () => {
     expect(scored).not.toContain('name="score.');
     expect(unscored).toContain(`name="score.${UNSCORED.id}"`);
   });
+
+  it("sends with each such box the score it was opened on, so a score saved in between is not written over", () => {
+    const typed = { [SCORED.id]: "70", [UNSCORED.id]: "90" };
+    const [scored, unscored] = rowsWith(typed, [SCORED.id, UNSCORED.id]);
+    const [untouched] = rowsWith({});
+
+    expect(scored).toContain(
+      `<input type="hidden" name="based.${SCORED.id}" value="88"/>`,
+    );
+    expect(unscored).toContain(
+      `<input type="hidden" name="based.${UNSCORED.id}" value=""/>`,
+    );
+    expect(untouched).not.toContain('name="based.');
+  });
 });
 
 describe("ScoreForm", () => {
