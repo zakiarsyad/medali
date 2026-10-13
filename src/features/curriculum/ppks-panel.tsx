@@ -9,13 +9,14 @@ import { type PpksActivity, wordsOf } from "./ppks-activities";
 import { PpksForm } from "./ppks-form";
 import { PpksTable } from "./ppks-table";
 
-/** What the form is open for: a new activity, or one to change. */
-type Open = "new" | PpksActivity | null;
+/** What an activity form is open for: a new activity, or one to change. */
+export type FormTarget = "new" | PpksActivity;
 
 /**
  * One list of activities with the form to add or change one: the PPKS
  * activities of one semester, or the special and additional ones when
- * there is no semester.
+ * there is no semester. The page holds which form is open, as only one
+ * is open at a time over all its lists.
  */
 export function PpksPanel({
   semester,
@@ -23,6 +24,10 @@ export function PpksPanel({
   activities,
   values,
   mayManage,
+  newActivityId,
+  open,
+  isFormOpen,
+  onOpen,
 }: {
   semester: number | null;
   /** The line under the heading. */
@@ -30,19 +35,26 @@ export function PpksPanel({
   activities: PpksActivity[];
   values: ValueIndicators[];
   mayManage: boolean;
+  /** The key for the next activity a form adds. */
+  newActivityId: string;
+  /** What the form of this list is open for, or null while it is closed. */
+  open: FormTarget | null;
+  /** Whether a form is open in any list of the page. */
+  isFormOpen: boolean;
+  /** Opens the form of this list, or closes it with null. */
+  onOpen: (target: FormTarget | null) => void;
 }) {
-  const [open, setOpen] = useState<Open>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const words = wordsOf(semester);
 
-  function openFor(target: Open) {
+  function openFor(target: FormTarget) {
     setSaved(null);
-    setOpen(target);
+    onOpen(target);
   }
 
   function showSaved(message: string) {
     setSaved(message);
-    setOpen(null);
+    onOpen(null);
   }
 
   return (
@@ -52,7 +64,7 @@ export function PpksPanel({
           <h2 className={shared.heading}>{words.heading}</h2>
           <p className={shared.detail}>{note}</p>
         </div>
-        {mayManage && !open && (
+        {mayManage && !isFormOpen && (
           <button
             type="button"
             className={shared.button}
@@ -72,9 +84,10 @@ export function PpksPanel({
           key={open === "new" ? "new" : open.id}
           semester={semester}
           activity={open === "new" ? null : open}
+          newActivityId={newActivityId}
           values={values}
           onSaved={showSaved}
-          onCancel={() => setOpen(null)}
+          onCancel={() => onOpen(null)}
         />
       )}
       <PpksTable

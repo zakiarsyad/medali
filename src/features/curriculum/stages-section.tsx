@@ -6,7 +6,7 @@ import { BreakdownPanel } from "./breakdown-panel";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
 import type { PpksActivity } from "./ppks-activities";
-import { PpksPanel } from "./ppks-panel";
+import { type FormTarget, PpksPanel } from "./ppks-panel";
 import type { TahapBreakdown } from "./stage-breakdown";
 import { type Parity, semesterOf, TAHAP } from "./stages";
 
@@ -19,9 +19,20 @@ const SPECIAL_NOTE =
   "Daftar kegiatan di luar PPKS. Setelah terdaftar di sini, kegiatan dapat dijadwalkan di menu Kegiatan karakter untuk mahasiswa tertentu, kelas, angkatan, atau lintas angkatan.";
 
 /**
+ * The one activity form open on the page: the list it belongs to, by its
+ * semester or by none, and what it is open for.
+ */
+interface OpenForm {
+  semester: number | null;
+  target: FormTarget;
+}
+
+/**
  * The semester choice and the four tahap, with the PPKS activities of the
  * chosen semester and the breakdown of the chosen tahap below. The special
  * and additional activities come last: they follow no semester or tahap.
+ * Both lists of activities share one open form, so only one is open at a
+ * time.
  */
 export function StagesSection({
   tahapNo,
@@ -31,6 +42,7 @@ export function StagesSection({
   values,
   mayChange,
   mayManage,
+  newActivityId,
 }: {
   /** The chosen tahap, from 1 to 4. */
   tahapNo: number;
@@ -42,12 +54,38 @@ export function StagesSection({
   values: ValueIndicators[];
   mayChange: boolean;
   mayManage: boolean;
+  /** The key for the next activity a form adds. */
+  newActivityId: string;
 }) {
   const [parity, setParity] = useState<Parity>("odd");
   const semester = semesterOf(tahapNo, parity);
   const tahap = TAHAP.find((candidate) => candidate.no === tahapNo);
   const half = PARITIES.find((choice) => choice.parity === parity);
   const breakdown = breakdowns.find((shown) => shown.tahapNo === tahapNo);
+  const [open, setOpen] = useState<OpenForm | null>(null);
+
+  // The form of a semester goes with its semester. The form of the special
+  // activities stays: they follow no semester.
+  function closeSemesterForm() {
+    if (open && open.semester !== null) setOpen(null);
+  }
+
+  /** What the list of one semester, or of the special activities, is given. */
+  function listOf(listSemester: number | null) {
+    return {
+      semester: listSemester,
+      activities: activities.filter(
+        (activity) => activity.semester === listSemester,
+      ),
+      values,
+      mayManage,
+      newActivityId,
+      open: open?.semester === listSemester ? open.target : null,
+      isFormOpen: open !== null,
+      onOpen: (target: FormTarget | null) =>
+        setOpen(target && { semester: listSemester, target }),
+    };
+  }
 
   return (
     <section>
@@ -60,7 +98,10 @@ export function StagesSection({
               type="button"
               className={styles.choiceButton}
               aria-pressed={choice.parity === parity}
-              onClick={() => setParity(choice.parity)}
+              onClick={() => {
+                closeSemesterForm();
+                setParity(choice.parity);
+              }}
             >
               {choice.label}
             </button>
@@ -74,7 +115,10 @@ export function StagesSection({
             type="button"
             className={styles.stageBox}
             aria-pressed={tahap.no === tahapNo}
-            onClick={() => onChoose(tahap.no)}
+            onClick={() => {
+              closeSemesterForm();
+              onChoose(tahap.no);
+            }}
           >
             <span className={styles.stageNo}>
               Tahap {tahap.no} · tingkat {tahap.no} · semester{" "}
@@ -88,13 +132,8 @@ export function StagesSection({
       {/* The key: an open form and its message belong to one semester. */}
       <PpksPanel
         key={semester}
-        semester={semester}
+        {...listOf(semester)}
         note={`Tahap ${tahap?.name.toLowerCase()}, semester ${half?.short}. Daftar kegiatan tanpa tanggal.`}
-        activities={activities.filter(
-          (activity) => activity.semester === semester,
-        )}
-        values={values}
-        mayManage={mayManage}
       />
       {/* The key: an open form and its message belong to one tahap. It is
           named, so it never equals the semester key of the panel above. */}
@@ -107,14 +146,7 @@ export function StagesSection({
           mayChange={mayChange}
         />
       )}
-      <PpksPanel
-        key="special"
-        semester={null}
-        note={SPECIAL_NOTE}
-        activities={activities.filter((activity) => activity.semester === null)}
-        values={values}
-        mayManage={false}
-      />
+      <PpksPanel key="special" {...listOf(null)} note={SPECIAL_NOTE} />
     </section>
   );
 }

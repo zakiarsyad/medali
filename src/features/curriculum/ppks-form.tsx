@@ -32,6 +32,7 @@ const START: FormState = { error: null, done: null };
 export function PpksForm({
   semester,
   activity,
+  newActivityId,
   values,
   onSaved,
   onCancel,
@@ -39,6 +40,8 @@ export function PpksForm({
   semester: number | null;
   /** The activity to change, or null to add a new one. */
   activity: PpksActivity | null;
+  /** The key of the activity this form adds, so two presses add it once. */
+  newActivityId: string;
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
   onSaved: (message: string) => void;
@@ -46,6 +49,9 @@ export function PpksForm({
 }) {
   const [chosen, setChosen] = useState<ValueKey[]>(activity?.valueKeys ?? []);
   const [ticked, setTicked] = useState(activity?.indicatorCodes ?? []);
+  // Kept as it was when the form opened: the page gets a new key whenever
+  // it is read again, and two presses of "Simpan" must send the same one.
+  const [newId] = useState(newActivityId);
 
   function toggleValue(key: ValueKey) {
     const left = toggled(chosen, key);
@@ -80,7 +86,10 @@ export function PpksForm({
         {activity ? "Ubah kegiatan" : wordsOf(semester).newTitle}
       </h3>
       <input type="hidden" name="semester" value={semester ?? ""} />
-      {activity && <input type="hidden" name="id" value={activity.id} />}
+      <input type="hidden" name="id" value={activity?.id ?? newId} />
+      {activity && (
+        <input type="hidden" name="version" value={activity.version} />
+      )}
       <div className={shared.form}>
         <label className={`${shared.field} ${styles.full}`}>
           Nama kegiatan

@@ -119,7 +119,7 @@ The issue did not say, so these were decided:
   additional, with who changed them and when; sample data adds two.
 - [x] 2. The page shows the "Kegiatan khusus dan tambahan" panel and its
   table.
-- [ ] 3. "Tambah kegiatan khusus" adds an activity, reusing the PPKS
+- [x] 3. "Tambah kegiatan khusus" adds an activity, reusing the PPKS
   form.
 - [ ] 4. "Ubah" changes an activity.
 - [ ] 5. "Hapus" removes it after a confirm, with "Urungkan".

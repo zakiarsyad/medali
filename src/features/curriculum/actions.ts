@@ -83,11 +83,13 @@ export async function savePpksActivityAction(
     isRequired: text(form, "required") === "on",
     description: text(form, "description"),
   };
-  // A form with an id changes that activity; one without adds a new one.
+  // A form with a version changes the activity it was opened for; one
+  // without adds a new one under the key it made.
   const id = text(form, "id");
+  const version = text(form, "version");
   const saved =
-    id === ""
-      ? await addPpksActivity(database(), manager, sent)
+    version === ""
+      ? await addPpksActivity(database(), manager, id, sent)
       : await changePpksActivity(database(), manager, id, sent);
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);

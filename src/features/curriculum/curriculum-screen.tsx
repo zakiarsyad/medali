@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { database } from "@/db/database";
 import { PageHead } from "@/ui/page-head";
 import { BaseScorePanel } from "./base-score-panel";
@@ -45,6 +46,7 @@ export async function CurriculumScreen({
           note: changeNote(changed, "Diperbarui", "Isi awal."),
         }))}
         mayManageActivities={mayManageActivities}
+        newActivityId={randomUUID()}
       >
         <BaseScorePanel
           score={baseScore.score}

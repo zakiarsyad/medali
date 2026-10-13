@@ -10,8 +10,14 @@ import {
   removePpksActivity,
 } from "./change-ppks-activity";
 import { ACTIVITIES_NOT_ALLOWED } from "./not-allowed";
+import type { SentPpksActivity } from "./ppks-activity-input";
 import { readPpksActivities } from "./stored-ppks-activities";
-import { addTestActor, SENT_PPKS_ACTIVITY } from "./test-records";
+import {
+  addTestActor,
+  NEW_ACTIVITY_ID,
+  SENT_PPKS_ACTIVITY,
+  SENT_SPECIAL_ACTIVITY,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -28,12 +34,13 @@ const CHANGED = {
 };
 
 /** Adds the activity of the checks as a made-up Kepala Unit; gives its id. */
-async function addKept(db: Database): Promise<string> {
+async function addKept(
+  db: Database,
+  sent: SentPpksActivity = SENT_PPKS_ACTIVITY,
+): Promise<string> {
   const adder = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
-  await addPpksActivity(db, adder, SENT_PPKS_ACTIVITY);
-  const [kept] = await readPpksActivities(db);
-  if (!kept) throw new Error("The activity was not added.");
-  return kept.id;
+  await addPpksActivity(db, adder, NEW_ACTIVITY_ID, sent);
+  return NEW_ACTIVITY_ID;
 }
 
 describe("changePpksActivity", () => {
@@ -128,6 +135,37 @@ describe("changePpksActivity", () => {
       expect(changed).toEqual(ACTIVITY_NOT_FOUND);
       const [kept] = await readPpksActivities(db);
       expect(kept?.semester).toBe(3);
+      expect(kept?.name).toBe("Kegiatan uji");
+    });
+  });
+
+  it("does not make a PPKS activity a special one", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+
+      const changed = await changePpksActivity(db, actor, id, {
+        ...CHANGED,
+        semester: "",
+      });
+
+      expect(changed).toEqual(ACTIVITY_NOT_FOUND);
+      const [kept] = await readPpksActivities(db);
+      expect(kept?.semester).toBe(3);
+      expect(kept?.name).toBe("Kegiatan uji");
+    });
+  });
+
+  it("does not move a special activity to a semester", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db, SENT_SPECIAL_ACTIVITY);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+
+      const changed = await changePpksActivity(db, actor, id, CHANGED);
+
+      expect(changed).toEqual(ACTIVITY_NOT_FOUND);
+      const [kept] = await readPpksActivities(db);
+      expect(kept?.semester).toBeNull();
       expect(kept?.name).toBe("Kegiatan uji");
     });
   });

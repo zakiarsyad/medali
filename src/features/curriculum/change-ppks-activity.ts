@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -17,9 +17,26 @@ export const ACTIVITY_NOT_FOUND = {
 } as const;
 
 /**
- * Changes a PPKS activity that is not removed, with who changed it and
- * when. Its semester stays: one sent for another semester is not found.
- * Gives back the name that was kept.
+ * Matches the activity with that id when it is not removed and of the
+ * same kind: a PPKS one of that semester, or a special or additional one
+ * when there is no semester.
+ */
+function keptOfKind(id: string, semester: number | null): SQL | undefined {
+  const sameKind =
+    semester === null
+      ? isNull(ppksActivities.semester)
+      : eq(ppksActivities.semester, semester);
+  return and(
+    eq(ppksActivities.id, id),
+    sameKind,
+    isNull(ppksActivities.deletedAt),
+  );
+}
+
+/**
+ * Changes an activity that is not removed, with who changed it and when.
+ * Its kind and its semester stay: one sent for another semester, or as
+ * the other kind, is not found. Gives back the name that was kept.
  */
 export async function changePpksActivity(
   db: Database,
@@ -35,20 +52,14 @@ export async function changePpksActivity(
   const [changed] = await db
     .update(ppksActivities)
     .set({ ...parsed.value, changedAt: new Date(), changedBy: actor.id })
-    .where(
-      and(
-        eq(ppksActivities.id, id),
-        eq(ppksActivities.semester, parsed.value.semester),
-        isNull(ppksActivities.deletedAt),
-      ),
-    )
+    .where(keptOfKind(id, parsed.value.semester))
     .returning({ id: ppksActivities.id });
   if (!changed) return ACTIVITY_NOT_FOUND;
   return { ok: true, value: parsed.value.name };
 }
 
 /**
- * Marks a PPKS activity as removed, with who removed it and when. Nothing
+ * Marks an activity as removed, with who removed it and when. Nothing
  * is erased, so a schedule made from it can still refer to it.
  */
 export async function removePpksActivity(
