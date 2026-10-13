@@ -153,7 +153,7 @@ decided:
   checks that guard it today.
 - [x] 2. The first deploy after this work starts it over once, by a
   mark in the database.
-- [ ] 3. The files of the preview of `main` are started over together
+- [x] 3. The files of the preview of `main` are started over together
   with its database.
 - [ ] 4. `docs/HOSTING.md` and `CLAUDE.md` say what a deploy of `main`
   does to its database.

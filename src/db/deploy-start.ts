@@ -39,3 +39,20 @@ export async function noteStart(db: PostgresJsDatabase): Promise<void> {
     sql`insert into medali_deploy.sample_data_start default values`,
   );
 }
+
+/** Whether a start still waits for its files to be emptied. */
+export async function startWaitsForFiles(
+  db: PostgresJsDatabase,
+): Promise<boolean> {
+  if (!(await hasStartTable(db))) return false;
+  const waiting = await db.execute(sql`
+    select 1 from medali_deploy.sample_data_start
+    where not files_emptied limit 1`);
+  return waiting.length > 0;
+}
+
+export async function noteFilesEmptied(db: PostgresJsDatabase): Promise<void> {
+  await db.execute(sql`
+    update medali_deploy.sample_data_start set files_emptied = true
+    where not files_emptied`);
+}

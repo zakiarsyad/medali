@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { hasStartMark, noteStart } from "./deploy-start";
+import {
+  hasStartMark,
+  noteFilesEmptied,
+  noteStart,
+  startWaitsForFiles,
+} from "./deploy-start";
 import { markDatabase } from "./deploy-target";
 import { rebuildTables } from "./rebuild";
 import { withEmptyTestDatabase } from "./test-database-alone";
@@ -23,5 +28,25 @@ describe("the mark of a start with sample data", () => {
     await rebuildTables(own.db);
 
     expect(await hasStartMark(own.db)).toBe(true);
+  });
+
+  it("says a start waits for its files until they are noted as emptied", async () => {
+    expect(await startWaitsForFiles(own.db)).toBe(true);
+
+    await noteFilesEmptied(own.db);
+
+    expect(await startWaitsForFiles(own.db)).toBe(false);
+
+    await noteStart(own.db);
+
+    expect(await startWaitsForFiles(own.db)).toBe(true);
+  });
+});
+
+describe("a database with no mark of a start", () => {
+  const own = withEmptyTestDatabase("deploystartnone");
+
+  it("has no start that waits for its files", async () => {
+    expect(await startWaitsForFiles(own.db)).toBe(false);
   });
 });
