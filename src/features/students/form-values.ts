@@ -1,11 +1,18 @@
 import type { FormState } from "@/ui/form-message";
+import { NO_GROUP } from "./group-choice-words";
 import { CATEGORIES } from "./labels";
-import type { StudentFields, StudentInput } from "./student-input";
+import type { StoredStudent, StudentFields } from "./student-input";
+
+/** The student form with the choice that is not part of the record. */
+export interface StudentFormFields extends StudentFields {
+  /** The kelompok pengasuhan chosen, or empty for "Belum ditetapkan". */
+  mentorGroupId: string;
+}
 
 /** What the student form says back after it is sent. */
 export interface StudentFormState extends FormState {
   /** What was typed in a refused form, so that it is not lost. */
-  values: StudentFields | null;
+  values: StudentFormFields | null;
   /** How many times the form was sent. The form is drawn anew each time. */
   attempt: number;
 }
@@ -20,7 +27,7 @@ export const START: StudentFormState = {
 export function refusedForm(
   before: StudentFormState,
   error: string,
-  values: StudentFields,
+  values: StudentFormFields,
 ): StudentFormState {
   return { error, done: null, values, attempt: before.attempt + 1 };
 }
@@ -38,8 +45,8 @@ export function savedForm(
  */
 export function formShows(
   state: StudentFormState,
-  start: StudentFields,
-): StudentFields {
+  start: StudentFormFields,
+): StudentFormFields {
   return state.values ?? start;
 }
 
@@ -54,9 +61,9 @@ interface FirstChoices {
  * or the first choices for a new one.
  */
 export function formValues(
-  student: StudentInput | null,
+  student: StoredStudent | null,
   first: FirstChoices,
-): StudentFields {
+): StudentFormFields {
   if (!student) {
     return {
       ...first,
@@ -70,6 +77,7 @@ export function formValues(
       originAgency: "",
       status: "active",
       categories: [],
+      mentorGroupId: NO_GROUP,
     };
   }
   return {
@@ -87,5 +95,6 @@ export function formValues(
     categories: CATEGORIES.map((category) => category.field).filter(
       (field) => student[field],
     ),
+    mentorGroupId: student.mentorGroupId ?? NO_GROUP,
   };
 }

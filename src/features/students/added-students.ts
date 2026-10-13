@@ -3,14 +3,31 @@ import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
 import {
   accounts,
+  mentorGroupMembers,
+  mentorGroupMentors,
+  mentorGroups,
   studentBatchFiles,
   students,
   studyPrograms,
 } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { dormInSql } from "@/dorms/resident-condition";
+import {
+  GROUP_COLUMNS,
+  GROUP_IN_FORCE,
+  GROUP_MENTOR,
+  GROUP_PROGRAM,
+  type GroupColumns,
+  groupMentor,
+  groupProgram,
+  HELD_TODAY,
+  IN_NO_GROUP,
+  IS_MEMBER,
+  type ListedGroup,
+  listedGroupOf,
+} from "./listed-group";
 import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
-import type { StudentInput } from "./student-input";
+import type { StoredStudent } from "./student-input";
 
 /** The most rows the list shows. More than that is found by searching. */
 export const LIST_LIMIT = 100;
@@ -60,6 +77,8 @@ export interface AddedStudent {
   fileId: string | null;
   /** The dorm the student lives in today. Null for one who lives in none. */
   dorm: DormId | null;
+  /** The group in force the student is in. Null for one who is in none. */
+  group: ListedGroup | null;
 }
 
 export interface StudentCounts {
@@ -70,6 +89,8 @@ export interface StudentCounts {
   addedActive: number;
   /** Those put in here who live in a dorm today. */
   addedResidents: number;
+  /** The Aktif ones put in here who are in no group in force. */
+  addedWithoutGroup: number;
 }
 
 const putInHere = isNotNull(students.inputAt);
@@ -78,9 +99,25 @@ const isActive = eq(students.status, "active");
 /** A student put in through Pengguna baru mahasiswa and not removed. */
 export const ADDED_HERE = and(putInHere, NOT_REMOVED);
 
+type StoredRow = Omit<AddedStudent, "group"> & GroupColumns;
+
+/** One row with its group columns gathered into the group they tell of. */
+function withGroup(row: StoredRow): AddedStudent {
+  const {
+    groupCohortYear,
+    groupEntryPath,
+    groupNumber,
+    groupProgramCode,
+    groupMentorName,
+    ...student
+  } = row;
+  return { ...student, group: listedGroupOf(row) };
+}
+
 /**
  * The students put in through Pengguna baru mahasiswa that match a search,
  * the newest first: at most `LIST_LIMIT` rows, and how many match in all.
+ * Each comes with their group in force, joined in the same read.
  * `dormCohorts` are the angkatan years that live in the dorm today.
  */
 export async function listAddedStudents(
@@ -94,7 +131,7 @@ export async function listAddedStudents(
     .from(students)
     .where(condition);
   const rows = await db
-    .select({ ...ROW, dorm: dormInSql(dormCohorts) })
+    .select({ ...ROW, ...GROUP_COLUMNS, dorm: dormInSql(dormCohorts) })
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .leftJoin(accounts, eq(accounts.studentId, students.id))
@@ -103,10 +140,15 @@ export async function listAddedStudents(
       studentBatchFiles,
       eq(studentBatchFiles.batchId, students.inputBatchId),
     )
+    .leftJoin(mentorGroupMembers, IS_MEMBER)
+    .leftJoin(mentorGroups, GROUP_IN_FORCE)
+    .leftJoin(groupProgram, GROUP_PROGRAM)
+    .leftJoin(mentorGroupMentors, HELD_TODAY)
+    .leftJoin(groupMentor, GROUP_MENTOR)
     .where(condition)
     .orderBy(desc(students.inputAt), asc(students.name))
     .limit(LIST_LIMIT);
-  return { students: rows, matching: counted?.matching ?? 0 };
+  return { students: rows.map(withGroup), matching: counted?.matching ?? 0 };
 }
 
 const INPUT = {
@@ -125,20 +167,24 @@ const INPUT = {
   isSeedling: students.isSeedling,
   isInternational: students.isInternational,
   isBlended: students.isBlended,
+  mentorGroupId: mentorGroupMembers.groupId,
+  version: students.version,
 };
 
 /**
  * What the form holds for one student put in through Pengguna baru
- * mahasiswa, or null when there is no such student or they were removed.
+ * mahasiswa, with the group they are in, or null when there is no such
+ * student or they were removed.
  */
 export async function findAddedStudent(
   db: Database,
   nim: string,
-): Promise<StudentInput | null> {
+): Promise<StoredStudent | null> {
   const [found] = await db
     .select(INPUT)
     .from(students)
     .leftJoin(accounts, eq(accounts.studentId, students.id))
+    .leftJoin(mentorGroupMembers, eq(mentorGroupMembers.studentId, students.id))
     .where(and(eq(students.nim, nim), ADDED_HERE))
     .limit(1);
   return found ?? null;
@@ -153,15 +199,20 @@ export async function countStudents(
   dormCohorts: number[],
 ): Promise<StudentCounts> {
   const isResident = sql`${dormInSql(dormCohorts)} is not null`;
+  const addedActive = sql`${putInHere} and ${isActive}`;
   const [counted] = await db
     .select({
       total: count(),
       active: countWhere(isActive),
       added: countWhere(putInHere),
-      addedActive: countWhere(sql`${putInHere} and ${isActive}`),
+      addedActive: countWhere(addedActive),
       addedResidents: countWhere(sql`${putInHere} and ${isResident}`),
+      addedWithoutGroup: countWhere(sql`${addedActive} and ${IN_NO_GROUP}`),
     })
     .from(students)
+    // A student is in one group at most, so these add no rows to count.
+    .leftJoin(mentorGroupMembers, IS_MEMBER)
+    .leftJoin(mentorGroups, GROUP_IN_FORCE)
     .where(NOT_REMOVED);
   if (!counted) throw new Error("The students were not counted.");
   return counted;

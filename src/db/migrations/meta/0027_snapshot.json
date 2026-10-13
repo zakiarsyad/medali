@@ -1,5 +1,5 @@
 {
-  "id": "ce0d230e-f0b7-40ac-afd3-d31487feae1a",
+  "id": "060b654c-fd20-4b4d-b3c3-8ca2c50d8aab",
   "prevId": "d142b313-2fac-487c-9839-b4d7eaae059f",
   "version": "7",
   "dialect": "postgresql",
@@ -350,114 +350,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.activity_attendance_changes": {
-      "name": "activity_attendance_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "attendance_id": {
-          "name": "attendance_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "status_before": {
-          "name": "status_before",
-          "type": "activity_attendance_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "note_before": {
-          "name": "note_before",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status_after": {
-          "name": "status_after",
-          "type": "activity_attendance_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note_after": {
-          "name": "note_after",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "activity_attendance_changes_attendance": {
-          "name": "activity_attendance_changes_attendance",
-          "columns": [
-            {
-              "expression": "attendance_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "activity_attendance_changes_attendance_id_activity_attendances_id_fk": {
-          "name": "activity_attendance_changes_attendance_id_activity_attendances_id_fk",
-          "tableFrom": "activity_attendance_changes",
-          "tableTo": "activity_attendances",
-          "columnsFrom": [
-            "attendance_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "activity_attendance_changes_changed_by_accounts_id_fk": {
-          "name": "activity_attendance_changes_changed_by_accounts_id_fk",
-          "tableFrom": "activity_attendance_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1854,6 +1746,131 @@
         "mentor_evaluations_values_0_to_100": {
           "name": "mentor_evaluations_values_0_to_100",
           "value": "\"mentor_evaluations\".\"activity\" between 0 and 100 and \"mentor_evaluations\".\"attendance\" between 0 and 100 and \"mentor_evaluations\".\"achievement\" between 0 and 100 and \"mentor_evaluations\".\"feedback\" between 0 and 100"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.mentor_group_member_changes": {
+      "name": "mentor_group_member_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_before": {
+          "name": "group_before",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "group_after": {
+          "name": "group_after",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "mentor_group_member_changes_student": {
+          "name": "mentor_group_member_changes_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mentor_group_member_changes_student_id_students_id_fk": {
+          "name": "mentor_group_member_changes_student_id_students_id_fk",
+          "tableFrom": "mentor_group_member_changes",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mentor_group_member_changes_group_before_mentor_groups_id_fk": {
+          "name": "mentor_group_member_changes_group_before_mentor_groups_id_fk",
+          "tableFrom": "mentor_group_member_changes",
+          "tableTo": "mentor_groups",
+          "columnsFrom": [
+            "group_before"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mentor_group_member_changes_group_after_mentor_groups_id_fk": {
+          "name": "mentor_group_member_changes_group_after_mentor_groups_id_fk",
+          "tableFrom": "mentor_group_member_changes",
+          "tableTo": "mentor_groups",
+          "columnsFrom": [
+            "group_after"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mentor_group_member_changes_changed_by_accounts_id_fk": {
+          "name": "mentor_group_member_changes_changed_by_accounts_id_fk",
+          "tableFrom": "mentor_group_member_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "mentor_group_member_changes_group_differs": {
+          "name": "mentor_group_member_changes_group_differs",
+          "value": "\"mentor_group_member_changes\".\"group_before\" is distinct from \"mentor_group_member_changes\".\"group_after\""
         }
       },
       "isRLSEnabled": false

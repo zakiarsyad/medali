@@ -16,9 +16,10 @@ import {
   findAddedStudent,
   listAddedStudents,
 } from "./added-students";
-import { changeStudent, NOT_FOUND, removeStudent } from "./change-student";
+import { NOT_FOUND, removeStudent } from "./change-student";
 import { inputStudent, NOT_ALLOWED } from "./input-student";
 import type { StudentInput } from "./student-input";
+import { changeTestStudent } from "./test-changes";
 import {
   addTestActor,
   addTestProgram,
@@ -104,14 +105,18 @@ describe("findAddedStudent", () => {
 
       const found = await findAddedStudent(db, "9900000501");
 
-      expect(found).toEqual(student("9900000501", program));
+      expect(found).toEqual({
+        ...student("9900000501", program),
+        mentorGroupId: null,
+        version: 1,
+      });
     });
   });
 
   it("gives the address the student's account holds", async () => {
     await inTestDatabase(async (db) => {
       const { program, staff } = await addThroughTab(db, "9900000521");
-      await changeStudent(
+      await changeTestStudent(
         db,
         staff,
         student("9900000521", program, "ubah.uji@kampus.example"),
@@ -154,7 +159,7 @@ describe("changeStudent", () => {
           isBlended: true,
         };
 
-        const done = await changeStudent(db, editor, changed);
+        const done = await changeTestStudent(db, editor, changed);
 
         expect(done.ok).toBe(true);
         const record = await recordOf(db, "9900000503");
@@ -175,7 +180,7 @@ describe("changeStudent", () => {
       const { program, staff } = await addThroughTab(db, "9900000522");
       const record = await recordOf(db, "9900000522");
       const saveWith = (email: string | null) =>
-        changeStudent(db, staff, student("9900000522", program, email));
+        changeTestStudent(db, staff, student("9900000522", program, email));
 
       expect((await saveWith("satu.uji@kampus.example")).ok).toBe(true);
       expect((await accountOf(db, record.id)).email).toBe(
@@ -194,9 +199,9 @@ describe("changeStudent", () => {
     await inTestDatabase(async (db) => {
       const { program, staff } = await addThroughTab(db, "9900000523");
       const email = "tetap.uji@kampus.example";
-      await changeStudent(db, staff, student("9900000523", program, email));
+      await changeTestStudent(db, staff, student("9900000523", program, email));
 
-      const done = await changeStudent(db, staff, {
+      const done = await changeTestStudent(db, staff, {
         ...student("9900000523", program, email),
         name: "Ubah Uji Tetap",
       });
@@ -219,12 +224,20 @@ describe("changeStudent", () => {
       await inTestDatabase(async (db) => {
         const { program, staff } = await addThroughTab(db, "9900000525");
         const before = "lama.uji@kampus.example";
-        await changeStudent(db, staff, student("9900000525", program, before));
+        await changeTestStudent(
+          db,
+          staff,
+          student("9900000525", program, before),
+        );
         const record = await recordOf(db, "9900000525");
         const account = await accountOf(db, record.id);
         const token = await startSession(db, account.id, NOW);
 
-        await changeStudent(db, staff, student("9900000525", program, after));
+        await changeTestStudent(
+          db,
+          staff,
+          student("9900000525", program, after),
+        );
 
         expect(await sessionAccount(db, token, NOW)).toBeNull();
         expect(await activeAccountIdByEmail(db, before)).toBeNull();
@@ -236,12 +249,12 @@ describe("changeStudent", () => {
     await inTestDatabase(async (db) => {
       const { program, staff } = await addThroughTab(db, "9900000526");
       const email = "masuk.tetap@kampus.example";
-      await changeStudent(db, staff, student("9900000526", program, email));
+      await changeTestStudent(db, staff, student("9900000526", program, email));
       const record = await recordOf(db, "9900000526");
       const account = await accountOf(db, record.id);
       const token = await startSession(db, account.id, NOW);
 
-      await changeStudent(db, staff, {
+      await changeTestStudent(db, staff, {
         ...student("9900000526", program, email),
         name: "Ubah Uji Masuk",
       });
@@ -257,7 +270,7 @@ describe("changeStudent", () => {
       const email = "dipakai.ubah@kampus.example";
       await db.insert(accounts).values({ name: "Pegawai Lain", email });
 
-      const done = await changeStudent(db, staff, {
+      const done = await changeTestStudent(db, staff, {
         ...student("9900000524", program, email),
         name: "Tidak Tersimpan",
       });
@@ -284,7 +297,7 @@ describe("changeStudent", () => {
       const first = "catat.satu@kampus.example";
       const second = "catat.dua@kampus.example";
       const saveWith = (email: string | null) =>
-        changeStudent(db, changer, student("9900000527", program, email));
+        changeTestStudent(db, changer, student("9900000527", program, email));
 
       await saveWith(first);
       await saveWith(first);
@@ -312,7 +325,7 @@ describe("changeStudent", () => {
       const record = await recordOf(db, "9900000528");
       const account = await accountOf(db, record.id);
 
-      await changeStudent(db, staff, student("9900000528", program, email));
+      await changeTestStudent(db, staff, student("9900000528", program, email));
 
       expect(await emailLinesOf(db, account.id)).toEqual([]);
     });
@@ -325,7 +338,7 @@ describe("changeStudent", () => {
       const record = await recordOf(db, "9900000529");
       const account = await accountOf(db, record.id);
 
-      const done = await changeStudent(
+      const done = await changeTestStudent(
         db,
         other,
         student("9900000529", program, "tanpa.hak@kampus.example"),
@@ -341,7 +354,7 @@ describe("changeStudent", () => {
     await inTestDatabase(async (db) => {
       const { program, staff } = await addThroughTab(db, "9900000530");
       const kept = "milik.uji@kampus.example";
-      await changeStudent(db, staff, student("9900000530", program, kept));
+      await changeTestStudent(db, staff, student("9900000530", program, kept));
       const record = await recordOf(db, "9900000530");
       const account = await accountOf(db, record.id);
       const [own] = (await accountsInRoleOrder(db)).filter(
@@ -349,7 +362,7 @@ describe("changeStudent", () => {
       );
       if (!own) throw new Error("The student account is gone.");
 
-      const done = await changeStudent(
+      const done = await changeTestStudent(
         db,
         own,
         student("9900000530", program, "ganti.sendiri@kampus.example"),
@@ -367,7 +380,7 @@ describe("changeStudent", () => {
       const { program, staff } = await addThroughTab(db, "9900000504");
       const other = await addTestActor(db, "Tanpa Hak Uji", OTHERS);
 
-      const done = await changeStudent(db, other, {
+      const done = await changeTestStudent(db, other, {
         ...student("9900000504", program),
         name: "Tidak Boleh",
       });
@@ -389,7 +402,7 @@ describe("changeStudent", () => {
       const own = await findActiveAccount(db, id);
       if (!own) throw new Error("The student account is not active.");
 
-      const done = await changeStudent(db, own, {
+      const done = await changeTestStudent(db, own, {
         ...student("9900000512", program),
         name: "Tidak Boleh",
       });
@@ -407,11 +420,11 @@ describe("changeStudent", () => {
       await addTestStudent(db, program, { nim: "9900000506", name: "Induk" });
       await removeStudent(db, staff, "9900000505");
 
-      const first = await changeStudent(db, staff, {
+      const first = await changeTestStudent(db, staff, {
         ...student("9900000506", program),
         name: "Tidak Boleh",
       });
-      const removed = await changeStudent(db, staff, {
+      const removed = await changeTestStudent(db, staff, {
         ...student("9900000505", program),
         name: "Tidak Boleh",
       });
@@ -447,6 +460,7 @@ describe("removeStudent", () => {
           added: before.added - 1,
           addedActive: before.addedActive - 1,
           addedResidents: before.addedResidents,
+          addedWithoutGroup: before.addedWithoutGroup - 1,
         });
       });
     },

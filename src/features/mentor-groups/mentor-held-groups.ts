@@ -2,8 +2,8 @@ import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { mentorGroupMentors, mentorGroups, studyPrograms } from "@/db/schema";
+import { MEMBERS } from "@/mentoring/member-count";
 import type { GroupCodeParts } from "@/ui/group-code";
-import { MEMBERS } from "./group-list";
 import { heldTodayBy } from "./visible-mentors";
 
 /** A group a mentor holds today. */

@@ -71,6 +71,10 @@ export interface TestMentorGroup {
   mentorId: string;
   /** The account that held the group before its mentor of today. */
   earlierMentorId?: string;
+  /** Angkatan 2026 unless another is given. */
+  cohortYear?: number;
+  /** The reguler jalur unless another is given. */
+  entryPath?: typeof mentorGroups.$inferInsert.entryPath;
 }
 
 const TEST_GROUP_STARTS_ON = "2026-09-01";
@@ -103,8 +107,8 @@ export async function addTestMentorGroup(
     .insert(mentorGroups)
     .values({
       studyProgramId,
-      cohortYear: 2026,
-      entryPath: "regular",
+      cohortYear: group.cohortYear ?? 2026,
+      entryPath: group.entryPath ?? "regular",
       number: group.number,
       startsOn: TEST_GROUP_STARTS_ON,
     })

@@ -2,7 +2,9 @@ import Link from "next/link";
 import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
+import { groupCode } from "@/ui/group-code";
 import type { AddedStudent } from "./added-students";
+import { NO_GROUP_WORDS } from "./group-choice-words";
 import {
   CATEGORIES,
   ENTRY_PATH_LABELS,
@@ -49,6 +51,22 @@ function Dorm({ dorm }: { dorm: AddedStudent["dorm"] }) {
   return DORM_NAMES[dorm];
 }
 
+function MentorGroup({ group }: { group: AddedStudent["group"] }) {
+  if (group === null) {
+    return (
+      <span className={`${styles.status} ${styles.noGroup}`}>
+        {NO_GROUP_WORDS}
+      </span>
+    );
+  }
+  return (
+    <>
+      {groupCode(group)}
+      <small className={shared.detail}>{group.mentorName ?? "-"}</small>
+    </>
+  );
+}
+
 function StudentRow({
   student,
   query,
@@ -80,6 +98,9 @@ function StudentRow({
       <td data-title="Angkatan">{student.cohortYear}</td>
       <td data-title="Asrama">
         <Dorm dorm={student.dorm} />
+      </td>
+      <td data-title="Kelompok pengasuhan">
+        <MentorGroup group={student.group} />
       </td>
       <td data-title="Status">
         <span className={`${styles.status} ${STATUS_STYLES[student.status]}`}>
@@ -125,6 +146,7 @@ export function StudentTable({
             <th>Program studi</th>
             <th>Angkatan</th>
             <th>Asrama</th>
+            <th>Kelompok pengasuhan</th>
             <th>Status</th>
             <th>Diinput</th>
             <th>
