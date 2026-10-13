@@ -26,11 +26,14 @@ export const NOT_OWN_MENTEE = {
     "Mahasiswa ini bukan anak asuh aktif Anda. Pilih mahasiswa dari kelompok yang Anda asuh saat ini.",
 } as const;
 
-/** What a save answers when its key is that of another note. */
+/**
+ * What a save answers when its key is that of a note with other words:
+ * the form was sent before and changed since, or the key is not its own.
+ */
 export const FORM_ALREADY_SENT = {
   ok: false,
   error:
-    "Formulir ini sudah pernah terkirim. Muat ulang halaman, lalu isi catatan lagi.",
+    "Formulir ini sudah pernah terkirim, jadi isian yang sekarang tidak disimpan. Muat ulang halaman, periksa catatan di daftar, lalu tulis catatan baru bila masih perlu.",
 } as const;
 
 /** What "Simpan catatan" tells the one who saved. */
@@ -56,10 +59,28 @@ async function addOnce(
   return added.length > 0;
 }
 
+type StoredNote = typeof mentoringNotes.$inferSelect;
+
+/** Whether a stored note holds, word for word, what the form sends. */
+function holdsSameWords(kept: StoredNote, input: NoteInput): boolean {
+  const sameValues = kept.valueKeys.join() === input.valueKeys.join();
+  return (
+    kept.studentId === input.studentId &&
+    kept.kind === input.kind &&
+    kept.happenedOn === input.happenedOn &&
+    kept.note === input.note &&
+    kept.followUp === input.followUp &&
+    sameValues
+  );
+}
+
 /**
  * Whether the note kept under a key is the one this form sent before: by
- * the same writer, about the same student. A key of any other note is
- * not the form's own, and nothing of that note is told or changed.
+ * the same writer, with every part the same. A form whose words were
+ * changed after it was sent is not the same form: taking it for one
+ * would drop the change while saying it was saved. A key of another
+ * writer's note is not the form's own either, and nothing of that note
+ * is told or changed.
  */
 async function isSameForm(
   tx: Database,
@@ -67,22 +88,20 @@ async function isSameForm(
   input: NoteInput,
 ): Promise<boolean> {
   const [kept] = await tx
-    .select({
-      writtenBy: mentoringNotes.writtenBy,
-      studentId: mentoringNotes.studentId,
-    })
+    .select()
     .from(mentoringNotes)
     .where(eq(mentoringNotes.id, input.id));
   if (!kept) return false;
-  return kept.writtenBy === actorId && kept.studentId === input.studentId;
+  return kept.writtenBy === actorId && holdsSameWords(kept, input);
 }
 
 /**
  * "Simpan catatan": keeps a note about one student as the work of the
  * actor, who is its writer whatever the form sent. Refused for any role
  * but Pengasuh, and for a student who is not an Aktif member of a group
- * the actor holds today. A form sent twice, as by a double press, is kept
- * once, and the second answer is the same as the first.
+ * the actor holds today. A form sent twice with the same words, as by a
+ * double press, is kept once, and the second answer is the same as the
+ * first. Sent again with other words it is refused, and nothing is saved.
  */
 export async function saveNote(
   db: Database,

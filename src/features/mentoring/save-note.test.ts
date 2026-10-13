@@ -5,6 +5,7 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { listMentees } from "./mentees";
+import type { NoteInput } from "./note-input";
 import {
   FORM_ALREADY_SENT,
   NOT_ALLOWED_TO_WRITE,
@@ -27,6 +28,14 @@ const inTestDatabase = withTestDatabase();
 
 const PROGRAM = "UJISIMPANCATATAN";
 const OTHER_ROLES = ROLE_IDS.filter((role) => role !== "mentor");
+
+/** One part of a note sent again with other words than the test note has. */
+const OTHER_WORDS: [string, Partial<NoteInput>][] = [
+  ["kind", { kind: "appreciation" }],
+  ["day", { happenedOn: "2026-10-01" }],
+  ["values", { valueKeys: ["M"] }],
+  ["follow-up", { followUp: "involve_parents" }],
+];
 
 interface Records {
   programId: number;
@@ -241,6 +250,39 @@ describe("Simpan catatan pressed twice", () => {
       expect(await testNotesOf(db, menteeId)).toHaveLength(1);
     });
   });
+
+  it("refuses a changed text sent with the key of a saved note, and keeps the saved note as it is", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, menteeId } = await addRecords(db);
+      const first = testNoteInput(menteeId, { note: "Catatan pertama." });
+      await saveNote(db, mentor, first);
+
+      const again = await saveNote(db, mentor, {
+        ...first,
+        note: "Catatan yang diubah.",
+      });
+
+      expect(again).toEqual(FORM_ALREADY_SENT);
+      const kept = await testNotesOf(db, menteeId);
+      expect(kept.map((note) => note.note)).toEqual(["Catatan pertama."]);
+    });
+  });
+
+  it.each(OTHER_WORDS)(
+    "refuses the key of a saved note when the %s differs",
+    (_what, changed) => {
+      return inTestDatabase(async (db) => {
+        const { mentor, menteeId } = await addRecords(db);
+        const first = testNoteInput(menteeId);
+        await saveNote(db, mentor, first);
+
+        const again = await saveNote(db, mentor, { ...first, ...changed });
+
+        expect(again).toEqual(FORM_ALREADY_SENT);
+        expect(await testNotesOf(db, menteeId)).toHaveLength(1);
+      });
+    },
+  );
 
   it("saves a second note from a form with a key of its own", async () => {
     await inTestDatabase(async (db) => {

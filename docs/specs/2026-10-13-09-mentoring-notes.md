@@ -142,8 +142,11 @@ The issue did not say, so these were decided:
 17. A double press saves once in two ways: the button is off while a
     save is on its way, and the form sends the key of its note, so the
     same form is kept once also when both presses reach the server at
-    the same moment. The second press gets the same message. No column
-    was added for this.
+    the same moment. The second press gets the same message. A form
+    sent again with its key after any part of it was changed is not a
+    double press: it is refused, nothing is saved, and the message says
+    to load the page again, look at the list and write a new note if
+    still needed. No column was added for this.
 18. After a save the text is emptied; the student, kind, day, values and
     follow-up stay for the next note.
 19. A Pengasuh who holds no group with Aktif students sees "Catatan
