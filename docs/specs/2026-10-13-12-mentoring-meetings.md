@@ -1,0 +1,215 @@
+# Mentoring meetings and attendance
+
+Depends on: Mentor groups, Academic period
+Group: Pengasuhan
+
+## What we want
+
+The Pengasuhan menu gets the tab "Pertemuan dan daftar hadir". Each
+group meets its mentor four times a semester. For every meeting the
+mentor records the date, the topic and who came: Hadir, Izin, Sakit or
+Alpa. This attendance later feeds the attendance part of the character
+grade.
+
+## Who it is for
+
+- Fill in and change: Pengasuh, for the groups they hold today.
+- Read only: Kepala Unit and Direktur / Wakil Direktur (every group),
+  Ketua Program Studi (groups of their study program).
+
+## What should happen
+
+- When Pengasuh opens the tab, then they see the intro, the numbers
+  "Pertemuan terlaksana" ((n) / 4 for the running semester), "Anak
+  asuh", "Rerata kehadiran pengasuhan" and "Pengasuh", and four cards
+  "Pertemuan 1" to "Pertemuan 4", each "Belum diisi" or "Terlaksana"
+  with date, topic and the counts of hadir, izin, sakit and alpa.
+- When a Pengasuh holds no group, then they see "Anda belum memegang
+  kelompok pengasuhan."
+- When someone can see more than one group, then "Kelompok pengasuhan"
+  lets them choose one, by code or mentor name.
+- When Pengasuh presses "Isi daftar hadir", then "Daftar hadir pertemuan
+  (n)" opens with Tanggal (today), Topik (free text with suggested
+  topics) and one row per member (name, NIM, kelas akademik) set to
+  Hadir; a member on Cuti is not listed and not counted, with "Tandai
+  semua hadir" and a running count.
+- When they press "Simpan daftar hadir", then the message says "Daftar
+  hadir pertemuan (n) disimpan.", the card becomes Terlaksana and the
+  numbers update.
+- When the date is in the future, outside the running semester, or the
+  topic is empty, then nothing is saved and the message says why.
+- When they press "Ubah daftar hadir" on a saved meeting and save, then
+  the new list replaces the old one, and who changed what is kept in a
+  log that cannot be edited. Confirmed by a check.
+- When they leave the form with unsaved changes, then they are asked
+  first.
+- When the average is worked out, then each member's own share is
+  hadir divided by hadir plus alpa, Izin and Sakit left out, and the
+  number is the average of those shares over the members who have at
+  least one Hadir or Alpa, as in the prototype. Confirmed by a check.
+- When a read-only role opens the tab, then they see the line that only
+  mentors fill this in, and "Lihat daftar hadir" on saved meetings.
+- When Pengasuh sends a list for a group they do not hold, a member who
+  is not in the group, or a fifth meeting, or any other role sends a
+  list, then the server refuses it. Confirmed by a check.
+- When "Simpan daftar hadir" is pressed twice, or the same meeting is
+  saved from two windows, then one list is kept and the second window is
+  told the meeting changed. Confirmed by a check.
+- When the form opens on a phone, then each member is a card with four
+  large choices and no sideways scroll; on the preview the tab shows
+  within about 1 second.
+
+No case was met on `main` before this spec: the tab was empty. All of
+it is built here.
+
+## Not included
+
+- Counting these meetings in Nilai kehadiran (Mentoring meetings in
+  the attendance score).
+- The reminder on the mentor's dashboard (Mentor dashboard overview).
+- Removing a saved meeting; the prototype has none.
+- Closing a semester, and any deadline for changing a list.
+- Four meetings a semester are the prototype's values, to be confirmed
+  by the campus before launch.
+
+## Better than the prototype
+
+- A future date and an empty topic are refused.
+- Changes to a saved list are logged, because they feed a score.
+- Leaving with unsaved changes asks first.
+- The group choice can be searched instead of one long list.
+
+## Decided
+
+1. Four meetings a semester is fixed, for every group, as in the
+   prototype.
+2. No deadline for changing a saved list is enforced now. The mentor of
+   the group may change it, and every change is logged.
+3. The running period and its dates are read from "Academic period".
+   This spec has no rule of its own. The four meetings are counted per
+   period, as in the prototype.
+4. A member on Cuti is not listed and not counted.
+5. After a mentor is replaced, the new mentor may change the meetings
+   the old one filled in. The log shows who.
+
+## Decisions made while building
+
+The issue did not say, so these were decided:
+
+6. There are two rights: reading attendance (Kepala Unit, Direktur /
+   Wakil Direktur, Ketua Program Studi, Pengasuh) and filling it in
+   (Pengasuh). Each reads within their own rows: Pengasuh the groups
+   they hold today, Ketua Program Studi the groups of their program.
+7. The list holds the members who are Aktif. A member on Cuti or Non
+   aktif is not listed. "Anak asuh" counts the same members, so the
+   numbers agree with the list.
+8. The four meetings can be filled in any order, and their dates need
+   not follow their numbers, as in the prototype.
+9. Topik starts with the prototype's suggestion for that meeting number
+   and can be changed freely. The suggestions are the prototype's seven
+   topics. Topik holds 1 to 200 characters, counted without the blanks
+   around it.
+10. Tanggal may be any day from the first day of the running period up
+    to today, and not after the period's last day.
+11. When no period is running, the tab says so and nothing can be filled
+    in.
+12. When a saved list is changed, the form lists the members who are
+    Aktif in the group today. A member who joined after the list was
+    saved has a fifth choice, "Tidak tercatat". They start on it and
+    stay without a mark unless the mentor picks one for them. "Tandai
+    semua hadir" leaves such a member without a mark, unless the mentor
+    has already picked one for them in the form. The prototype sets
+    them to Alpa; that would lower the share of a student for a meeting
+    held before they joined. A member who has a mark keeps the four
+    choices: a saved mark can be changed, not taken away. A mark saved
+    earlier for a student who has since left the group or is no longer
+    Aktif stays as it was saved and is not shown in the form.
+13. A member with no mark in a saved meeting is not counted for that
+    meeting in the average. The prototype counts them as Alpa; that
+    would lower the share of a student for a meeting held before they
+    joined.
+14. "Rerata kehadiran pengasuhan" is shown as a whole percent, and "-"
+    when no member has a Hadir or an Alpa yet.
+15. The log gets one line for each save: who, when, and the date, the
+    topic and each member's mark before and after. The first save has
+    nothing before.
+16. A second save of the same meeting is told apart from a change by
+    what the form loaded: a form that was opened on an older state of
+    the meeting is refused, nothing is saved, and the message says the
+    meeting changed and to load the page again.
+17. A Pengasuh with one group sees no "Kelompok pengasuhan" choice.
+18. The sample data has meetings 1 and 2 of the running period for every
+    sample group, by the mentor of that day: 45 and 15 days ago, or the
+    first day of the period or of the group's first mentor when that is
+    later. A group that has no mentor yet has none.
+19. Each card counts the marks of the members who are Aktif in the group
+    today, like the form and the average, so the three agree. A mark
+    kept for a student who has left the group is not counted.
+20. Someone who can see more than one group is shown the first one, the
+    newest angkatan first, until they choose another, as in the
+    prototype. An address that names a group the account may not read
+    shows that first group too, and nothing of the group it named.
+21. "Kelompok pengasuhan" names the group shown, with "Ganti" to search
+    for another by code or mentor name. It offers 8 groups at a time and
+    says how many more match. A group is named by its code and its
+    mentor, without the number of members the prototype adds.
+22. A role that only reads and has no group in its rows sees "Belum ada
+    kelompok pengasuhan yang dapat Anda lihat."
+23. A group that has no mentor today shows "-" under "Pengasuh".
+24. A list is saved only when it holds a mark for every member who is
+    Aktif in the group at that moment, and for nobody else. A mark may
+    be missing only when a saved list is changed, and only for a member
+    who has no mark saved for that meeting, as one who joined after the
+    list was saved. The server decides that from what is saved, not from
+    what the form says. A list that names a student outside the group, a
+    member on Cuti, or leaves any other member out, as when the group
+    changed while the form was open, is refused with one message that
+    says to load the page again.
+25. A list sent for a group the sender does not hold today gets one
+    answer, the same for a group of another mentor, a group they held
+    before, a group that is ended and one that does not exist.
+26. Tanggal opens on today. Once the last day of the running period has
+    passed, it opens on that last day.
+27. After a save the form stays open with its message, and "Tutup"
+    closes it. The prototype closes the form and shows the message
+    apart from it.
+28. Each member is one row: name, NIM and kelas akademik, then the four
+    choices. The rows have no table head.
+29. Leaving with unsaved changes is asked about on "Tutup" and on every
+    other link of the app, such as a tab, another group, another meeting
+    or the menu. On loading the page again or closing it the browser
+    asks in its own words. The browser's own step back is not asked
+    about.
+30. A group without an Aktif member can still have a meeting saved, with
+    its date and topic and no marks. The form says the group has no
+    Aktif member.
+31. Saving a list again with nothing changed is answered as saved and
+    writes nothing: the log gets no line for it.
+32. A log line holds every mark kept for the meeting before and after
+    the save, also the marks of students who have left the group since,
+    which the save does not touch.
+33. "Lihat daftar hadir" shows the day, the topic and the mark of each
+    member who is Aktif in the group today, with the counts and "Tutup".
+    A member with no mark in that list shows "Tidak tercatat". A role
+    that only reads is shown no list for a meeting that is not filled
+    in.
+34. Someone who fills in for their own groups and also reads other
+    groups, such as a Pengasuh who is also Kepala Unit, gets "Lihat
+    daftar hadir" on the groups they do not hold. The line that only
+    mentors fill this in is shown to those without the right to fill
+    in.
+35. The intro is the prototype's sentence, which says this attendance
+    counts in the attendance part of the character grade. That counting
+    is not built here; it comes with "Mentoring meetings in the
+    attendance score".
+
+## Steps
+
+- [x] 1. Meetings, their attendance and the change log are stored, with
+  two sample meetings per sample group.
+- [x] 2. The rights to fill in and to read attendance are added to the
+  permission list, with their checks.
+- [x] 3. The tab with the numbers, the group choice and the four cards.
+- [x] 4. Pengasuh fills in and saves an attendance list.
+- [x] 5. Changing a saved list, with the log and the two-window case.
+- [x] 6. Read-only view, refusals and the phone layout.

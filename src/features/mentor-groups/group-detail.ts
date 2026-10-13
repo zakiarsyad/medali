@@ -10,10 +10,11 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { NOT_ENDED } from "@/mentoring/group-in-force";
 import { opensDetailOf } from "@/mentoring/opens-detail";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { LISTED_MEMBER } from "./member-conditions";
-import { maySeeGroup, NOT_ENDED } from "./visible-groups";
+import { maySeeGroup } from "./visible-groups";
 
 /** One mentor line of a group. The NIP of the mentor is never read. */
 export interface GroupMentorLine {

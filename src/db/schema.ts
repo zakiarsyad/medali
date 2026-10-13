@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -19,6 +20,11 @@ import {
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import { DORM_IDS } from "@/dorms/dorms";
+import {
+  ATTENDANCE_MARKS,
+  type MarksByStudent,
+  MEETINGS_PER_PERIOD,
+} from "@/mentoring/meeting-ids";
 import { FOLLOW_UPS, NOTE_KINDS } from "@/mentoring/note-ids";
 import type { ValueKey } from "@/ui/medali-values";
 
@@ -86,6 +92,8 @@ export const cohortAssignmentChangeAction = pgEnum(
 export const mentoringNoteKind = pgEnum("mentoring_note_kind", NOTE_KINDS);
 
 export const mentoringFollowUp = pgEnum("mentoring_follow_up", FOLLOW_UPS);
+
+export const attendanceMark = pgEnum("attendance_mark", ATTENDANCE_MARKS);
 
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
@@ -768,4 +776,90 @@ export const mentoringNotes = pgTable(
     index("mentoring_notes_student").on(table.studentId),
     index("mentoring_notes_written_at").on(table.writtenAt),
   ],
+);
+
+/**
+ * One of the meetings a group has with its mentor in an academic period,
+ * once its attendance list is saved. A group has each number once in a
+ * period. Saving the list again corrects it. Never deleted: its log lines
+ * hold it.
+ */
+export const mentoringMeetings = pgTable(
+  "mentoring_meetings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    /** "Pertemuan 1" to the last one of the period. */
+    number: smallint().notNull(),
+    /** "Tanggal": the day the group met. */
+    heldOn: date().notNull(),
+    topic: text().notNull(),
+    /** Goes up with every save, so a save made from an older one is caught. */
+    version: integer().notNull().default(1),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** When the list was saved last, the first time or as a correction. */
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("mentoring_meetings_one_per_group_period_and_number").on(
+      table.groupId,
+      table.periodId,
+      table.number,
+    ),
+    check(
+      "mentoring_meetings_number_in_range",
+      sql`${table.number} between 1 and ${sql.raw(String(MEETINGS_PER_PERIOD))}`,
+    ),
+  ],
+);
+
+/**
+ * The mark of one student at one meeting. A student has one mark at a
+ * meeting at most.
+ */
+export const mentoringAttendance = pgTable(
+  "mentoring_attendance",
+  {
+    meetingId: uuid()
+      .notNull()
+      .references(() => mentoringMeetings.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    mark: attendanceMark().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.meetingId, table.studentId] })],
+);
+
+/**
+ * Every save of an attendance list: who, when, and the day, the topic and
+ * each student's mark before and after. The first save has none before.
+ * Rows here cannot be changed or deleted; the database refuses it.
+ */
+export const mentoringMeetingChanges = pgTable(
+  "mentoring_meeting_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    meetingId: uuid()
+      .notNull()
+      .references(() => mentoringMeetings.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    heldOnBefore: date(),
+    topicBefore: text(),
+    marksBefore: jsonb().$type<MarksByStudent>(),
+    heldOnAfter: date().notNull(),
+    topicAfter: text().notNull(),
+    marksAfter: jsonb().$type<MarksByStudent>().notNull(),
+  },
+  (table) => [index("mentoring_meeting_changes_meeting").on(table.meetingId)],
 );

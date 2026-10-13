@@ -1,4 +1,4 @@
-import { and, inArray, isNull, type SQL, sql } from "drizzle-orm";
+import { and, inArray, type SQL, sql } from "drizzle-orm";
 import {
   type AccountForAccess,
   may,
@@ -6,6 +6,7 @@ import {
   rowLimitForAction,
 } from "@/auth/access";
 import { mentorGroups } from "@/db/schema";
+import { NOT_ENDED } from "@/mentoring/group-in-force";
 
 const NO_GROUP = sql`false`;
 
@@ -29,12 +30,6 @@ export function maySeeGroup(limit: RowLimit, studyProgramId: number): boolean {
   if (limit.kind === "all") return true;
   return limit.studyProgramIds.includes(studyProgramId);
 }
-
-/**
- * A group that is in force. One whose penetapan was cancelled is ended:
- * it stays stored, and no read of groups shows it.
- */
-export const NOT_ENDED = isNull(mentorGroups.endedAt);
 
 /**
  * The same rule for the `where` of every read of groups, which also

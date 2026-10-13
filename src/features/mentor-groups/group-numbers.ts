@@ -2,8 +2,8 @@ import { and, count, eq, sql } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { mentorGroupMembers, mentorGroups, students } from "@/db/schema";
+import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { GROUP_MAX, GROUP_MIN } from "@/ui/group-size";
-import { COUNTED_MEMBER } from "./member-conditions";
 import { groupsVisibleTo } from "./visible-groups";
 
 /** The numbers above the Kelompok pengasuhan list. */
@@ -32,7 +32,7 @@ export async function readGroupNumbers(
     )
     .leftJoin(
       students,
-      and(eq(students.id, mentorGroupMembers.studentId), COUNTED_MEMBER),
+      and(eq(students.id, mentorGroupMembers.studentId), ACTIVE_MEMBER),
     )
     .where(groupsVisibleTo(limit))
     .groupBy(mentorGroups.id)

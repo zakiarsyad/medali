@@ -580,6 +580,60 @@ describe("may", () => {
     }
   });
 
+  const attendanceReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it.each(attendanceReaders)(
+    "lets %s read the attendance of mentoring meetings",
+    (role) => {
+      expect(may([role], "view_mentoring_attendance")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to read the attendance of mentoring meetings, Pegawai UPK and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !attendanceReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - attendanceReaders.length);
+    expect(others).toContain("upk_staff");
+    expect(others).toContain("student");
+    expect(others).toContain("assessor");
+    for (const role of others) {
+      expect(may([role], "view_mentoring_attendance")).toBe(false);
+    }
+  });
+
+  it("gives the right to read attendance to every role with the tab Pertemuan dan daftar hadir", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_mentoring_attendance")).toBe(
+        mayOpenTab([role], "mentoring", "meetings"),
+      );
+    }
+  });
+
+  it("lets Pengasuh fill in an attendance list", () => {
+    expect(may(["mentor"], "fill_mentoring_attendance")).toBe(true);
+  });
+
+  it("refuses every other role to fill in an attendance list, Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "mentor");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    expect(others).toContain("head_of_unit");
+    expect(others).toContain("head_of_program");
+    for (const role of others) {
+      expect(may([role], "fill_mentoring_attendance")).toBe(false);
+    }
+  });
+
+  it("lets every role that may fill in an attendance list read attendance", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "fill_mentoring_attendance")) continue;
+      expect(may([role], "view_mentoring_attendance")).toBe(true);
+    }
+  });
+
   it("lets Mahasiswa read their own student record", () => {
     expect(may(["student"], "view_own_profile")).toBe(true);
     expect(mayOpenPage(["student"], "profile")).toBe(true);
@@ -1029,6 +1083,59 @@ describe("rowLimitForAction and rowLimitForPage", () => {
 
     expect(rowLimitForAction(both, "view_mentoring_notes")).toEqual(EVERY_ROW);
     expect(rowLimitForAction(both, "write_mentoring_notes")).toEqual(
+      OWN_MENTEES,
+    );
+  });
+
+  it("gives each role that reads attendance the meetings of its own rows", () => {
+    const action = "view_mentoring_attendance";
+
+    expect(rowLimitForAction(account(["head_of_unit"]), action)).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(account(["director"]), action)).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(account(["head_of_program"], 7), action)).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(rowLimitForAction(account(["mentor"]), action)).toEqual(OWN_MENTEES);
+  });
+
+  it("keeps Pengasuh to the attendance of their own groups, whatever wide role without it they also hold", () => {
+    const wideWithoutAttendance = ROLE_IDS.filter(
+      (role) =>
+        ROLES[role].rows === "all" && !may([role], "view_mentoring_attendance"),
+    );
+
+    expect(wideWithoutAttendance).toEqual(
+      expect.arrayContaining(["upk_staff", "counsellor", "assessor"]),
+    );
+    for (const role of wideWithoutAttendance) {
+      const both = account(["mentor", role]);
+
+      expect(rowLimitForAction(both, "view_mentoring_attendance")).toEqual(
+        OWN_MENTEES,
+      );
+      expect(rowLimitForAction(both, "fill_mentoring_attendance")).toEqual(
+        OWN_MENTEES,
+      );
+    }
+  });
+
+  it("gives no group to fill in to an account that is not Pengasuh, whatever it reads", () => {
+    const readers = account(["head_of_unit", "director", "head_of_program"], 7);
+
+    expect(rowLimitForAction(readers, "fill_mentoring_attendance")).toEqual(
+      NO_ROW,
+    );
+  });
+
+  it("lets Pengasuh who is also Kepala Unit read every group and fill in only their own", () => {
+    const both = account(["mentor", "head_of_unit"]);
+
+    expect(rowLimitForAction(both, "view_mentoring_attendance")).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(both, "fill_mentoring_attendance")).toEqual(
       OWN_MENTEES,
     );
   });

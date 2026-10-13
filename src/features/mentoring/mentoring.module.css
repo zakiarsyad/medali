@@ -142,3 +142,142 @@
 .detailActions {
   margin: var(--space-lg) 0 0;
 }
+
+/* What the tab of meetings shows keeps clear of the line above it. */
+.readOnly + .meetings {
+  margin-top: var(--space-lg);
+}
+
+/* "Kelompok pengasuhan": the group shown, and the search for another. */
+.picker {
+  margin-bottom: var(--space-lg);
+}
+
+/*
+ * The cards "Pertemuan 1" to the last, side by side where there is room
+ * and one under another on a phone.
+ */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.card {
+  min-width: 0;
+  padding: var(--space-lg) var(--space-xl);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+/* "Terlaksana" and "Belum diisi". */
+.held {
+  border: var(--line-width) solid var(--ok);
+  background: var(--surface);
+  color: var(--ok);
+}
+
+.notHeld {
+  background: var(--surface2);
+  color: var(--muted);
+}
+
+.cardLine {
+  margin: var(--space-2xs) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.cardAction {
+  margin: var(--space-md) 0 0;
+}
+
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * One member: the name beside the choices where there is room for both.
+ * On a phone the choices fold under the name and take the whole width, so
+ * each member is a card of its own.
+ */
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: center;
+  padding: var(--space-md) 0;
+  border-top: var(--line-width) solid var(--line2);
+}
+
+.memberName {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The four choices of one member, side by side in equal parts. */
+.marks {
+  display: grid;
+  flex: 2 1 var(--card-min-width);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2xs);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* One choice: the whole box can be pressed, not only its small circle. */
+.mark {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-md) var(--space-2xs);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+
+/*
+ * The fifth choice, "Tidak tercatat", of a member who joined after the
+ * list was saved: under the four, over the whole width, so none of them
+ * gets narrower on a phone.
+ */
+.noMark {
+  grid-column: 1 / -1;
+}
+
+.mark:has(input:checked) {
+  border-color: var(--navy3);
+  background: var(--surface2);
+  font-weight: var(--weight-semibold);
+}

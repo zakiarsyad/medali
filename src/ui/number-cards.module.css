@@ -35,3 +35,14 @@
   color: var(--muted);
   font-size: var(--text-sm);
 }
+
+/* Words are smaller than a number, and a long name folds inside its card. */
+.words {
+  margin: 0;
+  padding-top: var(--space-xs);
+  color: var(--navy);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}

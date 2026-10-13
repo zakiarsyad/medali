@@ -11,13 +11,14 @@ import {
   mentorGroups,
 } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
+import { NOT_ENDED } from "@/mentoring/group-in-force";
 import type { Parsed } from "@/parsed";
 import { EVALUATION_ASPECTS } from "./evaluation-aspects";
 import type { EvaluationInput } from "./evaluation-input";
 import { evaluationPeriods, heldDuring } from "./evaluation-periods";
 import { type EvaluationResult, evaluationResult } from "./evaluation-result";
 import { evaluatedRowsFor } from "./visible-evaluations";
-import { maySeeGroup, NOT_ENDED } from "./visible-groups";
+import { maySeeGroup } from "./visible-groups";
 
 /** What a save answers to any role but Kepala Unit. */
 export const NOT_ALLOWED_TO_EVALUATE = {
