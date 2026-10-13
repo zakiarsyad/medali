@@ -11,6 +11,7 @@ import { GroupScreen } from "@/features/mentor-groups/group-screen";
 import { openEvaluationAddress } from "@/features/mentor-groups/open-evaluation-address";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMemberAddresses } from "@/features/mentor-groups/open-member-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { openReplacementAddress } from "@/features/mentor-groups/open-replacement-address";
 import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
@@ -58,6 +59,9 @@ async function GroupPage({
         groupId={groupId}
         detailVisible={detailVisibleTo(account)}
         memberAddressOf={openMemberAddresses(account.roles, groupId)}
+        mentorAddressOf={(mentorId, group) =>
+          openMentorAddress(account, mentorId, group)
+        }
       />
       {detail && (
         <StudentDetailDialog

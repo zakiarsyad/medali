@@ -20,6 +20,7 @@ import { readGroupPage } from "./group-page";
 import { academicClasses, countedMembers } from "./member-rules";
 import styles from "./mentor-groups.module.css";
 import { currentMentor } from "./mentor-history";
+import type { MentorAddressOf } from "./open-mentor-address";
 import { scheduledWords } from "./replacement-words";
 import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
@@ -45,6 +46,7 @@ export async function GroupScreen({
   groupId,
   detailVisible,
   memberAddressOf,
+  mentorAddressOf,
 }: {
   /** Which rows the account that opened the page may see. */
   limit: RowLimit;
@@ -71,6 +73,7 @@ export async function GroupScreen({
    * for an account that may not open a student's detail.
    */
   memberAddressOf: ((studentId: string) => string) | null;
+  mentorAddressOf: MentorAddressOf;
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
@@ -87,7 +90,8 @@ export async function GroupScreen({
       : listGroupEvaluations(db, evaluationLimit, group.id),
     readWaitingReplacementOf(db, group.id),
   ]);
-  const hasMentor = currentMentor(group.mentors) !== null;
+  const mentor = currentMentor(group.mentors);
+  const hasMentor = mentor !== null;
   return (
     <>
       <p className={styles.back}>
@@ -114,7 +118,11 @@ export async function GroupScreen({
           {scheduledWords(waiting)}
         </p>
       )}
-      <GroupMentorPanel mentors={group.mentors} recentNotes={recentNotes} />
+      <GroupMentorPanel
+        mentors={group.mentors}
+        mentorAddress={mentor && mentorAddressOf(mentor.mentorId, group)}
+        recentNotes={recentNotes}
+      />
       {evaluations && (
         <section className={shared.panel}>
           <h2 className={shared.heading}>Evaluasi pengasuh</h2>

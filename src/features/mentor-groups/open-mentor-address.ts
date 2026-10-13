@@ -7,6 +7,15 @@ import { mentorRowsFor } from "./visible-mentors";
 type MentorGroup = typeof mentorGroups.$inferSelect;
 
 /**
+ * The address of the page of a group's mentor of today, or null for an
+ * account that may not open it. The mentor is then named without a link.
+ */
+export type MentorAddressOf = (
+  mentorId: string,
+  group: Pick<MentorGroup, "studyProgramId">,
+) => string | null;
+
+/**
  * The address of the page of the mentor who holds a group today, for an
  * account that may open it, or null for one that would be refused there:
  * a screen that names the mentor of a group links to them only with this.

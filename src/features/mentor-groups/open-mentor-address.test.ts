@@ -60,7 +60,9 @@ describe("openMentorAddress", () => {
     expect(others).toContain("student");
     expect(others).toContain("counsellor");
     for (const role of others) {
-      expect(openMentorAddress(account([role], 7), MENTOR_ID, GROUP)).toBeNull();
+      expect(
+        openMentorAddress(account([role], 7), MENTOR_ID, GROUP),
+      ).toBeNull();
     }
   });
 

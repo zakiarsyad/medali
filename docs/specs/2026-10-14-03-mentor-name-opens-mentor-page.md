@@ -69,7 +69,7 @@ page and the group code was plain words. All of it is built here.
 
 - [x] 1. One rule gives the address of a mentor's page for an account
   that may open it, or nothing, with tests.
-- [ ] 2. The name in "Pengasuh saat ini" on the group page links to
+- [x] 2. The name in "Pengasuh saat ini" on the group page links to
   the mentor's page.
 - [ ] 3. In the student detail the name links to the mentor's page and
   the group code to the group's page.
