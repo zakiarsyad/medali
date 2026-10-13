@@ -31,6 +31,7 @@ src/db/removal-plan.ts
 src/db/copy-databases.ts
 src/db/database-server.ts
 src/db/deploy-command.ts
+src/db/deploy-database.ts
 src/files/deploy-command.ts
 src/files/deploy-files.ts
 

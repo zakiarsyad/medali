@@ -148,7 +148,7 @@ decided:
 
 ## Steps
 
-- [ ] 1. A deploy of `main` that applied a new table change starts the
+- [x] 1. A deploy of `main` that applied a new table change starts the
   database of the preview of `main` over with sample data, after the
   checks that guard it today.
 - [ ] 2. The first deploy after this work starts it over once, by a
