@@ -43,8 +43,33 @@ Everyone who fills in a form on a small phone.
 2. It is fixed once, in the shared form grid, so that a column is never
    asked to be wider than the room its panel has.
 
+## What was seen
+
+On a local computer with sample data, in a browser set to a screen 320px
+wide, as Kepala Unit and as Pengasuh:
+
+- On all three forms each field is 260px wide where the panel has room
+  for 238px. The fields stay in one column but run 22px into the panel's
+  right edge space, and end 3px from its border.
+- With only these three forms open, the page does not scroll sideways:
+  the fields end at 301px of the 320px.
+- The page does scroll sideways on Pengaturan > Periode akademik once
+  "Ubah tanggal" is opened in the list. That form uses the same shared
+  form grid, sits further in, and makes the page 335px wide.
+
+So the fault shows, and the fix is built.
+
+Decided while building, because the issue did not say:
+
+3. The fault counts as showing, although the three forms named do not
+   make the page scroll sideways by themselves: their fields are wider
+   than the panel's room, and a fourth form on the shared form grid does
+   make the page scroll.
+4. "Ubah tanggal" is not changed by a rule of its own. It gets the fix
+   from the shared form grid, like any form that uses it.
+
 ## Steps
 
-- [ ] 1. See the fault on a 320px screen on the three forms named.
+- [x] 1. See the fault on a 320px screen on the three forms named.
 - [ ] 2. The shared form grid fits its panel on a narrow screen, with a
   check.
