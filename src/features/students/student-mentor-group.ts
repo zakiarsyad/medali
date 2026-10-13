@@ -22,6 +22,8 @@ export interface StudentMentorGroup extends GroupCodeParts {
   id: string;
   /** Decides which accounts may open the group's page. */
   studyProgramId: number;
+  /** The account of the mentor of today. Null for a group without one. */
+  mentorId: string | null;
   /** Null for a group left without a mentor. */
   mentor: GroupMentor | null;
   /** The names of the mentors before, the oldest first. */
@@ -29,12 +31,13 @@ export interface StudentMentorGroup extends GroupCodeParts {
 }
 
 /**
- * What the Pengasuh line says of a group. The id and the program studi are
- * left out: they only serve the link to the group's page.
+ * What the Pengasuh line says of a group. The id, the program studi and
+ * the mentor's account are left out: they only serve the links to the
+ * group's page and the mentor's page.
  */
 export type ShownMentorGroup = Omit<
   StudentMentorGroup,
-  "id" | "studyProgramId"
+  "id" | "studyProgramId" | "mentorId"
 >;
 
 /** A group with only what the Pengasuh line says of it. */
@@ -55,6 +58,15 @@ export function shownPartOf(group: StudentMentorGroup): ShownMentorGroup {
  */
 export type GroupAddressOf = (group: StudentMentorGroup) => string | null;
 
+/**
+ * The address of the page of the mentor of a student's group, or null for
+ * an account that may not open it. The mentor is then named without a link.
+ */
+export type MentorAddressOf = (
+  mentorId: string,
+  group: StudentMentorGroup,
+) => string | null;
+
 const LINE = {
   id: mentorGroups.id,
   studyProgramId: mentorGroups.studyProgramId,
@@ -62,6 +74,7 @@ const LINE = {
   entryPath: mentorGroups.entryPath,
   number: mentorGroups.number,
   programCode: studyPrograms.code,
+  mentorId: mentorGroupMentors.mentorId,
   mentorName: accounts.name,
   mentorTitle: accounts.title,
   startsOn: mentorGroupMentors.startsOn,
@@ -75,22 +88,32 @@ const LINE = {
 export interface MentorGroupLine extends GroupCodeParts {
   id: string;
   studyProgramId: number;
+  mentorId: string | null;
   mentorName: string | null;
   mentorTitle: string | null;
   startsOn: string | null;
   endsOn: string | null;
 }
 
-function mentorOfToday(lines: MentorGroupLine[]): GroupMentor | null {
+/** A mentor line of today: it names a mentor and has no last day. */
+interface LineOfToday {
+  mentorId: string;
+  mentor: GroupMentor;
+}
+
+function lineOfToday(lines: MentorGroupLine[]): LineOfToday | null {
   for (const line of lines) {
-    const holdsToday = line.endsOn === null;
-    if (holdsToday && line.mentorName !== null && line.startsOn !== null) {
-      return {
+    if (line.endsOn !== null) continue;
+    if (line.mentorId === null) continue;
+    if (line.mentorName === null || line.startsOn === null) continue;
+    return {
+      mentorId: line.mentorId,
+      mentor: {
         name: line.mentorName,
         title: line.mentorTitle,
         since: line.startsOn,
-      };
-    }
+      },
+    };
   }
   return null;
 }
@@ -111,14 +134,16 @@ export function mentorGroupOf(
 ): StudentMentorGroup | null {
   const [group] = lines;
   if (!group) return null;
+  const today = lineOfToday(lines);
   return {
     id: group.id,
     studyProgramId: group.studyProgramId,
+    mentorId: today === null ? null : today.mentorId,
     cohortYear: group.cohortYear,
     entryPath: group.entryPath,
     number: group.number,
     programCode: group.programCode,
-    mentor: mentorOfToday(lines),
+    mentor: today === null ? null : today.mentor,
     earlierMentors: mentorsBefore(lines),
   };
 }

@@ -1,6 +1,7 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import {
   readScoresParams,
   scoresAddress,
@@ -51,6 +52,9 @@ export default async function MentoringScoresPage(
           period={await runningPeriodNow()}
           closeAddress={scoresAddress(params.groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
           morePanelsOf={(studentId) => (
             <StudentNotesPanel
               account={account}

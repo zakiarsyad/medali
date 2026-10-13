@@ -4,7 +4,7 @@ import { ModalDialog } from "@/ui/modal-dialog";
 import type { AskedDetail } from "./asked-detail";
 import type { RunningPeriod } from "./semester-now";
 import { StudentDetailView } from "./student-detail-view";
-import type { GroupAddressOf } from "./student-mentor-group";
+import type { GroupAddressOf, MentorAddressOf } from "./student-mentor-group";
 
 /**
  * The panels another area adds under a student's own record, such as the
@@ -18,6 +18,7 @@ export function StudentDetailDialog({
   period,
   closeAddress,
   groupAddressOf,
+  mentorAddressOf,
   morePanelsOf,
 }: {
   detail: AskedDetail;
@@ -25,6 +26,7 @@ export function StudentDetailDialog({
   /** The address of the list as it was left. */
   closeAddress: string;
   groupAddressOf: GroupAddressOf;
+  mentorAddressOf: MentorAddressOf;
   morePanelsOf: MorePanelsOf;
 }) {
   if (detail.kind === "not_found") {
@@ -47,6 +49,7 @@ export function StudentDetailDialog({
         student={detail.student}
         period={period}
         groupAddressOf={groupAddressOf}
+        mentorAddressOf={mentorAddressOf}
       />
       {morePanelsOf(detail.student.id)}
     </ModalDialog>

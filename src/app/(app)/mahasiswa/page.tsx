@@ -1,6 +1,7 @@
 import { rowLimitForPage } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
 import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { askedDetail } from "@/features/students/asked-detail";
@@ -19,6 +20,9 @@ export default async function StudentsPage(props: PageProps<"/mahasiswa">) {
       params={params}
       detail={await askedDetail(account, params.detailId)}
       groupAddressOf={(group) => openGroupAddress(account, group)}
+      mentorAddressOf={(mentorId, group) =>
+        openMentorAddress(account, mentorId, group)
+      }
       morePanelsOf={(studentId) => (
         <StudentNotesPanel
           account={account}

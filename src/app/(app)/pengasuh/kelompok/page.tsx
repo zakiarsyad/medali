@@ -69,6 +69,9 @@ async function GroupPage({
           period={await runningPeriodNow()}
           closeAddress={groupAddress(groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
           morePanelsOf={(studentId) => (
             <StudentNotesPanel
               account={account}

@@ -64,6 +64,11 @@ page and the group code was plain words. All of it is built here.
    sees both as plain words, as today.
 2. A student whose group has no mentor today keeps "Belum ditetapkan"
    as plain words.
+3. Decided while building, since the issue did not say: for a group
+   with no mentor today, the group code under "Belum ditetapkan" is
+   still a link to the group's page, for the accounts that may open
+   that group. Decision 1 gives the link by the right to open the
+   group, not by whether it has a mentor.
 
 ## Steps
 
@@ -71,5 +76,5 @@ page and the group code was plain words. All of it is built here.
   that may open it, or nothing, with tests.
 - [x] 2. The name in "Pengasuh saat ini" on the group page links to
   the mentor's page.
-- [ ] 3. In the student detail the name links to the mentor's page and
+- [x] 3. In the student detail the name links to the mentor's page and
   the group code to the group's page.
