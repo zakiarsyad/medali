@@ -51,11 +51,15 @@ const ONE_DECIMAL = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 1,
 });
 
-/** The score as its number shows it, such as 87,5%. */
-export function shownScore(score: AttendanceScore): string {
-  const percent = scorePercent(score);
+/** A percentage with one decimal as its number shows it, such as 87,5%. */
+export function shownPercent(percent: number | null): string {
   if (percent === null) return "-";
   return `${ONE_DECIMAL.format(percent)}%`;
+}
+
+/** The score as its number shows it. */
+export function shownScore(score: AttendanceScore): string {
+  return shownPercent(scorePercent(score));
 }
 
 /** The line under the number: how many of how many. */

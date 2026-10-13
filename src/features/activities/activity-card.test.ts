@@ -40,9 +40,15 @@ describe("maySendPhoto", () => {
     expect(maySendPhoto(attended("valid"), TEST_NOW)).toBe(false);
   });
 
-  it("does not after a rejection or a dispensation: sending again is not offered", () => {
-    expect(maySendPhoto(attended("rejected"), TEST_NOW)).toBe(false);
+  it("does not after a dispensation", () => {
     expect(maySendPhoto(attended("dispensation"), TEST_NOW)).toBe(false);
+  });
+
+  it("lets a student send again after a rejection, while the upload time is still open", () => {
+    const late = { day: "2026-10-15", time: "00:00" };
+
+    expect(maySendPhoto(attended("rejected"), TEST_NOW)).toBe(true);
+    expect(maySendPhoto(attended("rejected"), late)).toBe(false);
   });
 });
 

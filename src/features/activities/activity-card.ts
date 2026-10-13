@@ -1,5 +1,5 @@
 import type { ValueKey } from "@/ui/medali-values";
-import { ATTENDANCE_WORDS } from "./attendance-status";
+import { ATTENDANCE_WORDS, takesNewPhoto } from "./attendance-status";
 import { type BadgeLook, HISTORY_LOOKS, SCHEDULE_LOOKS } from "./badge-look";
 import {
   type CampusMoment,
@@ -67,14 +67,14 @@ function badgeOf(
 
 /**
  * Whether a student may send a photo for a schedule at a moment: while
- * its upload time is open, and only when they have no attendance at it
- * yet. A photo that waits cannot be replaced.
+ * its upload time is open, when they have sent nothing for it yet or
+ * their photo was rejected. A photo that waits cannot be replaced.
  */
 export function maySendPhoto(
   schedule: StudentSchedule,
   now: CampusMoment,
 ): boolean {
-  if (schedule.attendance !== null) return false;
+  if (!takesNewPhoto(schedule.attendance?.status ?? null)) return false;
   return scheduleStatus(schedule, now) === "open";
 }
 

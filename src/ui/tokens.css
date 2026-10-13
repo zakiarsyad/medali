@@ -89,6 +89,7 @@
   --score-box-width: 90px;
   --bare-box-width: 380px;
   --photo-preview-height: 260px;
+  --photo-card-height: 200px;
   --icon-size: 18px;
   --icon-stroke: 2;
   --switched-off-opacity: 0.55;
@@ -139,6 +140,13 @@
   /* Filters that a phone folds under one button are always shown here. */
   --filter-fold-button-display: none;
   --filter-folded-display: block;
+
+  /*
+   * What a card offers to decide stands side by side here. On a phone
+   * each takes the whole width of the card and is tall enough for a thumb.
+   */
+  --decide-control-basis: auto;
+  --decide-control-padding: var(--space-xs);
 }
 
 /*
@@ -172,6 +180,8 @@
     --stacked-actions-justify: flex-start;
     --stacked-empty-padding: 0;
     --stacked-badge-wrap: normal;
+    --decide-control-basis: 100%;
+    --decide-control-padding: var(--space-md);
     --dialog-width: 100%;
     --dialog-height: 100%;
     --dialog-max-size: 100%;

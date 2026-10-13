@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import type { FormParts } from "./form-values";
 import type { ScheduleList } from "./list-schedules";
 import { ScheduleBoard } from "./schedule-board";
-import { TEST_FORM_PARTS, TEST_SCHEDULE } from "./test-screen-parts";
+import {
+  TEST_FORM_PARTS,
+  TEST_NO_ATTENDANCE,
+  TEST_SCHEDULE,
+} from "./test-screen-parts";
 
 vi.mock("./actions", () => ({
   saveScheduleAction: vi.fn(),
@@ -24,6 +28,7 @@ function board(
       level={level}
       counts={TEST_FORM_PARTS.counts}
       now={{ day: "2026-10-13", time: "08:00" }}
+      attendance={TEST_NO_ATTENDANCE}
       form={form}
     />,
   );
@@ -87,5 +92,13 @@ describe("the list of the board", () => {
 
   it("says which schedules the page shows", () => {
     expect(board(null)).toContain("1–1 dari 1 jadwal");
+  });
+
+  it('leads "Peserta" to the same tahap and page of the list, with the students of that schedule open', () => {
+    const second = { ...ONE, matching: 30, page: 2 };
+
+    expect(board(null, second, 2)).toContain(
+      `href="/kegiatan/ppks?tahap=2&amp;hal=2&amp;peserta=${TEST_SCHEDULE.id}">Peserta</a>`,
+    );
   });
 });

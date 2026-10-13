@@ -3,9 +3,9 @@ import { may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { accounts, students, studyPrograms } from "@/db/schema";
+import { searchText } from "@/ui/search-text";
 import { holdsBamRole } from "./list-bam-students";
 import type { Manager } from "./save-bam-roles";
-import { searchText } from "./search-text";
 
 export const SEARCH_LIMIT = 10;
 

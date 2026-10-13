@@ -23,6 +23,9 @@ export const PHOTO_RULE: FileRule = {
   maxBytes: PHOTO_MAX_BYTES,
 };
 
+/** The part of the file storage that keeps the attendance photos. */
+export const PHOTO_FOLDER = "attendance-photos";
+
 /** The name every sent photo gets: the name of the picked file is not kept. */
 export const PHOTO_FILE_NAME = `foto-kehadiran${JPEG.extension}`;
 

@@ -7,6 +7,7 @@ import type { Download, Refusal } from "@/files/download-response";
 import { JPEG } from "@/files/file-kinds";
 import type { FileStore } from "@/files/file-store";
 import { PHOTO_FILE_NAME } from "./attendance-photo";
+import { mayVerify } from "./may-verify";
 import { readOwnStudent } from "./own-student";
 
 export type OpenedPhoto =
@@ -17,16 +18,37 @@ function refused(refusal: Refusal): OpenedPhoto {
   return { ok: false, refusal };
 }
 
+/** Whose photos an account may open: every student's, or one student's. */
+type PhotoReach = { kind: "all" } | { kind: "own"; studentId: string };
+
 /**
- * Where the photo of an attendance is kept, when the attendance is the
- * student's own and its schedule is not removed. Null otherwise, and for
- * an attendance without a photo.
+ * The photos an account may open: all of them with the right to verify
+ * attendance, and its own student's otherwise. Null for anyone else.
  */
-async function ownPhotoKey(
+async function photoReachOf(
   db: Database,
-  studentId: string,
+  account: AccountForAccess,
+): Promise<PhotoReach | null> {
+  if (mayVerify(account)) return { kind: "all" };
+  const student = await readOwnStudent(db, account);
+  if (student === null) return null;
+  return { kind: "own", studentId: student.id };
+}
+
+/**
+ * Where the photo of an attendance is kept, when the attendance is within
+ * reach and its schedule is not removed. Null otherwise, and for an
+ * attendance without a photo.
+ */
+async function photoKeyWithin(
+  db: Database,
+  reach: PhotoReach,
   attendanceId: string,
 ): Promise<string | null> {
+  const ofStudent =
+    reach.kind === "own"
+      ? eq(activityAttendances.studentId, reach.studentId)
+      : undefined;
   const [attendance] = await db
     .select({ photoKey: activityAttendances.photoKey })
     .from(activityAttendances)
@@ -37,7 +59,7 @@ async function ownPhotoKey(
     .where(
       and(
         eq(activityAttendances.id, attendanceId),
-        eq(activityAttendances.studentId, studentId),
+        ofStudent,
         isNull(activitySchedules.deletedAt),
       ),
     );
@@ -62,12 +84,12 @@ async function keptBytes(
 }
 
 /**
- * The photo of an attendance, for the one account that may open it for
- * now: the student who sent it. The account is checked before anything
- * is looked up, and the photo of another student answers as one that
- * does not exist, so nobody learns which attendances there are. `null`
- * is a visitor who is not signed in. `id` comes from the address and is
- * not trusted.
+ * The photo of an attendance, for the accounts that may open it: the
+ * student who sent it, and staff with the right to verify attendance.
+ * The account is checked before anything is looked up, and the photo of
+ * another student answers as one that does not exist, so nobody learns
+ * which attendances there are. `null` is a visitor who is not signed in.
+ * `id` comes from the address and is not trusted.
  */
 export async function openAttendancePhoto(
   db: Database,
@@ -76,12 +98,12 @@ export async function openAttendancePhoto(
   id: string,
 ): Promise<OpenedPhoto> {
   if (account === null) return refused("not-signed-in");
-  const student = await readOwnStudent(db, account);
-  if (student === null) return refused("not-allowed");
+  const reach = await photoReachOf(db, account);
+  if (reach === null) return refused("not-allowed");
   // Where file keeping is off, no photo was kept.
   if (store === null || !isUuid(id)) return refused("not-found");
 
-  const photoKey = await ownPhotoKey(db, student.id, id);
+  const photoKey = await photoKeyWithin(db, reach, id);
   if (photoKey === null) return refused("not-found");
   const bytes = await keptBytes(store, photoKey);
   if (bytes === "unreachable") return refused("unreachable");

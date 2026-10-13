@@ -1,16 +1,30 @@
+import Link from "next/link";
+import { Fragment } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { AbsentPanel } from "./absent-panel";
 import { type CohortCount, countParticipants } from "./participants";
+import {
+  type AttendanceCount,
+  hasStarted,
+  type ListAttendance,
+  shownAttendance,
+} from "./schedule-attendance";
+import type { OpenAbsent } from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
 import { type CampusMoment, scheduleStatus } from "./schedule-status";
 import {
   activityDetail,
   participantWords,
+  shownCount,
   shownDays,
   shownHours,
   targetWords,
   uploadWords,
 } from "./schedule-words";
 import { StatusBadge } from "./status-badge";
+
+/** The cells before the attendance, and the actions, count as columns too. */
+const COLUMNS = 8;
 
 function ScheduleCells({
   schedule,
@@ -59,14 +73,66 @@ function ScheduleCells({
   );
 }
 
+/** Hadir, Menunggu and Kehadiran: nobody yet before the schedule starts. */
+function AttendanceCells({ count }: { count: AttendanceCount | undefined }) {
+  return (
+    <>
+      <td data-title="Hadir">{shownCount(count?.present ?? 0)}</td>
+      <td data-title="Menunggu">{shownCount(count?.waiting ?? 0)}</td>
+      <td data-title="Kehadiran">{shownAttendance(count)}</td>
+    </>
+  );
+}
+
+/** The first page of the students of a schedule. */
+function first(scheduleId: string): OpenAbsent {
+  return { scheduleId, page: 1 };
+}
+
+/**
+ * What a row offers: "Peserta", or "Tutup" while it is open, and "Ubah".
+ * A row that offers nothing draws nothing, so its cell takes no room.
+ */
+function RowActions({
+  absentAddress,
+  isOpen,
+  onChange,
+}: {
+  /** Where "Peserta" or "Tutup" leads, or null before the schedule starts. */
+  absentAddress: string | null;
+  isOpen: boolean;
+  onChange: (() => void) | null;
+}) {
+  if (absentAddress === null && onChange === null) return null;
+  return (
+    <span className={shared.rowActions}>
+      {absentAddress !== null && (
+        // The list stays where it is scrolled to: the students open under their row.
+        <Link href={absentAddress} className={shared.link} scroll={false}>
+          {isOpen ? "Tutup" : "Peserta"}
+        </Link>
+      )}
+      {onChange && (
+        <button type="button" className={shared.link} onClick={onChange}>
+          Ubah
+        </button>
+      )}
+    </span>
+  );
+}
+
 /**
  * The schedules of one page of the list: a table, and cards on a phone.
- * Each has "Ubah" when `onChange` is given.
+ * Each shows how many attended. From its first day on a schedule has
+ * "Peserta", which opens the students who did not attend under it, and
+ * "Tutup" closes them again. Each has "Ubah" when `onChange` is given.
  */
 export function ScheduleTable({
   schedules,
   counts,
   now,
+  attendance,
+  addressOf,
   onChange,
 }: {
   schedules: ScheduleRow[];
@@ -74,9 +140,13 @@ export function ScheduleTable({
   counts: CohortCount[];
   /** The moment on campus the statuses are told at. */
   now: CampusMoment;
+  attendance: ListAttendance;
+  /** The address of this page of the list with a "Peserta" open, or none. */
+  addressOf: (open: OpenAbsent | null) => string;
   /** Opens the form of a schedule, or null for an account that only reads. */
   onChange: ((schedule: ScheduleRow) => void) | null;
 }) {
+  const { absent } = attendance;
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -86,30 +156,54 @@ export function ScheduleTable({
             <th>Kegiatan</th>
             <th>Sasaran</th>
             <th>Status</th>
-            {onChange && (
-              <th>
-                <span className={shared.hidden}>Tindakan</span>
-              </th>
-            )}
+            <th>Hadir</th>
+            <th>Menunggu</th>
+            <th>Kehadiran</th>
+            <th>
+              <span className={shared.hidden}>Tindakan</span>
+            </th>
           </tr>
         </thead>
         <tbody>
-          {schedules.map((schedule) => (
-            <tr key={schedule.id}>
-              <ScheduleCells schedule={schedule} counts={counts} now={now} />
-              {onChange && (
-                <td>
-                  <button
-                    type="button"
-                    className={shared.link}
-                    onClick={() => onChange(schedule)}
-                  >
-                    Ubah
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
+          {schedules.map((schedule) => {
+            const { id } = schedule;
+            const isOpen = absent?.scheduleId === id;
+            return (
+              <Fragment key={id}>
+                <tr>
+                  <ScheduleCells
+                    schedule={schedule}
+                    counts={counts}
+                    now={now}
+                  />
+                  <AttendanceCells count={attendance.counts[id]} />
+                  <td>
+                    <RowActions
+                      absentAddress={
+                        hasStarted(schedule, now.day)
+                          ? addressOf(isOpen ? null : first(id))
+                          : null
+                      }
+                      isOpen={isOpen}
+                      onChange={onChange && (() => onChange(schedule))}
+                    />
+                  </td>
+                </tr>
+                {absent !== null && isOpen && (
+                  <tr>
+                    <td colSpan={COLUMNS}>
+                      <AbsentPanel
+                        absent={absent}
+                        addressOf={(page) =>
+                          addressOf({ scheduleId: id, page })
+                        }
+                      />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>

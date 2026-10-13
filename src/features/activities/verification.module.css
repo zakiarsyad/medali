@@ -1,0 +1,145 @@
+/*
+ * A list is as wide as its longest choice unless told otherwise, and the
+ * name of an activity is longer than a phone is wide.
+ */
+.filters select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
+ * As many cards beside each other as fit. A card is never wider than the
+ * screen: on a phone its smallest width gives way and there is one column.
+ */
+.photoCards {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-lg);
+}
+
+.photoCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Every picture takes the same room, loaded or not: a card keeps its
+ * height while its picture is still on its way.
+ */
+.photo,
+.noPhoto {
+  width: 100%;
+  height: var(--photo-card-height);
+  background: var(--surface2);
+}
+
+.photo {
+  display: block;
+  object-fit: cover;
+}
+
+.noPhoto {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+  text-align: center;
+}
+
+.photoBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+}
+
+.decision {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-xs);
+  align-items: center;
+  margin-top: var(--space-xs);
+}
+
+/* "Pilih semua", "Validasi (n) terpilih" and what the last press answered. */
+.bulkBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.tick {
+  margin-top: var(--space-xs);
+}
+
+/* The folded panel of a record made by hand opens by a press on its title. */
+.foldHead {
+  cursor: pointer;
+}
+
+/* A field of the form that takes the whole row. */
+.wide {
+  grid-column: 1 / -1;
+}
+
+.pick,
+.found {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.found {
+  align-items: flex-start;
+}
+
+/* A found student is a long line: it folds instead of widening the page. */
+.found button {
+  max-width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  align-items: baseline;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* What a waiting card offers: "Validasi", the reason, and "Tolak". */
+.decide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+/*
+ * Named with its card part, so it counts for more than the shared look
+ * of a button or a field, whichever of the two style files comes last.
+ */
+.decide .decideControl {
+  flex: 1 1 var(--decide-control-basis);
+  min-width: 0;
+  max-width: 100%;
+  padding-top: var(--decide-control-padding);
+  padding-bottom: var(--decide-control-padding);
+}

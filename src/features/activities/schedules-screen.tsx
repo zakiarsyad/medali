@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { SQL } from "drizzle-orm";
 import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
@@ -7,8 +8,11 @@ import { database } from "@/db/database";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { readActivityChoices } from "./activity-choices";
+import { readAttendanceNumbers } from "./attendance-numbers";
+import { AttendanceNumbersView } from "./attendance-numbers-view";
 import { readCohortCounts } from "./cohort-counts";
 import type { FormParts, FormPeriod } from "./form-values";
+import { readListAttendance } from "./list-attendance";
 import { listSchedules } from "./list-schedules";
 import { ScheduleBoard } from "./schedule-board";
 import type { ScheduleListParams } from "./schedule-list-address";
@@ -35,28 +39,43 @@ async function readFormLists(
 }
 
 /**
- * The tab "Kegiatan PPKS": the schedules of the PPKS activities, and for
- * an account that may manage activities the form that adds one.
+ * The tab "Kegiatan PPKS": the attendance numbers, the schedules of the
+ * PPKS activities with how many attended, and for an account that may
+ * manage activities the form that adds one. `visible` is the students
+ * the account sees: every number of students and every name here is
+ * read through it.
  */
 export async function SchedulesScreen({
   tabs,
   params,
+  visible,
   mayManage,
 }: {
   tabs: TabLinksProps;
   params: ScheduleListParams;
+  visible: SQL;
   mayManage: boolean;
 }) {
   const db = database();
   // The server's clock in campus time, so every browser sees one status.
   const moment = new Date();
   const now = { day: campusDay(moment), time: campusTime(moment) };
-  const [list, counts, formLists] = await Promise.all([
+  const [list, counts, formLists, numbers] = await Promise.all([
     listSchedules(db, params.level, params.page),
     readCohortCounts(db),
     // Read only for an account that gets the form.
     mayManage ? readFormLists(db) : null,
+    readAttendanceNumbers(db, visible, params.level, now.day),
   ]);
+  // Asked only for the schedules of the page shown, so after the list.
+  const attendance = await readListAttendance(
+    db,
+    visible,
+    list.schedules,
+    counts,
+    params.open,
+    now.day,
+  );
   const form: FormParts | null = formLists && {
     ...formLists,
     counts,
@@ -71,11 +90,13 @@ export async function SchedulesScreen({
         kehadiran yang diunggah mahasiswa dan divalidasi Pegawai UPK.
       </PageHead>
       <TabLinks {...tabs} />
+      <AttendanceNumbersView numbers={numbers} />
       <ScheduleBoard
         list={list}
         level={params.level}
         counts={counts}
         now={now}
+        attendance={attendance}
         form={form}
       />
     </>

@@ -235,3 +235,30 @@
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius-md);
 }
+
+/* What "Peserta" opens under the row of its schedule. */
+.absent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.absentLine {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+/* As many names beside each other as fit, and one column on a phone. */
+.absentList {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-xs) var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}

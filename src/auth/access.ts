@@ -133,3 +133,17 @@ export function rowLimitForPage(
   );
   return rowLimitOf(account, opening);
 }
+
+/**
+ * The same for a tab that no action guards: the limits of only those
+ * roles of the account that open the tab. A role that opens the page
+ * but not this tab adds no rows to it.
+ */
+export function rowLimitForTab(
+  account: AccountForAccess,
+  page: PageId,
+  tab: string,
+): RowLimit {
+  const opening = account.roles.filter((role) => mayOpenTab([role], page, tab));
+  return rowLimitOf(account, opening);
+}
