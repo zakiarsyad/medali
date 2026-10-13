@@ -76,6 +76,7 @@ remove_files_not_in_backup() {
 }
 
 require_backup_settings
+take_turn
 is_backup_name "$name" ||
   refuse "Sebutkan nama cadangan yang dipulihkan, contoh: restore 2026-10-13-020000.medali-backup"
 [[ -f "$BACKUPS/$name" ]] ||

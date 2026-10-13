@@ -607,9 +607,6 @@ function nightlyAtTheNextMinute(settings: Settings): Promise<Outcome> {
   return inBackupPart(["bash", "-euc", NIGHTLY_AT_THE_NEXT_MINUTE], settings);
 }
 
-/** An address where no file storage answers. */
-const NO_FILE_STORAGE = { FILE_STORAGE_URL: "http://files:9" };
-
 describe("the nightly backup", () => {
   it(
     'says "Cadangan otomatis belum diatur." and makes no backup while BACKUP_FOLDER is empty',
@@ -695,22 +692,150 @@ describe("the nightly backup", () => {
   );
 
   it(
-    "makes a backup at its hour and says the result, and goes on after one that failed",
+    "makes a backup at its hour and says the result, and goes on after one that was refused",
     async () => {
+      // Side by side, each in a backup part of its own. The second is
+      // refused before it reaches the backup folder, so it cannot clear
+      // away what the first is still writing there.
       const [worked, failed] = await Promise.all([
         nightlyAtTheNextMinute({}),
-        nightlyAtTheNextMinute(NO_FILE_STORAGE),
+        nightlyAtTheNextMinute({ BACKUP_PASSWORD: "" }),
       ]);
 
       const name = nameIn(worked);
+      expect(name).toMatch(ONLY_A_BACKUP_NAME);
       expect(worked.said).toContain(`Cadangan selesai: ${name}`);
       expect(worked.status).toBe(STILL_RUNNING);
       expect(await backupFolder()).toContain(name);
       expect(failed.said).toContain(
-        "Cadangan gagal: berkas unggahan tidak bisa disalin.",
+        "Pengaturan BACKUP_PASSWORD masih kosong. Isi di .env.campus",
       );
       expect(failed.said).toContain("Cadangan otomatis gagal.");
       expect(failed.status).toBe(STILL_RUNNING);
+    },
+    CASE_TIMEOUT_MS,
+  );
+});
+
+/** An address where no file storage answers. */
+const NO_FILE_STORAGE = { FILE_STORAGE_URL: "http://files:9" };
+
+const UNFINISHED_ENDING = ".medali-backup.part";
+
+function unfinishedIn(folder: string[]): string[] {
+  return folder.filter((name) => name.endsWith(UNFINISHED_ENDING));
+}
+
+describe("a backup that fails half way", () => {
+  it(
+    "leaves no backup and no unfinished one, and removes no older backup",
+    async () => {
+      const before = await backupFolder();
+
+      const failed = await backup({ ...NO_FILE_STORAGE, BACKUP_KEEP: "1" });
+
+      expect(failed.status).toBe(1);
+      expect(failed.said).toContain(
+        "Cadangan gagal: berkas unggahan tidak bisa disalin.",
+      );
+      expect(before.filter((name) => BACKUP_NAME.test(name)).length).toBe(2);
+      expect(await backupFolder()).toEqual(before);
+    },
+    CASE_TIMEOUT_MS,
+  );
+
+  it(
+    "has its unfinished file removed by the next backup",
+    async () => {
+      const leftBehind = `a1b2c3d4${UNFINISHED_ENDING}`;
+      await inBackupFolder('touch "/backups/$1"', [leftBehind]);
+      const before = await backupFolder();
+
+      const next = await backup();
+
+      expect(unfinishedIn(before)).toEqual([leftBehind]);
+      expect(next.status).toBe(0);
+      expect(unfinishedIn(await backupFolder())).toEqual([]);
+    },
+    CASE_TIMEOUT_MS,
+  );
+});
+
+/** Runs a command while another backup or restore has the turn. */
+const WHILE_ANOTHER_RUNS = `flock /tmp/medali-backup.turn sleep 3 &
+  sleep 1
+  exec "$@"`;
+
+describe("a backup or restore started while another one runs", () => {
+  it.each([
+    ["backup", []],
+    ["restore", [REPLACE_WORD]],
+  ])(
+    "is refused and changes nothing: %s",
+    async (command, words) => {
+      const before = await backupFolder();
+      const target = await makeTargetHoldData();
+
+      const refused = await inBackupPart(
+        ["bash", "-euc", WHILE_ANOTHER_RUNS, "--", command, madeName, ...words],
+        TARGET,
+        REPLACING.typed,
+      );
+
+      expect(refused.status).toBe(1);
+      expect(refused.said).toContain(
+        "Cadangan atau pemulihan lain sedang berjalan.",
+      );
+      expect(await backupFolder()).toEqual(before);
+      expect(await stateOf(TARGET)).toEqual(target);
+    },
+    CASE_TIMEOUT_MS,
+  );
+});
+
+/**
+ * Makes a backup that opens with the password and unpacks, but whose
+ * database part fails at its very end, after it made every table.
+ */
+const MAKE_ONE_THAT_FAILS_LATE = `work=$(mktemp --directory)
+  mkdir --mode=700 "$work/tool"
+  mkdir "$work/content"
+  tool() {
+    gpg --homedir "$work/tool" --batch --quiet --pinentry-mode loopback \
+      --passphrase-fd 3 "$@" 2>/dev/null
+  }
+  tool --decrypt "/backups/$1" 3<<<"$BACKUP_PASSWORD" |
+    tar --extract --directory "$work/content"
+  echo "SELECT 1 / 0;" >> "$work/content/database.sql"
+  tar --create --directory "$work/content" database.sql files |
+    tool --symmetric --cipher-algo AES256 --output "/backups/$2" \
+      3<<<"$BACKUP_PASSWORD"`;
+
+describe("a restore that fails half way", () => {
+  it(
+    "leaves the package with every row and every file it had",
+    async () => {
+      const failsLate = "2000-01-03-000000.medali-backup";
+      await inBackupFolder(MAKE_ONE_THAT_FAILS_LATE, [madeName, failsLate]);
+      const before = await makeTargetHoldData();
+
+      const failed = await restore(failsLate, REPLACING);
+      await inBackupFolder('rm "/backups/$1"', [failsLate]);
+
+      expect(failed.status).toBe(1);
+      expect(failed.said).toContain(
+        "Pemulihan gagal: database tidak bisa diganti, jadi tetap seperti semula.",
+      );
+      const after = await stateOf(TARGET);
+      expect(after.rows).toEqual(before.rows);
+      expect(after.files[ONLY_IN_TARGET.key]).toBe(
+        before.files[ONLY_IN_TARGET.key],
+      );
+      // The backup's own file was added before the database failed, and
+      // stays as an extra file, which harms nothing.
+      expect(Object.keys(after.files).sort()).toEqual(
+        [KEPT_FILE.key, ONLY_IN_TARGET.key].sort(),
+      );
     },
     CASE_TIMEOUT_MS,
   );

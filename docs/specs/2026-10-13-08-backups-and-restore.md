@@ -156,6 +156,6 @@ change any of these.
   compares.
 - [x] 4. The nightly backup and the number to keep, with their
   settings.
-- [ ] 5. Failure handling: no half-written backup, and the app keeps
+- [x] 5. Failure handling: no half-written backup, and the app keeps
   running.
 - [ ] 6. The notes for the campus staff.

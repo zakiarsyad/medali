@@ -72,6 +72,10 @@ remove_oldest_beyond() {
 }
 
 require_backup_settings
+take_turn
+# What a failure or a power cut left unfinished. No other backup is
+# writing one now, since this one has the turn.
+rm -f "$BACKUPS"/*"$BACKUP_ENDING$UNFINISHED_ENDING"
 make_work_folder
 # Written under a name that marks it as unfinished, and given its real
 # name only once it is complete.

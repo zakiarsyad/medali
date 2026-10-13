@@ -102,7 +102,18 @@ prepare_locking_tool() {
 
 # The locking tool, with the backup password given on its own input,
 # never on the command line. The caller opens that input as number 3.
+# Its helper is not given the turn below, or it could keep it after the
+# command ended.
 locking_tool() {
   gpg --homedir "$WORK/locking-tool" --batch --yes --quiet \
-    --pinentry-mode loopback --passphrase-fd 3 "$@"
+    --pinentry-mode loopback --passphrase-fd 3 "$@" 9>&-
+}
+
+# One backup or restore at a time; the turn ends with the command. It is
+# kept inside this part, not in the backup folder, which may be on a
+# disk of another server where a turn cannot be kept.
+take_turn() {
+  exec 9>/tmp/medali-backup.turn
+  flock --nonblock 9 ||
+    refuse "Cadangan atau pemulihan lain sedang berjalan. Tunggu sampai selesai, lalu coba lagi."
 }
