@@ -3,10 +3,14 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { mentorGroups, students } from "@/db/schema";
+import { mentorGroupMembers, mentorGroups, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { findAddedStudent } from "./added-students";
-import { changeStudent, removeStudent } from "./change-student";
+import {
+  changeStudent,
+  removeStudent,
+  STUDENT_CHANGED,
+} from "./change-student";
 import { GROUP_DOES_NOT_FIT, GROUP_NOT_AVAILABLE } from "./fitting-group";
 import { inputStudent, NOT_ALLOWED } from "./input-student";
 import type { StudentInput } from "./student-input";
@@ -103,6 +107,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
         const moved = await changeStudent(db, mover, made.student, {
           mentorGroupId: made.newGroup,
+          openedGroupId: made.oldGroup,
           version: 1,
         });
 
@@ -134,6 +139,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, made.student, {
         mentorGroupId: null,
+        openedGroupId: made.oldGroup,
         version: 1,
       });
 
@@ -159,6 +165,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, late, {
         mentorGroupId: made.newGroup,
+        openedGroupId: null,
         version: 1,
       });
 
@@ -178,6 +185,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, renamed, {
         mentorGroupId: made.oldGroup,
+        openedGroupId: made.oldGroup,
         version: 1,
       });
 
@@ -214,6 +222,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
       for (const mentorGroupId of otherGroups) {
         const changed = await changeStudent(db, made.staff, renamed, {
           mentorGroupId,
+          openedGroupId: made.oldGroup,
           version: 1,
         });
         expect(changed).toEqual(GROUP_DOES_NOT_FIT);
@@ -232,6 +241,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, otherYear, {
         mentorGroupId: made.oldGroup,
+        openedGroupId: made.oldGroup,
         version: 1,
       });
 
@@ -254,6 +264,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, made.student, {
         mentorGroupId: made.newGroup,
+        openedGroupId: made.oldGroup,
         version: 1,
       });
 
@@ -271,6 +282,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
         const changed = await changeStudent(db, other, made.student, {
           mentorGroupId: made.newGroup,
+          openedGroupId: made.oldGroup,
           version: 1,
         });
 
@@ -280,6 +292,66 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
       });
     },
   );
+});
+
+describe("changeStudent from a form opened before the student's group changed", () => {
+  it("refuses the change of a student given a group since, who stays in it, with nothing changed or logged", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addPlacedStudent(db, "9900003414");
+      const late = studentOf("9900003415", made.program);
+      await inputStudent(db, made.staff, late);
+      const lateId = await idOf(db, late.nim);
+      await db
+        .insert(mentorGroupMembers)
+        .values({ studentId: lateId, groupId: made.newGroup });
+
+      const changed = await changeStudent(
+        db,
+        made.staff,
+        { ...late, name: "Tidak Tersimpan" },
+        { mentorGroupId: null, openedGroupId: null, version: 1 },
+      );
+
+      expect(changed).toEqual(STUDENT_CHANGED);
+      expect(await membersOf(db, made.newGroup)).toEqual([lateId]);
+      expect(await findAddedStudent(db, late.nim)).toMatchObject({
+        name: "Pindah Uji",
+        version: 1,
+      });
+      expect(await placementsOf(db, lateId)).toEqual([]);
+    });
+  });
+
+  it("refuses the change of a student taken out of their group since, who is not put back", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addPlacedStudent(db, "9900003416");
+      await db
+        .delete(mentorGroupMembers)
+        .where(eq(mentorGroupMembers.studentId, made.studentId));
+
+      const changed = await changeStudent(
+        db,
+        made.staff,
+        { ...made.student, name: "Tidak Tersimpan" },
+        {
+          mentorGroupId: made.oldGroup,
+          openedGroupId: made.oldGroup,
+          version: 1,
+        },
+      );
+
+      expect(changed).toEqual(STUDENT_CHANGED);
+      expect(await membersOf(db, made.oldGroup)).toEqual([]);
+      expect(await findAddedStudent(db, made.student.nim)).toMatchObject({
+        name: "Pindah Uji",
+        mentorGroupId: null,
+        version: 1,
+      });
+      expect(await placementsOf(db, made.studentId)).toEqual([
+        [null, made.oldGroup, made.staff.id],
+      ]);
+    });
+  });
 });
 
 describe("removeStudent for a student in a kelompok pengasuhan", () => {

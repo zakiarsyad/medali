@@ -77,6 +77,10 @@ export async function holdFittingGroup(
     .select()
     .from(mentorGroups)
     .where(eq(mentorGroups.id, groupId))
-    .for("update");
+    // Not the stronger "update": a save that moves another student out of
+    // this group logs a line that points at it, and two saves that swap
+    // students between two groups would each wait for the other until the
+    // database gives one of them up.
+    .for("no key update");
   return checkGroupFits(group, student);
 }

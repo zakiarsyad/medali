@@ -114,6 +114,7 @@ export async function changeStudentAction(
   if (!parsed.ok) return refusedForm(before, parsed.error, fields);
   const sent = parseChangeSent({
     mentorGroupId: fields.mentorGroupId,
+    openedGroupId: text(form, "openedGroupId"),
     version: text(form, "version"),
   });
   if (!sent.ok) return refusedForm(before, sent.error, fields);

@@ -90,7 +90,10 @@ Decided while building, because the issue did not say:
    keeps which group they left.
 7. To catch two people changing one student, each student record keeps
    a count of its changes. A save that started from an older count is
-   refused, and the message asks to load the page again.
+   refused, and the message asks to load the page again. A save is
+   refused the same way when the student's group changed since the form
+   opened, as a penetapan that is fixed or cancelled moves students
+   without raising that count.
 8. The column shows the mentor's name under the group code, as in the
    prototype. The line under the number says "atur di Pengasuh >
    Penetapan", as in the prototype.

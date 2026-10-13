@@ -20,6 +20,9 @@ export async function changeTestStudent(
   mentorGroupId: string | null = null,
 ): Promise<Parsed<null>> {
   const stored = await findAddedStudent(db, student.nim);
-  const version = stored?.version ?? FIRST_VERSION;
-  return changeStudent(db, actor, student, { mentorGroupId, version });
+  return changeStudent(db, actor, student, {
+    mentorGroupId,
+    openedGroupId: stored?.mentorGroupId ?? null,
+    version: stored?.version ?? FIRST_VERSION,
+  });
 }

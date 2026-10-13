@@ -12,7 +12,7 @@ import type { ChangeSent } from "./change-sent";
 import { emailChangeOf } from "./email-change";
 import { holdFittingGroup } from "./fitting-group";
 import { type Actor, NOT_ALLOWED } from "./input-student";
-import { moveToGroup } from "./move-to-group";
+import { heldGroupOf, moveFromGroup, moveToGroup } from "./move-to-group";
 import type { StudentInput } from "./student-input";
 
 export const NOT_FOUND = {
@@ -88,7 +88,10 @@ async function changeAccountOf(
  * none, in the same save, and the move is logged. A group that does not
  * fit the data being saved is refused, and nothing is changed.
  * A change sent from an older version of the record is refused too: every
- * change that is saved raises the version by one.
+ * change that is saved raises the version by one. So is a change sent from
+ * a form that opened before the student's group changed: a penetapan
+ * fixed or cancelled moves a student without raising the version, and
+ * the save would undo that move unseen.
  */
 export async function changeStudent(
   db: Database,
@@ -105,9 +108,12 @@ export async function changeStudent(
       if (stored.version !== sent.version) return STUDENT_CHANGED;
       const fits = await holdFittingGroup(tx, sent.mentorGroupId, student);
       if (!fits.ok) return fits;
-      const placed = await moveToGroup(
+      const groupNow = await heldGroupOf(tx, stored.id);
+      if (groupNow !== sent.openedGroupId) return STUDENT_CHANGED;
+      const placed = await moveFromGroup(
         tx,
         stored.id,
+        groupNow,
         sent.mentorGroupId,
         actor.id,
       );

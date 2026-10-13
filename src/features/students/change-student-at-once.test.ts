@@ -1,5 +1,5 @@
 // Sample NIMs of this file: 9900003600 to 9900003699.
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { mentorGroupMembers, students } from "@/db/schema";
@@ -88,7 +88,11 @@ describe("a student changed while a penetapan moves the same student", () => {
           db,
           made.second,
           { ...made.student, name: "Bareng Uji Kedua" },
-          { mentorGroupId: made.groups.two, version: OPENED_VERSION },
+          {
+            mentorGroupId: made.groups.two,
+            openedGroupId: null,
+            version: OPENED_VERSION,
+          },
         ),
     );
 
@@ -107,6 +111,7 @@ describe("a student changed while a penetapan moves the same student", () => {
     const studentId = await idOf(own.db, made.student.nim);
     const joined = await changeStudent(own.db, made.first, made.student, {
       mentorGroupId: made.groups.one,
+      openedGroupId: null,
       version: OPENED_VERSION,
     });
     expect(joined).toEqual(SAVED);
@@ -126,10 +131,54 @@ describe("a student changed while a penetapan moves the same student", () => {
   });
 });
 
+describe("two people who move two students between the same two groups", () => {
+  it("lets a student leave a group that an unfinished save of another student holds", async () => {
+    const made = await addStudentAndGroups(own.db, "9900003605");
+    const leaving = { ...made.student, nim: "9900003606" };
+    const added = await inputStudent(
+      own.db,
+      made.second,
+      leaving,
+      made.groups.one,
+    );
+    expect(added).toEqual(SAVED);
+
+    const left = await own.db.transaction(async (tx) => {
+      const joined = await changeStudent(tx, made.first, made.student, {
+        mentorGroupId: made.groups.one,
+        openedGroupId: null,
+        version: OPENED_VERSION,
+      });
+      expect(joined).toEqual(SAVED);
+      return own.otherDb.transaction(async (otherTx) => {
+        // A save that waits for the group fails here, where it would
+        // otherwise wait for a first save that ends only after it.
+        await otherTx.execute(sql`set local lock_timeout = '2s'`);
+        return changeStudent(otherTx, made.second, leaving, {
+          mentorGroupId: made.groups.two,
+          openedGroupId: made.groups.one,
+          version: OPENED_VERSION,
+        });
+      });
+    });
+
+    expect(left).toEqual(SAVED);
+    const [joinedId] = await membersOf(own.db, made.groups.one);
+    expect(joinedId).toBe(await idOf(own.db, made.student.nim));
+    expect(await membersOf(own.db, made.groups.two)).toEqual([
+      await idOf(own.db, leaving.nim),
+    ]);
+  });
+});
+
 describe("two people who change one student at the same moment", () => {
   it("saves the first change: the second waits and is told the record changed", async () => {
     const made = await addStudentAndGroups(own.db, "9900003601");
-    const sent = { mentorGroupId: null, version: OPENED_VERSION };
+    const sent = {
+      mentorGroupId: null,
+      openedGroupId: null,
+      version: OPENED_VERSION,
+    };
 
     const both = await own.atOnce(
       (db) =>
@@ -163,11 +212,13 @@ describe("two people who change one student at the same moment", () => {
       (db) =>
         changeStudent(db, made.first, made.student, {
           mentorGroupId: made.groups.one,
+          openedGroupId: null,
           version: OPENED_VERSION,
         }),
       (db) =>
         changeStudent(db, made.second, made.student, {
           mentorGroupId: made.groups.two,
+          openedGroupId: null,
           version: OPENED_VERSION,
         }),
     );

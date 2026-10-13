@@ -202,7 +202,14 @@ export function StudentForm({
       <Fragment key={state.attempt}>
         <NimField nim={shown.nim} locked={editing !== null} />
         {editing && (
-          <input type="hidden" name="version" value={editing.version} />
+          <>
+            <input type="hidden" name="version" value={editing.version} />
+            <input
+              type="hidden"
+              name="openedGroupId"
+              value={start.mentorGroupId}
+            />
+          </>
         )}
         <label className={shared.field}>
           Nama lengkap

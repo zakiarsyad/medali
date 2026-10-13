@@ -7,7 +7,7 @@ import { mentorGroupMemberChanges, mentorGroupMembers } from "@/db/schema";
  * cancelled at the same moment either waits, or has taken the student
  * out already, and then none is read here.
  */
-async function heldGroupOf(
+export async function heldGroupOf(
   tx: Database,
   studentId: string,
 ): Promise<string | null> {
@@ -37,19 +37,20 @@ async function joinGroup(
  * Puts a student in a group, or in none for null, and logs it as the
  * work of the account `by`: joining, moving, going back to none. A
  * student who stays where they are is left alone and nothing is logged.
- * The group must have been checked and held first.
+ * The group must have been checked and held first, and `before` is the
+ * group `heldGroupOf` read in this save.
  *
  * Gives false, with nothing written, when a penetapan fixed at the same
  * moment gave the student a group first. Call it before the other writes
  * of a save that may meet one.
  */
-export async function moveToGroup(
+export async function moveFromGroup(
   tx: Database,
   studentId: string,
+  before: string | null,
   groupId: string | null,
   by: string,
 ): Promise<boolean> {
-  const before = await heldGroupOf(tx, studentId);
   if (before === groupId) return true;
   if (before !== null) {
     await tx
@@ -66,4 +67,15 @@ export async function moveToGroup(
     changedBy: by,
   });
   return true;
+}
+
+/** Moves a student from the group they are in now, as `moveFromGroup` does. */
+export async function moveToGroup(
+  tx: Database,
+  studentId: string,
+  groupId: string | null,
+  by: string,
+): Promise<boolean> {
+  const before = await heldGroupOf(tx, studentId);
+  return moveFromGroup(tx, studentId, before, groupId, by);
 }

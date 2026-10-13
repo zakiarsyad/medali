@@ -57,10 +57,12 @@ describe("changeStudent and the version of the record", () => {
 
       const first = await changeStudent(db, staff, student, {
         mentorGroupId: null,
+        openedGroupId: null,
         version: 1,
       });
       const second = await changeStudent(db, staff, student, {
         mentorGroupId: null,
+        openedGroupId: null,
         version: 2,
       });
 
@@ -77,6 +79,7 @@ describe("changeStudent and the version of the record", () => {
       const renamed = { ...made.student, name: "Versi Uji Pertama" };
       await changeStudent(db, made.staff, renamed, {
         mentorGroupId: null,
+        openedGroupId: null,
         version: 1,
       });
 
@@ -84,7 +87,7 @@ describe("changeStudent and the version of the record", () => {
         db,
         other,
         { ...made.student, name: "Versi Uji Terlambat" },
-        { mentorGroupId: made.groupId, version: 1 },
+        { mentorGroupId: made.groupId, openedGroupId: null, version: 1 },
       );
 
       expect(late).toEqual(STUDENT_CHANGED);
@@ -104,6 +107,7 @@ describe("changeStudent and the version of the record", () => {
 
       const refused = await changeStudent(db, made.staff, otherYear, {
         mentorGroupId: made.groupId,
+        openedGroupId: null,
         version: 1,
       });
 

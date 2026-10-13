@@ -127,7 +127,7 @@ test("Kelompok pengasuhan stands on the group the student being changed is in", 
   expect(form).not.toContain('role="status"');
 });
 
-test("the form to change a student sends the version it opened with, and the form to add sends none", () => {
+test("the form to change a student sends the version and the group it opened with, and the form to add sends neither", () => {
   const changing = renderToStaticMarkup(
     <StudentForm
       programs={PROGRAMS}
@@ -140,7 +140,11 @@ test("the form to change a student sends the version it opened with, and the for
   );
 
   expect(changing).toContain('<input type="hidden" name="version" value="4"/>');
+  expect(changing).toContain(
+    '<input type="hidden" name="openedGroupId" value="fits-too"/>',
+  );
   expect(formFor([2026], GROUPS)).not.toContain('name="version"');
+  expect(formFor([2026], GROUPS)).not.toContain('name="openedGroupId"');
 });
 
 test("the warning of a full group shows under the line of the choice", () => {
