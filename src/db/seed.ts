@@ -29,6 +29,7 @@ import { addSampleMentorReplacements } from "./seed-mentor-replacements";
 import { addSampleMentoringMeetings } from "./seed-mentoring-meetings";
 import { addSampleMentoringNotes } from "./seed-mentoring-notes";
 import { addSampleMentoringScores } from "./seed-mentoring-scores";
+import { addSampleSurveyPeriods } from "./seed-survey-periods";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
 
@@ -139,7 +140,7 @@ async function addSampleFirstYears(
  * with some of the residents in them, and the kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
  * still to be formed, with a few evaluations of their mentors, one
- * replacement of a mentor, a few notes their mentors wrote, the first two
+ * replacement of a mentor, one closed survey period, a few notes their mentors wrote, the first two
  * meetings of the running period with their attendance lists and the
  * scores of that period for part of the groups, and schedules of the PPKS
  * activities that are over, open today and still to come. Every role given
@@ -206,5 +207,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleMentoringScores(tx, groups, grouped, running, today);
     await addSampleMentorEvaluations(tx, groups, periods, sampleActor);
     await addSampleMentorReplacements(tx, groups, sampleActor);
+    await addSampleSurveyPeriods(tx, periods, sampleActor);
   });
 }

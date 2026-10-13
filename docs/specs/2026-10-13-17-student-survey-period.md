@@ -93,9 +93,35 @@ menu and no screen. All of it is built here.
 4. "Responden" on this card is counted from all active students with a
    group; students on Cuti are left out.
 
+## Decisions made while building
+
+5. A survey period is stored as one record: its Periode, the two dates,
+   the weight of capaian karakter, the note, who opened it and when,
+   and, when it was closed by hand or cancelled, who did that and when.
+   The weight of umpan balik is not stored: it is always the rest of
+   100. A period is never erased, and the database itself refuses to
+   delete one.
+6. A period runs while it is Terjadwal or Dibuka: it is not cancelled,
+   not closed by hand, and its last day is today or later. The database
+   itself refuses a second period while one runs, and refuses to give a
+   period that is over a later last day while another runs. It decides
+   by the day on campus. Two that arrive at the same moment wait for
+   each other, so the second is refused. A period that is past its last
+   day, closed by hand or cancelled stands in nobody's way.
+7. The database also refuses a last day before the first day, a weight
+   outside 0 to 100, a close or a cancel without who and when, and a
+   period that is both closed by hand and cancelled. A period of one
+   day is allowed.
+8. The sample period is of the academic period before the running one,
+   as in the prototype: three weeks that start 60 days before that
+   period ends, which is 1 to 21 June for a Genap period, with weights
+   of 50 and 50 and the note "Data contoh periode lalu.". The sample
+   Kepala Unit opened it four days before its first day and closed it
+   by hand on its last day, so it shows as Ditutup.
+
 ## Steps
 
-- [ ] 1. Survey periods are stored, one running at a time, with one
+- [x] 1. Survey periods are stored, one running at a time, with one
   closed sample period.
 - [ ] 2. The permission to manage periods, with its checks.
 - [ ] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
