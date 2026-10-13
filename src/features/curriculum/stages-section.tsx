@@ -15,9 +15,13 @@ const PARITIES: { parity: Parity; label: string; short: string }[] = [
   { parity: "even", label: "Semester genap", short: "genap" },
 ];
 
+const SPECIAL_NOTE =
+  "Daftar kegiatan di luar PPKS. Setelah terdaftar di sini, kegiatan dapat dijadwalkan di menu Kegiatan karakter untuk mahasiswa tertentu, kelas, angkatan, atau lintas angkatan.";
+
 /**
  * The semester choice and the four tahap, with the PPKS activities of the
- * chosen semester and the breakdown of the chosen tahap below.
+ * chosen semester and the breakdown of the chosen tahap below. The special
+ * and additional activities come last: they follow no semester or tahap.
  */
 export function StagesSection({
   tahapNo,
@@ -103,6 +107,14 @@ export function StagesSection({
           mayChange={mayChange}
         />
       )}
+      <PpksPanel
+        key="special"
+        semester={null}
+        note={SPECIAL_NOTE}
+        activities={activities.filter((activity) => activity.semester === null)}
+        values={values}
+        mayManage={false}
+      />
     </section>
   );
 }

@@ -13,14 +13,22 @@ import { ValueSwatch } from "@/ui/value-swatch";
 import { savePpksActivityAction } from "./actions";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
-import { type PpksActivity, ticksOfValues, toggled } from "./ppks-activities";
+import {
+  type PpksActivity,
+  ticksOfValues,
+  toggled,
+  wordsOf,
+} from "./ppks-activities";
 import { DESCRIPTION_MAX_LENGTH, NAME_MAX_LENGTH } from "./ppks-activity-input";
 import { PpksIndicatorTicks } from "./ppks-indicator-ticks";
 import { RemovePpksButton } from "./remove-ppks-button";
 
 const START: FormState = { error: null, done: null };
 
-/** The form that adds a PPKS activity to one semester, or changes one. */
+/**
+ * The form that adds an activity or changes one: a PPKS activity of one
+ * semester, or a special or additional one, which has no semester.
+ */
 export function PpksForm({
   semester,
   activity,
@@ -28,7 +36,7 @@ export function PpksForm({
   onSaved,
   onCancel,
 }: {
-  semester: number;
+  semester: number | null;
   /** The activity to change, or null to add a new one. */
   activity: PpksActivity | null;
   /** Every nilai with its main indicators as they are now. */
@@ -69,9 +77,9 @@ export function PpksForm({
       noValidate
     >
       <h3 className={styles.boxTitle}>
-        {activity ? "Ubah kegiatan" : `Kegiatan PPKS semester ${semester}`}
+        {activity ? "Ubah kegiatan" : wordsOf(semester).newTitle}
       </h3>
-      <input type="hidden" name="semester" value={semester} />
+      <input type="hidden" name="semester" value={semester ?? ""} />
       {activity && <input type="hidden" name="id" value={activity.id} />}
       <div className={shared.form}>
         <label className={`${shared.field} ${styles.full}`}>

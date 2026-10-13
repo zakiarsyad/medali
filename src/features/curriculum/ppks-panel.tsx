@@ -5,14 +5,18 @@ import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
-import type { PpksActivity } from "./ppks-activities";
+import { type PpksActivity, wordsOf } from "./ppks-activities";
 import { PpksForm } from "./ppks-form";
 import { PpksTable } from "./ppks-table";
 
 /** What the form is open for: a new activity, or one to change. */
 type Open = "new" | PpksActivity | null;
 
-/** The PPKS activities of one semester, with the form to add or change one. */
+/**
+ * One list of activities with the form to add or change one: the PPKS
+ * activities of one semester, or the special and additional ones when
+ * there is no semester.
+ */
 export function PpksPanel({
   semester,
   note,
@@ -20,8 +24,8 @@ export function PpksPanel({
   values,
   mayManage,
 }: {
-  semester: number;
-  /** The tahap and the half of the year the semester belongs to. */
+  semester: number | null;
+  /** The line under the heading. */
   note: string;
   activities: PpksActivity[];
   values: ValueIndicators[];
@@ -29,6 +33,7 @@ export function PpksPanel({
 }) {
   const [open, setOpen] = useState<Open>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const words = wordsOf(semester);
 
   function openFor(target: Open) {
     setSaved(null);
@@ -44,9 +49,7 @@ export function PpksPanel({
     <section className={shared.panel}>
       <div className={styles.panelHead}>
         <div>
-          <h2 className={shared.heading}>
-            Program kegiatan PPKS semester {semester}
-          </h2>
+          <h2 className={shared.heading}>{words.heading}</h2>
           <p className={shared.detail}>{note}</p>
         </div>
         {mayManage && !open && (
@@ -55,7 +58,7 @@ export function PpksPanel({
             className={shared.button}
             onClick={() => openFor("new")}
           >
-            Tambah kegiatan PPKS
+            {words.addButton}
           </button>
         )}
       </div>
@@ -76,6 +79,7 @@ export function PpksPanel({
       )}
       <PpksTable
         activities={activities}
+        emptyText={words.empty}
         onChange={mayManage ? openFor : null}
       />
     </section>

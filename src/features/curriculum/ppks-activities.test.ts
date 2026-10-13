@@ -1,11 +1,52 @@
 import { describe, expect, it } from "vitest";
 import {
   activityNote,
+  levelNote,
   removalQuestion,
   ticksOfValues,
   toggled,
   versionOf,
+  wordsOf,
 } from "./ppks-activities";
+
+describe("wordsOf", () => {
+  it("gives the words of the PPKS activities of a semester", () => {
+    expect(wordsOf(3)).toEqual({
+      heading: "Program kegiatan PPKS semester 3",
+      addButton: "Tambah kegiatan PPKS",
+      newTitle: "Kegiatan PPKS semester 3",
+      empty: "Belum ada kegiatan PPKS untuk semester ini.",
+    });
+  });
+
+  it("gives the words of the special and additional activities when there is no semester", () => {
+    expect(wordsOf(null)).toEqual({
+      heading: "Kegiatan khusus dan tambahan",
+      addButton: "Tambah kegiatan khusus",
+      newTitle: "Kegiatan khusus atau tambahan",
+      empty: "Belum ada kegiatan khusus atau tambahan.",
+    });
+  });
+});
+
+describe("levelNote", () => {
+  it("marks the indicator level of the semester", () => {
+    expect(levelNote(2, 3)).toBe(" (level semester ini)");
+    expect(levelNote(2, 4)).toBe(" (level semester ini)");
+  });
+
+  it("marks no other level", () => {
+    expect(levelNote(1, 3)).toBe("");
+    expect(levelNote(3, 4)).toBe("");
+  });
+
+  it.each([1, 2, 3, 4])(
+    "marks no level %s when there is no semester",
+    (level) => {
+      expect(levelNote(level, null)).toBe("");
+    },
+  );
+});
 
 describe("versionOf", () => {
   it("differs for two moments one millisecond apart", () => {

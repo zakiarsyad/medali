@@ -117,7 +117,7 @@ The issue did not say, so these were decided:
 
 - [x] 1. Activities can be stored without a semester, as special or
   additional, with who changed them and when; sample data adds two.
-- [ ] 2. The page shows the "Kegiatan khusus dan tambahan" panel and its
+- [x] 2. The page shows the "Kegiatan khusus dan tambahan" panel and its
   table.
 - [ ] 3. "Tambah kegiatan khusus" adds an activity, reusing the PPKS
   form.

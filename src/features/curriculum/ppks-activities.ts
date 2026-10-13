@@ -1,3 +1,4 @@
+import { levelOf } from "@/academic-periods/stages";
 import type { ValueKey } from "@/ui/medali-values";
 
 /**
@@ -25,6 +26,47 @@ export interface PpksActivity {
  */
 export function versionOf(changedAt: Date): string {
   return changedAt.toISOString();
+}
+
+/** The words of one list of activities and of its form. */
+export interface ActivityWords {
+  heading: string;
+  addButton: string;
+  /** The title of the form for a new activity. */
+  newTitle: string;
+  /** What the list says while it holds nothing. */
+  empty: string;
+}
+
+const SPECIAL_WORDS: ActivityWords = {
+  heading: "Kegiatan khusus dan tambahan",
+  addButton: "Tambah kegiatan khusus",
+  newTitle: "Kegiatan khusus atau tambahan",
+  empty: "Belum ada kegiatan khusus atau tambahan.",
+};
+
+/**
+ * The words for the PPKS activities of a semester, or for the special and
+ * additional activities when there is no semester.
+ */
+export function wordsOf(semester: number | null): ActivityWords {
+  if (semester === null) return SPECIAL_WORDS;
+  return {
+    heading: `Program kegiatan PPKS semester ${semester}`,
+    addButton: "Tambah kegiatan PPKS",
+    newTitle: `Kegiatan PPKS semester ${semester}`,
+    empty: "Belum ada kegiatan PPKS untuk semester ini.",
+  };
+}
+
+/**
+ * What follows the tahap of a main indicator in the activity form: a mark
+ * on the level of the form's semester. A special or additional activity
+ * has no semester, so no level is marked.
+ */
+export function levelNote(level: number, semester: number | null): string {
+  if (semester === null) return "";
+  return level === levelOf(semester) ? " (level semester ini)" : "";
 }
 
 /** The small line under the name of an activity. */
