@@ -20,6 +20,7 @@ const inputter = alias(accounts, "inputter");
 const ROW = {
   nim: students.nim,
   name: students.name,
+  email: accounts.email,
   sex: students.sex,
   studyProgram: studyPrograms.name,
   entryPath: students.entryPath,
@@ -39,6 +40,8 @@ const ROW = {
 export interface AddedStudent {
   nim: string;
   name: string;
+  /** The campus address of the student's account, when it holds one. */
+  email: string | null;
   sex: typeof students.$inferSelect.sex;
   studyProgram: string;
   entryPath: typeof students.$inferSelect.entryPath;
@@ -94,6 +97,7 @@ export async function listAddedStudents(
     .select({ ...ROW, dorm: dormInSql(dormCohorts) })
     .from(students)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
+    .leftJoin(accounts, eq(accounts.studentId, students.id))
     .leftJoin(inputter, eq(inputter.id, students.inputBy))
     .leftJoin(
       studentBatchFiles,
@@ -108,6 +112,7 @@ export async function listAddedStudents(
 const INPUT = {
   nim: students.nim,
   name: students.name,
+  email: accounts.email,
   studyProgramId: students.studyProgramId,
   entryPath: students.entryPath,
   sex: students.sex,
@@ -133,6 +138,7 @@ export async function findAddedStudent(
   const [found] = await db
     .select(INPUT)
     .from(students)
+    .leftJoin(accounts, eq(accounts.studentId, students.id))
     .where(and(eq(students.nim, nim), ADDED_HERE))
     .limit(1);
   return found ?? null;

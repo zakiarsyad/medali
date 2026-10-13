@@ -1,15 +1,18 @@
 // Sample NIMs of this file: 9900000100 to 9900000199.
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { EMAIL_IN_USE_RULE } from "@/auth/account-email";
 import type { Database } from "@/db/connect";
 import {
   accountRoles,
   accounts,
+  emailChanges,
   roleChanges,
   students,
   studyPrograms,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { brokeUniqueRule } from "@/db/unique-violation";
 import { addStudent, addStudents } from "./add-student";
 
 const inTestDatabase = withTestDatabase();
@@ -192,6 +195,133 @@ describe("addStudents", () => {
       const actor = await addActor(db);
 
       expect(await addStudents(db, [], actor)).toEqual([]);
+    });
+  });
+});
+
+describe("the campus address of a student account", () => {
+  function student(nim: string, studyProgramId: number, email: string | null) {
+    return {
+      nim,
+      name: "Mahasiswa Alamat Uji",
+      studyProgramId,
+      entryPath: "regular" as const,
+      sex: "female" as const,
+      cohortYear: 2026,
+      email,
+    };
+  }
+
+  async function emailOf(db: Database, accountId: string) {
+    const [account] = await db
+      .select({ email: accounts.email })
+      .from(accounts)
+      .where(eq(accounts.id, accountId));
+    return account?.email;
+  }
+
+  it("is kept on the account of the student, and nowhere when there is none", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addProgram(db);
+      const actor = await addActor(db);
+
+      const [withOne, without] = await addStudents(
+        db,
+        [
+          student("9900000111", program, "alamat.satu@kampus.example"),
+          student("9900000112", program, null),
+        ],
+        actor,
+      );
+      if (!withOne || !without) throw new Error("A student was not added.");
+
+      expect(await emailOf(db, withOne.accountId)).toBe(
+        "alamat.satu@kampus.example",
+      );
+      expect(await emailOf(db, without.accountId)).toBeNull();
+    });
+  });
+
+  it("is logged as added, by whom, and a student without one gets no line", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addProgram(db);
+      const actor = await addActor(db);
+
+      const [withOne, without] = await addStudents(
+        db,
+        [
+          student("9900000116", program, "catat.satu@kampus.example"),
+          student("9900000117", program, null),
+        ],
+        actor,
+      );
+      if (!withOne || !without) throw new Error("A student was not added.");
+
+      const lines = await db
+        .select()
+        .from(emailChanges)
+        .where(
+          inArray(emailChanges.accountId, [
+            withOne.accountId,
+            without.accountId,
+          ]),
+        );
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatchObject({
+        accountId: withOne.accountId,
+        changedBy: actor,
+        action: "added",
+        emailBefore: null,
+        emailAfter: "catat.satu@kampus.example",
+      });
+      expect(lines[0]?.changedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  it("is refused by the database when a staff account holds it, and the student is not added", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addProgram(db);
+      const actor = await addActor(db);
+      await db
+        .insert(accounts)
+        .values({ name: "Pegawai Uji", email: "dipakai@kampus.example" });
+
+      const adding = addStudent(
+        db,
+        student("9900000113", program, "dipakai@kampus.example"),
+        actor,
+      );
+
+      await expect(adding).rejects.toSatisfy((error) =>
+        brokeUniqueRule(error, EMAIL_IN_USE_RULE),
+      );
+      const kept = await db
+        .select({ id: students.id })
+        .from(students)
+        .where(eq(students.nim, "9900000113"));
+      expect(kept).toEqual([]);
+    });
+  });
+
+  it("is refused by the database when another student's account holds it", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addProgram(db);
+      const actor = await addActor(db);
+      await addStudent(
+        db,
+        student("9900000114", program, "berdua@kampus.example"),
+        actor,
+      );
+
+      const adding = addStudent(
+        db,
+        student("9900000115", program, "berdua@kampus.example"),
+        actor,
+      );
+
+      await expect(adding).rejects.toSatisfy((error) =>
+        brokeUniqueRule(error, EMAIL_IN_USE_RULE),
+      );
     });
   });
 });

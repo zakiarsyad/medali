@@ -62,6 +62,7 @@ export function formValues(
       ...first,
       nim: "",
       name: "",
+      email: "",
       entryPath: "regular",
       sex: "male",
       className: "",
@@ -74,6 +75,7 @@ export function formValues(
   return {
     nim: student.nim,
     name: student.name,
+    email: student.email ?? "",
     studyProgramId: String(student.studyProgramId),
     entryPath: student.entryPath,
     sex: student.sex,

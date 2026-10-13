@@ -4,7 +4,12 @@ import type { Database } from "@/db/connect";
 import { accountRoles, accounts, sessions, signInLog } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { newSessionToken } from "./session-token";
-import { endSession, sessionAccount, startSession } from "./sessions";
+import {
+  endSession,
+  endSessionsOf,
+  sessionAccount,
+  startSession,
+} from "./sessions";
 import { addTestAccount } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -263,6 +268,37 @@ describe("endSession", () => {
 
       expect(await endSession(db, token, NOW)).toBeNull();
       expect(await lastSeenOf(db, accountId)).toHaveLength(1);
+      expect(await signOutLines(db)).toEqual([]);
+    });
+  });
+});
+
+describe("endSessionsOf", () => {
+  it("ends every session of the account, and no one else's", async () => {
+    await inTestDatabase(async (db) => {
+      const accountId = await addBudi(db);
+      const otherId = await addTestAccount(db, {
+        email: "sari@kampus.example",
+      });
+      const here = await startSession(db, accountId, NOW);
+      const elsewhere = await startSession(db, accountId, NOW);
+      const others = await startSession(db, otherId, NOW);
+
+      await endSessionsOf(db, accountId);
+
+      expect(await sessionAccount(db, here, NOW)).toBeNull();
+      expect(await sessionAccount(db, elsewhere, NOW)).toBeNull();
+      expect((await sessionAccount(db, others, NOW))?.id).toBe(otherId);
+    });
+  });
+
+  it("writes no sign-out line: the person did not sign out", async () => {
+    await inTestDatabase(async (db) => {
+      const accountId = await addBudi(db);
+      await startSession(db, accountId, NOW);
+
+      await endSessionsOf(db, accountId);
+
       expect(await signOutLines(db)).toEqual([]);
     });
   });

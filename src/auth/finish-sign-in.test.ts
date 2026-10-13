@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { sessions, signInLog } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { pagesFor } from "./access";
 import {
   type AddressConfirmer,
   type CodeExchange,
@@ -11,7 +12,7 @@ import {
 import type { ConfirmedAddress } from "./google-token";
 import { sessionAccount } from "./sessions";
 import { newSignInAttempt } from "./sign-in-attempt";
-import { addTestAccount } from "./test-records";
+import { addTestAccount, addTestStudentAccount } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 const NOW = new Date("2026-10-12T08:00:00Z");
@@ -78,6 +79,48 @@ describe("finishSignIn", () => {
       expect(await logLines(db)).toEqual([
         { result: "signed_in", accountId, happenedAt: NOW },
       ]);
+    });
+  });
+
+  it("signs in the student whose account holds the confirmed address, and Profil saya is their first page", async () => {
+    await inTestDatabase(async (db) => {
+      const email = "mahasiswa.uji@kampus.example";
+      const accountId = await addTestStudentAccount(db, {
+        nim: "9900002711",
+        email,
+      });
+
+      const finished = await finish(db, {
+        email,
+        verified: true,
+        hostedDomain: "kampus.example",
+      });
+
+      if (finished.result !== "signed_in") throw new Error(finished.result);
+      const account = await sessionAccount(db, finished.sessionToken, NOW);
+      expect(account?.id).toBe(accountId);
+      expect(account?.studentId).not.toBeNull();
+      expect(pagesFor(account?.roles ?? [])[0]?.id).toBe("profile");
+    });
+  });
+
+  it("refuses a student whose account holds no address, as it refuses an unknown address", async () => {
+    await inTestDatabase(async (db) => {
+      await addTestStudentAccount(db, { nim: "9900002712", email: null });
+      const answer = { verified: true, hostedDomain: "kampus.example" };
+
+      const student = await finish(db, {
+        ...answer,
+        email: "tanpa.alamat@kampus.example",
+      });
+      const unknown = await finish(db, {
+        ...answer,
+        email: "tamu@kampus.example",
+      });
+
+      expect(student).toEqual({ result: "refused_no_account" });
+      expect(student).toEqual(unknown);
+      expect(await db.select().from(sessions)).toEqual([]);
     });
   });
 

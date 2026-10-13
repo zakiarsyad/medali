@@ -1,11 +1,16 @@
-import { inArray } from "drizzle-orm";
+import { and, inArray, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { students } from "@/db/schema";
+import { accounts, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { type FilePreview, previewOf } from "./file-preview";
 import { type Actor, NOT_ALLOWED } from "./input-student";
-import { type FileRows, readStudentFile, skipRegistered } from "./student-file";
+import {
+  type FileRows,
+  readStudentFile,
+  skipRegistered,
+  skipUsedEmails,
+} from "./student-file";
 import type { InputContext } from "./student-input";
 import { checkFileShape, readFileText } from "./uploaded-file";
 
@@ -32,8 +37,32 @@ async function registeredAmong(
 }
 
 /**
+ * Which of these addresses an account holds. A removed account does not
+ * count: its address is free again, as the database's rule has it.
+ */
+async function emailsInUseAmong(
+  db: Database,
+  emails: string[],
+): Promise<Set<string>> {
+  if (emails.length === 0) return new Set();
+  const found = await db
+    .select({ email: accounts.email })
+    .from(accounts)
+    .where(and(inArray(accounts.email, emails), isNull(accounts.deletedAt)));
+  return new Set(found.flatMap(({ email }) => (email === null ? [] : [email])));
+}
+
+function emailsOf(rows: FileRows): string[] {
+  return rows.ready.flatMap(({ student }) =>
+    student.email === null ? [] : [student.email],
+  );
+}
+
+/**
  * Reads a sent file from the start and decides, row by row, ready or
- * skipped. Saves nothing, and keeps nothing of the file.
+ * skipped. Saves nothing, and keeps nothing of the file. A row whose NIM
+ * is registered is set apart first, so its address takes none away from
+ * a row that can be saved.
  */
 export async function checkStudentFile(
   db: Database,
@@ -49,7 +78,9 @@ export async function checkStudentFile(
 
   const nims = rows.value.ready.map((row) => row.student.nim);
   const registered = await registeredAmong(db, nims);
-  return { ok: true, value: skipRegistered(rows.value, registered) };
+  const unregistered = skipRegistered(rows.value, registered);
+  const inUse = await emailsInUseAmong(db, emailsOf(unregistered));
+  return { ok: true, value: skipUsedEmails(unregistered, inUse) };
 }
 
 /** What a file would do if it were saved now. Saves nothing. */

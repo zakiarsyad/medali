@@ -1,6 +1,6 @@
-import { isCampusEmail } from "@/auth/campus-email";
+import { NOT_CAMPUS_EMAIL, parseAccountEmail } from "@/auth/account-email";
 import type { Parsed } from "@/parsed";
-import { isFullName, isWellFormedEmail } from "./account-input";
+import { isFullName } from "./account-input";
 
 /** The first account of an empty app: who it is, and their campus address. */
 export interface FirstAccount {
@@ -39,14 +39,15 @@ export function parseFirstAccount(
   }
   const name = writtenName.trim();
   if (!isFullName(name)) return refused("Give the full name of the person.");
-  const email = writtenEmail.trim().toLowerCase();
-  if (!isWellFormedEmail(email)) {
-    return refused("The address is not a well-formed email address.");
-  }
-  if (!isCampusEmail(email, campusEnding)) {
-    return refused(
-      "The address does not end with the campus address ending, the setting CAMPUS_EMAIL_ENDING.",
-    );
-  }
-  return { ok: true, value: { name, email } };
+  const email = parseAccountEmail(
+    writtenEmail,
+    campusEnding,
+    "The address is not a well-formed email address.",
+  );
+  if (email.ok) return { ok: true, value: { name, email: email.value } };
+  const isOutsideCampus = email.error === NOT_CAMPUS_EMAIL;
+  if (!isOutsideCampus) return refused(email.error);
+  return refused(
+    "The address does not end with the campus address ending, the setting CAMPUS_EMAIL_ENDING.",
+  );
 }

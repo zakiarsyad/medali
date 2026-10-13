@@ -10,6 +10,7 @@ function student(nim: string): StudentInput {
   return {
     nim,
     name: "Pratinjau Uji",
+    email: null,
     studyProgramId: 3,
     entryPath: "regular",
     sex: "male",
@@ -45,6 +46,7 @@ describe("previewOf", () => {
   it("shows a row in the words of the screen, in the order of the template", () => {
     const filled: StudentInput = {
       ...student("9900000601"),
+      email: "pratinjau.uji@kampus.example",
       entryPath: "transfer",
       sex: "female",
       className: "1-01",
@@ -78,6 +80,7 @@ describe("previewOf", () => {
         "-",
         "-",
         "Aktif",
+        "-",
       ],
       [
         "9900000601",
@@ -93,6 +96,7 @@ describe("previewOf", () => {
         "ya",
         "-",
         "Cuti",
+        "pratinjau.uji@kampus.example",
       ],
     ]);
   });

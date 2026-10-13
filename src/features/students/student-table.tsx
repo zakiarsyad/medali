@@ -14,6 +14,8 @@ import styles from "./new-students.module.css";
 import { newStudentsAddress, studentFileAddress } from "./new-students-address";
 import { RemoveStudentButton } from "./remove-student-button";
 
+const NO_EMAIL = "Belum ada email";
+
 const STATUS_STYLES: Record<AddedStudent["status"], string | undefined> = {
   active: styles.active,
   on_leave: styles.onLeave,
@@ -61,6 +63,9 @@ function StudentRow({
         <b>{student.name}</b>
         <small className={shared.detail}>
           {student.nim} · {SEX_LABELS[student.sex]}
+        </small>
+        <small className={`${shared.detail} ${styles.email}`}>
+          {student.email ?? NO_EMAIL}
         </small>
         {categories.map(({ field, label }) => (
           <span key={field} className={shared.badge}>

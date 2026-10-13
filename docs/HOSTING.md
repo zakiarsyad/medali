@@ -189,6 +189,8 @@ that is registered.
   computer.
 - Pengguna dan peran accepts any well-formed email. Once
   `CAMPUS_EMAIL_ENDING` is filled, a new account's email must end with it.
+  The same goes for a student's "Email kampus" on Pengguna baru
+  mahasiswa.
 
 ### On the campus server
 
