@@ -4,7 +4,10 @@ import { ScheduleForm } from "./schedule-form";
 import type { ScheduleRow } from "./schedule-row";
 import { TEST_FORM_PARTS, TEST_SCHEDULE } from "./test-screen-parts";
 
-vi.mock("./actions", () => ({ saveScheduleAction: vi.fn() }));
+vi.mock("./actions", () => ({
+  saveScheduleAction: vi.fn(),
+  removeScheduleAction: vi.fn(),
+}));
 
 function nothing() {}
 
@@ -14,6 +17,7 @@ function formFor(schedule: ScheduleRow | null): string {
       schedule={schedule}
       parts={TEST_FORM_PARTS}
       onSaved={nothing}
+      onRemoved={nothing}
       onCancel={nothing}
     />,
   );
@@ -114,6 +118,11 @@ describe("the form that changes a schedule", () => {
     expect(form).toContain("Batal</button>");
     expect(form).not.toContain("Simpan jadwal");
     expect(form).not.toContain("Jadwalkan kegiatan PPKS");
+  });
+
+  it("has Hapus jadwal, which the form for a new schedule has not", () => {
+    expect(form).toContain("Hapus jadwal</button>");
+    expect(newForm()).not.toContain("Hapus jadwal");
   });
 
   it("opens filled in with what the schedule holds", () => {

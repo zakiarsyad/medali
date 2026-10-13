@@ -119,3 +119,11 @@
   justify-content: space-between;
   align-items: flex-start;
 }
+
+.pushedEnd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-left: auto;
+}

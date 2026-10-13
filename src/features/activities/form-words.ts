@@ -1,6 +1,13 @@
 import { stageNameOf } from "@/academic-periods/stages";
 import { shownCount } from "./schedule-words";
 
+/** The question asked before a schedule is removed. */
+export const REMOVAL_QUESTION =
+  "Hapus jadwal kegiatan ini? Presensi yang sudah masuk tidak lagi dihitung.";
+
+/** What the list says once a schedule is removed. */
+export const REMOVED_WORDS = "Jadwal dihapus.";
+
 /** What the list says once a schedule is saved. */
 export function savedWords(name: string, semester: number): string {
   const stage = stageNameOf(semester).toLowerCase();

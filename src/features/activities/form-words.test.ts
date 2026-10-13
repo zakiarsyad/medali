@@ -2,9 +2,23 @@ import { describe, expect, it } from "vitest";
 import {
   activityTargetWords,
   formTargetWords,
+  REMOVAL_QUESTION,
+  REMOVED_WORDS,
   savedWords,
   semesterGroupWords,
 } from "./form-words";
+
+describe("the words of a removal", () => {
+  it("ask first, and say that attendance already sent no longer counts", () => {
+    expect(REMOVAL_QUESTION).toBe(
+      "Hapus jadwal kegiatan ini? Presensi yang sudah masuk tidak lagi dihitung.",
+    );
+  });
+
+  it("say so once the schedule is removed", () => {
+    expect(REMOVED_WORDS).toBe("Jadwal dihapus.");
+  });
+});
 
 const UPLOAD_NOTE =
   "Mahasiswa mengunggah foto kehadiran sejak kegiatan dimulai sampai batas rentang unggah; satu foto tervalidasi dihitung hadir.";

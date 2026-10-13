@@ -16,6 +16,7 @@ import {
   valuesOf,
 } from "./form-values";
 import { formTargetWords } from "./form-words";
+import { RemoveScheduleButton } from "./remove-schedule-button";
 import { LOCATION_MAX_LENGTH } from "./schedule-input";
 import type { ScheduleRow } from "./schedule-row";
 import { UploadRangeField } from "./upload-range-field";
@@ -24,18 +25,20 @@ const START: FormState = { error: null, done: null };
 
 /**
  * The form that schedules a PPKS activity of the Kurikulum list, or
- * changes a schedule.
+ * changes a schedule, where it also has "Hapus jadwal".
  */
 export function ScheduleForm({
   schedule,
   parts,
   onSaved,
+  onRemoved,
   onCancel,
 }: {
   /** The schedule to change, or null to add a new one. */
   schedule: ScheduleRow | null;
   parts: FormParts;
   onSaved: (message: string) => void;
+  onRemoved: (message: string) => void;
   onCancel: () => void;
 }) {
   const start = schedule ? valuesOf(schedule) : startingValues(parts.today);
@@ -156,6 +159,9 @@ export function ScheduleForm({
           <button type="button" className={shared.quiet} onClick={onCancel}>
             Batal
           </button>
+          {schedule && (
+            <RemoveScheduleButton id={schedule.id} onRemoved={onRemoved} />
+          )}
         </div>
       </div>
     </form>

@@ -68,6 +68,7 @@ export function ScheduleBoard({
               schedule={target === "new" ? null : target}
               parts={form}
               onSaved={closeWith}
+              onRemoved={closeWith}
               onCancel={() => setTarget(null)}
             />
           ) : (

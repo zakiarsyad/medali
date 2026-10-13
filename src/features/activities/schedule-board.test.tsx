@@ -5,7 +5,10 @@ import type { ScheduleList } from "./list-schedules";
 import { ScheduleBoard } from "./schedule-board";
 import { TEST_FORM_PARTS, TEST_SCHEDULE } from "./test-screen-parts";
 
-vi.mock("./actions", () => ({ saveScheduleAction: vi.fn() }));
+vi.mock("./actions", () => ({
+  saveScheduleAction: vi.fn(),
+  removeScheduleAction: vi.fn(),
+}));
 
 const ONE: ScheduleList = { schedules: [TEST_SCHEDULE], matching: 1, page: 1 };
 const NONE: ScheduleList = { schedules: [], matching: 0, page: 1 };

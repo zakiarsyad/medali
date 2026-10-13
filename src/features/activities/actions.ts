@@ -10,7 +10,8 @@ import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addSchedule } from "./add-schedule";
 import { changeSchedule, SCHEDULE_CHANGED_BY_OTHER } from "./change-schedule";
-import { savedWords } from "./form-words";
+import { REMOVED_WORDS, savedWords } from "./form-words";
+import { removeSchedule } from "./remove-schedule";
 import type { SentSchedule } from "./schedule-input";
 import { SCHEDULES_ADDRESS } from "./schedule-list-address";
 
@@ -55,4 +56,12 @@ export async function saveScheduleAction(
   if (!saved.ok) return { error: saved.error, done: null };
   const { name, semester } = saved.value;
   return { error: null, done: savedWords(name, semester) };
+}
+
+export async function removeScheduleAction(id: string): Promise<FormState> {
+  const manager = await activityManager();
+  const removed = await removeSchedule(database(), manager, id);
+  if (!removed.ok) return { error: removed.error, done: null };
+  revalidatePath(SCHEDULES_ADDRESS);
+  return { error: null, done: REMOVED_WORDS };
 }

@@ -51,4 +51,8 @@ describe("the schedule form on a phone", () => {
     expect(ruleOf(".facts")).toContain("flex-wrap: wrap;");
     expect(ruleOf(".addHead")).toContain("flex-wrap: wrap;");
   });
+
+  it("folds Hapus jadwal with its message under the other buttons when there is no room beside them", () => {
+    expect(ruleOf(".pushedEnd")).toContain("flex-wrap: wrap;");
+  });
 });

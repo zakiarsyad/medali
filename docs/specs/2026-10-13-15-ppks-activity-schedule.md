@@ -139,6 +139,18 @@ The issue did not say, so these were decided:
     still removes the schedule.
 17. "Sasaran: (n) mahasiswa" in the form follows the chosen start date:
     it counts the students of the period that runs on that date.
+18. The message after a save names the tahap in small letters, as the
+    prototype does: 'disimpan untuk semester 3 (penumbuhan).'
+19. Hours show with a colon, as in the prototype: 07:30–11:30.
+20. Like its name, the indicators, the target and the nilai a schedule
+    shows are those the activity has in Kurikulum now.
+21. A change sent from a form opened before someone else's change is
+    told so first, whatever else is wrong in it.
+22. The tab lists schedules of PPKS activities only. Schedules of
+    special and additional activities come with "Kegiatan tambahan".
+23. Mahasiswa and Penilai Mahasiswa who type the address of the tab are
+    refused. Kegiatan karakter itself stays the empty page for them.
+24. An upload range of 0 ends on the last day of the schedule.
 
 ## Steps
 
@@ -150,4 +162,4 @@ The issue did not say, so these were decided:
 - [x] 3. The tab shows "Jadwal dan kehadiran" with the tahap choice.
 - [x] 4. "Jadwalkan kegiatan PPKS" adds a schedule.
 - [x] 5. "Ubah" changes a schedule.
-- [ ] 6. "Hapus jadwal" removes a schedule.
+- [x] 6. "Hapus jadwal" removes a schedule.
