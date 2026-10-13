@@ -12,6 +12,7 @@ import {
   type AttendanceGroup,
   groupToShow,
   listAttendanceGroups,
+  mayFillInFor,
 } from "./attendance-groups";
 import { readMarks, readMeetings } from "./group-meetings";
 import { GroupPicker } from "./group-picker";
@@ -19,9 +20,10 @@ import { listScoredMembers } from "./group-scores";
 import { groupChoiceOf } from "./group-search";
 import styles from "./mentoring.module.css";
 import { ReadOnlyLine } from "./read-only-line";
+import { ScoreForm } from "./score-form";
 import { ScoreList } from "./score-list";
 import { ScoreNumbers } from "./score-numbers";
-import { scoreRowsOf } from "./score-rows";
+import { type ScoreRow, scoreRowsOf } from "./score-rows";
 import { ScoreRubric } from "./score-rubric";
 import { SCORES_ADDRESS, type ScoresParams } from "./scores-address";
 import { scoresOverview } from "./scores-overview";
@@ -30,10 +32,13 @@ import { scoresOverview } from "./scores-overview";
 async function GroupScores({
   groupId,
   period,
+  mayGive,
   detailVisible,
 }: {
   groupId: string;
   period: AcademicPeriod;
+  /** Whether the account may give the scores of this group. */
+  mayGive: boolean;
   detailVisible: SQL | null;
 }) {
   const db = database();
@@ -58,16 +63,35 @@ async function GroupScores({
           </span>
         </div>
         <ScoreRubric />
-        {rows.length === 0 ? (
-          <p className={styles.quiet}>
-            Kelompok ini belum memiliki anak asuh aktif.
-          </p>
-        ) : (
-          <ScoreList rows={rows} />
-        )}
+        <Scores groupId={groupId} rows={rows} mayGive={mayGive} />
       </section>
     </>
   );
+}
+
+/**
+ * "Nilai anak asuh" of one group: the form for the account that may give
+ * its scores, and the saved scores to read for any other.
+ */
+function Scores({
+  groupId,
+  rows,
+  mayGive,
+}: {
+  groupId: string;
+  rows: ScoreRow[];
+  mayGive: boolean;
+}) {
+  if (rows.length === 0) {
+    return (
+      <p className={styles.quiet}>
+        Kelompok ini belum memiliki anak asuh aktif.
+      </p>
+    );
+  }
+  if (!mayGive) return <ScoreList rows={rows} />;
+  // Made anew for each group, so nothing typed for one stays for another.
+  return <ScoreForm key={groupId} groupId={groupId} rows={rows} />;
 }
 
 /** What the tab shows under its head, for the groups an account may read. */
@@ -119,6 +143,7 @@ function Groups({
       <GroupScores
         groupId={shown.id}
         period={period}
+        mayGive={mayFillInFor(giveLimit, shown.mentor?.id ?? null)}
         detailVisible={detailVisible}
       />
     </>

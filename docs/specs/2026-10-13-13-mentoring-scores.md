@@ -137,6 +137,20 @@ it is built here.
     read them. Closing it goes back to the scores of the same group. A
     name is a link only for a student whose detail the account may
     open.
+17. The boxes are shown to the Pengasuh who holds the group today. A
+    Pengasuh who reads another group through a second role sees its
+    scores without boxes.
+18. A save sends only the rows that were changed, and the message counts
+    those. A row whose saved score is typed back counts as not changed.
+    With nothing changed the button reads "Simpan nilai", as in the
+    prototype.
+19. The prototype's line beside the button, that a saved score is used
+    in the character grade at once, is left out: that use is not built
+    here.
+20. Leaving is asked about as on the attendance tab: a link of the app,
+    such as a tab, another group, the menu or a mentee's name, and
+    loading the page anew or closing it. The browser's own step back is
+    not asked about.
 
 ## Steps
 
@@ -145,6 +159,6 @@ it is built here.
 - [x] 2. The rights to score and to read scores are added to the
   permission list, with their checks.
 - [x] 3. The tab with the numbers, the rubric and the table, read only.
-- [ ] 4. Pengasuh types and saves scores.
+- [x] 4. Pengasuh types and saves scores.
 - [ ] 5. Changed scores, the log and the two-window case.
 - [ ] 6. Refusals and the phone layout.

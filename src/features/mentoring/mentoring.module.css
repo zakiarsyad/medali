@@ -318,3 +318,18 @@
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+/* The box of one score: as wide as a score needs, never wider than its card. */
+.scoreBox {
+  width: var(--score-box-width);
+  max-width: 100%;
+}
+
+/* The button under the scores, with what the save answered beside it. */
+.saveScores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: center;
+  margin-top: var(--space-md);
+}

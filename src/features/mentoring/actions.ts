@@ -9,6 +9,7 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
+import type { FormState } from "@/ui/form-message";
 import type { AttendanceFormState } from "./attendance-form-state";
 import { parseAttendance, sentMarks } from "./attendance-input";
 import { MEETINGS_ADDRESS } from "./meetings-address";
@@ -17,6 +18,9 @@ import { parseNote } from "./note-input";
 import { NOTES_ADDRESS } from "./notes-address";
 import { saveAttendance } from "./save-attendance";
 import { saveNote } from "./save-note";
+import { saveScores } from "./save-scores";
+import { parseScores, sentScores } from "./score-input";
+import { SCORES_ADDRESS } from "./scores-address";
 
 /**
  * The signed-in account when it may write a mentoring note. Any other is
@@ -102,5 +106,39 @@ export async function saveAttendanceAction(
     error: null,
     done: `Daftar hadir pertemuan ${saved.value.number} disimpan.`,
     version: saved.value.version,
+  };
+}
+
+/**
+ * The signed-in account when it may give mentoring scores. Any other is
+ * refused before anything of what it sent is read.
+ */
+async function scorer(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "give_mentoring_scores")) forbidden();
+  return account;
+}
+
+/**
+ * "Simpan nilai". Who gives the scores is the signed-in account, never a
+ * field.
+ */
+export async function saveScoresAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const actor = await scorer();
+  const parsed = parseScores({
+    groupId: text(form, "groupId"),
+    scores: sentScores(form),
+  });
+  if (!parsed.ok) return { error: parsed.error, done: null };
+
+  const saved = await saveScores(database(), actor, parsed.value);
+  if (!saved.ok) return { error: saved.error, done: null };
+  revalidatePath(SCORES_ADDRESS);
+  return {
+    error: null,
+    done: `${saved.value.savedIds.length} nilai pengasuhan disimpan.`,
   };
 }
