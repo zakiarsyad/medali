@@ -11,6 +11,7 @@ import { CATEGORIES } from "@/features/students/labels";
 import {
   SAMPLE_ACCOUNTS,
   SAMPLE_PPKS_ACTIVITIES,
+  SAMPLE_SPECIAL_ACTIVITIES,
   SAMPLE_STUDENTS,
   samplePeriods,
 } from "./sample-data";
@@ -44,8 +45,16 @@ describe("the sample PPKS activities", () => {
     }
   });
 
+  it("come with two special or additional ones", () => {
+    expect(SAMPLE_SPECIAL_ACTIVITIES.map((a) => a.name)).toEqual([
+      "Pelatihan kepemimpinan organisasi mahasiswa",
+      "Program mentor sebaya",
+    ]);
+  });
+
   it("aim only at indicators of their own values", () => {
-    for (const activity of SAMPLE_PPKS_ACTIVITIES) {
+    const all = [...SAMPLE_PPKS_ACTIVITIES, ...SAMPLE_SPECIAL_ACTIVITIES];
+    for (const activity of all) {
       expect(activity.indicatorCodes.length).toBeGreaterThan(0);
       for (const code of activity.indicatorCodes) {
         expect(activity.valueKeys).toContain(code[0]);

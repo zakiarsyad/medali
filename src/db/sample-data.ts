@@ -430,6 +430,27 @@ export const SAMPLE_PPKS_ACTIVITIES: SamplePpksActivity[] = [
   },
 ];
 
+/** The two made-up special or additional activities, which have no semester. */
+export const SAMPLE_SPECIAL_ACTIVITIES: Omit<SamplePpksActivity, "semester">[] =
+  [
+    {
+      name: "Pelatihan kepemimpinan organisasi mahasiswa",
+      valueKeys: ["A", "L"],
+      indicatorCodes: ["A2", "L3"],
+      targetParticipants: 120,
+      isRequired: true,
+      description: "Untuk pengurus organisasi kemahasiswaan lintas angkatan.",
+    },
+    {
+      name: "Program mentor sebaya",
+      valueKeys: ["M", "E"],
+      indicatorCodes: ["M3", "E3"],
+      targetParticipants: 60,
+      isRequired: false,
+      description: "Mahasiswa senior mendampingi mahasiswa baru.",
+    },
+  ];
+
 export interface SamplePeriod {
   /** The first year of the Tahun akademik. */
   startYear: number;

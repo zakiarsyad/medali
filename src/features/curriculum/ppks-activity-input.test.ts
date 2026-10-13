@@ -93,7 +93,12 @@ describe("parsePpksActivity", () => {
     expect(refusal({ semester })).toBeNull();
   });
 
-  it.each(["", "0", "9", "1.5", "-1", "dua"])(
+  it("takes no semester, for a special or additional activity", () => {
+    const parsed = parsePpksActivity({ ...SENT, semester: "" });
+    expect(parsed.ok && parsed.value.semester).toBeNull();
+  });
+
+  it.each([" ", "0", "9", "1.5", "-1", "dua"])(
     "refuses semester '%s'",
     (semester) => {
       expect(refusal({ semester })).toBe("Semester harus 1 sampai 8.");

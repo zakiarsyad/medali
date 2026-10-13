@@ -1,10 +1,80 @@
 import { describe, expect, it } from "vitest";
 import {
   activityNote,
+  levelNote,
+  momentOf,
   removalQuestion,
   ticksOfValues,
   toggled,
+  versionOf,
+  wordsOf,
 } from "./ppks-activities";
+
+describe("wordsOf", () => {
+  it("gives the words of the PPKS activities of a semester", () => {
+    expect(wordsOf(3)).toEqual({
+      heading: "Program kegiatan PPKS semester 3",
+      addButton: "Tambah kegiatan PPKS",
+      newTitle: "Kegiatan PPKS semester 3",
+      empty: "Belum ada kegiatan PPKS untuk semester ini.",
+    });
+  });
+
+  it("gives the words of the special and additional activities when there is no semester", () => {
+    expect(wordsOf(null)).toEqual({
+      heading: "Kegiatan khusus dan tambahan",
+      addButton: "Tambah kegiatan khusus",
+      newTitle: "Kegiatan khusus atau tambahan",
+      empty: "Belum ada kegiatan khusus atau tambahan.",
+    });
+  });
+});
+
+describe("levelNote", () => {
+  it("marks the indicator level of the semester", () => {
+    expect(levelNote(2, 3)).toBe(" (level semester ini)");
+    expect(levelNote(2, 4)).toBe(" (level semester ini)");
+  });
+
+  it("marks no other level", () => {
+    expect(levelNote(1, 3)).toBe("");
+    expect(levelNote(3, 4)).toBe("");
+  });
+
+  it.each([1, 2, 3, 4])(
+    "marks no level %s when there is no semester",
+    (level) => {
+      expect(levelNote(level, null)).toBe("");
+    },
+  );
+});
+
+describe("momentOf", () => {
+  it("gives back the moment a version was made from", () => {
+    const moment = new Date("2026-10-13T08:00:00.123Z");
+    expect(momentOf(versionOf(moment))).toEqual(moment);
+  });
+
+  it.each(["", "kemarin", "2026-10-13", "2026-13-40T08:00:00.000Z", "0"])(
+    "gives nothing for '%s', which is no version",
+    (sent) => {
+      expect(momentOf(sent)).toBeNull();
+    },
+  );
+});
+
+describe("versionOf", () => {
+  it("differs for two moments one millisecond apart", () => {
+    const first = versionOf(new Date("2026-10-13T08:00:00.000Z"));
+    const next = versionOf(new Date("2026-10-13T08:00:00.001Z"));
+    expect(first).not.toBe(next);
+  });
+
+  it("is the same for the same moment", () => {
+    const moment = "2026-10-13T08:00:00.000Z";
+    expect(versionOf(new Date(moment))).toBe(versionOf(new Date(moment)));
+  });
+});
 
 describe("activityNote", () => {
   it("gives the description alone for a required activity", () => {

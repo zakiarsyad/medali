@@ -10,6 +10,7 @@ import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addPpksActivity } from "./add-ppks-activity";
 import { changePpksActivity, removePpksActivity } from "./change-ppks-activity";
+import { restorePpksActivity } from "./restore-ppks-activity";
 import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
 import { saveStageBreakdown } from "./save-stage-breakdown";
@@ -83,12 +84,14 @@ export async function savePpksActivityAction(
     isRequired: text(form, "required") === "on",
     description: text(form, "description"),
   };
-  // A form with an id changes that activity; one without adds a new one.
+  // A form with a version changes the activity it was opened for; one
+  // without adds a new one under the key it made.
   const id = text(form, "id");
+  const version = text(form, "version");
   const saved =
-    id === ""
-      ? await addPpksActivity(database(), manager, sent)
-      : await changePpksActivity(database(), manager, id, sent);
+    version === ""
+      ? await addPpksActivity(database(), manager, id, sent)
+      : await changePpksActivity(database(), manager, id, version, sent);
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Kegiatan "${saved.value}" disimpan.` };
@@ -100,4 +103,14 @@ export async function removePpksActivityAction(id: string): Promise<FormState> {
   if (!removed.ok) return { error: removed.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: "Kegiatan dihapus dari daftar." };
+}
+
+export async function restorePpksActivityAction(
+  id: string,
+): Promise<FormState> {
+  const manager = await activityManager();
+  const restored = await restorePpksActivity(database(), manager, id);
+  if (!restored.ok) return { error: restored.error, done: null };
+  revalidatePath(CURRICULUM_ADDRESS);
+  return { error: null, done: "Kegiatan dikembalikan ke daftar." };
 }

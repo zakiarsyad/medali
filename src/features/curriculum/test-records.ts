@@ -26,6 +26,15 @@ export const SENT_PPKS_ACTIVITY: SentPpksActivity = {
   description: "Deskripsi uji.",
 };
 
+/** The same as a special or additional activity: it sends no semester. */
+export const SENT_SPECIAL_ACTIVITY: SentPpksActivity = {
+  ...SENT_PPKS_ACTIVITY,
+  semester: "",
+};
+
+/** The key a form made for the activity it adds. */
+export const NEW_ACTIVITY_ID = "7c1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f";
+
 /** A breakdown as a form sends it, with nothing wrong in it. */
 export const SENT_BREAKDOWN: SentBreakdown = {
   tahap: "2",

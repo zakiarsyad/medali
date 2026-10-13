@@ -1,8 +1,8 @@
-import { levelOf } from "@/academic-periods/stages";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./curriculum.module.css";
 import { IndicatorTick } from "./indicator-tick";
 import type { ValueIndicators } from "./main-indicators";
+import { levelNote } from "./ppks-activities";
 
 /** The main indicators of the chosen nilai, each to tick. */
 export function PpksIndicatorTicks({
@@ -13,7 +13,8 @@ export function PpksIndicatorTicks({
 }: {
   /** Only the nilai that are chosen. */
   values: ValueIndicators[];
-  semester: number;
+  /** Null in the form of a special or additional activity. */
+  semester: number | null;
   ticked: readonly string[];
   onToggle: (code: string) => void;
 }) {
@@ -27,9 +28,7 @@ export function PpksIndicatorTicks({
         <IndicatorTick
           key={indicator.code}
           indicator={indicator}
-          levelNote={
-            indicator.level === levelOf(semester) ? " (level semester ini)" : ""
-          }
+          levelNote={levelNote(indicator.level, semester)}
           checked={ticked.includes(indicator.code)}
           onToggle={onToggle}
         />
