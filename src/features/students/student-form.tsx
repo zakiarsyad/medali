@@ -18,6 +18,7 @@ import {
 import {
   type ChosenCohort,
   fittingGroups,
+  fullGroupWarning,
   groupHint,
   keptGroupId,
 } from "./group-choice-words";
@@ -186,6 +187,8 @@ export function StudentForm({
   const program = programs.find(
     ({ id }) => String(id) === cohort.studyProgramId,
   );
+  const chosenGroupId = keptGroupId(groupId, fitting);
+  const chosenGroup = fitting.find((group) => group.id === chosenGroupId);
   return (
     // noValidate: a wrong NIM or a short name gets the app's own message.
     <form
@@ -198,6 +201,9 @@ export function StudentForm({
           sent form, and this fills it again with what `shown` holds. */}
       <Fragment key={state.attempt}>
         <NimField nim={shown.nim} locked={editing !== null} />
+        {editing && (
+          <input type="hidden" name="version" value={editing.version} />
+        )}
         <label className={shared.field}>
           Nama lengkap
           <input
@@ -280,8 +286,9 @@ export function StudentForm({
         <Categories chosen={shown.categories} />
         <MentorGroupField
           groups={fitting}
-          chosen={keptGroupId(groupId, fitting)}
+          chosen={chosenGroupId}
           hint={groupHint(fitting, cohort, program?.name ?? "")}
+          warning={fullGroupWarning(chosenGroup, start.mentorGroupId)}
           onChoose={setGroupId}
         />
       </Fragment>

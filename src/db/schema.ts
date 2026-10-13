@@ -153,6 +153,11 @@ export const students = pgTable("students", {
   isInternational: boolean().notNull().default(false),
   isBlended: boolean().notNull().default(false),
   status: studentStatus().notNull().default("active"),
+  /**
+   * Goes up with every change made on Pengguna baru mahasiswa, so a change
+   * made from an older one is caught.
+   */
+  version: integer().notNull().default(1),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   /** Set only for a student put in through Pengguna baru mahasiswa. */
   inputAt: timestamp({ withTimezone: true }),

@@ -108,5 +108,5 @@ Decided while building, because the issue did not say:
   pengasuhan".
 - [x] 3. Moving a student to another group or to none, and removal
   taking the student out of the group, with their checks.
-- [ ] 4. The full-group warning, the two-person case and the phone
+- [x] 4. The full-group warning, the two-person case and the phone
   layout.

@@ -14,6 +14,7 @@ import { readCampusEmailEnding } from "@/settings";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { findAddedStudent } from "./added-students";
+import { parseChangeSent } from "./change-sent";
 import { changeStudent, NOT_FOUND, removeStudent } from "./change-student";
 import type { FilePreview } from "./file-preview";
 import { parseGroupChoice } from "./fitting-group";
@@ -111,11 +112,13 @@ export async function changeStudentAction(
   const context = await inputContext(db, kept.cohortYear);
   const parsed = parseStudent(fields, context);
   if (!parsed.ok) return refusedForm(before, parsed.error, fields);
-  const group = parseGroupChoice(fields.mentorGroupId);
-  if (!group.ok) return refusedForm(before, group.error, fields);
+  const sent = parseChangeSent({
+    mentorGroupId: fields.mentorGroupId,
+    version: text(form, "version"),
+  });
+  if (!sent.ok) return refusedForm(before, sent.error, fields);
 
-  const sent = { mentorGroupId: group.value };
-  const changed = await changeStudent(db, inputter, parsed.value, sent);
+  const changed = await changeStudent(db, inputter, parsed.value, sent.value);
   if (!changed.ok) return refusedForm(before, changed.error, fields);
   refreshScreens();
   return savedForm(before, `Data ${parsed.value.name} diperbarui.`);

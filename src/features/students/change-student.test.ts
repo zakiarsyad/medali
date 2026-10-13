@@ -108,6 +108,7 @@ describe("findAddedStudent", () => {
       expect(found).toEqual({
         ...student("9900000501", program),
         mentorGroupId: null,
+        version: 1,
       });
     });
   });

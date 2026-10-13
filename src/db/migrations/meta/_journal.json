@@ -197,6 +197,13 @@
       "when": 1791914326578,
       "tag": "0027_mentor-group-member-changes",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1791914978913,
+      "tag": "0028_student-version",
+      "breakpoints": true
     }
   ]
 }

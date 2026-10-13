@@ -8,6 +8,7 @@ import type { Database } from "@/db/connect";
 import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { ADDED_HERE } from "./added-students";
+import type { ChangeSent } from "./change-sent";
 import { emailChangeOf } from "./email-change";
 import { holdFittingGroup } from "./fitting-group";
 import { type Actor, NOT_ALLOWED } from "./input-student";
@@ -19,10 +20,25 @@ export const NOT_FOUND = {
   error: "Mahasiswa tidak ditemukan.",
 } as const;
 
-/** What the change form sends beside the record. */
-export interface ChangeSent {
-  /** The kelompok pengasuhan chosen, or null for "Belum ditetapkan". */
-  mentorGroupId: string | null;
+/** What a change made from an older record is told. */
+export const STUDENT_CHANGED = {
+  ok: false,
+  error:
+    "Data mahasiswa ini sudah diubah orang lain. Muat ulang halaman, lalu ulangi perubahan Anda.",
+} as const;
+
+/**
+ * Holds the record of a student put in here until the save ends, so two
+ * changes of one student never run at the same moment: the second waits,
+ * and then reads the version the first one left.
+ */
+async function holdStudent(tx: Database, nim: string) {
+  const [stored] = await tx
+    .select({ id: students.id, version: students.version })
+    .from(students)
+    .where(and(eq(students.nim, nim), ADDED_HERE))
+    .for("update");
+  return stored;
 }
 
 /**
@@ -68,6 +84,8 @@ async function changeAccountOf(
  * The student leaves the group they were in for the one chosen, or for
  * none, in the same save, and the move is logged. A group that does not
  * fit the data being saved is refused, and nothing is changed.
+ * A change sent from an older version of the record is refused too: every
+ * change that is saved raises the version by one.
  */
 export async function changeStudent(
   db: Database,
@@ -79,17 +97,18 @@ export async function changeStudent(
   const { nim, email, ...fields } = student;
   return refusedWhenEmailInUse(() =>
     db.transaction(async (tx) => {
+      const stored = await holdStudent(tx, nim);
+      if (!stored) return NOT_FOUND;
+      if (stored.version !== sent.version) return STUDENT_CHANGED;
       const fits = await holdFittingGroup(tx, sent.mentorGroupId, student);
       if (!fits.ok) return fits;
-      const [changed] = await tx
+      await tx
         .update(students)
-        .set(fields)
-        .where(and(eq(students.nim, nim), ADDED_HERE))
-        .returning({ id: students.id });
-      if (!changed) return NOT_FOUND;
-      await settleCompanionDuty(tx, changed.id);
-      await changeAccountOf(tx, changed.id, fields.name, email, actor.id);
-      await moveToGroup(tx, changed.id, sent.mentorGroupId, actor.id);
+        .set({ ...fields, version: stored.version + 1 })
+        .where(eq(students.id, stored.id));
+      await settleCompanionDuty(tx, stored.id);
+      await changeAccountOf(tx, stored.id, fields.name, email, actor.id);
+      await moveToGroup(tx, stored.id, sent.mentorGroupId, actor.id);
       return { ok: true, value: null };
     }),
   );

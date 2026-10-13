@@ -16,6 +16,8 @@ interface MentorGroupFieldProps {
   chosen: string;
   /** The line under the choice. */
   hint: string;
+  /** Shown under the line for a full group. Saving stays allowed. */
+  warning: string | null;
   onChoose: (groupId: string) => void;
 }
 
@@ -23,6 +25,7 @@ export function MentorGroupField({
   groups,
   chosen,
   hint,
+  warning,
   onChoose,
 }: MentorGroupFieldProps) {
   return (
@@ -47,6 +50,11 @@ export function MentorGroupField({
       <p id={HINT_ID} className={shared.detail} aria-live="polite">
         {hint}
       </p>
+      {warning && (
+        <p className={styles.groupWarning} role="status">
+          {warning}
+        </p>
+      )}
     </div>
   );
 }

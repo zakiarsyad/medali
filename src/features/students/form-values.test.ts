@@ -30,6 +30,7 @@ const student: StoredStudent = {
   isInternational: false,
   isBlended: true,
   mentorGroupId: GROUP_ID,
+  version: 4,
 };
 
 const typed: StudentFormFields = {

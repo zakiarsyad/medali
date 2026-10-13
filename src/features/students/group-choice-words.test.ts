@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type ChosenCohort,
   fittingGroups,
+  fullGroupWarning,
   groupChoiceWords,
   groupHint,
   keptGroupId,
@@ -94,5 +95,40 @@ describe("groupHint", () => {
     expect(groupHint([], transfer, "D4 Akuntansi")).toBe(
       "Belum ada kelompok untuk angkatan 2026 D4 Akuntansi alih program. Kelompok dibentuk lewat Pengasuh > Penetapan angkatan baru.",
     );
+  });
+});
+
+describe("fullGroupWarning", () => {
+  const NOT_IN_A_GROUP = "";
+
+  it("warns for a chosen group that holds 35 Aktif members, and says saving is still possible", () => {
+    const full = group("full", { members: 35 });
+
+    expect(fullGroupWarning(full, NOT_IN_A_GROUP)).toBe(
+      "Kelompok ini sudah berisi 35 anggota aktif, dari biasanya paling banyak 35. Data tetap bisa disimpan, atau pilih kelompok lain.",
+    );
+  });
+
+  it("warns for a group that holds more than 35, naming how many", () => {
+    const over = group("over", { members: 38 });
+
+    expect(fullGroupWarning(over, "another")).toContain("38 anggota aktif");
+  });
+
+  it("says nothing for a group that holds 34", () => {
+    const withRoom = group("room", { members: 34 });
+
+    expect(fullGroupWarning(withRoom, NOT_IN_A_GROUP)).toBeNull();
+  });
+
+  it("says nothing for the full group the student is already in", () => {
+    const full = group("full", { members: 36 });
+
+    expect(fullGroupWarning(full, "full")).toBeNull();
+  });
+
+  it("says nothing while no group is chosen", () => {
+    expect(fullGroupWarning(undefined, NOT_IN_A_GROUP)).toBeNull();
+    expect(fullGroupWarning(undefined, "full")).toBeNull();
   });
 });

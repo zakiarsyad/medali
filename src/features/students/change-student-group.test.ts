@@ -103,6 +103,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
         const moved = await changeStudent(db, mover, made.student, {
           mentorGroupId: made.newGroup,
+          version: 1,
         });
 
         expect(moved).toEqual(SAVED);
@@ -133,6 +134,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, made.student, {
         mentorGroupId: null,
+        version: 1,
       });
 
       expect(changed).toEqual(SAVED);
@@ -157,6 +159,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, late, {
         mentorGroupId: made.newGroup,
+        version: 1,
       });
 
       expect(changed).toEqual(SAVED);
@@ -175,6 +178,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, renamed, {
         mentorGroupId: made.oldGroup,
+        version: 1,
       });
 
       expect(changed).toEqual(SAVED);
@@ -210,6 +214,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
       for (const mentorGroupId of otherGroups) {
         const changed = await changeStudent(db, made.staff, renamed, {
           mentorGroupId,
+          version: 1,
         });
         expect(changed).toEqual(GROUP_DOES_NOT_FIT);
       }
@@ -227,6 +232,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, otherYear, {
         mentorGroupId: made.oldGroup,
+        version: 1,
       });
 
       expect(changed).toEqual(GROUP_DOES_NOT_FIT);
@@ -248,6 +254,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
       const changed = await changeStudent(db, made.staff, made.student, {
         mentorGroupId: made.newGroup,
+        version: 1,
       });
 
       expect(changed).toEqual(GROUP_NOT_AVAILABLE);
@@ -264,6 +271,7 @@ describe("changeStudent with a kelompok pengasuhan chosen", () => {
 
         const changed = await changeStudent(db, other, made.student, {
           mentorGroupId: made.newGroup,
+          version: 1,
         });
 
         expect(changed).toEqual(NOT_ALLOWED);

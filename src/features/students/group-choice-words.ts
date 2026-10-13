@@ -1,4 +1,5 @@
 import { groupCode } from "@/ui/group-code";
+import { GROUP_MAX } from "@/ui/group-size";
 import type { GroupChoice } from "./mentor-group-choices";
 
 /** The value of the choice "Belum ditetapkan": no group. */
@@ -39,6 +40,22 @@ export function keptGroupId(chosenId: string, fitting: GroupChoice[]): string {
 export function groupChoiceWords(group: GroupChoice): string {
   const mentor = group.mentorName ?? "-";
   return `${groupCode(group)} · ${mentor} · ${group.members} anggota`;
+}
+
+/**
+ * What is said under a chosen group that is full: one that holds 35 Aktif
+ * members or more. Null for a group with room, for no group, and for the
+ * group the student is already in, which gains nobody. The student may
+ * still be saved in a full group.
+ */
+export function fullGroupWarning(
+  chosen: GroupChoice | undefined,
+  savedGroupId: string,
+): string | null {
+  if (chosen === undefined) return null;
+  if (chosen.id === savedGroupId) return null;
+  if (chosen.members < GROUP_MAX) return null;
+  return `Kelompok ini sudah berisi ${chosen.members} anggota aktif, dari biasanya paling banyak ${GROUP_MAX}. Data tetap bisa disimpan, atau pilih kelompok lain.`;
 }
 
 const GROUPS_OFFERED =

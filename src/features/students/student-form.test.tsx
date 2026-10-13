@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test, vi } from "vitest";
 import type { GroupChoice } from "./mentor-group-choices";
+import { MentorGroupField } from "./mentor-group-field";
 import { StudentForm } from "./student-form";
 import type { StoredStudent } from "./student-input";
 
@@ -49,6 +50,7 @@ const STUDENT: StoredStudent = {
   isInternational: false,
   isBlended: false,
   mentorGroupId: "fits-too",
+  version: 4,
 };
 
 /** The form for a new student, which starts on the first angkatan given. */
@@ -121,5 +123,38 @@ test("Kelompok pengasuhan stands on the group the student being changed is in", 
 
   expect(groupChoiceOf(form)).toContain(
     '<option value="fits-too" selected="">',
+  );
+  expect(form).not.toContain('role="status"');
+});
+
+test("the form to change a student sends the version it opened with, and the form to add sends none", () => {
+  const changing = renderToStaticMarkup(
+    <StudentForm
+      programs={PROGRAMS}
+      cohortYears={[2026]}
+      editing={STUDENT}
+      groups={GROUPS}
+      query=""
+      period={ODD_2026}
+    />,
+  );
+
+  expect(changing).toContain('<input type="hidden" name="version" value="4"/>');
+  expect(formFor([2026], GROUPS)).not.toContain('name="version"');
+});
+
+test("the warning of a full group shows under the line of the choice", () => {
+  const field = renderToStaticMarkup(
+    <MentorGroupField
+      groups={GROUPS}
+      chosen="fits"
+      hint="Pilih kelompok."
+      warning="Kelompok ini sudah berisi 35 anggota aktif."
+      onChoose={() => {}}
+    />,
+  );
+
+  expect(field).toMatch(
+    /Pilih kelompok\.<\/p><p[^>]* role="status">Kelompok ini sudah berisi 35 anggota aktif\.<\/p>/,
   );
 });

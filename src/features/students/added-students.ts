@@ -168,6 +168,7 @@ const INPUT = {
   isInternational: students.isInternational,
   isBlended: students.isBlended,
   mentorGroupId: mentorGroupMembers.groupId,
+  version: students.version,
 };
 
 /**

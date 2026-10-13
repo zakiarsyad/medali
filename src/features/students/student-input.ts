@@ -51,6 +51,8 @@ export interface StudentInput extends Record<CategoryField, boolean> {
 export interface StoredStudent extends StudentInput {
   /** The kelompok pengasuhan the student is in, or null for none. */
   mentorGroupId: string | null;
+  /** How many times the record was saved. A change is sent with it. */
+  version: number;
 }
 
 export interface InputContext {
