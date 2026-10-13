@@ -9,7 +9,7 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
-import type { FormState } from "@/ui/form-message";
+import type { AttendanceFormState } from "./attendance-form-state";
 import { parseAttendance, sentMarks } from "./attendance-input";
 import { MEETINGS_ADDRESS } from "./meetings-address";
 import type { NoteFormState } from "./note-form-state";
@@ -77,24 +77,30 @@ async function filler(): Promise<Account> {
  * never a field.
  */
 export async function saveAttendanceAction(
-  _before: FormState,
+  before: AttendanceFormState,
   form: FormData,
-): Promise<FormState> {
+): Promise<AttendanceFormState> {
   const actor = await filler();
   const parsed = parseAttendance({
     groupId: text(form, "groupId"),
     number: text(form, "number"),
     heldOn: text(form, "heldOn"),
     topic: text(form, "topic"),
+    version: text(form, "version"),
     marks: sentMarks(form),
   });
-  if (!parsed.ok) return { error: parsed.error, done: null };
+  if (!parsed.ok) {
+    return { error: parsed.error, done: null, version: before.version };
+  }
 
   const saved = await saveAttendance(database(), actor, parsed.value);
-  if (!saved.ok) return { error: saved.error, done: null };
+  if (!saved.ok) {
+    return { error: saved.error, done: null, version: before.version };
+  }
   revalidatePath(MEETINGS_ADDRESS);
   return {
     error: null,
     done: `Daftar hadir pertemuan ${saved.value.number} disimpan.`,
+    version: saved.value.version,
   };
 }

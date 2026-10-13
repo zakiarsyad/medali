@@ -4,6 +4,7 @@ import {
   allMarked,
   hasUnsavedChanges,
   marksOf,
+  marksToCorrect,
 } from "./attendance-form-values";
 
 const KEPT: AttendanceValues = {
@@ -27,6 +28,27 @@ describe("marksOf", () => {
     const marks = { a: "sick", b: "present", left: "absent" } as const;
 
     expect(marksOf(marks, ["b", "a"])).toEqual(["present", "sick"]);
+  });
+});
+
+describe("marksToCorrect", () => {
+  it("opens a saved list with the mark kept for each member of today", () => {
+    const kept = { a: "sick", b: "present" } as const;
+
+    expect(marksToCorrect(["a", "b"], kept)).toEqual(kept);
+  });
+
+  it("starts a member who joined after the list was saved as Alpa", () => {
+    expect(marksToCorrect(["a", "new"], { a: "present" })).toEqual({
+      a: "present",
+      new: "absent",
+    });
+  });
+
+  it("does not show the mark kept for a student who is no member today", () => {
+    const kept = { a: "present", left: "excused" } as const;
+
+    expect(marksToCorrect(["a"], kept)).toEqual({ a: "present" });
   });
 });
 

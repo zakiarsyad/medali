@@ -20,7 +20,7 @@ import type { GroupChoice } from "./group-search";
 import { MeetingCards } from "./meeting-cards";
 import { MeetingNumbers } from "./meeting-numbers";
 import type { MeetingsParams } from "./meetings-address";
-import { meetingsOverview } from "./meetings-overview";
+import { keptListOf, meetingsOverview } from "./meetings-overview";
 import styles from "./mentoring.module.css";
 import { ReadOnlyLine } from "./read-only-line";
 
@@ -83,6 +83,7 @@ async function GroupMeetings({
           period={period}
           number={openNumber}
           members={members}
+          kept={keptListOf(openNumber, meetings, marks)}
         />
       )}
     </>

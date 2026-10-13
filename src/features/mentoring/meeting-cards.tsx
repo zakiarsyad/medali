@@ -16,14 +16,15 @@ function CardAction({
   groupId: string;
   mayFillIn: boolean;
 }) {
-  if (!mayFillIn || card.stored !== null) return null;
+  if (!mayFillIn) return null;
+  const isFilledIn = card.stored !== null;
   return (
     <p className={styles.cardAction}>
       <Link
         href={attendanceListAddress(groupId, card.number)}
-        className={shared.button}
+        className={isFilledIn ? shared.quiet : shared.button}
       >
-        Isi daftar hadir
+        {isFilledIn ? "Ubah daftar hadir" : "Isi daftar hadir"}
       </Link>
     </p>
   );

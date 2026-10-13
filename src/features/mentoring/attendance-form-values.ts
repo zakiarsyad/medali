@@ -1,4 +1,5 @@
 import type { AttendanceMark, MarksByStudent } from "@/mentoring/meeting-ids";
+import { sameMarks } from "./attendance-marks";
 
 /** What the form "Daftar hadir pertemuan" holds. */
 export interface AttendanceValues {
@@ -17,6 +18,20 @@ export function allMarked(
   return marks;
 }
 
+/**
+ * The marks a form opens with when its meeting has a list already: for
+ * each member of today the mark kept, and Alpa for a member who has none,
+ * as one who joined the group after the list was saved.
+ */
+export function marksToCorrect(
+  memberIds: readonly string[],
+  kept: MarksByStudent,
+): MarksByStudent {
+  const marks: MarksByStudent = {};
+  for (const id of memberIds) marks[id] = kept[id] ?? "absent";
+  return marks;
+}
+
 /** The marks the form shows for these members, as a list in their order. */
 export function marksOf(
   marks: MarksByStudent,
@@ -28,12 +43,6 @@ export function marksOf(
     if (mark !== undefined) listed.push(mark);
   }
   return listed;
-}
-
-function sameMarks(a: MarksByStudent, b: MarksByStudent): boolean {
-  const ids = Object.keys(a);
-  if (ids.length !== Object.keys(b).length) return false;
-  return ids.every((id) => a[id] === b[id]);
 }
 
 /**

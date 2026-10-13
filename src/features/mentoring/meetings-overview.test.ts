@@ -1,9 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
+  keptListOf,
   meetingsOverview,
   type StoredMark,
   type StoredMeeting,
 } from "./meetings-overview";
+
+describe("keptListOf", () => {
+  it("gives the meeting of a number with every mark kept for it, and none of another meeting", () => {
+    const kept = keptListOf(
+      2,
+      [meeting(1), meeting(2)],
+      [
+        mark(1, "a", "absent"),
+        mark(2, "a", "present"),
+        mark(2, "left", "sick"),
+      ],
+    );
+
+    expect(kept?.meeting.number).toBe(2);
+    expect(kept?.marks).toEqual({ a: "present", left: "sick" });
+  });
+
+  it("gives nothing for a meeting that is not filled in", () => {
+    expect(keptListOf(3, [meeting(1)], [mark(1, "a", "present")])).toBeNull();
+  });
+});
 
 function meeting(number: number): StoredMeeting {
   return {

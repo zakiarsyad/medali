@@ -7,10 +7,10 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { mentorGroups } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import type { AttendanceInput } from "./attendance-input";
+import { type AttendanceInput, NOT_SAVED_YET } from "./attendance-input";
 import {
-  ALREADY_FILLED_IN,
   GROUP_NOT_HELD,
+  MEETING_CHANGED,
   marksExactly,
   NO_RUNNING_PERIOD,
   NO_SUCH_MEETING,
@@ -115,6 +115,7 @@ function listOf(
     number: 1,
     heldOn: "2073-09-10",
     topic: "Orientasi kelompok dan kontrak belajar",
+    version: NOT_SAVED_YET,
     marks: { [records.ani]: "present", [records.budi]: "sick" },
     ...more,
   };
@@ -141,7 +142,7 @@ describe("saveAttendance", () => {
       );
 
       const [meeting, ...more] = await testMeetingsOf(db, records.groupId);
-      expect(saved).toEqual({ ok: true, value: { number: 1 } });
+      expect(saved).toEqual({ ok: true, value: { number: 1, version: 1 } });
       expect(more).toEqual([]);
       expect(meeting).toMatchObject({
         periodId: period.id,
@@ -427,23 +428,63 @@ describe("saveAttendance", () => {
     });
   });
 
-  it("refuses a second list for a meeting that is filled in, and keeps the first", async () => {
+  it("keeps one list when Simpan daftar hadir is pressed twice: the second press is told the meeting changed", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period } = records;
+      const list = listOf(records);
+
+      const first = await saveAttendance(db, mentor, list, period.day);
+      const second = await saveAttendance(db, mentor, list, period.day);
+
+      const meetings = await testMeetingsOf(db, records.groupId);
+      expect(first.ok).toBe(true);
+      expect(second).toEqual(MEETING_CHANGED);
+      expect(meetings).toHaveLength(1);
+      expect(meetings[0]?.version).toBe(1);
+      expect(await testLogOf(db, meetings[0]?.id ?? "")).toHaveLength(1);
+    });
+  });
+
+  it("refuses a first list from a window that was opened before another window saved one, and keeps that one", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const { mentor, period } = records;
       await saveAttendance(db, mentor, listOf(records), period.day);
 
-      const again = await saveAttendance(
+      const fromOtherWindow = await saveAttendance(
         db,
         mentor,
-        listOf(records, { topic: "Topik lain" }),
+        listOf(records, {
+          topic: "Topik jendela kedua",
+          marks: { [records.ani]: "absent", [records.budi]: "absent" },
+        }),
         period.day,
       );
 
-      const meetings = await testMeetingsOf(db, records.groupId);
-      expect(again).toEqual(ALREADY_FILLED_IN);
-      expect(meetings).toHaveLength(1);
-      expect(meetings[0]?.topic).toBe("Orientasi kelompok dan kontrak belajar");
+      const [meeting] = await testMeetingsOf(db, records.groupId);
+      expect(fromOtherWindow).toEqual(MEETING_CHANGED);
+      expect(meeting?.topic).toBe("Orientasi kelompok dan kontrak belajar");
+      expect(await testMarksOf(db, meeting?.id ?? "")).toEqual({
+        [records.ani]: "present",
+        [records.budi]: "sick",
+      });
+    });
+  });
+
+  it("refuses a form that says it was opened on a list no meeting has yet", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const saved = await saveAttendance(
+        db,
+        records.mentor,
+        listOf(records, { version: 3 }),
+        records.period.day,
+      );
+
+      expect(saved).toEqual(MEETING_CHANGED);
+      expect(await savedCount(db, records)).toBe(0);
     });
   });
 });

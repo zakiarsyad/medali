@@ -9,10 +9,11 @@ import {
 } from "@/mentoring/meeting-ids";
 import { MEETING_TOPICS } from "@/mentoring/meeting-topics";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { saveAttendanceAction } from "./actions";
 import { useAskBeforeLeaving } from "./ask-before-leaving";
+import type { AttendanceFormState } from "./attendance-form-state";
 import {
   type AttendanceValues,
   allMarked,
@@ -25,7 +26,6 @@ import type { GroupMember } from "./group-meetings";
 import { MemberName } from "./member-name";
 import styles from "./mentoring.module.css";
 
-const START: FormState = { error: null, done: null };
 const TOPICS_ID = "topik-pertemuan";
 
 function MemberRow({
@@ -92,14 +92,17 @@ function MemberList({
 /**
  * The form "Daftar hadir pertemuan": the day, the topic and a mark for
  * each member, with a count that follows the marks. The button is off
- * while a save is on its way, so two presses send once. Leaving with
- * changes that are not saved asks first.
+ * while a save is on its way, so two presses send once, and the form
+ * sends which save of the list it was opened on, so a list saved in
+ * between is not written over. Leaving with changes that are not saved
+ * asks first.
  */
 export function AttendanceForm({
   groupId,
   number,
   members,
   start,
+  version,
   firstDay,
   lastDay,
   closeAddress,
@@ -111,6 +114,11 @@ export function AttendanceForm({
   members: GroupMember[];
   /** What the form opens with. */
   start: AttendanceValues;
+  /**
+   * Which save of the list the form opens on, or `NOT_SAVED_YET`. The
+   * form sends it, so a list saved in between is not written over.
+   */
+  version: number;
   /** The first and the last day "Tanggal" takes. */
   firstDay: string;
   lastDay: string;
@@ -121,14 +129,18 @@ export function AttendanceForm({
   const [kept, setKept] = useState(start);
   const memberIds = members.map((member) => member.id);
 
-  async function send(before: FormState, form: FormData): Promise<FormState> {
+  async function send(
+    before: AttendanceFormState,
+    form: FormData,
+  ): Promise<AttendanceFormState> {
     const sent = values;
     const after = await saveAttendanceAction(before, form);
     if (after.done) setKept(sent);
     return after;
   }
 
-  const [state, save, pending] = useActionState(send, START);
+  const first: AttendanceFormState = { error: null, done: null, version };
+  const [state, save, pending] = useActionState(send, first);
   useAskBeforeLeaving(hasUnsavedChanges(kept, values));
 
   function setMark(studentId: string, mark: AttendanceMark) {
@@ -157,6 +169,7 @@ export function AttendanceForm({
       </div>
       <input type="hidden" name="groupId" value={groupId} />
       <input type="hidden" name="number" value={number} />
+      <input type="hidden" name="version" value={state.version} />
       <label className={shared.field}>
         Tanggal
         <input

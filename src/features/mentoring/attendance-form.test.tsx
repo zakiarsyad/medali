@@ -38,6 +38,7 @@ function formWith(
       number={2}
       members={members}
       start={start}
+      version={3}
       firstDay="2026-08-01"
       lastDay="2026-10-13"
       closeAddress="/pengasuhan/hadir"
@@ -130,6 +131,10 @@ describe("AttendanceForm", () => {
     expect(form).toContain(`name="groupId" value="${GROUP_ID}"`);
     expect(form).toContain('name="number" value="2"');
     expect(form).not.toContain("savedBy");
+  });
+
+  it("sends which save of the list it was opened on, so a list saved in between is not written over", () => {
+    expect(formWith([ANI])).toContain('name="version" value="3"');
   });
 
   it("says so for a group without Aktif members", () => {

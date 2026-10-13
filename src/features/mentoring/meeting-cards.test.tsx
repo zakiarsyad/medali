@@ -70,9 +70,20 @@ describe("MeetingCards", () => {
     );
   });
 
-  it("offers an account that only reads nothing to fill in", () => {
+  it("offers Ubah daftar hadir on a saved meeting, to an account that may fill in for the group", () => {
+    const [card = ""] = cardsOf(CARDS, true);
+
+    expect(card).toContain("Ubah daftar hadir");
+    expect(card).not.toContain("Isi daftar hadir");
+    expect(card).toContain(
+      `href="/pengasuhan/hadir?kelompok=${GROUP_ID}&amp;pertemuan=1#daftar-hadir"`,
+    );
+  });
+
+  it("offers an account that only reads nothing to fill in or to change", () => {
     for (const card of cardsOf(CARDS, false)) {
       expect(card).not.toContain("Isi daftar hadir");
+      expect(card).not.toContain("Ubah daftar hadir");
     }
   });
 });

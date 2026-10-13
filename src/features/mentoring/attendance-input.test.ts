@@ -17,6 +17,7 @@ function sent(more: Partial<SentAttendance> = {}): SentAttendance {
     number: "2",
     heldOn: "2026-10-10",
     topic: "Refleksi nilai Mandiri dan Disiplin",
+    version: "0",
     marks: [
       [ANI, "present"],
       [BUDI, "sick"],
@@ -39,10 +40,24 @@ describe("parseAttendance", () => {
         number: 2,
         heldOn: "2026-10-10",
         topic: "Refleksi nilai Mandiri dan Disiplin",
+        version: 0,
         marks: { [ANI]: "present", [BUDI]: "sick" },
       },
     });
   });
+
+  it("reads which save of the list the form was opened on", () => {
+    const parsed = parseAttendance(sent({ version: "7" }));
+
+    expect(parsed.ok && parsed.value.version).toBe(7);
+  });
+
+  it.each(["", "-1", "1.5", "satu", "1e3", "12345678901"])(
+    "refuses %o as that save, and says to load the page again",
+    (version) => {
+      expect(errorOf({ version })).toContain("Muat ulang halaman");
+    },
+  );
 
   it("takes a list for a group without members", () => {
     const parsed = parseAttendance(sent({ marks: [] }));

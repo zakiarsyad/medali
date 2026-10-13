@@ -174,6 +174,11 @@ The issue did not say, so these were decided:
 30. A group without an Aktif member can still have a meeting saved, with
     its date and topic and no marks. The form says the group has no
     Aktif member.
+31. Saving a list again with nothing changed is answered as saved and
+    writes nothing: the log gets no line for it.
+32. A log line holds every mark kept for the meeting before and after
+    the save, also the marks of students who have left the group since,
+    which the save does not touch.
 
 ## Steps
 
@@ -183,5 +188,5 @@ The issue did not say, so these were decided:
   permission list, with their checks.
 - [x] 3. The tab with the numbers, the group choice and the four cards.
 - [x] 4. Pengasuh fills in and saves an attendance list.
-- [ ] 5. Changing a saved list, with the log and the two-window case.
+- [x] 5. Changing a saved list, with the log and the two-window case.
 - [ ] 6. Read-only view, refusals and the phone layout.

@@ -6,11 +6,8 @@ import type { Database } from "@/db/connect";
 import {
   mentorGroupMentors,
   mentorGroups,
-  mentoringAttendance,
-  mentoringMeetingChanges,
   mentoringMeetings,
 } from "@/db/schema";
-import { WRITTEN_NOW } from "@/db/written-now";
 import { NOT_ENDED } from "@/mentoring/group-in-force";
 import {
   isMeetingNumber,
@@ -19,10 +16,11 @@ import {
 } from "@/mentoring/meeting-ids";
 import type { Parsed } from "@/parsed";
 import { mayFillInFor } from "./attendance-groups";
-import type { AttendanceInput } from "./attendance-input";
+import { type AttendanceInput, NOT_SAVED_YET } from "./attendance-input";
 import { listActiveMembers } from "./group-meetings";
 import { meetingDayFault } from "./meeting-day";
 import { filledRowsFor } from "./visible-attendance";
+import { addMeeting, correctMeeting } from "./write-attendance";
 
 /** What a save answers to any role but Pengasuh. */
 export const NOT_ALLOWED_TO_FILL_IN = {
@@ -64,16 +62,22 @@ export const NOT_THE_MEMBERS = {
     "Daftar hadir tidak sesuai dengan anak asuh aktif kelompok ini saat ini. Muat ulang halaman, lalu isi lagi.",
 } as const;
 
-/** What a save answers for a meeting whose list is saved already. */
-export const ALREADY_FILLED_IN = {
+/**
+ * What a save answers when the list kept for the meeting is not the one
+ * the form was opened on: it was saved in between, by a second press or
+ * from another window.
+ */
+export const MEETING_CHANGED = {
   ok: false,
   error:
-    "Daftar hadir pertemuan ini sudah diisi, jadi isian Anda tidak disimpan. Muat ulang halaman untuk melihat isinya.",
+    "Daftar hadir pertemuan ini sudah berubah sejak formulir dibuka, jadi isian Anda tidak disimpan. Muat ulang halaman untuk melihat isinya yang terbaru, lalu ubah lagi bila masih perlu.",
 } as const;
 
 /** What "Simpan daftar hadir" tells the one who saved. */
 export interface SavedAttendance {
   number: number;
+  /** Which save of the list is kept now, for the form to send next. */
+  version: number;
 }
 
 /**
@@ -136,50 +140,16 @@ async function findMeeting(
   return stored ?? null;
 }
 
-/** Adds the meeting with its marks, and the first line of its log. */
-async function addMeeting(
-  tx: Database,
-  actorId: string,
-  periodId: string,
-  input: AttendanceInput,
-): Promise<void> {
-  const { groupId, number, heldOn, topic, marks } = input;
-  const [added] = await tx
-    .insert(mentoringMeetings)
-    .values({
-      groupId,
-      periodId,
-      number,
-      heldOn,
-      topic,
-      savedBy: actorId,
-      savedAt: WRITTEN_NOW,
-    })
-    .returning({ id: mentoringMeetings.id });
-  if (!added) throw new Error("The meeting was not added.");
-  const rows = Object.entries(marks).map(([studentId, mark]) => ({
-    meetingId: added.id,
-    studentId,
-    mark,
-  }));
-  if (rows.length > 0) await tx.insert(mentoringAttendance).values(rows);
-  await tx.insert(mentoringMeetingChanges).values({
-    meetingId: added.id,
-    changedBy: actorId,
-    changedAt: WRITTEN_NOW,
-    heldOnAfter: heldOn,
-    topicAfter: topic,
-    marksAfter: marks,
-  });
-}
-
 /**
  * "Simpan daftar hadir": keeps the attendance list of one meeting of a
  * group in the period that runs on `day`, as the work of the actor, with
- * a line in the log. Refused for any role but Pengasuh, for a group the
- * actor does not hold today, for a number no meeting of a period has, for
- * a day in the future or outside the period, and for a list that is not
- * that of the Aktif members of the group today.
+ * a line in the log. The first save of a meeting adds it; a later one,
+ * by whoever holds the group then, puts the new list in its place.
+ * Refused for any role but Pengasuh, for a group the actor does not hold
+ * today, for a number no meeting of a period has, for a day in the future
+ * or outside the period, for a list that is not that of the Aktif members
+ * of the group today, and for a form that was opened on another state of
+ * the meeting than the one kept now: a second press, or a second window.
  */
 export async function saveAttendance(
   db: Database,
@@ -203,9 +173,14 @@ export async function saveAttendance(
     const memberIds = members.map((member) => member.id);
     if (!marksExactly(input.marks, memberIds)) return NOT_THE_MEMBERS;
 
-    const stored = await findMeeting(tx, period.id, input);
-    if (stored !== null) return ALREADY_FILLED_IN;
-    await addMeeting(tx, actor.id, period.id, input);
-    return { ok: true, value: { number: input.number } };
+    const kept = await findMeeting(tx, period.id, input);
+    if ((kept?.version ?? NOT_SAVED_YET) !== input.version) {
+      return MEETING_CHANGED;
+    }
+    const version =
+      kept === null
+        ? await addMeeting(tx, actor.id, period.id, input)
+        : await correctMeeting(tx, actor.id, kept, input);
+    return { ok: true, value: { number: input.number, version } };
   });
 }

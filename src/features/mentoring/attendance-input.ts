@@ -17,6 +17,8 @@ export interface SentAttendance {
   number: string;
   heldOn: string;
   topic: string;
+  /** Which save of the list the form was opened on. */
+  version: string;
   marks: SentMark[];
 }
 
@@ -26,8 +28,16 @@ export interface AttendanceInput {
   number: number;
   heldOn: string;
   topic: string;
+  /**
+   * Which save of the list the form was opened on, counted from 1, or
+   * `NOT_SAVED_YET` for a meeting that had no list then.
+   */
+  version: number;
   marks: MarksByStudent;
 }
+
+/** The version a form sends for a meeting that had no list when it opened. */
+export const NOT_SAVED_YET = 0;
 
 export const TOPIC_MAX_LENGTH = 200;
 
@@ -53,6 +63,8 @@ export function sentMarks(form: FormData): SentMark[] {
 /** The database keeps no text with this character. */
 const NUL = "\u0000";
 const WHOLE_NUMBER = /^\d$/;
+/** As many digits as the database keeps for a version. */
+const VERSION = /^\d{1,9}$/;
 
 const INCOMPLETE =
   "Formulir ini tidak lengkap. Muat ulang halaman, lalu isi lagi.";
@@ -87,19 +99,22 @@ function readMarks(sent: SentMark[]): MarksByStudent | null {
  * Checks "Simpan daftar hadir" as sent. The topic holds 1 to 200
  * characters, the meeting is one of the period, and every mark is one of
  * the four for one student. Whether the day falls in the running period,
- * and whether the group and its members are the sender's, is decided
- * where the list is saved.
+ * whether the group and its members are the sender's, and whether the
+ * form was opened on the list kept now, is decided where the list is
+ * saved.
  */
 export function parseAttendance(sent: SentAttendance): Parsed<AttendanceInput> {
-  if (!isUuid(sent.groupId)) return refused(INCOMPLETE);
+  const isWhole = isUuid(sent.groupId) && VERSION.test(sent.version);
+  if (!isWhole) return refused(INCOMPLETE);
   const number = WHOLE_NUMBER.test(sent.number) ? Number(sent.number) : 0;
   if (!isMeetingNumber(number)) {
     return refused(
       `Pertemuan ini tidak ada. Setiap semester ada ${MEETINGS_PER_PERIOD} pertemuan.`,
     );
   }
-  if (!isDay(sent.heldOn))
+  if (!isDay(sent.heldOn)) {
     return refused("Isi tanggal pertemuan dengan benar.");
+  }
   const topic = sent.topic.trim();
   const topicError = topicFault(topic);
   if (topicError !== null) return refused(topicError);
@@ -111,6 +126,13 @@ export function parseAttendance(sent: SentAttendance): Parsed<AttendanceInput> {
   }
   return {
     ok: true,
-    value: { groupId: sent.groupId, number, heldOn: sent.heldOn, topic, marks },
+    value: {
+      groupId: sent.groupId,
+      number,
+      heldOn: sent.heldOn,
+      topic,
+      version: Number(sent.version),
+      marks,
+    },
   };
 }

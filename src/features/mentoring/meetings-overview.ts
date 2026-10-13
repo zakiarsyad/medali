@@ -1,5 +1,6 @@
 import {
   type AttendanceMark,
+  type MarksByStudent,
   MEETINGS_PER_PERIOD,
 } from "@/mentoring/meeting-ids";
 import { averageAttendance } from "./attendance-average";
@@ -82,4 +83,28 @@ export function meetingsOverview(
     held: meetings.length,
     average: averageAttendance([...byMember.values()]),
   };
+}
+
+/** A meeting whose list is saved, with every mark kept for it. */
+export interface KeptList {
+  meeting: StoredMeeting;
+  marks: MarksByStudent;
+}
+
+/**
+ * The list kept for the meeting of a number, among these meetings and
+ * their marks, or null for a meeting that is not filled in.
+ */
+export function keptListOf(
+  number: number,
+  meetings: readonly StoredMeeting[],
+  marks: readonly StoredMark[],
+): KeptList | null {
+  const meeting = meetings.find((each) => each.number === number);
+  if (meeting === undefined) return null;
+  const own: MarksByStudent = {};
+  for (const mark of marks) {
+    if (mark.meetingId === meeting.id) own[mark.studentId] = mark.mark;
+  }
+  return { meeting, marks: own };
 }

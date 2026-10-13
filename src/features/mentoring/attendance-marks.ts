@@ -1,4 +1,15 @@
-import { ATTENDANCE_MARKS, type AttendanceMark } from "@/mentoring/meeting-ids";
+import {
+  ATTENDANCE_MARKS,
+  type AttendanceMark,
+  type MarksByStudent,
+} from "@/mentoring/meeting-ids";
+
+/** Whether two lists mark the same students, each with the same mark. */
+export function sameMarks(a: MarksByStudent, b: MarksByStudent): boolean {
+  const ids = Object.keys(a);
+  if (ids.length !== Object.keys(b).length) return false;
+  return ids.every((id) => a[id] === b[id]);
+}
 
 /** What the screens call each mark. */
 export const MARK_TITLES: Record<AttendanceMark, string> = {
