@@ -76,6 +76,7 @@ take_turn
 # What a failure or a power cut left unfinished. No other backup is
 # writing one now, since this one has the turn.
 rm -f "$BACKUPS"/*"$BACKUP_ENDING$UNFINISHED_ENDING"
+remove_stale_work_folders
 make_work_folder
 # Written under a name that marks it as unfinished, and given its real
 # name only once it is complete.
@@ -92,6 +93,10 @@ copy_files ||
 lock_into "$UNFINISHED" ||
   refuse "Cadangan gagal: tidak bisa ditulis ke folder cadangan. Periksa ruang kosong di BACKUP_FOLDER."
 
+# On the disk before it gets its real name, so after a power cut a file
+# that is cut short never carries a good name.
+sync "$UNFINISHED" ||
+  refuse "Cadangan gagal: tidak bisa ditulis ke folder cadangan. Periksa ruang kosong di BACKUP_FOLDER."
 name=$(free_name)
 mv "$UNFINISHED" "$BACKUPS/$name"
 echo "Cadangan selesai: $name ($(size_of "$BACKUPS/$name"))."

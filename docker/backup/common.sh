@@ -76,10 +76,19 @@ remove_work_folder() {
   rm -rf "$WORK"
 }
 
+WORK_FOLDERS=/tmp/medali-backup-work
+
+# A command that was killed, as when the package is stopped while it
+# runs, cannot remove its unlocked working copy. Whoever has the turn
+# may remove it: no other command is using one.
+remove_stale_work_folders() {
+  rm -rf "$WORK_FOLDERS".*
+}
+
 # The unlocked working copy: inside this part, never in the backup
 # folder, and removed however the command ends.
 make_work_folder() {
-  WORK=$(mktemp -d)
+  WORK=$(mktemp --directory "$WORK_FOLDERS.XXXXXXXX")
   CONTENT=$WORK/content
   mkdir "$CONTENT"
   trap remove_work_folder EXIT

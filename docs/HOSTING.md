@@ -317,11 +317,18 @@ command again.
 - `BACKUP_FOLDER`: the folder on the server where backups are kept, as a
   full path. Point it at another disk or server than the one the app
   runs on: a backup kept beside the data is lost together with it.
-  While it is empty no backup is made.
+  While it is empty no backup is made. With a bare name, without a path,
+  the package does not start: Docker Compose takes such a name for
+  something else. If the folder does not exist, Docker makes it, so
+  check that the other disk is really attached there, or the backups
+  land on the app's own disk.
 - `BACKUP_PASSWORD`: the password every backup is locked with. Keep a
   copy somewhere safe apart from the server. It cannot be recovered, and
   without it no backup can be read. A backup opens only with the
-  password that was set when it was made.
+  password that was set when it was made. Letters, digits and spaces
+  only is safest: other signs, such as `$`, `#` or quotes, can be
+  changed when the settings file is read, and the copy kept elsewhere
+  would then not open the backup.
 - `BACKUP_HOUR`: the hour of the nightly backup, in campus time, such as
   `02:00`. Empty means 02:00.
 - `BACKUP_KEEP`: how many backups are kept. Empty means 14.
@@ -335,7 +342,8 @@ the password is empty, or while the hour or the number cannot be read.
 
 It says the name and the size of the backup it made. People can go on
 using the app meanwhile. A backup that fails leaves nothing behind in
-the folder, and says what to check.
+the folder, and says what to check. A backup belongs to the server's
+administrator account (root), and only that account can read it.
 
 #### The nightly backup
 
@@ -385,6 +393,9 @@ It then asks to type `GANTI-SEMUA` once more. With any other answer it
 changes nothing. With the word, everything entered after the backup was
 made is gone. Then start the app again, as in step 3 above.
 
+Do it when nobody is working in the app: what people save while it runs
+is lost, and pages may fail until the app is started again.
+
 #### What the restore refuses
 
 - A wrong password: it says the backup does not open with
@@ -409,9 +420,14 @@ that was never restored is not known to work.
    server. The other values may be made up.
 3. Make a folder, put a copy of one backup in it, and set
    `BACKUP_FOLDER` to that folder.
-4. Start the package, restore the backup, and start the app again, as
+4. Fetch the newest tools first, so they are not older than the ones
+   that made the backup:
+
+       docker compose --file compose.campus.yaml --env-file .env.campus build --pull backup
+
+5. Start the package, restore the backup, and start the app again, as
    in "Restoring into an empty package".
-5. Open the app and check that the sign-in page opens. Signing in with
+6. Open the app and check that the sign-in page opens. Signing in with
    Google needs the real keys, and this computer's address registered
    at Google, so the trial ends at the sign-in page unless both are
    there.

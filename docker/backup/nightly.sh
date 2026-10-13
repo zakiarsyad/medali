@@ -4,13 +4,28 @@
 set -euo pipefail
 source /usr/local/lib/medali-backup/common.sh
 
-# Run beside this script, so stopping the package is not held up until
-# a wait or a backup ends.
+# Run beside this script, so a stop reaches it at once and is not held
+# up until a wait or a backup ends.
+RUNNING=
 beside() {
   "$@" &
-  wait $!
+  RUNNING=$!
+  wait "$RUNNING"
 }
-trap 'exit 0' TERM INT
+
+# Stopping the package stops only this script. A backup running beside
+# it is told to stop too, with the tool it is waiting for, and is waited
+# for: so it removes its unlocked working copy and its unfinished file
+# before the part is gone.
+stop() {
+  if [[ -n "$RUNNING" ]]; then
+    kill "$RUNNING" 2>/dev/null || true
+    pkill --parent "$RUNNING" 2>/dev/null || true
+    wait "$RUNNING" 2>/dev/null || true
+  fi
+  exit 0
+}
+trap stop TERM INT
 
 why_no_nightly_backup() {
   if [[ -z "${BACKUP_FOLDER:-}" ]]; then
@@ -42,5 +57,6 @@ echo "Cadangan otomatis berjalan setiap hari pukul $(backup_hour). Yang disimpan
 
 while true; do
   beside sleep "$(seconds_until "$(backup_hour)" "$(date +%s)")"
-  beside backup || echo "Cadangan otomatis gagal. Cadangan yang lama tidak dihapus."
+  beside backup ||
+    echo "$(date '+%Y-%m-%d %H:%M') Cadangan otomatis gagal. Cadangan yang lama tidak dihapus."
 done

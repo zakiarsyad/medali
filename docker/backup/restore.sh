@@ -61,13 +61,11 @@ add_files() {
 }
 
 # In one go: the database is emptied and filled from the backup fully, or
-# it stays exactly as it was. A fault is shown by its code only, since
-# its words can hold a record.
+# it stays exactly as it was.
 replace_database() {
-  psql --no-psqlrc --quiet --single-transaction \
-    --set ON_ERROR_STOP=1 --set VERBOSITY=sqlstate \
+  psql --no-psqlrc --quiet --single-transaction --set ON_ERROR_STOP=1 \
     --file /usr/local/lib/medali-backup/empty-database.sql \
-    --file "$CONTENT/database.sql" >/dev/null </dev/null
+    --file "$CONTENT/database.sql" >/dev/null 2>&1 </dev/null
 }
 
 remove_files_not_in_backup() {
@@ -77,6 +75,7 @@ remove_files_not_in_backup() {
 
 require_backup_settings
 take_turn
+remove_stale_work_folders
 is_backup_name "$name" ||
   refuse "Sebutkan nama cadangan yang dipulihkan, contoh: restore 2026-10-13-020000.medali-backup"
 [[ -f "$BACKUPS/$name" ]] ||

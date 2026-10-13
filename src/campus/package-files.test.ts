@@ -381,6 +381,17 @@ describe("the backup part of the campus server package", () => {
   ])("stays out of the app's own package: %s", (path) => {
     expect(isIgnored(path)).toBe(true);
   });
+
+  it("keeps a backup, finished or not, out of the repo wherever its folder is", () => {
+    const kept = linesOf(".gitignore");
+
+    expect(kept).toContain("*.medali-backup");
+    expect(kept).toContain("*.medali-backup.part");
+    expect(kept.filter((line) => line.startsWith("!"))).toEqual([
+      "!.env.example",
+      "!.env.campus.example",
+    ]);
+  });
 });
 
 describe("the example settings file of the package", () => {

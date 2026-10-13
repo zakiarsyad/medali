@@ -11,6 +11,11 @@ coverage/
 !.env.campus.example
 .claude/settings.local.json
 
+# Backups, finished or not: a backup folder inside a copy of the repo
+# must never get into this public repo
+*.medali-backup
+*.medali-backup.part
+
 # Computer clutter
 .DS_Store
 Thumbs.db

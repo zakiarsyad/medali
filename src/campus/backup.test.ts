@@ -594,14 +594,14 @@ async function secondsUntil(hour: string, now: string): Promise<number> {
 
 /**
  * The nightly backup with its hour set to the minute that starts next,
- * stopped five seconds after it. A minute about to end is skipped, so the
+ * stopped thirty seconds after it. A minute about to end is skipped, so the
  * hour is never missed.
  */
 const NIGHTLY_AT_THE_NEXT_MINUTE = `now=$(date +%s)
   left=$((60 - now % 60))
   if ((left < 5)); then left=$((left + 60)); fi
   export BACKUP_HOUR=$(date --date="@$((now + left))" +%H:%M)
-  exec timeout $((left + 5)) nightly`;
+  exec timeout $((left + 30)) nightly`;
 
 function nightlyAtTheNextMinute(settings: Settings): Promise<Outcome> {
   return inBackupPart(["bash", "-euc", NIGHTLY_AT_THE_NEXT_MINUTE], settings);
@@ -710,7 +710,9 @@ describe("the nightly backup", () => {
       expect(failed.said).toContain(
         "Pengaturan BACKUP_PASSWORD masih kosong. Isi di .env.campus",
       );
-      expect(failed.said).toContain("Cadangan otomatis gagal.");
+      expect(failed.said).toMatch(
+        /^\d{4}-\d{2}-\d{2} \d{2}:\d{2} Cadangan otomatis gagal\./m,
+      );
       expect(failed.status).toBe(STILL_RUNNING);
     },
     CASE_TIMEOUT_MS,
@@ -756,6 +758,62 @@ describe("a backup that fails half way", () => {
       expect(unfinishedIn(before)).toEqual([leftBehind]);
       expect(next.status).toBe(0);
       expect(unfinishedIn(await backupFolder())).toEqual([]);
+    },
+    CASE_TIMEOUT_MS,
+  );
+});
+
+/**
+ * Leaves an unlocked working copy as a killed command would, runs a
+ * command in the same backup part, and lists what the part then holds.
+ */
+const AFTER_A_KILLED_COMMAND = `left=/tmp/medali-backup-work.killed
+  mkdir --parents "$left/content"
+  touch "$left/content/database.sql"
+  ls --almost-all /tmp
+  echo then
+  "$@" >/dev/null 2>&1 || true
+  ls --almost-all /tmp`;
+
+describe("the unlocked working copy of a command that was killed", () => {
+  it.each([
+    ["backup", []],
+    ["restore", ["no-backup-name"]],
+  ])(
+    "is removed by the next command: %s",
+    async (command, words) => {
+      const ran = await inBackupPart(
+        ["bash", "-euc", AFTER_A_KILLED_COMMAND, "--", command, ...words],
+        {},
+      );
+
+      const [before, after] = ran.output.toString().split("then\n");
+      expect(ran.status).toBe(0);
+      expect(before).toContain("medali-backup-work.killed");
+      expect(after).toBe("medali-backup.turn\n");
+    },
+    CASE_TIMEOUT_MS,
+  );
+});
+
+describe("a backup of a package with no uploaded file", () => {
+  it(
+    "is made, and restored over a package in use it leaves that one with no file either",
+    async () => {
+      const noFiles = { FILE_STORAGE_BUCKET: "without-files" };
+      await emptyBucket(noFiles.FILE_STORAGE_BUCKET);
+      await makeTargetHoldData();
+
+      const backedUp = await backup(noFiles);
+      const restored = await restore(nameIn(backedUp), REPLACING);
+      await inBackupFolder('rm "/backups/$1"', [nameIn(backedUp)]);
+
+      expect(backedUp.status).toBe(0);
+      expect(restored.said).toContain("Pemulihan selesai");
+      expect(restored.status).toBe(0);
+      const target = await stateOf(TARGET);
+      expect(target.files).toEqual({});
+      expect(target.rows).toEqual(await rowCounts(SOURCE.PGDATABASE));
     },
     CASE_TIMEOUT_MS,
   );
