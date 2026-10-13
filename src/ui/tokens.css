@@ -163,7 +163,8 @@
 
   /*
    * The room a field brought into view keeps under itself, so it stops
-   * above the save bar. More than the bar is high with a message in it.
+   * above the save bar. More than the bar is high with a message of
+   * several lines in it.
    */
   --above-save-bar: 0;
 }
@@ -213,7 +214,7 @@
     --save-bar-line: var(--line-width);
     --save-bar-direction: column-reverse;
     --save-bar-wrap: wrap-reverse;
-    --above-save-bar: calc(3 * var(--space-3xl));
+    --above-save-bar: calc(4 * var(--space-3xl));
   }
 }
 
