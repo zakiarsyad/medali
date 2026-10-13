@@ -86,6 +86,23 @@ describe("MeetingCards", () => {
       expect(card).not.toContain("Ubah daftar hadir");
     }
   });
+
+  it("offers an account that only reads Lihat daftar hadir on a saved meeting, and nothing on one without a list", () => {
+    const [saved = "", empty = ""] = cardsOf(CARDS, false);
+
+    expect(saved).toContain("Lihat daftar hadir");
+    expect(saved).toContain(
+      `href="/pengasuhan/hadir?kelompok=${GROUP_ID}&amp;pertemuan=1#daftar-hadir"`,
+    );
+    expect(empty).not.toContain("Lihat daftar hadir");
+    expect(empty).not.toContain("href=");
+  });
+
+  it("offers an account that may fill in no Lihat daftar hadir: it changes the list instead", () => {
+    for (const card of cardsOf(CARDS, true)) {
+      expect(card).not.toContain("Lihat daftar hadir");
+    }
+  });
 });
 
 describe("MeetingNumbers", () => {

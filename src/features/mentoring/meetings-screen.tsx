@@ -10,17 +10,28 @@ import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import {
   type AttendanceGroup,
+  groupToShow,
   listAttendanceGroups,
   mayFillInFor,
 } from "./attendance-groups";
 import { AttendancePanel } from "./attendance-panel";
-import { listActiveMembers, readMarks, readMeetings } from "./group-meetings";
+import { AttendanceView } from "./attendance-view";
+import {
+  type GroupMember,
+  listActiveMembers,
+  readMarks,
+  readMeetings,
+} from "./group-meetings";
 import { GroupPicker } from "./group-picker";
 import type { GroupChoice } from "./group-search";
 import { MeetingCards } from "./meeting-cards";
 import { MeetingNumbers } from "./meeting-numbers";
-import type { MeetingsParams } from "./meetings-address";
-import { keptListOf, meetingsOverview } from "./meetings-overview";
+import { type MeetingsParams, meetingsAddress } from "./meetings-address";
+import {
+  type KeptList,
+  keptListOf,
+  meetingsOverview,
+} from "./meetings-overview";
 import styles from "./mentoring.module.css";
 import { ReadOnlyLine } from "./read-only-line";
 
@@ -77,16 +88,59 @@ async function GroupMeetings({
         groupId={group.id}
         mayFillIn={mayFillIn}
       />
-      {mayFillIn && openNumber !== null && (
-        <AttendancePanel
+      {openNumber !== null && (
+        <OpenList
           groupId={group.id}
           period={period}
           number={openNumber}
           members={members}
           kept={keptListOf(openNumber, meetings, marks)}
+          mayFillIn={mayFillIn}
         />
       )}
     </>
+  );
+}
+
+/**
+ * The attendance list the address opens: the form for an account that
+ * may fill in for the group, and the saved list to read for any other.
+ * An account that only reads is shown nothing of a meeting without a list.
+ */
+function OpenList({
+  groupId,
+  period,
+  number,
+  members,
+  kept,
+  mayFillIn,
+}: {
+  groupId: string;
+  period: AcademicPeriod;
+  number: number;
+  members: GroupMember[];
+  kept: KeptList | null;
+  mayFillIn: boolean;
+}) {
+  if (mayFillIn) {
+    return (
+      <AttendancePanel
+        groupId={groupId}
+        period={period}
+        number={number}
+        members={members}
+        kept={kept}
+      />
+    );
+  }
+  if (kept === null) return null;
+  return (
+    <AttendanceView
+      number={number}
+      members={members}
+      kept={kept}
+      closeAddress={meetingsAddress(groupId)}
+    />
   );
 }
 
@@ -122,8 +176,7 @@ function Groups({
       </p>
     );
   }
-  // An address that names no group the account may read shows the first.
-  const shown = groups.find((group) => group.id === params.groupId) ?? first;
+  const shown = groupToShow(groups, params.groupId) ?? first;
   const chosen = choiceOf(shown);
   return (
     <>
@@ -176,12 +229,14 @@ export async function MeetingsScreen({
       </PageHead>
       <TabLinks {...tabs} />
       {fillLimit === null && <ReadOnlyLine />}
-      <Groups
-        groups={groups}
-        period={period}
-        fillLimit={fillLimit}
-        params={params}
-      />
+      <div className={styles.meetings}>
+        <Groups
+          groups={groups}
+          period={period}
+          fillLimit={fillLimit}
+          params={params}
+        />
+      </div>
     </>
   );
 }

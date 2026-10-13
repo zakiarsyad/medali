@@ -16,12 +16,23 @@ function CardAction({
   groupId: string;
   mayFillIn: boolean;
 }) {
-  if (!mayFillIn) return null;
   const isFilledIn = card.stored !== null;
+  // An account that only reads has nothing to open on an empty meeting.
+  if (!mayFillIn && !isFilledIn) return null;
+  const address = attendanceListAddress(groupId, card.number);
+  if (!mayFillIn) {
+    return (
+      <p className={styles.cardAction}>
+        <Link href={address} className={shared.link}>
+          Lihat daftar hadir
+        </Link>
+      </p>
+    );
+  }
   return (
     <p className={styles.cardAction}>
       <Link
-        href={attendanceListAddress(groupId, card.number)}
+        href={address}
         className={isFilledIn ? shared.quiet : shared.button}
       >
         {isFilledIn ? "Ubah daftar hadir" : "Isi daftar hadir"}

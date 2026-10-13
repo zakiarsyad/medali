@@ -179,6 +179,16 @@ The issue did not say, so these were decided:
 32. A log line holds every mark kept for the meeting before and after
     the save, also the marks of students who have left the group since,
     which the save does not touch.
+33. "Lihat daftar hadir" shows the day, the topic and the mark of each
+    member who is Aktif in the group today, with the counts and "Tutup".
+    A member with no mark in that list shows "Tidak tercatat". A role
+    that only reads is shown no list for a meeting that is not filled
+    in.
+34. Someone who fills in for their own groups and also reads other
+    groups, such as a Pengasuh who is also Kepala Unit, gets "Lihat
+    daftar hadir" on the groups they do not hold. The line that only
+    mentors fill this in is shown to those without the right to fill
+    in.
 
 ## Steps
 
@@ -189,4 +199,4 @@ The issue did not say, so these were decided:
 - [x] 3. The tab with the numbers, the group choice and the four cards.
 - [x] 4. Pengasuh fills in and saves an attendance list.
 - [x] 5. Changing a saved list, with the log and the two-window case.
-- [ ] 6. Read-only view, refusals and the phone layout.
+- [x] 6. Read-only view, refusals and the phone layout.

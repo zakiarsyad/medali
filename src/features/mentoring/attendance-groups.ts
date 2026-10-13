@@ -78,6 +78,20 @@ export function mayFillInFor(
   return limit.menteesOf.includes(mentorId);
 }
 
+/**
+ * The group the tab shows, among those the account may read: the one the
+ * address asks for, or else the first. An address that names a group the
+ * account may not read shows the first too, and nothing of the one it
+ * named. Null for an account that reads no group.
+ */
+export function groupToShow<Group extends { id: string }>(
+  readable: readonly Group[],
+  askedId: string | null,
+): Group | null {
+  const asked = readable.find((group) => group.id === askedId);
+  return asked ?? readable[0] ?? null;
+}
+
 const HELD_TODAY = and(
   eq(mentorGroupMentors.groupId, mentorGroups.id),
   isNull(mentorGroupMentors.endsOn),

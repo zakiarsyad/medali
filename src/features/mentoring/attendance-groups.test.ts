@@ -4,7 +4,11 @@ import type { AccountForAccess } from "@/auth/access";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
-import { listAttendanceGroups, mayFillInFor } from "./attendance-groups";
+import {
+  groupToShow,
+  listAttendanceGroups,
+  mayFillInFor,
+} from "./attendance-groups";
 import {
   addTestAccount,
   addTestGroup,
@@ -164,6 +168,29 @@ describe("listAttendanceGroups", () => {
         },
       });
     });
+  });
+});
+
+describe("groupToShow", () => {
+  const readable = [{ id: "group-1" }, { id: "group-2" }];
+
+  it("shows the group the address asks for, when the account may read it", () => {
+    expect(groupToShow(readable, "group-2")).toEqual({ id: "group-2" });
+  });
+
+  it("shows the first group when the address names none", () => {
+    expect(groupToShow(readable, null)).toEqual({ id: "group-1" });
+  });
+
+  it("shows the first group, and nothing of the one named, for a group the account may not read", () => {
+    expect(groupToShow(readable, "group-of-another")).toEqual({
+      id: "group-1",
+    });
+  });
+
+  it("shows nothing to an account that reads no group, whatever the address names", () => {
+    expect(groupToShow([], "group-1")).toBeNull();
+    expect(groupToShow([], null)).toBeNull();
   });
 });
 

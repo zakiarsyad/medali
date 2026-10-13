@@ -143,6 +143,11 @@
   margin: var(--space-lg) 0 0;
 }
 
+/* What the tab of meetings shows keeps clear of the line above it. */
+.readOnly + .meetings {
+  margin-top: var(--space-lg);
+}
+
 /* "Kelompok pengasuhan": the group shown, and the search for another. */
 .picker {
   margin-bottom: var(--space-lg);
