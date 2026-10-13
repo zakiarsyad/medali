@@ -1,4 +1,4 @@
-// Sample NIMs of this file: 9900002600 to 9900002699.
+// Sample NIMs of this file: 9900003700 to 9900003799.
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -58,7 +58,7 @@ async function linesOf(db: Database, studentId: string) {
 describe("moveToGroup", () => {
   it("lets a student join a group, logged with none before", async () => {
     await inTestDatabase(async (db) => {
-      const made = await addStudentAndGroups(db, "9900002601");
+      const made = await addStudentAndGroups(db, "9900003701");
 
       await moveToGroup(db, made.studentId, made.first, made.staff.id);
 
@@ -71,7 +71,7 @@ describe("moveToGroup", () => {
 
   it("moves a student to another group, logged with both", async () => {
     await inTestDatabase(async (db) => {
-      const made = await addStudentAndGroups(db, "9900002602");
+      const made = await addStudentAndGroups(db, "9900003702");
       await moveToGroup(db, made.studentId, made.first, made.staff.id);
 
       await moveToGroup(db, made.studentId, made.second, made.staff.id);
@@ -87,7 +87,7 @@ describe("moveToGroup", () => {
 
   it("takes a student back to no group, logged with none after", async () => {
     await inTestDatabase(async (db) => {
-      const made = await addStudentAndGroups(db, "9900002603");
+      const made = await addStudentAndGroups(db, "9900003703");
       await moveToGroup(db, made.studentId, made.first, made.staff.id);
 
       await moveToGroup(db, made.studentId, null, made.staff.id);
@@ -103,7 +103,7 @@ describe("moveToGroup", () => {
 
   it("logs nothing for a student who stays where they are", async () => {
     await inTestDatabase(async (db) => {
-      const made = await addStudentAndGroups(db, "9900002604");
+      const made = await addStudentAndGroups(db, "9900003704");
 
       await moveToGroup(db, made.studentId, null, made.staff.id);
       await moveToGroup(db, made.studentId, made.first, made.staff.id);

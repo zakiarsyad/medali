@@ -1,4 +1,4 @@
-// Sample NIMs of this file: 9900002700 to 9900002799.
+// Sample NIMs of this file: 9900003800 to 9900003899.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
@@ -75,7 +75,7 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
       await inTestDatabase(async (db) => {
         const { program, mentor, groupId } = await addGroup(db, "Masuk");
         const actor = await addTestActor(db, "Pegawai Uji", [role]);
-        const student = newStudent("9900002701", program);
+        const student = newStudent("9900003801", program);
 
         const added = await inputStudent(db, actor, student, groupId);
 
@@ -102,7 +102,7 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
     await inTestDatabase(async (db) => {
       const { program, groupId } = await addGroup(db, "Tolak");
       const actor = await addTestActor(db, "Akun Lain", [role]);
-      const student = newStudent("9900002702", program);
+      const student = newStudent("9900003802", program);
 
       const added = await inputStudent(db, actor, student, groupId);
 
@@ -129,8 +129,8 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
         mentorId: mentor.id,
         entryPath: "transfer",
       });
-      const fromOtherProgram = newStudent("9900002703", otherProgram);
-      const student = newStudent("9900002704", program);
+      const fromOtherProgram = newStudent("9900003803", otherProgram);
+      const student = newStudent("9900003804", program);
 
       const answers = [
         await inputStudent(db, actor, fromOtherProgram, groupId),
@@ -156,7 +156,7 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
         .update(mentorGroups)
         .set({ endedAt: new Date(), endedBy: actor.id })
         .where(eq(mentorGroups.id, groupId));
-      const student = newStudent("9900002705", program);
+      const student = newStudent("9900003805", program);
 
       const added = await inputStudent(db, actor, student, groupId);
 
@@ -169,14 +169,14 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
     await inTestDatabase(async (db) => {
       const { program, groupId } = await addGroup(db, "Terpakai");
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
-      const student = newStudent("9900002706", program);
+      const student = newStudent("9900003806", program);
       await inputStudent(db, actor, student);
 
       const again = await inputStudent(db, actor, student, groupId);
 
       expect(again).toEqual({
         ok: false,
-        error: "NIM 9900002706 sudah terdaftar.",
+        error: "NIM 9900003806 sudah terdaftar.",
       });
       expect(await membersOf(db, groupId)).toEqual([]);
     });
@@ -188,7 +188,7 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
       await inTestDatabase(async (db) => {
         const { program, groupId } = await addGroup(db, "Cuti");
         const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
-        const student = { ...newStudent("9900002707", program), status };
+        const student = { ...newStudent("9900003807", program), status };
 
         const added = await inputStudent(db, actor, student, groupId);
 
@@ -203,7 +203,7 @@ describe("inputStudent with a kelompok pengasuhan chosen", () => {
     await inTestDatabase(async (db) => {
       const { program, groupId } = await addGroup(db, "Kosong");
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
-      const student = newStudent("9900002708", program);
+      const student = newStudent("9900003808", program);
 
       const added = await inputStudent(db, actor, student, null);
 
