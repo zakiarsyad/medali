@@ -16,26 +16,38 @@ import { useAskBeforeLeaving } from "./ask-before-leaving";
 import type { AttendanceFormState } from "./attendance-form-state";
 import {
   type AttendanceValues,
-  allMarked,
+  allPresent,
   hasUnsavedChanges,
   marksOf,
+  withMark,
 } from "./attendance-form-values";
-import { markField, TOPIC_MAX_LENGTH } from "./attendance-input";
-import { countMarks, countWords, MARK_TITLES } from "./attendance-marks";
+import { markField, NO_MARK, TOPIC_MAX_LENGTH } from "./attendance-input";
+import {
+  countMarks,
+  countWords,
+  MARK_TITLES,
+  NO_MARK_TITLE,
+} from "./attendance-marks";
 import type { GroupMember } from "./group-meetings";
 import { MemberName } from "./member-name";
 import styles from "./mentoring.module.css";
 
 const TOPICS_ID = "topik-pertemuan";
 
+/** Sets the mark of a student, or takes it away with null. */
+type OnMark = (studentId: string, mark: AttendanceMark | null) => void;
+
 function MemberRow({
   member,
   mark,
+  mayStayUnmarked,
   onMark,
 }: {
   member: GroupMember;
   mark: AttendanceMark | undefined;
-  onMark: (studentId: string, mark: AttendanceMark) => void;
+  /** Whether the member gets the fifth choice, "Tidak tercatat". */
+  mayStayUnmarked: boolean;
+  onMark: OnMark;
 }) {
   return (
     <li className={styles.member}>
@@ -54,6 +66,18 @@ function MemberRow({
             {MARK_TITLES[each]}
           </label>
         ))}
+        {mayStayUnmarked && (
+          <label className={`${styles.mark} ${styles.noMark}`}>
+            <input
+              type="radio"
+              name={markField(member.id)}
+              value={NO_MARK}
+              checked={mark === undefined}
+              onChange={() => onMark(member.id, null)}
+            />
+            {NO_MARK_TITLE}
+          </label>
+        )}
       </fieldset>
     </li>
   );
@@ -61,12 +85,14 @@ function MemberRow({
 
 function MemberList({
   members,
+  unmarkedIds,
   marks,
   onMark,
 }: {
   members: GroupMember[];
+  unmarkedIds: readonly string[];
   marks: MarksByStudent;
-  onMark: (studentId: string, mark: AttendanceMark) => void;
+  onMark: OnMark;
 }) {
   if (members.length === 0) {
     return (
@@ -82,6 +108,7 @@ function MemberList({
           key={member.id}
           member={member}
           mark={marks[member.id]}
+          mayStayUnmarked={unmarkedIds.includes(member.id)}
           onMark={onMark}
         />
       ))}
@@ -101,6 +128,7 @@ export function AttendanceForm({
   groupId,
   number,
   members,
+  unmarkedIds,
   start,
   version,
   firstDay,
@@ -112,6 +140,11 @@ export function AttendanceForm({
   number: number;
   /** The Aktif members of the group, by name. */
   members: GroupMember[];
+  /**
+   * The members the saved list holds no mark for, who joined after it was
+   * saved: they may stay "Tidak tercatat". None for a list not saved yet.
+   */
+  unmarkedIds: readonly string[];
   /** What the form opens with. */
   start: AttendanceValues;
   /**
@@ -143,8 +176,8 @@ export function AttendanceForm({
   const [state, save, pending] = useActionState(send, first);
   useAskBeforeLeaving(hasUnsavedChanges(kept, values));
 
-  function setMark(studentId: string, mark: AttendanceMark) {
-    setValues({ ...values, marks: { ...values.marks, [studentId]: mark } });
+  function setMark(studentId: string, mark: AttendanceMark | null) {
+    setValues({ ...values, marks: withMark(values.marks, studentId, mark) });
   }
 
   const counts = countMarks(marksOf(values.marks, memberIds));
@@ -161,7 +194,10 @@ export function AttendanceForm({
           type="button"
           className={shared.link}
           onClick={() =>
-            setValues({ ...values, marks: allMarked(memberIds, "present") })
+            setValues({
+              ...values,
+              marks: allPresent(memberIds, unmarkedIds, values.marks),
+            })
           }
         >
           Tandai semua hadir
@@ -203,7 +239,12 @@ export function AttendanceForm({
         </datalist>
       </label>
       <div className={styles.whole}>
-        <MemberList members={members} marks={values.marks} onMark={setMark} />
+        <MemberList
+          members={members}
+          unmarkedIds={unmarkedIds}
+          marks={values.marks}
+          onMark={setMark}
+        />
       </div>
       <div className={shared.actions}>
         <button type="submit" className={shared.button} disabled={pending}>

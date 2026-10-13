@@ -67,14 +67,15 @@ export function attendanceGroupsVisibleTo(limit: RowLimit): SQL | undefined {
  * Whether an account with this limit to fill in may fill in for a group
  * with this mentor of today: only the one who holds the group does. Null
  * is the limit of an account without the right, and the mentor of a group
- * without one.
+ * without one. A limit that opens every group names no mentor, so it
+ * holds none.
  */
 export function mayFillInFor(
   limit: RowLimit | null,
   mentorId: string | null,
 ): boolean {
   if (limit === null || mentorId === null) return false;
-  if (limit.kind === "all") return true;
+  if (limit.kind === "all") return false;
   return limit.menteesOf.includes(mentorId);
 }
 

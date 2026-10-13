@@ -267,6 +267,15 @@
   cursor: pointer;
 }
 
+/*
+ * The fifth choice, "Tidak tercatat", of a member who joined after the
+ * list was saved: under the four, over the whole width, so none of them
+ * gets narrower on a phone.
+ */
+.noMark {
+  grid-column: 1 / -1;
+}
+
 .mark:has(input:checked) {
   border-color: var(--navy3);
   background: var(--surface2);

@@ -115,10 +115,15 @@ The issue did not say, so these were decided:
     in.
 12. When a saved list is changed, the form lists the members who are
     Aktif in the group today. A member who joined after the list was
-    saved starts as Alpa, as in the prototype, and the mentor can change
-    it. A mark saved earlier for a student who has since left the group
-    or is no longer Aktif stays as it was saved and is not shown in the
-    form.
+    saved has a fifth choice, "Tidak tercatat". They start on it and
+    stay without a mark unless the mentor picks one for them. "Tandai
+    semua hadir" leaves such a member without a mark, unless the mentor
+    has already picked one for them in the form. The prototype sets
+    them to Alpa; that would lower the share of a student for a meeting
+    held before they joined. A member who has a mark keeps the four
+    choices: a saved mark can be changed, not taken away. A mark saved
+    earlier for a student who has since left the group or is no longer
+    Aktif stays as it was saved and is not shown in the form.
 13. A member with no mark in a saved meeting is not counted for that
     meeting in the average. The prototype counts them as Alpa; that
     would lower the share of a student for a meeting held before they
@@ -152,10 +157,14 @@ The issue did not say, so these were decided:
     kelompok pengasuhan yang dapat Anda lihat."
 23. A group that has no mentor today shows "-" under "Pengasuh".
 24. A list is saved only when it holds a mark for every member who is
-    Aktif in the group at that moment, and for nobody else. A list that
-    names a student outside the group, a member on Cuti, or leaves a
-    member out, as when the group changed while the form was open, is
-    refused with one message that says to load the page again.
+    Aktif in the group at that moment, and for nobody else. A mark may
+    be missing only when a saved list is changed, and only for a member
+    who has no mark saved for that meeting, as one who joined after the
+    list was saved. The server decides that from what is saved, not from
+    what the form says. A list that names a student outside the group, a
+    member on Cuti, or leaves any other member out, as when the group
+    changed while the form was open, is refused with one message that
+    says to load the page again.
 25. A list sent for a group the sender does not hold today gets one
     answer, the same for a group of another mentor, a group they held
     before, a group that is ended and one that does not exist.
@@ -189,6 +198,10 @@ The issue did not say, so these were decided:
     daftar hadir" on the groups they do not hold. The line that only
     mentors fill this in is shown to those without the right to fill
     in.
+35. The intro is the prototype's sentence, which says this attendance
+    counts in the attendance part of the character grade. That counting
+    is not built here; it comes with "Mentoring meetings in the
+    attendance score".
 
 ## Steps
 

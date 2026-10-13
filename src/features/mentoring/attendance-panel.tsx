@@ -9,6 +9,7 @@ import {
   marksToCorrect,
 } from "./attendance-form-values";
 import { NOT_SAVED_YET } from "./attendance-input";
+import { withoutMark } from "./attendance-marks";
 import type { GroupMember } from "./group-meetings";
 import { lastMeetingDay } from "./meeting-day";
 import { LIST_ANCHOR, meetingsAddress } from "./meetings-address";
@@ -69,6 +70,7 @@ export function AttendancePanel({
         groupId={groupId}
         number={number}
         members={members}
+        unmarkedIds={kept === null ? [] : withoutMark(memberIds, kept.marks)}
         start={startValues(number, memberIds, lastDay, kept)}
         version={kept?.meeting.version ?? NOT_SAVED_YET}
         firstDay={period.startsOn}

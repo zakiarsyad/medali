@@ -11,6 +11,17 @@ export function sameMarks(a: MarksByStudent, b: MarksByStudent): boolean {
   return ids.every((id) => a[id] === b[id]);
 }
 
+/**
+ * The members a list holds no mark for: those who joined the group after
+ * the list was saved.
+ */
+export function withoutMark(
+  memberIds: readonly string[],
+  marks: MarksByStudent,
+): string[] {
+  return memberIds.filter((id) => !Object.hasOwn(marks, id));
+}
+
 /** What the screens call each mark. */
 export const MARK_TITLES: Record<AttendanceMark, string> = {
   present: "Hadir",
@@ -18,6 +29,9 @@ export const MARK_TITLES: Record<AttendanceMark, string> = {
   sick: "Sakit",
   absent: "Alpa",
 };
+
+/** What the screens call having no mark in a saved list. */
+export const NO_MARK_TITLE = "Tidak tercatat";
 
 export function isAttendanceMark(sent: string): sent is AttendanceMark {
   return ATTENDANCE_MARKS.some((mark) => mark === sent);

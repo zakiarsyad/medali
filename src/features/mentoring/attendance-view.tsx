@@ -2,15 +2,17 @@ import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { marksOf } from "./attendance-form-values";
-import { countMarks, countWords, MARK_TITLES } from "./attendance-marks";
+import {
+  countMarks,
+  countWords,
+  MARK_TITLES,
+  NO_MARK_TITLE,
+} from "./attendance-marks";
 import type { GroupMember } from "./group-meetings";
 import { LIST_ANCHOR } from "./meetings-address";
 import type { KeptList } from "./meetings-overview";
 import { MemberName } from "./member-name";
 import styles from "./mentoring.module.css";
-
-/** What a member without a mark in a saved list shows, as one who joined later. */
-const NO_MARK = "Tidak tercatat";
 
 /**
  * "Daftar hadir pertemuan" of a saved meeting for an account that only
@@ -46,7 +48,7 @@ export function AttendanceView({
             <li key={member.id} className={styles.member}>
               <MemberName member={member} />
               <span className={`${shared.badge} ${styles.notHeld}`}>
-                {mark === undefined ? NO_MARK : MARK_TITLES[mark]}
+                {mark === undefined ? NO_MARK_TITLE : MARK_TITLES[mark]}
               </span>
             </li>
           );

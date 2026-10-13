@@ -229,4 +229,8 @@ describe("mayFillInFor", () => {
     expect(mayFillInFor(filledRowsFor(both), "mentor-1")).toBe(true);
     expect(mayFillInFor(filledRowsFor(both), "mentor-2")).toBe(false);
   });
+
+  it("refuses an account whose limit opens every group and that holds none a group with a mentor", () => {
+    expect(mayFillInFor({ kind: "all" }, "mentor-1")).toBe(false);
+  });
 });

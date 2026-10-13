@@ -50,6 +50,10 @@ describe("the tab Pertemuan dan daftar hadir on a phone", () => {
     expect(ruleOf(".memberName")).toContain("overflow-wrap: anywhere;");
   });
 
+  it("puts the fifth choice, Tidak tercatat, under the four over the whole width, so none gets narrower", () => {
+    expect(ruleOf(".noMark")).toContain("grid-column: 1 / -1;");
+  });
+
   it("makes each choice large: the whole box is pressed, with room above and below its word", () => {
     const mark = ruleOf(".mark");
 

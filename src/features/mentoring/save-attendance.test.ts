@@ -10,8 +10,8 @@ import { withTestDatabase } from "@/db/test-database";
 import { type AttendanceInput, NOT_SAVED_YET } from "./attendance-input";
 import {
   GROUP_NOT_HELD,
+  isListOf,
   MEETING_CHANGED,
-  marksExactly,
   NO_RUNNING_PERIOD,
   NO_SUCH_MEETING,
   NOT_ALLOWED_TO_FILL_IN,
@@ -489,15 +489,30 @@ describe("saveAttendance", () => {
   });
 });
 
-describe("marksExactly", () => {
+describe("isListOf", () => {
   it("takes a list with a mark for each member and nobody else", () => {
-    expect(marksExactly({ a: "present", b: "absent" }, ["b", "a"])).toBe(true);
-    expect(marksExactly({}, [])).toBe(true);
+    expect(isListOf({ a: "present", b: "absent" }, ["b", "a"], [])).toBe(true);
+    expect(isListOf({}, [], [])).toBe(true);
   });
 
   it("refuses a list with someone else, with a member left out, or with one in place of another", () => {
-    expect(marksExactly({ a: "present", c: "sick" }, ["a"])).toBe(false);
-    expect(marksExactly({ a: "present" }, ["a", "b"])).toBe(false);
-    expect(marksExactly({ a: "present", c: "sick" }, ["a", "b"])).toBe(false);
+    expect(isListOf({ a: "present", c: "sick" }, ["a"], [])).toBe(false);
+    expect(isListOf({ a: "present" }, ["a", "b"], [])).toBe(false);
+    expect(isListOf({ a: "present", c: "sick" }, ["a", "b"], [])).toBe(false);
+  });
+
+  it("takes a list with or without a mark for a member who may be left out", () => {
+    const withThem = { a: "present", new: "absent" } as const;
+
+    expect(isListOf({ a: "present" }, ["a", "new"], ["new"])).toBe(true);
+    expect(isListOf(withThem, ["a", "new"], ["new"])).toBe(true);
+  });
+
+  it("still refuses a list that leaves another member out, or marks someone who is no member", () => {
+    const withOther = { a: "present", left: "sick" } as const;
+
+    expect(isListOf({}, ["a", "new"], ["new"])).toBe(false);
+    expect(isListOf(withOther, ["a", "new"], ["new"])).toBe(false);
+    expect(isListOf(withOther, ["a"], ["left"])).toBe(false);
   });
 });

@@ -13,7 +13,7 @@ import { sameMarks } from "./attendance-marks";
 export type KeptMeeting = typeof mentoringMeetings.$inferSelect;
 
 /** Every mark kept for a meeting, by the id of the student. */
-async function readMarksOf(
+export async function readMarksOf(
   tx: Database,
   meetingId: string,
 ): Promise<MarksByStudent> {
@@ -92,18 +92,19 @@ export async function addMeeting(
 /**
  * Puts the new list in the place of the one kept for a meeting, and adds
  * a line to the log with the day, the topic and every mark before and
- * after. A mark kept for a student the new list does not name, one who
- * has left the group, stays as it was. A save that changes nothing writes
- * nothing: no new version, no log line. Gives the version of the list.
+ * after. `marksBefore` is every mark kept for it. A mark kept for a
+ * student the new list does not name, one who has left the group, stays
+ * as it was. A save that changes nothing writes nothing: no new version,
+ * no log line. Gives the version of the list.
  */
 export async function correctMeeting(
   tx: Database,
   actorId: string,
   kept: KeptMeeting,
+  marksBefore: MarksByStudent,
   input: AttendanceInput,
 ): Promise<number> {
   const { heldOn, topic } = input;
-  const marksBefore = await readMarksOf(tx, kept.id);
   const marksAfter = { ...marksBefore, ...input.marks };
   const isUnchanged =
     kept.heldOn === heldOn &&

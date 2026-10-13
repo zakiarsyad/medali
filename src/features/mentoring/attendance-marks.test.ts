@@ -5,7 +5,17 @@ import {
   countWords,
   isAttendanceMark,
   MARK_TITLES,
+  withoutMark,
 } from "./attendance-marks";
+
+describe("withoutMark", () => {
+  it("gives the members a list holds no mark for, as those who joined after it was saved", () => {
+    const marks = { a: "present", left: "sick" } as const;
+
+    expect(withoutMark(["a", "new"], marks)).toEqual(["new"]);
+    expect(withoutMark(["a"], marks)).toEqual([]);
+  });
+});
 
 describe("the marks of a meeting", () => {
   it("are Hadir, Izin, Sakit and Alpa, in that order", () => {

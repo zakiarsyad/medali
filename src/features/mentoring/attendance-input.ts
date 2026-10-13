@@ -49,11 +49,22 @@ export function markField(studentId: string): string {
   return `${MARK_FIELD_START}${studentId}`;
 }
 
-/** The marks a sent form holds, one for each field of a student. */
+/**
+ * What the field of a student holds when the choice "Tidak tercatat" is
+ * picked: no mark is sent for them.
+ */
+export const NO_MARK = "";
+
+/**
+ * The marks a sent form holds, one for each field of a student that holds
+ * one. Whether a student may be left without a mark is decided where the
+ * list is saved.
+ */
 export function sentMarks(form: FormData): SentMark[] {
   const marks: SentMark[] = [];
   for (const [name, value] of form.entries()) {
     if (!name.startsWith(MARK_FIELD_START)) continue;
+    if (value === NO_MARK) continue;
     const mark = typeof value === "string" ? value : "";
     marks.push([name.slice(MARK_FIELD_START.length), mark]);
   }

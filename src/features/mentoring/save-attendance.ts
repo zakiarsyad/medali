@@ -17,10 +17,16 @@ import {
 import type { Parsed } from "@/parsed";
 import { mayFillInFor } from "./attendance-groups";
 import { type AttendanceInput, NOT_SAVED_YET } from "./attendance-input";
+import { withoutMark } from "./attendance-marks";
 import { listActiveMembers } from "./group-meetings";
 import { meetingDayFault } from "./meeting-day";
 import { filledRowsFor } from "./visible-attendance";
-import { addMeeting, correctMeeting } from "./write-attendance";
+import {
+  addMeeting,
+  correctMeeting,
+  type KeptMeeting,
+  readMarksOf,
+} from "./write-attendance";
 
 /** What a save answers to any role but Pengasuh. */
 export const NOT_ALLOWED_TO_FILL_IN = {
@@ -54,7 +60,8 @@ export const NO_RUNNING_PERIOD = {
 /**
  * What a save answers when the list is not that of the group today: it
  * marks someone who is no Aktif member of the group, or leaves a member
- * out.
+ * out. Only a member who joined after the list was saved, and so has no
+ * mark kept for the meeting, may be left out.
  */
 export const NOT_THE_MEMBERS = {
   ok: false,
@@ -112,22 +119,31 @@ async function readMentorOfToday(
   return line?.mentorId ?? null;
 }
 
-/** Whether a list holds a mark for each of these members and for nobody else. */
-export function marksExactly(
+/**
+ * Whether a list is that of these members: it marks nobody else, and it
+ * holds a mark for each of them but those who may be left out.
+ */
+export function isListOf(
   marks: MarksByStudent,
   memberIds: readonly string[],
+  mayBeLeftOut: readonly string[],
 ): boolean {
-  const marked = Object.keys(marks);
-  if (marked.length !== memberIds.length) return false;
-  return memberIds.every((id) => Object.hasOwn(marks, id));
+  const marksOnlyMembers = Object.keys(marks).every((id) =>
+    memberIds.includes(id),
+  );
+  if (!marksOnlyMembers) return false;
+  return memberIds.every(
+    (id) => Object.hasOwn(marks, id) || mayBeLeftOut.includes(id),
+  );
 }
 
-async function findMeeting(
+/** The meeting kept for a list, with every mark kept for it, or null for none. */
+async function findKept(
   tx: Database,
   periodId: string,
   input: AttendanceInput,
-) {
-  const [stored] = await tx
+): Promise<{ meeting: KeptMeeting; marks: MarksByStudent } | null> {
+  const [meeting] = await tx
     .select()
     .from(mentoringMeetings)
     .where(
@@ -137,7 +153,8 @@ async function findMeeting(
         eq(mentoringMeetings.number, input.number),
       ),
     );
-  return stored ?? null;
+  if (!meeting) return null;
+  return { meeting, marks: await readMarksOf(tx, meeting.id) };
 }
 
 /**
@@ -147,9 +164,10 @@ async function findMeeting(
  * by whoever holds the group then, puts the new list in its place.
  * Refused for any role but Pengasuh, for a group the actor does not hold
  * today, for a number no meeting of a period has, for a day in the future
- * or outside the period, for a list that is not that of the Aktif members
- * of the group today, and for a form that was opened on another state of
- * the meeting than the one kept now: a second press, or a second window.
+ * or outside the period, for a form that was opened on another state of
+ * the meeting than the one kept now, a second press or a second window,
+ * and for a list that is not that of the Aktif members of the group
+ * today.
  */
 export async function saveAttendance(
   db: Database,
@@ -171,16 +189,24 @@ export async function saveAttendance(
     if (dayError !== null) return { ok: false, error: dayError };
     const members = await listActiveMembers(tx, input.groupId);
     const memberIds = members.map((member) => member.id);
-    if (!marksExactly(input.marks, memberIds)) return NOT_THE_MEMBERS;
-
-    const kept = await findMeeting(tx, period.id, input);
-    if ((kept?.version ?? NOT_SAVED_YET) !== input.version) {
+    const kept = await findKept(tx, period.id, input);
+    // Before the members: a save from another window can give a mark to a
+    // member this form left without one, and the group has not changed.
+    if ((kept?.meeting.version ?? NOT_SAVED_YET) !== input.version) {
       return MEETING_CHANGED;
+    }
+    // Only a member the kept list holds no mark for, one who joined after
+    // it was saved, may stay without one. Read here, never taken from the
+    // form.
+    const mayBeLeftOut =
+      kept === null ? [] : withoutMark(memberIds, kept.marks);
+    if (!isListOf(input.marks, memberIds, mayBeLeftOut)) {
+      return NOT_THE_MEMBERS;
     }
     const version =
       kept === null
         ? await addMeeting(tx, actor.id, period.id, input)
-        : await correctMeeting(tx, actor.id, kept, input);
+        : await correctMeeting(tx, actor.id, kept.meeting, kept.marks, input);
     return { ok: true, value: { number: input.number, version } };
   });
 }

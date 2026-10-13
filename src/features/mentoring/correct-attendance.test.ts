@@ -6,7 +6,13 @@ import type { Database } from "@/db/connect";
 import { mentorGroupMembers, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { AttendanceInput } from "./attendance-input";
-import { MEETING_CHANGED, saveAttendance } from "./save-attendance";
+import { listActiveMembers, readMarks, readMeetings } from "./group-meetings";
+import { meetingsOverview } from "./meetings-overview";
+import {
+  MEETING_CHANGED,
+  NOT_THE_MEMBERS,
+  saveAttendance,
+} from "./save-attendance";
 import {
   addTestPeriod,
   type TestPeriod,
@@ -86,6 +92,31 @@ async function addRecords(db: Database): Promise<Records> {
     budi,
     meetingId: meeting.id,
   };
+}
+
+/** Adds an Aktif member to the group, after its meeting 1 was saved. */
+async function addNewMember(db: Database, records: Records): Promise<string> {
+  const citra = await addTestStudent(db, records.program, {
+    nim: "9962000403",
+    name: "Citra Uji Ubah",
+  });
+  await addTestMembers(db, records.groupId, [citra]);
+  return citra;
+}
+
+/** "Rerata kehadiran pengasuhan" of the group, as the tab works it out. */
+async function averageOf(
+  db: Database,
+  records: Records,
+): Promise<number | null> {
+  const members = await listActiveMembers(db, records.groupId);
+  const meetings = await readMeetings(db, records.groupId, records.period.id);
+  const marks = await readMarks(
+    db,
+    meetings.map((meeting) => meeting.id),
+  );
+  const memberIds = members.map((member) => member.id);
+  return meetingsOverview(memberIds, meetings, marks).average;
 }
 
 describe("Ubah daftar hadir", () => {
@@ -268,37 +299,140 @@ describe("Ubah daftar hadir", () => {
     });
   });
 
-  it("asks a mark for a member who joined after the list was saved", async () => {
+  it("leaves a member who joined after the list was saved without a mark when only the topic is corrected, and the average stays", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const { mentor, period } = records;
-      const citra = await addTestStudent(db, records.program, {
-        nim: "9962000403",
-        name: "Citra Uji Ubah",
-      });
-      await addTestMembers(db, records.groupId, [citra]);
+      const averageBefore = await averageOf(db, records);
+      await addNewMember(db, records);
+
+      const saved = await saveAttendance(
+        db,
+        mentor,
+        listOf(records, { version: 1, topic: "Topik lain" }),
+        period.day,
+      );
+
+      const kept = { [records.ani]: "present", [records.budi]: "sick" };
+      const lines = await testLogOf(db, records.meetingId);
+      expect(saved).toEqual({ ok: true, value: { number: 1, version: 2 } });
+      expect(await testMarksOf(db, records.meetingId)).toEqual(kept);
+      expect(lines[1]?.marksAfter).toEqual(kept);
+      expect(averageBefore).toBe(100);
+      expect(await averageOf(db, records)).toBe(100);
+    });
+  });
+
+  it("writes nothing when a member who joined later is left without a mark and nothing else changed", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addNewMember(db, records);
+
+      const saved = await saveAttendance(
+        db,
+        records.mentor,
+        listOf(records, { version: 1 }),
+        records.period.day,
+      );
+
+      expect(saved).toEqual({ ok: true, value: { number: 1, version: 1 } });
+      expect(await testLogOf(db, records.meetingId)).toHaveLength(1);
+    });
+  });
+
+  it("keeps the mark the mentor picks for a member who joined after the list was saved, and then asks one for them", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period } = records;
+      const citra = await addNewMember(db, records);
       const withNewMember = {
         [records.ani]: "present",
         [records.budi]: "sick",
         [citra]: "absent",
       } as const;
 
-      const without = await saveAttendance(
-        db,
-        mentor,
-        listOf(records, { version: 1, topic: "Topik lain" }),
-        period.day,
-      );
       const withThem = await saveAttendance(
         db,
         mentor,
         listOf(records, { version: 1, marks: withNewMember }),
         period.day,
       );
+      const withoutThem = await saveAttendance(
+        db,
+        mentor,
+        listOf(records, { version: 2, topic: "Topik lain" }),
+        period.day,
+      );
 
-      expect(without.ok).toBe(false);
       expect(withThem).toEqual({ ok: true, value: { number: 1, version: 2 } });
+      expect(withoutThem).toEqual(NOT_THE_MEMBERS);
       expect(await testMarksOf(db, records.meetingId)).toEqual(withNewMember);
+      expect(await averageOf(db, records)).toBe(50);
+    });
+  });
+
+  it("tells a window opened with a member on Tidak tercatat that the meeting changed, once another window saved a mark for them", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period } = records;
+      const citra = await addNewMember(db, records);
+      const withNewMember = {
+        [records.ani]: "present",
+        [records.budi]: "sick",
+        [citra]: "excused",
+      } as const;
+
+      const fromSecondWindow = await saveAttendance(
+        db,
+        mentor,
+        listOf(records, { version: 1, marks: withNewMember }),
+        period.day,
+      );
+      const fromFirstWindow = await saveAttendance(
+        db,
+        mentor,
+        listOf(records, { version: 1, topic: "Topik jendela pertama" }),
+        period.day,
+      );
+
+      expect(fromSecondWindow.ok).toBe(true);
+      expect(fromFirstWindow).toEqual(MEETING_CHANGED);
+      expect(await testMarksOf(db, records.meetingId)).toEqual(withNewMember);
+      expect(await testLogOf(db, records.meetingId)).toHaveLength(2);
+    });
+  });
+
+  it("refuses a list that leaves out a member who has a mark, or marks a student outside the group, also beside a member without a mark", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period } = records;
+      await addNewMember(db, records);
+      const outsider = await addTestStudent(db, records.program, {
+        nim: "9962000404",
+        name: "Luar Uji Ubah",
+      });
+      const withOutsider = {
+        [records.ani]: "present",
+        [records.budi]: "sick",
+        [outsider]: "present",
+      } as const;
+
+      const withoutBudi = await saveAttendance(
+        db,
+        mentor,
+        listOf(records, { version: 1, marks: { [records.ani]: "absent" } }),
+        period.day,
+      );
+      const withStranger = await saveAttendance(
+        db,
+        mentor,
+        listOf(records, { version: 1, marks: withOutsider }),
+        period.day,
+      );
+
+      expect(withoutBudi).toEqual(NOT_THE_MEMBERS);
+      expect(withStranger).toEqual(NOT_THE_MEMBERS);
+      expect(await testLogOf(db, records.meetingId)).toHaveLength(1);
     });
   });
 

@@ -31,12 +31,14 @@ const START: AttendanceValues = {
 function formWith(
   members: GroupMember[],
   start: AttendanceValues = START,
+  unmarkedIds: string[] = [],
 ): string {
   return renderToStaticMarkup(
     <AttendanceForm
       groupId={GROUP_ID}
       number={2}
       members={members}
+      unmarkedIds={unmarkedIds}
       start={start}
       version={3}
       firstDay="2026-08-01"
@@ -123,6 +125,28 @@ describe("AttendanceForm", () => {
 
     expect(chosenIn(form)).toEqual({ [ANI.id]: "sick", [BUDI.id]: "absent" });
     expect(form).toContain("Hadir 0, izin 0, sakit 1, alpa 1");
+  });
+
+  it("offers Tidak tercatat, chosen at the start, only to a member the saved list holds no mark for", () => {
+    const start: AttendanceValues = { ...START, marks: { [ANI.id]: "sick" } };
+    const form = formWith([ANI, BUDI], start, [BUDI.id]);
+    const rows = form.split("<li").slice(1);
+
+    expect(rows[0]).not.toContain("Tidak tercatat");
+    expect(rows[0]?.match(/type="radio"/g)).toHaveLength(4);
+    expect(rows[1]).toContain("Tidak tercatat");
+    expect(rows[1]?.match(/type="radio"/g)).toHaveLength(5);
+    expect(rows[1]).toContain(`name="mark.${BUDI.id}" checked="" value=""`);
+    expect(chosenIn(form)).toEqual({ [ANI.id]: "sick" });
+    expect(form).toContain("Hadir 0, izin 0, sakit 1, alpa 0");
+  });
+
+  it("shows the mark picked for such a member in place of Tidak tercatat, and counts it", () => {
+    const form = formWith([ANI, BUDI], START, [BUDI.id]);
+
+    expect(chosenIn(form)).toEqual(START.marks);
+    expect(form).not.toContain('checked="" value=""');
+    expect(form).toContain("Hadir 2, izin 0, sakit 0, alpa 0");
   });
 
   it("sends the group and the number of the meeting, never who fills it in", () => {

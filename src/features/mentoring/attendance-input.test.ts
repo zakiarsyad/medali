@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   markField,
+  NO_MARK,
   parseAttendance,
   type SentAttendance,
   sentMarks,
@@ -138,6 +139,14 @@ describe("sentMarks", () => {
       [ANI, "present"],
       [BUDI, "absent"],
     ]);
+  });
+
+  it("reads no mark from the field of a student who is left on Tidak tercatat", () => {
+    const form = new FormData();
+    form.set(markField(ANI), "present");
+    form.set(markField(BUDI), NO_MARK);
+
+    expect(sentMarks(form)).toEqual([[ANI, "present"]]);
   });
 
   it("reads a field sent twice as two marks, which the check then refuses", () => {
