@@ -1,18 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { SAMPLE_ACCOUNTS, SAMPLE_STUDENTS } from "./sample-data";
 import {
+  isGroupOf,
   SAMPLE_MENTOR_OF_NEWEST_ONLY,
   SAMPLE_MENTORS_WITHOUT_GROUP,
   SAMPLE_REPLACED_GROUP,
+  SAMPLE_REPLACEMENT,
   type SampleMentorGroup,
   sampleGroupHolders,
   sampleMentorGroups,
+  sampleReplacementDay,
 } from "./sample-mentor-groups";
 import { sampleGroupedFirstYears } from "./sample-new-intake";
 
 const FIRST_YEAR = 2026;
+const DAY = "2026-10-13";
 const everyone = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(FIRST_YEAR)];
-const groups = sampleMentorGroups(everyone);
+const groups = sampleMentorGroups(everyone, DAY);
 
 const mentorNames = SAMPLE_ACCOUNTS.filter((account) =>
   account.roles.includes("mentor"),
@@ -45,6 +49,17 @@ describe("the sample Pengasuh", () => {
     const holders = sampleGroupHolders();
     expect(holders.length).toBeGreaterThanOrEqual(3);
     expect(holders.length + 2).toBe(mentorNames.length);
+  });
+});
+
+describe("sampleReplacementDay", () => {
+  it("is 30 days before the day", () => {
+    expect(sampleReplacementDay("2026-10-13")).toBe("2026-09-13");
+  });
+
+  it("stays within the calendar year of the day", () => {
+    expect(sampleReplacementDay("2027-01-20")).toBe("2027-01-01");
+    expect(sampleReplacementDay("2027-01-01")).toBe("2027-01-01");
   });
 });
 
@@ -98,14 +113,11 @@ describe("sampleMentorGroups", () => {
     }
   });
 
-  it("gives every holder a group, and none to the two without one", () => {
-    const holding = new Set(
-      groups.flatMap((g) => g.mentors.map((m) => m.name)),
-    );
+  it("gives every holder a group of today, and none to the two without one", () => {
     const current = new Set(groups.map(currentMentor));
     expect([...current].sort()).toEqual(sampleGroupHolders().sort());
     for (const name of SAMPLE_MENTORS_WITHOUT_GROUP) {
-      expect(holding.has(name)).toBe(false);
+      expect(current.has(name)).toBe(false);
     }
   });
 
@@ -123,19 +135,54 @@ describe("sampleMentorGroups", () => {
     expect(held.some(isLarge)).toBe(true);
   });
 
-  it("has one group with an earlier mentor, who ended with a reason", () => {
+  it("has two groups with an earlier mentor, who ended with a reason", () => {
     const replaced = groups.filter((group) => group.mentors.length > 1);
-    expect(replaced).toHaveLength(1);
-    expect(replaced[0]).toMatchObject({
-      studyProgram: SAMPLE_REPLACED_GROUP.studyProgram,
-      cohortYear: SAMPLE_REPLACED_GROUP.cohortYear,
-      entryPath: SAMPLE_REPLACED_GROUP.entryPath,
-    });
-    const [earlier, current] = replaced[0]?.mentors ?? [];
+    expect(replaced).toHaveLength(2);
+    for (const group of replaced) {
+      const [earlier, current] = group.mentors;
+      expect(group.mentors).toHaveLength(2);
+      expect(earlier?.endReason).toBeTruthy();
+      expect(current?.name).not.toBe(earlier?.name);
+    }
+  });
+
+  it("has one of them from before replacements were kept as records", () => {
+    const group = groups.find((each) => isGroupOf(each, SAMPLE_REPLACED_GROUP));
+    const [earlier, current] = group?.mentors ?? [];
     expect(earlier?.endsOn).toBe(SAMPLE_REPLACED_GROUP.endsOn);
     expect(earlier?.endReason).toBe(SAMPLE_REPLACED_GROUP.endReason);
     expect(current?.startsOn).toBe(SAMPLE_REPLACED_GROUP.replacedOn);
-    expect(current?.name).not.toBe(earlier?.name);
+  });
+
+  it("has the other from the sample replacement, the old mentor ending the day the new one starts", () => {
+    const group = groups.find((each) => isGroupOf(each, SAMPLE_REPLACEMENT));
+    const [earlier, current] = group?.mentors ?? [];
+    expect(earlier).toEqual({
+      name: SAMPLE_REPLACEMENT.oldMentor,
+      startsOn: group?.startsOn,
+      endsOn: "2026-09-13",
+      endReason: "Permintaan sendiri",
+    });
+    expect(current).toEqual({
+      name: SAMPLE_REPLACEMENT.newMentor,
+      startsOn: "2026-09-13",
+      endsOn: null,
+      endReason: null,
+    });
+  });
+
+  it("gives the old mentor of the sample replacement no other group, and the new one a spare mentor's jurusan", () => {
+    const { oldMentor, newMentor } = SAMPLE_REPLACEMENT;
+    const held = groups.filter((group) =>
+      group.mentors.some((mentor) => mentor.name === oldMentor),
+    );
+    const unitOf = (name: string) =>
+      SAMPLE_ACCOUNTS.find((account) => account.name === name)?.unit;
+
+    expect(held).toHaveLength(1);
+    expect(SAMPLE_MENTORS_WITHOUT_GROUP).toContain(oldMentor);
+    expect(unitOf(newMentor)).toBe(unitOf(oldMentor));
+    expect(unitOf(newMentor)).toBeTruthy();
   });
 
   it("has a group with a member on Cuti", () => {

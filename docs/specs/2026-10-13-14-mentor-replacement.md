@@ -113,10 +113,36 @@ part only. All of it is built here.
    cancelled and whose start date is in this calendar year, as the
    prototype does. Ketua Program Studi sees the count of their program's
    groups.
+9. A replacement is Terjadwal until it is carried out, and the record
+   keeps when that happened. It is Berlaku from then on, and Dibatalkan
+   once it is cancelled. One that is carried out can no longer be
+   cancelled.
+10. The database itself refuses a second waiting replacement for one
+    group, a new mentor named in two waiting replacements, a new mentor
+    who is the old one, an empty letter number, and the deleting of a
+    replacement.
+11. On the day of a replacement the old mentor's line ends and the new
+    mentor's line starts, both on that same day, as the prototype does.
+    The reason kept on the old mentor's line is the reason as the form
+    words it, such as "Permintaan sendiri".
+12. The sample replacement is in the group of D3 Pajak of angkatan
+    2025, so the sample Ketua Program Studi sees it too. It started 30
+    days before the day the sample data is loaded, or on 1 January when
+    that would fall in the year before. Its reason is Permintaan
+    sendiri, so the old mentor is Cadangan.
+13. Every other sample Pengasuh with a group holds several, so none of
+    them would be a spare mentor after being replaced. One more made-up
+    Pengasuh was added to the sample accounts as the old mentor: they
+    held this one group only and are a spare mentor since. The new
+    mentor is the sample spare mentor of the same jurusan. Penetapan
+    angkatan baru still has three mentors to choose from.
+14. The sample group whose first mentor left in 2025 stays as it was,
+    with its earlier mentor and no replacement record: that change is
+    from before replacements were recorded.
 
 ## Steps
 
-- [ ] 1. Replacements are stored, with the old mentor's new status and
+- [x] 1. Replacements are stored, with the old mentor's new status and
   reason, and one sample replacement.
 - [ ] 2. The permission to replace, with its checks.
 - [ ] 3. The Penggantian form with its rules and the tick box.

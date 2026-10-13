@@ -1,4 +1,4 @@
-import { count, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, count, eq, isNotNull, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { groupCode } from "@/ui/group-code";
@@ -15,6 +15,7 @@ import {
   mentorGroupMembers,
   mentorGroupMentors,
   mentorGroups,
+  mentorReplacements,
   students,
   studyPrograms,
 } from "./schema";
@@ -142,15 +143,10 @@ describe("the sample mentor groups", { timeout: 20_000 }, () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
-      const lines = await db
-        .select({ name: accounts.name })
-        .from(mentorGroupMentors)
-        .innerJoin(accounts, eq(accounts.id, mentorGroupMentors.mentorId));
-      const everHeld = new Set(lines.map((line) => line.name));
       const holding = new Set((await heldGroups(db)).map((g) => g.mentor));
       const mentors = await mentorAccountNames(db);
 
-      const without = mentors.filter((name) => !everHeld.has(name));
+      const without = mentors.filter((name) => !holding.has(name));
       expect(without.sort()).toEqual([...SAMPLE_MENTORS_WITHOUT_GROUP].sort());
       expect(holding.size).toBeGreaterThanOrEqual(3);
       for (const name of holding) {
@@ -159,7 +155,7 @@ describe("the sample mentor groups", { timeout: 20_000 }, () => {
     });
   });
 
-  it("keep one group with an earlier mentor, who ended with a reason", async () => {
+  it("keep one group whose earlier mentor left before replacements were kept as records", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
 
@@ -177,7 +173,16 @@ describe("the sample mentor groups", { timeout: 20_000 }, () => {
           mentorGroups,
           eq(mentorGroups.id, mentorGroupMentors.groupId),
         )
-        .where(isNotNull(mentorGroupMentors.endsOn));
+        .leftJoin(
+          mentorReplacements,
+          eq(mentorReplacements.groupId, mentorGroupMentors.groupId),
+        )
+        .where(
+          and(
+            isNotNull(mentorGroupMentors.endsOn),
+            isNull(mentorReplacements.id),
+          ),
+        );
       expect(ended).toHaveLength(1);
       const [earlier] = ended;
       expect(earlier?.startsOn).toBe(earlier?.groupStartsOn);

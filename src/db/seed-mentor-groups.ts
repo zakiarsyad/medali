@@ -116,13 +116,15 @@ async function addMentors(db: Database, groups: AddedGroup[]): Promise<void> {
 /**
  * Adds the sample kelompok pengasuhan of the sample students, each with
  * its members and its mentors. The students and the sample Pengasuh
- * accounts must be there already. Gives back the groups it added.
+ * accounts must be there already. `day` is today on campus. Gives back
+ * the groups it added.
  */
 export async function addSampleMentorGroups(
   db: Database,
   sampleStudents: SampleStudent[],
+  day: string,
 ): Promise<AddedGroup[]> {
-  const groups = sampleMentorGroups(sampleStudents);
+  const groups = sampleMentorGroups(sampleStudents, day);
   if (groups.length === 0) return [];
   const added = await addGroups(db, groups);
   await addMembers(db, added);

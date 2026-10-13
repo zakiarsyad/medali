@@ -1,5 +1,6 @@
 import { daysBefore } from "@/academic-periods/days-before";
 import {
+  isGroupOf,
   SAMPLE_REPLACED_GROUP,
   type SampleMentorGroup,
 } from "./sample-mentor-groups";
@@ -94,14 +95,6 @@ export function holderOn(group: SampleMentorGroup, day: string): string | null {
   return line?.name ?? null;
 }
 
-function isReplacedGroup(group: SampleMentorGroup): boolean {
-  return (
-    group.studyProgram === SAMPLE_REPLACED_GROUP.studyProgram &&
-    group.cohortYear === SAMPLE_REPLACED_GROUP.cohortYear &&
-    group.entryPath === SAMPLE_REPLACED_GROUP.entryPath
-  );
-}
-
 function activeNims(students: SampleStudent[]): Set<string> {
   const active = students.filter(
     (student) => (student.status ?? "active") === "active",
@@ -114,7 +107,8 @@ function earlierNote(
   group: SampleMentorGroup,
   nim: string | undefined,
 ): SampleMentoringNote[] {
-  if (!isReplacedGroup(group) || nim === undefined) return [];
+  if (nim === undefined) return [];
+  if (!isGroupOf(group, SAMPLE_REPLACED_GROUP)) return [];
   const writer = holderOn(group, SAMPLE_NOTE_BY_EARLIER_MENTOR.happenedOn);
   if (writer === null) return [];
   return [{ ...SAMPLE_NOTE_BY_EARLIER_MENTOR, nim, writer }];

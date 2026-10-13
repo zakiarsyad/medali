@@ -20,8 +20,9 @@ while building.
   in force, which members of a group are Aktif, how a list marks
   the students whose detail may be opened, the kinds and follow-ups of a
   mentoring note, how many meetings a period has with their marks and
-  suggested topics, and the range a mentoring score lies in, read by
-  every area that needs them.
+  suggested topics, the range a mentoring score lies in, and the reasons
+  for replacing a mentor with what the old mentor becomes, read by every
+  area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/campus/`: what the campus server package checks and does when it
   starts.

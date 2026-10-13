@@ -15,7 +15,7 @@ import { mentoringNoteKind } from "./schema";
 
 const DAY = "2026-10-13";
 const students = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(2026)];
-const groups = sampleMentorGroups(students);
+const groups = sampleMentorGroups(students, DAY);
 const notes = sampleMentoringNotes(groups, students, DAY);
 
 function groupOf(nim: string): SampleMentorGroup {
