@@ -7,6 +7,7 @@ import { LISTED_REPLACEMENTS, listReplacements } from "./replacement-rows";
 import { addTestEvaluator, addTestHeldGroup } from "./test-evaluations";
 import {
   addTestEndedGroup,
+  addTestGroup,
   addTestMembersWithStatus,
   addTestMentor,
 } from "./test-records";
@@ -185,6 +186,54 @@ describe("listReplacements", () => {
 
       expect(rows).toHaveLength(LISTED_REPLACEMENTS);
       expect(rows.at(-1)?.startsOn).toBe("2087-03-02");
+    });
+  });
+
+  it("puts a Terjadwal replacement first, also when 20 others have a later start date", async () => {
+    await inTestDatabase(async (db) => {
+      const { replacement, limit } = await addRecords(db);
+      const waiting = await addTestReplacement(db, {
+        ...replacement,
+        startsOn: "2087-02-01",
+      });
+      for (let day = 1; day <= LISTED_REPLACEMENTS; day += 1) {
+        await addTestReplacement(db, {
+          ...replacement,
+          startsOn: `2087-03-${String(day).padStart(2, "0")}`,
+          carriedOutAt: new Date("2087-03-01T02:00:00Z"),
+        });
+      }
+
+      const rows = await listReplacements(db, limit);
+
+      expect(rows).toHaveLength(LISTED_REPLACEMENTS);
+      expect(rows[0]).toMatchObject({ id: waiting, status: "scheduled" });
+      expect(rows.at(-1)?.startsOn).toBe("2087-03-02");
+    });
+  });
+
+  it("shows every Terjadwal replacement when more than 20 wait, and none of the others", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, replacement, limit } = await addRecords(db);
+      await addTestReplacement(db, {
+        ...replacement,
+        startsOn: "2087-09-01",
+        carriedOutAt: new Date("2087-09-01T02:00:00Z"),
+      });
+      for (let number = 2; number <= LISTED_REPLACEMENTS + 2; number += 1) {
+        await addTestReplacement(db, {
+          ...replacement,
+          groupId: await addTestGroup(db, held.studyProgramId, { number }),
+          newMentorId: await addTestMentor(db, { name: `Baru ${number}` }),
+        });
+      }
+
+      const rows = await listReplacements(db, limit);
+
+      expect(rows).toHaveLength(LISTED_REPLACEMENTS + 1);
+      expect(new Set(rows.map((row) => row.status))).toEqual(
+        new Set(["scheduled"]),
+      );
     });
   });
 });

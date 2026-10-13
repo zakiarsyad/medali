@@ -262,6 +262,11 @@ part only. All of it is built here.
     and the tick were chosen for the mentor the form showed. This refines
     decision 43: a second "Tetapkan penggantian" for today is told this,
     whichever spare mentor it names.
+46. "Riwayat penggantian" always lists every Terjadwal replacement, and
+    lists them first, so each one can be cancelled: "Batalkan" stands on
+    its row only. After them come the others with the latest start date,
+    20 rows in all. When more than 20 wait, all of them are listed and no
+    others. This refines decision 32; what each role sees stays the same.
 
 ## Steps
 

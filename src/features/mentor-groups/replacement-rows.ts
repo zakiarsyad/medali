@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, or, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
@@ -12,6 +12,7 @@ import type {
   OldMentorStatus,
   ReplacementReason,
 } from "@/mentoring/replacement-ids";
+import { IS_WAITING } from "@/mentoring/waiting-replacement";
 import type { GroupCodeParts } from "@/ui/group-code";
 import { MEMBERS } from "./group-list";
 import {
@@ -20,7 +21,7 @@ import {
 } from "./replacement-status";
 import { groupsVisibleTo } from "./visible-groups";
 
-/** How many replacements "Riwayat penggantian" shows. */
+/** How many replacements "Riwayat penggantian" shows, unless more wait. */
 export const LISTED_REPLACEMENTS = 20;
 
 /** One replacement as "Riwayat penggantian" shows it. The NIP of nobody is read. */
@@ -69,7 +70,14 @@ const ROW = {
   cancellerName: canceller.name,
 };
 
-function readRows(db: Database, limit: RowLimit) {
+/** A replacement that waits no more: Berlaku or Dibatalkan. */
+const WAITS_NO_MORE = or(
+  isNotNull(mentorReplacements.carriedOutAt),
+  isNotNull(mentorReplacements.cancelledAt),
+);
+
+/** The replacements of one kind that the limit lets through, the latest first. */
+function readRows(db: Database, limit: RowLimit, kind: SQL | undefined) {
   return db
     .select(ROW)
     .from(mentorReplacements)
@@ -78,13 +86,12 @@ function readRows(db: Database, limit: RowLimit) {
     .innerJoin(accounts, eq(accounts.id, mentorReplacements.oldMentorId))
     .innerJoin(newMentor, eq(newMentor.id, mentorReplacements.newMentorId))
     .leftJoin(canceller, eq(canceller.id, mentorReplacements.cancelledBy))
-    .where(groupsVisibleTo(limit))
+    .where(and(groupsVisibleTo(limit), kind))
     .orderBy(
       desc(mentorReplacements.startsOn),
       desc(mentorReplacements.setAt),
       desc(mentorReplacements.id),
-    )
-    .limit(LISTED_REPLACEMENTS);
+    );
 }
 
 type ReadRow = Awaited<ReturnType<typeof readRows>>[number];
@@ -100,15 +107,23 @@ function listed(row: ReadRow): ListedReplacement {
 }
 
 /**
- * "Riwayat penggantian": the 20 replacements with the latest start date
- * that an account with this limit may see, and among those of one day
- * the one set last first. A replacement is seen through its group: one of
- * a group outside the limit, or of an ended group, is left out.
+ * "Riwayat penggantian": first every replacement that waits for its start
+ * date, because "Batalkan" stands on its row only and one that is not
+ * listed could never be cancelled. Then the others with the latest start
+ * date, as many as make 20 rows with the waiting ones, and none when 20
+ * or more wait. Within each kind the latest start date comes first, and
+ * among those of one day the one set last. A replacement is seen through
+ * its group: one of a group outside the limit, or of an ended group, is
+ * left out.
  */
 export async function listReplacements(
   db: Database,
   limit: RowLimit,
 ): Promise<ListedReplacement[]> {
-  const rows = await readRows(db, limit);
-  return rows.map(listed);
+  const [waiting, others] = await Promise.all([
+    readRows(db, limit, IS_WAITING),
+    readRows(db, limit, WAITS_NO_MORE).limit(LISTED_REPLACEMENTS),
+  ]);
+  const room = Math.max(0, LISTED_REPLACEMENTS - waiting.length);
+  return [...waiting, ...others.slice(0, room)].map(listed);
 }
