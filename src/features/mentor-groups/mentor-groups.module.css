@@ -178,6 +178,12 @@
   overflow-wrap: anywhere;
 }
 
+/* A button beside a field of a form, level with the field and not with its label. */
+.fieldEnd {
+  display: flex;
+  align-items: flex-end;
+}
+
 /* What a change of the survey period did, above whatever the panel shows next. */
 .said {
   margin-bottom: var(--space-md);

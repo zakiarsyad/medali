@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  CANCEL_QUESTION,
+  CLOSE_QUESTION,
+  endChangedWords,
   openedSurveyWords,
   respondentWords,
   surveyDaysWords,
@@ -8,6 +11,26 @@ import {
 
 const TODAY = "2026-10-13";
 const TITLE = "Ganjil 2026/2027";
+
+describe("the questions before a period is closed or cancelled", () => {
+  it("says what closing does to the students", () => {
+    expect(CLOSE_QUESTION).toBe(
+      "Tutup periode evaluasi sekarang? Mahasiswa tidak dapat mengisi survei lagi.",
+    );
+  });
+
+  it("asks about a cancel without a number of answers", () => {
+    expect(CANCEL_QUESTION).toBe("Batalkan periode ini?");
+  });
+});
+
+describe("endChangedWords", () => {
+  it("names the new last day", () => {
+    expect(endChangedWords("2026-10-31")).toBe(
+      "Tanggal ditutup diubah menjadi 31 Okt 2026.",
+    );
+  });
+});
 
 describe("surveyDaysWords", () => {
   it("names the first and the last day and who opened the period", () => {

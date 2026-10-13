@@ -34,3 +34,18 @@ export function respondentWords(answered: number, pool: number): string {
 export function weightWords(achievementWeight: number): string {
   return `Capaian ${achievementWeight}% · umpan balik ${feedbackWeight(achievementWeight)}%`;
 }
+
+/** What "Simpan tanggal" says once the last day is changed. */
+export function endChangedWords(endsOn: string): string {
+  return `Tanggal ditutup diubah menjadi ${shownDay(endsOn)}.`;
+}
+
+export const CLOSE_QUESTION =
+  "Tutup periode evaluasi sekarang? Mahasiswa tidak dapat mengisi survei lagi.";
+
+export const CLOSED_WORDS =
+  "Periode evaluasi ditutup. Mahasiswa tidak dapat mengisi survei lagi.";
+
+export const CANCEL_QUESTION = "Batalkan periode ini?";
+
+export const CANCELLED_SURVEY_WORDS = "Periode evaluasi dibatalkan.";

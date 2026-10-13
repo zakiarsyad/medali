@@ -184,6 +184,35 @@ menu and no screen. All of it is built here.
     dibuka oleh (name)", as in the prototype. Bobot reads "Capaian 50% ·
     umpan balik 50%". Keterangan shows only when the period has one.
     Dibuka and Terjadwal have the colours the prototype gives them.
+24. "Ubah tanggal ditutup" refuses a day before the first day and, as
+    when opening, a day that has passed, each with the message the form
+    uses. Today is accepted: the period stays Dibuka until the day is
+    over. To end a period at once there is "Tutup periode sekarang". A
+    date that is missing or does not exist gets "Isi tanggal ditutup
+    dengan tanggal yang benar." After a save the message reads "Tanggal
+    ditutup diubah menjadi (date)."
+25. "Tutup periode sekarang" asks "Tutup periode evaluasi sekarang?
+    Mahasiswa tidak dapat mengisi survei lagi." The period keeps its
+    dates and gets the mark of who closed it and when; the prototype
+    moves the last day to today instead. A Terjadwal period can be
+    closed too, as in the prototype. The message reads "Periode evaluasi
+    ditutup. Mahasiswa tidak dapat mengisi survei lagi."; what the
+    prototype says there about capaian karakter belongs to "Student
+    survey results".
+26. "Batalkan periode" asks "Batalkan periode ini?", and then says
+    "Periode evaluasi dibatalkan."
+27. Only a period that runs can get another last day, be closed or be
+    cancelled. A period that is Berakhir or Ditutup cannot be cancelled
+    and cannot be opened again by a later date. A request that comes too
+    late, such as a second press or one from another window, is told
+    "Periode evaluasi ini sudah tidak berjalan: sudah ditutup,
+    dibatalkan, atau berakhir. Muat ulang halaman, lalu periksa lagi."
+28. Under the buttons stands "Hanya satu periode evaluasi yang dapat
+    dibuka pada satu waktu.", without the prototype's second sentence
+    about the results table, which is not built here.
+29. Nothing here stops a student from answering, because there is no
+    survey form yet. That form will ask which period runs, and a period
+    that is closed, cancelled or past its last day does not.
 
 ## Steps
 
@@ -192,5 +221,5 @@ menu and no screen. All of it is built here.
 - [x] 2. The permission to manage periods, with its checks.
 - [x] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
 - [x] 4. The running period card with its status by date.
-- [ ] 5. Changing the end date, closing now and cancelling.
+- [x] 5. Changing the end date, closing now and cancelling.
 - [ ] 6. Read-only view, double press and the phone layout.

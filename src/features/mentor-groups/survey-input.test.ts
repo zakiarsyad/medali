@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { NOTE_MAX_LENGTH } from "./evaluation-input";
 import {
   ASK_FOR_DATES,
+  ASK_FOR_END,
   ASK_FOR_PERIOD,
   ASK_FOR_WEIGHT,
   END_HAS_PASSED,
   ENDS_BEFORE_START,
+  parseSurveyEnd,
   parseSurveyPeriod,
   type SentSurveyPeriod,
 } from "./survey-input";
@@ -135,4 +137,20 @@ describe("parseSurveyPeriod", () => {
       ASK_FOR_DATES,
     );
   });
+});
+
+describe("parseSurveyEnd", () => {
+  it("takes a real day", () => {
+    expect(parseSurveyEnd("2026-10-31")).toEqual({
+      ok: true,
+      value: "2026-10-31",
+    });
+  });
+
+  it.each(["", "2026-02-30", "31/10/2026", "besok"])(
+    "asks for the date when it is '%s'",
+    (sent) => {
+      expect(parseSurveyEnd(sent)).toEqual({ ok: false, error: ASK_FOR_END });
+    },
+  );
 });

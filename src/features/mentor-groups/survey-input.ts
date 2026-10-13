@@ -95,3 +95,14 @@ export function parseSurveyPeriod(
     },
   };
 }
+
+export const ASK_FOR_END = "Isi tanggal ditutup dengan tanggal yang benar.";
+
+/**
+ * Checks "Ubah tanggal ditutup" as sent: it must be a real day. Whether
+ * it suits the period is for the save to say, which reads its first day.
+ */
+export function parseSurveyEnd(sent: string): Parsed<string> {
+  if (!isDay(sent)) return refused(ASK_FOR_END);
+  return { ok: true, value: sent };
+}
