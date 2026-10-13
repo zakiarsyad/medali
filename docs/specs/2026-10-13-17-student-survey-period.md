@@ -118,12 +118,19 @@ menu and no screen. All of it is built here.
    of 50 and 50 and the note "Data contoh periode lalu.". The sample
    Kepala Unit opened it four days before its first day and closed it
    by hand on its last day, so it shows as Ditutup.
+9. Opening a period, changing its last day, closing it and cancelling
+   it are one new right, held by Kepala Unit only. The list of rights
+   that Kepala Unit sees names it "Membuka, mengubah, menutup, dan
+   membatalkan periode evaluasi oleh mahasiswa". Reading the tab needs
+   no new right: whoever may open the tab reads it, which the list of
+   pages already gives to Kepala Unit, Direktur / Wakil Direktur, Ketua
+   Program Studi and Pegawai UPK, and to nobody else.
 
 ## Steps
 
 - [x] 1. Survey periods are stored, one running at a time, with one
   closed sample period.
-- [ ] 2. The permission to manage periods, with its checks.
+- [x] 2. The permission to manage periods, with its checks.
 - [ ] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
 - [ ] 4. The running period card with its status by date.
 - [ ] 5. Changing the end date, closing now and cancelling.
