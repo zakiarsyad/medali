@@ -171,6 +171,14 @@ export async function readAllSchedules(
 }
 
 /**
+ * The order that puts the newest attendance first: by when its photo was
+ * sent, or for a record made by hand, which has no photo, when it was made.
+ */
+export const NEWEST_FIRST = desc(
+  sql`coalesce(${activityAttendances.sentAt}, ${activityAttendances.decidedAt})`,
+);
+
+/**
  * The newest attendance of one student at each of some schedules. The
  * student is the one the account's own rows hold, never one asked for
  * from outside.
@@ -196,11 +204,7 @@ export async function readOwnAttendances(
         inArray(activityAttendances.scheduleId, [...new Set(scheduleIds)]),
       ),
     )
-    .orderBy(
-      desc(
-        sql`coalesce(${activityAttendances.sentAt}, ${activityAttendances.decidedAt})`,
-      ),
-    );
+    .orderBy(NEWEST_FIRST);
   for (const { scheduleId, ...attendance } of rows) {
     if (!newest.has(scheduleId)) newest.set(scheduleId, attendance);
   }

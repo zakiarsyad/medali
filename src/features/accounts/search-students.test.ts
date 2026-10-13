@@ -4,9 +4,9 @@ import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import type { Manager } from "./save-bam-roles";
 import { SEARCH_LIMIT, searchActiveStudents } from "./search-students";
-import { SEARCH_TEXT_MAX } from "./search-text";
 import {
   addTestProgram,
   addTestStudentAccount,

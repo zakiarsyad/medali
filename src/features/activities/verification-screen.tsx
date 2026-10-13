@@ -3,6 +3,7 @@ import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import { ManualRecordForm } from "./manual-record-form";
 import { PhotoCards } from "./photo-cards";
 import type { Verification } from "./verification";
 import {
@@ -24,7 +25,8 @@ export function emptyWords(filters: VerificationFilters): string {
 
 /**
  * The tab "Verifikasi presensi": the four numbers, the choices of
- * activity and status, and the photo cards, the oldest first.
+ * activity and status, the photo cards, the oldest first, and under them
+ * the folded form that records an attendance by hand.
  */
 export function VerificationScreen({
   tabs,
@@ -67,6 +69,7 @@ export function VerificationScreen({
           />
         )}
       </section>
+      <ManualRecordForm />
     </>
   );
 }

@@ -236,6 +236,33 @@ decided, from what the merged app does and then from the prototype:
     24 presensi dapat divalidasi sekaligus." Nothing sent answers
     "Pilih presensi yang akan divalidasi." Each photo validated at
     once gets its own line in the log.
+34. "Catat kehadiran manual atau dispensasi" is a folded panel under
+    the cards, with the prototype's line of explanation. The search
+    offers 10 students at most, each with name, NIM and program studi,
+    or says "Tidak ada mahasiswa aktif yang cocok." The picked student
+    is shown with "Ganti" to pick another. Each activity is listed as
+    its first day, its name and its semester, with the status the
+    student has there, and the chosen one says "Status saat ini:
+    (status)." below. The list holds the 100 newest at most. Before a
+    student is picked it says "Pilih mahasiswa dulu", and with none
+    "Tidak ada kegiatan".
+35. "Simpan" without a student says "Pilih mahasiswa.", without an
+    activity "Pilih kegiatan.", and a Keterangan that is too long
+    "Keterangan paling banyak 200 karakter." A student who is no
+    longer Aktif, or an activity that is not the student's or has not
+    started, sent by hand, is refused and nothing is saved. Another
+    role is told "Anda tidak berhak memverifikasi presensi."
+36. A photo that waits can be replaced by a record made by hand, after
+    the same confirmation; its card then shows the record. When the
+    student's photo arrives at the very moment of "Simpan", so that
+    two attendances would count, nothing is saved and the message is
+    "Status kehadiran baru saja berubah. Tekan Simpan lagi."
+37. After a record is saved the student and the activity stay chosen
+    and the Keterangan is emptied, to record the next one. Choosing
+    another student or activity asks for the confirmation anew.
+38. The search of students by name or NIM takes the same text, and
+    waits the same moment while typing, as the search in "Tambah
+    pengurus BAM": both now use one shared rule.
 
 ## Steps
 
@@ -244,7 +271,7 @@ decided, from what the merged app does and then from the prototype:
 - [x] 2. The tab shows the numbers, the filters and the photo cards.
 - [x] 3. "Validasi" and "Tolak" with a reason; the student sends again.
 - [x] 4. Ticking many cards and "Validasi (n) terpilih".
-- [ ] 5. "Catat kehadiran manual atau dispensasi".
+- [x] 5. "Catat kehadiran manual atau dispensasi".
 - [ ] 6. The Kegiatan PPKS table shows the attendance numbers and
   "Peserta".
 

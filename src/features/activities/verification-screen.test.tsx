@@ -9,6 +9,9 @@ vi.mock("./verification-actions", () => ({
   validateAttendanceAction: vi.fn(),
   rejectAttendanceAction: vi.fn(),
   validateTickedAction: vi.fn(),
+  searchRecordStudentsAction: vi.fn(),
+  readRecordActivitiesAction: vi.fn(),
+  recordAttendanceAction: vi.fn(),
 }));
 
 const TABS = {

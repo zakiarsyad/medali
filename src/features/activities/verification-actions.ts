@@ -9,6 +9,16 @@ import { database } from "@/db/database";
 import { fileStorage } from "@/files/file-storage";
 import type { BulkAnswer } from "./bulk-validation";
 import { type Decision, decideAttendance } from "./decide-attendance";
+import {
+  type RecordActivity,
+  type RecordAnswer,
+  type RecordStudent,
+  type SentRecord,
+  sentRecord,
+} from "./manual-record";
+import { readRecordActivities } from "./record-activities";
+import { recordAttendance } from "./record-attendance";
+import { searchRecordStudents } from "./record-student";
 import { rejectionNote } from "./rejection-reasons";
 import { validateTicked } from "./validate-ticked";
 import { VERIFICATION_ADDRESS } from "./verification-address";
@@ -84,4 +94,38 @@ export async function rejectAttendanceAction(
     status: "rejected",
     note: kept.value,
   });
+}
+
+/** The students "Catat kehadiran manual atau dispensasi" offers for what was typed. */
+export async function searchRecordStudentsAction(
+  query: string,
+): Promise<RecordStudent[]> {
+  const verifier = await attendanceVerifier();
+  return searchRecordStudents(database(), verifier, query);
+}
+
+/** The activities of the picked student that have started. */
+export async function readRecordActivitiesAction(
+  studentId: string,
+): Promise<RecordActivity[]> {
+  const verifier = await attendanceVerifier();
+  return readRecordActivities(database(), verifier, studentId, new Date());
+}
+
+/**
+ * "Simpan" of "Catat kehadiran manual atau dispensasi". A record can
+ * change what a card shows, so the numbers and the cards are read again.
+ */
+export async function recordAttendanceAction(
+  sent: SentRecord,
+): Promise<RecordAnswer> {
+  const verifier = await attendanceVerifier();
+  const answer = await recordAttendance(
+    database(),
+    verifier,
+    sentRecord(sent),
+    new Date(),
+  );
+  revalidatePath(VERIFICATION_ADDRESS);
+  return answer;
 }

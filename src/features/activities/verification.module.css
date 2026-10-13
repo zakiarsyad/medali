@@ -86,6 +86,44 @@
   margin-top: var(--space-xs);
 }
 
+/* The folded panel of a record made by hand opens by a press on its title. */
+.foldHead {
+  cursor: pointer;
+}
+
+/* A field of the form that takes the whole row. */
+.wide {
+  grid-column: 1 / -1;
+}
+
+.pick,
+.found {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.found {
+  align-items: flex-start;
+}
+
+/* A found student is a long line: it folds instead of widening the page. */
+.found button {
+  max-width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  align-items: baseline;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
 /* What a waiting card offers: "Validasi", the reason, and "Tolak". */
 .decide {
   display: flex;
