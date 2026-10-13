@@ -11,16 +11,18 @@ const BETWEEN = " · ";
 function EvaluationRow({ evaluation }: { evaluation: ListedEvaluation }) {
   return (
     <tr>
-      <td>{periodTitle(evaluation.period)}</td>
-      <td>{evaluation.mentorName}</td>
-      <td>{groupCode(evaluation.group)}</td>
+      <td data-title="Periode">{periodTitle(evaluation.period)}</td>
+      <td data-title="Pengasuh">{evaluation.mentorName}</td>
+      <td data-title="Kelompok">{groupCode(evaluation.group)}</td>
       {EVALUATION_ASPECTS.map((aspect) => (
-        <td key={aspect}>{evaluation[aspect]}</td>
+        <td key={aspect} data-title={ASPECT_SHORT_TITLES[aspect]}>
+          {evaluation[aspect]}
+        </td>
       ))}
-      <td>
+      <td data-title="Hasil">
         <EvaluationBadge scores={evaluation} />
       </td>
-      <td>
+      <td data-title="Dievaluasi">
         <small className={shared.detail}>
           {DAY.format(evaluation.evaluatedAt)}
           {BETWEEN}
@@ -46,7 +48,7 @@ export function EvaluationTable({
   }
   return (
     <div className={shared.tableWrap}>
-      <table className={shared.table}>
+      <table className={`${shared.table} ${shared.stacked}`}>
         <thead>
           <tr>
             <th>Periode</th>

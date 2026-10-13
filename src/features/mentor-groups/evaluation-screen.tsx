@@ -6,6 +6,7 @@ import type { TabLinksProps } from "@/ui/tab-links";
 import { EvaluationPanel } from "./evaluation-panel";
 import { listLatestEvaluations } from "./evaluation-rows";
 import { EvaluationTable } from "./evaluation-table";
+import styles from "./mentor-groups.module.css";
 
 /** The tab "Evaluasi dan penggantian". */
 export async function EvaluationScreen({
@@ -29,7 +30,12 @@ export async function EvaluationScreen({
   return (
     <>
       <MentorsHead tabs={tabs} />
-      {evaluatedLimit !== null && (
+      {evaluatedLimit === null ? (
+        <p className={styles.note}>
+          Evaluasi dan penggantian pengasuh dilakukan oleh Kepala Unit
+          Pembangunan Karakter.
+        </p>
+      ) : (
         <EvaluationPanel limit={evaluatedLimit} chosenGroupId={chosenGroupId} />
       )}
       <section className={shared.panel}>

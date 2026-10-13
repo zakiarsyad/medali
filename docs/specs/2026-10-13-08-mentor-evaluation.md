@@ -86,6 +86,60 @@ is built here.
 3. This spec reads the running period from "Academic period" and has no
    rule of its own.
 
+Decided while building, where the issue gave no answer:
+
+4. Each value is a whole number from 0 to 100. A value with a decimal is
+   refused, with the same message that names the aspect.
+5. "Nilai evaluasi" is shown with one decimal, written with a comma as
+   the app writes numbers (79,8), a half going up. The predikat is
+   judged on the number that is shown, so the two never disagree.
+6. "Evaluasi terakhir" of a group is the evaluation of the mentor who
+   holds the group today, for the latest period. A group whose mentor
+   was replaced shows "Belum dievaluasi" until the new mentor is
+   evaluated. "Evaluasi kurang" counts by the same rule.
+7. "Evaluasi terakhir" of a mentor is their evaluation for the latest
+   period, over every group they were evaluated in; among several of one
+   period, the one saved last.
+8. Every list of evaluations shows the one saved last first. An
+   evaluation that is corrected moves to the top.
+9. The first save adds a log line too, with no values before. A save
+   that changes nothing writes nothing: no log line, and the earlier
+   date and evaluator stay.
+10. When the group has another mentor by now, the evaluation of that
+    period stays with the earlier mentor and cannot be corrected. The
+    message says so and asks for another period. "Mentor replacement"
+    can change this.
+11. A group without a mentor cannot be evaluated: the tab says so and
+    shows no form. A group that was ended by cancelling its penetapan
+    cannot be evaluated either; its evaluations stay stored and are
+    shown nowhere, like the group itself.
+12. Seeing evaluations is a permission of its own, held by Kepala Unit,
+    Direktur / Wakil Direktur, Pegawai UPK and Ketua Program Studi. A
+    role without it sees no evaluation on any screen. Ketua Program
+    Studi sees those of their program's groups only, on every screen.
+13. Pengasuh sees no evaluation, not their own either: they cannot open
+    the Pengasuh menu today, and the prototype shows them none.
+14. The form starts empty, since suggested values are not included.
+    "Nilai evaluasi" shows once all four values are valid.
+15. Choosing a period that already has an evaluation fills the form with
+    it and says that saving again corrects it.
+16. The box above the form shows the mentor, since when, the number of
+    active students and the last evaluation. Of "Alur penggantian" only
+    the line about evaluation is shown, under the heading; the rest
+    belongs to "Mentor replacement".
+17. While no academic period runs, the form is not shown and a line
+    says where to set one.
+18. "Catatan evaluasi" may be left empty and holds 1,000 characters at
+    most.
+19. The button "Evaluasi pengasuh" on a group page shows only while the
+    group has a mentor.
+20. When "Simpan evaluasi" reaches the server twice at the same moment,
+    the second waits for the first and then finds nothing to change.
+21. The sample data has five evaluations by the sample Kepala Unit: four
+    groups of the angkatan before the newest for the period before
+    (two Baik, one Cukup, one Kurang), and one of them also for the
+    running period.
+
 ## Steps
 
 - [x] 1. Evaluations and their change log are stored; the periods rule
@@ -94,4 +148,4 @@ is built here.
 - [x] 3. The tab with the form and "Evaluasi terbaru".
 - [x] 4. Evaluations on the group page, the mentor page, both lists and
   the "Evaluasi kurang" number.
-- [ ] 5. Read-only view, double press and phone layout.
+- [x] 5. Read-only view, double press and phone layout.
