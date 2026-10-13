@@ -234,6 +234,17 @@ menu and no screen. All of it is built here.
 33. The period, the number of students who can answer and what the form
     opens with are read at the same time. On a local computer the tab
     answered in about 0.1 second for each of the four roles.
+34. A date of the year 0000 is not a date: the database has no such
+    year and cannot keep it. A hand-made request with such a first day
+    used to end in a server error without a message. The check of a
+    date that every form shares now refuses it, so here the answer is
+    "Isi tanggal dibuka dan tanggal ditutup dengan tanggal yang benar."
+    and nothing is saved. The other forms that ask for a date now
+    answer such a date with their own message for a wrong date. The
+    ones that were tried, mentor replacement and the PPKS schedule,
+    refused it before as well. Periode akademik answers it with other
+    words now: "Isi tanggal Mulai dan Selesai." instead of the message
+    about the years 2000 to 2101.
 
 ## Steps
 

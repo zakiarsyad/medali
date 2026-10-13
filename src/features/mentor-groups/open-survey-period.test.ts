@@ -15,7 +15,12 @@ import {
   NOT_ALLOWED_TO_MANAGE,
   openSurveyPeriod,
 } from "./open-survey-period";
-import { ASK_FOR_PERIOD, type SurveyPeriodInput } from "./survey-input";
+import {
+  ASK_FOR_DATES,
+  ASK_FOR_PERIOD,
+  parseSurveyPeriod,
+  type SurveyPeriodInput,
+} from "./survey-input";
 import {
   addTestEvaluator,
   addTestPeriods,
@@ -172,6 +177,29 @@ describe("openSurveyPeriod", () => {
 
         expect(refused).toEqual(NOT_ALLOWED_TO_MANAGE);
       }
+      expect(await testSurveyPeriods(db)).toHaveLength(0);
+    });
+  });
+
+  it("answers a hand-made first day of year 0000 with the message about the dates, and stores nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const periods = await addTestPeriods(db, START_YEAR);
+      const head = await addHead(db);
+      const sent = {
+        periodId: periods.runningId,
+        startsOn: "0000-01-01",
+        endsOn: "2142-10-27",
+        achievementWeight: "50",
+        note: "",
+      };
+
+      // As the action does: what the check lets through goes to the save.
+      const parsed = parseSurveyPeriod(sent, TODAY);
+      const answer = parsed.ok
+        ? await openSurveyPeriod(db, head, parsed.value, TODAY)
+        : parsed;
+
+      expect(answer).toEqual({ ok: false, error: ASK_FOR_DATES });
       expect(await testSurveyPeriods(db)).toHaveLength(0);
     });
   });

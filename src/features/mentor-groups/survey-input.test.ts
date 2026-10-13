@@ -80,6 +80,13 @@ describe("parseSurveyPeriod", () => {
     expect(refusalOf({ startsOn: "2026-10-01", endsOn: TODAY })).toBe(null);
   });
 
+  it.each(["0000-01-01", "0000-12-31"])(
+    "asks for the dates when Tanggal dibuka is %s, a year the database cannot keep",
+    (day) => {
+      expect(refusalOf({ startsOn: day })).toBe(ASK_FOR_DATES);
+    },
+  );
+
   it("takes a first day later than today", () => {
     expect(refusalOf({ startsOn: "2026-11-01", endsOn: "2026-11-15" })).toBe(
       null,
