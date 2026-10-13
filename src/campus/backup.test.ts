@@ -4,10 +4,11 @@ import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { connect } from "@/db/connect";
-import { applyTableChanges } from "@/db/migrate";
+import { readDeployTarget } from "@/db/deploy-target";
 import { fillWithSampleData } from "@/db/seed";
 import { ensureBucket, objectStore } from "@/files/object-store";
 import type { FileStorageSettings } from "@/settings";
+import { prepareCampusDatabase } from "./prepare-database";
 
 // This check runs the real backup part in Docker, on a database and a
 // file storage it starts for itself and removes again. Everything it
@@ -151,7 +152,7 @@ const KEPT_FILE = {
 
 async function fillSource(): Promise<void> {
   await inDatabase(SOURCE.PGDATABASE, async (db) => {
-    await applyTableChanges(db);
+    await prepareCampusDatabase(db);
     await fillWithSampleData(db);
   });
   const storage = storageOf(SOURCE.FILE_STORAGE_BUCKET);
@@ -194,7 +195,7 @@ async function makeTargetEmpty(): Promise<void> {
     await db.execute(sql`drop database if exists ${database} with (force)`);
     await db.execute(sql`create database ${database}`);
   });
-  await inDatabase(TARGET.PGDATABASE, applyTableChanges);
+  await inDatabase(TARGET.PGDATABASE, prepareCampusDatabase);
   await emptyBucket(TARGET.FILE_STORAGE_BUCKET);
 }
 
@@ -491,4 +492,69 @@ describe("the restore command", () => {
     },
     CASE_TIMEOUT_MS,
   );
+});
+
+async function accountEmails(database: string): Promise<string[]> {
+  const rows = await inDatabase(database, (db) =>
+    db.execute<{ email: string }>(
+      sql`select email from accounts where email is not null order by email`,
+    ),
+  );
+  return rows.map((row) => row.email);
+}
+
+describe("a backup restored into another package that holds no data", () => {
+  beforeAll(async () => {
+    await makeTargetEmpty();
+    expect(restore(madeName).status).toBe(0);
+  }, CASE_TIMEOUT_MS);
+
+  it("holds as many rows in every table as the package the backup was made of", async () => {
+    const source = await rowCounts(SOURCE.PGDATABASE);
+    const target = await rowCounts(TARGET.PGDATABASE);
+
+    expect(Object.keys(source)).toEqual(
+      expect.arrayContaining([
+        "public.accounts",
+        "public.students",
+        "drizzle.__drizzle_migrations",
+        "medali_deploy.database_kind",
+      ]),
+    );
+    expect(source["public.students"]).toBeGreaterThan(0);
+    expect(target).toEqual(source);
+  });
+
+  it("holds the same accounts, so the same people sign in", async () => {
+    const source = await accountEmails(SOURCE.PGDATABASE);
+
+    expect(source.length).toBeGreaterThan(1);
+    expect(await accountEmails(TARGET.PGDATABASE)).toEqual(source);
+  });
+
+  it("gives back a file kept before the backup, byte for byte", async () => {
+    const store = objectStore(storageOf(TARGET.FILE_STORAGE_BUCKET));
+
+    const bytes = await store.get(KEPT_FILE.key);
+
+    expect(await store.list("")).toEqual([KEPT_FILE.key]);
+    expect(bytes).not.toBeNull();
+    expect(KEPT_FILE.bytes.equals(bytes ?? new Uint8Array())).toBe(true);
+  });
+
+  it("is still the campus one, and needs no table change again when the app starts", async () => {
+    const before = await rowCounts(TARGET.PGDATABASE);
+
+    const { added, marker } = await inDatabase(
+      TARGET.PGDATABASE,
+      async (db) => ({
+        added: await prepareCampusDatabase(db),
+        marker: (await readDeployTarget(db)).marker,
+      }),
+    );
+
+    expect(marker).toBe("campus");
+    expect(added).toBe(0);
+    expect(await rowCounts(TARGET.PGDATABASE)).toEqual(before);
+  });
 });
