@@ -128,6 +128,33 @@ for Mahasiswa. The issue did not say, so these were decided:
     rejected, or was never sent. An activity that is not required is
     left out, attended or not. The upload time closes at the end of the
     last upload day, as the status of a schedule already has it.
+11. The student's page is Kegiatan karakter itself, without a tab. The
+    tab "Kegiatan PPKS" keeps refusing Mahasiswa, and staff see what
+    they saw before. An account that is both Mahasiswa and a staff role
+    with that tab is sent to the tab and does not reach the student's
+    page; no sample account is like that.
+12. The three parts follow the prototype. "Berlangsung dan masa unggah
+    foto" holds what waits for its hour today or still takes photos.
+    "Riwayat kehadiran" holds what ended before today, newest first. So
+    an activity that ended and still takes photos is in both.
+13. The history reaches back over every period. The four numbers count
+    the running period only.
+14. "Menunggu verifikasi" and "Dispensasi" count every waiting photo
+    and every dispensation of the running period. The prototype counted
+    them only after the upload time had closed, which showed 0 beside a
+    card that said "Menunggu verifikasi".
+15. A rejected attendance shows "Ditolak" with its reason, and a
+    dispensation shows "Dispensasi". Neither gets the upload button:
+    sending again comes with "Attendance verification".
+16. Name, description and nilai are those the activity has in Kurikulum
+    now, as in the staff's list of schedules.
+17. A student who is not Aktif, such as on Cuti, can open the page and
+    sees no activity: only Aktif students take part.
+18. "Kegiatan berikutnya" shows the name and first day of the next
+    activity, or "-". The intro names the tahap of the student's
+    semester.
+19. When a student has more than one attendance for a schedule, the page
+    shows the newest.
 
 ## Steps
 
@@ -136,6 +163,6 @@ for Mahasiswa. The issue did not say, so these were decided:
   swafoto" is added for Mahasiswa, with its checks. Sample data adds
   attendance in every status.
 - [x] 2. The rule for Nilai kehadiran kegiatan, with checks.
-- [ ] 3. The student page shows the numbers and the three parts.
+- [x] 3. The student page shows the numbers and the three parts.
 - [ ] 4. "Unggah foto kehadiran" takes or picks a photo and sends it.
 

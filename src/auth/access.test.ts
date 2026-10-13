@@ -1382,9 +1382,10 @@ describe("the permission list", () => {
   });
 
   /**
-   * The pages a role opens while none of their tabs is for that role yet.
-   * Kegiatan karakter stays the empty page for Mahasiswa and Penilai
-   * Mahasiswa until their own views of it are built.
+   * The pages a role opens while none of their tabs is for that role.
+   * Mahasiswa sees their own activities on Kegiatan karakter itself,
+   * without a tab. It stays the empty page for Penilai Mahasiswa until
+   * their own view of it is built.
    */
   const NO_TAB_YET: Partial<Record<RoleId, string[]>> = {
     student: ["activities"],

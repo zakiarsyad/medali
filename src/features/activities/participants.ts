@@ -10,18 +10,50 @@ export interface CohortCount {
 export type PeriodParts = Pick<AcademicPeriod, "startYear" | "term">;
 
 /**
- * Whether the students of an angkatan are in a semester during a period.
- * An angkatan that starts after the first year of the period is in none:
+ * The semester the students of an angkatan are in during a period. An
+ * angkatan that starts after the first year of the period is in none:
  * its students were not students yet, though the semester rule alone
  * would put them in semester 1.
  */
+export function semesterIn(
+  cohortYear: number,
+  period: PeriodParts,
+): number | null {
+  if (cohortYear > period.startYear) return null;
+  return studentSemester(cohortYear, period);
+}
+
+/** Whether the students of an angkatan are in a semester during a period. */
 export function isInSemester(
   cohortYear: number,
   semester: number,
   period: PeriodParts,
 ): boolean {
-  if (cohortYear > period.startYear) return false;
-  return studentSemester(cohortYear, period) === semester;
+  return semesterIn(cohortYear, period) === semester;
+}
+
+/** A period with the semester one student is in while it runs. */
+export interface PeriodSemester {
+  periodId: string;
+  semester: number;
+}
+
+/**
+ * The semester a student of an angkatan is in during each of the periods
+ * in which they were a student. A schedule is meant for them when its
+ * period and the semester of its activity are one of these.
+ */
+export function semestersByPeriod(
+  cohortYear: number,
+  periods: readonly (PeriodParts & Pick<AcademicPeriod, "id">)[],
+): PeriodSemester[] {
+  const semesters: PeriodSemester[] = [];
+  for (const period of periods) {
+    const semester = semesterIn(cohortYear, period);
+    if (semester === null) continue;
+    semesters.push({ periodId: period.id, semester });
+  }
+  return semesters;
 }
 
 /**
