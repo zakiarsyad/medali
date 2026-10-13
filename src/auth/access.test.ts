@@ -552,6 +552,63 @@ describe("may", () => {
     );
   });
 
+  it("lets Kepala Unit manage the survey periods", () => {
+    expect(may(["head_of_unit"], "manage_survey_periods")).toBe(true);
+  });
+
+  it("refuses every other role to manage the survey periods, those who read the tab among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toContain("director");
+    expect(others).toContain("head_of_program");
+    expect(others).toContain("upk_staff");
+    expect(others).toContain("mentor");
+    expect(others).toContain("student");
+    for (const role of others) {
+      expect(may([role], "manage_survey_periods")).toBe(false);
+    }
+  });
+
+  it("lets every role that may manage the survey periods open their tab", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "manage_survey_periods")) continue;
+      expect(mayOpenTab([role], "mentors", "student_survey")).toBe(true);
+    }
+  });
+
+  it("names the right to manage the survey periods in words for the list of rights", () => {
+    expect(ACTION_TITLES.manage_survey_periods).toBe(
+      "Membuka, mengubah, menutup, dan membatalkan periode evaluasi oleh mahasiswa",
+    );
+  });
+
+  it("opens the tab Evaluasi oleh mahasiswa to Kepala Unit, Direktur, Ketua Program Studi and Pegawai UPK only", () => {
+    const openers: RoleId[] = [
+      "head_of_unit",
+      "director",
+      "head_of_program",
+      "upk_staff",
+    ];
+    for (const role of ROLE_IDS) {
+      expect(mayOpenTab([role], "mentors", "student_survey")).toBe(
+        openers.includes(role),
+      );
+    }
+  });
+
+  it("refuses the tab Evaluasi oleh mahasiswa to Pengasuh and Mahasiswa, alone or together", () => {
+    expect(mayOpenTab(["mentor"], "mentors", "student_survey")).toBe(false);
+    expect(mayOpenTab(["student"], "mentors", "student_survey")).toBe(false);
+    expect(mayOpenTab(["mentor", "student"], "mentors", "student_survey")).toBe(
+      false,
+    );
+  });
+
+  it("gives no survey period to manage to an account whose roles only read the tab", () => {
+    expect(may(["head_of_program", "upk_staff"], "manage_survey_periods")).toBe(
+      false,
+    );
+  });
+
   it("lets every role that sees the evaluations of mentors see the groups and the mentors they are shown with", () => {
     for (const role of ROLE_IDS) {
       if (!may([role], "view_mentor_evaluations")) continue;

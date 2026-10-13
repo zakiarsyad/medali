@@ -13,4 +13,15 @@ describe("isDay", () => {
       expect(isDay(sent)).toBe(false);
     },
   );
+
+  it.each(["0000-01-01", "0000-12-31"])(
+    "refuses '%s': the database keeps no day of a year zero",
+    (sent) => {
+      expect(isDay(sent)).toBe(false);
+    },
+  );
+
+  it("takes the first day of year one, the earliest year the database keeps", () => {
+    expect(isDay("0001-01-01")).toBe(true);
+  });
 });

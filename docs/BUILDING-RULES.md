@@ -25,8 +25,9 @@ while building.
   replacement set Tidak aktif, which mentor is kept for a replacement
   that waits for its date, whether an account holds a group today, how a
   replacement gives its group the new mentor, today or once its date has
-  come, and the wait that keeps two changes of who holds which group
-  apart, read by every area that needs them.
+  come, the wait that keeps two changes of who holds which group apart,
+  the status a survey period has by its dates, and which survey period
+  runs on a day, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/campus/`: what the campus server package checks and does when it
   starts.

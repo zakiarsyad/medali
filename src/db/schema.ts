@@ -846,6 +846,67 @@ export const mentorReplacements = pgTable(
 );
 
 /**
+ * One period in which students rate their mentor in the satisfaction
+ * survey, opened by Kepala Unit for an academic period. It runs from the
+ * day it is opened until its last day, unless it is closed by hand or
+ * cancelled before. One runs at a time: the database refuses a second one
+ * while another still runs. Never deleted: a cancelled one stays, with who
+ * and when.
+ */
+export const studentSurveyPeriods = pgTable(
+  "student_survey_periods",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    /** "Periode": the academic period the survey is about. */
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    /** "Tanggal dibuka". */
+    startsOn: date().notNull(),
+    /** "Tanggal ditutup": the last day students can answer. */
+    endsOn: date().notNull(),
+    /**
+     * "Bobot capaian karakter (%)". The weight of the students' feedback
+     * is the rest of 100.
+     */
+    achievementWeight: smallint().notNull(),
+    /** "Keterangan untuk mahasiswa". */
+    note: text(),
+    openedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    openedAt: timestamp({ withTimezone: true }).notNull(),
+    /** Set by "Tutup periode sekarang". Empty for one that ends by its date. */
+    closedBy: uuid().references(() => accounts.id),
+    closedAt: timestamp({ withTimezone: true }),
+    cancelledBy: uuid().references(() => accounts.id),
+    cancelledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    check(
+      "student_survey_periods_ends_on_or_after_start",
+      sql`${table.endsOn} >= ${table.startsOn}`,
+    ),
+    check(
+      "student_survey_periods_weight_0_to_100",
+      sql`${table.achievementWeight} between 0 and 100`,
+    ),
+    check(
+      "student_survey_periods_closed_with_who_and_when",
+      sql`(${table.closedAt} is null) = (${table.closedBy} is null)`,
+    ),
+    check(
+      "student_survey_periods_cancelled_with_who_and_when",
+      sql`(${table.cancelledAt} is null) = (${table.cancelledBy} is null)`,
+    ),
+    check(
+      "student_survey_periods_not_closed_and_cancelled",
+      sql`${table.closedAt} is null or ${table.cancelledAt} is null`,
+    ),
+  ],
+);
+
+/**
  * A note a mentor wrote after accompanying one student. Its key is made
  * by the form it was written on, so a form that is sent twice is kept
  * once. The writer stays the one who wrote it when the group gets another
