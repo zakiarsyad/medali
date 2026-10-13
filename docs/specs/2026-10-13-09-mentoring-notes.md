@@ -96,7 +96,7 @@ it is built here.
 
 ## Steps
 
-- [ ] 1. Notes are stored, with sample notes for the sample groups.
+- [x] 1. Notes are stored, with sample notes for the sample groups.
 - [ ] 2. The rights to write and to read notes are added to the
   permission list, with their checks.
 - [ ] 3. Pengasuh writes a note with "Catatan baru".

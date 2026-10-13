@@ -82,6 +82,23 @@ export const cohortAssignmentChangeAction = pgEnum(
   ],
 );
 
+export const mentoringNoteKind = pgEnum("mentoring_note_kind", [
+  "individual_counselling",
+  "group_mentoring",
+  "appreciation",
+  "attendance_monitoring",
+  "discipline_guidance",
+  "parent_visit",
+]);
+
+export const mentoringFollowUp = pgEnum("mentoring_follow_up", [
+  "none",
+  "watch_two_weeks",
+  "schedule_counselling",
+  "refer_to_psychologist",
+  "involve_parents",
+]);
+
 /**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
  * or from a file, kept with the name of that file.
@@ -732,5 +749,35 @@ export const mentorEvaluationChanges = pgTable(
   },
   (table) => [
     index("mentor_evaluation_changes_evaluation").on(table.evaluationId),
+  ],
+);
+
+/**
+ * A note a mentor wrote after accompanying one student. Its key is made
+ * by the form it was written on, so a form that is sent twice is kept
+ * once. The writer stays the one who wrote it when the group gets another
+ * mentor. A note is never changed or removed.
+ */
+export const mentoringNotes = pgTable(
+  "mentoring_notes",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    writtenBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    kind: mentoringNoteKind().notNull(),
+    /** "Tanggal": the day of the contact. */
+    happenedOn: date().notNull(),
+    valueKeys: text().array().$type<ValueKey[]>().notNull(),
+    note: text().notNull(),
+    followUp: mentoringFollowUp().notNull(),
+    writtenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("mentoring_notes_student").on(table.studentId),
+    index("mentoring_notes_written_at").on(table.writtenAt),
   ],
 );

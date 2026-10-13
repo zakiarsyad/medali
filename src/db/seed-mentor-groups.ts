@@ -29,14 +29,16 @@ async function programIdsByName(db: Database): Promise<Map<string, number>> {
   return new Map(programs.map((program) => [program.name, program.id]));
 }
 
-async function studentIdsByNim(db: Database): Promise<Map<string, string>> {
+export async function studentIdsByNim(
+  db: Database,
+): Promise<Map<string, string>> {
   const found = await db
     .select({ id: students.id, nim: students.nim })
     .from(students);
   return new Map(found.map((student) => [student.nim, student.id]));
 }
 
-async function mentorIdsByName(
+export async function mentorIdsByName(
   db: Database,
   groups: SampleMentorGroup[],
 ): Promise<Map<string, string>> {
