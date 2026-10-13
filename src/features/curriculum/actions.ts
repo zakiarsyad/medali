@@ -90,7 +90,7 @@ export async function savePpksActivityAction(
   const saved =
     version === ""
       ? await addPpksActivity(database(), manager, id, sent)
-      : await changePpksActivity(database(), manager, id, sent);
+      : await changePpksActivity(database(), manager, id, version, sent);
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Kegiatan "${saved.value}" disimpan.` };

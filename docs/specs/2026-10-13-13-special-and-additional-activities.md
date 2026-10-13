@@ -121,6 +121,6 @@ The issue did not say, so these were decided:
   table.
 - [x] 3. "Tambah kegiatan khusus" adds an activity, reusing the PPKS
   form.
-- [ ] 4. "Ubah" changes an activity.
+- [x] 4. "Ubah" changes an activity.
 - [ ] 5. "Hapus" removes it after a confirm, with "Urungkan".
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   activityNote,
   levelNote,
+  momentOf,
   removalQuestion,
   ticksOfValues,
   toggled,
@@ -44,6 +45,20 @@ describe("levelNote", () => {
     "marks no level %s when there is no semester",
     (level) => {
       expect(levelNote(level, null)).toBe("");
+    },
+  );
+});
+
+describe("momentOf", () => {
+  it("gives back the moment a version was made from", () => {
+    const moment = new Date("2026-10-13T08:00:00.123Z");
+    expect(momentOf(versionOf(moment))).toEqual(moment);
+  });
+
+  it.each(["", "kemarin", "2026-10-13", "2026-13-40T08:00:00.000Z", "0"])(
+    "gives nothing for '%s', which is no version",
+    (sent) => {
+      expect(momentOf(sent)).toBeNull();
     },
   );
 });

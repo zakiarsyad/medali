@@ -5,11 +5,13 @@ import { ppksActivities } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addPpksActivity } from "./add-ppks-activity";
 import {
+  ACTIVITY_CHANGED_BY_OTHER,
   ACTIVITY_NOT_FOUND,
   changePpksActivity,
   removePpksActivity,
 } from "./change-ppks-activity";
 import { ACTIVITIES_NOT_ALLOWED } from "./not-allowed";
+import { versionOf } from "./ppks-activities";
 import type { SentPpksActivity } from "./ppks-activity-input";
 import { readPpksActivities } from "./stored-ppks-activities";
 import {
@@ -32,6 +34,10 @@ const CHANGED = {
   isRequired: false,
   description: "",
 };
+const CHANGED_SPECIAL = { ...CHANGED, semester: "" };
+const MAY_NOT_MANAGE = ROLE_IDS.filter((role) => !MAY_MANAGE.includes(role));
+
+type TestActor = Awaited<ReturnType<typeof addTestActor>>;
 
 /** Adds the activity of the checks as a made-up Kepala Unit; gives its id. */
 async function addKept(
@@ -43,7 +49,156 @@ async function addKept(
   return NEW_ACTIVITY_ID;
 }
 
+/** The version a form opened now holds, also of a removed activity. */
+async function newestVersion(db: Database): Promise<string> {
+  const [kept] = await db.select().from(ppksActivities);
+  if (!kept) throw new Error("The activity was not added.");
+  return versionOf(kept.changedAt);
+}
+
+/** Changes the activity as a form opened on its newest version does. */
+async function changeNewest(
+  db: Database,
+  actor: TestActor,
+  id: string,
+  sent: SentPpksActivity,
+) {
+  return changePpksActivity(db, actor, id, await newestVersion(db), sent);
+}
+
 describe("changePpksActivity", () => {
+  it.each(MAY_MANAGE)(
+    "lets %s change a special activity, which keeps no semester",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db, SENT_SPECIAL_ACTIVITY);
+        const actor = await addTestActor(db, "Pegawai Uji", [role]);
+
+        const changed = await changeNewest(db, actor, id, CHANGED_SPECIAL);
+
+        expect(changed).toEqual({ ok: true, value: "Kegiatan uji baru" });
+        const [kept] = await db.select().from(ppksActivities);
+        expect(kept?.semester).toBeNull();
+        expect(kept?.name).toBe("Kegiatan uji baru");
+        expect(kept?.changedBy).toBe(actor.id);
+      });
+    },
+  );
+
+  it.each(MAY_NOT_MANAGE)(
+    "refuses %s for a special activity and changes nothing",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db, SENT_SPECIAL_ACTIVITY);
+        const actor = await addTestActor(db, "Pegawai Uji", [role]);
+
+        const changed = await changeNewest(db, actor, id, CHANGED_SPECIAL);
+
+        expect(changed).toEqual(ACTIVITIES_NOT_ALLOWED);
+        const [kept] = await readPpksActivities(db);
+        expect(kept?.name).toBe("Kegiatan uji");
+      });
+    },
+  );
+
+  it.each([SENT_PPKS_ACTIVITY, SENT_SPECIAL_ACTIVITY])(
+    "refuses a change from a form opened before someone else's change, and overwrites nothing",
+    async (sent) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db, sent);
+        const first = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+        const second = await addTestActor(db, "Kepala Dua", ["head_of_unit"]);
+        const opened = await newestVersion(db);
+        const theirs = { ...sent, name: "Kegiatan uji pertama" };
+        const late = { ...sent, name: "Kegiatan uji kedua" };
+
+        const sooner = await changePpksActivity(db, first, id, opened, theirs);
+        const later = await changePpksActivity(db, second, id, opened, late);
+
+        expect(sooner).toEqual({ ok: true, value: "Kegiatan uji pertama" });
+        expect(later).toEqual(ACTIVITY_CHANGED_BY_OTHER);
+        expect(later).toEqual({
+          ok: false,
+          error:
+            "Kegiatan ini baru saja diubah orang lain. Muat ulang untuk melihat versi terbaru.",
+        });
+        const [kept] = await db.select().from(ppksActivities);
+        expect(kept?.name).toBe("Kegiatan uji pertama");
+        expect(kept?.changedBy).toBe(first.id);
+      });
+    },
+  );
+
+  it("keeps a change sent twice once: the second finds the activity changed", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const opened = await newestVersion(db);
+
+      const first = await changePpksActivity(db, actor, id, opened, CHANGED);
+      const after = await newestVersion(db);
+      const second = await changePpksActivity(db, actor, id, opened, CHANGED);
+
+      expect(first).toEqual({ ok: true, value: "Kegiatan uji baru" });
+      expect(second).toEqual(ACTIVITY_CHANGED_BY_OTHER);
+      expect(await newestVersion(db)).toBe(after);
+    });
+  });
+
+  it("gives every change a new version, also one made at once after another", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const versions = [await newestVersion(db)];
+
+      for (const name of ["Kegiatan satu", "Kegiatan dua", "Kegiatan tiga"]) {
+        await changeNewest(db, actor, id, { ...CHANGED, name });
+        versions.push(await newestVersion(db));
+      }
+
+      expect(new Set(versions).size).toBe(4);
+      expect([...versions].sort()).toEqual(versions);
+    });
+  });
+
+  it.each(["", "bukan-versi", "2026-10-13"])(
+    "refuses the version '%s' and changes nothing",
+    async (version) => {
+      await inTestDatabase(async (db) => {
+        const id = await addKept(db);
+        const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+
+        const changed = await changePpksActivity(
+          db,
+          actor,
+          id,
+          version,
+          CHANGED,
+        );
+
+        expect(changed).toEqual(ACTIVITY_CHANGED_BY_OTHER);
+        const [kept] = await readPpksActivities(db);
+        expect(kept?.name).toBe("Kegiatan uji");
+      });
+    },
+  );
+
+  it("finds no activity when someone else removed it since the form opened", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addKept(db);
+      const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const remover = await addTestActor(db, "Kepala Dua", ["head_of_unit"]);
+      const opened = await newestVersion(db);
+      await removePpksActivity(db, remover, id);
+
+      const changed = await changePpksActivity(db, actor, id, opened, CHANGED);
+
+      expect(changed).toEqual(ACTIVITY_NOT_FOUND);
+      const [kept] = await db.select().from(ppksActivities);
+      expect(kept?.name).toBe("Kegiatan uji");
+    });
+  });
+
   it.each(MAY_MANAGE)(
     "lets %s change an activity, kept with who changed it last",
     async (role) => {
@@ -51,7 +206,7 @@ describe("changePpksActivity", () => {
         const id = await addKept(db);
         const actor = await addTestActor(db, "Pegawai Uji", [role]);
 
-        const changed = await changePpksActivity(db, actor, id, CHANGED);
+        const changed = await changeNewest(db, actor, id, CHANGED);
 
         expect(changed).toEqual({ ok: true, value: "Kegiatan uji baru" });
         expect(await readPpksActivities(db)).toEqual([
@@ -80,7 +235,7 @@ describe("changePpksActivity", () => {
         const id = await addKept(db);
         const actor = await addTestActor(db, "Pegawai Uji", [role]);
 
-        const changed = await changePpksActivity(db, actor, id, CHANGED);
+        const changed = await changeNewest(db, actor, id, CHANGED);
 
         expect(changed).toEqual(ACTIVITIES_NOT_ALLOWED);
         const [kept] = await readPpksActivities(db);
@@ -94,7 +249,7 @@ describe("changePpksActivity", () => {
       const id = await addKept(db);
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
 
-      const changed = await changePpksActivity(db, actor, id, {
+      const changed = await changeNewest(db, actor, id, {
         ...CHANGED,
         valueKeys: [],
       });
@@ -115,7 +270,7 @@ describe("changePpksActivity", () => {
         await addKept(db);
         const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
 
-        const changed = await changePpksActivity(db, actor, id, CHANGED);
+        const changed = await changeNewest(db, actor, id, CHANGED);
 
         expect(changed).toEqual(ACTIVITY_NOT_FOUND);
       });
@@ -127,7 +282,7 @@ describe("changePpksActivity", () => {
       const id = await addKept(db);
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
 
-      const changed = await changePpksActivity(db, actor, id, {
+      const changed = await changeNewest(db, actor, id, {
         ...CHANGED,
         semester: "4",
       });
@@ -144,7 +299,7 @@ describe("changePpksActivity", () => {
       const id = await addKept(db);
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
 
-      const changed = await changePpksActivity(db, actor, id, {
+      const changed = await changeNewest(db, actor, id, {
         ...CHANGED,
         semester: "",
       });
@@ -161,7 +316,7 @@ describe("changePpksActivity", () => {
       const id = await addKept(db, SENT_SPECIAL_ACTIVITY);
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
 
-      const changed = await changePpksActivity(db, actor, id, CHANGED);
+      const changed = await changeNewest(db, actor, id, CHANGED);
 
       expect(changed).toEqual(ACTIVITY_NOT_FOUND);
       const [kept] = await readPpksActivities(db);
@@ -242,7 +397,7 @@ describe("removePpksActivity", () => {
       const actor = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
       await removePpksActivity(db, actor, id);
 
-      expect(await changePpksActivity(db, actor, id, CHANGED)).toEqual(
+      expect(await changeNewest(db, actor, id, CHANGED)).toEqual(
         ACTIVITY_NOT_FOUND,
       );
     });
