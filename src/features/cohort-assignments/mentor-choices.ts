@@ -8,6 +8,10 @@ type Account = typeof accounts.$inferSelect;
 export interface MentorCandidate extends Pick<Account, "id" | "name" | "unit"> {
   /** Whether the account has the Pengasuh role and is not removed. */
   hasMentorRole: boolean;
+  /** Whether the last replacement that took a group from them set them Tidak aktif. */
+  leftAsInactive: boolean;
+  /** Whether a replacement that waits for its start date names them as the new mentor. */
+  isPromised: boolean;
   /** The angkatan of each group the mentor holds today. */
   heldCohortYears: number[];
 }
@@ -16,6 +20,7 @@ function isInactive(mentor: MentorCandidate): boolean {
   const standing = {
     groupsHeld: mentor.heldCohortYears.length,
     hasMentorRole: mentor.hasMentorRole,
+    leftAsInactive: mentor.leftAsInactive,
   };
   return mentorStatus(standing) === "inactive";
 }
@@ -24,13 +29,15 @@ function isInactive(mentor: MentorCandidate): boolean {
  * Whether a mentor may be chosen for a group of an angkatan: one who is
  * not Tidak aktif and holds no group of another angkatan. So a mentor
  * without a group may, and so may one whose groups are all of this
- * angkatan.
+ * angkatan. One who is kept for a group whose replacement waits for its
+ * start date may not: that replacement could not be carried out.
  */
 export function mayBeChosen(
   mentor: MentorCandidate,
   cohortYear: number,
 ): boolean {
   if (isInactive(mentor)) return false;
+  if (mentor.isPromised) return false;
   return mentor.heldCohortYears.every((year) => year === cohortYear);
 }
 

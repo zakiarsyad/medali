@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestReplacement } from "@/mentoring/test-replacements";
 import { groupCode } from "@/ui/group-code";
 import { mentorStatus } from "@/ui/mentor-status";
 import { listMentors, MENTOR_PAGE_SIZE } from "./mentor-list";
@@ -121,6 +122,7 @@ describe("listMentors", () => {
             unit: UNIT,
             status: "mentoring",
             inactiveSince: null,
+            inactiveReason: null,
             students: 3,
             groups: [
               {
@@ -170,11 +172,31 @@ describe("listMentors", () => {
     await inTestDatabase(async (db) => {
       await addEachStanding(db);
       const standings = {
-        "Pengasuh Uji Dewi": { groupsHeld: 1, hasMentorRole: true },
-        "Pengasuh Uji Eko": { groupsHeld: 1, hasMentorRole: false },
-        "Pengasuh Uji Candra": { groupsHeld: 0, hasMentorRole: true },
-        "Pengasuh Uji Budi": { groupsHeld: 0, hasMentorRole: false },
-        "Pengasuh Uji Ani": { groupsHeld: 0, hasMentorRole: false },
+        "Pengasuh Uji Dewi": {
+          groupsHeld: 1,
+          hasMentorRole: true,
+          leftAsInactive: false,
+        },
+        "Pengasuh Uji Eko": {
+          groupsHeld: 1,
+          hasMentorRole: false,
+          leftAsInactive: false,
+        },
+        "Pengasuh Uji Candra": {
+          groupsHeld: 0,
+          hasMentorRole: true,
+          leftAsInactive: false,
+        },
+        "Pengasuh Uji Budi": {
+          groupsHeld: 0,
+          hasMentorRole: false,
+          leftAsInactive: false,
+        },
+        "Pengasuh Uji Ani": {
+          groupsHeld: 0,
+          hasMentorRole: false,
+          leftAsInactive: false,
+        },
       };
 
       const listed = await listMentors(db, EVERYONE, inTestUnit(), 1);
@@ -202,6 +224,74 @@ describe("listMentors", () => {
         ["Pengasuh Uji Candra", null],
         ["Pengasuh Uji Ani", "2026-05-06"],
         ["Pengasuh Uji Budi", "2026-03-04"],
+      ]);
+    });
+  });
+
+  it("lists one a replacement set Tidak aktif as the rule works out, since its start date and with its reason", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "UJIDAFTARGANTI");
+      const retired = await addMentorWithRole(db, "Pengasuh Uji Pensiun");
+      const stayed = await addMentorWithRole(db, "Pengasuh Uji Tetap");
+      const newMentorId = await addMentorWithRole(db, "Pengasuh Uji Baru");
+      const first = await addTestGroup(db, program);
+      const second = await addTestGroup(db, program, { number: 2 });
+      await addTestMentorLine(db, first, newMentorId);
+      await addTestReplacement(db, {
+        groupId: first,
+        oldMentorId: retired,
+        newMentorId,
+        startsOn: "2026-09-15",
+        reason: "retirement",
+        oldMentorStatus: "inactive",
+        carriedOutAt: new Date("2026-09-15T02:00:00Z"),
+      });
+      await addTestReplacement(db, {
+        groupId: second,
+        oldMentorId: stayed,
+        newMentorId,
+        startsOn: "2026-09-15",
+        carriedOutAt: new Date("2026-09-15T02:00:00Z"),
+        cancelledAt: null,
+      });
+
+      const listed = await listMentors(db, EVERYONE, inTestUnit(), 1);
+
+      expect(listed.mentors).toMatchObject([
+        { id: newMentorId, status: "mentoring", inactiveReason: null },
+        { id: stayed, status: "reserve", inactiveReason: null },
+        {
+          id: retired,
+          status: mentorStatus({
+            groupsHeld: 0,
+            hasMentorRole: true,
+            leftAsInactive: true,
+          }),
+          inactiveSince: "2026-09-15",
+          inactiveReason: "Pensiun",
+        },
+      ]);
+    });
+  });
+
+  it("keeps one Cadangan while the replacement that would set them Tidak aktif waits for its start date", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "UJIDAFTARTUNGGU");
+      const leaving = await addMentorWithRole(db, "Pengasuh Uji Akan Pergi");
+      const newMentorId = await addMentorWithRole(db, "Pengasuh Uji Baru");
+      const groupId = await addTestGroup(db, program);
+      await addTestReplacement(db, {
+        groupId,
+        oldMentorId: leaving,
+        newMentorId,
+        oldMentorStatus: "inactive",
+      });
+
+      const listed = await listMentors(db, EVERYONE, inTestUnit(), 1);
+
+      expect(listed.mentors).toMatchObject([
+        { id: leaving, status: "reserve" },
+        { id: newMentorId, status: "reserve" },
       ]);
     });
   });

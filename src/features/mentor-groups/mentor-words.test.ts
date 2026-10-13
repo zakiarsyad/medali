@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { mentorLede, standingWords, titleAndUnit } from "./mentor-words";
 
-const NO_GROUP = { groups: [], students: 0, inactiveSince: null };
+const NO_GROUP = {
+  groups: [],
+  students: 0,
+  inactiveSince: null,
+  inactiveReason: null,
+};
 
 const GROUPS = [
   { cohortYear: 2024, entryPath: "regular", number: 1, programCode: "D3PJK" },
@@ -35,6 +40,7 @@ describe("standingWords", () => {
       groups: [...GROUPS],
       students: 1234,
       inactiveSince: null,
+      inactiveReason: null,
     });
 
     expect(words).toBe(
@@ -53,6 +59,7 @@ describe("standingWords", () => {
       ...NO_GROUP,
       status: "inactive",
       inactiveSince: "2026-03-04",
+      inactiveReason: "Akun dihapus atau peran diganti",
     });
 
     expect(words).toBe(

@@ -12,6 +12,23 @@ export function savedWords(saved: SavedEvaluation): string {
   return `Evaluasi ${saved.mentorName} disimpan: ${RESULT_TITLES[saved.result]}.`;
 }
 
+/**
+ * What the form of a replacement says when the saving of an evaluation
+ * opened it: the words of that save, read back from what is stored for
+ * the period the address names. Null when nothing is stored for it or its
+ * result is not Kurang: the address alone is never believed.
+ */
+export function poorSaveWords(
+  mentorName: string,
+  stored: EvaluationScores[],
+): string | null {
+  const [saved] = stored;
+  if (saved === undefined) return null;
+  const result = evaluationResult(saved);
+  if (result !== "poor") return null;
+  return savedWords({ mentorName, result });
+}
+
 /** What a list shows where a group or a mentor has no evaluation. */
 export const NOT_EVALUATED = "Belum dievaluasi";
 

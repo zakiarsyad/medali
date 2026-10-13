@@ -7,7 +7,16 @@ function mentor(
   unit: string | null,
   title: string | null = null,
 ): PoolMentor {
-  return { id, name, unit, title, hasMentorRole: true, heldCohortYears: [] };
+  return {
+    id,
+    name,
+    unit,
+    title,
+    hasMentorRole: true,
+    leftAsInactive: false,
+    isPromised: false,
+    heldCohortYears: [],
+  };
 }
 
 const POOL = [

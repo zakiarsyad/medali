@@ -11,8 +11,10 @@ import { GroupScreen } from "@/features/mentor-groups/group-screen";
 import { openEvaluationAddress } from "@/features/mentor-groups/open-evaluation-address";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMemberAddresses } from "@/features/mentor-groups/open-member-address";
+import { openReplacementAddress } from "@/features/mentor-groups/open-replacement-address";
 import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
+import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
 import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { askedDetail } from "@/features/students/asked-detail";
@@ -52,6 +54,7 @@ async function GroupPage({
         limit={limit}
         evaluationLimit={evaluationRowsFor(account)}
         evaluateAddress={openEvaluationAddress(account, groupId)}
+        replaceAddress={openReplacementAddress(account, groupId)}
         groupId={groupId}
         detailVisible={detailVisibleTo(account)}
         memberAddressOf={openMemberAddresses(account.roles, groupId)}
@@ -98,6 +101,7 @@ export default async function MentorGroupsPage(
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "kelompok" }}
       limit={limit}
       evaluationLimit={evaluationRowsFor(account)}
+      mentorLimit={mentorRowsFor(account)}
       params={params}
     />
   );

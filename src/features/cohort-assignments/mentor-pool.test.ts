@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestReplacement } from "@/mentoring/test-replacements";
 import { readMentorPool } from "./mentor-pool";
 import {
   addTestActor,
@@ -52,6 +53,8 @@ describe("readMentorPool", () => {
           title: "M.Ak.",
           unit: null,
           hasMentorRole: true,
+          leftAsInactive: false,
+          isPromised: false,
           heldCohortYears: [],
         },
         expect.objectContaining({
@@ -83,6 +86,38 @@ describe("readMentorPool", () => {
       });
 
       expect(await poolNames(db)).toEqual(["Uji Pilih Bekas"]);
+    });
+  });
+
+  it("leaves out a mentor a replacement set Tidak aktif, and one who is kept for a group whose replacement waits", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "UJIPILIH GANTI");
+      const first = await addTestLiveGroup(db, program, { cohortYear: YEAR });
+      const second = await addTestLiveGroup(db, program, {
+        cohortYear: YEAR,
+        number: 2,
+      });
+      const retired = await addTestMentor(db, { name: "Uji Pilih Pensiun" });
+      const promised = await addTestMentor(db, {
+        name: "Uji Pilih Dijanjikan",
+      });
+      const holder = await addTestMentor(db, { name: "Uji Pilih Pegang" });
+      await addTestMentorOfToday(db, first, holder);
+      await addTestMentorOfToday(db, second, holder);
+      await addTestReplacement(db, {
+        groupId: first,
+        oldMentorId: retired,
+        newMentorId: holder,
+        oldMentorStatus: "inactive",
+        carriedOutAt: new Date(),
+      });
+      await addTestReplacement(db, {
+        groupId: second,
+        oldMentorId: holder,
+        newMentorId: promised,
+      });
+
+      expect(await poolNames(db)).toEqual(["Uji Pilih Pegang"]);
     });
   });
 

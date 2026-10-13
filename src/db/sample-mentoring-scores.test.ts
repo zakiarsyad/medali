@@ -10,7 +10,7 @@ const BEFORE_NEW_GROUPS = "2026-08-15";
 const [period] = samplePeriods(DAY);
 if (!period) throw new Error("There are no sample periods.");
 const students = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(2026)];
-const groups = sampleMentorGroups(students);
+const groups = sampleMentorGroups(students, DAY);
 const scores = sampleMentoringScores(groups, students, period, DAY);
 const scoredNims = new Set(scores.map((score) => score.nim));
 

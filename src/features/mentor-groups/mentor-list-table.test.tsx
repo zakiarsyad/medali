@@ -17,6 +17,7 @@ const HOLDING: ListedMentor = {
   unit: "Unit Uji",
   status: "mentoring",
   inactiveSince: null,
+  inactiveReason: null,
   students: 1234,
   groups: [
     {
@@ -37,6 +38,7 @@ const INACTIVE: ListedMentor = {
   name: "Pengasuh Uji Budi",
   status: "inactive",
   inactiveSince: "2026-03-04",
+  inactiveReason: "Akun dihapus atau peran diganti",
   students: 0,
   groups: [],
 };

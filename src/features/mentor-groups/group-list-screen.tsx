@@ -17,31 +17,39 @@ import { GroupListTable } from "./group-list-table";
 import { readGroupNumbers } from "./group-numbers";
 import { GroupNumbersView } from "./group-numbers-view";
 import { countPoorGroups, readLastGroupEvaluations } from "./last-evaluations";
+import { readReplacementNumbers } from "./replacement-numbers";
 
 export async function GroupListScreen({
   tabs,
   limit,
   evaluationLimit,
+  mentorLimit,
   params,
 }: {
   tabs: TabLinksProps;
   /** Which rows the account that opened the page may see. */
   limit: RowLimit;
   /**
-   * Which evaluations the account may see, or null for an account that
-   * may see none: it gets neither "Evaluasi terakhir" nor "Evaluasi
-   * kurang".
+   * Which evaluations the account may see, and with them the replacements
+   * of the same groups, or null for an account that may see none: it gets
+   * neither "Evaluasi terakhir" nor "Evaluasi kurang" nor "Penggantian
+   * tahun ini".
    */
   evaluationLimit: RowLimit | null;
+  /** Which mentors the account may see, or null for none. */
+  mentorLimit: RowLimit | null;
   params: GroupListParams;
 }) {
   const db = database();
   const { filters } = params;
-  const [numbers, choices, list, poorGroups] = await Promise.all([
+  const [numbers, choices, list, poorGroups, replacements] = await Promise.all([
     readGroupNumbers(db, limit),
     listGroupChoices(db, limit),
     listGroups(db, limit, filters, params.page),
     evaluationLimit === null ? null : countPoorGroups(db, evaluationLimit),
+    evaluationLimit === null
+      ? null
+      : readReplacementNumbers(db, evaluationLimit, mentorLimit),
   ]);
   const groupIds = list.groups.map((group) => group.id);
   // One read for the whole page of groups, not one for each row.
@@ -52,7 +60,11 @@ export async function GroupListScreen({
   return (
     <>
       <MentorsHead tabs={tabs} />
-      <GroupNumbersView numbers={numbers} poorGroups={poorGroups} />
+      <GroupNumbersView
+        numbers={numbers}
+        poorGroups={poorGroups}
+        replacements={replacements}
+      />
       <section className={shared.panel}>
         {/* Made anew for each address, so its fields show what the address holds. */}
         <AutoSubmitForm

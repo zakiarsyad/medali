@@ -7,6 +7,7 @@ import {
   sampleMentorGroups,
 } from "./sample-mentor-groups";
 import {
+  holderOn,
   SAMPLE_NOTE_BY_EARLIER_MENTOR,
   sampleMentoringNotes,
 } from "./sample-mentoring-notes";
@@ -15,7 +16,7 @@ import { mentoringNoteKind } from "./schema";
 
 const DAY = "2026-10-13";
 const students = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(2026)];
-const groups = sampleMentorGroups(students);
+const groups = sampleMentorGroups(students, DAY);
 const notes = sampleMentoringNotes(groups, students, DAY);
 
 function groupOf(nim: string): SampleMentorGroup {
@@ -100,5 +101,43 @@ describe("sampleMentoringNotes", () => {
 
   it("is empty without groups", () => {
     expect(sampleMentoringNotes([], students, DAY)).toEqual([]);
+  });
+});
+
+describe("holderOn", () => {
+  const replaced: SampleMentorGroup = {
+    studyProgram: "D3 Pajak",
+    cohortYear: 2025,
+    entryPath: "regular",
+    number: 1,
+    startsOn: "2025-09-01",
+    memberNims: [],
+    mentors: [
+      {
+        name: "Pengasuh Uji Lama",
+        startsOn: "2025-09-01",
+        endsOn: "2026-09-13",
+        endReason: "Permintaan sendiri",
+      },
+      {
+        name: "Pengasuh Uji Baru",
+        startsOn: "2026-09-13",
+        endsOn: null,
+        endReason: null,
+      },
+    ],
+  };
+
+  it("gives the old mentor until the day before a replacement", () => {
+    expect(holderOn(replaced, "2026-09-12")).toBe("Pengasuh Uji Lama");
+  });
+
+  it("gives the new mentor from the day of the replacement on", () => {
+    expect(holderOn(replaced, "2026-09-13")).toBe("Pengasuh Uji Baru");
+    expect(holderOn(replaced, "2026-09-14")).toBe("Pengasuh Uji Baru");
+  });
+
+  it("gives nobody before the group had a mentor", () => {
+    expect(holderOn(replaced, "2025-08-31")).toBeNull();
   });
 });

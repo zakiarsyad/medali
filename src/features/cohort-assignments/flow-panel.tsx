@@ -1,13 +1,12 @@
 import shared from "@/ui/data-screen.module.css";
 import { USUAL_SIZE_WORDS } from "@/ui/group-size";
-import styles from "./cohort-assignments.module.css";
 
 /** "Alur penetapan": the four steps from new students to fixed groups. */
 export function FlowPanel() {
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Alur penetapan</h2>
-      <ol className={styles.flow}>
+      <ol className={shared.flow}>
         <li>
           <b>Data mahasiswa baru masuk</b>
           <span>

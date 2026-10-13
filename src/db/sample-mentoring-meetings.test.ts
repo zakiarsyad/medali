@@ -9,7 +9,7 @@ const BEFORE_NEW_GROUPS = "2026-08-15";
 const [period] = samplePeriods(DAY);
 if (!period) throw new Error("There are no sample periods.");
 const students = [...SAMPLE_STUDENTS, ...sampleGroupedFirstYears(2026)];
-const groups = sampleMentorGroups(students);
+const groups = sampleMentorGroups(students, DAY);
 const meetings = sampleMentoringMeetings(groups, students, period, DAY);
 
 function statusOf(nim: string): string {

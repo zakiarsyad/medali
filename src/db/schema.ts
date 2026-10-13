@@ -27,6 +27,10 @@ import {
   MEETINGS_PER_PERIOD,
 } from "@/mentoring/meeting-ids";
 import { FOLLOW_UPS, NOTE_KINDS } from "@/mentoring/note-ids";
+import {
+  OLD_MENTOR_STATUSES,
+  REPLACEMENT_REASONS,
+} from "@/mentoring/replacement-ids";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 import type { ValueKey } from "@/ui/medali-values";
 
@@ -99,6 +103,13 @@ export const attendanceMark = pgEnum("attendance_mark", ATTENDANCE_MARKS);
 
 /** What the time allowed to upload an attendance photo is counted in. */
 export const uploadUnit = pgEnum("upload_unit", ["day", "week"]);
+
+export const mentorReplacementReason = pgEnum(
+  "mentor_replacement_reason",
+  REPLACEMENT_REASONS,
+);
+
+export const oldMentorStatus = pgEnum("old_mentor_status", OLD_MENTOR_STATUSES);
 
 /**
  * Where an attendance at an activity stands: its photo waits to be
@@ -764,6 +775,73 @@ export const mentorEvaluationChanges = pgTable(
   },
   (table) => [
     index("mentor_evaluation_changes_evaluation").on(table.evaluationId),
+  ],
+);
+
+/**
+ * One replacement of the mentor of a group, set by Kepala Unit: the whole
+ * group goes from the old mentor to the new one on its start date. Until
+ * that day it waits, neither carried out nor cancelled; a group has one
+ * such replacement at most, and a new mentor is named in one at most.
+ * Never deleted: a cancelled one stays, with who and when.
+ */
+export const mentorReplacements = pgTable(
+  "mentor_replacements",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    oldMentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    newMentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** "Tanggal efektif". */
+    startsOn: date().notNull(),
+    reason: mentorReplacementReason().notNull(),
+    /** "Nomor surat keputusan atau nota dinas". */
+    letterNumber: text().notNull(),
+    oldMentorStatus: oldMentorStatus().notNull(),
+    note: text(),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+    /** When the group got its new mentor. Empty while it waits for its day. */
+    carriedOutAt: timestamp({ withTimezone: true }),
+    cancelledBy: uuid().references(() => accounts.id),
+    cancelledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("mentor_replacements_one_waiting_per_group")
+      .on(table.groupId)
+      .where(
+        sql`${table.carriedOutAt} is null and ${table.cancelledAt} is null`,
+      ),
+    uniqueIndex("mentor_replacements_one_waiting_per_new_mentor")
+      .on(table.newMentorId)
+      .where(
+        sql`${table.carriedOutAt} is null and ${table.cancelledAt} is null`,
+      ),
+    index("mentor_replacements_old_mentor").on(table.oldMentorId),
+    check(
+      "mentor_replacements_cancelled_with_who_and_when",
+      sql`(${table.cancelledAt} is null) = (${table.cancelledBy} is null)`,
+    ),
+    check(
+      "mentor_replacements_not_carried_out_and_cancelled",
+      sql`${table.carriedOutAt} is null or ${table.cancelledAt} is null`,
+    ),
+    check(
+      "mentor_replacements_two_mentors",
+      sql`${table.oldMentorId} <> ${table.newMentorId}`,
+    ),
+    check(
+      "mentor_replacements_letter_number_given",
+      sql`btrim(${table.letterNumber}) <> ''`,
+    ),
   ],
 );
 

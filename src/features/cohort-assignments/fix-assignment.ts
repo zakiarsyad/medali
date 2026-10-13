@@ -1,5 +1,5 @@
-import { sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
+import { waitForOtherMentorChanges } from "@/mentoring/mentor-change-lock";
 import type { Parsed } from "@/parsed";
 import { readCompleteDraft } from "./complete-draft";
 import { type DecreeInput, wholeDecree } from "./decree-input";
@@ -28,18 +28,6 @@ function groupToStart(group: DraftGroup): GroupToStart {
     mentorId: group.mentor.id,
     studentIds: group.members.map((member) => member.id),
   };
-}
-
-/**
- * Makes a penetapan wait until every other one that is being fixed has
- * ended. A fix holds only its own angkatan, so two angkatan fixed at the
- * same moment would each read the other's mentors as free, and one mentor
- * would get groups of both. The second now reads what the first saved.
- */
-async function waitForOtherFixes(tx: Database): Promise<void> {
-  await tx.execute(
-    sql`select pg_advisory_xact_lock(hashtext('fix_cohort_assignment'))`,
-  );
 }
 
 /** What stops the penetapan of these groups today, read at the server. */
@@ -80,7 +68,9 @@ export function fixAssignment(
   return takeStep(db, actor, input, "fix", async (tx, stored) => {
     const decree = wholeDecree(input);
     if (!decree.ok) return decree;
-    await waitForOtherFixes(tx);
+    // A fix holds only its own angkatan: without this, two fixed at the
+    // same moment would each read the other's mentors as free.
+    await waitForOtherMentorChanges(tx);
     const draft = await readCompleteDraft(tx, stored.cohortYear);
     if (!draft.ok) return draft;
     const groups = draft.value.groups.map(groupToStart);

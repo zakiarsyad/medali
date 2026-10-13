@@ -3,12 +3,20 @@ import { describe, expect, it } from "vitest";
 import { rolesByAccount } from "@/auth/accounts";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accountRoles, accounts, mentorGroups } from "@/db/schema";
-import { withTestDatabase } from "@/db/test-database";
 import {
-  holdsGroupToday,
+  accountRoles,
+  accounts,
+  mentorGroups,
+  mentorReplacements,
+} from "@/db/schema";
+import { withTestDatabase } from "@/db/test-database";
+import { holdsGroupToday } from "@/mentoring/holds-group-today";
+import { addTestReplacement } from "@/mentoring/test-replacements";
+import {
   REMOVAL_REFUSED_FOR_GROUP,
+  REMOVAL_REFUSED_FOR_REPLACEMENT,
   ROLE_REFUSED_FOR_GROUP,
+  ROLE_REFUSED_FOR_REPLACEMENT,
   takesMentorRole,
 } from "./held-groups";
 import { changeRoles, removeAccount } from "./manage-accounts";
@@ -171,6 +179,63 @@ describe("removeAccount on a mentor", () => {
       const removed = await removeAccount(db, mentorId, manager.id);
 
       expect(removed.ok).toBe(true);
+    });
+  });
+});
+
+describe("a mentor named as the new one of a replacement that waits for its start date", () => {
+  /** A group, its mentor, and a spare mentor who is to take it. */
+  async function addWaitingReplacement(db: Database) {
+    const manager = await addTestManager(db);
+    const oldMentorId = await addStaff(db, ["mentor"]);
+    const newMentorId = await addStaff(db, ["mentor"]);
+    const program = await addTestProgram(db, PROGRAM);
+    const groupId = await addTestGroupHeldBy(db, program, oldMentorId);
+    const replacementId = await addTestReplacement(db, {
+      groupId,
+      oldMentorId,
+      newMentorId,
+    });
+    return { by: manager.id, newMentorId, replacementId };
+  }
+
+  it("is not removed and keeps the Pengasuh role, and nothing is saved", async () => {
+    await inTestDatabase(async (db) => {
+      const { by, newMentorId } = await addWaitingReplacement(db);
+
+      const removed = await removeAccount(db, newMentorId, by);
+      const changed = await changeRoles(
+        db,
+        rolesChange(newMentorId, ["assessor"]),
+        by,
+      );
+
+      expect(removed).toEqual({
+        ok: false,
+        error: REMOVAL_REFUSED_FOR_REPLACEMENT,
+      });
+      expect(changed).toEqual({
+        ok: false,
+        error: ROLE_REFUSED_FOR_REPLACEMENT,
+      });
+      expect((await storedAccount(db, newMentorId))?.deletedAt).toBeNull();
+      expect(await rolesOf(db, newMentorId)).toEqual(["mentor"]);
+      expect(await roleLogOf(db, newMentorId)).toEqual([]);
+    });
+  });
+
+  it("can be removed once the replacement is cancelled", async () => {
+    await inTestDatabase(async (db) => {
+      const { by, newMentorId, replacementId } =
+        await addWaitingReplacement(db);
+      await db
+        .update(mentorReplacements)
+        .set({ cancelledBy: by, cancelledAt: new Date() })
+        .where(eq(mentorReplacements.id, replacementId));
+
+      const removed = await removeAccount(db, newMentorId, by);
+
+      expect(removed).toEqual({ ok: true, value: null });
     });
   });
 });
