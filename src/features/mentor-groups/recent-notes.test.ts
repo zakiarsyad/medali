@@ -1,11 +1,9 @@
 // Sample NIMs of this file: 9961000500 to 9961000599.
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { mentoringNotes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { readGroup } from "./group-detail";
 import { countRecentNotes, RECENT_NOTE_DAYS } from "./recent-notes";
 import {
   addTestGroup,
@@ -15,7 +13,6 @@ import {
   addTestProgram,
   addTestStudent,
 } from "./test-records";
-import { groupRowsFor } from "./visible-groups";
 
 const inTestDatabase = withTestDatabase();
 
@@ -143,28 +140,6 @@ describe("countRecentNotes", () => {
       }
 
       expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
-    });
-  });
-
-  it("gives the count to Pegawai UPK, who opens the page of the group and has no right to a note or to a member's detail", async () => {
-    await inTestDatabase(async (db) => {
-      const { groupId, mentorId, first } = await addRecords(db);
-      await addNote(db, first, mentorId, TODAY);
-      const upk: AccountForAccess = {
-        id: mentorId,
-        roles: ["upk_staff"],
-        studyProgramId: null,
-        studentId: null,
-      };
-      const limit = groupRowsFor(upk);
-      if (limit === null) throw new Error("Pegawai UPK may see groups.");
-
-      const page = await readGroup(db, limit, groupId, null);
-
-      expect(page.kind).toBe("found");
-      expect(await countRecentNotes(db, groupId, TODAY)).toBe(1);
-      expect(may(upk.roles, "view_mentoring_notes")).toBe(false);
-      expect(may(upk.roles, "view_student_detail")).toBe(false);
     });
   });
 

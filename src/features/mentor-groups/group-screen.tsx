@@ -11,14 +11,14 @@ import { GROUP_MIN, isSmallGroup } from "@/ui/group-size";
 import { PageHead } from "@/ui/page-head";
 import { listGroupEvaluations } from "./evaluation-rows";
 import { EvaluationTable } from "./evaluation-table";
-import { type GroupDetail, readGroup } from "./group-detail";
+import type { GroupDetail } from "./group-detail";
 import { GROUP_LIST_ADDRESS } from "./group-list-address";
 import { GroupMembersTable } from "./group-members-table";
 import { GroupMentorPanel } from "./group-mentor-panel";
+import { readGroupPage } from "./group-page";
 import { academicClasses, countedMembers } from "./member-rules";
 import styles from "./mentor-groups.module.css";
 import { currentMentor } from "./mentor-history";
-import { countRecentNotes } from "./recent-notes";
 
 /** The line under the code: whose group it is, since when, and how large. */
 function groupLede(group: GroupDetail): string {
@@ -65,20 +65,17 @@ export async function GroupScreen({
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
-    readGroup(db, limit, groupId, detailVisible),
+    readGroupPage(db, limit, groupId, detailVisible),
     readRunningPeriod(db),
   ]);
   if (answer.kind === "not_found") notFound();
   if (answer.kind === "refused") forbidden();
-  const { group } = answer;
+  const { group, recentNotes } = answer;
   // Read once the group is found: its id is then known to be one.
   const evaluations =
     evaluationLimit === null
       ? null
       : await listGroupEvaluations(db, evaluationLimit, group.id);
-  // Every account that opens the page gets this number, whatever notes
-  // it may read: it is the count of the group, not a note.
-  const recentNotes = await countRecentNotes(db, group.id);
   const hasMentor = currentMentor(group.mentors) !== null;
   return (
     <>

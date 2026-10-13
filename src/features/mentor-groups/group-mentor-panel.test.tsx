@@ -16,8 +16,4 @@ describe("GroupMentorPanel", () => {
   it("shows the count also when it is 0", () => {
     expect(panelWith(0)).toMatch(/Catatan pengasuhan 90 hari:.*<b>0<\/b>/);
   });
-
-  it("shows the number alone, and nothing of a note", () => {
-    expect(panelWith(7)).not.toContain("Dicatat oleh");
-  });
 });

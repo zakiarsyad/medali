@@ -295,6 +295,21 @@ describe("Simpan catatan pressed twice", () => {
     });
   });
 
+  it("refuses the new mentor of the group the key of a note the earlier mentor wrote, also with exactly the same words", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, otherMentor, menteeId, groupId } = await addRecords(db);
+      const first = testNoteInput(menteeId);
+      await saveNote(db, mentor, first);
+      await replaceTestMentor(db, groupId, otherMentor.id, "2026-10-12");
+
+      const again = await saveNote(db, otherMentor, { ...first });
+
+      expect(again).toEqual(FORM_ALREADY_SENT);
+      const kept = await testNotesOf(db, menteeId);
+      expect(kept.map((note) => note.writtenBy)).toEqual([mentor.id]);
+    });
+  });
+
   it("refuses the key of a note another mentor wrote, and leaves that note as it is", async () => {
     await inTestDatabase(async (db) => {
       const { mentor, otherMentor, menteeId, otherMenteeId } =
