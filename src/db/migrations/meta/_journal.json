@@ -162,6 +162,13 @@
       "when": 1791882586614,
       "tag": "0022_special-activities",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791883729550,
+      "tag": "0023_activity-schedules",
+      "breakpoints": true
     }
   ]
 }

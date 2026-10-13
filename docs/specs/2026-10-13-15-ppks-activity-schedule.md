@@ -142,7 +142,7 @@ The issue did not say, so these were decided:
 
 ## Steps
 
-- [ ] 1. Schedules are stored, each tied to a Kurikulum PPKS activity,
+- [x] 1. Schedules are stored, each tied to a Kurikulum PPKS activity,
   with who changed it and when and a removal mark. Sample data adds
   past, current and coming schedules.
 - [ ] 2. The rule for a schedule's status and upload deadline, with
