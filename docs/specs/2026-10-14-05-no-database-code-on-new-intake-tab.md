@@ -79,5 +79,5 @@ The issue did not say, so these were decided:
 
 - [x] 1. The list of methods lives in a file with no database code, and
   the form and the table definitions both take it from there.
-- [ ] 2. A check fails when a browser part of "Penetapan angkatan baru"
+- [x] 2. A check fails when a browser part of "Penetapan angkatan baru"
   reaches the table definitions or the database library.
