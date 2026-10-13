@@ -8,6 +8,7 @@ import { NewNotePanel } from "./new-note-panel";
 import { listNotes } from "./note-list";
 import { NoteListPanel } from "./note-list-panel";
 import type { NotesParams } from "./notes-address";
+import { ReadOnlyLine } from "./read-only-line";
 
 /** The tab "Catatan pendampingan". */
 export async function NotesScreen({
@@ -39,13 +40,7 @@ export async function NotesScreen({
   return (
     <>
       <MentoringHead tabs={tabs} />
-      {writeLimit === null && (
-        <p className={styles.readOnly}>
-          Catatan pendampingan, daftar hadir pertemuan, dan nilai pengasuhan
-          hanya diisi oleh pengasuh untuk anak asuhnya. Anda dapat melihat isian
-          yang sudah dibuat pengasuh.
-        </p>
-      )}
+      {writeLimit === null && <ReadOnlyLine />}
       <div className={styles.columns}>
         {writeLimit !== null && (
           <NewNotePanel limit={writeLimit} startWithId={params.writeForId} />

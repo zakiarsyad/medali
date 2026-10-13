@@ -4,6 +4,13 @@
  */
 export const MEETINGS_PER_PERIOD = 4;
 
+/** Whether a number is that of a meeting of a period: 1 to the last. */
+export function isMeetingNumber(number: number): boolean {
+  return (
+    Number.isInteger(number) && number >= 1 && number <= MEETINGS_PER_PERIOD
+  );
+}
+
 /** What a member can be marked at a meeting, in the order the form offers them. */
 export const ATTENDANCE_MARKS = [
   "present",

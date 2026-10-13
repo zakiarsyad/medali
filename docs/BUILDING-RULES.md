@@ -16,7 +16,8 @@ while building.
   to, read by every area that needs them.
 - `src/dorms/`: the four dorms, the rule for who lives in which, and a
   resident's room, read by every area that needs them.
-- `src/mentoring/`: who is a mentee of a mentor today, how a list marks
+- `src/mentoring/`: who is a mentee of a mentor today, which groups are
+  in force, how a list marks
   the students whose detail may be opened, the kinds and follow-ups of a
   mentoring note, and how many meetings a period has with their marks
   and suggested topics, read by every area that needs them.

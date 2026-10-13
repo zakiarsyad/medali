@@ -137,6 +137,20 @@ The issue did not say, so these were decided:
     sample group, by the mentor of that day: 45 and 15 days ago, or the
     first day of the period or of the group's first mentor when that is
     later. A group that has no mentor yet has none.
+19. Each card counts the marks of the members who are Aktif in the group
+    today, like the form and the average, so the three agree. A mark
+    kept for a student who has left the group is not counted.
+20. Someone who can see more than one group is shown the first one, the
+    newest angkatan first, until they choose another, as in the
+    prototype. An address that names a group the account may not read
+    shows that first group too, and nothing of the group it named.
+21. "Kelompok pengasuhan" names the group shown, with "Ganti" to search
+    for another by code or mentor name. It offers 8 groups at a time and
+    says how many more match. A group is named by its code and its
+    mentor, without the number of members the prototype adds.
+22. A role that only reads and has no group in its rows sees "Belum ada
+    kelompok pengasuhan yang dapat Anda lihat."
+23. A group that has no mentor today shows "-" under "Pengasuh".
 
 ## Steps
 
@@ -144,7 +158,7 @@ The issue did not say, so these were decided:
   two sample meetings per sample group.
 - [x] 2. The rights to fill in and to read attendance are added to the
   permission list, with their checks.
-- [ ] 3. The tab with the numbers, the group choice and the four cards.
+- [x] 3. The tab with the numbers, the group choice and the four cards.
 - [ ] 4. Pengasuh fills in and saves an attendance list.
 - [ ] 5. Changing a saved list, with the log and the two-window case.
 - [ ] 6. Read-only view, refusals and the phone layout.
