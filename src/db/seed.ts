@@ -21,6 +21,7 @@ import {
   roleChanges,
   studyPrograms,
 } from "./schema";
+import { addSampleActivityAttendances } from "./seed-activity-attendances";
 import { addSampleActivitySchedules } from "./seed-activity-schedules";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
@@ -142,8 +143,9 @@ async function addSampleFirstYears(
  * replacement of a mentor, a few notes their mentors wrote, the first two
  * meetings of the running period with their attendance lists and the
  * scores of that period for part of the groups, and schedules of the PPKS
- * activities that are over, open today and still to come. Every role given
- * is logged as the
+ * activities that are over, open today and still to come, with the
+ * attendance of the sample students at them in every status. Every role
+ * given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
  */
@@ -193,7 +195,13 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     const [running] = periods;
     if (!running) throw new Error("There are no sample periods.");
     await addSamplePeriods(tx, periods, sampleActor);
-    await addSampleActivitySchedules(tx, periods, today, sampleActor);
+    const schedules = await addSampleActivitySchedules(
+      tx,
+      periods,
+      today,
+      sampleActor,
+    );
+    await addSampleActivityAttendances(tx, schedules, SAMPLE_STUDENTS, today);
     await addSampleFirstYears(tx, running, programIds, sampleActor);
     await addSampleDorms(tx, running);
     const grouped = [

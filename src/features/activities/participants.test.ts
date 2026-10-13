@@ -3,6 +3,7 @@ import {
   type CohortCount,
   countParticipants,
   isInSemester,
+  semestersByPeriod,
 } from "./participants";
 
 const ODD_2026 = { startYear: 2026, term: "odd" } as const;
@@ -66,5 +67,28 @@ describe("countParticipants", () => {
 
   it("counts nobody while no period is known", () => {
     expect(countParticipants(COUNTS, 1, null)).toBe(0);
+  });
+});
+
+describe("semestersByPeriod", () => {
+  const PERIODS = [
+    { id: "odd-2026", ...ODD_2026 },
+    { id: "even-2025", ...EVEN_2025 },
+    { id: "odd-2025", startYear: 2025, term: "odd" },
+  ] as const;
+
+  it("gives the semester a student was in during each period", () => {
+    expect(semestersByPeriod(2025, PERIODS)).toEqual([
+      { periodId: "odd-2026", semester: 3 },
+      { periodId: "even-2025", semester: 2 },
+      { periodId: "odd-2025", semester: 1 },
+    ]);
+  });
+
+  it("leaves out the periods before the student's angkatan started", () => {
+    expect(semestersByPeriod(2026, PERIODS)).toEqual([
+      { periodId: "odd-2026", semester: 1 },
+    ]);
+    expect(semestersByPeriod(2027, PERIODS)).toEqual([]);
   });
 });

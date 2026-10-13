@@ -3,6 +3,7 @@ import type { Database } from "@/db/connect";
 import {
   academicPeriods,
   accounts,
+  activityAttendances,
   activitySchedules,
   ppksActivities,
   students,
@@ -171,4 +172,73 @@ export async function addTestStudents(
       ...student,
     })),
   );
+}
+
+/** A student as their own account asks: with the role Mahasiswa alone. */
+export interface TestStudentAccount extends TestActor {
+  studyProgramId: null;
+  studentId: string;
+}
+
+/** A stored student with the account they sign in with. */
+export async function addTestStudentAccount(
+  db: Database,
+  studyProgramId: number,
+  student: TestStudent,
+): Promise<TestStudentAccount> {
+  const [added] = await db
+    .insert(students)
+    .values({
+      studyProgramId,
+      entryPath: "regular",
+      sex: "female",
+      ...student,
+    })
+    .returning({ id: students.id });
+  if (!added) throw new Error("The student was not added.");
+  const [account] = await db
+    .insert(accounts)
+    .values({ name: student.name, studentId: added.id })
+    .returning({ id: accounts.id });
+  if (!account) throw new Error("The account was not added.");
+  return {
+    id: account.id,
+    roles: ["student"],
+    studyProgramId: null,
+    studentId: added.id,
+  };
+}
+
+type TestAttendance = Pick<
+  typeof activityAttendances.$inferInsert,
+  "scheduleId" | "studentId" | "status"
+> &
+  Partial<typeof activityAttendances.$inferInsert>;
+
+/** When the photos of the checks were sent, and when they were decided. */
+export const TEST_SENT_AT = new Date("2150-09-10T03:00:00Z");
+export const TEST_DECIDED_AT = new Date("2150-09-11T03:00:00Z");
+
+/**
+ * A stored attendance: one that waits has only the time it was sent, and
+ * every other one is decided by `byId`.
+ */
+export async function addTestAttendance(
+  db: Database,
+  byId: string,
+  attendance: TestAttendance,
+): Promise<string> {
+  const isWaiting = attendance.status === "waiting";
+  const [added] = await db
+    .insert(activityAttendances)
+    .values({
+      note: "",
+      sentAt: TEST_SENT_AT,
+      decidedAt: isWaiting ? null : TEST_DECIDED_AT,
+      decidedBy: isWaiting ? null : byId,
+      ...attendance,
+    })
+    .returning({ id: activityAttendances.id });
+  if (!added) throw new Error("The attendance was not added.");
+  return added.id;
 }

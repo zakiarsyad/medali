@@ -176,6 +176,13 @@
       "when": 1791894873401,
       "tag": "0024_mentor-replacements",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791898485920,
+      "tag": "0025_activity-attendances",
+      "breakpoints": true
     }
   ]
 }

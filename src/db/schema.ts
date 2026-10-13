@@ -112,6 +112,17 @@ export const mentorReplacementReason = pgEnum(
 export const oldMentorStatus = pgEnum("old_mentor_status", OLD_MENTOR_STATUSES);
 
 /**
+ * Where an attendance at an activity stands: its photo waits to be
+ * checked, or staff decided it.
+ */
+export const activityAttendanceStatus = pgEnum("activity_attendance_status", [
+  "waiting",
+  "valid",
+  "rejected",
+  "dispensation",
+]);
+
+/**
  * How a student was put in through Pengguna baru mahasiswa: by the form,
  * or from a file, kept with the name of that file.
  */
@@ -1053,6 +1064,47 @@ export const activitySchedules = pgTable(
     check(
       "activity_schedules_upload_count_0_to_52",
       sql`${table.uploadCount} between 0 and 52`,
+    ),
+  ],
+);
+
+/**
+ * The attendance of one student at one schedule: the photo they sent and
+ * when, where it stands, and who decided it and when. A student has one
+ * waiting or valid attendance for a schedule at most. Nothing here is
+ * removed: the attendance of a removed schedule stays and is not counted.
+ */
+export const activityAttendances = pgTable(
+  "activity_attendances",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    scheduleId: uuid()
+      .notNull()
+      .references(() => activitySchedules.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    status: activityAttendanceStatus().notNull(),
+    /** Where the photo is in the file storage. Empty when none is kept. */
+    photoKey: text().unique(),
+    sentAt: timestamp({ withTimezone: true }),
+    /** What the history shows as Keterangan. Empty when nothing was noted. */
+    note: text().notNull(),
+    decidedAt: timestamp({ withTimezone: true }),
+    decidedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    uniqueIndex("activity_attendances_one_waiting_or_valid")
+      .on(table.scheduleId, table.studentId)
+      .where(sql`${table.status} in ('waiting', 'valid')`),
+    index("activity_attendances_student").on(table.studentId),
+    check(
+      "activity_attendances_waiting_is_sent",
+      sql`${table.status} <> 'waiting' or ${table.sentAt} is not null`,
+    ),
+    check(
+      "activity_attendances_decided_unless_waiting",
+      sql`(${table.status} = 'waiting') = (${table.decidedAt} is null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
     ),
   ],
 );
