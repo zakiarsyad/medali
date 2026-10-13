@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type ConfirmedChange, confirmWords } from "./replacement-words";
+import {
+  type ConfirmedChange,
+  confirmWords,
+  savedReplacementWords,
+} from "./replacement-words";
+import type { SavedReplacement } from "./save-replacement";
 
 const CHANGE: ConfirmedChange = {
   members: 1234,
@@ -9,6 +14,33 @@ const CHANGE: ConfirmedChange = {
   startsOn: "2026-11-02",
   today: "2026-10-13",
 };
+
+const SAVED: SavedReplacement = {
+  id: "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f4a01",
+  group: {
+    cohortYear: 2025,
+    entryPath: "regular",
+    number: 1,
+    programCode: "D3PJK",
+  },
+  newMentorName: "Pengasuh Uji Baru",
+  startsOn: "2026-11-02",
+  isInForce: false,
+};
+
+describe("savedReplacementWords", () => {
+  it("says from which day a replacement for a later date is scheduled", () => {
+    expect(savedReplacementWords(SAVED)).toBe(
+      "Penggantian dijadwalkan mulai 2 Nov 2026.",
+    );
+  });
+
+  it("says who holds the group now once it is in force", () => {
+    expect(savedReplacementWords({ ...SAVED, isInForce: true })).toBe(
+      "Pengasuh KP 25-D3PJK-01 kini Pengasuh Uji Baru.",
+    );
+  });
+});
 
 describe("confirmWords", () => {
   it("names the students, the group, both mentors and the day", () => {

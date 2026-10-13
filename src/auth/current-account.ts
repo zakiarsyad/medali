@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { database } from "@/db/database";
+import { carryOutDueReplacements } from "@/mentoring/due-replacements";
 import { currentStage } from "@/settings";
 import { accountSwitcherOn } from "./account-switcher";
 import {
@@ -41,12 +42,17 @@ export const currentSignIn = cache(async (): Promise<SignedIn | null> => {
     switcherCounts && !pickedAccount
       ? await firstAccountWithRole(database(), "head_of_unit")
       : null;
-  return whoIsSignedIn({
+  const signedIn = whoIsSignedIn({
     stage,
     sessionAccount: own,
     pickedAccount,
     defaultAccount,
   });
+  // Every screen and every action asks here first, so a replacement whose
+  // start date has come gives its group the new mentor before anything
+  // is shown or saved.
+  if (signedIn) await carryOutDueReplacements(database());
+  return signedIn;
 });
 
 export const currentAccount = cache(async (): Promise<Account | null> => {

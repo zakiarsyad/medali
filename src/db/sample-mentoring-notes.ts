@@ -85,11 +85,15 @@ function wordsAt(place: number): Words {
   return words;
 }
 
-/** The name of the mentor who held a group on a day, if anyone did. */
+/**
+ * The name of the mentor who held a group on a day, if anyone did. On the
+ * day of a replacement the line of the old mentor ends and the line of
+ * the new one starts: the group is the new mentor's from that day on.
+ */
 export function holderOn(group: SampleMentorGroup, day: string): string | null {
   const line = group.mentors.find((mentor) => {
     const hasStarted = mentor.startsOn <= day;
-    const hasEnded = mentor.endsOn !== null && mentor.endsOn < day;
+    const hasEnded = mentor.endsOn !== null && mentor.endsOn <= day;
     return hasStarted && !hasEnded;
   });
   return line?.name ?? null;

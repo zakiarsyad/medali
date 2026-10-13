@@ -7,6 +7,7 @@ import {
   mentorGroups,
 } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
+import { cancelWaitingReplacementsOf } from "@/mentoring/cancel-waiting-replacements";
 import type { Parsed } from "@/parsed";
 import type { DraftKey } from "./draft-change-input";
 import { type StepActor, takeStep } from "./take-step";
@@ -46,8 +47,9 @@ async function moveMembersToPast(
 /**
  * Ends the kelompok pengasuhan of a penetapan, with who and when. Nothing
  * is erased: the groups stay stored with their mentor lines, and so does
- * everything recorded for their students. The groups of the draft name no
- * kelompok any more.
+ * everything recorded for their students. A replacement of their mentor
+ * that still waited for its start date is cancelled with them. The groups
+ * of the draft name no kelompok any more.
  */
 async function endLiveGroups(
   tx: Database,
@@ -60,6 +62,7 @@ async function endLiveGroups(
     .update(mentorGroups)
     .set({ endedAt: WRITTEN_NOW, endedBy })
     .where(inArray(mentorGroups.id, liveIds));
+  await cancelWaitingReplacementsOf(tx, liveIds, endedBy);
   await moveMembersToPast(tx, liveIds);
   await tx
     .update(cohortAssignmentGroups)

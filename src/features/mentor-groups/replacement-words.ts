@@ -1,5 +1,7 @@
 import { isDay } from "@/db/is-day";
 import { shownDay } from "@/ui/day";
+import { groupCode } from "@/ui/group-code";
+import type { SavedReplacement } from "./save-replacement";
 
 /** What the sentence beside the tick box names. */
 export interface ConfirmedChange {
@@ -26,9 +28,15 @@ export function confirmWords(change: ConfirmedChange): string {
   return `Seluruh ${members} mahasiswa ${change.groupCode} beralih dari ${change.oldMentorName} ke ${newMentor} mulai ${shownDay(day)}. Catatan pengasuhan sebelumnya tetap tersimpan atas nama pengasuh lama.`;
 }
 
-/** What "Tetapkan penggantian" says once it is saved for a later day. */
-export function scheduledWords(startsOn: string): string {
-  return `Penggantian dijadwalkan mulai ${shownDay(startsOn)}.`;
+/**
+ * What "Tetapkan penggantian" says once it is saved: who holds the group
+ * now, or from which day the replacement is scheduled.
+ */
+export function savedReplacementWords(saved: SavedReplacement): string {
+  if (!saved.isInForce) {
+    return `Penggantian dijadwalkan mulai ${shownDay(saved.startsOn)}.`;
+  }
+  return `Pengasuh ${groupCode(saved.group)} kini ${saved.newMentorName}.`;
 }
 
 /** What the form says while Hasil evaluasi kurang has no evaluation to stand on. */

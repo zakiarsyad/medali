@@ -10,7 +10,7 @@ import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { EVALUATION_ADDRESS } from "./evaluation-address";
 import { parseReplacement } from "./replacement-input";
-import { scheduledWords } from "./replacement-words";
+import { savedReplacementWords } from "./replacement-words";
 import { saveReplacement } from "./save-replacement";
 
 /**
@@ -44,5 +44,5 @@ export async function saveReplacementAction(
   const saved = await saveReplacement(database(), actor, parsed.value);
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(EVALUATION_ADDRESS);
-  return { error: null, done: scheduledWords(saved.value.startsOn) };
+  return { error: null, done: savedReplacementWords(saved.value) };
 }

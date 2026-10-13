@@ -23,8 +23,10 @@ while building.
   suggested topics, the range a mentoring score lies in, the reasons for
   replacing a mentor with what the old mentor becomes, which mentor a
   replacement set Tidak aktif, which mentor is kept for a replacement
-  that waits for its date, and the wait that keeps two changes of who
-  holds which group apart, read by every area that needs them.
+  that waits for its date, whether an account holds a group today, how a
+  replacement gives its group the new mentor, today or once its date has
+  come, and the wait that keeps two changes of who holds which group
+  apart, read by every area that needs them.
 - `src/auth/`: sign-in, and the one list of what each role may do.
 - `src/campus/`: what the campus server package checks and does when it
   starts.

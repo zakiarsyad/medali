@@ -171,6 +171,28 @@ part only. All of it is built here.
     tick. After a save the fields start again.
 25. Setting a replacement and fixing a penetapan wait for each other,
     so one spare mentor cannot get a group from both at the same moment.
+26. A Terjadwal replacement whose date has come is carried out before
+    anything is shown or saved for someone who is signed in. Most of the
+    time this is one small read that finds nothing. Two people opening
+    the app at the same moment carry it out once.
+27. From the start date on, the group is the new mentor's: the old
+    mentor's line ends and the new one starts on that day, and the
+    sample notes of that day are the new mentor's.
+28. The start date cannot be before the day the current mentor took the
+    group, which can lie ahead when a penetapan starts later.
+29. What could stop a Terjadwal replacement on its date is refused where
+    it would begin. The account of its new mentor cannot be removed and
+    cannot lose the Pengasuh role until the replacement is cancelled,
+    and the message says so. Cancelling a penetapan also cancels the
+    Terjadwal replacements of its groups, as the work of the person who
+    cancelled the penetapan, so their new mentors are free again.
+30. Should a Terjadwal replacement still be impossible on its date (the
+    group is ended, its mentor is another one by then, or the new mentor
+    holds a group), nothing changes and it stays Terjadwal until Kepala
+    Unit cancels it. The app never cancels one by itself, because every
+    cancel keeps who did it.
+31. When one spare mentor is chosen for two groups at the same moment,
+    the first gets them and the second is told to choose another.
 
 ## Steps
 
@@ -178,7 +200,7 @@ part only. All of it is built here.
   reason, and one sample replacement.
 - [x] 2. The permission to replace, with its checks.
 - [x] 3. The Penggantian form with its rules and the tick box.
-- [ ] 4. A replacement takes effect today or on its date, in the group,
+- [x] 4. A replacement takes effect today or on its date, in the group,
   its history and the mentor row rule.
 - [ ] 5. "Riwayat penggantian", cancelling, and the two refusals.
 - [ ] 6. The note and button on the group page, the jump after Kurang,

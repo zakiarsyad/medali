@@ -4,8 +4,13 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { cohortAssignmentGroups } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestReplacement,
+  testReplacementsOf,
+} from "@/mentoring/test-replacements";
 import { cancelAssignment } from "./cancel-assignment";
 import { fixAssignment } from "./fix-assignment";
+import { readMentorPool } from "./mentor-pool";
 import {
   DRAFT_CHANGED,
   NO_DRAFT,
@@ -15,7 +20,7 @@ import {
 import { saveDecree } from "./save-decree";
 import { addCompleteTestDraft, testDraftOf } from "./test-drafts";
 import { testLiveGroupsOf } from "./test-live-groups";
-import { addTestActor } from "./test-records";
+import { addTestActor, addTestMentor } from "./test-records";
 import { EVERY_ROW } from "./visible-assignments";
 import { readWaitingStudents } from "./waiting-students";
 
@@ -80,6 +85,31 @@ describe("cancelAssignment", () => {
         expect(group.pastStudentIds.length).toBeGreaterThan(0);
         expect(group.mentors).toEqual(was?.mentors);
       }
+    });
+  });
+
+  it("cancels a replacement of an ended group that still waited, with who and when, so its new mentor is free again", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addFixed(db);
+      const [group] = await testLiveGroupsOf(db, YEAR);
+      const oldMentorId = group?.mentors[0]?.mentorId;
+      if (!group || !oldMentorId) throw new Error("No group was fixed.");
+      const newMentorId = await addTestMentor(db, { name: "Uji Batal Baru" });
+      await addTestReplacement(db, {
+        groupId: group.id,
+        oldMentorId,
+        newMentorId,
+        startsOn: "2054-12-01",
+      });
+
+      await cancelAssignment(db, head, KEY);
+
+      const [replacement] = await testReplacementsOf(db, group.id);
+      expect(replacement?.cancelledBy).toBe(head.id);
+      expect(replacement?.cancelledAt).toBeInstanceOf(Date);
+      expect(replacement?.carriedOutAt).toBeNull();
+      const pool = await readMentorPool(db, YEAR);
+      expect(pool.map((mentor) => mentor.id)).toContain(newMentorId);
     });
   });
 

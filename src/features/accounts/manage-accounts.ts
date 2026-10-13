@@ -23,12 +23,15 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
+import { holdsGroupToday } from "@/mentoring/holds-group-today";
+import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
 import type { NewAccount, RoleChange } from "./account-input";
 import {
-  holdsGroupToday,
   REMOVAL_REFUSED_FOR_GROUP,
+  REMOVAL_REFUSED_FOR_REPLACEMENT,
   ROLE_REFUSED_FOR_GROUP,
+  ROLE_REFUSED_FOR_REPLACEMENT,
   takesMentorRole,
 } from "./held-groups";
 import { isManagedRole, LISTED_ROLES, type ListedRole } from "./managed-roles";
@@ -256,10 +259,14 @@ export async function changeRoles(
     if (after.length === 0) {
       return { ok: false, error: "Pilih minimal satu peran." };
     }
-    const leavesGroup =
-      takesMentorRole(before, after) &&
-      (await holdsGroupToday(tx, change.accountId));
-    if (leavesGroup) return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
+    if (takesMentorRole(before, after)) {
+      if (await holdsGroupToday(tx, change.accountId)) {
+        return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
+      }
+      if (await isKeptForReplacement(tx, change.accountId)) {
+        return { ok: false, error: ROLE_REFUSED_FOR_REPLACEMENT };
+      }
+    }
 
     await tx
       .delete(accountRoles)
@@ -303,7 +310,8 @@ export async function changeRoles(
  * Marks an account removed. It is never erased. A student's account and
  * an account that holds a role not managed here, such as Kepala Unit, are
  * not removed here; nor is the manager's own account, nor the mentor of
- * today of a group, which would be left without one.
+ * today of a group, which would be left without one, nor the mentor a
+ * replacement that waits for its start date names as the new one.
  */
 export async function removeAccount(
   db: Database,
@@ -325,6 +333,9 @@ export async function removeAccount(
     }
     if (await holdsGroupToday(tx, accountId)) {
       return { ok: false, error: REMOVAL_REFUSED_FOR_GROUP };
+    }
+    if (await isKeptForReplacement(tx, accountId)) {
+      return { ok: false, error: REMOVAL_REFUSED_FOR_REPLACEMENT };
     }
     await tx
       .update(accounts)

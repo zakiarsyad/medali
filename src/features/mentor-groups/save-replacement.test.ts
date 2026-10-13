@@ -4,8 +4,11 @@ import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestReplacement,
+  testMentorLinesOf,
   testReplacementsOf,
 } from "@/mentoring/test-replacements";
+import { readLastGroupEvaluations } from "./last-evaluations";
+import { readMentor } from "./mentor-detail";
 import type { ReplacementInput } from "./replacement-input";
 import { GROUP_NOT_FOUND } from "./save-evaluation";
 import {
@@ -15,6 +18,7 @@ import {
   NOT_ALLOWED_TO_REPLACE,
   STARTS_BEFORE_TODAY,
   saveReplacement,
+  startsBeforeOldMentor,
 } from "./save-replacement";
 import {
   addTestEvaluation,
@@ -28,6 +32,7 @@ import {
   addTestMentor,
   addTestMentorLine,
   addTestMentorRole,
+  TEST_GROUP_STARTS_ON,
 } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -96,6 +101,118 @@ describe("saveReplacement", () => {
       expect(stored?.setAt.getTime()).toBeGreaterThanOrEqual(
         before.getTime() - 1000,
       );
+    });
+  });
+
+  it("changes nothing for the group while a replacement waits for a later date", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+
+      await saveReplacement(db, made.head, made.input, TODAY);
+
+      expect(await testMentorLinesOf(db, made.groupId)).toEqual([
+        {
+          mentorId: made.mentorId,
+          startsOn: TEST_GROUP_STARTS_ON,
+          endsOn: null,
+          endReason: null,
+        },
+      ]);
+    });
+  });
+
+  it("gives the group its new mentor at once when it starts today: the old line ends and the new one starts that day", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const input = { ...made.input, startsOn: TODAY };
+
+      const saved = await saveReplacement(db, made.head, input, TODAY);
+
+      expect(saved).toMatchObject({
+        ok: true,
+        value: { newMentorName: "Pengasuh Uji Baru", isInForce: true },
+      });
+      const [stored] = await testReplacementsOf(db, made.groupId);
+      expect(stored?.carriedOutAt).toBeInstanceOf(Date);
+      expect(await testMentorLinesOf(db, made.groupId)).toEqual([
+        {
+          mentorId: made.mentorId,
+          startsOn: TEST_GROUP_STARTS_ON,
+          endsOn: TODAY,
+          endReason: "Permintaan sendiri",
+        },
+        {
+          mentorId: made.newMentorId,
+          startsOn: TODAY,
+          endsOn: null,
+          endReason: null,
+        },
+      ]);
+    });
+  });
+
+  it("shows the old mentor as Cadangan or Tidak aktif, and the new one as Mengasuh, once it is in force", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const input = {
+        ...made.input,
+        startsOn: TODAY,
+        reason: "study_leave",
+        oldMentorStatus: "inactive",
+      } as const;
+      await addTestMentorRole(db, made.mentorId);
+
+      await saveReplacement(db, made.head, input, TODAY);
+
+      const everyone = { kind: "all" } as const;
+      const old = await readMentor(db, everyone, made.mentorId, null);
+      const next = await readMentor(db, everyone, made.newMentorId, null);
+      expect(old).toMatchObject({
+        mentor: {
+          status: "inactive",
+          inactiveSince: TODAY,
+          inactiveReason: "Tugas belajar",
+          groups: [],
+        },
+      });
+      expect(next).toMatchObject({
+        mentor: { status: "mentoring", groups: [{ id: made.groupId }] },
+      });
+    });
+  });
+
+  it("leaves a replaced group without Evaluasi terakhir until its new mentor is evaluated", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const periods = await addTestPeriods(db, 2081);
+      await addTestEvaluation(db, {
+        groupId: made.groupId,
+        mentorId: made.mentorId,
+        periodId: periods.runningId,
+        evaluatedBy: made.head.id,
+      });
+      const everyone = { kind: "all" } as const;
+      const groupIds = [made.groupId];
+      const before = await readLastGroupEvaluations(db, everyone, groupIds);
+
+      const input = { ...made.input, startsOn: TODAY };
+      await saveReplacement(db, made.head, input, TODAY);
+
+      const after = await readLastGroupEvaluations(db, everyone, groupIds);
+      expect(before.size).toBe(1);
+      expect(after.size).toBe(0);
+    });
+  });
+
+  it("refuses a start date before the day the mentor of today took the group", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const input = { ...made.input, startsOn: "2026-08-31" };
+
+      const saved = await saveReplacement(db, made.head, input, "2026-08-30");
+
+      expect(saved).toEqual(startsBeforeOldMentor(TEST_GROUP_STARTS_ON));
+      expect(await testReplacementsOf(db, made.groupId)).toEqual([]);
     });
   });
 
