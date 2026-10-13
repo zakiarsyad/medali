@@ -1,8 +1,45 @@
 import { describe, expect, it } from "vitest";
-import { openedSurveyWords } from "./survey-words";
+import {
+  openedSurveyWords,
+  respondentWords,
+  surveyDaysWords,
+  weightWords,
+} from "./survey-words";
 
 const TODAY = "2026-10-13";
 const TITLE = "Ganjil 2026/2027";
+
+describe("surveyDaysWords", () => {
+  it("names the first and the last day and who opened the period", () => {
+    const words = surveyDaysWords({
+      startsOn: "2026-10-13",
+      endsOn: "2026-10-27",
+      openerName: "Kepala Uji",
+    });
+
+    expect(words).toBe(
+      "13 Okt 2026 sampai 27 Okt 2026 · dibuka oleh Kepala Uji",
+    );
+  });
+});
+
+describe("respondentWords", () => {
+  it("shows how many of the students who can answer did", () => {
+    expect(respondentWords(0, 28)).toBe("0 dari 28");
+  });
+
+  it("writes a large number the Indonesian way", () => {
+    expect(respondentWords(0, 1250)).toBe("0 dari 1.250");
+  });
+});
+
+describe("weightWords", () => {
+  it("shows both weights, the second as the rest of 100", () => {
+    expect(weightWords(50)).toBe("Capaian 50% · umpan balik 50%");
+    expect(weightWords(70)).toBe("Capaian 70% · umpan balik 30%");
+    expect(weightWords(0)).toBe("Capaian 0% · umpan balik 100%");
+  });
+});
 
 describe("openedSurveyWords", () => {
   it("says the period is open and where students fill in the survey", () => {

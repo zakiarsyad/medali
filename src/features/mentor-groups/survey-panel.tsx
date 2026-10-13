@@ -1,8 +1,9 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import { database } from "@/db/database";
-import { readRunningSurveyPeriod } from "@/mentoring/running-survey-period";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./mentor-groups.module.css";
+import { readRunningSurveyCard } from "./survey-card";
+import { SurveyCard } from "./survey-card-view";
 import { readSurveyFormStart } from "./survey-form-reads";
 import type { SurveyFormStart } from "./survey-form-start";
 import { SurveyOpenForm } from "./survey-open-form";
@@ -23,22 +24,24 @@ function OpenPart({ start }: { start: SurveyFormStart }) {
 }
 
 /**
- * The panel of the survey period: the form that opens one while none
- * runs, for an account that may manage them. What it shows is read at
- * the same time.
+ * The panel of the survey period: the card of the one that runs, or,
+ * while none runs, the form that opens one for an account that may manage
+ * them. What it shows is read at the same time.
  */
 export async function SurveyPanel({ rights }: { rights: SurveyRights }) {
   const db = database();
   const today = campusDay();
-  const [running, start] = await Promise.all([
-    readRunningSurveyPeriod(db, today),
+  const [card, start] = await Promise.all([
+    readRunningSurveyCard(db, rights.respondents, today),
     rights.mayManage ? readSurveyFormStart(db, today) : null,
   ]);
-  if (running !== null || start === null) return null;
+  if (card === null && start === null) return null;
   return (
     <section className={shared.panel}>
+      {/* The same part around the card and the form, so what it says stays when one gives way to the other. */}
       <SurveySaidAbove>
-        <OpenPart start={start} />
+        {card !== null && <SurveyCard card={card} />}
+        {card === null && start !== null && <OpenPart start={start} />}
       </SurveySaidAbove>
     </section>
   );

@@ -167,6 +167,23 @@ menu and no screen. All of it is built here.
     other tabs of the Pengasuh menu. Which survey period runs on a day
     is kept with the shared mentoring rules, because Profil saya will
     read it too.
+20. Only a period that runs has a card, as in the prototype. When the
+    latest period is Berakhir or Ditutup, Kepala Unit sees the form to
+    open a new one, and the other roles see no period. A period that is
+    over shows again with "Student survey results".
+21. The status is decided from the two dates and the mark of a close by
+    hand, on the day on campus. Nothing is stored for it. This rule is
+    kept with the shared mentoring rules too.
+22. Responden reads "0 dari (n)" without the percentage the prototype
+    adds: a share of nothing says nothing, and it comes with the
+    answers. (n) counts the Aktif students of the groups in force.
+    Ketua Program Studi sees the count of their program's groups only,
+    as the prototype does and as their other screens do; one without a
+    program sees 0.
+23. Under the heading the card reads "(first day) sampai (last day) ·
+    dibuka oleh (name)", as in the prototype. Bobot reads "Capaian 50% ·
+    umpan balik 50%". Keterangan shows only when the period has one.
+    Dibuka and Terjadwal have the colours the prototype gives them.
 
 ## Steps
 
@@ -174,6 +191,6 @@ menu and no screen. All of it is built here.
   closed sample period.
 - [x] 2. The permission to manage periods, with its checks.
 - [x] 3. The tab with the open form and "Komponen evaluasi pengasuhan".
-- [ ] 4. The running period card with its status by date.
+- [x] 4. The running period card with its status by date.
 - [ ] 5. Changing the end date, closing now and cancelling.
 - [ ] 6. Read-only view, double press and the phone layout.
