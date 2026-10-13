@@ -1,6 +1,8 @@
 import { averageSize, USUAL_SIZE_WORDS } from "@/ui/group-size";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import type { GroupNumbers } from "./group-numbers";
+import type { ReplacementNumbers } from "./replacement-numbers";
+import { spareWords } from "./replacement-words";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
@@ -9,6 +11,7 @@ function shown(amount: number): string {
 export function GroupNumbersView({
   numbers,
   poorGroups,
+  replacements,
 }: {
   numbers: GroupNumbers;
   /**
@@ -16,6 +19,11 @@ export function GroupNumbersView({
    * account that may not see evaluations: it gets no such number.
    */
   poorGroups: number | null;
+  /**
+   * "Penggantian tahun ini", or null for an account that may not see
+   * replacements: it gets no such number.
+   */
+  replacements: ReplacementNumbers | null;
 }) {
   const { groups, members, usualSize } = numbers;
   return (
@@ -35,6 +43,13 @@ export function GroupNumbersView({
           label="Evaluasi kurang"
           amount={poorGroups}
           note="kelompok, pertimbangkan penggantian"
+        />
+      )}
+      {replacements !== null && (
+        <NumberCard
+          label="Penggantian tahun ini"
+          amount={replacements.thisYear}
+          note={spareWords(replacements.spares)}
         />
       )}
     </NumberCards>

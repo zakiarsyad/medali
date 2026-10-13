@@ -3,6 +3,7 @@ import { openPage } from "@/auth/open-page";
 import {
   readChosenGroup,
   readChosenPart,
+  readSavedPeriod,
 } from "@/features/mentor-groups/evaluation-address";
 import { EvaluationScreen } from "@/features/mentor-groups/evaluation-screen";
 import {
@@ -31,6 +32,7 @@ export default async function MentorEvaluationsPage(
       }}
       chosenPart={readChosenPart(params)}
       chosenGroupId={readChosenGroup(params)}
+      savedPeriodId={readSavedPeriod(params)}
     />
   );
 }

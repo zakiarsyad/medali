@@ -211,6 +211,37 @@ part only. All of it is built here.
     atau batalkan penggantian itu dulu di riwayat." A cancel that comes
     too late is told the replacement is already cancelled, or already
     in force.
+37. The note "Penggantian terjadwal" stands on the group page only, for
+    everyone who may open that page: the four roles of the Pengasuh
+    menu, each within the groups they see. Pengasuh and Mahasiswa cannot
+    open a group page, and nothing they can open says a replacement is
+    coming: the student detail and the student's own profile show the
+    mentor of today and the earlier ones, as before.
+38. "Ganti pengasuh" shows only while the group has a mentor, as
+    "Evaluasi pengasuh" does: a group without one has nobody to replace.
+39. Saving an evaluation of Kurang opens Penggantian for the same group,
+    and the message "Evaluasi (name) disimpan: Kurang." stands above the
+    form there. The address keeps which period was saved, and the
+    message is read back from what is stored for it: it stays while that
+    address is open, also after a reload, and an address that names a
+    period without a Kurang evaluation shows no message. The reason
+    starts as Hasil evaluasi kurang, the first reason. When the Kurang
+    evaluation is of the earlier period and the latest one is not
+    Kurang, the form still opens and its note says an evaluation of
+    Kurang is needed first.
+40. "Penggantian tahun ini" takes the year from the day on campus. It
+    counts Berlaku and Terjadwal replacements whose start date is in
+    that year; one that waits for a date of next year counts next year.
+    A replacement of a group whose penetapan was cancelled is not
+    counted, as it is not listed. The number is shown to whoever may
+    open the tab, the same roles that see "Evaluasi kurang".
+41. "(n) pengasuh cadangan tersedia" counts the mentors shown as
+    Cadangan, as the prototype does, so it is the number of Cadangan
+    rows on the Pengasuh tab. A mentor kept for a Terjadwal replacement
+    still shows as Cadangan and is counted. Ketua Program Studi sees on
+    the Pengasuh tab only the mentors who hold a group of their program,
+    so no spare mentor: they are given no count, and the line under
+    their number says "tidak termasuk yang dibatalkan" instead.
 
 ## Steps
 
@@ -221,6 +252,6 @@ part only. All of it is built here.
 - [x] 4. A replacement takes effect today or on its date, in the group,
   its history and the mentor row rule.
 - [x] 5. "Riwayat penggantian", cancelling, and the two refusals.
-- [ ] 6. The note and button on the group page, the jump after Kurang,
+- [x] 6. The note and button on the group page, the jump after Kurang,
   and "Penggantian tahun ini".
 - [ ] 7. Read-only view, double press and the phone layout.

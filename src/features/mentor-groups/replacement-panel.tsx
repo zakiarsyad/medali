@@ -1,10 +1,12 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
+import shared from "@/ui/data-screen.module.css";
 import { groupCode } from "@/ui/group-code";
 import { readEvaluatedGroup } from "./evaluated-group";
 import { evaluationAddress } from "./evaluation-address";
 import { evaluationResult } from "./evaluation-result";
+import { poorSaveWords } from "./evaluation-words";
 import { ChooseGroupFirst, MentorFacts } from "./group-facts";
 import styles from "./mentor-groups.module.css";
 import { ReplacementForm } from "./replacement-form";
@@ -12,7 +14,7 @@ import { spareChoices } from "./spare-choices";
 import { listSpareMentors } from "./spare-mentors";
 import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
-/** No period is asked for: the form of a replacement shows no stored evaluation. */
+/** No period is asked for unless the saving of an evaluation opened the form. */
 const NO_PERIODS: string[] = [];
 
 /**
@@ -23,14 +25,18 @@ const NO_PERIODS: string[] = [];
 export async function ReplacementPart({
   limit,
   chosenGroupId,
+  savedPeriodId,
 }: {
   limit: RowLimit;
   /** The group the address asks for, if any. */
   chosenGroupId: string | null;
+  /** The period of the evaluation whose saving opened the form, if any. */
+  savedPeriodId: string | null;
 }) {
   if (chosenGroupId === null) return <ChooseGroupFirst />;
   const db = database();
-  const group = await readEvaluatedGroup(db, limit, chosenGroupId, NO_PERIODS);
+  const periods = savedPeriodId === null ? NO_PERIODS : [savedPeriodId];
+  const group = await readEvaluatedGroup(db, limit, chosenGroupId, periods);
   if (group === null) return <ChooseGroupFirst />;
   const [spares, waiting] = await Promise.all([
     listSpareMentors(db),
@@ -47,8 +53,14 @@ export async function ReplacementPart({
   }
   const hasPoorEvaluation =
     group.last !== null && evaluationResult(group.last) === "poor";
+  const savedWords = poorSaveWords(mentor.name, group.stored);
   return (
     <>
+      {savedWords !== null && (
+        <p className={shared.done} role="status">
+          {savedWords}
+        </p>
+      )}
       <MentorFacts group={group} mentor={mentor} />
       {/* Made anew for each group, so its fields start from that group. */}
       <ReplacementForm

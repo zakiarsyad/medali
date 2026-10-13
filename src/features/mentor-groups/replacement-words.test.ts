@@ -3,6 +3,8 @@ import {
   type ConfirmedChange,
   confirmWords,
   savedReplacementWords,
+  scheduledWords,
+  spareWords,
 } from "./replacement-words";
 import type { SavedReplacement } from "./save-replacement";
 
@@ -38,6 +40,30 @@ describe("savedReplacementWords", () => {
   it("says who holds the group now once it is in force", () => {
     expect(savedReplacementWords({ ...SAVED, isInForce: true })).toBe(
       "Pengasuh KP 25-D3PJK-01 kini Pengasuh Uji Baru.",
+    );
+  });
+});
+
+describe("spareWords", () => {
+  it("says how many spare mentors there are", () => {
+    expect(spareWords(3)).toBe("3 pengasuh cadangan tersedia");
+    expect(spareWords(0)).toBe("0 pengasuh cadangan tersedia");
+  });
+
+  it("names no number of mentors to an account that is told none", () => {
+    expect(spareWords(null)).toBe("tidak termasuk yang dibatalkan");
+  });
+});
+
+describe("scheduledWords", () => {
+  it("names the mentor who is to take the group and the day", () => {
+    const waiting = {
+      newMentorName: "Pengasuh Uji Baru",
+      startsOn: "2026-11-02",
+    };
+
+    expect(scheduledWords(waiting)).toBe(
+      "Penggantian terjadwal: Pengasuh Uji Baru mulai 2 Nov 2026.",
     );
   });
 });

@@ -1,16 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { forbidden } from "next/navigation";
+import { forbidden, redirect } from "next/navigation";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
-import { EVALUATION_ADDRESS } from "./evaluation-address";
+import {
+  afterPoorEvaluationAddress,
+  EVALUATION_ADDRESS,
+} from "./evaluation-address";
 import { parseEvaluation } from "./evaluation-input";
 import { savedWords } from "./evaluation-words";
+import { openReplacementAddress } from "./open-replacement-address";
 import { saveEvaluation } from "./save-evaluation";
 
 /**
@@ -23,7 +27,10 @@ async function evaluator(): Promise<Account> {
   return account;
 }
 
-/** "Simpan evaluasi". */
+/**
+ * "Simpan evaluasi". A result of Kurang opens the form of a replacement
+ * for the same group, for an account that may set one.
+ */
 export async function saveEvaluationAction(
   _before: FormState,
   form: FormData,
@@ -43,5 +50,11 @@ export async function saveEvaluationAction(
   const saved = await saveEvaluation(database(), actor, parsed.value);
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(EVALUATION_ADDRESS);
+  const { groupId, periodId } = parsed.value;
+  const mayReplace = openReplacementAddress(actor, groupId) !== null;
+  if (saved.value.result === "poor" && mayReplace) {
+    // The form of a replacement says there what was saved here.
+    redirect(afterPoorEvaluationAddress(groupId, periodId));
+  }
   return { error: null, done: savedWords(saved.value) };
 }

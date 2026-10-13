@@ -21,6 +21,7 @@ export async function EvaluationScreen({
   formLimits,
   chosenPart,
   chosenGroupId,
+  savedPeriodId,
 }: {
   tabs: TabLinksProps;
   /**
@@ -39,6 +40,8 @@ export async function EvaluationScreen({
   chosenPart: FormPart;
   /** The group the address asks the form for, if any. */
   chosenGroupId: string | null;
+  /** The period of the evaluation whose saving opened the form, if any. */
+  savedPeriodId: string | null;
 }) {
   const db = database();
   const [latest, replacements] = await Promise.all([
@@ -61,6 +64,7 @@ export async function EvaluationScreen({
             limits={formLimits}
             part={part}
             chosenGroupId={chosenGroupId}
+            savedPeriodId={savedPeriodId}
           />
           <ReplacementFlow />
         </div>

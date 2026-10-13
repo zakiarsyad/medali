@@ -27,13 +27,21 @@ function PartBody({
   part,
   limit,
   chosenGroupId,
+  savedPeriodId,
 }: {
   part: FormPart;
   limit: RowLimit;
   chosenGroupId: string | null;
+  savedPeriodId: string | null;
 }) {
   if (part === "replacement") {
-    return <ReplacementPart limit={limit} chosenGroupId={chosenGroupId} />;
+    return (
+      <ReplacementPart
+        limit={limit}
+        chosenGroupId={chosenGroupId}
+        savedPeriodId={savedPeriodId}
+      />
+    );
   }
   return <EvaluationPart limit={limit} chosenGroupId={chosenGroupId} />;
 }
@@ -47,12 +55,15 @@ export async function FormPanel({
   limits,
   part,
   chosenGroupId,
+  savedPeriodId,
 }: {
   limits: FormLimits;
   /** The form that is open: one the account may use. */
   part: FormPart;
   /** The group the address asks for, if any. */
   chosenGroupId: string | null;
+  /** The period of the evaluation whose saving opened the form, if any. */
+  savedPeriodId: string | null;
 }) {
   const limit = limits[part];
   if (limit === null) return null;
@@ -87,7 +98,12 @@ export async function FormPanel({
         )}
         <GroupChoice choices={choices} chosenId={groupId} />
       </AutoSubmitForm>
-      <PartBody part={part} limit={limit} chosenGroupId={groupId} />
+      <PartBody
+        part={part}
+        limit={limit}
+        chosenGroupId={groupId}
+        savedPeriodId={savedPeriodId}
+      />
     </section>
   );
 }

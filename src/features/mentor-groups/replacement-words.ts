@@ -44,6 +44,24 @@ export function alreadyScheduledWords(startsOn: string): string {
   return `Kelompok ini sudah punya penggantian terjadwal pada ${shownDay(startsOn)}. Batalkan dulu di riwayat bila ingin mengubah.`;
 }
 
+/**
+ * The line under "Penggantian tahun ini": how many mentors are Cadangan,
+ * or, for an account that is told no such number, what the number above
+ * it leaves out.
+ */
+export function spareWords(spares: number | null): string {
+  if (spares === null) return "tidak termasuk yang dibatalkan";
+  return `${spares.toLocaleString("id-ID")} pengasuh cadangan tersedia`;
+}
+
+/** The note on the page of a group that has a Terjadwal replacement. */
+export function scheduledWords(waiting: {
+  newMentorName: string;
+  startsOn: string;
+}): string {
+  return `Penggantian terjadwal: ${waiting.newMentorName} mulai ${shownDay(waiting.startsOn)}.`;
+}
+
 /** What "Batalkan" asks before it cancels a Terjadwal replacement. */
 export function cancelQuestion(replacement: {
   groupCode: string;

@@ -53,7 +53,15 @@
 
 /* The buttons of a page, under its head. */
 .headActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
   margin: 0 0 var(--space-lg);
+}
+
+/* A second note of a page stands clear of the first. */
+.note + .note {
+  margin-top: var(--space-md);
 }
 
 /* Who holds the group chosen for an evaluation, and the result of the values typed. */
