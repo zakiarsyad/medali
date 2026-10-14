@@ -174,22 +174,36 @@ describe("nameCompanion", () => {
     });
   });
 
-  it.each([
-    ["in semester 1", { cohortYear: 2530 }],
-    ["Pembibitan", { isSeedling: true }],
-    ["Internasional", { isInternational: true }],
-  ])("refuses a student who lives in a dorm: %s", async (_who, facts) => {
+  it("refuses a Reguler student in semester 1, who lives in Dana Rakca", async () => {
     await inTestDatabase(async (db) => {
-      const studentId = await addSenior(db, facts);
+      const studentId = await addSenior(db, { cohortYear: 2530 });
 
       const named = await name(db, { studentId });
 
       expect(named).toEqual({
         ok: false,
         error:
-          "Mahasiswa ini tinggal di asrama, jadi tidak bisa ditetapkan sebagai kakak pendamping.",
+          "Mahasiswa ini penghuni Asrama Dana Rakca atau Asrama Cipta Bakti, jadi tidak bisa ditetapkan sebagai kakak pendamping.",
       });
       expect(await companionCount(db)).toBe(0);
+    });
+  });
+
+  it.each([
+    ["Pembibitan", { isSeedling: true }],
+    ["Internasional", { isInternational: true }],
+    [
+      "Internasional in semester 1",
+      { isInternational: true, cohortYear: 2530 },
+    ],
+  ])("names a student who lives in Wismantara: %s", async (_who, facts) => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addSenior(db, facts);
+
+      const named = await name(db, { studentId });
+
+      expect(named.ok).toBe(true);
+      expect((await companionOf(db, studentId))?.isActive).toBe(true);
     });
   });
 
