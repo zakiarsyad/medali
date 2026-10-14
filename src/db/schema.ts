@@ -36,6 +36,10 @@ import {
   DORM_CLARIFICATION_REASONS,
   DORM_CLARIFICATION_STATUSES,
 } from "@/features/dorm/clarification-ids";
+import {
+  PLACE_NAME_MAX_LENGTH,
+  PLACE_NAME_MIN_LENGTH,
+} from "@/features/dorm/cleaning-ids";
 import { type CountMarks, NOTE_MAX_LENGTH } from "@/features/dorm/count-ids";
 import {
   CONTACT_MAX_LENGTH,
@@ -1095,6 +1099,70 @@ export const dormClarificationChanges = pgTable(
   },
   (table) => [
     index("dorm_clarification_changes_clarification").on(table.clarificationId),
+  ],
+);
+
+/**
+ * A shared place of a dorm that a room cleans on a day, such as Kamar
+ * Mandi. Its name is used once among the places of its dorm that are not
+ * removed, whatever its capitals. A removed one keeps its row, marked with
+ * who removed it, when, and the first day it no longer shows: its duties
+ * before that day still show, and "Urungkan" takes the mark away.
+ */
+export const dormCleaningPlaces = pgTable(
+  "dorm_cleaning_places",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    dorm: dorm().notNull(),
+    name: text().notNull(),
+    removedFrom: date(),
+    deletedAt: timestamp({ withTimezone: true }),
+    deletedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    uniqueIndex("dorm_cleaning_places_name_in_dorm")
+      .on(table.dorm, sql`lower(${table.name})`)
+      .where(sql`${table.deletedAt} is null`),
+    check(
+      "dorm_cleaning_places_name_length",
+      sql`char_length(${table.name}) between ${sql.raw(String(PLACE_NAME_MIN_LENGTH))} and ${sql.raw(String(PLACE_NAME_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_cleaning_places_removal_mark_is_whole",
+      sql`(${table.deletedAt} is null) = (${table.deletedBy} is null) and (${table.deletedAt} is null) = (${table.removedFrom} is null)`,
+    ),
+  ],
+);
+
+/**
+ * One room's cleaning duty on one day: a shared place of its dorm, or its
+ * own room when no place is given. A place has one duty a day, and a room
+ * one duty for its own room a day. The room number is kept, so a duty of
+ * a room that was removed since still says which room did it.
+ */
+export const dormCleaningDuties = pgTable(
+  "dorm_cleaning_duties",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    day: date().notNull(),
+    dorm: dorm().notNull(),
+    placeId: uuid().references(() => dormCleaningPlaces.id),
+    roomId: uuid().references(() => dormRooms.id, { onDelete: "set null" }),
+    roomNumber: text().notNull(),
+    createdBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("dorm_cleaning_duties_one_per_place_and_day")
+      .on(table.placeId, table.day)
+      .where(sql`${table.placeId} is not null`),
+    uniqueIndex("dorm_cleaning_duties_one_own_room_per_day")
+      .on(table.roomId, table.day)
+      .where(sql`${table.placeId} is null`),
+    index("dorm_cleaning_duties_room_day").on(table.roomId, table.day),
+    index("dorm_cleaning_duties_day_dorm").on(table.day, table.dorm),
   ],
 );
 

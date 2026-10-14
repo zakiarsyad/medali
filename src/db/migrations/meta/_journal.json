@@ -274,6 +274,13 @@
       "when": 1792007169645,
       "tag": "0038_dorm-attendance-clarification",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1792009721172,
+      "tag": "0039_dorm-cleaning",
+      "breakpoints": true
     }
   ]
 }

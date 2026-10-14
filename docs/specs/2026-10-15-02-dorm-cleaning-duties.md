@@ -130,7 +130,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The tables for places and duties are added, with the four
+- [x] 1. The tables for places and duties are added, with the four
   sample places per dorm and a week of sample duties.
 - [ ] 2. The rights to see and to manage cleaning are added to the
   permission list, with their checks.
