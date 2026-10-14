@@ -3,11 +3,15 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
-import { removePpksActivityAction } from "./actions";
+import { removePpksActivityAction, scheduleCountAction } from "./actions";
 import styles from "./curriculum.module.css";
 import { removalQuestion } from "./ppks-activities";
 
-/** "Hapus" in the form of an activity. It asks first. */
+/**
+ * "Hapus" in the form of an activity. It asks first, with how often the
+ * activity is scheduled at the moment of the press. Nothing is removed
+ * when that number cannot be read.
+ */
 export function RemovePpksButton({
   id,
   name,
@@ -22,9 +26,15 @@ export function RemovePpksButton({
   const [pending, startRemoving] = useTransition();
 
   function remove() {
-    const sure = window.confirm(removalQuestion(name));
-    if (!sure) return;
+    setError(null);
     startRemoving(async () => {
+      const counted = await scheduleCountAction(id);
+      if (!counted.ok) {
+        setError(counted.error);
+        return;
+      }
+      const sure = window.confirm(removalQuestion(name, counted.value));
+      if (!sure) return;
       const after = await removePpksActivityAction(id);
       if (after.done) onRemoved(after.done);
       setError(after.error);

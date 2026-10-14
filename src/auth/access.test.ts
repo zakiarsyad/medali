@@ -99,6 +99,27 @@ describe("may", () => {
     }
   });
 
+  // Kurikulum shows how often each activity is scheduled, campus-wide.
+  const curriculumReaders: RoleId[] = [
+    "head_of_unit",
+    "upk_staff",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it.each(curriculumReaders)("lets %s open Kurikulum", (role) => {
+    expect(mayOpenPage([role], "curriculum")).toBe(true);
+  });
+
+  it("refuses Kurikulum to every other role", () => {
+    const others = ROLE_IDS.filter((role) => !curriculumReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - curriculumReaders.length);
+    for (const role of others) {
+      expect(mayOpenPage([role], "curriculum")).toBe(false);
+    }
+  });
+
   it("lets Kepala Unit set the academic periods", () => {
     expect(may(["head_of_unit"], "set_academic_periods")).toBe(true);
   });
