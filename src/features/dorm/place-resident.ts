@@ -6,8 +6,10 @@ import { dormRoomPlaces, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
 import { livesIn } from "@/dorms/resident-condition";
+import { roomHeader } from "@/dorms/student-room";
 import type { Parsed } from "@/parsed";
 import { NOT_ALLOWED } from "./not-allowed";
+import { type RoomInDorm, readCompanionRoom } from "./room-companions";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, lockRoom } from "./room-lock";
 import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
@@ -40,6 +42,13 @@ function notResident(dorm: DormId) {
   } as const;
 }
 
+function placedAsCompanion(room: RoomInDorm) {
+  return {
+    ok: false,
+    error: `Mahasiswa ini sudah diplot sebagai kakak pendamping di ${roomHeader(room.dorm, room)}. Keluarkan dari kamar itu dulu.`,
+  } as const;
+}
+
 /** A room and a resident as a form sends them. */
 export interface SentPlace {
   roomId: string;
@@ -60,8 +69,10 @@ async function place(
     .select({ name: students.name })
     .from(students)
     .where(and(eq(students.id, studentId), livesIn(room.dorm, dormCohorts)))
-    .limit(1);
+    .for("update");
   if (!resident) return notResident(room.dorm);
+  const companionRoom = await readCompanionRoom(tx, studentId);
+  if (companionRoom) return placedAsCompanion(companionRoom);
   if ((await countTaken(tx, room.id)) >= room.capacity) return ROOM_FULL;
 
   const placed = await tx
@@ -79,10 +90,11 @@ async function place(
 /**
  * Puts a resident into a room, and gives back what to tell the staff.
  * Refused for a student who does not live in the dorm of the room, for a
- * resident who has a room, for a full room, and while no academic period
- * runs. The room is held while its
+ * resident who has a room, also one they have as kakak pendamping, for a
+ * full room, and while no academic period runs. The room is held while its
  * places are counted, so two people filling the last place at the same
- * moment cannot both succeed.
+ * moment cannot both succeed. The student is held too, as placing a kakak
+ * pendamping does, so nobody gets a room both ways at the same moment.
  */
 export async function placeResident(
   db: Database,

@@ -15,7 +15,7 @@ import { autoFillRoom } from "./auto-fill-room";
 import { placeResident, type SentPlace } from "./place-resident";
 import { listUnplaced, type ResidentScope } from "./room-list";
 import { takeOutResident } from "./take-out-resident";
-import { EVERYONE, residentsOfRoom } from "./test-records";
+import { addTestCompanion, EVERYONE, residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -96,6 +96,12 @@ async function addTestRows(db: Database): Promise<TestRows> {
   return { program, roomId, women };
 }
 
+/** Makes a student kakak pendamping of Dana Rakca, placed in a room there. */
+async function placeAsCompanion(db: Database, studentId: string) {
+  const roomId = await addTestRoom(db, { number: "P201", floor: 2 });
+  await addTestCompanion(db, studentId, { roomId });
+}
+
 async function waitingIn(db: Database): Promise<string[]> {
   const scope: ResidentScope = {
     dorm: DORM,
@@ -169,6 +175,36 @@ describe("placeResident", () => {
       });
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
       expect(await residentsOfRoom(db, other)).toEqual([studentId]);
+    });
+  });
+
+  it("refuses a resident who is placed in a room as kakak pendamping", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, women } = await addTestRows(db);
+      const [studentId = ""] = women;
+      await placeAsCompanion(db, studentId);
+
+      const placed = await place(db, MANAGER, { roomId, studentId });
+
+      expect(placed).toEqual({
+        ok: false,
+        error:
+          "Mahasiswa ini sudah diplot sebagai kakak pendamping di Asrama Dana Rakca, lantai 2, kamar P201. Keluarkan dari kamar itu dulu.",
+      });
+      expect(await residentsOfRoom(db, roomId)).toEqual([]);
+    });
+  });
+
+  it("places a resident who is kakak pendamping without a room", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, women } = await addTestRows(db);
+      const [studentId = ""] = women;
+      await addTestCompanion(db, studentId);
+
+      const placed = await place(db, MANAGER, { roomId, studentId });
+
+      expect(placed.ok).toBe(true);
+      expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
     });
   });
 
@@ -413,6 +449,22 @@ describe("autoFillRoom", () => {
         [first, second].sort(),
       );
       expect(await waitingIn(db)).toEqual([third]);
+    });
+  });
+
+  it("leaves out a resident who is placed in a room as kakak pendamping", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, women } = await addTestRows(db);
+      const [first = "", second = "", third = ""] = women;
+      await placeAsCompanion(db, first);
+
+      const filled = await fill(db, MANAGER, roomId);
+
+      expect(filled.ok).toBe(true);
+      expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
+        [second, third].sort(),
+      );
+      expect(await waitingIn(db)).toEqual([]);
     });
   });
 

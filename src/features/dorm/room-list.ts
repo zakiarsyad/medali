@@ -5,6 +5,7 @@ import {
   eq,
   ilike,
   isNull,
+  not,
   or,
   type SQL,
   sql,
@@ -77,6 +78,17 @@ const COMPANIONS_IN_ROOM = sql`(
 )`;
 
 /**
+ * Whether a student row is placed in a room as kakak pendamping. A student
+ * has one room only, so a resident of Wismantara who is placed that way
+ * waits for no room in their own dorm.
+ */
+export const PLACED_AS_COMPANION = sql`exists (
+  select 1 from ${dormCompanions}
+  where ${dormCompanions.studentId} = ${students.id}
+    and ${dormCompanions.roomId} is not null
+)`;
+
+/**
  * Every room of a dorm, by floor and number, in one request. The places
  * taken are those of students who live in the dorm now, and of the kakak
  * pendamping placed in the room.
@@ -132,20 +144,30 @@ export async function readFloorResidents(
 export interface ResidentCounts {
   residents: number;
   placed: number;
+  /** How many of them are placed in a room as kakak pendamping instead. */
+  placedAsCompanion: number;
 }
 
-/** How many residents a dorm has, and how many of them have a room in it. */
+/**
+ * How many residents a dorm has, how many of them have a room in it, and
+ * how many have their room as kakak pendamping.
+ */
 export async function countResidents(
   db: Database,
   scope: ResidentScope,
 ): Promise<ResidentCounts> {
   const [counted] = await db
-    .select({ residents: count(), placed: count(dormRooms.id) })
+    .select({
+      residents: count(),
+      placed: count(dormRooms.id),
+      placedAsCompanion:
+        sql`count(*) filter (where ${PLACED_AS_COMPANION})`.mapWith(Number),
+    })
     .from(students)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(dormRooms, roomIn(scope.dorm))
     .where(inScope(scope));
-  return counted ?? { residents: 0, placed: 0 };
+  return counted ?? { residents: 0, placed: 0, placedAsCompanion: 0 };
 }
 
 /** Students whose name or NIM holds the text. No text finds everyone. */
@@ -165,6 +187,7 @@ export interface UnplacedResidents {
 /**
  * The residents of a dorm without a room in it whose name or NIM holds
  * the search text: the first of them in NIM order, and how many there are.
+ * One who is placed in a room as kakak pendamping is left out.
  */
 export async function listUnplaced(
   db: Database,
@@ -176,7 +199,14 @@ export async function listUnplaced(
     .from(students)
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(dormRooms, roomIn(scope.dorm))
-    .where(and(inScope(scope), isNull(dormRooms.id), matchesSearch(query)))
+    .where(
+      and(
+        inScope(scope),
+        isNull(dormRooms.id),
+        not(PLACED_AS_COMPANION),
+        matchesSearch(query),
+      ),
+    )
     .orderBy(asc(students.nim))
     .limit(UNPLACED_SHOWN);
   return {

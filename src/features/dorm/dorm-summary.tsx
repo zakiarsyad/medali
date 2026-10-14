@@ -67,6 +67,7 @@ export function DormNumbers({
   companions: CompanionCounts | null;
 }) {
   const places = rooms.reduce((sum, room) => sum + room.capacity, 0);
+  const waiting = counts.residents - counts.placed - counts.placedAsCompanion;
   return (
     <dl className={styles.numbers}>
       <DormNumber
@@ -77,7 +78,7 @@ export function DormNumbers({
       <DormNumber
         label="Sudah diplot"
         amount={counts.placed}
-        note={`${shown(counts.residents - counts.placed)} belum diplot`}
+        note={`${shown(waiting)} belum diplot`}
       />
       <DormNumber
         label="Kamar terdaftar"

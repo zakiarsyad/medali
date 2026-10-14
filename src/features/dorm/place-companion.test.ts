@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods } from "@/db/schema";
+import { academicPeriods, dormRoomPlaces } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestProgram,
   addTestRoom,
   addTestStudent,
+  placeTestResident,
 } from "@/dorms/test-records";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
@@ -93,6 +94,18 @@ async function addSecondCompanion(db: Database, program: number) {
     nim: "9936610002",
     name: "Tari Uji",
     cohortYear: 2061,
+  });
+  await addTestCompanion(db, id);
+  return id;
+}
+
+/** An active kakak pendamping of Dana Rakca who lives in Wismantara Putri. */
+async function addWismantaraCompanion(db: Database, program: number) {
+  const id = await addTestStudent(db, program, {
+    nim: "9936610003",
+    name: "Wisma Uji",
+    cohortYear: 2061,
+    isInternational: true,
   });
   await addTestCompanion(db, id);
   return id;
@@ -267,6 +280,57 @@ describe("placeCompanion", () => {
         error:
           "Mahasiswa ini sekarang penghuni Asrama Dana Rakca atau Asrama Cipta Bakti, jadi diplot sebagai penghuni.",
       });
+    });
+  });
+
+  it("places one who lives in Wismantara and has no room there", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, roomId } = await addTestRows(db);
+      const resident = await addWismantaraCompanion(db, program);
+
+      const placed = await place(db, roomId, resident);
+
+      expect(placed.ok).toBe(true);
+      expect((await companionOf(db, resident))?.roomId).toBe(roomId);
+    });
+  });
+
+  it("refuses one who has a room in Wismantara, until they are taken out of it", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, roomId } = await addTestRows(db);
+      const resident = await addWismantaraCompanion(db, program);
+      const ownRoom = await addTestRoom(db, {
+        number: "KP301",
+        dorm: "wismantara_putri",
+        floor: 3,
+      });
+      await placeTestResident(db, ownRoom, resident);
+
+      const refused = await place(db, roomId, resident);
+      await db.delete(dormRoomPlaces);
+      const placed = await place(db, roomId, resident);
+
+      expect(refused).toEqual({
+        ok: false,
+        error:
+          "Mahasiswa ini sudah diplot sebagai penghuni di Asrama Wismantara Putri, lantai 3, kamar KP301. Keluarkan dari kamar itu dulu.",
+      });
+      expect(placed.ok).toBe(true);
+    });
+  });
+
+  it("places one whose place in Wismantara was left behind when they stopped living there", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, companion } = await addTestRows(db);
+      const oldRoom = await addTestRoom(db, {
+        number: "KP302",
+        dorm: "wismantara_putri",
+      });
+      await placeTestResident(db, oldRoom, companion);
+
+      const placed = await place(db, roomId, companion);
+
+      expect(placed.ok).toBe(true);
     });
   });
 
