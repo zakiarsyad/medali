@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2900 to 2900.
+// Sample Tahun akademik of this file: 2908 to 2908.
 // Sample NIMs of this file: 9937890000 to 9937890099.
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -11,7 +11,7 @@ import { addApprovedLeave, campusAt } from "./test-returns";
 const inTestDatabase = withTestDatabase();
 
 async function addRecords(db: Database) {
-  const [ani] = await addTestResidents(db, 2900, "Prodi Uji Simpan Izin", [
+  const [ani] = await addTestResidents(db, 2908, "Prodi Uji Simpan Izin", [
     "9937890001",
   ]);
   if (!ani) throw new Error("The resident was not added.");
@@ -21,14 +21,14 @@ async function addRecords(db: Database) {
   return { studentId: ani.studentId, managerId: manager.id };
 }
 
-/** Leave from 09:00 to 16:00 on 13 October 2900, Selesai at a time on campus. */
+/** Leave from 09:00 to 16:00 on 13 October 2908, Selesai at a time on campus. */
 async function addReturned(db: Database, returnedAt: string) {
   const { studentId, managerId } = await addRecords(db);
   await addApprovedLeave(
     db,
     studentId,
     managerId,
-    { startsAt: "2900-10-13T09:00", endsAt: "2900-10-13T16:00" },
+    { startsAt: "2908-10-13T09:00", endsAt: "2908-10-13T16:00" },
     { status: "completed", returnedAt: campusAt(returnedAt) },
   );
   return studentId;
@@ -41,19 +41,19 @@ function spanOf(start: string, end: string) {
 describe("readApprovedLeaves", () => {
   it("covers a late resident up to their return, past the end of their leave", async () => {
     await inTestDatabase(async (db) => {
-      const studentId = await addReturned(db, "2900-10-13T18:20");
+      const studentId = await addReturned(db, "2908-10-13T18:20");
 
       const leaves = await readApprovedLeaves(
         db,
-        spanOf("2900-10-13T17:00", "2900-10-13T18:00"),
+        spanOf("2908-10-13T17:00", "2908-10-13T18:00"),
       );
 
       expect(leaves).toEqual([
         {
           studentId,
           kind: "special",
-          start: campusAt("2900-10-13T09:00"),
-          end: campusAt("2900-10-13T18:20"),
+          start: campusAt("2908-10-13T09:00"),
+          end: campusAt("2908-10-13T18:20"),
         },
       ]);
     });
@@ -61,15 +61,15 @@ describe("readApprovedLeaves", () => {
 
   it("no longer covers a resident who came back early, from their return", async () => {
     await inTestDatabase(async (db) => {
-      await addReturned(db, "2900-10-13T12:00");
+      await addReturned(db, "2908-10-13T12:00");
 
       const after = await readApprovedLeaves(
         db,
-        spanOf("2900-10-13T13:00", "2900-10-13T14:00"),
+        spanOf("2908-10-13T13:00", "2908-10-13T14:00"),
       );
       const before = await readApprovedLeaves(
         db,
-        spanOf("2900-10-13T11:00", "2900-10-13T11:30"),
+        spanOf("2908-10-13T11:00", "2908-10-13T11:30"),
       );
 
       expect(after).toEqual([]);
@@ -81,17 +81,17 @@ describe("readApprovedLeaves", () => {
     await inTestDatabase(async (db) => {
       const { studentId, managerId } = await addRecords(db);
       await addApprovedLeave(db, studentId, managerId, {
-        startsAt: "2900-10-13T09:00",
-        endsAt: "2900-10-13T16:00",
+        startsAt: "2908-10-13T09:00",
+        endsAt: "2908-10-13T16:00",
       });
 
       const during = await readApprovedLeaves(
         db,
-        spanOf("2900-10-13T15:00", "2900-10-13T15:30"),
+        spanOf("2908-10-13T15:00", "2908-10-13T15:30"),
       );
       const after = await readApprovedLeaves(
         db,
-        spanOf("2900-10-13T16:00", "2900-10-13T17:00"),
+        spanOf("2908-10-13T16:00", "2908-10-13T17:00"),
       );
 
       expect(during).toHaveLength(1);
@@ -103,20 +103,20 @@ describe("readApprovedLeaves", () => {
 describe("overlapsOwn", () => {
   it("holds the time of leave that is Selesai up to its return only", async () => {
     await inTestDatabase(async (db) => {
-      const studentId = await addReturned(db, "2900-10-13T12:00");
+      const studentId = await addReturned(db, "2908-10-13T12:00");
 
       expect(
         await overlapsOwn(
           db,
           studentId,
-          spanOf("2900-10-13T11:00", "2900-10-13T13:00"),
+          spanOf("2908-10-13T11:00", "2908-10-13T13:00"),
         ),
       ).toBe(true);
       expect(
         await overlapsOwn(
           db,
           studentId,
-          spanOf("2900-10-13T13:00", "2900-10-13T15:00"),
+          spanOf("2908-10-13T13:00", "2908-10-13T15:00"),
         ),
       ).toBe(false);
     });
