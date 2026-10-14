@@ -489,4 +489,49 @@ describe("listManagedAccounts", () => {
       ]);
     });
   });
+
+  it("shows the last page of the search and the filter when asked for one past the end", async () => {
+    await inTestDatabase(async (db) => {
+      for (let index = 1; index <= 27; index += 1) {
+        const number = String(index).padStart(2, "0");
+        await addTestStaffAccount(db, `Halaman Uji ${number}`, ["mentor"]);
+      }
+      await addTestStaffAccount(db, "Halaman Uji Penilai", ["assessor"]);
+
+      const searched = await listManagedAccounts(db, {
+        query: "halaman uji",
+        role: null,
+        page: 98,
+      });
+      const filtered = await listManagedAccounts(db, {
+        query: "halaman uji",
+        role: "assessor",
+        page: 98,
+      });
+
+      expect(searched.page).toBe(1);
+      expect(searched.total).toBe(28);
+      expect(searched.accounts.map((account) => account.name)).toEqual([
+        "Halaman Uji 26",
+        "Halaman Uji 27",
+        "Halaman Uji Penilai",
+      ]);
+      expect(filtered.page).toBe(0);
+      expect(filtered.accounts.map((account) => account.name)).toEqual([
+        "Halaman Uji Penilai",
+      ]);
+    });
+  });
+
+  it("shows no account when nothing matches, whatever page was asked for", async () => {
+    await inTestDatabase(async (db) => {
+      const listed = await listManagedAccounts(db, {
+        query: "tidak ada yang cocok",
+        role: null,
+        page: 98,
+      });
+
+      expect(listed).toEqual({ accounts: [], total: 0, page: 0 });
+    });
+  });
 });

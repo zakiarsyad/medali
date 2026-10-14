@@ -65,6 +65,7 @@ export async function UsersScreen({
     listStudyPrograms(db),
     listBamStudents(db, params.bamPage),
   ]);
+  const shown = { ...params, page: list.page };
   return (
     <>
       <PageHead title="Pengaturan pengguna">
@@ -79,17 +80,17 @@ export async function UsersScreen({
         <Filters params={params} />
         <AccountTable
           accounts={list.accounts}
-          filter={params}
+          filter={shown}
           editing={params.editing}
           programs={programs}
         />
         {list.total > 0 && (
           <ListPager
-            page={params.page}
+            page={shown.page}
             pageSize={PAGE_SIZE}
             total={list.total}
             unit="pengguna"
-            addressOf={(page) => listAddress({ ...params, page })}
+            addressOf={(page) => listAddress({ ...shown, page })}
           />
         )}
         <p className={styles.detail}>
@@ -99,7 +100,7 @@ export async function UsersScreen({
           Badan Asrama Mahasiswa di bawah.
         </p>
       </section>
-      <BamPanel list={bamList} params={params} />
+      <BamPanel list={bamList} params={shown} />
       <section className={styles.panel}>
         <h2 className={styles.heading}>Hak akses tiap peran</h2>
         <p className={styles.detail}>

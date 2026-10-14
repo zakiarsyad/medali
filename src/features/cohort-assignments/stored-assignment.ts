@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
@@ -7,6 +7,7 @@ import {
   cohortAssignmentChanges,
   cohortAssignmentGroups,
   cohortAssignments,
+  mentorGroupMentors,
   students,
   studyPrograms,
 } from "@/db/schema";
@@ -25,7 +26,10 @@ export type DraftMember = Pick<
   "id" | "nim" | "name" | "sex" | "province" | "className"
 >;
 
-/** The mentor chosen for a group. The NIP of the mentor is never read. */
+/**
+ * The mentor of a group: of today for a group in force, or else the one
+ * chosen. The NIP of the mentor is never read.
+ */
 export interface ChosenMentor {
   id: string;
   name: string;
@@ -39,6 +43,11 @@ export interface DraftGroup extends GroupCodeParts {
   programName: string;
   /** Null while no mentor is chosen. */
   mentor: ChosenMentor | null;
+  /**
+   * The day the mentor of today took the group in force, or null for a
+   * group of a penetapan that is not fixed.
+   */
+  mentorSince: string | null;
   /** By name. */
   members: DraftMember[];
 }
@@ -89,6 +98,18 @@ const ASSIGNMENT = {
 
 const mentor = alias(accounts, "mentor");
 
+/** The mentor line of today of the kelompok a group became, if any. */
+const lineToday = alias(mentorGroupMentors, "line_today");
+
+/**
+ * A group that became a kelompok in force has the mentor of that
+ * kelompok today, so a replacement there shows here. Any other group has
+ * the mentor chosen for it.
+ */
+const MENTOR_ID_TODAY = sql<
+  string | null
+>`coalesce(${lineToday.mentorId}, ${cohortAssignmentGroups.mentorId})`;
+
 const GROUP = {
   id: cohortAssignmentGroups.id,
   studyProgramId: cohortAssignmentGroups.studyProgramId,
@@ -96,9 +117,10 @@ const GROUP = {
   number: cohortAssignmentGroups.number,
   programName: studyPrograms.name,
   programCode: studyPrograms.code,
-  mentorId: cohortAssignmentGroups.mentorId,
+  mentorId: MENTOR_ID_TODAY,
   mentorName: mentor.name,
   mentorTitle: mentor.title,
+  mentorSince: lineToday.startsOn,
 };
 
 const MEMBER = {
@@ -119,7 +141,14 @@ function readGroupRows(db: Database, limit: RowLimit, assignmentId: string) {
       studyPrograms,
       eq(studyPrograms.id, cohortAssignmentGroups.studyProgramId),
     )
-    .leftJoin(mentor, eq(mentor.id, cohortAssignmentGroups.mentorId))
+    .leftJoin(
+      lineToday,
+      and(
+        eq(lineToday.groupId, cohortAssignmentGroups.mentorGroupId),
+        isNull(lineToday.endsOn),
+      ),
+    )
+    .leftJoin(mentor, eq(mentor.id, MENTOR_ID_TODAY))
     .where(
       and(
         eq(cohortAssignmentGroups.assignmentId, assignmentId),
@@ -200,8 +229,9 @@ function draftGroup(
  * The penetapan of an angkatan with its groups, their members and its
  * log, or null for an angkatan that has none. An account held to its
  * study programs is given the groups of those programs only. The groups
- * of a fixed one hold the members they have today, and those of any
- * other the members prepared for them: see `membersToday`. A student
+ * of a fixed one hold the members and the mentor they have today, and
+ * those of any other the members and the mentor prepared for them: see
+ * `membersToday`. A student
  * who was removed or is not Aktif any more is in no group here, only
  * counted: the next save takes them out of what is stored. The log is
  * left unread, and given empty, when the caller says it is not shown.
