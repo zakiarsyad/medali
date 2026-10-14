@@ -79,7 +79,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The table for leave requests is added, with sample requests in
+- [x] 1. The table for leave requests is added, with sample requests in
   every status.
 - [ ] 2. The rights to ask for and to decide on leave are added to the
   permission list, with their checks.
