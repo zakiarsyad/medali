@@ -92,7 +92,7 @@ residents see what is on today and next.
 
 ## Steps
 
-- [ ] 1. The tables for dorm activities and their days off are added,
+- [x] 1. The tables for dorm activities and their days off are added,
   with sample repeating and one-off activities.
 - [ ] 2. The rights to see and to manage dorm activities are added to
   the permission list, with their checks.
