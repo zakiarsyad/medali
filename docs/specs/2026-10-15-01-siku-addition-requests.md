@@ -111,7 +111,7 @@ An approved request becomes a normal gain in the SIKU history.
 
 ## Steps
 
-- [ ] 1. Requests are stored with their photos, status and decision. The
+- [x] 1. Requests are stored with their photos, status and decision. The
   rights to ask and to decide are added, with their checks. Sample data adds
   requests in every status, with drawn placeholder photos.
 - [ ] 2. The student sends a request from "Ajukan penambahan SIKU".

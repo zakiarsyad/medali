@@ -3,6 +3,7 @@ import { noteFilesEmptied, startWaitsForFiles } from "@/db/deploy-start";
 import { samplePhotosAdded } from "@/db/seed-attendance-photos";
 import { samplePapersAdded } from "@/db/seed-clarification-papers";
 import { sampleReturnPhotosAdded } from "@/db/seed-return-photos";
+import { sampleRequestPhotosAdded } from "@/db/seed-siku-request-photos";
 import {
   currentStage,
   deployBranch,
@@ -27,11 +28,16 @@ async function deploy(): Promise<string> {
     // sample attendance of a database that was started over has no photo
     // yet, and one that kept its data has none left without. The same
     // goes for the papers of the sample clarifications and the photos of
-    // the sample reports of a return from leave.
+    // the sample reports of a return from leave and of the sample
+    // requests for a SIKU gain.
     const photos = await samplePhotosAdded(connection.db, fileStorage());
     const papers = await samplePapersAdded(connection.db, fileStorage());
     const returns = await sampleReturnPhotosAdded(connection.db, fileStorage());
-    return `${emptied}\n${photos}\n${papers}\n${returns}`;
+    const requests = await sampleRequestPhotosAdded(
+      connection.db,
+      fileStorage(),
+    );
+    return `${emptied}\n${photos}\n${papers}\n${returns}\n${requests}`;
   } finally {
     await connection.close();
   }

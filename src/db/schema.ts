@@ -43,6 +43,14 @@ import {
   SPECIAL_REASONS,
 } from "@/features/dorm/leave-ids";
 import {
+  PHOTOS_MAX,
+  PHOTOS_MIN,
+  REPORT_MAX_LENGTH,
+  REPORT_MIN_LENGTH,
+  DECISION_NOTE_MAX_LENGTH as REQUEST_NOTE_MAX_LENGTH,
+  REQUEST_STATUSES,
+} from "@/features/siku/request-ids";
+import {
   BASIS_MAX_LENGTH,
   ENTRY_NOTE_MAX_LENGTH,
   GAIN_REASONS,
@@ -134,6 +142,11 @@ export const dormReturnReportStatus = pgEnum(
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
 
 export const sikuReason = pgEnum("siku_reason", SIKU_REASONS);
+
+export const sikuRequestStatus = pgEnum(
+  "siku_request_status",
+  REQUEST_STATUSES,
+);
 
 export const sikuAdjustmentChangeAction = pgEnum(
   "siku_adjustment_change_action",
@@ -1959,5 +1972,103 @@ export const sikuAdjustmentChanges = pgTable(
   },
   (table) => [
     index("siku_adjustment_changes_adjustment").on(table.adjustmentId),
+  ],
+);
+
+/**
+ * A student's request for a SIKU gain, with the day of the deed, their
+ * report and proof photos. The key is made by the form that sent it, so
+ * a request sent twice is kept once. Kepala Unit or Penilai Mahasiswa
+ * approves it, which makes a gain for the student it names, or rejects
+ * it with a note. A withdrawn request is marked, never erased, and is
+ * shown to nobody.
+ */
+export const sikuRequests = pgTable(
+  "siku_requests",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    reason: sikuReason().notNull(),
+    /** Tanggal kegiatan: never after the day it was sent. */
+    day: date().notNull(),
+    /** Keterangan (laporan kegiatan). */
+    report: text().notNull(),
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+    status: sikuRequestStatus().notNull().default("waiting"),
+    /** Who decided, the role they decided as, which the student is shown, and when. */
+    decidedBy: uuid().references(() => accounts.id),
+    decidedAs: role(),
+    decidedAt: timestamp({ withTimezone: true }),
+    /** Catatan penilai; empty when nothing was noted. */
+    decisionNote: text().notNull().default(""),
+    /** The gain an approval made. */
+    entryId: uuid()
+      .unique()
+      .references(() => sikuAdjustments.id),
+    withdrawnAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("siku_requests_student").on(table.studentId, table.sentAt),
+    index("siku_requests_status").on(table.status, table.sentAt),
+    check(
+      "siku_requests_reason_is_gain",
+      sql`${table.reason} in (${SIKU_GAIN_REASON_LIST})`,
+    ),
+    check(
+      "siku_requests_report_length",
+      sql`char_length(${table.report}) between ${sql.raw(String(REPORT_MIN_LENGTH))} and ${sql.raw(String(REPORT_MAX_LENGTH))}`,
+    ),
+    check(
+      "siku_requests_decision_note_length",
+      sql`char_length(${table.decisionNote}) <= ${sql.raw(String(REQUEST_NOTE_MAX_LENGTH))}`,
+    ),
+    check(
+      "siku_requests_decided_when_decided",
+      sql`(${table.status} in ('approved', 'rejected')) = (${table.decidedAt} is not null) and (${table.decidedAt} is null) = (${table.decidedBy} is null) and (${table.decidedAt} is null) = (${table.decidedAs} is null)`,
+    ),
+    check(
+      "siku_requests_gain_when_approved",
+      sql`(${table.status} = 'approved') = (${table.entryId} is not null)`,
+    ),
+    check(
+      "siku_requests_rejected_has_note",
+      sql`${table.status} <> 'rejected' or ${table.decisionNote} <> ''`,
+    ),
+    check(
+      "siku_requests_withdrawn_has_moment",
+      sql`(${table.status} = 'withdrawn') = (${table.withdrawnAt} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * The proof photos of a request, in the order they were picked. Each is
+ * kept large and as a small copy, so the cards load the small one first.
+ * Where they are in the file storage is empty for a sample request until
+ * the sample photos are added.
+ */
+export const sikuRequestPhotos = pgTable(
+  "siku_request_photos",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    requestId: uuid()
+      .notNull()
+      .references(() => sikuRequests.id),
+    place: smallint().notNull(),
+    photoKey: text().unique(),
+    thumbKey: text().unique(),
+  },
+  (table) => [
+    unique("siku_request_photos_place").on(table.requestId, table.place),
+    check(
+      "siku_request_photos_place_in_range",
+      sql`${table.place} between ${sql.raw(String(PHOTOS_MIN))} and ${sql.raw(String(PHOTOS_MAX))}`,
+    ),
+    check(
+      "siku_request_photos_both_kept",
+      sql`(${table.photoKey} is null) = (${table.thumbKey} is null)`,
+    ),
   ],
 );

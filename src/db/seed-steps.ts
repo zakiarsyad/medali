@@ -8,6 +8,7 @@ import { samplePhotosAdded } from "./seed-attendance-photos";
 import { samplePapersAdded } from "./seed-clarification-papers";
 import { checkSeedStage, checkSeedTarget } from "./seed-plan";
 import { sampleReturnPhotosAdded } from "./seed-return-photos";
+import { sampleRequestPhotosAdded } from "./seed-siku-request-photos";
 
 /**
  * What the sample data command does, in order. Both checks come before
@@ -27,9 +28,10 @@ export async function loadSampleData(
 
 /**
  * What the sample photos command does on a local computer, after the
- * sample data is in: it gives the sample attendance and the sample
- * reports of a return from leave their drawn pictures, and the sample
- * clarifications their drawn papers. The previews get theirs from the deploy step, and the campus server
+ * sample data is in: it gives the sample attendance, the sample reports
+ * of a return from leave and the sample requests for a SIKU gain their
+ * drawn pictures, and the sample clarifications their drawn papers. The
+ * previews get theirs from the deploy step, and the campus server
  * never does, whatever the computer the command runs on says about
  * itself. `store` is null while the file storage settings are empty.
  */
@@ -48,5 +50,6 @@ export async function loadSamplePhotos(
   const photos = await samplePhotosAdded(db, store);
   const papers = await samplePapersAdded(db, store);
   const returns = await sampleReturnPhotosAdded(db, store);
-  return `${photos}\n${papers}\n${returns}`;
+  const requests = await sampleRequestPhotosAdded(db, store);
+  return `${photos}\n${papers}\n${returns}\n${requests}`;
 }
