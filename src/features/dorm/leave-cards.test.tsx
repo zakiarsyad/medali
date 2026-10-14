@@ -1,3 +1,5 @@
+// Sample NIMs of this file: 9937970000 to 9937970099. None is added to
+// the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { LeaveCard } from "./leave-card";
@@ -33,7 +35,7 @@ const CARD: LeaveCard = {
   decisionNote: "",
   covered: [],
   name: "Penghuni Contoh",
-  nim: "9900000001",
+  nim: "9937970001",
   room: "Asrama Dana Rakca, kamar 101",
   decision: { by: "Pengelola Contoh", note: "" },
   warnings: [],
