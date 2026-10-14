@@ -7,7 +7,17 @@ import {
 } from "./own-request-list";
 import type { OwnRequest } from "./own-requests";
 import { OwnSikuScreen } from "./own-siku-screen";
+import type { RequestBoard, RequestCard } from "./request-board";
+import { SAME_GAIN_WARNING } from "./request-card-view";
+import { RequestCards } from "./request-cards";
+import {
+  DECIDER_REQUESTS,
+  NO_REQUESTS_HERE,
+  READ_ONLY_REQUESTS,
+  RequestPanel,
+} from "./request-panel";
 import { PHOTO_NOT_KEPT } from "./request-photo-thumbs";
+import { START_PARAMS } from "./siku-address";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
@@ -109,5 +119,102 @@ describe("SIKU akhir of a student who may ask", () => {
       "tidak ada pengajuan menunggu",
     );
     expect(screen(null)).toContain("nilai dasar + penambahan − pengurangan");
+  });
+});
+
+const CARD: RequestCard = {
+  id: "00000000-0000-4000-8000-000000000401",
+  name: "Ayu Contoh",
+  nim: "9900230001",
+  program: "D3 Akuntansi",
+  reason: "peer_mentoring",
+  day: "2026-10-12",
+  report: "Membimbing dua mahasiswa lain menyiapkan ujian.",
+  sentAt: new Date("2026-10-13T12:00:00Z"),
+  status: "waiting",
+  points: null,
+  decidedBy: null,
+  decidedAs: null,
+  decidedAt: null,
+  note: "",
+  hasSameGain: false,
+  photos: [{ id: "00000000-0000-4000-8000-000000000411", isKept: true }],
+};
+
+const BOARD: RequestBoard = {
+  counts: { waiting: 1, approved: 4, rejected: 2, all: 8 },
+  cards: [CARD],
+  matching: 1,
+  page: 1,
+};
+
+function panel(board: RequestBoard, mayDecide: boolean) {
+  return renderToStaticMarkup(
+    <RequestPanel
+      board={board}
+      params={START_PARAMS}
+      mayDecide={mayDecide}
+      cards={<RequestCards cards={board.cards} />}
+    />,
+  );
+}
+
+describe("Pengajuan penambahan SIKU dari mahasiswa", () => {
+  it("offers each status with its count, Diajukan chosen at the start, in the address", () => {
+    const html = panel(BOARD, false);
+
+    expect(html).toContain("Pengajuan penambahan SIKU dari mahasiswa");
+    expect(html).toContain(
+      'aria-current="true" href="/penilaian/siku">Diajukan 1</a>',
+    );
+    expect(html).toContain('href="/penilaian/siku?pengajuan=disetujui"');
+    expect(html).toMatch(/Disetujui (<!-- -->)?4/);
+    expect(html).toMatch(/Ditolak (<!-- -->)?2/);
+    expect(html).toMatch(/Semua (<!-- -->)?8/);
+  });
+
+  it("shows a card with the student, NIM, program, reason, dates, report and small photos", () => {
+    const html = panel(BOARD, false);
+
+    expect(html).toContain("Ayu Contoh");
+    expect(html).toContain("9900230001 · D3 Akuntansi");
+    expect(html).toContain("Melakukan pembimbingan mahasiswa lain");
+    expect(html).toMatch(/Kegiatan (<!-- -->)?12 Okt 2026/);
+    expect(html).toMatch(/diajukan (<!-- -->)?13 Okt 2026, 19.00/);
+    expect(html).toContain("Membimbing dua mahasiswa lain menyiapkan ujian.");
+    expect(html).toContain("?ukuran=kecil");
+  });
+
+  it("tells a role that only reads who decides", () => {
+    expect(panel(BOARD, false)).toContain(READ_ONLY_REQUESTS);
+    expect(panel(BOARD, true)).not.toContain(READ_ONLY_REQUESTS);
+    expect(panel(BOARD, true)).toContain(DECIDER_REQUESTS);
+  });
+
+  it("says so when the status holds no request", () => {
+    const html = panel({ ...BOARD, cards: [], matching: 0 }, false);
+
+    expect(html).toContain(NO_REQUESTS_HERE);
+  });
+
+  it("warns on a waiting card when the student has a gain with the same reason on that day", () => {
+    const warned = { ...CARD, hasSameGain: true };
+    const decided = {
+      ...warned,
+      status: "rejected",
+      decidedBy: "Lina Contoh",
+      decidedAs: "assessor",
+      decidedAt: new Date("2026-10-14T03:00:00Z"),
+      note: "Sudah tercatat.",
+    } as const;
+
+    expect(panel({ ...BOARD, cards: [warned] }, true)).toContain(
+      SAME_GAIN_WARNING,
+    );
+    const html = panel({ ...BOARD, cards: [decided] }, true);
+    expect(html).not.toContain(SAME_GAIN_WARNING);
+    expect(html).toContain(
+      "Diperiksa Lina Contoh (Penilai Mahasiswa), 14 Okt 2026, 10.00. Catatan: Sudah tercatat.",
+    );
   });
 });

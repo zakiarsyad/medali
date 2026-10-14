@@ -24,6 +24,8 @@ describe("readSikuParams", () => {
         riwayat: "2",
         lihat: ENTRY,
         lihathal: "4",
+        pengajuan: "ditolak",
+        pengajuanhal: "5",
       }),
     ).toEqual({
       query: "ayu",
@@ -34,6 +36,8 @@ describe("readSikuParams", () => {
       historyPage: 2,
       seenEntry: ENTRY,
       seenPage: 4,
+      requestFilter: "rejected",
+      requestPage: 5,
     });
   });
 
@@ -47,6 +51,8 @@ describe("readSikuParams", () => {
         riwayat: "-1",
         lihat: "bukan-kunci",
         lihathal: "x",
+        pengajuan: "dibatalkan",
+        pengajuanhal: "0",
       }),
     ).toEqual(START_PARAMS);
     expect(readSikuParams({ hal: ["2", "5"] }).page).toBe(2);
@@ -76,12 +82,14 @@ describe("sikuAddress", () => {
       historyPage: 3,
       seenEntry: ENTRY,
       seenPage: 2,
+      requestFilter: "all",
+      requestPage: 2,
     } as const;
 
     const address = sikuAddress(params);
 
     expect(address).toBe(
-      `/penilaian/siku?cari=Ayu+L&saring=dasar&hal=2&turun=semua&riwayat=3&lihat=${ENTRY}&lihathal=2`,
+      `/penilaian/siku?cari=Ayu+L&saring=dasar&hal=2&turun=semua&riwayat=3&lihat=${ENTRY}&lihathal=2&pengajuan=semua&pengajuanhal=2`,
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readSikuParams(Object.fromEntries(search))).toEqual(params);

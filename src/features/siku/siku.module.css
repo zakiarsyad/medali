@@ -307,3 +307,61 @@
 .cancelled {
   color: var(--muted);
 }
+
+a.choice {
+  text-decoration: none;
+}
+
+.choice[aria-current="true"] {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--surface);
+}
+
+/* The request cards, side by side on a laptop and one column on a phone. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+  padding: var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.card p {
+  margin: 0;
+}
+
+.cardHead {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardHead > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.warning {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--goldsoft);
+  color: var(--ink);
+  font-size: var(--text-md);
+}
