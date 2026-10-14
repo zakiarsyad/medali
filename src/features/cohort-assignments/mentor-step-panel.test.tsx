@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkOfGroups } from "./draft-check";
+import { checkOfGroups, READY_WORDS } from "./draft-check";
 import { DraftGroupsPanel } from "./draft-groups-panel";
 import type { PoolMentor } from "./mentor-options";
 import { MentorStepPanel } from "./mentor-step-panel";
@@ -32,6 +32,7 @@ function group(id: string, more: Partial<DraftGroup>): DraftGroup {
     entryPath: "regular",
     number: 1,
     mentor: null,
+    mentorSince: null,
     members: members(26, id.slice(0, 2)),
     ...more,
   };
@@ -128,6 +129,35 @@ describe("MentorStepPanel", () => {
   it("offers no move in a program studi with one group", () => {
     expect(step(OTHER)).not.toContain("Pindahkan ke…");
   });
+
+  it("does not call a complete draft ready while it names a mentor who can no longer be chosen", () => {
+    const zaki = { id: "zaki", name: "Zaki Contoh", title: null };
+    const groups = [
+      group(FIRST, { mentor: YUNI }),
+      group(SECOND, { number: 2, mentor: zaki }),
+    ];
+    const waiting = WAITING.filter((student) =>
+      groups.some((g) => g.members.some((member) => member.id === student.id)),
+    );
+    const check = checkOfGroups(groups, waiting);
+    const panel = renderToStaticMarkup(
+      <OneSaveAtATime>
+        <MentorStepPanel
+          assignment={{ cohortYear: 2026, version: 4, groups }}
+          check={check}
+          pool={POOL}
+          openGroupId={null}
+        />
+      </OneSaveAtATime>,
+    );
+
+    expect(check.isComplete).toBe(true);
+    expect(panel).toContain("Zaki Contoh (tidak bisa dipilih lagi)");
+    expect(panel).toContain(
+      "1 pengasuh pada draf tidak bisa dipilih lagi untuk angkatan ini.",
+    );
+    expect(panel).not.toContain(READY_WORDS);
+  });
 });
 
 const SAVED = {
@@ -158,15 +188,19 @@ describe("DraftGroupsPanel", () => {
   });
 
   it("says a fixed angkatan is fixed, with its decree, who fixed it and since when each mentor holds the group", () => {
+    const [first, ...others] = GROUPS;
+    if (!first) throw new Error("No group to show.");
+    const groups = [{ ...first, mentorSince: "2026-10-05" }, ...others];
     const panel = renderToStaticMarkup(
-      <DraftGroupsPanel assignment={{ ...SAVED, status: "fixed" }} />,
+      <DraftGroupsPanel assignment={{ ...SAVED, groups, status: "fixed" }} />,
     );
 
     expect(panel).toContain("Angkatan 2026 sudah ditetapkan");
     expect(panel).toContain(
       "KEP-12/UJI/2026 · berlaku 1 Sep 2026 · ditetapkan Kepala Uji",
     );
-    expect(panel).toContain("sejak 1 Sep 2026");
+    expect(panel).toContain("sejak 5 Okt 2026");
+    expect(panel).not.toContain("sejak 1 Sep 2026");
     expect(panel).not.toContain("Anggota Uji");
     expect(panel).not.toContain("<button");
     expect(panel).not.toContain("<a ");

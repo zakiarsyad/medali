@@ -15,12 +15,9 @@ const COLUMNS = 4;
 
 function GroupRow({
   group,
-  since,
   openGroupId,
 }: {
   group: DraftGroup;
-  /** The day the mentor took the group, for a fixed penetapan. */
-  since: string | null;
   openGroupId: string | null | undefined;
 }) {
   const namesMembers = openGroupId !== undefined;
@@ -31,8 +28,10 @@ function GroupRow({
         <GroupFactCells group={group} />
         <td data-title="Pengasuh">
           {group.mentor ? mentorLabel(group.mentor) : "-"}
-          {since !== null && (
-            <small className={shared.detail}>sejak {shownDay(since)}</small>
+          {group.mentorSince !== null && (
+            <small className={shared.detail}>
+              sejak {shownDay(group.mentorSince)}
+            </small>
           )}
         </td>
         {namesMembers && (
@@ -68,9 +67,10 @@ type Shown = Pick<
 
 /**
  * The groups of a penetapan as they are saved, to read only: the code,
- * the program studi, how many members each one holds and the mentor
- * chosen for it. A fixed one says so, with its decree number, the day its
- * groups started and who fixed it. Nothing in the table can be changed.
+ * the program studi, how many members each one holds and its mentor. A
+ * fixed one says so, with its decree number, the day its groups started
+ * and who fixed it, and names the mentor each group has today with the
+ * day that mentor took it. Nothing in the table can be changed.
  * No member is named unless `openGroupId` is given: then each group has
  * "Anggota", which lists its members to read only.
  */
@@ -127,7 +127,6 @@ export function DraftGroupsPanel({
               <GroupRow
                 key={group.id}
                 group={group}
-                since={isFixed ? assignment.effectiveOn : null}
                 openGroupId={openGroupId}
               />
             ))}

@@ -25,6 +25,7 @@ const FIXED: StoredAssignment = {
       entryPath: "regular",
       number: 1,
       mentor: { id: "yuni", name: "Yuni Contoh", title: "M.Si." },
+      mentorSince: "2026-09-01",
       members: [
         {
           id: "member",
