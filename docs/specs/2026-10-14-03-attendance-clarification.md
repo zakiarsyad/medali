@@ -158,6 +158,63 @@ decided, from what the merged app does and then from the prototype:
 17. Sample data gets clarifications in every status, each with a drawn
     paper that says "Lampiran contoh", given by the same command and
     deploy step that give the sample attendance photos.
+18. The clarification time has no first day of its own. A rejected
+    photo can be clarified while the upload time is still open; an
+    activity with nothing sent only once the upload time has closed.
+19. The file's name is kept with the clarification, without any folder
+    path and cut to 120 characters. The 5 MB limit applies to the file
+    as picked, before a picture is made smaller. A picture is made
+    smaller as an attendance photo is; a PDF goes as it is.
+20. With a clarification already waiting, a second "Kirim klarifikasi"
+    changes nothing and answers "Klarifikasi terkirim." A clarification
+    is written under the same wait as the attendance of that student
+    and activity, and so is every decision on it.
+21. Other messages of the form: "Penjelasan paling banyak 1.000
+    karakter.", "Batas klarifikasi sudah lewat.", "Klarifikasi hanya
+    untuk kegiatan yang tercatat tidak hadir atau presensinya ditolak.",
+    "Pilih alasan klarifikasi.", "Anda tidak berhak mengajukan
+    klarifikasi.", "Lampiran belum dapat disimpan di sini karena
+    penyimpanan berkas belum diatur. Tidak ada yang tersimpan.",
+    "Lampiran tidak dapat disimpan. Coba lagi." and "Klarifikasi tidak
+    terkirim. Periksa koneksi internet, lalu tekan Kirim klarifikasi
+    lagi." An activity that is unknown, removed or not the student's
+    gets the one message the photo upload has for it.
+22. The message of the form shows in a line under its row. The note
+    under the table shows only when the history has rows. A rejected
+    clarification whose time has passed shows its badge and note only,
+    as in the prototype.
+23. The student's row also shows "Lampiran: (file name)" under the
+    badge, a link that downloads the file they sent. The prototype
+    shows the student no file.
+24. The tab stands between "Verifikasi presensi" and "Kegiatan PPKS".
+    It keeps the title "Kegiatan karakter" with the prototype's lede
+    under it, and "Klarifikasi kehadiran" heads the cards, as on
+    "Verifikasi presensi".
+25. The search also finds students who are no longer Aktif, and such a
+    student's clarification can still be accepted.
+26. A card shows "-" for Lampiran where no file is kept. The file opens
+    in a box over the page; only PDF, JPG and PNG are shown there, and
+    "Unduh" downloads it.
+27. A rejection says "Klarifikasi ditolak." When the attendance is
+    already Hadir or Dispensasi the message is "Kehadiran mahasiswa ini
+    sudah berstatus (status) pada kegiatan ini, sehingga klarifikasi
+    tidak dapat diterima. Tolak dengan catatan bila perlu." Someone
+    else decided first: "Klarifikasi ini sudah diputuskan oleh petugas
+    lain." Without the right: "Anda tidak berhak memutuskan
+    klarifikasi." Not found or its activity removed: "Klarifikasi ini
+    tidak ditemukan. Muat ulang halaman." Too long a note: "Catatan
+    paling banyak 200 karakter." Not sent: "Putusan tidak terkirim.
+    Periksa koneksi internet, lalu coba lagi."
+28. A card decided on the screen stays in its place with its message
+    until another filter or page is opened, and the numbers are read
+    again, as on "Verifikasi presensi".
+29. On the panel the decision shows with its note, who and when. The
+    line under the heading counts every clarification the account
+    sees, not only the six shown.
+30. Sample data gets three more activities for the students in their
+    second year, 7, 5 and 4 days ago, where most students are absent or
+    rejected. The sample decisions are by the sample Penilai Mahasiswa.
+    The paper is one small drawn PDF named "surat-keterangan.pdf".
 
 ## Steps
 
