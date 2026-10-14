@@ -40,7 +40,10 @@ const GROUP = {
 
 function tableOf(group: AddedStudent["group"]): string {
   return renderToStaticMarkup(
-    <StudentTable students={[student("9900003301", group)]} query="" />,
+    <StudentTable
+      students={[student("9900003301", group)]}
+      place={{ query: "", page: 1 }}
+    />,
   );
 }
 

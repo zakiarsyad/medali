@@ -86,5 +86,5 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The list of added students is read from the database one page
   of 25 at a time, with the count of all that match.
-- [ ] 2. The line with "Sebelumnya" and "Berikutnya" shows under the
+- [x] 2. The line with "Sebelumnya" and "Berikutnya" shows under the
   list, with the page and the search kept in the address.
