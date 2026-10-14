@@ -57,6 +57,40 @@ describe("parseNewAccount", () => {
     });
   });
 
+  it.each([
+    ["a name", { name: "a".repeat(101) }, "Nama paling banyak 100 karakter."],
+    ["a gelar", { title: "a".repeat(51) }, "Gelar paling banyak 50 karakter."],
+    [
+      "a unit",
+      { unit: "a".repeat(101) },
+      "Unit atau jabatan paling banyak 100 karakter.",
+    ],
+  ])("refuses %s over its longest length", (_kind, change, error) => {
+    expect(parseNewAccount({ ...valid, ...change }, NO_ENDING)).toEqual({
+      ok: false,
+      error,
+    });
+  });
+
+  it("accepts a name, a gelar and a unit at their longest, counted without the blanks around them", () => {
+    const longest = {
+      name: "a".repeat(100),
+      title: "b".repeat(50),
+      unit: "c".repeat(100),
+    };
+    const parsed = parseNewAccount(
+      {
+        ...valid,
+        name: ` ${longest.name} `,
+        title: ` ${longest.title} `,
+        unit: ` ${longest.unit} `,
+      },
+      NO_ENDING,
+    );
+
+    expect(parsed.ok && parsed.value).toMatchObject(longest);
+  });
+
   it("accepts a campus email once the campus ending is set", () => {
     const parsed = parseNewAccount(
       { ...valid, email: "Budi@Kampus.Example" },
@@ -151,6 +185,20 @@ describe("parseRoleChange", () => {
       ok: false,
       error: "Akun tidak ditemukan.",
     });
+  });
+
+  it("refuses a unit over its longest length", () => {
+    expect(parseRoleChange({ ...change, unit: "a".repeat(101) })).toEqual({
+      ok: false,
+      error: "Unit atau jabatan paling banyak 100 karakter.",
+    });
+  });
+
+  it("accepts a unit at its longest, counted without the blanks around it", () => {
+    const unit = "a".repeat(100);
+    const parsed = parseRoleChange({ ...change, unit: ` ${unit} ` });
+
+    expect(parsed.ok && parsed.value.unit).toBe(unit);
   });
 
   it("accepts no managed role, which leaves only roles not managed here", () => {

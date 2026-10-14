@@ -5,6 +5,11 @@ import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import {
+  NAME_MAX_LENGTH,
+  TITLE_MAX_LENGTH,
+  UNIT_MAX_LENGTH,
+} from "./account-limits";
 import { addAccountAction } from "./actions";
 import { ProgramChoice, RoleChoices } from "./role-choices";
 
@@ -34,7 +39,13 @@ export function AddAccountForm({ programs }: { programs: StudyProgram[] }) {
         <h2 className={styles.heading}>Pengguna baru</h2>
         <label className={styles.field}>
           Nama lengkap
-          <input name="name" className={styles.input} required minLength={3} />
+          <input
+            name="name"
+            className={styles.input}
+            required
+            minLength={3}
+            maxLength={NAME_MAX_LENGTH}
+          />
         </label>
         <label className={styles.field}>
           Gelar
@@ -42,6 +53,7 @@ export function AddAccountForm({ programs }: { programs: StudyProgram[] }) {
             name="title"
             className={styles.input}
             placeholder="Misalnya S.E., M.Ak."
+            maxLength={TITLE_MAX_LENGTH}
           />
         </label>
         <label className={styles.field}>
@@ -71,6 +83,7 @@ export function AddAccountForm({ programs }: { programs: StudyProgram[] }) {
             name="unit"
             className={styles.input}
             defaultValue="Unit Pembangunan Karakter"
+            maxLength={UNIT_MAX_LENGTH}
           />
         </label>
         <FormMessage state={state} />

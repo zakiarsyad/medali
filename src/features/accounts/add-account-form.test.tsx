@@ -9,3 +9,14 @@ test("the browser's own check is off, so the app's message is the one shown", ()
 
   expect(/<form[^>]* novalidate=""/i.test(form)).toBe(true);
 });
+
+test.each([
+  ["name", 100],
+  ["title", 50],
+  ["unit", 100],
+])("the box %s takes no more than its longest length", (name, longest) => {
+  const form = renderToStaticMarkup(<AddAccountForm programs={[]} />);
+  const box = form.match(new RegExp(`<input[^>]* name="${name}"[^>]*>`))?.[0];
+
+  expect(box).toContain(`maxLength="${longest}"`);
+});

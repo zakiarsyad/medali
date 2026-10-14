@@ -66,7 +66,7 @@ Kepala Unit.
 
 ## Steps
 
-- [ ] 1. The server refuses a name, a gelar or a unit over its limit,
+- [x] 1. The server refuses a name, a gelar or a unit over its limit,
   for a new account and for "Edit peran", and the boxes take no more.
 - [ ] 2. A long word wraps in the staff list, in "Edit peran" and on
   "Ganti peran".
