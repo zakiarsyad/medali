@@ -27,6 +27,3 @@ export const DECISION_NOTE_MAX_LENGTH = 500;
 /** The fewest and the most photos one request holds. */
 export const PHOTOS_MIN = 1;
 export const PHOTOS_MAX = 3;
-
-/** The points "Setujui" starts with, as the prototype does. */
-export const START_POINTS = 2;

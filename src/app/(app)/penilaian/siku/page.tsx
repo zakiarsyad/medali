@@ -9,8 +9,10 @@ import {
   HistoryPanel,
   SeenStudentsDialog,
 } from "@/features/siku/history-panel";
+import { OwnRequestPanels } from "@/features/siku/own-request-panels";
 import { readOwnSiku } from "@/features/siku/own-siku";
 import { OwnSikuScreen } from "@/features/siku/own-siku-screen";
+import { RequestForm } from "@/features/siku/request-form";
 import { readSikuParams } from "@/features/siku/siku-address";
 import {
   readSikuList,
@@ -42,7 +44,22 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   if (!may(account.roles, "view_siku")) {
     const own = await readOwnSiku(db, account);
     if (own.kind === "refused") forbidden();
-    return <OwnSikuScreen tabs={tabs} base={base} siku={own.siku} />;
+    const requests = may(account.roles, "ask_siku_addition") ? (
+      <OwnRequestPanels
+        form={
+          <RequestForm newRequestId={crypto.randomUUID()} today={campusDay()} />
+        }
+        list={null}
+      />
+    ) : null;
+    return (
+      <OwnSikuScreen
+        tabs={tabs}
+        base={base}
+        siku={own.siku}
+        requests={requests}
+      />
+    );
   }
   const params = readSikuParams(await props.searchParams);
   const visible = visibleTo(rowLimitForAction(account, "view_siku"));

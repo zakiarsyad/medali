@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ROLES } from "@/auth/roles";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
@@ -71,18 +72,22 @@ function EntryTable({
 }
 
 /**
- * Penilaian SIKU of a student: their four numbers, and "Transparansi
- * nilai SIKU" with how SIKU akhir is reached, each gain and loss with
- * the role that entered it, and what can add to or reduce SIKU.
+ * Penilaian SIKU of a student: their four numbers, their requests for a
+ * gain, and "Transparansi nilai SIKU" with how SIKU akhir is reached,
+ * each gain and loss with the role that entered it, and what can add to
+ * or reduce SIKU.
  */
 export function OwnSikuScreen({
   tabs,
   base,
   siku,
+  requests,
 }: {
   tabs: TabLinksProps;
   base: number;
   siku: OwnSiku;
+  /** "Ajukan penambahan SIKU" and "Pengajuan saya", or null for none. */
+  requests: ReactNode;
 }) {
   const { totals, entries } = siku;
   const final = sikuOf(base, totals);
@@ -122,6 +127,7 @@ export function OwnSikuScreen({
           note="nilai dasar + penambahan − pengurangan"
         />
       </NumberCards>
+      {requests}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Transparansi nilai SIKU</h2>
         <div className={styles.sum}>

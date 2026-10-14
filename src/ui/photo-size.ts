@@ -8,13 +8,16 @@ export interface PhotoSize {
 
 /**
  * The size a picked picture is sent in: made smaller, with its shape
- * kept, until its longest side is the largest allowed. A picture that is
- * small enough already keeps its size.
+ * kept, until its longest side is `maxSide`, the largest allowed unless
+ * told otherwise. A picture that is small enough already keeps its size.
  */
-export function shrunkSize(size: PhotoSize): PhotoSize {
+export function shrunkSize(
+  size: PhotoSize,
+  maxSide: number = PHOTO_MAX_SIDE,
+): PhotoSize {
   const longest = Math.max(size.width, size.height);
-  if (longest <= PHOTO_MAX_SIDE) return size;
-  const scale = PHOTO_MAX_SIDE / longest;
+  if (longest <= maxSide) return size;
+  const scale = maxSide / longest;
   return {
     width: Math.max(1, Math.round(size.width * scale)),
     height: Math.max(1, Math.round(size.height * scale)),

@@ -1,5 +1,5 @@
 import { JPEG } from "@/files/file-kinds";
-import { shrunkSize } from "@/ui/photo-size";
+import { PHOTO_MAX_SIDE, shrunkSize } from "./photo-size";
 
 /*
  * Runs in the browser only: it draws the picked picture with the
@@ -19,11 +19,14 @@ function pictureAt(address: string): Promise<HTMLImageElement | null> {
   });
 }
 
-function drawnSmaller(picture: HTMLImageElement): Promise<Blob | null> {
-  const size = shrunkSize({
-    width: picture.naturalWidth,
-    height: picture.naturalHeight,
-  });
+function drawnSmaller(
+  picture: HTMLImageElement,
+  maxSide: number,
+): Promise<Blob | null> {
+  const size = shrunkSize(
+    { width: picture.naturalWidth, height: picture.naturalHeight },
+    maxSide,
+  );
   const canvas = document.createElement("canvas");
   canvas.width = size.width;
   canvas.height = size.height;
@@ -36,15 +39,19 @@ function drawnSmaller(picture: HTMLImageElement): Promise<Blob | null> {
 }
 
 /**
- * A picked picture made smaller and turned into a JPEG, ready to send.
- * Null when the file is not a picture this browser can read.
+ * A picked picture made smaller and turned into a JPEG, ready to send:
+ * `maxSide` dots on its longest side at most, 1,280 unless told
+ * otherwise. Null when the file is not a picture this browser can read.
  */
-export async function shrinkPhoto(file: Blob): Promise<Blob | null> {
+export async function shrinkPhoto(
+  file: Blob,
+  maxSide: number = PHOTO_MAX_SIDE,
+): Promise<Blob | null> {
   const address = URL.createObjectURL(file);
   try {
     const picture = await pictureAt(address);
     if (picture === null) return null;
-    return await drawnSmaller(picture);
+    return await drawnSmaller(picture, maxSide);
   } finally {
     URL.revokeObjectURL(address);
   }
