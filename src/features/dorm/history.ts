@@ -13,12 +13,16 @@ import { activityState } from "./activity-state";
 /** How far back Riwayat looks for activities: one year. */
 const DAYS_BACK = 366;
 
-/** Where a resident stands at an activity that is over. */
-export type HistoryStatus = "present" | "absent" | "not_announced";
+/**
+ * Where a resident stands at an activity that is over. Izin is what
+ * approved leave gives an announced count.
+ */
+export type HistoryStatus = "present" | "absent" | "leave" | "not_announced";
 
 export const HISTORY_STATUS_WORDS: Record<HistoryStatus, string> = {
   present: "Hadir",
   absent: "Tidak hadir",
+  leave: "Izin",
   not_announced: "Belum diumumkan",
 };
 

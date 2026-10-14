@@ -18,8 +18,10 @@ import {
   type Participant,
   sameMarks,
   shownParticipants,
+  withoutLeaveAbsences,
 } from "./count-view";
 import { absentWords, announceQuestion, countStatusWords } from "./count-words";
+import type { LeaveMark, LeaveMarks } from "./leave-marks";
 
 export const LEAVE_QUESTION =
   "Perubahan penghitungan belum disimpan. Tinggalkan tanpa menyimpan?";
@@ -29,13 +31,21 @@ function roomWords(participant: Participant): string {
   return `Kamar ${participant.room}`;
 }
 
+const LEAVE_BADGE_WORDS: Record<LeaveMark, string> = {
+  leave: "Izin",
+  itmk: "Hadir · ITMK",
+};
+
 function ParticipantRow({
   participant,
   mark,
+  onLeave,
   onMark,
 }: {
   participant: Participant;
   mark: CountMark;
+  /** What approved leave makes of them here, or null for none. */
+  onLeave: LeaveMark | null;
   onMark: (mark: CountMark) => void;
 }) {
   const { name } = participant;
@@ -46,11 +56,18 @@ function ParticipantRow({
         <span className={shared.detail}>
           {participant.nim} · {roomWords(participant)}
         </span>
+        {onLeave && (
+          <span className={`${shared.badge} ${styles.plain}`}>
+            {LEAVE_BADGE_WORDS[onLeave]}
+          </span>
+        )}
       </span>
       <label className={styles.countAbsent}>
+        {/* Approved leave decides how they count: they cannot be ticked. */}
         <input
           type="checkbox"
           checked={mark.isAbsent}
+          disabled={onLeave !== null}
           onChange={(event) =>
             onMark({ ...mark, isAbsent: event.target.checked })
           }
@@ -104,16 +121,22 @@ export function CountForm({
   day,
   participants,
   kept,
+  onLeave,
   onUnsaved,
 }: {
   activity: ActivityRow;
   day: string;
   participants: Participant[];
   kept: KeptCount | null;
+  /** The participants approved leave covers at the activity. */
+  onLeave: LeaveMarks;
   /** Told whether the form holds changes that are not saved. */
   onUnsaved: (isUnsaved: boolean) => void;
 }) {
-  const start = marksFor(participants, kept?.marks ?? {});
+  const start = withoutLeaveAbsences(
+    marksFor(participants, kept?.marks ?? {}),
+    onLeave,
+  );
   const [marks, setMarks] = useState(start);
   const [saved, setSaved] = useState(start);
   const [typed, setTyped] = useState("");
@@ -185,6 +208,7 @@ export function CountForm({
               key={participant.id}
               participant={participant}
               mark={marks[participant.id] ?? { isAbsent: false, note: "" }}
+              onLeave={onLeave[participant.id] ?? null}
               onMark={(mark) => setMarks({ ...marks, [participant.id]: mark })}
             />
           ))}

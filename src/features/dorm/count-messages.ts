@@ -37,3 +37,10 @@ export const NOT_A_PARTICIPANT = {
   ok: false,
   error: "Daftar peserta sudah berubah. Muat ulang halaman, lalu isi lagi.",
 } as const;
+
+/** What a save answers when it marks absent someone on approved leave. */
+export const ON_LEAVE = {
+  ok: false,
+  error:
+    "Peserta dengan izin yang disetujui pada waktu kegiatan ini tidak dapat ditandai tidak hadir. Muat ulang halaman, lalu isi lagi.",
+} as const;

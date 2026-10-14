@@ -18,15 +18,22 @@ const ANNOUNCED: AnnouncedAttendance = {
       studentId: "ani",
       name: "Ani Wiratama",
       nim: "9937780001",
-      isAbsent: true,
+      status: "absent",
       note: "Sakit",
     },
     {
       studentId: "budi",
       name: "Budi Hasibuan",
       nim: "9937780002",
-      isAbsent: false,
+      status: "present",
       note: "Terlambat",
+    },
+    {
+      studentId: "cici",
+      name: "Cici Manurung",
+      nim: "9937780003",
+      status: "leave",
+      note: "",
     },
   ],
 };
@@ -55,6 +62,10 @@ describe("Rincian of an activity", () => {
     expect(shown).toContain("<b>Budi Hasibuan</b>");
     expect(shown).toContain("Hadir</span>");
     expect(shown).toContain("Terlambat");
+  });
+
+  it("lists one on approved leave as Izin", () => {
+    expect(detail(ANNOUNCED)).toMatch(/<b>Cici Manurung<\/b>.*>Izin<\/span>/);
   });
 
   it("says so when everyone was present without a note", () => {

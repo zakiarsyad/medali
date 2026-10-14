@@ -15,6 +15,7 @@ import type { OwnAttendance } from "./resident-attendance";
 const STATUS_STYLES: Record<HistoryStatus, string | undefined> = {
   present: styles.ok,
   absent: styles.bad,
+  leave: styles.plain,
   not_announced: styles.warn,
 };
 
@@ -37,7 +38,9 @@ export function AttendanceNumbers({
       <p className={styles.note}>
         Kehadiran kegiatan asrama dihitung langsung di tempat kegiatan oleh
         Badan Asrama Mahasiswa. Setelah kegiatan, BAM mengumumkan
-        ketidakhadiran. Kegiatan yang belum diumumkan belum dihitung.
+        ketidakhadiran. Kegiatan yang belum diumumkan belum dihitung. Kegiatan
+        pada waktu izin pesiar atau izin khusus yang disetujui tercatat Izin dan
+        tidak dihitung; pada waktu ITMK yang disetujui tercatat Hadir.
       </p>
       <NumberCards>
         <NumberCard
