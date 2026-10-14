@@ -9,7 +9,8 @@ import type { FormParts } from "./form-values";
 import type { ScheduleList } from "./list-schedules";
 import type { CohortCount } from "./participants";
 import type { ListAttendance } from "./schedule-attendance";
-import { ScheduleForm } from "./schedule-form";
+import { addWords, ScheduleForm } from "./schedule-form";
+import type { ScheduleScope } from "./schedule-list-address";
 import { ScheduleListPanel } from "./schedule-list-panel";
 import type { ScheduleRow } from "./schedule-row";
 
@@ -24,15 +25,14 @@ type FormTarget = "new" | ScheduleRow;
  */
 export function ScheduleBoard({
   list,
-  level,
+  scope,
   counts,
   now,
   attendance,
   form,
 }: {
   list: ScheduleList;
-  /** The tahap chosen, or null for every tahap. */
-  level: number | null;
+  scope: ScheduleScope;
   counts: CohortCount[];
   now: CampusMoment;
   attendance: ListAttendance;
@@ -80,7 +80,7 @@ export function ScheduleBoard({
                 <h2 className={shared.heading}>Jadwalkan kegiatan</h2>
                 <p className={shared.detail}>
                   Pilih kegiatan dari daftar Kurikulum, lalu atur rentang
-                  tanggal dan jam.
+                  tanggal dan jam{form.extra && " serta pesertanya"}.
                 </p>
               </div>
               <button
@@ -88,7 +88,7 @@ export function ScheduleBoard({
                 className={shared.button}
                 onClick={() => openFor("new")}
               >
-                Jadwalkan kegiatan PPKS
+                {addWords(form)}
               </button>
             </div>
           )}
@@ -101,7 +101,7 @@ export function ScheduleBoard({
       )}
       <ScheduleListPanel
         list={list}
-        level={level}
+        scope={scope}
         counts={counts}
         now={now}
         attendance={attendance}

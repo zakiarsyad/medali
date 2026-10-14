@@ -23,6 +23,8 @@ import {
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
 import { pageWithin } from "@/ui/list-pages";
+import type { CandidateStudent } from "./chosen-participants";
+import { naming } from "./chosen-students";
 import type { PeriodSemester } from "./participants";
 import type { OwnAttendance, StudentSchedule } from "./student-schedule";
 import { UPLOAD_COUNT_MAX } from "./upload-range";
@@ -54,12 +56,19 @@ const ROW = {
 const OF_SCHEDULE = eq(ppksActivities.id, activitySchedules.activityId);
 
 /**
- * The schedules that are meant for a student: those not removed, of an
- * activity of the semester the student is in during the period the
- * schedule keeps. With no period to be in, none is.
+ * The schedules that are meant for a student, among those not removed
+ * of the periods given: of a PPKS activity of the semester the student
+ * is in during the period the schedule keeps, or of a special or
+ * additional activity that names the student, their class or their
+ * angkatan. `semesters` holds the periods in which the student takes
+ * part, with their semester in each: with none, as for a student who is
+ * not Aktif, no schedule is meant for them.
  */
-export function meantFor(semesters: readonly PeriodSemester[]): SQL {
-  const inPeriods = or(
+export function meantFor(
+  semesters: readonly PeriodSemester[],
+  student: Omit<CandidateStudent, "isActive">,
+): SQL {
+  const ofSemester = or(
     ...semesters.map(({ periodId, semester }) =>
       and(
         eq(activitySchedules.academicPeriodId, periodId),
@@ -67,8 +76,17 @@ export function meantFor(semesters: readonly PeriodSemester[]): SQL {
       ),
     ),
   );
-  if (inPeriods === undefined) return sql`false`;
-  return and(isNull(activitySchedules.deletedAt), inPeriods) ?? sql`false`;
+  if (ofSemester === undefined) return sql`false`;
+  const periodIds = semesters.map(({ periodId }) => periodId);
+  const chosen = and(
+    inArray(activitySchedules.academicPeriodId, periodIds),
+    isNull(ppksActivities.semester),
+    naming(student),
+  );
+  return (
+    and(isNull(activitySchedules.deletedAt), or(ofSemester, chosen)) ??
+    sql`false`
+  );
 }
 
 function found(db: Database, condition: SQL | undefined) {

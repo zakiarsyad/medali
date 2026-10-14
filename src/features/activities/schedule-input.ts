@@ -1,6 +1,8 @@
 import { isDay } from "@/db/is-day";
 import { isUuid } from "@/db/is-uuid";
 import type { Parsed } from "@/parsed";
+import type { SentParticipants } from "./participant-input";
+import type { ScheduleKind } from "./schedule-list-address";
 import {
   UPLOAD_COUNT_MAX,
   UPLOAD_UNIT_WORDS,
@@ -15,6 +17,8 @@ const UPLOAD_COUNT = /^\d{1,2}$/;
 
 /** A schedule form as the browser sends it: nothing in it is trusted. */
 export interface SentSchedule {
+  /** The tab the form is on: read only for a new schedule. */
+  kind: string;
   activityId: string;
   startsOn: string;
   endsOn: string;
@@ -24,6 +28,8 @@ export interface SentSchedule {
   uploadUnit: string;
   location: string;
   isRequired: boolean;
+  /** Read only for a special or additional activity. */
+  participants: SentParticipants;
 }
 
 /** A checked schedule, ready to keep once its activity is found. */
@@ -45,6 +51,12 @@ export const NO_ACTIVITY = {
   ok: false,
   error: "Pilih kegiatan dari daftar Kurikulum.",
 } as const;
+
+/** The tab a form says it is on, or null for one there is not. */
+export function sentKind(sent: string): ScheduleKind | null {
+  if (sent === "ppks" || sent === "extra") return sent;
+  return null;
+}
 
 function refused(error: string): { ok: false; error: string } {
   return { ok: false, error };

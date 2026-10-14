@@ -232,6 +232,13 @@
       "when": 1791955869644,
       "tag": "0032_dorm-attendance",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791972173181,
+      "tag": "0033_extra-activity-participants",
+      "breakpoints": true
     }
   ]
 }

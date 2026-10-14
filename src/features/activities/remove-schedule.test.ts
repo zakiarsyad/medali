@@ -61,7 +61,7 @@ async function storedOf(db: Database, id: string) {
 }
 
 async function listedIds(db: Database): Promise<string[]> {
-  const list = await listSchedules(db, null, 1);
+  const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
   return list.schedules.map((schedule) => schedule.id);
 }
 
@@ -132,7 +132,9 @@ describe("removeSchedule", () => {
       const other = await addTestActor(db, "Kepala Uji Jadwal", [
         "head_of_unit",
       ]);
-      const [opened] = (await listSchedules(db, null, 1)).schedules;
+      const [opened] = (
+        await listSchedules(db, { kind: "ppks", level: null }, 1)
+      ).schedules;
       const changed = await changeSchedule(
         db,
         other,

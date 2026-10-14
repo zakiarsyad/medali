@@ -1,14 +1,15 @@
-import { and, asc, eq, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, or, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { pageWithin } from "@/ui/list-pages";
+import { meantStudents } from "./meant-students";
 import { newestAt } from "./newest-attendances";
-import { type CohortCount, meantCohortYears } from "./participants";
+import type { CohortCount } from "./participants";
 import { ABSENT_PAGE_SIZE, type AbsentList } from "./schedule-attendance";
 import type { ScheduleRow } from "./schedule-row";
 
-type Opened = Pick<ScheduleRow, "id" | "activity" | "period">;
+type Opened = Pick<ScheduleRow, "id" | "target" | "period">;
 
 /**
  * "Peserta" of one schedule: how many Aktif students it is meant for,
@@ -25,17 +26,12 @@ export async function readAbsent(
   cohorts: readonly CohortCount[],
   page: number,
 ): Promise<AbsentList> {
-  const { semester } = schedule.activity;
-  const years = meantCohortYears(cohorts, semester, schedule.period);
+  const meantByIt = meantStudents(schedule, cohorts);
   const empty = { scheduleId: schedule.id, targeted: 0, absent: 0 };
-  if (years.length === 0) return { ...empty, students: [], page: 1 };
+  if (meantByIt === undefined) return { ...empty, students: [], page: 1 };
 
   const newest = newestAt(db, [schedule.id]);
-  const meant = and(
-    ACTIVE_MEMBER,
-    visible,
-    inArray(students.cohortYear, years),
-  );
+  const meant = and(ACTIVE_MEMBER, visible, meantByIt);
   const isAbsent = or(isNull(newest.status), eq(newest.status, "rejected"));
   const ofStudent = eq(newest.studentId, students.id);
   const [counted] = await db

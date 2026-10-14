@@ -15,10 +15,14 @@ import {
   academicPeriods,
   activitySchedules,
   ppksActivities,
+  students,
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
-import type { ScheduleRow } from "./schedule-row";
+import { type ParticipantChoice, shownChoiceOf } from "./chosen-participants";
+import { readParticipantChoices, takingPartIn } from "./chosen-students";
+import type { ScheduleKind, ScheduleScope } from "./schedule-list-address";
+import type { ScheduleRow, ScheduleTarget } from "./schedule-row";
 
 /** One page of the list, and how many schedules the list has in all. */
 export interface ScheduleList {
@@ -41,9 +45,9 @@ const ROW = {
   location: activitySchedules.location,
   isRequired: activitySchedules.isRequired,
   changedAt: activitySchedules.changedAt,
+  semester: ppksActivities.semester,
   activity: {
     id: ppksActivities.id,
-    semester: ppksActivities.semester,
     name: ppksActivities.name,
     valueKeys: ppksActivities.valueKeys,
     indicatorCodes: ppksActivities.indicatorCodes,
@@ -64,15 +68,23 @@ function ofLevel(level: number | null): SQL | undefined {
 }
 
 /**
- * The schedules of PPKS activities that are not removed, of a tahap or of
- * every tahap. An activity that was removed from Kurikulum since still
- * counts: its schedules stay.
+ * The activities of a kind: a PPKS one has a semester, and a special or
+ * additional one has none.
  */
-export function listedSchedules(level: number | null): SQL | undefined {
+export function ofKind(kind: ScheduleKind): SQL {
+  const { semester } = ppksActivities;
+  return kind === "ppks" ? isNotNull(semester) : isNull(semester);
+}
+
+/**
+ * The schedules of a scope that are not removed. An activity that was
+ * removed from Kurikulum since still counts: its schedules stay.
+ */
+export function listedSchedules(scope: ScheduleScope): SQL | undefined {
   return and(
     isNull(activitySchedules.deletedAt),
-    isNotNull(ppksActivities.semester),
-    ofLevel(level),
+    ofKind(scope.kind),
+    scope.kind === "ppks" ? ofLevel(scope.level) : undefined,
   );
 }
 
@@ -112,35 +124,89 @@ function readRows(db: Database, condition: SQL | undefined, page: number) {
 
 type StoredRow = Awaited<ReturnType<typeof readRows>>[number];
 
-function rowOf(stored: StoredRow): ScheduleRow {
-  const { changedAt, activity, ...schedule } = stored;
-  const { semester } = activity;
-  // The read asks for PPKS activities only, and each has a semester.
-  if (semester === null) {
-    throw new Error(`The schedule ${stored.id} is of no PPKS activity.`);
+/** Who takes part in each schedule of an extra activity, read for one page. */
+interface ChosenOnPage {
+  choices: Map<string, ParticipantChoice>;
+  /** The Aktif students each one holds, by the key of the schedule. */
+  heads: Map<string, number>;
+}
+
+/**
+ * How many Aktif students take part in each of some schedules of extra
+ * activities, counted in the database: only numbers leave it.
+ */
+async function countHeads(
+  db: Database,
+  scheduleIds: string[],
+): Promise<Map<string, number>> {
+  const counted = await db
+    .select({ scheduleId: activitySchedules.id, heads: count() })
+    .from(activitySchedules)
+    .innerJoin(students, takingPartIn(activitySchedules.id))
+    .where(inArray(activitySchedules.id, scheduleIds))
+    .groupBy(activitySchedules.id);
+  return new Map(counted.map(({ scheduleId, heads }) => [scheduleId, heads]));
+}
+
+async function readChosen(
+  db: Database,
+  rows: StoredRow[],
+): Promise<ChosenOnPage> {
+  const extraIds = rows
+    .filter((row) => row.semester === null)
+    .map((row) => row.id);
+  if (extraIds.length === 0) return { choices: new Map(), heads: new Map() };
+  const [choices, heads] = await Promise.all([
+    readParticipantChoices(db, extraIds),
+    countHeads(db, extraIds),
+  ]);
+  return { choices, heads };
+}
+
+function targetOf(stored: StoredRow, chosen: ChosenOnPage): ScheduleTarget {
+  if (stored.semester !== null) {
+    return { kind: "semester", semester: stored.semester };
   }
+  const choice = chosen.choices.get(stored.id);
+  if (choice === undefined) {
+    throw new Error(`The schedule ${stored.id} has no participant choice.`);
+  }
+  return {
+    kind: "chosen",
+    choice: shownChoiceOf(choice),
+    participants: chosen.heads.get(stored.id) ?? 0,
+  };
+}
+
+function rowOf(stored: StoredRow, chosen: ChosenOnPage): ScheduleRow {
+  const { changedAt, semester, ...schedule } = stored;
   return {
     ...schedule,
     startTime: hourAndMinute(schedule.startTime),
     endTime: hourAndMinute(schedule.endTime),
-    activity: { ...activity, semester },
+    target: targetOf(stored, chosen),
     version: versionOf(changedAt),
   };
 }
 
 /**
- * One page of the schedules, the earliest first, of one tahap or of every
- * tahap when `level` is null. Each comes with its activity as Kurikulum
- * has it now, and with the academic period it keeps.
+ * One page of the schedules of a scope, the earliest first. Each comes
+ * with its activity as Kurikulum has it now, whom it is for, and the
+ * academic period it keeps.
  */
 export async function listSchedules(
   db: Database,
-  level: number | null,
+  scope: ScheduleScope,
   page: number,
 ): Promise<ScheduleList> {
-  const condition = listedSchedules(level);
+  const condition = listedSchedules(scope);
   const matching = await countSchedules(db, condition);
   const shownPage = pageWithin(page, matching);
   const rows = await readRows(db, condition, shownPage);
-  return { schedules: rows.map(rowOf), matching, page: shownPage };
+  const chosen = await readChosen(db, rows);
+  return {
+    schedules: rows.map((row) => rowOf(row, chosen)),
+    matching,
+    page: shownPage,
+  };
 }

@@ -1370,11 +1370,13 @@ export const mentoringScoreChanges = pgTable(
 );
 
 /**
- * One holding of a PPKS activity of the curriculum: its days, its hours,
- * its place and how long after its last day an attendance photo may be
- * uploaded. It keeps the academic period that ran on its first day, which
- * decides who its participants are. A removed one keeps its row, marked
- * with who removed it and when.
+ * One holding of an activity of the curriculum, PPKS or special and
+ * additional: its days, its hours, its place and how long after its last
+ * day an attendance photo may be uploaded. It keeps the academic period
+ * that ran on its first day: for a PPKS activity that decides who its
+ * participants are, and for a special or additional one, whose
+ * participants are chosen, the period whose attendance score it counts
+ * in. A removed one keeps its row, marked with who removed it and when.
  */
 export const activitySchedules = pgTable(
   "activity_schedules",
@@ -1416,6 +1418,45 @@ export const activitySchedules = pgTable(
     check(
       "activity_schedules_upload_count_0_to_52",
       sql`${table.uploadCount} between 0 and 52`,
+    ),
+  ],
+);
+
+/**
+ * Whom a schedule of a special or additional activity is for: each row
+ * names one student, one class or one angkatan. A student takes part when
+ * a row of the schedule names them, their class or their angkatan, also
+ * when they joined that class or angkatan after the schedule was made. A
+ * schedule of a PPKS activity has none: the semester of its activity
+ * decides.
+ */
+export const activityScheduleParticipants = pgTable(
+  "activity_schedule_participants",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    scheduleId: uuid()
+      .notNull()
+      .references(() => activitySchedules.id),
+    studentId: uuid().references(() => students.id),
+    className: text(),
+    cohortYear: smallint(),
+  },
+  (table) => [
+    uniqueIndex("activity_schedule_participants_student").on(
+      table.scheduleId,
+      table.studentId,
+    ),
+    uniqueIndex("activity_schedule_participants_class").on(
+      table.scheduleId,
+      table.className,
+    ),
+    uniqueIndex("activity_schedule_participants_cohort").on(
+      table.scheduleId,
+      table.cohortYear,
+    ),
+    check(
+      "activity_schedule_participants_names_one",
+      sql`num_nonnulls(${table.studentId}, ${table.className}, ${table.cohortYear}) = 1`,
     ),
   ],
 );

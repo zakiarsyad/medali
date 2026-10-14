@@ -39,8 +39,15 @@ describe("what a person is told when the schedule is gone or changed", () => {
 describe("a refused save or removal", () => {
   it("has the list read again when it is out of date, so the table shows what is there now", () => {
     expect(linesOf(ACTIONS, "refusal")).toEqual([
-      "if (isOutdatedList(error)) revalidatePath(SCHEDULES_ADDRESS);",
+      "if (isOutdatedList(error)) rereadSchedules();",
       "return { error, done: null };",
+    ]);
+  });
+
+  it("reads both tabs of schedules again, as either may show the schedule", () => {
+    expect(linesOf(ACTIONS, "rereadSchedules")).toEqual([
+      "revalidatePath(SCHEDULES_ADDRESS);",
+      "revalidatePath(EXTRA_SCHEDULES_ADDRESS);",
     ]);
   });
 

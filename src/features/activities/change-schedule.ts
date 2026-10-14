@@ -4,15 +4,18 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { momentOf } from "@/db/row-version";
-import { activitySchedules } from "@/db/schema";
+import { activitySchedules, ppksActivities } from "@/db/schema";
 import type { Parsed } from "@/parsed";
+import { OF_SCHEDULE } from "./list-schedules";
 import { SCHEDULES_NOT_ALLOWED } from "./not-allowed";
+import { replaceParticipants } from "./save-participants";
+import type { SentSchedule } from "./schedule-input";
 import {
-  parseSchedule,
-  type ScheduleInput,
-  type SentSchedule,
-} from "./schedule-input";
-import { placeOf, type SavedSchedule } from "./schedule-place";
+  planSchedule,
+  type ScheduleHome,
+  type SchedulePlan,
+} from "./schedule-place";
+import type { SavedSchedule } from "./schedule-row";
 
 /** What a change or a removal answers when the schedule is not there. */
 export const SCHEDULE_NOT_FOUND = {
@@ -62,29 +65,39 @@ interface Opened {
 }
 
 /**
- * Changes the schedule when it is still as the form was opened with. Two
- * changes of one version never both go in: the second waits for the
- * first, then finds the version gone.
+ * Changes the schedule, and whom it is for, when it is still as the form
+ * was opened with. Two changes of one version never both go in: the
+ * second waits for the first, then finds the version gone.
  */
 async function changeOpened(
   db: Database,
   actorId: string,
   opened: Opened,
-  parts: ScheduleInput & { academicPeriodId: string },
+  plan: SchedulePlan,
 ): Promise<boolean> {
-  const changed = await db
-    .update(activitySchedules)
-    .set({ ...parts, changedAt: nextChangedAt(), changedBy: actorId })
-    .where(
-      and(keptSchedule(opened.id), eq(activitySchedules.changedAt, opened.at)),
-    )
-    .returning({ id: activitySchedules.id });
-  return changed.length > 0;
+  const parts = { ...plan.input, academicPeriodId: plan.academicPeriodId };
+  return db.transaction(async (tx) => {
+    const changed = await tx
+      .update(activitySchedules)
+      .set({ ...parts, changedAt: nextChangedAt(), changedBy: actorId })
+      .where(
+        and(
+          keptSchedule(opened.id),
+          eq(activitySchedules.changedAt, opened.at),
+        ),
+      )
+      .returning({ id: activitySchedules.id });
+    if (changed.length === 0) return false;
+    await replaceParticipants(tx, opened.id, plan.choice);
+    return true;
+  });
 }
 
 interface KeptParts {
   activityId: string;
   changedAt: Date;
+  /** Null for a special or additional activity. */
+  semester: number | null;
 }
 
 async function readKept(db: Database, id: string): Promise<KeptParts | null> {
@@ -92,10 +105,18 @@ async function readKept(db: Database, id: string): Promise<KeptParts | null> {
     .select({
       activityId: activitySchedules.activityId,
       changedAt: activitySchedules.changedAt,
+      semester: ppksActivities.semester,
     })
     .from(activitySchedules)
+    .innerJoin(ppksActivities, OF_SCHEDULE)
     .where(keptSchedule(id));
   return kept ?? null;
+}
+
+/** A schedule stays on its tab: a PPKS one never becomes an extra one. */
+function homeOf(id: string, kept: KeptParts): ScheduleHome {
+  const kind = kept.semester === null ? "extra" : "ppks";
+  return { kind, keptScheduleId: id, keptActivityId: kept.activityId };
 }
 
 /** Why a change did not go in: the schedule is gone, or it was changed. */
@@ -115,8 +136,9 @@ async function whyNotChanged(
  * change is refused and nothing is overwritten. That is said before any
  * fault in the form itself: the person must first see the newest version.
  * The activity the schedule already holds may stay after it was removed
- * from Kurikulum; any other must be in the list. Gives back the activity
- * that is scheduled.
+ * from Kurikulum; any other must be in the list. Whom a schedule of an
+ * extra activity is for is replaced with what the form sends. Gives back
+ * the activity that is scheduled and whom it is for.
  */
 export async function changeSchedule(
   db: Database,
@@ -134,17 +156,11 @@ export async function changeSchedule(
   const isAsOpened = openedAt?.getTime() === kept.changedAt.getTime();
   if (openedAt === null || !isAsOpened) return SCHEDULE_CHANGED_BY_OTHER;
 
-  const parsed = parseSchedule(sent);
-  if (!parsed.ok) return parsed;
-  const place = await placeOf(db, parsed.value, kept.activityId);
-  if (!place.ok) return place;
-  const parts = {
-    ...parsed.value,
-    academicPeriodId: place.value.academicPeriodId,
-  };
+  const plan = await planSchedule(db, sent, homeOf(id, kept));
+  if (!plan.ok) return plan;
   const opened = { id, at: openedAt };
-  if (await changeOpened(db, actor.id, opened, parts)) {
-    return { ok: true, value: place.value.activity };
+  if (await changeOpened(db, actor.id, opened, plan.value)) {
+    return { ok: true, value: plan.value.saved };
   }
   return whyNotChanged(db, id);
 }

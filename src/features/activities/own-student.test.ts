@@ -16,6 +16,7 @@ const STUDENT = {
   nim: "9972200001",
   name: "Mahasiswa Uji Sendiri",
   cohortYear: 2159,
+  className: "MS-01",
 };
 
 describe("readOwnStudent", () => {
@@ -27,6 +28,7 @@ describe("readOwnStudent", () => {
       expect(await readOwnStudent(db, account)).toEqual({
         id: account.studentId,
         cohortYear: 2159,
+        className: "MS-01",
         isActive: true,
       });
     });

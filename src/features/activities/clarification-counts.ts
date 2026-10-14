@@ -3,9 +3,11 @@ import type { Database } from "@/db/connect";
 import {
   activityClarifications,
   activitySchedules,
+  ppksActivities,
   students,
 } from "@/db/schema";
 import { OF_CLARIFICATION, OF_KEPT_SCHEDULE } from "./clarification-rows";
+import { OF_SCHEDULE } from "./list-schedules";
 
 /** How many clarifications stand in each status. */
 export interface ClarificationCounts {
@@ -18,12 +20,13 @@ const NONE: ClarificationCounts = { submitted: 0, accepted: 0, rejected: 0 };
 
 /**
  * The clarifications in each status, of schedules that are not removed,
- * over every period, in one read. `visible` limits the students they are
- * counted for, or counts every student's when it is left out.
+ * over every period, in one read. `condition` limits the students they
+ * are counted for and the activities they are of, or counts them all
+ * when it is left out.
  */
 export async function countClarifications(
   db: Database,
-  visible?: SQL,
+  condition?: SQL,
 ): Promise<ClarificationCounts> {
   const { status } = activityClarifications;
   const [counted] = await db
@@ -34,7 +37,8 @@ export async function countClarifications(
     })
     .from(activityClarifications)
     .innerJoin(activitySchedules, OF_CLARIFICATION)
+    .innerJoin(ppksActivities, OF_SCHEDULE)
     .innerJoin(students, eq(students.id, activityClarifications.studentId))
-    .where(and(OF_KEPT_SCHEDULE, visible));
+    .where(and(OF_KEPT_SCHEDULE, condition));
   return counted ?? NONE;
 }

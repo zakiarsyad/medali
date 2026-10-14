@@ -44,7 +44,9 @@ describe("two staff who save a change to one schedule at the same moment", () =>
       changedBy: first.id,
       startsOn: "2120-09-10",
     });
-    const [opened] = (await listSchedules(own.db, null, 1)).schedules;
+    const [opened] = (
+      await listSchedules(own.db, { kind: "ppks", level: null }, 1)
+    ).schedules;
     if (!opened) throw new Error("The schedule was not added.");
     const change = (actor: TestActor, location: string) => (db: Database) =>
       changeSchedule(db, actor, id, opened.version, {
@@ -60,7 +62,10 @@ describe("two staff who save a change to one schedule at the same moment", () =>
 
     expect(both.sooner).toEqual({
       ok: true,
-      value: { name: "Kegiatan uji jadwal", semester: 3 },
+      value: {
+        name: "Kegiatan uji jadwal",
+        target: { kind: "semester", semester: 3 },
+      },
     });
     expect(both.later).toEqual(SCHEDULE_CHANGED_BY_OTHER);
     const kept = await own.db.select().from(activitySchedules);

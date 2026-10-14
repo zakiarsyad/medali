@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   choicesWith,
+  draftFor,
   type FormPeriod,
+  keptChoice,
   participantsOn,
   startingValues,
   valuesOf,
 } from "./form-values";
-import { TEST_CHOICES, TEST_SCHEDULE } from "./test-screen-parts";
+import { STARTING_DRAFT } from "./participant-draft";
+import {
+  TEST_CHOICES,
+  TEST_EXTRA_SCHEDULE,
+  TEST_SCHEDULE,
+} from "./test-screen-parts";
 
 describe("valuesOf", () => {
   it("fills the form with what the schedule holds, Wajib as the schedule has it", () => {
@@ -24,15 +31,72 @@ describe("valuesOf", () => {
   });
 });
 
+describe("keptChoice", () => {
+  it("gives the PPKS activity a schedule holds with the semester of its target", () => {
+    expect(keptChoice(TEST_SCHEDULE)).toEqual({
+      ...TEST_SCHEDULE.activity,
+      semester: 3,
+    });
+  });
+
+  it("gives the extra activity a schedule holds with no semester", () => {
+    expect(keptChoice(TEST_EXTRA_SCHEDULE)).toEqual({
+      ...TEST_EXTRA_SCHEDULE.activity,
+      semester: null,
+    });
+  });
+});
+
+describe("draftFor", () => {
+  const picked = {
+    id: "00000000-0000-4000-8000-0000000000c1",
+    name: "Uji Draf Terpilih",
+    nim: "9974640011",
+    isActive: true,
+  };
+  const extra = {
+    pool: { classes: [], cohorts: [] },
+    picked: { [TEST_EXTRA_SCHEDULE.id]: [picked] },
+  };
+
+  it("opens a new schedule on Per angkatan with nothing picked", () => {
+    expect(draftFor(null, extra)).toEqual(STARTING_DRAFT);
+  });
+
+  it("opens a schedule with the angkatan it holds", () => {
+    expect(draftFor(TEST_EXTRA_SCHEDULE, extra)).toMatchObject({
+      mode: "cohorts",
+      cohortYears: [2024, 2025],
+    });
+  });
+
+  it("opens a schedule with the students it names one by one", () => {
+    const byName = {
+      ...TEST_EXTRA_SCHEDULE,
+      target: {
+        kind: "chosen",
+        choice: { kind: "students", chosen: 1 },
+        participants: 1,
+      },
+    } as const;
+
+    expect(draftFor(byName, extra)).toMatchObject({
+      mode: "students",
+      students: [picked],
+    });
+  });
+});
+
 describe("choicesWith", () => {
   it("offers only the activities in the list for a new schedule", () => {
     expect(choicesWith(TEST_CHOICES, null)).toEqual(TEST_CHOICES);
   });
 
   it("adds the activity a schedule holds when it is no longer in the list", () => {
-    const offered = choicesWith(TEST_CHOICES, TEST_SCHEDULE.activity);
+    const held = keptChoice(TEST_SCHEDULE);
+    const offered = choicesWith(TEST_CHOICES, held);
 
-    expect(offered).toEqual([...TEST_CHOICES, TEST_SCHEDULE.activity]);
+    expect(offered).toEqual([...TEST_CHOICES, held]);
   });
 
   it("does not offer an activity twice when the one held is still in the list", () => {

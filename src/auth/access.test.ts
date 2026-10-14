@@ -1167,10 +1167,20 @@ describe("tabsFor", () => {
     expect(mayOpenTab([role], "activities", "ppks")).toBe(true);
   });
 
+  it.each(scheduleReaders)(
+    "gives %s the tab Kegiatan tambahan, right after Kegiatan PPKS",
+    (role) => {
+      const tabs = paths(tabsFor([role], "activities"));
+      expect(tabs.indexOf("tambahan")).toBe(tabs.indexOf("ppks") + 1);
+      expect(mayOpenTab([role], "activities", "extra")).toBe(true);
+    },
+  );
+
   it("gives Pegawai UPK the tab Verifikasi presensi, as their first tab of Kegiatan karakter", () => {
     expect(paths(tabsFor(["upk_staff"], "activities"))).toEqual([
       "verifikasi",
       "ppks",
+      "tambahan",
     ]);
     expect(mayOpenTab(["upk_staff"], "activities", "verification")).toBe(true);
   });
@@ -1192,11 +1202,12 @@ describe("tabsFor", () => {
     }
   });
 
-  it("refuses the tab Kegiatan PPKS to every other role", () => {
+  it("refuses the tabs Kegiatan PPKS and Kegiatan tambahan to every other role", () => {
     const others = ROLE_IDS.filter((role) => !scheduleReaders.includes(role));
     expect(others.length).toBe(ROLE_IDS.length - scheduleReaders.length);
     for (const role of others) {
       expect(mayOpenTab([role], "activities", "ppks")).toBe(false);
+      expect(mayOpenTab([role], "activities", "extra")).toBe(false);
     }
   });
 

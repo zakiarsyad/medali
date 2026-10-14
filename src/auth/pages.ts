@@ -19,6 +19,7 @@ export const PAGES = [
         title: "Klarifikasi kehadiran",
       },
       { id: "ppks", path: "ppks", title: "Kegiatan PPKS" },
+      { id: "extra", path: "tambahan", title: "Kegiatan tambahan" },
     ],
   },
   { id: "students", path: "mahasiswa", title: "Mahasiswa" },

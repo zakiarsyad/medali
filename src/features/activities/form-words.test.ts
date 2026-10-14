@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { ShownChoice } from "./chosen-participants";
 import {
   activityTargetWords,
+  chosenCountWords,
   formTargetWords,
   REMOVAL_QUESTION,
   REMOVED_WORDS,
@@ -23,14 +25,43 @@ describe("the words of a removal", () => {
 const UPLOAD_NOTE =
   "Mahasiswa mengunggah foto kehadiran sejak kegiatan dimulai sampai batas rentang unggah; satu foto tervalidasi dihitung hadir.";
 
+function ppks(name: string, semester: number) {
+  return { name, target: { kind: "semester", semester } } as const;
+}
+
+function extra(name: string, choice: ShownChoice) {
+  return { name, target: { kind: "chosen", choice } } as const;
+}
+
 describe("savedWords", () => {
   it("names the activity, its semester and its tahap", () => {
-    expect(savedWords("Latihan dasar kepemimpinan organisasi", 3)).toBe(
+    expect(savedWords(ppks("Latihan dasar kepemimpinan organisasi", 3))).toBe(
       'Jadwal "Latihan dasar kepemimpinan organisasi" disimpan untuk semester 3 (penumbuhan).',
     );
-    expect(savedWords("Seminar integritas dan antikorupsi", 7)).toBe(
+    expect(savedWords(ppks("Seminar integritas dan antikorupsi", 7))).toBe(
       'Jadwal "Seminar integritas dan antikorupsi" disimpan untuk semester 7 (pematangan).',
     );
+  });
+
+  it.each<[ShownChoice, string]>([
+    [{ kind: "students", chosen: 3 }, "3 mahasiswa terpilih"],
+    [{ kind: "classes", classNames: ["2-01", "2-02"] }, "kelas 2-01, 2-02"],
+    [{ kind: "cohorts", cohortYears: [2024] }, "angkatan 2024"],
+    [
+      { kind: "cohorts", cohortYears: [2023, 2024] },
+      "lintas angkatan 2023, 2024",
+    ],
+  ])("names the activity and whom it is for: %j", (choice, sasaran) => {
+    expect(savedWords(extra("Mentoring sebaya", choice))).toBe(
+      `Jadwal "Mentoring sebaya" disimpan untuk ${sasaran}.`,
+    );
+  });
+});
+
+describe("chosenCountWords", () => {
+  it("says how many Aktif students the choice holds", () => {
+    expect(chosenCountWords(0)).toBe("Sasaran: 0 mahasiswa.");
+    expect(chosenCountWords(1250)).toBe("Sasaran: 1.250 mahasiswa.");
   });
 });
 
