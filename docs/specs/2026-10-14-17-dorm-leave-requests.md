@@ -77,6 +77,88 @@ Izin, and during ITMK as Hadir with the note ITMK.
 
 Decided while building, because the issue did not say:
 
+2. "Overnight" means the leave ends on another day than it starts, by
+   campus time (WIB); ending at midnight counts as overnight, as in the
+   prototype. ITMK and Izin khusus may go overnight. Any leave lasts at
+   most 30 days and starts at most a year ahead.
+3. Tujuan and Kontak may be left empty, as in the prototype, and ITMK
+   keeps neither. Keperluan holds 5 to 500 letters, not counting spaces
+   around it; Tujuan holds at most 200, Kontak at most 100 and the note
+   of a decision at most 500.
+4. Jenis keperluan of Izin khusus is picked from the prototype's list:
+   Sakit atau berobat, Urusan keluarga, Kegiatan lomba atau tugas
+   institusi, Keperluan administrasi, Lainnya. Screens show it before
+   Keperluan, such as "Urusan keluarga: ...".
+5. The note under the times is worked out by the server while they are
+   typed: the length, for ITMK the resident's dorm activities it covers,
+   and whatever would refuse the times, an overlap among them, as in the
+   prototype. "Riwayat izin saya" says for each ITMK how many dorm
+   activities it covers.
+6. Two requests overlap when one starts before the other ends; one that
+   starts as the other ends does not. Only a request that waits or is
+   approved holds its time. The requests of one resident are taken one
+   after the other, so two that overlap are never both kept, also when
+   sent at the same moment.
+7. "Ajukan izin" pressed twice keeps one request and answers both the
+   same. The same form sent again with other content, or by another
+   student, is refused and nothing is saved, as on Kegiatan asrama.
+8. Only a student who lives in a dorm today may ask, by the rule the app
+   already uses for who lives in which dorm. A request of another
+   student is answered as if it were not there.
+9. "Batalkan" asks "Batalkan (jenis izin) (berangkat)?" first and says
+   "Pengajuan dibatalkan.". "Ajukan izin" says "(Jenis izin) diajukan.
+   Menunggu verifikasi Pengelola Asrama.", "Setujui" "Izin disetujui."
+   and "Tolak" "Izin ditolak.", as in the prototype.
+10. Pengelola Asrama may add a note to an approval too, as in the
+    prototype. The resident sees the note of an approval and of a
+    rejection under the status; staff see who decided and the note on the
+    card.
+11. A cancel, an approval or a rejection that comes second is refused
+    with where the request stands, such as "Izin ini sudah dibatalkan
+    lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman."
+    A card decided on the screen stays in its place with its new status
+    and the message until the list is opened again.
+12. The staff list starts at Menunggu verifikasi, the soonest start
+    first; every other choice shows the latest start first. The status
+    choices are Menunggu verifikasi, Disetujui, Ditolak, Dibatalkan and
+    Semua; the kind choices Semua jenis, Pesiar, ITMK and Khusus. It shows
+    20 cards a page; "Riwayat izin saya" shows 25 a page, the latest start
+    first.
+13. "Menunggu verifikasi" counts the requests that wait; "Izin 30 hari
+    terakhir" counts the approved ones that started in the last 30 days,
+    up to now. Both count only the students the account may see.
+14. A warning shows only on a request that waits: when its start has
+    passed, and when Izin pesiar is 12 hours or more or goes overnight.
+15. A card says where the student lives today: their dorm and room,
+    "belum diplot", or "Tidak tinggal di asrama". The activities an ITMK
+    covers are those of the dorm they live in today.
+16. Seeing the requests is a right of its own, held by the roles with the
+    tab: Kepala Unit, Direktur / Wakil Direktur, Ketua Program Studi
+    (their own study program only), Pengelola Asrama and BAM - BPHK.
+    Deciding is held by Pengelola Asrama only, and asking and cancelling
+    by Mahasiswa only. An account that may see the requests sees the
+    staff screen.
+17. A leave covers a dorm activity when their times overlap: the leave
+    starts before the activity ends and ends after it starts, as in the
+    prototype.
+18. Approved leave decides how a resident counts at an activity it
+    covers, whatever the count keeps, also when it was approved after the
+    announcement: Izin for Izin pesiar and Izin khusus, which is neither
+    Hadir nor Tidak hadir and so is left out of Kehadiran, and Hadir with
+    the note ITMK for ITMK. The count itself is not changed, and an
+    activity that is not announced stays "Belum diumumkan".
+19. In "Penghitungan kehadiran" a participant on approved leave shows
+    "Izin" or "Hadir · ITMK", and their box Tidak hadir cannot be ticked;
+    a note may still be written. A count sent by hand that marks them
+    absent is refused.
+20. Rincian lists a participant on Izin as Izin, and one on ITMK as Hadir
+    with the note ITMK. The resident's note on how attendance is counted
+    says how leave counts.
+21. The sample requests belong to the first sample residents by name and
+    lie around today, in every status, decided by the sample Pengelola
+    Asrama. Three approved ones cover sample activities of the week
+    before, so Izin and ITMK show in the sample counts.
+
 ## Steps
 
 - [x] 1. The table for leave requests is added, with sample requests in
