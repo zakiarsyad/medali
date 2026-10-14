@@ -83,7 +83,7 @@ Decided while building, because the issue did not say:
   every status.
 - [x] 2. The rights to ask for and to decide on leave are added to the
   permission list, with their checks.
-- [ ] 3. Residents ask for leave and see and cancel their history.
+- [x] 3. Residents ask for leave and see and cancel their history.
 - [ ] 4. Staff see the numbers, filters and cards, read only.
 - [ ] 5. Pengelola Asrama approves and rejects.
 - [ ] 6. Approved leave changes dorm attendance.
