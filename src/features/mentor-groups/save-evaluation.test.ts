@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2610 to 2611.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -30,7 +31,7 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
-const YEAR = 2071;
+const YEAR = 2610;
 const PROGRAM = "UJISIMPANEVAL";
 const MENTOR = "Pengasuh Uji Simpan";
 

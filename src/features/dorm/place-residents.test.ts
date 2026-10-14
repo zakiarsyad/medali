@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2090 to 2090.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";

@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2600 to 2601.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
@@ -27,7 +28,7 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
-const YEAR = 2081;
+const YEAR = 2600;
 const PROGRAM = "UJITERAKHIR";
 
 function onlyPrograms(studyProgramIds: number[]): RowLimit {
@@ -71,13 +72,13 @@ describe("readLastGroupEvaluations", () => {
         ...by,
         ...all(90),
         periodId: periods.runningId,
-        evaluatedAt: new Date("2082-10-01T03:00:00Z"),
+        evaluatedAt: new Date("2601-10-01T03:00:00Z"),
       });
       await addTestEvaluation(db, {
         ...by,
         ...all(50),
         periodId: periods.beforeId,
-        evaluatedAt: new Date("2082-10-05T03:00:00Z"),
+        evaluatedAt: new Date("2601-10-05T03:00:00Z"),
       });
 
       const last = await readLastGroupEvaluations(db, limit, [held.groupId]);
@@ -183,14 +184,14 @@ describe("readLastMentorEvaluations", () => {
         ...by,
         ...all(70),
         periodId: periods.runningId,
-        evaluatedAt: new Date("2082-10-05T03:00:00Z"),
+        evaluatedAt: new Date("2601-10-05T03:00:00Z"),
       });
       await addTestEvaluation(db, {
         ...by,
         ...all(40),
         groupId: secondId,
         periodId: periods.runningId,
-        evaluatedAt: new Date("2082-10-01T03:00:00Z"),
+        evaluatedAt: new Date("2601-10-01T03:00:00Z"),
       });
 
       const last = await readLastMentorEvaluations(db, limit, [held.mentorId]);

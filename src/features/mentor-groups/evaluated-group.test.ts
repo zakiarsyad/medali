@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2580 to 2581.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
@@ -26,7 +27,7 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
-const YEAR = 2077;
+const YEAR = 2580;
 const PROGRAM = "UJIPILIHEVAL";
 const MENTOR = "Pengasuh Uji Pilih Evaluasi";
 
@@ -123,12 +124,12 @@ describe("readEvaluatedGroup", () => {
         periodId: periods.runningId,
         activity: 40,
         note: "Berjalan.",
-        evaluatedAt: new Date("2078-10-01T03:00:00Z"),
+        evaluatedAt: new Date("2581-10-01T03:00:00Z"),
       });
       await addTestEvaluation(db, {
         ...by,
         periodId: periods.beforeId,
-        evaluatedAt: new Date("2078-10-05T03:00:00Z"),
+        evaluatedAt: new Date("2581-10-05T03:00:00Z"),
       });
       await addTestEvaluation(db, { ...by, periodId: periods.olderId });
 

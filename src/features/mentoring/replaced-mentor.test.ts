@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2660 to 2660.
 // Sample NIMs of this file: 9962001300 to 9962001399.
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
@@ -54,7 +55,7 @@ async function addRecords(db: Database): Promise<Records> {
     memberIds: [ani, budi],
     mentorId: oldMentor.id,
   });
-  const period = await addTestPeriod(db, 2088);
+  const period = await addTestPeriod(db, 2660);
   return { oldMentor, newMentor, groupId, period, ani, budi };
 }
 
@@ -126,7 +127,7 @@ const REFUSED = {
 /** Confirms the old mentor reads and saves, and the new mentor neither. */
 async function expectOldMentorHolds(db: Database, records: Records) {
   const { oldMentor, newMentor, ani, budi } = records;
-  const round = { meeting: 1, heldOn: "2088-09-10", scored: ani };
+  const round = { meeting: 1, heldOn: "2660-09-10", scored: ani };
 
   expect(await menteeIdsOf(db, oldMentor)).toEqual([ani, budi]);
   expect(await menteeIdsOf(db, newMentor)).toEqual([]);
@@ -137,7 +138,7 @@ async function expectOldMentorHolds(db: Database, records: Records) {
 /** Confirms it is the other way round once the replacement is carried out. */
 async function expectNewMentorHolds(db: Database, records: Records) {
   const { oldMentor, newMentor, ani, budi } = records;
-  const round = { meeting: 2, heldOn: "2088-09-17", scored: budi };
+  const round = { meeting: 2, heldOn: "2660-09-17", scored: budi };
 
   expect(await menteeIdsOf(db, newMentor)).toEqual([ani, budi]);
   expect(await menteeIdsOf(db, oldMentor)).toEqual([]);
@@ -176,7 +177,7 @@ describe("the students of a group whose mentor is replaced", () => {
         startsOn: records.period.day,
       });
 
-      await carryOutDueReplacements(db, "2088-10-12");
+      await carryOutDueReplacements(db, "2660-10-12");
       await expectOldMentorHolds(db, records);
       await carryOutDueReplacements(db, records.period.day);
 

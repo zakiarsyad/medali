@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2141 to 2145.
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { daysAfter } from "@/academic-periods/days-after";

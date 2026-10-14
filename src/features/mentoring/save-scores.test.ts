@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2680 to 2680.
 // Sample NIMs of this file: 9962001000 to 9962001099.
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
@@ -93,7 +94,7 @@ async function addRecords(db: Database): Promise<Records> {
     memberIds: [outsider],
     mentorId: otherMentor.id,
   });
-  const period = await addTestPeriod(db, 2078);
+  const period = await addTestPeriod(db, 2680);
   return {
     program,
     mentor,

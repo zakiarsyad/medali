@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2097 to 2097.
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -6,12 +7,21 @@ import { withTestDatabase } from "@/db/test-database";
 import { addPeriod } from "./add-period";
 import { changePeriodDates } from "./change-period-dates";
 import { NOT_ALLOWED } from "./not-allowed";
-import { addTestActor, SENT_PERIOD } from "./test-records";
+import type { SentPeriod } from "./period-input";
+import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
-const TODAY = "2026-10-12";
-const NEW_DATES = { startsOn: "2026-08-10", endsOn: "2027-02-05" };
+/** A period as the form sends it, with nothing wrong in it. */
+const SENT_PERIOD: SentPeriod = {
+  year: "2097/2098",
+  term: "odd",
+  startsOn: "2097-08-01",
+  endsOn: "2098-01-31",
+};
+
+const TODAY = "2097-10-12";
+const NEW_DATES = { startsOn: "2097-08-10", endsOn: "2098-02-05" };
 
 async function withOnePeriod(db: Database) {
   const actor = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
@@ -34,9 +44,9 @@ describe("changePeriodDates", () => {
         TODAY,
       );
 
-      expect(changed).toEqual({ ok: true, value: "Ganjil 2026/2027" });
+      expect(changed).toEqual({ ok: true, value: "Ganjil 2097/2098" });
       expect(await db.select().from(academicPeriods)).toMatchObject([
-        { id: period.id, startYear: 2026, term: "odd", ...NEW_DATES },
+        { id: period.id, startYear: 2097, term: "odd", ...NEW_DATES },
       ]);
     });
   });
@@ -55,10 +65,10 @@ describe("changePeriodDates", () => {
       expect(line).toMatchObject({
         periodId: period.id,
         changedBy: second.id,
-        startsOnBefore: "2026-08-01",
-        endsOnBefore: "2027-01-31",
-        startsOnAfter: "2026-08-10",
-        endsOnAfter: "2027-02-05",
+        startsOnBefore: "2097-08-01",
+        endsOnBefore: "2098-01-31",
+        startsOnAfter: "2097-08-10",
+        endsOnAfter: "2098-02-05",
       });
     });
   });
@@ -94,7 +104,7 @@ describe("changePeriodDates", () => {
         actor,
         period.id,
         NEW_DATES,
-        "2027-01-31",
+        "2098-01-31",
       );
 
       expect(changed.ok).toBe(true);
@@ -110,7 +120,7 @@ describe("changePeriodDates", () => {
         actor,
         period.id,
         NEW_DATES,
-        "2027-02-01",
+        "2098-02-01",
       );
 
       expect(changed).toEqual({
@@ -130,7 +140,7 @@ describe("changePeriodDates", () => {
         db,
         actor,
         period.id,
-        { startsOn: "2026-08-01", endsOn: "2026-10-11" },
+        { startsOn: "2097-08-01", endsOn: "2097-10-11" },
         TODAY,
       );
 
@@ -151,7 +161,7 @@ describe("changePeriodDates", () => {
         db,
         actor,
         period.id,
-        { startsOn: "2026-08-01", endsOn: TODAY },
+        { startsOn: "2097-08-01", endsOn: TODAY },
         TODAY,
       );
 
@@ -167,7 +177,7 @@ describe("changePeriodDates", () => {
         db,
         actor,
         period.id,
-        { startsOn: "2026-08-01", endsOn: "2026-07-01" },
+        { startsOn: "2097-08-01", endsOn: "2097-07-01" },
         TODAY,
       );
 
@@ -183,24 +193,24 @@ describe("changePeriodDates", () => {
     await inTestDatabase(async (db) => {
       const { actor, period } = await withOnePeriod(db);
       await addPeriod(db, actor, {
-        year: "2026/2027",
+        year: "2097/2098",
         term: "even",
-        startsOn: "2027-02-01",
-        endsOn: "2027-07-31",
+        startsOn: "2098-02-01",
+        endsOn: "2098-07-31",
       });
 
       const changed = await changePeriodDates(
         db,
         actor,
         period.id,
-        { startsOn: "2026-08-01", endsOn: "2027-02-01" },
+        { startsOn: "2097-08-01", endsOn: "2098-02-01" },
         TODAY,
       );
 
       expect(changed).toEqual({
         ok: false,
         error:
-          "Tanggal bertumpuk dengan periode Genap 2026/2027 (1 Feb 2027 – 31 Jul 2027). Pilih tanggal di luar periode itu.",
+          "Tanggal bertumpuk dengan periode Genap 2097/2098 (1 Feb 2098 – 31 Jul 2098). Pilih tanggal di luar periode itu.",
       });
       expect(await db.select().from(academicPeriodChanges)).toHaveLength(2);
     });
@@ -214,7 +224,7 @@ describe("changePeriodDates", () => {
         db,
         actor,
         period.id,
-        { startsOn: "2026-08-01", endsOn: "2027-01-15" },
+        { startsOn: "2097-08-01", endsOn: "2098-01-15" },
         TODAY,
       );
 

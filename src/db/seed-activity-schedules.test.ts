@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: those of the app's sample data.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";

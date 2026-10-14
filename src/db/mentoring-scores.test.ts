@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2430 to 2430.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
@@ -35,16 +36,16 @@ async function addRecords(db: Database): Promise<Records> {
     .insert(academicPeriods)
     .values([
       {
-        startYear: 2065,
+        startYear: 2430,
         term: "odd",
-        startsOn: "2065-08-01",
-        endsOn: "2066-01-31",
+        startsOn: "2430-08-01",
+        endsOn: "2431-01-31",
       },
       {
-        startYear: 2065,
+        startYear: 2430,
         term: "even",
-        startsOn: "2066-02-01",
-        endsOn: "2066-07-31",
+        startsOn: "2431-02-01",
+        endsOn: "2431-07-31",
       },
     ])
     .returning();
@@ -56,7 +57,7 @@ async function addRecords(db: Database): Promise<Records> {
       studyProgramId: program.id,
       entryPath: "regular",
       sex: "female",
-      cohortYear: 2065,
+      cohortYear: 2430,
     })
     .returning();
   if (!period || !otherPeriod || !student) {

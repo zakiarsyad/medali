@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2190 to 2190.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";

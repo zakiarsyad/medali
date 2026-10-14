@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2590 to 2591.
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
@@ -19,7 +20,7 @@ import { addTestEndedGroup, addTestGroup, addTestMentor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
-const YEAR = 2075;
+const YEAR = 2590;
 const EVERY_ROW: RowLimit = { kind: "all" };
 
 function onlyPrograms(studyProgramIds: number[]): RowLimit {
@@ -37,7 +38,7 @@ describe("listLatestEvaluations", () => {
   it("shows the period, the mentor, the group, the values, the note, when and by whom", async () => {
     await inTestDatabase(async (db) => {
       const { held, periods, head } = await addRecords(db);
-      const at = new Date("2076-10-13T03:00:00Z");
+      const at = new Date("2591-10-13T03:00:00Z");
       await addTestEvaluation(db, {
         ...held,
         periodId: periods.runningId,
@@ -76,12 +77,12 @@ describe("listLatestEvaluations", () => {
       await addTestEvaluation(db, {
         ...by,
         periodId: periods.runningId,
-        evaluatedAt: new Date("2076-10-01T03:00:00Z"),
+        evaluatedAt: new Date("2591-10-01T03:00:00Z"),
       });
       await addTestEvaluation(db, {
         ...by,
         periodId: periods.beforeId,
-        evaluatedAt: new Date("2076-10-05T03:00:00Z"),
+        evaluatedAt: new Date("2591-10-05T03:00:00Z"),
       });
 
       const rows = await listLatestEvaluations(
