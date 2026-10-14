@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import type { SentFile } from "@/files/file-check";
 import type { Parsed } from "@/parsed";
+import { lockEntryKey } from "./entry-key-lock";
 import { enteredAsOf } from "./save-entry";
 import type { ReadySikuRow } from "./siku-file";
 import { checkSikuFile, sikuVisibleTo } from "./siku-file-check";
@@ -143,6 +144,7 @@ async function save(
   confirmedRepeat: boolean,
   moment: Date,
 ): Promise<Parsed<SavedSikuFile>> {
+  await lockEntryKey(tx, upload.id);
   const taken = await answerTaken(tx, actor, upload);
   if (taken) return taken;
   if (await isEntryKey(tx, upload.id)) return FILE_ALREADY_SENT;

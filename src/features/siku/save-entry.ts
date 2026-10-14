@@ -15,6 +15,7 @@ import {
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { Parsed } from "@/parsed";
 import { type EntryInput, parseEntry, type SentEntry } from "./entry-input";
+import { lockEntryKey } from "./entry-key-lock";
 import type { SikuKind } from "./siku-ids";
 import {
   ENTRY_ALREADY_SENT,
@@ -102,6 +103,7 @@ async function save(
   input: EntryInput,
   moment: Date,
 ): Promise<Parsed<SavedEntry>> {
+  await lockEntryKey(tx, id);
   if (await isUploadKey(tx, id)) return ENTRY_ALREADY_SENT;
   const saved = {
     ok: true,

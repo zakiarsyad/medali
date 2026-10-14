@@ -164,7 +164,7 @@ describe("an upload in the history", () => {
       expect(seen?.entry).toMatchObject({ source: "upload", id: upload });
       expect(seen?.matching).toBe(4);
       // Two rows of one student come in the order of their keys, which
-      // are random: the lines are compared as words, sorted.
+      // the save makes at random, so the check cannot know that order.
       const lines = seen?.students.map(
         ({ nim, change }) =>
           `${nim} ${change?.kind} ${change?.reason} ${change?.points}`,
