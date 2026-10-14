@@ -87,9 +87,13 @@ export function activityNote(description: string, isRequired: boolean): string {
   return parts.filter((part) => part !== "").join(" · ");
 }
 
-/** The question asked before an activity is removed from the list. */
-export function removalQuestion(name: string): string {
-  return `Hapus kegiatan "${name}" dari daftar?`;
+/**
+ * The question asked before an activity is removed from the list. One
+ * that is scheduled warns with how often, as its schedules stay.
+ */
+export function removalQuestion(name: string, scheduled: number): string {
+  if (scheduled === 0) return `Hapus kegiatan "${name}" dari daftar?`;
+  return `Kegiatan ini sudah dijadwalkan ${scheduled} kali. Tetap hapus dari daftar? Jadwal yang ada tidak ikut terhapus.`;
 }
 
 /** The list with the item taken out when it is in, and put in when not. */

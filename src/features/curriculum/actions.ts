@@ -6,6 +6,7 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addPpksActivity } from "./add-ppks-activity";
@@ -14,6 +15,7 @@ import { restorePpksActivity } from "./restore-ppks-activity";
 import { saveBaseScore } from "./save-base-score";
 import { saveMainIndicators } from "./save-main-indicators";
 import { saveStageBreakdown } from "./save-stage-breakdown";
+import { readScheduleCount } from "./schedule-counts";
 
 const CURRICULUM_ADDRESS = "/kurikulum";
 
@@ -95,6 +97,11 @@ export async function savePpksActivityAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Kegiatan "${saved.value}" disimpan.` };
+}
+
+export async function scheduleCountAction(id: string): Promise<Parsed<number>> {
+  const manager = await activityManager();
+  return readScheduleCount(database(), manager, id);
 }
 
 export async function removePpksActivityAction(id: string): Promise<FormState> {
