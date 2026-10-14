@@ -42,6 +42,9 @@ export const ACTIONS = [
   "send_attendance_photo",
   "verify_attendance",
   "decide_activity_clarifications",
+  "view_siku",
+  "adjust_siku",
+  "view_own_siku",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -89,6 +92,10 @@ export const ACTION_TITLES: Record<Action, string> = {
   verify_attendance: "Verifikasi presensi",
   decide_activity_clarifications:
     "Verifikasi dan validasi klarifikasi kegiatan karakter",
+  view_siku: "Melihat penilaian SIKU",
+  adjust_siku:
+    "Penilaian SIKU: menambah, mengurangi, dan membatalkan penyesuaian nilai SIKU",
+  view_own_siku: "Melihat nilai SIKU sendiri",
 };
 
 /**
@@ -210,6 +217,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_notes",
       "view_mentoring_attendance",
       "view_mentoring_scores",
+      "view_siku",
+      "adjust_siku",
     ],
     rows: "all",
   },
@@ -232,6 +241,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_notes",
       "view_mentoring_attendance",
       "view_mentoring_scores",
+      "view_siku",
     ],
     rows: "all",
   },
@@ -254,6 +264,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_notes",
       "view_mentoring_attendance",
       "view_mentoring_scores",
+      "view_siku",
     ],
     rows: "own_program",
   },
@@ -284,6 +295,7 @@ export const ROLES: Record<RoleId, Role> = {
       "fill_mentoring_attendance",
       "view_mentoring_scores",
       "give_mentoring_scores",
+      "view_siku",
     ],
     rows: "own_mentees",
   },
@@ -302,6 +314,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
       "ask_dorm_leave",
+      "view_own_siku",
     ],
     rows: "self",
   },
@@ -435,7 +448,7 @@ export const ROLES: Record<RoleId, Role> = {
       activities: ["clarification"],
       assessment: ["character", "skpm", "siku", "character_test", "fitness"],
     },
-    actions: ["decide_activity_clarifications"],
+    actions: ["decide_activity_clarifications", "view_siku", "adjust_siku"],
     rows: "all",
   },
 };

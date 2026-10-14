@@ -112,7 +112,7 @@ and a student sees their own SIKU and why.
 
 ## Steps
 
-- [ ] 1. SIKU entries are stored with their students, a cancel mark and the
+- [x] 1. SIKU entries are stored with their students, a cancel mark and the
   log. The right "Penilaian SIKU" is added for Kepala Unit and Penilai
   Mahasiswa, with its checks. Sample data adds a few entries.
 - [ ] 2. The SIKU rule (dasar + gains − losses, 0–100), with checks.
@@ -120,3 +120,16 @@ and a student sees their own SIKU and why.
 - [ ] 4. The form adds a gain or a loss for chosen students.
 - [ ] 5. The history, with "Lihat mahasiswa" and "Batalkan".
 - [ ] 6. The student's own numbers and "Transparansi nilai SIKU".
+
+## Decisions made while building
+
+- Reading the tab is a right of its own for the staff who read it
+  (Kepala Unit, Penilai Mahasiswa, Direktur / Wakil Direktur, Ketua
+  Program Studi, Pengasuh), and Mahasiswa has a separate right to read
+  only their own SIKU. Both show on the list of rights per role.
+- Each entry keeps the role it was entered as: Penilai Mahasiswa when
+  the person holds that role, otherwise Kepala Unit. A student sees that
+  role under "Dicatat oleh".
+- The academic period of an entry is the one running on the day it is
+  saved, not the day under Tanggal. While no period runs, nothing is
+  saved.
