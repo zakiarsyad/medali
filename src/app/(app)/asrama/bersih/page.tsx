@@ -1,3 +1,4 @@
+import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { readCleaningParams } from "@/features/dorm/cleaning-address";
@@ -17,10 +18,12 @@ export default async function DormCleaningPage(
   const { account } = opened;
   const tabs = { pagePath: "asrama", tabs: opened.tabs, open: "bersih" };
   if (may(account.roles, "view_dorm_cleaning")) {
+    const today = campusDay();
     return (
       <CleaningScreen
         tabs={tabs}
-        params={readCleaningParams(await props.searchParams)}
+        params={readCleaningParams(await props.searchParams, today)}
+        today={today}
         mayManage={may(account.roles, "manage_dorm_cleaning")}
       />
     );

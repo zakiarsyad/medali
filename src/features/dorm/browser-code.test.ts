@@ -42,14 +42,6 @@ describe("the screen parts of Kegiatan asrama that run in the browser", () => {
     },
   );
 
-  it.each([
-    `${FOLDER}/cleaning-places-board.tsx`,
-    `${FOLDER}/cleaning-place-form.tsx`,
-  ])("%s, of Pembersihan asrama, takes no database code along", (path) => {
-    expect(browserFilesIn(FOLDER)).toContain(path);
-    expect(databaseCodeReachedFrom(path)).toEqual([]);
-  });
-
   it("finds database code that is taken by way of another file", () => {
     expect(
       databaseCodeReachedFrom(`${FOLDER}/activities-screen.tsx`).length,

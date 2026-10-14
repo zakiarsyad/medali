@@ -28,6 +28,51 @@ export const PLACE_NOT_FOUND = {
   error: "Tempat tidak ditemukan. Muat ulang halaman.",
 } as const;
 
+export const DAY_REFUSED = { ok: false, error: "Pilih tanggal." } as const;
+
+export const DAY_PAST = {
+  ok: false,
+  error: "Tanggal sudah lewat. Pilih hari ini atau sesudahnya.",
+} as const;
+
+export const ROOM_MISSING = {
+  ok: false,
+  error: "Pilih kamar bertugas.",
+} as const;
+
+export const ASSIGN_NOT_FOUND = {
+  ok: false,
+  error: "Tempat atau kamar tidak ditemukan. Muat ulang halaman.",
+} as const;
+
+export const ROOM_EMPTY = {
+  ok: false,
+  error: "Kamar ini tidak berpenghuni. Muat ulang halaman.",
+} as const;
+
+export const PLACE_TAKEN = {
+  ok: false,
+  error:
+    "Tempat ini sudah ditugaskan ke kamar lain pada tanggal ini. Muat ulang halaman.",
+} as const;
+
+export const NOT_PLOTTED = "Kamar asrama ini belum diploting.";
+
+export const DUTY_NOT_FOUND = {
+  ok: false,
+  error: "Tugas tidak ditemukan atau sudah lewat. Muat ulang halaman.",
+} as const;
+
+export const DUTY_ASSIGNED = "Kamar ditugaskan.";
+
+export const ALL_SCHEDULED = "Semua kamar sudah dijadwalkan.";
+
+export function ownRoomsAssigned(count: number): string {
+  return `${count.toLocaleString("id-ID")} tugas kamar dijadwalkan.`;
+}
+
+export const DUTY_CANCELLED = "Tugas dibatalkan.";
+
 export function placeAdded(name: string): string {
   return `Tempat ${name} ditambahkan.`;
 }

@@ -57,6 +57,69 @@
   composes: quietLine from "./rooms.module.css";
 }
 
+.numbers {
+  composes: numbers from "./rooms.module.css";
+}
+
+.number {
+  composes: number from "./rooms.module.css";
+}
+
+.numberLabel {
+  composes: numberLabel from "./rooms.module.css";
+}
+
+.numberValue {
+  composes: numberValue from "./rooms.module.css";
+}
+
+.numberNote {
+  composes: numberNote from "./rooms.module.css";
+}
+
+.daySwitch {
+  composes: daySwitch from "./activities.module.css";
+}
+
+/* The part of the schedule of one dorm. */
+.dormSchedule {
+  margin-top: var(--space-lg);
+}
+
+.dormTitle {
+  margin: 0 0 var(--space-sm);
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+/* The room picked for a place and "Tugaskan": they fold under each other on a phone. */
+.assign {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.assign select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.assign > p {
+  flex: 1 1 100%;
+}
+
+.ownLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  margin: var(--space-md) 0;
+  overflow-wrap: anywhere;
+}
+
 /* What a change says, with "Urungkan" beside it after a removal. */
 .said {
   display: flex;

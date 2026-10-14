@@ -27,15 +27,16 @@ export async function readOccupiedRooms(
 }
 
 /**
- * The occupied rooms of each dorm asked for, counted today. While no
- * academic period runs only Internasional and Pembibitan students count
- * as residents, as on Ploting kamar.
+ * The occupied rooms of each dorm asked for, counted on a day, today when
+ * none is given. While no academic period runs only Internasional and
+ * Pembibitan students count as residents, as on Ploting kamar.
  */
 export async function readOccupiedRoomsOf(
   db: Database,
   dorms: readonly DormId[],
+  day?: string,
 ): Promise<Map<DormId, OccupiedRoom[]>> {
-  const dormCohorts = (await readDormCohorts(db)) ?? [];
+  const dormCohorts = (await readDormCohorts(db, day)) ?? [];
   const found = await Promise.all(
     dorms.map((dorm) => readOccupiedRooms(db, dorm, dormCohorts)),
   );

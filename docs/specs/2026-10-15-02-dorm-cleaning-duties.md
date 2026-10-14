@@ -135,6 +135,6 @@ Decided while building, because the issue did not say:
 - [x] 2. The rights to see and to manage cleaning are added to the
   permission list, with their checks.
 - [x] 3. Places can be added, renamed and removed.
-- [ ] 4. The schedule gives places and own rooms to rooms, and cancels
+- [x] 4. The schedule gives places and own rooms to rooms, and cancels
   duties.
 - [ ] 5. Residents see their room's duties.
