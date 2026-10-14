@@ -252,6 +252,84 @@ describe("may", () => {
     },
   );
 
+  const cleaningViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "dorm_manager",
+    "bam_bphk",
+    "bam_household",
+  ];
+
+  it.each(cleaningViewers)("lets %s see Pembersihan asrama", (role) => {
+    expect(may([role], "view_dorm_cleaning")).toBe(true);
+    expect(mayOpenTab([role], "dorm", "cleaning")).toBe(true);
+  });
+
+  it("refuses every other role to see Pembersihan asrama", () => {
+    const others = ROLE_IDS.filter((role) => !cleaningViewers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - cleaningViewers.length);
+    for (const role of others) {
+      expect(may([role], "view_dorm_cleaning")).toBe(false);
+    }
+  });
+
+  it.each(["bam_compliance", "mentor"] as const)(
+    "refuses %s Pembersihan asrama and its tab",
+    (role) => {
+      expect(may([role], "view_dorm_cleaning")).toBe(false);
+      expect(may([role], "view_own_dorm_cleaning")).toBe(false);
+      expect(mayOpenTab([role], "dorm", "cleaning")).toBe(false);
+    },
+  );
+
+  const cleaningManagers: RoleId[] = [
+    "dorm_manager",
+    "bam_bphk",
+    "bam_household",
+  ];
+
+  it.each(cleaningManagers)(
+    "lets %s manage the cleaning places and duties",
+    (role) => {
+      expect(may([role], "manage_dorm_cleaning")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to manage the cleaning places and duties", () => {
+    const others = ROLE_IDS.filter((role) => !cleaningManagers.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - cleaningManagers.length);
+    for (const role of others) {
+      expect(may([role], "manage_dorm_cleaning")).toBe(false);
+    }
+  });
+
+  it.each(["head_of_unit", "director", "head_of_program", "student"] as const)(
+    "refuses %s to manage the cleaning places and duties",
+    (role) => {
+      expect(may([role], "manage_dorm_cleaning")).toBe(false);
+    },
+  );
+
+  it("lets Mahasiswa see their own room's cleaning duties, and no one else's", () => {
+    expect(may(["student"], "view_own_dorm_cleaning")).toBe(true);
+    expect(may(["student"], "view_dorm_cleaning")).toBe(false);
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    for (const role of others) {
+      expect(may([role], "view_own_dorm_cleaning")).toBe(false);
+    }
+  });
+
+  it("gives a right to read cleaning to every role with the tab Pembersihan asrama", () => {
+    for (const role of ROLE_IDS) {
+      const reads =
+        may([role], "view_dorm_cleaning") ||
+        may([role], "view_own_dorm_cleaning");
+      expect(reads).toBe(mayOpenTab([role], "dorm", "cleaning"));
+    }
+  });
+
   const activityViewers: RoleId[] = [
     "head_of_unit",
     "director",
@@ -1339,6 +1417,7 @@ describe("may", () => {
       "ask_dorm_leave",
       "report_dorm_return",
       "ask_dorm_clarification",
+      "view_own_dorm_cleaning",
       "view_own_siku",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);

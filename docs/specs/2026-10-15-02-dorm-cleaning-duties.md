@@ -132,7 +132,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The tables for places and duties are added, with the four
   sample places per dorm and a week of sample duties.
-- [ ] 2. The rights to see and to manage cleaning are added to the
+- [x] 2. The rights to see and to manage cleaning are added to the
   permission list, with their checks.
 - [ ] 3. Places can be added, renamed and removed.
 - [ ] 4. The schedule gives places and own rooms to rooms, and cancels
