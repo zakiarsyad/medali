@@ -96,6 +96,56 @@ async function isUploadKey(tx: Database, id: string): Promise<boolean> {
   return upload !== undefined;
 }
 
+/**
+ * What every new entry checks in its transaction before it is kept:
+ * that an academic period runs on the day it is saved, and that each of
+ * its students is Aktif now. Gives the key of that period.
+ */
+export async function periodOfNewEntry(
+  tx: Database,
+  studentIds: string[],
+  moment: Date,
+): Promise<Parsed<string>> {
+  const period = await readRunningPeriod(tx, campusDay(moment));
+  if (period === null) return NO_PERIOD;
+  const active = await countActive(tx, studentIds);
+  if (active !== studentIds.length) return NOT_ACTIVE_STUDENTS;
+  return { ok: true, value: period.id };
+}
+
+/** The row of a new entry, as the work of the actor, in the role it is made as. */
+export function newEntryRow(
+  actor: Pick<AccountForAccess, "id" | "roles">,
+  id: string,
+  entry: Omit<EntryInput, "studentIds">,
+  periodId: string,
+  moment: Date,
+): typeof sikuAdjustments.$inferInsert {
+  return {
+    ...entry,
+    id,
+    periodId,
+    enteredBy: actor.id,
+    enteredAs: enteredAsOf(actor.roles),
+    enteredAt: moment,
+  };
+}
+
+/** Names the students of a new entry and writes its line in the log. */
+export async function nameAndLogEntry(
+  tx: Database,
+  actorId: string,
+  id: string,
+  studentIds: string[],
+): Promise<void> {
+  await tx
+    .insert(sikuAdjustmentStudents)
+    .values(studentIds.map((studentId) => ({ adjustmentId: id, studentId })));
+  await tx
+    .insert(sikuAdjustmentChanges)
+    .values({ adjustmentId: id, changedBy: actorId, action: "entered" });
+}
+
 async function save(
   tx: Database,
   actor: AccountForAccess,
@@ -113,22 +163,13 @@ async function save(
       students: input.studentIds.length,
     },
   } as const;
-  const period = await readRunningPeriod(tx, campusDay(moment));
-  if (period === null) return NO_PERIOD;
-  const active = await countActive(tx, input.studentIds);
-  if (active !== input.studentIds.length) return NOT_ACTIVE_STUDENTS;
+  const period = await periodOfNewEntry(tx, input.studentIds, moment);
+  if (!period.ok) return period;
   const { studentIds, ...entry } = input;
   // A second press waits here for the first to end, then adds nothing.
   const added = await tx
     .insert(sikuAdjustments)
-    .values({
-      ...entry,
-      id,
-      periodId: period.id,
-      enteredBy: actor.id,
-      enteredAs: enteredAsOf(actor.roles),
-      enteredAt: moment,
-    })
+    .values(newEntryRow(actor, id, entry, period.value, moment))
     .onConflictDoNothing({ target: sikuAdjustments.id })
     .returning({ id: sikuAdjustments.id });
   if (added.length === 0) {
@@ -140,12 +181,7 @@ async function save(
     const isSame = await isSameEntry(tx, kept, actor.id, input);
     return isSame ? saved : ENTRY_ALREADY_SENT;
   }
-  await tx
-    .insert(sikuAdjustmentStudents)
-    .values(studentIds.map((studentId) => ({ adjustmentId: id, studentId })));
-  await tx
-    .insert(sikuAdjustmentChanges)
-    .values({ adjustmentId: id, changedBy: actor.id, action: "entered" });
+  await nameAndLogEntry(tx, actor.id, id, studentIds);
   return saved;
 }
 

@@ -16,6 +16,7 @@ import {
   accounts,
   sikuAdjustmentStudents,
   sikuAdjustments,
+  sikuRequests,
   sikuUploads,
   students,
   studyPrograms,
@@ -37,6 +38,8 @@ export interface FormEntry {
   students: number;
   note: string;
   basis: string;
+  /** Whether an approved request of a student made it. */
+  fromRequest: boolean;
   /** The name of the staff member who entered it. */
   enteredBy: string;
 }
@@ -91,6 +94,12 @@ export interface SeenStudents {
 /** A row entered with the form, not from a file. */
 const FROM_FORM = isNull(sikuAdjustments.uploadId);
 
+/** Whether the entry in the outer query was made by approving a request. */
+export const FROM_REQUEST = sql<boolean>`exists (
+  select 1 from ${sikuRequests}
+  where ${sikuRequests.entryId} = ${sikuAdjustments.id}
+)`;
+
 /** The entry a row is shown in: its upload, or the row itself. */
 const ENTRY_OF_ROW = sql<string>`coalesce(${sikuAdjustments.uploadId}, ${sikuAdjustments.id})`;
 
@@ -127,6 +136,7 @@ async function readFormEntries(
       students: visibleCount(visible),
       note: sikuAdjustments.note,
       basis: sikuAdjustments.basis,
+      fromRequest: FROM_REQUEST,
       enteredBy: accounts.name,
     })
     .from(sikuAdjustments)

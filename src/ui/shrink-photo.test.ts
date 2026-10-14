@@ -110,6 +110,18 @@ describe("shrinkPhoto", () => {
     expect(canvases[0]).toMatchObject({ width: 960, height: 1280 });
   });
 
+  it("draws a small copy as small as asked", async () => {
+    const { canvases } = standIn({
+      picture: { width: 4000, height: 3000 },
+      canDraw: true,
+    });
+
+    const photo = await shrinkPhoto(FILE, 240);
+
+    expect(canvases[0]).toMatchObject({ width: 240, height: 180 });
+    expect(photo?.type).toBe("image/jpeg");
+  });
+
   it("keeps the size of a small picture, and still gives a JPEG that keeps part of the detail", async () => {
     const { canvases } = standIn({
       picture: { width: 640, height: 480 },

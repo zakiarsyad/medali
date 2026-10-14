@@ -8,7 +8,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./siku.module.css";
 import { cancelSikuEntryAction } from "./siku-actions";
 import type { FormEntry, HistoryEntry } from "./siku-history";
-import { KIND_WORDS, REASON_WORDS, signedPoints } from "./siku-words";
+import { basisOf, KIND_WORDS, REASON_WORDS, signedPoints } from "./siku-words";
 
 export const NO_HISTORY = "Belum ada penambahan atau pengurangan SIKU.";
 
@@ -75,12 +75,11 @@ function Adjustment({ row }: { row: HistoryRow }) {
 }
 
 function Notes({ entry }: { entry: FormEntry }) {
+  const basis = basisOf(entry);
   return (
     <>
       {entry.note !== "" && <span className={shared.typed}>{entry.note}</span>}
-      {entry.basis !== "" && (
-        <span className={shared.detail}>Dasar: {entry.basis}</span>
-      )}
+      {basis !== "" && <span className={shared.detail}>Dasar: {basis}</span>}
     </>
   );
 }

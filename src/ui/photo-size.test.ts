@@ -33,4 +33,15 @@ describe("shrunkSize", () => {
       height: 1,
     });
   });
+
+  it("makes a picture as small as asked, as for a small copy, with its shape kept", () => {
+    expect(shrunkSize({ width: 4000, height: 3000 }, 240)).toEqual({
+      width: 240,
+      height: 180,
+    });
+    expect(shrunkSize({ width: 200, height: 100 }, 240)).toEqual({
+      width: 200,
+      height: 100,
+    });
+  });
 });

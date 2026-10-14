@@ -16,7 +16,7 @@ import {
 import { studentIdsByNim } from "./seed-mentor-groups";
 
 /** The first sample account that holds a role. */
-async function sampleAccountOf(
+export async function sampleAccountOf(
   db: Database,
   role: SampleSikuEntry["enteredAs"],
 ): Promise<string> {
@@ -30,7 +30,7 @@ async function sampleAccountOf(
 }
 
 /** Ten in the morning on campus of a day, or now when that is later. */
-function momentOf(day: string, now: Date): Date {
+export function momentOf(day: string, now: Date): Date {
   const morning = new Date(`${day}T10:00:00+07:00`);
   return morning < now ? morning : now;
 }
@@ -47,13 +47,15 @@ function idOf(ids: Map<string, string>, nim: string): string {
  * Adds the sample SIKU entries, each in the academic period that ran on
  * its day, as the work of the sample Penilai Mahasiswa or Kepala Unit,
  * with its log lines. The sample students, accounts and periods must be
- * there already. `today` is today on campus.
+ * there already. `today` is today on campus. Gives the key each was
+ * kept under.
  */
 export async function addSampleSikuAdjustments(
   db: Database,
   today: string,
   now: Date = new Date(),
-): Promise<void> {
+): Promise<Map<SampleSikuEntry, string>> {
+  const added = new Map<SampleSikuEntry, string>();
   const studentIds = await studentIdsByNim(db);
   const periods = await readAcademicPeriods(db);
   const enterers = {
@@ -71,6 +73,7 @@ export async function addSampleSikuAdjustments(
         ? null
         : momentOf(sampleEntryDay(today, sample.cancelledDaysAgo), now);
     const id = crypto.randomUUID();
+    added.set(sample, id);
     await db.insert(sikuAdjustments).values({
       id,
       kind: sample.kind,
@@ -106,4 +109,5 @@ export async function addSampleSikuAdjustments(
       action: "cancelled",
     });
   }
+  return added;
 }

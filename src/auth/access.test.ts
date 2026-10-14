@@ -567,6 +567,48 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa ask for a SIKU gain with proof photos, on Penilaian SIKU, and no other role", () => {
+    expect(may(["student"], "ask_siku_addition")).toBe(true);
+    expect(mayOpenTab(["student"], "assessment", "siku")).toBe(true);
+    expect(ACTION_TITLES.ask_siku_addition).toBe(
+      "Ajukan penambahan SIKU dengan foto bukti",
+    );
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["assessor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "ask_siku_addition")).toBe(false);
+    }
+  });
+
+  it.each(["head_of_unit", "assessor"] as const)(
+    "lets %s approve and reject requests for a SIKU gain, on Penilaian SIKU",
+    (role) => {
+      expect(may([role], "decide_siku_additions")).toBe(true);
+      expect(mayOpenTab([role], "assessment", "siku")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to decide requests for a SIKU gain, Pengasuh, Direktur, Ketua Program Studi and Mahasiswa among them", () => {
+    expect(ACTION_TITLES.decide_siku_additions).toBe(
+      "Persetujuan pengajuan penambahan SIKU",
+    );
+    const deciders: RoleId[] = ["head_of_unit", "assessor"];
+    const others = ROLE_IDS.filter((role) => !deciders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "mentor",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "decide_siku_additions")).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa ask for and cancel their own dorm leave, on a page that asks them to live in the dorm", () => {
     expect(may(["student"], "ask_dorm_leave")).toBe(true);
     expect(may(["student"], "view_dorm_leave")).toBe(false);
@@ -1419,6 +1461,7 @@ describe("may", () => {
       "ask_dorm_clarification",
       "view_own_dorm_cleaning",
       "view_own_siku",
+      "ask_siku_addition",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });

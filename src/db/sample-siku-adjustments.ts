@@ -21,6 +21,35 @@ export interface SampleSikuEntry {
   cancelledDaysAgo: number | null;
 }
 
+/** The gain a sample request of a student made when it was approved. */
+export const APPROVED_REQUEST_GAIN: SampleSikuEntry = {
+  kind: "gain",
+  reason: "training_speaker",
+  points: 3,
+  daysAgo: 8,
+  note: "Menjadi narasumber pelatihan penulisan laporan kegiatan untuk pengurus himpunan.",
+  basis: "",
+  nims: ["9900230001"],
+  enteredAs: "assessor",
+  cancelledDaysAgo: null,
+};
+
+/**
+ * A gain that was cancelled the day after it was entered. It came from
+ * a sample request, which shows as Dibatalkan.
+ */
+export const CANCELLED_REQUEST_GAIN: SampleSikuEntry = {
+  kind: "gain",
+  reason: "social_media_campaign",
+  points: 2,
+  daysAgo: 12,
+  note: "Kampanye anti-perundungan di media sosial himpunan.",
+  basis: "",
+  nims: ["9900240014"],
+  enteredAs: "assessor",
+  cancelledDaysAgo: 11,
+};
+
 /**
  * The sample entries: gains and losses over the last weeks and one
  * from the semester before, which keeps counting; one cancelled; and
@@ -100,17 +129,7 @@ export const SAMPLE_SIKU_ENTRIES: SampleSikuEntry[] = [
     enteredAs: "assessor",
     cancelledDaysAgo: null,
   },
-  {
-    kind: "gain",
-    reason: "social_media_campaign",
-    points: 2,
-    daysAgo: 12,
-    note: "Kampanye anti-perundungan di media sosial himpunan.",
-    basis: "",
-    nims: ["9900240014"],
-    enteredAs: "assessor",
-    cancelledDaysAgo: 11,
-  },
+  CANCELLED_REQUEST_GAIN,
   {
     kind: "gain",
     reason: "peer_mentoring",
@@ -122,6 +141,7 @@ export const SAMPLE_SIKU_ENTRIES: SampleSikuEntry[] = [
     enteredAs: "assessor",
     cancelledDaysAgo: null,
   },
+  APPROVED_REQUEST_GAIN,
   {
     kind: "loss",
     reason: "discipline_penalty",
