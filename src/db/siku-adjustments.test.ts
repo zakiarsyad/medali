@@ -1,5 +1,5 @@
 // Sample Tahun akademik of this file: 2900 to 2900.
-// Sample NIMs of this file: 9964000000 to 9964000099.
+// Sample NIMs of this file: 9964090000 to 9964090099.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "./connect";
@@ -46,7 +46,7 @@ async function addRecords(db: Database): Promise<Records> {
   const [student] = await db
     .insert(students)
     .values({
-      nim: "9964000001",
+      nim: "9964090001",
       name: "Mahasiswa Uji Tabel SIKU",
       studyProgramId: program.id,
       entryPath: "regular",
