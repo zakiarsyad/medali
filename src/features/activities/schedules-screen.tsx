@@ -80,8 +80,8 @@ const INTROS: Record<ScheduleKind, string> = {
  * The tab "Kegiatan PPKS" or "Kegiatan tambahan", by the scope of its
  * params: the attendance numbers, the schedules of its activities with
  * how many attended, for an account that may manage activities the form
- * that adds one, and on "Kegiatan PPKS" the clarifications of the
- * students the account sees, when there are any. `visible` is the
+ * that adds one, and the clarifications of the students the account sees
+ * at the tab's activities, when there are any. `visible` is the
  * students the account sees: every number of students and every name
  * here is read through it.
  */
@@ -107,7 +107,7 @@ export async function SchedulesScreen({
     // Read only for an account that gets the form.
     mayManage ? readFormLists(db, scope.kind) : null,
     readAttendanceNumbers(db, visible, scope, now.day),
-    scope.kind === "ppks" ? readClarificationPanel(db, visible) : null,
+    readClarificationPanel(db, visible, scope.kind),
   ]);
   // Asked only for the schedules of the page shown, so after the list.
   const [attendance, extra] = await Promise.all([

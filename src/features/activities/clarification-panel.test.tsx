@@ -164,6 +164,18 @@ async function addGroupOf(
   );
 }
 
+/** The academic period the schedule of the records keeps. */
+async function activityPeriodOf(
+  db: Database,
+  records: Records,
+): Promise<string | undefined> {
+  const [kept] = await db
+    .select({ periodId: activitySchedules.academicPeriodId })
+    .from(activitySchedules)
+    .where(eq(activitySchedules.id, records.scheduleId));
+  return kept?.periodId;
+}
+
 function namesOf(panel: ClarificationPanel | null): string[] {
   return (panel?.latest ?? []).map((card) => card.name);
 }
@@ -179,8 +191,8 @@ describe("readClarificationPanel", () => {
         accountOf(records.assessorId, "head_of_program", records.programId),
       );
 
-      expect(await readClarificationPanel(db, ownProgram)).toBeNull();
-      expect(await readClarificationPanel(db, sql`false`)).toBeNull();
+      expect(await readClarificationPanel(db, ownProgram, "ppks")).toBeNull();
+      expect(await readClarificationPanel(db, sql`false`, "ppks")).toBeNull();
     });
   });
 
@@ -194,7 +206,7 @@ describe("readClarificationPanel", () => {
         records.programId,
       );
 
-      const panel = await readClarificationPanel(db, seenOnTab(head));
+      const panel = await readClarificationPanel(db, seenOnTab(head), "ppks");
 
       expect(panel?.counts).toEqual({ submitted: 1, accepted: 1, rejected: 1 });
       expect(namesOf(panel)).toEqual([name(2), name(1), name(0)]);
@@ -212,10 +224,12 @@ describe("readClarificationPanel", () => {
       const own = await readClarificationPanel(
         db,
         seenOnTab(accountOf(mentor.id, "mentor")),
+        "ppks",
       );
       const none = await readClarificationPanel(
         db,
         seenOnTab(accountOf(other.id, "mentor")),
+        "ppks",
       );
 
       expect(own?.counts).toEqual({ submitted: 1, accepted: 0, rejected: 1 });
@@ -234,10 +248,10 @@ describe("readClarificationPanel", () => {
       await inTestDatabase(async (db) => {
         const records = await addRecords(db);
         const everyone = seenOnTab(accountOf(records.assessorId, role));
-        const before = await readClarificationPanel(db, everyone);
+        const before = await readClarificationPanel(db, everyone, "ppks");
         await addOneEach(db, records);
 
-        const panel = await readClarificationPanel(db, everyone);
+        const panel = await readClarificationPanel(db, everyone, "ppks");
 
         const had = before?.counts ?? {
           submitted: 0,
@@ -275,7 +289,7 @@ describe("readClarificationPanel", () => {
       });
       const both = sql`${visibleTo({ kind: "all" })} and students.nim like '99742000%'`;
 
-      const panel = await readClarificationPanel(db, both);
+      const panel = await readClarificationPanel(db, both, "ppks");
 
       expect(panel?.counts.submitted).toBe(7);
       expect(namesOf(panel)).toEqual([
@@ -301,7 +315,36 @@ describe("readClarificationPanel", () => {
         .set({ deletedAt: SENT_AT, deletedBy: records.assessorId })
         .where(eq(activitySchedules.id, records.scheduleId));
 
-      expect(await readClarificationPanel(db, head)).toBeNull();
+      expect(await readClarificationPanel(db, head, "ppks")).toBeNull();
+    });
+  });
+
+  it("holds on each tab only the clarifications of its own kind of activity", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const extraActivityId = await addTestActivity(db, records.assessorId, {
+        semester: null,
+        name: "Kegiatan tambahan uji panel",
+      });
+      const extraScheduleId = await addTestSchedule(db, {
+        activityId: extraActivityId,
+        academicPeriodId: (await activityPeriodOf(db, records)) ?? "",
+        changedBy: records.assessorId,
+        startsOn: "2350-09-11",
+      });
+      await addSent(db, records, 0);
+      await addSent(db, records, 1, { scheduleId: extraScheduleId });
+      const head = seenOnTab(
+        accountOf(records.assessorId, "head_of_program", records.programId),
+      );
+
+      const ppks = await readClarificationPanel(db, head, "ppks");
+      const extra = await readClarificationPanel(db, head, "extra");
+
+      expect(namesOf(ppks)).toEqual([name(0)]);
+      expect(ppks?.counts).toEqual({ submitted: 1, accepted: 0, rejected: 0 });
+      expect(namesOf(extra)).toEqual([name(1)]);
+      expect(extra?.counts).toEqual({ submitted: 1, accepted: 0, rejected: 0 });
     });
   });
 
@@ -319,7 +362,7 @@ describe("readClarificationPanel", () => {
         accountOf(records.assessorId, "head_of_program", records.programId),
       );
 
-      const panel = await readClarificationPanel(db, head);
+      const panel = await readClarificationPanel(db, head, "ppks");
 
       expect(panel?.latest).toEqual([
         {

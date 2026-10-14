@@ -138,6 +138,18 @@ The issue did not say, so these were decided:
 16. As in the prototype, the save message writes the Sasaran with a
     small first letter, as 'Jadwal "Program mentor sebaya" disimpan
     untuk kelas 2-01, 2-02.'
+17. As in the prototype, the panel "Klarifikasi kehadiran" of each tab
+    holds only the clarifications of that tab's kind of activity, so the
+    one on "Kegiatan PPKS" no longer counts those of extra activities.
+18. A chosen student sees an extra activity only when it keeps a period
+    in which they were a student, as for a PPKS activity, and only while
+    they are Aktif.
+19. The photo of a student taken out of a schedule stays in "Verifikasi
+    presensi" and can still be decided there, but counts in no number
+    and no score; the student no longer sees the schedule.
+20. "Catat kehadiran manual atau dispensasi" offers the extra activities
+    of the student picked too, so a dispensation can be recorded for
+    them as for a PPKS activity.
 
 ## Steps
 
@@ -148,5 +160,5 @@ The issue did not say, so these were decided:
 - [x] 3. The "Kegiatan tambahan" tab shows the numbers and the table.
 - [x] 4. "Jadwalkan kegiatan tambahan" with the Peserta choice, "Ubah"
   and "Hapus jadwal".
-- [ ] 5. Students see their extra activities and send photos; Verifikasi
+- [x] 5. Students see their extra activities and send photos; Verifikasi
   presensi and clarifications include them.

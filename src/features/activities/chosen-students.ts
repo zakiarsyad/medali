@@ -1,8 +1,16 @@
 import { asc, inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { activityScheduleParticipants as chosen, students } from "@/db/schema";
+import {
+  activitySchedules,
+  activityScheduleParticipants as chosen,
+  students,
+} from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
-import { choiceOf, type ParticipantChoice } from "./chosen-participants";
+import {
+  type CandidateStudent,
+  choiceOf,
+  type ParticipantChoice,
+} from "./chosen-participants";
 
 /**
  * The students a schedule of a special or additional activity names, by
@@ -13,6 +21,20 @@ import { choiceOf, type ParticipantChoice } from "./chosen-participants";
  */
 export function chosenBy(scheduleId: SQLWrapper | string): SQL {
   return sql`exists (select 1 from ${chosen} where ${chosen.scheduleId} = ${scheduleId} and (${chosen.studentId} = ${students.id} or ${chosen.className} = ${students.className} or ${chosen.cohortYear} = ${students.cohortYear}))`;
+}
+
+/**
+ * The schedules of special or additional activities that name one
+ * student, by name, by the class they are in now or by the angkatan they
+ * are in now: `isChosen` as a condition on the schedules in the
+ * database. Whether the student is Aktif is for the caller to ask.
+ */
+export function naming(student: Omit<CandidateStudent, "isActive">): SQL {
+  const byClass =
+    student.className === null
+      ? sql`false`
+      : sql`${chosen.className} = ${student.className}`;
+  return sql`exists (select 1 from ${chosen} where ${chosen.scheduleId} = ${activitySchedules.id} and (${chosen.studentId} = ${student.id} or ${byClass} or ${chosen.cohortYear} = ${student.cohortYear}))`;
 }
 
 /**

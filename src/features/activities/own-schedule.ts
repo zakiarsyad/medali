@@ -7,8 +7,10 @@ import {
   ppksActivities,
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
+import { takesPart } from "./chosen-participants";
 import type { OwnStudent } from "./own-student";
-import { isInSemester } from "./participants";
+import { isInSemester, type PeriodParts, semesterIn } from "./participants";
+import { readStoredChoice } from "./save-participants";
 import type { StatusParts } from "./schedule-status";
 
 /** A schedule a student takes part in, with what its status is told from. */
@@ -17,10 +19,27 @@ export interface OwnSchedule extends StatusParts {
 }
 
 /**
+ * Whether a schedule of a special or additional activity is meant for a
+ * student: they were a student in the period it keeps, and it names
+ * them, their class or their angkatan.
+ */
+async function isChosenFor(
+  db: Database,
+  student: OwnStudent,
+  scheduleId: string,
+  period: PeriodParts,
+): Promise<boolean> {
+  if (semesterIn(student.cohortYear, period) === null) return false;
+  const choice = await readStoredChoice(db, scheduleId);
+  return choice !== null && takesPart(student, choice);
+}
+
+/**
  * One schedule, when it is meant for a student: not removed, and of an
  * activity of the semester the student is in during the period the
- * schedule keeps. Null otherwise, and for a student who is not Aktif.
- * `id` comes from outside and is not trusted.
+ * schedule keeps, or of a special or additional activity that names the
+ * student. Null otherwise, and for a student who is not Aktif. `id` comes
+ * from outside and is not trusted.
  */
 export async function readOwnSchedule(
   db: Database,
@@ -52,11 +71,13 @@ export async function readOwnSchedule(
     .where(
       and(eq(activitySchedules.id, id), isNull(activitySchedules.deletedAt)),
     );
-  // A special or additional activity has no semester and is not PPKS.
-  if (!found || found.semester === null) return null;
+  if (!found) return null;
   const { semester, startYear, term, ...schedule } = found;
-  if (!isInSemester(student.cohortYear, semester, { startYear, term })) {
-    return null;
-  }
+  const period = { startYear, term };
+  const isMeant =
+    semester === null
+      ? await isChosenFor(db, student, schedule.id, period)
+      : isInSemester(student.cohortYear, semester, period);
+  if (!isMeant) return null;
   return { ...schedule, startTime: hourAndMinute(schedule.startTime) };
 }

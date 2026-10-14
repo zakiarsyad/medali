@@ -63,6 +63,8 @@ export interface ActiveStudent {
   id: string;
   name: string;
   cohortYear: number;
+  /** Null for a student with no class. */
+  className: string | null;
 }
 
 /**
@@ -80,6 +82,7 @@ export async function readActiveStudent(
       id: students.id,
       name: students.name,
       cohortYear: students.cohortYear,
+      className: students.className,
     })
     .from(students)
     .where(and(eq(students.id, id), ACTIVE_MEMBER));

@@ -30,8 +30,9 @@ function group(
   students: number,
   kept: StudentGroup["kept"] = {},
   cohortYear = 2025,
+  chosenIn: string[] = [],
 ): StudentGroup {
-  return { cohortYear, kept, students };
+  return { cohortYear, kept, chosenIn, students };
 }
 
 const CLOSED = [schedule("a", "2026-10-01"), schedule("b", "2026-10-05")];
@@ -104,6 +105,34 @@ describe("meanScore", () => {
     expect(meanScore([third, first], schedules, PERIOD, TODAY)).toEqual({
       percent: 100,
       students: 2,
+    });
+  });
+
+  it("counts a required extra activity only for the students it names", () => {
+    const schedules = [
+      ...CLOSED,
+      schedule("extra", "2026-10-04", { semester: null }),
+    ];
+    const chosen = group(1, { a: "valid", b: "valid" }, 2025, ["extra"]);
+    const notChosen = group(1, { a: "valid", b: "valid" });
+
+    // The one chosen missed the extra activity: 2 of 3.
+    expect(meanScore([chosen, notChosen], schedules, PERIOD, TODAY)).toEqual({
+      percent: 83.4,
+      students: 2,
+    });
+  });
+
+  it("leaves out an extra activity that is not required, also for those it names", () => {
+    const schedules = [
+      ...CLOSED,
+      schedule("free", "2026-10-04", { semester: null, isRequired: false }),
+    ];
+    const chosen = group(1, { a: "valid", b: "valid" }, 2025, ["free"]);
+
+    expect(meanScore([chosen], schedules, PERIOD, TODAY)).toEqual({
+      percent: 100,
+      students: 1,
     });
   });
 

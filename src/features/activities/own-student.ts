@@ -2,14 +2,13 @@ import { and, eq, isNull } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
+import type { CandidateStudent } from "./chosen-participants";
 
-/** The student an account sends attendance photos as. */
-export interface OwnStudent {
-  id: string;
-  cohortYear: number;
-  /** Only an Aktif student takes part in activities. */
-  isActive: boolean;
-}
+/**
+ * The student an account sends attendance photos as, with what tells
+ * which schedules are meant for them. Only an Aktif student takes part.
+ */
+export type OwnStudent = CandidateStudent;
 
 /**
  * The one student whose attendance an account may see and send: its own.
@@ -31,6 +30,7 @@ export async function readOwnStudent(
     .select({
       id: students.id,
       cohortYear: students.cohortYear,
+      className: students.className,
       status: students.status,
     })
     .from(students)
@@ -39,6 +39,7 @@ export async function readOwnStudent(
   return {
     id: student.id,
     cohortYear: student.cohortYear,
+    className: student.className,
     isActive: student.status === "active",
   };
 }
