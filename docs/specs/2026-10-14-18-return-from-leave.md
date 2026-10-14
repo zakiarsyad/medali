@@ -98,7 +98,7 @@ return directly, and see who is still out and who is late.
 
 - [x] 1. Leave keeps its report, checks and actual return time, with
   sample reports in every state.
-- [ ] 2. The rights to check, confirm and record a return are added to
+- [x] 2. The rights to check, confirm and record a return are added to
   the permission list, with their checks.
 - [ ] 3. Residents send the report photo and see its state.
 - [ ] 4. BAM - BPHK verifies and rejects; Pengelola validates and

@@ -423,6 +423,90 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa report back to the dorm from their own leave, on a page that asks them to live in the dorm", () => {
+    expect(may(["student"], "report_dorm_return")).toBe(true);
+    expect(mayOpenTab(["student"], "dorm", "leave")).toBe(true);
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+  });
+
+  it("refuses every other role to report back to the dorm", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_bphk", "dorm_manager", "head_of_unit"]),
+    );
+    for (const role of others) {
+      expect(may([role], "report_dorm_return")).toBe(false);
+    }
+  });
+
+  it("lets BAM - BPHK verify and reject a report of a return, on Perizinan asrama", () => {
+    expect(may(["bam_bphk"], "verify_dorm_return")).toBe(true);
+    expect(mayOpenTab(["bam_bphk"], "dorm", "leave")).toBe(true);
+  });
+
+  it("refuses every other role to verify a report of a return, Pengelola Asrama and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "bam_bphk");
+    expect(others).toEqual(
+      expect.arrayContaining(["dorm_manager", "head_of_unit", "bam_health"]),
+    );
+    for (const role of others) {
+      expect(may([role], "verify_dorm_return")).toBe(false);
+    }
+  });
+
+  it("lets Pengelola Asrama validate and reject a report of a return", () => {
+    expect(may(["dorm_manager"], "validate_dorm_return")).toBe(true);
+  });
+
+  it("refuses every other role to validate a report of a return, BAM - BPHK and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_bphk", "head_of_unit", "director"]),
+    );
+    for (const role of others) {
+      expect(may([role], "validate_dorm_return")).toBe(false);
+    }
+  });
+
+  const returnRecorders: RoleId[] = ["dorm_manager", "bam_bphk"];
+
+  it.each(returnRecorders)(
+    "lets %s record that a resident is back, on Perizinan asrama",
+    (role) => {
+      expect(may([role], "record_dorm_return")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "leave")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to record that a resident is back, the read-only roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !returnRecorders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "record_dorm_return")).toBe(false);
+    }
+  });
+
+  it("gives every right on a return only to roles that see dorm leave", () => {
+    const rights = [
+      "verify_dorm_return",
+      "validate_dorm_return",
+      "record_dorm_return",
+    ] as const;
+    for (const role of ROLE_IDS) {
+      for (const right of rights) {
+        if (!may([role], right)) continue;
+        expect(may([role], "view_dorm_leave")).toBe(true);
+      }
+    }
+  });
+
   it("gives a way to see dorm leave to every role with the tab Perizinan asrama, and to no other", () => {
     for (const role of ROLE_IDS) {
       const sees =
@@ -1011,6 +1095,7 @@ describe("may", () => {
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
       "ask_dorm_leave",
+      "report_dorm_return",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });
