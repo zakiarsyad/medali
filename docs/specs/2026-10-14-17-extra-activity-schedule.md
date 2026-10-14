@@ -121,14 +121,21 @@ The issue did not say, so these were decided:
     first angkatan picked.
 12. As in the prototype, a choice that holds no Aktif student today is
     refused with "Tentukan peserta kegiatan.", also when it names a
-    class or angkatan that has only students who are not Aktif. The
-    class list and the angkatan offer only those with Aktif students,
-    and also those a schedule already holds when it is changed.
-13. A student chosen Per mahasiswa who is no longer Aktif shows on the
-    form as "tidak dihitung", and stays chosen unless taken out with ×.
+    class or angkatan that has only students who are not Aktif. A
+    student counts here only when they were a student in the period the
+    schedule keeps, as for "(n) peserta" (see 18): so a choice of only
+    a newer angkatan is refused too, though Sasaran on the form, which
+    does not know the period yet, counts them. The class list and the
+    angkatan offer only those with Aktif students, and also those a
+    schedule already holds when it is changed.
+13. A student chosen Per mahasiswa who is no longer Aktif, or who was
+    removed, shows on the form as "tidak dihitung", and stays chosen
+    unless taken out with ×. The schedule can be saved again with them
+    still chosen.
 14. Per angkatan with more than one angkatan, which only a hand-made
     request can send, is refused with "Pilih satu angkatan, atau pilih
-    Lintas angkatan." A student who is not stored is refused with
+    Lintas angkatan." A student who is not stored, or a new pick who is
+    not Aktif, which the search never offers, is refused with
     "Peserta yang dipilih tidak dikenali. Muat ulang halaman, lalu pilih
     peserta lagi." One schedule holds at most 2.000 picks.
 15. A schedule stays on its tab: as before, a schedule of a PPKS
@@ -143,13 +150,19 @@ The issue did not say, so these were decided:
     one on "Kegiatan PPKS" no longer counts those of extra activities.
 18. A chosen student sees an extra activity only when it keeps a period
     in which they were a student, as for a PPKS activity, and only while
-    they are Aktif.
+    they are Aktif. The staff numbers count the same students: "(n)
+    peserta", Peserta, Hadir, "Kehadiran", "Menunggu verifikasi" and
+    "Rerata nilai kehadiran" leave out a chosen student of an angkatan
+    newer than the period.
 19. The photo of a student taken out of a schedule stays in "Verifikasi
     presensi" and can still be decided there, but counts in no number
-    and no score; the student no longer sees the schedule.
+    and no score, "Menunggu verifikasi" included; the student no longer
+    sees the schedule.
 20. "Catat kehadiran manual atau dispensasi" offers the extra activities
     of the student picked too, so a dispensation can be recorded for
     them as for a PPKS activity.
+21. Enter in "Cari mahasiswa" or "Cari kelas" does not save the
+    schedule; only "Simpan jadwal" or "Simpan perubahan" does.
 
 ## Steps
 

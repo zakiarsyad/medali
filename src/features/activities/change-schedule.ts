@@ -114,9 +114,9 @@ async function readKept(db: Database, id: string): Promise<KeptParts | null> {
 }
 
 /** A schedule stays on its tab: a PPKS one never becomes an extra one. */
-function homeOf(kept: KeptParts): ScheduleHome {
+function homeOf(id: string, kept: KeptParts): ScheduleHome {
   const kind = kept.semester === null ? "extra" : "ppks";
-  return { kind, keptActivityId: kept.activityId };
+  return { kind, keptScheduleId: id, keptActivityId: kept.activityId };
 }
 
 /** Why a change did not go in: the schedule is gone, or it was changed. */
@@ -156,7 +156,7 @@ export async function changeSchedule(
   const isAsOpened = openedAt?.getTime() === kept.changedAt.getTime();
   if (openedAt === null || !isAsOpened) return SCHEDULE_CHANGED_BY_OTHER;
 
-  const plan = await planSchedule(db, sent, homeOf(kept));
+  const plan = await planSchedule(db, sent, homeOf(id, kept));
   if (!plan.ok) return plan;
   const opened = { id, at: openedAt };
   if (await changeOpened(db, actor.id, opened, plan.value)) {

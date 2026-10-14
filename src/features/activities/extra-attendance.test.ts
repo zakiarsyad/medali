@@ -10,6 +10,7 @@ import {
 import { withTestDatabase } from "@/db/test-database";
 import { memoryStore } from "@/files/memory-store";
 import { readAttendanceCounts } from "./attendance-counts";
+import { readAttendanceNumbers } from "./attendance-numbers";
 import { PHOTO_FILE_NAME } from "./attendance-photo";
 import type { ParticipantChoice } from "./chosen-participants";
 import { readCohortCounts } from "./cohort-counts";
@@ -401,12 +402,13 @@ describe("a record made by hand for a schedule of an extra activity", () => {
 });
 
 describe("participants changed after photos came in", () => {
-  it("keeps the photo of a student taken out, and no longer counts it", async () => {
+  it("keeps the photos of a student taken out, valid or waiting, and no longer counts them", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
+      const store = memoryStore();
       await sendAttendancePhoto(
         db,
-        memoryStore(),
+        store,
         records.chosen,
         records.scheduleId,
         PHOTO,
@@ -417,16 +419,48 @@ describe("participants changed after photos came in", () => {
         decidedAt: WHILE_OPEN,
         decidedBy: records.staffId,
       });
-
-      await replaceParticipants(db, records.scheduleId, {
-        kind: "classes",
-        classNames: ["HT-02"],
+      const waitingId = await addExtra(db, {
+        staffId: records.staffId,
+        activityId: records.activityId,
+        periodId: records.oddId,
+        startsOn: "2760-10-13",
       });
+      await sendAttendancePhoto(
+        db,
+        store,
+        records.chosen,
+        waitingId,
+        PHOTO,
+        WHILE_OPEN,
+      );
 
-      const kept = await db.select().from(activityAttendances);
-      expect(kept).toMatchObject([
-        { studentId: records.chosen.studentId, status: "valid" },
-      ]);
+      for (const scheduleId of [records.scheduleId, waitingId]) {
+        await replaceParticipants(db, scheduleId, {
+          kind: "classes",
+          classNames: ["HT-02"],
+        });
+      }
+
+      const kept = await db
+        .select({
+          studentId: activityAttendances.studentId,
+          status: activityAttendances.status,
+        })
+        .from(activityAttendances);
+      expect(kept).toHaveLength(2);
+      expect(kept).toEqual(
+        expect.arrayContaining([
+          { studentId: records.chosen.studentId, status: "valid" },
+          { studentId: records.chosen.studentId, status: "waiting" },
+        ]),
+      );
+      const numbers = await readAttendanceNumbers(
+        db,
+        ofProgram(records),
+        { kind: "extra" },
+        DAY_AFTER_UPLOAD,
+      );
+      expect(numbers.waiting).toBe(0);
       const list = await listSchedules(db, { kind: "extra" }, 1);
       const shown = list.schedules.filter(
         (schedule) => schedule.id === records.scheduleId,

@@ -6,6 +6,7 @@ import {
   ppksActivities,
   students,
 } from "@/db/schema";
+import { takingPartIn } from "./chosen-students";
 import { listedSchedules, OF_SCHEDULE, ofKind } from "./list-schedules";
 import type { MeanScore } from "./mean-score";
 import { readMeanScore } from "./read-mean-score";
@@ -42,6 +43,16 @@ async function countSchedules(
   return counted ?? { held: 0, coming: 0 };
 }
 
+/**
+ * The students whose photos count at the schedules of a kind. At an extra
+ * activity only those who take part in it now count, as for Hadir: the
+ * photo of one taken out stays to be decided, but counts nowhere.
+ */
+function countedAt(kind: ScheduleKind): SQL | undefined {
+  if (kind === "ppks") return undefined;
+  return takingPartIn(activitySchedules.id);
+}
+
 /** The photos that wait, at the schedules of the activities of a kind. */
 async function countWaiting(
   db: Database,
@@ -60,6 +71,7 @@ async function countWaiting(
         ofKind(kind),
         eq(activityAttendances.status, "waiting"),
         visible,
+        countedAt(kind),
       ),
     );
   return counted?.waiting ?? 0;

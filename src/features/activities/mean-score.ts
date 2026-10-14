@@ -3,7 +3,7 @@ import {
   type ScoredSchedule,
   scorePercent,
 } from "./attendance-score";
-import { isInSemester, type PeriodParts } from "./participants";
+import { isInSemester, type PeriodParts, wasStudentIn } from "./participants";
 import type { UploadRange } from "./upload-range";
 
 /** A schedule of the running period, with what the score reads of it. */
@@ -29,19 +29,26 @@ export type KeptStatus = "valid" | "dispensation";
 export interface StudentGroup {
   cohortYear: number;
   kept: Readonly<Record<string, KeptStatus>>;
-  /** The keys of the schedules of special or additional activities they take part in. */
+  /** The keys of the schedules of special or additional activities that name them. */
   chosenIn: readonly string[];
   students: number;
 }
 
-/** Whether a schedule of the period is meant for the students of a group. */
+/**
+ * Whether a schedule of the period is meant for the students of a group.
+ * One of a special or additional activity is meant for those it names
+ * only when they were students in the period, as they see it only then.
+ */
 function isMeantFor(
   group: StudentGroup,
   schedule: CountedSchedule,
   period: PeriodParts,
 ): boolean {
-  if (schedule.semester === null) return group.chosenIn.includes(schedule.id);
-  return isInSemester(group.cohortYear, schedule.semester, period);
+  if (schedule.semester !== null) {
+    return isInSemester(group.cohortYear, schedule.semester, period);
+  }
+  if (!wasStudentIn(group.cohortYear, period)) return false;
+  return group.chosenIn.includes(schedule.id);
 }
 
 /** Rerata nilai kehadiran, and how many students it is the mean of. */

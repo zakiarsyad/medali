@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type KeyboardEvent, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { useFound } from "@/ui/use-found";
@@ -30,6 +30,14 @@ import { shownCount } from "./schedule-words";
 
 type Change = (change: (draft: ParticipantDraft) => ParticipantDraft) => void;
 
+/**
+ * A search box sits inside the schedule form, where Enter would send the
+ * whole schedule while the person only means to search.
+ */
+function keepFormOnEnter(event: KeyboardEvent<HTMLInputElement>) {
+  if (event.key === "Enter") event.preventDefault();
+}
+
 /** Per mahasiswa: a search of Aktif students, and those picked with ×. */
 function StudentsPart({
   draft,
@@ -58,6 +66,7 @@ function StudentsPart({
         maxLength={SEARCH_TEXT_MAX}
         autoComplete="off"
         onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={keepFormOnEnter}
       />
       <Offered query={query} found={found} onPick={pick} />
       {draft.students.length > 0 && (
@@ -108,6 +117,7 @@ function ClassesPart({
         maxLength={SEARCH_TEXT_MAX}
         autoComplete="off"
         onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={keepFormOnEnter}
       />
       <div className={styles.classList}>
         {shown.length === 0 && (

@@ -9,7 +9,7 @@ import {
 import { hourAndMinute } from "@/db/stored-time";
 import { takesPart } from "./chosen-participants";
 import type { OwnStudent } from "./own-student";
-import { isInSemester, type PeriodParts, semesterIn } from "./participants";
+import { isInSemester, type PeriodParts } from "./participants";
 import { readStoredChoice } from "./save-participants";
 import type { StatusParts } from "./schedule-status";
 
@@ -29,9 +29,8 @@ async function isChosenFor(
   scheduleId: string,
   period: PeriodParts,
 ): Promise<boolean> {
-  if (semesterIn(student.cohortYear, period) === null) return false;
   const choice = await readStoredChoice(db, scheduleId);
-  return choice !== null && takesPart(student, choice);
+  return choice !== null && takesPart(student, choice, period);
 }
 
 /**

@@ -38,10 +38,12 @@ interface ScheduledActivity {
 
 /**
  * Where a schedule is saved: the tab of its kind, and when it is changed
- * the activity it already holds.
+ * the schedule and the activity it already holds.
  */
 export interface ScheduleHome {
   kind: ScheduleKind;
+  /** Null for a new schedule. */
+  keptScheduleId: string | null;
   /** Null for a new schedule. */
   keptActivityId: string | null;
 }
@@ -102,7 +104,10 @@ export async function planSchedule(
       value: { ...placed, choice: null, saved: { name, target } },
     };
   }
-  const choice = await checkParticipants(db, sent.participants);
+  const choice = await checkParticipants(db, sent.participants, {
+    period,
+    keptScheduleId: home.keptScheduleId,
+  });
   if (!choice.ok) return choice;
   const target = {
     kind: "chosen",

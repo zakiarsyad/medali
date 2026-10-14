@@ -31,6 +31,9 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
+/** The period the schedules of this file keep. */
+const PERIOD = { startYear: 2720 };
+
 interface Records {
   programId: number;
   /** The key of each stored student, by NIM. */
@@ -80,6 +83,12 @@ async function addStudents(db: Database, programId: number) {
       className: "U-01",
       deletedAt: new Date(),
     },
+    {
+      nim: "9974500007",
+      name: "Uji Pilih Tujuh",
+      cohortYear: 2721,
+      className: "U-01",
+    },
   ]);
 }
 
@@ -103,7 +112,7 @@ async function addRecords(db: Database): Promise<Records> {
   const choices: ParticipantChoice[] = [
     { kind: "students", studentIds: chosenIds },
     { kind: "classes", classNames: ["U-01"] },
-    { kind: "cohorts", cohortYears: [2719, 2720] },
+    { kind: "cohorts", cohortYears: [2719, 2720, 2721] },
   ];
   const schedules: Records["schedules"] = [];
   for (const choice of choices) {
@@ -172,7 +181,7 @@ describe("takingPartIn", () => {
 
       for (const { id, choice } of schedules) {
         const expected = all
-          .filter((student) => takesPart(student, choice))
+          .filter((student) => takesPart(student, choice, PERIOD))
           .map(({ nim }) => nim)
           .sort();
 
@@ -183,7 +192,7 @@ describe("takingPartIn", () => {
     });
   });
 
-  it("counts only Aktif students: those chosen who are Non aktif, on Cuti or removed are left out", async () => {
+  it("counts only Aktif students who were students in the period the schedule keeps: those chosen who are Non aktif, on Cuti, removed or of a newer angkatan are left out", async () => {
     await inTestDatabase(async (db) => {
       const { programId, schedules } = await addRecords(db);
       const [byStudent, byClass, byCohort] = schedules;

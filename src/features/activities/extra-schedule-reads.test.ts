@@ -284,6 +284,55 @@ describe("the attendance of a schedule of an extra activity", () => {
   });
 });
 
+describe("a chosen student who was not a student yet in the period of the schedule", () => {
+  /** Every number of Kegiatan tambahan that counts the students of class T-01. */
+  async function numbersOfClass(db: Database, records: Records) {
+    const schedules = await listedExtra(db);
+    const byClass = schedules.find(({ id }) => id === records.byClass);
+    if (!byClass) throw new Error("The schedule is not listed.");
+    const cohorts = await readCohortCounts(db);
+    const { everyone } = records;
+    return {
+      target: byClass.target,
+      counts: (
+        await readAttendanceCounts(db, everyone, [byClass], cohorts, TODAY)
+      )[records.byClass],
+      absent: await readAbsent(db, everyone, byClass, cohorts, 1),
+      numbers: await readAttendanceNumbers(db, everyone, EXTRA, TODAY),
+    };
+  }
+
+  it("counts in no number of the schedule, as they do not see it: Fani of angkatan 2731 joins T-01, with a photo that waits", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const before = await numbersOfClass(db, records);
+      const [ani] = await db
+        .select({ programId: students.studyProgramId })
+        .from(students)
+        .where(eq(students.nim, "9974600001"));
+      await addTestStudents(db, ani?.programId ?? 0, [
+        {
+          nim: "9974600006",
+          name: "Fani Uji Tambahan",
+          cohortYear: 2731,
+          className: "T-01",
+        },
+      ]);
+      const [staff] = await db
+        .select({ id: activityAttendances.decidedBy })
+        .from(activityAttendances)
+        .where(eq(activityAttendances.status, "valid"));
+      await addTestAttendance(db, staff?.id ?? "", {
+        scheduleId: records.byClass,
+        studentId: await idOf(db, "9974600006"),
+        status: "waiting",
+      });
+
+      expect(await numbersOfClass(db, records)).toEqual(before);
+    });
+  });
+});
+
 describe("readAttendanceNumbers on each tab", () => {
   it("counts the schedules and the waiting photos of the tab's own kind of activity", async () => {
     await inTestDatabase(async (db) => {

@@ -16,6 +16,9 @@ const STUDENT: CandidateStudent = {
   isActive: true,
 };
 
+/** A period in which the student is in their third year. */
+const PERIOD = { startYear: 2026 };
+
 const OTHER_ID = "00000000-0000-4000-8000-0000000000d2";
 
 const BY_STUDENT: ParticipantChoice = {
@@ -39,7 +42,7 @@ describe("takesPart", () => {
     ["in the chosen angkatan", BY_COHORT],
     ["in one of the angkatan chosen across angkatan", ACROSS_COHORTS],
   ])("lets an Aktif student take part when %s", (_how, choice) => {
-    expect(takesPart(STUDENT, choice)).toBe(true);
+    expect(takesPart(STUDENT, choice, PERIOD)).toBe(true);
   });
 
   it.each([
@@ -58,21 +61,21 @@ describe("takesPart", () => {
   ] satisfies [string, ParticipantChoice][])(
     "leaves a student out when %s",
     (_how, choice) => {
-      expect(takesPart(STUDENT, choice)).toBe(false);
+      expect(takesPart(STUDENT, choice, PERIOD)).toBe(false);
     },
   );
 
   it("leaves a student without a class out of every choice by class", () => {
     const classless = { ...STUDENT, className: null };
 
-    expect(takesPart(classless, BY_CLASS)).toBe(false);
+    expect(takesPart(classless, BY_CLASS, PERIOD)).toBe(false);
   });
 
   it("leaves out a student who is not Aktif, however they were chosen", () => {
     const inactive = { ...STUDENT, isActive: false };
 
     for (const choice of [BY_STUDENT, BY_CLASS, BY_COHORT, ACROSS_COHORTS]) {
-      expect(takesPart(inactive, choice)).toBe(false);
+      expect(takesPart(inactive, choice, PERIOD)).toBe(false);
     }
   });
 
@@ -82,9 +85,20 @@ describe("takesPart", () => {
       id: "00000000-0000-4000-8000-0000000000d9",
     };
 
-    expect(takesPart(joinedLater, BY_CLASS)).toBe(true);
-    expect(takesPart(joinedLater, BY_COHORT)).toBe(true);
-    expect(takesPart(joinedLater, BY_STUDENT)).toBe(false);
+    expect(takesPart(joinedLater, BY_CLASS, PERIOD)).toBe(true);
+    expect(takesPart(joinedLater, BY_COHORT, PERIOD)).toBe(true);
+    expect(takesPart(joinedLater, BY_STUDENT, PERIOD)).toBe(false);
+  });
+
+  it("leaves out a student who was not a student yet in the period the schedule keeps, however they were chosen", () => {
+    const earlier = { startYear: STUDENT.cohortYear - 1 };
+
+    for (const choice of [BY_STUDENT, BY_CLASS, BY_COHORT, ACROSS_COHORTS]) {
+      expect(takesPart(STUDENT, choice, earlier)).toBe(false);
+    }
+    expect(
+      takesPart(STUDENT, BY_CLASS, { startYear: STUDENT.cohortYear }),
+    ).toBe(true);
   });
 });
 
@@ -93,7 +107,7 @@ describe("isChosen", () => {
     const inactive = { ...STUDENT, isActive: false };
 
     expect(isChosen(inactive, BY_STUDENT)).toBe(true);
-    expect(takesPart(inactive, BY_STUDENT)).toBe(false);
+    expect(takesPart(inactive, BY_STUDENT, PERIOD)).toBe(false);
   });
 });
 

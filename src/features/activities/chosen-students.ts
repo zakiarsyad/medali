@@ -1,6 +1,8 @@
-import { asc, inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
+import { asc, eq, inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
+import { alias, QueryBuilder } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
 import {
+  academicPeriods,
   activitySchedules,
   activityScheduleParticipants as chosen,
   students,
@@ -38,12 +40,43 @@ export function naming(student: Omit<CandidateStudent, "isActive">): SQL {
 }
 
 /**
+ * The students who were students during a period, by its first year:
+ * `wasStudentIn` as a condition on the students in the database.
+ */
+export function studentsDuring(startYear: SQLWrapper | number): SQL {
+  return sql`${students.cohortYear} <= ${startYear}`;
+}
+
+// Named apart, so the schedule of an outer query is never mistaken for it.
+const ownSchedule = alias(activitySchedules, "own_schedule");
+const ownPeriod = alias(academicPeriods, "own_period");
+
+/** The first year of the period a schedule keeps, as a value in a query. */
+function startYearOf(scheduleId: SQLWrapper | string): SQL {
+  const found = new QueryBuilder()
+    .select({ startYear: ownPeriod.startYear })
+    .from(ownSchedule)
+    .innerJoin(ownPeriod, eq(ownPeriod.id, ownSchedule.academicPeriodId))
+    .where(eq(ownSchedule.id, scheduleId));
+  return sql`(${found})`;
+}
+
+/**
+ * The students a schedule of a special or additional activity is meant
+ * for, whatever their status: those it names who were students in the
+ * period it keeps.
+ */
+export function meantByChoice(scheduleId: SQLWrapper | string): SQL {
+  return sql`${chosenBy(scheduleId)} and ${studentsDuring(startYearOf(scheduleId))}`;
+}
+
+/**
  * The students who take part in a schedule of a special or additional
- * activity: the Aktif ones it names. `takesPart` as a condition on the
- * students in the database.
+ * activity: the Aktif ones it is meant for. `takesPart` as a condition
+ * on the students in the database.
  */
 export function takingPartIn(scheduleId: SQLWrapper | string): SQL {
-  return sql`(${ACTIVE_MEMBER}) and ${chosenBy(scheduleId)}`;
+  return sql`(${ACTIVE_MEMBER}) and ${meantByChoice(scheduleId)}`;
 }
 
 /**

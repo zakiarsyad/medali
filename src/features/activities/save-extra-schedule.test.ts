@@ -34,7 +34,7 @@ import {
 
 /*
  * This file's own sample values: the Tahun akademik 2740, the program
- * UJIJADWALTAMBAH, the classes JT-01 to JT-03 and the NIMs 9974620000 to
+ * UJIJADWALTAMBAH, the classes JT-01 to JT-04 and the NIMs 9974620000 to
  * 9974620099.
  */
 
@@ -51,8 +51,9 @@ interface Records {
 }
 
 /**
- * Two Aktif students of angkatan 2740 in JT-01 and JT-02, and a Non aktif
- * one of angkatan 2739 alone in JT-03.
+ * Two Aktif students of angkatan 2740 in JT-01 and JT-02, a Non aktif
+ * one of angkatan 2739 alone in JT-03, and an Aktif one of angkatan 2741,
+ * who was not a student yet in the periods of 2740, alone in JT-04.
  */
 async function addStudents(db: Database): Promise<Map<string, string>> {
   const programId = await addTestProgram(db, "UJIJADWALTAMBAH");
@@ -75,6 +76,12 @@ async function addStudents(db: Database): Promise<Map<string, string>> {
       cohortYear: 2739,
       className: "JT-03",
       status: "inactive",
+    },
+    {
+      nim: "9974620004",
+      name: "Uji Jadwal Tambah Empat",
+      cohortYear: 2741,
+      className: "JT-04",
     },
   ]);
   const stored = await db
@@ -194,7 +201,7 @@ describe("adding a schedule of an extra activity", () => {
       const { actor, idsByNim, sent } = await addRecords(db);
       const picked = [
         idsByNim.get("9974620001") ?? "",
-        idsByNim.get("9974620003") ?? "",
+        idsByNim.get("9974620002") ?? "",
       ];
 
       const added = await addSchedule(db, actor, NEW_SCHEDULE_ID, {
@@ -239,6 +246,11 @@ describe("adding a schedule of an extra activity", () => {
       NO_PARTICIPANTS,
     ],
     [
+      "a class whose only Aktif student was not a student yet in the period",
+      { mode: "classes", values: ["JT-04"] },
+      NO_PARTICIPANTS,
+    ],
+    [
       "a student who is not stored",
       { mode: "students", values: [UNKNOWN_ID] },
       UNKNOWN_PARTICIPANTS,
@@ -258,7 +270,7 @@ describe("adding a schedule of an extra activity", () => {
     });
   });
 
-  it("refuses a student picked one by one who is Non aktif alone", async () => {
+  it("refuses a student picked one by one who is Non aktif, also beside an Aktif one", async () => {
     await inTestDatabase(async (db) => {
       const { actor, idsByNim, sent } = await addRecords(db);
 
@@ -266,11 +278,14 @@ describe("adding a schedule of an extra activity", () => {
         ...sent,
         participants: {
           mode: "students",
-          values: [idsByNim.get("9974620003") ?? ""],
+          values: ["9974620001", "9974620003"].map(
+            (nim) => idsByNim.get(nim) ?? "",
+          ),
         },
       });
 
-      expect(added).toEqual(NO_PARTICIPANTS);
+      expect(added).toEqual(UNKNOWN_PARTICIPANTS);
+      expect(await storedSchedules(db)).toEqual([]);
     });
   });
 
@@ -335,8 +350,12 @@ describe("a schedule of an extra activity sent a second time", () => {
 });
 
 describe("changing a schedule of an extra activity", () => {
-  async function addedVersion(db: Database, records: Records) {
-    await addSchedule(db, records.actor, NEW_SCHEDULE_ID, records.sent);
+  async function addedVersion(
+    db: Database,
+    records: Records,
+    sent: SentSchedule = records.sent,
+  ) {
+    await addSchedule(db, records.actor, NEW_SCHEDULE_ID, sent);
     const [kept] = await storedSchedules(db);
     if (!kept) throw new Error("The schedule was not added.");
     return versionOf(kept.changedAt);
@@ -369,6 +388,69 @@ describe("changing a schedule of an extra activity", () => {
           cohortYear: 2740,
         },
       ]);
+    });
+  });
+
+  function byName(records: Records, nims: string[]): SentSchedule {
+    const values = nims.map((nim) => records.idsByNim.get(nim) ?? "");
+    return { ...records.sent, participants: { mode: "students", values } };
+  }
+
+  function removeStudent(db: Database, id: string | undefined) {
+    return db
+      .update(students)
+      .set({ deletedAt: new Date() })
+      .where(eq(students.id, id ?? ""));
+  }
+
+  it("saves again, unchanged, a student picked one by one who was removed since: they stay chosen", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const sent = byName(records, ["9974620001", "9974620002"]);
+      const version = await addedVersion(db, records, sent);
+      await removeStudent(db, records.idsByNim.get("9974620002"));
+
+      const changed = await changeSchedule(
+        db,
+        records.actor,
+        NEW_SCHEDULE_ID,
+        version,
+        sent,
+      );
+
+      expect(changed).toMatchObject({
+        ok: true,
+        value: { target: { choice: { kind: "students", chosen: 2 } } },
+      });
+      const kept = await storedParticipants(db);
+      expect(kept.map(({ studentId }) => studentId).sort()).toEqual(
+        [...sent.participants.values].sort(),
+      );
+    });
+  });
+
+  it("refuses a student newly picked one by one who is Non aktif or removed", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const version = await addedVersion(db, records);
+      const before = await storedParticipants(db);
+      await removeStudent(db, records.idsByNim.get("9974620002"));
+
+      for (const nims of [
+        ["9974620001", "9974620003"],
+        ["9974620001", "9974620002"],
+      ]) {
+        const changed = await changeSchedule(
+          db,
+          records.actor,
+          NEW_SCHEDULE_ID,
+          version,
+          byName(records, nims),
+        );
+
+        expect(changed).toEqual(UNKNOWN_PARTICIPANTS);
+      }
+      expect(await storedParticipants(db)).toEqual(before);
     });
   });
 

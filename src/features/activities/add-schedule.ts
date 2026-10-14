@@ -121,7 +121,11 @@ export async function addSchedule(
   if (!may(actor.roles, "manage_activities")) return SCHEDULES_NOT_ALLOWED;
   const kind = sentKind(sent.kind);
   if (kind === null) return NO_ACTIVITY;
-  const plan = await planSchedule(db, sent, { kind, keptActivityId: null });
+  const plan = await planSchedule(db, sent, {
+    kind,
+    keptScheduleId: null,
+    keptActivityId: null,
+  });
   if (!plan.ok) return plan;
   if (!isUuid(id)) return SCHEDULE_ALREADY_SENT;
 

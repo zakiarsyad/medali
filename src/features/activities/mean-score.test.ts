@@ -123,6 +123,17 @@ describe("meanScore", () => {
     });
   });
 
+  it("leaves out an extra activity for those it names who were not students yet in its period, as they do not see it", () => {
+    const schedules = [schedule("extra", "2026-10-04", { semester: null })];
+    const newer = group(2, {}, 2027, ["extra"]);
+    const chosen = group(1, { extra: "valid" }, 2025, ["extra"]);
+
+    expect(meanScore([newer, chosen], schedules, PERIOD, TODAY)).toEqual({
+      percent: 100,
+      students: 1,
+    });
+  });
+
   it("leaves out an extra activity that is not required, also for those it names", () => {
     const schedules = [
       ...CLOSED,

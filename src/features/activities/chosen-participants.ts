@@ -4,6 +4,8 @@
  * the browser: nothing here may take from the database code.
  */
 
+import { type PeriodParts, wasStudentIn } from "./participants";
+
 /**
  * Whom a schedule of a special or additional activity is for: chosen
  * students (Per mahasiswa), classes (Per kelas), or one angkatan (Per
@@ -45,16 +47,19 @@ export function isChosen(
 }
 
 /**
- * Whether a student takes part in a schedule: an Aktif student the choice
- * names, by name, by the class they are in now or by the angkatan they
- * are in now. So a student who joins a chosen class or angkatan later
- * takes part too, and one who is no longer Aktif is not counted.
+ * Whether a student takes part in a schedule: an Aktif student who was a
+ * student in the period the schedule keeps, and whom the choice names, by
+ * name, by the class they are in now or by the angkatan they are in now.
+ * So a student who joins a chosen class or angkatan later takes part too,
+ * and one who is no longer Aktif is not counted.
  */
 export function takesPart(
   student: CandidateStudent,
   choice: ParticipantChoice,
+  period: Pick<PeriodParts, "startYear">,
 ): boolean {
   if (!student.isActive) return false;
+  if (!wasStudentIn(student.cohortYear, period)) return false;
   return isChosen(student, choice);
 }
 
