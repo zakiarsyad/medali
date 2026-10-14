@@ -26,6 +26,7 @@ import { WRITTEN_NOW } from "@/db/written-now";
 import { holdsGroupToday } from "@/mentoring/holds-group-today";
 import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
+import { pageWithin } from "@/ui/list-pages";
 import type { NewAccount, RoleChange } from "./account-input";
 import {
   REMOVAL_REFUSED_FOR_GROUP,
@@ -96,16 +97,23 @@ function listCondition(db: Database, filter: AccountFilter): SQL | undefined {
   );
 }
 
+/** The page shown, from 0: the last one when a page past the end was asked for. */
+function shownPage(wanted: number, total: number): number {
+  return pageWithin(wanted + 1, total, PAGE_SIZE) - 1;
+}
+
 /** The staff accounts listed in Pengguna dan peran, one page at a time. */
 export async function listManagedAccounts(
   db: Database,
   filter: AccountFilter,
-): Promise<{ accounts: ManagedAccount[]; total: number }> {
+): Promise<{ accounts: ManagedAccount[]; total: number; page: number }> {
   const condition = listCondition(db, filter);
   const [counted] = await db
     .select({ total: count() })
     .from(accounts)
     .where(condition);
+  const total = counted?.total ?? 0;
+  const page = shownPage(filter.page, total);
   const rows = await db
     .select({
       id: accounts.id,
@@ -122,14 +130,15 @@ export async function listManagedAccounts(
     .where(condition)
     .orderBy(asc(accounts.name))
     .limit(PAGE_SIZE)
-    .offset(filter.page * PAGE_SIZE);
+    .offset(page * PAGE_SIZE);
   const roles = await rolesByAccount(
     db,
     rows.map((row) => row.id),
   );
   return {
     accounts: rows.map((row) => ({ ...row, roles: roles.get(row.id) ?? [] })),
-    total: counted?.total ?? 0,
+    total,
+    page,
   };
 }
 
