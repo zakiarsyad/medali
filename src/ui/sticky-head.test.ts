@@ -23,6 +23,24 @@ describe("the headings of a list that stay in view", () => {
     expect(bar).toContain("min-height: var(--top-bar-height);");
   });
 
+  it("stop at a height made of the same room and text size the top bar uses", () => {
+    const tokens = readFileSync("src/ui/tokens.css", "utf8");
+    const height = tokens.match(/--top-bar-height:\s*calc\(([^;]*)\);/)?.[1];
+
+    expect(height?.replace(/\s+/g, " ").trim()).toBe(
+      "2 * var(--top-bar-room) + var(--top-bar-line) + var(--line-width)",
+    );
+    expect(tokens).toContain(
+      "--top-bar-line: calc(var(--leading-body) * var(--top-bar-text));",
+    );
+    expect(
+      tokens.match(/--top-bar-padding: var\(--top-bar-room\) /g),
+    ).toHaveLength(2);
+    expect(ruleOf("src/ui/top-bar.module.css", ".unit")).toContain(
+      "font-size: var(--top-bar-text);",
+    );
+  });
+
   it("cover the rows that pass under them", () => {
     expect(headings).toContain("background: var(--surface);");
   });

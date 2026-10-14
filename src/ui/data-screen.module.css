@@ -214,6 +214,20 @@
   content: attr(data-title);
 }
 
+/*
+ * A stacked list that adds `titlesAbove` has values too long to stand
+ * beside their title on a phone, so each title stands above its value.
+ */
+.titlesAbove td[data-title] {
+  padding: var(--stacked-above-cell-padding);
+}
+
+.titlesAbove td[data-title]::before {
+  float: none;
+  width: auto;
+  margin-left: 0;
+}
+
 .stacked td:not([data-title]) {
   padding: var(--stacked-actions-padding);
   justify-content: var(--stacked-actions-justify);
@@ -239,20 +253,6 @@
 
 .stacked td.rowHeading::before {
   display: none;
-}
-
-/*
- * A stacked list that adds `titlesAbove` has values too long to stand
- * beside their title on a phone, so each title stands above its value.
- */
-.titlesAbove td[data-title] {
-  padding: var(--stacked-above-cell-padding);
-}
-
-.titlesAbove td[data-title]::before {
-  float: none;
-  width: auto;
-  margin-left: 0;
 }
 
 /*

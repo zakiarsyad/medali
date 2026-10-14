@@ -23,5 +23,5 @@
 
 .unit {
   color: var(--muted);
-  font-size: var(--text-md);
+  font-size: var(--top-bar-text);
 }
