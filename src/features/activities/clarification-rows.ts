@@ -8,6 +8,7 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { hourAndMinute } from "@/db/stored-time";
 import { shownMoment } from "@/ui/day";
 import {
   type ClarificationCard,
@@ -20,7 +21,6 @@ import {
   resultWords,
 } from "./clarification-card";
 import { REASON_WORDS } from "./clarification-reasons";
-import { hourAndMinute } from "./stored-time";
 
 export const OF_CLARIFICATION = eq(
   activitySchedules.id,

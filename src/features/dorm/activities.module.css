@@ -1,0 +1,115 @@
+.note {
+  composes: note from "./rooms.module.css";
+}
+
+/* The switch between the three lists, and beside it what can be added. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.switch {
+  composes: switch from "./rooms.module.css";
+}
+
+.choice {
+  composes: choice from "./rooms.module.css";
+}
+
+.head {
+  composes: head from "./rooms.module.css";
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  composes: title from "./rooms.module.css";
+}
+
+/* The step to the day before, the day itself, and the step to the day after. */
+.daySwitch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.daySwitch input {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ok,
+.warn,
+.plain {
+  border: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.plain {
+  color: var(--muted);
+}
+
+/* What "Rincian" opens under the row of its activity. */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+/* Rincian kegiatan: each line its time, then what happens. */
+.rundown {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-md);
+}
+
+.rundown li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  overflow-wrap: anywhere;
+}
+
+.quietLine {
+  composes: quietLine from "./rooms.module.css";
+}

@@ -96,7 +96,7 @@ residents see what is on today and next.
   with sample repeating and one-off activities.
 - [x] 2. The rights to see and to manage dorm activities are added to
   the permission list, with their checks.
-- [ ] 3. Jadwal harian, Kegiatan rutin and Kegiatan non rutin show the
+- [x] 3. Jadwal harian, Kegiatan rutin and Kegiatan non rutin show the
   schedule with "Rincian", read only.
 - [ ] 4. The form adds and changes repeating and one-off activities;
   a change leaves past dates as they were.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import shared from "@/ui/data-screen.module.css";
 import { AbsentPanel } from "./absent-panel";
 import { type CohortCount, countParticipants } from "./participants";
@@ -11,7 +12,7 @@ import {
 } from "./schedule-attendance";
 import type { OpenAbsent } from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
-import { type CampusMoment, scheduleStatus } from "./schedule-status";
+import { scheduleStatus } from "./schedule-status";
 import {
   activityDetail,
   participantWords,

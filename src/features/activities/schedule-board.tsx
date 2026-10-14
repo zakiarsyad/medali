@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import styles from "./activities.module.css";
@@ -11,7 +12,6 @@ import type { ListAttendance } from "./schedule-attendance";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleListPanel } from "./schedule-list-panel";
 import type { ScheduleRow } from "./schedule-row";
-import type { CampusMoment } from "./schedule-status";
 
 /** What the form is open for: a new schedule, or one to change. */
 type FormTarget = "new" | ScheduleRow;

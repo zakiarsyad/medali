@@ -21,9 +21,9 @@ import {
   activitySchedules,
   ppksActivities,
 } from "@/db/schema";
+import { hourAndMinute } from "@/db/stored-time";
 import { pageWithin } from "@/ui/list-pages";
 import type { PeriodSemester } from "./participants";
-import { hourAndMinute } from "./stored-time";
 import type { OwnAttendance, StudentSchedule } from "./student-schedule";
 import { UPLOAD_COUNT_MAX } from "./upload-range";
 

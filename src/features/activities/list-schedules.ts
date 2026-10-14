@@ -10,15 +10,15 @@ import {
 } from "drizzle-orm";
 import { levelOf } from "@/academic-periods/stages";
 import type { Database } from "@/db/connect";
+import { versionOf } from "@/db/row-version";
 import {
   academicPeriods,
   activitySchedules,
   ppksActivities,
 } from "@/db/schema";
+import { hourAndMinute } from "@/db/stored-time";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { ScheduleRow } from "./schedule-row";
-import { versionOf } from "./schedule-version";
-import { hourAndMinute } from "./stored-time";
 
 /** One page of the list, and how many schedules the list has in all. */
 export interface ScheduleList {

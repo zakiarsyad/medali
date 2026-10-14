@@ -1,10 +1,11 @@
 import { and, gte, isNull, lte, sql } from "drizzle-orm";
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import { daysAfter } from "@/academic-periods/days-after";
 import { daysBefore } from "@/academic-periods/days-before";
 import type { Database } from "@/db/connect";
 import { activityAttendances, activitySchedules } from "@/db/schema";
-import { type CampusMoment, scheduleStatus } from "./schedule-status";
-import { hourAndMinute } from "./stored-time";
+import { hourAndMinute } from "@/db/stored-time";
+import { scheduleStatus } from "./schedule-status";
 import { LONGEST_UPLOAD_DAYS } from "./student-schedules";
 import { IS_CARD, OF_ATTENDANCE } from "./verification-cards";
 

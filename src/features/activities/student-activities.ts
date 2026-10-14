@@ -1,3 +1,4 @@
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
 import { runningPeriodOn } from "@/academic-periods/running-period";
@@ -10,7 +11,7 @@ import type { ShownClarification } from "./clarification-time";
 import { readOwnClarifications } from "./own-clarifications";
 import { readOwnStudent } from "./own-student";
 import { semestersByPeriod } from "./participants";
-import { type CampusMoment, scheduleStatus } from "./schedule-status";
+import { scheduleStatus } from "./schedule-status";
 import type { StudentSchedule } from "./student-schedule";
 import {
   meantFor,
