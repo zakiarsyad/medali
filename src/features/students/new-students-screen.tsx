@@ -4,18 +4,19 @@ import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
 import { dormCohortsOf } from "@/dorms/dorm-cohorts";
 import shared from "@/ui/data-screen.module.css";
+import { ListPager } from "@/ui/list-pager";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import {
   countStudents,
   findAddedStudent,
-  LIST_LIMIT,
   listAddedStudents,
 } from "./added-students";
 import { listGroupChoices } from "./mentor-group-choices";
 import {
   NEW_STUDENTS_ADDRESS,
   type NewStudentsParams,
+  newStudentsAddress,
 } from "./new-students-address";
 import { cohortChoices } from "./student-input";
 import { StudentInputPanel } from "./student-input-panel";
@@ -72,8 +73,9 @@ export async function NewStudentsScreen({
   const dormCohorts = dormCohortsOf(studentYears, period);
   const [counts, list] = await Promise.all([
     countStudents(db, dormCohorts),
-    listAddedStudents(db, params.query, dormCohorts),
+    listAddedStudents(db, params.query, dormCohorts, params.page),
   ]);
+  const place = { query: params.query, page: list.page };
   const thisYear = new Date().getFullYear();
   return (
     <>
@@ -92,7 +94,7 @@ export async function NewStudentsScreen({
           cohortYears={cohortChoices(thisYear, editing?.cohortYear)}
           editing={editing}
           groups={groups}
-          query={params.query}
+          place={place}
           period={period}
         />
         <section className={shared.panel}>
@@ -101,16 +103,20 @@ export async function NewStudentsScreen({
             Data induk awal tidak diubah dari menu ini.
           </p>
           <Search query={params.query} />
-          {list.students.length === 0 ? (
+          {list.matching === 0 ? (
             <NothingListed anyAdded={counts.added > 0} />
           ) : (
-            <StudentTable students={list.students} query={params.query} />
-          )}
-          {list.matching > LIST_LIMIT && (
-            <p className={shared.detail}>
-              Menampilkan {LIST_LIMIT} dari{" "}
-              {list.matching.toLocaleString("id-ID")}. Gunakan pencarian.
-            </p>
+            <>
+              <StudentTable students={list.students} place={place} />
+              <ListPager
+                page={list.page}
+                matching={list.matching}
+                noun="mahasiswa"
+                keepsPlace
+                stepsOnOnePage={false}
+                addressOf={(page) => newStudentsAddress({ ...place, page })}
+              />
+            </>
           )}
         </section>
       </StudentNotice>

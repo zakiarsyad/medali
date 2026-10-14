@@ -8,7 +8,8 @@ import {
   students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { countStudents, LIST_LIMIT, listAddedStudents } from "./added-students";
+import { PAGE_SIZE } from "@/ui/list-pages";
+import { countStudents, listAddedStudents } from "./added-students";
 import { addTestActor, addTestProgram, addTestStudent } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -178,7 +179,7 @@ describe("listAddedStudents", () => {
 
       const listed = await listAddedStudents(db, "Dihapus Uji", []);
 
-      expect(listed).toEqual({ students: [], matching: 0 });
+      expect(listed).toEqual({ students: [], matching: 0, page: 1 });
     });
   });
 
@@ -215,11 +216,12 @@ describe("listAddedStudents", () => {
     });
   });
 
-  it("gives no more rows than the list shows, and says how many match", async () => {
+  it("gives one page of rows, and says how many match in all", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Batas");
       const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
-      for (let place = 0; place <= LIST_LIMIT; place++) {
+      // All alike but the NIM, so the pages part only by it.
+      for (let place = 0; place <= 2 * PAGE_SIZE; place++) {
         await addTestStudent(db, program, {
           nim: String(9900100000 + place),
           name: "Batas Uji",
@@ -229,10 +231,44 @@ describe("listAddedStudents", () => {
         });
       }
 
-      const listed = await listAddedStudents(db, "Batas Uji", []);
+      const pages = await Promise.all(
+        [1, 2, 3].map((page) => listAddedStudents(db, "Batas Uji", [], page)),
+      );
+      const nims = pages.flatMap((one) => one.students.map((s) => s.nim));
 
-      expect(listed.students).toHaveLength(LIST_LIMIT);
-      expect(listed.matching).toBe(LIST_LIMIT + 1);
+      expect(pages.map((one) => one.students.length)).toEqual([
+        PAGE_SIZE,
+        PAGE_SIZE,
+        1,
+      ]);
+      expect(pages.map((one) => one.matching)).toEqual([51, 51, 51]);
+      expect(pages.map((one) => one.page)).toEqual([1, 2, 3]);
+      expect(new Set(nims).size).toBe(2 * PAGE_SIZE + 1);
+    });
+  });
+
+  it("gives the last page for a page past it, and the first when nothing matches", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Batas");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      for (let place = 0; place <= PAGE_SIZE; place++) {
+        await addTestStudent(db, program, {
+          nim: String(9900100100 + place),
+          name: "Lewat Uji",
+          inputBy: staff.id,
+          inputSource: "form",
+          inputAt: LATER,
+        });
+      }
+
+      const past = await listAddedStudents(db, "Lewat Uji", [], 9);
+      const none = await listAddedStudents(db, "Tidak Ada Uji", [], 9);
+
+      expect(past.page).toBe(2);
+      expect(past.students.map((s) => s.nim)).toEqual([
+        String(9900100100 + PAGE_SIZE),
+      ]);
+      expect(none).toEqual({ students: [], matching: 0, page: 1 });
     });
   });
 

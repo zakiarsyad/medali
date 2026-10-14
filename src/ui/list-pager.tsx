@@ -33,6 +33,7 @@ export function ListPager({
   pageSize = PAGE_SIZE,
   noun,
   keepsPlace = false,
+  stepsOnOnePage = true,
   addressOf,
 }: {
   page: number;
@@ -47,31 +48,37 @@ export function ListPager({
    * list far down a page: a step otherwise goes back to the top.
    */
   keepsPlace?: boolean;
+  /** Whether the steps show, as words with no link, when there is one page. */
+  stepsOnOnePage?: boolean;
   /** The address of a page of the list. */
   addressOf: (page: number) => string;
 }) {
   const { first, last } = rowRange(page, matching, pageSize);
+  const pages = pageCount(matching, pageSize);
   const hasEarlier = page > 1;
-  const hasLater = page < pageCount(matching, pageSize);
+  const hasLater = page < pages;
+  const showsSteps = stepsOnOnePage || pages > 1;
   return (
     <div className={shared.pager}>
       <span>
         {shown(first)}–{shown(last)} dari {shown(matching)} {noun}
       </span>
-      <div className={shared.actions}>
-        <Step
-          to={hasEarlier ? addressOf(page - 1) : null}
-          keepsPlace={keepsPlace}
-        >
-          Sebelumnya
-        </Step>
-        <Step
-          to={hasLater ? addressOf(page + 1) : null}
-          keepsPlace={keepsPlace}
-        >
-          Berikutnya
-        </Step>
-      </div>
+      {showsSteps && (
+        <div className={shared.actions}>
+          <Step
+            to={hasEarlier ? addressOf(page - 1) : null}
+            keepsPlace={keepsPlace}
+          >
+            Sebelumnya
+          </Step>
+          <Step
+            to={hasLater ? addressOf(page + 1) : null}
+            keepsPlace={keepsPlace}
+          >
+            Berikutnya
+          </Step>
+        </div>
+      )}
     </div>
   );
 }

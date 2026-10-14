@@ -37,7 +37,7 @@ import {
 } from "./labels";
 import type { GroupChoice } from "./mentor-group-choices";
 import { MentorGroupField } from "./mentor-group-field";
-import { newStudentsAddress } from "./new-students-address";
+import { type ListPlace, newStudentsAddress } from "./new-students-address";
 import { type ResidentFields, residentNote } from "./resident-note";
 import { SelectField } from "./select-field";
 import type { RunningPeriod } from "./semester-now";
@@ -103,8 +103,8 @@ export interface StudentFormProps {
   editing: StoredStudent | null;
   /** Every kelompok pengasuhan in force. The form offers the ones that fit. */
   groups: GroupChoice[];
-  /** The search of the list, kept when the form is left. */
-  query: string;
+  /** The search and the page of the list, kept when the form is left. */
+  place: ListPlace;
   /** The academic period that runs now, which says the semester of an angkatan. */
   period: RunningPeriod;
 }
@@ -132,7 +132,7 @@ export function StudentForm({
   cohortYears,
   editing,
   groups,
-  query,
+  place,
   period,
 }: StudentFormProps) {
   const router = useRouter();
@@ -179,7 +179,7 @@ export function StudentForm({
     setCohort(shownAfter);
     setGroupId(shownAfter.mentorGroupId);
     if (after.done && editing) {
-      const list = newStudentsAddress(query);
+      const list = newStudentsAddress(place);
       notify(after.done, list);
       router.replace(list);
     } else if (after.done) {
@@ -313,7 +313,7 @@ export function StudentForm({
           {editing ? "Simpan perubahan" : "Tambah mahasiswa"}
         </button>
         {editing && (
-          <Link href={newStudentsAddress(query)} className={shared.quiet}>
+          <Link href={newStudentsAddress(place)} className={shared.quiet}>
             Batal
           </Link>
         )}

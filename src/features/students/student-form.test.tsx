@@ -61,7 +61,7 @@ function formFor(cohortYears: number[], groups: GroupChoice[] = []): string {
       cohortYears={cohortYears}
       editing={null}
       groups={groups}
-      query=""
+      place={{ query: "", page: 1 }}
       period={ODD_2026}
     />,
   );
@@ -116,7 +116,7 @@ test("Kelompok pengasuhan stands on the group the student being changed is in", 
       cohortYears={[2026]}
       editing={STUDENT}
       groups={GROUPS}
-      query=""
+      place={{ query: "", page: 1 }}
       period={ODD_2026}
     />,
   );
@@ -134,7 +134,7 @@ test("the form to change a student sends the version and the group it opened wit
       cohortYears={[2026]}
       editing={STUDENT}
       groups={GROUPS}
-      query=""
+      place={{ query: "", page: 1 }}
       period={ODD_2026}
     />,
   );

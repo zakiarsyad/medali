@@ -13,7 +13,11 @@ import {
   STATUS_LABELS,
 } from "./labels";
 import styles from "./new-students.module.css";
-import { newStudentsAddress, studentFileAddress } from "./new-students-address";
+import {
+  type ListPlace,
+  newStudentsAddress,
+  studentFileAddress,
+} from "./new-students-address";
 import { RemoveStudentButton } from "./remove-student-button";
 
 const NO_EMAIL = "Belum ada email";
@@ -69,10 +73,10 @@ function MentorGroup({ group }: { group: AddedStudent["group"] }) {
 
 function StudentRow({
   student,
-  query,
+  place,
 }: {
   student: AddedStudent;
-  query: string;
+  place: ListPlace;
 }) {
   const categories = CATEGORIES.filter(({ field }) => student[field]);
   return (
@@ -118,7 +122,7 @@ function StudentRow({
       </td>
       <td className={shared.rowActions}>
         <Link
-          href={newStudentsAddress(query, student.nim)}
+          href={newStudentsAddress(place, student.nim)}
           className={shared.link}
         >
           Ubah
@@ -131,11 +135,11 @@ function StudentRow({
 
 export function StudentTable({
   students,
-  query,
+  place,
 }: {
   students: AddedStudent[];
-  /** The search of the list, kept by the link to change a student. */
-  query: string;
+  /** The search and the page of the list, kept by the link to change a student. */
+  place: ListPlace;
 }) {
   return (
     <div className={shared.tableWrap}>
@@ -156,7 +160,7 @@ export function StudentTable({
         </thead>
         <tbody>
           {students.map((student) => (
-            <StudentRow key={student.nim} student={student} query={query} />
+            <StudentRow key={student.nim} student={student} place={place} />
           ))}
         </tbody>
       </table>

@@ -453,7 +453,7 @@ describe("removeStudent", () => {
         expect(record.deletedBy).toBe(remover.id);
         expect(record.deletedAt).toBeInstanceOf(Date);
         const listed = await listAddedStudents(db, "9900000507", []);
-        expect(listed).toEqual({ students: [], matching: 0 });
+        expect(listed).toEqual({ students: [], matching: 0, page: 1 });
         expect(await countStudents(db, [])).toEqual({
           total: before.total - 1,
           active: before.active - 1,
