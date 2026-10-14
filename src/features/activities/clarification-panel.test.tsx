@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2350 to 2352.
 import { eq, sql } from "drizzle-orm";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";

@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2620 to 2621.
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -42,8 +43,8 @@ import {
 const inTestDatabase = withTestDatabase();
 
 const PROGRAM = "UJISIMPANGANTI";
-const TODAY = "2082-10-13";
-const LATER = "2082-11-02";
+const TODAY = "2621-10-13";
+const LATER = "2621-11-02";
 const POOR = { activity: 50, attendance: 60, achievement: 55, feedback: 60 };
 
 async function addSpare(db: Database, name: string): Promise<string> {
@@ -63,7 +64,7 @@ async function addGroupToReplace(db: Database) {
     reason: "own_request",
     startsOn: LATER,
     newMentorId,
-    letterNumber: "ND-12/PKN/2082",
+    letterNumber: "ND-12/PKN/2621",
     oldMentorStatus: "reserve",
     note: "Atas permintaan yang bersangkutan.",
   };
@@ -189,7 +190,7 @@ describe("saveReplacement", () => {
   it("leaves a replaced group without Evaluasi terakhir until its new mentor is evaluated", async () => {
     await inTestDatabase(async (db) => {
       const made = await addGroupToReplace(db);
-      const periods = await addTestPeriods(db, 2081);
+      const periods = await addTestPeriods(db, 2620);
       await addTestEvaluation(db, {
         groupId: made.groupId,
         mentorId: made.mentorId,
@@ -239,7 +240,7 @@ describe("saveReplacement", () => {
   it("refuses a start date before today, by the day on campus", async () => {
     await inTestDatabase(async (db) => {
       const made = await addGroupToReplace(db);
-      const input = { ...made.input, startsOn: "2082-10-12" };
+      const input = { ...made.input, startsOn: "2621-10-12" };
 
       expect(await saveReplacement(db, made.head, input, TODAY)).toEqual(
         STARTS_BEFORE_TODAY,
@@ -340,7 +341,7 @@ describe("saveReplacement", () => {
       expect(later).toEqual({
         ok: false,
         error:
-          "Kelompok ini sudah punya penggantian terjadwal pada 2 Nov 2082. Batalkan dulu di riwayat bila ingin mengubah.",
+          "Kelompok ini sudah punya penggantian terjadwal pada 2 Nov 2621. Batalkan dulu di riwayat bila ingin mengubah.",
       });
       expect(await testReplacementsOf(db, made.groupId)).toHaveLength(1);
       expect(await testMentorLinesOf(db, made.groupId)).toHaveLength(1);
@@ -395,7 +396,7 @@ describe("saveReplacement", () => {
   it("refuses Hasil evaluasi kurang while the mentor has no evaluation, or the last one is not Kurang", async () => {
     await inTestDatabase(async (db) => {
       const made = await addGroupToReplace(db);
-      const periods = await addTestPeriods(db, 2081);
+      const periods = await addTestPeriods(db, 2620);
       const input = { ...made.input, reason: "poor_evaluation" } as const;
 
       const without = await saveReplacement(db, made.head, input, TODAY);
@@ -415,7 +416,7 @@ describe("saveReplacement", () => {
   it("takes Hasil evaluasi kurang once the mentor's last evaluation for the group is Kurang", async () => {
     await inTestDatabase(async (db) => {
       const made = await addGroupToReplace(db);
-      const periods = await addTestPeriods(db, 2081);
+      const periods = await addTestPeriods(db, 2620);
       await addTestEvaluation(db, {
         groupId: made.groupId,
         mentorId: made.mentorId,

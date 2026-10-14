@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2520 to 2520.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -45,15 +46,15 @@ const SENT: SentRoom = {
 
 /*
  * A period far from those of any other file of checks, so these wait for
- * none of them. Angkatan 2070 is in semester 1 in it.
+ * none of them. Angkatan 2520 is in semester 1 in it.
  */
-const ODD_2070 = {
-  startYear: 2070,
+const ODD_2520 = {
+  startYear: 2520,
   term: "odd",
-  startsOn: "2070-08-01",
-  endsOn: "2071-01-31",
+  startsOn: "2520-08-01",
+  endsOn: "2521-01-31",
 } as const;
-const DAY = "2070-10-12";
+const DAY = "2520-10-12";
 
 interface LeftBehind {
   roomId: string;
@@ -67,7 +68,7 @@ async function addRoomLeftBehind(db: Database): Promise<LeftBehind> {
   const left = await addTestStudent(db, program, {
     nim: "9925700001",
     name: "Penghuni Uji Cuti",
-    cohortYear: 2070,
+    cohortYear: 2520,
     status: "on_leave",
   });
   const roomId = await addTestRoom(db, { number: "M101" });
@@ -81,7 +82,7 @@ describe("a room with a place left behind", () => {
 
   it("is removed while a period runs, as the screen shows it empty", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2070);
+      await db.insert(academicPeriods).values(ODD_2520);
       const { roomId } = await addRoomLeftBehind(db);
 
       const removed = await removeRoom(db, MANAGER, roomId, DAY);
@@ -92,13 +93,13 @@ describe("a room with a place left behind", () => {
 
   it("does not count the place left behind against a smaller kapasitas", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2070);
+      await db.insert(academicPeriods).values(ODD_2520);
       const { roomId } = await addRoomLeftBehind(db);
       const program = await addTestProgram(db, "Prodi Uji Asrama M Dua");
       const stays = await addTestStudent(db, program, {
         nim: "9925700002",
         name: "Penghuni Uji",
-        cohortYear: 2070,
+        cohortYear: 2520,
       });
       await placeTestResident(db, roomId, stays);
 
@@ -111,7 +112,7 @@ describe("a room with a place left behind", () => {
 
   it("leaves the stale place of another room alone", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2070);
+      await db.insert(academicPeriods).values(ODD_2520);
       const { roomId, left } = await addRoomLeftBehind(db);
       const emptyRoom = await addTestRoom(db, { number: "M109" });
 
@@ -189,7 +190,7 @@ describe("the rooms while no academic period runs", () => {
 
 /** The running period and the first room of a check. */
 async function addFirstRoom(db: Database): Promise<string> {
-  await db.insert(academicPeriods).values(ODD_2070);
+  await db.insert(academicPeriods).values(ODD_2520);
   return addTestRoom(db, { number: "M101" });
 }
 
@@ -306,7 +307,7 @@ describe("changeRoom", () => {
         const id = await addTestStudent(db, program, {
           nim,
           name: `Uji ${nim}`,
-          cohortYear: 2070,
+          cohortYear: 2520,
         });
         await placeTestResident(db, roomId, id);
       }
@@ -395,7 +396,7 @@ describe("removeRoom", () => {
       const id = await addTestStudent(db, program, {
         nim: "9925260001",
         name: "Penghuni Uji",
-        cohortYear: 2070,
+        cohortYear: 2520,
       });
       await placeTestResident(db, roomId, id);
 

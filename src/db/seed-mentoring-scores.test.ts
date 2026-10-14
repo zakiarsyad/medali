@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: those of the app's sample data.
 import { and, eq, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";

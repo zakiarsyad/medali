@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2670 to 2670.
 // Sample NIMs of this file: 9962000200 to 9962000299.
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
@@ -90,7 +91,7 @@ async function addRecords(db: Database): Promise<Records> {
     memberIds: [outsider],
     mentorId: otherMentor.id,
   });
-  const period = await addTestPeriod(db, 2073);
+  const period = await addTestPeriod(db, 2670);
   return {
     mentor,
     otherMentor,
@@ -113,7 +114,7 @@ function listOf(
   return {
     groupId: records.groupId,
     number: 1,
-    heldOn: "2073-09-10",
+    heldOn: "2670-09-10",
     topic: "Orientasi kelompok dan kontrak belajar",
     version: NOT_SAVED_YET,
     marks: { [records.ani]: "present", [records.budi]: "sick" },
@@ -147,7 +148,7 @@ describe("saveAttendance", () => {
       expect(meeting).toMatchObject({
         periodId: period.id,
         number: 1,
-        heldOn: "2073-09-10",
+        heldOn: "2670-09-10",
         topic: "Orientasi kelompok dan kontrak belajar",
         version: 1,
         savedBy: mentor.id,
@@ -187,9 +188,9 @@ describe("saveAttendance", () => {
       const { mentor, period } = records;
 
       for (const [number, heldOn] of [
-        [3, "2073-09-20"],
-        [1, "2073-10-01"],
-        [4, "2073-08-01"],
+        [3, "2670-09-20"],
+        [1, "2670-10-01"],
+        [4, "2670-08-01"],
         [2, period.day],
       ] as const) {
         const saved = await saveAttendance(
@@ -384,7 +385,7 @@ describe("saveAttendance", () => {
       const saved = await saveAttendance(
         db,
         records.mentor,
-        listOf(records, { heldOn: "2073-10-14" }),
+        listOf(records, { heldOn: "2670-10-14" }),
         records.period.day,
       );
 
@@ -401,7 +402,7 @@ describe("saveAttendance", () => {
       const saved = await saveAttendance(
         db,
         records.mentor,
-        listOf(records, { heldOn: "2073-07-31" }),
+        listOf(records, { heldOn: "2670-07-31" }),
         records.period.day,
       );
 

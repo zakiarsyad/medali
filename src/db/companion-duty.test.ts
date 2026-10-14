@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2400 to 2400.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { settleCompanionDuty } from "./companion-duty";
@@ -15,16 +16,16 @@ const inTestDatabase = withTestDatabase();
 
 /*
  * A period far from those of any other file of checks, so these wait for
- * none of them. Angkatan 2063 is in semester 1 in it, angkatan 2062 in
+ * none of them. Angkatan 2400 is in semester 1 in it, angkatan 2399 in
  * semester 3.
  */
-const ODD_2063 = {
-  startYear: 2063,
+const ODD_2400 = {
+  startYear: 2400,
   term: "odd",
-  startsOn: "2063-08-01",
-  endsOn: "2064-01-31",
+  startsOn: "2400-08-01",
+  endsOn: "2401-01-31",
 } as const;
-const DAY = "2063-10-12";
+const DAY = "2400-10-12";
 
 const ENDED = { isActive: false, roomId: null };
 
@@ -35,7 +36,7 @@ interface TestRows {
 
 /** A Reguler woman of semester 3, kakak pendamping of Dana Rakca in a room. */
 async function addPlacedCompanion(db: Database): Promise<TestRows> {
-  await db.insert(academicPeriods).values(ODD_2063);
+  await db.insert(academicPeriods).values(ODD_2400);
   const [program] = await db
     .insert(studyPrograms)
     .values({
@@ -52,7 +53,7 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
       studyProgramId: program.id,
       entryPath: "regular",
       sex: "female",
-      cohortYear: 2062,
+      cohortYear: 2399,
     })
     .returning();
   const [room] = await db
@@ -116,7 +117,7 @@ describe("settleCompanionDuty", () => {
     ["is on leave", { status: "on_leave" }],
     ["is not active", { status: "inactive" }],
     ["was removed", { deletedAt: new Date() }],
-    ["is of an angkatan in semester 1", { cohortYear: 2063 }],
+    ["is of an angkatan in semester 1", { cohortYear: 2400 }],
     ["is a man, while serving Dana Rakca", { sex: "male" }],
   ] as [string, Change][])(
     "ends the duty, and the room is left, when the student %s",

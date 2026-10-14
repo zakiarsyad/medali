@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2170 to 2170.
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { activityAttendances } from "@/db/schema";

@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2560 to 2561.
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -19,23 +20,23 @@ const inTestDatabase = withTestDatabase();
 
 /*
  * Periods far from those of any other file of checks, so these wait for
- * none of them. In the first one angkatan 2080 is in semester 1, in the
+ * none of them. In the first one angkatan 2560 is in semester 1, in the
  * second one in semester 3.
  */
-const ODD_2080 = {
-  startYear: 2080,
+const ODD_2560 = {
+  startYear: 2560,
   term: "odd",
-  startsOn: "2080-08-01",
-  endsOn: "2081-01-31",
+  startsOn: "2560-08-01",
+  endsOn: "2561-01-31",
 } as const;
-const ODD_2081 = {
-  startYear: 2081,
+const ODD_2561 = {
+  startYear: 2561,
   term: "odd",
-  startsOn: "2081-08-01",
-  endsOn: "2082-01-31",
+  startsOn: "2561-08-01",
+  endsOn: "2562-01-31",
 } as const;
-const DAY = "2080-10-12";
-const A_YEAR_LATER = "2081-10-12";
+const DAY = "2560-10-12";
+const A_YEAR_LATER = "2561-10-12";
 
 interface Placed {
   program: number;
@@ -45,12 +46,12 @@ interface Placed {
 
 /** A Reguler woman of semester 1 with a place in a room of Dana Rakca. */
 async function addPlacedResident(db: Database): Promise<Placed> {
-  await db.insert(academicPeriods).values(ODD_2080);
+  await db.insert(academicPeriods).values(ODD_2560);
   const program = await addTestProgram(db, "Prodi Uji Asrama S");
   const studentId = await addTestStudent(db, program, {
     nim: "9923800001",
     name: "Penghuni Uji",
-    cohortYear: 2080,
+    cohortYear: 2560,
   });
   const roomId = await addTestRoom(db, { number: "S101", capacity: 1 });
   await placeTestResident(db, roomId, studentId);
@@ -125,7 +126,7 @@ describe("a load of Ploting kamar", () => {
   it("shows the place of a Reguler resident who reaches semester 3 as free", async () => {
     await inTestDatabase(async (db) => {
       const { roomId, studentId } = await addPlacedResident(db);
-      await db.insert(academicPeriods).values(ODD_2081);
+      await db.insert(academicPeriods).values(ODD_2561);
 
       const view = await load(db, A_YEAR_LATER);
 
@@ -142,12 +143,12 @@ describe("a load of Ploting kamar", () => {
 
   it("keeps showing a Pembibitan resident who reaches semester 3", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values([ODD_2080, ODD_2081]);
+      await db.insert(academicPeriods).values([ODD_2560, ODD_2561]);
       const program = await addTestProgram(db, "Prodi Uji Asrama S");
       const studentId = await addTestStudent(db, program, {
         nim: "9923800001",
         name: "Penghuni Uji",
-        cohortYear: 2080,
+        cohortYear: 2560,
         isSeedling: true,
       });
       const roomId = await addTestRoom(db, {
@@ -219,7 +220,7 @@ describe("a load of Ploting kamar", () => {
     await inTestDatabase(async (db) => {
       const { program, roomId, studentId } = await addPlacedResident(db);
       const other = await addTestProgram(db, "Prodi Uji Asrama S Lain");
-      const more = { cohortYear: 2080, name: "Penghuni Uji Lain" };
+      const more = { cohortYear: 2560, name: "Penghuni Uji Lain" };
       const stays = await addTestStudent(db, other, {
         ...more,
         nim: "9923800002",
@@ -252,7 +253,7 @@ describe("freeStalePlacesIn", () => {
   it("deletes the stale places of the room, and leaves every other place", async () => {
     await inTestDatabase(async (db) => {
       const { program, roomId, studentId } = await addPlacedResident(db);
-      const more = { cohortYear: 2080, status: "on_leave" as const };
+      const more = { cohortYear: 2560, status: "on_leave" as const };
       const left = await addTestStudent(db, program, {
         ...more,
         nim: "9923800002",
@@ -267,7 +268,7 @@ describe("freeStalePlacesIn", () => {
       await placeTestResident(db, roomId, left);
       await placeTestResident(db, otherRoom, leftElsewhere);
 
-      await freeStalePlacesIn(db, [2080], roomId);
+      await freeStalePlacesIn(db, [2560], roomId);
 
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
       expect(await residentsOfRoom(db, otherRoom)).toEqual([leftElsewhere]);
@@ -279,7 +280,7 @@ describe("freeStalePlacesOf", () => {
   it("deletes the stale place of the students given only", async () => {
     await inTestDatabase(async (db) => {
       const { program, roomId, studentId } = await addPlacedResident(db);
-      const more = { cohortYear: 2080, status: "on_leave" as const };
+      const more = { cohortYear: 2560, status: "on_leave" as const };
       const given = await addTestStudent(db, program, {
         ...more,
         nim: "9923800002",
@@ -293,8 +294,8 @@ describe("freeStalePlacesOf", () => {
       await placeTestResident(db, roomId, given);
       await placeTestResident(db, roomId, notGiven);
 
-      await freeStalePlacesOf(db, [2080], [given, studentId]);
-      await freeStalePlacesOf(db, [2080], []);
+      await freeStalePlacesOf(db, [2560], [given, studentId]);
+      await freeStalePlacesOf(db, [2560], []);
 
       expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
         [studentId, notGiven].sort(),

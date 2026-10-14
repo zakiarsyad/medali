@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2540 to 2540.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -49,17 +50,17 @@ const NO_ROW = "00000000-0000-4000-8000-000000000000";
 
 /*
  * A period far from those of any other file of checks, so these wait for
- * none of them. Angkatan 2062 is in semester 1 in it, angkatan 2061 in
+ * none of them. Angkatan 2540 is in semester 1 in it, angkatan 2539 in
  * semester 3.
  */
-const ODD_2062 = {
-  startYear: 2062,
+const ODD_2540 = {
+  startYear: 2540,
   term: "odd",
-  startsOn: "2062-08-01",
-  endsOn: "2063-01-31",
+  startsOn: "2540-08-01",
+  endsOn: "2541-01-31",
 } as const;
-const DAY = "2062-10-12";
-const BEFORE_ANY_PERIOD = "2062-01-01";
+const DAY = "2540-10-12";
+const BEFORE_ANY_PERIOD = "2540-01-01";
 
 type Actor = { roles: RoleId[] };
 
@@ -74,13 +75,13 @@ interface TestRows {
 }
 
 async function addTestRows(db: Database): Promise<TestRows> {
-  await db.insert(academicPeriods).values(ODD_2062);
+  await db.insert(academicPeriods).values(ODD_2540);
   const program = await addTestProgram(db, "Prodi Uji Plot Kakak");
   const roomId = await addTestRoom(db, { number: "KP101", capacity: 2 });
   const companion = await addTestStudent(db, program, {
     nim: "9936610001",
     name: "Sinta Uji",
-    cohortYear: 2061,
+    cohortYear: 2539,
   });
   await addTestCompanion(db, companion);
   const residents: string[] = [];
@@ -88,7 +89,7 @@ async function addTestRows(db: Database): Promise<TestRows> {
     const id = await addTestStudent(db, program, {
       nim: `993662000${place}`,
       name: `Penghuni Uji ${place}`,
-      cohortYear: 2062,
+      cohortYear: 2540,
     });
     residents.push(id);
   }
@@ -100,7 +101,7 @@ async function addSecondCompanion(db: Database, program: number) {
   const id = await addTestStudent(db, program, {
     nim: "9936610002",
     name: "Tari Uji",
-    cohortYear: 2061,
+    cohortYear: 2539,
   });
   await addTestCompanion(db, id);
   return id;
@@ -111,7 +112,7 @@ async function addWismantaraCompanion(db: Database, program: number) {
   const id = await addTestStudent(db, program, {
     nim: "9936610003",
     name: "Wisma Uji",
-    cohortYear: 2061,
+    cohortYear: 2539,
     isInternational: true,
   });
   await addTestCompanion(db, id);
@@ -247,7 +248,7 @@ describe("placeCompanion", () => {
       const stopped = await addTestStudent(db, program, {
         nim: "9936610003",
         name: "Ajeng Uji",
-        cohortYear: 2061,
+        cohortYear: 2539,
       });
       await addTestCompanion(db, stopped, { isActive: false });
 
@@ -278,7 +279,7 @@ describe("placeCompanion", () => {
       const resident = await addTestStudent(db, program, {
         nim: "9936620009",
         name: "Pindah Uji",
-        cohortYear: 2062,
+        cohortYear: 2540,
       });
       await addTestCompanion(db, resident);
 
@@ -358,7 +359,7 @@ describe("placeCompanion", () => {
         .where(eq(students.id, companion));
       const scope: ResidentScope = {
         dorm: "wismantara_putri",
-        dormCohorts: [2062],
+        dormCohorts: [2540],
         visible: EVERYONE,
       };
 
