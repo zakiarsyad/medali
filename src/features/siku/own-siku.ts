@@ -3,6 +3,7 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { sikuAdjustmentStudents, sikuAdjustments } from "@/db/schema";
+import { FROM_REQUEST } from "./siku-history";
 import type { SikuKind, SikuReason } from "./siku-ids";
 import type { SikuTotals } from "./siku-score";
 import { IN_FORCE } from "./siku-totals";
@@ -22,6 +23,8 @@ export interface OwnEntry {
   enteredAs: RoleId;
   /** Whether it came from a row of an uploaded file. */
   fromFile: boolean;
+  /** Whether an approved request of the student made it. */
+  fromRequest: boolean;
 }
 
 export interface OwnSiku {
@@ -67,6 +70,7 @@ export async function readOwnSiku(
       basis: sikuAdjustments.basis,
       enteredAs: sikuAdjustments.enteredAs,
       fromFile: sql<boolean>`${sikuAdjustments.uploadId} is not null`,
+      fromRequest: FROM_REQUEST,
     })
     .from(sikuAdjustmentStudents)
     .innerJoin(

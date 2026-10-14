@@ -154,10 +154,39 @@ function panel(board: RequestBoard, mayDecide: boolean) {
       board={board}
       params={START_PARAMS}
       mayDecide={mayDecide}
-      cards={<RequestCards cards={board.cards} />}
+      cards={<RequestCards cards={board.cards} mayDecide={mayDecide} />}
     />,
   );
 }
+
+describe("a waiting request card", () => {
+  const decided = {
+    ...CARD,
+    status: "approved",
+    points: 3,
+    decidedBy: "Lina Contoh",
+    decidedAs: "assessor",
+    decidedAt: new Date("2026-10-14T03:00:00Z"),
+  } as const;
+
+  it("offers Poin from 1 to 30, 2 at the start, Catatan penilai, Setujui and Tolak to an account that may decide", () => {
+    const html = panel(BOARD, true);
+
+    expect(html).toContain('min="1" max="30" step="1"');
+    expect(html).toContain('value="2"');
+    expect(html).toContain("Catatan penilai");
+    expect(html).toContain("Setujui");
+    expect(html).toContain("Tolak");
+  });
+
+  it("offers nothing to a role that only reads, nor on a decided card", () => {
+    expect(panel(BOARD, false)).not.toContain("Setujui");
+    expect(panel(BOARD, false)).not.toContain("Poin");
+    const html = panel({ ...BOARD, cards: [decided] }, true);
+    expect(html).not.toContain("Setujui");
+    expect(html).toContain("Disetujui +3");
+  });
+});
 
 describe("Pengajuan penambahan SIKU dari mahasiswa", () => {
   it("offers each status with its count, Diajukan chosen at the start, in the address", () => {

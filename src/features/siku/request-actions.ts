@@ -10,6 +10,7 @@ import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { decideSikuRequest } from "./decide-request";
 import { REQUEST_PHOTO_FILE_NAME } from "./request-photo";
 import { type SentPhoto, sendSikuRequest } from "./send-request";
 import { SIKU_ADDRESS } from "./siku-address";
@@ -22,6 +23,13 @@ import { withdrawSikuRequest } from "./withdraw-request";
 async function asker(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "ask_siku_addition")) forbidden();
+  return account;
+}
+
+/** The signed-in account when it may approve and reject requests. */
+async function decider(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "decide_siku_additions")) forbidden();
   return account;
 }
 
@@ -93,4 +101,29 @@ export async function withdrawSikuRequestAction(
   revalidatePath(SIKU_ADDRESS);
   if (!withdrawn.ok) return { error: withdrawn.error, done: null };
   return { error: null, done: withdrawn.value };
+}
+
+/**
+ * "Setujui" or "Tolak" on a request card, with Poin and "Catatan
+ * penilai". Who decided is the signed-in account. The panel is read
+ * again whatever the answer: a refusal often means the card is out of
+ * date, as when someone else decided it first.
+ */
+export async function decideSikuRequestAction(
+  id: string,
+  kind: string,
+  points: string,
+  note: string,
+): Promise<FormState> {
+  const actor = await decider();
+  const decided = await decideSikuRequest(
+    database(),
+    actor,
+    String(id),
+    { kind, points, note },
+    new Date(),
+  );
+  revalidatePath(SIKU_ADDRESS);
+  if (!decided.ok) return { error: decided.error, done: null };
+  return { error: null, done: decided.value };
 }

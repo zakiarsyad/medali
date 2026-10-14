@@ -10,7 +10,7 @@ import { waitingWords } from "./request-status";
 import styles from "./siku.module.css";
 import { GAIN_REASONS, LOSS_REASONS, type SikuKind } from "./siku-ids";
 import { isHeldWithin, sikuOf } from "./siku-score";
-import { REASON_WORDS, signedPoints } from "./siku-words";
+import { basisOf, REASON_WORDS, signedPoints } from "./siku-words";
 
 export const HELD_WITHIN = "Nilai SIKU dibatasi 0–100.";
 
@@ -50,8 +50,8 @@ function EntryTable({
                 <span className={shared.typed}>
                   {entry.note === "" ? "-" : entry.note}
                 </span>
-                {entry.basis !== "" && (
-                  <span className={shared.detail}>Dasar: {entry.basis}</span>
+                {basisOf(entry) !== "" && (
+                  <span className={shared.detail}>Dasar: {basisOf(entry)}</span>
                 )}
               </td>
               <td className={shared.detail} data-title="Dicatat oleh">

@@ -30,6 +30,7 @@ const FORM = {
   students: 1,
   note: "Catatan contoh",
   basis: "",
+  fromRequest: false,
   enteredBy: "Penilai Contoh",
   seeAddress: "/penilaian/siku?lihat=2",
 } as const;
@@ -105,6 +106,7 @@ describe("a row from a file in Transparansi nilai SIKU", () => {
     basis: "",
     enteredAs: "assessor",
     fromFile: true,
+    fromRequest: false,
   };
 
   it("says it was entered by unggah berkas beside who entered it", () => {

@@ -41,6 +41,25 @@ export const ALREADY_DECIDED = refusal(
   "Pengajuan ini sudah diperiksa Penilai Mahasiswa, jadi tidak dapat ditarik. Muat ulang halaman.",
 );
 
+export const DECIDE_NOT_ALLOWED = refusal(
+  "Anda tidak berhak memutuskan pengajuan penambahan SIKU. Pengajuan diperiksa oleh Penilai Mahasiswa.",
+);
+
+/** What a decision answers for a request that is not there, or was withdrawn. */
+export const REQUEST_GONE = refusal(
+  "Pengajuan ini tidak ditemukan atau sudah ditarik mahasiswa. Muat ulang halaman.",
+);
+
+/** What a decision answers once another decision was saved first. */
+export const DECIDED_BEFORE = refusal(
+  "Pengajuan ini sudah diputuskan. Muat ulang halaman untuk melihat hasilnya.",
+);
+
+/** Gains go to Aktif students only, so a request of one who left is not approved. */
+export const STUDENT_NOT_ACTIVE = refusal(
+  "Mahasiswa ini tidak berstatus Aktif lagi, jadi pengajuan tidak dapat disetujui. Tolak dengan catatan bila perlu.",
+);
+
 export const PHOTOS_NOT_KEPT = refusal(
   "Foto bukti tidak dapat disimpan. Coba lagi.",
 );

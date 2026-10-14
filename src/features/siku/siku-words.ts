@@ -21,6 +21,21 @@ export const REASON_WORDS: Record<SikuReason, string> = {
     "Ketentuan lain sesuai keputusan Direktur/Wakil Direktur Kemahasiswaan",
 };
 
+/** What Dasar says of a gain an approved request of a student made. */
+export const REQUEST_BASIS = "Pengajuan mahasiswa";
+
+/**
+ * What an entry rests on, as Dasar shows it: the letter of a decision of
+ * the Direktur, a student's request, or nothing.
+ */
+export function basisOf(entry: {
+  basis: string;
+  fromRequest: boolean;
+}): string {
+  if (entry.fromRequest) return REQUEST_BASIS;
+  return entry.basis;
+}
+
 /** Points with their sign, such as +3 or −2, and "-" for none. */
 export function signedPoints(points: number, kind: SikuKind): string {
   if (points === 0) return "-";

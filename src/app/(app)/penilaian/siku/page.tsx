@@ -119,7 +119,7 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
             board={board}
             params={params}
             mayDecide={mayDecide}
-            cards={<RequestCards cards={board.cards} />}
+            cards={<RequestCards cards={board.cards} mayDecide={mayDecide} />}
           />
         }
         form={form}
