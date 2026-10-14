@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2740 to 2740.
+// Sample Tahun akademik of this file: 2800 to 2800.
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -33,7 +33,7 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2740, the program
+ * This file's own sample values: the Tahun akademik 2800, the program
  * UJIJADWALTAMBAH, the classes JT-01 to JT-04 and the NIMs 9974620000 to
  * 9974620099.
  */
@@ -51,9 +51,9 @@ interface Records {
 }
 
 /**
- * Two Aktif students of angkatan 2740 in JT-01 and JT-02, a Non aktif
- * one of angkatan 2739 alone in JT-03, and an Aktif one of angkatan 2741,
- * who was not a student yet in the periods of 2740, alone in JT-04.
+ * Two Aktif students of angkatan 2800 in JT-01 and JT-02, a Non aktif
+ * one of angkatan 2799 alone in JT-03, and an Aktif one of angkatan 2801,
+ * who was not a student yet in the periods of 2800, alone in JT-04.
  */
 async function addStudents(db: Database): Promise<Map<string, string>> {
   const programId = await addTestProgram(db, "UJIJADWALTAMBAH");
@@ -61,26 +61,26 @@ async function addStudents(db: Database): Promise<Map<string, string>> {
     {
       nim: "9974620001",
       name: "Uji Jadwal Tambah Satu",
-      cohortYear: 2740,
+      cohortYear: 2800,
       className: "JT-01",
     },
     {
       nim: "9974620002",
       name: "Uji Jadwal Tambah Dua",
-      cohortYear: 2740,
+      cohortYear: 2800,
       className: "JT-02",
     },
     {
       nim: "9974620003",
       name: "Uji Jadwal Tambah Tiga",
-      cohortYear: 2739,
+      cohortYear: 2799,
       className: "JT-03",
       status: "inactive",
     },
     {
       nim: "9974620004",
       name: "Uji Jadwal Tambah Empat",
-      cohortYear: 2741,
+      cohortYear: 2801,
       className: "JT-04",
     },
   ]);
@@ -99,8 +99,8 @@ function sentWith(
     ...SENT_SCHEDULE,
     kind: "extra",
     activityId,
-    startsOn: "2740-09-10",
-    endsOn: "2740-09-11",
+    startsOn: "2800-09-10",
+    endsOn: "2800-09-11",
     participants,
   };
 }
@@ -114,7 +114,7 @@ async function addRecords(
     semester: null,
     name: "Kegiatan tambahan uji",
   });
-  const periods = await addTestPeriods(db, 2740);
+  const periods = await addTestPeriods(db, 2800);
   const idsByNim = await addStudents(db);
   const sent = sentWith(activityId, {
     mode: "classes",
@@ -221,7 +221,7 @@ describe("adding a schedule of an extra activity", () => {
   it("keeps one angkatan for Per angkatan and several for Lintas angkatan", async () => {
     await inTestDatabase(async (db) => {
       const { actor, sent } = await addRecords(db);
-      const across = { mode: "cohorts", values: ["2739", "2740"] };
+      const across = { mode: "cohorts", values: ["2799", "2800"] };
 
       await addSchedule(db, actor, NEW_SCHEDULE_ID, {
         ...sent,
@@ -229,7 +229,7 @@ describe("adding a schedule of an extra activity", () => {
       });
 
       const kept = await storedParticipants(db);
-      expect(kept.map((row) => row.cohortYear)).toEqual([2739, 2740]);
+      expect(kept.map((row) => row.cohortYear)).toEqual([2799, 2800]);
     });
   });
 
@@ -237,7 +237,7 @@ describe("adding a schedule of an extra activity", () => {
     ["no participant", { mode: "classes", values: [] }, NO_PARTICIPANTS],
     [
       "Lintas angkatan with one angkatan",
-      { mode: "cohorts", values: ["2740"] },
+      { mode: "cohorts", values: ["2800"] },
       TOO_FEW_COHORTS,
     ],
     [
@@ -371,13 +371,13 @@ describe("changing a schedule of an extra activity", () => {
         records.actor,
         NEW_SCHEDULE_ID,
         version,
-        { ...records.sent, participants: { mode: "cohort", values: ["2740"] } },
+        { ...records.sent, participants: { mode: "cohort", values: ["2800"] } },
       );
 
       expect(changed).toMatchObject({
         ok: true,
         value: {
-          target: { choice: { kind: "cohorts", cohortYears: [2740] } },
+          target: { choice: { kind: "cohorts", cohortYears: [2800] } },
         },
       });
       expect(await storedParticipants(db)).toEqual([
@@ -385,7 +385,7 @@ describe("changing a schedule of an extra activity", () => {
           scheduleId: NEW_SCHEDULE_ID,
           studentId: null,
           className: null,
-          cohortYear: 2740,
+          cohortYear: 2800,
         },
       ]);
     });
@@ -467,7 +467,7 @@ describe("changing a schedule of an extra activity", () => {
         version,
         {
           ...records.sent,
-          participants: { mode: "cohorts", values: ["2740"] },
+          participants: { mode: "cohorts", values: ["2800"] },
         },
       );
 
@@ -510,7 +510,7 @@ describe("changing a schedule of an extra activity", () => {
           version,
           {
             ...records.sent,
-            participants: { mode: "cohort", values: ["2740"] },
+            participants: { mode: "cohort", values: ["2800"] },
           },
         );
 

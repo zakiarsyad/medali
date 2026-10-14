@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2730 to 2730.
+// Sample Tahun akademik of this file: 2790 to 2790.
 import { eq, inArray, type SQL } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -26,14 +26,14 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2730, the programs
+ * This file's own sample values: the Tahun akademik 2790, the programs
  * UJITAMBAHAN and UJITAMBAHANLAIN and the NIMs 9974600000 to
  * 9974600099.
  */
 
 const inTestDatabase = withTestDatabase();
 
-const TODAY = "2730-09-20";
+const TODAY = "2790-09-20";
 const EXTRA: ScheduleScope = { kind: "extra" };
 const EVERY_PPKS: ScheduleScope = { kind: "ppks", level: null };
 
@@ -46,7 +46,7 @@ interface Records {
   byClass: string;
   /** For Budi and Cici by name, held on 15 September. */
   byStudent: string;
-  /** For angkatan 2728 and 2729, still to come on 1 October. */
+  /** For angkatan 2788 and 2789, still to come on 1 October. */
   byCohorts: string;
   /** A PPKS schedule of 12 September. */
   ppks: string;
@@ -62,9 +62,9 @@ async function idOf(db: Database, nim: string): Promise<string> {
 }
 
 /**
- * Of the first program: Ani and Budi of angkatan 2729 in classes T-01
- * and T-02, Cici of angkatan 2728 in T-01 who is Non aktif, and Dodi of
- * angkatan 2728 in T-03. Of the other program: Eka of angkatan 2729 in
+ * Of the first program: Ani and Budi of angkatan 2789 in classes T-01
+ * and T-02, Cici of angkatan 2788 in T-01 who is Non aktif, and Dodi of
+ * angkatan 2788 in T-03. Of the other program: Eka of angkatan 2789 in
  * T-01.
  */
 async function addStudents(db: Database) {
@@ -74,26 +74,26 @@ async function addStudents(db: Database) {
     {
       nim: "9974600001",
       name: "Ani Uji Tambahan",
-      cohortYear: 2729,
+      cohortYear: 2789,
       className: "T-01",
     },
     {
       nim: "9974600002",
       name: "Budi Uji Tambahan",
-      cohortYear: 2729,
+      cohortYear: 2789,
       className: "T-02",
     },
     {
       nim: "9974600003",
       name: "Cici Uji Tambahan",
-      cohortYear: 2728,
+      cohortYear: 2788,
       className: "T-01",
       status: "inactive",
     },
     {
       nim: "9974600004",
       name: "Dodi Uji Tambahan",
-      cohortYear: 2728,
+      cohortYear: 2788,
       className: "T-03",
     },
   ]);
@@ -101,7 +101,7 @@ async function addStudents(db: Database) {
     {
       nim: "9974600005",
       name: "Eka Uji Tambahan",
-      cohortYear: 2729,
+      cohortYear: 2789,
       className: "T-01",
     },
   ]);
@@ -120,33 +120,33 @@ async function addRecords(db: Database): Promise<Records> {
   const staff = await addTestActor(db, "Pegawai Uji Tambahan", ["upk_staff"]);
   const extraId = await addTestActivity(db, staff.id, { semester: null });
   const ppksId = await addTestActivity(db, staff.id);
-  const periods = await addTestPeriods(db, 2730);
+  const periods = await addTestPeriods(db, 2790);
   const visible = await addStudents(db);
   const base = { academicPeriodId: periods.oddId, changedBy: staff.id };
   const extra = { ...base, activityId: extraId };
   const byClass = await addTestSchedule(db, {
     ...extra,
-    startsOn: "2730-09-10",
+    startsOn: "2790-09-10",
   });
   const byStudent = await addTestSchedule(db, {
     ...extra,
-    startsOn: "2730-09-15",
+    startsOn: "2790-09-15",
   });
   const byCohorts = await addTestSchedule(db, {
     ...extra,
-    startsOn: "2730-10-01",
+    startsOn: "2790-10-01",
   });
   const ppks = await addTestSchedule(db, {
     ...base,
     activityId: ppksId,
-    startsOn: "2730-09-12",
+    startsOn: "2790-09-12",
   });
   await db.insert(activityScheduleParticipants).values([
     { scheduleId: byClass, className: "T-01" },
     { scheduleId: byStudent, studentId: await idOf(db, "9974600002") },
     { scheduleId: byStudent, studentId: await idOf(db, "9974600003") },
-    { scheduleId: byCohorts, cohortYear: 2728 },
-    { scheduleId: byCohorts, cohortYear: 2729 },
+    { scheduleId: byCohorts, cohortYear: 2788 },
+    { scheduleId: byCohorts, cohortYear: 2789 },
   ]);
   async function attend(
     scheduleId: string,
@@ -194,7 +194,7 @@ describe("listSchedules on Kegiatan tambahan", () => {
         },
         {
           kind: "chosen",
-          choice: { kind: "cohorts", cohortYears: [2728, 2729] },
+          choice: { kind: "cohorts", cohortYears: [2788, 2789] },
           participants: 4,
         },
       ]);
@@ -302,7 +302,7 @@ describe("a chosen student who was not a student yet in the period of the schedu
     };
   }
 
-  it("counts in no number of the schedule, as they do not see it: Fani of angkatan 2731 joins T-01, with a photo that waits", async () => {
+  it("counts in no number of the schedule, as they do not see it: Fani of angkatan 2791 joins T-01, with a photo that waits", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const before = await numbersOfClass(db, records);
@@ -314,7 +314,7 @@ describe("a chosen student who was not a student yet in the period of the schedu
         {
           nim: "9974600006",
           name: "Fani Uji Tambahan",
-          cohortYear: 2731,
+          cohortYear: 2791,
           className: "T-01",
         },
       ]);

@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2720 to 2720.
+// Sample Tahun akademik of this file: 2780 to 2780.
 import { and, asc, eq, type SQL } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -25,14 +25,14 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2720, the program
+ * This file's own sample values: the Tahun akademik 2780, the program
  * UJIPESERTAPILIH and the NIMs 9974500000 to 9974500099.
  */
 
 const inTestDatabase = withTestDatabase();
 
 /** The period the schedules of this file keep. */
-const PERIOD = { startYear: 2720 };
+const PERIOD = { startYear: 2780 };
 
 interface Records {
   programId: number;
@@ -47,46 +47,46 @@ async function addStudents(db: Database, programId: number) {
     {
       nim: "9974500001",
       name: "Uji Pilih Satu",
-      cohortYear: 2720,
+      cohortYear: 2780,
       className: "U-01",
     },
     {
       nim: "9974500002",
       name: "Uji Pilih Dua",
-      cohortYear: 2720,
+      cohortYear: 2780,
       className: "U-02",
     },
     {
       nim: "9974500003",
       name: "Uji Pilih Tiga",
-      cohortYear: 2719,
+      cohortYear: 2779,
       className: "U-01",
       status: "inactive",
     },
     {
       nim: "9974500004",
       name: "Uji Pilih Empat",
-      cohortYear: 2719,
+      cohortYear: 2779,
       className: null,
     },
     {
       nim: "9974500005",
       name: "Uji Pilih Lima",
-      cohortYear: 2719,
+      cohortYear: 2779,
       className: "U-01",
       status: "on_leave",
     },
     {
       nim: "9974500006",
       name: "Uji Pilih Enam",
-      cohortYear: 2720,
+      cohortYear: 2780,
       className: "U-01",
       deletedAt: new Date(),
     },
     {
       nim: "9974500007",
       name: "Uji Pilih Tujuh",
-      cohortYear: 2721,
+      cohortYear: 2781,
       className: "U-01",
     },
   ]);
@@ -97,7 +97,7 @@ async function addRecords(db: Database): Promise<Records> {
     "upk_staff",
   ]);
   const activityId = await addTestActivity(db, staff.id, { semester: null });
-  const periods = await addTestPeriods(db, 2720);
+  const periods = await addTestPeriods(db, 2780);
   const programId = await addTestProgram(db, "UJIPESERTAPILIH");
   await addStudents(db, programId);
   const stored = await db
@@ -112,7 +112,7 @@ async function addRecords(db: Database): Promise<Records> {
   const choices: ParticipantChoice[] = [
     { kind: "students", studentIds: chosenIds },
     { kind: "classes", classNames: ["U-01"] },
-    { kind: "cohorts", cohortYears: [2719, 2720, 2721] },
+    { kind: "cohorts", cohortYears: [2779, 2780, 2781] },
   ];
   const schedules: Records["schedules"] = [];
   for (const choice of choices) {
@@ -120,7 +120,7 @@ async function addRecords(db: Database): Promise<Records> {
       activityId,
       academicPeriodId: periods.oddId,
       changedBy: staff.id,
-      startsOn: "2720-09-10",
+      startsOn: "2780-09-10",
     });
     await db.insert(activityScheduleParticipants).values(rowsOf(id, choice));
     schedules.push({ id, choice });
