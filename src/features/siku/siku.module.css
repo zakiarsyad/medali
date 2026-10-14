@@ -1,0 +1,197 @@
+/*
+ * The falls and the rises side by side on a laptop. On a phone the
+ * smallest width of a panel gives way and they stack in one column.
+ */
+.sideBySide {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: 0 var(--space-lg);
+  align-items: start;
+}
+
+.sideBySide > * {
+  min-width: 0;
+}
+
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* Nilai dasar + Penambahan − Pengurangan = SIKU akhir, on one line that folds. */
+.sum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-lg);
+  background: var(--surface2);
+}
+
+.sum > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.sum small {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.sum b {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+}
+
+.sign {
+  color: var(--faint);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+}
+
+.total {
+  color: var(--navy);
+}
+
+.subheading {
+  margin: var(--space-lg) 0 var(--space-sm);
+  font-size: var(--text-base);
+}
+
+.list {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-xl);
+}
+
+.spaced {
+  margin-top: var(--space-xl);
+}
+
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.gain {
+  color: var(--ok);
+}
+
+.loss {
+  color: var(--bad);
+}
+
+.strong {
+  font-weight: var(--weight-heavy);
+}
+
+.note {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.more {
+  margin-top: var(--space-sm);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  padding: var(--space-xs) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.choice[aria-pressed="true"] {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: var(--surface);
+}
+
+/* A field that takes the whole width of the form. */
+.full {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* A choice holds long reasons: it folds them instead of widening the form. */
+.full > select {
+  max-width: 100%;
+}
+
+.pickRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.pickRow > * {
+  flex: 1 1 var(--card-min-width);
+  min-width: 0;
+}
+
+.found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  min-width: 0;
+  margin-top: var(--space-xs);
+}
+
+/* A found student is a long line: it folds instead of widening the page. */
+.found button {
+  max-width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: center;
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  max-width: 100%;
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--goldsoft);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
