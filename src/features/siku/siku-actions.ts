@@ -12,6 +12,7 @@ import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { cancelSikuEntry } from "./cancel-entry";
 import { saveSikuEntry } from "./save-entry";
+import { savedMessage, saveSikuFile } from "./save-siku-file";
 import { SIKU_ADDRESS } from "./siku-address";
 import { previewSikuFile } from "./siku-file-check";
 import type { SikuFilePreview } from "./siku-file-preview";
@@ -67,6 +68,30 @@ export async function previewSikuFileAction(
   const file = await sentCsvFile(form);
   if (!file.ok) return file;
   return previewSikuFile(database(), actor, file.value);
+}
+
+/**
+ * "Simpan (n) baris": the file is read and checked again by the server.
+ * `id` is the key the screen made for the file; `confirmRepeat` is the
+ * confirm that a file saved before is to be saved again.
+ */
+export async function saveSikuFileAction(
+  form: FormData,
+): Promise<Parsed<string>> {
+  const actor = await enterer();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  const confirmed = text(form, "confirmRepeat") === "yes";
+  const saved = await saveSikuFile(
+    database(),
+    actor,
+    text(form, "id"),
+    file.value,
+    confirmed,
+  );
+  if (!saved.ok) return saved;
+  revalidatePath(SIKU_ADDRESS);
+  return { ok: true, value: savedMessage(saved.value) };
 }
 
 /** The Aktif students the form offers for what was typed. */

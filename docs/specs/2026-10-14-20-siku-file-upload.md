@@ -81,7 +81,7 @@ Kepala Unit and Penilai Mahasiswa.
   or skipped and why, with checks.
 - [x] 2. "Unggah berkas" shows with the note and "Unduh templat CSV".
 - [x] 3. Picking a file shows the preview and the skipped rows.
-- [ ] 4. "Simpan (n) baris" saves the rows as one history entry, which
+- [x] 4. "Simpan (n) baris" saves the rows as one history entry, which
   can be opened and cancelled.
 
 ## Decisions made while building
@@ -131,3 +131,18 @@ Kepala Unit and Penilai Mahasiswa.
   skipped with "NIM tidak ada dalam data mahasiswa."
 - The preview shows jenis as "Penambahan" or "Pengurangan", and the
   points with their sign, as the history does.
+- A file counts as saved before when an upload still in force has the
+  same file name, as shown, and the same content. The preview then says
+  on which day, and "Simpan" works only after ticking "Tetap simpan
+  berkas ini lagi". The server refuses such a save without the tick.
+- "Simpan" pressed twice for the same picked file is answered as the
+  first press. The same key sent with another file, or by another
+  account, is refused and saves nothing.
+- At "Simpan" the server reads the file again: a row whose student
+  stopped being Aktif since the preview is skipped then, and the message
+  counts only the rows saved.
+- A row of an upload cannot be cancelled on its own, only with the whole
+  upload. "Batalkan" on an upload asks "Batalkan semua baris dari berkas
+  ini?".
+- "Lihat mahasiswa" on an upload adds a column "Penyesuaian" with each
+  row's signed points and reason.

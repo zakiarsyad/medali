@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -20,6 +20,8 @@ export interface OwnEntry {
   note: string;
   basis: string;
   enteredAs: RoleId;
+  /** Whether it came from a row of an uploaded file. */
+  fromFile: boolean;
 }
 
 export interface OwnSiku {
@@ -64,6 +66,7 @@ export async function readOwnSiku(
       note: sikuAdjustments.note,
       basis: sikuAdjustments.basis,
       enteredAs: sikuAdjustments.enteredAs,
+      fromFile: sql<boolean>`${sikuAdjustments.uploadId} is not null`,
     })
     .from(sikuAdjustmentStudents)
     .innerJoin(

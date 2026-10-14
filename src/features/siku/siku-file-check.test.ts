@@ -154,6 +154,7 @@ describe("previewSikuFile", () => {
           ],
           skipped: 1,
           firstSkipped: [{ row: 3, nim: "9964000999", reason: UNKNOWN_NIM }],
+          savedOn: null,
         },
       });
     });

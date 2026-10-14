@@ -16,6 +16,7 @@ import {
 } from "./siku-file";
 import { type SikuFilePreview, sikuPreviewOf } from "./siku-file-preview";
 import { NOT_ALLOWED_TO_ADJUST } from "./siku-messages";
+import { savedBefore, uploadMarkOf } from "./siku-uploads";
 
 /** The students an account may give SIKU to: those it sees on Penilaian SIKU. */
 export function sikuVisibleTo(actor: AccountForAccess): SQL {
@@ -79,5 +80,6 @@ export async function previewSikuFile(
   if (!may(actor.roles, "adjust_siku")) return NOT_ALLOWED_TO_ADJUST;
   const rows = await checkSikuFile(db, sikuVisibleTo(actor), file);
   if (!rows.ok) return rows;
-  return { ok: true, value: sikuPreviewOf(rows.value) };
+  const savedOn = await savedBefore(db, uploadMarkOf(file));
+  return { ok: true, value: sikuPreviewOf(rows.value, savedOn) };
 }

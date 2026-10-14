@@ -117,8 +117,8 @@ describe("readSikuHistory", () => {
 
       for (const reader of [penilai, direktur]) {
         const history = await readSikuHistory(db, seenBy(reader), 1);
-        expect(history.entries.map((entry) => entry.reason)).toContain(
-          "discipline_penalty",
+        expect(history.entries).toContainEqual(
+          expect.objectContaining({ reason: "discipline_penalty" }),
         );
       }
     });

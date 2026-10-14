@@ -1,4 +1,5 @@
 import { PREVIEW_ROWS, PREVIEW_SKIPPED } from "@/files/csv-file";
+import { shownDay } from "@/ui/day";
 import type { SikuFileRows, SkippedSikuRow } from "./siku-file";
 import { REASON_WITH_BASIS, type SikuKind, type SikuReason } from "./siku-ids";
 
@@ -20,9 +21,25 @@ export interface SikuFilePreview {
   firstRows: SikuPreviewRow[];
   skipped: number;
   firstSkipped: SkippedSikuRow[];
+  /**
+   * The day the same file was saved before, by an upload still in force,
+   * or null. Saving it again then asks for a confirm.
+   */
+  savedOn: string | null;
 }
 
-export function sikuPreviewOf(rows: SikuFileRows): SikuFilePreview {
+/** The words of the confirm a file saved before needs. */
+export const SAVE_AGAIN = "Tetap simpan berkas ini lagi";
+
+/** The warning for a file saved before, on the day it was saved. */
+export function savedBeforeNote(day: string): string {
+  return `Berkas dengan nama dan isi yang sama sudah disimpan pada ${shownDay(day)}.`;
+}
+
+export function sikuPreviewOf(
+  rows: SikuFileRows,
+  savedOn: string | null,
+): SikuFilePreview {
   const first = rows.ready.slice(0, PREVIEW_ROWS);
   return {
     ready: rows.ready.length,
@@ -37,5 +54,6 @@ export function sikuPreviewOf(rows: SikuFileRows): SikuFilePreview {
     })),
     skipped: rows.skipped.length,
     firstSkipped: rows.skipped.slice(0, PREVIEW_SKIPPED),
+    savedOn,
   };
 }

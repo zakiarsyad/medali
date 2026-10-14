@@ -21,6 +21,7 @@ const PREVIEW: SikuFilePreview = {
   firstSkipped: [
     { row: 9, nim: "4121230009", reason: "Mahasiswa tidak aktif." },
   ],
+  savedOn: null,
 };
 
 function render(preview: SikuFilePreview): string {

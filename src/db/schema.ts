@@ -1734,6 +1734,33 @@ const SIKU_GAIN_REASON_LIST = sql.raw(
 );
 
 /**
+ * One CSV file of SIKU gains and losses, saved at once. Its rows are the
+ * entries that name it. The key is made by the screen that showed the
+ * file, so a file sent twice is kept once. The file itself is never kept:
+ * only its name as shown and a SHA-256 fingerprint of its bytes, to tell
+ * when the same file is saved again.
+ */
+export const sikuUploads = pgTable(
+  "siku_uploads",
+  {
+    id: uuid().primaryKey(),
+    fileName: text().notNull(),
+    fingerprint: text().notNull(),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("siku_uploads_fingerprint").on(table.fingerprint),
+    check(
+      "siku_uploads_fingerprint_is_sha256",
+      sql`${table.fingerprint} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
+);
+
+/**
  * One gain or loss of SIKU points for the students it names, with its
  * reason, its date and the academic period that ran when it was saved.
  * The key is made by the form that sent it, so a form sent twice is kept
@@ -1764,9 +1791,12 @@ export const sikuAdjustments = pgTable(
     enteredAt: timestamp({ withTimezone: true }).notNull(),
     cancelledBy: uuid().references(() => accounts.id),
     cancelledAt: timestamp({ withTimezone: true }),
+    /** The file it came from, one row of it for one student; null for the form. */
+    uploadId: uuid().references(() => sikuUploads.id),
   },
   (table) => [
     index("siku_adjustments_day").on(table.day, table.enteredAt),
+    index("siku_adjustments_upload").on(table.uploadId),
     check(
       "siku_adjustments_points_in_range",
       sql`${table.points} between ${sql.raw(String(POINTS_MIN))} and ${sql.raw(String(POINTS_MAX))}`,

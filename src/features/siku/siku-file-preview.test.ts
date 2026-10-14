@@ -25,7 +25,7 @@ describe("sikuPreviewOf", () => {
       reason: "Alasan tidak dikenali.",
     }));
 
-    const preview = sikuPreviewOf({ ready, skipped });
+    const preview = sikuPreviewOf({ ready, skipped }, null);
 
     expect(preview.ready).toBe(8);
     expect(preview.firstRows.map((row) => row.row)).toEqual([2, 3, 4, 5, 6, 7]);
@@ -43,7 +43,7 @@ describe("sikuPreviewOf", () => {
       basis: "SK-1",
     };
 
-    const preview = sikuPreviewOf({ ready: [note, basis], skipped: [] });
+    const preview = sikuPreviewOf({ ready: [note, basis], skipped: [] }, null);
 
     expect(preview.firstRows.map((row) => row.keterangan)).toEqual([
       "Catatan",
