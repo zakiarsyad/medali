@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2770 to 2770.
+// Sample Tahun akademik of this file: 2870 to 2870.
 // Sample NIMs of this file: 9937840000 to 9937840099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -15,13 +15,13 @@ import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
-// 10:00 on campus on 12 October 2770.
-const MOMENT = new Date("2770-10-12T03:00:00Z");
+// 10:00 on campus on 12 October 2870.
+const MOMENT = new Date("2870-10-12T03:00:00Z");
 
 async function addRecords(db: Database) {
   const [ani, bea] = await addTestResidents(
     db,
-    2770,
+    2870,
     "Prodi Uji Riwayat Izin",
     ["9937840001", "9937840002"],
   );
@@ -34,7 +34,7 @@ async function addRecords(db: Database) {
     versions: [
       {
         name: "Belajar malam uji",
-        startsOn: "2770-08-01",
+        startsOn: "2870-08-01",
         startTime: "19:30",
         endTime: "21:00",
       },
@@ -63,14 +63,14 @@ describe("readOwnLeave", () => {
   it("shows only the resident's own requests, the latest start first, an ITMK with the activities it covers", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea } = await addRecords(db);
-      await ask(db, ani, { day: "2770-10-13" });
+      await ask(db, ani, { day: "2870-10-13" });
       await ask(db, ani, {
-        day: "2770-10-14",
+        day: "2870-10-14",
         kind: "skip_activities",
-        startsAt: "2770-10-14T19:00",
-        endsAt: "2770-10-14T21:30",
+        startsAt: "2870-10-14T19:00",
+        endsAt: "2870-10-14T21:30",
       });
-      await ask(db, bea, { day: "2770-10-15" });
+      await ask(db, bea, { day: "2870-10-15" });
 
       const answer = await readOwnLeave(db, ani, 1, MOMENT);
 
@@ -85,7 +85,7 @@ describe("readOwnLeave", () => {
       expect(skipping?.covered.map((each) => each.name)).toEqual([
         "Belajar malam uji",
       ]);
-      expect(skipping?.start).toBe("14 Okt 2770, 19.00");
+      expect(skipping?.start).toBe("14 Okt 2870, 19.00");
       expect(outing).toMatchObject({
         status: "submitted",
         length: "7 jam",
@@ -101,10 +101,10 @@ describe("readOwnLeave", () => {
       expect(
         await readOwnLeave(db, { ...ani, roles: ["bam_bphk"] }, 1, MOMENT),
       ).toEqual({ kind: "refused" });
-      // Angkatan 2769 is in semester 3 then: it lives in no dorm.
+      // Angkatan 2869 is in semester 3 then: it lives in no dorm.
       await db
         .update(students)
-        .set({ cohortYear: 2769 })
+        .set({ cohortYear: 2869 })
         .where(eq(students.id, ani.studentId));
       expect(await readOwnLeave(db, ani, 1, MOMENT)).toEqual({
         kind: "refused",
@@ -123,15 +123,15 @@ describe("describeLeave", () => {
         ani,
         {
           kind: "skip_activities",
-          startsAt: "2770-10-13T19:00",
-          endsAt: "2770-10-14T20:00",
+          startsAt: "2870-10-13T19:00",
+          endsAt: "2870-10-14T20:00",
         },
         MOMENT,
       );
 
       expect(note).toEqual({
         words:
-          "Durasi 25 jam, melewati malam. Kegiatan asrama yang tidak diikuti dan akan tercatat hadir (ITMK): Belajar malam uji 13 Okt 2770 19:30, Belajar malam uji 14 Okt 2770 19:30.",
+          "Durasi 25 jam, melewati malam. Kegiatan asrama yang tidak diikuti dan akan tercatat hadir (ITMK): Belajar malam uji 13 Okt 2870 19:30, Belajar malam uji 14 Okt 2870 19:30.",
         isProblem: false,
       });
     });
@@ -140,15 +140,15 @@ describe("describeLeave", () => {
   it("says when the times overlap another request of theirs", async () => {
     await inTestDatabase(async (db) => {
       const { ani } = await addRecords(db);
-      await ask(db, ani, { day: "2770-10-13" });
+      await ask(db, ani, { day: "2870-10-13" });
 
       const note = await describeLeave(
         db,
         ani,
         {
           kind: "outing",
-          startsAt: "2770-10-13T15:00",
-          endsAt: "2770-10-13T18:00",
+          startsAt: "2870-10-13T15:00",
+          endsAt: "2870-10-13T18:00",
         },
         MOMENT,
       );
@@ -165,8 +165,8 @@ describe("describeLeave", () => {
       const { ani } = await addRecords(db);
       const times = {
         kind: "outing",
-        startsAt: "2770-10-13T09:00",
-        endsAt: "2770-10-13T10:00",
+        startsAt: "2870-10-13T09:00",
+        endsAt: "2870-10-13T10:00",
       };
 
       expect(

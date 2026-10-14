@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2760 to 2760.
+// Sample Tahun akademik of this file: 2860 to 2860.
 // Sample NIMs of this file: 9937830000 to 9937830099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -16,17 +16,17 @@ import { addTestResidents, leaveById, sentOuting } from "./test-leave";
 
 const inTestDatabase = withTestDatabase();
 
-// 10:00 on campus on 12 October 2760.
-const MOMENT = new Date("2760-10-12T03:00:00Z");
+// 10:00 on campus on 12 October 2860.
+const MOMENT = new Date("2860-10-12T03:00:00Z");
 
 async function addRecords(db: Database) {
-  const [ani, bea] = await addTestResidents(db, 2760, "Prodi Uji Batal Izin", [
+  const [ani, bea] = await addTestResidents(db, 2860, "Prodi Uji Batal Izin", [
     "9937830001",
     "9937830002",
   ]);
   if (!ani || !bea) throw new Error("The residents were not added.");
   const id = crypto.randomUUID();
-  const saved = await askLeave(db, ani, id, sentOuting("2760-10-13"), MOMENT);
+  const saved = await askLeave(db, ani, id, sentOuting("2860-10-13"), MOMENT);
   if (!saved.ok) throw new Error(saved.error);
   return { ani, bea, id };
 }

@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2750 to 2750.
+// Sample Tahun akademik of this file: 2850 to 2850.
 // Sample NIMs of this file: 9937820000 to 9937820099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -22,22 +22,22 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
-// 10:00 on campus on 12 October 2750.
-const MOMENT = new Date("2750-10-12T03:00:00Z");
-const TOMORROW = "2750-10-13";
+// 10:00 on campus on 12 October 2850.
+const MOMENT = new Date("2850-10-12T03:00:00Z");
+const TOMORROW = "2850-10-13";
 
 async function addRecords(db: Database) {
   const [ani, bea, senior] = await addTestResidents(
     db,
-    2750,
+    2850,
     "Prodi Uji Ajukan Izin",
     ["9937820001", "9937820002", "9937820003"],
   );
   if (!ani || !bea || !senior) throw new Error("The residents were not added.");
-  // Angkatan 2749 is in semester 3 then: it lives in no dorm.
+  // Angkatan 2849 is in semester 3 then: it lives in no dorm.
   await db
     .update(students)
-    .set({ cohortYear: 2749 })
+    .set({ cohortYear: 2849 })
     .where(eq(students.id, senior.studentId));
   return { ani, bea, senior };
 }
@@ -56,8 +56,8 @@ describe("askLeave", () => {
         studentId: ani.studentId,
         kind: "outing",
         status: "submitted",
-        startsAt: new Date("2750-10-13T02:00:00Z"),
-        endsAt: new Date("2750-10-13T09:00:00Z"),
+        startsAt: new Date("2850-10-13T02:00:00Z"),
+        endsAt: new Date("2850-10-13T09:00:00Z"),
         purpose: "Membeli buku kuliah",
         sentAt: MOMENT,
       });
@@ -163,7 +163,7 @@ describe("askLeave", () => {
         db,
         other,
         id,
-        sentOuting("2750-10-14"),
+        sentOuting("2850-10-14"),
         MOMENT,
       );
 

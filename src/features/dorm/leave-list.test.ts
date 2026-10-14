@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2780 to 2780.
+// Sample Tahun akademik of this file: 2880 to 2880.
 // Sample NIMs of this file: 9937860000 to 9937860099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -15,10 +15,10 @@ import { addTestActor, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
-// 10:00 on campus on 12 October 2780.
-const NOW = new Date("2780-10-12T03:00:00Z");
+// 10:00 on campus on 12 October 2880.
+const NOW = new Date("2880-10-12T03:00:00Z");
 
-/** A time on campus, such as 2780-10-13T09:00, as a moment. */
+/** A time on campus, such as 2880-10-13T09:00, as a moment. */
 function on(time: string): Date {
   return new Date(`${time}:00+07:00`);
 }
@@ -51,7 +51,7 @@ async function addLeave(
 async function addRecords(db: Database) {
   const [ani, bea, cici] = await addTestResidents(
     db,
-    2780,
+    2880,
     "Prodi Uji Daftar Izin",
     ["9937860001", "9937860002", "9937860003"],
   );
@@ -69,13 +69,13 @@ describe("readLeaveBoard", () => {
     await inTestDatabase(async (db) => {
       const { ani, bea, manager } = await addRecords(db);
       const decided = { decidedBy: manager.id, decidedAt: NOW };
-      await addLeave(db, ani.studentId, "2780-10-13T09:00", "2780-10-13T12:00");
-      await addLeave(db, bea.studentId, "2780-10-14T09:00", "2780-10-14T12:00");
+      await addLeave(db, ani.studentId, "2880-10-13T09:00", "2880-10-13T12:00");
+      await addLeave(db, bea.studentId, "2880-10-14T09:00", "2880-10-14T12:00");
       await addLeave(
         db,
         ani.studentId,
-        "2780-10-01T09:00",
-        "2780-10-01T12:00",
+        "2880-10-01T09:00",
+        "2880-10-01T12:00",
         {
           status: "approved",
           ...decided,
@@ -85,8 +85,8 @@ describe("readLeaveBoard", () => {
       await addLeave(
         db,
         ani.studentId,
-        "2780-09-01T09:00",
-        "2780-09-01T12:00",
+        "2880-09-01T09:00",
+        "2880-09-01T12:00",
         {
           status: "approved",
           ...decided,
@@ -95,8 +95,8 @@ describe("readLeaveBoard", () => {
       await addLeave(
         db,
         bea.studentId,
-        "2780-10-20T09:00",
-        "2780-10-20T12:00",
+        "2880-10-20T09:00",
+        "2880-10-20T12:00",
         {
           status: "approved",
           ...decided,
@@ -112,13 +112,13 @@ describe("readLeaveBoard", () => {
   it("starts with those that wait, the soonest first, each with the student and where they live", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea, cici } = await addRecords(db);
-      await addLeave(db, bea.studentId, "2780-10-14T09:00", "2780-10-14T12:00");
-      await addLeave(db, ani.studentId, "2780-10-13T09:00", "2780-10-13T12:00");
+      await addLeave(db, bea.studentId, "2880-10-14T09:00", "2880-10-14T12:00");
+      await addLeave(db, ani.studentId, "2880-10-13T09:00", "2880-10-13T12:00");
       await addLeave(
         db,
         cici.studentId,
-        "2780-10-15T09:00",
-        "2780-10-15T12:00",
+        "2880-10-15T09:00",
+        "2880-10-15T12:00",
         {
           status: "cancelled",
           cancelledAt: NOW,
@@ -135,7 +135,7 @@ describe("readLeaveBoard", () => {
       expect(list.cards[0]).toMatchObject({
         nim: "9937860001",
         room: "Asrama Dana Rakca, kamar U-IZIN-1",
-        start: "13 Okt 2780, 09.00",
+        start: "13 Okt 2880, 09.00",
         length: "3 jam",
         destination: "Bintaro",
         warnings: [],
@@ -147,12 +147,12 @@ describe("readLeaveBoard", () => {
   it("narrows by status, kind and a part of a name or NIM", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea, manager } = await addRecords(db);
-      await addLeave(db, ani.studentId, "2780-10-13T09:00", "2780-10-13T12:00");
+      await addLeave(db, ani.studentId, "2880-10-13T09:00", "2880-10-13T12:00");
       await addLeave(
         db,
         bea.studentId,
-        "2780-10-13T19:00",
-        "2780-10-13T21:00",
+        "2880-10-13T19:00",
+        "2880-10-13T21:00",
         {
           kind: "skip_activities",
           destination: "",
@@ -162,8 +162,8 @@ describe("readLeaveBoard", () => {
       await addLeave(
         db,
         bea.studentId,
-        "2780-10-01T09:00",
-        "2780-10-01T12:00",
+        "2880-10-01T09:00",
+        "2880-10-01T12:00",
         {
           status: "rejected",
           decidedBy: manager.id,
@@ -208,7 +208,7 @@ describe("readLeaveBoard", () => {
   it("shows Ketua Program Studi only the requests of their own program", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea } = await addRecords(db);
-      await addLeave(db, ani.studentId, "2780-10-13T09:00", "2780-10-13T12:00");
+      await addLeave(db, ani.studentId, "2880-10-13T09:00", "2880-10-13T12:00");
       const [student] = await db
         .select({ program: students.studyProgramId })
         .from(students)
@@ -243,7 +243,7 @@ describe("readLeaveBoard", () => {
         versions: [
           {
             name: "Belajar malam uji",
-            startsOn: "2780-08-01",
+            startsOn: "2880-08-01",
             startTime: "19:30",
             endTime: "21:00",
           },
@@ -252,8 +252,8 @@ describe("readLeaveBoard", () => {
       await addLeave(
         db,
         ani.studentId,
-        "2780-10-12T09:00",
-        "2780-10-12T21:30",
+        "2880-10-12T09:00",
+        "2880-10-12T21:30",
         {
           kind: "skip_activities",
           destination: "",
@@ -264,7 +264,7 @@ describe("readLeaveBoard", () => {
       const { list } = await readLeaveBoard(db, EVERYONE, WAITING, 1, NOW);
 
       expect(list.cards[0]?.covered.map((each) => each.day)).toEqual([
-        "2780-10-12",
+        "2880-10-12",
       ]);
       expect(list.cards[0]?.warnings).toEqual(["Jam mulai sudah lewat."]);
     });
@@ -274,7 +274,7 @@ describe("readLeaveBoard", () => {
     await inTestDatabase(async (db) => {
       const { ani } = await addRecords(db);
       for (let day = 1; day <= 21; day++) {
-        const date = `2780-11-${String(day).padStart(2, "0")}`;
+        const date = `2880-11-${String(day).padStart(2, "0")}`;
         await addLeave(db, ani.studentId, `${date}T09:00`, `${date}T12:00`);
       }
 
@@ -284,7 +284,7 @@ describe("readLeaveBoard", () => {
       expect(first.list.cards).toHaveLength(20);
       expect(beyond.list.page).toBe(2);
       expect(beyond.list.cards.map((card) => card.start)).toEqual([
-        "21 Nov 2780, 09.00",
+        "21 Nov 2880, 09.00",
       ]);
     });
   });
