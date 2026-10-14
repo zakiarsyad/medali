@@ -77,7 +77,7 @@ Kepala Unit and Penilai Mahasiswa.
 
 ## Steps
 
-- [ ] 1. The rules that read the SIKU file and decide, row by row, ready
+- [x] 1. The rules that read the SIKU file and decide, row by row, ready
   or skipped and why, with checks.
 - [ ] 2. "Unggah berkas" shows with the note and "Unduh templat CSV".
 - [ ] 3. Picking a file shows the preview and the skipped rows.
@@ -117,3 +117,10 @@ Kepala Unit and Penilai Mahasiswa.
 - The reading and the limits of a CSV file, and the place to pick or drop
   one, are shared with Pengguna baru mahasiswa, so both keep the same
   rules.
+- A first row whose first cell is a number is read as a row of the
+  file, not as titles.
+- When the beginning of a reason fits more than one reason, the first in
+  the prototype's order is taken. A number in "alasan" outside 1–5 for a
+  gain or 1–4 for a loss is not recognized.
+- A file with too many rows or with no row says "baris penyesuaian SIKU"
+  in its message, where Pengguna baru mahasiswa says "baris mahasiswa".
