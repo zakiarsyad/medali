@@ -1,13 +1,4 @@
 /*
- * A list is as wide as its longest choice unless told otherwise, and the
- * name of an activity is longer than a phone is wide.
- */
-.filters select {
-  min-width: 0;
-  max-width: 100%;
-}
-
-/*
  * As many cards beside each other as fit. A card is never wider than the
  * screen: on a phone its smallest width gives way and there is one column.
  */

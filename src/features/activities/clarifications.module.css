@@ -9,16 +9,6 @@
 }
 
 /*
- * A field has a width of its own unless told otherwise, wider than the
- * room a phone leaves beside the edges of the panel.
- */
-.filters input,
-.filters select {
-  min-width: 0;
-  max-width: 100%;
-}
-
-/*
  * As many facts beside each other as fit in a card, and one column where
  * the card is as narrow as a phone.
  */

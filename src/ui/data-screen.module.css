@@ -142,6 +142,16 @@
 }
 
 /*
+ * A field has a width of its own and a choice is as wide as its longest
+ * name, unless told otherwise; either can be wider than a phone leaves
+ * inside the panel. A choice held narrower cuts its shown name short.
+ */
+.filters > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
  * The box places the words of `hidden` inside it. Placed by the page
  * instead, they stand where the list overflows and widen the whole page.
  */

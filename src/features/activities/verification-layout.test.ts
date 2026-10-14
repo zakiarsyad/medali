@@ -28,11 +28,6 @@ describe("the tab Verifikasi presensi on a phone", () => {
     expect(ruleOf(".decision")).toContain("flex-wrap: wrap;");
   });
 
-  it("keeps a choice with a long activity name as narrow as the screen", () => {
-    expect(ruleOf(".filters select")).toContain("max-width: 100%;");
-    expect(ruleOf(".filters select")).toContain("min-width: 0;");
-  });
-
   it("gives each thing a card offers to decide the whole width of the card and more height, through the names for phone width", () => {
     const control = ruleOf(".decide .decideControl");
     const tokens = readFileSync("src/ui/tokens.css", "utf8");

@@ -14,7 +14,6 @@ import {
   choiceNamed,
   clarificationListAddress,
 } from "./clarification-list-address";
-import styles from "./clarifications.module.css";
 
 /** The search and the status choice as they are drawn for one state. */
 export function ClarificationFiltersView({
@@ -29,7 +28,7 @@ export function ClarificationFiltersView({
   onStatus: (status: ClarificationChoice) => void;
 }) {
   return (
-    <div className={`${shared.filters} ${styles.filters}`}>
+    <div className={shared.filters}>
       <input
         type="search"
         className={shared.input}
