@@ -33,6 +33,8 @@ import { coveredActivities } from "./leave-cover";
 import { APPROVED_STATUSES } from "./leave-ids";
 import { rowOfLeave } from "./leave-row";
 import { readActivityRows } from "./leave-store";
+import { type ReportCard, reportCardOf } from "./return-card";
+import { type LatestStoredReport, readLatestReports } from "./return-store";
 
 /** The two numbers above the list. */
 export interface LeaveCounts {
@@ -172,7 +174,20 @@ function readRowsFor(db: Database, rows: PageRow[]): Promise<ActivityRow[]> {
   return readActivityRows(db, [...dorms], first, last);
 }
 
-function cardOf(row: PageRow, activities: ActivityRow[], now: Date): LeaveCard {
+function reportOf(
+  stored: LatestStoredReport | undefined,
+  endsAt: Date,
+): ReportCard | null {
+  if (stored === undefined) return null;
+  return reportCardOf(stored.report, stored, endsAt);
+}
+
+function cardOf(
+  row: PageRow,
+  activities: ActivityRow[],
+  reports: Map<string, LatestStoredReport>,
+  now: Date,
+): LeaveCard {
   const { leave, dorm } = row;
   const span = { start: leave.startsAt, end: leave.endsAt };
   const isSkipping = leave.kind === "skip_activities";
@@ -191,6 +206,7 @@ function cardOf(row: PageRow, activities: ActivityRow[], now: Date): LeaveCard {
     room: roomWords(dorm, row.room),
     decision,
     warnings: warningsOf({ ...leave, ...span }, now),
+    report: reportOf(reports.get(leave.id), leave.endsAt),
   };
 }
 
@@ -198,8 +214,9 @@ function cardOf(row: PageRow, activities: ActivityRow[], now: Date): LeaveCard {
  * Perizinan asrama as staff see it, among the students `visible` holds:
  * for Ketua Program Studi those of their own program only. The numbers
  * Menunggu verifikasi and Izin 30 hari terakhir, and one page of the
- * cards that match the filters, each with where the student lives today
- * and, for ITMK, the activities of their dorm it covers. A fixed number
+ * cards that match the filters, each with where the student lives today,
+ * for ITMK the activities of their dorm it covers, and for the other
+ * kinds the latest report of a return with who checked it. A fixed number
  * of reads, however many requests there are. Whether the account may
  * read them is checked by the caller.
  */
@@ -219,11 +236,17 @@ export async function readLeaveBoard(
   const shownPage = pageWithin(page, total, LEAVE_CARDS_PAGE_SIZE);
   const dorm = dormInSql(dormCohorts ?? []);
   const rows = await readPage(db, condition, filters, dorm, shownPage);
-  const activities = await readRowsFor(db, rows);
+  const [activities, reports] = await Promise.all([
+    readRowsFor(db, rows),
+    readLatestReports(
+      db,
+      rows.map((row) => row.leave.id),
+    ),
+  ]);
   return {
     counts,
     list: {
-      cards: rows.map((row) => cardOf(row, activities, now)),
+      cards: rows.map((row) => cardOf(row, activities, reports, now)),
       matching: total,
       page: shownPage,
     },

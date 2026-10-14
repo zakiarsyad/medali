@@ -36,7 +36,11 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
         tabs={tabs}
         params={params}
         board={board}
-        mayDecide={may(account.roles, "decide_dorm_leave")}
+        rights={{
+          decide: may(account.roles, "decide_dorm_leave"),
+          verify: may(account.roles, "verify_dorm_return"),
+          validate: may(account.roles, "validate_dorm_return"),
+        }}
       />
     );
   }

@@ -1,3 +1,5 @@
+import type { ReportStatus } from "./leave-ids";
+
 /*
  * What reporting back, and checking and recording a return, answer.
  * Read by the screen parts in the browser, so nothing here may take from
@@ -59,3 +61,50 @@ export function reportSentWords(lateMinutes: number): string {
   }
   return `Laporan kembali terkirim. Anda tercatat terlambat ${lateMinutes} menit. Menunggu verifikasi BAM.`;
 }
+
+export const REPORT_NOT_FOUND = refusal(
+  "Laporan kembali ini tidak ditemukan. Muat ulang halaman.",
+);
+
+export const VERIFY_NOT_ALLOWED = refusal(
+  "Anda tidak berhak memverifikasi laporan kembali ke asrama.",
+);
+
+export const VALIDATE_NOT_ALLOWED = refusal(
+  "Anda tidak berhak memvalidasi laporan kembali ke asrama.",
+);
+
+export const NO_VERIFY_DECISION = refusal("Pilih Verifikasi atau Tolak.");
+
+export const NO_VALIDATE_DECISION = refusal(
+  "Pilih Validasi kembali atau Tolak.",
+);
+
+/** What Pengelola Asrama is told of a report that BAM - BPHK has not checked. */
+export const STILL_WAITS_FOR_BAM = refusal(
+  "Laporan ini masih menunggu verifikasi BAM, jadi belum dapat divalidasi. Muat ulang halaman nanti.",
+);
+
+/** What a decision on a report makes it. */
+export type DecidedStatus = Exclude<ReportStatus, "waiting">;
+
+/** How a decision that came first is named, by what it made the report. */
+const DECIDED_WORDS: Record<DecidedStatus, string> = {
+  verified: "diverifikasi BAM",
+  rejected: "ditolak",
+  validated: "divalidasi",
+};
+
+/** What a decision answers when the report was decided by someone else first. */
+export function reportDecidedFirst(status: DecidedStatus) {
+  return refusal(
+    `Laporan ini sudah ${DECIDED_WORDS[status]} lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman.`,
+  );
+}
+
+/** What a kept decision on a report answers, by what it made the report. */
+export const REPORT_DECIDED_WORDS: Record<DecidedStatus, string> = {
+  verified: "Laporan kembali diverifikasi dan diteruskan ke Pengelola Asrama.",
+  rejected: "Laporan kembali ditolak. Mahasiswa perlu mengirim ulang.",
+  validated: "Kepulangan divalidasi. Izin selesai.",
+};

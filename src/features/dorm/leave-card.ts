@@ -1,6 +1,7 @@
 import type { LeaveRow } from "./leave-row";
 import { fitsKind, startPassedWords } from "./leave-rules";
 import { KIND_SHORT_WORDS } from "./leave-words";
+import type { ReportCard } from "./return-card";
 
 /*
  * A leave request as its card shows it to staff. Read by the screen
@@ -22,6 +23,8 @@ export interface LeaveCard extends LeaveRow {
   decision: DecisionWords | null;
   /** What Pengelola Asrama should look at before deciding. */
   warnings: string[];
+  /** The latest report of a return, or null while there is none. */
+  report: ReportCard | null;
 }
 
 /**

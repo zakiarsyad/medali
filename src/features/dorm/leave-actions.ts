@@ -14,11 +14,13 @@ import type { FormState } from "@/ui/form-message";
 import { askLeave } from "./ask-leave";
 import { cancelLeave } from "./cancel-leave";
 import { decideLeave } from "./decide-leave";
+import { validateReturn, verifyReturn } from "./decide-return";
 import { describeLeave } from "./describe-leave";
 import { LEAVE_ADDRESS } from "./leave-address";
 import type { SentLeave } from "./leave-input";
 import type { LeaveNote } from "./leave-note";
 import { KIND_WORDS } from "./leave-words";
+import { type DecidedStatus, REPORT_DECIDED_WORDS } from "./return-messages";
 import {
   RETURN_PHOTO_FAULTS,
   RETURN_PHOTO_FILE_NAME,
@@ -110,11 +112,69 @@ export async function decideLeaveAction(
   return { error: null, done: DECIDED_WORDS[decided.value] ?? null };
 }
 
+/** The signed-in account when it may verify reports of a return. */
+async function verifier(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "verify_dorm_return")) forbidden();
+  return account;
+}
+
+/** The signed-in account when it may validate reports of a return. */
+async function validator(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "validate_dorm_return")) forbidden();
+  return account;
+}
+
 /** The signed-in account when it may report back from its own leave. */
 async function reporter(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "report_dorm_return")) forbidden();
   return account;
+}
+
+function answerOf(decided: Parsed<DecidedStatus>): FormState {
+  if (!decided.ok) return { error: decided.error, done: null };
+  revalidatePath(LEAVE_ADDRESS);
+  return { error: null, done: REPORT_DECIDED_WORDS[decided.value] };
+}
+
+/**
+ * "Verifikasi" and "Tolak" of BAM - BPHK on a report of a return. Who
+ * decided is the signed-in account, never a field. A refusal stays on
+ * its card, which a reload would take away.
+ */
+export async function verifyReturnAction(
+  reportId: string,
+  decision: string,
+  note: string,
+): Promise<FormState> {
+  const actor = await verifier();
+  const decided = await verifyReturn(
+    database(),
+    actor,
+    String(reportId),
+    String(decision),
+    String(note),
+  );
+  return answerOf(decided);
+}
+
+/** "Validasi kembali" and "Tolak" of Pengelola Asrama on a report of a return. */
+export async function validateReturnAction(
+  reportId: string,
+  decision: string,
+  note: string,
+): Promise<FormState> {
+  const actor = await validator();
+  const decided = await validateReturn(
+    database(),
+    actor,
+    String(reportId),
+    String(decision),
+    String(note),
+  );
+  return answerOf(decided);
 }
 
 /**

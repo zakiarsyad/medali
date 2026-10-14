@@ -2,11 +2,20 @@
 import { describe, expect, it } from "vitest";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { memoryStore } from "@/files/memory-store";
+import type { Parsed } from "@/parsed";
+import { validateReturn, verifyReturn } from "./decide-return";
+import { reportDecidedFirst } from "./return-messages";
 import { RETURN_PHOTO_FILE_NAME } from "./return-photo";
 import { sendReturnReport } from "./send-return-report";
-import { addTestResidents, type TestResident } from "./test-leave";
+import { addTestResidents, leaveById, type TestResident } from "./test-leave";
 import { addTestActor } from "./test-records";
-import { addApprovedLeave, campusAt, reportsOf } from "./test-returns";
+import {
+  addApprovedLeave,
+  addTestReport,
+  campusAt,
+  reportById,
+  reportsOf,
+} from "./test-returns";
 
 /*
  * Two saves at the same moment need two connections that both see the
@@ -65,5 +74,53 @@ describe("a report of a return sent twice at the same moment", () => {
     expect(both.later).toEqual(both.sooner);
     expect(await reportsOf(own.db, leaveId)).toHaveLength(1);
     expect(store.files.size).toBe(1);
+  });
+});
+
+/** A report of a resident's leave, sent on time, as BAM - BPHK left it. */
+async function reportOf(place: number, status: "waiting" | "verified") {
+  const { manager, leaveId } = await outingOf(place);
+  const bam = await addTestActor(own.db, `BAM Uji ${place}`, ["bam_bphk"]);
+  const otherBam = await addTestActor(own.db, `BAM Lain Uji ${place}`, [
+    "bam_bphk",
+  ]);
+  const verified =
+    status === "verified"
+      ? { status, verifiedBy: bam.id, verifiedAt: new Date() }
+      : {};
+  const reportId = await addTestReport(
+    own.db,
+    leaveId,
+    "2930-10-13T15:50",
+    verified,
+  );
+  return { manager, bam, otherBam, leaveId, reportId };
+}
+
+describe("two decisions on one report at the same moment", () => {
+  it("lets the rejection of one BAM - BPHK that comes first win: the verification of another waits, then is refused", async () => {
+    const { bam, otherBam, reportId } = await reportOf(1, "waiting");
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => verifyReturn(db, bam, reportId, "reject", "Foto buram."),
+      (db) => verifyReturn(db, otherBam, reportId, "verify", ""),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: "rejected" });
+    expect(both.later).toEqual(reportDecidedFirst("rejected"));
+    expect((await reportById(own.db, reportId))?.verifiedBy).toBe(bam.id);
+  });
+
+  it("lets the validation that comes first win: a rejection of Pengelola Asrama at once waits, then is refused, and the leave stays Selesai", async () => {
+    const { manager, leaveId, reportId } = await reportOf(2, "verified");
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => validateReturn(db, manager, reportId, "validate", ""),
+      (db) => validateReturn(db, manager, reportId, "reject", "Bukan asrama."),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: "validated" });
+    expect(both.later).toEqual(reportDecidedFirst("validated"));
+    expect((await leaveById(own.db, leaveId))?.status).toBe("completed");
   });
 });
