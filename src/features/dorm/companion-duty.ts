@@ -12,7 +12,10 @@ import { isUuid } from "@/db/is-uuid";
 import { dormCompanions, students } from "@/db/schema";
 import { DORM_NAMES, DORM_RESIDENTS, type DormId } from "@/dorms/dorms";
 import type { Parsed } from "@/parsed";
-import { COMPANIONS_NOT_ALLOWED } from "./companion-messages";
+import {
+  COMPANION_DORMS_NAMED,
+  COMPANIONS_NOT_ALLOWED,
+} from "./companion-messages";
 
 export type LockedCompanion = typeof dormCompanions.$inferSelect;
 
@@ -40,17 +43,16 @@ const STUDENT_NOT_ACTIVE = {
   error:
     "Mahasiswa ini tidak aktif, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
 } as const;
-const LIVES_IN_DORM = {
+const LIVES_WITH_COMPANIONS = {
   ok: false,
-  error:
-    "Mahasiswa ini sekarang tinggal di asrama, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
+  error: `Mahasiswa ini sekarang penghuni ${COMPANION_DORMS_NAMED}, jadi tidak bisa diaktifkan sebagai kakak pendamping.`,
 } as const;
 
 /** What "Aktifkan" answers for each reason a student cannot have the duty. */
 function restartRefusal(bar: DutyBar, dorm: DormId): Parsed<never> {
   if (bar === "removed") return COMPANION_NOT_FOUND;
   if (bar === "not_active") return STUDENT_NOT_ACTIVE;
-  if (bar === "lives_in_dorm") return LIVES_IN_DORM;
+  if (bar === "lives_with_companions") return LIVES_WITH_COMPANIONS;
   return {
     ok: false,
     error: `${DORM_NAMES[dorm]} hanya untuk ${DORM_RESIDENTS[dorm]}, jadi kakak pendamping ini tidak bisa diaktifkan.`,
@@ -162,8 +164,8 @@ async function restart(
 /**
  * Starts the duty of a stopped kakak pendamping again: Aktif, without a
  * room. Refused for a student the rule that ends a duty would stop: not
- * active, living in a dorm on the day, today when none is given, or not
- * of the jenis kelamin of the dorm they serve.
+ * active, living in Dana Rakca or Cipta Bakti on the day, today when none
+ * is given, or not of the jenis kelamin of the dorm they serve.
  */
 export async function restartCompanion(
   db: Database,

@@ -3,7 +3,10 @@ import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { studentSemester } from "@/academic-periods/student-semester";
 import type { DormId } from "@/dorms/dorms";
 import { dormOf, type ResidentFacts } from "@/dorms/resident-rule";
-import { companionDormOf } from "@/features/dorm/companion-dorms";
+import {
+  companionDormOf,
+  hasCompanions,
+} from "@/features/dorm/companion-dorms";
 import type { Database } from "./connect";
 import { dormCompanions, students } from "./schema";
 
@@ -16,12 +19,17 @@ import { dormCompanions, students } from "./schema";
 export type DutyFacts = ResidentFacts & { deletedAt: Date | null };
 
 /** Why a student cannot be kakak pendamping of a dorm. */
-export type DutyBar = "removed" | "not_active" | "lives_in_dorm" | "wrong_dorm";
+export type DutyBar =
+  | "removed"
+  | "not_active"
+  | "lives_with_companions"
+  | "wrong_dorm";
 
 /**
  * Why a student cannot be, or go on being, kakak pendamping of a dorm in
  * a semester, or null when they can: the one rule that ends a duty and
- * that refuses to start one again.
+ * that refuses to start one again. A resident of a dorm that has kakak
+ * pendamping cannot be one. A resident of Wismantara can.
  */
 export function dutyBar(
   student: DutyFacts,
@@ -30,7 +38,8 @@ export function dutyBar(
 ): DutyBar | null {
   if (student.deletedAt !== null) return "removed";
   if (student.status !== "active") return "not_active";
-  if (dormOf(student, semester) !== null) return "lives_in_dorm";
+  const home = dormOf(student, semester);
+  if (home !== null && hasCompanions(home)) return "lives_with_companions";
   if (dorm !== companionDormOf(student.sex)) return "wrong_dorm";
   return null;
 }
@@ -94,10 +103,11 @@ async function readActiveDuty(db: Database, studentId: string) {
 
 /**
  * Ends the duty of an active kakak pendamping whose student data no longer
- * fits it: the student is removed or not active, lives in a dorm on the
- * day, today when none is given, or is not of the jenis kelamin of the
- * dorm they serve. Called after every change to a student, so nobody is
- * kakak pendamping and resident at once.
+ * fits it: the student is removed or not active, lives in Dana Rakca or
+ * Cipta Bakti on the day, today when none is given, or is not of the
+ * jenis kelamin of the dorm they serve. Called after every change to a
+ * student, so nobody is kakak pendamping and resident of those two at
+ * once.
  */
 export async function settleCompanionDuty(
   db: Database,

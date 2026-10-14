@@ -294,24 +294,34 @@ describe("restartCompanion for a student who no longer fits the duty", () => {
     });
   });
 
+  it("refuses a Reguler student in semester 1, who lives in Dana Rakca now", async () => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addStoppedWith(db, { cohortYear: 2064 });
+
+      const restarted = await restartCompanion(db, MANAGER, studentId, DAY);
+
+      expect(restarted).toEqual({
+        ok: false,
+        error:
+          "Mahasiswa ini sekarang penghuni Asrama Dana Rakca atau Asrama Cipta Bakti, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
+      });
+      expect((await companionOf(db, studentId))?.isActive).toBe(false);
+    });
+  });
+
   it.each([
-    ["in semester 1", { cohortYear: 2064 }],
     ["Pembibitan", { isSeedling: true }],
     ["Internasional", { isInternational: true }],
   ] as [string, Facts][])(
-    "refuses a student who lives in a dorm now: %s",
+    "restarts a student who lives in Wismantara now: %s",
     async (_who, facts) => {
       await inTestDatabase(async (db) => {
         const studentId = await addStoppedWith(db, facts);
 
         const restarted = await restartCompanion(db, MANAGER, studentId, DAY);
 
-        expect(restarted).toEqual({
-          ok: false,
-          error:
-            "Mahasiswa ini sekarang tinggal di asrama, jadi tidak bisa diaktifkan sebagai kakak pendamping.",
-        });
-        expect((await companionOf(db, studentId))?.isActive).toBe(false);
+        expect(restarted.ok).toBe(true);
+        expect((await companionOf(db, studentId))?.isActive).toBe(true);
       });
     },
   );

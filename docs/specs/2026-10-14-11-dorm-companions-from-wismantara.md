@@ -112,7 +112,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. A student who lives in Wismantara can be named kakak
+- [x] 1. A student who lives in Wismantara can be named kakak
   pendamping, and keeps the duty.
 - [ ] 2. A student has one room only: as a resident of Wismantara or as
   kakak pendamping.

@@ -5,13 +5,14 @@ import type { Database } from "@/db/connect";
 import { dormCompanions, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
 import type { Parsed } from "@/parsed";
+import { livesWithCompanions } from "./companion-dorms";
 import {
   COMPANION_NOT_FOUND,
   type LockedCompanion,
   lockCompanion,
 } from "./companion-duty";
+import { COMPANION_DORMS_NAMED } from "./companion-messages";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL, type SentPlace } from "./place-resident";
 import { NOT_FOUND, parseId } from "./room-input";
@@ -27,10 +28,9 @@ const HAS_ROOM = {
   error:
     "Kakak pendamping ini sudah punya kamar. Keluarkan dari kamarnya dulu.",
 } as const;
-const LIVES_IN_DORM = {
+const LIVES_WITH_COMPANIONS = {
   ok: false,
-  error:
-    "Mahasiswa ini sekarang tinggal di asrama, jadi diplot sebagai penghuni.",
+  error: `Mahasiswa ini sekarang penghuni ${COMPANION_DORMS_NAMED}, jadi diplot sebagai penghuni.`,
 } as const;
 
 function servesElsewhere(companion: LockedCompanion) {
@@ -65,12 +65,15 @@ async function place(
   const refused = refusal(companion, room);
   if (refused) return refused;
   const [student] = await tx
-    .select({ name: students.name, livesIn: dormInSql(dormCohorts) })
+    .select({
+      name: students.name,
+      livesWithCompanions: livesWithCompanions(dormCohorts),
+    })
     .from(students)
     .where(eq(students.id, companion.studentId))
     .limit(1);
   if (!student) return COMPANION_NOT_FOUND;
-  if (student.livesIn !== null) return LIVES_IN_DORM;
+  if (student.livesWithCompanions) return LIVES_WITH_COMPANIONS;
   if ((await countTaken(tx, room.id)) >= room.capacity) return ROOM_FULL;
 
   await tx

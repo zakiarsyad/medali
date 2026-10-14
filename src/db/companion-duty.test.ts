@@ -97,11 +97,25 @@ describe("settleCompanionDuty", () => {
   });
 
   it.each([
+    ["became Pembibitan", { isSeedling: true }],
+    ["became Internasional", { isInternational: true }],
+  ] as [string, Change][])(
+    "leaves the duty of a student who %s, and so lives in Wismantara",
+    async (_what, to) => {
+      await inTestDatabase(async (db) => {
+        const { studentId, roomId } = await addPlacedCompanion(db);
+
+        await changeAndSettle(db, studentId, to);
+
+        expect(await dutyOf(db, studentId)).toEqual({ isActive: true, roomId });
+      });
+    },
+  );
+
+  it.each([
     ["is on leave", { status: "on_leave" }],
     ["is not active", { status: "inactive" }],
     ["was removed", { deletedAt: new Date() }],
-    ["became Pembibitan, who live in Wismantara", { isSeedling: true }],
-    ["became Internasional, who live in Wismantara", { isInternational: true }],
     ["is of an angkatan in semester 1", { cohortYear: 2063 }],
     ["is a man, while serving Dana Rakca", { sex: "male" }],
   ] as [string, Change][])(

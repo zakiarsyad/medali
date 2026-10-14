@@ -252,7 +252,7 @@ describe("placeCompanion", () => {
     });
   });
 
-  it("refuses one who lives in a dorm now", async () => {
+  it("refuses one who lives in Dana Rakca now", async () => {
     await inTestDatabase(async (db) => {
       const { program, roomId } = await addTestRows(db);
       const resident = await addTestStudent(db, program, {
@@ -265,7 +265,7 @@ describe("placeCompanion", () => {
       expect(await place(db, roomId, resident)).toEqual({
         ok: false,
         error:
-          "Mahasiswa ini sekarang tinggal di asrama, jadi diplot sebagai penghuni.",
+          "Mahasiswa ini sekarang penghuni Asrama Dana Rakca atau Asrama Cipta Bakti, jadi diplot sebagai penghuni.",
       });
     });
   });
