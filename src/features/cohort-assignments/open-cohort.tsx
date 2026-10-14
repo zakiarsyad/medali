@@ -81,7 +81,7 @@ async function MentorStep({
  * account that prepares one sees them. A fixed one has "Batalkan
  * penetapan" for an account that may fix.
  */
-function SavedGroups({
+export function SavedGroups({
   assignment,
   mayPrepare,
   mayFix,

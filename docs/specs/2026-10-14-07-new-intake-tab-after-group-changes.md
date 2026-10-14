@@ -106,6 +106,12 @@ Decided while building, because the issue did not say:
    group they were really in. The old place in the other draft is
    given up, as forming groups already does.
 
+9. A student who was set to "Belum ditetapkan" before the cancel was in
+   no group at that moment, so the draft does not name them. If they
+   are still Aktif they wait for a group, and by the rule the tab
+   already has the draft is not fixed again until every waiting
+   student has a place: the note gives the count. Confirmed by a check.
+
 ## Steps
 
 - [x] 1. A fixed angkatan shows its groups, counts and members as they

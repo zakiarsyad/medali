@@ -141,6 +141,33 @@ describe("cancelAssignment after students were placed on Pengguna baru mahasiswa
     });
   });
 
+  it("leaves a student who was taken out of their group out of the draft, so they wait and it is not fixed again until they have a place", async () => {
+    await inTestDatabase(async (db) => {
+      const changed = await addChangedSinceFixed(db);
+      await cancelAssignment(db, changed.head, KEY);
+
+      const fixed = await fixAssignment(db, changed.head, {
+        cohortYear: YEAR,
+        version: 4,
+        decreeNumber: "KEP-UJITETAP",
+        effectiveOn: "2068-09-01",
+      });
+
+      const waiting = await readWaitingStudents(db, EVERY_ROW, YEAR);
+      expect(waiting.map((student) => student.id)).toContain(changed.out);
+      expect(fixed).toMatchObject({
+        ok: false,
+        error: expect.stringContaining(
+          "1 mahasiswa angkatan ini belum masuk kelompok mana pun pada draf.",
+        ),
+      });
+      expect(await testDraftOf(db, YEAR)).toMatchObject({
+        status: "cancelled",
+        version: 4,
+      });
+    });
+  });
+
   it("takes a member who is on Cuti out of the draft, with its line in the log", async () => {
     await inTestDatabase(async (db) => {
       const changed = await addChangedSinceFixed(db);
