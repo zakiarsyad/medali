@@ -6,11 +6,15 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import { sentCsvFile } from "@/files/sent-csv-file";
+import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { cancelSikuEntry } from "./cancel-entry";
 import { saveSikuEntry } from "./save-entry";
 import { SIKU_ADDRESS } from "./siku-address";
+import { previewSikuFile } from "./siku-file-check";
+import type { SikuFilePreview } from "./siku-file-preview";
 import {
   readGroupPicks,
   type SikuPick,
@@ -53,6 +57,16 @@ export async function saveSikuEntryAction(
     error: null,
     done: `${KIND_WORDS[kind]} ${points} poin SIKU disimpan untuk ${students} mahasiswa.`,
   };
+}
+
+/** "Unggah berkas": what a picked file would do. Saves nothing. */
+export async function previewSikuFileAction(
+  form: FormData,
+): Promise<Parsed<SikuFilePreview>> {
+  const actor = await enterer();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  return previewSikuFile(database(), actor, file.value);
 }
 
 /** The Aktif students the form offers for what was typed. */

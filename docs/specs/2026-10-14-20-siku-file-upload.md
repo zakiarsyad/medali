@@ -80,7 +80,7 @@ Kepala Unit and Penilai Mahasiswa.
 - [x] 1. The rules that read the SIKU file and decide, row by row, ready
   or skipped and why, with checks.
 - [x] 2. "Unggah berkas" shows with the note and "Unduh templat CSV".
-- [ ] 3. Picking a file shows the preview and the skipped rows.
+- [x] 3. Picking a file shows the preview and the skipped rows.
 - [ ] 4. "Simpan (n) baris" saves the rows as one history entry, which
   can be opened and cancelled.
 
@@ -127,3 +127,7 @@ Kepala Unit and Penilai Mahasiswa.
 - The note over the columns starts "Satu baris per penambahan atau
   pengurangan", not the prototype's "Satu baris per mahasiswa", since a
   student may have several rows.
+- A removed student counts as a NIM that is not in the data, and is
+  skipped with "NIM tidak ada dalam data mahasiswa."
+- The preview shows jenis as "Penambahan" or "Pengurangan", and the
+  points with their sign, as the history does.
