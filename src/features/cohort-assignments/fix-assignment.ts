@@ -4,6 +4,7 @@ import type { Parsed } from "@/parsed";
 import { readCompleteDraft } from "./complete-draft";
 import { type DecreeInput, wholeDecree } from "./decree-input";
 import { whatStopsFix } from "./fix-check";
+import { holdDraftStudents } from "./hold-draft-students";
 import {
   type GroupToStart,
   readLiveNumbers,
@@ -55,6 +56,10 @@ async function readWhatStops(
  * mentor from "Berlaku mulai", and the penetapan keeps the decree number
  * and that day. All of it is one transaction, so a penetapan is fixed
  * whole or not at all, and of two sent at once the second is refused.
+ * It holds the record of each student of the draft before it reads who
+ * still waits for a group, so a student given a group or removed on
+ * Pengguna baru mahasiswa at the same moment is read as that save left
+ * them.
  *
  * Refused without a decree number or a day, for a draft that is not
  * complete (see `readCompleteDraft`), and when a member or a mentor of
@@ -68,6 +73,10 @@ export function fixAssignment(
   return takeStep(db, actor, input, "fix", async (tx, stored) => {
     const decree = wholeDecree(input);
     if (!decree.ok) return decree;
+    // Before the wait below, never while it is held: a student save may
+    // wait for a group that a mentor replacement holds, and that
+    // replacement would wait for a fix that waits for the student.
+    await holdDraftStudents(tx, stored.id);
     // A fix holds only its own angkatan: without this, two fixed at the
     // same moment would each read the other's mentors as free.
     await waitForOtherMentorChanges(tx);
