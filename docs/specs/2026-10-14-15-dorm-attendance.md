@@ -102,12 +102,17 @@ Decided while building, because the issue did not say:
    BAM - BPHK: most are announced, one was corrected with "Umumkan
    ulang", yesterday's last activity has no count yet and the one before
    it is a draft.
+8. Counting and announcing is a right held by every BAM role. Seeing the
+   attendance is a right of its own, held by every role that sees the
+   schedule: Kepala Unit, Direktur / Wakil Direktur, Ketua Program Studi
+   (their study program only), Pengelola Asrama and every BAM role.
+   Seeing one's own attendance is a right of its own, held by Mahasiswa.
 
 ## Steps
 
 - [x] 1. The tables for counts and their change log are added, with
   sample counts for the past week.
-- [ ] 2. The rights to count and to see attendance are added to the
+- [x] 2. The rights to count and to see attendance are added to the
   permission list, with their checks.
 - [ ] 3. "Penghitungan kehadiran" lets BAM tick, note, save and announce.
 - [ ] 4. Staff see Hadir, Kehadiran and the absent list in Rincian.
