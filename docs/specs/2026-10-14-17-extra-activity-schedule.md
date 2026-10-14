@@ -98,13 +98,17 @@ The issue did not say, so these were decided:
    angkatan 2023 and 2024, which is over, and peer mentoring for classes
    2-01 and 2-02, whose photo upload is open today, so both kinds of
    choice can be tried.
+6. Only Aktif students take part, as in a PPKS schedule: one on Cuti,
+   Non aktif or removed is not counted, however they were chosen. A
+   class or angkatan counts the students who are in it now, so one who
+   moves to another class leaves the schedule of the old one.
 
 ## Steps
 
 - [x] 1. A schedule can hold its participants: students, classes or
   angkatan, and keeps its academic period, as a PPKS schedule does.
   Sample data adds two extra activities.
-- [ ] 2. The rule that says whether a student takes part, with checks.
+- [x] 2. The rule that says whether a student takes part, with checks.
 - [ ] 3. The "Kegiatan tambahan" tab shows the numbers and the table.
 - [ ] 4. "Jadwalkan kegiatan tambahan" with the Peserta choice, "Ubah"
   and "Hapus jadwal".
