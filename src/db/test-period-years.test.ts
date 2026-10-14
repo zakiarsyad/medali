@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { sourceFilesEndingWith } from "@/ui/source-files";
 import type { TestFileText } from "./test-nim-blocks";
 import {
+  filesWithoutYearsLine,
   namedYearsIn,
   sharedYears,
   unnamedYears,
@@ -25,6 +26,17 @@ function testFiles(): TestFileText[] {
 /** The text of a made-up test file whose first line names these years. */
 function textNaming(years: string): string {
   return `// Sample Tahun akademik of this file: ${years}.\nimport { it } from "vitest";\n`;
+}
+
+// Written in parts, so this file is not read as one that adds a period
+// in the database the checks share.
+const SHARED_DATABASE = ["const inTestDatabase = with", "TestDatabase();"];
+const OWN_DATABASE = `const own = withOwnTestDatabase("years");\n`;
+const ADDS_PERIOD = ["await db.insert(", "academicPeriods).values(ODD);"];
+
+/** The text of a made-up test file, after its first line. */
+function textWith(...lines: string[][]): string {
+  return lines.map((parts) => `${parts.join("")}\n`).join("");
 }
 
 describe("the line of sample years of a test file", () => {
@@ -90,6 +102,40 @@ describe("the line of sample years of a test file", () => {
     ];
 
     expect(unreadableYearLines(files)).toEqual([]);
+  });
+});
+
+describe("the test files that must have a line of sample years", () => {
+  const adding = textWith(SHARED_DATABASE, ADDS_PERIOD);
+
+  it("name a file that adds a period itself and has no line", () => {
+    const files = [{ path: "src/one.test.ts", text: adding }];
+
+    expect(filesWithoutYearsLine(files)).toEqual(["src/one.test.ts"]);
+  });
+
+  it("leave out a file that has the line", () => {
+    const text = `${textNaming("2159 to 2161")}${adding}`;
+
+    expect(filesWithoutYearsLine([{ path: "src/one.test.ts", text }])).toEqual(
+      [],
+    );
+  });
+
+  it("leave out a file with a database of its own", () => {
+    const text = `${OWN_DATABASE}${textWith(ADDS_PERIOD)}`;
+
+    expect(filesWithoutYearsLine([{ path: "src/one.test.ts", text }])).toEqual(
+      [],
+    );
+  });
+
+  it("leave out a file that adds no period itself", () => {
+    const text = textWith(SHARED_DATABASE);
+
+    expect(filesWithoutYearsLine([{ path: "src/one.test.ts", text }])).toEqual(
+      [],
+    );
   });
 });
 
@@ -216,6 +262,10 @@ describe("the sample years of the test files", () => {
 
   it("are named in a line that can be read, from 2090 to 9999", () => {
     expect(unreadableYearLines(testFiles())).toEqual([]);
+  });
+
+  it("are named by every test file that adds a period itself", () => {
+    expect(filesWithoutYearsLine(testFiles())).toEqual([]);
   });
 
   it("are years that no other test file adds", () => {

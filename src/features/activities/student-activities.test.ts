@@ -34,7 +34,7 @@ interface Records {
   staffId: string;
   /** An activity of semester 3, which the student is in during Ganjil 2361. */
   activityId: string;
-  /** Ganjil 2361/2161, which runs today. */
+  /** Ganjil 2361/2362, which runs today. */
   periodId: string;
   programId: number;
   /** A student of angkatan 2360. */

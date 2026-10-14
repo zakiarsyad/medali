@@ -96,6 +96,24 @@ export function unreadableYearLines(files: TestFileText[]): string[] {
     .map((file) => file.path);
 }
 
+const SHARED_DATABASE = "withTestDatabase";
+
+const ADDS_PERIOD = "insert(academicPeriods)";
+
+/**
+ * The paths of the files that add a period themselves in the database
+ * the checks share, and have no line of sample years. A check that ends
+ * on a statement the database refused cannot be asked for its years, so
+ * such a file could add a year of another file unseen.
+ */
+export function filesWithoutYearsLine(files: TestFileText[]): string[] {
+  return files
+    .filter((file) => file.text.includes(SHARED_DATABASE))
+    .filter((file) => file.text.includes(ADDS_PERIOD))
+    .filter((file) => yearsLineIn(file.text) === undefined)
+    .map((file) => file.path);
+}
+
 function yearsOfBoth(one: YearRange, other: YearRange): YearRange | undefined {
   const first = Math.max(one.first, other.first);
   const last = Math.min(one.last, other.last);

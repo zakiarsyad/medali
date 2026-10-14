@@ -73,11 +73,11 @@ Decided while building, because the issue did not say:
    that is undone. Before it is undone, the years that the check added
    are compared with the line at the top of its test file. A check
    that added a year its file does not name fails, and says which year
-   and which file. So a test file added later cannot add a year
-   without naming it, and cannot name a year another file has. One
-   kind of check is left out: a check that ends on a save the database
-   refused. The database answers nothing more after that, so the years
-   of that one check cannot be read.
+   and which file. A check that ends on a save the database refused
+   cannot be read, because the database answers nothing more after
+   that, so for that kind the line is not compared. A test file that
+   adds a period itself must have the line at its top, or a check
+   fails and names it.
 3. A sample Tahun akademik of a test file is from 2090 to 9999, not
    from 2100 as first decided. The form that adds a period takes no
    year after 2100, and two test files add their periods through it,
