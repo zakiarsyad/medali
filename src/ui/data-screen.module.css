@@ -256,6 +256,23 @@
 }
 
 /*
+ * A long list that adds `stickyHead` to `table` keeps its headings in view
+ * under the top bar while it scrolls. It must not sit in `tableWrap`: a box
+ * that scrolls sideways holds the headings back. A cell that stays in view
+ * loses its line when the lines of the cells are joined, so they are not.
+ */
+.stickyHead {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.stickyHead th {
+  position: sticky;
+  top: var(--top-bar-height);
+  background: var(--surface);
+}
+
+/*
  * The values of one cell as a list. At computer width they read as one
  * sentence, with a `comma` after each but the last. On a phone each has
  * its own line and the commas are left out.

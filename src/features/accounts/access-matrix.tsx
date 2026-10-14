@@ -27,31 +27,29 @@ function Rights({ actions }: { actions: readonly Action[] }) {
 /** What each role may open and do, read from the one permission list. */
 export function AccessMatrix() {
   return (
-    <div className={styles.tableWrap}>
-      <table
-        className={`${styles.table} ${styles.stacked} ${styles.titlesAbove}`}
-      >
-        <thead>
-          <tr>
-            <th>Peran</th>
-            <th>Menu</th>
-            <th>Tindakan</th>
+    <table
+      className={`${styles.table} ${styles.stacked} ${styles.titlesAbove} ${styles.stickyHead}`}
+    >
+      <thead>
+        <tr>
+          <th>Peran</th>
+          <th>Menu</th>
+          <th>Tindakan</th>
+        </tr>
+      </thead>
+      <tbody>
+        {ROLE_IDS.map((role) => (
+          <tr key={role}>
+            <td className={styles.rowHeading} data-title="Peran">
+              <b>{ROLES[role].title}</b>
+            </td>
+            <td data-title="Menu">{pageTitles(ROLES[role].pages)}</td>
+            <td data-title="Tindakan">
+              <Rights actions={ROLES[role].actions} />
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {ROLE_IDS.map((role) => (
-            <tr key={role}>
-              <td className={styles.rowHeading} data-title="Peran">
-                <b>{ROLES[role].title}</b>
-              </td>
-              <td data-title="Menu">{pageTitles(ROLES[role].pages)}</td>
-              <td data-title="Tindakan">
-                <Rights actions={ROLES[role].actions} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }

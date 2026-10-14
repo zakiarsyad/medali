@@ -98,6 +98,20 @@
   --layer-top-bar: 20;
 
   /*
+   * How high the top bar is at computer width: its room above and below,
+   * one line of its words, and its line. Headings that stay in view while
+   * their list scrolls stop this far from the top of the screen. On a
+   * phone the bar is higher, and no headings stay in view there.
+   */
+  --top-bar-height: calc(
+    2 *
+    var(--space-md) +
+    var(--leading-body) *
+    var(--text-md) +
+    var(--line-width)
+  );
+
+  /*
    * The room a part scrolled into view keeps above itself, so it stops
    * below the top bar, which stays at the top of the screen. More than
    * the bar is high, at computer width and on a phone.

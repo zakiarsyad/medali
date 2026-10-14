@@ -83,5 +83,5 @@ Decided while building, because the issue did not say:
 
 - [x] 1. On a phone "Hak akses tiap peran" shows one card per role, with
   each right on its own line.
-- [ ] 2. On a computer the headings of the table stay in view while it
+- [x] 2. On a computer the headings of the table stay in view while it
   scrolls.
