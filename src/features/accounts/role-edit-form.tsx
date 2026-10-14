@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { UNIT_MAX_LENGTH } from "./account-limits";
 import { changeRolesAction } from "./actions";
 import type { ManagedAccount } from "./manage-accounts";
 import { ProgramChoice, RoleChoices } from "./role-choices";
@@ -32,6 +33,7 @@ export function RoleEditForm({ account, programs, back }: RoleEditFormProps) {
           name="unit"
           className={styles.input}
           defaultValue={account.unit ?? ""}
+          maxLength={UNIT_MAX_LENGTH}
         />
       </label>
       <FormMessage state={state} />

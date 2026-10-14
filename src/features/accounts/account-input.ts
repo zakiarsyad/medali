@@ -1,6 +1,11 @@
 import { parseAccountEmail } from "@/auth/account-email";
 import { isAccountId } from "@/auth/accounts";
 import type { Parsed } from "@/parsed";
+import {
+  NAME_MAX_LENGTH,
+  TITLE_MAX_LENGTH,
+  UNIT_MAX_LENGTH,
+} from "./account-limits";
 import { isManagedRole, type ManagedRole } from "./managed-roles";
 
 export interface NewAccountFields {
@@ -54,6 +59,40 @@ function optional(text: string): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
+function parseName(text: string): Parsed<string> {
+  const name = text.trim();
+  if (!isFullName(name)) return { ok: false, error: "Isi nama lengkap." };
+  if (name.length > NAME_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: `Nama paling banyak ${NAME_MAX_LENGTH} karakter.`,
+    };
+  }
+  return { ok: true, value: name };
+}
+
+function parseTitle(text: string): Parsed<string | null> {
+  const title = optional(text);
+  if (title !== null && title.length > TITLE_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: `Gelar paling banyak ${TITLE_MAX_LENGTH} karakter.`,
+    };
+  }
+  return { ok: true, value: title };
+}
+
+function parseUnit(text: string): Parsed<string | null> {
+  const unit = optional(text);
+  if (unit !== null && unit.length > UNIT_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: `Unit atau jabatan paling banyak ${UNIT_MAX_LENGTH} karakter.`,
+    };
+  }
+  return { ok: true, value: unit };
+}
+
 function parseRoles(
   roles: string[],
   noneAllowed: boolean,
@@ -91,8 +130,10 @@ export function parseNewAccount(
   fields: NewAccountFields,
   campusEnding: string,
 ): Parsed<NewAccount> {
-  const name = fields.name.trim();
-  if (!isFullName(name)) return { ok: false, error: "Isi nama lengkap." };
+  const name = parseName(fields.name);
+  if (!name.ok) return name;
+  const title = parseTitle(fields.title);
+  if (!title.ok) return title;
   const email = parseAccountEmail(
     fields.email,
     campusEnding,
@@ -110,17 +151,19 @@ export function parseNewAccount(
   if (!roles.ok) return roles;
   const program = parseProgram(roles.value, fields.studyProgramId);
   if (!program.ok) return program;
+  const unit = parseUnit(fields.unit);
+  if (!unit.ok) return unit;
 
   return {
     ok: true,
     value: {
-      name,
-      title: optional(fields.title),
+      name: name.value,
+      title: title.value,
       nip,
       email: email.value,
       roles: roles.value,
       studyProgramId: program.value,
-      unit: optional(fields.unit),
+      unit: unit.value,
     },
   };
 }
@@ -135,6 +178,8 @@ export function parseRoleChange(fields: RoleChangeFields): Parsed<RoleChange> {
   if (!roles.ok) return roles;
   const program = parseProgram(roles.value, fields.studyProgramId);
   if (!program.ok) return program;
+  const unit = parseUnit(fields.unit);
+  if (!unit.ok) return unit;
 
   return {
     ok: true,
@@ -142,7 +187,7 @@ export function parseRoleChange(fields: RoleChangeFields): Parsed<RoleChange> {
       accountId: fields.accountId,
       roles: roles.value,
       studyProgramId: program.value,
-      unit: optional(fields.unit),
+      unit: unit.value,
     },
   };
 }

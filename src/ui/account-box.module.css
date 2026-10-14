@@ -55,8 +55,10 @@ a.me:hover,
   font-weight: var(--weight-heavy);
 }
 
+/* A name typed as one long word folds, or it runs out of the menu. */
 .who {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .name {
