@@ -30,6 +30,11 @@ export function clarificationOpen(day: string, today: string): boolean {
   return today <= clarificationDeadline(day);
 }
 
+/** The first day whose activities may still be clarified on `today`. */
+export function firstClarifiableDay(today: string): string {
+  return daysAfter(today, -CLARIFICATION_DAYS);
+}
+
 /** The newest clarification of a resident for an activity, as their row shows it. */
 export interface ShownClarification {
   id: string;

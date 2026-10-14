@@ -314,6 +314,60 @@ describe("readOwnAttendance", () => {
   });
 });
 
+describe("Riwayat over the clarification time", () => {
+  it("holds every activity back to the first day a clarification can still be sent, also past 25 rows, so an absence 7 days back still offers Ajukan klarifikasi", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { ani, counter } = records;
+      // Four more activities a day from a week back: with the two of the
+      // records, more than 25 are over within the seven days.
+      const extra: string[] = [];
+      for (const [place, startTime] of [
+        "08:00",
+        "12:00",
+        "15:00",
+        "17:00",
+      ].entries()) {
+        extra.push(
+          await addTestActivity(db, counter.id, {
+            versions: [
+              {
+                startsOn: "2740-10-05",
+                name: `Kegiatan uji ${place + 1}`,
+                startTime,
+                endTime: `${startTime.slice(0, 2)}:45`,
+              },
+            ],
+          }),
+        );
+      }
+      const [first] = extra;
+      if (!first) throw new Error("The activities were not added.");
+      // Seven days before today: its clarification time ends today.
+      const weekBack = "2740-10-07";
+      await count(db, records, {
+        activityId: first,
+        day: weekBack,
+        marks: { [ani]: { isAbsent: true, note: "" } },
+      });
+
+      const answer = await readOwnAttendance(db, residentOf(ani), NIGHT);
+
+      if (answer.kind !== "shown") throw new Error("It was refused.");
+      const { history } = answer.attendance;
+      expect(history.length).toBeGreaterThan(25);
+      expect(history.at(-1)?.day).toBe(weekBack);
+      const absence = history.find(
+        (entry) => entry.day === weekBack && entry.activityId === first,
+      );
+      expect(absence).toMatchObject({
+        status: "absent",
+        clarification: { action: "ask" },
+      });
+    });
+  });
+});
+
 describe("readOwnAttendance with clarifications", () => {
   it("shows in Riwayat the newest clarification of an absence with its note and Ajukan ulang, and counts those that wait as Klarifikasi aktif", async () => {
     await inTestDatabase(async (db) => {

@@ -162,6 +162,10 @@ Decided while building, because the issue did not say:
     how attendance is counted gains the 7-day sentence, and Riwayat ends
     with "Klarifikasi diverifikasi Badan Asrama Mahasiswa lalu divalidasi
     Pengelola Asrama.", as in the prototype.
+17. Riwayat shows every activity that is over back to the first day
+    whose activities may still be clarified, and at least the last 25,
+    whichever holds more. So an absence within the 7 days never drops
+    out of it.
 
 ## Steps
 

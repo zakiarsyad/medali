@@ -89,30 +89,51 @@ function latestFirst(a: HeldActivity, b: HeldActivity): number {
 }
 
 /**
+ * How far back Riwayat reaches: every row on or after `keepFrom`, and at
+ * least the last `limit` rows. `keepFrom` is the first day whose
+ * activities may still be clarified, so no absence that may be clarified
+ * drops out.
+ */
+export interface HistoryReach {
+  limit: number;
+  keepFrom: string;
+}
+
+/** The rows, the latest first, within the reach. */
+function withinReach<Row extends { day: string }>(
+  rows: Row[],
+  reach: HistoryReach,
+): Row[] {
+  return rows.filter(
+    (row, place) => place < reach.limit || row.day >= reach.keepFrom,
+  );
+}
+
+/**
  * The times the rows took place that are over at a moment, the latest
- * first: today's that have ended, then the days before, at most `limit`
- * of them and none more than a year back.
+ * first: today's that have ended, then the days before, within the reach
+ * and none more than a year back.
  */
 export function pastOccurrences<Row extends ActivityRow>(
   rows: Row[],
   now: CampusMoment,
-  limit: number,
+  reach: HistoryReach,
 ): Occurrence<Row>[] {
   const found: Occurrence<Row>[] = [];
   for (let back = 0; back <= DAYS_BACK; back++) {
-    if (found.length >= limit) break;
     const day = daysAfter(now.day, -back);
+    if (found.length >= reach.limit && day < reach.keepFrom) break;
     const held = takingPlaceOn(rows, day).reverse();
     for (const activity of held) {
       const state = activityState({ ...activity, day }, now);
       if (state === "over") found.push({ day, activity });
     }
   }
-  return found.slice(0, limit);
+  return withinReach(found, reach);
 }
 
 /**
- * Riwayat, the latest first and at most `limit` entries: the resident's
+ * Riwayat, the latest first and within the reach: the resident's
  * own mark of each announced count, Hadir or Tidak hadir with its note,
  * also of an activity no longer shown on its day, and "Belum diumumkan"
  * for an activity that is over without an announcement. An activity
@@ -122,7 +143,7 @@ export function historyOf(
   held: HeldActivity[],
   marks: OwnMark[],
   announced: ReadonlySet<string>,
-  limit: number,
+  reach: HistoryReach,
 ): HistoryEntry[] {
   const entries: HistoryEntry[] = [];
   const marked = new Set<string>();
@@ -135,5 +156,5 @@ export function historyOf(
     if (marked.has(key) || announced.has(key)) continue;
     entries.push({ ...activity, status: "not_announced", note: "" });
   }
-  return entries.sort(latestFirst).slice(0, limit);
+  return withinReach(entries.sort(latestFirst), reach);
 }

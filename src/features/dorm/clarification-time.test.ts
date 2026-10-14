@@ -4,6 +4,7 @@ import {
   clarificationCell,
   clarificationDeadline,
   clarificationOpen,
+  firstClarifiableDay,
   type ShownClarification,
   shownNote,
   takesClarification,
@@ -39,6 +40,16 @@ describe("clarificationOpen", () => {
   it("is closed from the eighth day on", () => {
     expect(clarificationOpen(DAY, "2026-10-22")).toBe(false);
     expect(clarificationOpen(DAY, "2026-11-30")).toBe(false);
+  });
+});
+
+describe("firstClarifiableDay", () => {
+  it("is the day seven days back, whose clarification time ends today", () => {
+    const first = firstClarifiableDay("2026-10-21");
+
+    expect(first).toBe(DAY);
+    expect(clarificationOpen(first, "2026-10-21")).toBe(true);
+    expect(clarificationOpen("2026-10-13", "2026-10-21")).toBe(false);
   });
 });
 
