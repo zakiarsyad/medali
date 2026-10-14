@@ -10,6 +10,7 @@ import {
   sql,
 } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import {
   accounts,
@@ -32,7 +33,6 @@ import {
   type StatusChoice,
   type StudentListFilters,
 } from "./student-list-address";
-import { visibleTo } from "./visible-students";
 
 type Student = typeof students.$inferSelect;
 

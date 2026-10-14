@@ -1,6 +1,7 @@
 import { may } from "@/auth/access";
 import { refusedWhenEmailInUse } from "@/auth/account-email";
 import type { Database } from "@/db/connect";
+import { sourceName } from "@/files/csv-file";
 import type { FileStore } from "@/files/file-store";
 import type { Parsed } from "@/parsed";
 import { addStudents } from "./add-student";
@@ -11,7 +12,6 @@ import { uploadSource } from "./labels";
 import { skipRegistered } from "./student-file";
 import { checkStudentFile, type UploadedFile } from "./student-file-check";
 import type { InputContext } from "./student-input";
-import { sourceName } from "./uploaded-file";
 
 const NOTHING_TO_SAVE = {
   ok: false,

@@ -1,5 +1,6 @@
 import { rowLimitForPage } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -7,7 +8,6 @@ import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { askedDetail } from "@/features/students/asked-detail";
 import { readStudentListParams } from "@/features/students/student-list-address";
 import { StudentListScreen } from "@/features/students/student-list-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 export default async function StudentsPage(props: PageProps<"/mahasiswa">) {
   const { account } = await openPage("mahasiswa");

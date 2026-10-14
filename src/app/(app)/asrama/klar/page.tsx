@@ -1,11 +1,11 @@
 import { forbidden } from "next/navigation";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readClarificationListParams } from "@/features/dorm/clarification-address";
 import { readClarificationBoard } from "@/features/dorm/clarification-list";
 import { ClarificationsScreen } from "@/features/dorm/clarifications-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 /**
  * The tab Klarifikasi kehadiran of Asrama. Staff see the clarifications

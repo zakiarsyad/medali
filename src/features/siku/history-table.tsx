@@ -7,7 +7,7 @@ import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./siku.module.css";
 import { cancelSikuEntryAction } from "./siku-actions";
-import type { HistoryEntry } from "./siku-history";
+import type { FormEntry, HistoryEntry } from "./siku-history";
 import { KIND_WORDS, REASON_WORDS, signedPoints } from "./siku-words";
 
 export const NO_HISTORY = "Belum ada penambahan atau pengurangan SIKU.";
@@ -15,24 +15,28 @@ export const NO_HISTORY = "Belum ada penambahan atau pengurangan SIKU.";
 export const CANCEL_QUESTION =
   "Batalkan penyesuaian ini? SIKU mahasiswa terkait dihitung ulang.";
 
+export const CANCEL_UPLOAD_QUESTION =
+  "Batalkan semua baris dari berkas ini? SIKU mahasiswa terkait dihitung ulang.";
+
 /** An entry of the history, with the address that shows its students. */
-export interface HistoryRow extends HistoryEntry {
-  seeAddress: string;
-}
+export type HistoryRow = HistoryEntry & { seeAddress: string };
 
 const START: FormState = { error: null, done: null };
 
 function CancelButton({
-  id,
+  row,
   onAnswer,
 }: {
-  id: string;
+  row: HistoryRow;
   onAnswer: (answer: FormState) => void;
 }) {
   const [pending, startSending] = useTransition();
+  const { id } = row;
+  const question =
+    row.source === "upload" ? CANCEL_UPLOAD_QUESTION : CANCEL_QUESTION;
 
   function press() {
-    if (!window.confirm(CANCEL_QUESTION)) return;
+    if (!window.confirm(question)) return;
     startSending(async () => onAnswer(await cancelSikuEntryAction(id)));
   }
 
@@ -48,12 +52,46 @@ function CancelButton({
   );
 }
 
+/** What an entry adds or takes, or the file it came from. */
+function Adjustment({ row }: { row: HistoryRow }) {
+  if (row.source === "upload") {
+    return (
+      <>
+        <span className={shared.badge}>Unggah berkas</span>{" "}
+        <span className={shared.typed}>{row.fileName}</span>
+      </>
+    );
+  }
+  return (
+    <>
+      <span
+        className={`${shared.badge} ${row.kind === "gain" ? styles.gain : styles.loss}`}
+      >
+        {KIND_WORDS[row.kind]}
+      </span>{" "}
+      {REASON_WORDS[row.reason]}
+    </>
+  );
+}
+
+function Notes({ entry }: { entry: FormEntry }) {
+  return (
+    <>
+      {entry.note !== "" && <span className={shared.typed}>{entry.note}</span>}
+      {entry.basis !== "" && (
+        <span className={shared.detail}>Dasar: {entry.basis}</span>
+      )}
+    </>
+  );
+}
+
 /**
  * The entries of "Riwayat penambahan dan pengurangan SIKU": date, kind and
  * reason, points, how many students, Keterangan and Dasar with "Lihat
- * mahasiswa", and who entered it, with "Batalkan" for those who may. The
- * answer to "Batalkan" stays above the list, since the row leaves it once
- * the entry is cancelled.
+ * mahasiswa", and who entered it, with "Batalkan" for those who may. An
+ * upload shows its file name in place of a kind and a reason, and "-" for
+ * points. The answer to "Batalkan" stays above the list, since the row
+ * leaves it once the entry is cancelled.
  */
 export function HistoryTable({
   rows,
@@ -89,24 +127,16 @@ export function HistoryTable({
                 <tr key={row.id}>
                   <td data-title="Tanggal">{shownDay(row.day)}</td>
                   <td data-title="Penyesuaian">
-                    <span
-                      className={`${shared.badge} ${row.kind === "gain" ? styles.gain : styles.loss}`}
-                    >
-                      {KIND_WORDS[row.kind]}
-                    </span>{" "}
-                    {REASON_WORDS[row.reason]}
+                    <Adjustment row={row} />
                   </td>
                   <td className={styles.strong} data-title="Poin">
-                    {signedPoints(row.points, row.kind)}
+                    {row.source === "form"
+                      ? signedPoints(row.points, row.kind)
+                      : "-"}
                   </td>
                   <td data-title="Mahasiswa">{row.students}</td>
                   <td data-title="Keterangan">
-                    {row.note !== "" && (
-                      <span className={shared.typed}>{row.note}</span>
-                    )}
-                    {row.basis !== "" && (
-                      <span className={shared.detail}>Dasar: {row.basis}</span>
-                    )}
+                    {row.source === "form" && <Notes entry={row} />}
                     <Link
                       href={row.seeAddress}
                       className={shared.link}
@@ -120,7 +150,7 @@ export function HistoryTable({
                   </td>
                   <td className={shared.rowActions}>
                     {mayCancel && (
-                      <CancelButton id={row.id} onAnswer={setAnswer} />
+                      <CancelButton row={row} onAnswer={setAnswer} />
                     )}
                   </td>
                 </tr>

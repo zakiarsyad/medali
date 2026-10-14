@@ -32,7 +32,8 @@ while building.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.
-- `src/auth/`: sign-in, and the one list of what each role may do.
+- `src/auth/`: sign-in, the one list of what each role may do, and which
+  students an account may see by it.
 - `src/campus/`: what the campus server package checks and does when it
   starts.
 - `src/ui/`: screen parts shared by more than one area.

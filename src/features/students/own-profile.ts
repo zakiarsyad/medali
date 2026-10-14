@@ -1,4 +1,5 @@
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import type { RunningPeriod } from "./semester-now";
 import { type StudentFacts, selectStudentFacts } from "./student-facts";
@@ -8,7 +9,6 @@ import {
   shownPartOf,
 } from "./student-mentor-group";
 import { readOwnResidence, type StudentResidence } from "./student-residence";
-import { visibleTo } from "./visible-students";
 
 /** What Profil saya shows of the student of the account. */
 export interface OwnProfile extends StudentFacts {

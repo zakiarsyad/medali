@@ -2,6 +2,7 @@ import { and, inArray, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { accounts, students } from "@/db/schema";
+import { checkFileShape, readFileText } from "@/files/csv-file";
 import type { Parsed } from "@/parsed";
 import { type FilePreview, previewOf } from "./file-preview";
 import { type Actor, NOT_ALLOWED } from "./input-student";
@@ -12,7 +13,6 @@ import {
   skipUsedEmails,
 } from "./student-file";
 import type { InputContext } from "./student-input";
-import { checkFileShape, readFileText } from "./uploaded-file";
 
 /** A file as the browser sends it: nothing in it is trusted. */
 export interface UploadedFile {

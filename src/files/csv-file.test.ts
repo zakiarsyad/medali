@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MAX_FILE_BYTES } from "./student-file-columns";
 import {
   checkFileShape,
+  MAX_FILE_BYTES,
   readFileText,
   shortLine,
   sourceName,
-} from "./uploaded-file";
+} from "./csv-file";
 
 const NOT_CSV =
   "Berkas harus berformat CSV. Simpan berkas sebagai CSV sesuai templat, lalu unggah lagi.";

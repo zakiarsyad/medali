@@ -1,4 +1,4 @@
-import { and, inArray, or, type SQL, sql } from "drizzle-orm";
+import { and, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
 import {
   type AccountForAccess,
   may,
@@ -7,9 +7,11 @@ import {
 } from "@/auth/access";
 import { students } from "@/db/schema";
 import { menteesOf } from "@/mentoring/mentees-of";
-import { NOT_REMOVED } from "./student-conditions";
 
 const NOBODY = sql`false`;
+
+/** A student who was not removed: the record is kept, and seen by nobody. */
+export const NOT_REMOVED = isNull(students.deletedAt);
 
 function inPrograms(ids: number[]): SQL | undefined {
   return ids.length > 0 ? inArray(students.studyProgramId, ids) : undefined;

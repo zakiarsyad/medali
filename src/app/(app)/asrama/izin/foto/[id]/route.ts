@@ -1,8 +1,8 @@
 import { may, rowLimitForAction } from "@/auth/access";
 import { currentAccount } from "@/auth/current-account";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { openReturnPhoto } from "@/features/dorm/open-return-photo";
-import { visibleTo } from "@/features/students/visible-students";
 import { refusalResponse, viewResponse } from "@/files/download-response";
 import { fileStorage } from "@/files/file-storage";
 

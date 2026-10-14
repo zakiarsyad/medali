@@ -1,10 +1,17 @@
 import { type FileFault, type FileRule, shapeFault } from "@/files/file-check";
 import { CSV, readText } from "@/files/file-kinds";
 import type { Parsed } from "@/parsed";
-import { MAX_FILE_BYTES } from "./student-file-columns";
 
-/** A student file is CSV only, and no larger than the template says. */
-export const STUDENT_FILE_RULE: FileRule = {
+/** The most rows one uploaded CSV file may hold, and its largest size. */
+export const MAX_FILE_ROWS = 1000;
+export const MAX_FILE_BYTES = 1024 * 1024;
+
+/** How many ready rows and skipped rows the preview of a file shows. */
+export const PREVIEW_ROWS = 6;
+export const PREVIEW_SKIPPED = 30;
+
+/** An uploaded list is CSV only, and no larger than the template says. */
+export const CSV_FILE_RULE: FileRule = {
   kinds: [CSV],
   maxBytes: MAX_FILE_BYTES,
 };
@@ -27,11 +34,11 @@ const UNREADABLE =
  * nothing the browser sends. Gives what is wrong, or null.
  */
 export function checkFileShape(name: string, bytes: number): string | null {
-  const fault = shapeFault(name, bytes, STUDENT_FILE_RULE);
+  const fault = shapeFault(name, bytes, CSV_FILE_RULE);
   return fault ? FAULT_MESSAGES[fault] : null;
 }
 
-/** What the screen says for each thing wrong with a student file. */
+/** What the screen says for each thing wrong with an uploaded CSV file. */
 export const FAULT_MESSAGES: Record<FileFault, string> = {
   "wrong-kind": NOT_CSV,
   empty: EMPTY,
@@ -56,7 +63,7 @@ export function shortLine(text: string, maxLength: number): string {
   return oneLine.slice(0, maxLength).trim();
 }
 
-/** A file name as it is kept with a student and shown in the list. */
+/** A file name as it is kept with what came from it and shown in a list. */
 export function sourceName(fileName: string): string {
   return shortLine(fileName, SOURCE_NAME_MAX_LENGTH);
 }

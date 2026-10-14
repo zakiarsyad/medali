@@ -9,8 +9,13 @@ import {
   type SikuParams,
   sikuAddress,
 } from "./siku-address";
-import type { SeenStudents, SikuHistory } from "./siku-history";
-import { KIND_WORDS, REASON_WORDS } from "./siku-words";
+import type {
+  HistoryEntry,
+  SeenChange,
+  SeenStudents,
+  SikuHistory,
+} from "./siku-history";
+import { KIND_WORDS, REASON_WORDS, signedPoints } from "./siku-words";
 
 /**
  * "Riwayat penambahan dan pengurangan SIKU": the entries in force of the
@@ -54,9 +59,41 @@ export function HistoryPanel({
   );
 }
 
+function SeenTitle({ entry }: { entry: HistoryEntry }) {
+  if (entry.source === "upload") {
+    return (
+      <>
+        <h2 className={shared.heading}>Unggah berkas</h2>
+        <p className={`${styles.sub} ${shared.typed}`}>{entry.fileName}</p>
+      </>
+    );
+  }
+  return (
+    <>
+      <h2 className={shared.heading}>
+        {KIND_WORDS[entry.kind]} {entry.points} poin
+      </h2>
+      <p className={styles.sub}>{REASON_WORDS[entry.reason]}</p>
+    </>
+  );
+}
+
+/** The student's own points and reason, on a row of an upload. */
+function SeenChangeCell({ change }: { change: SeenChange }) {
+  return (
+    <td data-title="Penyesuaian">
+      <b className={change.kind === "gain" ? styles.gain : styles.loss}>
+        {signedPoints(change.points, change.kind)}
+      </b>{" "}
+      {REASON_WORDS[change.reason]}
+    </td>
+  );
+}
+
 /**
  * "Lihat mahasiswa": the students of one entry the account sees, 25 a
- * page, in a box over the tab.
+ * page, in a box over the tab. For an upload, each row of it, with the
+ * student's own points and reason.
  */
 export function SeenStudentsDialog({
   seen,
@@ -66,15 +103,13 @@ export function SeenStudentsDialog({
   params: SikuParams;
 }) {
   const { entry } = seen;
+  const fromFile = entry.source === "upload";
   return (
     <ModalDialog
       label="Mahasiswa penyesuaian SIKU"
       closeAddress={sikuAddress({ ...params, seenEntry: null })}
     >
-      <h2 className={shared.heading}>
-        {KIND_WORDS[entry.kind]} {entry.points} poin
-      </h2>
-      <p className={styles.sub}>{REASON_WORDS[entry.reason]}</p>
+      <SeenTitle entry={entry} />
       <div className={shared.tableWrap}>
         <table className={`${shared.table} ${shared.stacked}`}>
           <thead>
@@ -82,6 +117,7 @@ export function SeenStudentsDialog({
               <th>Mahasiswa</th>
               <th>NIM</th>
               <th>Program studi</th>
+              {fromFile && <th>Penyesuaian</th>}
             </tr>
           </thead>
           <tbody>
@@ -92,6 +128,7 @@ export function SeenStudentsDialog({
                 </td>
                 <td data-title="NIM">{student.nim}</td>
                 <td data-title="Program studi">{student.program}</td>
+                {student.change && <SeenChangeCell change={student.change} />}
               </tr>
             ))}
           </tbody>
@@ -101,7 +138,7 @@ export function SeenStudentsDialog({
         page={seen.page}
         matching={seen.matching}
         pageSize={SEEN_PAGE_SIZE}
-        noun="mahasiswa"
+        noun={fromFile ? "baris" : "mahasiswa"}
         keepsPlace
         stepsOnOnePage={false}
         addressOf={(page) => sikuAddress({ ...params, seenPage: page })}

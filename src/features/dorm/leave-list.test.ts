@@ -2,11 +2,11 @@
 // Sample NIMs of this file: 9937860000 to 9937860099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { dormLeaves, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestRoom, placeTestResident } from "@/dorms/test-records";
-import { visibleTo } from "@/features/students/visible-students";
 import type { LeaveFilters } from "./leave-address";
 import { readLeaveBoard } from "./leave-list";
 import { addTestActivity } from "./test-activities";

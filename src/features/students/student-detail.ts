@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { AccountForAccess } from "@/auth/access";
+import { detailVisibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students } from "@/db/schema";
@@ -13,7 +14,6 @@ import {
   readStudentResidence,
   type StudentResidence,
 } from "./student-residence";
-import { detailVisibleTo } from "./visible-students";
 
 /** What the detail of one student shows. */
 export interface StudentDetail extends StudentFacts {

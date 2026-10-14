@@ -16,7 +16,7 @@ import {
   addTestMentorGroup,
   addTestProgram,
   addTestStudent,
-} from "./test-records";
+} from "@/features/students/test-records";
 import { detailVisibleTo, visibleTo } from "./visible-students";
 
 const inTestDatabase = withTestDatabase();

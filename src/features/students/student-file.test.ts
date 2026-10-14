@@ -1,11 +1,12 @@
 // Sample NIMs of this file: 9900001600 to 9900001699, and 9900300000 to 9900301099.
 import { describe, expect, it } from "vitest";
+import { MAX_FILE_ROWS } from "@/files/csv-file";
 import {
   readStudentFile,
   skipRegistered,
   skipUsedEmails,
 } from "./student-file";
-import { MAX_FILE_ROWS, templateCsv } from "./student-file-columns";
+import { templateCsv } from "./student-file-columns";
 import { cohortChoices } from "./student-input";
 
 const context = {

@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import {
   mentorGroupMemberChanges,
@@ -6,7 +7,6 @@ import {
   students,
 } from "@/db/schema";
 import { listGroupChoices } from "./mentor-group-choices";
-import { visibleTo } from "./visible-students";
 
 /** What the checks of a student's place in a group read back. */
 

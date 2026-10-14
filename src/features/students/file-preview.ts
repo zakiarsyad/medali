@@ -1,11 +1,8 @@
 import type { StudyProgram } from "@/db/study-programs";
+import { PREVIEW_ROWS, PREVIEW_SKIPPED } from "@/files/csv-file";
 import { ENTRY_PATH_LABELS, STATUS_LABELS } from "./labels";
 import type { FileRows, SkippedRow } from "./student-file";
 import type { StudentInput } from "./student-input";
-
-/** How many ready rows and skipped rows the preview shows. */
-export const PREVIEW_ROWS = 6;
-export const PREVIEW_SKIPPED = 30;
 
 const NOT_FILLED = "-";
 const YES = "ya";
