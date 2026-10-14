@@ -32,6 +32,7 @@ function group(id: string, more: Partial<DraftGroup>): DraftGroup {
     entryPath: "regular",
     number: 1,
     mentor: null,
+    mentorSince: null,
     members: members(26, id.slice(0, 2)),
     ...more,
   };
@@ -158,15 +159,19 @@ describe("DraftGroupsPanel", () => {
   });
 
   it("says a fixed angkatan is fixed, with its decree, who fixed it and since when each mentor holds the group", () => {
+    const [first, ...others] = GROUPS;
+    if (!first) throw new Error("No group to show.");
+    const groups = [{ ...first, mentorSince: "2026-10-05" }, ...others];
     const panel = renderToStaticMarkup(
-      <DraftGroupsPanel assignment={{ ...SAVED, status: "fixed" }} />,
+      <DraftGroupsPanel assignment={{ ...SAVED, groups, status: "fixed" }} />,
     );
 
     expect(panel).toContain("Angkatan 2026 sudah ditetapkan");
     expect(panel).toContain(
       "KEP-12/UJI/2026 · berlaku 1 Sep 2026 · ditetapkan Kepala Uji",
     );
-    expect(panel).toContain("sejak 1 Sep 2026");
+    expect(panel).toContain("sejak 5 Okt 2026");
+    expect(panel).not.toContain("sejak 1 Sep 2026");
     expect(panel).not.toContain("Anggota Uji");
     expect(panel).not.toContain("<button");
     expect(panel).not.toContain("<a ");
