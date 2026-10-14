@@ -1,7 +1,7 @@
 // Sample Tahun akademik of this file: 2290 to 2290.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { CLARIFICATION_FILE_RULE } from "@/features/activities/clarification-file";
+import { CLARIFICATION_FILE_RULE } from "@/clarifications/clarification-file";
 import {
   addTestActivity,
   addTestActor,
@@ -11,6 +11,11 @@ import {
   addTestSchedule,
   addTestStudentAccount,
 } from "@/features/activities/test-records";
+import { addTestActivity as addTestDormActivity } from "@/features/dorm/test-activities";
+import {
+  addTestCount,
+  addTestClarification as addTestDormClarification,
+} from "@/features/dorm/test-clarifications";
 import { fileFault } from "@/files/file-check";
 import { PDF } from "@/files/file-kinds";
 import { memoryStore } from "@/files/memory-store";
@@ -19,7 +24,7 @@ import {
   SAMPLE_PAPER_NAME,
   samplePaperBytes,
 } from "./sample-clarification-paper";
-import { activityClarifications } from "./schema";
+import { activityClarifications, dormClarifications } from "./schema";
 import {
   addSamplePapers,
   samplePapersAdded,
@@ -27,8 +32,9 @@ import {
 import { withTestDatabase } from "./test-database";
 
 /*
- * This file's own sample values: the Tahun akademik 2290, the program
- * UJIKERTASCONTOH and the NIMs 9973600000 to 9973600099.
+ * This file's own sample values: the Tahun akademik 2290, the programs
+ * UJIKERTASCONTOH and UJIKERTASASRAMA, and the NIMs 9973600000 to
+ * 9973600099.
  */
 
 const inTestDatabase = withTestDatabase();
@@ -204,6 +210,43 @@ describe("samplePapersAdded", () => {
       expect(await samplePapersAdded(db, memoryStore())).toBe(
         "Sample clarification papers added: 2.",
       );
+    });
+  });
+});
+
+describe("addSamplePapers for the dorm", () => {
+  it("gives the paper to each dorm clarification without a file, in a folder of its own", async () => {
+    await inTestDatabase(async (db) => {
+      const bam = await addTestActor(db, "BAM Uji Kertas Contoh", ["bam_bphk"]);
+      const programId = await addTestProgram(db, "UJIKERTASASRAMA");
+      const { studentId } = await addTestStudentAccount(db, programId, {
+        nim: "9973600002",
+        name: "Penghuni Uji Kertas Contoh",
+        cohortYear: 2289,
+      });
+      const countId = await addTestCount(db, {
+        activityId: await addTestDormActivity(db, bam.id),
+        day: "2290-09-10",
+        byId: bam.id,
+        marks: { [studentId]: { isAbsent: true, note: "" } },
+      });
+      const id = await addTestDormClarification(db, bam.id, {
+        countId,
+        studentId,
+      });
+      const store = memoryStore();
+
+      expect(await addSamplePapers(db, store)).toBe(1);
+
+      const [kept] = await db
+        .select({ fileKey: dormClarifications.fileKey })
+        .from(dormClarifications)
+        .where(eq(dormClarifications.id, id));
+      expect(kept?.fileKey).toMatch(/^dorm-clarifications\//);
+      expect(store.files.get(kept?.fileKey ?? "")).toEqual({
+        bytes: samplePaperBytes(),
+        contentType: "application/pdf",
+      });
     });
   });
 });

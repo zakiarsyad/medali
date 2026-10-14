@@ -1,6 +1,11 @@
 import { sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { AccountForAccess } from "@/auth/access";
+import {
+  CLARIFICATION_FILE_FAULTS,
+  CLARIFICATION_FILE_RULE,
+  FILE_MISSING,
+} from "@/clarifications/clarification-file";
 import type { Database } from "@/db/connect";
 import { activityClarifications } from "@/db/schema";
 import { fileFault, type SentFile } from "@/files/file-check";
@@ -8,12 +13,6 @@ import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
 import { waitForOtherAttendanceWrites } from "./attendance-lock";
-import {
-  CLARIFICATION_FILE_FAULTS,
-  CLARIFICATION_FILE_RULE,
-  CLARIFICATION_FOLDER,
-  FILE_MISSING,
-} from "./clarification-file";
 import {
   explanationFault,
   keptFileName,
@@ -49,6 +48,9 @@ export const NO_FILE_STORAGE = refusal(
 export const FILE_NOT_KEPT = refusal(
   "Lampiran tidak dapat disimpan. Coba lagi.",
 );
+
+/** The part of the file storage that keeps the files of clarifications. */
+export const CLARIFICATION_FOLDER = "attendance-clarifications";
 
 export const CLARIFICATION_SENT = "Klarifikasi terkirim.";
 

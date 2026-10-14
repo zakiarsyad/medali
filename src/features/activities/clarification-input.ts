@@ -1,10 +1,10 @@
-import { shapeFault } from "@/files/file-check";
-import { JPEG } from "@/files/file-kinds";
 import {
   CLARIFICATION_FILE_FAULTS,
   CLARIFICATION_FILE_RULE,
   FILE_MISSING,
-} from "./clarification-file";
+} from "@/clarifications/clarification-file";
+import { shapeFault } from "@/files/file-check";
+import { JPEG } from "@/files/file-kinds";
 
 /*
  * What a clarification must hold before it is sent, checked in the

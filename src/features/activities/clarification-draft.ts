@@ -1,7 +1,10 @@
+import {
+  FILE_MISSING,
+  FILE_WRONG_KIND,
+} from "@/clarifications/clarification-file";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
-import { FILE_MISSING, FILE_WRONG_KIND } from "./clarification-file";
 import {
   explanationFault,
   isPictureName,

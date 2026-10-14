@@ -42,6 +42,23 @@ export interface SampleCount {
   firstMarks: CountMarks | null;
 }
 
+/** A sample count with the key it was kept under. */
+export interface KeptSampleCount {
+  id: string;
+  count: SampleCount;
+}
+
+/** Half an hour after a sample activity ended, on campus: its first announcement. */
+export function afterEnd(count: SampleCount): Date {
+  const ended = new Date(`${count.day}T${count.endTime}:00+07:00`);
+  return new Date(ended.getTime() + 30 * 60 * 1000);
+}
+
+/** Eight in the morning on campus, the day after a sample activity: its correction. */
+export function nextMorning(count: SampleCount): Date {
+  return new Date(`${daysAfter(count.day, 1)}T08:00:00+07:00`);
+}
+
 /** How many days before today the samples are counted for: a week. */
 const DAYS_COUNTED = 7;
 /** One participant in this many is absent, at a place that moves each time. */

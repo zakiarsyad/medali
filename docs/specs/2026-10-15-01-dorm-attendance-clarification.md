@@ -106,7 +106,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The table for dorm clarifications is added, with sample
+- [x] 1. The table for dorm clarifications is added, with sample
   clarifications in every status.
 - [ ] 2. The rights to ask, check and decide are added to the permission
   list, with their checks.
