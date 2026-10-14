@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
+import type { ClarificationFile } from "@/clarifications/shown-file";
 import shared from "@/ui/data-screen.module.css";
 import base from "./activities.module.css";
 import { CLARIFICATION_LOOKS } from "./badge-look";
 import {
   CLARIFICATION_STATUS_WORDS,
   type ClarificationCard,
-  type ClarificationFile,
   type ClarificationSummary,
   hasDetails,
   NO_FILE,

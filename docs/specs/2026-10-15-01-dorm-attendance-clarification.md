@@ -111,5 +111,5 @@ Decided while building, because the issue did not say:
 - [x] 2. The rights to ask, check and decide are added to the permission
   list, with their checks.
 - [x] 3. Residents send a clarification with a file from Riwayat.
-- [ ] 4. Klarifikasi kehadiran shows the numbers, filters and cards.
+- [x] 4. Klarifikasi kehadiran shows the numbers, filters and cards.
 - [ ] 5. BAM checks and Pengelola decides, and attendance changes.
