@@ -94,11 +94,18 @@ built again.
    account sees them for the Aktif students its roles that read
    Penilaian SIKU see there, and the server refuses any other student,
    a student on Cuti or Non aktif included.
+5. A discipline loss shown without its reason says "Tidak ditampilkan"
+   under Alasan and "-" under Keterangan.
+6. A table of more than 10 lines shows the first 10 and "Tampilkan
+   semua (n)", which unfolds the rest in place. The detail reads every
+   line of the student at once: one student has few.
+7. The panel shows in every place the detail opens, above "Catatan
+   pengasuhan", as in the prototype.
 
 ## Steps
 
 - [x] 1. The right to read a student's SIKU lines is checked for each
   role and its own students, with its checks.
-- [ ] 2. The student detail shows "Rincian nilai SIKU", reusing the
+- [x] 2. The student detail shows "Rincian nilai SIKU", reusing the
   panel from SIKU adjustments.
 - [ ] 3. Names in the Penilaian SIKU lists open the student detail.
