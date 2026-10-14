@@ -7,8 +7,10 @@ import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { findAddedStudent } from "@/features/students/added-students";
 import {
   changeStudent,
+  removeStudent,
   STUDENT_CHANGED,
 } from "@/features/students/change-student";
+import { placementsOf } from "@/features/students/test-group-reads";
 import { fixAssignment } from "./fix-assignment";
 import { addCompleteTestDraft, testDraftOf } from "./test-drafts";
 import { testLiveGroupsOf } from "./test-live-groups";
@@ -154,5 +156,61 @@ describe("a penetapan fixed while one of its students is given a group", () => {
       name: made.student.name,
       version: form.version,
     });
+  });
+});
+
+/** How many members the kelompok pengasuhan of an angkatan store in all. */
+async function storedMembers(db: Database, cohortYear: number) {
+  const live = await testLiveGroupsOf(db, cohortYear);
+  return live.reduce((sum, group) => sum + group.studentIds.length, 0);
+}
+
+describe("a penetapan fixed while one of its students is removed", () => {
+  it("places the others when the removal was first: it waits, then leaves the removed student out", async () => {
+    const year = 2065;
+    const made = await addDraftWithAddedStudent(
+      own.db,
+      year,
+      9965000001,
+      "UJIHAPUSDULU",
+    );
+
+    const both = await own.atOnce<unknown>(
+      (db) => removeStudent(db, made.staff, made.nim),
+      (db) => fixAssignment(db, made.head, decreeOf(year)),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: made.student.name });
+    expect(both.later).toEqual(DONE);
+    expect(await groupsHolding(own.db, made.student.id)).toEqual([]);
+    expect(await testLiveGroupsOf(own.db, year)).toHaveLength(3);
+    expect(await storedMembers(own.db, year)).toBe(79);
+    const fixed = await testDraftOf(own.db, year);
+    expect(fixed.status).toBe("fixed");
+    const actions = fixed.log.map((line) => line.action);
+    expect(actions).toContain("members_dropped");
+  });
+
+  it("makes the removal wait when it was first: the student leaves the group they were just given", async () => {
+    const year = 2066;
+    const made = await addDraftWithAddedStudent(
+      own.db,
+      year,
+      9966000001,
+      "UJITETAPLALUHAPUS",
+    );
+
+    const both = await own.atOnce<unknown>(
+      (db) => fixAssignment(db, made.head, decreeOf(year)),
+      (db) => removeStudent(db, made.staff, made.nim),
+    );
+
+    expect(both.sooner).toEqual(DONE);
+    expect(both.later).toEqual({ ok: true, value: made.student.name });
+    expect(await groupsHolding(own.db, made.student.id)).toEqual([]);
+    expect(await storedMembers(own.db, year)).toBe(79);
+    expect(await placementsOf(own.db, made.student.id)).toEqual([
+      [expect.any(String), null, made.staff.id],
+    ]);
   });
 });
