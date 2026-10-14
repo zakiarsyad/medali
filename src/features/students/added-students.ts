@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { dormInSql } from "@/dorms/resident-condition";
+import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import {
   GROUP_COLUMNS,
   GROUP_IN_FORCE,
@@ -28,9 +29,6 @@ import {
 } from "./listed-group";
 import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
 import type { StoredStudent } from "./student-input";
-
-/** The most rows the list shows. More than that is found by searching. */
-export const LIST_LIMIT = 100;
 
 const inputter = alias(accounts, "inputter");
 
@@ -114,22 +112,35 @@ function withGroup(row: StoredRow): AddedStudent {
   return { ...student, group: listedGroupOf(row) };
 }
 
+export interface AddedStudentPage {
+  students: AddedStudent[];
+  /** How many students match in all. */
+  matching: number;
+  /** The page given, counted from 1: the last one when there are fewer. */
+  page: number;
+}
+
 /**
- * The students put in through Pengguna baru mahasiswa that match a search,
- * the newest first: at most `LIST_LIMIT` rows, and how many match in all.
- * Each comes with their group in force, joined in the same read.
- * `dormCohorts` are the angkatan years that live in the dorm today.
+ * One page of the students put in through Pengguna baru mahasiswa that
+ * match a search, the newest first, and how many match in all. Each comes
+ * with their group in force, joined in the same read. `dormCohorts` are
+ * the angkatan years that live in the dorm today.
  */
 export async function listAddedStudents(
   db: Database,
   query: string,
   dormCohorts: number[],
-): Promise<{ students: AddedStudent[]; matching: number }> {
+  page = 1,
+): Promise<AddedStudentPage> {
   const condition = and(ADDED_HERE, matchesSearch(query));
   const [counted] = await db
     .select({ matching: count() })
     .from(students)
     .where(condition);
+  const matching = counted?.matching ?? 0;
+  const given = pageWithin(page, matching);
+  if (matching === 0) return { students: [], matching, page: given };
+
   const rows = await db
     .select({ ...ROW, ...GROUP_COLUMNS, dorm: dormInSql(dormCohorts) })
     .from(students)
@@ -146,9 +157,12 @@ export async function listAddedStudents(
     .leftJoin(mentorGroupMentors, HELD_TODAY)
     .leftJoin(groupMentor, GROUP_MENTOR)
     .where(condition)
-    .orderBy(desc(students.inputAt), asc(students.name))
-    .limit(LIST_LIMIT);
-  return { students: rows.map(withGroup), matching: counted?.matching ?? 0 };
+    // The NIM last, so that rows alike in the rest keep one place each and
+    // none shows on two pages.
+    .orderBy(desc(students.inputAt), asc(students.name), asc(students.nim))
+    .limit(PAGE_SIZE)
+    .offset((given - 1) * PAGE_SIZE);
+  return { students: rows.map(withGroup), matching, page: given };
 }
 
 const INPUT = {

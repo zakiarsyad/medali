@@ -9,7 +9,6 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import {
   countStudents,
   findAddedStudent,
-  LIST_LIMIT,
   listAddedStudents,
 } from "./added-students";
 import { listGroupChoices } from "./mentor-group-choices";
@@ -105,12 +104,6 @@ export async function NewStudentsScreen({
             <NothingListed anyAdded={counts.added > 0} />
           ) : (
             <StudentTable students={list.students} query={params.query} />
-          )}
-          {list.matching > LIST_LIMIT && (
-            <p className={shared.detail}>
-              Menampilkan {LIST_LIMIT} dari{" "}
-              {list.matching.toLocaleString("id-ID")}. Gunakan pencarian.
-            </p>
           )}
         </section>
       </StudentNotice>
