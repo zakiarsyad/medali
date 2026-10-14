@@ -88,9 +88,20 @@ get them checked exactly like PPKS activities.
 
 The issue did not say, so these were decided:
 
+3. Nothing of the issue was built before: the schedules could already
+   hold a special or additional activity, but none could choose its
+   participants.
+4. A schedule names its participants one by one: each student, class or
+   angkatan chosen. Per angkatan and Lintas angkatan are told apart by
+   how many angkatan are chosen: one, or two or more.
+5. The sample data holds the prototype's leadership training for
+   angkatan 2023 and 2024, which is over, and peer mentoring for classes
+   2-01 and 2-02, whose photo upload is open today, so both kinds of
+   choice can be tried.
+
 ## Steps
 
-- [ ] 1. A schedule can hold its participants: students, classes or
+- [x] 1. A schedule can hold its participants: students, classes or
   angkatan, and keeps its academic period, as a PPKS schedule does.
   Sample data adds two extra activities.
 - [ ] 2. The rule that says whether a student takes part, with checks.
