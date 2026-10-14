@@ -82,6 +82,18 @@ async function answerTaken(
   return { ok: true, value: { saved: rows?.saved ?? 0 } };
 }
 
+/**
+ * Whether a form entry has the key. The history and "Batalkan" find an
+ * upload and a form entry by the same key, so they never share one.
+ */
+async function isEntryKey(tx: Database, id: string): Promise<boolean> {
+  const [entry] = await tx
+    .select({ id: sikuAdjustments.id })
+    .from(sikuAdjustments)
+    .where(eq(sikuAdjustments.id, id));
+  return entry !== undefined;
+}
+
 async function addRows(
   tx: Database,
   actor: AccountForAccess,
@@ -133,6 +145,7 @@ async function save(
 ): Promise<Parsed<SavedSikuFile>> {
   const taken = await answerTaken(tx, actor, upload);
   if (taken) return taken;
+  if (await isEntryKey(tx, upload.id)) return FILE_ALREADY_SENT;
   const rows = await checkSikuFile(tx, sikuVisibleTo(actor), file);
   if (!rows.ok) return rows;
   const { ready } = rows.value;

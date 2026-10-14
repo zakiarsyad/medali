@@ -9,6 +9,7 @@ import {
   sikuAdjustmentChanges,
   sikuAdjustmentStudents,
   sikuAdjustments,
+  sikuUploads,
   students,
 } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
@@ -82,6 +83,18 @@ async function isSameEntry(
   return named.join() === [...input.studentIds].sort().join();
 }
 
+/**
+ * Whether an uploaded file has the key. The history and "Batalkan" find
+ * an upload and a form entry by the same key, so they never share one.
+ */
+async function isUploadKey(tx: Database, id: string): Promise<boolean> {
+  const [upload] = await tx
+    .select({ id: sikuUploads.id })
+    .from(sikuUploads)
+    .where(eq(sikuUploads.id, id));
+  return upload !== undefined;
+}
+
 async function save(
   tx: Database,
   actor: AccountForAccess,
@@ -89,6 +102,7 @@ async function save(
   input: EntryInput,
   moment: Date,
 ): Promise<Parsed<SavedEntry>> {
+  if (await isUploadKey(tx, id)) return ENTRY_ALREADY_SENT;
   const saved = {
     ok: true,
     value: {

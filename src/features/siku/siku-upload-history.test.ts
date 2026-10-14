@@ -163,28 +163,18 @@ describe("an upload in the history", () => {
 
       expect(seen?.entry).toMatchObject({ source: "upload", id: upload });
       expect(seen?.matching).toBe(4);
-      expect(
-        seen?.students.map((line) => [line.nim, line.change]).sort(),
-      ).toEqual(
-        [
-          [
-            "9964001101",
-            { kind: "gain", reason: "social_media_campaign", points: 3 },
-          ],
-          [
-            "9964001101",
-            { kind: "loss", reason: "discipline_penalty", points: 2 },
-          ],
-          [
-            "9964001102",
-            { kind: "loss", reason: "unannounced_absence", points: 5 },
-          ],
-          [
-            "9964001103",
-            { kind: "gain", reason: "spiritual_activity", points: 1 },
-          ],
-        ].sort(),
+      // Two rows of one student come in the order of their keys, which
+      // are random: the lines are compared as words, sorted.
+      const lines = seen?.students.map(
+        ({ nim, change }) =>
+          `${nim} ${change?.kind} ${change?.reason} ${change?.points}`,
       );
+      expect(lines?.sort()).toEqual([
+        "9964001101 gain social_media_campaign 3",
+        "9964001101 loss discipline_penalty 2",
+        "9964001102 loss unannounced_absence 5",
+        "9964001103 gain spiritual_activity 1",
+      ]);
       expect(ofProgram?.matching).toBe(3);
     });
   });

@@ -23,7 +23,12 @@ import {
 import { previewSikuFile } from "./siku-file-check";
 import { NO_PERIOD, NOT_ALLOWED_TO_ADJUST } from "./siku-messages";
 import { readTotalsOf } from "./siku-totals";
-import { addTestActor, addTestStudents, addTestYear } from "./test-siku";
+import {
+  addTestActor,
+  addTestEntry,
+  addTestStudents,
+  addTestYear,
+} from "./test-siku";
 
 const inTestDatabase = withTestDatabase();
 
@@ -45,7 +50,7 @@ function csv(lines: string[], name = "siku-oktober.csv") {
 }
 
 async function addRecords(db: Database) {
-  await addTestYear(db, 2908);
+  const periods = await addTestYear(db, 2908);
   const { studentIds } = await addTestStudents(
     db,
     "Prodi Uji Simpan Berkas SIKU",
@@ -55,7 +60,7 @@ async function addRecords(db: Database) {
   const [ani, budi, citra] = studentIds;
   if (!ani || !budi || !citra) throw new Error("Students missing.");
   const penilai = await addTestActor(db, "Penilai Uji Berkas", ["assessor"]);
-  return { ani, budi, citra, penilai };
+  return { periods, ani, budi, citra, penilai };
 }
 
 function rowsOf(db: Database, uploadId: string) {
@@ -181,6 +186,36 @@ describe("saveSikuFile", () => {
         await saveSikuFile(db, other, id, csv(ROWS), false, MOMENT),
       ).toEqual(FILE_ALREADY_SENT);
       expect(await countWhere(db, id)).toMatchObject({ rows: 3 });
+    });
+  });
+
+  it("refuses the key of an entry made with the form, saving nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { periods, ani, penilai } = await addRecords(db);
+      const formEntry = await addTestEntry(db, penilai, {
+        kind: "gain",
+        reason: "knowledge_sharing",
+        points: 2,
+        day: "2908-10-11",
+        periodId: periods.odd,
+        studentIds: [ani],
+      });
+
+      const saved = await saveSikuFile(
+        db,
+        penilai,
+        formEntry,
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
+
+      expect(saved).toEqual(FILE_ALREADY_SENT);
+      const uploads = await db
+        .select()
+        .from(sikuUploads)
+        .where(eq(sikuUploads.id, formEntry));
+      expect(uploads).toEqual([]);
     });
   });
 
