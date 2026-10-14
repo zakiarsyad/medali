@@ -3,6 +3,7 @@ import type { DormId } from "@/dorms/dorms";
 import type { ActivityRow } from "./activity-row";
 import { activityState, type Held } from "./activity-state";
 import type { CountMark, CountMarks } from "./count-ids";
+import type { LeaveMarks } from "./leave-marks";
 
 /*
  * What "Penghitungan kehadiran" shows, and the rules it shows it by. Read
@@ -43,9 +44,27 @@ export type CountPanelView =
       activity: ActivityRow;
       participants: Participant[];
       kept: KeptCount | null;
+      /** The participants approved leave covers at the activity. */
+      onLeave: LeaveMarks;
     };
 
 const PRESENT: CountMark = { isAbsent: false, note: "" };
+
+/**
+ * The marks with no participant on approved leave marked Tidak hadir:
+ * the leave decides how they count, whatever the count kept for them.
+ */
+export function withoutLeaveAbsences(
+  marks: CountMarks,
+  onLeave: LeaveMarks,
+): CountMarks {
+  const cleared: CountMarks = { ...marks };
+  for (const [id, mark] of Object.entries(marks)) {
+    if (mark.isAbsent && onLeave[id])
+      cleared[id] = { ...mark, isAbsent: false };
+  }
+  return cleared;
+}
 
 /**
  * Whether an activity of a day has started at a moment on campus, so its

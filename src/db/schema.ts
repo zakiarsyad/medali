@@ -32,6 +32,16 @@ import {
 } from "@/features/dorm/activity-ids";
 import { type CountMarks, NOTE_MAX_LENGTH } from "@/features/dorm/count-ids";
 import {
+  CONTACT_MAX_LENGTH,
+  DECISION_NOTE_MAX_LENGTH,
+  DESTINATION_MAX_LENGTH,
+  LEAVE_KINDS,
+  LEAVE_STATUSES,
+  PURPOSE_MAX_LENGTH,
+  PURPOSE_MIN_LENGTH,
+  SPECIAL_REASONS,
+} from "@/features/dorm/leave-ids";
+import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
   MEETINGS_PER_PERIOD,
@@ -95,6 +105,15 @@ export const dormActivityOrganiser = pgEnum(
 );
 
 export const dormActivityAudience = pgEnum("dorm_activity_audience", AUDIENCES);
+
+export const dormLeaveKind = pgEnum("dorm_leave_kind", LEAVE_KINDS);
+
+export const dormLeaveStatus = pgEnum("dorm_leave_status", LEAVE_STATUSES);
+
+export const dormLeaveSpecialReason = pgEnum(
+  "dorm_leave_special_reason",
+  SPECIAL_REASONS,
+);
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
   "draft",
@@ -752,6 +771,85 @@ export const dormAttendanceChanges = pgTable(
     marksAfter: jsonb().$type<CountMarks>().notNull(),
   },
   (table) => [index("dorm_attendance_changes_count").on(table.countId)],
+);
+
+/**
+ * A resident's request for dorm leave, from its start up to its end. The
+ * key is made by the form that sent it, so a form sent twice is kept once.
+ * Tujuan and Kontak are empty for ITMK, and may be empty for the others.
+ * A request is never deleted: a cancelled one keeps its row, with when.
+ */
+export const dormLeaves = pgTable(
+  "dorm_leaves",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    kind: dormLeaveKind().notNull(),
+    startsAt: timestamp({ withTimezone: true }).notNull(),
+    endsAt: timestamp({ withTimezone: true }).notNull(),
+    /** Jenis keperluan, only of Izin khusus. */
+    specialReason: dormLeaveSpecialReason(),
+    /** Keperluan. */
+    purpose: text().notNull(),
+    /** Tujuan; empty when none was given. */
+    destination: text().notNull(),
+    /** Kontak yang bisa dihubungi; empty when none was given. */
+    contact: text().notNull(),
+    status: dormLeaveStatus().notNull().default("submitted"),
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+    /** Who approved or rejected it, and when; empty until then. */
+    decidedBy: uuid().references(() => accounts.id),
+    decidedAt: timestamp({ withTimezone: true }),
+    /** What Pengelola Asrama noted; empty when nothing was noted. */
+    decisionNote: text().notNull().default(""),
+    cancelledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("dorm_leaves_student").on(table.studentId, table.startsAt),
+    index("dorm_leaves_status").on(table.status, table.startsAt),
+    check(
+      "dorm_leaves_ends_after_start",
+      sql`${table.endsAt} > ${table.startsAt}`,
+    ),
+    check(
+      "dorm_leaves_special_reason_only_for_special",
+      sql`(${table.kind} = 'special') = (${table.specialReason} is not null)`,
+    ),
+    check(
+      "dorm_leaves_skip_activities_has_no_destination",
+      sql`${table.kind} <> 'skip_activities' or (${table.destination} = '' and ${table.contact} = '')`,
+    ),
+    check(
+      "dorm_leaves_purpose_length",
+      sql`char_length(${table.purpose}) between ${sql.raw(String(PURPOSE_MIN_LENGTH))} and ${sql.raw(String(PURPOSE_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_leaves_destination_length",
+      sql`char_length(${table.destination}) <= ${sql.raw(String(DESTINATION_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_leaves_contact_length",
+      sql`char_length(${table.contact}) <= ${sql.raw(String(CONTACT_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_leaves_decision_note_length",
+      sql`char_length(${table.decisionNote}) <= ${sql.raw(String(DECISION_NOTE_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_leaves_decided_when_approved_or_rejected",
+      sql`(${table.status} in ('approved', 'rejected')) = (${table.decidedAt} is not null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
+    ),
+    check(
+      "dorm_leaves_rejected_has_note",
+      sql`${table.status} <> 'rejected' or ${table.decisionNote} <> ''`,
+    ),
+    check(
+      "dorm_leaves_cancelled_has_moment",
+      sql`(${table.status} = 'cancelled') = (${table.cancelledAt} is not null)`,
+    ),
+  ],
 );
 
 /**

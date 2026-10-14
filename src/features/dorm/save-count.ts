@@ -13,11 +13,14 @@ import {
   NOT_A_PARTICIPANT,
   NOT_HELD_THAT_DAY,
   NOT_STARTED,
+  ON_LEAVE,
 } from "./count-messages";
 import { readParticipants } from "./count-participants";
 import { lockActivity, readStoredCount, writeCount } from "./count-store";
 import { hasStarted, NOT_COUNTED_YET, type Participant } from "./count-view";
 import { readActivityOn } from "./daily-activities";
+import { type ApprovedLeave, type HeldTimes, leaveMarkOf } from "./leave-marks";
+import { readApprovedLeaves, spanOfHeld } from "./leave-store";
 
 /** What a save tells the one who saved. */
 export interface SavedCount {
@@ -33,6 +36,20 @@ const ONE_COUNT_RULE = "dorm_attendance_counts_one_per_activity_and_day";
 function marksOnly(input: CountInput, participants: Participant[]): boolean {
   const ids = new Set(participants.map((participant) => participant.id));
   return Object.keys(input.marks).every((id) => ids.has(id));
+}
+
+/**
+ * Whether the form marks Tidak hadir someone whose approved leave covers
+ * the activity: the leave decides how they count.
+ */
+function marksAbsentOnLeave(
+  input: CountInput,
+  leaves: ApprovedLeave[],
+  held: HeldTimes,
+): boolean {
+  return Object.entries(input.marks).some(
+    ([id, mark]) => mark.isAbsent && leaveMarkOf(leaves, id, held) !== null,
+  );
 }
 
 async function saveIn(
@@ -54,6 +71,9 @@ async function saveIn(
   if (wasAnnounced && !input.isAnnouncement) return ANNOUNCED_ALREADY;
   const participants = await readParticipants(tx, held.audience, input.day);
   if (!marksOnly(input, participants)) return NOT_A_PARTICIPANT;
+  const times = { ...held, day: input.day };
+  const leaves = await readApprovedLeaves(tx, spanOfHeld(times));
+  if (marksAbsentOnLeave(input, leaves, times)) return ON_LEAVE;
 
   const version = await writeCount(tx, actorId, input, participants, kept);
   const isAnnounced = wasAnnounced || input.isAnnouncement;
@@ -66,8 +86,9 @@ async function saveIn(
  * a role that may not count, for an activity that does not take place
  * that day or has not started at the moment of the save, for a form that
  * was opened on another state of the count than the one kept now, for a
- * draft of a count already announced, and for a form that marks someone
- * who does not take part. Two saves of one activity at once are taken one
+ * draft of a count already announced, for a form that marks someone
+ * who does not take part, and for one that marks Tidak hadir someone
+ * whose approved leave covers the activity. Two saves of one activity at once are taken one
  * after the other, and the database keeps one count for it on a day.
  */
 export async function saveCount(

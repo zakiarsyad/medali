@@ -84,6 +84,7 @@ export function CountPanel({
           day={params.day}
           participants={view.participants}
           kept={view.kept}
+          onLeave={view.onLeave}
           onUnsaved={onUnsaved}
         />
       )}

@@ -31,7 +31,7 @@ function nextMorning(count: SampleCount): Date {
 }
 
 /** The residents of the running sample period, by name. */
-async function sampleResidents(
+export async function sampleResidents(
   db: Database,
   period: SamplePeriod,
 ): Promise<SampleResident[]> {
