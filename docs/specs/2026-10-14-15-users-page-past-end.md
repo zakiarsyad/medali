@@ -70,5 +70,5 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The account list shows its last page, with its count line, when
+- [x] 1. The account list shows its last page, with its count line, when
   a page past the end is asked for.
