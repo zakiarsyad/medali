@@ -129,7 +129,7 @@ export const SAMPLE_SIKU_ENTRIES: SampleSikuEntry[] = [
     daysAgo: 6,
     note: "Hukuman disiplin ringan.",
     basis: "",
-    nims: ["9900240011"],
+    nims: ["9900240011", "9900250013"],
     enteredAs: "assessor",
     cancelledDaysAgo: null,
   },

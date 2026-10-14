@@ -8,6 +8,8 @@ import {
   HistoryPanel,
   SeenStudentsDialog,
 } from "@/features/siku/history-panel";
+import { readOwnSiku } from "@/features/siku/own-siku";
+import { OwnSikuScreen } from "@/features/siku/own-siku-screen";
 import { readSikuParams } from "@/features/siku/siku-address";
 import {
   readSikuList,
@@ -26,18 +28,23 @@ import { visibleTo } from "@/features/students/visible-students";
 /**
  * The tab Penilaian SIKU. Staff see the SIKU of the students they may
  * see through the roles that read it: Ketua Program Studi those of their
- * own program only, Pengasuh their own mentees only. Nilai dasar is the
- * one set in Kurikulum.
+ * own program only, Pengasuh their own mentees only. A student sees only
+ * their own SIKU, whatever the address asks for. Nilai dasar is the one
+ * set in Kurikulum.
  */
 export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const opened = await openPage("penilaian", "siku");
   const { account } = opened;
   const tabs = { pagePath: "penilaian", tabs: opened.tabs, open: "siku" };
-  if (!may(account.roles, "view_siku")) forbidden();
   const db = database();
+  const { score: base } = await readBaseScore(db);
+  if (!may(account.roles, "view_siku")) {
+    const own = await readOwnSiku(db, account);
+    if (own.kind === "refused") forbidden();
+    return <OwnSikuScreen tabs={tabs} base={base} siku={own.siku} />;
+  }
   const params = readSikuParams(await props.searchParams);
   const visible = visibleTo(rowLimitForAction(account, "view_siku"));
-  const { score: base } = await readBaseScore(db);
   const mayAdjust = may(account.roles, "adjust_siku");
   const { seenEntry } = params;
   const [numbers, ranking, list, groups, history, seen] = await Promise.all([

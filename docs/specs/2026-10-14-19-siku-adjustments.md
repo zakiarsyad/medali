@@ -119,7 +119,7 @@ and a student sees their own SIKU and why.
 - [x] 3. The tab shows the numbers, "Daftar nilai SIKU" and the ranking.
 - [x] 4. The form adds a gain or a loss for chosen students.
 - [x] 5. The history, with "Lihat mahasiswa" and "Batalkan".
-- [ ] 6. The student's own numbers and "Transparansi nilai SIKU".
+- [x] 6. The student's own numbers and "Transparansi nilai SIKU".
 
 ## Decisions made while building
 
@@ -150,3 +150,11 @@ and a student sees their own SIKU and why.
   mahasiswa" lists only them, 25 a page, in a box over the tab.
 - "Oleh" in the history shows the name of the staff member, for staff
   only.
+- A student sees every reason of their own gains and losses, "Hukuman
+  disiplin mahasiswa" among them, as the prototype shows it. "Dicatat
+  oleh" shows the full title of the role, such as "Penilai Mahasiswa"
+  or "Kepala Unit Pembangunan Karakter".
+- The student's page leaves out the prototype's words about sending a
+  request for a gain, which belong to the spec "SIKU addition requests".
+  Under SIKU akhir it says "nilai dasar + penambahan − pengurangan"
+  instead of how many requests wait.

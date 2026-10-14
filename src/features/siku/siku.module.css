@@ -24,6 +24,53 @@
   align-items: baseline;
 }
 
+/* Nilai dasar + Penambahan − Pengurangan = SIKU akhir, on one line that folds. */
+.sum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-lg);
+  background: var(--surface2);
+}
+
+.sum > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.sum small {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.sum b {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+}
+
+.sign {
+  color: var(--faint);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
+}
+
+.total {
+  color: var(--navy);
+}
+
+.subheading {
+  margin: var(--space-lg) 0 var(--space-sm);
+  font-size: var(--text-base);
+}
+
+.list {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-xl);
+}
+
 .spaced {
   margin-top: var(--space-xl);
 }
