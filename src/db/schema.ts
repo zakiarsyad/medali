@@ -30,6 +30,7 @@ import {
   ORGANISERS,
   type RundownLine,
 } from "@/features/dorm/activity-ids";
+import { type CountMarks, NOTE_MAX_LENGTH } from "@/features/dorm/count-ids";
 import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
@@ -663,6 +664,94 @@ export const dormActivityDaysOff = pgTable(
     day: date().notNull(),
   },
   (table) => [primaryKey({ columns: [table.activityId, table.day] })],
+);
+
+/**
+ * The count BAM made of who was present at one dorm activity on one day:
+ * an activity repeats, so it has one count for each day at most. Until it
+ * is announced it is a draft, which counts for no one. Never deleted: it
+ * stays when its activity is removed, and its log lines hold it.
+ */
+export const dormAttendanceCounts = pgTable(
+  "dorm_attendance_counts",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    activityId: uuid()
+      .notNull()
+      .references(() => dormActivities.id),
+    day: date().notNull(),
+    /** Goes up with every save, so a save made from an older one is caught. */
+    version: integer().notNull().default(1),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** When it was saved last, as a draft or as an announcement. */
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+    /** Who announced it last, and when; empty while it is a draft. */
+    announcedBy: uuid().references(() => accounts.id),
+    announcedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    unique("dorm_attendance_counts_one_per_activity_and_day").on(
+      table.activityId,
+      table.day,
+    ),
+    check(
+      "dorm_attendance_counts_announcement_is_whole",
+      sql`(${table.announcedBy} is null) = (${table.announcedAt} is null)`,
+    ),
+  ],
+);
+
+/**
+ * One participant of a count, as it was saved last: Tidak hadir or not,
+ * and Catatan. A count holds every resident who took part on its day, so
+ * one who is not marked absent is Hadir once it is announced.
+ */
+export const dormAttendanceMarks = pgTable(
+  "dorm_attendance_marks",
+  {
+    countId: uuid()
+      .notNull()
+      .references(() => dormAttendanceCounts.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    isAbsent: boolean().notNull(),
+    /** Empty when no note was written. */
+    note: text().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.countId, table.studentId] }),
+    index("dorm_attendance_marks_student").on(table.studentId),
+    check(
+      "dorm_attendance_marks_note_length",
+      sql`char_length(${table.note}) <= ${sql.raw(String(NOTE_MAX_LENGTH))}`,
+    ),
+  ],
+);
+
+/**
+ * Every announcement of a count: who, when, and the participants who
+ * were absent or had a note, before and after. The first announcement
+ * has none before. Rows here cannot be changed or deleted; the database
+ * refuses it.
+ */
+export const dormAttendanceChanges = pgTable(
+  "dorm_attendance_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    countId: uuid()
+      .notNull()
+      .references(() => dormAttendanceCounts.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    marksBefore: jsonb().$type<CountMarks>(),
+    marksAfter: jsonb().$type<CountMarks>().notNull(),
+  },
+  (table) => [index("dorm_attendance_changes_count").on(table.countId)],
 );
 
 /**

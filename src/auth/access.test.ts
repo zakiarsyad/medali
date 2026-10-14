@@ -12,7 +12,7 @@ import {
   rowLimitForTab,
   tabsFor,
 } from "./access";
-import { BAM_ROLES } from "./bam-roles";
+import { BAM_ROLES, isBamRole } from "./bam-roles";
 import { PAGES } from "./pages";
 import { ROLE_IDS, type RoleId } from "./role-ids";
 import { ACTION_TITLES, ACTIONS, type Action, ROLES } from "./roles";
@@ -308,6 +308,65 @@ describe("may", () => {
       expect(may([role], "manage_dorm_activities")).toBe(false);
     },
   );
+
+  it.each(BAM_ROLES)(
+    "lets %s count and announce the attendance at the dorm activities, and see it",
+    (role) => {
+      expect(may([role], "count_dorm_attendance")).toBe(true);
+      expect(may([role], "view_dorm_attendance")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to count the attendance at the dorm activities", () => {
+    const others = ROLE_IDS.filter((role) => !isBamRole(role));
+    expect(others.length).toBe(ROLE_IDS.length - BAM_ROLES.length);
+    for (const role of others) {
+      expect(may([role], "count_dorm_attendance")).toBe(false);
+    }
+  });
+
+  it.each(["dorm_manager", "head_of_unit", "director", "student"] as const)(
+    "refuses %s to count the attendance at the dorm activities",
+    (role) => {
+      expect(may([role], "count_dorm_attendance")).toBe(false);
+    },
+  );
+
+  it.each(activityViewers)(
+    "lets %s see the attendance at the dorm activities",
+    (role) => {
+      expect(may([role], "view_dorm_attendance")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to see the attendance at the dorm activities", () => {
+    const others = ROLE_IDS.filter((role) => !activityViewers.includes(role));
+    for (const role of others) {
+      expect(may([role], "view_dorm_attendance")).toBe(false);
+    }
+  });
+
+  it("gives the right to see the attendance to exactly the roles that see the schedule", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_dorm_attendance")).toBe(
+        may([role], "view_dorm_activities"),
+      );
+    }
+  });
+
+  it("lets Mahasiswa see their own attendance at the dorm activities only", () => {
+    expect(may(["student"], "view_own_dorm_attendance")).toBe(true);
+    expect(may(["student"], "view_dorm_attendance")).toBe(false);
+    expect(may(["student"], "count_dorm_attendance")).toBe(false);
+  });
+
+  it("refuses every other role to see attendance at the dorm activities as a resident", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "view_own_dorm_attendance")).toBe(false);
+    }
+  });
 
   const detailReaders: RoleId[] = [
     "head_of_unit",
@@ -886,6 +945,7 @@ describe("may", () => {
       "view_own_profile",
       "send_attendance_photo",
       "view_own_dorm_activities",
+      "view_own_dorm_attendance",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });
@@ -1367,6 +1427,7 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     "view_dorm_rooms",
     "view_dorm_companions",
     "view_dorm_activities",
+    "view_dorm_attendance",
   ] as const)(
     "keeps Ketua Program Studi who is also Konselor to their program for %s",
     (action) => {
@@ -1380,6 +1441,7 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     "view_dorm_rooms",
     "view_dorm_companions",
     "view_dorm_activities",
+    "view_dorm_attendance",
   ] as const)("joins the rows of two roles that both allow %s", (action) => {
     const both = account(["head_of_program", "dorm_manager"], 7);
 

@@ -20,6 +20,8 @@ import {
   mayMarkDayOff,
 } from "./activity-row";
 import { dayWords } from "./activity-words";
+import { LEAVE_QUESTION } from "./count-form";
+import { CountPanel } from "./count-panel";
 import { DailyPanel } from "./daily-panel";
 import { OneOffPanel } from "./one-off-panel";
 import { RoutinePanel } from "./routine-panel";
@@ -46,11 +48,14 @@ function OpenList({
   params,
   now,
   actionsOf,
+  leaveQuestion,
 }: {
   view: ActivitiesView;
   params: ActivitiesParams;
   now: CampusMoment;
   actionsOf: ActionsOf;
+  /** What is asked before another day opens, or null to ask nothing. */
+  leaveQuestion: string | null;
 }) {
   if (view.view === "rutin") {
     return <RoutinePanel routines={view.routines} actionsOf={actionsOf} />;
@@ -70,8 +75,10 @@ function OpenList({
       day={view.day}
       activities={view.activities}
       residents={view.residents}
+      attendance={view.attendance}
       now={now}
       actionsOf={actionsOf}
+      leaveQuestion={leaveQuestion}
     />
   );
 }
@@ -119,6 +126,7 @@ export function ActivityBoard({
 }) {
   const [target, setTarget] = useState<FormTarget | null>(null);
   const [said, setSaid] = useState<Said | null>(null);
+  const [isCountUnsaved, setCountUnsaved] = useState(false);
   const panel = useRef<HTMLElement>(null);
   // "Tiada kegiatan" is for one day, so only Jadwal harian offers it.
   const dayShown = view.view === "harian" ? view.day : null;
@@ -214,7 +222,17 @@ export function ActivityBoard({
         params={params}
         now={now}
         actionsOf={form ? rowActions : null}
+        leaveQuestion={isCountUnsaved ? LEAVE_QUESTION : null}
       />
+      {view.view === "harian" && view.count && (
+        <CountPanel
+          activities={view.activities}
+          view={view.count}
+          params={params}
+          today={now.day}
+          onUnsaved={setCountUnsaved}
+        />
+      )}
     </>
   );
 }

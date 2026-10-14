@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Database } from "./connect";
 import { sampleDormActivities } from "./sample-dorm-activities";
+import type { KeptSampleActivity } from "./sample-dorm-counts";
 import {
   dormActivities,
   dormActivityDaysOff,
@@ -9,18 +10,19 @@ import {
 
 /**
  * Adds the sample dorm activities around a day, with their versions and
- * their days off, as the work of one account. `day` is today on campus.
+ * their days off, as the work of one account, and gives them back with
+ * their keys. `day` is today on campus.
  */
 export async function addSampleDormActivities(
   db: Database,
   day: string,
   by: string,
-): Promise<void> {
+): Promise<KeptSampleActivity[]> {
   const added = sampleDormActivities(day).map((sample) => ({
     id: randomUUID(),
     sample,
   }));
-  if (added.length === 0) return;
+  if (added.length === 0) return added;
   const changed = { changedAt: new Date(), changedBy: by };
 
   await db
@@ -37,4 +39,5 @@ export async function addSampleDormActivities(
     sample.daysOff.map((dayOff) => ({ activityId: id, day: dayOff })),
   );
   if (daysOff.length > 0) await db.insert(dormActivityDaysOff).values(daysOff);
+  return added;
 }

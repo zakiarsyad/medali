@@ -12,6 +12,7 @@ vi.mock("./activity-actions", () => ({
   removeActivityAction: vi.fn(),
   restoreActivityAction: vi.fn(),
 }));
+vi.mock("./count-actions", () => ({ saveCountAction: vi.fn() }));
 
 const NOW = { day: "2026-10-14", time: "18:00" };
 const RESIDENTS = {
@@ -22,7 +23,7 @@ const RESIDENTS = {
 };
 
 function params(view: ActivitiesParams["view"]): ActivitiesParams {
-  return { view, day: NOW.day, page: 1 };
+  return { view, day: NOW.day, page: 1, counted: null };
 }
 
 const FORM: FormParts = {
@@ -40,12 +41,14 @@ function board(view: ActivitiesView, form: FormParts | null = null): string {
   );
 }
 
-const DAILY: ActivitiesView = {
+const DAILY = {
   view: "harian",
   day: NOW.day,
   activities: [TEST_ROW, { ...TEST_ONE_OFF, audience: "women" }],
   residents: RESIDENTS,
-};
+  count: null,
+  attendance: null,
+} satisfies ActivitiesView;
 
 describe("Jadwal harian", () => {
   it("shows the day, the steps around it, and each activity with its time, kind, penanggung jawab, peserta and state", () => {
@@ -90,6 +93,47 @@ describe("Jadwal harian", () => {
       'href="/asrama/kegiatan?lihat=rutin">Kegiatan rutin</a>',
     );
     expect(shown.match(/aria-current="true"/g)).toHaveLength(1);
+  });
+});
+
+describe("Hadir and Kehadiran in Jadwal harian", () => {
+  const announced = {
+    announcedAt: new Date("2026-10-14T00:00:00Z"),
+    announcedBy: "Rizky Pratama",
+    present: 62,
+    absent: 6,
+    marked: [],
+  };
+
+  it("are not shown to an account that may not see the attendance", () => {
+    const shown = board(DAILY);
+
+    expect(shown).not.toContain("<th>Hadir</th>");
+    expect(shown).not.toContain("<th>Kehadiran</th>");
+  });
+
+  it("show the numbers of an announced activity, and Belum diumumkan for one that is over without an announcement", () => {
+    const withNumbers = board({
+      ...DAILY,
+      attendance: { [TEST_ROW.id]: announced },
+    });
+    const without = board({ ...DAILY, attendance: {} });
+
+    expect(withNumbers).toContain("<th>Hadir</th><th>Kehadiran</th>");
+    expect(withNumbers).toContain('data-title="Hadir">62</td>');
+    expect(withNumbers).toContain('data-title="Kehadiran"><b>91%</b></td>');
+    expect(without).toContain("Belum diumumkan</span>");
+  });
+
+  it("show a dash for an activity that is not over and not announced", () => {
+    const shown = board({
+      ...DAILY,
+      activities: [TEST_ONE_OFF],
+      attendance: {},
+    });
+
+    expect(shown).toContain('data-title="Kehadiran">-</td>');
+    expect(shown).not.toContain("Belum diumumkan");
   });
 });
 

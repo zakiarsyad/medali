@@ -1,5 +1,5 @@
 {
-  "id": "4b67b16f-9dae-4d48-b4d8-66669998b067",
+  "id": "cfeb2108-0dfa-4428-bfb8-8f5d1ce1bc08",
   "prevId": "2ab129b7-2c62-4cc3-a4fd-d823ec0021c3",
   "version": "7",
   "dialect": "postgresql",
@@ -937,146 +937,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.activity_schedule_participants": {
-      "name": "activity_schedule_participants",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "schedule_id": {
-          "name": "schedule_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "class_name": {
-          "name": "class_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cohort_year": {
-          "name": "cohort_year",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "activity_schedule_participants_student": {
-          "name": "activity_schedule_participants_student",
-          "columns": [
-            {
-              "expression": "schedule_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "activity_schedule_participants_class": {
-          "name": "activity_schedule_participants_class",
-          "columns": [
-            {
-              "expression": "schedule_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "class_name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "activity_schedule_participants_cohort": {
-          "name": "activity_schedule_participants_cohort",
-          "columns": [
-            {
-              "expression": "schedule_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "cohort_year",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "activity_schedule_participants_schedule_id_activity_schedules_id_fk": {
-          "name": "activity_schedule_participants_schedule_id_activity_schedules_id_fk",
-          "tableFrom": "activity_schedule_participants",
-          "tableTo": "activity_schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "activity_schedule_participants_student_id_students_id_fk": {
-          "name": "activity_schedule_participants_student_id_students_id_fk",
-          "tableFrom": "activity_schedule_participants",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "activity_schedule_participants_names_one": {
-          "name": "activity_schedule_participants_names_one",
-          "value": "num_nonnulls(\"activity_schedule_participants\".\"student_id\", \"activity_schedule_participants\".\"class_name\", \"activity_schedule_participants\".\"cohort_year\") = 1"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.activity_schedules": {
       "name": "activity_schedules",
       "schema": "",
@@ -1976,6 +1836,310 @@
         "dorm_activity_versions_month_day_in_range": {
           "name": "dorm_activity_versions_month_day_in_range",
           "value": "\"dorm_activity_versions\".\"month_day\" between 1 and 28"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.dorm_attendance_changes": {
+      "name": "dorm_attendance_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "count_id": {
+          "name": "count_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "marks_before": {
+          "name": "marks_before",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "marks_after": {
+          "name": "marks_after",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "dorm_attendance_changes_count": {
+          "name": "dorm_attendance_changes_count",
+          "columns": [
+            {
+              "expression": "count_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_attendance_changes_count_id_dorm_attendance_counts_id_fk": {
+          "name": "dorm_attendance_changes_count_id_dorm_attendance_counts_id_fk",
+          "tableFrom": "dorm_attendance_changes",
+          "tableTo": "dorm_attendance_counts",
+          "columnsFrom": [
+            "count_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_attendance_changes_changed_by_accounts_id_fk": {
+          "name": "dorm_attendance_changes_changed_by_accounts_id_fk",
+          "tableFrom": "dorm_attendance_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dorm_attendance_counts": {
+      "name": "dorm_attendance_counts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "activity_id": {
+          "name": "activity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day": {
+          "name": "day",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "saved_by": {
+          "name": "saved_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "announced_by": {
+          "name": "announced_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "announced_at": {
+          "name": "announced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "dorm_attendance_counts_activity_id_dorm_activities_id_fk": {
+          "name": "dorm_attendance_counts_activity_id_dorm_activities_id_fk",
+          "tableFrom": "dorm_attendance_counts",
+          "tableTo": "dorm_activities",
+          "columnsFrom": [
+            "activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_attendance_counts_saved_by_accounts_id_fk": {
+          "name": "dorm_attendance_counts_saved_by_accounts_id_fk",
+          "tableFrom": "dorm_attendance_counts",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "saved_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_attendance_counts_announced_by_accounts_id_fk": {
+          "name": "dorm_attendance_counts_announced_by_accounts_id_fk",
+          "tableFrom": "dorm_attendance_counts",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "announced_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "dorm_attendance_counts_one_per_activity_and_day": {
+          "name": "dorm_attendance_counts_one_per_activity_and_day",
+          "nullsNotDistinct": false,
+          "columns": [
+            "activity_id",
+            "day"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "dorm_attendance_counts_announcement_is_whole": {
+          "name": "dorm_attendance_counts_announcement_is_whole",
+          "value": "(\"dorm_attendance_counts\".\"announced_by\" is null) = (\"dorm_attendance_counts\".\"announced_at\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.dorm_attendance_marks": {
+      "name": "dorm_attendance_marks",
+      "schema": "",
+      "columns": {
+        "count_id": {
+          "name": "count_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_absent": {
+          "name": "is_absent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "dorm_attendance_marks_student": {
+          "name": "dorm_attendance_marks_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_attendance_marks_count_id_dorm_attendance_counts_id_fk": {
+          "name": "dorm_attendance_marks_count_id_dorm_attendance_counts_id_fk",
+          "tableFrom": "dorm_attendance_marks",
+          "tableTo": "dorm_attendance_counts",
+          "columnsFrom": [
+            "count_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_attendance_marks_student_id_students_id_fk": {
+          "name": "dorm_attendance_marks_student_id_students_id_fk",
+          "tableFrom": "dorm_attendance_marks",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "dorm_attendance_marks_count_id_student_id_pk": {
+          "name": "dorm_attendance_marks_count_id_student_id_pk",
+          "columns": [
+            "count_id",
+            "student_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "dorm_attendance_marks_note_length": {
+          "name": "dorm_attendance_marks_note_length",
+          "value": "char_length(\"dorm_attendance_marks\".\"note\") <= 200"
         }
       },
       "isRLSEnabled": false

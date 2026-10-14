@@ -13,6 +13,7 @@ describe("readActivitiesParams", () => {
       view: "harian",
       day: TODAY,
       page: 1,
+      counted: null,
     });
   });
 
@@ -23,6 +24,7 @@ describe("readActivitiesParams", () => {
       view: "nonrutin",
       day: "2031-02-28",
       page: 3,
+      counted: null,
     });
   });
 
@@ -45,6 +47,15 @@ describe("readActivitiesParams", () => {
     },
   );
 
+  it("takes the activity Penghitungan kehadiran is open on, and none that is not a key", () => {
+    const counted = "00000000-0000-4000-8000-00000000a001";
+
+    expect(readActivitiesParams({ hitung: counted }, TODAY).counted).toBe(
+      counted,
+    );
+    expect(readActivitiesParams({ hitung: "apel" }, TODAY).counted).toBeNull();
+  });
+
   it("takes a list it does not know as Jadwal harian", () => {
     expect(readActivitiesParams({ lihat: "semua" }, TODAY).view).toBe("harian");
   });
@@ -53,7 +64,7 @@ describe("readActivitiesParams", () => {
 describe("activitiesAddress", () => {
   it("leaves out Jadwal harian, today and the first page", () => {
     const address = activitiesAddress(
-      { view: "harian", day: TODAY, page: 1 },
+      { view: "harian", day: TODAY, page: 1, counted: null },
       TODAY,
     );
 
@@ -62,7 +73,7 @@ describe("activitiesAddress", () => {
 
   it("names another day of Jadwal harian", () => {
     const address = activitiesAddress(
-      { view: "harian", day: "2026-10-15", page: 1 },
+      { view: "harian", day: "2026-10-15", page: 1, counted: null },
       TODAY,
     );
 
@@ -71,16 +82,30 @@ describe("activitiesAddress", () => {
 
   it("names the list and its page, and no day, for Kegiatan non rutin", () => {
     const address = activitiesAddress(
-      { view: "nonrutin", day: "2026-10-15", page: 2 },
+      { view: "nonrutin", day: "2026-10-15", page: 2, counted: null },
       TODAY,
     );
 
     expect(address).toBe("/asrama/kegiatan?lihat=nonrutin&hal=2");
   });
 
+  it("names the activity Penghitungan kehadiran is open on in Jadwal harian only", () => {
+    const counted = "00000000-0000-4000-8000-00000000a001";
+
+    expect(
+      activitiesAddress(
+        { view: "harian", day: TODAY, page: 1, counted },
+        TODAY,
+      ),
+    ).toBe(`/asrama/kegiatan?hitung=${counted}`);
+    expect(
+      activitiesAddress({ view: "rutin", day: TODAY, page: 1, counted }, TODAY),
+    ).toBe("/asrama/kegiatan?lihat=rutin");
+  });
+
   it("names only the list for Kegiatan rutin", () => {
     const address = activitiesAddress(
-      { view: "rutin", day: "2026-10-15", page: 2 },
+      { view: "rutin", day: "2026-10-15", page: 2, counted: null },
       TODAY,
     );
 
@@ -88,7 +113,12 @@ describe("activitiesAddress", () => {
   });
 
   it("gives an address that reads back as what it was made from", () => {
-    const params = { view: "harian", day: "2027-01-01", page: 1 } as const;
+    const params = {
+      view: "harian",
+      day: "2027-01-01",
+      page: 1,
+      counted: null,
+    } as const;
     const address = activitiesAddress(params, TODAY);
     const asked = Object.fromEntries(new URL(address, "http://x").searchParams);
 
