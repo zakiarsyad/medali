@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import { eq } from "drizzle-orm";
+import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -22,6 +23,7 @@ import {
   readDaysOff,
   versionParts,
 } from "./activity-store";
+import { daysOffToKeep } from "./days-off-kept";
 
 /**
  * Whether the activity kept under a key is the one this form added
@@ -78,19 +80,23 @@ async function save(
  * `id` is the key its form made. A form sent twice, as by a double press,
  * is kept once: two adds of one key never both add it, as the second
  * waits for the first and then adds nothing, and its answer is the same
- * as the first. Gives back the activity that was saved.
+ * as the first. At most 100 of its days off may be today or later.
+ * `today` is the day on campus. Gives back the activity that was saved.
  */
 export async function addActivity(
   db: Database,
   actor: Pick<Account, "id" | "roles">,
   id: string,
   sent: SentActivity,
+  today = campusDay(),
 ): Promise<Parsed<ActivityInput>> {
   if (!may(actor.roles, "manage_dorm_activities")) {
     return ACTIVITIES_NOT_ALLOWED;
   }
   const parsed = parseActivity(sent);
   if (!parsed.ok) return parsed;
+  const daysOff = daysOffToKeep([], parsed.value.daysOff, today);
+  if (!daysOff.ok) return daysOff;
   if (!isUuid(id)) return ACTIVITY_ALREADY_SENT;
   return db.transaction((tx) => save(tx, actor.id, id, parsed.value));
 }

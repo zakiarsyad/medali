@@ -194,6 +194,7 @@ export function ActivityBoard({
             target={target}
             newActivityId={form.newActivityId}
             day={params.day}
+            today={now.day}
             onSaved={(text) => closeWith(text)}
             onCancel={() => setTarget(null)}
             removal={

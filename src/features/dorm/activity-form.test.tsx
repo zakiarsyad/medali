@@ -13,6 +13,7 @@ function form(target: FormTarget): string {
       target={target}
       newActivityId={NEW_ID}
       day="2026-10-14"
+      today="2026-10-14"
       onSaved={vi.fn()}
       onCancel={vi.fn()}
       removal={null}
@@ -112,6 +113,17 @@ describe("the form of a change", () => {
     expect(shown).toContain('name="daysOff" value="2026-10-21"');
     expect(shown).toContain('value="Apel uji"');
     expect(shown).toContain("Simpan perubahan</button>");
+  });
+
+  it("shows a day off before today without a way to take it off, and does not send it", () => {
+    const withPast = { ...TEST_ROW, daysOff: ["2026-10-01", "2026-10-21"] };
+    const shown = form({ isRoutine: true, activity: withPast });
+
+    expect(shown).toContain("1 Okt 2026");
+    expect(shown).not.toContain('aria-label="Hapus 1 Okt 2026"');
+    expect(shown).not.toContain('value="2026-10-01"');
+    expect(shown).toContain('aria-label="Hapus 21 Okt 2026"');
+    expect(shown).toContain('name="daysOff" value="2026-10-21"');
   });
 
   it("holds the Tanggal of a one-off activity", () => {

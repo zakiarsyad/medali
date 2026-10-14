@@ -123,11 +123,13 @@ function TimeField({
 function DaysFields({
   isRoutine,
   start,
+  today,
 }: {
   isRoutine: boolean;
   start: FormStart;
+  today: string;
 }) {
-  if (isRoutine) return <PatternFields start={start} />;
+  if (isRoutine) return <PatternFields start={start} today={today} />;
   return (
     <label className={shared.field}>
       <input type="hidden" name="pattern" value={ONE_OFF} />
@@ -150,6 +152,7 @@ export function ActivityForm({
   target,
   newActivityId,
   day,
+  today,
   onSaved,
   onCancel,
   removal,
@@ -159,6 +162,8 @@ export function ActivityForm({
   newActivityId: string;
   /** The day a new activity starts on: the one open in Jadwal harian. */
   day: string;
+  /** The day on campus: days off before it stay as they are. */
+  today: string;
   onSaved: (message: string) => void;
   onCancel: () => void;
   removal: ReactNode;
@@ -207,7 +212,7 @@ export function ActivityForm({
           start={start.location}
           maxLength={LOCATION_MAX_LENGTH}
         />
-        <DaysFields isRoutine={isRoutine} start={start} />
+        <DaysFields isRoutine={isRoutine} start={start} today={today} />
         <TimeField label="Mulai" name="startTime" start={start.startTime} />
         <TimeField label="Selesai" name="endTime" start={start.endTime} />
         <ChoiceField

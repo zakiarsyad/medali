@@ -40,7 +40,14 @@ function Weekdays({ start }: { start: number[] }) {
  * the week of a weekly one or the date of a monthly one, Berlaku mulai
  * and sampai, and the days without the activity.
  */
-export function PatternFields({ start }: { start: FormStart }) {
+export function PatternFields({
+  start,
+  today,
+}: {
+  start: FormStart;
+  /** The day on campus. */
+  today: string;
+}) {
   const [pattern, setPattern] = useState<RoutinePattern>(start.pattern);
   return (
     <>
@@ -93,7 +100,7 @@ export function PatternFields({ start }: { start: FormStart }) {
           defaultValue={start.endsOn}
         />
       </label>
-      <DaysOffField start={start.daysOff} />
+      <DaysOffField start={start.daysOff} today={today} />
     </>
   );
 }

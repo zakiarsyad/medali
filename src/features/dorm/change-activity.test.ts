@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { daysAfter } from "@/academic-periods/days-after";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { listOneOffs, listRoutines } from "./activity-lists";
@@ -147,11 +148,11 @@ describe("changeActivity of a repeating activity", () => {
     });
   });
 
-  it("keeps the days off the form sends, and only those", async () => {
+  it("keeps the days off of today and later that the form sends, and only those", async () => {
     await inTestDatabase(async (db) => {
       const actor = await manager(db);
       const id = await addTestActivity(db, actor.id, {
-        daysOff: ["2026-10-08"],
+        daysOff: [TODAY, "2026-10-21"],
       });
 
       await changeActivity(
@@ -164,6 +165,97 @@ describe("changeActivity of a repeating activity", () => {
       );
 
       expect(await daysOffOf(db, id)).toEqual(["2026-10-20"]);
+    });
+  });
+
+  it("keeps a day off before today that the form no longer sends, so that date still shows no activity", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await manager(db);
+      const id = await addTestActivity(db, actor.id, {
+        daysOff: ["2026-10-01"],
+      });
+
+      const changed = await changeActivity(
+        db,
+        actor,
+        id,
+        await versionOf(db, id),
+        { ...SENT_ROUTINE, daysOff: [] },
+        TODAY,
+      );
+
+      expect(changed.ok).toBe(true);
+      expect(await daysOffOf(db, id)).toEqual(["2026-10-01"]);
+      expect(await readDailyActivities(db, "2026-10-01")).toEqual([]);
+    });
+  });
+
+  it("can still be saved with many days off gone by, and refuses more than 100 sent", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await manager(db);
+      const past = Array.from({ length: 150 }, (_, place) =>
+        daysAfter("2026-01-01", place),
+      );
+      const coming = Array.from({ length: 100 }, (_, place) =>
+        daysAfter(TODAY, place),
+      );
+      const id = await addTestActivity(db, actor.id, {
+        daysOff: [...past, ...coming],
+      });
+      const opened = await versionOf(db, id);
+
+      const tooMany = await changeActivity(
+        db,
+        actor,
+        id,
+        opened,
+        { ...SENT_ROUTINE, daysOff: [...coming, "2027-12-31"] },
+        TODAY,
+      );
+      const saved = await changeActivity(
+        db,
+        actor,
+        id,
+        opened,
+        { ...SENT_ROUTINE, daysOff: coming },
+        TODAY,
+      );
+
+      expect(tooMany).toEqual({
+        ok: false,
+        error:
+          "Hari tanpa kegiatan yang dikirim sekaligus paling banyak 100 tanggal.",
+      });
+      expect(saved.ok).toBe(true);
+      expect(await daysOffOf(db, id)).toHaveLength(250);
+    });
+  });
+
+  it("refuses a hand-made request with more days off than one form sends, and keeps the days off as they were", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await manager(db);
+      const id = await addTestActivity(db, actor.id, {
+        daysOff: ["2026-10-01"],
+      });
+      const flood = Array.from({ length: 40_000 }, (_, place) =>
+        daysAfter("1900-01-01", place),
+      );
+
+      const changed = await changeActivity(
+        db,
+        actor,
+        id,
+        await versionOf(db, id),
+        { ...SENT_ROUTINE, daysOff: flood },
+        TODAY,
+      );
+
+      expect(changed).toEqual({
+        ok: false,
+        error:
+          "Hari tanpa kegiatan yang dikirim sekaligus paling banyak 100 tanggal.",
+      });
+      expect(await daysOffOf(db, id)).toEqual(["2026-10-01"]);
     });
   });
 

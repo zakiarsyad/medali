@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { daysAfter } from "@/academic-periods/days-after";
 import { parseActivity, type SentActivity } from "./activity-input";
 import { SENT_ONE_OFF, SENT_ROUTINE } from "./test-activities";
 
@@ -120,6 +121,27 @@ describe("parseActivity for a one-off activity", () => {
       "Isi tanggal kegiatan dengan tanggal yang benar.",
     );
   });
+});
+
+describe("parseActivity and the days off one form sends", () => {
+  function pastDays(count: number): string[] {
+    return Array.from({ length: count }, (_, place) =>
+      daysAfter("2000-01-01", place),
+    );
+  }
+
+  it("takes 100 of them", () => {
+    expect(refusal({ daysOff: pastDays(100) })).toBeNull();
+  });
+
+  it.each([101, 40_000])(
+    "refuses %i of them, a hand-made request, with a message",
+    (count) => {
+      expect(refusal({ daysOff: pastDays(count) })).toBe(
+        "Hari tanpa kegiatan yang dikirim sekaligus paling banyak 100 tanggal.",
+      );
+    },
+  );
 });
 
 describe("parseActivity refuses", () => {

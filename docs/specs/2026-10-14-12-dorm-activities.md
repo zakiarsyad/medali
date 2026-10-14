@@ -111,7 +111,13 @@ Decided while building, because the issue did not say:
 6. A date without the activity may be marked on any date, also a past
    one, with "Tiada kegiatan" or in the form, as in the prototype: it
    records that the activity did not take place then. It is the one way
-   a past date changes. "Tiada kegiatan" is offered in Jadwal harian, on
+   a past date changes. A marked date before today stays marked: the
+   form shows it without a way to take it off, and a save keeps it
+   whatever is sent. Only dates from today on can be taken off again. At
+   most 100 marked dates may be today or later, in the form and with
+   "Tiada kegiatan" alike; dates gone by do not count, so a long past
+   never stops a save. One save of the form sends at most 100 dates:
+   the marked dates from today on and those just marked in it. "Tiada kegiatan" is offered in Jadwal harian, on
    each repeating activity that is not removed. Marking a date counts as
    a change, so a form opened before it is told "Kegiatan sudah diubah
    orang lain. Muat ulang." and does not undo the mark.

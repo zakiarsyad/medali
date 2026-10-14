@@ -126,19 +126,25 @@ function parseMonthDay(sent: string): Parsed<number> {
   return { ok: true, value: monthDay };
 }
 
+/**
+ * The days off as sent, each once and in order. The form sends only the
+ * days of today and later and those just marked in it, so one form sends
+ * at most 100: more is a hand-made request, refused before it is read.
+ * How many may still come is for the save to say: it knows which day is
+ * today.
+ */
 function parseDaysOff(sent: string[]): Parsed<string[]> {
+  if (sent.length > DAYS_OFF_MAX) {
+    return refused(
+      `Hari tanpa kegiatan yang dikirim sekaligus paling banyak ${DAYS_OFF_MAX} tanggal.`,
+    );
+  }
   if (!sent.every(isDay)) {
     return refused(
       "Hari tanpa kegiatan berisi tanggal yang tidak benar. Muat ulang halaman.",
     );
   }
-  const daysOff = [...new Set(sent)].sort();
-  if (daysOff.length > DAYS_OFF_MAX) {
-    return refused(
-      `Hari tanpa kegiatan paling banyak ${DAYS_OFF_MAX} tanggal.`,
-    );
-  }
-  return { ok: true, value: daysOff };
+  return { ok: true, value: [...new Set(sent)].sort() };
 }
 
 function parseOneOffDays(sent: SentActivity): Parsed<Days> {

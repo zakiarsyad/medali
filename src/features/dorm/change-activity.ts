@@ -27,9 +27,11 @@ import {
   markChanged,
   putDaysOff,
   readCurrentVersion,
+  readDaysOff,
   type StoredVersion,
   versionParts,
 } from "./activity-store";
+import { daysOffToKeep } from "./days-off-kept";
 
 /** Why a checked change may not go in, or null when it may. */
 function wrongForNow(
@@ -101,16 +103,19 @@ async function save(
   if (!parsed.ok) return parsed;
   const wrong = wrongForNow(current, parsed.value, change.today);
   if (wrong) return wrong;
+  const stored = await readDaysOff(tx, change.id);
+  const daysOff = daysOffToKeep(stored, parsed.value.daysOff, change.today);
+  if (!daysOff.ok) return daysOff;
   await writeVersion(tx, current, parsed.value, change.today);
-  await putDaysOff(tx, change.id, parsed.value.daysOff);
+  await putDaysOff(tx, change.id, daysOff.value);
   await markChanged(tx, change.id, change.actorId);
-  return { ok: true, value: parsed.value };
+  return { ok: true, value: { ...parsed.value, daysOff: daysOff.value } };
 }
 
 /**
  * Changes a dorm activity that is not removed, with who changed it and
  * when, for today and the days after it: the days gone by keep what they
- * showed. `version` is the one the form was opened with: when the
+ * showed, their days off among it. `version` is the one the form was opened with: when the
  * activity was changed since, by someone else or by the same form sent
  * before, the change is refused and nothing is overwritten. That is said
  * before any fault in the form itself: the person must first see the
