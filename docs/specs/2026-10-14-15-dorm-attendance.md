@@ -89,9 +89,23 @@ history and staff see the attendance rate per activity.
 
 Decided while building, because the issue did not say:
 
+4. A count is for one activity on one date. It holds every resident who
+   took part on that date as they were at its last save, each Hadir or
+   Tidak hadir with a Catatan, so a resident who moves out later keeps
+   their past attendance.
+5. Catatan holds at most 200 characters.
+6. The log holds each announcement, the first one too: who, when, and
+   the participants who were absent or had a note, before and after. A
+   draft saved before the first announcement is not logged, as it
+   counts for no one.
+7. The sample counts are of the week before today, made by the sample
+   BAM - BPHK: most are announced, one was corrected with "Umumkan
+   ulang", yesterday's last activity has no count yet and the one before
+   it is a draft.
+
 ## Steps
 
-- [ ] 1. The tables for counts and their change log are added, with
+- [x] 1. The tables for counts and their change log are added, with
   sample counts for the past week.
 - [ ] 2. The rights to count and to see attendance are added to the
   permission list, with their checks.
