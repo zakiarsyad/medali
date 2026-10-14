@@ -1,6 +1,6 @@
 import { PAGES } from "@/auth/pages";
 import { ROLE_IDS } from "@/auth/role-ids";
-import { ACTION_TITLES, ROLES } from "@/auth/roles";
+import { ACTION_TITLES, type Action, ROLES } from "@/auth/roles";
 import styles from "@/ui/data-screen.module.css";
 
 function pageTitles(pages: readonly string[]): string {
@@ -9,11 +9,28 @@ function pageTitles(pages: readonly string[]): string {
     .join(", ");
 }
 
+function Rights({ actions }: { actions: readonly Action[] }) {
+  if (actions.length === 0) return "-";
+  const last = actions.length - 1;
+  return (
+    <ul className={styles.lines}>
+      {actions.map((action, index) => (
+        <li key={action}>
+          {ACTION_TITLES[action]}
+          {index < last && <span className={styles.comma}>, </span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** What each role may open and do, read from the one permission list. */
 export function AccessMatrix() {
   return (
     <div className={styles.tableWrap}>
-      <table className={styles.table}>
+      <table
+        className={`${styles.table} ${styles.stacked} ${styles.titlesAbove}`}
+      >
         <thead>
           <tr>
             <th>Peran</th>
@@ -24,14 +41,12 @@ export function AccessMatrix() {
         <tbody>
           {ROLE_IDS.map((role) => (
             <tr key={role}>
-              <td>
+              <td className={styles.rowHeading} data-title="Peran">
                 <b>{ROLES[role].title}</b>
               </td>
-              <td>{pageTitles(ROLES[role].pages)}</td>
-              <td>
-                {ROLES[role].actions
-                  .map((action) => ACTION_TITLES[action])
-                  .join(", ") || "-"}
+              <td data-title="Menu">{pageTitles(ROLES[role].pages)}</td>
+              <td data-title="Tindakan">
+                <Rights actions={ROLES[role].actions} />
               </td>
             </tr>
           ))}

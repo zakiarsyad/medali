@@ -228,6 +228,53 @@
   display: none;
 }
 
+/*
+ * The cell that names its row. On a phone it is the heading of the block,
+ * so it takes the full width and shows no title.
+ */
+.stacked td.rowHeading {
+  padding: var(--stacked-actions-padding);
+  font-size: var(--stacked-heading-size);
+}
+
+.stacked td.rowHeading::before {
+  display: none;
+}
+
+/*
+ * A stacked list that adds `titlesAbove` has values too long to stand
+ * beside their title on a phone, so each title stands above its value.
+ */
+.titlesAbove td[data-title] {
+  padding: var(--stacked-above-cell-padding);
+}
+
+.titlesAbove td[data-title]::before {
+  float: none;
+  width: auto;
+  margin-left: 0;
+}
+
+/*
+ * The values of one cell as a list. At computer width they read as one
+ * sentence, with a `comma` after each but the last. On a phone each has
+ * its own line and the commas are left out.
+ */
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lines li {
+  display: var(--lines-item-display);
+  padding: var(--lines-item-padding);
+}
+
+.comma {
+  display: var(--lines-comma-display);
+}
+
 .badge {
   display: inline-block;
   margin: 0 var(--space-2xs) var(--space-2xs) 0;
