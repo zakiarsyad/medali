@@ -6,10 +6,10 @@ import {
   activitySchedules,
   ppksActivities,
 } from "@/db/schema";
+import { hourAndMinute } from "@/db/stored-time";
 import type { OwnStudent } from "./own-student";
 import { isInSemester } from "./participants";
 import type { StatusParts } from "./schedule-status";
-import { hourAndMinute } from "./stored-time";
 
 /** A schedule a student takes part in, with what its status is told from. */
 export interface OwnSchedule extends StatusParts {

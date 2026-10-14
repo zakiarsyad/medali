@@ -1,3 +1,4 @@
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import { type UploadRange, uploadDeadline } from "./upload-range";
 
 /** Where a schedule stands on a day at an hour. */
@@ -15,12 +16,6 @@ export interface StatusParts extends UploadRange {
   startsOn: string;
   /** The hour and minute it starts, such as 07:30. */
   startTime: string;
-}
-
-/** A moment on campus: the day, and the hour and minute, such as 07:30. */
-export interface CampusMoment {
-  day: string;
-  time: string;
 }
 
 /**

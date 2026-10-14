@@ -1,11 +1,8 @@
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import type { ValueKey } from "@/ui/medali-values";
 import { ATTENDANCE_WORDS, takesNewPhoto } from "./attendance-status";
 import { type BadgeLook, HISTORY_LOOKS, SCHEDULE_LOOKS } from "./badge-look";
-import {
-  type CampusMoment,
-  STATUS_WORDS,
-  scheduleStatus,
-} from "./schedule-status";
+import { STATUS_WORDS, scheduleStatus } from "./schedule-status";
 import {
   rejectedWords,
   sentWords,

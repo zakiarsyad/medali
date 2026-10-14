@@ -23,6 +23,14 @@ import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import { DORM_IDS } from "@/dorms/dorms";
 import { ASSIGNMENT_METHODS } from "@/features/cohort-assignments/methods";
 import {
+  ACTIVITY_CATEGORIES,
+  ACTIVITY_PATTERNS,
+  AUDIENCES,
+  LAST_MONTH_DAY,
+  ORGANISERS,
+  type RundownLine,
+} from "@/features/dorm/activity-ids";
+import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
   MEETINGS_PER_PERIOD,
@@ -69,6 +77,23 @@ export const academicPeriodChangeAction = pgEnum(
 );
 
 export const dorm = pgEnum("dorm", DORM_IDS);
+
+export const dormActivityCategory = pgEnum(
+  "dorm_activity_category",
+  ACTIVITY_CATEGORIES,
+);
+
+export const dormActivityPattern = pgEnum(
+  "dorm_activity_pattern",
+  ACTIVITY_PATTERNS,
+);
+
+export const dormActivityOrganiser = pgEnum(
+  "dorm_activity_organiser",
+  ORGANISERS,
+);
+
+export const dormActivityAudience = pgEnum("dorm_activity_audience", AUDIENCES);
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
   "draft",
@@ -517,6 +542,127 @@ export const dormCompanions = pgTable(
       sql`${table.isActive} or ${table.roomId} is null`,
     ),
   ],
+);
+
+/**
+ * One dorm activity, repeating (rutin) or one-off (non rutin). What it
+ * holds is in its versions. A removed one keeps its row, marked with who
+ * removed it, when, and the first day it no longer takes place: the days
+ * before that one still show it.
+ */
+export const dormActivities = pgTable(
+  "dorm_activities",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    removedFrom: date(),
+    deletedAt: timestamp({ withTimezone: true }),
+    deletedBy: uuid().references(() => accounts.id),
+  },
+  (table) => [
+    check(
+      "dorm_activities_removal_mark_is_whole",
+      sql`(${table.deletedAt} is null) = (${table.deletedBy} is null) and (${table.deletedAt} is null) = (${table.removedFrom} is null)`,
+    ),
+  ],
+);
+
+/**
+ * What a dorm activity holds, for the days from `shownFrom` to
+ * `shownUntil`; an empty one has no limit on that side. A change to a
+ * repeating activity ends its version the day before and adds a new one,
+ * so the days gone by keep what they showed. An activity has one version
+ * without a last day. A one-off activity repeats `once`, on `startsOn`,
+ * which is then also its `endsOn`. A weekday is 0 for Minggu to 6 for
+ * Sabtu.
+ */
+export const dormActivityVersions = pgTable(
+  "dorm_activity_versions",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    activityId: uuid()
+      .notNull()
+      .references(() => dormActivities.id),
+    shownFrom: date(),
+    shownUntil: date(),
+    name: text().notNull(),
+    category: dormActivityCategory().notNull(),
+    /** Empty when no place was given. */
+    location: text().notNull(),
+    pattern: dormActivityPattern().notNull(),
+    /** The days of the week of a weekly activity; empty for any other. */
+    weekdays: smallint().array().notNull(),
+    /** The date in each month of a monthly activity. */
+    monthDay: smallint(),
+    /** Berlaku mulai, or the date of a one-off activity. */
+    startsOn: date().notNull(),
+    /** Berlaku sampai; empty for an activity that goes on. */
+    endsOn: date(),
+    startTime: time().notNull(),
+    endTime: time().notNull(),
+    organiser: dormActivityOrganiser().notNull(),
+    /** Empty when no name was given. */
+    organiserName: text().notNull(),
+    audience: dormActivityAudience().notNull(),
+    isRequired: boolean().notNull(),
+    rundown: jsonb().$type<RundownLine[]>().notNull(),
+  },
+  (table) => [
+    uniqueIndex("dorm_activity_versions_one_without_last_day")
+      .on(table.activityId)
+      .where(sql`${table.shownUntil} is null`),
+    index("dorm_activity_versions_activity").on(table.activityId),
+    check(
+      "dorm_activity_versions_shown_until_on_or_after_from",
+      sql`${table.shownUntil} >= ${table.shownFrom}`,
+    ),
+    check(
+      "dorm_activity_versions_ends_on_or_after_start",
+      sql`${table.endsOn} >= ${table.startsOn}`,
+    ),
+    check(
+      "dorm_activity_versions_end_time_after_start",
+      sql`${table.endTime} > ${table.startTime}`,
+    ),
+    check(
+      "dorm_activity_versions_once_is_one_day",
+      sql`${table.pattern} <> 'once' or ${table.endsOn} is not distinct from ${table.startsOn}`,
+    ),
+    check(
+      "dorm_activity_versions_weekly_has_weekdays",
+      sql`(${table.pattern} = 'weekly') = (cardinality(${table.weekdays}) > 0)`,
+    ),
+    check(
+      "dorm_activity_versions_weekdays_0_to_6",
+      sql`${table.weekdays} <@ array[0, 1, 2, 3, 4, 5, 6]::smallint[]`,
+    ),
+    check(
+      "dorm_activity_versions_monthly_has_month_day",
+      sql`(${table.pattern} = 'monthly') = (${table.monthDay} is not null)`,
+    ),
+    check(
+      "dorm_activity_versions_month_day_in_range",
+      sql`${table.monthDay} between 1 and ${sql.raw(String(LAST_MONTH_DAY))}`,
+    ),
+  ],
+);
+
+/**
+ * A day on which a repeating dorm activity does not take place ("Hari
+ * tanpa kegiatan"). A day is marked once for an activity.
+ */
+export const dormActivityDaysOff = pgTable(
+  "dorm_activity_days_off",
+  {
+    activityId: uuid()
+      .notNull()
+      .references(() => dormActivities.id),
+    day: date().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.day] })],
 );
 
 /**

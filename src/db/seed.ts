@@ -24,6 +24,7 @@ import {
 import { addSampleActivityAttendances } from "./seed-activity-attendances";
 import { addSampleClarifications } from "./seed-activity-clarifications";
 import { addSampleActivitySchedules } from "./seed-activity-schedules";
+import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
@@ -139,7 +140,8 @@ async function addSampleFirstYears(
 /**
  * Fills a freshly built database with the sample data, among it the
  * students in their first year of the running period, the dorm rooms
- * with some of the residents in them, and the kelompok pengasuhan of
+ * with some of the residents in them, the dorm activities that repeat
+ * and the one-off ones, and the kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
  * still to be formed, with a few evaluations of their mentors, one
  * replacement of a mentor, one closed survey period, a few notes their mentors wrote, the first two
@@ -208,6 +210,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleClarifications(tx, schedules, SAMPLE_STUDENTS, today);
     await addSampleFirstYears(tx, running, programIds, sampleActor);
     await addSampleDorms(tx, running);
+    await addSampleDormActivities(tx, today, sampleActor);
     const grouped = [
       ...SAMPLE_STUDENTS,
       ...sampleGroupedFirstYears(running.startYear),

@@ -1,0 +1,260 @@
+.note {
+  composes: note from "./rooms.module.css";
+}
+
+/* The switch between the three lists, and beside it what can be added. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.switch {
+  composes: switch from "./rooms.module.css";
+}
+
+.choice {
+  composes: choice from "./rooms.module.css";
+}
+
+.head {
+  composes: head from "./rooms.module.css";
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  composes: title from "./rooms.module.css";
+}
+
+/* The step to the day before, the day itself, and the step to the day after. */
+.daySwitch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.daySwitch input {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ok,
+.warn,
+.plain {
+  border: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.plain {
+  color: var(--muted);
+}
+
+/* What "Rincian" opens under the row of its activity. */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+/* Rincian kegiatan: each line its time, then what happens. */
+.rundown {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-md);
+}
+
+.rundown li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  overflow-wrap: anywhere;
+}
+
+.quietLine {
+  composes: quietLine from "./rooms.module.css";
+}
+
+/* One part of a resident's page, under its own heading. */
+.part {
+  margin-top: var(--space-xl);
+}
+
+/*
+ * As many cards beside each other as fit. A card is never wider than the
+ * screen: on a phone its smallest width gives way and there is one column.
+ */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+  padding: var(--space-lg) var(--space-xl);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow-wrap: anywhere;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardName {
+  margin: 0;
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+.comingList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comingItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--line-width) solid var(--line2);
+  overflow-wrap: anywhere;
+}
+
+.comingItem:last-child {
+  border-bottom: 0;
+}
+
+/* "Ubah" scrolls here: the panel must stop below the top bar, not under it. */
+.formPanel {
+  scroll-margin-top: var(--below-top-bar);
+}
+
+/* A line of a form that takes its whole width. */
+.full {
+  grid-column: 1 / -1;
+}
+
+/* A list is as wide as its longest choice unless told otherwise. */
+.fits {
+  min-width: 0;
+}
+
+.fits select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* A part of a form with several fields under one name. */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A line of Rincian kegiatan in the form: the time is the shorter field. */
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.lineTime {
+  flex: 1 1 var(--score-box-width);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.lineActivity {
+  flex: 4 1 var(--box-min-width);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  align-items: baseline;
+  margin-top: var(--space-md);
+}
+
+.pushedEnd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-left: auto;
+}

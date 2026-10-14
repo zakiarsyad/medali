@@ -1,3 +1,4 @@
+import type { CampusMoment } from "@/academic-periods/campus-clock";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import styles from "./activities.module.css";
@@ -6,7 +7,6 @@ import type { CohortCount } from "./participants";
 import type { ListAttendance } from "./schedule-attendance";
 import { scheduleListAddress } from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
-import type { CampusMoment } from "./schedule-status";
 import { ScheduleTable } from "./schedule-table";
 import { StageChoices } from "./stage-choices";
 
