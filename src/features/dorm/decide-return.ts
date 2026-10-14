@@ -6,9 +6,9 @@ import { isUuid } from "@/db/is-uuid";
 import { dormLeaves, dormReturnReports } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
+import { lettersIn } from "@/ui/letters-in";
 import { NOTE_TOO_LONG } from "./decide-leave";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
-import { lettersIn } from "./leave-input";
 import { REJECTION_NEEDS_NOTE } from "./leave-messages";
 import {
   type DecidedStatus,

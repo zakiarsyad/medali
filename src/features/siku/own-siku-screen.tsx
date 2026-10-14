@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ROLES } from "@/auth/roles";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
@@ -5,10 +6,11 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import type { OwnEntry, OwnSiku } from "./own-siku";
+import { waitingWords } from "./request-status";
 import styles from "./siku.module.css";
 import { GAIN_REASONS, LOSS_REASONS, type SikuKind } from "./siku-ids";
 import { isHeldWithin, sikuOf } from "./siku-score";
-import { REASON_WORDS, signedPoints } from "./siku-words";
+import { basisOf, REASON_WORDS, signedPoints } from "./siku-words";
 
 export const HELD_WITHIN = "Nilai SIKU dibatasi 0–100.";
 
@@ -48,8 +50,8 @@ function EntryTable({
                 <span className={shared.typed}>
                   {entry.note === "" ? "-" : entry.note}
                 </span>
-                {entry.basis !== "" && (
-                  <span className={shared.detail}>Dasar: {entry.basis}</span>
+                {basisOf(entry) !== "" && (
+                  <span className={shared.detail}>Dasar: {basisOf(entry)}</span>
                 )}
               </td>
               <td className={shared.detail} data-title="Dicatat oleh">
@@ -71,18 +73,25 @@ function EntryTable({
 }
 
 /**
- * Penilaian SIKU of a student: their four numbers, and "Transparansi
- * nilai SIKU" with how SIKU akhir is reached, each gain and loss with
- * the role that entered it, and what can add to or reduce SIKU.
+ * Penilaian SIKU of a student: their four numbers, their requests for a
+ * gain, and "Transparansi nilai SIKU" with how SIKU akhir is reached,
+ * each gain and loss with the role that entered it, and what can add to
+ * or reduce SIKU.
  */
 export function OwnSikuScreen({
   tabs,
   base,
   siku,
+  requests,
 }: {
   tabs: TabLinksProps;
   base: number;
   siku: OwnSiku;
+  /**
+   * "Ajukan penambahan SIKU" and "Pengajuan saya" with how many requests
+   * wait, or null for a student who may not ask.
+   */
+  requests: { panels: ReactNode; waiting: number } | null;
 }) {
   const { totals, entries } = siku;
   const final = sikuOf(base, totals);
@@ -119,9 +128,14 @@ export function OwnSikuScreen({
         <NumberCard
           label="SIKU akhir"
           amount={final}
-          note="nilai dasar + penambahan − pengurangan"
+          note={
+            requests === null
+              ? "nilai dasar + penambahan − pengurangan"
+              : waitingWords(requests.waiting)
+          }
         />
       </NumberCards>
+      {requests?.panels}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Transparansi nilai SIKU</h2>
         <div className={styles.sum}>

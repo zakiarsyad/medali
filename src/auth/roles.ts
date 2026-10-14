@@ -54,6 +54,8 @@ export const ACTIONS = [
   "view_siku",
   "adjust_siku",
   "view_own_siku",
+  "ask_siku_addition",
+  "decide_siku_additions",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -118,6 +120,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   adjust_siku:
     "Penilaian SIKU: menambah, mengurangi, dan membatalkan penyesuaian nilai SIKU",
   view_own_siku: "Melihat nilai SIKU sendiri",
+  ask_siku_addition: "Ajukan penambahan SIKU dengan foto bukti",
+  decide_siku_additions: "Persetujuan pengajuan penambahan SIKU",
 };
 
 /**
@@ -249,6 +253,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_scores",
       "view_siku",
       "adjust_siku",
+      "decide_siku_additions",
     ],
     rows: "all",
   },
@@ -349,6 +354,7 @@ export const ROLES: Record<RoleId, Role> = {
       "report_dorm_return",
       "ask_dorm_clarification",
       "view_own_siku",
+      "ask_siku_addition",
     ],
     rows: "self",
   },
@@ -490,7 +496,12 @@ export const ROLES: Record<RoleId, Role> = {
       activities: ["clarification"],
       assessment: ["character", "skpm", "siku", "character_test", "fitness"],
     },
-    actions: ["decide_activity_clarifications", "view_siku", "adjust_siku"],
+    actions: [
+      "decide_activity_clarifications",
+      "view_siku",
+      "adjust_siku",
+      "decide_siku_additions",
+    ],
     rows: "all",
   },
 };

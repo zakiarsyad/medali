@@ -21,10 +21,10 @@ export const READ_ONLY_INPUT =
   "Nilai SIKU diinput oleh Penilai Mahasiswa. Anda dapat melihat hasilnya di daftar di bawah.";
 
 /**
- * Penilaian SIKU for staff: the four numbers, "Input nilai SIKU" with the
- * form for those who may enter and a note for those who only read, the
- * ranking, the history, and "Daftar nilai SIKU", all of the students the
- * account may see.
+ * Penilaian SIKU for staff: the four numbers, the requests of students,
+ * "Input nilai SIKU" with the form for those who may enter and a note for
+ * those who only read, the ranking, the history, and "Daftar nilai SIKU",
+ * all of the students the account may see.
  */
 export function StaffSikuScreen({
   tabs,
@@ -33,6 +33,7 @@ export function StaffSikuScreen({
   numbers,
   ranking,
   list,
+  requests,
   form,
   history,
 }: {
@@ -42,6 +43,8 @@ export function StaffSikuScreen({
   numbers: SikuNumbers;
   ranking: SikuRanking;
   list: SikuList;
+  /** "Pengajuan penambahan SIKU dari mahasiswa". */
+  requests: ReactNode;
   /** "Input nilai SIKU" with its title, or null for an account that only reads. */
   form: ReactNode;
   history: ReactNode;
@@ -75,6 +78,7 @@ export function StaffSikuScreen({
           note="mahasiswa"
         />
       </NumberCards>
+      {requests}
       <section className={shared.panel}>
         {form ?? (
           <>

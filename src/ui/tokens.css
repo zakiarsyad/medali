@@ -92,6 +92,7 @@
   --bare-box-width: 380px;
   --photo-preview-height: 260px;
   --photo-card-height: 200px;
+  --photo-thumb-size: 84px;
   --class-list-height: 220px;
   --class-min-width: 150px;
   /* A file shown in a box over the screen leaves room for its buttons. */

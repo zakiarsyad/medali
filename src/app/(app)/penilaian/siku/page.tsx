@@ -9,8 +9,15 @@ import {
   HistoryPanel,
   SeenStudentsDialog,
 } from "@/features/siku/history-panel";
+import { OwnRequestList } from "@/features/siku/own-request-list";
+import { OwnRequestPanels } from "@/features/siku/own-request-panels";
+import { readOwnRequests, waitingCount } from "@/features/siku/own-requests";
 import { readOwnSiku } from "@/features/siku/own-siku";
 import { OwnSikuScreen } from "@/features/siku/own-siku-screen";
+import { readRequestBoard } from "@/features/siku/request-board";
+import { RequestCards } from "@/features/siku/request-cards";
+import { RequestForm } from "@/features/siku/request-form";
+import { RequestPanel } from "@/features/siku/request-panel";
 import { readSikuParams } from "@/features/siku/siku-address";
 import {
   readSikuList,
@@ -40,24 +47,51 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const db = database();
   const { score: base } = await readBaseScore(db);
   if (!may(account.roles, "view_siku")) {
-    const own = await readOwnSiku(db, account);
+    const [own, asked] = await Promise.all([
+      readOwnSiku(db, account),
+      readOwnRequests(db, account),
+    ]);
     if (own.kind === "refused") forbidden();
-    return <OwnSikuScreen tabs={tabs} base={base} siku={own.siku} />;
+    const requests = asked && {
+      waiting: waitingCount(asked),
+      panels: (
+        <OwnRequestPanels
+          form={
+            <RequestForm
+              newRequestId={crypto.randomUUID()}
+              today={campusDay()}
+            />
+          }
+          list={<OwnRequestList requests={asked} />}
+        />
+      ),
+    };
+    return (
+      <OwnSikuScreen
+        tabs={tabs}
+        base={base}
+        siku={own.siku}
+        requests={requests}
+      />
+    );
   }
   const params = readSikuParams(await props.searchParams);
   const visible = visibleTo(rowLimitForAction(account, "view_siku"));
   const mayAdjust = may(account.roles, "adjust_siku");
   const { seenEntry } = params;
-  const [numbers, ranking, list, groups, history, seen] = await Promise.all([
-    readSikuNumbers(db, visible, base),
-    readSikuRanking(db, visible, base, params),
-    readSikuList(db, visible, base, params),
-    mayAdjust ? readGroupChoices(db) : [],
-    readSikuHistory(db, visible, params.historyPage),
-    seenEntry === null
-      ? null
-      : readSeenStudents(db, visible, seenEntry, params.seenPage),
-  ]);
+  const mayDecide = may(account.roles, "decide_siku_additions");
+  const [numbers, ranking, list, groups, history, seen, board] =
+    await Promise.all([
+      readSikuNumbers(db, visible, base),
+      readSikuRanking(db, visible, base, params),
+      readSikuList(db, visible, base, params),
+      mayAdjust ? readGroupChoices(db) : [],
+      readSikuHistory(db, visible, params.historyPage),
+      seenEntry === null
+        ? null
+        : readSeenStudents(db, visible, seenEntry, params.seenPage),
+      readRequestBoard(db, visible, params.requestFilter, params.requestPage),
+    ]);
   const form = mayAdjust ? (
     <SikuInputPanel
       base={base}
@@ -80,6 +114,14 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
         numbers={numbers}
         ranking={ranking}
         list={list}
+        requests={
+          <RequestPanel
+            board={board}
+            params={params}
+            mayDecide={mayDecide}
+            cards={<RequestCards cards={board.cards} mayDecide={mayDecide} />}
+          />
+        }
         form={form}
         history={
           <HistoryPanel

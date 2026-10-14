@@ -50,7 +50,39 @@ export interface SikuParams {
   seenEntry: string | null;
   /** The page of those students. */
   seenPage: number;
+  /** Which requests of students "Pengajuan penambahan SIKU" shows. */
+  requestFilter: RequestFilter;
+  /** The page of those requests. */
+  requestPage: number;
 }
+
+/** Which requests the staff panel shows: those of one status, or all. */
+export const REQUEST_FILTERS = [
+  "waiting",
+  "approved",
+  "rejected",
+  "all",
+] as const;
+
+export type RequestFilter = (typeof REQUEST_FILTERS)[number];
+
+/** Each choice as the address names it; the first is named by nothing. */
+export const REQUEST_FILTER_CHOICES: Record<RequestFilter, string> = {
+  waiting: "",
+  approved: "disetujui",
+  rejected: "ditolak",
+  all: "semua",
+};
+
+export const REQUEST_FILTER_WORDS: Record<RequestFilter, string> = {
+  waiting: "Diajukan",
+  approved: "Disetujui",
+  rejected: "Ditolak",
+  all: "Semua",
+};
+
+/** How many request cards one page of the staff panel shows. */
+export const REQUEST_PAGE_SIZE = 12;
 
 export const START_PARAMS: SikuParams = {
   query: "",
@@ -61,6 +93,8 @@ export const START_PARAMS: SikuParams = {
   historyPage: 1,
   seenEntry: null,
   seenPage: 1,
+  requestFilter: "waiting",
+  requestPage: 1,
 };
 
 /** How many entries one page of the history shows. */
@@ -97,7 +131,17 @@ export function readSikuParams(params: SearchParams): SikuParams {
     historyPage: pageNamed(firstParam(params.riwayat)),
     seenEntry: entryNamed(firstParam(params.lihat)),
     seenPage: pageNamed(firstParam(params.lihathal)),
+    requestFilter: requestFilterNamed(firstParam(params.pengajuan)),
+    requestPage: pageNamed(firstParam(params.pengajuanhal)),
   };
+}
+
+/** The requests an address names, or those that wait for any other word. */
+export function requestFilterNamed(sent: string): RequestFilter {
+  const named = REQUEST_FILTERS.find(
+    (each) => REQUEST_FILTER_CHOICES[each] === sent,
+  );
+  return named ?? "waiting";
 }
 
 function entryNamed(sent: string): string | null {
@@ -122,6 +166,12 @@ export function sikuAddress(params: SikuParams): string {
   if (params.seenEntry !== null) search.set("lihat", params.seenEntry);
   if (params.seenEntry !== null && params.seenPage > 1) {
     search.set("lihathal", String(params.seenPage));
+  }
+  if (params.requestFilter !== "waiting") {
+    search.set("pengajuan", REQUEST_FILTER_CHOICES[params.requestFilter]);
+  }
+  if (params.requestPage > 1) {
+    search.set("pengajuanhal", String(params.requestPage));
   }
   const text = search.toString();
   if (text === "") return SIKU_ADDRESS;
