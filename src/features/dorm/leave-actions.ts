@@ -10,6 +10,7 @@ import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { askLeave } from "./ask-leave";
 import { cancelLeave } from "./cancel-leave";
+import { decideLeave } from "./decide-leave";
 import { describeLeave } from "./describe-leave";
 import { LEAVE_ADDRESS } from "./leave-address";
 import type { SentLeave } from "./leave-input";
@@ -23,6 +24,13 @@ import { KIND_WORDS } from "./leave-words";
 async function resident(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "ask_dorm_leave")) forbidden();
+  return account;
+}
+
+/** The signed-in account when it may approve and reject leave. */
+async function decider(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "decide_dorm_leave")) forbidden();
   return account;
 }
 
@@ -63,6 +71,34 @@ export async function cancelLeaveAction(id: string): Promise<FormState> {
   if (!cancelled.ok) return { error: cancelled.error, done: null };
   revalidatePath(LEAVE_ADDRESS);
   return { error: null, done: "Pengajuan dibatalkan." };
+}
+
+const DECIDED_WORDS: Record<string, string> = {
+  approved: "Izin disetujui.",
+  rejected: "Izin ditolak.",
+};
+
+/**
+ * "Setujui" and "Tolak" on a card. Who decided is the signed-in account,
+ * never a field. A refusal stays on its card, which a reload would take
+ * away.
+ */
+export async function decideLeaveAction(
+  id: string,
+  decision: string,
+  note: string,
+): Promise<FormState> {
+  const actor = await decider();
+  const decided = await decideLeave(
+    database(),
+    actor,
+    String(id),
+    String(decision),
+    String(note),
+  );
+  if (!decided.ok) return { error: decided.error, done: null };
+  revalidatePath(LEAVE_ADDRESS);
+  return { error: null, done: DECIDED_WORDS[decided.value] ?? null };
 }
 
 /** The note under the times of the form, while they are typed. */

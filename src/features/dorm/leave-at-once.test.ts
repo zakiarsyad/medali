@@ -1,14 +1,23 @@
 // Sample NIMs of this file: 9937850000 to 9937850099.
 import { describe, expect, it } from "vitest";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import type { Parsed } from "@/parsed";
 import { askLeave } from "./ask-leave";
-import { LEAVE_OVERLAPS } from "./leave-messages";
+import { cancelLeave } from "./cancel-leave";
+import { decideLeave } from "./decide-leave";
+import {
+  LEAVE_OVERLAPS,
+  tooLateToCancel,
+  tooLateToDecide,
+} from "./leave-messages";
 import {
   addTestResidents,
+  leaveById,
   leavesOf,
   sentOuting,
   type TestResident,
 } from "./test-leave";
+import { addTestActor } from "./test-records";
 
 /*
  * Two requests at the same moment need two connections that both see the
@@ -35,6 +44,48 @@ async function resident(place: number): Promise<TestResident> {
   if (!found) throw new Error("There is no such resident.");
   return found;
 }
+
+/** A request of a resident that waits, and a Pengelola Asrama to decide it. */
+async function waitingRequest(place: number) {
+  const asker = await resident(place);
+  const id = crypto.randomUUID();
+  const saved = await askLeave(own.db, asker, id, sentOuting(TOMORROW), MOMENT);
+  if (!saved.ok) throw new Error(saved.error);
+  const manager = await addTestActor(own.db, `Pengelola Uji ${place}`, [
+    "dorm_manager",
+  ]);
+  return { asker, id, manager };
+}
+
+describe("a cancel and a decision of one request at the same moment", () => {
+  it("lets the cancel that comes first win: the approval waits, then is refused", async () => {
+    const { asker, id, manager } = await waitingRequest(2);
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => cancelLeave(db, asker, id),
+      (db) => decideLeave(db, manager, id, "approve", ""),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: null });
+    expect(both.later).toEqual(tooLateToDecide("cancelled"));
+    expect((await leaveById(own.db, id))?.status).toBe("cancelled");
+  });
+
+  it("lets the approval that comes first win: the cancel waits, then is refused", async () => {
+    const { asker, id, manager } = await waitingRequest(3);
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => decideLeave(db, manager, id, "approve", ""),
+      (db) => cancelLeave(db, asker, id),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: "approved" });
+    expect(both.later).toEqual(tooLateToCancel("approved"));
+    const kept = await leaveById(own.db, id);
+    expect(kept?.status).toBe("approved");
+    expect(kept?.cancelledAt).toBeNull();
+  });
+});
 
 describe("two requests of one resident at the same moment", () => {
   it("keeps a form pressed twice once: the second waits, then answers the same", async () => {

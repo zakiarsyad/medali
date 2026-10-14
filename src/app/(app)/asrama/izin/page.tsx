@@ -31,7 +31,14 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
       params.page,
       new Date(),
     );
-    return <StaffLeaveScreen tabs={tabs} params={params} board={board} />;
+    return (
+      <StaffLeaveScreen
+        tabs={tabs}
+        params={params}
+        board={board}
+        mayDecide={may(account.roles, "decide_dorm_leave")}
+      />
+    );
   }
   const page = pageOf(searchParams);
   const answer = await readOwnLeave(database(), account, page, new Date());

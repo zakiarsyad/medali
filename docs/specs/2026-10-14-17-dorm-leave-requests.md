@@ -85,5 +85,5 @@ Decided while building, because the issue did not say:
   permission list, with their checks.
 - [x] 3. Residents ask for leave and see and cancel their history.
 - [x] 4. Staff see the numbers, filters and cards, read only.
-- [ ] 5. Pengelola Asrama approves and rejects.
+- [x] 5. Pengelola Asrama approves and rejects.
 - [ ] 6. Approved leave changes dorm attendance.

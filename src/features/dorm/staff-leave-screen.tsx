@@ -9,7 +9,7 @@ import {
   type LeaveListParams,
   leaveListAddress,
 } from "./leave-address";
-import { LeaveCardView } from "./leave-card-view";
+import { LeaveCards } from "./leave-cards";
 import { LeaveFilterRow } from "./leave-filters";
 import type { LeaveBoard } from "./leave-list";
 
@@ -18,19 +18,24 @@ export const NO_LEAVE_MATCHES = "Tidak ada pengajuan pada filter ini.";
 /**
  * Perizinan asrama for staff: the numbers Menunggu verifikasi and Izin 30
  * hari terakhir, the search with the status and kind choices, and one
- * page of request cards. Read only for every role but Pengelola Asrama.
+ * page of request cards. Pengelola Asrama approves and rejects there;
+ * every other role only reads.
  */
 export function StaffLeaveScreen({
   tabs,
   params,
   board,
+  mayDecide,
 }: {
   tabs: TabLinksProps;
   params: LeaveListParams;
   board: LeaveBoard;
+  /** Whether the account may approve and reject, or only see. */
+  mayDecide: boolean;
 }) {
   const { counts, list } = board;
   const { filters } = params;
+  const address = leaveListAddress(filters, params.page);
   return (
     <>
       <PageHead title="Perizinan asrama">
@@ -38,10 +43,12 @@ export function StaffLeaveScreen({
         penghuni asrama.
       </PageHead>
       <TabLinks {...tabs} />
-      <p className={styles.note}>
-        Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap dan
-        rinciannya.
-      </p>
+      {!mayDecide && (
+        <p className={styles.note}>
+          Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
+          dan rinciannya.
+        </p>
+      )}
       <NumberCards>
         <NumberCard
           label="Menunggu verifikasi"
@@ -56,15 +63,17 @@ export function StaffLeaveScreen({
       </NumberCards>
       <section className={shared.panel}>
         <LeaveFilterRow filters={filters} />
-        {list.cards.length === 0 ? (
-          <p className={shared.empty}>{NO_LEAVE_MATCHES}</p>
-        ) : (
-          <ul className={styles.cards}>
-            {list.cards.map((card) => (
-              <LeaveCardView key={card.id} card={card} />
-            ))}
-          </ul>
-        )}
+        {/*
+          Made anew for each address, so a decision made on one page is not
+          shown on another. By the page the address asked for, not the one
+          shown, so a decided card stays when the list shrinks.
+        */}
+        <LeaveCards
+          key={address}
+          cards={list.cards}
+          mayDecide={mayDecide}
+          emptyWords={NO_LEAVE_MATCHES}
+        />
         {list.matching > 0 && (
           <ListPager
             page={list.page}
