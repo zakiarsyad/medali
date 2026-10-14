@@ -1,4 +1,4 @@
-import { and, gt, gte, isNull, lte, or, type SQL } from "drizzle-orm";
+import { and, eq, gt, gte, isNull, lte, or, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormActivities, dormActivityVersions } from "@/db/schema";
 import { takingPlaceOn } from "./activity-days";
@@ -54,4 +54,26 @@ export async function readDailyActivities(
     and(shownOn(day), validOn(day), keptOn(day)),
   );
   return takingPlaceOn(rows, day);
+}
+
+/**
+ * One activity as Jadwal harian shows it on a day, or null when it does
+ * not take place on that day.
+ */
+export async function readActivityOn(
+  db: Database,
+  activityId: string,
+  day: string,
+): Promise<ActivityRow | null> {
+  const rows = await readVersions(
+    db,
+    and(
+      eq(dormActivityVersions.activityId, activityId),
+      shownOn(day),
+      validOn(day),
+      keptOn(day),
+    ),
+  );
+  const [held] = takingPlaceOn(rows, day);
+  return held ?? null;
 }

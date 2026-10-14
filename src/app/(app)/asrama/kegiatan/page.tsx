@@ -29,6 +29,7 @@ export default async function DormActivitiesPage(
         searchParams={await props.searchParams}
         visible={visibleTo(rowLimitForAction(account, "view_dorm_activities"))}
         mayManage={may(account.roles, "manage_dorm_activities")}
+        mayCount={may(account.roles, "count_dorm_attendance")}
       />
     );
   }

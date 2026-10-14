@@ -12,6 +12,7 @@ vi.mock("./activity-actions", () => ({
   removeActivityAction: vi.fn(),
   restoreActivityAction: vi.fn(),
 }));
+vi.mock("./count-actions", () => ({ saveCountAction: vi.fn() }));
 
 const NOW = { day: "2026-10-14", time: "18:00" };
 const RESIDENTS = {
@@ -22,7 +23,7 @@ const RESIDENTS = {
 };
 
 function params(view: ActivitiesParams["view"]): ActivitiesParams {
-  return { view, day: NOW.day, page: 1 };
+  return { view, day: NOW.day, page: 1, counted: null };
 }
 
 const FORM: FormParts = {
@@ -40,12 +41,13 @@ function board(view: ActivitiesView, form: FormParts | null = null): string {
   );
 }
 
-const DAILY: ActivitiesView = {
+const DAILY = {
   view: "harian",
   day: NOW.day,
   activities: [TEST_ROW, { ...TEST_ONE_OFF, audience: "women" }],
   residents: RESIDENTS,
-};
+  count: null,
+} satisfies ActivitiesView;
 
 describe("Jadwal harian", () => {
   it("shows the day, the steps around it, and each activity with its time, kind, penanggung jawab, peserta and state", () => {

@@ -107,6 +107,32 @@ Decided while building, because the issue did not say:
    schedule: Kepala Unit, Direktur / Wakil Direktur, Ketua Program Studi
    (their study program only), Pengelola Asrama and every BAM role.
    Seeing one's own attendance is a right of its own, held by Mahasiswa.
+9. "Penghitungan kehadiran" is for the date open in Jadwal harian, any
+   date. The chip picked is kept in the address. On a date gone by every
+   activity has started, so its last one is chosen at the start. An
+   activity that has not started shows only the message, without the
+   list.
+10. The participants are the students who live, on the activity's date,
+    in a dorm its Peserta covers, by the rule the app already uses for
+    who lives in which dorm. The room shown is their room today, or
+    "Belum diplot". Each save takes the participants anew: one who no
+    longer takes part leaves the count and one who just moved in counts
+    as Hadir. A form that marks someone who does not take part is
+    refused with "Daftar peserta sudah berubah. Muat ulang halaman, lalu
+    isi lagi."
+11. An announcement may be made once the activity has started, as in the
+    prototype. After the first one "Simpan" is no longer offered and a
+    draft sent by hand is refused; "Umumkan ulang" asks first too.
+12. Leaving with unsaved changes asks first on every link of the app
+    (the chips, the day steps, the tabs and the menu), on picking another
+    date, and on reloading or closing the page, where the browser asks in
+    its own words. The browser's own back step is not asked about, as on
+    Daftar hadir pertemuan.
+13. The messages are "Draf penghitungan disimpan.", "Ketidakhadiran
+    diumumkan." and "Ketidakhadiran diumumkan ulang."; the question
+    before an announcement is "Umumkan (n) mahasiswa tidak hadir pada
+    (kegiatan)?", without the prototype's line on clarification, which
+    is not part of this work.
 
 ## Steps
 
@@ -114,6 +140,6 @@ Decided while building, because the issue did not say:
   sample counts for the past week.
 - [x] 2. The rights to count and to see attendance are added to the
   permission list, with their checks.
-- [ ] 3. "Penghitungan kehadiran" lets BAM tick, note, save and announce.
+- [x] 3. "Penghitungan kehadiran" lets BAM tick, note, save and announce.
 - [ ] 4. Staff see Hadir, Kehadiran and the absent list in Rincian.
 - [ ] 5. Residents see the numbers and Riwayat.

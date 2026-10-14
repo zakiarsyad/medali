@@ -1,4 +1,5 @@
 import { isDay } from "@/db/is-day";
+import { isUuid } from "@/db/is-uuid";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 
 export const ACTIVITIES_ADDRESS = "/asrama/kegiatan";
@@ -21,6 +22,11 @@ export interface ActivitiesParams {
   day: string;
   /** The page of Kegiatan non rutin, counted from 1. */
   page: number;
+  /**
+   * The activity "Penghitungan kehadiran" is open on in Jadwal harian, or
+   * null for the one it opens on by itself.
+   */
+  counted: string | null;
 }
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -44,24 +50,28 @@ export function readActivitiesParams(
   const view = firstParam(params.lihat);
   const day = firstParam(params.tgl);
   const page = firstParam(params.hal);
+  const counted = firstParam(params.hitung);
   return {
     view: ACTIVITY_VIEWS.find((known) => known === view) ?? "harian",
     day: isOpenable(day) ? day : today,
     page: PAGE.test(page) ? Number(page) : 1,
+    counted: isUuid(counted) ? counted : null,
   };
 }
 
 /**
  * The address of the screen. Jadwal harian, today and the first page are
- * left out, and so are the day and the page of a list that has none.
+ * left out, and so are the day, the page and the counted activity of a
+ * list that has none.
  */
 export function activitiesAddress(
-  { view, day, page }: ActivitiesParams,
+  { view, day, page, counted }: ActivitiesParams,
   today: string,
 ): string {
   const params = new URLSearchParams();
   if (view !== "harian") params.set("lihat", view);
   if (view === "harian" && day !== today) params.set("tgl", day);
+  if (view === "harian" && counted !== null) params.set("hitung", counted);
   if (view === "nonrutin" && page > 1) params.set("hal", String(page));
   const text = params.toString();
   return text === "" ? ACTIVITIES_ADDRESS : `${ACTIVITIES_ADDRESS}?${text}`;
