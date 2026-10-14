@@ -99,6 +99,9 @@ Decided while building, because the issue did not say:
    uses for it, and leaves out the sentence that says the groups are
    ready. "Tetapkan" stays refused for it, as today.
 6. No table is added or changed.
+7. A group in force always has one mentor of today. Should one ever
+   have none, the tab shows the mentor that was chosen for it, with no
+   "sejak", rather than no mentor at all.
 
 ## Steps
 
