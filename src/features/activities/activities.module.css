@@ -19,12 +19,15 @@
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--ink);
+  font-family: inherit;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   text-decoration: none;
+  cursor: pointer;
 }
 
-.choice[aria-current="true"] {
+.choice[aria-current="true"],
+.choice[aria-pressed="true"] {
   border-color: var(--navy);
   background: var(--navy);
   color: var(--surface);
@@ -281,5 +284,75 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  overflow-wrap: anywhere;
+}
+
+/* The Peserta part of the form of an extra activity. */
+.participants {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+/* The four kinds of choice fold onto more lines on a phone. */
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.modes legend {
+  margin-bottom: var(--space-2xs);
+}
+
+.modes .choice {
+  flex: 1 1 auto;
+}
+
+/*
+ * The classes under "Cari kelas" scroll inside a box of their own, so a
+ * long list neither lengthens nor widens the page.
+ */
+.classList {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--class-min-width)), 1fr)
+    );
+  gap: var(--space-3xs) var(--space-md);
+  max-height: var(--class-list-height);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--space-sm);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+/* The students picked one by one, each with × to take them out. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  max-width: 100%;
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--goldsoft);
+  color: var(--ink);
+  font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }

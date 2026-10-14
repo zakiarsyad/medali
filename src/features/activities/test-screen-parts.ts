@@ -28,6 +28,7 @@ export const TEST_CHOICES: ActivityChoice[] = [
 
 export const TEST_FORM_PARTS: FormParts = {
   choices: TEST_CHOICES,
+  extra: null,
   periods: [{ startYear: 2026, term: "odd", startsOn: "2026-08-01" }],
   counts: [
     { cohortYear: 2026, students: 120 },
@@ -35,6 +36,32 @@ export const TEST_FORM_PARTS: FormParts = {
   ],
   today: "2026-10-13",
   newScheduleId: "00000000-0000-4000-8000-0000000000f1",
+};
+
+/** The form on "Kegiatan tambahan": one extra activity, two classes. */
+export const TEST_EXTRA_FORM_PARTS: FormParts = {
+  ...TEST_FORM_PARTS,
+  choices: [
+    {
+      id: "00000000-0000-4000-8000-0000000000a9",
+      semester: null,
+      name: "Mentoring sebaya uji",
+      valueKeys: ["A"],
+      indicatorCodes: ["A2"],
+      targetParticipants: null,
+      isRequired: true,
+    },
+  ],
+  extra: {
+    pool: {
+      classes: [
+        { className: "2-01", students: 30 },
+        { className: "2-02", students: 28 },
+      ],
+      cohorts: TEST_FORM_PARTS.counts,
+    },
+    picked: {},
+  },
 };
 
 /**

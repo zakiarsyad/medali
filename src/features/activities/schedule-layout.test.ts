@@ -52,6 +52,20 @@ describe("the schedule form on a phone", () => {
     expect(ruleOf(".addHead")).toContain("flex-wrap: wrap;");
   });
 
+  it("folds the Peserta choices, the angkatan and the students picked, and scrolls the classes inside their own box", () => {
+    expect(ruleOf(".modes")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".modes")).toContain("min-width: 0;");
+    expect(ruleOf(".choices")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".chips")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".chip")).toContain("max-width: 100%;");
+    expect(ruleOf(".classList")).toContain(
+      "max-height: var(--class-list-height);",
+    );
+    expect(ruleOf(".classList")).toContain("overflow-y: auto;");
+    expect(ruleOf(".classList")).toContain("overflow-x: hidden;");
+    expect(ruleOf(".classList")).toContain("minmax(min(100%,");
+  });
+
   it("folds Hapus jadwal with its message under the other buttons when there is no room beside them", () => {
     expect(ruleOf(".pushedEnd")).toContain("flex-wrap: wrap;");
   });

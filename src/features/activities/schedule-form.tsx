@@ -10,6 +10,7 @@ import { ActivityFacts } from "./activity-facts";
 import { ACTIVITY_FIELD_ID, ActivitySelect } from "./activity-select";
 import {
   choicesWith,
+  draftFor,
   type FormParts,
   keptChoice,
   participantsOn,
@@ -17,6 +18,7 @@ import {
   valuesOf,
 } from "./form-values";
 import { formTargetWords } from "./form-words";
+import { ParticipantField } from "./participant-field";
 import { RemoveScheduleButton } from "./remove-schedule-button";
 import { LOCATION_MAX_LENGTH } from "./schedule-input";
 import type { ScheduleRow } from "./schedule-row";
@@ -24,9 +26,17 @@ import { UploadRangeField } from "./upload-range-field";
 
 const START: FormState = { error: null, done: null };
 
+/** The heading of the form and the button that opens it for a new schedule. */
+export function addWords(parts: Pick<FormParts, "extra">): string {
+  return parts.extra
+    ? "Jadwalkan kegiatan tambahan"
+    : "Jadwalkan kegiatan PPKS";
+}
+
 /**
- * The form that schedules a PPKS activity of the Kurikulum list, or
- * changes a schedule, where it also has "Hapus jadwal".
+ * The form that schedules an activity of the Kurikulum list, PPKS or
+ * special and additional with its Peserta, or changes a schedule, where
+ * it also has "Hapus jadwal".
  */
 export function ScheduleForm({
   schedule,
@@ -43,10 +53,7 @@ export function ScheduleForm({
   onCancel: () => void;
 }) {
   const start = schedule ? valuesOf(schedule) : startingValues(parts.today);
-  const choices = choicesWith(
-    parts.choices,
-    schedule ? keptChoice(schedule) : null,
-  );
+  const choices = choicesWith(parts.choices, schedule && keptChoice(schedule));
   const [activityId, setActivityId] = useState(start.activityId);
   const [startsOn, setStartsOn] = useState(start.startsOn);
   const [isRequired, setIsRequired] = useState(start.isRequired);
@@ -74,8 +81,9 @@ export function ScheduleForm({
     // noValidate: the server says what is wrong, in the app's own words.
     <form onSubmit={(event) => sendForm(event, action)} noValidate>
       <h2 className={shared.heading}>
-        {schedule ? "Ubah jadwal" : "Jadwalkan kegiatan PPKS"}
+        {schedule ? "Ubah jadwal" : addWords(parts)}
       </h2>
+      <input type="hidden" name="kind" value={parts.extra ? "extra" : "ppks"} />
       <input type="hidden" name="id" value={schedule?.id ?? newId} />
       {schedule && (
         <input type="hidden" name="version" value={schedule.version} />
@@ -149,12 +157,19 @@ export function ScheduleForm({
           />
           Wajib, dihitung dalam nilai kehadiran
         </label>
-        <p className={`${shared.detail} ${styles.full}`}>
-          {formTargetWords(
-            participantsOn(parts, activity, startsOn),
-            activity?.targetParticipants ?? null,
-          )}
-        </p>
+        {parts.extra ? (
+          <ParticipantField
+            start={draftFor(schedule, parts.extra)}
+            pool={parts.extra.pool}
+          />
+        ) : (
+          <p className={`${shared.detail} ${styles.full}`}>
+            {formTargetWords(
+              participantsOn(parts, activity, startsOn),
+              activity?.targetParticipants ?? null,
+            )}
+          </p>
+        )}
         {state.error && <FormMessage state={state} />}
         <div className={shared.actions}>
           <button type="submit" className={shared.button} disabled={pending}>

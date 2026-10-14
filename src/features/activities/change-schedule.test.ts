@@ -32,7 +32,10 @@ const MAY_MANAGE: RoleId[] = ["head_of_unit", "upk_staff"];
 const MAY_NOT_MANAGE = ROLE_IDS.filter((role) => !MAY_MANAGE.includes(role));
 const CHANGED = {
   ok: true,
-  value: { name: "Kegiatan uji jadwal", semester: 3 },
+  value: {
+    name: "Kegiatan uji jadwal",
+    target: { kind: "semester", semester: 3 },
+  },
 };
 const UNKNOWN_ID = "6e5d4c3b-2a1f-4e0d-9c8b-7a6f5e4d3c2b";
 
@@ -401,7 +404,10 @@ describe("the activity of a changed schedule", () => {
 
       expect(changed).toEqual({
         ok: true,
-        value: { name: "Kegiatan uji lain", semester: 5 },
+        value: {
+          name: "Kegiatan uji lain",
+          target: { kind: "semester", semester: 5 },
+        },
       });
       expect((await storedOf(db, id)).activityId).toBe(other);
     });

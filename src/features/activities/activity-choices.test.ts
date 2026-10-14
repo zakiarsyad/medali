@@ -26,7 +26,7 @@ describe("readActivityChoices", () => {
         name: "Uji pilihan B",
       });
 
-      const choices = await readActivityChoices(db);
+      const choices = await readActivityChoices(db, "ppks");
 
       expect(choices.map((choice) => choice.id)).toEqual([
         earlierName,
@@ -61,9 +61,37 @@ describe("readActivityChoices", () => {
         name: "Uji pilihan khusus",
       });
 
-      const choices = await readActivityChoices(db);
+      const choices = await readActivityChoices(db, "ppks");
 
       expect(choices.map((choice) => choice.id)).toEqual([kept]);
+    });
+  });
+
+  it("gives the special and additional activities in the list, by name, for Kegiatan tambahan", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await addTestActor(db, "Pegawai Uji Pilihan", [
+        "upk_staff",
+      ]);
+      await addTestActivity(db, actor.id);
+      const later = await addTestActivity(db, actor.id, {
+        semester: null,
+        name: "Uji pilihan khusus B",
+      });
+      const earlier = await addTestActivity(db, actor.id, {
+        semester: null,
+        name: "Uji pilihan khusus A",
+      });
+      await addTestActivity(db, actor.id, {
+        semester: null,
+        name: "Uji pilihan khusus dihapus",
+        deletedAt: new Date(),
+        deletedBy: actor.id,
+      });
+
+      const choices = await readActivityChoices(db, "extra");
+
+      expect(choices.map((choice) => choice.id)).toEqual([earlier, later]);
+      expect(choices[0]?.semester).toBeNull();
     });
   });
 });

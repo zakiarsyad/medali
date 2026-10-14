@@ -1,4 +1,4 @@
-import { rowLimitForTab } from "@/auth/access";
+import { may, rowLimitForTab } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { readScheduleListParams } from "@/features/activities/schedule-list-address";
 import { SchedulesScreen } from "@/features/activities/schedules-screen";
@@ -21,9 +21,7 @@ export default async function ExtraSchedulesPage(
       tabs={{ pagePath: "kegiatan", tabs: opened.tabs, open: "tambahan" }}
       params={params}
       visible={visibleTo(rowLimitForTab(account, "activities", "extra"))}
-      // No account gets a form here yet: the form of the PPKS tab cannot
-      // choose the participants of an extra activity.
-      mayManage={false}
+      mayManage={may(account.roles, "manage_activities")}
     />
   );
 }

@@ -114,6 +114,30 @@ The issue did not say, so these were decided:
    choice holds, the same for every role, as on the PPKS tab.
 10. Classes are listed by name and angkatan from the earliest, as
     "Kelas 2-01, 2-02" and "Lintas angkatan 2023, 2024".
+11. As in the prototype, a new schedule starts on Per angkatan with
+    nothing picked, the angkatan are offered the newest first, and each
+    kind of choice keeps its picks while another is shown. Only the
+    picks of the kind shown are saved. Going to Per angkatan keeps the
+    first angkatan picked.
+12. As in the prototype, a choice that holds no Aktif student today is
+    refused with "Tentukan peserta kegiatan.", also when it names a
+    class or angkatan that has only students who are not Aktif. The
+    class list and the angkatan offer only those with Aktif students,
+    and also those a schedule already holds when it is changed.
+13. A student chosen Per mahasiswa who is no longer Aktif shows on the
+    form as "tidak dihitung", and stays chosen unless taken out with ×.
+14. Per angkatan with more than one angkatan, which only a hand-made
+    request can send, is refused with "Pilih satu angkatan, atau pilih
+    Lintas angkatan." A student who is not stored is refused with
+    "Peserta yang dipilih tidak dikenali. Muat ulang halaman, lalu pilih
+    peserta lagi." One schedule holds at most 2.000 picks.
+15. A schedule stays on its tab: as before, a schedule of a PPKS
+    activity cannot be changed to a special or additional one, and the
+    reverse is refused too. Each tab's form offers only its own kind of
+    activity.
+16. As in the prototype, the save message writes the Sasaran with a
+    small first letter, as 'Jadwal "Program mentor sebaya" disimpan
+    untuk kelas 2-01, 2-02.'
 
 ## Steps
 
@@ -122,7 +146,7 @@ The issue did not say, so these were decided:
   Sample data adds two extra activities.
 - [x] 2. The rule that says whether a student takes part, with checks.
 - [x] 3. The "Kegiatan tambahan" tab shows the numbers and the table.
-- [ ] 4. "Jadwalkan kegiatan tambahan" with the Peserta choice, "Ubah"
+- [x] 4. "Jadwalkan kegiatan tambahan" with the Peserta choice, "Ubah"
   and "Hapus jadwal".
 - [ ] 5. Students see their extra activities and send photos; Verifikasi
   presensi and clarifications include them.

@@ -16,6 +16,20 @@ export type ScheduleTarget =
   | { kind: "semester"; semester: number }
   | { kind: "chosen"; choice: ShownChoice; participants: number };
 
+/**
+ * Whom a saved schedule is for, as the message of the save names it: the
+ * semester of its PPKS activity, or the choice of its extra activity.
+ */
+export type SavedTarget =
+  | { kind: "semester"; semester: number }
+  | { kind: "chosen"; choice: ShownChoice };
+
+/** The activity a saved schedule holds and whom it is for. */
+export interface SavedSchedule {
+  name: string;
+  target: SavedTarget;
+}
+
 /** One schedule as the list shows it and as its form opens with. */
 export interface ScheduleRow extends StatusParts {
   id: string;

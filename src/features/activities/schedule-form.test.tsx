@@ -1,21 +1,31 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { FormParts } from "./form-values";
 import { ScheduleForm } from "./schedule-form";
 import type { ScheduleRow } from "./schedule-row";
-import { TEST_FORM_PARTS, TEST_SCHEDULE } from "./test-screen-parts";
+import {
+  TEST_EXTRA_FORM_PARTS,
+  TEST_EXTRA_SCHEDULE,
+  TEST_FORM_PARTS,
+  TEST_SCHEDULE,
+} from "./test-screen-parts";
 
 vi.mock("./actions", () => ({
   saveScheduleAction: vi.fn(),
   removeScheduleAction: vi.fn(),
+  searchParticipantStudentsAction: vi.fn(),
 }));
 
 function nothing() {}
 
-function formFor(schedule: ScheduleRow | null): string {
+function formFor(
+  schedule: ScheduleRow | null,
+  parts: FormParts = TEST_FORM_PARTS,
+): string {
   return renderToStaticMarkup(
     <ScheduleForm
       schedule={schedule}
-      parts={TEST_FORM_PARTS}
+      parts={parts}
       onSaved={nothing}
       onRemoved={nothing}
       onCancel={nothing}
@@ -106,6 +116,71 @@ describe("the form for a new schedule", () => {
 
   it("sends no version, so the server adds a schedule", () => {
     expect(newForm()).not.toContain('name="version"');
+  });
+
+  it("says it is on the PPKS tab, and has no Peserta", () => {
+    expect(fieldOf(newForm(), "kind")).toContain('value="ppks"');
+    expect(newForm()).not.toContain("Per mahasiswa");
+  });
+});
+
+describe("the form for a new schedule of an extra activity", () => {
+  const form = formFor(null, TEST_EXTRA_FORM_PARTS);
+
+  it("is titled Jadwalkan kegiatan tambahan and says it is on that tab", () => {
+    expect(form).toContain("Jadwalkan kegiatan tambahan");
+    expect(fieldOf(form, "kind")).toContain('value="extra"');
+  });
+
+  it("offers the extra activities in one list, with no semester groups", () => {
+    expect(form).toContain("Mentoring sebaya uji</option>");
+    expect(form).not.toContain("<optgroup");
+  });
+
+  it("offers the four kinds of Peserta, on Per angkatan at the start", () => {
+    for (const words of [
+      "Per mahasiswa",
+      "Per kelas",
+      "Per angkatan",
+      "Lintas angkatan",
+    ]) {
+      expect(form).toContain(words);
+    }
+    expect(form).toContain('aria-pressed="true">Per angkatan</button>');
+    expect(fieldOf(form, "participantMode")).toContain('value="cohort"');
+  });
+
+  it("offers each angkatan with its count, the newest first, and counts nobody while none is picked", () => {
+    expect(form.indexOf("Angkatan 2026")).toBeLessThan(
+      form.indexOf("Angkatan 2025"),
+    );
+    expect(form).toContain("(120)");
+    expect(form).toContain("Sasaran: 0 mahasiswa.");
+    expect(form).not.toContain('name="participant"');
+    expect(form).not.toContain("(target");
+  });
+});
+
+describe("the form that changes a schedule of an extra activity", () => {
+  const form = formFor(TEST_EXTRA_SCHEDULE, TEST_EXTRA_FORM_PARTS);
+
+  it("opens on Lintas angkatan with the two angkatan it holds, counted", () => {
+    expect(form).toContain('aria-pressed="true">Lintas angkatan</button>');
+    expect(form).toContain(
+      '<input type="hidden" name="participant" value="2024"/>',
+    );
+    expect(form).toContain(
+      '<input type="hidden" name="participant" value="2025"/>',
+    );
+    expect(form).toContain("Angkatan 2024");
+    expect(form).toContain("Pilih dua angkatan atau lebih.");
+    expect(form).toContain("Sasaran: 96 mahasiswa.");
+  });
+
+  it("offers the activity it holds, chosen", () => {
+    expect(form).toContain(
+      `<option value="${TEST_EXTRA_SCHEDULE.activity.id}" selected="">`,
+    );
   });
 });
 

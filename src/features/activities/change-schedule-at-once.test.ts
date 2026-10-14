@@ -62,7 +62,10 @@ describe("two staff who save a change to one schedule at the same moment", () =>
 
     expect(both.sooner).toEqual({
       ok: true,
-      value: { name: "Kegiatan uji jadwal", semester: 3 },
+      value: {
+        name: "Kegiatan uji jadwal",
+        target: { kind: "semester", semester: 3 },
+      },
     });
     expect(both.later).toEqual(SCHEDULE_CHANGED_BY_OTHER);
     const kept = await own.db.select().from(activitySchedules);

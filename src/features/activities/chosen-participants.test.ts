@@ -3,6 +3,7 @@ import {
   type CandidateStudent,
   choiceOf,
   isChosen,
+  isSameChoice,
   type ParticipantChoice,
   shownChoiceOf,
   takesPart,
@@ -146,5 +147,42 @@ describe("choiceOf", () => {
 
   it("refuses a row that names nothing", () => {
     expect(() => choiceOf([nobody])).toThrow();
+  });
+});
+
+describe("isSameChoice", () => {
+  it("holds for the same picks in another order", () => {
+    const sameClasses: ParticipantChoice = {
+      kind: "classes",
+      classNames: ["2-01", "2-02"],
+    };
+    const sameCohorts: ParticipantChoice = {
+      kind: "cohorts",
+      cohortYears: [2024, 2023],
+    };
+
+    expect(isSameChoice(BY_CLASS, sameClasses)).toBe(true);
+    expect(isSameChoice(ACROSS_COHORTS, sameCohorts)).toBe(true);
+  });
+
+  it("does not hold for other picks or another kind", () => {
+    const fewerClasses: ParticipantChoice = {
+      kind: "classes",
+      classNames: ["2-01"],
+    };
+    const otherKind: ParticipantChoice = {
+      kind: "classes",
+      classNames: [OTHER_ID, STUDENT.id],
+    };
+
+    expect(isSameChoice(BY_COHORT, ACROSS_COHORTS)).toBe(false);
+    expect(isSameChoice(BY_CLASS, fewerClasses)).toBe(false);
+    expect(isSameChoice(BY_STUDENT, otherKind)).toBe(false);
+  });
+
+  it("holds for no choice only against no choice", () => {
+    expect(isSameChoice(null, null)).toBe(true);
+    expect(isSameChoice(null, BY_COHORT)).toBe(false);
+    expect(isSameChoice(BY_COHORT, null)).toBe(false);
   });
 });

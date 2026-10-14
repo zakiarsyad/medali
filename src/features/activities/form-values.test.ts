@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   choicesWith,
+  draftFor,
   type FormPeriod,
   keptChoice,
   participantsOn,
   startingValues,
   valuesOf,
 } from "./form-values";
+import { STARTING_DRAFT } from "./participant-draft";
 import {
   TEST_CHOICES,
   TEST_EXTRA_SCHEDULE,
@@ -37,8 +39,51 @@ describe("keptChoice", () => {
     });
   });
 
-  it("gives none for a schedule of an extra activity", () => {
-    expect(keptChoice(TEST_EXTRA_SCHEDULE)).toBeNull();
+  it("gives the extra activity a schedule holds with no semester", () => {
+    expect(keptChoice(TEST_EXTRA_SCHEDULE)).toEqual({
+      ...TEST_EXTRA_SCHEDULE.activity,
+      semester: null,
+    });
+  });
+});
+
+describe("draftFor", () => {
+  const picked = {
+    id: "00000000-0000-4000-8000-0000000000c1",
+    name: "Uji Draf Terpilih",
+    nim: "9974640011",
+    isActive: true,
+  };
+  const extra = {
+    pool: { classes: [], cohorts: [] },
+    picked: { [TEST_EXTRA_SCHEDULE.id]: [picked] },
+  };
+
+  it("opens a new schedule on Per angkatan with nothing picked", () => {
+    expect(draftFor(null, extra)).toEqual(STARTING_DRAFT);
+  });
+
+  it("opens a schedule with the angkatan it holds", () => {
+    expect(draftFor(TEST_EXTRA_SCHEDULE, extra)).toMatchObject({
+      mode: "cohorts",
+      cohortYears: [2024, 2025],
+    });
+  });
+
+  it("opens a schedule with the students it names one by one", () => {
+    const byName = {
+      ...TEST_EXTRA_SCHEDULE,
+      target: {
+        kind: "chosen",
+        choice: { kind: "students", chosen: 1 },
+        participants: 1,
+      },
+    } as const;
+
+    expect(draftFor(byName, extra)).toMatchObject({
+      mode: "students",
+      students: [picked],
+    });
   });
 });
 
@@ -49,7 +94,6 @@ describe("choicesWith", () => {
 
   it("adds the activity a schedule holds when it is no longer in the list", () => {
     const held = keptChoice(TEST_SCHEDULE);
-    if (!held) throw new Error("The schedule holds no PPKS activity.");
     const offered = choicesWith(TEST_CHOICES, held);
 
     expect(offered).toEqual([...TEST_CHOICES, held]);

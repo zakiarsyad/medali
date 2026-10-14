@@ -13,11 +13,15 @@ import { AttendanceNumbersView } from "./attendance-numbers-view";
 import { readClarificationPanel } from "./clarification-panel";
 import { ClarificationPanelView } from "./clarification-panel-view";
 import { readCohortCounts } from "./cohort-counts";
-import type { FormParts, FormPeriod } from "./form-values";
+import type { ExtraFormParts, FormParts, FormPeriod } from "./form-values";
 import { readListAttendance } from "./list-attendance";
 import { listSchedules } from "./list-schedules";
+import type { ClassCount } from "./participant-draft";
+import { readClassCounts, readPickedStudents } from "./participant-pool";
+import type { CohortCount } from "./participants";
 import { ScheduleBoard } from "./schedule-board";
 import type { ScheduleKind, ScheduleListParams } from "./schedule-list-address";
+import type { ScheduleRow } from "./schedule-row";
 
 /** The stored periods, with only what the form reads of each. */
 async function readFormPeriods(db: Database): Promise<FormPeriod[]> {
@@ -29,15 +33,40 @@ async function readFormPeriods(db: Database): Promise<FormPeriod[]> {
   }));
 }
 
-/** What only the form shows: the activities to choose from, and the periods. */
-async function readFormLists(
-  db: Database,
-): Promise<Pick<FormParts, "choices" | "periods">> {
-  const [choices, periods] = await Promise.all([
-    readActivityChoices(db),
+/**
+ * What only the form shows: the activities of the tab's kind to choose
+ * from, the periods, and on "Kegiatan tambahan" the classes to pick.
+ */
+async function readFormLists(db: Database, kind: ScheduleKind) {
+  const [choices, periods, classes] = await Promise.all([
+    readActivityChoices(db, kind),
     readFormPeriods(db),
+    kind === "extra" ? readClassCounts(db) : null,
   ]);
-  return { choices, periods };
+  return { choices, periods, classes };
+}
+
+/** The schedules of a page that name their students one by one. */
+function byNameIds(schedules: readonly ScheduleRow[]): string[] {
+  const ids: string[] = [];
+  for (const { id, target } of schedules) {
+    if (target.kind === "chosen" && target.choice.kind === "students") {
+      ids.push(id);
+    }
+  }
+  return ids;
+}
+
+/** The Peserta part of the form, or null on "Kegiatan PPKS". */
+async function readExtraParts(
+  db: Database,
+  classes: ClassCount[] | null,
+  cohorts: CohortCount[],
+  schedules: readonly ScheduleRow[],
+): Promise<ExtraFormParts | null> {
+  if (classes === null) return null;
+  const picked = await readPickedStudents(db, byNameIds(schedules));
+  return { pool: { classes, cohorts }, picked };
 }
 
 /** The intro of each tab, before the line on how attendance is counted. */
@@ -76,21 +105,26 @@ export async function SchedulesScreen({
     listSchedules(db, scope, params.page),
     readCohortCounts(db),
     // Read only for an account that gets the form.
-    mayManage ? readFormLists(db) : null,
+    mayManage ? readFormLists(db, scope.kind) : null,
     readAttendanceNumbers(db, visible, scope, now.day),
     scope.kind === "ppks" ? readClarificationPanel(db, visible) : null,
   ]);
   // Asked only for the schedules of the page shown, so after the list.
-  const attendance = await readListAttendance(
-    db,
-    visible,
-    list.schedules,
-    counts,
-    params.open,
-    now.day,
-  );
+  const [attendance, extra] = await Promise.all([
+    readListAttendance(
+      db,
+      visible,
+      list.schedules,
+      counts,
+      params.open,
+      now.day,
+    ),
+    formLists && readExtraParts(db, formLists.classes, counts, list.schedules),
+  ]);
   const form: FormParts | null = formLists && {
-    ...formLists,
+    choices: formLists.choices,
+    periods: formLists.periods,
+    extra,
     counts,
     today: now.day,
     newScheduleId: randomUUID(),

@@ -125,3 +125,29 @@ export function choiceOf(
       };
   }
 }
+
+/** What a choice names, as texts in one order, to compare two choices. */
+function namedOf(choice: ParticipantChoice): string[] {
+  switch (choice.kind) {
+    case "students":
+      return [...choice.studentIds].sort();
+    case "classes":
+      return [...choice.classNames].sort();
+    case "cohorts":
+      return choice.cohortYears.map(String).sort();
+  }
+}
+
+/**
+ * Whether two choices name the same students, classes or angkatan, in
+ * any order. No choice, as a PPKS schedule has, is the same only as no
+ * choice.
+ */
+export function isSameChoice(
+  one: ParticipantChoice | null,
+  other: ParticipantChoice | null,
+): boolean {
+  if (one === null || other === null) return one === other;
+  if (one.kind !== other.kind) return false;
+  return namedOf(one).join("\n") === namedOf(other).join("\n");
+}
