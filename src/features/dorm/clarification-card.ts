@@ -78,6 +78,24 @@ export function byWords(name: string, at: Date): string {
   return `(${name}, ${shownMoment(at)})`;
 }
 
+/**
+ * What a card offers an account: the check of BAM on one that waits for
+ * it, the decision of Pengelola Asrama on one BAM passed on, to
+ * Pengelola a line that one still waits for BAM, or nothing. Hiding the
+ * buttons is only for tidiness: the server checks every press.
+ */
+export type CardOffer = "verify" | "decide" | "waits_for_bam" | null;
+
+export function offerOf(
+  status: DormClarificationStatus,
+  rights: { verify: boolean; decide: boolean },
+): CardOffer {
+  if (status === "submitted" && rights.verify) return "verify";
+  if (status === "submitted" && rights.decide) return "waits_for_bam";
+  if (status === "verified" && rights.decide) return "decide";
+  return null;
+}
+
 /** What the Lampiran of a card says to a role that may not open the file. */
 export function fileNotOpenedWords(hasFile: boolean): string {
   return hasFile ? "Terlampir" : "-";

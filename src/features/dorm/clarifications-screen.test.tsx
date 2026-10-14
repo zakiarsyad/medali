@@ -7,6 +7,10 @@ import {
   ClarificationsScreen,
 } from "./clarifications-screen";
 
+vi.mock("./clarification-actions", () => ({
+  verifyDormClarificationAction: vi.fn(),
+  decideDormClarificationAction: vi.fn(),
+}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
   unstable_rethrow: vi.fn(),
@@ -16,7 +20,7 @@ const CARD: DormClarificationCard = {
   id: "00000000-0000-4000-8000-00000000c1a3",
   sentAt: "2026-10-13T05:00:00.000Z",
   name: "Penghuni Uji Layar",
-  nim: "9900000001",
+  nim: "9937980901",
   room: "Asrama Dana Rakca, kamar 101",
   activity: "Apel pagi uji",
   held: "13 Okt 2026, 05:30–06:15",
@@ -88,7 +92,7 @@ describe("ClarificationsScreen", () => {
     const shown = screen();
 
     expect(shown).toContain("<b>Penghuni Uji Layar</b>");
-    expect(shown).toContain("9900000001 · Asrama Dana Rakca, kamar 101");
+    expect(shown).toContain("9937980901 · Asrama Dana Rakca, kamar 101");
     expect(shown).toContain("Diverifikasi BAM</span>");
     expect(shown).toContain("Apel pagi uji");
     expect(shown).toContain("13 Okt 2026, 05:30–06:15");
@@ -127,5 +131,56 @@ describe("ClarificationsScreen", () => {
 
     expect(shown).toContain("Tidak ada klarifikasi yang ditutup.");
     expect(shown).not.toContain("Berikutnya");
+  });
+});
+
+describe("the presses on a card", () => {
+  function withStatus(status: DormClarificationCard["status"]) {
+    return { ...BOARD, list: { ...BOARD.list, cards: [{ ...CARD, status }] } };
+  }
+
+  it("offers BAM to pass on or reject one that waits for it", () => {
+    const shown = screen(withStatus("submitted"), {
+      verify: true,
+      decide: false,
+    });
+
+    expect(shown).toContain(
+      'placeholder="Catatan verifikasi (wajib bila ditolak)"',
+    );
+    expect(shown).toContain(">Terima, teruskan ke pengelola</button>");
+    expect(shown).toContain(">Tolak klarifikasi</button>");
+    expect(shown).not.toContain("Terima sebagai hadir");
+  });
+
+  it("offers Pengelola Asrama to accept as present or as leave, or reject, once BAM passed it on", () => {
+    const shown = screen(withStatus("verified"), {
+      verify: false,
+      decide: true,
+    });
+
+    expect(shown).toContain(">Terima sebagai hadir</button>");
+    expect(shown).toContain(">Terima sebagai izin</button>");
+    expect(shown).toContain(">Tolak</button>");
+    expect(shown).not.toContain("Terima, teruskan ke pengelola");
+  });
+
+  it("tells Pengelola Asrama that one still waits for BAM, with nothing to press", () => {
+    const shown = screen(withStatus("submitted"), {
+      verify: false,
+      decide: true,
+    });
+
+    expect(shown).toContain(
+      "Menunggu verifikasi Badan Asrama Mahasiswa sebelum dapat divalidasi.",
+    );
+    expect(shown).not.toContain('aria-label="Catatan"');
+  });
+
+  it("offers a role that only reads nothing to press", () => {
+    const shown = screen(withStatus("verified"), READS_ONLY);
+
+    expect(shown).not.toContain("Terima");
+    expect(shown).not.toContain("Tolak");
   });
 });

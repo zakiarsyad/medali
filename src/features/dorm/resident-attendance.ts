@@ -29,6 +29,10 @@ import type { DormId } from "@/dorms/dorms";
 import { audiencesCovering } from "./activity-audience";
 import { readVersions } from "./activity-reads";
 import {
+  historyWithClarifications,
+  tallyWithClarifications,
+} from "./clarification-effect";
+import {
   type ClarifiedEntry,
   clarificationCell,
   waitingCount,
@@ -52,7 +56,11 @@ import {
 } from "./history-leave";
 import type { ApprovedLeave } from "./leave-marks";
 import { readApprovedLeaves } from "./leave-store";
-import { readOwnClarifications, readOwnStatuses } from "./own-clarifications";
+import {
+  readOwnAccepted,
+  readOwnClarifications,
+  readOwnStatuses,
+} from "./own-clarifications";
 import { readStudentDorm } from "./student-dorm";
 
 /** How many activities Riwayat shows. */
@@ -207,7 +215,9 @@ async function readAnnouncedKeys(
 /**
  * The attendance of a resident at the dorm activities: how often they
  * were Hadir and Tidak hadir in the announced counts, and Riwayat of the
- * last 25 activities of their group that are over. Only the account's own
+ * last 25 activities of their group that are over, with their
+ * clarifications; approved leave and an accepted clarification make them
+ * Izin or Hadir. Only the account's own
  * student is ever read. Refused for an account without the right, and
  * for a student who lives in no dorm today.
  */
@@ -240,20 +250,29 @@ export async function readOwnAttendance(
     absent: earlier.absent + today.absent,
   };
   const marks = [...overToday, ...marksOver(past, now)];
-  const [announced, covered] = await Promise.all([
+  const [announced, covered, accepted] = await Promise.all([
     readAnnouncedKeys(db, held),
     readCoveredMarks(db, studentId, moment, now),
+    readOwnAccepted(db, studentId),
   ]);
   const history = historyOf(held, marks, announced, HISTORY_SHOWN);
-  const withLeave = historyWithLeave(history, covered);
+  const withClarifications = historyWithClarifications(
+    historyWithLeave(history, covered),
+    new Map(accepted.map((each) => [each.key, each])),
+  );
   const [clarified, statuses] = await Promise.all([
-    clarifiedHistory(db, studentId, withLeave, now.day),
+    clarifiedHistory(db, studentId, withClarifications, now.day),
     readOwnStatuses(db, studentId),
   ]);
+  const tally = tallyWithClarifications(
+    tallyWithLeave(totals, covered),
+    accepted,
+    new Set(covered.keys()),
+  );
   return {
     kind: "shown",
     attendance: {
-      ...tallyWithLeave(totals, covered),
+      ...tally,
       history: clarified,
       waitingClarifications: waitingCount(statuses),
     },

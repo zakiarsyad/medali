@@ -92,6 +92,7 @@ export function ClarificationsScreen({
         <ClarificationCards
           key={address}
           cards={list.cards}
+          rights={rights}
           emptyWords={emptyWords(filters)}
         />
         {list.matching > 0 && (

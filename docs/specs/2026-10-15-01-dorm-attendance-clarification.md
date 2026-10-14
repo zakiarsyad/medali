@@ -102,7 +102,66 @@ rejects it. An accepted clarification changes the attendance at once.
 
 Decided while building, because the issue did not say:
 
-(added while building)
+4. Five new rights: seeing the clarifications (Kepala Unit, Direktur /
+   Wakil Direktur, Ketua Program Studi for their own program, Pengelola
+   Asrama, BAM - BPHK, BAM - KI), asking one (Mahasiswa), checking one
+   (BAM - BPHK, BAM - KI), deciding one (Pengelola Asrama) and opening
+   the file (BAM - BPHK, BAM - KI, Pengelola Asrama).
+5. Pengelola Asrama does not check in BAM's place. A clarification that
+   still waits for BAM tells Pengelola "Menunggu verifikasi Badan Asrama
+   Mahasiswa sebelum dapat divalidasi.", as in the prototype.
+6. Only an activity Riwayat shows as Tidak hadir can be clarified: its
+   absence is announced, the activity is over and no approved leave
+   covers it. A second "Kirim klarifikasi" while one waits saves nothing
+   and says "Klarifikasi terkirim."
+7. A clarification closed by "Umumkan ulang" gets a fifth status,
+   Ditutup, with the note "Ketidakhadiran dibatalkan BAM pada
+   pengumuman ulang." and the BAM member who announced. It is in the
+   status filter but not in the four numbers. If a later announcement
+   marks the resident absent again, they may ask again within the 7 days.
+8. An accepted clarification makes the resident Hadir or Izin whatever
+   the count keeps, as approved leave does; leave that covers the
+   activity decides first. Riwayat and Rincian show the note
+   "Klarifikasi: (alasan)". Izin counts as neither Hadir nor Tidak hadir.
+9. Every check, decision and closing adds a line to a log that the
+   database refuses to change.
+10. The file, Penjelasan and Catatan follow the character activity
+    clarification: PDF, JPG or PNG of at most 5 MB, checked by name, size
+    and content, a picture made smaller in the browser, Penjelasan of 10
+    to 1,000 characters, Catatan of at most 200. The file field is not
+    forced to the camera, so a PDF can still be picked; a phone offers
+    its camera there.
+11. The roles that only read see Penjelasan, and for Lampiran only
+    "Terlampir", without the file's name. The resident sees "Lampiran:
+    (name)" under their row and can download their own file.
+12. The cards are newest first, 20 a page. The status filter starts at
+    Diajukan, where BAM starts, and offers Semua status, Diajukan,
+    Diverifikasi BAM, Diterima, Ditolak and Ditutup. The search and the
+    filter are kept in the address. Each filter has its own empty words.
+    The numbers count every clarification the account sees, whatever the
+    filter.
+13. A card shows where the resident lives today, then "Verifikasi BAM"
+    and "Keputusan", each with who and when, as in the prototype. A card
+    decided on the screen keeps its place with its new status and
+    message until the page is read again.
+14. The messages are "Klarifikasi diterima dan diteruskan ke Pengelola
+    Asrama.", "Klarifikasi diterima; status kehadiran diperbarui.",
+    "Klarifikasi ditolak.", "Tulis alasan penolakan di kolom catatan.",
+    "Klarifikasi ini sudah diputuskan oleh petugas lain. Muat ulang
+    halaman.", "Klarifikasi ini masih menunggu verifikasi Badan Asrama
+    Mahasiswa." and "Batas klarifikasi sudah lewat."; the form's file
+    messages are those of the character activity clarification.
+15. Sample data gets clarifications of the sample absences of the week
+    before today, of residents without sample leave: one absence left to
+    ask, one each Diajukan, Diverifikasi BAM, Diterima as hadir, Diterima
+    as izin, Ditolak by BAM and Ditolak by Pengelola, and one Ditutup on
+    the corrected count. They are checked by the sample BAM - BPHK and
+    decided by the sample Pengelola Asrama, each with the drawn paper
+    "surat-keterangan.pdf".
+16. "Tercatat tidak hadir" now says "dapat diklarifikasi", the note on
+    how attendance is counted gains the 7-day sentence, and Riwayat ends
+    with "Klarifikasi diverifikasi Badan Asrama Mahasiswa lalu divalidasi
+    Pengelola Asrama.", as in the prototype.
 
 ## Steps
 
@@ -112,4 +171,4 @@ Decided while building, because the issue did not say:
   list, with their checks.
 - [x] 3. Residents send a clarification with a file from Riwayat.
 - [x] 4. Klarifikasi kehadiran shows the numbers, filters and cards.
-- [ ] 5. BAM checks and Pengelola decides, and attendance changes.
+- [x] 5. BAM checks and Pengelola decides, and attendance changes.
