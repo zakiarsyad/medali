@@ -127,9 +127,11 @@
   color: var(--bad);
 }
 
+/* The message may name what was typed, which can be one long word. */
 .done {
   margin: 0;
   color: var(--ok);
+  overflow-wrap: anywhere;
 }
 
 .filters {
@@ -313,6 +315,20 @@
   display: block;
   color: var(--muted);
   font-size: var(--text-sm);
+}
+
+/*
+ * Text someone typed, such as a name, inside a cell of a list. Typed as one
+ * long word it folds, or it makes the list wider than the page at computer
+ * width. The two widths keep a column of usual text as it was: without the
+ * least one a narrow list would fold every word letter by letter, and
+ * without the most one a long word would take the room of the other columns.
+ */
+.typed {
+  display: block;
+  min-width: var(--typed-min-width);
+  max-width: var(--typed-max-width);
+  overflow-wrap: anywhere;
 }
 
 .empty {

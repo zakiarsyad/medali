@@ -38,7 +38,7 @@ function AccountRow({
     <>
       <tr>
         <td data-title="Pengguna">
-          <b>{fullName(account)}</b>
+          <b className={styles.typed}>{fullName(account)}</b>
           <small className={styles.detail}>
             NIP {account.nip ?? "-"} · {account.email ?? "-"}
           </small>
@@ -50,7 +50,9 @@ function AccountRow({
             </span>
           ))}
         </td>
-        <td data-title="Unit atau jabatan">{account.unit ?? "-"}</td>
+        <td data-title="Unit atau jabatan">
+          <span className={styles.typed}>{account.unit ?? "-"}</span>
+        </td>
         <td className={styles.detail} data-title="Keterangan">
           {account.studyProgram ? `Kaprodi ${account.studyProgram}` : ""}
         </td>

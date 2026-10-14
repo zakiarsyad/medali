@@ -64,9 +64,30 @@ Kepala Unit.
 2. The limits are named once beside the other checks of a new account,
    and used by the form and by the server.
 
+Decided while building, because the issue did not say:
+
+3. A long word also folds in two more places that show the same name on
+   the same screens: the message after "Simpan pengguna", which names
+   the new account, and the box "Masuk sebagai" in the menu, when the
+   account itself is signed in.
+4. In the staff list on a computer a long word folds inside its column,
+   and the list stays as wide as its box wherever the usual rows fit it,
+   such as at a width of 1366. Rows of a usual length keep their look.
+   On a narrower computer window the list was already wider than its
+   box with usual rows, and scrolls sideways inside that box; it still
+   does.
+5. Two faults seen on the same screen are not part of this work, and
+   each has its own issue: "Groundwork: Unseen column title that makes
+   the whole page scroll sideways", which shows when a list is wider
+   than its box, and "Pengaturan: The choice Peran on a very narrow
+   phone", which makes the page 4px wider than a phone of 320.
+6. The command that adds the first account of an empty app is not
+   changed. It is not "Tambah pengguna", and it takes a name only from
+   the person who runs the server.
+
 ## Steps
 
 - [x] 1. The server refuses a name, a gelar or a unit over its limit,
   for a new account and for "Edit peran", and the boxes take no more.
-- [ ] 2. A long word wraps in the staff list, in "Edit peran" and on
+- [x] 2. A long word wraps in the staff list, in "Edit peran" and on
   "Ganti peran".
