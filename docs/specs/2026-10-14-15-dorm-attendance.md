@@ -164,6 +164,12 @@ Decided while building, because the issue did not say:
 19. The note on how attendance is counted, "Klarifikasi aktif" and the
     Klarifikasi column of Riwayat leave out clarification, which is not
     part of this work.
+20. An account that may see the dorm schedule, such as a resident who is
+    also a BAM member, sees the staff screen of Kegiatan asrama, as the
+    merged dorm activities already do with Hari ini and Akan datang. Its
+    own attendance is not shown there yet. Showing the resident part to
+    such an account is a separate issue, for activities and attendance
+    together.
 
 ## Steps
 
