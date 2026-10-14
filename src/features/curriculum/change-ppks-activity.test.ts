@@ -220,6 +220,7 @@ describe("changePpksActivity", () => {
             isRequired: false,
             description: "",
             version: expect.any(String),
+            scheduledCount: 0,
           },
         ]);
         const [kept] = await db.select().from(ppksActivities);

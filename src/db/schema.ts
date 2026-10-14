@@ -43,6 +43,16 @@ import {
   SPECIAL_REASONS,
 } from "@/features/dorm/leave-ids";
 import {
+  BASIS_MAX_LENGTH,
+  ENTRY_NOTE_MAX_LENGTH,
+  GAIN_REASONS,
+  POINTS_MAX,
+  POINTS_MIN,
+  REASON_WITH_BASIS,
+  SIKU_KINDS,
+  SIKU_REASONS,
+} from "@/features/siku/siku-ids";
+import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
   MEETINGS_PER_PERIOD,
@@ -119,6 +129,15 @@ export const dormLeaveSpecialReason = pgEnum(
 export const dormReturnReportStatus = pgEnum(
   "dorm_return_report_status",
   REPORT_STATUSES,
+);
+
+export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
+
+export const sikuReason = pgEnum("siku_reason", SIKU_REASONS);
+
+export const sikuAdjustmentChangeAction = pgEnum(
+  "siku_adjustment_change_action",
+  ["entered", "cancelled"],
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -1805,5 +1824,110 @@ export const activityClarificationChanges = pgTable(
     index("activity_clarification_changes_clarification").on(
       table.clarificationId,
     ),
+  ],
+);
+
+const SIKU_GAIN_REASON_LIST = sql.raw(
+  GAIN_REASONS.map((reason) => `'${reason}'`).join(", "),
+);
+
+/**
+ * One gain or loss of SIKU points for the students it names, with its
+ * reason, its date and the academic period that ran when it was saved.
+ * The key is made by the form that sent it, so a form sent twice is kept
+ * once. Basis is the letter a decision of the Direktur rests on, empty
+ * for every other reason. An entry is never deleted: a cancelled one
+ * keeps its row, with who and when, and counts no more.
+ */
+export const sikuAdjustments = pgTable(
+  "siku_adjustments",
+  {
+    id: uuid().primaryKey(),
+    kind: sikuKind().notNull(),
+    reason: sikuReason().notNull(),
+    points: smallint().notNull(),
+    /** Tanggal: the day it happened, never after the day it was saved. */
+    day: date().notNull(),
+    /** Keterangan; empty when nothing was noted. */
+    note: text().notNull(),
+    basis: text().notNull(),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** The role it was entered as, which a student is shown instead of a name. */
+    enteredAs: role().notNull(),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+    cancelledBy: uuid().references(() => accounts.id),
+    cancelledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("siku_adjustments_day").on(table.day, table.enteredAt),
+    check(
+      "siku_adjustments_points_in_range",
+      sql`${table.points} between ${sql.raw(String(POINTS_MIN))} and ${sql.raw(String(POINTS_MAX))}`,
+    ),
+    check(
+      "siku_adjustments_reason_fits_kind",
+      sql`(${table.kind} = 'gain') = (${table.reason} in (${SIKU_GAIN_REASON_LIST}))`,
+    ),
+    check(
+      "siku_adjustments_basis_only_for_decision",
+      sql`(${table.reason} = ${sql.raw(`'${REASON_WITH_BASIS}'`)}) = (${table.basis} <> '')`,
+    ),
+    check(
+      "siku_adjustments_note_length",
+      sql`char_length(${table.note}) <= ${sql.raw(String(ENTRY_NOTE_MAX_LENGTH))}`,
+    ),
+    check(
+      "siku_adjustments_basis_length",
+      sql`char_length(${table.basis}) <= ${sql.raw(String(BASIS_MAX_LENGTH))}`,
+    ),
+    check(
+      "siku_adjustments_cancel_is_whole",
+      sql`(${table.cancelledBy} is null) = (${table.cancelledAt} is null)`,
+    ),
+  ],
+);
+
+/** The students one SIKU entry gives its points to or takes them from. */
+export const sikuAdjustmentStudents = pgTable(
+  "siku_adjustment_students",
+  {
+    adjustmentId: uuid()
+      .notNull()
+      .references(() => sikuAdjustments.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+  },
+  (table) => [
+    primaryKey({ columns: [table.adjustmentId, table.studentId] }),
+    index("siku_adjustment_students_student").on(table.studentId),
+  ],
+);
+
+/**
+ * Every entry and every cancel of a SIKU entry: who and when. An entry
+ * cannot be changed otherwise, so what it was before and after is the
+ * action. Rows here cannot be changed or deleted; the database refuses it.
+ */
+export const sikuAdjustmentChanges = pgTable(
+  "siku_adjustment_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    adjustmentId: uuid()
+      .notNull()
+      .references(() => sikuAdjustments.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    action: sikuAdjustmentChangeAction().notNull(),
+  },
+  (table) => [
+    index("siku_adjustment_changes_adjustment").on(table.adjustmentId),
   ],
 );

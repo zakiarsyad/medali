@@ -1,5 +1,5 @@
 {
-  "id": "52d26169-7610-4ef8-a14b-1f8129681cf6",
+  "id": "a8f3b5d3-6abe-411a-a7cf-19856c1a93e7",
   "prevId": "fdf6ae1e-7183-4d0d-a066-ec08ab971886",
   "version": "7",
   "dialect": "postgresql",
@@ -2479,18 +2479,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "returned_at": {
-          "name": "returned_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "return_recorded_by": {
-          "name": "return_recorded_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -2535,22 +2523,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "dorm_leaves_out": {
-          "name": "dorm_leaves_out",
-          "columns": [
-            {
-              "expression": "starts_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"dorm_leaves\".\"status\" = 'approved' and \"dorm_leaves\".\"kind\" <> 'skip_activities'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -2573,19 +2545,6 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "decided_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "dorm_leaves_return_recorded_by_accounts_id_fk": {
-          "name": "dorm_leaves_return_recorded_by_accounts_id_fk",
-          "tableFrom": "dorm_leaves",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "return_recorded_by"
           ],
           "columnsTo": [
             "id"
@@ -2626,25 +2585,9 @@
           "name": "dorm_leaves_decision_note_length",
           "value": "char_length(\"dorm_leaves\".\"decision_note\") <= 500"
         },
-        "dorm_leaves_decided_when_approved_rejected_or_completed": {
-          "name": "dorm_leaves_decided_when_approved_rejected_or_completed",
-          "value": "(\"dorm_leaves\".\"status\"::text in ('approved', 'rejected', 'completed')) = (\"dorm_leaves\".\"decided_at\" is not null) and (\"dorm_leaves\".\"decided_at\" is null) = (\"dorm_leaves\".\"decided_by\" is null)"
-        },
-        "dorm_leaves_returned_when_completed": {
-          "name": "dorm_leaves_returned_when_completed",
-          "value": "(\"dorm_leaves\".\"status\"::text = 'completed') = (\"dorm_leaves\".\"returned_at\" is not null)"
-        },
-        "dorm_leaves_return_recorded_only_when_returned": {
-          "name": "dorm_leaves_return_recorded_only_when_returned",
-          "value": "\"dorm_leaves\".\"return_recorded_by\" is null or \"dorm_leaves\".\"returned_at\" is not null"
-        },
-        "dorm_leaves_returned_after_start": {
-          "name": "dorm_leaves_returned_after_start",
-          "value": "\"dorm_leaves\".\"returned_at\" is null or \"dorm_leaves\".\"returned_at\" >= \"dorm_leaves\".\"starts_at\""
-        },
-        "dorm_leaves_skip_activities_needs_no_return": {
-          "name": "dorm_leaves_skip_activities_needs_no_return",
-          "value": "\"dorm_leaves\".\"kind\" <> 'skip_activities' or \"dorm_leaves\".\"returned_at\" is null"
+        "dorm_leaves_decided_when_approved_or_rejected": {
+          "name": "dorm_leaves_decided_when_approved_or_rejected",
+          "value": "(\"dorm_leaves\".\"status\" in ('approved', 'rejected')) = (\"dorm_leaves\".\"decided_at\" is not null) and (\"dorm_leaves\".\"decided_at\" is null) = (\"dorm_leaves\".\"decided_by\" is null)"
         },
         "dorm_leaves_rejected_has_note": {
           "name": "dorm_leaves_rejected_has_note",
@@ -2653,212 +2596,6 @@
         "dorm_leaves_cancelled_has_moment": {
           "name": "dorm_leaves_cancelled_has_moment",
           "value": "(\"dorm_leaves\".\"status\" = 'cancelled') = (\"dorm_leaves\".\"cancelled_at\" is not null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.dorm_return_reports": {
-      "name": "dorm_return_reports",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "leave_id": {
-          "name": "leave_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "photo_key": {
-          "name": "photo_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sent_at": {
-          "name": "sent_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "dorm_return_report_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'waiting'"
-        },
-        "verified_by": {
-          "name": "verified_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "verified_at": {
-          "name": "verified_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "verify_note": {
-          "name": "verify_note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "validated_by": {
-          "name": "validated_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "validated_at": {
-          "name": "validated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "validate_note": {
-          "name": "validate_note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        }
-      },
-      "indexes": {
-        "dorm_return_reports_leave": {
-          "name": "dorm_return_reports_leave",
-          "columns": [
-            {
-              "expression": "leave_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "sent_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dorm_return_reports_one_open": {
-          "name": "dorm_return_reports_one_open",
-          "columns": [
-            {
-              "expression": "leave_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"dorm_return_reports\".\"status\" <> 'rejected'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dorm_return_reports_waiting": {
-          "name": "dorm_return_reports_waiting",
-          "columns": [
-            {
-              "expression": "sent_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"dorm_return_reports\".\"status\" in ('waiting', 'verified')",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "dorm_return_reports_leave_id_dorm_leaves_id_fk": {
-          "name": "dorm_return_reports_leave_id_dorm_leaves_id_fk",
-          "tableFrom": "dorm_return_reports",
-          "tableTo": "dorm_leaves",
-          "columnsFrom": [
-            "leave_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "dorm_return_reports_verified_by_accounts_id_fk": {
-          "name": "dorm_return_reports_verified_by_accounts_id_fk",
-          "tableFrom": "dorm_return_reports",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "verified_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "dorm_return_reports_validated_by_accounts_id_fk": {
-          "name": "dorm_return_reports_validated_by_accounts_id_fk",
-          "tableFrom": "dorm_return_reports",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "validated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "dorm_return_reports_photoKey_unique": {
-          "name": "dorm_return_reports_photoKey_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "photo_key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "dorm_return_reports_verified_unless_waiting": {
-          "name": "dorm_return_reports_verified_unless_waiting",
-          "value": "(\"dorm_return_reports\".\"status\" = 'waiting') = (\"dorm_return_reports\".\"verified_at\" is null) and (\"dorm_return_reports\".\"verified_at\" is null) = (\"dorm_return_reports\".\"verified_by\" is null)"
-        },
-        "dorm_return_reports_validated_when_validated": {
-          "name": "dorm_return_reports_validated_when_validated",
-          "value": "(\"dorm_return_reports\".\"status\" = 'validated' or \"dorm_return_reports\".\"validated_at\" is null or \"dorm_return_reports\".\"status\" = 'rejected') and (\"dorm_return_reports\".\"status\" <> 'validated' or \"dorm_return_reports\".\"validated_at\" is not null) and (\"dorm_return_reports\".\"validated_at\" is null) = (\"dorm_return_reports\".\"validated_by\" is null)"
-        },
-        "dorm_return_reports_rejected_has_note": {
-          "name": "dorm_return_reports_rejected_has_note",
-          "value": "\"dorm_return_reports\".\"status\" <> 'rejected' or \"dorm_return_reports\".\"verify_note\" <> '' or \"dorm_return_reports\".\"validate_note\" <> ''"
-        },
-        "dorm_return_reports_verify_note_length": {
-          "name": "dorm_return_reports_verify_note_length",
-          "value": "char_length(\"dorm_return_reports\".\"verify_note\") <= 500"
-        },
-        "dorm_return_reports_validate_note_length": {
-          "name": "dorm_return_reports_validate_note_length",
-          "value": "char_length(\"dorm_return_reports\".\"validate_note\") <= 500"
         }
       },
       "isRLSEnabled": false
@@ -5124,6 +4861,352 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.siku_adjustment_changes": {
+      "name": "siku_adjustment_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "adjustment_id": {
+          "name": "adjustment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "action": {
+          "name": "action",
+          "type": "siku_adjustment_change_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "siku_adjustment_changes_adjustment": {
+          "name": "siku_adjustment_changes_adjustment",
+          "columns": [
+            {
+              "expression": "adjustment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "siku_adjustment_changes_adjustment_id_siku_adjustments_id_fk": {
+          "name": "siku_adjustment_changes_adjustment_id_siku_adjustments_id_fk",
+          "tableFrom": "siku_adjustment_changes",
+          "tableTo": "siku_adjustments",
+          "columnsFrom": [
+            "adjustment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "siku_adjustment_changes_changed_by_accounts_id_fk": {
+          "name": "siku_adjustment_changes_changed_by_accounts_id_fk",
+          "tableFrom": "siku_adjustment_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.siku_adjustment_students": {
+      "name": "siku_adjustment_students",
+      "schema": "",
+      "columns": {
+        "adjustment_id": {
+          "name": "adjustment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "siku_adjustment_students_student": {
+          "name": "siku_adjustment_students_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "siku_adjustment_students_adjustment_id_siku_adjustments_id_fk": {
+          "name": "siku_adjustment_students_adjustment_id_siku_adjustments_id_fk",
+          "tableFrom": "siku_adjustment_students",
+          "tableTo": "siku_adjustments",
+          "columnsFrom": [
+            "adjustment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "siku_adjustment_students_student_id_students_id_fk": {
+          "name": "siku_adjustment_students_student_id_students_id_fk",
+          "tableFrom": "siku_adjustment_students",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "siku_adjustment_students_adjustment_id_student_id_pk": {
+          "name": "siku_adjustment_students_adjustment_id_student_id_pk",
+          "columns": [
+            "adjustment_id",
+            "student_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.siku_adjustments": {
+      "name": "siku_adjustments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "siku_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "siku_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "points": {
+          "name": "points",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day": {
+          "name": "day",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "basis": {
+          "name": "basis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period_id": {
+          "name": "period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_by": {
+          "name": "entered_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_as": {
+          "name": "entered_as",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_at": {
+          "name": "entered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cancelled_by": {
+          "name": "cancelled_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "siku_adjustments_day": {
+          "name": "siku_adjustments_day",
+          "columns": [
+            {
+              "expression": "day",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entered_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "siku_adjustments_period_id_academic_periods_id_fk": {
+          "name": "siku_adjustments_period_id_academic_periods_id_fk",
+          "tableFrom": "siku_adjustments",
+          "tableTo": "academic_periods",
+          "columnsFrom": [
+            "period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "siku_adjustments_entered_by_accounts_id_fk": {
+          "name": "siku_adjustments_entered_by_accounts_id_fk",
+          "tableFrom": "siku_adjustments",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "entered_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "siku_adjustments_cancelled_by_accounts_id_fk": {
+          "name": "siku_adjustments_cancelled_by_accounts_id_fk",
+          "tableFrom": "siku_adjustments",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "cancelled_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "siku_adjustments_points_in_range": {
+          "name": "siku_adjustments_points_in_range",
+          "value": "\"siku_adjustments\".\"points\" between 1 and 30"
+        },
+        "siku_adjustments_reason_fits_kind": {
+          "name": "siku_adjustments_reason_fits_kind",
+          "value": "(\"siku_adjustments\".\"kind\" = 'gain') = (\"siku_adjustments\".\"reason\" in ('social_media_campaign', 'knowledge_sharing', 'training_speaker', 'peer_mentoring', 'spiritual_activity'))"
+        },
+        "siku_adjustments_basis_only_for_decision": {
+          "name": "siku_adjustments_basis_only_for_decision",
+          "value": "(\"siku_adjustments\".\"reason\" = 'director_decision') = (\"siku_adjustments\".\"basis\" <> '')"
+        },
+        "siku_adjustments_note_length": {
+          "name": "siku_adjustments_note_length",
+          "value": "char_length(\"siku_adjustments\".\"note\") <= 500"
+        },
+        "siku_adjustments_basis_length": {
+          "name": "siku_adjustments_basis_length",
+          "value": "char_length(\"siku_adjustments\".\"basis\") <= 200"
+        },
+        "siku_adjustments_cancel_is_whole": {
+          "name": "siku_adjustments_cancel_is_whole",
+          "value": "(\"siku_adjustments\".\"cancelled_by\" is null) = (\"siku_adjustments\".\"cancelled_at\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.siku_base_score": {
       "name": "siku_base_score",
       "schema": "",
@@ -6027,18 +6110,7 @@
         "submitted",
         "approved",
         "rejected",
-        "cancelled",
-        "completed"
-      ]
-    },
-    "public.dorm_return_report_status": {
-      "name": "dorm_return_report_status",
-      "schema": "public",
-      "values": [
-        "waiting",
-        "verified",
-        "rejected",
-        "validated"
+        "cancelled"
       ]
     },
     "public.email_change_action": {
@@ -6149,6 +6221,37 @@
         "signed_out",
         "refused_outside_campus",
         "refused_no_account"
+      ]
+    },
+    "public.siku_adjustment_change_action": {
+      "name": "siku_adjustment_change_action",
+      "schema": "public",
+      "values": [
+        "entered",
+        "cancelled"
+      ]
+    },
+    "public.siku_kind": {
+      "name": "siku_kind",
+      "schema": "public",
+      "values": [
+        "gain",
+        "loss"
+      ]
+    },
+    "public.siku_reason": {
+      "name": "siku_reason",
+      "schema": "public",
+      "values": [
+        "social_media_campaign",
+        "knowledge_sharing",
+        "training_speaker",
+        "peer_mentoring",
+        "spiritual_activity",
+        "student_violation",
+        "discipline_penalty",
+        "unannounced_absence",
+        "director_decision"
       ]
     },
     "public.student_status": {

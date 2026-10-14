@@ -37,6 +37,7 @@ import { addSampleMentorReplacements } from "./seed-mentor-replacements";
 import { addSampleMentoringMeetings } from "./seed-mentoring-meetings";
 import { addSampleMentoringNotes } from "./seed-mentoring-notes";
 import { addSampleMentoringScores } from "./seed-mentoring-scores";
+import { addSampleSikuAdjustments } from "./seed-siku-adjustments";
 import { addSampleSurveyPeriods } from "./seed-survey-periods";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
@@ -157,8 +158,8 @@ async function addSampleFirstYears(
  * activities that are over, open today and still to come, with the
  * attendance of the sample students at them in every status and their
  * clarifications of it in every status, and two schedules of the special
- * and additional activities for chosen angkatan and classes. Every role
- * given is logged as the
+ * and additional activities for chosen angkatan and classes, and SIKU
+ * gains and losses of the sample students. Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
  */
@@ -237,5 +238,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleMentorEvaluations(tx, groups, periods, sampleActor);
     await addSampleMentorReplacements(tx, groups, sampleActor);
     await addSampleSurveyPeriods(tx, periods, sampleActor);
+    await addSampleSikuAdjustments(tx, today);
   });
 }

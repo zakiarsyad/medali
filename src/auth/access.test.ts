@@ -99,6 +99,27 @@ describe("may", () => {
     }
   });
 
+  // Kurikulum shows how often each activity is scheduled, campus-wide.
+  const curriculumReaders: RoleId[] = [
+    "head_of_unit",
+    "upk_staff",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it.each(curriculumReaders)("lets %s open Kurikulum", (role) => {
+    expect(mayOpenPage([role], "curriculum")).toBe(true);
+  });
+
+  it("refuses Kurikulum to every other role", () => {
+    const others = ROLE_IDS.filter((role) => !curriculumReaders.includes(role));
+    expect(others.length).toBe(ROLE_IDS.length - curriculumReaders.length);
+    for (const role of others) {
+      expect(mayOpenPage([role], "curriculum")).toBe(false);
+    }
+  });
+
   it("lets Kepala Unit set the academic periods", () => {
     expect(may(["head_of_unit"], "set_academic_periods")).toBe(true);
   });
@@ -405,6 +426,66 @@ describe("may", () => {
     );
     for (const role of others) {
       expect(may([role], "decide_dorm_leave")).toBe(false);
+    }
+  });
+
+  const sikuReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+    "assessor",
+  ];
+
+  it.each(sikuReaders)("lets %s read Penilaian SIKU", (role) => {
+    expect(may([role], "view_siku")).toBe(true);
+    expect(mayOpenTab([role], "assessment", "siku")).toBe(true);
+  });
+
+  it("refuses every other role to read Penilaian SIKU of other students, Mahasiswa and Konselor among them", () => {
+    const others = ROLE_IDS.filter((role) => !sikuReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["student", "counsellor", "upk_staff"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_siku")).toBe(false);
+    }
+  });
+
+  it.each(["head_of_unit", "assessor"] as const)(
+    "lets %s add and cancel SIKU entries, with the right Penilaian SIKU",
+    (role) => {
+      expect(may([role], "adjust_siku")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to add or cancel SIKU entries, Pengasuh, Direktur and Mahasiswa among them", () => {
+    const enterers: RoleId[] = ["head_of_unit", "assessor"];
+    const others = ROLE_IDS.filter((role) => !enterers.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["mentor", "director", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "adjust_siku")).toBe(false);
+    }
+  });
+
+  it("lets Mahasiswa read only their own SIKU, and no other role", () => {
+    expect(may(["student"], "view_own_siku")).toBe(true);
+    expect(may(["student"], "view_siku")).toBe(false);
+    expect(tabsFor(["student"], "assessment").map((tab) => tab.id)).toEqual([
+      "siku",
+    ]);
+    for (const role of ROLE_IDS.filter((each) => each !== "student")) {
+      expect(may([role], "view_own_siku")).toBe(false);
+    }
+  });
+
+  it("gives a way to read SIKU to every role with the tab Penilaian SIKU, and to no other", () => {
+    for (const role of ROLE_IDS) {
+      const reads = may([role], "view_siku") || may([role], "view_own_siku");
+
+      expect(reads).toBe(mayOpenTab([role], "assessment", "siku"));
     }
   });
 
@@ -1096,6 +1177,7 @@ describe("may", () => {
       "view_own_dorm_attendance",
       "ask_dorm_leave",
       "report_dorm_return",
+      "view_own_siku",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });
@@ -1441,6 +1523,27 @@ describe("rowLimitForAction and rowLimitForPage", () => {
   const WIDE_WITHOUT_DETAIL = ROLE_IDS.filter(
     (role) => ROLES[role].rows === "all" && !may([role], "view_student_detail"),
   );
+
+  it("lets each reader of Penilaian SIKU read only its own students there", () => {
+    expect(rowLimitForAction(account(["assessor"]), "view_siku")).toEqual(
+      EVERY_ROW,
+    );
+    expect(rowLimitForAction(account(["director"]), "view_siku")).toEqual(
+      EVERY_ROW,
+    );
+    expect(
+      rowLimitForAction(account(["head_of_program"], 7), "view_siku"),
+    ).toEqual(onlyPrograms([7]));
+    expect(rowLimitForAction(account(["mentor"]), "view_siku")).toEqual(
+      OWN_MENTEES,
+    );
+  });
+
+  it("keeps Pengasuh who is also Konselor to their own mentees on Penilaian SIKU", () => {
+    expect(
+      rowLimitForAction(account(["mentor", "counsellor"]), "view_siku"),
+    ).toEqual(OWN_MENTEES);
+  });
 
   it("gives one role its own rows for an action it allows", () => {
     expect(

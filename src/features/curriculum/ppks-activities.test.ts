@@ -97,9 +97,18 @@ describe("activityNote", () => {
 });
 
 describe("removalQuestion", () => {
-  it("asks about the activity by its name", () => {
-    expect(removalQuestion("Latihan uji")).toBe(
+  it("asks about the activity by its name while it is not scheduled", () => {
+    expect(removalQuestion("Latihan uji", 0)).toBe(
       'Hapus kegiatan "Latihan uji" dari daftar?',
+    );
+  });
+
+  it.each([
+    [1, "1 kali"],
+    [12, "12 kali"],
+  ])("warns about an activity scheduled %i times", (scheduled, times) => {
+    expect(removalQuestion("Latihan uji", scheduled)).toBe(
+      `Kegiatan ini sudah dijadwalkan ${times}. Tetap hapus dari daftar? Jadwal yang ada tidak ikut terhapus.`,
     );
   });
 });

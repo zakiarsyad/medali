@@ -39,6 +39,7 @@ export function PpksTable({
             <th>Nilai</th>
             <th>Indikator utama</th>
             <th>Target peserta</th>
+            <th>Dijadwalkan</th>
             {onChange && (
               <th>
                 <span className={shared.hidden}>Tindakan</span>
@@ -68,6 +69,7 @@ export function PpksTable({
               <td data-title="Target peserta">
                 {activity.targetParticipants ?? "-"}
               </td>
+              <td data-title="Dijadwalkan">{activity.scheduledCount}×</td>
               {onChange && (
                 <td>
                   <button
