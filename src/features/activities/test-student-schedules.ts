@@ -42,4 +42,5 @@ export const TEST_EMPTY_ACTIVITIES: StudentActivities = {
   current: [],
   coming: [],
   history: { schedules: [], matching: 0, page: 1 },
+  clarifications: {},
 };

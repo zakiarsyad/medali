@@ -1,4 +1,5 @@
 import type { AttendanceStatus } from "@/features/activities/attendance-status";
+import { clarificationTimeOpen } from "@/features/activities/clarification-time";
 import { isInSemester } from "@/features/activities/participants";
 import { uploadDeadline } from "@/features/activities/upload-range";
 import type { SampleActivitySchedule } from "./sample-activity-schedules";
@@ -38,6 +39,30 @@ const AFTER_CLOSING: Turn[] = [
   "valid",
 ];
 const WHILE_OPEN: Turn[] = [null, "waiting"];
+/**
+ * At a schedule whose upload time closed a few days ago, most are absent
+ * or rejected, so the sample data has attendance to ask a clarification
+ * for.
+ */
+const WHILE_CLARIFYING: Turn[] = [
+  null,
+  "rejected",
+  null,
+  "valid",
+  "valid",
+  "dispensation",
+];
+
+/**
+ * Whether a clarification can be sent for a schedule on a day: its upload
+ * time has closed, and its clarification time is still open.
+ */
+export function takesClarifications(
+  schedule: SampleActivitySchedule,
+  day: string,
+): boolean {
+  return uploadDeadline(schedule) < day && clarificationTimeOpen(schedule, day);
+}
 
 const NOTES: Record<AttendanceStatus, string> = {
   waiting: "",
@@ -63,7 +88,7 @@ function isMeantFor(
 }
 
 /** The schedules a student takes part in that began before a day, oldest first. */
-function begunFor(
+export function begunFor(
   schedules: SampleActivitySchedule[],
   student: SampleStudent,
   day: string,
@@ -78,7 +103,7 @@ function turnAt(turns: Turn[], place: number): Turn {
   return turns[place % turns.length] ?? null;
 }
 
-function campusMoment(day: string, time: string): Date {
+export function campusMoment(day: string, time: string): Date {
   return new Date(`${day}T${time}:00+07:00`);
 }
 
@@ -112,19 +137,58 @@ export function sampleActivityAttendances(
   day: string,
 ): SampleActivityAttendance[] {
   const attendances: SampleActivityAttendance[] = [];
-  const placeInCohort = new Map<number, number>();
-  for (const student of students) {
-    if ((student.status ?? "active") !== "active") continue;
-    const studentPlace = placeInCohort.get(student.cohortYear) ?? 0;
-    placeInCohort.set(student.cohortYear, studentPlace + 1);
+  for (const { student, place } of activeByCohortPlace(students)) {
     const begun = begunFor(schedules, student, day);
+    const turns = turnsAt(begun, place, day);
     for (const [schedulePlace, schedule] of begun.entries()) {
-      const isClosed = uploadDeadline(schedule) < day;
-      const turns = isClosed ? AFTER_CLOSING : WHILE_OPEN;
-      const status = turnAt(turns, studentPlace + schedulePlace);
+      const status = turns[schedulePlace] ?? null;
       if (status === null) continue;
       attendances.push(attendanceOf(student.nim, schedule, status));
     }
   }
   return attendances;
+}
+
+/**
+ * What one student gets at each of the schedules they take part in. The
+ * schedules that still take a clarification are counted on their own, so
+ * the first student of an angkatan is absent at the first and the third
+ * of them and has a rejected photo at the second, however many other
+ * schedules lie between.
+ */
+function turnsAt(
+  begun: SampleActivitySchedule[],
+  studentPlace: number,
+  day: string,
+): Turn[] {
+  let clarifiable = 0;
+  return begun.map((schedule, schedulePlace) => {
+    if (takesClarifications(schedule, day)) {
+      clarifiable += 1;
+      return turnAt(WHILE_CLARIFYING, studentPlace + clarifiable - 1);
+    }
+    const isClosed = uploadDeadline(schedule) < day;
+    const turns = isClosed ? AFTER_CLOSING : WHILE_OPEN;
+    return turnAt(turns, studentPlace + schedulePlace);
+  });
+}
+
+/** An Aktif sample student, with their place among those of their angkatan. */
+export interface PlacedStudent {
+  student: SampleStudent;
+  place: number;
+}
+
+export function activeByCohortPlace(
+  students: SampleStudent[],
+): PlacedStudent[] {
+  const placed: PlacedStudent[] = [];
+  const placeInCohort = new Map<number, number>();
+  for (const student of students) {
+    if ((student.status ?? "active") !== "active") continue;
+    const place = placeInCohort.get(student.cohortYear) ?? 0;
+    placeInCohort.set(student.cohortYear, place + 1);
+    placed.push({ student, place });
+  }
+  return placed;
 }

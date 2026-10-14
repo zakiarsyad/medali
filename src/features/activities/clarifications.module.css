@@ -1,0 +1,86 @@
+/* The flow in one sentence, set apart from the numbers and the cards. */
+.flowLine {
+  margin: var(--space-lg) 0 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  font-size: var(--text-md);
+}
+
+/*
+ * A field has a width of its own unless told otherwise, wider than the
+ * room a phone leaves beside the edges of the panel.
+ */
+.filters input,
+.filters select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
+ * As many facts beside each other as fit in a card, and one column where
+ * the card is as narrow as a phone.
+ */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--box-min-width)), 1fr)
+    );
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+}
+
+.fact {
+  min-width: 0;
+}
+
+.fact dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.fact dd {
+  margin: 0;
+}
+
+/* A fact that takes the whole width of its card. */
+.wide {
+  grid-column: 1 / -1;
+}
+
+/* The name of a file is long: it folds instead of widening the card. */
+.fileName {
+  max-width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.fileHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+  overflow-wrap: anywhere;
+}
+
+.fileFrame {
+  display: block;
+  width: 100%;
+  height: var(--file-preview-height);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+/* A tall picture is kept from pushing "Unduh" and "Tutup" off the screen. */
+.filePicture {
+  display: block;
+  max-width: 100%;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  max-height: var(--file-preview-height);
+  margin: 0 auto;
+}

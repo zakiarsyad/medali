@@ -29,7 +29,8 @@ import { NEWEST_FIRST } from "./student-schedules";
 /** The database's rule of one waiting or valid attendance per student and schedule. */
 const ONE_WAITING_OR_VALID = "activity_attendances_one_waiting_or_valid";
 
-interface Target {
+/** The student and the schedule an attendance is of. */
+export interface Target {
   studentId: string;
   scheduleId: string;
 }
@@ -53,7 +54,7 @@ function refused(error: string): RecordAnswer {
  * The newest attendance of the student for the schedule, held with the
  * older ones so that nobody else changes them until this record is saved.
  */
-async function holdNewest(db: Database, target: Target) {
+export async function holdNewest(db: Database, target: Target) {
   const held = await db
     .select({
       id: activityAttendances.id,
@@ -100,35 +101,50 @@ async function keep(
 }
 
 /**
- * Keeps the record and writes the line of the log, both or neither. A
- * student without an attendance for the schedule gets a new one, which
- * has no photo and no time sent. Otherwise their newest one is replaced
- * and keeps its photo, but only once the person agreed to replace the
- * status it has now.
+ * Puts a record in place of `before`, the newest attendance of the
+ * student for the schedule as `holdNewest` gave it, and writes the line
+ * of the log. A student without an attendance there gets a new one,
+ * which has no photo and no time sent; a replaced one keeps its photo.
+ * Runs in the transaction of the caller, which holds `before`.
+ */
+export async function replaceNewest(
+  tx: Database,
+  before: Awaited<ReturnType<typeof holdNewest>>,
+  target: Target,
+  record: ManualRecord,
+  { byId, at }: Pick<Recording, "byId" | "at">,
+): Promise<void> {
+  const decided = { ...record, decidedAt: at, decidedBy: byId };
+  const attendanceId = await keep(tx, before?.id, target, decided);
+  await tx.insert(activityAttendanceChanges).values({
+    attendanceId,
+    changedBy: byId,
+    changedAt: at,
+    statusBefore: before?.status ?? null,
+    noteBefore: before?.note ?? null,
+    statusAfter: record.status,
+    noteAfter: record.note,
+  });
+}
+
+/**
+ * Keeps the record and writes the line of the log, both or neither. The
+ * newest attendance of the student is replaced only once the person
+ * agreed to replace the status it has now.
  */
 function save(
   db: Database,
   target: Target,
   record: ManualRecord,
-  { byId, at, agreed }: Recording,
+  recording: Recording,
 ): Promise<RecordEnd> {
   return db.transaction(async (tx) => {
     await waitForOtherAttendanceWrites(tx, target.studentId, target.scheduleId);
     const before = await holdNewest(tx, target);
-    if (before !== undefined && mustConfirm(before.status, agreed)) {
+    if (before !== undefined && mustConfirm(before.status, recording.agreed)) {
       return { kind: "confirm", status: before.status };
     }
-    const decided = { ...record, decidedAt: at, decidedBy: byId };
-    const attendanceId = await keep(tx, before?.id, target, decided);
-    await tx.insert(activityAttendanceChanges).values({
-      attendanceId,
-      changedBy: byId,
-      changedAt: at,
-      statusBefore: before?.status ?? null,
-      noteBefore: before?.note ?? null,
-      statusAfter: record.status,
-      noteAfter: record.note,
-    });
+    await replaceNewest(tx, before, target, record, recording);
     return { kind: "recorded" };
   });
 }

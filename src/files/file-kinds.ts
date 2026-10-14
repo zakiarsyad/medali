@@ -35,8 +35,30 @@ export const CSV: FileKind = {
 /** Every JPEG picture starts with these three bytes. */
 const JPEG_START = [0xff, 0xd8, 0xff];
 
+function startsWith(bytes: Uint8Array, start: readonly number[]): boolean {
+  return start.every((byte, place) => bytes[place] === byte);
+}
+
 export const JPEG: FileKind = {
   extension: ".jpg",
   contentType: "image/jpeg",
-  holds: (bytes) => JPEG_START.every((byte, place) => bytes[place] === byte),
+  holds: (bytes) => startsWith(bytes, JPEG_START),
+};
+
+/** Every PNG picture starts with these eight bytes. */
+const PNG_START = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+export const PNG: FileKind = {
+  extension: ".png",
+  contentType: "image/png",
+  holds: (bytes) => startsWith(bytes, PNG_START),
+};
+
+/** Every PDF document starts with "%PDF-". */
+const PDF_START = [0x25, 0x50, 0x44, 0x46, 0x2d];
+
+export const PDF: FileKind = {
+  extension: ".pdf",
+  contentType: "application/pdf",
+  holds: (bytes) => startsWith(bytes, PDF_START),
 };

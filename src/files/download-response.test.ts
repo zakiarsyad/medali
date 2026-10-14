@@ -3,6 +3,7 @@ import {
   attachmentHeader,
   downloadResponse,
   refusalResponse,
+  viewResponse,
 } from "./download-response";
 
 describe("attachmentHeader", () => {
@@ -55,6 +56,43 @@ describe("downloadResponse", () => {
     expect(headers.get("Content-Type")).toBe("text/csv; charset=utf-8");
     expect(headers.get("Content-Length")).toBe("9");
     expect(headers.get("Cache-Control")).toBe("private, no-store");
+    expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
+  });
+});
+
+describe("viewResponse", () => {
+  const bytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]);
+
+  it.each(["application/pdf", "image/jpeg", "image/png"])(
+    "lets a page show a file of the kind %s, as private as a download",
+    async (contentType) => {
+      const response = viewResponse({
+        name: "surat (1).pdf",
+        contentType,
+        bytes,
+      });
+      const { headers } = response;
+
+      expect(headers.get("Content-Disposition")).toBe(
+        "inline; filename=\"surat__1_.pdf\"; filename*=UTF-8''surat%20%281%29.pdf",
+      );
+      expect(headers.get("Content-Type")).toBe(contentType);
+      expect(headers.get("Cache-Control")).toBe("private, no-store");
+      expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
+    },
+  );
+
+  it.each([
+    "text/html",
+    "image/svg+xml",
+    "text/csv; charset=utf-8",
+    "application/pdf; charset=utf-8",
+    "",
+  ])("downloads a file of the kind %j instead of showing it", (contentType) => {
+    const { headers } = viewResponse({ name: "berkas", contentType, bytes });
+
+    expect(headers.get("Content-Disposition")).toMatch(/^attachment; /);
     expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
 });

@@ -21,16 +21,26 @@ export interface AnsweredCard {
   answer: DecisionAnswer;
 }
 
-/** The answers after one more: the newest answer of a card replaces its last. */
-export function answersAfter(
-  answers: CardAnswers,
-  { cardId, answer }: AnsweredCard,
-): CardAnswers {
+/**
+ * The answers after one more: the newest answer of a card replaces its
+ * last. For the cards of any list that is decided card by card.
+ */
+export function answersAfter<Answer>(
+  answers: Readonly<Record<string, Answer>>,
+  { cardId, answer }: { cardId: string; answer: Answer },
+): Readonly<Record<string, Answer>> {
   return { ...answers, [cardId]: answer };
 }
 
-/** The oldest first, as the list is read; two sent together go by their key. */
-function byTimeSent(one: VerificationCard, other: VerificationCard): number {
+/** What gives a card its place in its list. */
+interface PlacedCard {
+  id: string;
+  /** When it was sent, written so that the oldest sorts first. */
+  sentAt: string;
+}
+
+/** The oldest first; two sent together go by their key. */
+function byTimeSent(one: PlacedCard, other: PlacedCard): number {
   if (one.sentAt !== other.sentAt) return one.sentAt < other.sentAt ? -1 : 1;
   return one.id < other.id ? -1 : 1;
 }
@@ -41,18 +51,21 @@ function byTimeSent(one: VerificationCard, other: VerificationCard): number {
  * since, as a validated photo leaves the list of waiting ones. Such a
  * card stays, in its place, as the answer gave it, so the person sees
  * what became of it. A card the list still holds is shown as the list
- * has it, which is never older than an answer.
+ * has it, which is never older than an answer. In the order its list is
+ * read in: the oldest first unless told otherwise.
  */
-export function shownCards(
-  listed: readonly VerificationCard[],
-  answers: CardAnswers,
-): VerificationCard[] {
+export function shownCards<Card extends PlacedCard>(
+  listed: readonly Card[],
+  answers: Readonly<Record<string, { card: Card | null }>>,
+  order: "oldest-first" | "newest-first" = "oldest-first",
+): Card[] {
   const listedIds = new Set(listed.map((card) => card.id));
   const shown = [...listed];
   for (const { card } of Object.values(answers)) {
     if (card !== null && !listedIds.has(card.id)) shown.push(card);
   }
-  return shown.sort(byTimeSent);
+  shown.sort(byTimeSent);
+  return order === "newest-first" ? shown.reverse() : shown;
 }
 
 /**

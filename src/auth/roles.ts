@@ -32,6 +32,7 @@ export const ACTIONS = [
   "give_mentoring_scores",
   "send_attendance_photo",
   "verify_attendance",
+  "decide_activity_clarifications",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -68,6 +69,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   give_mentoring_scores: "Mengisi nilai pengasuhan",
   send_attendance_photo: "Presensi swafoto",
   verify_attendance: "Verifikasi presensi",
+  decide_activity_clarifications:
+    "Verifikasi dan validasi klarifikasi kegiatan karakter",
 };
 
 /**
@@ -375,9 +378,10 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PN",
     pages: ["assessment", "activities"],
     tabs: {
+      activities: ["clarification"],
       assessment: ["character", "skpm", "siku", "character_test", "fitness"],
     },
-    actions: [],
+    actions: ["decide_activity_clarifications"],
     rows: "all",
   },
 };

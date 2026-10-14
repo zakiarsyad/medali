@@ -90,6 +90,8 @@
   --bare-box-width: 380px;
   --photo-preview-height: 260px;
   --photo-card-height: 200px;
+  /* A file shown in a box over the screen leaves room for its buttons. */
+  --file-preview-height: 70dvh;
   --icon-size: 18px;
   --icon-stroke: 2;
   --switched-off-opacity: 0.55;

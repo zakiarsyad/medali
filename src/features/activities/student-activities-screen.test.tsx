@@ -149,7 +149,13 @@ describe("StudentActivitiesScreen", () => {
       ]),
     );
 
-    for (const title of ["Tanggal", "Kegiatan", "Status", "Keterangan"]) {
+    for (const title of [
+      "Tanggal",
+      "Kegiatan",
+      "Status",
+      "Keterangan",
+      "Klarifikasi",
+    ]) {
       expect(screen).toContain(`<th>${title}</th>`);
       expect(screen).toContain(`data-title="${title}"`);
     }
@@ -167,6 +173,85 @@ describe("StudentActivitiesScreen", () => {
     expect(screen.match(/sampai /g)).toHaveLength(1);
     expect(screen).toContain('<td data-title="Keterangan">Foto buram</td>');
     expect(screen).toContain('<td data-title="Keterangan">Sakit</td>');
+  });
+
+  it('offers "Ajukan klarifikasi" only for an absence and a rejected photo, and says how under the table', () => {
+    const sent = { sentAt: TEST_SENT_PHOTO.sentAt };
+    const screen = shown(
+      historyOf([
+        past(12, { attendance: null }),
+        past(9, { attendance: TEST_SENT_PHOTO }),
+        past(8, { attendance: { status: "valid", note: "", ...sent } }),
+        past(7, {
+          attendance: { status: "rejected", note: "Foto buram", ...sent },
+        }),
+        past(5, { attendance: null }),
+        past(1, { attendance: null }),
+      ]),
+    );
+
+    expect(screen.match(/>Ajukan klarifikasi<\/button>/g)).toHaveLength(2);
+    expect(screen.match(/Batas klarifikasi lewat/g)).toHaveLength(1);
+    expect(screen).toContain(
+      "Tercatat tidak hadir padahal punya alasan? Ajukan klarifikasi dengan lampiran paling lambat 7 hari setelah masa unggah foto berakhir. Klarifikasi diperiksa Penilai Mahasiswa.",
+    );
+  });
+
+  it("shows the newest clarification of each schedule: waiting, accepted with the attendance it gave, and rejected with its note", () => {
+    const [waiting, accepted, rejected] = [
+      past(10, {}),
+      past(9, {}),
+      past(8, {}),
+    ];
+    if (!waiting || !accepted || !rejected) throw new Error("No schedules.");
+    const screen = shown({
+      ...historyOf([
+        waiting,
+        {
+          ...accepted,
+          attendance: {
+            status: "valid",
+            note: "Klarifikasi: Kendala teknis presensi",
+            sentAt: null,
+          },
+        },
+        rejected,
+      ]),
+      clarifications: {
+        [waiting.id]: {
+          status: "submitted",
+          note: "",
+          file: { clarificationId: "abc", name: "surat-keterangan.pdf" },
+        },
+        [accepted.id]: { status: "accepted", note: "", file: null },
+        [rejected.id]: {
+          status: "rejected",
+          note: "Surat tidak terbaca.",
+          file: null,
+        },
+      },
+    });
+
+    expect(screen.match(/>Lampiran: [^<]+<\/a>/g)).toEqual([
+      ">Lampiran: surat-keterangan.pdf</a>",
+    ]);
+    expect(screen).toContain('href="/kegiatan/klarifikasi/lampiran/abc"');
+    expect(screen).toContain("Klarifikasi diajukan</span>");
+    expect(screen).toContain("Klarifikasi diterima</span>");
+    expect(screen).toContain(
+      '<td data-title="Keterangan">Klarifikasi: Kendala teknis presensi</td>',
+    );
+    expect(screen).toContain("Hadir</span>");
+    expect(screen).toContain("Klarifikasi ditolak</span>");
+    expect(screen).toContain("Surat tidak terbaca.</span>");
+    expect(screen.match(/>Ajukan ulang<\/button>/g)).toHaveLength(1);
+    expect(screen).not.toContain(">Ajukan klarifikasi</button>");
+  });
+
+  it("shows no note about clarifications while the history is empty", () => {
+    const screen = shown();
+
+    expect(screen).toContain("Belum ada riwayat.");
     expect(screen).not.toContain("Klarifikasi");
   });
 
