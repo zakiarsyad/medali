@@ -5,6 +5,7 @@ import type { DraftKey } from "./draft-change-input";
 import type { DraftCheck } from "./draft-check";
 import { DraftCheckNote } from "./draft-check-note";
 import { FillMentorsButton } from "./fill-mentors-button";
+import { countNotOffered } from "./fix-check";
 import { GroupFactCells, GroupFactTitles } from "./group-fact-cells";
 import { GroupMembers } from "./group-members";
 import { MembersLink } from "./members-link";
@@ -67,6 +68,17 @@ function chosenCount(groups: DraftGroup[]): number {
   return groups.filter((group) => group.mentor !== null).length;
 }
 
+function notOfferedCount(groups: DraftGroup[], pool: PoolMentor[]): number {
+  const chosenIds: string[] = [];
+  for (const group of groups) {
+    if (group.mentor !== null) chosenIds.push(group.mentor.id);
+  }
+  return countNotOffered(
+    chosenIds,
+    pool.map((mentor) => mentor.id),
+  );
+}
+
 /**
  * "3. Pengasuh setiap kelompok", for an account that prepares the
  * penetapan: the mentor of each group, "Isi otomatis yang kosong", and
@@ -117,7 +129,10 @@ export function MentorStepPanel({
           </tbody>
         </table>
       </div>
-      <DraftCheckNote check={check} />
+      <DraftCheckNote
+        check={check}
+        notOffered={notOfferedCount(groups, pool)}
+      />
       <p className={styles.hint}>
         Tanda {SAME_JURUSAN_MARK} berarti pengasuh dari jurusan yang sama dengan
         program studi kelompok. Setiap pilihan pengasuh dan perpindahan anggota

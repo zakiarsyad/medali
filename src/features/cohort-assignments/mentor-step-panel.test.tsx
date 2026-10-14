@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkOfGroups } from "./draft-check";
+import { checkOfGroups, READY_WORDS } from "./draft-check";
 import { DraftGroupsPanel } from "./draft-groups-panel";
 import type { PoolMentor } from "./mentor-options";
 import { MentorStepPanel } from "./mentor-step-panel";
@@ -128,6 +128,35 @@ describe("MentorStepPanel", () => {
 
   it("offers no move in a program studi with one group", () => {
     expect(step(OTHER)).not.toContain("Pindahkan ke…");
+  });
+
+  it("does not call a complete draft ready while it names a mentor who can no longer be chosen", () => {
+    const zaki = { id: "zaki", name: "Zaki Contoh", title: null };
+    const groups = [
+      group(FIRST, { mentor: YUNI }),
+      group(SECOND, { number: 2, mentor: zaki }),
+    ];
+    const waiting = WAITING.filter((student) =>
+      groups.some((g) => g.members.some((member) => member.id === student.id)),
+    );
+    const check = checkOfGroups(groups, waiting);
+    const panel = renderToStaticMarkup(
+      <OneSaveAtATime>
+        <MentorStepPanel
+          assignment={{ cohortYear: 2026, version: 4, groups }}
+          check={check}
+          pool={POOL}
+          openGroupId={null}
+        />
+      </OneSaveAtATime>,
+    );
+
+    expect(check.isComplete).toBe(true);
+    expect(panel).toContain("Zaki Contoh (tidak bisa dipilih lagi)");
+    expect(panel).toContain(
+      "1 pengasuh pada draf tidak bisa dipilih lagi untuk angkatan ini.",
+    );
+    expect(panel).not.toContain(READY_WORDS);
   });
 });
 

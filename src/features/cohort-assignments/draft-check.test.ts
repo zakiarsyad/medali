@@ -184,6 +184,14 @@ describe("checkWords", () => {
     ]);
   });
 
+  it("names the mentors who can no longer be chosen as Tetapkan does, and not that it is ready", () => {
+    const found = check([group("ani"), group("budi")]);
+
+    expect(checkWords(found, 1)).toEqual([
+      "1 pengasuh pada draf tidak bisa dipilih lagi untuk angkatan ini. Pilih pengasuh lain untuk kelompoknya, lalu tetapkan lagi.",
+    ]);
+  });
+
   it("adds the groups of an unusual size as a warning beside being ready", () => {
     const found = check([group("ani", 17), group("budi")]);
 

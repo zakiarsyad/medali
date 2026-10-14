@@ -33,9 +33,23 @@ function membersNotWaiting(facts: FixFacts): number {
   return count;
 }
 
+/** How many of the mentors chosen, one for each group, are not offered. */
+export function countNotOffered(
+  chosenIds: string[],
+  offeredIds: string[],
+): number {
+  const offered = new Set(offeredIds);
+  return chosenIds.filter((id) => !offered.has(id)).length;
+}
+
+/** What is said of a draft that names mentors who are not offered any more. */
+export function notOfferedWords(count: number): string {
+  return `${count} pengasuh pada draf tidak bisa dipilih lagi untuk angkatan ini. Pilih pengasuh lain untuk kelompoknya, lalu tetapkan lagi.`;
+}
+
 function mentorsNotOffered(facts: FixFacts): number {
-  const offered = new Set(facts.offeredMentorIds);
-  return facts.groups.filter((group) => !offered.has(group.mentorId)).length;
+  const chosenIds = facts.groups.map((group) => group.mentorId);
+  return countNotOffered(chosenIds, facts.offeredMentorIds);
 }
 
 function holdsNumberOf(live: GroupNumber, group: GroupNumber): boolean {
@@ -67,9 +81,7 @@ export function whatStopsFix(facts: FixFacts): string | null {
     return `${notWaiting} mahasiswa pada draf sudah punya kelompok pengasuhan atau sudah pindah angkatan. ${FORM_AGAIN}`;
   }
   const notOffered = mentorsNotOffered(facts);
-  if (notOffered > 0) {
-    return `${notOffered} pengasuh pada draf tidak bisa dipilih lagi untuk angkatan ini. Pilih pengasuh lain untuk kelompoknya, lalu tetapkan lagi.`;
-  }
+  if (notOffered > 0) return notOfferedWords(notOffered);
   const taken = numbersTaken(facts);
   if (taken > 0) {
     return `${taken} kelompok pada draf memakai nomor yang sudah dipakai kelompok lain yang berlaku. ${FORM_AGAIN}`;

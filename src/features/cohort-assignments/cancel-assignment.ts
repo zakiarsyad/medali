@@ -1,9 +1,10 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import {
   cohortAssignmentGroups,
   cohortAssignmentMembers,
   mentorGroupMembers,
+  mentorGroupMentors,
   mentorGroupPastMembers,
   mentorGroups,
 } from "@/db/schema";
@@ -90,12 +91,34 @@ async function keepMembersInDraft(
 }
 
 /**
+ * Makes the draft hold, for each of its groups, the mentor of today of
+ * its kelompok, in place of the one chosen before the penetapan: a
+ * replacement carried out since then stays.
+ */
+async function keepMentorsInDraft(
+  tx: Database,
+  assignmentId: string,
+): Promise<void> {
+  await tx
+    .update(cohortAssignmentGroups)
+    .set({ mentorId: sql`${mentorGroupMentors.mentorId}` })
+    .from(mentorGroupMentors)
+    .where(
+      and(
+        eq(cohortAssignmentGroups.assignmentId, assignmentId),
+        eq(mentorGroupMentors.groupId, cohortAssignmentGroups.mentorGroupId),
+        isNull(mentorGroupMentors.endsOn),
+      ),
+    );
+}
+
+/**
  * Ends the kelompok pengasuhan of a penetapan, with who and when. Nothing
  * is erased: the groups stay stored with their mentor lines, and so does
  * everything recorded for their students. A replacement of their mentor
  * that still waited for its start date is cancelled with them. The groups
- * of the draft get the members their kelompok had, and name no kelompok
- * any more.
+ * of the draft get the mentor and the members their kelompok had, and
+ * name no kelompok any more.
  */
 async function endLiveGroups(
   tx: Database,
@@ -113,6 +136,7 @@ async function endLiveGroups(
     .set({ endedAt: WRITTEN_NOW, endedBy })
     .where(inArray(mentorGroups.id, liveIds));
   await cancelWaitingReplacementsOf(tx, liveIds, endedBy);
+  await keepMentorsInDraft(tx, assignmentId);
   const members = await moveMembersToPast(tx, liveIds);
   await keepMembersInDraft(tx, draftIdOf, members);
   await tx
@@ -125,7 +149,7 @@ async function endLiveGroups(
  * "Batalkan penetapan": cancels the fixed penetapan of an angkatan, at any
  * time. Its groups in force are ended and its students go back to having
  * no group, in one transaction. The groups stay as a draft, with the
- * mentors chosen and the members each group had at that moment, to be
+ * mentor and the members each group had at that moment, to be
  * changed, submitted and fixed again. Refused for
  * any role but one that may fix, for an angkatan that is not fixed, and
  * for a cancel sent from an older version.

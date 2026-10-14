@@ -104,6 +104,6 @@ Decided while building, because the issue did not say:
 
 - [x] 1. A fixed angkatan shows the mentor of today of each group, with
   "sejak" the day that mentor started, with its checks.
-- [ ] 2. "Batalkan penetapan" keeps the mentor of today in the draft,
+- [x] 2. "Batalkan penetapan" keeps the mentor of today in the draft,
   and the note does not call a draft ready while it names a mentor who
   can no longer be chosen, with its checks.

@@ -5,6 +5,7 @@ import {
   type PlacedGroup,
   type PlacedStudent,
 } from "./draft-students";
+import { notOfferedWords } from "./fix-check";
 
 /** What the check reads of a group being prepared. */
 export interface GroupToCheck {
@@ -136,16 +137,26 @@ export function whatHoldsBack(check: DraftCheck): string | null {
 }
 
 /**
- * What the note under the groups says of a check, one sentence for each
- * thing found: first what holds the penetapan back, then the warning.
+ * Whether the note may call the draft ready to be fixed. A mentor who can
+ * no longer be chosen stops "Tetapkan", though not "Ajukan".
  */
-export function checkWords(check: DraftCheck): string[] {
+export function isReadyToFix(check: DraftCheck, notOffered: number): boolean {
+  return check.isComplete && notOffered === 0;
+}
+
+/**
+ * What the note under the groups says of a check, one sentence for each
+ * thing found: first what holds the penetapan back, then the mentors on
+ * the draft who can no longer be chosen, then the warning.
+ */
+export function checkWords(check: DraftCheck, notOffered = 0): string[] {
   const words = heldBackWords(check);
+  if (notOffered > 0) words.push(notOfferedWords(notOffered));
   if (check.outsideUsualSize > 0) {
     words.push(
       `${check.outsideUsualSize} kelompok di luar ukuran ${USUAL_SIZE_WORDS} (boleh, misalnya prodi kecil).`,
     );
   }
-  if (check.isComplete) words.push(READY_WORDS);
+  if (isReadyToFix(check, notOffered)) words.push(READY_WORDS);
   return words;
 }
