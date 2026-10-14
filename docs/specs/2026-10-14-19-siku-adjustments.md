@@ -116,7 +116,7 @@ and a student sees their own SIKU and why.
   log. The right "Penilaian SIKU" is added for Kepala Unit and Penilai
   Mahasiswa, with its checks. Sample data adds a few entries.
 - [x] 2. The SIKU rule (dasar + gains − losses, 0–100), with checks.
-- [ ] 3. The tab shows the numbers, "Daftar nilai SIKU" and the ranking.
+- [x] 3. The tab shows the numbers, "Daftar nilai SIKU" and the ranking.
 - [ ] 4. The form adds a gain or a loss for chosen students.
 - [ ] 5. The history, with "Lihat mahasiswa" and "Batalkan".
 - [ ] 6. The student's own numbers and "Transparansi nilai SIKU".

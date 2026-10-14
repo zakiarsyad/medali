@@ -3,6 +3,9 @@ import type { Database } from "@/db/connect";
 import {
   academicPeriods,
   accounts,
+  mentorGroupMembers,
+  mentorGroupMentors,
+  mentorGroups,
   sikuAdjustmentStudents,
   sikuAdjustments,
 } from "@/db/schema";
@@ -10,6 +13,34 @@ import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import type { SikuKind, SikuReason } from "./siku-ids";
 
 /** Made-up records for the checks of this area. */
+
+/** A kelompok pengasuhan of some students, held today by a mentor. */
+export async function addTestGroup(
+  db: Database,
+  of: { programId: number; year: number; number: number },
+  mentorId: string,
+  studentIds: string[],
+): Promise<string> {
+  const startsOn = `${of.year}-08-01`;
+  const [group] = await db
+    .insert(mentorGroups)
+    .values({
+      studyProgramId: of.programId,
+      cohortYear: of.year,
+      entryPath: "regular",
+      number: of.number,
+      startsOn,
+    })
+    .returning();
+  if (!group) throw new Error("The group was not added.");
+  await db
+    .insert(mentorGroupMembers)
+    .values(studentIds.map((studentId) => ({ studentId, groupId: group.id })));
+  await db
+    .insert(mentorGroupMentors)
+    .values({ groupId: group.id, mentorId, startsOn });
+  return group.id;
+}
 
 export interface TestActor {
   id: string;
