@@ -118,4 +118,70 @@ An approved request becomes a normal gain in the SIKU history.
 - [x] 3. "Pengajuan saya" shows the requests, with "Tarik pengajuan".
 - [x] 4. Staff see the panel with the status choice and the cards.
 - [x] 5. "Setujui" adds the gain; "Tolak" needs a note.
-- [ ] 6. Cancelling the gain shows the request as Dibatalkan.
+- [x] 6. Cancelling the gain shows the request as Dibatalkan.
+
+## Decisions made while building
+
+- Two new rights on the list of rights per role: "Ajukan penambahan
+  SIKU dengan foto bukti" for Mahasiswa only, and "Persetujuan
+  pengajuan penambahan SIKU" for Kepala Unit and Penilai Mahasiswa.
+  Reading the staff panel uses the right to read SIKU, with its limits:
+  Ketua Program Studi their own program, Pengasuh their own mentees,
+  Direktur / Wakil Direktur every student. A student reads only their
+  own requests.
+- Only an Aktif student may send a request, as gains go to Aktif
+  students only. Approving the request of a student who is not Aktif
+  any more is refused with a message; it can still be rejected. The
+  staff panel lists the requests of Aktif students only, as the rest of
+  the tab counts only them.
+- Each request keeps a key made by the form, so a second press of
+  "Kirim pengajuan" keeps one request and answers the same.
+- A request is stored as waiting, approved, rejected or withdrawn.
+  Withdrawn is a mark with when; such a request and its photos are shown
+  to nobody, not even its student. "Dibatalkan" is not stored: it is
+  told from the gain of an approved request being cancelled.
+- A withdrawal and a decision, or two decisions, at the same moment:
+  the one saved first wins and the other is refused with a message. A
+  second press of "Setujui" adds no second gain; it is told the request
+  is decided already.
+- "Setujui" makes a normal SIKU gain for that one student, in the
+  academic period that runs on the day of approval (refused with a
+  message while none runs), with a line in the log, as any entry. Its
+  reason and Tanggal are those of the request, and its Keterangan is the
+  report, cut to the 500 characters an entry holds, ending in "…" when
+  longer. Dasar shows "Pengajuan mahasiswa", in the history for staff
+  and in the student's own list. "Catatan penilai" stays on the request
+  only.
+- The request keeps who decided, when, and the role they decided as:
+  Penilai Mahasiswa when the person holds it, otherwise Kepala Unit, as
+  entries do. The student sees only that role; staff see the name and
+  the role.
+- Keterangan holds 20 to 1.000 characters. "Catatan penilai" holds at
+  most 500 characters, is optional on approval and required on
+  rejection. Poin is whole, 1 to 30, 2 at the start.
+- Photos: 1 to 3. The form takes only JPG and PNG files of at most 5 MB
+  ("Hanya berkas gambar yang diterima.", "Maksimal 3 foto.", "Ukuran
+  foto maksimal 5 MB."). "Maksimal 3 foto." shows only when a picked
+  photo was left out. The browser makes each photo a JPEG 1.280 dots on
+  its longest side, and a small copy 240 dots on its longest side, and
+  sends both. The server checks both again and keeps both. Cards and
+  "Pengajuan saya" show the small copy, loaded only when it comes into
+  view; a press opens the large one in a box over the page.
+- A photo opens only for the student who sent it and for staff whose
+  right to read SIKU covers that student; anything else answers as not
+  found. Where the file storage settings are empty, "Kirim pengajuan"
+  keeps nothing and says the proof photos cannot be stored yet.
+- The photo field does not force the camera, so a phone offers both
+  camera and gallery.
+- The staff panel sits right after the four numbers. The status choice
+  is in the address, Diajukan at the start, each with its count; a
+  request whose gain was cancelled counts and shows under Semua only, as
+  in the prototype. 12 cards a page, newest first.
+- A waiting card warns when the student already has a gain in force with
+  the same reason on the same Tanggal.
+- Sample data holds seven requests: three waiting, one approved, one
+  approved whose gain was cancelled, one rejected and one withdrawn,
+  with drawn pictures that show no person, kept by the sample photos
+  command. The two approved ones point at sample gains of the same
+  student, reason and day.
+- "Pengajuan saya" is not paged: a student has few requests.
