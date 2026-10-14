@@ -225,6 +225,13 @@
       "when": 1791951390809,
       "tag": "0031_dorm-activities",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791955869644,
+      "tag": "0032_dorm-attendance",
+      "breakpoints": true
     }
   ]
 }

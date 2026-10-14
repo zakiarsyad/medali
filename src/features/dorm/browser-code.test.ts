@@ -7,6 +7,7 @@ const FOLDER = "src/features/dorm";
 const ACTIVITY_PARTS = [
   `${FOLDER}/activity-board.tsx`,
   `${FOLDER}/activity-form.tsx`,
+  `${FOLDER}/count-form.tsx`,
 ];
 
 describe("the screen parts of Kegiatan asrama that run in the browser", () => {

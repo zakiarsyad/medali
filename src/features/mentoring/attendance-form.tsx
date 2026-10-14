@@ -8,11 +8,11 @@ import {
   type MarksByStudent,
 } from "@/mentoring/meeting-ids";
 import { MEETING_TOPICS } from "@/mentoring/meeting-topics";
+import { useAskBeforeLeaving } from "@/ui/ask-before-leaving";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { saveAttendanceAction } from "./actions";
-import { useAskBeforeLeaving } from "./ask-before-leaving";
 import type { AttendanceFormState } from "./attendance-form-state";
 import {
   type AttendanceValues,

@@ -8,18 +8,38 @@ import { activitiesAddress } from "./activities-address";
 
 /**
  * The day of Jadwal harian: ‹ steps to the day before, › to the day
- * after, and any day can be picked in between.
+ * after, and any day can be picked in between. A day picked while
+ * `leaveQuestion` is given is opened only when the person agrees; the
+ * links ask by themselves, as every link of a form that is not saved does.
  */
-export function DaySwitch({ day, today }: { day: string; today: string }) {
+export function DaySwitch({
+  day,
+  today,
+  leaveQuestion,
+}: {
+  day: string;
+  today: string;
+  /** What is asked before another day opens, or null to ask nothing. */
+  leaveQuestion: string | null;
+}) {
   const router = useRouter();
 
   function addressOf(shown: string): string {
-    return activitiesAddress({ view: "harian", day: shown, page: 1 }, today);
+    return activitiesAddress(
+      { view: "harian", day: shown, page: 1, counted: null },
+      today,
+    );
   }
 
-  function open(picked: string) {
+  function open(field: HTMLInputElement) {
+    const picked = field.value;
     // A day half typed is not a day yet.
-    if (isDay(picked)) router.push(addressOf(picked), { scroll: false });
+    if (!isDay(picked)) return;
+    if (leaveQuestion !== null && !window.confirm(leaveQuestion)) {
+      field.value = day;
+      return;
+    }
+    router.push(addressOf(picked), { scroll: false });
   }
 
   return (
@@ -39,7 +59,7 @@ export function DaySwitch({ day, today }: { day: string; today: string }) {
         className={shared.input}
         defaultValue={day}
         aria-label="Tanggal"
-        onChange={(event) => open(event.target.value)}
+        onChange={(event) => open(event.target)}
       />
       <Link
         href={addressOf(daysAfter(day, 1))}

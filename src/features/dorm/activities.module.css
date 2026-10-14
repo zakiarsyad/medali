@@ -258,3 +258,99 @@
   align-items: center;
   margin-left: auto;
 }
+
+/* Where a count stands before its first announcement: it counts for no one yet. */
+.warnNote {
+  composes: note;
+  border-color: var(--warn);
+}
+
+.countForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.countForm > .note,
+.countForm > .warnNote {
+  margin: 0;
+}
+
+.countList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * One participant: the name, the box and the note side by side where
+ * there is room. On a phone the name takes the whole width and the box
+ * and the note fold under it, so the row never scrolls sideways.
+ */
+.countRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-top: var(--line-width) solid var(--line2);
+}
+
+.countWho {
+  display: flex;
+  flex: 1 1 var(--box-min-width);
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.countAbsent {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  font-size: var(--text-md);
+}
+
+.countNote {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* The buttons of a count stay at the bottom of the screen on a phone. */
+.countBar {
+  position: var(--save-bar-position);
+  bottom: 0;
+  display: flex;
+  flex-direction: var(--save-bar-direction);
+  gap: var(--space-md);
+  margin-top: var(--save-bar-margin);
+  padding: var(--save-bar-padding);
+  border-top: var(--save-bar-line) solid var(--line);
+  background: var(--surface);
+}
+
+.bad {
+  border: var(--line-width) solid var(--bad);
+  background: var(--surface);
+  color: var(--bad);
+}
+
+/* Who was absent or has a note, under Rincian of an announced count. */
+.markedList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.markedRow {
+  composes: countRow;
+}
+
+.markedNote {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
