@@ -82,6 +82,6 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. Words that only a screen reader gets stay inside the shared
+- [x] 1. Words that only a screen reader gets stay inside the shared
   sideways-scrolling box of their list, with a check, and Pengguna dan
   peran does not scroll sideways as a whole page at 900px wide.

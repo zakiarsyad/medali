@@ -141,7 +141,12 @@
   margin-bottom: var(--space-md);
 }
 
+/*
+ * The box places the words of `hidden` inside it. Placed by the page
+ * instead, they stand where the list overflows and widen the whole page.
+ */
 .tableWrap {
+  position: relative;
   overflow-x: auto;
 }
 
