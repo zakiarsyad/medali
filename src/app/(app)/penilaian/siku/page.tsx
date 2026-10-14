@@ -1,4 +1,5 @@
 import { forbidden } from "next/navigation";
+import { campusDay } from "@/academic-periods/campus-day";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
@@ -9,6 +10,8 @@ import {
   readSikuNumbers,
   readSikuRanking,
 } from "@/features/siku/siku-board";
+import { SikuForm } from "@/features/siku/siku-form";
+import { readGroupChoices } from "@/features/siku/siku-picks";
 import { StaffSikuScreen } from "@/features/siku/staff-siku-screen";
 import { visibleTo } from "@/features/students/visible-students";
 
@@ -27,11 +30,21 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const params = readSikuParams(await props.searchParams);
   const visible = visibleTo(rowLimitForAction(account, "view_siku"));
   const { score: base } = await readBaseScore(db);
-  const [numbers, ranking, list] = await Promise.all([
+  const mayAdjust = may(account.roles, "adjust_siku");
+  const [numbers, ranking, list, groups] = await Promise.all([
     readSikuNumbers(db, visible, base),
     readSikuRanking(db, visible, base, params),
     readSikuList(db, visible, base, params),
+    mayAdjust ? readGroupChoices(db) : [],
   ]);
+  const form = mayAdjust ? (
+    <SikuForm
+      newEntryId={crypto.randomUUID()}
+      base={base}
+      today={campusDay()}
+      groups={groups}
+    />
+  ) : null;
   return (
     <StaffSikuScreen
       tabs={tabs}
@@ -40,7 +53,7 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
       numbers={numbers}
       ranking={ranking}
       list={list}
-      form={null}
+      form={form}
       history={null}
     />
   );

@@ -117,7 +117,7 @@ and a student sees their own SIKU and why.
   Mahasiswa, with its checks. Sample data adds a few entries.
 - [x] 2. The SIKU rule (dasar + gains − losses, 0–100), with checks.
 - [x] 3. The tab shows the numbers, "Daftar nilai SIKU" and the ranking.
-- [ ] 4. The form adds a gain or a loss for chosen students.
+- [x] 4. The form adds a gain or a loss for chosen students.
 - [ ] 5. The history, with "Lihat mahasiswa" and "Batalkan".
 - [ ] 6. The student's own numbers and "Transparansi nilai SIKU".
 
@@ -133,3 +133,13 @@ and a student sees their own SIKU and why.
 - The academic period of an entry is the one running on the day it is
   saved, not the day under Tanggal. While no period runs, nothing is
   saved.
+- The tab, its numbers and its lists count Aktif students only, as the
+  prototype does. A gain or a loss can be given only to Aktif students;
+  a student on Cuti or Non aktif keeps the SIKU they have.
+- "Tambah satu kelompok pengasuhan" offers every group in force that
+  holds an Aktif student, by its code with that number, and adds its
+  Aktif members.
+- The form starts with 2 points for a gain and 3 for a loss, and with
+  today under Tanggal, as the prototype does. Keterangan is optional and
+  holds at most 500 characters; "Dasar atau nomor surat" at most 200.
+- One entry holds at most 2.000 students.
