@@ -65,7 +65,7 @@ async function addRecords(db: Database) {
 }
 
 describe("readLeaveBoard", () => {
-  it("counts the requests that wait, and those approved that started in the last 30 days", async () => {
+  it("counts the requests that wait, and those approved that started in the last 30 days, Selesai or not", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea, manager } = await addRecords(db);
       const decided = { decidedBy: manager.id, decidedAt: NOW };
@@ -78,6 +78,17 @@ describe("readLeaveBoard", () => {
         "2880-10-01T12:00",
         {
           status: "approved",
+          ...decided,
+        },
+      );
+      await addLeave(
+        db,
+        bea.studentId,
+        "2880-10-02T09:00",
+        "2880-10-02T12:00",
+        {
+          status: "completed",
+          returnedAt: on("2880-10-02T11:50"),
           ...decided,
         },
       );
@@ -105,7 +116,7 @@ describe("readLeaveBoard", () => {
 
       const board = await readLeaveBoard(db, EVERYONE, WAITING, 1, NOW);
 
-      expect(board.counts).toEqual({ waiting: 2, recentApproved: 1 });
+      expect(board.counts).toEqual({ waiting: 2, recentApproved: 2 });
     });
   });
 

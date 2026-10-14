@@ -16,15 +16,47 @@ export type LeaveKind = (typeof LEAVE_KINDS)[number];
 /**
  * Where a leave request stands: it waits for Pengelola Asrama (Diajukan),
  * was approved or rejected, or the resident cancelled it while it waited.
+ * Approved Izin pesiar and Izin khusus become Selesai once their return is
+ * validated or recorded; ITMK stays approved, as it needs no return.
  */
 export const LEAVE_STATUSES = [
   "submitted",
   "approved",
   "rejected",
   "cancelled",
+  "completed",
 ] as const;
 
 export type LeaveStatus = (typeof LEAVE_STATUSES)[number];
+
+/** The statuses of approved leave, before and after its return. */
+export const APPROVED_STATUSES = [
+  "approved",
+  "completed",
+] as const satisfies readonly LeaveStatus[];
+
+/**
+ * Where a report of a return stands: it waits for BAM - BPHK (Menunggu
+ * verifikasi BAM), BAM verified it and it waits for Pengelola Asrama
+ * (Diverifikasi BAM), one of them rejected it, or Pengelola validated it.
+ */
+export const REPORT_STATUSES = [
+  "waiting",
+  "verified",
+  "rejected",
+  "validated",
+] as const;
+
+export type ReportStatus = (typeof REPORT_STATUSES)[number];
+
+/** The statuses of a report that still waits for a decision. */
+export const OPEN_REPORT_STATUSES = [
+  "waiting",
+  "verified",
+] as const satisfies readonly ReportStatus[];
+
+/** How many minutes before the return time a report may be sent. */
+export const REPORT_OPENS_MINUTES = 30;
 
 /** Jenis keperluan of Izin khusus, in the order the form offers them. */
 export const SPECIAL_REASONS = [

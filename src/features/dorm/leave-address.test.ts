@@ -31,7 +31,7 @@ describe("readLeaveListParams", () => {
     expect(
       readLeaveListParams({
         cari: "a".repeat(101),
-        status: "selesai",
+        status: "kedaluwarsa",
         jenis: "cuti",
         hal: "-1",
       }),

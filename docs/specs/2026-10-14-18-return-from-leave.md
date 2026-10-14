@@ -96,7 +96,7 @@ return directly, and see who is still out and who is late.
 
 ## Steps
 
-- [ ] 1. Leave keeps its report, checks and actual return time, with
+- [x] 1. Leave keeps its report, checks and actual return time, with
   sample reports in every state.
 - [ ] 2. The rights to check, confirm and record a return are added to
   the permission list, with their checks.

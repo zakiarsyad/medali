@@ -21,6 +21,7 @@ export type StatusChoice = LeaveStatus | "all";
 export const STATUS_CHOICE_ORDER: StatusChoice[] = [
   "submitted",
   "approved",
+  "completed",
   "rejected",
   "cancelled",
   "all",
@@ -30,6 +31,7 @@ export const STATUS_CHOICE_ORDER: StatusChoice[] = [
 export const STATUS_CHOICES: Record<StatusChoice, string> = {
   submitted: "diajukan",
   approved: "disetujui",
+  completed: "selesai",
   rejected: "ditolak",
   cancelled: "dibatalkan",
   all: "semua",
@@ -38,6 +40,7 @@ export const STATUS_CHOICES: Record<StatusChoice, string> = {
 export const STATUS_CHOICE_WORDS: Record<StatusChoice, string> = {
   submitted: "Menunggu verifikasi",
   approved: "Disetujui",
+  completed: "Selesai",
   rejected: "Ditolak",
   cancelled: "Dibatalkan",
   all: "Semua",

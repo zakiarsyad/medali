@@ -6,6 +6,7 @@ import {
   eq,
   gte,
   ilike,
+  inArray,
   lte,
   or,
   type SQL,
@@ -29,6 +30,7 @@ import type { ActivityRow } from "./activity-row";
 import { LEAVE_CARDS_PAGE_SIZE, type LeaveFilters } from "./leave-address";
 import { type LeaveCard, warningsOf } from "./leave-card";
 import { coveredActivities } from "./leave-cover";
+import { APPROVED_STATUSES } from "./leave-ids";
 import { rowOfLeave } from "./leave-row";
 import { readActivityRows } from "./leave-store";
 
@@ -36,7 +38,7 @@ import { readActivityRows } from "./leave-store";
 export interface LeaveCounts {
   /** Menunggu verifikasi: the requests that wait. */
   waiting: number;
-  /** Izin 30 hari terakhir: approved, starting in the last 30 days. */
+  /** Izin 30 hari terakhir: approved, Selesai or not, starting in the last 30 days. */
   recentApproved: number;
 }
 
@@ -77,7 +79,7 @@ async function readCounts(
       db,
       and(
         visible,
-        eq(dormLeaves.status, "approved"),
+        inArray(dormLeaves.status, APPROVED_STATUSES),
         gte(dormLeaves.startsAt, since),
         lte(dormLeaves.startsAt, now),
       ),

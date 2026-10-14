@@ -8,6 +8,7 @@ const STATUS_STYLES: Record<LeaveStatus, string | undefined> = {
   approved: styles.ok,
   rejected: styles.bad,
   cancelled: styles.plain,
+  completed: styles.plain,
 };
 
 export function StatusBadge({ status }: { status: LeaveStatus }) {

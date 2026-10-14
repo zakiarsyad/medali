@@ -9,6 +9,7 @@ import {
   lte,
   or,
   type SQL,
+  sql,
 } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormActivityVersions, dormLeaves, students } from "@/db/schema";
@@ -17,6 +18,7 @@ import { audiencesCovering } from "./activity-audience";
 import { readVersions } from "./activity-reads";
 import type { ActivityRow } from "./activity-row";
 import type { LeaveSpan } from "./leave-cover";
+import { APPROVED_STATUSES } from "./leave-ids";
 import type { ApprovedLeave } from "./leave-marks";
 
 /*
@@ -24,7 +26,24 @@ import type { ApprovedLeave } from "./leave-marks";
  */
 
 /** The statuses whose leave holds its time: no other may overlap it. */
-export const HOLDING = inArray(dormLeaves.status, ["submitted", "approved"]);
+export const HOLDING = inArray(dormLeaves.status, [
+  "submitted",
+  ...APPROVED_STATUSES,
+]);
+
+/**
+ * When a leave stops covering the resident: at their return once there
+ * is one, earlier or later than its end, and at its end until then.
+ */
+export const LEAVE_END =
+  sql<Date>`coalesce(${dormLeaves.returnedAt}, ${dormLeaves.endsAt})`.mapWith(
+    dormLeaves.endsAt,
+  );
+
+/** Whether a leave still covers the resident after a moment. */
+export function coversAfter(moment: Date): SQL {
+  return gt(LEAVE_END, sql.param(moment, dormLeaves.endsAt));
+}
 
 /**
  * Holds a student until the transaction ends, so a second request of
@@ -42,7 +61,10 @@ export async function lockStudent(
     .for("no key update");
 }
 
-/** Whether a student has a leave that waits or is approved in the span. */
+/**
+ * Whether a student has a leave that waits or is approved in the span,
+ * up to its return for one that is Selesai.
+ */
 export async function overlapsOwn(
   db: Database,
   studentId: string,
@@ -56,7 +78,7 @@ export async function overlapsOwn(
         eq(dormLeaves.studentId, studentId),
         HOLDING,
         lt(dormLeaves.startsAt, span.end),
-        gt(dormLeaves.endsAt, span.start),
+        coversAfter(span.start),
       ),
     )
     .limit(1);
@@ -64,8 +86,9 @@ export async function overlapsOwn(
 }
 
 /**
- * The approved leave whose time overlaps a span, of the students `which`
- * picks from the student rows: of every student when it is not given.
+ * The approved leave, Selesai or not, whose time up to its return
+ * overlaps a span, of the students `which` picks from the student rows:
+ * of every student when it is not given.
  */
 export async function readApprovedLeaves(
   db: Database,
@@ -77,15 +100,15 @@ export async function readApprovedLeaves(
       studentId: dormLeaves.studentId,
       kind: dormLeaves.kind,
       start: dormLeaves.startsAt,
-      end: dormLeaves.endsAt,
+      end: LEAVE_END,
     })
     .from(dormLeaves)
     .innerJoin(students, eq(students.id, dormLeaves.studentId))
     .where(
       and(
-        eq(dormLeaves.status, "approved"),
+        inArray(dormLeaves.status, APPROVED_STATUSES),
         lt(dormLeaves.startsAt, span.end),
-        gt(dormLeaves.endsAt, span.start),
+        coversAfter(span.start),
         which,
       ),
     );
