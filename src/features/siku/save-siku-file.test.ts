@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 2908 to 2908.
+// Sample Tahun akademik of this file: 2911 to 2911.
 // Sample NIMs of this file: 9964001000 to 9964001099.
 import { createHash } from "node:crypto";
 import { eq, inArray, sql } from "drizzle-orm";
@@ -32,16 +32,16 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
-// 10:00 on campus on 12 October 2908, in the odd period of 2908.
-const MOMENT = new Date("2908-10-12T03:00:00Z");
-const LATER = new Date("2908-10-14T03:00:00Z");
+// 10:00 on campus on 12 October 2911, in the odd period of 2911.
+const MOMENT = new Date("2911-10-12T03:00:00Z");
+const LATER = new Date("2911-10-14T03:00:00Z");
 
 const TITLES = "nim,jenis,alasan,poin,keterangan";
 const ROWS = [
   TITLES,
   "9964001001,tambah,1,3,Konten kampanye",
   "9964001002,kurang,3,5,Tidak hadir apel",
-  "9964001001,kurang,4,2,SK-7/2908",
+  "9964001001,kurang,4,2,SK-7/2911",
   "9964001099,tambah,1,2,",
 ];
 
@@ -50,11 +50,11 @@ function csv(lines: string[], name = "siku-oktober.csv") {
 }
 
 async function addRecords(db: Database) {
-  const periods = await addTestYear(db, 2908);
+  const periods = await addTestYear(db, 2911);
   const { studentIds } = await addTestStudents(
     db,
     "Prodi Uji Simpan Berkas SIKU",
-    2908,
+    2911,
     ["9964001001", "9964001002", "9964001003"],
   );
   const [ani, budi, citra] = studentIds;
@@ -114,12 +114,12 @@ describe("saveSikuFile", () => {
         [
           ["gain", "social_media_campaign", 3, "Konten kampanye", ""],
           ["loss", "unannounced_absence", 5, "Tidak hadir apel", ""],
-          ["loss", "director_decision", 2, "", "SK-7/2908"],
+          ["loss", "director_decision", 2, "", "SK-7/2911"],
         ].sort(),
       );
       for (const row of rows) {
         expect(row).toMatchObject({
-          day: "2908-10-12",
+          day: "2911-10-12",
           enteredBy: penilai.id,
           enteredAs: "assessor",
           enteredAt: MOMENT,
@@ -196,7 +196,7 @@ describe("saveSikuFile", () => {
         kind: "gain",
         reason: "knowledge_sharing",
         points: 2,
-        day: "2908-10-11",
+        day: "2911-10-11",
         periodId: periods.odd,
         studentIds: [ani],
       });
@@ -274,7 +274,7 @@ describe("saveSikuFile", () => {
         LATER,
       );
 
-      expect(refused).toEqual(repeatedFile("2908-10-12"));
+      expect(refused).toEqual(repeatedFile("2911-10-12"));
       expect(confirmed).toEqual({ ok: true, value: { saved: 3 } });
     });
   });
@@ -397,7 +397,7 @@ describe("saveSikuFile", () => {
         crypto.randomUUID(),
         csv(ROWS),
         false,
-        new Date("2908-07-01T03:00:00Z"),
+        new Date("2911-07-01T03:00:00Z"),
       );
 
       expect(saved).toEqual(NO_PERIOD);
@@ -435,7 +435,7 @@ describe("previewSikuFile of a file saved before", () => {
       const cancelled = await previewSikuFile(db, penilai, csv(ROWS));
 
       expect(before.ok && before.value.savedOn).toBe(null);
-      expect(after.ok && after.value.savedOn).toBe("2908-10-12");
+      expect(after.ok && after.value.savedOn).toBe("2911-10-12");
       expect(cancelled.ok && cancelled.value.savedOn).toBe(null);
     });
   });
