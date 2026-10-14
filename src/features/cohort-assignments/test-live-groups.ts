@@ -1,6 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import {
+  cohortAssignmentGroups,
   mentorGroupMembers,
   mentorGroupMentors,
   mentorGroupPastMembers,
@@ -53,6 +54,37 @@ async function testLiveGroup(
     studentIds: members.map((member) => member.studentId).sort(),
     pastStudentIds: past.map((member) => member.studentId).sort(),
   };
+}
+
+/** The kelompok pengasuhan that a group of a fixed penetapan became. */
+export async function testLiveIdOf(
+  db: Database,
+  draftGroupId: string,
+): Promise<string> {
+  const [group] = await db
+    .select({ liveId: cohortAssignmentGroups.mentorGroupId })
+    .from(cohortAssignmentGroups)
+    .where(eq(cohortAssignmentGroups.id, draftGroupId));
+  if (!group?.liveId) throw new Error("The group is not in force.");
+  return group.liveId;
+}
+
+/**
+ * Puts a student where Pengguna baru mahasiswa would: in a kelompok
+ * pengasuhan in force, or in none for null.
+ */
+export async function placeTestMember(
+  db: Database,
+  studentId: string,
+  liveGroupId: string | null,
+): Promise<void> {
+  await db
+    .delete(mentorGroupMembers)
+    .where(eq(mentorGroupMembers.studentId, studentId));
+  if (liveGroupId === null) return;
+  await db
+    .insert(mentorGroupMembers)
+    .values({ studentId, groupId: liveGroupId });
 }
 
 /** Every kelompok pengasuhan of an angkatan, ended or not. */

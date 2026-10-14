@@ -22,26 +22,37 @@ function memberFacts(member: DraftMember): string {
   return facts.filter((fact) => fact !== null).join(" · ");
 }
 
-/**
- * "Anggota": the members of one group of a draft by name, each with the
- * other groups of the same program studi and jalur to move to. Shown only
- * to an account that prepares the penetapan.
- */
-export function GroupMembers({
-  shown,
-  group,
-  groups,
-}: {
+/** What moving a member of a draft needs. */
+interface MoveOffer {
   /** The draft the members are shown with. */
   shown: DraftKey;
-  group: DraftGroup;
   /** Every group of the draft. */
   groups: DraftGroup[];
-}) {
-  const targets = moveTargets(groups, group.id).map((target) => ({
+}
+
+function moveTargetsOf(group: DraftGroup, move: MoveOffer | undefined) {
+  if (move === undefined) return [];
+  return moveTargets(move.groups, group.id).map((target) => ({
     id: target.id,
     code: groupCode(target),
   }));
+}
+
+/**
+ * "Anggota": the members of one group of a penetapan by name. In a draft
+ * each has the other groups of the same program studi and jalur to move
+ * to; in a fixed penetapan they are to read only. Shown only to an
+ * account that prepares the penetapan.
+ */
+export function GroupMembers({
+  group,
+  move,
+}: {
+  group: DraftGroup;
+  /** Left out where no member may be moved: a fixed penetapan. */
+  move?: MoveOffer;
+}) {
+  const targets = moveTargetsOf(group, move);
   if (group.members.length === 0) {
     return <p className={shared.empty}>Kelompok ini belum punya anggota.</p>;
   }
@@ -53,9 +64,9 @@ export function GroupMembers({
             <b>{member.name}</b>
             <small className={shared.detail}>{memberFacts(member)}</small>
           </div>
-          {targets.length > 0 && (
+          {move !== undefined && targets.length > 0 && (
             <MoveSelect
-              shown={shown}
+              shown={move.shown}
               studentId={member.id}
               studentName={member.name}
               targets={targets}

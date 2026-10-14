@@ -108,7 +108,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. A fixed angkatan shows its groups, counts and members as they
+- [x] 1. A fixed angkatan shows its groups, counts and members as they
   are today, with its checks.
 - [ ] 2. "Batalkan penetapan" keeps the members as they are at that
   moment, with its checks.

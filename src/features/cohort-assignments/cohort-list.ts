@@ -3,7 +3,6 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import {
   cohortAssignmentGroups,
-  cohortAssignmentMembers,
   cohortAssignments,
   students,
 } from "@/db/schema";
@@ -13,6 +12,7 @@ import {
   type ListedCohort,
   type WaitingCohort,
 } from "./cohort-rows";
+import { membersToday } from "./members-today";
 import { inProgramsOf, isLimited } from "./visible-assignments";
 import { WAITS_FOR_GROUP } from "./waiting-students";
 
@@ -27,16 +27,11 @@ function readWaitingCohorts(
     .groupBy(students.cohortYear);
 }
 
-/** A member who counts in "Mahasiswa aktif": Aktif and not removed. */
-const COUNTED_MEMBER = and(
-  eq(students.id, cohortAssignmentMembers.studentId),
-  eq(students.status, "active"),
-  isNull(students.deletedAt),
-);
-
 /**
  * Every penetapan with how many of its groups an account with this limit
- * may see, and how many Aktif students those groups hold.
+ * may see, and how many students those groups hold today: see
+ * `membersToday`. Only a member who counts in "Mahasiswa aktif" is
+ * counted: Aktif and not removed.
  */
 function readAssignmentFacts(
   db: Database,
@@ -45,6 +40,12 @@ function readAssignmentFacts(
   const seenGroup = and(
     eq(cohortAssignmentGroups.assignmentId, cohortAssignments.id),
     inProgramsOf(limit, cohortAssignmentGroups.studyProgramId),
+  );
+  const today = membersToday(db);
+  const countedMember = and(
+    eq(students.id, today.studentId),
+    eq(students.status, "active"),
+    isNull(students.deletedAt),
   );
   return db
     .select({
@@ -55,11 +56,8 @@ function readAssignmentFacts(
     })
     .from(cohortAssignments)
     .leftJoin(cohortAssignmentGroups, seenGroup)
-    .leftJoin(
-      cohortAssignmentMembers,
-      eq(cohortAssignmentMembers.groupId, cohortAssignmentGroups.id),
-    )
-    .leftJoin(students, COUNTED_MEMBER)
+    .leftJoin(today, eq(today.groupId, cohortAssignmentGroups.id))
+    .leftJoin(students, countedMember)
     .groupBy(cohortAssignments.id);
 }
 
