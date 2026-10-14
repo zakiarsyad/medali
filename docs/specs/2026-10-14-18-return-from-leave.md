@@ -94,6 +94,29 @@ return directly, and see who is still out and who is late.
 4. A report photo is kept as long as its leave record. No removal is
    built now.
 
+Decided while building, where the issue said nothing:
+
+5. The camera shows a live view in the page, with no file picker, so the
+   app can tell when the camera is not allowed. It uses the front
+   camera, for a photo of yourself, as in the prototype.
+6. The photo is sent as a picture of at most 1280 pixels and 2 MB.
+   Where file storage is off, a report is refused with a message, as
+   attendance photos are.
+7. The report opens 30 minutes before the return time, but never before
+   the leave starts. Minutes late are rounded up.
+8. A resident whose report waits is not counted "Sedang di luar", and
+   their card offers no "Catat sudah kembali", as in the prototype.
+9. "Terlambat kembali" counts every late return, those already back
+   among them, as in the prototype.
+10. "Laporan kembali menunggu" is a number of its own. The filters come
+    in this order: Menunggu verifikasi, Laporan kembali menunggu, Sedang
+    di luar, Terlambat kembali, Disetujui, Selesai, Ditolak, Dibatalkan,
+    Semua.
+11. Selesai leave still blocks a new request that overlaps it, up to its
+    actual return.
+12. The photo opens whole in a new tab. Where no photo is kept, the card
+    says "Foto tidak tersimpan di sini."
+
 ## Steps
 
 - [x] 1. Leave keeps its report, checks and actual return time, with
