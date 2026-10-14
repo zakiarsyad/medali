@@ -117,8 +117,9 @@ Decided while building, because the issue did not say:
    most 100 marked dates may be today or later, in the form and with
    "Tiada kegiatan" alike; dates gone by do not count, so a long past
    never stops a save. One save of the form sends at most 100 dates:
-   the marked dates from today on and those just marked in it. "Tiada kegiatan" is offered in Jadwal harian, on
-   each repeating activity that is not removed. Marking a date counts as
+   the marked dates from today on and those just marked in it. "Tiada
+   kegiatan" is offered in Jadwal harian, on each repeating activity
+   that is not removed. Marking a date counts as
    a change, so a form opened before it is told "Kegiatan sudah diubah
    orang lain. Muat ulang." and does not undo the mark.
 7. On a past date, "Ubah" is offered only on an activity as it is now;
