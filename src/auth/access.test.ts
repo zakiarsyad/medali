@@ -368,6 +368,70 @@ describe("may", () => {
     }
   });
 
+  const leaveViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "dorm_manager",
+    "bam_bphk",
+  ];
+
+  it.each(leaveViewers)(
+    "lets %s see the dorm leave requests on Perizinan asrama",
+    (role) => {
+      expect(may([role], "view_dorm_leave")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "leave")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to see the dorm leave requests, the other BAM roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !leaveViewers.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_compliance", "bam_health", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_leave")).toBe(false);
+    }
+  });
+
+  it("lets Pengelola Asrama approve and reject dorm leave", () => {
+    expect(may(["dorm_manager"], "decide_dorm_leave")).toBe(true);
+  });
+
+  it("refuses every other role to approve and reject dorm leave, BAM - BPHK and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_bphk", "head_of_unit", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "decide_dorm_leave")).toBe(false);
+    }
+  });
+
+  it("lets Mahasiswa ask for and cancel their own dorm leave, on a page that asks them to live in the dorm", () => {
+    expect(may(["student"], "ask_dorm_leave")).toBe(true);
+    expect(may(["student"], "view_dorm_leave")).toBe(false);
+    expect(mayOpenTab(["student"], "dorm", "leave")).toBe(true);
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+  });
+
+  it("refuses every other role to ask for dorm leave", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "ask_dorm_leave")).toBe(false);
+    }
+  });
+
+  it("gives a way to see dorm leave to every role with the tab Perizinan asrama, and to no other", () => {
+    for (const role of ROLE_IDS) {
+      const sees =
+        may([role], "view_dorm_leave") || may([role], "ask_dorm_leave");
+
+      expect(sees).toBe(mayOpenTab([role], "dorm", "leave"));
+    }
+  });
+
   const detailReaders: RoleId[] = [
     "head_of_unit",
     "director",
@@ -946,6 +1010,7 @@ describe("may", () => {
       "send_attendance_photo",
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
+      "ask_dorm_leave",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });
@@ -1417,6 +1482,7 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     "view_dorm_companions",
     "view_dorm_activities",
     "view_dorm_attendance",
+    "view_dorm_leave",
   ] as const)(
     "keeps Ketua Program Studi who is also Konselor to their program for %s",
     (action) => {
@@ -1431,6 +1497,7 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     "view_dorm_companions",
     "view_dorm_activities",
     "view_dorm_attendance",
+    "view_dorm_leave",
   ] as const)("joins the rows of two roles that both allow %s", (action) => {
     const both = account(["head_of_program", "dorm_manager"], 7);
 

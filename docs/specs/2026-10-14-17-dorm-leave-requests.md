@@ -81,7 +81,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The table for leave requests is added, with sample requests in
   every status.
-- [ ] 2. The rights to ask for and to decide on leave are added to the
+- [x] 2. The rights to ask for and to decide on leave are added to the
   permission list, with their checks.
 - [ ] 3. Residents ask for leave and see and cancel their history.
 - [ ] 4. Staff see the numbers, filters and cards, read only.
