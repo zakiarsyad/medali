@@ -75,6 +75,7 @@ describe("the screen parts of Perizinan asrama that run in the browser", () => {
     `${FOLDER}/cancel-leave-button.tsx`,
     `${FOLDER}/leave-filters.tsx`,
     `${FOLDER}/leave-cards.tsx`,
+    `${FOLDER}/own-leave-view.tsx`,
   ];
 
   it("are found", () => {

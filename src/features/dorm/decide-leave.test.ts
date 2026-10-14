@@ -6,7 +6,7 @@ import type { Database } from "@/db/connect";
 import { dormLeaves } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { askLeave } from "./ask-leave";
-import { decideLeave, NO_DECISION } from "./decide-leave";
+import { decideLeave, NO_DECISION, NOTE_TOO_LONG } from "./decide-leave";
 import {
   DECIDE_NOT_ALLOWED,
   LEAVE_NOT_FOUND,
@@ -130,6 +130,30 @@ describe("decideLeave", () => {
           "Izin ini sudah disetujui lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman.",
       });
       expect((await leaveById(db, id))?.status).toBe("approved");
+    });
+  });
+
+  it("counts an emoji in the note as one letter, as the database does", async () => {
+    await inTestDatabase(async (db) => {
+      const { manager, id } = await addRecords(db);
+
+      const tooLong = await decideLeave(
+        db,
+        manager,
+        id,
+        "reject",
+        "😀".repeat(501),
+      );
+      const longest = await decideLeave(
+        db,
+        manager,
+        id,
+        "reject",
+        "😀".repeat(500),
+      );
+
+      expect(tooLong).toEqual(NOTE_TOO_LONG);
+      expect(longest).toEqual({ ok: true, value: "rejected" });
     });
   });
 

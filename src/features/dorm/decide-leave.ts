@@ -7,6 +7,7 @@ import { dormLeaves } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import { DECISION_NOTE_MAX_LENGTH, type LeaveStatus } from "./leave-ids";
+import { lettersIn } from "./leave-input";
 import {
   DECIDE_NOT_ALLOWED,
   LEAVE_NOT_FOUND,
@@ -40,7 +41,7 @@ function checked(
     : undefined;
   if (status === undefined) return NO_DECISION;
   const trimmed = note.trim();
-  if (trimmed.length > DECISION_NOTE_MAX_LENGTH) return NOTE_TOO_LONG;
+  if (lettersIn(trimmed) > DECISION_NOTE_MAX_LENGTH) return NOTE_TOO_LONG;
   if (status === "rejected" && trimmed === "") return REJECTION_NEEDS_NOTE;
   return { ok: true, value: { status, note: trimmed } };
 }

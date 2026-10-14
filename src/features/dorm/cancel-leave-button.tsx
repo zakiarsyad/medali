@@ -5,23 +5,31 @@ import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { cancelLeaveAction } from "./leave-actions";
 
-const NOTHING_SAID: FormState = { error: null, done: null };
-
-/** "Batalkan" on a request that waits. It asks first. */
+/**
+ * "Batalkan" on a request that waits. It asks first. A refusal stays
+ * beside it; every answer is passed on, as the button leaves with its
+ * row's new status once a cancel is kept.
+ */
 export function CancelLeaveButton({
   id,
   question,
+  onCancelled,
 }: {
   id: string;
   /** The question asked before the request is cancelled. */
   question: string;
+  onCancelled: (answer: FormState) => void;
 }) {
-  const [said, setSaid] = useState(NOTHING_SAID);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startSending] = useTransition();
 
   function press() {
     if (!window.confirm(question)) return;
-    startSending(async () => setSaid(await cancelLeaveAction(id)));
+    startSending(async () => {
+      const after = await cancelLeaveAction(id);
+      onCancelled(after);
+      setError(after.error);
+    });
   }
 
   return (
@@ -34,7 +42,7 @@ export function CancelLeaveButton({
       >
         Batalkan
       </button>
-      <FormMessage state={said} />
+      <FormMessage state={{ error, done: null }} />
     </>
   );
 }

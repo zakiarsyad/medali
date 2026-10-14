@@ -58,6 +58,14 @@ function specialReasonOf(sent: string): SpecialReason | null {
   return SPECIAL_REASONS.find((reason) => reason === sent) ?? null;
 }
 
+/**
+ * How many letters a text holds, as the database counts them: an emoji
+ * is one, where the length of a text would count two.
+ */
+export function lettersIn(text: string): number {
+  return [...text].length;
+}
+
 function tooLong(words: string, max: number): string {
   return `${words} paling banyak ${max} huruf.`;
 }
@@ -72,10 +80,10 @@ function placeOf(
   }
   const destination = sent.destination.trim();
   const contact = sent.contact.trim();
-  if (destination.length > DESTINATION_MAX_LENGTH) {
+  if (lettersIn(destination) > DESTINATION_MAX_LENGTH) {
     return refused(tooLong("Tujuan", DESTINATION_MAX_LENGTH));
   }
-  if (contact.length > CONTACT_MAX_LENGTH) {
+  if (lettersIn(contact) > CONTACT_MAX_LENGTH) {
     return refused(tooLong("Kontak", CONTACT_MAX_LENGTH));
   }
   return { ok: true, value: { destination, contact } };
@@ -102,8 +110,9 @@ export function parseLeave(sent: SentLeave, now: Date): Parsed<LeaveInput> {
     return refused(NO_SPECIAL_REASON);
   }
   const purpose = sent.purpose.trim();
-  if (purpose.length < PURPOSE_MIN_LENGTH) return refused(PURPOSE_TOO_SHORT);
-  if (purpose.length > PURPOSE_MAX_LENGTH) {
+  const letters = lettersIn(purpose);
+  if (letters < PURPOSE_MIN_LENGTH) return refused(PURPOSE_TOO_SHORT);
+  if (letters > PURPOSE_MAX_LENGTH) {
     return refused(tooLong("Keperluan", PURPOSE_MAX_LENGTH));
   }
   const place = placeOf(kind, sent);

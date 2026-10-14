@@ -124,4 +124,21 @@ describe("parseLeave", () => {
       error: "Kontak paling banyak 100 huruf.",
     });
   });
+
+  it("counts an emoji as one letter, as the database does", () => {
+    expect(parseLeave(sent({ purpose: "😀😀😀" }), NOW)).toEqual({
+      ok: false,
+      error: PURPOSE_TOO_SHORT,
+    });
+    const longest = {
+      purpose: "😀".repeat(500),
+      destination: "😀".repeat(200),
+      contact: "😀".repeat(100),
+    };
+    expect(parseLeave(sent(longest), NOW).ok).toBe(true);
+    expect(parseLeave(sent({ contact: "😀".repeat(101) }), NOW)).toEqual({
+      ok: false,
+      error: "Kontak paling banyak 100 huruf.",
+    });
+  });
 });
