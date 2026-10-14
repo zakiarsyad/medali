@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   type HeldActivity,
   historyOf,
+  marksOver,
   type OwnMark,
   pastOccurrences,
+  type TimedMark,
+  tallyOf,
 } from "./history";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
 
@@ -75,6 +78,43 @@ const HELD: HeldActivity[] = [
     startTime: "07:00",
   },
 ];
+
+describe("marksOver", () => {
+  const apel: TimedMark = {
+    activityId: "a",
+    day: TODAY,
+    name: "Apel pagi",
+    startTime: "05:30",
+    endTime: "06:30",
+    isAbsent: true,
+    note: "",
+  };
+
+  it("leaves out an announced activity of today that still runs, and keeps it once it is over", () => {
+    expect(marksOver([apel], { day: TODAY, time: "05:50" })).toEqual([]);
+    expect(marksOver([apel], { day: TODAY, time: "06:30" })).toEqual([]);
+    const { endTime: _endTime, ...kept } = apel;
+    expect(marksOver([apel], { day: TODAY, time: "06:31" })).toEqual([kept]);
+  });
+
+  it("keeps a mark of a day gone by", () => {
+    const yesterday = { ...apel, day: "2026-10-13" };
+
+    expect(marksOver([yesterday], { day: TODAY, time: "00:00" })).toHaveLength(
+      1,
+    );
+  });
+});
+
+describe("tallyOf", () => {
+  it("counts Hadir and Tidak hadir", () => {
+    const mark: OwnMark = { ...MORNING, isAbsent: false, note: "" };
+
+    expect(
+      tallyOf([mark, { ...mark, isAbsent: true }, { ...mark, day: "x" }]),
+    ).toEqual({ present: 2, absent: 1 });
+  });
+});
 
 describe("historyOf", () => {
   it("gives the resident's own mark of an announced activity, Belum diumumkan for one not announced, and leaves out one announced without them", () => {

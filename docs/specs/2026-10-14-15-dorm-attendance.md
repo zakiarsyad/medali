@@ -153,11 +153,13 @@ Decided while building, because the issue did not say:
     live in today, as under Hari ini. An activity announced without
     them, held before they took part, is left out. An announced count
     stays in Riwayat after its activity is removed or its day is marked
-    without activity.
+    without activity. An activity announced while it still runs enters
+    Riwayat only once it is over, by campus time.
 18. "Kehadiran kegiatan asrama" is the share of the announced counts that
     hold the resident in which they were Hadir, of all time, rounded to a
     whole percentage, and 0% before any. "Tercatat tidak hadir" counts
-    their announced absences. "Kegiatan hari ini" counts today's
+    their announced absences. Both count an activity only once it is
+    over, as Riwayat does. "Kegiatan hari ini" counts today's
     activities of their group, with their dorm under it.
 19. The note on how attendance is counted, "Klarifikasi aktif" and the
     Klarifikasi column of Riwayat leave out clarification, which is not

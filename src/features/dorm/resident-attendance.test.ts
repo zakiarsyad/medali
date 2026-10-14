@@ -158,6 +158,46 @@ describe("readOwnAttendance", () => {
     });
   });
 
+  it("counts an activity announced while it runs only once it is over", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      // 05:45 and 05:50 on campus: Apel pagi runs from 05:30 to 06:15.
+      const announcing = new Date("2740-10-13T22:45:00Z");
+      const running = new Date("2740-10-13T22:50:00Z");
+      const after = new Date("2740-10-13T23:30:00Z");
+      const saved = await saveCount(
+        db,
+        records.counter,
+        {
+          activityId: records.morning,
+          day: TODAY,
+          version: 0,
+          isAnnouncement: true,
+          marks: { [records.ani]: { isAbsent: true, note: "" } },
+        },
+        announcing,
+      );
+      expect(saved.ok).toBe(true);
+      const ani = residentOf(records.ani);
+
+      const during = await readOwnAttendance(db, ani, running);
+      const over = await readOwnAttendance(db, ani, after);
+
+      if (during.kind !== "shown" || over.kind !== "shown") {
+        throw new Error("It was refused.");
+      }
+      expect(during.attendance.absent).toBe(0);
+      expect(during.attendance.history.map((entry) => entry.day)).not.toContain(
+        TODAY,
+      );
+      expect(over.attendance.absent).toBe(1);
+      expect(over.attendance.history[0]).toMatchObject({
+        day: TODAY,
+        status: "absent",
+      });
+    });
+  });
+
   it("keeps an announced count in Riwayat after its activity is removed", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);

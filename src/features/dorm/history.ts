@@ -37,6 +37,37 @@ export interface OwnMark extends HeldActivity {
   note: string;
 }
 
+/** An own mark with the hour its activity ended, such as 06:15. */
+export interface TimedMark extends OwnMark {
+  endTime: string;
+}
+
+/** How often a resident was Hadir and Tidak hadir. */
+export interface Tally {
+  present: number;
+  absent: number;
+}
+
+/**
+ * The marks whose activity is over at a moment on campus, without their
+ * end hour. A count may be announced once its activity starts, but it
+ * counts for the resident only once the activity is over.
+ */
+export function marksOver(marks: TimedMark[], now: CampusMoment): OwnMark[] {
+  const over: OwnMark[] = [];
+  for (const { endTime, ...mark } of marks) {
+    const state = activityState({ ...mark, endTime }, now);
+    if (state === "over") over.push(mark);
+  }
+  return over;
+}
+
+/** How many of the marks are Hadir and how many Tidak hadir. */
+export function tallyOf(marks: OwnMark[]): Tally {
+  const absent = marks.filter((mark) => mark.isAbsent).length;
+  return { present: marks.length - absent, absent };
+}
+
 export interface HistoryEntry extends HeldActivity {
   status: HistoryStatus;
   note: string;

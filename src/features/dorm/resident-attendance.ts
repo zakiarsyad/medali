@@ -7,8 +7,10 @@ import {
   inArray,
   isNotNull,
   isNull,
+  lt,
   lte,
   or,
+  type SQL,
   sql,
 } from "drizzle-orm";
 import { type CampusMoment, campusTime } from "@/academic-periods/campus-clock";
@@ -30,8 +32,11 @@ import {
   type HistoryEntry,
   heldKey,
   historyOf,
-  type OwnMark,
+  marksOver,
   pastOccurrences,
+  type Tally,
+  type TimedMark,
+  tallyOf,
 } from "./history";
 import { readStudentDorm } from "./student-dorm";
 
@@ -53,8 +58,15 @@ export type OwnAttendanceAnswer =
 
 const ANNOUNCED = isNotNull(dormAttendanceCounts.announcedAt);
 
-/** How often the student was Hadir and Tidak hadir in announced counts. */
-async function readTotals(db: Database, studentId: string) {
+/**
+ * How often the student was Hadir and Tidak hadir in announced counts of
+ * the days before `today`, whose activities are all over.
+ */
+async function readTotalsBefore(
+  db: Database,
+  studentId: string,
+  today: string,
+): Promise<Tally> {
   const rows = await db
     .select({ isAbsent: dormAttendanceMarks.isAbsent, times: count() })
     .from(dormAttendanceMarks)
@@ -62,7 +74,13 @@ async function readTotals(db: Database, studentId: string) {
       dormAttendanceCounts,
       eq(dormAttendanceCounts.id, dormAttendanceMarks.countId),
     )
-    .where(and(eq(dormAttendanceMarks.studentId, studentId), ANNOUNCED))
+    .where(
+      and(
+        eq(dormAttendanceMarks.studentId, studentId),
+        ANNOUNCED,
+        lt(dormAttendanceCounts.day, today),
+      ),
+    )
     .groupBy(dormAttendanceMarks.isAbsent);
   const timesOf = (isAbsent: boolean) =>
     rows.find((row) => row.isAbsent === isAbsent)?.times ?? 0;
@@ -70,20 +88,23 @@ async function readTotals(db: Database, studentId: string) {
 }
 
 /**
- * The student's own marks in the last announced counts, each with the
- * name and hour its activity had on its day, also an activity removed
- * since.
+ * The student's own marks in announced counts of the days `days` picks,
+ * the latest first, each with the name and hours its activity had on its
+ * day, also an activity removed since.
  */
 async function readOwnMarks(
   db: Database,
   studentId: string,
-): Promise<OwnMark[]> {
-  const rows = await db
+  days: SQL | undefined,
+  limit?: number,
+): Promise<TimedMark[]> {
+  const query = db
     .select({
       activityId: dormAttendanceCounts.activityId,
       day: dormAttendanceCounts.day,
       name: dormActivityVersions.name,
       startTime: dormActivityVersions.startTime,
+      endTime: dormActivityVersions.endTime,
       isAbsent: dormAttendanceMarks.isAbsent,
       note: dormAttendanceMarks.note,
     })
@@ -106,15 +127,16 @@ async function readOwnMarks(
         ),
       ),
     )
-    .where(and(eq(dormAttendanceMarks.studentId, studentId), ANNOUNCED))
+    .where(and(eq(dormAttendanceMarks.studentId, studentId), ANNOUNCED, days))
     .orderBy(
       desc(dormAttendanceCounts.day),
       desc(dormActivityVersions.startTime),
-    )
-    .limit(HISTORY_SHOWN);
+    );
+  const rows = await (limit === undefined ? query : query.limit(limit));
   return rows.map((row) => ({
     ...row,
     startTime: hourAndMinute(row.startTime),
+    endTime: hourAndMinute(row.endTime),
   }));
 }
 
@@ -186,11 +208,21 @@ export async function readOwnAttendance(
   const dorm = await readStudentDorm(db, studentId, now.day);
   if (dorm === null) return { kind: "refused" };
 
-  const [totals, marks, held] = await Promise.all([
-    readTotals(db, studentId),
-    readOwnMarks(db, studentId),
+  const before = lt(dormAttendanceCounts.day, now.day);
+  const [earlier, todays, past, held] = await Promise.all([
+    readTotalsBefore(db, studentId, now.day),
+    readOwnMarks(db, studentId, eq(dormAttendanceCounts.day, now.day)),
+    readOwnMarks(db, studentId, before, HISTORY_SHOWN),
     readHeld(db, dorm, now),
   ]);
+  // An activity announced while it still runs counts only once it is over.
+  const overToday = marksOver(todays, now);
+  const today = tallyOf(overToday);
+  const totals = {
+    present: earlier.present + today.present,
+    absent: earlier.absent + today.absent,
+  };
+  const marks = [...overToday, ...marksOver(past, now)];
   const announced = await readAnnouncedKeys(db, held);
   const history = historyOf(held, marks, announced, HISTORY_SHOWN);
   return { kind: "shown", attendance: { ...totals, history } };
