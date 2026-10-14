@@ -5,6 +5,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
+  min-height: var(--top-bar-height);
   padding: var(--top-bar-padding);
   border-bottom: var(--line-width) solid var(--line);
   background: var(--surface);
@@ -22,5 +23,5 @@
 
 .unit {
   color: var(--muted);
-  font-size: var(--text-md);
+  font-size: var(--top-bar-text);
 }

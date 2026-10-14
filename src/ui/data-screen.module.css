@@ -214,6 +214,20 @@
   content: attr(data-title);
 }
 
+/*
+ * A stacked list that adds `titlesAbove` has values too long to stand
+ * beside their title on a phone, so each title stands above its value.
+ */
+.titlesAbove td[data-title] {
+  padding: var(--stacked-above-cell-padding);
+}
+
+.titlesAbove td[data-title]::before {
+  float: none;
+  width: auto;
+  margin-left: 0;
+}
+
 .stacked td:not([data-title]) {
   padding: var(--stacked-actions-padding);
   justify-content: var(--stacked-actions-justify);
@@ -226,6 +240,56 @@
 
 .stacked td:empty::before {
   display: none;
+}
+
+/*
+ * The cell that names its row. On a phone it is the heading of the block,
+ * so it takes the full width and shows no title.
+ */
+.stacked td.rowHeading {
+  padding: var(--stacked-actions-padding);
+  font-size: var(--stacked-heading-size);
+}
+
+.stacked td.rowHeading::before {
+  display: none;
+}
+
+/*
+ * A long list that adds `stickyHead` to `table` keeps its headings in view
+ * under the top bar while it scrolls. It must not sit in `tableWrap`: a box
+ * that scrolls sideways holds the headings back. A cell that stays in view
+ * loses its line when the lines of the cells are joined, so they are not.
+ */
+.stickyHead {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.stickyHead th {
+  position: sticky;
+  top: var(--top-bar-height);
+  background: var(--surface);
+}
+
+/*
+ * The values of one cell as a list. At computer width they read as one
+ * sentence, with a `comma` after each but the last. On a phone each has
+ * its own line and the commas are left out.
+ */
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lines li {
+  display: var(--lines-item-display);
+  padding: var(--lines-item-padding);
+}
+
+.comma {
+  display: var(--lines-comma-display);
 }
 
 .badge {
