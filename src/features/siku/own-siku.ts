@@ -59,6 +59,17 @@ export async function readOwnSiku(
   if (!may(account.roles, "view_own_siku")) return { kind: "refused" };
   const { studentId } = account;
   if (studentId === null) return { kind: "refused" };
+  return { kind: "shown", siku: await readSikuOf(db, studentId) };
+}
+
+/**
+ * Every entry in force that names one student, of every period, with
+ * their totals. It checks no right: the one who calls it does.
+ */
+export async function readSikuOf(
+  db: Database,
+  studentId: string,
+): Promise<OwnSiku> {
   const entries = await db
     .select({
       id: sikuAdjustments.id,
@@ -79,5 +90,5 @@ export async function readOwnSiku(
     )
     .where(and(eq(sikuAdjustmentStudents.studentId, studentId), IN_FORCE))
     .orderBy(desc(sikuAdjustments.day), desc(sikuAdjustments.enteredAt));
-  return { kind: "shown", siku: { totals: totalsOf(entries), entries } };
+  return { totals: totalsOf(entries), entries };
 }

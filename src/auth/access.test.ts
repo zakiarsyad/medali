@@ -531,6 +531,30 @@ describe("may", () => {
     }
   });
 
+  const disciplineReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it.each(disciplineReaders)("lets %s read discipline records", (role) => {
+    expect(may([role], "view_discipline_records")).toBe(true);
+  });
+
+  it("refuses every other role to read discipline records, Penilai Mahasiswa and Mahasiswa among them", () => {
+    expect(ACTION_TITLES.view_discipline_records).toBe(
+      "Melihat catatan disiplin mahasiswa",
+    );
+    const others = ROLE_IDS.filter((role) => !disciplineReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["assessor", "student", "counsellor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_discipline_records")).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa ask for and cancel their own dorm leave, on a page that asks them to live in the dorm", () => {
     expect(may(["student"], "ask_dorm_leave")).toBe(true);
     expect(may(["student"], "view_dorm_leave")).toBe(false);

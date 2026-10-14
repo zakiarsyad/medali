@@ -85,10 +85,19 @@ built again.
 2. A loss with the reason "Hukuman disiplin mahasiswa" shows its reason
    and Keterangan only to roles that may read discipline records.
    Penilai Mahasiswa sees the date and the points without them.
+3. The right "Melihat catatan disiplin mahasiswa" is new in the list of
+   what each role may do, given to Kepala Unit, Direktur / Wakil
+   Direktur, Ketua Program Studi and Pengasuh. Pembina Disiplin
+   Mahasiswa does not get it yet: it opens no student detail and has no
+   Penilaian SIKU, and the spec of its own discipline screens decides.
+4. The SIKU lines in the detail follow the rows of Penilaian SIKU: an
+   account sees them for the Aktif students its roles that read
+   Penilaian SIKU see there, and the server refuses any other student,
+   a student on Cuti or Non aktif included.
 
 ## Steps
 
-- [ ] 1. The right to read a student's SIKU lines is checked for each
+- [x] 1. The right to read a student's SIKU lines is checked for each
   role and its own students, with its checks.
 - [ ] 2. The student detail shows "Rincian nilai SIKU", reusing the
   panel from SIKU adjustments.
