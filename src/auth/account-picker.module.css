@@ -30,13 +30,16 @@
   background: var(--goldsoft);
 }
 
+/* A name or a unit typed as one long word folds, or it runs out of its card. */
 .name {
   display: block;
   font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
 }
 
 .detail {
   display: block;
   color: var(--muted);
   font-size: var(--text-sm);
+  overflow-wrap: anywhere;
 }

@@ -84,6 +84,8 @@
   --empty-area-height: 240px;
   --lede-width: 62ch;
   --card-min-width: 260px;
+  --typed-min-width: 12ch;
+  --typed-max-width: 40ch;
   --column-min-width: 360px;
   --box-min-width: 200px;
   --score-box-width: 90px;
