@@ -13,6 +13,7 @@ import styles from "./student-list.module.css";
 import { StudentMentorFact } from "./student-mentor-fact";
 import type {
   GroupAddressOf,
+  MentorAddressOf,
   StudentMentorGroup,
 } from "./student-mentor-group";
 
@@ -24,16 +25,26 @@ function addressOfGroup(
   return groupAddressOf(group);
 }
 
+function addressOfMentor(
+  group: StudentMentorGroup | null,
+  mentorAddressOf: MentorAddressOf,
+): string | null {
+  if (group === null || group.mentorId === null) return null;
+  return mentorAddressOf(group.mentorId, group);
+}
+
 /** What the detail of one student shows. */
 export function StudentDetailView({
   student,
   period,
   groupAddressOf,
+  mentorAddressOf,
 }: {
   student: StudentDetail;
   /** The academic period that runs now, which says the semester. */
   period: RunningPeriod;
   groupAddressOf: GroupAddressOf;
+  mentorAddressOf: MentorAddressOf;
 }) {
   return (
     <>
@@ -51,7 +62,8 @@ export function StudentDetailView({
         <OriginAgencyFact student={student} />
         <StudentMentorFact
           group={student.mentorGroup}
-          address={addressOfGroup(student.mentorGroup, groupAddressOf)}
+          mentorAddress={addressOfMentor(student.mentorGroup, mentorAddressOf)}
+          groupAddress={addressOfGroup(student.mentorGroup, groupAddressOf)}
         />
       </dl>
     </>

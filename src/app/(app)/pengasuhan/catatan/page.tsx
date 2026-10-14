@@ -1,6 +1,7 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import {
   notesAddress,
   readNotesParams,
@@ -47,8 +48,12 @@ export default async function MentoringNotesPage(
         <StudentDetailDialog
           detail={detail}
           period={await runningPeriodNow()}
+          openedFrom="notes_list"
           closeAddress={notesAddress(params.kind, params.page)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
           morePanelsOf={(studentId) => (
             <StudentNotesPanel
               account={account}

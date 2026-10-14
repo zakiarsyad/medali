@@ -12,6 +12,7 @@ import { MentorScreen } from "@/features/mentor-groups/mentor-screen";
 import { newMentorsAddress } from "@/features/mentor-groups/new-mentors-address";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorStudentAddresses } from "@/features/mentor-groups/open-member-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { evaluationRowsFor } from "@/features/mentor-groups/visible-evaluations";
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -57,8 +58,12 @@ async function MentorPage({
         <StudentDetailDialog
           detail={detail}
           period={await runningPeriodNow()}
+          openedFrom="mentor_page"
           closeAddress={mentorAddress(mentorId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
           morePanelsOf={(studentId) => (
             <StudentNotesPanel
               account={account}

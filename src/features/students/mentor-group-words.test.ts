@@ -5,6 +5,7 @@ import type { StudentMentorGroup } from "./student-mentor-group";
 const GROUP: StudentMentorGroup = {
   id: "00000000-0000-4000-8000-000000000001",
   studyProgramId: 7,
+  mentorId: "00000000-0000-4000-8000-000000000002",
   cohortYear: 2024,
   entryPath: "regular",
   number: 1,

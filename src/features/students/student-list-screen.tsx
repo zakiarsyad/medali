@@ -24,13 +24,14 @@ import { StudentListBar } from "./student-list-bar";
 import { StudentListFilterRow } from "./student-list-filters";
 import { StudentListPager } from "./student-list-pager";
 import { StudentListTable } from "./student-list-table";
-import type { GroupAddressOf } from "./student-mentor-group";
+import type { GroupAddressOf, MentorAddressOf } from "./student-mentor-group";
 
 export async function StudentListScreen({
   limit,
   params,
   detail,
   groupAddressOf,
+  mentorAddressOf,
   morePanelsOf,
 }: {
   /** Which student rows the account that opened the page may see. */
@@ -39,6 +40,7 @@ export async function StudentListScreen({
   /** The detail the address asks to open over the list, or null for none. */
   detail: AskedDetail | null;
   groupAddressOf: GroupAddressOf;
+  mentorAddressOf: MentorAddressOf;
   /** The panels other areas add to the detail. */
   morePanelsOf: MorePanelsOf;
 }) {
@@ -104,8 +106,10 @@ export async function StudentListScreen({
         <StudentDetailDialog
           detail={detail}
           period={period}
+          openedFrom="student_list"
           closeAddress={studentListAddress(filters, list.page)}
           groupAddressOf={groupAddressOf}
+          mentorAddressOf={mentorAddressOf}
           morePanelsOf={morePanelsOf}
         />
       )}

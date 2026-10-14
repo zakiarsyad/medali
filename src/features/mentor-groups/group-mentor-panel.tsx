@@ -1,3 +1,4 @@
+import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { mentorLabel } from "@/ui/mentor-label";
@@ -13,15 +14,30 @@ function unitAndSince(mentor: GroupMentorLine): string {
   return mentor.unit ? `${mentor.unit}${BETWEEN}${since}` : since;
 }
 
-function CurrentMentor({ mentor }: { mentor: GroupMentorLine | null }) {
+function CurrentMentor({
+  mentor,
+  address,
+}: {
+  mentor: GroupMentorLine | null;
+  address: string | null;
+}) {
   if (mentor === null) {
     return (
       <p className={styles.quiet}>Kelompok ini belum memiliki pengasuh.</p>
     );
   }
+  const name = mentorLabel(mentor);
   return (
     <p>
-      <b className={styles.mentor}>{mentorLabel(mentor)}</b>
+      <b className={styles.mentor}>
+        {address === null ? (
+          name
+        ) : (
+          <Link href={address} className={shared.link}>
+            {name}
+          </Link>
+        )}
+      </b>
       <small className={shared.detail}>{unitAndSince(mentor)}</small>
     </p>
   );
@@ -43,16 +59,22 @@ function HistoryLine({ line }: { line: GroupMentorLine }) {
  */
 export function GroupMentorPanel({
   mentors,
+  mentorAddress,
   recentNotes,
 }: {
   mentors: GroupMentorLine[];
+  /**
+   * The address of the page of the mentor of today, or null for an account
+   * that may not open it: the name is then plain words.
+   */
+  mentorAddress: string | null;
   /** How many mentoring notes of the last 90 days there are about the members. */
   recentNotes: number;
 }) {
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Pengasuh saat ini</h2>
-      <CurrentMentor mentor={currentMentor(mentors)} />
+      <CurrentMentor mentor={currentMentor(mentors)} address={mentorAddress} />
       <p className={styles.facts}>
         Catatan pengasuhan 90 hari: <b>{recentNotes.toLocaleString("id-ID")}</b>
       </p>

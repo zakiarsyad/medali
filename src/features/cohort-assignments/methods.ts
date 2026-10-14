@@ -1,7 +1,5 @@
-import { cohortAssignmentMethod } from "@/db/schema";
-
 /** The ways to split new students into groups, in the order of the choice. */
-export const ASSIGNMENT_METHODS = cohortAssignmentMethod.enumValues;
+export const ASSIGNMENT_METHODS = ["balanced", "by_nim", "by_class"] as const;
 
 export type AssignmentMethod = (typeof ASSIGNMENT_METHODS)[number];
 

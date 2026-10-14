@@ -186,81 +186,81 @@ export function AttendanceForm({
   const counts = countMarks(marksOf(values.marks, memberIds));
   return (
     // noValidate: the server says what is missing, in the app's own words.
-    <form
-      onSubmit={(event) => sendForm(event, save)}
-      className={shared.form}
-      noValidate
-    >
-      <div className={`${styles.panelHead} ${styles.whole}`}>
-        <h2 className={shared.heading}>Daftar hadir pertemuan {number}</h2>
-        <button
-          type="button"
-          className={shared.link}
-          onClick={() =>
-            setValues({
-              ...values,
-              marks: allPresent(memberIds, unmarkedIds, values.marks),
-            })
-          }
-        >
-          Tandai semua hadir
-        </button>
+    <form onSubmit={(event) => sendForm(event, save)} noValidate>
+      <div className={shared.form}>
+        <div className={`${styles.panelHead} ${styles.whole}`}>
+          <h2 className={shared.heading}>Daftar hadir pertemuan {number}</h2>
+          <button
+            type="button"
+            className={shared.link}
+            onClick={() =>
+              setValues({
+                ...values,
+                marks: allPresent(memberIds, unmarkedIds, values.marks),
+              })
+            }
+          >
+            Tandai semua hadir
+          </button>
+        </div>
+        <input type="hidden" name="groupId" value={groupId} />
+        <input type="hidden" name="number" value={number} />
+        <input type="hidden" name="version" value={state.version} />
+        <label className={shared.field}>
+          Tanggal
+          <input
+            name="heldOn"
+            type="date"
+            className={shared.input}
+            value={values.heldOn}
+            min={firstDay}
+            max={lastDay}
+            onChange={(event) =>
+              setValues({ ...values, heldOn: event.target.value })
+            }
+          />
+        </label>
+        <label className={shared.field}>
+          Topik
+          <input
+            name="topic"
+            className={shared.input}
+            list={TOPICS_ID}
+            maxLength={TOPIC_MAX_LENGTH}
+            value={values.topic}
+            onChange={(event) =>
+              setValues({ ...values, topic: event.target.value })
+            }
+          />
+          <datalist id={TOPICS_ID}>
+            {MEETING_TOPICS.map((topic) => (
+              <option key={topic} value={topic} />
+            ))}
+          </datalist>
+        </label>
+        <div className={styles.whole}>
+          <MemberList
+            members={members}
+            unmarkedIds={unmarkedIds}
+            marks={values.marks}
+            onMark={setMark}
+          />
+        </div>
       </div>
-      <input type="hidden" name="groupId" value={groupId} />
-      <input type="hidden" name="number" value={number} />
-      <input type="hidden" name="version" value={state.version} />
-      <label className={shared.field}>
-        Tanggal
-        <input
-          name="heldOn"
-          type="date"
-          className={shared.input}
-          value={values.heldOn}
-          min={firstDay}
-          max={lastDay}
-          onChange={(event) =>
-            setValues({ ...values, heldOn: event.target.value })
-          }
-        />
-      </label>
-      <label className={shared.field}>
-        Topik
-        <input
-          name="topic"
-          className={shared.input}
-          list={TOPICS_ID}
-          maxLength={TOPIC_MAX_LENGTH}
-          value={values.topic}
-          onChange={(event) =>
-            setValues({ ...values, topic: event.target.value })
-          }
-        />
-        <datalist id={TOPICS_ID}>
-          {MEETING_TOPICS.map((topic) => (
-            <option key={topic} value={topic} />
-          ))}
-        </datalist>
-      </label>
-      <div className={styles.whole}>
-        <MemberList
-          members={members}
-          unmarkedIds={unmarkedIds}
-          marks={values.marks}
-          onMark={setMark}
-        />
+      <div className={`${styles.saveBar} ${styles.saveAttendance}`}>
+        <div className={shared.actions}>
+          <button type="submit" className={shared.button} disabled={pending}>
+            Simpan daftar hadir
+          </button>
+          <Link href={closeAddress} className={shared.quiet} scroll={false}>
+            Tutup
+          </Link>
+          <span className={styles.quiet} role="status">
+            {countWords(counts, ", ")}
+          </span>
+        </div>
+        <FormMessage state={state} />
       </div>
-      <div className={shared.actions}>
-        <button type="submit" className={shared.button} disabled={pending}>
-          Simpan daftar hadir
-        </button>
-        <Link href={closeAddress} className={shared.quiet} scroll={false}>
-          Tutup
-        </Link>
-        <span className={styles.quiet} role="status">
-          {countWords(counts, ", ")}
-        </span>
-      </div>
-      <FormMessage state={state} />
     </form>
   );
 }

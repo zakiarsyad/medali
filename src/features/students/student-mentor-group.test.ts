@@ -26,7 +26,11 @@ const GROUP = {
   programCode: "D3PJK",
 } as const;
 
+const MENTOR_ID = "00000000-0000-4000-8000-000000000002";
+const EARLIER_ID = "00000000-0000-4000-8000-000000000003";
+
 const NO_MENTOR = {
+  mentorId: null,
   mentorName: null,
   mentorTitle: null,
   startsOn: null,
@@ -45,6 +49,7 @@ describe("mentorGroupOf", () => {
   it("names the mentor of today and since when", () => {
     const lines = [
       line({
+        mentorId: MENTOR_ID,
         mentorName: "Sari Uji",
         mentorTitle: "M.Si.",
         startsOn: "2026-09-01",
@@ -53,6 +58,7 @@ describe("mentorGroupOf", () => {
 
     expect(mentorGroupOf(lines)).toEqual({
       ...GROUP,
+      mentorId: MENTOR_ID,
       mentor: { name: "Sari Uji", title: "M.Si.", since: "2026-09-01" },
       earlierMentors: [],
     });
@@ -61,20 +67,27 @@ describe("mentorGroupOf", () => {
   it("names the mentors before, apart from the mentor of today", () => {
     const lines = [
       line({
+        mentorId: EARLIER_ID,
         mentorName: "Awal Uji",
         startsOn: "2026-09-01",
         endsOn: "2026-09-30",
       }),
       line({
+        mentorId: EARLIER_ID,
         mentorName: "Tengah Uji",
         startsOn: "2026-10-01",
         endsOn: "2026-10-31",
       }),
-      line({ mentorName: "Kini Uji", startsOn: "2026-11-01" }),
+      line({
+        mentorId: MENTOR_ID,
+        mentorName: "Kini Uji",
+        startsOn: "2026-11-01",
+      }),
     ];
 
     expect(mentorGroupOf(lines)).toEqual({
       ...GROUP,
+      mentorId: MENTOR_ID,
       mentor: { name: "Kini Uji", title: null, since: "2026-11-01" },
       earlierMentors: ["Awal Uji", "Tengah Uji"],
     });
@@ -83,6 +96,7 @@ describe("mentorGroupOf", () => {
   it("gives no mentor for a group whose every mentor line has ended", () => {
     const lines = [
       line({
+        mentorId: EARLIER_ID,
         mentorName: "Awal Uji",
         startsOn: "2026-09-01",
         endsOn: "2026-09-30",
@@ -91,6 +105,7 @@ describe("mentorGroupOf", () => {
 
     expect(mentorGroupOf(lines)).toEqual({
       ...GROUP,
+      mentorId: null,
       mentor: null,
       earlierMentors: ["Awal Uji"],
     });
@@ -99,6 +114,7 @@ describe("mentorGroupOf", () => {
   it("gives no mentor for a group that never had one", () => {
     expect(mentorGroupOf([line({})])).toEqual({
       ...GROUP,
+      mentorId: null,
       mentor: null,
       earlierMentors: [],
     });
@@ -133,6 +149,7 @@ describe("readStudentMentorGroup", () => {
         entryPath: "regular",
         number: 3,
         programCode: "UJIKP",
+        mentorId: mentor.id,
         mentor: { name: "Kini Uji", title: "M.Si.", since: "2026-10-01" },
         earlierMentors: ["Awal Uji"],
       });
