@@ -31,14 +31,14 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2260, the programs
- * UJIKLARPANEL and UJIKLARPANELLAIN and the NIMs 9973200000 to
- * 9973200099.
+ * This file's own sample values: the Tahun akademik 2350, the programs
+ * UJIKLARPANEL and UJIKLARPANELLAIN and the NIMs 9974200000 to
+ * 9974200099.
  */
 
 const inTestDatabase = withTestDatabase();
 
-const SENT_AT = new Date("2260-09-12T05:00:00Z");
+const SENT_AT = new Date("2350-09-12T05:00:00Z");
 
 interface Records {
   assessorId: string;
@@ -54,7 +54,7 @@ async function addRecords(db: Database): Promise<Records> {
   const activityId = await addTestActivity(db, assessor.id, {
     name: "Kegiatan uji panel",
   });
-  const periods = await addTestPeriods(db, 2260);
+  const periods = await addTestPeriods(db, 2350);
   const programId = await addTestProgram(db, "UJIKLARPANEL");
   const otherProgramId = await addTestProgram(db, "UJIKLARPANELLAIN");
   const students: TestStudentAccount[] = [];
@@ -63,9 +63,9 @@ async function addRecords(db: Database): Promise<Records> {
       db,
       place < 3 ? programId : otherProgramId,
       {
-        nim: `997320000${place}`,
+        nim: `997420000${place}`,
         name: `Mahasiswa Uji Panel ${place}`,
-        cohortYear: 2259,
+        cohortYear: 2349,
       },
     );
     students.push(student);
@@ -74,7 +74,7 @@ async function addRecords(db: Database): Promise<Records> {
     activityId,
     academicPeriodId: periods.oddId,
     changedBy: assessor.id,
-    startsOn: "2260-09-10",
+    startsOn: "2350-09-10",
   });
   return {
     assessorId: assessor.id,
@@ -143,17 +143,17 @@ async function addGroupOf(
     .insert(mentorGroups)
     .values({
       studyProgramId: records.programId,
-      cohortYear: 2259,
+      cohortYear: 2349,
       entryPath: "regular",
       number: 1,
-      startsOn: "2260-08-01",
+      startsOn: "2350-08-01",
     })
     .returning({ id: mentorGroups.id });
   if (!group) throw new Error("The group was not added.");
   await db.insert(mentorGroupMentors).values({
     groupId: group.id,
     mentorId,
-    startsOn: "2260-08-01",
+    startsOn: "2350-08-01",
   });
   await db.insert(mentorGroupMembers).values(
     places.map((place) => ({
@@ -257,9 +257,9 @@ describe("readClarificationPanel", () => {
       const records = await addRecords(db);
       const earlier = await addTestSchedule(db, {
         activityId: await addTestActivity(db, records.assessorId),
-        academicPeriodId: (await addTestPeriods(db, 2262)).oddId,
+        academicPeriodId: (await addTestPeriods(db, 2352)).oddId,
         changedBy: records.assessorId,
-        startsOn: "2262-09-01",
+        startsOn: "2352-09-01",
       });
       for (let place = 0; place < 5; place++) {
         await addSent(db, records, place);
@@ -272,7 +272,7 @@ describe("readClarificationPanel", () => {
         scheduleId: earlier,
         sentAt: new Date(SENT_AT.getTime() + 11 * 60_000),
       });
-      const both = sql`${visibleTo({ kind: "all" })} and students.nim like '99732000%'`;
+      const both = sql`${visibleTo({ kind: "all" })} and students.nim like '99742000%'`;
 
       const panel = await readClarificationPanel(db, both);
 
@@ -323,15 +323,15 @@ describe("readClarificationPanel", () => {
       expect(panel?.latest).toEqual([
         {
           id,
-          sentAt: "2260-09-12T05:00:00.000Z",
+          sentAt: "2350-09-12T05:00:00.000Z",
           name: name(0),
-          nim: "9973200000",
+          nim: "9974200000",
           program: "UJIKLARPANEL",
           activity: "Kegiatan uji panel",
-          held: "10 Sep 2260, 07:30–11:30",
+          held: "10 Sep 2350, 07:30–11:30",
           reason: "Sakit",
           status: "rejected",
-          sent: "12 Sep 2260, 12.00",
+          sent: "12 Sep 2350, 12.00",
           decision: {
             result: "Ditolak: Lampiran tidak terbaca.",
             by: "(Penilai Uji Panel, 11 Sep 2150, 10.00)",

@@ -25,7 +25,7 @@ import {
  * the saved rows, and the logs of decisions cannot be emptied. So these
  * checks have a database of their own, dropped at the end, and each
  * check uses records of its own: the Tahun akademik 2300 and 2310, and
- * the NIMs 9973500000 to 9973500099.
+ * the NIMs 9974300000 to 9974300099.
  */
 const own = withOwnTestDatabase("klarbareng");
 
@@ -94,7 +94,7 @@ function linesOf(clarificationId: string) {
 
 describe("two Penilai Mahasiswa deciding the same clarification at the same moment", () => {
   it("keeps the first decision: the second waits, then is told it was decided, and changes nothing", async () => {
-    const records = await addRecords(2300, "UJIKLARBARENG", "9973500001");
+    const records = await addRecords(2300, "UJIKLARBARENG", "9974300001");
     const { clarificationId, at } = records;
 
     const both = await own.atOnce(
@@ -150,7 +150,7 @@ describe("two Penilai Mahasiswa deciding the same clarification at the same mome
 
 describe("an acceptance and a record made by hand for the same student and schedule at the same moment", () => {
   it("keeps one attendance: the acceptance waits for the record, then is refused because the attendance already counts", async () => {
-    const records = await addRecords(2310, "UJIKLARCATAT", "9973500002");
+    const records = await addRecords(2310, "UJIKLARCATAT", "9974300002");
     const { clarificationId, at } = records;
     const record = {
       studentId: records.student.studentId,

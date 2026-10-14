@@ -28,19 +28,19 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2249 and 2250, the
- * program UJIKLARPUTUS and the NIMs 9973100000 to 9973100099.
+ * This file's own sample values: the Tahun akademik 2340, the
+ * program UJIKLARPUTUS and the NIMs 9974100000 to 9974100099.
  */
 
 const inTestDatabase = withTestDatabase();
 
-const TODAY = "2250-10-13";
+const TODAY = "2340-10-13";
 /** Ten in the morning on campus. */
-const NOW = new Date("2250-10-13T03:00:00Z");
+const NOW = new Date("2340-10-13T03:00:00Z");
 
 interface Records {
   assessor: AccountForAccess;
-  /** A student of angkatan 2249, in semester 3 during Ganjil 2250. */
+  /** A student of angkatan 2339, in semester 3 during Ganjil 2340. */
   student: TestStudentAccount;
   /**
    * Required, held three days ago with an upload range of 1 hari: its
@@ -58,12 +58,12 @@ function accountOf(id: string, roles: RoleId[]): AccountForAccess {
 async function addRecords(db: Database): Promise<Records> {
   const assessor = await addTestActor(db, "Penilai Uji Putusan", ["assessor"]);
   const activityId = await addTestActivity(db, assessor.id);
-  const periods = await addTestPeriods(db, 2250);
+  const periods = await addTestPeriods(db, 2340);
   const programId = await addTestProgram(db, "UJIKLARPUTUS");
   const student = await addTestStudentAccount(db, programId, {
-    nim: "9973100001",
+    nim: "9974100001",
     name: "Mahasiswa Uji Putusan",
-    cohortYear: 2249,
+    cohortYear: 2339,
   });
   const scheduleId = await addTestSchedule(db, {
     activityId,
@@ -162,7 +162,7 @@ describe("accepting a clarification", () => {
         status: "accepted",
         decision: {
           result: "Diterima sebagai hadir",
-          by: "(Penilai Uji Putusan, 13 Okt 2250, 10.00)",
+          by: "(Penilai Uji Putusan, 13 Okt 2340, 10.00)",
         },
       });
       expect(await keptClarification(db, records)).toMatchObject({
@@ -393,7 +393,7 @@ describe("rejecting a clarification", () => {
         status: "rejected",
         decision: {
           result: "Ditolak: Lampiran tidak terbaca.",
-          by: "(Penilai Uji Putusan, 13 Okt 2250, 10.00)",
+          by: "(Penilai Uji Putusan, 13 Okt 2340, 10.00)",
         },
       });
       expect(await keptClarification(db, records)).toMatchObject({

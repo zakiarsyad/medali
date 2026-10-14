@@ -19,14 +19,14 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2240, the program
- * UJIKLARDAFTAR and the NIMs 9973000000 to 9973000099.
+ * This file's own sample values: the Tahun akademik 2330, the program
+ * UJIKLARDAFTAR and the NIMs 9974000000 to 9974000099.
  */
 
 const inTestDatabase = withTestDatabase();
 
 /** Noon on campus on 12 September. */
-const SENT_AT = new Date("2240-09-12T05:00:00Z");
+const SENT_AT = new Date("2330-09-12T05:00:00Z");
 
 interface Records {
   assessor: AccountForAccess;
@@ -48,14 +48,14 @@ async function addRecords(db: Database, studentCount = 3): Promise<Records> {
   const activityId = await addTestActivity(db, assessor.id, {
     name: "Kegiatan uji klarifikasi",
   });
-  const periods = await addTestPeriods(db, 2240);
+  const periods = await addTestPeriods(db, 2330);
   const programId = await addTestProgram(db, "UJIKLARDAFTAR");
   const students: TestStudentAccount[] = [];
   for (let place = 0; place < studentCount; place++) {
     const student = await addTestStudentAccount(db, programId, {
-      nim: `99730000${String(place).padStart(2, "0")}`,
+      nim: `99740000${String(place).padStart(2, "0")}`,
       name: `Mahasiswa Uji Klarifikasi ${place}`,
-      cohortYear: 2239,
+      cohortYear: 2329,
     });
     students.push(student);
   }
@@ -68,12 +68,12 @@ async function addRecords(db: Database, studentCount = 3): Promise<Records> {
     assessor: accountOf(assessor.id, assessor.roles),
     scheduleId: await addTestSchedule(db, {
       ...schedule,
-      startsOn: "2240-09-10",
-      endsOn: "2240-09-11",
+      startsOn: "2330-09-10",
+      endsOn: "2330-09-11",
     }),
     earlierScheduleId: await addTestSchedule(db, {
       ...schedule,
-      startsOn: "2240-09-01",
+      startsOn: "2330-09-01",
     }),
     students,
   };
@@ -176,15 +176,15 @@ describe("readClarifications", () => {
       expect(shown.list.cards).toEqual([
         {
           id,
-          sentAt: "2240-09-12T05:00:00.000Z",
+          sentAt: "2330-09-12T05:00:00.000Z",
           name: "Mahasiswa Uji Klarifikasi 0",
-          nim: "9973000000",
+          nim: "9974000000",
           program: "UJIKLARDAFTAR",
           activity: "Kegiatan uji klarifikasi",
-          held: "10 Sep – 11 Sep 2240, 07:30–11:30",
+          held: "10 Sep – 11 Sep 2330, 07:30–11:30",
           reason: "Tugas institusi atau lomba",
           status: "submitted",
-          sent: "12 Sep 2240, 12.00",
+          sent: "12 Sep 2330, 12.00",
           decision: null,
           explanation: "Mewakili kampus pada lomba uji.",
           file: {
@@ -281,7 +281,7 @@ describe("readClarifications", () => {
       const { assessor } = records;
 
       const byName = await read(db, assessor, { query: "uji klarifikasi 1" });
-      const byNim = await read(db, assessor, { query: "973000000" });
+      const byNim = await read(db, assessor, { query: "974000000" });
       const bySign = await read(db, assessor, { query: "%" });
 
       expect(namesOf(byName)).toEqual(["Mahasiswa Uji Klarifikasi 1"]);
@@ -324,7 +324,7 @@ describe("readClarifications", () => {
         .set({ deletedAt: new Date(), deletedBy: records.assessor.id })
         .where(eq(activitySchedules.id, records.earlierScheduleId));
 
-      const shown = await read(db, records.assessor, { query: "9973000" });
+      const shown = await read(db, records.assessor, { query: "9974000" });
 
       expect(namesOf(shown)).toEqual(["Mahasiswa Uji Klarifikasi 0"]);
       expect(shown.counts.submitted).toBe(before.submitted - 1);
