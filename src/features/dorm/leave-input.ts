@@ -1,4 +1,5 @@
 import type { Parsed } from "@/parsed";
+import { lettersIn } from "@/ui/letters-in";
 import {
   CONTACT_MAX_LENGTH,
   DESTINATION_MAX_LENGTH,
@@ -56,14 +57,6 @@ function kindOf(sent: string): LeaveKind | null {
 
 function specialReasonOf(sent: string): SpecialReason | null {
   return SPECIAL_REASONS.find((reason) => reason === sent) ?? null;
-}
-
-/**
- * How many letters a text holds, as the database counts them: an emoji
- * is one, where the length of a text would count two.
- */
-export function lettersIn(text: string): number {
-  return [...text].length;
 }
 
 function tooLong(words: string, max: number): string {

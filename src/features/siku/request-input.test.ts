@@ -84,6 +84,18 @@ describe("parseRequest", () => {
     expect(parsed.ok && parsed.value.report).toBe("a".repeat(1000));
   });
 
+  it("counts an emoji as one letter, as the database does", () => {
+    expect(refusal({ report: "Mengajar 🙏🙏🙏🙏🙏🙏" })).toEqual({
+      ok: false,
+      error: REPORT_TOO_SHORT,
+    });
+    expect(refusal({ report: "🙏".repeat(1000) }).ok).toBe(true);
+    expect(refusal({ report: "🙏".repeat(1001) })).toEqual({
+      ok: false,
+      error: REPORT_TOO_LONG,
+    });
+  });
+
   it("leaves out a character the database cannot keep", () => {
     const parsed = refusal({ report: `${"a".repeat(20)}\u0000` });
 

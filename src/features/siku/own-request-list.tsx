@@ -1,5 +1,6 @@
 "use client";
 
+import { unstable_rethrow } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ROLES } from "@/auth/roles";
 import shared from "@/ui/data-screen.module.css";
@@ -19,7 +20,27 @@ export const WITHDRAW_QUESTION = "Tarik pengajuan ini?";
 export const GAIN_CANCELLED_NOTE =
   "Penambahan poin dari pengajuan ini dibatalkan oleh penilai.";
 
+/** Said when "Tarik pengajuan" did not reach the server, or no answer came back. */
+export const WITHDRAW_NOT_SENT =
+  "Penarikan tidak terkirim. Periksa koneksi internet, lalu coba lagi.";
+
 const START: FormState = { error: null, done: null };
+
+/**
+ * What the server answered to "Tarik pengajuan", or that it did not
+ * arrive. What is no failure, as an answer that leads elsewhere, is
+ * thrown again.
+ */
+export async function withdrawnOr(
+  withdraw: () => Promise<FormState>,
+): Promise<FormState> {
+  try {
+    return await withdraw();
+  } catch (error) {
+    unstable_rethrow(error);
+    return { error: WITHDRAW_NOT_SENT, done: null };
+  }
+}
 
 /** When it was sent, and the role that checked it and when, never a name. */
 function sentAndChecked(request: OwnRequest): string {
@@ -40,7 +61,9 @@ function WithdrawButton({
 
   function press() {
     if (!window.confirm(WITHDRAW_QUESTION)) return;
-    startSending(async () => onAnswer(await withdrawSikuRequestAction(id)));
+    startSending(async () =>
+      onAnswer(await withdrawnOr(() => withdrawSikuRequestAction(id))),
+    );
   }
 
   return (

@@ -4,6 +4,8 @@ import {
   GAIN_CANCELLED_NOTE,
   NO_REQUESTS,
   OwnRequestList,
+  WITHDRAW_NOT_SENT,
+  withdrawnOr,
 } from "./own-request-list";
 import type { OwnRequest } from "./own-requests";
 import { OwnSikuScreen } from "./own-siku-screen";
@@ -19,7 +21,26 @@ import {
 import { PHOTO_NOT_KEPT } from "./request-photo-thumbs";
 import { START_PARAMS } from "./siku-address";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({}),
+  unstable_rethrow: () => {},
+}));
+
+describe("Tarik pengajuan", () => {
+  it("says it was not sent when the connection drops, instead of failing", async () => {
+    const answer = await withdrawnOr(async () => {
+      throw new Error("Tidak ada koneksi.");
+    });
+
+    expect(answer).toEqual({ error: WITHDRAW_NOT_SENT, done: null });
+  });
+
+  it("gives what the server answered", async () => {
+    const done = { error: null, done: "Pengajuan ditarik." };
+
+    expect(await withdrawnOr(async () => done)).toEqual(done);
+  });
+});
 
 const WAITING: OwnRequest = {
   id: "00000000-0000-4000-8000-000000000301",

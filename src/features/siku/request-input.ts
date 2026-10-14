@@ -1,5 +1,6 @@
 import { isDay } from "@/db/is-day";
 import type { Parsed } from "@/parsed";
+import { lettersIn } from "@/ui/letters-in";
 import {
   PHOTOS_MAX,
   PHOTOS_MIN,
@@ -62,8 +63,8 @@ export function parseRequest(
   if (!isDay(draft.day)) return refused(NO_DAY);
   if (draft.day > today) return refused(DAY_IN_FUTURE);
   const report = draft.report.replaceAll(NOT_KEPT_AS_TEXT, "").trim();
-  if (report.length < REPORT_MIN_LENGTH) return refused(REPORT_TOO_SHORT);
-  if (report.length > REPORT_MAX_LENGTH) return refused(REPORT_TOO_LONG);
+  if (lettersIn(report) < REPORT_MIN_LENGTH) return refused(REPORT_TOO_SHORT);
+  if (lettersIn(report) > REPORT_MAX_LENGTH) return refused(REPORT_TOO_LONG);
   if (draft.photoCount < PHOTOS_MIN) return refused(NO_PHOTO);
   if (draft.photoCount > PHOTOS_MAX) return refused(TOO_MANY_PHOTOS);
   return { ok: true, value: { reason, day: draft.day, report } };

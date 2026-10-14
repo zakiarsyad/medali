@@ -1,4 +1,5 @@
 import type { Parsed } from "@/parsed";
+import { firstLetters, lettersIn } from "@/ui/letters-in";
 import { DECISION_NOTE_MAX_LENGTH } from "./request-ids";
 import { ENTRY_NOTE_MAX_LENGTH, POINTS_MAX, POINTS_MIN } from "./siku-ids";
 
@@ -54,13 +55,14 @@ export function parseDecision(
   const kept = typed.replaceAll(NOT_KEPT_AS_TEXT, "").trim();
   if (kind === "reject") {
     if (kept === "") return refused(NOTE_NEEDED);
-    if (kept.length > DECISION_NOTE_MAX_LENGTH) return refused(NOTE_TOO_LONG);
+    const isTooLong = lettersIn(kept) > DECISION_NOTE_MAX_LENGTH;
+    if (isTooLong) return refused(NOTE_TOO_LONG);
     return { ok: true, value: { kind, note: kept } };
   }
   if (kind !== "approve") return refused(UNKNOWN_DECISION);
   const whole = pointsOf(points);
   if (whole === null) return refused(POINTS_OUTSIDE);
-  if (kept.length > DECISION_NOTE_MAX_LENGTH) return refused(NOTE_TOO_LONG);
+  if (lettersIn(kept) > DECISION_NOTE_MAX_LENGTH) return refused(NOTE_TOO_LONG);
   return { ok: true, value: { kind, points: whole, note: kept } };
 }
 
@@ -73,9 +75,10 @@ const CUT = "…";
 
 /**
  * The Keterangan of the gain an approval makes: the report of the
- * request, cut to what an entry holds, which is less than a report may.
+ * request, cut to what an entry holds, which is less than a report may,
+ * counted as the database counts letters.
  */
 export function entryNoteOf(report: string): string {
-  if (report.length <= ENTRY_NOTE_MAX_LENGTH) return report;
-  return `${report.slice(0, ENTRY_NOTE_MAX_LENGTH - CUT.length)}${CUT}`;
+  if (lettersIn(report) <= ENTRY_NOTE_MAX_LENGTH) return report;
+  return `${firstLetters(report, ENTRY_NOTE_MAX_LENGTH - lettersIn(CUT))}${CUT}`;
 }

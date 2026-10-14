@@ -6,8 +6,8 @@ import { isUuid } from "@/db/is-uuid";
 import { dormLeaves } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
+import { lettersIn } from "@/ui/letters-in";
 import { DECISION_NOTE_MAX_LENGTH, type LeaveStatus } from "./leave-ids";
-import { lettersIn } from "./leave-input";
 import {
   DECIDE_NOT_ALLOWED,
   LEAVE_NOT_FOUND,

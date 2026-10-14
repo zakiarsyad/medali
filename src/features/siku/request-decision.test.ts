@@ -71,6 +71,14 @@ describe("parseDecision", () => {
     });
   });
 
+  it("counts an emoji in the note as one letter, as the database does", () => {
+    expect(parseDecision("reject", "", "🙏".repeat(500)).ok).toBe(true);
+    expect(parseDecision("reject", "", "🙏".repeat(501))).toEqual({
+      ok: false,
+      error: NOTE_TOO_LONG,
+    });
+  });
+
   it("refuses a decision it does not know", () => {
     expect(parseDecision("cancel", "2", "x")).toEqual({
       ok: false,
@@ -97,5 +105,13 @@ describe("entryNoteOf", () => {
 
     expect(note).toHaveLength(500);
     expect(note.endsWith("a…")).toBe(true);
+  });
+
+  it("keeps a report of 500 emoji whole, and cuts a longer one at 500 letters without splitting an emoji", () => {
+    expect(entryNoteOf("🙏".repeat(500))).toBe("🙏".repeat(500));
+    const note = entryNoteOf("🙏".repeat(600));
+
+    expect([...note]).toHaveLength(500);
+    expect(note).toBe(`${"🙏".repeat(499)}…`);
   });
 });
