@@ -77,23 +77,27 @@ async function MentorStep({
 
 /**
  * The groups to read only. "Riwayat proses" names the staff who prepared
- * the penetapan, so only an account that prepares one sees it. A fixed
- * one has "Batalkan penetapan" for an account that may fix.
+ * the penetapan, and "Anggota" names the members of a group, so only an
+ * account that prepares one sees them. A fixed one has "Batalkan
+ * penetapan" for an account that may fix.
  */
-function SavedGroups({
+export function SavedGroups({
   assignment,
   mayPrepare,
   mayFix,
+  openGroupId,
 }: {
   assignment: StoredAssignment;
   mayPrepare: boolean;
   mayFix: boolean;
+  openGroupId: string | null;
 }) {
   const { cohortYear, version, status } = assignment;
   const mayCancel = mayFix && statusAfter(status, "cancel") !== null;
   return (
     <DraftGroupsPanel
       assignment={assignment}
+      openGroupId={mayPrepare ? openGroupId : undefined}
       action={
         mayCancel ? <CancelButton shown={{ cohortYear, version }} /> : undefined
       }
@@ -144,8 +148,9 @@ function DraftSteps({
  * left the draft. Any other is told who
  * prepares, and sees the groups that are saved to read only, as far as
  * the limit lets the account see them; so does everyone once the
- * angkatan is fixed. "Riwayat proses" is read only for an account that
- * prepares, the only one it is shown to.
+ * angkatan is fixed, and then an account that prepares has "Anggota" to
+ * read the members of a group. "Riwayat proses" is read only for an
+ * account that prepares, the only one it is shown to.
  */
 export async function OpenCohort({
   cohortYear,
@@ -198,6 +203,7 @@ export async function OpenCohort({
           assignment={formed}
           mayPrepare={mayPrepare}
           mayFix={mayFix}
+          openGroupId={openGroupId}
         />
       )}
     </OneSaveAtATime>

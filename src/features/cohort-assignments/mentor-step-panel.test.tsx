@@ -169,5 +169,37 @@ describe("DraftGroupsPanel", () => {
     expect(panel).toContain("sejak 1 Sep 2026");
     expect(panel).not.toContain("Anggota Uji");
     expect(panel).not.toContain("<button");
+    expect(panel).not.toContain("<a ");
+  });
+
+  it("gives an account that may read member names Anggota on each group, and names no member while none is open", () => {
+    const panel = renderToStaticMarkup(
+      <DraftGroupsPanel
+        assignment={{ ...SAVED, status: "fixed" }}
+        openGroupId={null}
+      />,
+    );
+
+    expect(panel).toContain(`kelompok=${FIRST}`);
+    expect(panel).toContain(`kelompok=${SECOND}`);
+    expect(panel).toContain(">Anggota</a>");
+    expect(panel).not.toContain("Anggota Uji");
+  });
+
+  it("lists the members of the open group to read only, with nowhere to move them", () => {
+    const panel = renderToStaticMarkup(
+      <DraftGroupsPanel
+        assignment={{ ...SAVED, status: "fixed" }}
+        openGroupId={FIRST}
+      />,
+    );
+
+    expect(panel).toContain("Anggota Uji 11 0");
+    expect(panel).toContain("99110 · putri · Bali · 1-01");
+    expect(panel).not.toContain("Anggota Uji 22 0");
+    expect(panel).toContain(">Tutup</a>");
+    expect(panel).not.toContain("Pindahkan ke…");
+    expect(panel).not.toContain("<select");
+    expect(panel).not.toContain("<button");
   });
 });

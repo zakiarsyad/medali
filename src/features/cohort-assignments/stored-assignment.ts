@@ -6,7 +6,6 @@ import {
   accounts,
   cohortAssignmentChanges,
   cohortAssignmentGroups,
-  cohortAssignmentMembers,
   cohortAssignments,
   students,
   studyPrograms,
@@ -14,6 +13,7 @@ import {
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { AssignmentStatus, ChangeAction } from "./assignment-steps";
 import { LEFT_DRAFT } from "./dropped-members";
+import { membersToday } from "./members-today";
 import type { AssignmentMethod } from "./methods";
 import { inProgramsOf } from "./visible-assignments";
 
@@ -102,7 +102,6 @@ const GROUP = {
 };
 
 const MEMBER = {
-  groupId: cohortAssignmentMembers.groupId,
   id: students.id,
   nim: students.nim,
   name: students.name,
@@ -135,14 +134,15 @@ function readGroupRows(db: Database, limit: RowLimit, assignmentId: string) {
 }
 
 function readMemberRows(db: Database, limit: RowLimit, assignmentId: string) {
+  const today = membersToday(db);
   return db
-    .select(MEMBER)
-    .from(cohortAssignmentMembers)
+    .select({ ...MEMBER, groupId: today.groupId })
+    .from(today)
     .innerJoin(
       cohortAssignmentGroups,
-      eq(cohortAssignmentGroups.id, cohortAssignmentMembers.groupId),
+      eq(cohortAssignmentGroups.id, today.groupId),
     )
-    .innerJoin(students, eq(students.id, cohortAssignmentMembers.studentId))
+    .innerJoin(students, eq(students.id, today.studentId))
     .where(
       and(
         eq(cohortAssignmentGroups.assignmentId, assignmentId),
@@ -199,7 +199,9 @@ function draftGroup(
 /**
  * The penetapan of an angkatan with its groups, their members and its
  * log, or null for an angkatan that has none. An account held to its
- * study programs is given the groups of those programs only. A student
+ * study programs is given the groups of those programs only. The groups
+ * of a fixed one hold the members they have today, and those of any
+ * other the members prepared for them: see `membersToday`. A student
  * who was removed or is not Aktif any more is in no group here, only
  * counted: the next save takes them out of what is stored. The log is
  * left unread, and given empty, when the caller says it is not shown.

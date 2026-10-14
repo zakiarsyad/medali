@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { cohortAssignments } from "@/db/schema";
 import { fillDraftMentors } from "./fill-draft-mentors";
+import { fixAssignment } from "./fix-assignment";
 import { formAssignment } from "./form-assignment";
 import {
   type DraftGroup,
@@ -76,6 +77,28 @@ export async function addCompleteTestDraft(
   });
   if (!filled.ok) throw new Error(filled.error);
   return draft;
+}
+
+/**
+ * The same draft fixed by a Kepala Unit named `Kepala <tag>`, which
+ * leaves it at version 3 with its three groups in force.
+ */
+export async function addFixedTestDraft(
+  db: Database,
+  cohortYear: number,
+  firstNim: number,
+  tag: string,
+): Promise<TestDraft & { head: TestActor }> {
+  const draft = await addCompleteTestDraft(db, cohortYear, firstNim, tag);
+  const head = await addTestActor(db, ["head_of_unit"], `Kepala ${tag}`);
+  const fixed = await fixAssignment(db, head, {
+    cohortYear,
+    version: 2,
+    decreeNumber: `KEP-${tag}`,
+    effectiveOn: `${cohortYear}-09-01`,
+  });
+  if (!fixed.ok) throw new Error(fixed.error);
+  return { ...draft, head };
 }
 
 export async function testDraftOf(
