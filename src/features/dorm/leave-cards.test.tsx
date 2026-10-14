@@ -39,6 +39,7 @@ const CARD: LeaveCard = {
   warnings: [],
   report: REPORT,
   isOut: false,
+  isLate: false,
   returned: null,
 };
 
@@ -168,6 +169,24 @@ describe("Catat sudah kembali on a card", () => {
     expect(card).toContain("Kembali aktual");
     expect(card).toContain(">Terlambat 20 menit</span>");
     expect(card).toContain("Kembali dicatat Bima BAM (dicatat langsung).");
+  });
+});
+
+describe("the labels of a card", () => {
+  it("shows Di luar asrama in place of Disetujui while the resident is out", () => {
+    const card = shown(OUT, NONE);
+
+    expect(card).toContain(">Di luar asrama</span>");
+    expect(card).not.toContain(">Disetujui</span>");
+    expect(card).not.toContain(">Terlambat</span>");
+  });
+
+  it("adds Terlambat once the return time has passed, and says so beside Catat sudah kembali", () => {
+    const card = shown({ ...OUT, isLate: true }, MANAGER);
+
+    expect(card).toContain(">Di luar asrama</span>");
+    expect(card).toContain(">Terlambat</span>");
+    expect(card).toContain("Melewati batas kembali 14 Okt 2026, 16.00");
   });
 });
 

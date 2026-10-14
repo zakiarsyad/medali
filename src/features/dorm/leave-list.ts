@@ -29,7 +29,11 @@ import { dormInSql } from "@/dorms/resident-condition";
 import { shownMoment } from "@/ui/day";
 import { pageWithin } from "@/ui/list-pages";
 import type { ActivityRow } from "./activity-row";
-import { LEAVE_CARDS_PAGE_SIZE, type LeaveFilters } from "./leave-address";
+import {
+  LEAVE_CARDS_PAGE_SIZE,
+  type LeaveFilters,
+  type StatusChoice,
+} from "./leave-address";
 import { type LeaveCard, type ReturnWords, warningsOf } from "./leave-card";
 import { coveredActivities } from "./leave-cover";
 import { APPROVED_STATUSES } from "./leave-ids";
@@ -37,13 +41,25 @@ import { rowOfLeave } from "./leave-row";
 import { readActivityRows } from "./leave-store";
 import { campusTimeOf } from "./leave-time";
 import { type ReportCard, reportCardOf } from "./return-card";
-import { isOpenReport, isOut, timelinessOf } from "./return-rules";
+import { lateAt, outAt, REPORT_WAITING } from "./return-conditions";
+import {
+  isLateReturn,
+  isOpenReport,
+  isOut,
+  timelinessOf,
+} from "./return-rules";
 import { type LatestStoredReport, readLatestReports } from "./return-store";
 
-/** The two numbers above the list. */
+/** The numbers above the list. */
 export interface LeaveCounts {
   /** Menunggu verifikasi: the requests that wait. */
   waiting: number;
+  /** Laporan kembali menunggu: reports of a return that wait for a check. */
+  waitingReports: number;
+  /** Sedang di luar: residents out on leave now. */
+  out: number;
+  /** Terlambat kembali: leave late now, those already back among them. */
+  late: number;
   /** Izin 30 hari terakhir: approved, Selesai or not, starting in the last 30 days. */
   recentApproved: number;
 }
@@ -81,19 +97,23 @@ async function readCounts(
   now: Date,
 ): Promise<LeaveCounts> {
   const since = new Date(now.getTime() - DAYS_COUNTED * DAY_MS);
-  const [waiting, recentApproved] = await Promise.all([
-    countWhere(db, and(visible, eq(dormLeaves.status, "submitted"))),
-    countWhere(
-      db,
-      and(
-        visible,
-        inArray(dormLeaves.status, APPROVED_STATUSES),
-        gte(dormLeaves.startsAt, since),
-        lte(dormLeaves.startsAt, now),
+  const [waiting, waitingReports, out, late, recentApproved] =
+    await Promise.all([
+      countWhere(db, and(visible, eq(dormLeaves.status, "submitted"))),
+      countWhere(db, and(visible, REPORT_WAITING)),
+      countWhere(db, and(visible, outAt(now))),
+      countWhere(db, and(visible, lateAt(now))),
+      countWhere(
+        db,
+        and(
+          visible,
+          inArray(dormLeaves.status, APPROVED_STATUSES),
+          gte(dormLeaves.startsAt, since),
+          lte(dormLeaves.startsAt, now),
+        ),
       ),
-    ),
-  ]);
-  return { waiting, recentApproved };
+    ]);
+  return { waiting, waitingReports, out, late, recentApproved };
 }
 
 function ofStudentFound(query: string): SQL | undefined {
@@ -102,11 +122,31 @@ function ofStudentFound(query: string): SQL | undefined {
   return or(ilike(students.name, pattern), ilike(students.nim, pattern));
 }
 
-function matching(filters: LeaveFilters, visible: SQL): SQL | undefined {
+/** The leave a status choice narrows the list to, at a moment. */
+function ofStatus(status: StatusChoice, now: Date): SQL | undefined {
+  switch (status) {
+    case "all":
+      return undefined;
+    case "reports":
+      return REPORT_WAITING;
+    case "out":
+      return outAt(now);
+    case "late":
+      return lateAt(now);
+    default:
+      return eq(dormLeaves.status, status);
+  }
+}
+
+function matching(
+  filters: LeaveFilters,
+  visible: SQL,
+  now: Date,
+): SQL | undefined {
   const { status, kind, query } = filters;
   return and(
     visible,
-    status === "all" ? undefined : eq(dormLeaves.status, status),
+    ofStatus(status, now),
     kind === "all" ? undefined : eq(dormLeaves.kind, kind),
     ofStudentFound(query),
   );
@@ -220,6 +260,7 @@ function cardOf(
       ? null
       : { by: row.decidedBy, note: leave.decisionNote };
   const latest = reports.get(leave.id);
+  const waiting = isOpenReport(latest?.report ?? null) ? latest : undefined;
   return {
     ...rowOfLeave(leave, covered),
     name: row.name,
@@ -228,7 +269,8 @@ function cardOf(
     decision,
     warnings: warningsOf({ ...leave, ...span }, now),
     report: reportOf(latest, leave.endsAt),
-    isOut: isOut(leave, isOpenReport(latest?.report ?? null), now),
+    isOut: isOut(leave, waiting !== undefined, now),
+    isLate: isLateReturn(leave, waiting?.report ?? null, now),
     returned: returnedOf(row),
   };
 }
@@ -236,7 +278,7 @@ function cardOf(
 /**
  * Perizinan asrama as staff see it, among the students `visible` holds:
  * for Ketua Program Studi those of their own program only. The numbers
- * Menunggu verifikasi and Izin 30 hari terakhir, and one page of the
+ * above the list, and one page of the
  * cards that match the filters, each with where the student lives today,
  * for ITMK the activities of their dorm it covers, and for the other
  * kinds the latest report of a return with who checked it. A fixed number
@@ -250,7 +292,7 @@ export async function readLeaveBoard(
   page: number,
   now: Date,
 ): Promise<LeaveBoard> {
-  const condition = matching(filters, visible);
+  const condition = matching(filters, visible, now);
   const [counts, total, dormCohorts] = await Promise.all([
     readCounts(db, visible, now),
     countWhere(db, condition),

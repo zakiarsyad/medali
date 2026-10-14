@@ -21,8 +21,9 @@ function onlySees(rights: LeaveRights): boolean {
 }
 
 /**
- * Perizinan asrama for staff: the numbers Menunggu verifikasi and Izin 30
- * hari terakhir, the search with the status and kind choices, and one
+ * Perizinan asrama for staff: the numbers Menunggu verifikasi, Laporan
+ * kembali menunggu, Sedang di luar, Terlambat kembali and Izin 30 hari
+ * terakhir, the search with the status and kind choices, and one
  * page of request cards. Pengelola Asrama approves and rejects there,
  * BAM - BPHK verifies reports of a return and Pengelola validates them,
  * and both record a return directly; every other role only reads.
@@ -59,6 +60,21 @@ export function StaffLeaveScreen({
           label="Menunggu verifikasi"
           amount={counts.waiting}
           note="pengajuan"
+        />
+        <NumberCard
+          label="Laporan kembali menunggu"
+          amount={counts.waitingReports}
+          note="verifikasi BAM atau validasi"
+        />
+        <NumberCard
+          label="Sedang di luar"
+          amount={counts.out}
+          note="izin disetujui"
+        />
+        <NumberCard
+          label="Terlambat kembali"
+          amount={counts.late}
+          note="termasuk yang sudah kembali"
         />
         <NumberCard
           label="Izin 30 hari terakhir"

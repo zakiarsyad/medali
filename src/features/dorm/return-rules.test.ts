@@ -13,6 +13,7 @@ import {
   reportNotOpen,
 } from "./return-messages";
 import {
+  isLateReturn,
   isOut,
   type LatestReport,
   lateMinutes,
@@ -133,6 +134,40 @@ describe("isOut", () => {
     for (const status of ["completed", "submitted", "cancelled"] as const) {
       expect(isOut({ ...OUTING, status }, false, now)).toBe(false);
     }
+  });
+});
+
+describe("isLateReturn", () => {
+  const NOW = on("2026-10-14T17:00");
+
+  it("is late out past the return time, and not before it", () => {
+    expect(isLateReturn(OUTING, null, NOW)).toBe(true);
+    expect(isLateReturn(OUTING, null, on("2026-10-14T16:00"))).toBe(false);
+  });
+
+  it("goes by the time of a report that waits, or of the actual return", () => {
+    expect(isLateReturn(OUTING, { sentAt: on("2026-10-14T15:55") }, NOW)).toBe(
+      false,
+    );
+    expect(isLateReturn(OUTING, { sentAt: on("2026-10-14T16:05") }, NOW)).toBe(
+      true,
+    );
+    const back = { ...OUTING, status: "completed" as const };
+    expect(
+      isLateReturn({ ...back, returnedAt: on("2026-10-14T16:20") }, null, NOW),
+    ).toBe(true);
+    expect(
+      isLateReturn({ ...back, returnedAt: on("2026-10-14T15:20") }, null, NOW),
+    ).toBe(false);
+  });
+
+  it("is never late for ITMK, nor for leave that is not approved", () => {
+    expect(
+      isLateReturn({ ...OUTING, kind: "skip_activities" }, null, NOW),
+    ).toBe(false);
+    expect(isLateReturn({ ...OUTING, status: "cancelled" }, null, NOW)).toBe(
+      false,
+    );
   });
 });
 

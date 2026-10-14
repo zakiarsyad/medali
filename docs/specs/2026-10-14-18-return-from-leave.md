@@ -104,4 +104,4 @@ return directly, and see who is still out and who is late.
 - [x] 4. BAM - BPHK verifies and rejects; Pengelola validates and
   rejects.
 - [x] 5. "Catat sudah kembali" records a return directly.
-- [ ] 6. The out and late numbers, labels and filters show.
+- [x] 6. The out and late numbers, labels and filters show.

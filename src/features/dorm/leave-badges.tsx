@@ -43,6 +43,15 @@ export function TimelinessBadge({ timeliness }: { timeliness: Timeliness }) {
   return <span className={`${shared.badge} ${look}`}>{timeliness.words}</span>;
 }
 
+/** In place of Disetujui while the resident is out on the leave. */
+export function OutBadge() {
+  return <span className={`${shared.badge} ${styles.ok}`}>Di luar asrama</span>;
+}
+
+export function LateBadge() {
+  return <span className={`${shared.badge} ${styles.bad}`}>Terlambat</span>;
+}
+
 export function KindBadge({ kind }: { kind: LeaveKind }) {
   return (
     <span className={`${shared.badge} ${styles.plain}`}>

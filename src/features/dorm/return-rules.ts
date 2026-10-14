@@ -104,6 +104,22 @@ export function isOut(
 }
 
 /**
+ * Whether a leave is late at a moment: back after its return time,
+ * reported after it, or out past it. ITMK is never late.
+ */
+export function isLateReturn(
+  leave: ReturningLeave & { returnedAt: Date | null },
+  openReport: Pick<LatestReport, "sentAt"> | null,
+  now: Date,
+): boolean {
+  if (!needsReturn(leave.kind)) return false;
+  if (leave.returnedAt !== null) return leave.returnedAt > leave.endsAt;
+  if (leave.status !== "approved") return false;
+  if (openReport !== null) return openReport.sentAt > leave.endsAt;
+  return leave.startsAt <= now && leave.endsAt < now;
+}
+
+/**
  * Why "Catat sudah kembali" is refused for a leave at a moment, or null
  * when the return may be recorded: the resident must be out, and the
  * time of the return must lie between the start and now.

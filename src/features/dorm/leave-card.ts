@@ -28,6 +28,8 @@ export interface LeaveCard extends LeaveRow {
   report: ReportCard | null;
   /** Whether the resident is out on it now, with no report that waits. */
   isOut: boolean;
+  /** Whether its return is late: out past the return time, or reported or back after it. */
+  isLate: boolean;
   /** The actual return of leave that is Selesai; null before it. */
   returned: ReturnWords | null;
 }

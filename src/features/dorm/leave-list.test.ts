@@ -116,7 +116,7 @@ describe("readLeaveBoard", () => {
 
       const board = await readLeaveBoard(db, EVERYONE, WAITING, 1, NOW);
 
-      expect(board.counts).toEqual({ waiting: 2, recentApproved: 2 });
+      expect(board.counts).toMatchObject({ waiting: 2, recentApproved: 2 });
     });
   });
 

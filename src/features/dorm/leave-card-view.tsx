@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 import styles from "./leave.module.css";
-import { KindBadge, StatusBadge, TimelinessBadge } from "./leave-badges";
+import {
+  KindBadge,
+  LateBadge,
+  OutBadge,
+  StatusBadge,
+  TimelinessBadge,
+} from "./leave-badges";
 import type { LeaveCard } from "./leave-card";
 import { coveredWords } from "./leave-cover";
 import { timeLabels } from "./leave-words";
@@ -26,7 +32,8 @@ function orDash(words: string): string {
 
 /**
  * One request as staff see it: the student and where they live, its
- * kind and status, the times with the length, Keperluan, and Tujuan and
+ * kind and status, or Di luar asrama while the resident is out, with
+ * Terlambat when the return is late, the times with the length, Keperluan, and Tujuan and
  * Kontak or, for ITMK, the dorm activities it covers. Who decided it and
  * their note, the actual return with who recorded it, and any warning,
  * follow. `children` holds what the card offers below that.
@@ -51,7 +58,8 @@ export function LeaveCardView({
         </div>
         <div className={styles.badges}>
           <KindBadge kind={card.kind} />
-          <StatusBadge status={card.status} />
+          {card.isOut ? <OutBadge /> : <StatusBadge status={card.status} />}
+          {card.isLate && <LateBadge />}
         </div>
       </div>
       <dl className={styles.facts}>

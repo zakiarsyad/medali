@@ -174,6 +174,7 @@ function LeaveCardItem({
         <RecordReturnForm
           leaveId={card.id}
           end={card.end}
+          isLate={card.isLate}
           asOf={asOf}
           onAnswer={setRecordAnswer}
         />

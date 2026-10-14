@@ -15,12 +15,15 @@ import { recordReturnAction } from "./leave-actions";
 export function RecordReturnForm({
   leaveId,
   end,
+  isLate,
   asOf,
   onAnswer,
 }: {
   leaveId: string;
   /** The return time of the leave, as the screens show it. */
   end: string;
+  /** Whether the return time has passed. */
+  isLate: boolean;
   /** The moment the page was read, as a time on campus. */
   asOf: string;
   onAnswer: (state: FormState) => void;
@@ -54,7 +57,9 @@ export function RecordReturnForm({
       >
         Catat sudah kembali
       </button>
-      <span className={styles.quietLine}>Batas kembali {end}</span>
+      <span className={styles.quietLine}>
+        {isLate ? `Melewati batas kembali ${end}` : `Batas kembali ${end}`}
+      </span>
     </div>
   );
 }

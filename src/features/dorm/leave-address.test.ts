@@ -27,6 +27,22 @@ describe("readLeaveListParams", () => {
     });
   });
 
+  it("reads the choices of the return from leave, and writes them back the same", () => {
+    const named = {
+      "laporan-kembali": "reports",
+      "di-luar": "out",
+      terlambat: "late",
+    };
+    for (const [address, status] of Object.entries(named)) {
+      const params = readLeaveListParams({ status: address });
+
+      expect(params.filters.status).toBe(status);
+      expect(leaveListAddress(params.filters)).toBe(
+        `/asrama/izin?status=${address}`,
+      );
+    }
+  });
+
   it("takes what it does not understand as not chosen", () => {
     expect(
       readLeaveListParams({
