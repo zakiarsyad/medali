@@ -1,0 +1,67 @@
+.note {
+  composes: note from "./rooms.module.css";
+}
+
+.switch {
+  composes: switch from "./rooms.module.css";
+}
+
+.choice {
+  composes: choice from "./rooms.module.css";
+}
+
+.head {
+  composes: head from "./rooms.module.css";
+}
+
+.title {
+  composes: title from "./rooms.module.css";
+}
+
+.sub {
+  composes: quietLine from "./rooms.module.css";
+}
+
+/* One box per dorm, side by side, and one column on a phone. */
+.boxes {
+  composes: cards from "./rooms.module.css";
+}
+
+.box {
+  composes: card from "./rooms.module.css";
+}
+
+.places {
+  composes: residents from "./rooms.module.css";
+}
+
+/* A name typed as one long word folds, so the box never grows wider. */
+.place {
+  composes: resident from "./rooms.module.css";
+}
+
+.placeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+}
+
+.renameForm {
+  composes: roomForm from "./rooms.module.css";
+  flex: 1 1 100%;
+  margin-top: 0;
+}
+
+.quiet {
+  composes: quietLine from "./rooms.module.css";
+}
+
+/* What a change says, with "Urungkan" beside it after a removal. */
+.said {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  margin-top: var(--space-md);
+}
