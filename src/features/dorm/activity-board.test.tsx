@@ -6,7 +6,12 @@ import { ActivityBoard, type FormParts } from "./activity-board";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
-vi.mock("./activity-actions", () => ({ saveActivityAction: vi.fn() }));
+vi.mock("./activity-actions", () => ({
+  saveActivityAction: vi.fn(),
+  markDayOffAction: vi.fn(),
+  removeActivityAction: vi.fn(),
+  restoreActivityAction: vi.fn(),
+}));
 
 const NOW = { day: "2026-10-14", time: "18:00" };
 const RESIDENTS = {
@@ -172,6 +177,18 @@ describe("the board for Pengelola Asrama", () => {
 
     expect(board(DAILY, FORM).match(/>Ubah<\/button>/g)).toHaveLength(2);
     expect(board(routines, FORM).match(/>Ubah<\/button>/g)).toHaveLength(1);
+  });
+
+  it("offers Tiada kegiatan on each repeating activity of the day, and on no one-off one", () => {
+    const shown = board(DAILY, FORM);
+
+    expect(shown.match(/>Tiada kegiatan<\/button>/g)).toHaveLength(1);
+  });
+
+  it("offers Tiada kegiatan in Jadwal harian only", () => {
+    const routines: ActivitiesView = { view: "rutin", routines: [TEST_ROW] };
+
+    expect(board(routines, FORM)).not.toContain("Tiada kegiatan");
   });
 
   it("offers no Ubah on a one-off activity of a day gone by, nor on an earlier version", () => {

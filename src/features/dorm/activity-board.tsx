@@ -7,8 +7,19 @@ import { FormMessage } from "@/ui/form-message";
 import styles from "./activities.module.css";
 import { type ActivitiesParams, activitiesAddress } from "./activities-address";
 import type { ActivitiesView } from "./activities-view";
+import {
+  DayOffButton,
+  RemoveActivityButton,
+  RestoreActivityButton,
+} from "./activity-buttons";
 import { ActivityForm, type FormTarget } from "./activity-form";
-import { type ActivityRow, isRoutine, mayChange } from "./activity-row";
+import {
+  type ActivityRow,
+  isRoutine,
+  mayChange,
+  mayMarkDayOff,
+} from "./activity-row";
+import { dayWords } from "./activity-words";
 import { DailyPanel } from "./daily-panel";
 import { OneOffPanel } from "./one-off-panel";
 import { RoutinePanel } from "./routine-panel";
@@ -21,6 +32,13 @@ export interface FormParts {
 }
 
 type ActionsOf = ((activity: ActivityRow) => ReactNode) | null;
+
+/** What the board says after a change. */
+interface Said {
+  text: string;
+  /** The activity "Urungkan" brings back, after a removal only. */
+  removedId: string | null;
+}
 
 /** The list the address asks for. */
 function OpenList({
@@ -100,8 +118,10 @@ export function ActivityBoard({
   form: FormParts | null;
 }) {
   const [target, setTarget] = useState<FormTarget | null>(null);
-  const [said, setSaid] = useState<string | null>(null);
+  const [said, setSaid] = useState<Said | null>(null);
   const panel = useRef<HTMLElement>(null);
+  // "Tiada kegiatan" is for one day, so only Jadwal harian offers it.
+  const dayShown = view.view === "harian" ? view.day : null;
 
   // The form is above the list, so "Ubah" far down brings it into view.
   useEffect(() => {
@@ -113,21 +133,33 @@ export function ActivityBoard({
     setTarget(opened);
   }
 
-  function closeWith(message: string) {
-    setSaid(message);
+  function closeWith(text: string, removedId: string | null = null) {
+    setSaid({ text, removedId });
     setTarget(null);
   }
 
   function rowActions(activity: ActivityRow): ReactNode {
-    if (!mayChange(activity, now.day)) return null;
     const change = () => openFor({ isRoutine: isRoutine(activity), activity });
     return (
-      <button type="button" className={shared.link} onClick={change}>
-        Ubah
-      </button>
+      <>
+        {mayChange(activity, now.day) && (
+          <button type="button" className={shared.link} onClick={change}>
+            Ubah
+          </button>
+        )}
+        {dayShown !== null && mayMarkDayOff(activity) && (
+          <DayOffButton
+            id={activity.id}
+            day={dayShown}
+            question={`Tandai ${dayWords(dayShown)} tidak ada ${activity.name.toLowerCase()}?`}
+            onDone={(text) => closeWith(text)}
+          />
+        )}
+      </>
     );
   }
 
+  const removing = target?.activity;
   return (
     <>
       <div className={styles.toolbar}>
@@ -140,7 +172,13 @@ export function ActivityBoard({
       </div>
       {said && (
         <div className={styles.message}>
-          <FormMessage state={{ error: null, done: said }} />
+          <FormMessage state={{ error: null, done: said.text }} />
+          {said.removedId && (
+            <RestoreActivityButton
+              id={said.removedId}
+              onRestored={(text) => closeWith(text)}
+            />
+          )}
         </div>
       )}
       {form && target && (
@@ -156,9 +194,17 @@ export function ActivityBoard({
             target={target}
             newActivityId={form.newActivityId}
             day={params.day}
-            onSaved={closeWith}
+            onSaved={(text) => closeWith(text)}
             onCancel={() => setTarget(null)}
-            removal={null}
+            removal={
+              removing &&
+              mayChange(removing, now.day) && (
+                <RemoveActivityButton
+                  id={removing.id}
+                  onRemoved={(text) => closeWith(text, removing.id)}
+                />
+              )
+            }
           />
         </section>
       )}

@@ -14,6 +14,8 @@ import { isOutdatedList } from "./activity-messages";
 import { savedWords } from "./activity-words";
 import { addActivity } from "./add-activity";
 import { changeActivity } from "./change-activity";
+import { markDayOff } from "./mark-day-off";
+import { removeActivity, restoreActivity } from "./remove-activity";
 
 async function activityManager(): Promise<Account> {
   const account = await currentAccount();
@@ -71,4 +73,31 @@ export async function saveActivityAction(
   if (!saved.ok) return refusal(saved.error);
   revalidatePath(ACTIVITIES_ADDRESS);
   return { error: null, done: savedWords(saved.value) };
+}
+
+export async function markDayOffAction(
+  id: string,
+  day: string,
+): Promise<FormState> {
+  const manager = await activityManager();
+  const marked = await markDayOff(database(), manager, id, day);
+  if (!marked.ok) return refusal(marked.error);
+  revalidatePath(ACTIVITIES_ADDRESS);
+  return { error: null, done: marked.value };
+}
+
+export async function removeActivityAction(id: string): Promise<FormState> {
+  const manager = await activityManager();
+  const removed = await removeActivity(database(), manager, id);
+  if (!removed.ok) return refusal(removed.error);
+  revalidatePath(ACTIVITIES_ADDRESS);
+  return { error: null, done: "Kegiatan dihapus." };
+}
+
+export async function restoreActivityAction(id: string): Promise<FormState> {
+  const manager = await activityManager();
+  const restored = await restoreActivity(database(), manager, id);
+  if (!restored.ok) return refusal(restored.error);
+  revalidatePath(ACTIVITIES_ADDRESS);
+  return { error: null, done: "Kegiatan dikembalikan ke jadwal." };
 }

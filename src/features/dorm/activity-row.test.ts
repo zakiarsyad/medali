@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isCurrent, isRoutine, mayChange } from "./activity-row";
+import { isCurrent, isRoutine, mayChange, mayMarkDayOff } from "./activity-row";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
 
 const TODAY = "2026-10-14";
@@ -17,6 +17,19 @@ describe("isCurrent", () => {
     expect(isCurrent(TEST_ROW)).toBe(true);
     expect(isCurrent({ ...TEST_ROW, shownUntil: "2026-10-13" })).toBe(false);
     expect(isCurrent({ ...TEST_ROW, removedFrom: TODAY })).toBe(false);
+  });
+});
+
+describe("mayMarkDayOff", () => {
+  it("offers Tiada kegiatan on a repeating activity, also on an earlier version of it", () => {
+    expect(mayMarkDayOff(TEST_ROW)).toBe(true);
+    const earlier = { ...TEST_ROW, shownUntil: "2026-10-13" };
+    expect(mayMarkDayOff(earlier)).toBe(true);
+  });
+
+  it("offers it on no one-off activity, and on no removed one", () => {
+    expect(mayMarkDayOff(TEST_ONE_OFF)).toBe(false);
+    expect(mayMarkDayOff({ ...TEST_ROW, removedFrom: TODAY })).toBe(false);
   });
 });
 

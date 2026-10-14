@@ -41,6 +41,16 @@ export const ONE_OFF_BEFORE_TODAY = {
   error: "Tanggal kegiatan non rutin tidak boleh sebelum hari ini.",
 } as const;
 
+export const ONLY_ROUTINE_HAS_DAYS_OFF = {
+  ok: false,
+  error: "Hanya kegiatan rutin yang dapat ditandai tidak ada kegiatan.",
+} as const;
+
+export const NO_DAY_PICKED = {
+  ok: false,
+  error: "Pilih tanggal yang benar.",
+} as const;
+
 export const KIND_KEPT = {
   ok: false,
   error:

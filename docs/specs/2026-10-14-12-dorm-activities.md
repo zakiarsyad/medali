@@ -100,5 +100,5 @@ residents see what is on today and next.
   schedule with "Rincian", read only.
 - [x] 4. The form adds and changes repeating and one-off activities;
   a change leaves past dates as they were.
-- [ ] 5. "Tiada kegiatan" and "Hapus kegiatan" with undo work.
+- [x] 5. "Tiada kegiatan" and "Hapus kegiatan" with undo work.
 - [ ] 6. Residents see Hari ini and Akan datang.

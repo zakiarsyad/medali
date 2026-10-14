@@ -72,3 +72,14 @@ export function mayChange(
   if (!isCurrent(row)) return false;
   return isRoutine(row) || row.startsOn >= today;
 }
+
+/**
+ * Whether "Tiada kegiatan" is offered for a row of a day: the activity
+ * repeats and is not removed. A day gone by can be marked too, as in the
+ * prototype: it says the activity did not take place then.
+ */
+export function mayMarkDayOff(
+  row: Pick<ActivityRow, "removedFrom" | "pattern">,
+): boolean {
+  return isRoutine(row) && row.removedFrom === null;
+}
