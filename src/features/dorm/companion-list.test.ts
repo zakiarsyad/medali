@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2510 to 2510.
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -16,16 +17,16 @@ const inTestDatabase = withTestDatabase();
 
 /*
  * A period far from those of any other file of checks, so these wait for
- * none of them. Angkatan 2059 is in semester 3 in it.
+ * none of them. Angkatan 2509 is in semester 3 in it.
  */
-const ODD_2060 = {
-  startYear: 2060,
+const ODD_2510 = {
+  startYear: 2510,
   term: "odd",
-  startsOn: "2060-08-01",
-  endsOn: "2061-01-31",
+  startsOn: "2510-08-01",
+  endsOn: "2511-01-31",
 } as const;
-const DAY = "2060-10-12";
-const BEFORE_ANY_PERIOD = "2060-01-01";
+const DAY = "2510-10-12";
+const BEFORE_ANY_PERIOD = "2510-01-01";
 
 interface TestRows {
   ownProgram: number;
@@ -37,25 +38,25 @@ interface TestRows {
  * another program without one, and a woman who is not active.
  */
 async function addTestRows(db: Database): Promise<TestRows> {
-  await db.insert(academicPeriods).values(ODD_2060);
+  await db.insert(academicPeriods).values(ODD_2510);
   const ownProgram = await addTestProgram(db, "Prodi Uji Kakak Sendiri");
   const otherProgram = await addTestProgram(db, "Prodi Uji Kakak Lain");
   const roomId = await addTestRoom(db, { number: "KD201", floor: 2 });
   const inRoom = await addTestStudent(db, ownProgram, {
     nim: "9931590002",
     name: "Sinta Uji",
-    cohortYear: 2059,
+    cohortYear: 2509,
   });
   const man = await addTestStudent(db, otherProgram, {
     nim: "9931590001",
     name: "Bima Uji",
     sex: "male",
-    cohortYear: 2059,
+    cohortYear: 2509,
   });
   const stopped = await addTestStudent(db, ownProgram, {
     nim: "9931590003",
     name: "Ajeng Uji",
-    cohortYear: 2059,
+    cohortYear: 2509,
   });
   await addTestCompanion(db, stopped, { isActive: false });
   await addTestCompanion(db, man, { dorm: "cipta_bakti" });
@@ -174,7 +175,7 @@ describe("listCompanions", () => {
         const id = await addTestStudent(db, program, {
           nim: `99315800${number}`,
           name: `Kakak Uji ${number}`,
-          cohortYear: 2058,
+          cohortYear: 2508,
         });
         await addTestCompanion(db, id);
       }

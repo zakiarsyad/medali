@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2210 to 2210.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";

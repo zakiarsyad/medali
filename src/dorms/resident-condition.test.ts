@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2460 to 2460.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { studentSemester } from "@/academic-periods/student-semester";
@@ -6,14 +7,23 @@ import { withTestDatabase } from "@/db/test-database";
 import { readDormCohorts } from "./dorm-cohorts";
 import { dormInSql, livesIn } from "./resident-condition";
 import { dormOf } from "./resident-rule";
-import { addTestProgram, addTestStudent, DAY, ODD_2026 } from "./test-records";
+import { addTestProgram, addTestStudent } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
+
+/** The period the checks run in: angkatan 2460 is in semester 1. */
+const ODD_2460 = {
+  startYear: 2460,
+  term: "odd",
+  startsOn: "2460-08-01",
+  endsOn: "2461-01-31",
+} as const;
+const DAY = "2460-10-12";
 
 const STATUSES = ["active", "on_leave", "inactive"] as const;
 const PATHS = ["regular", "transfer"] as const;
 const SEXES = ["female", "male"] as const;
-const COHORTS = [2026, 2025, 2023];
+const COHORTS = [2460, 2459, 2457];
 const YES_NO = [false, true];
 
 type NewStudent = Omit<typeof students.$inferInsert, "studyProgramId">;
@@ -50,19 +60,23 @@ function everyKindOfStudent(): NewStudent[] {
 describe("readDormCohorts", () => {
   it("gives the angkatan in semester 1 or 2 of the running period", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2026);
+      await db.insert(academicPeriods).values(ODD_2460);
       const program = await addTestProgram(db, "Prodi Uji Asrama B");
-      await addTestStudent(db, program, { nim: "9922260001", name: "Uji A" });
+      await addTestStudent(db, program, {
+        nim: "9922260001",
+        name: "Uji A",
+        cohortYear: 2460,
+      });
       await addTestStudent(db, program, {
         nim: "9922250001",
         name: "Uji B",
-        cohortYear: 2025,
+        cohortYear: 2459,
       });
 
       const cohorts = await readDormCohorts(db, DAY);
 
-      expect(cohorts).toContain(2026);
-      expect(cohorts).not.toContain(2025);
+      expect(cohorts).toContain(2460);
+      expect(cohorts).not.toContain(2459);
     });
   });
 
@@ -79,7 +93,7 @@ describe("readDormCohorts", () => {
 describe("dormInSql", () => {
   it("gives every kind of student the dorm the rule gives", async () => {
     await inTestDatabase(async (db) => {
-      await db.insert(academicPeriods).values(ODD_2026);
+      await db.insert(academicPeriods).values(ODD_2460);
       const studyProgramId = await addTestProgram(db, "Prodi Uji Asrama B");
       const kinds = everyKindOfStudent();
       await db
@@ -94,7 +108,7 @@ describe("dormInSql", () => {
 
       expect(rows).toHaveLength(kinds.length);
       for (const { student, dorm } of rows) {
-        const semester = studentSemester(student.cohortYear, ODD_2026);
+        const semester = studentSemester(student.cohortYear, ODD_2460);
         expect(dorm).toBe(dormOf(student, semester));
       }
     });

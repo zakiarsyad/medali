@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2640 to 2641.
 // Sample NIMs of this file: 9962000100 to 9962000199.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -76,7 +77,7 @@ async function addRecords(db: Database): Promise<Records> {
     memberIds: [other],
     mentorId: mentor.id,
   });
-  const period = await addTestPeriod(db, 2072);
+  const period = await addTestPeriod(db, 2641);
   return {
     mentorId: mentor.id,
     groupId,
@@ -137,7 +138,7 @@ describe("readMeetings and readMarks", () => {
       const of = { groupId, periodId: period.id, savedBy };
       const third = await addTestMeeting(
         db,
-        { ...of, number: 3, heldOn: "2072-09-20", topic: "Topik tiga" },
+        { ...of, number: 3, heldOn: "2641-09-20", topic: "Topik tiga" },
         { [records.ani]: "present", [records.budi]: "sick" },
       );
       const first = await addTestMeeting(db, { ...of, number: 1 });
@@ -150,7 +151,7 @@ describe("readMeetings and readMarks", () => {
         {
           id: third,
           number: 3,
-          heldOn: "2072-09-20",
+          heldOn: "2641-09-20",
           topic: "Topik tiga",
           version: 1,
         },
@@ -168,7 +169,7 @@ describe("readMeetings and readMarks", () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const { groupId, otherGroupId, mentorId: savedBy, period } = records;
-      const earlier = await addTestPeriod(db, 2071);
+      const earlier = await addTestPeriod(db, 2640);
       await addTestMeeting(db, {
         groupId: otherGroupId,
         periodId: period.id,

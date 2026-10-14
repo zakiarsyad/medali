@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2360 to 2361.
 import { describe, expect, it } from "vitest";
 import { daysAfter } from "@/academic-periods/days-after";
 import type { Database } from "@/db/connect";
@@ -19,24 +20,24 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2159 and 2160, the
+ * This file's own sample values: the Tahun akademik 2360 and 2361, the
  * program UJIKEGIATANMHS and the NIMs 9972100000 to 9972100099.
  */
 
 const inTestDatabase = withTestDatabase();
 
-const TODAY = "2160-10-13";
+const TODAY = "2361-10-13";
 /** Ten in the morning on campus. */
-const NOW = new Date("2160-10-13T03:00:00Z");
+const NOW = new Date("2361-10-13T03:00:00Z");
 
 interface Records {
   staffId: string;
-  /** An activity of semester 3, which the student is in during Ganjil 2160. */
+  /** An activity of semester 3, which the student is in during Ganjil 2361. */
   activityId: string;
-  /** Ganjil 2160/2161, which runs today. */
+  /** Ganjil 2361/2161, which runs today. */
   periodId: string;
   programId: number;
-  /** A student of angkatan 2159. */
+  /** A student of angkatan 2360. */
   student: TestStudentAccount;
 }
 
@@ -45,12 +46,12 @@ async function addRecords(db: Database): Promise<Records> {
     "upk_staff",
   ]);
   const activityId = await addTestActivity(db, staff.id);
-  const periods = await addTestPeriods(db, 2160);
+  const periods = await addTestPeriods(db, 2361);
   const programId = await addTestProgram(db, "UJIKEGIATANMHS");
   const student = await addTestStudentAccount(db, programId, {
     nim: "9972100001",
     name: "Mahasiswa Uji Kegiatan",
-    cohortYear: 2159,
+    cohortYear: 2360,
   });
   return {
     staffId: staff.id,
@@ -139,7 +140,7 @@ describe("readStudentActivities", () => {
   it("shows only schedules meant for the student: not a removed one, not one of another semester, not one of their semester in another period", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const earlier = await addTestPeriods(db, 2159);
+      const earlier = await addTestPeriods(db, 2360);
       const firstSemester = await addTestActivity(db, records.staffId, {
         semester: 1,
         name: "Kegiatan uji semester satu",
@@ -212,7 +213,7 @@ describe("readStudentActivities", () => {
       const other = await addTestStudentAccount(db, records.programId, {
         nim: "9972100003",
         name: "Mahasiswa Uji Lain Klar",
-        cohortYear: 2159,
+        cohortYear: 2360,
       });
       const askedAgain = await addTestSchedule(db, scheduleIn(records, -5));
       const othersOnly = await addTestSchedule(db, scheduleIn(records, -6));
@@ -221,13 +222,13 @@ describe("readStudentActivities", () => {
         studentId,
         status: "rejected",
         note: "Surat tidak terbaca.",
-        sentAt: new Date("2160-10-10T03:00:00Z"),
+        sentAt: new Date("2361-10-10T03:00:00Z"),
       });
       await addTestClarification(db, staffId, {
         scheduleId: askedAgain,
         studentId,
         status: "submitted",
-        sentAt: new Date("2160-10-11T03:00:00Z"),
+        sentAt: new Date("2361-10-11T03:00:00Z"),
       });
       await addTestClarification(db, staffId, {
         scheduleId: othersOnly,
@@ -256,7 +257,7 @@ describe("readStudentActivities", () => {
         status: "rejected",
         fileKey: "attendance-clarifications/uji-riwayat-lama.pdf",
         fileName: "surat-lama.pdf",
-        sentAt: new Date("2160-10-10T03:00:00Z"),
+        sentAt: new Date("2361-10-10T03:00:00Z"),
       });
       const newest = await addTestClarification(db, staffId, {
         scheduleId: withFile,
@@ -264,7 +265,7 @@ describe("readStudentActivities", () => {
         status: "submitted",
         fileKey: "attendance-clarifications/uji-riwayat-baru.pdf",
         fileName: "surat-baru.pdf",
-        sentAt: new Date("2160-10-11T03:00:00Z"),
+        sentAt: new Date("2361-10-11T03:00:00Z"),
       });
       await addTestClarification(db, staffId, {
         scheduleId: withoutFile,
@@ -294,7 +295,7 @@ describe("readStudentActivities", () => {
       const other = await addTestStudentAccount(db, records.programId, {
         nim: "9972100002",
         name: "Mahasiswa Uji Lain",
-        cohortYear: 2159,
+        cohortYear: 2360,
       });
       const resent = await addTestSchedule(db, scheduleIn(records, -1));
       const notSent = await addTestSchedule(db, scheduleIn(records, -2));
@@ -303,13 +304,13 @@ describe("readStudentActivities", () => {
         studentId: student.studentId,
         status: "rejected",
         note: "Foto buram",
-        sentAt: new Date("2160-10-12T05:00:00Z"),
+        sentAt: new Date("2361-10-12T05:00:00Z"),
       });
       await addTestAttendance(db, staffId, {
         scheduleId: resent,
         studentId: student.studentId,
         status: "waiting",
-        sentAt: new Date("2160-10-12T06:00:00Z"),
+        sentAt: new Date("2361-10-12T06:00:00Z"),
       });
       await addTestAttendance(db, staffId, {
         scheduleId: notSent,
@@ -323,7 +324,7 @@ describe("readStudentActivities", () => {
         {
           status: "waiting",
           note: "",
-          sentAt: new Date("2160-10-12T06:00:00Z"),
+          sentAt: new Date("2361-10-12T06:00:00Z"),
         },
         null,
       ]);
@@ -334,7 +335,7 @@ describe("readStudentActivities", () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const { staffId, student } = records;
-      const earlier = await addTestPeriods(db, 2159);
+      const earlier = await addTestPeriods(db, 2360);
       const firstSemester = await addTestActivity(db, staffId, {
         semester: 1,
         name: "Kegiatan uji semester satu",
@@ -384,7 +385,7 @@ describe("readStudentActivities", () => {
       const onLeave = await addTestStudentAccount(db, records.programId, {
         nim: "9972100003",
         name: "Mahasiswa Uji Cuti",
-        cohortYear: 2159,
+        cohortYear: 2360,
         status: "on_leave",
       });
       await addTestSchedule(db, scheduleIn(records, 0));

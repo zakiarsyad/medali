@@ -74,9 +74,15 @@ Decided while building, because the issue did not say:
    are compared with the line at the top of its test file. A check
    that added a year its file does not name fails, and says which year
    and which file. So a test file added later cannot add a year
-   without naming it, and cannot name a year another file has.
-3. A sample Tahun akademik of a test file is from 2100 to 9999. The
-   years before 2100 are left to the app's sample data, which follows
+   without naming it, and cannot name a year another file has. One
+   kind of check is left out: a check that ends on a save the database
+   refused. The database answers nothing more after that, so the years
+   of that one check cannot be read.
+3. A sample Tahun akademik of a test file is from 2090 to 9999, not
+   from 2100 as first decided. The form that adds a period takes no
+   year after 2100, and two test files add their periods through it,
+   so they need years of their own that the form takes. The years
+   before 2090 are left to the app's sample data, which follows
    today's date. A test file that loads the app's sample data says so
    in its line at the top, and adds those years besides its own. Such
    files stay as they are: changing the sample data is not included,
@@ -88,9 +94,15 @@ Decided while building, because the issue did not say:
    be stopped this way. It keeps its years and gets no line.
 5. A test file whose years no other test file adds keeps them. The
    files renumbered are those that shared a year, and those that added
-   a year before 2100.
+   a year before 2090. Of two files that shared a year with each other
+   only, one is renumbered and the other keeps it.
 6. When a test file is renumbered, its dates, its names and its
-   expected words move with the year. The cases stay the same.
+   expected words move with the year. The cases stay the same. Where
+   a student's semester follows from the year, the angkatan moves
+   with it. Four test files took a period of 2026 from a shared helper;
+   each now writes its own period. One check asks for the period of
+   today with no day given, so its period keeps days in the past under
+   a year of its own.
 7. Two periods of different years can still wait for each other when
    their days overlap, because the database refuses overlapping days.
    Every test file gives a year its usual days, and no failure was
@@ -98,5 +110,5 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. Each test file that adds a sample Tahun akademik has years of
+- [x] 1. Each test file that adds a sample Tahun akademik has years of
   its own, with a check that no year is added by two test files.

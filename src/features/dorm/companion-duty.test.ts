@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2500 to 2500.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -256,27 +257,27 @@ describe("restartCompanion", () => {
 describe("restartCompanion for a student who no longer fits the duty", () => {
   /*
    * A period far from those of any other file of checks, so these wait
-   * for none of them. Angkatan 2064 is in semester 1 in it, angkatan 2063
+   * for none of them. Angkatan 2500 is in semester 1 in it, angkatan 2499
    * in semester 3.
    */
-  const ODD_2064 = {
-    startYear: 2064,
+  const ODD_2500 = {
+    startYear: 2500,
     term: "odd",
-    startsOn: "2064-08-01",
-    endsOn: "2065-01-31",
+    startsOn: "2500-08-01",
+    endsOn: "2501-01-31",
   } as const;
-  const DAY = "2064-10-12";
+  const DAY = "2500-10-12";
 
   type Facts = Partial<typeof students.$inferInsert>;
 
   /** A stopped kakak pendamping of Dana Rakca: a woman of semester 3, unless told otherwise. */
   async function addStoppedWith(db: Database, facts: Facts): Promise<string> {
-    await db.insert(academicPeriods).values(ODD_2064);
+    await db.insert(academicPeriods).values(ODD_2500);
     const program = await addTestProgram(db, "Prodi Uji Aktifkan Kakak");
     const studentId = await addTestStudent(db, program, {
       nim: "9939630001",
       name: "Sinta Uji",
-      cohortYear: 2063,
+      cohortYear: 2499,
       ...facts,
     });
     await addTestCompanion(db, studentId, { isActive: false });
@@ -295,7 +296,7 @@ describe("restartCompanion for a student who no longer fits the duty", () => {
   });
 
   it.each([
-    ["in semester 1", { cohortYear: 2064 }],
+    ["in semester 1", { cohortYear: 2500 }],
     ["Pembibitan", { isSeedling: true }],
     ["Internasional", { isInternational: true }],
   ] as [string, Facts][])(

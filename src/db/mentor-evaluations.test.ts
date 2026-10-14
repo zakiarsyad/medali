@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2410 to 2410.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "./connect";
@@ -35,19 +36,19 @@ async function addRecords(db: Database): Promise<Records> {
     .insert(mentorGroups)
     .values({
       studyProgramId: program.id,
-      cohortYear: 2061,
+      cohortYear: 2410,
       entryPath: "regular",
       number: 1,
-      startsOn: "2061-09-01",
+      startsOn: "2410-09-01",
     })
     .returning();
   const [period] = await db
     .insert(academicPeriods)
     .values({
-      startYear: 2061,
+      startYear: 2410,
       term: "odd",
-      startsOn: "2061-08-01",
-      endsOn: "2062-01-31",
+      startsOn: "2410-08-01",
+      endsOn: "2411-01-31",
     })
     .returning();
   if (!group || !period) throw new Error("The records were not added.");

@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2101 to 2101.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";

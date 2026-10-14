@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2650 to 2651.
 // Sample NIMs of this file: 9962000700 to 9962000799.
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
@@ -63,7 +64,7 @@ async function addRecords(db: Database): Promise<Records> {
     memberIds: [outsider],
     mentorId: otherMentor.id,
   });
-  const period = await addTestPeriod(db, 2076);
+  const period = await addTestPeriod(db, 2650);
   return {
     program,
     mentor,
@@ -81,7 +82,7 @@ describe("listScoredMembers", () => {
   it("lists the Aktif members of the group by name, each with the score kept for them in the period", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const scoredAt = new Date("2076-10-01T03:00:00Z");
+      const scoredAt = new Date("2650-10-01T03:00:00Z");
       await addTestScore(db, {
         studentId: records.budi,
         periodId: records.period.id,
@@ -138,7 +139,7 @@ describe("listScoredMembers", () => {
   it("shows no score of another period", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const earlier = await addTestPeriod(db, 2077);
+      const earlier = await addTestPeriod(db, 2651);
       await addTestScore(db, {
         studentId: records.ani,
         periodId: earlier.id,

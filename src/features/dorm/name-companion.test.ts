@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2530 to 2530.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -25,28 +26,28 @@ const NO_ROW = "00000000-0000-4000-8000-000000000000";
 
 /*
  * A period far from those of any other file of checks, so these wait for
- * none of them. Angkatan 2061 is in semester 1 in it, angkatan 2060 in
+ * none of them. Angkatan 2530 is in semester 1 in it, angkatan 2529 in
  * semester 3.
  */
-const ODD_2061 = {
-  startYear: 2061,
+const ODD_2530 = {
+  startYear: 2530,
   term: "odd",
-  startsOn: "2061-08-01",
-  endsOn: "2062-01-31",
+  startsOn: "2530-08-01",
+  endsOn: "2531-01-31",
 } as const;
-const DAY = "2061-10-12";
-const BEFORE_ANY_PERIOD = "2061-01-01";
+const DAY = "2530-10-12";
+const BEFORE_ANY_PERIOD = "2530-01-01";
 
 type TestStudent = Partial<typeof students.$inferInsert>;
 
 /** A Reguler woman of semester 3, unless told otherwise. */
 async function addSenior(db: Database, student: TestStudent = {}) {
-  await db.insert(academicPeriods).values(ODD_2061).onConflictDoNothing();
+  await db.insert(academicPeriods).values(ODD_2530).onConflictDoNothing();
   const program = await addTestProgram(db, "Prodi Uji Tetapkan Kakak");
   return addTestStudent(db, program, {
     nim: "9932600001",
     name: "Sinta Uji",
-    cohortYear: 2060,
+    cohortYear: 2529,
     ...student,
   });
 }
@@ -174,7 +175,7 @@ describe("nameCompanion", () => {
   });
 
   it.each([
-    ["in semester 1", { cohortYear: 2061 }],
+    ["in semester 1", { cohortYear: 2530 }],
     ["Pembibitan", { isSeedling: true }],
     ["Internasional", { isInternational: true }],
   ])("refuses a student who lives in a dorm: %s", async (_who, facts) => {

@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2092 to 2092.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS } from "@/auth/role-ids";
@@ -5,9 +6,18 @@ import { academicPeriodChanges, academicPeriods, accounts } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addPeriod } from "./add-period";
 import { NOT_ALLOWED } from "./not-allowed";
-import { addTestActor, SENT_PERIOD } from "./test-records";
+import type { SentPeriod } from "./period-input";
+import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
+
+/** A period as the form sends it, with nothing wrong in it. */
+const SENT_PERIOD: SentPeriod = {
+  year: "2092/2093",
+  term: "odd",
+  startsOn: "2092-08-01",
+  endsOn: "2093-01-31",
+};
 
 describe("addPeriod", () => {
   it("lets Kepala Unit add a period", async () => {
@@ -16,13 +26,13 @@ describe("addPeriod", () => {
 
       const added = await addPeriod(db, actor, SENT_PERIOD);
 
-      expect(added).toEqual({ ok: true, value: "Ganjil 2026/2027" });
+      expect(added).toEqual({ ok: true, value: "Ganjil 2092/2093" });
       expect(await db.select().from(academicPeriods)).toMatchObject([
         {
-          startYear: 2026,
+          startYear: 2092,
           term: "odd",
-          startsOn: "2026-08-01",
-          endsOn: "2027-01-31",
+          startsOn: "2092-08-01",
+          endsOn: "2093-01-31",
         },
       ]);
     });
@@ -47,8 +57,8 @@ describe("addPeriod", () => {
         action: "added",
         startsOnBefore: null,
         endsOnBefore: null,
-        startsOnAfter: "2026-08-01",
-        endsOnAfter: "2027-01-31",
+        startsOnAfter: "2092-08-01",
+        endsOnAfter: "2093-01-31",
       });
     });
   });
@@ -92,13 +102,13 @@ describe("addPeriod", () => {
 
       const again = await addPeriod(db, actor, {
         ...SENT_PERIOD,
-        startsOn: "2028-08-01",
-        endsOn: "2029-01-31",
+        startsOn: "2094-08-01",
+        endsOn: "2095-01-31",
       });
 
       expect(again).toEqual({
         ok: false,
-        error: "Periode Ganjil 2026/2027 sudah ada.",
+        error: "Periode Ganjil 2092/2093 sudah ada.",
       });
       expect(await db.select().from(academicPeriods)).toHaveLength(1);
       expect(await db.select().from(academicPeriodChanges)).toHaveLength(1);
@@ -106,10 +116,10 @@ describe("addPeriod", () => {
   });
 
   it.each([
-    ["starts on the last day of another", "2027-01-31", "2027-07-31"],
-    ["ends on the first day of another", "2026-02-01", "2026-08-01"],
-    ["lies inside another", "2026-09-01", "2026-10-01"],
-    ["covers another", "2026-07-01", "2027-03-01"],
+    ["starts on the last day of another", "2093-01-31", "2093-07-31"],
+    ["ends on the first day of another", "2092-02-01", "2092-08-01"],
+    ["lies inside another", "2092-09-01", "2092-10-01"],
+    ["covers another", "2092-07-01", "2093-03-01"],
   ])(
     "saves nothing when it %s, and says which",
     async (_what, startsOn, endsOn) => {
@@ -118,7 +128,7 @@ describe("addPeriod", () => {
         await addPeriod(db, actor, SENT_PERIOD);
 
         const added = await addPeriod(db, actor, {
-          year: "2026/2027",
+          year: "2092/2093",
           term: "even",
           startsOn,
           endsOn,
@@ -127,7 +137,7 @@ describe("addPeriod", () => {
         expect(added).toEqual({
           ok: false,
           error:
-            "Tanggal bertumpuk dengan periode Ganjil 2026/2027 (1 Agu 2026 – 31 Jan 2027). Pilih tanggal di luar periode itu.",
+            "Tanggal bertumpuk dengan periode Ganjil 2092/2093 (1 Agu 2092 – 31 Jan 2093). Pilih tanggal di luar periode itu.",
         });
         expect(await db.select().from(academicPeriods)).toHaveLength(1);
       });
@@ -140,13 +150,13 @@ describe("addPeriod", () => {
       await addPeriod(db, actor, SENT_PERIOD);
 
       const added = await addPeriod(db, actor, {
-        year: "2026/2027",
+        year: "2092/2093",
         term: "even",
-        startsOn: "2027-02-01",
-        endsOn: "2027-07-31",
+        startsOn: "2093-02-01",
+        endsOn: "2093-07-31",
       });
 
-      expect(added).toEqual({ ok: true, value: "Genap 2026/2027" });
+      expect(added).toEqual({ ok: true, value: "Genap 2092/2093" });
     });
   });
 });

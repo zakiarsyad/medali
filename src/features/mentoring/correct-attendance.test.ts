@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2630 to 2630.
 // Sample NIMs of this file: 9962000400 to 9962000499.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -52,7 +53,7 @@ function listOf(
   return {
     groupId: records.groupId,
     number: 1,
-    heldOn: "2074-09-10",
+    heldOn: "2630-09-10",
     topic: FIRST_TOPIC,
     version: 0,
     marks: { [records.ani]: "present", [records.budi]: "sick" },
@@ -77,7 +78,7 @@ async function addRecords(db: Database): Promise<Records> {
     memberIds: [ani, budi],
     mentorId: mentor.id,
   });
-  const period = await addTestPeriod(db, 2074);
+  const period = await addTestPeriod(db, 2630);
   const first = listOf({ groupId, ani, budi });
   const saved = await saveAttendance(db, mentor, first, period.day);
   if (!saved.ok) throw new Error("The first list was not saved.");
@@ -124,7 +125,7 @@ describe("Ubah daftar hadir", () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const changed = listOf(records, {
-        heldOn: "2074-09-12",
+        heldOn: "2630-09-12",
         topic: "Topik yang diperbaiki",
         version: 1,
         marks: { [records.ani]: "absent", [records.budi]: "present" },
@@ -142,7 +143,7 @@ describe("Ubah daftar hadir", () => {
       expect(meetings).toHaveLength(1);
       expect(meetings[0]).toMatchObject({
         id: records.meetingId,
-        heldOn: "2074-09-12",
+        heldOn: "2630-09-12",
         topic: "Topik yang diperbaiki",
         version: 2,
       });
@@ -157,7 +158,7 @@ describe("Ubah daftar hadir", () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const changed = listOf(records, {
-        heldOn: "2074-09-12",
+        heldOn: "2630-09-12",
         topic: "Topik yang diperbaiki",
         version: 1,
         marks: { [records.ani]: "absent", [records.budi]: "sick" },
@@ -169,10 +170,10 @@ describe("Ubah daftar hadir", () => {
       expect(lines).toHaveLength(2);
       expect(lines[1]).toMatchObject({
         changedBy: records.mentor.id,
-        heldOnBefore: "2074-09-10",
+        heldOnBefore: "2630-09-10",
         topicBefore: FIRST_TOPIC,
         marksBefore: { [records.ani]: "present", [records.budi]: "sick" },
-        heldOnAfter: "2074-09-12",
+        heldOnAfter: "2630-09-12",
         topicAfter: "Topik yang diperbaiki",
         marksAfter: { [records.ani]: "absent", [records.budi]: "sick" },
       });
@@ -272,7 +273,7 @@ describe("Ubah daftar hadir", () => {
       const newMentor = await addTestAccount(db, "Pengasuh Uji Pengganti", [
         "mentor",
       ]);
-      await replaceTestMentor(db, records.groupId, newMentor.id, "2074-10-01");
+      await replaceTestMentor(db, records.groupId, newMentor.id, "2630-10-01");
       const changed = listOf(records, { version: 1, topic: "Topik pengganti" });
 
       const byNew = await saveAttendance(
