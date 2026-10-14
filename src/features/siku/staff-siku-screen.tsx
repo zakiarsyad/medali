@@ -12,6 +12,7 @@ import {
 } from "./siku-address";
 import type { SikuList, SikuNumbers, SikuRanking } from "./siku-board";
 import { SikuFilterRow } from "./siku-filters";
+import { SikuInputTitle } from "./siku-input-title";
 import { SikuListTable } from "./siku-list-table";
 import { SikuRankingPanels } from "./siku-ranking";
 import { shownMean } from "./siku-words";
@@ -41,7 +42,7 @@ export function StaffSikuScreen({
   numbers: SikuNumbers;
   ranking: SikuRanking;
   list: SikuList;
-  /** The form of "Input nilai SIKU", or null for an account that only reads. */
+  /** "Input nilai SIKU" with its title, or null for an account that only reads. */
   form: ReactNode;
   history: ReactNode;
 }) {
@@ -75,12 +76,12 @@ export function StaffSikuScreen({
         />
       </NumberCards>
       <section className={shared.panel}>
-        <h2 className={shared.heading}>Input nilai SIKU</h2>
-        <p className={styles.sub}>
-          Semua mahasiswa mulai dari nilai dasar {base}. SIKU = {base} +
-          penambahan − pengurangan.
-        </p>
-        {form ?? <p className={styles.note}>{READ_ONLY_INPUT}</p>}
+        {form ?? (
+          <>
+            <SikuInputTitle base={base} />
+            <p className={styles.note}>{READ_ONLY_INPUT}</p>
+          </>
+        )}
       </section>
       <SikuRankingPanels ranking={ranking} params={params} base={base} />
       {history}

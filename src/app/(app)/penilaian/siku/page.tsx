@@ -22,6 +22,7 @@ import {
   readSeenStudents,
   readSikuHistory,
 } from "@/features/siku/siku-history";
+import { SikuInputPanel } from "@/features/siku/siku-input-panel";
 import { readGroupChoices } from "@/features/siku/siku-picks";
 import { StaffSikuScreen } from "@/features/siku/staff-siku-screen";
 
@@ -58,11 +59,16 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
       : readSeenStudents(db, visible, seenEntry, params.seenPage),
   ]);
   const form = mayAdjust ? (
-    <SikuForm
-      newEntryId={crypto.randomUUID()}
+    <SikuInputPanel
       base={base}
-      today={campusDay()}
-      groups={groups}
+      form={
+        <SikuForm
+          newEntryId={crypto.randomUUID()}
+          base={base}
+          today={campusDay()}
+          groups={groups}
+        />
+      }
     />
   ) : null;
   return (

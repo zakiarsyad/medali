@@ -79,7 +79,7 @@ Kepala Unit and Penilai Mahasiswa.
 
 - [x] 1. The rules that read the SIKU file and decide, row by row, ready
   or skipped and why, with checks.
-- [ ] 2. "Unggah berkas" shows with the note and "Unduh templat CSV".
+- [x] 2. "Unggah berkas" shows with the note and "Unduh templat CSV".
 - [ ] 3. Picking a file shows the preview and the skipped rows.
 - [ ] 4. "Simpan (n) baris" saves the rows as one history entry, which
   can be opened and cancelled.
@@ -124,3 +124,6 @@ Kepala Unit and Penilai Mahasiswa.
   gain or 1–4 for a loss is not recognized.
 - A file with too many rows or with no row says "baris penyesuaian SIKU"
   in its message, where Pengguna baru mahasiswa says "baris mahasiswa".
+- The note over the columns starts "Satu baris per penambahan atau
+  pengurangan", not the prototype's "Satu baris per mahasiswa", since a
+  student may have several rows.
