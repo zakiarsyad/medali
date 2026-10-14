@@ -56,10 +56,26 @@ describe("the leave form of a resident on a phone", () => {
   });
 });
 
+describe("the request cards of staff on a phone", () => {
+  it("stack in one column, and fold every long word and the row of badges", () => {
+    expect(read("staff-leave-screen.tsx")).toContain(
+      "<ul className={styles.cards}>",
+    );
+    expect(ruleOf(".cards")).toContain(
+      "minmax(min(100%, var(--column-min-width)), 1fr)",
+    );
+    expect(ruleOf(".card")).toContain("min-width: 0;");
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".cardHead")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".badges")).toContain("flex-wrap: wrap;");
+  });
+});
+
 describe("the screen parts of Perizinan asrama that run in the browser", () => {
   const PARTS = [
     `${FOLDER}/leave-form.tsx`,
     `${FOLDER}/cancel-leave-button.tsx`,
+    `${FOLDER}/leave-filters.tsx`,
   ];
 
   it("are found", () => {

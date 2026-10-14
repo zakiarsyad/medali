@@ -3,25 +3,10 @@ import { ListPager } from "@/ui/list-pager";
 import { CancelLeaveButton } from "./cancel-leave-button";
 import styles from "./leave.module.css";
 import { ownLeaveAddress } from "./leave-address";
-import type { LeaveStatus } from "./leave-ids";
+import { StatusBadge } from "./leave-badges";
 import { coveredCountWords, type LeaveRow } from "./leave-row";
-import { KIND_WORDS, STATUS_WORDS } from "./leave-words";
+import { KIND_WORDS } from "./leave-words";
 import type { OwnLeave } from "./own-leave";
-
-export const STATUS_STYLES: Record<LeaveStatus, string | undefined> = {
-  submitted: styles.warn,
-  approved: styles.ok,
-  rejected: styles.bad,
-  cancelled: styles.plain,
-};
-
-export function StatusBadge({ status }: { status: LeaveStatus }) {
-  return (
-    <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
-      {STATUS_WORDS[status]}
-    </span>
-  );
-}
 
 function OwnLeaveRow({ row }: { row: LeaveRow }) {
   return (
