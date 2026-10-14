@@ -18,6 +18,7 @@ import {
   dormActivityVersions,
   dormAttendanceCounts,
   dormAttendanceMarks,
+  dormClarifications,
   students,
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
@@ -26,6 +27,10 @@ import {
   type DayAttendance,
   withLeave,
 } from "./announced-attendance";
+import {
+  type AcceptedParticipant,
+  attendanceWithClarifications,
+} from "./clarification-effect";
 import { type ApprovedLeave, type HeldTimes, leaveMarkOf } from "./leave-marks";
 import { readApprovedLeaves, spanOfDay } from "./leave-store";
 
@@ -169,13 +174,58 @@ function coveredAt(
 }
 
 /**
+ * The accepted clarifications of the visible students in the counts,
+ * each with their mark as the count keeps it now.
+ */
+async function readAccepted(
+  db: Database,
+  countIds: string[],
+  visible: SQL,
+): Promise<(AcceptedParticipant & { countId: string })[]> {
+  const rows = await db
+    .select({
+      countId: dormClarifications.countId,
+      studentId: students.id,
+      name: students.name,
+      nim: students.nim,
+      isAbsent: dormAttendanceMarks.isAbsent,
+      note: dormAttendanceMarks.note,
+      acceptedAs: dormClarifications.acceptedAs,
+      reason: dormClarifications.reason,
+    })
+    .from(dormClarifications)
+    .innerJoin(students, eq(students.id, dormClarifications.studentId))
+    .innerJoin(
+      dormAttendanceMarks,
+      and(
+        eq(dormAttendanceMarks.countId, dormClarifications.countId),
+        eq(dormAttendanceMarks.studentId, dormClarifications.studentId),
+      ),
+    )
+    .where(
+      and(
+        inArray(dormClarifications.countId, countIds),
+        eq(dormClarifications.status, "accepted"),
+        visible,
+      ),
+    );
+  const accepted: (AcceptedParticipant & { countId: string })[] = [];
+  for (const { acceptedAs, ...row } of rows) {
+    if (acceptedAs === null) continue;
+    accepted.push({ ...row, acceptedAs, key: row.countId });
+  }
+  return accepted;
+}
+
+/**
  * The announced counts of a day, by the id of their activity, among the
  * students an account may see: Ketua Program Studi counts and lists only
  * the students of their own program. A draft is left out: until it is
  * announced it counts for no one. A count stays when its activity is
  * removed later. Approved leave that covers an activity decides how its
  * students count, also leave approved after the announcement: Izin is
- * neither Hadir nor Tidak hadir, and ITMK is Hadir.
+ * neither Hadir nor Tidak hadir, and ITMK is Hadir. Where no leave covers
+ * a student, an accepted clarification makes them Hadir or Izin.
  */
 export async function readDayAttendance(
   db: Database,
@@ -185,10 +235,11 @@ export async function readDayAttendance(
   const announced = await readAnnounced(db, day);
   if (announced.length === 0) return {};
   const countIds = announced.map((counted) => counted.id);
-  const [totals, marked, covered] = await Promise.all([
+  const [totals, marked, covered, accepted] = await Promise.all([
     readTotals(db, countIds, visible),
     readMarks(db, countIds, visible, ABSENT_OR_NOTED),
     readCovered(db, announced, day, visible),
+    readAccepted(db, countIds, visible),
   ]);
 
   const attendance: DayAttendance = {};
@@ -206,9 +257,11 @@ export async function readDayAttendance(
           status: isAbsent ? ("absent" as const) : ("present" as const),
         })),
     };
-    attendance[counted.activityId] = withLeave(
-      kept,
-      covered.get(counted.id) ?? [],
+    const coveredHere = covered.get(counted.id) ?? [];
+    attendance[counted.activityId] = attendanceWithClarifications(
+      withLeave(kept, coveredHere),
+      accepted.filter((each) => each.countId === counted.id),
+      new Set(coveredHere.map((each) => each.studentId)),
     );
   }
   return attendance;

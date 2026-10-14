@@ -18,6 +18,7 @@ function ruleOf(styles: string, selector: string): string {
 
 const OWN = stylesOf("clarifications.module.css");
 const BASE = stylesOf("activities.module.css");
+const FILE_BOX = `\n${readFileSync("src/clarifications/clarification-file-dialog.module.css", "utf8")}`;
 
 describe("the tab Klarifikasi kehadiran on a phone", () => {
   it("puts the cards in one column: a card is never wider than the screen", () => {
@@ -38,7 +39,7 @@ describe("the tab Klarifikasi kehadiran on a phone", () => {
     expect(ruleOf(BASE, ".card")).toContain("overflow-wrap: anywhere;");
     expect(ruleOf(OWN, ".fileName")).toContain("overflow-wrap: anywhere;");
     expect(ruleOf(OWN, ".fileName")).toContain("max-width: 100%;");
-    expect(ruleOf(OWN, ".fileHead")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(FILE_BOX, ".fileHead")).toContain("flex-wrap: wrap;");
   });
 
   it("gives the Catatan and each decision the whole width of the card and more height, by the look the photo cards already have for a phone", () => {
@@ -57,9 +58,9 @@ describe("the tab Klarifikasi kehadiran on a phone", () => {
   });
 
   it("keeps a shown file inside its box", () => {
-    expect(ruleOf(OWN, ".fileFrame")).toContain("width: 100%;");
-    expect(ruleOf(OWN, ".filePicture")).toContain("max-width: 100%;");
-    expect(ruleOf(OWN, ".filePicture")).toContain(
+    expect(ruleOf(FILE_BOX, ".fileFrame")).toContain("width: 100%;");
+    expect(ruleOf(FILE_BOX, ".filePicture")).toContain("max-width: 100%;");
+    expect(ruleOf(FILE_BOX, ".filePicture")).toContain(
       "max-height: var(--file-preview-height);",
     );
   });

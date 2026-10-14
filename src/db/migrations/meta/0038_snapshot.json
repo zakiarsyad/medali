@@ -1,5 +1,5 @@
 {
-  "id": "c6b930c4-9e8c-4b7c-a016-1b11847f8dec",
+  "id": "8c6a92dd-540e-4df4-8fca-e3bf2b6425dc",
   "prevId": "ea604f5c-10b7-45aa-9615-488569cbd946",
   "version": "7",
   "dialect": "postgresql",
@@ -2280,6 +2280,381 @@
         "dorm_attendance_marks_note_length": {
           "name": "dorm_attendance_marks_note_length",
           "value": "char_length(\"dorm_attendance_marks\".\"note\") <= 200"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.dorm_clarification_changes": {
+      "name": "dorm_clarification_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "clarification_id": {
+          "name": "clarification_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status_before": {
+          "name": "status_before",
+          "type": "dorm_clarification_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_after": {
+          "name": "status_after",
+          "type": "dorm_clarification_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accepted_as": {
+          "name": "accepted_as",
+          "type": "dorm_clarification_accepted_as",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "dorm_clarification_changes_clarification": {
+          "name": "dorm_clarification_changes_clarification",
+          "columns": [
+            {
+              "expression": "clarification_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_clarification_changes_clarification_id_dorm_clarifications_id_fk": {
+          "name": "dorm_clarification_changes_clarification_id_dorm_clarifications_id_fk",
+          "tableFrom": "dorm_clarification_changes",
+          "tableTo": "dorm_clarifications",
+          "columnsFrom": [
+            "clarification_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_clarification_changes_changed_by_accounts_id_fk": {
+          "name": "dorm_clarification_changes_changed_by_accounts_id_fk",
+          "tableFrom": "dorm_clarification_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dorm_clarifications": {
+      "name": "dorm_clarifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "count_id": {
+          "name": "count_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "dorm_clarification_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "explanation": {
+          "name": "explanation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_key": {
+          "name": "file_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_name": {
+          "name": "file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_content_type": {
+          "name": "file_content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_size": {
+          "name": "file_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "dorm_clarification_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accepted_as": {
+          "name": "accepted_as",
+          "type": "dorm_clarification_accepted_as",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verified_by": {
+          "name": "verified_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verify_note": {
+          "name": "verify_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "decided_by": {
+          "name": "decided_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decided_at": {
+          "name": "decided_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decision_note": {
+          "name": "decision_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        }
+      },
+      "indexes": {
+        "dorm_clarifications_one_waiting": {
+          "name": "dorm_clarifications_one_waiting",
+          "columns": [
+            {
+              "expression": "count_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"dorm_clarifications\".\"status\" in ('submitted', 'verified')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_clarifications_student": {
+          "name": "dorm_clarifications_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_clarifications_sent": {
+          "name": "dorm_clarifications_sent",
+          "columns": [
+            {
+              "expression": "sent_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_clarifications_count_id_dorm_attendance_counts_id_fk": {
+          "name": "dorm_clarifications_count_id_dorm_attendance_counts_id_fk",
+          "tableFrom": "dorm_clarifications",
+          "tableTo": "dorm_attendance_counts",
+          "columnsFrom": [
+            "count_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_clarifications_student_id_students_id_fk": {
+          "name": "dorm_clarifications_student_id_students_id_fk",
+          "tableFrom": "dorm_clarifications",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_clarifications_verified_by_accounts_id_fk": {
+          "name": "dorm_clarifications_verified_by_accounts_id_fk",
+          "tableFrom": "dorm_clarifications",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "verified_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_clarifications_decided_by_accounts_id_fk": {
+          "name": "dorm_clarifications_decided_by_accounts_id_fk",
+          "tableFrom": "dorm_clarifications",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "decided_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "dorm_clarifications_fileKey_unique": {
+          "name": "dorm_clarifications_fileKey_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "file_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "dorm_clarifications_verified_when_checked": {
+          "name": "dorm_clarifications_verified_when_checked",
+          "value": "(\"dorm_clarifications\".\"status\" <> 'submitted' or \"dorm_clarifications\".\"verified_at\" is null) and (\"dorm_clarifications\".\"status\" not in ('verified', 'accepted', 'rejected') or \"dorm_clarifications\".\"verified_at\" is not null) and (\"dorm_clarifications\".\"verified_at\" is null) = (\"dorm_clarifications\".\"verified_by\" is null)"
+        },
+        "dorm_clarifications_decided_when_final": {
+          "name": "dorm_clarifications_decided_when_final",
+          "value": "(\"dorm_clarifications\".\"status\" not in ('submitted', 'verified') or \"dorm_clarifications\".\"decided_at\" is null) and (\"dorm_clarifications\".\"status\" not in ('accepted', 'closed') or \"dorm_clarifications\".\"decided_at\" is not null) and (\"dorm_clarifications\".\"decided_at\" is null) = (\"dorm_clarifications\".\"decided_by\" is null)"
+        },
+        "dorm_clarifications_accepted_as_when_accepted": {
+          "name": "dorm_clarifications_accepted_as_when_accepted",
+          "value": "(\"dorm_clarifications\".\"status\" = 'accepted') = (\"dorm_clarifications\".\"accepted_as\" is not null)"
+        },
+        "dorm_clarifications_rejected_has_note": {
+          "name": "dorm_clarifications_rejected_has_note",
+          "value": "\"dorm_clarifications\".\"status\" <> 'rejected' or (\"dorm_clarifications\".\"decided_at\" is null and \"dorm_clarifications\".\"verify_note\" <> '') or (\"dorm_clarifications\".\"decided_at\" is not null and \"dorm_clarifications\".\"decision_note\" <> '')"
+        },
+        "dorm_clarifications_verify_note_length": {
+          "name": "dorm_clarifications_verify_note_length",
+          "value": "char_length(\"dorm_clarifications\".\"verify_note\") <= 200"
+        },
+        "dorm_clarifications_decision_note_length": {
+          "name": "dorm_clarifications_decision_note_length",
+          "value": "char_length(\"dorm_clarifications\".\"decision_note\") <= 200"
         }
       },
       "isRLSEnabled": false
@@ -5561,312 +5936,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.siku_request_photos": {
-      "name": "siku_request_photos",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "request_id": {
-          "name": "request_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "place": {
-          "name": "place",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "photo_key": {
-          "name": "photo_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "thumb_key": {
-          "name": "thumb_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "siku_request_photos_request_id_siku_requests_id_fk": {
-          "name": "siku_request_photos_request_id_siku_requests_id_fk",
-          "tableFrom": "siku_request_photos",
-          "tableTo": "siku_requests",
-          "columnsFrom": [
-            "request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "siku_request_photos_photoKey_unique": {
-          "name": "siku_request_photos_photoKey_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "photo_key"
-          ]
-        },
-        "siku_request_photos_thumbKey_unique": {
-          "name": "siku_request_photos_thumbKey_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "thumb_key"
-          ]
-        },
-        "siku_request_photos_place": {
-          "name": "siku_request_photos_place",
-          "nullsNotDistinct": false,
-          "columns": [
-            "request_id",
-            "place"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "siku_request_photos_place_in_range": {
-          "name": "siku_request_photos_place_in_range",
-          "value": "\"siku_request_photos\".\"place\" between 1 and 3"
-        },
-        "siku_request_photos_both_kept": {
-          "name": "siku_request_photos_both_kept",
-          "value": "(\"siku_request_photos\".\"photo_key\" is null) = (\"siku_request_photos\".\"thumb_key\" is null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.siku_requests": {
-      "name": "siku_requests",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "siku_reason",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "report": {
-          "name": "report",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sent_at": {
-          "name": "sent_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "siku_request_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'waiting'"
-        },
-        "decided_by": {
-          "name": "decided_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decided_as": {
-          "name": "decided_as",
-          "type": "role",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decided_at": {
-          "name": "decided_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decision_note": {
-          "name": "decision_note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "entry_id": {
-          "name": "entry_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "withdrawn_at": {
-          "name": "withdrawn_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "siku_requests_student": {
-          "name": "siku_requests_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "sent_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "siku_requests_status": {
-          "name": "siku_requests_status",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "sent_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "siku_requests_student_id_students_id_fk": {
-          "name": "siku_requests_student_id_students_id_fk",
-          "tableFrom": "siku_requests",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "siku_requests_decided_by_accounts_id_fk": {
-          "name": "siku_requests_decided_by_accounts_id_fk",
-          "tableFrom": "siku_requests",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "decided_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "siku_requests_entry_id_siku_adjustments_id_fk": {
-          "name": "siku_requests_entry_id_siku_adjustments_id_fk",
-          "tableFrom": "siku_requests",
-          "tableTo": "siku_adjustments",
-          "columnsFrom": [
-            "entry_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "siku_requests_entryId_unique": {
-          "name": "siku_requests_entryId_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "entry_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "siku_requests_reason_is_gain": {
-          "name": "siku_requests_reason_is_gain",
-          "value": "\"siku_requests\".\"reason\" in ('social_media_campaign', 'knowledge_sharing', 'training_speaker', 'peer_mentoring', 'spiritual_activity')"
-        },
-        "siku_requests_report_length": {
-          "name": "siku_requests_report_length",
-          "value": "char_length(\"siku_requests\".\"report\") between 20 and 1000"
-        },
-        "siku_requests_decision_note_length": {
-          "name": "siku_requests_decision_note_length",
-          "value": "char_length(\"siku_requests\".\"decision_note\") <= 500"
-        },
-        "siku_requests_decided_when_decided": {
-          "name": "siku_requests_decided_when_decided",
-          "value": "(\"siku_requests\".\"status\" in ('approved', 'rejected')) = (\"siku_requests\".\"decided_at\" is not null) and (\"siku_requests\".\"decided_at\" is null) = (\"siku_requests\".\"decided_by\" is null) and (\"siku_requests\".\"decided_at\" is null) = (\"siku_requests\".\"decided_as\" is null)"
-        },
-        "siku_requests_gain_when_approved": {
-          "name": "siku_requests_gain_when_approved",
-          "value": "(\"siku_requests\".\"status\" = 'approved') = (\"siku_requests\".\"entry_id\" is not null)"
-        },
-        "siku_requests_rejected_has_note": {
-          "name": "siku_requests_rejected_has_note",
-          "value": "\"siku_requests\".\"status\" <> 'rejected' or \"siku_requests\".\"decision_note\" <> ''"
-        },
-        "siku_requests_withdrawn_has_moment": {
-          "name": "siku_requests_withdrawn_has_moment",
-          "value": "(\"siku_requests\".\"status\" = 'withdrawn') = (\"siku_requests\".\"withdrawn_at\" is not null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.siku_uploads": {
       "name": "siku_uploads",
       "schema": "",
@@ -6764,6 +6833,36 @@
         "monthly"
       ]
     },
+    "public.dorm_clarification_accepted_as": {
+      "name": "dorm_clarification_accepted_as",
+      "schema": "public",
+      "values": [
+        "present",
+        "leave"
+      ]
+    },
+    "public.dorm_clarification_reason": {
+      "name": "dorm_clarification_reason",
+      "schema": "public",
+      "values": [
+        "sick",
+        "family_matter",
+        "campus_duty",
+        "present_not_recorded",
+        "other"
+      ]
+    },
+    "public.dorm_clarification_status": {
+      "name": "dorm_clarification_status",
+      "schema": "public",
+      "values": [
+        "submitted",
+        "verified",
+        "accepted",
+        "rejected",
+        "closed"
+      ]
+    },
     "public.dorm_leave_kind": {
       "name": "dorm_leave_kind",
       "schema": "public",
@@ -6944,16 +7043,6 @@
         "discipline_penalty",
         "unannounced_absence",
         "director_decision"
-      ]
-    },
-    "public.siku_request_status": {
-      "name": "siku_request_status",
-      "schema": "public",
-      "values": [
-        "waiting",
-        "approved",
-        "rejected",
-        "withdrawn"
       ]
     },
     "public.student_status": {

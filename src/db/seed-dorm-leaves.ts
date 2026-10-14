@@ -22,7 +22,10 @@ function campusMoment(time: string): Date {
 }
 
 /** The first sample account with a role. */
-async function sampleAccount(db: Database, role: RoleId): Promise<string> {
+export async function sampleAccount(
+  db: Database,
+  role: RoleId,
+): Promise<string> {
   const [found] = await db
     .select({ id: accountRoles.accountId })
     .from(accountRoles)

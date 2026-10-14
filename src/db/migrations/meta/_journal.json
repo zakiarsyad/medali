@@ -271,8 +271,15 @@
     {
       "idx": 38,
       "version": "7",
-      "when": 1792006922652,
-      "tag": "0038_siku-addition-requests",
+      "when": 1792007169645,
+      "tag": "0038_dorm-attendance-clarification",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1792009927155,
+      "tag": "0039_siku-addition-requests",
       "breakpoints": true
     }
   ]

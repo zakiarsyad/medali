@@ -29,6 +29,19 @@ describe("the screen parts of Kegiatan asrama that run in the browser", () => {
     },
   );
 
+  it.each([
+    `${FOLDER}/history-table.tsx`,
+    `${FOLDER}/clarification-form.tsx`,
+    `${FOLDER}/clarification-cards.tsx`,
+    `${FOLDER}/clarification-filters.tsx`,
+  ])(
+    "%s, of a clarification of an absence, takes no database code along",
+    (path) => {
+      expect(browserFilesIn(FOLDER)).toContain(path);
+      expect(databaseCodeReachedFrom(path)).toEqual([]);
+    },
+  );
+
   it("finds database code that is taken by way of another file", () => {
     expect(
       databaseCodeReachedFrom(`${FOLDER}/activities-screen.tsx`).length,

@@ -639,6 +639,167 @@ describe("may", () => {
     }
   });
 
+  const clarificationViewers: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "dorm_manager",
+    "bam_bphk",
+    "bam_compliance",
+  ];
+
+  it.each(clarificationViewers)(
+    "lets %s see the dorm clarifications on Klarifikasi kehadiran",
+    (role) => {
+      expect(may([role], "view_dorm_clarifications")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "clarification")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to see the dorm clarifications, the other BAM roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !clarificationViewers.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_household", "bam_health", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_clarifications")).toBe(false);
+    }
+  });
+
+  it("gives the right to see the dorm clarifications to exactly the roles with the tab Klarifikasi kehadiran of Asrama", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_dorm_clarifications")).toBe(
+        mayOpenTab([role], "dorm", "clarification"),
+      );
+    }
+  });
+
+  it("limits Ketua Program Studi to the dorm clarifications of their own study program", () => {
+    const account: AccountForAccess = {
+      id: "kaprodi",
+      roles: ["head_of_program"],
+      studyProgramId: 7,
+      studentId: null,
+    };
+
+    expect(rowLimitForAction(account, "view_dorm_clarifications")).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: [],
+      studentIds: [],
+    });
+  });
+
+  it("lets Mahasiswa ask a clarification of their own dorm absence, from Kegiatan asrama, on a page that asks them to live in the dorm", () => {
+    expect(may(["student"], "ask_dorm_clarification")).toBe(true);
+    expect(may(["student"], "view_dorm_clarifications")).toBe(false);
+    expect(may(["student"], "view_own_dorm_attendance")).toBe(true);
+    expect(mayOpenTab(["student"], "dorm", "activities")).toBe(true);
+    expect(mayOpenTab(["student"], "dorm", "clarification")).toBe(false);
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+  });
+
+  it("refuses every other role to ask a clarification of a dorm absence", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_bphk", "dorm_manager", "head_of_unit"]),
+    );
+    for (const role of others) {
+      expect(may([role], "ask_dorm_clarification")).toBe(false);
+    }
+  });
+
+  const clarificationCheckers: RoleId[] = ["bam_bphk", "bam_compliance"];
+
+  it.each(clarificationCheckers)(
+    "lets %s pass on and reject a dorm clarification",
+    (role) => {
+      expect(may([role], "verify_dorm_clarification")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to pass on or reject a dorm clarification, Pengelola Asrama, Kepala Unit and the other BAM roles among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !clarificationCheckers.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "dorm_manager",
+        "head_of_unit",
+        "bam_household",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "verify_dorm_clarification")).toBe(false);
+    }
+  });
+
+  it("lets Pengelola Asrama accept and reject a dorm clarification", () => {
+    expect(may(["dorm_manager"], "decide_dorm_clarification")).toBe(true);
+  });
+
+  it("refuses every other role to accept or reject a dorm clarification, BAM - BPHK, BAM - KI and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_bphk",
+        "bam_compliance",
+        "head_of_unit",
+        "director",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "decide_dorm_clarification")).toBe(false);
+    }
+  });
+
+  const clarificationFileOpeners: RoleId[] = [
+    "dorm_manager",
+    "bam_bphk",
+    "bam_compliance",
+  ];
+
+  it.each(clarificationFileOpeners)(
+    "lets %s open the file of any dorm clarification",
+    (role) => {
+      expect(may([role], "open_dorm_clarification_files")).toBe(true);
+    },
+  );
+
+  it("refuses every other role the file of a dorm clarification, the roles that only read and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !clarificationFileOpeners.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "open_dorm_clarification_files")).toBe(false);
+    }
+  });
+
+  it("gives every right on a dorm clarification, but asking, only to roles that see them", () => {
+    const rights = [
+      "verify_dorm_clarification",
+      "decide_dorm_clarification",
+      "open_dorm_clarification_files",
+    ] as const;
+    for (const role of ROLE_IDS) {
+      for (const right of rights) {
+        if (!may([role], right)) continue;
+        expect(may([role], "view_dorm_clarifications")).toBe(true);
+      }
+    }
+  });
+
   const detailReaders: RoleId[] = [
     "head_of_unit",
     "director",
@@ -1219,6 +1380,7 @@ describe("may", () => {
       "view_own_dorm_attendance",
       "ask_dorm_leave",
       "report_dorm_return",
+      "ask_dorm_clarification",
       "view_own_siku",
       "ask_siku_addition",
     ]);

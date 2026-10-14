@@ -30,6 +30,12 @@ import {
   ORGANISERS,
   type RundownLine,
 } from "@/features/dorm/activity-ids";
+import {
+  ACCEPTED_AS,
+  CLARIFICATION_NOTE_MAX_LENGTH,
+  DORM_CLARIFICATION_REASONS,
+  DORM_CLARIFICATION_STATUSES,
+} from "@/features/dorm/clarification-ids";
 import { type CountMarks, NOTE_MAX_LENGTH } from "@/features/dorm/count-ids";
 import {
   CONTACT_MAX_LENGTH,
@@ -137,6 +143,21 @@ export const dormLeaveSpecialReason = pgEnum(
 export const dormReturnReportStatus = pgEnum(
   "dorm_return_report_status",
   REPORT_STATUSES,
+);
+
+export const dormClarificationStatus = pgEnum(
+  "dorm_clarification_status",
+  DORM_CLARIFICATION_STATUSES,
+);
+
+export const dormClarificationReason = pgEnum(
+  "dorm_clarification_reason",
+  DORM_CLARIFICATION_REASONS,
+);
+
+export const dormClarificationAcceptedAs = pgEnum(
+  "dorm_clarification_accepted_as",
+  ACCEPTED_AS,
 );
 
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
@@ -979,6 +1000,114 @@ export const dormReturnReports = pgTable(
       "dorm_return_reports_validate_note_length",
       sql`char_length(${table.validateNote}) <= ${sql.raw(String(DECISION_NOTE_MAX_LENGTH))}`,
     ),
+  ],
+);
+
+const CLARIFICATION_NOTE_MAX = sql.raw(String(CLARIFICATION_NOTE_MAX_LENGTH));
+
+/**
+ * A resident's clarification of an absence BAM announced in a count,
+ * with its file. BAM - BPHK or BAM - KI checks it first and passes it on
+ * or rejects it; Pengelola Asrama then accepts it as Hadir or Izin, or
+ * rejects it. A clarification is closed when BAM announces the count
+ * again without that absence. A rejected or closed one keeps its row, and
+ * the resident may send a new one: a resident has at most one waiting
+ * clarification for a count.
+ */
+export const dormClarifications = pgTable(
+  "dorm_clarifications",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    countId: uuid()
+      .notNull()
+      .references(() => dormAttendanceCounts.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    reason: dormClarificationReason().notNull(),
+    explanation: text().notNull(),
+    /**
+     * Where the file is in the file storage. Empty only for sample data
+     * where no file storage is set.
+     */
+    fileKey: text().unique(),
+    fileName: text().notNull(),
+    fileContentType: text().notNull(),
+    /** In bytes. */
+    fileSize: integer().notNull(),
+    status: dormClarificationStatus().notNull(),
+    /** What an accepted one made the resident. */
+    acceptedAs: dormClarificationAcceptedAs(),
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+    /** Who of BAM passed it on or rejected it, when, and their note. */
+    verifiedBy: uuid().references(() => accounts.id),
+    verifiedAt: timestamp({ withTimezone: true }),
+    verifyNote: text().notNull().default(""),
+    /**
+     * Who of Pengelola Asrama accepted or rejected it, or who of BAM
+     * announced the count that closed it, when, and the note.
+     */
+    decidedBy: uuid().references(() => accounts.id),
+    decidedAt: timestamp({ withTimezone: true }),
+    decisionNote: text().notNull().default(""),
+  },
+  (table) => [
+    uniqueIndex("dorm_clarifications_one_waiting")
+      .on(table.countId, table.studentId)
+      .where(sql`${table.status} in ('submitted', 'verified')`),
+    index("dorm_clarifications_student").on(table.studentId),
+    index("dorm_clarifications_sent").on(table.sentAt),
+    check(
+      "dorm_clarifications_verified_when_checked",
+      sql`(${table.status} <> 'submitted' or ${table.verifiedAt} is null) and (${table.status} not in ('verified', 'accepted', 'rejected') or ${table.verifiedAt} is not null) and (${table.verifiedAt} is null) = (${table.verifiedBy} is null)`,
+    ),
+    check(
+      "dorm_clarifications_decided_when_final",
+      sql`(${table.status} not in ('submitted', 'verified') or ${table.decidedAt} is null) and (${table.status} not in ('accepted', 'closed') or ${table.decidedAt} is not null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
+    ),
+    check(
+      "dorm_clarifications_accepted_as_when_accepted",
+      sql`(${table.status} = 'accepted') = (${table.acceptedAs} is not null)`,
+    ),
+    check(
+      "dorm_clarifications_rejected_has_note",
+      sql`${table.status} <> 'rejected' or (${table.decidedAt} is null and ${table.verifyNote} <> '') or (${table.decidedAt} is not null and ${table.decisionNote} <> '')`,
+    ),
+    check(
+      "dorm_clarifications_verify_note_length",
+      sql`char_length(${table.verifyNote}) <= ${CLARIFICATION_NOTE_MAX}`,
+    ),
+    check(
+      "dorm_clarifications_decision_note_length",
+      sql`char_length(${table.decisionNote}) <= ${CLARIFICATION_NOTE_MAX}`,
+    ),
+  ],
+);
+
+/**
+ * Every check, decision and closing of a dorm clarification: who, when,
+ * the status before and after, what an acceptance made the resident, and
+ * the note. Rows here cannot be changed or deleted; the database refuses
+ * it.
+ */
+export const dormClarificationChanges = pgTable(
+  "dorm_clarification_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    clarificationId: uuid()
+      .notNull()
+      .references(() => dormClarifications.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    statusBefore: dormClarificationStatus().notNull(),
+    statusAfter: dormClarificationStatus().notNull(),
+    acceptedAs: dormClarificationAcceptedAs(),
+    note: text().notNull(),
+  },
+  (table) => [
+    index("dorm_clarification_changes_clarification").on(table.clarificationId),
   ],
 );
 

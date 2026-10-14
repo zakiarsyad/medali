@@ -202,7 +202,8 @@ function readPage(
 
 type PageRow = Awaited<ReturnType<typeof readPage>>[number];
 
-function roomWords(dorm: DormId | null, room: string | null): string {
+/** Where a student lives today, as a card of staff says it. */
+export function roomWords(dorm: DormId | null, room: string | null): string {
   if (dorm === null) return "Tidak tinggal di asrama";
   if (room === null) return `${DORM_NAMES[dorm]}, belum diplot`;
   return `${DORM_NAMES[dorm]}, kamar ${room}`;

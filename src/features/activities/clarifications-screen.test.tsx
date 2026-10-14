@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { ClarificationCard } from "./clarification-card";
-import { ClarificationFileDialog } from "./clarification-file-dialog";
+import { ClarificationFileDialog } from "@/clarifications/clarification-file-dialog";
+import { type ClarificationCard, fileAddressOf } from "./clarification-card";
 import { ClarificationFiltersView } from "./clarification-filters";
 import type { Clarifications } from "./clarifications";
 import { ClarificationsScreen } from "./clarifications-screen";
@@ -160,8 +160,8 @@ describe("ClarificationFileDialog", () => {
   function box(file: NonNullable<ClarificationCard["file"]>): string {
     return renderToStaticMarkup(
       <ClarificationFileDialog
-        clarificationId={id}
         file={file}
+        addressOf={(isShown) => fileAddressOf(id, isShown)}
         onClose={() => {}}
       />,
     );

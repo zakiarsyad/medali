@@ -28,6 +28,7 @@ import {
   addSampleExtraSchedules,
 } from "./seed-activity-schedules";
 import { addSampleDormActivities } from "./seed-dorm-activities";
+import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCounts } from "./seed-dorm-counts";
 import { addSampleDormLeaves } from "./seed-dorm-leaves";
 import { addSampleDorms } from "./seed-dorms";
@@ -149,7 +150,8 @@ async function addSampleFirstYears(
  * students in their first year of the running period, the dorm rooms
  * with some of the residents in them, the dorm activities that repeat
  * and the one-off ones with the counts BAM made of them in the week
- * before today, the residents' leave requests around today in every
+ * before today and the residents' clarifications of their absences in
+ * every status, the residents' leave requests around today in every
  * status, and the kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
  * still to be formed, with a few evaluations of their mentors, one
@@ -227,8 +229,14 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       today,
       sampleActor,
     );
-    await addSampleDormCounts(tx, dormActivities, running, today);
+    const dormCounts = await addSampleDormCounts(
+      tx,
+      dormActivities,
+      running,
+      today,
+    );
     await addSampleDormLeaves(tx, running, today);
+    await addSampleDormClarifications(tx, dormCounts, running);
     const grouped = [
       ...SAMPLE_STUDENTS,
       ...sampleGroupedFirstYears(running.startYear),

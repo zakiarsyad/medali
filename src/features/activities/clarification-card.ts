@@ -1,4 +1,4 @@
-import { PDF } from "@/files/file-kinds";
+import type { ClarificationFile } from "@/clarifications/shown-file";
 import { shownMoment } from "@/ui/day";
 import type { ClarificationStatus } from "./clarification-reasons";
 import { shownDays, shownHours } from "./schedule-words";
@@ -39,14 +39,6 @@ export interface ClarificationSummary {
   decision: DecisionWords | null;
 }
 
-/** The file of a clarification, as far as its card and its box show it. */
-export interface ClarificationFile {
-  name: string;
-  isPdf: boolean;
-  /** What kind of file it is and how large, such as Dokumen PDF · 12 KB. */
-  facts: string;
-}
-
 /** A clarification as its card shows it to the account that decides it. */
 export interface ClarificationCard extends ClarificationSummary {
   explanation: string;
@@ -61,8 +53,6 @@ export const CLARIFICATION_STATUS_WORDS: Record<ClarificationStatus, string> = {
 };
 
 export const NO_FILE = "-";
-export const PDF_NOT_SHOWN =
-  "Bila pratinjau tidak tampil, gunakan tombol Unduh.";
 
 const RESULT_WORDS = {
   valid: "Diterima sebagai hadir",
@@ -92,19 +82,6 @@ export function heldWords(schedule: {
 }): string {
   const days = shownDays(schedule.startsOn, schedule.endsOn);
   return `${days}, ${shownHours(schedule.startTime, schedule.endTime)}`;
-}
-
-const KILOBYTE = 1024;
-
-/** The kind of a file and its size, a small file counting as 1 KB. */
-export function fileFacts(isPdf: boolean, bytes: number): string {
-  const kind = isPdf ? "Dokumen PDF" : "Gambar";
-  const size = Math.max(1, Math.round(bytes / KILOBYTE));
-  return `${kind} · ${size.toLocaleString("id-ID")} KB`;
-}
-
-export function isPdfType(contentType: string): boolean {
-  return contentType === PDF.contentType;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { desc, eq, isNull, type SQL } from "drizzle-orm";
+import { fileFacts, isPdfType } from "@/clarifications/shown-file";
 import type { Database } from "@/db/connect";
 import {
   accounts,
@@ -15,9 +16,7 @@ import {
   type ClarificationSummary,
   type DecisionWords,
   decidedByWords,
-  fileFacts,
   heldWords,
-  isPdfType,
   resultWords,
 } from "./clarification-card";
 import { REASON_WORDS } from "./clarification-reasons";

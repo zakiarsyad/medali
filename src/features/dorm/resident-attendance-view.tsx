@@ -1,23 +1,9 @@
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
-import shared from "@/ui/data-screen.module.css";
-import { shownDay } from "@/ui/day";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import styles from "./activities.module.css";
 import { attendanceRate, rateWords } from "./attendance-rate";
-import {
-  HISTORY_STATUS_WORDS,
-  type HistoryEntry,
-  type HistoryStatus,
-  heldKey,
-} from "./history";
+import { CLARIFICATION_DAYS } from "./clarification-time";
 import type { OwnAttendance } from "./resident-attendance";
-
-const STATUS_STYLES: Record<HistoryStatus, string | undefined> = {
-  present: styles.ok,
-  absent: styles.bad,
-  leave: styles.plain,
-  not_announced: styles.warn,
-};
 
 /** The note on how attendance is counted, and the numbers under it. */
 export function AttendanceNumbers({
@@ -40,7 +26,9 @@ export function AttendanceNumbers({
         Badan Asrama Mahasiswa. Setelah kegiatan, BAM mengumumkan
         ketidakhadiran. Kegiatan yang belum diumumkan belum dihitung. Kegiatan
         pada waktu izin pesiar atau izin khusus yang disetujui tercatat Izin dan
-        tidak dihitung; pada waktu ITMK yang disetujui tercatat Hadir.
+        tidak dihitung; pada waktu ITMK yang disetujui tercatat Hadir. Bila Anda
+        tercatat tidak hadir, ajukan klarifikasi dari tabel riwayat paling
+        lambat {CLARIFICATION_DAYS} hari setelah kegiatan.
       </p>
       <NumberCards>
         <NumberCard
@@ -51,58 +39,19 @@ export function AttendanceNumbers({
         <NumberCard
           label="Tercatat tidak hadir"
           amount={absent}
-          note="dari kegiatan yang diumumkan"
+          note="dapat diklarifikasi"
         />
         <NumberCard
           label="Kegiatan hari ini"
           amount={todayCount}
           note={DORM_NAMES[dorm]}
         />
+        <NumberCard
+          label="Klarifikasi aktif"
+          amount={attendance.waitingClarifications}
+          note="menunggu BAM atau pengelola"
+        />
       </NumberCards>
     </>
-  );
-}
-
-function HistoryRow({ entry }: { entry: HistoryEntry }) {
-  return (
-    <tr>
-      <td data-title="Tanggal">
-        {shownDay(entry.day)}{" "}
-        <span className={shared.detail}>{entry.startTime}</span>
-      </td>
-      <td data-title="Kegiatan">{entry.name}</td>
-      <td data-title="Status">
-        <span className={`${shared.badge} ${STATUS_STYLES[entry.status]}`}>
-          {HISTORY_STATUS_WORDS[entry.status]}
-        </span>
-      </td>
-      <td data-title="Catatan">{entry.note || "-"}</td>
-    </tr>
-  );
-}
-
-/** Riwayat: the last activities that are over, with what was announced. */
-export function HistoryTable({ history }: { history: HistoryEntry[] }) {
-  if (history.length === 0) {
-    return <p className={shared.empty}>Belum ada riwayat.</p>;
-  }
-  return (
-    <div className={shared.tableWrap}>
-      <table className={`${shared.table} ${shared.stacked}`}>
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Kegiatan</th>
-            <th>Status</th>
-            <th>Catatan</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((entry) => (
-            <HistoryRow key={heldKey(entry)} entry={entry} />
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 }

@@ -25,6 +25,11 @@ export const ACTIONS = [
   "verify_dorm_return",
   "validate_dorm_return",
   "record_dorm_return",
+  "view_dorm_clarifications",
+  "ask_dorm_clarification",
+  "verify_dorm_clarification",
+  "decide_dorm_clarification",
+  "open_dorm_clarification_files",
   "view_student_detail",
   "view_student_room",
   "view_mentor_groups",
@@ -78,6 +83,15 @@ export const ACTION_TITLES: Record<Action, string> = {
   verify_dorm_return: "Memverifikasi dan menolak laporan kembali ke asrama",
   validate_dorm_return: "Memvalidasi dan menolak laporan kembali ke asrama",
   record_dorm_return: "Mencatat penghuni sudah kembali ke asrama",
+  view_dorm_clarifications: "Melihat klarifikasi kehadiran kegiatan asrama",
+  ask_dorm_clarification:
+    "Mengajukan klarifikasi kehadiran kegiatan asrama sendiri",
+  verify_dorm_clarification:
+    "Memverifikasi dan menolak klarifikasi kehadiran kegiatan asrama",
+  decide_dorm_clarification:
+    "Menerima dan menolak klarifikasi kehadiran kegiatan asrama yang diteruskan BAM",
+  open_dorm_clarification_files:
+    "Membuka lampiran klarifikasi kehadiran kegiatan asrama",
   view_student_detail: "Melihat detail mahasiswa",
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
@@ -190,6 +204,13 @@ const BAM_DORM_ACTIVITY_ACTIONS = [
   "count_dorm_attendance",
 ] as const satisfies readonly Action[];
 
+/** What BAM - BPHK and BAM - KI may do with the clarifications of dorm absences. */
+const BAM_CLARIFICATION_ACTIONS = [
+  "view_dorm_clarifications",
+  "verify_dorm_clarification",
+  "open_dorm_clarification_files",
+] as const satisfies readonly Action[];
+
 /**
  * The one list of what each role may open and do. Nothing else decides
  * access. Taken from the prototype's roles.
@@ -215,6 +236,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_activities",
       "view_dorm_attendance",
       "view_dorm_leave",
+      "view_dorm_clarifications",
       "view_student_detail",
       "view_student_room",
       "view_mentor_groups",
@@ -246,6 +268,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_activities",
       "view_dorm_attendance",
       "view_dorm_leave",
+      "view_dorm_clarifications",
       "view_student_detail",
       "view_mentor_groups",
       "view_mentors",
@@ -269,6 +292,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_activities",
       "view_dorm_attendance",
       "view_dorm_leave",
+      "view_dorm_clarifications",
       "view_student_detail",
       "view_mentor_groups",
       "view_mentors",
@@ -328,6 +352,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_own_dorm_attendance",
       "ask_dorm_leave",
       "report_dorm_return",
+      "ask_dorm_clarification",
       "view_own_siku",
       "ask_siku_addition",
     ],
@@ -351,6 +376,9 @@ export const ROLES: Record<RoleId, Role> = {
       "decide_dorm_leave",
       "validate_dorm_return",
       "record_dorm_return",
+      "view_dorm_clarifications",
+      "decide_dorm_clarification",
+      "open_dorm_clarification_files",
     ],
     rows: "all",
   },
@@ -366,6 +394,7 @@ export const ROLES: Record<RoleId, Role> = {
       "verify_dorm_return",
       "record_dorm_return",
       ...BAM_DORM_ACTIVITY_ACTIONS,
+      ...BAM_CLARIFICATION_ACTIONS,
     ],
     rows: "all",
   },
@@ -374,7 +403,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BK",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "clarification", "violations"] },
-    actions: BAM_DORM_ACTIVITY_ACTIONS,
+    actions: [...BAM_DORM_ACTIVITY_ACTIONS, ...BAM_CLARIFICATION_ACTIONS],
     rows: "all",
   },
   bam_household: {

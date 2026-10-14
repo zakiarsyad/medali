@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   type HeldActivity,
+  type HistoryReach,
   historyOf,
   marksOver,
   type OwnMark,
@@ -24,12 +25,35 @@ function keysOf(held: { day: string; activity: { id: string } }[]): string[] {
   return held.map(({ day, activity }) => `${day} ${activity.id}`);
 }
 
+/** A reach of the last rows only, with no day kept for clarification. */
+function lastOnly(limit: number): HistoryReach {
+  return { limit, keepFrom: "9999-12-31" };
+}
+
 describe("pastOccurrences", () => {
+  it("keeps every activity on or after the first day that may be clarified, also past the limit", () => {
+    const now = { day: TODAY, time: "23:00" };
+
+    const held = pastOccurrences([TEST_ROW, EVENING], now, {
+      limit: 2,
+      keepFrom: "2026-10-12",
+    });
+
+    expect(keysOf(held)).toEqual([
+      `${TODAY} malam`,
+      `${TODAY} ${TEST_ROW.id}`,
+      `2026-10-13 malam`,
+      `2026-10-13 ${TEST_ROW.id}`,
+      `2026-10-12 malam`,
+      `2026-10-12 ${TEST_ROW.id}`,
+    ]);
+  });
+
   it("takes today's activities that are over, then the days before, the latest first", () => {
     const held = pastOccurrences(
       [TEST_ROW, EVENING],
       { day: TODAY, time: "12:00" },
-      4,
+      lastOnly(4),
     );
 
     expect(keysOf(held)).toEqual([
@@ -44,12 +68,12 @@ describe("pastOccurrences", () => {
     const held = pastOccurrences(
       [TEST_ONE_OFF],
       { day: "2026-10-20", time: "08:00" },
-      25,
+      lastOnly(25),
     );
     const old = pastOccurrences(
       [TEST_ONE_OFF],
       { day: "2027-12-01", time: "08:00" },
-      25,
+      lastOnly(25),
     );
 
     expect(keysOf(held)).toEqual([`2026-10-14 ${TEST_ONE_OFF.id}`]);
@@ -121,7 +145,7 @@ describe("historyOf", () => {
     const marks: OwnMark[] = [{ ...MORNING, isAbsent: true, note: "Sakit" }];
     const announced = new Set(["2026-10-14 a", "2026-10-13 c"]);
 
-    expect(historyOf(HELD, marks, announced, 25)).toEqual([
+    expect(historyOf(HELD, marks, announced, lastOnly(25))).toEqual([
       { ...MORNING, status: "absent", note: "Sakit" },
       { ...HELD[1], status: "not_announced", note: "" },
     ]);
@@ -136,13 +160,13 @@ describe("historyOf", () => {
     };
     const mark: OwnMark = { ...removed, isAbsent: false, note: "" };
 
-    expect(historyOf([], [mark], new Set(), 25)).toEqual([
+    expect(historyOf([], [mark], new Set(), lastOnly(25))).toEqual([
       { ...removed, status: "present", note: "" },
     ]);
   });
 
   it("orders the latest first and keeps the last ones only", () => {
-    const history = historyOf(HELD, [], new Set(), 2);
+    const history = historyOf(HELD, [], new Set(), lastOnly(2));
 
     expect(history.map((entry) => entry.activityId)).toEqual(["a", "b"]);
   });

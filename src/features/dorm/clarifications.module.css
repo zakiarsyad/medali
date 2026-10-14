@@ -1,0 +1,5 @@
+/* The flow in one note, set apart from the numbers above it. */
+.flow {
+  composes: note from "./leave.module.css";
+  margin-top: var(--space-lg);
+}

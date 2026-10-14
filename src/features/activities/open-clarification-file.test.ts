@@ -1,6 +1,7 @@
 // Sample Tahun akademik of this file: 2320 to 2320.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { testPaper } from "@/clarifications/test-paper";
 import type { Database } from "@/db/connect";
 import { activityClarifications, activitySchedules } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -11,7 +12,6 @@ import {
 } from "@/files/memory-store";
 import { openClarificationFile } from "./open-clarification-file";
 import { sendClarification } from "./send-clarification";
-import { testPaper } from "./test-paper";
 import {
   addTestActivity,
   addTestActor,
