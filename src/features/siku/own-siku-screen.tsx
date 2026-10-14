@@ -6,6 +6,7 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import type { OwnEntry, OwnSiku } from "./own-siku";
+import { waitingWords } from "./request-status";
 import styles from "./siku.module.css";
 import { GAIN_REASONS, LOSS_REASONS, type SikuKind } from "./siku-ids";
 import { isHeldWithin, sikuOf } from "./siku-score";
@@ -86,8 +87,11 @@ export function OwnSikuScreen({
   tabs: TabLinksProps;
   base: number;
   siku: OwnSiku;
-  /** "Ajukan penambahan SIKU" and "Pengajuan saya", or null for none. */
-  requests: ReactNode;
+  /**
+   * "Ajukan penambahan SIKU" and "Pengajuan saya" with how many requests
+   * wait, or null for a student who may not ask.
+   */
+  requests: { panels: ReactNode; waiting: number } | null;
 }) {
   const { totals, entries } = siku;
   const final = sikuOf(base, totals);
@@ -124,10 +128,14 @@ export function OwnSikuScreen({
         <NumberCard
           label="SIKU akhir"
           amount={final}
-          note="nilai dasar + penambahan − pengurangan"
+          note={
+            requests === null
+              ? "nilai dasar + penambahan − pengurangan"
+              : waitingWords(requests.waiting)
+          }
         />
       </NumberCards>
-      {requests}
+      {requests?.panels}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Transparansi nilai SIKU</h2>
         <div className={styles.sum}>

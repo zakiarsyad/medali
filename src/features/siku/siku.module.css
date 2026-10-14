@@ -244,3 +244,66 @@
   font-weight: var(--weight-heavy);
   cursor: pointer;
 }
+
+.largePhoto {
+  display: block;
+  max-width: 100%;
+  max-height: var(--file-preview-height);
+  margin: 0 auto;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+/* A photo whose picture is not kept, as a sample one before its photos are added. */
+.missingPhoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: var(--line-width) dashed var(--line);
+  border-radius: var(--radius-md);
+  color: var(--faint);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+.requests {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.request {
+  min-width: 0;
+  padding-bottom: var(--space-md);
+  border-bottom: var(--line-width) solid var(--line2);
+  overflow-wrap: anywhere;
+}
+
+.request:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.request p {
+  margin: var(--space-xs) 0 0;
+}
+
+.waiting {
+  color: var(--warn);
+}
+
+.approved {
+  color: var(--ok);
+}
+
+.rejected {
+  color: var(--bad);
+}
+
+.cancelled {
+  color: var(--muted);
+}

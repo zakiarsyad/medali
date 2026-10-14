@@ -42,6 +42,17 @@ export const REQUEST_PHOTO_FOLDER = "siku-request-photos";
 /** The name every sent photo gets: the name of the picked file is not kept. */
 export const REQUEST_PHOTO_FILE_NAME = `foto-bukti-siku${JPEG.extension}`;
 
+/** The address a photo of a request opens from, large or as its small copy. */
+export function photoAddress(photoId: string, isSmall: boolean): string {
+  const address = `/penilaian/siku/foto/${photoId}`;
+  return isSmall ? `${address}?ukuran=kecil` : address;
+}
+
+/** What the address of a photo asks for: its small copy, or the photo. */
+export function asksSmall(size: string): boolean {
+  return size === "kecil";
+}
+
 export const ONLY_PICTURES = "Hanya berkas gambar yang diterima.";
 export const TOO_MANY_PHOTOS = "Maksimal 3 foto.";
 export const PHOTO_TOO_LARGE = "Ukuran foto maksimal 5 MB.";

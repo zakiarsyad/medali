@@ -115,7 +115,7 @@ An approved request becomes a normal gain in the SIKU history.
   rights to ask and to decide are added, with their checks. Sample data adds
   requests in every status, with drawn placeholder photos.
 - [x] 2. The student sends a request from "Ajukan penambahan SIKU".
-- [ ] 3. "Pengajuan saya" shows the requests, with "Tarik pengajuan".
+- [x] 3. "Pengajuan saya" shows the requests, with "Tarik pengajuan".
 - [ ] 4. Staff see the panel with the status choice and the cards.
 - [ ] 5. "Setujui" adds the gain; "Tolak" needs a note.
 - [ ] 6. Cancelling the gain shows the request as Dibatalkan.

@@ -9,7 +9,9 @@ import {
   HistoryPanel,
   SeenStudentsDialog,
 } from "@/features/siku/history-panel";
+import { OwnRequestList } from "@/features/siku/own-request-list";
 import { OwnRequestPanels } from "@/features/siku/own-request-panels";
+import { readOwnRequests, waitingCount } from "@/features/siku/own-requests";
 import { readOwnSiku } from "@/features/siku/own-siku";
 import { OwnSikuScreen } from "@/features/siku/own-siku-screen";
 import { RequestForm } from "@/features/siku/request-form";
@@ -42,16 +44,25 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const db = database();
   const { score: base } = await readBaseScore(db);
   if (!may(account.roles, "view_siku")) {
-    const own = await readOwnSiku(db, account);
+    const [own, asked] = await Promise.all([
+      readOwnSiku(db, account),
+      readOwnRequests(db, account),
+    ]);
     if (own.kind === "refused") forbidden();
-    const requests = may(account.roles, "ask_siku_addition") ? (
-      <OwnRequestPanels
-        form={
-          <RequestForm newRequestId={crypto.randomUUID()} today={campusDay()} />
-        }
-        list={null}
-      />
-    ) : null;
+    const requests = asked && {
+      waiting: waitingCount(asked),
+      panels: (
+        <OwnRequestPanels
+          form={
+            <RequestForm
+              newRequestId={crypto.randomUUID()}
+              today={campusDay()}
+            />
+          }
+          list={<OwnRequestList requests={asked} />}
+        />
+      ),
+    };
     return (
       <OwnSikuScreen
         tabs={tabs}

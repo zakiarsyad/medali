@@ -30,6 +30,17 @@ export const NO_PHOTO_STORAGE = refusal(
   "Foto bukti belum dapat disimpan di sini karena penyimpanan berkas belum diatur. Tidak ada yang tersimpan.",
 );
 
+export const REQUEST_WITHDRAWN = "Pengajuan ditarik.";
+
+export const REQUEST_NOT_FOUND = refusal(
+  "Pengajuan ini tidak ditemukan. Muat ulang halaman.",
+);
+
+/** What a withdrawal answers once the request was decided, as at the same moment. */
+export const ALREADY_DECIDED = refusal(
+  "Pengajuan ini sudah diperiksa Penilai Mahasiswa, jadi tidak dapat ditarik. Muat ulang halaman.",
+);
+
 export const PHOTOS_NOT_KEPT = refusal(
   "Foto bukti tidak dapat disimpan. Coba lagi.",
 );

@@ -21,6 +21,12 @@ export const SHOWN_STATUS_WORDS: Record<ShownStatus, string> = {
   cancelled: "Dibatalkan",
 };
 
+/** How many of a student's requests wait, as SIKU akhir says it. */
+export function waitingWords(waiting: number): string {
+  if (waiting === 0) return "tidak ada pengajuan menunggu";
+  return `${waiting.toLocaleString("id-ID")} pengajuan menunggu`;
+}
+
 /** What a request is shown as, from what is kept of it and its gain. */
 export interface KeptStatus {
   status: RequestStatus;

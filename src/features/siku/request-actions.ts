@@ -9,9 +9,11 @@ import { database } from "@/db/database";
 import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
+import type { FormState } from "@/ui/form-message";
 import { REQUEST_PHOTO_FILE_NAME } from "./request-photo";
 import { type SentPhoto, sendSikuRequest } from "./send-request";
 import { SIKU_ADDRESS } from "./siku-address";
+import { withdrawSikuRequest } from "./withdraw-request";
 
 /**
  * The signed-in account when it may ask for a SIKU gain. Any other is
@@ -75,4 +77,20 @@ export async function sendSikuRequestAction(
   );
   if (sent.ok) revalidatePath(SIKU_ADDRESS);
   return sent;
+}
+
+/** "Tarik pengajuan" on one of the student's own requests. */
+export async function withdrawSikuRequestAction(
+  id: string,
+): Promise<FormState> {
+  const actor = await asker();
+  const withdrawn = await withdrawSikuRequest(
+    database(),
+    actor,
+    String(id),
+    new Date(),
+  );
+  revalidatePath(SIKU_ADDRESS);
+  if (!withdrawn.ok) return { error: withdrawn.error, done: null };
+  return { error: null, done: withdrawn.value };
 }
