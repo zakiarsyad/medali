@@ -2,8 +2,10 @@ import type { FileFault, FileRule } from "@/files/file-check";
 import { JPEG, PDF, PNG } from "@/files/file-kinds";
 
 /*
- * Read by the form in the browser, so nothing here may take from the
- * database code: that would send it to the browser with the form.
+ * The file a clarification takes, the same for every area that takes
+ * clarifications. Read by the forms in the browser, so nothing here may
+ * take from the database code: that would send it to the browser with
+ * the form.
  */
 
 const MEGABYTE = 1024 * 1024;
@@ -23,9 +25,6 @@ export const CLARIFICATION_FILE_RULE: FileRule = {
   kinds: [PDF, JPEG, PNG],
   maxBytes: CLARIFICATION_FILE_MAX_BYTES,
 };
-
-/** The part of the file storage that keeps the files of clarifications. */
-export const CLARIFICATION_FOLDER = "attendance-clarifications";
 
 /** What the screen says for each thing wrong with a sent file. */
 export const CLARIFICATION_FILE_FAULTS: Record<FileFault, string> = {

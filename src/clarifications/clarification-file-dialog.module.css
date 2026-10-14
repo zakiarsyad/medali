@@ -1,0 +1,27 @@
+.fileHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+  overflow-wrap: anywhere;
+}
+
+.fileFrame {
+  display: block;
+  width: 100%;
+  height: var(--file-preview-height);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+/* A tall picture is kept from pushing "Unduh" and "Tutup" off the screen. */
+.filePicture {
+  display: block;
+  max-width: 100%;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  max-height: var(--file-preview-height);
+  margin: 0 auto;
+}

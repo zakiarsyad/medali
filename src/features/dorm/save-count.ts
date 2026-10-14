@@ -5,6 +5,7 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { brokeUniqueRule } from "@/db/unique-violation";
 import type { Parsed } from "@/parsed";
+import { closeWithdrawn } from "./clarification-store";
 import type { CountInput } from "./count-input";
 import {
   ANNOUNCED_ALREADY,
@@ -52,6 +53,14 @@ function marksAbsentOnLeave(
   );
 }
 
+/** The participants a form marks Tidak hadir. */
+function absentIn(input: CountInput): Set<string> {
+  const absent = Object.entries(input.marks).filter(
+    ([, mark]) => mark.isAbsent,
+  );
+  return new Set(absent.map(([id]) => id));
+}
+
 async function saveIn(
   tx: Database,
   actorId: string,
@@ -76,6 +85,10 @@ async function saveIn(
   if (marksAbsentOnLeave(input, leaves, times)) return ON_LEAVE;
 
   const version = await writeCount(tx, actorId, input, participants, kept);
+  // Only a count announced before can have clarifications.
+  if (input.isAnnouncement && wasAnnounced) {
+    await closeWithdrawn(tx, kept.id, absentIn(input), actorId);
+  }
   const isAnnounced = wasAnnounced || input.isAnnouncement;
   return { ok: true, value: { version, isAnnounced } };
 }
@@ -90,6 +103,9 @@ async function saveIn(
  * who does not take part, and for one that marks Tidak hadir someone
  * whose approved leave covers the activity. Two saves of one activity at once are taken one
  * after the other, and the database keeps one count for it on a day.
+ * "Umumkan ulang" closes the waiting clarification of each resident it
+ * no longer marks Tidak hadir, with the note that the absence was
+ * withdrawn.
  */
 export async function saveCount(
   db: Database,

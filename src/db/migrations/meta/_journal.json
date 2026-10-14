@@ -267,6 +267,13 @@
       "when": 1792003659022,
       "tag": "0037_siku-uploads",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792007169645,
+      "tag": "0038_dorm-attendance-clarification",
+      "breakpoints": true
     }
   ]
 }

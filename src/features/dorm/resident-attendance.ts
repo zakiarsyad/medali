@@ -29,8 +29,19 @@ import type { DormId } from "@/dorms/dorms";
 import { audiencesCovering } from "./activity-audience";
 import { readVersions } from "./activity-reads";
 import {
+  historyWithClarifications,
+  tallyWithClarifications,
+} from "./clarification-effect";
+import {
+  type ClarifiedEntry,
+  clarificationCell,
+  firstClarifiableDay,
+  waitingCount,
+} from "./clarification-time";
+import {
   type HeldActivity,
   type HistoryEntry,
+  type HistoryReach,
   heldKey,
   historyOf,
   marksOver,
@@ -47,10 +58,24 @@ import {
 } from "./history-leave";
 import type { ApprovedLeave } from "./leave-marks";
 import { readApprovedLeaves } from "./leave-store";
+import {
+  readOwnAccepted,
+  readOwnClarifications,
+  readOwnStatuses,
+} from "./own-clarifications";
 import { readStudentDorm } from "./student-dorm";
 
-/** How many activities Riwayat shows. */
+/** How many activities Riwayat shows at least. */
 export const HISTORY_SHOWN = 25;
+
+/**
+ * How far back Riwayat reaches on a day: every activity that may still
+ * be clarified, and at least the last 25, so an absence that may be
+ * clarified never drops out of it.
+ */
+function historyReach(today: string): HistoryReach {
+  return { limit: HISTORY_SHOWN, keepFrom: firstClarifiableDay(today) };
+}
 
 /** The attendance of a resident at the dorm activities. */
 export interface OwnAttendance {
@@ -58,7 +83,9 @@ export interface OwnAttendance {
   present: number;
   absent: number;
   /** The last activities that are over, the latest first. */
-  history: HistoryEntry[];
+  history: ClarifiedEntry[];
+  /** "Klarifikasi aktif": the resident's clarifications that wait. */
+  waitingClarifications: number;
 }
 
 export type OwnAttendanceAnswer =
@@ -154,6 +181,7 @@ async function readHeld(
   db: Database,
   dorm: DormId,
   now: CampusMoment,
+  reach: HistoryReach,
 ): Promise<HeldActivity[]> {
   const rows = await readVersions(
     db,
@@ -162,7 +190,7 @@ async function readHeld(
       lte(dormActivityVersions.startsOn, now.day),
     ),
   );
-  return pastOccurrences(rows, now, HISTORY_SHOWN).map(({ day, activity }) => ({
+  return pastOccurrences(rows, now, reach).map(({ day, activity }) => ({
     activityId: activity.id,
     day,
     name: activity.name,
@@ -199,7 +227,10 @@ async function readAnnouncedKeys(
 /**
  * The attendance of a resident at the dorm activities: how often they
  * were Hadir and Tidak hadir in the announced counts, and Riwayat of the
- * last 25 activities of their group that are over. Only the account's own
+ * activities of their group that are over, back to the first day whose
+ * activities may still be clarified and at least the last 25, with their
+ * clarifications; approved leave and an accepted clarification make them
+ * Izin or Hadir. Only the account's own
  * student is ever read. Refused for an account without the right, and
  * for a student who lives in no dorm today.
  */
@@ -217,13 +248,20 @@ export async function readOwnAttendance(
   const dorm = await readStudentDorm(db, studentId, now.day);
   if (dorm === null) return { kind: "refused" };
 
-  const before = lt(dormAttendanceCounts.day, now.day);
-  const [earlier, todays, past, held] = await Promise.all([
+  const reach = historyReach(now.day);
+  const day = dormAttendanceCounts.day;
+  const [earlier, todays, inWindow, older, held] = await Promise.all([
     readTotalsBefore(db, studentId, now.day),
-    readOwnMarks(db, studentId, eq(dormAttendanceCounts.day, now.day)),
-    readOwnMarks(db, studentId, before, HISTORY_SHOWN),
-    readHeld(db, dorm, now),
+    readOwnMarks(db, studentId, eq(day, now.day)),
+    readOwnMarks(
+      db,
+      studentId,
+      and(lt(day, now.day), gte(day, reach.keepFrom)),
+    ),
+    readOwnMarks(db, studentId, lt(day, reach.keepFrom), reach.limit),
+    readHeld(db, dorm, now, reach),
   ]);
+  const past = [...inWindow, ...older];
   // An activity announced while it still runs counts only once it is over.
   const overToday = marksOver(todays, now);
   const today = tallyOf(overToday);
@@ -232,18 +270,54 @@ export async function readOwnAttendance(
     absent: earlier.absent + today.absent,
   };
   const marks = [...overToday, ...marksOver(past, now)];
-  const [announced, covered] = await Promise.all([
+  const [announced, covered, accepted] = await Promise.all([
     readAnnouncedKeys(db, held),
     readCoveredMarks(db, studentId, moment, now),
+    readOwnAccepted(db, studentId),
   ]);
-  const history = historyOf(held, marks, announced, HISTORY_SHOWN);
+  const history = historyOf(held, marks, announced, reach);
+  const withClarifications = historyWithClarifications(
+    historyWithLeave(history, covered),
+    new Map(accepted.map((each) => [each.key, each])),
+  );
+  const [clarified, statuses] = await Promise.all([
+    clarifiedHistory(db, studentId, withClarifications, now.day),
+    readOwnStatuses(db, studentId),
+  ]);
+  const tally = tallyWithClarifications(
+    tallyWithLeave(totals, covered),
+    accepted,
+    new Set(covered.keys()),
+  );
   return {
     kind: "shown",
     attendance: {
-      ...tallyWithLeave(totals, covered),
-      history: historyWithLeave(history, covered),
+      ...tally,
+      history: clarified,
+      waitingClarifications: waitingCount(statuses),
     },
   };
+}
+
+/** Riwayat with what the Klarifikasi cell of each row shows `today`. */
+async function clarifiedHistory(
+  db: Database,
+  studentId: string,
+  history: HistoryEntry[],
+  today: string,
+): Promise<ClarifiedEntry[]> {
+  const oldest = history.at(-1);
+  if (oldest === undefined) return [];
+  const shown = await readOwnClarifications(db, studentId, oldest.day);
+  return history.map((entry) => ({
+    ...entry,
+    clarification: clarificationCell({
+      status: entry.status,
+      day: entry.day,
+      today,
+      newest: shown.get(heldKey(entry)) ?? null,
+    }),
+  }));
 }
 
 /** The days on campus from the first to the last day of each leave. */

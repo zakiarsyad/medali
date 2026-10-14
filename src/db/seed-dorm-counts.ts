@@ -1,12 +1,14 @@
 import { asc, eq } from "drizzle-orm";
-import { daysAfter } from "@/academic-periods/days-after";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { dormOf } from "@/dorms/resident-rule";
 import { loggedMarks } from "@/features/dorm/count-marks";
 import type { Database } from "./connect";
 import type { SamplePeriod } from "./sample-data";
 import {
+  afterEnd,
   type KeptSampleActivity,
+  type KeptSampleCount,
+  nextMorning,
   type SampleCount,
   type SampleResident,
   sampleDormCounts,
@@ -18,17 +20,6 @@ import {
   dormAttendanceMarks,
   students,
 } from "./schema";
-
-/** Half an hour after a sample activity ended, on campus. */
-function afterEnd(count: SampleCount): Date {
-  const ended = new Date(`${count.day}T${count.endTime}:00+07:00`);
-  return new Date(ended.getTime() + 30 * 60 * 1000);
-}
-
-/** Eight in the morning on campus, the day after a sample activity. */
-function nextMorning(count: SampleCount): Date {
-  return new Date(`${daysAfter(count.day, 1)}T08:00:00+07:00`);
-}
 
 /** The residents of the running sample period, by name. */
 export async function sampleResidents(
@@ -55,11 +46,12 @@ async function sampleCounter(db: Database): Promise<string> {
   return counter.id;
 }
 
+/** Adds a sample count with its marks and log lines. Gives back its key. */
 async function addCount(
   db: Database,
   count: SampleCount,
   by: string,
-): Promise<void> {
+): Promise<string> {
   const firstSaved = afterEnd(count);
   const savedAt = count.stage === "corrected" ? nextMorning(count) : firstSaved;
   const announcement =
@@ -82,7 +74,7 @@ async function addCount(
     ...mark,
   }));
   if (marks.length > 0) await db.insert(dormAttendanceMarks).values(marks);
-  if (count.stage === "draft") return;
+  if (count.stage === "draft") return added.id;
 
   const after = loggedMarks(count.marks);
   if (count.firstMarks === null) {
@@ -92,7 +84,7 @@ async function addCount(
       changedAt: savedAt,
       marksAfter: after,
     });
-    return;
+    return added.id;
   }
   const first = loggedMarks(count.firstMarks);
   await db.insert(dormAttendanceChanges).values([
@@ -110,23 +102,27 @@ async function addCount(
       marksAfter: after,
     },
   ]);
+  return added.id;
 }
 
 /**
  * Adds the sample counts of the week before today for the sample dorm
  * activities, with their marks and the log of their announcements, as
- * the work of the sample BAM - BPHK. The residents are those of the
- * running sample period. `day` is today on campus.
+ * the work of the sample BAM - BPHK, and gives them back with their keys.
+ * The residents are those of the running sample period. `day` is today
+ * on campus.
  */
 export async function addSampleDormCounts(
   db: Database,
   activities: KeptSampleActivity[],
   period: SamplePeriod,
   day: string,
-): Promise<void> {
+): Promise<KeptSampleCount[]> {
   const residents = await sampleResidents(db, period);
   const counter = await sampleCounter(db);
+  const kept: KeptSampleCount[] = [];
   for (const count of sampleDormCounts(day, activities, residents)) {
-    await addCount(db, count, counter);
+    kept.push({ id: await addCount(db, count, counter), count });
   }
+  return kept;
 }

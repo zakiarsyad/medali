@@ -3,12 +3,8 @@
 import { type MouseEvent, useEffect, useRef } from "react";
 import shared from "@/ui/data-screen.module.css";
 import modal from "@/ui/modal-dialog.module.css";
-import {
-  type ClarificationFile,
-  fileAddressOf,
-  PDF_NOT_SHOWN,
-} from "./clarification-card";
-import styles from "./clarifications.module.css";
+import styles from "./clarification-file-dialog.module.css";
+import { type ClarificationFile, PDF_NOT_SHOWN } from "./shown-file";
 
 /** The file itself: a PDF in a frame, or the picture. */
 function Shown({
@@ -38,15 +34,16 @@ function Shown({
  * the file itself. "Tutup", Escape and a press outside the box all close
  * it, and the browser then puts the keyboard back on the name pressed.
  * The address of the page does not change, so the cards keep what was
- * decided on them.
+ * decided on them. `addressOf` gives where the server answers with the
+ * file, to be shown inside the page or downloaded.
  */
 export function ClarificationFileDialog({
-  clarificationId,
   file,
+  addressOf,
   onClose,
 }: {
-  clarificationId: string;
   file: ClarificationFile;
+  addressOf: (isShown: boolean) => string;
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -79,10 +76,7 @@ export function ClarificationFileDialog({
             <p className={shared.detail}>{file.facts}</p>
           </div>
           <div className={shared.actions}>
-            <a
-              href={fileAddressOf(clarificationId, false)}
-              className={shared.quiet}
-            >
+            <a href={addressOf(false)} className={shared.quiet}>
               Unduh
             </a>
             <button
@@ -94,7 +88,7 @@ export function ClarificationFileDialog({
             </button>
           </div>
         </div>
-        <Shown file={file} address={fileAddressOf(clarificationId, true)} />
+        <Shown file={file} address={addressOf(true)} />
       </div>
     </dialog>
   );

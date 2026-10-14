@@ -1,9 +1,11 @@
 // Sample Tahun akademik of this file: 2740 to 2740.
 // Sample NIMs of this file: 9937790000 to 9937790099.
+
+import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, dormLeaves } from "@/db/schema";
+import { academicPeriods, dormAttendanceCounts, dormLeaves } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import type { CountInput } from "./count-input";
@@ -11,6 +13,7 @@ import { removeActivity } from "./remove-activity";
 import { readOwnAttendance } from "./resident-attendance";
 import { saveCount } from "./save-count";
 import { addTestActivity } from "./test-activities";
+import { addTestClarification } from "./test-clarifications";
 import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -310,3 +313,136 @@ describe("readOwnAttendance", () => {
     });
   });
 });
+
+describe("Riwayat over the clarification time", () => {
+  it("holds every activity back to the first day a clarification can still be sent, also past 25 rows, so an absence 7 days back still offers Ajukan klarifikasi", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { ani, counter } = records;
+      // Four more activities a day from a week back: with the two of the
+      // records, more than 25 are over within the seven days.
+      const extra: string[] = [];
+      for (const [place, startTime] of [
+        "08:00",
+        "12:00",
+        "15:00",
+        "17:00",
+      ].entries()) {
+        extra.push(
+          await addTestActivity(db, counter.id, {
+            versions: [
+              {
+                startsOn: "2740-10-05",
+                name: `Kegiatan uji ${place + 1}`,
+                startTime,
+                endTime: `${startTime.slice(0, 2)}:45`,
+              },
+            ],
+          }),
+        );
+      }
+      const [first] = extra;
+      if (!first) throw new Error("The activities were not added.");
+      // Seven days before today: its clarification time ends today.
+      const weekBack = "2740-10-07";
+      await count(db, records, {
+        activityId: first,
+        day: weekBack,
+        marks: { [ani]: { isAbsent: true, note: "" } },
+      });
+
+      const answer = await readOwnAttendance(db, residentOf(ani), NIGHT);
+
+      if (answer.kind !== "shown") throw new Error("It was refused.");
+      const { history } = answer.attendance;
+      expect(history.length).toBeGreaterThan(25);
+      expect(history.at(-1)?.day).toBe(weekBack);
+      const absence = history.find(
+        (entry) => entry.day === weekBack && entry.activityId === first,
+      );
+      expect(absence).toMatchObject({
+        status: "absent",
+        clarification: { action: "ask" },
+      });
+    });
+  });
+});
+
+describe("readOwnAttendance with clarifications", () => {
+  it("shows in Riwayat the newest clarification of an absence with its note and Ajukan ulang, and counts those that wait as Klarifikasi aktif", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { ani, morning, evening, counter } = records;
+      await count(db, records, {
+        activityId: morning,
+        day: YESTERDAY,
+        marks: { [ani]: { isAbsent: true, note: "" } },
+      });
+      await count(db, records, {
+        activityId: evening,
+        day: YESTERDAY,
+        marks: { [ani]: { isAbsent: true, note: "" } },
+      });
+      const morningCount = await countIdOf(db, morning, YESTERDAY);
+      const eveningCount = await countIdOf(db, evening, YESTERDAY);
+      await addTestClarification(db, counter.id, {
+        countId: morningCount,
+        studentId: ani,
+        status: "rejected",
+        verifyNote: "Tidak ada surat.",
+        sentAt: new Date("2740-10-13T14:00:00Z"),
+      });
+      await addTestClarification(db, counter.id, {
+        countId: eveningCount,
+        studentId: ani,
+        status: "verified",
+        fileKey: "dorm-clarifications/uji",
+      });
+
+      const answer = await readOwnAttendance(db, residentOf(ani), NIGHT);
+
+      if (answer.kind !== "shown") throw new Error("It was refused.");
+      const cells = answer.attendance.history
+        .filter((entry) => entry.day === YESTERDAY)
+        .map((entry) => [entry.name, entry.clarification]);
+      expect(cells).toEqual([
+        [
+          "Belajar malam uji",
+          {
+            badge: "verified",
+            note: "",
+            file: {
+              clarificationId: expect.any(String),
+              name: "surat-keterangan.pdf",
+            },
+            action: null,
+          },
+        ],
+        [
+          "Apel pagi uji",
+          {
+            badge: "rejected",
+            note: "Tidak ada surat.",
+            file: null,
+            action: "ask_again",
+          },
+        ],
+      ]);
+      expect(answer.attendance.waitingClarifications).toBe(1);
+    });
+  });
+});
+
+async function countIdOf(db: Database, activityId: string, day: string) {
+  const [found] = await db
+    .select({ id: dormAttendanceCounts.id })
+    .from(dormAttendanceCounts)
+    .where(
+      and(
+        eq(dormAttendanceCounts.activityId, activityId),
+        eq(dormAttendanceCounts.day, day),
+      ),
+    );
+  if (!found) throw new Error("The count is missing.");
+  return found.id;
+}

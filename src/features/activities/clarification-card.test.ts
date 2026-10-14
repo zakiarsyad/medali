@@ -2,10 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   decidedByWords,
   fileAddressOf,
-  fileFacts,
   hasDetails,
   heldWords,
-  isPdfType,
   resultWords,
 } from "./clarification-card";
 import { TEST_CLARIFICATION } from "./test-clarifications";
@@ -52,19 +50,6 @@ describe("heldWords", () => {
     const schedule = { startsOn: "2026-10-10", endsOn: "2026-10-12", ...hours };
 
     expect(heldWords(schedule)).toBe("10 Okt – 12 Okt 2026, 07:30–11:30");
-  });
-});
-
-describe("fileFacts", () => {
-  it("says the kind and the size in KB, a small file counting as 1 KB", () => {
-    expect(fileFacts(true, 20_480)).toBe("Dokumen PDF · 20 KB");
-    expect(fileFacts(false, 64)).toBe("Gambar · 1 KB");
-    expect(fileFacts(true, 5 * 1024 * 1024)).toBe("Dokumen PDF · 5.120 KB");
-  });
-
-  it("takes only a PDF as a document", () => {
-    expect(isPdfType("application/pdf")).toBe(true);
-    expect(isPdfType("image/png")).toBe(false);
   });
 });
 

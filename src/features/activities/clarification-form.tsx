@@ -2,11 +2,15 @@
 
 import { unstable_rethrow } from "next/navigation";
 import { type FormEvent, useRef, useTransition } from "react";
+import {
+  draftOf,
+  type SendEdges,
+  sendDraft,
+} from "@/clarifications/clarification-draft";
 import type { FormState } from "@/ui/form-message";
+import { shrinkPhoto } from "@/ui/shrink-photo";
 import { sendClarificationAction } from "./clarification-actions";
-import { draftOf, type SendEdges, sendDraft } from "./clarification-draft";
 import { ClarificationFormView } from "./clarification-form-view";
-import { shrinkPhoto } from "./shrink-photo";
 
 /** The form's ties to this browser and to the server. */
 const EDGES: SendEdges = {
@@ -40,7 +44,7 @@ export function ClarificationForm({
     event.preventDefault();
     if (isOnItsWay.current) return;
     isOnItsWay.current = true;
-    const draft = draftOf(scheduleId, new FormData(event.currentTarget));
+    const draft = draftOf({ scheduleId }, new FormData(event.currentTarget));
     startSending(async () => {
       try {
         onAnswer(await sendDraft(draft, EDGES));

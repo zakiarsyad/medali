@@ -7,9 +7,10 @@ import { Rundown } from "./activity-detail";
 import type { ActivityRow } from "./activity-row";
 import { type ActivityState, activityState } from "./activity-state";
 import { hoursWords, placeWords } from "./activity-words";
+import { HistoryTable } from "./history-table";
 import type { ResidentActivities } from "./resident-activities";
 import type { OwnAttendance } from "./resident-attendance";
-import { AttendanceNumbers, HistoryTable } from "./resident-attendance-view";
+import { AttendanceNumbers } from "./resident-attendance-view";
 
 function whenAndWhere(activity: ActivityRow): string {
   const hours = hoursWords(activity.startTime, activity.endTime);

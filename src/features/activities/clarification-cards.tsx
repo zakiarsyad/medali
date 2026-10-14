@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { ClarificationFileDialog } from "@/clarifications/clarification-file-dialog";
 import { answersAfter } from "./card-decisions";
-import type { ClarificationCard } from "./clarification-card";
+import { type ClarificationCard, fileAddressOf } from "./clarification-card";
 import {
   ClarificationCardsView,
   NO_CLARIFICATION_ANSWERS,
 } from "./clarification-cards-view";
-import { ClarificationFileDialog } from "./clarification-file-dialog";
 
 /**
  * The clarification cards of one page of the list. It holds what the
@@ -39,8 +39,8 @@ export function ClarificationCards({
       {opened?.file && (
         <ClarificationFileDialog
           key={opened.id}
-          clarificationId={opened.id}
           file={opened.file}
+          addressOf={(isShown) => fileAddressOf(opened.id, isShown)}
           onClose={() => setOpened(null)}
         />
       )}
