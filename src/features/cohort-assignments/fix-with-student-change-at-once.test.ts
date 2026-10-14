@@ -1,5 +1,5 @@
-// Sample NIMs of this file: 9963000001 to 9966000199, and 9974000001 to
-// 9974000199.
+// Sample NIMs of this file: 9963000001 to 9966000199, and 9978000001 to
+// 9978000199.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -223,7 +223,7 @@ describe("a penetapan that waits for a save of one of its students", () => {
     const made = await addDraftWithAddedStudent(
       own.db,
       year,
-      9974000001,
+      9978000001,
       "UJITUNGGUMHS",
     );
     let fixing: Promise<unknown> | undefined;
