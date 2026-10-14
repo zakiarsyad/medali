@@ -146,6 +146,22 @@ Decided while building, because the issue did not say:
     with Hadir or Tidak hadir and the note, or says "Semua peserta hadir
     tanpa catatan." Before the announcement it shows only "Pengumuman
     BAM: Belum diumumkan".
+17. Riwayat holds the last 25 activities of the resident's group that are
+    over, today's once they end, looking back a year at most: each
+    announced one as Hadir or Tidak hadir with its Catatan, and one not
+    announced as "Belum diumumkan". The group is that of the dorm they
+    live in today, as under Hari ini. An activity announced without
+    them, held before they took part, is left out. An announced count
+    stays in Riwayat after its activity is removed or its day is marked
+    without activity.
+18. "Kehadiran kegiatan asrama" is the share of the announced counts that
+    hold the resident in which they were Hadir, of all time, rounded to a
+    whole percentage, and 0% before any. "Tercatat tidak hadir" counts
+    their announced absences. "Kegiatan hari ini" counts today's
+    activities of their group, with their dorm under it.
+19. The note on how attendance is counted, "Klarifikasi aktif" and the
+    Klarifikasi column of Riwayat leave out clarification, which is not
+    part of this work.
 
 ## Steps
 
@@ -155,4 +171,4 @@ Decided while building, because the issue did not say:
   permission list, with their checks.
 - [x] 3. "Penghitungan kehadiran" lets BAM tick, note, save and announce.
 - [x] 4. Staff see Hadir, Kehadiran and the absent list in Rincian.
-- [ ] 5. Residents see the numbers and Riwayat.
+- [x] 5. Residents see the numbers and Riwayat.

@@ -8,6 +8,8 @@ import type { ActivityRow } from "./activity-row";
 import { type ActivityState, activityState } from "./activity-state";
 import { hoursWords, placeWords } from "./activity-words";
 import type { ResidentActivities } from "./resident-activities";
+import type { OwnAttendance } from "./resident-attendance";
+import { AttendanceNumbers, HistoryTable } from "./resident-attendance-view";
 
 function whenAndWhere(activity: ActivityRow): string {
   const hours = hoursWords(activity.startTime, activity.endTime);
@@ -55,16 +57,28 @@ function ComingItem({ occurrence }: { occurrence: Occurrence<ActivityRow> }) {
 
 /**
  * Kegiatan asrama for a resident: "Hari ini" as cards, one column on a
- * phone, and "Akan datang" with the next activities.
+ * phone, and "Akan datang" with the next activities. A resident who may
+ * see their attendance sees how it is counted and its numbers above, and
+ * Riwayat below.
  */
 export function ResidentActivitiesView({
   activities,
+  attendance,
 }: {
   activities: ResidentActivities;
+  /** The resident's attendance, or null when they may not see it. */
+  attendance: OwnAttendance | null;
 }) {
   const { now, today, coming } = activities;
   return (
     <>
+      {attendance && (
+        <AttendanceNumbers
+          attendance={attendance}
+          todayCount={today.length}
+          dorm={activities.dorm}
+        />
+      )}
       <section className={styles.part}>
         <h2 className={shared.heading}>Hari ini</h2>
         {today.length === 0 ? (
@@ -107,6 +121,14 @@ export function ResidentActivitiesView({
           )}
         </div>
       </section>
+      {attendance && (
+        <section className={styles.part}>
+          <h2 className={shared.heading}>Riwayat</h2>
+          <div className={shared.panel}>
+            <HistoryTable history={attendance.history} />
+          </div>
+        </section>
+      )}
     </>
   );
 }

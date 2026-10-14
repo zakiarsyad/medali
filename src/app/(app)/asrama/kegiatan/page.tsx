@@ -5,6 +5,7 @@ import { database } from "@/db/database";
 import { ActivitiesScreen } from "@/features/dorm/activities-screen";
 import { readResidentActivities } from "@/features/dorm/resident-activities";
 import { ResidentActivitiesView } from "@/features/dorm/resident-activities-view";
+import { readOwnAttendance } from "@/features/dorm/resident-attendance";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { visibleTo } from "@/features/students/visible-students";
 import { PageHead } from "@/ui/page-head";
@@ -14,7 +15,8 @@ import { TabLinks } from "@/ui/tab-links";
  * The tab Kegiatan asrama. Staff see the schedule; the Peserta are
  * counted among the students the account sees through the roles that may
  * see it: for Ketua Program Studi their own students only. A student who
- * lives in the dorm sees today's and the next activities of their group.
+ * lives in the dorm sees today's and the next activities of their group,
+ * and their own attendance.
  */
 export default async function DormActivitiesPage(
   props: PageProps<"/asrama/kegiatan">,
@@ -38,15 +40,22 @@ export default async function DormActivitiesPage(
       />
     );
   }
-  const answer = await readResidentActivities(database(), account, new Date());
+  const moment = new Date();
+  const answer = await readResidentActivities(database(), account, moment);
   if (answer.kind === "refused") forbidden();
+  const own = may(account.roles, "view_own_dorm_attendance")
+    ? await readOwnAttendance(database(), account, moment)
+    : null;
   return (
     <>
       <PageHead title="Kegiatan asrama">
         {await residentHeader(account.studentId)}
       </PageHead>
       <TabLinks {...tabs} />
-      <ResidentActivitiesView activities={answer.activities} />
+      <ResidentActivitiesView
+        activities={answer.activities}
+        attendance={own?.kind === "shown" ? own.attendance : null}
+      />
     </>
   );
 }
