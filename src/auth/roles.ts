@@ -12,6 +12,9 @@ export const ACTIONS = [
   "manage_dorm_rooms",
   "view_dorm_companions",
   "manage_dorm_companions",
+  "view_dorm_activities",
+  "manage_dorm_activities",
+  "view_own_dorm_activities",
   "view_student_detail",
   "view_student_room",
   "view_mentor_groups",
@@ -47,6 +50,9 @@ export const ACTION_TITLES: Record<Action, string> = {
   manage_dorm_rooms: "Mengelola ploting kamar",
   view_dorm_companions: "Melihat kakak pendamping",
   manage_dorm_companions: "Mengelola kakak pendamping",
+  view_dorm_activities: "Melihat jadwal kegiatan asrama",
+  manage_dorm_activities: "Mengelola kegiatan asrama",
+  view_own_dorm_activities: "Melihat kegiatan asrama sebagai penghuni",
   view_student_detail: "Melihat detail mahasiswa",
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
@@ -168,6 +174,7 @@ export const ROLES: Record<RoleId, Role> = {
       "set_academic_periods",
       "view_dorm_rooms",
       "view_dorm_companions",
+      "view_dorm_activities",
       "view_student_detail",
       "view_student_room",
       "view_mentor_groups",
@@ -193,6 +200,7 @@ export const ROLES: Record<RoleId, Role> = {
     actions: [
       "view_dorm_rooms",
       "view_dorm_companions",
+      "view_dorm_activities",
       "view_student_detail",
       "view_mentor_groups",
       "view_mentors",
@@ -212,6 +220,7 @@ export const ROLES: Record<RoleId, Role> = {
     actions: [
       "view_dorm_rooms",
       "view_dorm_companions",
+      "view_dorm_activities",
       "view_student_detail",
       "view_mentor_groups",
       "view_mentors",
@@ -262,7 +271,11 @@ export const ROLES: Record<RoleId, Role> = {
       assessment: ["siku"],
       dorm: ["activities", "leave", "cleaning", "violations"],
     },
-    actions: ["view_own_profile", "send_attendance_photo"],
+    actions: [
+      "view_own_profile",
+      "send_attendance_photo",
+      "view_own_dorm_activities",
+    ],
     rows: "self",
   },
   dorm_manager: {
@@ -276,6 +289,8 @@ export const ROLES: Record<RoleId, Role> = {
       "manage_dorm_rooms",
       "view_dorm_companions",
       "manage_dorm_companions",
+      "view_dorm_activities",
+      "manage_dorm_activities",
     ],
     rows: "all",
   },
@@ -284,7 +299,11 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BA",
     pages: ["dorm"],
     tabs: { dorm: ALL_DORM },
-    actions: ["view_dorm_rooms", "view_dorm_companions"],
+    actions: [
+      "view_dorm_rooms",
+      "view_dorm_companions",
+      "view_dorm_activities",
+    ],
     rows: "all",
   },
   bam_compliance: {
@@ -292,7 +311,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BK",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "clarification", "violations"] },
-    actions: [],
+    actions: ["view_dorm_activities"],
     rows: "all",
   },
   bam_household: {
@@ -300,7 +319,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BR",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "rooms", "cleaning"] },
-    actions: ["view_dorm_rooms", "manage_dorm_rooms"],
+    actions: ["view_dorm_rooms", "manage_dorm_rooms", "view_dorm_activities"],
     rows: "all",
   },
   bam_spiritual: {
@@ -308,7 +327,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BH",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations"] },
-    actions: [],
+    actions: ["view_dorm_activities"],
     rows: "all",
   },
   bam_catering: {
@@ -316,7 +335,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BS",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations"] },
-    actions: [],
+    actions: ["view_dorm_activities"],
     rows: "all",
   },
   bam_arts_sports: {
@@ -324,7 +343,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BP",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations"] },
-    actions: [],
+    actions: ["view_dorm_activities"],
     rows: "all",
   },
   bam_health: {
@@ -332,7 +351,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BE",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations", "health"] },
-    actions: [],
+    actions: ["view_dorm_activities"],
     rows: "all",
   },
   upk_staff: {
