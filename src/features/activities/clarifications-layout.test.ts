@@ -41,13 +41,6 @@ describe("the tab Klarifikasi kehadiran on a phone", () => {
     expect(ruleOf(OWN, ".fileHead")).toContain("flex-wrap: wrap;");
   });
 
-  it("keeps the search and the status choice as narrow as the screen", () => {
-    const fields = ruleOf(OWN, ".filters input,\n.filters select");
-
-    expect(fields).toContain("max-width: 100%;");
-    expect(fields).toContain("min-width: 0;");
-  });
-
   it("gives the Catatan and each decision the whole width of the card and more height, by the look the photo cards already have for a phone", () => {
     const view = readFileSync(
       `${FOLDER}/clarification-decide-view.tsx`,

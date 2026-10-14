@@ -1,5 +1,4 @@
 import shared from "@/ui/data-screen.module.css";
-import styles from "./verification.module.css";
 import {
   STATUS_CHOICE_WORDS,
   STATUS_CHOICES,
@@ -17,7 +16,7 @@ export function VerificationFilterRow({
   choices: ScheduleChoice[];
 }) {
   return (
-    <div className={`${shared.filters} ${styles.filters}`}>
+    <div className={shared.filters}>
       <select
         name="kegiatan"
         className={shared.input}
