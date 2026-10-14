@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2690 to 2690.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
@@ -167,18 +168,18 @@ describe("listOneOffs", () => {
 describe("countResidentsByDorm", () => {
   /*
    * A period far from those of any other file of checks, so these wait
-   * for none of them. Angkatan 2066 is in semester 1 in it.
+   * for none of them. Angkatan 2690 is in semester 1 in it.
    */
-  const ODD_2066 = {
-    startYear: 2066,
+  const ODD_2690 = {
+    startYear: 2690,
     term: "odd",
-    startsOn: "2066-08-01",
-    endsOn: "2067-01-31",
+    startsOn: "2690-08-01",
+    endsOn: "2691-01-31",
   } as const;
-  const DAY_2066 = "2066-10-12";
+  const DAY_2690 = "2690-10-12";
 
   async function addResidents(db: Database): Promise<number> {
-    await db.insert(academicPeriods).values(ODD_2066);
+    await db.insert(academicPeriods).values(ODD_2690);
     const own = await addTestProgram(db, "Prodi Uji Kegiatan Sendiri");
     const other = await addTestProgram(db, "Prodi Uji Kegiatan Lain");
     const added = [
@@ -196,7 +197,7 @@ describe("countResidentsByDorm", () => {
         program: own,
         nim: "9936660005",
         sex: "female" as const,
-        cohortYear: 2065,
+        cohortYear: 2689,
       },
       {
         program: own,
@@ -208,7 +209,7 @@ describe("countResidentsByDorm", () => {
     for (const { program, ...student } of added) {
       await addTestStudent(db, program, {
         name: `Penghuni Uji ${student.nim}`,
-        cohortYear: 2066,
+        cohortYear: 2690,
         ...student,
       });
     }
@@ -219,7 +220,7 @@ describe("countResidentsByDorm", () => {
     await inTestDatabase(async (db) => {
       await addResidents(db);
 
-      expect(await countResidentsByDorm(db, EVERYONE, DAY_2066)).toEqual({
+      expect(await countResidentsByDorm(db, EVERYONE, DAY_2690)).toEqual({
         wismantara_putra: 1,
         wismantara_putri: 0,
         dana_rakca: 2,
@@ -233,7 +234,7 @@ describe("countResidentsByDorm", () => {
       const own = await addResidents(db);
       const ownProgram = eq(students.studyProgramId, own);
 
-      expect(await countResidentsByDorm(db, ownProgram, DAY_2066)).toEqual({
+      expect(await countResidentsByDorm(db, ownProgram, DAY_2690)).toEqual({
         wismantara_putra: 0,
         wismantara_putri: 0,
         dana_rakca: 1,
@@ -246,7 +247,7 @@ describe("countResidentsByDorm", () => {
     await inTestDatabase(async (db) => {
       await addResidents(db);
 
-      const counted = await countResidentsByDorm(db, EVERYONE, "2066-02-01");
+      const counted = await countResidentsByDorm(db, EVERYONE, "2690-02-01");
 
       expect(counted).toEqual({
         wismantara_putra: 1,

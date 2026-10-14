@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 2700 to 2700.
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -13,18 +14,18 @@ const inTestDatabase = withTestDatabase();
 
 /*
  * A period far from those of any other file of checks, so these wait for
- * none of them. Angkatan 2067 is in semester 1 in it.
+ * none of them. Angkatan 2700 is in semester 1 in it.
  */
-const ODD_2067 = {
-  startYear: 2067,
+const ODD_2700 = {
+  startYear: 2700,
   term: "odd",
-  startsOn: "2067-08-01",
-  endsOn: "2068-01-31",
+  startsOn: "2700-08-01",
+  endsOn: "2701-01-31",
 } as const;
-// 10:00 on campus on Wednesday 12 October 2067.
-const MOMENT = new Date("2067-10-12T03:00:00Z");
-const TODAY = "2067-10-12";
-const FROM = { startsOn: "2067-08-01" };
+// 10:00 on campus on 12 October 2700.
+const MOMENT = new Date("2700-10-12T03:00:00Z");
+const TODAY = "2700-10-12";
+const FROM = { startsOn: "2700-08-01" };
 
 interface Residents {
   /** A Reguler woman of semester 1: she lives in Dana Rakca. */
@@ -34,17 +35,17 @@ interface Residents {
 }
 
 async function addResidents(db: Database): Promise<Residents> {
-  await db.insert(academicPeriods).values(ODD_2067);
+  await db.insert(academicPeriods).values(ODD_2700);
   const program = await addTestProgram(db, "Prodi Uji Kegiatan Penghuni");
   const woman = await addTestStudent(db, program, {
     nim: "9936670001",
     name: "Penghuni Uji",
-    cohortYear: 2067,
+    cohortYear: 2700,
   });
   const senior = await addTestStudent(db, program, {
     nim: "9936670002",
     name: "Senior Uji",
-    cohortYear: 2066,
+    cohortYear: 2699,
   });
   return { woman, senior };
 }
@@ -93,12 +94,12 @@ describe("readResidentActivities", () => {
       ]);
       expect(coming).toHaveLength(6);
       expect(coming.map(({ day }) => day)).toEqual([
-        "2067-10-13",
-        "2067-10-13",
-        "2067-10-13",
-        "2067-10-14",
-        "2067-10-14",
-        "2067-10-14",
+        "2700-10-13",
+        "2700-10-13",
+        "2700-10-13",
+        "2700-10-14",
+        "2700-10-14",
+        "2700-10-14",
       ]);
       for (const { activity } of coming) {
         expect(activity.name.startsWith("Untuk")).toBe(true);
