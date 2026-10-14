@@ -1,3 +1,14 @@
+import { DORM_NAMES } from "@/dorms/dorms";
+import { COMPANION_DORM_IDS } from "./companion-dorms";
+
+/**
+ * How a message names the dorms that have kakak pendamping. Their own
+ * residents cannot be kakak pendamping.
+ */
+export const COMPANION_DORMS_NAMED = COMPANION_DORM_IDS.map(
+  (dorm) => DORM_NAMES[dorm],
+).join(" atau ");
+
 /** What a change to the kakak pendamping answers to a role without the right. */
 export const COMPANIONS_NOT_ALLOWED = {
   ok: false,

@@ -92,7 +92,11 @@ describe("a load of Ploting kamar", () => {
       expect(view.periodRuns).toBe(true);
       expect(takenIn(view, roomId)).toBe(1);
       expect(shownIds(view)).toEqual([studentId]);
-      expect(view.counts).toEqual({ residents: 1, placed: 1 });
+      expect(view.counts).toEqual({
+        residents: 1,
+        placed: 1,
+        placedAsCompanion: 0,
+      });
       expect(view.unplaced.matching).toBe(0);
     });
   });
@@ -108,7 +112,11 @@ describe("a load of Ploting kamar", () => {
 
         expect(takenIn(view, roomId)).toBe(0);
         expect(shownIds(view)).toEqual([]);
-        expect(view.counts).toEqual({ residents: 0, placed: 0 });
+        expect(view.counts).toEqual({
+          residents: 0,
+          placed: 0,
+          placedAsCompanion: 0,
+        });
         expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
       });
     },
@@ -123,7 +131,11 @@ describe("a load of Ploting kamar", () => {
 
       expect(takenIn(view, roomId)).toBe(0);
       expect(shownIds(view)).toEqual([]);
-      expect(view.counts).toEqual({ residents: 0, placed: 0 });
+      expect(view.counts).toEqual({
+        residents: 0,
+        placed: 0,
+        placedAsCompanion: 0,
+      });
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
     });
   });
@@ -166,7 +178,11 @@ describe("a load of Ploting kamar", () => {
 
       expect(takenIn(old, roomId)).toBe(0);
       expect(shownIds(old)).toEqual([]);
-      expect(now.counts).toEqual({ residents: 1, placed: 0 });
+      expect(now.counts).toEqual({
+        residents: 1,
+        placed: 0,
+        placedAsCompanion: 0,
+      });
       expect(now.unplaced.shown.map((one) => one.id)).toEqual([studentId]);
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
     });
@@ -222,7 +238,11 @@ describe("a load of Ploting kamar", () => {
 
       expect(shownIds(view)).toEqual([studentId]);
       expect(takenIn(view, roomId) - view.residents.length).toBe(1);
-      expect(view.counts).toEqual({ residents: 1, placed: 1 });
+      expect(view.counts).toEqual({
+        residents: 1,
+        placed: 1,
+        placedAsCompanion: 0,
+      });
       expect(await residentsOfRoom(db, roomId)).toHaveLength(3);
     });
   });

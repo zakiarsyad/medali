@@ -108,10 +108,11 @@ describe("the duty of a kakak pendamping", () => {
     ["Pembibitan", { isSeedling: true }],
     ["Internasional", { isInternational: true }],
   ])(
-    "ends, and the room is left, when the student becomes %s and so lives in a dorm",
+    "goes on, in the same room, when the student becomes %s and so lives in Wismantara",
     async (_what, change) => {
       await inTestDatabase(async (db) => {
-        const { staff, input, studentId } = await addPlacedCompanion(db);
+        const { staff, input, studentId, roomId } =
+          await addPlacedCompanion(db);
 
         const changed = await changeTestStudent(db, staff, {
           ...input,
@@ -119,7 +120,7 @@ describe("the duty of a kakak pendamping", () => {
         });
 
         expect(changed.ok).toBe(true);
-        expect(await dutyOf(db, studentId)).toEqual(ENDED);
+        expect(await dutyOf(db, studentId)).toEqual({ isActive: true, roomId });
       });
     },
   );

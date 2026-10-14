@@ -6,15 +6,16 @@ import { isUuid } from "@/db/is-uuid";
 import { dormCompanions, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES, DORM_RESIDENTS } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
 import type { Parsed } from "@/parsed";
 import {
   COMPANION_DORM_IDS,
   type CompanionDormId,
   companionDormOf,
+  livesWithCompanions,
 } from "./companion-dorms";
 import { NOTE_MAX_LENGTH } from "./companion-limits";
 import {
+  COMPANION_DORMS_NAMED,
   COMPANIONS_NOT_ALLOWED,
   NO_PERIOD_TO_NAME,
 } from "./companion-messages";
@@ -42,10 +43,9 @@ const NOT_ACTIVE = {
   ok: false,
   error: "Mahasiswa tidak ditemukan atau tidak aktif. Muat ulang halaman.",
 } as const;
-const LIVES_IN_DORM = {
+const LIVES_WITH_COMPANIONS = {
   ok: false,
-  error:
-    "Mahasiswa ini tinggal di asrama, jadi tidak bisa ditetapkan sebagai kakak pendamping.",
+  error: `Mahasiswa ini penghuni ${COMPANION_DORMS_NAMED}, jadi tidak bisa ditetapkan sebagai kakak pendamping.`,
 } as const;
 const ALREADY_NAMED = {
   ok: false,
@@ -85,7 +85,7 @@ function lockStudent(tx: Database, dormCohorts: number[], studentId: string) {
       sex: students.sex,
       status: students.status,
       deletedAt: students.deletedAt,
-      livesIn: dormInSql(dormCohorts),
+      livesWithCompanions: livesWithCompanions(dormCohorts),
     })
     .from(students)
     .where(eq(students.id, studentId))
@@ -100,7 +100,7 @@ async function save(
   const [student] = await lockStudent(tx, dormCohorts, companion.studentId);
   if (!student || student.deletedAt !== null) return NOT_ACTIVE;
   if (student.status !== "active") return NOT_ACTIVE;
-  if (student.livesIn !== null) return LIVES_IN_DORM;
+  if (student.livesWithCompanions) return LIVES_WITH_COMPANIONS;
   if (companion.dorm !== companionDormOf(student.sex)) {
     return wrongDorm(companion.dorm);
   }
@@ -119,9 +119,9 @@ async function save(
 
 /**
  * Names a student kakak pendamping of Dana Rakca or Cipta Bakti, and gives
- * back what to tell the staff. Only an active student who does not live in
- * a dorm on the day, today when none is given, and only for the dorm that
- * fits their jenis kelamin. A student is named once: the database keeps
+ * back what to tell the staff. Only an active student who is no resident
+ * of those two on the day, today when none is given, and only for the dorm
+ * that fits their jenis kelamin. A resident of Wismantara can be named. A student is named once: the database keeps
  * that, so two people naming the same student at once cannot both succeed.
  * The student row is held while it is checked, so a change that makes the
  * student unfit at the same moment cannot slip in between.

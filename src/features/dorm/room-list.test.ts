@@ -17,7 +17,7 @@ import {
   readFloorResidents,
   readRooms,
 } from "./room-list";
-import { EVERYONE } from "./test-records";
+import { addTestCompanion, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -143,6 +143,36 @@ describe("countResidents", () => {
       expect(await countResidents(db, DANA_RAKCA)).toEqual({
         residents: 3,
         placed: 2,
+        placedAsCompanion: 0,
+      });
+    });
+  });
+
+  it("counts apart a resident of Wismantara who is placed as kakak pendamping", async () => {
+    await inTestDatabase(async (db) => {
+      const { ownProgram, roomId } = await addTestRows(db);
+      const scope: ResidentScope = { ...DANA_RAKCA, dorm: "wismantara_putri" };
+      const placed = await addTestStudent(db, ownProgram, {
+        nim: "9924260005",
+        name: "Wisma Diplot Uji",
+        isInternational: true,
+      });
+      await addTestCompanion(db, placed, { roomId });
+      const waiting = await addTestStudent(db, ownProgram, {
+        nim: "9924260006",
+        name: "Wisma Menunggu Uji",
+        isInternational: true,
+      });
+      await addTestCompanion(db, waiting);
+
+      expect(await countResidents(db, scope)).toEqual({
+        residents: 2,
+        placed: 0,
+        placedAsCompanion: 1,
+      });
+      expect(await listUnplaced(db, scope, "")).toEqual({
+        shown: [{ id: waiting, name: "Wisma Menunggu Uji", nim: "9924260006" }],
+        matching: 1,
       });
     });
   });
@@ -154,6 +184,7 @@ describe("countResidents", () => {
       expect(await countResidents(db, onlyProgram(ownProgram))).toEqual({
         residents: 2,
         placed: 1,
+        placedAsCompanion: 0,
       });
     });
   });
@@ -166,6 +197,7 @@ describe("countResidents", () => {
       expect(await countResidents(db, scope)).toEqual({
         residents: 0,
         placed: 0,
+        placedAsCompanion: 0,
       });
     });
   });

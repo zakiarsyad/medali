@@ -1,7 +1,7 @@
-import { and, asc, eq, isNull, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, not, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormCompanions, students } from "@/db/schema";
-import { dormInSql } from "@/dorms/resident-condition";
+import { livesWithCompanions } from "./companion-dorms";
 import { CANDIDATES_SHOWN } from "./companion-limits";
 import { matchesSearch } from "./room-list";
 
@@ -30,9 +30,9 @@ export interface CandidateScope {
 
 /**
  * The students who can be named kakak pendamping whose name or NIM holds
- * the search text: active, living in no dorm, and not kakak pendamping
- * already, whether active or stopped. The first of them by name, and how
- * many there are.
+ * the search text: active, no resident of Dana Rakca or Cipta Bakti, and
+ * not kakak pendamping already, whether active or stopped. The first of
+ * them by name, and how many there are.
  */
 export async function listCandidates(
   db: Database,
@@ -53,7 +53,7 @@ export async function listCandidates(
       and(
         scope.visible,
         eq(students.status, "active"),
-        sql`${dormInSql(scope.dormCohorts)} is null`,
+        not(livesWithCompanions(scope.dormCohorts)),
         isNull(dormCompanions.studentId),
         matchesSearch(query),
       ),

@@ -17,9 +17,9 @@ interface TestRows {
 }
 
 /**
- * Two seniors who can be named, and one of every kind who cannot: a
- * resident, one on leave, one not active, one removed, and two who are
- * kakak pendamping already.
+ * Two seniors and two residents of Wismantara who can be named, and one
+ * of every kind who cannot: a resident of Dana Rakca, one on leave, one
+ * not active, one removed, and two who are kakak pendamping already.
  */
 async function addTestRows(db: Database): Promise<TestRows> {
   const ownProgram = await addTestProgram(db, "Prodi Uji Calon Sendiri");
@@ -39,6 +39,17 @@ async function addTestRows(db: Database): Promise<TestRows> {
   await addTestStudent(db, ownProgram, {
     nim: "9933260003",
     name: "Penghuni Calon Uji",
+  });
+  await addTestStudent(db, otherProgram, {
+    nim: "9933260009",
+    name: "Wisma Internasional Calon Uji",
+    isInternational: true,
+  });
+  await addTestStudent(db, otherProgram, {
+    nim: "9933260010",
+    name: "Wisma Pembibitan Calon Uji",
+    sex: "male",
+    isSeedling: true,
   });
   await addTestStudent(db, ownProgram, {
     ...senior,
@@ -78,7 +89,7 @@ function list(db: Database, query = "Calon Uji", visible = EVERYONE) {
 }
 
 describe("listCandidates", () => {
-  it("offers only active students who live in no dorm and are not kakak pendamping, by name", async () => {
+  it("offers only active students who are no residents of Dana Rakca or Cipta Bakti and not kakak pendamping, by name", async () => {
     await inTestDatabase(async (db) => {
       await addTestRows(db);
 
@@ -97,8 +108,20 @@ describe("listCandidates", () => {
           nim: "9933240002",
           sex: "female",
         },
+        {
+          id: expect.any(String),
+          name: "Wisma Internasional Calon Uji",
+          nim: "9933260009",
+          sex: "female",
+        },
+        {
+          id: expect.any(String),
+          name: "Wisma Pembibitan Calon Uji",
+          nim: "9933260010",
+          sex: "male",
+        },
       ]);
-      expect(candidates.matching).toBe(2);
+      expect(candidates.matching).toBe(4);
     });
   });
 
