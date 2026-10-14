@@ -213,3 +213,33 @@
   flex: 1 1 var(--card-min-width);
   min-width: 0;
 }
+
+/* Under a status: the note of a rejected report over its button. */
+.returnState {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  align-items: flex-start;
+  margin-top: var(--space-xs);
+}
+
+/* "Lapor kembali ke asrama" opened under its request. */
+.camera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+/*
+ * The camera and the photo it took are never wider than the screen, and
+ * short enough for their buttons to show under them on a phone.
+ */
+.cameraView {
+  align-self: flex-start;
+  max-width: 100%;
+  max-height: var(--photo-preview-height);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+}

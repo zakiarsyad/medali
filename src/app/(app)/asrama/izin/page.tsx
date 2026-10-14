@@ -49,6 +49,7 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
       room={await residentHeader(account.studentId)}
       leave={answer.leave}
       newLeaveId={crypto.randomUUID()}
+      newReportId={crypto.randomUUID()}
     />
   );
 }

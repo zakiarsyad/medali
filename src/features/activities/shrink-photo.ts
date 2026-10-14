@@ -1,5 +1,5 @@
 import { JPEG } from "@/files/file-kinds";
-import { shrunkSize } from "./photo-size";
+import { shrunkSize } from "@/ui/photo-size";
 
 /*
  * Runs in the browser only: it draws the picked picture with the

@@ -8,8 +8,12 @@ import { JPEG } from "@/files/file-kinds";
 
 const MEGABYTE = 1024 * 1024;
 
-/** The largest photo the server takes. */
-export const RETURN_PHOTO_MAX_BYTES = 8 * MEGABYTE;
+/**
+ * The largest photo the server takes. The camera on the page makes one
+ * far smaller, and a sent form may hold no more than the app's limit for
+ * every form.
+ */
+export const RETURN_PHOTO_MAX_BYTES = 2 * MEGABYTE;
 
 /**
  * What the server takes as the photo of a report. The camera on the page
@@ -32,6 +36,6 @@ const NOT_A_PHOTO = "Foto tidak terbaca. Ambil foto lagi dengan kamera.";
 export const RETURN_PHOTO_FAULTS: Record<FileFault, string> = {
   "wrong-kind": NOT_A_PHOTO,
   empty: NOT_A_PHOTO,
-  "too-large": "Ukuran foto maksimal 8 MB. Ambil foto lagi.",
+  "too-large": "Ukuran foto maksimal 2 MB. Ambil foto lagi.",
   "wrong-content": NOT_A_PHOTO,
 };
