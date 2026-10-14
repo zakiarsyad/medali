@@ -2,6 +2,7 @@ import { forbidden } from "next/navigation";
 import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
+import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import {
   groupAddress,
   readGroupListParams,
@@ -21,10 +22,6 @@ import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
-import {
-  detailVisibleTo,
-  visibleTo,
-} from "@/features/students/visible-students";
 
 /**
  * The page of one group, with the detail of a member over it when the

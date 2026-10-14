@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { type AccountForAccess, rowLimitForTab } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import {
   activitySchedules,
@@ -12,7 +13,6 @@ import {
   mentorGroups,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { visibleTo } from "@/features/students/visible-students";
 import {
   type ClarificationPanel,
   panelLine,

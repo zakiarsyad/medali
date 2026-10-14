@@ -3,12 +3,12 @@ import type { SQL } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
-import type { Database } from "@/db/connect";
-import { withTestDatabase } from "@/db/test-database";
 // The rule that turns a row limit into the students it holds is the
 // students area's own. The checks here need the real one, to confirm
 // which notes each role is given.
-import { visibleTo } from "@/features/students/visible-students";
+import { visibleTo } from "@/auth/visible-students";
+import type { Database } from "@/db/connect";
+import { withTestDatabase } from "@/db/test-database";
 import { openWriteAddress } from "./open-write-address";
 import { listStudentNotes, STUDENT_NOTES_SHOWN } from "./student-notes";
 import {

@@ -1,13 +1,13 @@
 import { forbidden } from "next/navigation";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { ActivitiesScreen } from "@/features/dorm/activities-screen";
 import { readResidentActivities } from "@/features/dorm/resident-activities";
 import { ResidentActivitiesView } from "@/features/dorm/resident-activities-view";
 import { readOwnAttendance } from "@/features/dorm/resident-attendance";
 import { residentHeader } from "@/features/dorm/resident-header";
-import { visibleTo } from "@/features/students/visible-students";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks } from "@/ui/tab-links";
 

@@ -1,6 +1,7 @@
 import { forbidden } from "next/navigation";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { pageOf, readLeaveListParams } from "@/features/dorm/leave-address";
 import { readLeaveBoard } from "@/features/dorm/leave-list";
@@ -8,7 +9,6 @@ import { readOwnLeave } from "@/features/dorm/own-leave";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { ResidentLeaveScreen } from "@/features/dorm/resident-leave-screen";
 import { StaffLeaveScreen } from "@/features/dorm/staff-leave-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 /**
  * The tab Perizinan asrama. Staff see the requests of the students they

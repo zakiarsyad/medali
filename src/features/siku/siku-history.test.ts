@@ -3,10 +3,10 @@
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { rowLimitForAction } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { visibleTo } from "@/features/students/visible-students";
 import { readSeenStudents, readSikuHistory } from "./siku-history";
 import {
   addTestActor,

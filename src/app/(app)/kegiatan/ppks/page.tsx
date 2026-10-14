@@ -1,8 +1,8 @@
 import { may, rowLimitForTab } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { readScheduleListParams } from "@/features/activities/schedule-list-address";
 import { SchedulesScreen } from "@/features/activities/schedules-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 /**
  * The tab "Kegiatan PPKS". The attendance shown there is of the students

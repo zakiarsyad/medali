@@ -1,9 +1,9 @@
 import { forbidden } from "next/navigation";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { readCompanionsParams } from "@/features/dorm/companions-address";
 import { CompanionsScreen } from "@/features/dorm/companions-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 export default async function DormCompanionsPage(
   props: PageProps<"/asrama/kakak">,

@@ -1,5 +1,6 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
+import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import {
@@ -15,10 +16,6 @@ import {
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
-import {
-  detailVisibleTo,
-  visibleTo,
-} from "@/features/students/visible-students";
 
 /**
  * The tab "Catatan pendampingan", with the detail of a student over it

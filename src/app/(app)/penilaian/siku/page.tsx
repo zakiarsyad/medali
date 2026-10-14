@@ -2,6 +2,7 @@ import { forbidden } from "next/navigation";
 import { campusDay } from "@/academic-periods/campus-day";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
 import {
@@ -23,7 +24,6 @@ import {
 } from "@/features/siku/siku-history";
 import { readGroupChoices } from "@/features/siku/siku-picks";
 import { StaffSikuScreen } from "@/features/siku/staff-siku-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 /**
  * The tab Penilaian SIKU. Staff see the SIKU of the students they may

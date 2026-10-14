@@ -29,7 +29,8 @@ while building.
   come, the wait that keeps two changes of who holds which group apart,
   the status a survey period has by its dates, and which survey period
   runs on a day, read by every area that needs them.
-- `src/auth/`: sign-in, and the one list of what each role may do.
+- `src/auth/`: sign-in, the one list of what each role may do, and which
+  students an account may see by it.
 - `src/campus/`: what the campus server package checks and does when it
   starts.
 - `src/ui/`: screen parts shared by more than one area.
