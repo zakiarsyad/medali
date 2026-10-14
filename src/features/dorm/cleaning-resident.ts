@@ -12,7 +12,11 @@ import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
 import { RESIDENT_DUTIES_SHOWN } from "./cleaning-ids";
 import { readOccupiedRooms } from "./cleaning-rooms";
-import { DUTY_SHOWN } from "./cleaning-schedule";
+import {
+  DUTY_ROOM_NUMBER,
+  DUTY_SHOWN,
+  ROOM_OF_DUTY,
+} from "./cleaning-schedule";
 import { readStudentDorm } from "./student-dorm";
 
 /** The room of a resident as Pembersihan asrama shows it. */
@@ -101,10 +105,11 @@ function readLastDuties(db: Database, roomId: string): Promise<ResidentDuty[]> {
     .select({
       day: dormCleaningDuties.day,
       place: dormCleaningPlaces.name,
-      roomNumber: dormCleaningDuties.roomNumber,
+      roomNumber: DUTY_ROOM_NUMBER,
     })
     .from(dormCleaningDuties)
     .leftJoin(dormCleaningPlaces, PLACE_OF_DUTY)
+    .leftJoin(dormRooms, ROOM_OF_DUTY)
     .where(and(eq(dormCleaningDuties.roomId, roomId), DUTY_SHOWN))
     .orderBy(
       desc(dormCleaningDuties.day),

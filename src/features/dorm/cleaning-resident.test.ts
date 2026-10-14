@@ -16,6 +16,7 @@ import {
   addTestStudent,
   placeTestResident,
 } from "@/dorms/test-records";
+import { changeRoom } from "./change-room";
 import { removeCleaningPlace } from "./cleaning-places";
 import { readOwnCleaning } from "./cleaning-resident";
 import { addTestActor, type TestActor } from "./test-records";
@@ -237,6 +238,31 @@ describe("readOwnCleaning", () => {
       ).toEqual({ kind: "refused" });
       expect(await readOwnCleaning(db, studentOf(null), TODAY)).toEqual({
         kind: "refused",
+      });
+    });
+  });
+
+  it("names the room and its own-room duties by the new number after the room is renumbered", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      await addDuties(db, setting, [
+        { day: TODAY, roomId: setting.ownRoom, roomNumber: "BR101" },
+      ]);
+
+      const changed = await changeRoom(
+        db,
+        { roles: ["dorm_manager"] },
+        setting.ownRoom,
+        { number: "BR111", capacity: "4" },
+        TODAY,
+      );
+
+      expect(changed.ok).toBe(true);
+      const own = await readOwnCleaning(db, studentOf(setting.resident), TODAY);
+      expect(own).toMatchObject({
+        kind: "shown",
+        room: { number: "BR111" },
+        duties: [{ day: TODAY, place: null, roomNumber: "BR111" }],
       });
     });
   });

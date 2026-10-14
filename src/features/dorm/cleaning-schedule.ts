@@ -12,7 +12,7 @@ import {
   sql,
 } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { dormCleaningDuties, dormCleaningPlaces } from "@/db/schema";
+import { dormCleaningDuties, dormCleaningPlaces, dormRooms } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
 import { OWN_ROOM_PAGE_SIZE } from "./cleaning-ids";
@@ -44,11 +44,21 @@ export interface OwnRoomPage {
  */
 export const DUTY_SHOWN: SQL = sql`(${dormCleaningPlaces.removedFrom} is null or ${dormCleaningPlaces.removedFrom} > ${dormCleaningDuties.day})`;
 
+/** The join that finds the room of a duty, while the room is still there. */
+export const ROOM_OF_DUTY = eq(dormRooms.id, dormCleaningDuties.roomId);
+
+/**
+ * The number of a duty's room as it is now: a room renumbered on Ploting
+ * kamar shows its new number. The number kept with the duty is for a room
+ * that was removed. The read joins the rooms to the duties.
+ */
+export const DUTY_ROOM_NUMBER = sql<string>`coalesce(${dormRooms.number}, ${dormCleaningDuties.roomNumber})`;
+
 const DUTY = {
   id: dormCleaningDuties.id,
   placeId: dormCleaningDuties.placeId,
   roomId: dormCleaningDuties.roomId,
-  roomNumber: dormCleaningDuties.roomNumber,
+  roomNumber: DUTY_ROOM_NUMBER,
 };
 
 const PLACE_OF_DUTY = eq(dormCleaningPlaces.id, dormCleaningDuties.placeId);
@@ -94,6 +104,7 @@ export async function readPlaceDutiesOn(
     .select(DUTY)
     .from(dormCleaningDuties)
     .innerJoin(dormCleaningPlaces, PLACE_OF_DUTY)
+    .leftJoin(dormRooms, ROOM_OF_DUTY)
     .where(
       and(
         eq(dormCleaningDuties.day, day),
@@ -147,8 +158,9 @@ export async function readOwnRoomPage(
   const duties = await db
     .select(DUTY)
     .from(dormCleaningDuties)
+    .leftJoin(dormRooms, ROOM_OF_DUTY)
     .where(ownRoomsOf(dorm, day))
-    .orderBy(asc(dormCleaningDuties.roomNumber), asc(dormCleaningDuties.id))
+    .orderBy(asc(DUTY_ROOM_NUMBER), asc(dormCleaningDuties.id))
     .limit(OWN_ROOM_PAGE_SIZE)
     .offset((shown - 1) * OWN_ROOM_PAGE_SIZE);
   return { duties, matching, page: shown };

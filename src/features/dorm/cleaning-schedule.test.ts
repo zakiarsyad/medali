@@ -3,6 +3,7 @@ import type { Database } from "@/db/connect";
 import { dormCleaningDuties, dormCleaningPlaces } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestRoom } from "@/dorms/test-records";
+import { changeRoom } from "./change-room";
 import { removeCleaningPlace, restoreCleaningPlace } from "./cleaning-places";
 import {
   countDutiesOn,
@@ -153,6 +154,44 @@ describe("countScheduledRooms", () => {
       expect(await countScheduledRooms(db, DORM, BEFORE, rooms)).toBe(1);
       expect(await countScheduledRooms(db, DORM, AFTER, rooms)).toBe(0);
       expect(await countScheduledRooms(db, DORM, BEFORE, [])).toBe(0);
+    });
+  });
+});
+
+describe("a room renumbered on Ploting kamar", () => {
+  it("shows its duties under its new number, and sorts its own room by it", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const renamed = await addTestRoom(db, { number: "BJ310", dorm: DORM });
+      const other = await addTestRoom(db, { number: "BJ305", dorm: DORM });
+      const duty = { day: BEFORE, dorm: DORM, createdBy: setting.actor.id };
+      await db.insert(dormCleaningDuties).values([
+        {
+          ...duty,
+          placeId: setting.placeId,
+          roomId: renamed,
+          roomNumber: "BJ310",
+        },
+        { ...duty, roomId: renamed, roomNumber: "BJ310" },
+        { ...duty, roomId: other, roomNumber: "BJ305" },
+      ]);
+
+      const changed = await changeRoom(
+        db,
+        { roles: ["dorm_manager"] },
+        renamed,
+        { number: "BJ300", capacity: "4" },
+        BEFORE,
+      );
+
+      expect(changed).toEqual({ ok: true, value: "BJ300" });
+      const placeDuties = await readPlaceDutiesOn(db, DORMS, BEFORE);
+      expect(placeDuties.map((each) => each.roomNumber)).toEqual(["BJ300"]);
+      const own = await readOwnRoomPage(db, DORM, BEFORE, 1);
+      expect(own.duties.map((each) => each.roomNumber)).toEqual([
+        "BJ300",
+        "BJ305",
+      ]);
     });
   });
 });
