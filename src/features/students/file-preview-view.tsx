@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
+import styles from "@/ui/file-upload.module.css";
 import { type FilePreview, PREVIEW_SKIPPED } from "./file-preview";
-import styles from "./new-students.module.css";
 import { FILE_COLUMNS } from "./student-file-columns";
 
 function shown(amount: number): string {

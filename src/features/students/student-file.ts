@@ -1,12 +1,15 @@
 import { EMAIL_IN_USE } from "@/auth/account-email";
+import {
+  type NumberedRow,
+  readTitledRows,
+  type TitledFile,
+} from "@/files/titled-rows";
 import type { Parsed } from "@/parsed";
-import { readCsv } from "./csv-text";
 import { fileReason } from "./file-reasons";
 import { isNim } from "./input-limits";
 import {
   FILE_COLUMNS,
   type FileCells,
-  MAX_FILE_ROWS,
   OPTIONAL_COLUMNS,
 } from "./student-file-columns";
 import {
@@ -39,77 +42,21 @@ export interface FileRows {
   repeated: number;
 }
 
-interface NumberedRow {
-  row: number;
-  cells: string[];
-}
-
 const SHOWN_NIM_LENGTH = 20;
 const REGISTERED = "NIM sudah terdaftar.";
-const EMPTY_FILE =
-  "Berkas tidak berisi baris mahasiswa. Isi berkas sesuai templat, lalu unggah lagi.";
-const TEMPLATE_ORDER = FILE_COLUMNS.map((_, index) => index);
-const KNOWN_TITLES: string[] = FILE_COLUMNS.flatMap((column) => [
-  column.title,
-  ...column.others,
-]);
 
-function refused(error: string): { ok: false; error: string } {
-  return { ok: false, error };
-}
+/** How a student file is read: by its titles, or in the template's order. */
+const STUDENT_FILE: TitledFile = {
+  columns: FILE_COLUMNS,
+  optional: OPTIONAL_COLUMNS,
+  startsRecord: isNim,
+  noun: "mahasiswa",
+};
 
-function shown(amount: number): string {
-  return amount.toLocaleString("id-ID");
-}
-
-function filled(rows: string[][]): NumberedRow[] {
-  const numbered = rows.map((cells, index) => ({ row: index + 1, cells }));
-  return numbered.filter(({ cells }) => cells.some((cell) => cell.trim()));
-}
-
-/**
- * Whether a first row names the columns. A row that starts with a NIM is
- * a student, even when one of its cells is a word that is also a title.
- */
-function namesColumns(titles: string[]): boolean {
-  if (isNim(titles[0] ?? "")) return false;
-  return titles.some((title) => KNOWN_TITLES.includes(title));
-}
-
-function titlesOf(row: NumberedRow): string[] {
-  return row.cells.map((cell) => cell.trim().toLowerCase());
-}
-
-/**
- * Where each column of the template is in a file whose first row names
- * its columns.
- */
-function placesByTitle(titles: string[]): Parsed<number[]> {
-  const places = FILE_COLUMNS.map((column) => {
-    const accepted: string[] = [column.title, ...column.others];
-    return titles.findIndex((title) => accepted.includes(title));
-  });
-  const missing = FILE_COLUMNS.filter(
-    (column, index) =>
-      places[index] === -1 && !OPTIONAL_COLUMNS.includes(column.title),
-  );
-  if (missing.length > 0) {
-    const names = missing.map((column) => column.title).join(", ");
-    return refused(
-      `Kolom tidak ditemukan: ${names}. Samakan judul kolom dengan templat.`,
-    );
-  }
-  return { ok: true, value: places };
-}
-
-/**
- * `places` holds, in the order of the template, where each column is. A
- * column the file does not have gives empty cells.
- */
-function cellsOf(row: NumberedRow, places: number[]): FileCells {
+/** The cells of a row, which are in the order of the template. */
+function cellsOf(row: NumberedRow): FileCells {
   function cell(templatePlace: number): string {
-    const place = places[templatePlace] ?? -1;
-    return (row.cells[place] ?? "").trim();
+    return row.cells[templatePlace] ?? "";
   }
   return {
     nim: cell(0),
@@ -136,15 +83,11 @@ function lastOfEachNim(rows: ReadyRow[]): ReadyRow[] {
   return [...byNim.values()];
 }
 
-function checkRows(
-  rows: NumberedRow[],
-  places: number[],
-  context: InputContext,
-): FileRows {
+function checkRows(rows: NumberedRow[], context: InputContext): FileRows {
   const ready: ReadyRow[] = [];
   const skipped: SkippedRow[] = [];
   for (const row of rows) {
-    const cells = cellsOf(row, places);
+    const cells = cellsOf(row);
     const parsed = parseStudent(rowFields(cells, context.programs), context);
     if (parsed.ok) {
       ready.push({ row: row.row, student: parsed.value });
@@ -174,27 +117,9 @@ export function readStudentFile(
   text: string,
   context: InputContext,
 ): Parsed<FileRows> {
-  const read = readCsv(text);
-  if (!read.ok) return read;
-  const rows = filled(read.value);
-  const [first, ...rest] = rows;
-  if (!first) return refused(EMPTY_FILE);
-
-  const titles = titlesOf(first);
-  const hasTitles = namesColumns(titles);
-  const places: Parsed<number[]> = hasTitles
-    ? placesByTitle(titles)
-    : { ok: true, value: TEMPLATE_ORDER };
-  if (!places.ok) return places;
-
-  const studentRows = hasTitles ? rest : rows;
-  if (studentRows.length === 0) return refused(EMPTY_FILE);
-  if (studentRows.length > MAX_FILE_ROWS) {
-    return refused(
-      `Berkas berisi ${shown(studentRows.length)} baris mahasiswa, paling banyak ${shown(MAX_FILE_ROWS)}. Bagi menjadi beberapa berkas, lalu unggah satu per satu.`,
-    );
-  }
-  return { ok: true, value: checkRows(studentRows, places.value, context) };
+  const rows = readTitledRows(text, STUDENT_FILE);
+  if (!rows.ok) return rows;
+  return { ok: true, value: checkRows(rows.value, context) };
 }
 
 /**

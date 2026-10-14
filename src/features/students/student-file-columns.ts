@@ -1,7 +1,3 @@
-/** The most student rows one file may hold, and its largest size. */
-export const MAX_FILE_ROWS = 1000;
-export const MAX_FILE_BYTES = 1024 * 1024;
-
 /**
  * The columns of a student file, in the order of the template. `others`
  * are the titles a file may use instead. A new column goes last, so that

@@ -8,6 +8,7 @@ import { currentAccount } from "@/auth/current-account";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
+import { checkFileShape } from "@/files/csv-file";
 import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
 import { readCampusEmailEnding } from "@/settings";
@@ -33,7 +34,6 @@ import {
   type InputContext,
   parseStudent,
 } from "./student-input";
-import { checkFileShape } from "./uploaded-file";
 
 async function studentInputter(): Promise<Account> {
   const account = await currentAccount();
