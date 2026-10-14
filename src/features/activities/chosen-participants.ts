@@ -58,6 +58,19 @@ export function takesPart(
   return isChosen(student, choice);
 }
 
+/**
+ * A choice as a list of schedules shows it: the students chosen one by
+ * one only by how many there are, so the list names nobody.
+ */
+export type ShownChoice =
+  | { kind: "students"; chosen: number }
+  | Exclude<ParticipantChoice, { kind: "students" }>;
+
+export function shownChoiceOf(choice: ParticipantChoice): ShownChoice {
+  if (choice.kind !== "students") return choice;
+  return { kind: "students", chosen: choice.studentIds.length };
+}
+
 /** One stored participant row: it names exactly one of the three. */
 export interface StoredParticipant {
   studentId: string | null;

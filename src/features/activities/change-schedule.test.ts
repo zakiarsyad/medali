@@ -48,7 +48,7 @@ interface Records {
 }
 
 async function versionOfStored(db: Database, id: string): Promise<string> {
-  const list = await listSchedules(db, null, 1);
+  const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
   const opened = list.schedules.find((schedule) => schedule.id === id);
   if (!opened) throw new Error("The schedule is not in the list.");
   return opened.version;

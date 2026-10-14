@@ -4,6 +4,7 @@ import {
   choiceOf,
   isChosen,
   type ParticipantChoice,
+  shownChoiceOf,
   takesPart,
 } from "./chosen-participants";
 
@@ -92,6 +93,17 @@ describe("isChosen", () => {
 
     expect(isChosen(inactive, BY_STUDENT)).toBe(true);
     expect(takesPart(inactive, BY_STUDENT)).toBe(false);
+  });
+});
+
+describe("shownChoiceOf", () => {
+  it("keeps only how many students were chosen one by one", () => {
+    expect(shownChoiceOf(BY_STUDENT)).toEqual({ kind: "students", chosen: 2 });
+  });
+
+  it("keeps the classes and the angkatan chosen as they are", () => {
+    expect(shownChoiceOf(BY_CLASS)).toEqual(BY_CLASS);
+    expect(shownChoiceOf(ACROSS_COHORTS)).toEqual(ACROSS_COHORTS);
   });
 });
 

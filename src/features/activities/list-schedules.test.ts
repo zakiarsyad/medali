@@ -63,7 +63,7 @@ describe("listSchedules", () => {
         scheduleOf(records, "2110-09-10"),
       );
 
-      const list = await listSchedules(db, null, 1);
+      const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
 
       expect(list.schedules.map((schedule) => schedule.id)).toEqual([
         morning,
@@ -85,7 +85,7 @@ describe("listSchedules", () => {
         isRequired: false,
       });
 
-      const list = await listSchedules(db, null, 1);
+      const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
 
       expect(list.schedules).toEqual([
         {
@@ -101,12 +101,12 @@ describe("listSchedules", () => {
           activity: {
             id: records.activityId,
             name: "Kegiatan uji jadwal",
-            semester: 3,
             valueKeys: ["M", "D"],
             indicatorCodes: ["M2", "D2"],
             targetParticipants: 40,
             isRequired: true,
           },
+          target: { kind: "semester", semester: 3 },
           period: { startYear: 2110, term: "odd" },
           version: expect.any(String),
         },
@@ -124,7 +124,7 @@ describe("listSchedules", () => {
         deletedBy: records.actorId,
       });
 
-      const list = await listSchedules(db, null, 1);
+      const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
 
       expect(list.schedules.map((schedule) => schedule.id)).toEqual([kept]);
       expect(list.matching).toBe(1);
@@ -140,7 +140,7 @@ describe("listSchedules", () => {
         .set({ deletedAt: new Date(), deletedBy: records.actorId })
         .where(eq(ppksActivities.id, records.activityId));
 
-      const list = await listSchedules(db, null, 1);
+      const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
 
       expect(list.schedules.map((schedule) => schedule.id)).toEqual([id]);
       expect(list.schedules[0]?.activity.name).toBe("Kegiatan uji jadwal");
@@ -156,7 +156,7 @@ describe("listSchedules", () => {
         .set({ name: "Kegiatan uji berganti nama" })
         .where(eq(ppksActivities.id, records.activityId));
 
-      const list = await listSchedules(db, null, 1);
+      const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
 
       expect(list.schedules[0]?.activity.name).toBe(
         "Kegiatan uji berganti nama",
@@ -182,7 +182,7 @@ describe("listSchedules", () => {
       const third = await ofSemester(3, "2110-09-03");
       const eighth = await ofSemester(8, "2110-09-04");
       const idsOf = async (level: number | null) => {
-        const list = await listSchedules(db, level, 1);
+        const list = await listSchedules(db, { kind: "ppks", level }, 1);
         expect(list.matching).toBe(list.schedules.length);
         return list.schedules.map((schedule) => schedule.id);
       };
@@ -203,9 +203,17 @@ describe("listSchedules", () => {
         await addTestSchedule(db, scheduleOf(records, startsOn));
       }
 
-      const firstPage = await listSchedules(db, null, 1);
-      const secondPage = await listSchedules(db, null, 2);
-      const farPage = await listSchedules(db, null, 9);
+      const firstPage = await listSchedules(
+        db,
+        { kind: "ppks", level: null },
+        1,
+      );
+      const secondPage = await listSchedules(
+        db,
+        { kind: "ppks", level: null },
+        2,
+      );
+      const farPage = await listSchedules(db, { kind: "ppks", level: null }, 9);
 
       expect(firstPage.matching).toBe(27);
       expect(firstPage.schedules).toHaveLength(25);
@@ -255,7 +263,7 @@ describe("the participants of a listed schedule", () => {
       });
 
       const [list, counts] = await Promise.all([
-        listSchedules(db, null, 1),
+        listSchedules(db, { kind: "ppks", level: null }, 1),
         readCohortCounts(db),
       ]);
       const participants = new Map(
@@ -263,7 +271,7 @@ describe("the participants of a listed schedule", () => {
           schedule.id,
           countParticipants(
             counts,
-            schedule.activity.semester,
+            schedule.target.kind === "semester" ? schedule.target.semester : 0,
             schedule.period,
           ),
         ]),

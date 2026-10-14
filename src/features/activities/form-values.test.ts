@@ -2,11 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   choicesWith,
   type FormPeriod,
+  keptChoice,
   participantsOn,
   startingValues,
   valuesOf,
 } from "./form-values";
-import { TEST_CHOICES, TEST_SCHEDULE } from "./test-screen-parts";
+import {
+  TEST_CHOICES,
+  TEST_EXTRA_SCHEDULE,
+  TEST_SCHEDULE,
+} from "./test-screen-parts";
 
 describe("valuesOf", () => {
   it("fills the form with what the schedule holds, Wajib as the schedule has it", () => {
@@ -24,15 +29,30 @@ describe("valuesOf", () => {
   });
 });
 
+describe("keptChoice", () => {
+  it("gives the PPKS activity a schedule holds with the semester of its target", () => {
+    expect(keptChoice(TEST_SCHEDULE)).toEqual({
+      ...TEST_SCHEDULE.activity,
+      semester: 3,
+    });
+  });
+
+  it("gives none for a schedule of an extra activity", () => {
+    expect(keptChoice(TEST_EXTRA_SCHEDULE)).toBeNull();
+  });
+});
+
 describe("choicesWith", () => {
   it("offers only the activities in the list for a new schedule", () => {
     expect(choicesWith(TEST_CHOICES, null)).toEqual(TEST_CHOICES);
   });
 
   it("adds the activity a schedule holds when it is no longer in the list", () => {
-    const offered = choicesWith(TEST_CHOICES, TEST_SCHEDULE.activity);
+    const held = keptChoice(TEST_SCHEDULE);
+    if (!held) throw new Error("The schedule holds no PPKS activity.");
+    const offered = choicesWith(TEST_CHOICES, held);
 
-    expect(offered).toEqual([...TEST_CHOICES, TEST_SCHEDULE.activity]);
+    expect(offered).toEqual([...TEST_CHOICES, held]);
   });
 
   it("does not offer an activity twice when the one held is still in the list", () => {

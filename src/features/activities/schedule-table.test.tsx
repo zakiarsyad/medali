@@ -5,13 +5,14 @@ import { type OpenAbsent, scheduleListAddress } from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
 import { ScheduleTable } from "./schedule-table";
 import {
+  TEST_EXTRA_SCHEDULE,
   TEST_FORM_PARTS,
   TEST_NO_ATTENDANCE,
   TEST_SCHEDULE,
 } from "./test-screen-parts";
 
 function addressOf(open: OpenAbsent | null): string {
-  return scheduleListAddress(null, 1, open);
+  return scheduleListAddress({ kind: "ppks", level: null }, 1, open);
 }
 
 function shown(
@@ -78,6 +79,23 @@ describe("ScheduleTable", () => {
 
     expect(table).toContain("Semester 3 (Penumbuhan)");
     expect(table).toContain("96 peserta · target 110");
+  });
+
+  it("shows whom a schedule of an extra activity is for, with its own count of participants", () => {
+    const table = renderToStaticMarkup(
+      <ScheduleTable
+        schedules={[TEST_EXTRA_SCHEDULE]}
+        counts={TEST_FORM_PARTS.counts}
+        now={{ day: "2026-10-13", time: "08:00" }}
+        attendance={TEST_NO_ATTENDANCE}
+        addressOf={addressOf}
+        onChange={null}
+      />,
+    );
+
+    expect(table).toContain("Lintas angkatan 2024, 2025");
+    expect(table).toContain(">64 peserta<");
+    expect(table).not.toContain("Semester");
   });
 
   it.each([

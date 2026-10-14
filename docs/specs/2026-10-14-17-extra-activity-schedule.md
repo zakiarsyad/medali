@@ -102,6 +102,18 @@ The issue did not say, so these were decided:
    Non aktif or removed is not counted, however they were chosen. A
    class or angkatan counts the students who are in it now, so one who
    moves to another class leaves the schedule of the old one.
+7. "Kegiatan tambahan" comes right after "Kegiatan PPKS" for every staff
+   role that reads it, as in the prototype.
+8. As in the prototype, "Rerata nilai kehadiran" is the same mean on both
+   tabs, while "Kegiatan terlaksana", "Menunggu verifikasi" and
+   "Terjadwal" count only the tab's own kind of activity. So "Menunggu
+   verifikasi" on "Kegiatan PPKS" no longer counts photos of extra
+   activities.
+9. Students chosen one by one show in Sasaran only as a number; the list
+   names nobody. "(n) peserta" is the number of Aktif students the
+   choice holds, the same for every role, as on the PPKS tab.
+10. Classes are listed by name and angkatan from the earliest, as
+    "Kelas 2-01, 2-02" and "Lintas angkatan 2023, 2024".
 
 ## Steps
 
@@ -109,7 +121,7 @@ The issue did not say, so these were decided:
   angkatan, and keeps its academic period, as a PPKS schedule does.
   Sample data adds two extra activities.
 - [x] 2. The rule that says whether a student takes part, with checks.
-- [ ] 3. The "Kegiatan tambahan" tab shows the numbers and the table.
+- [x] 3. The "Kegiatan tambahan" tab shows the numbers and the table.
 - [ ] 4. "Jadwalkan kegiatan tambahan" with the Peserta choice, "Ubah"
   and "Hapus jadwal".
 - [ ] 5. Students see their extra activities and send photos; Verifikasi

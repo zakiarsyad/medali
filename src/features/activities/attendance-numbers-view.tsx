@@ -2,6 +2,7 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import type { AttendanceNumbers } from "./attendance-numbers";
 import { shownPercent } from "./attendance-score";
 import type { MeanScore } from "./mean-score";
+import type { ScheduleKind } from "./schedule-list-address";
 import { shownCount } from "./schedule-words";
 
 /** The line under Rerata nilai kehadiran: how many students it is the mean of. */
@@ -9,11 +10,19 @@ export function meanNote(mean: MeanScore): string {
   return `${shownCount(mean.students)} mahasiswa`;
 }
 
-/** The four numbers above the list of schedules. */
+/** What Kegiatan terlaksana counts on each tab. */
+const HELD_NOTES: Record<ScheduleKind, string> = {
+  ppks: "PPKS wajib",
+  extra: "tambahan wajib",
+};
+
+/** The four numbers above the list of schedules of a tab. */
 export function AttendanceNumbersView({
   numbers,
+  kind,
 }: {
   numbers: AttendanceNumbers;
+  kind: ScheduleKind;
 }) {
   const { mean, held, waiting, coming } = numbers;
   return (
@@ -23,7 +32,11 @@ export function AttendanceNumbersView({
         amount={shownPercent(mean.percent)}
         note={meanNote(mean)}
       />
-      <NumberCard label="Kegiatan terlaksana" amount={held} note="PPKS wajib" />
+      <NumberCard
+        label="Kegiatan terlaksana"
+        amount={held}
+        note={HELD_NOTES[kind]}
+      />
       <NumberCard
         label="Menunggu verifikasi"
         amount={waiting}

@@ -10,6 +10,7 @@ import { readAttendanceNumbers } from "./attendance-numbers";
 import { readCohortCounts } from "./cohort-counts";
 import { readListAttendance } from "./list-attendance";
 import { listSchedules } from "./list-schedules";
+import type { ScheduleScope } from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
 import {
   addTestActivity,
@@ -31,6 +32,7 @@ const inTestDatabase = withTestDatabase();
 
 const TODAY = "2270-09-20";
 const NOBODY = sql`false`;
+const EVERY_PPKS: ScheduleScope = { kind: "ppks", level: null };
 
 interface Records {
   staffId: string;
@@ -140,7 +142,7 @@ async function addRecords(db: Database): Promise<Records> {
 }
 
 async function listed(db: Database): Promise<ScheduleRow[]> {
-  const list = await listSchedules(db, null, 1);
+  const list = await listSchedules(db, { kind: "ppks", level: null }, 1);
   return list.schedules;
 }
 
@@ -354,7 +356,7 @@ describe("readAttendanceNumbers", () => {
       const numbers = await readAttendanceNumbers(
         db,
         records.everyone,
-        null,
+        EVERY_PPKS,
         TODAY,
       );
 
@@ -369,7 +371,7 @@ describe("readAttendanceNumbers", () => {
       const { mean } = await readAttendanceNumbers(
         db,
         records.everyone,
-        null,
+        EVERY_PPKS,
         TODAY,
       );
 
@@ -386,11 +388,11 @@ describe("readAttendanceNumbers", () => {
       const own = await readAttendanceNumbers(
         db,
         records.ownProgram,
-        null,
+        EVERY_PPKS,
         TODAY,
       );
-      const others = await readAttendanceNumbers(db, other, null, TODAY);
-      const none = await readAttendanceNumbers(db, NOBODY, null, TODAY);
+      const others = await readAttendanceNumbers(db, other, EVERY_PPKS, TODAY);
+      const none = await readAttendanceNumbers(db, NOBODY, EVERY_PPKS, TODAY);
 
       expect(own.mean).toEqual({ percent: 33.3, students: 3 });
       expect(own.waiting).toBe(1);
@@ -408,8 +410,18 @@ describe("readAttendanceNumbers", () => {
       const records = await addRecords(db);
       const { everyone } = records;
 
-      const second = await readAttendanceNumbers(db, everyone, 2, TODAY);
-      const first = await readAttendanceNumbers(db, everyone, 1, TODAY);
+      const second = await readAttendanceNumbers(
+        db,
+        everyone,
+        { kind: "ppks", level: 2 },
+        TODAY,
+      );
+      const first = await readAttendanceNumbers(
+        db,
+        everyone,
+        { kind: "ppks", level: 1 },
+        TODAY,
+      );
 
       expect(second).toMatchObject({ held: 1, coming: 1 });
       expect(first).toMatchObject({ held: 0, coming: 0, waiting: 1 });
@@ -430,7 +442,7 @@ describe("readAttendanceNumbers", () => {
       const { mean } = await readAttendanceNumbers(
         db,
         records.everyone,
-        null,
+        EVERY_PPKS,
         TODAY,
       );
 

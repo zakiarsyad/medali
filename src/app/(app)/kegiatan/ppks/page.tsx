@@ -13,7 +13,7 @@ export default async function PpksSchedulesPage(
   props: PageProps<"/kegiatan/ppks">,
 ) {
   const opened = await openPage("kegiatan", "ppks");
-  const params = readScheduleListParams(await props.searchParams);
+  const params = readScheduleListParams(await props.searchParams, "ppks");
   const { account } = opened;
   return (
     <SchedulesScreen

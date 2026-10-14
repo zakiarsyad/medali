@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { FormParts } from "./form-values";
 import type { ScheduleList } from "./list-schedules";
 import { ScheduleBoard } from "./schedule-board";
+import type { ScheduleScope } from "./schedule-list-address";
 import {
+  TEST_EXTRA_SCHEDULE,
   TEST_FORM_PARTS,
   TEST_NO_ATTENDANCE,
   TEST_SCHEDULE,
@@ -20,12 +22,12 @@ const NONE: ScheduleList = { schedules: [], matching: 0, page: 1 };
 function board(
   form: FormParts | null,
   list = ONE,
-  level: number | null = null,
+  scope: ScheduleScope = { kind: "ppks", level: null },
 ) {
   return renderToStaticMarkup(
     <ScheduleBoard
       list={list}
-      level={level}
+      scope={scope}
       counts={TEST_FORM_PARTS.counts}
       now={{ day: "2026-10-13", time: "08:00" }}
       attendance={TEST_NO_ATTENDANCE}
@@ -66,7 +68,7 @@ describe("ScheduleBoard for an account that only reads", () => {
 
 describe("the list of the board", () => {
   it("offers Semua and the four tahap, and marks the one that is open", () => {
-    const shown = board(null, ONE, 2);
+    const shown = board(null, ONE, { kind: "ppks", level: 2 });
 
     for (const name of [
       "Semua",
@@ -97,8 +99,30 @@ describe("the list of the board", () => {
   it('leads "Peserta" to the same tahap and page of the list, with the students of that schedule open', () => {
     const second = { ...ONE, matching: 30, page: 2 };
 
-    expect(board(null, second, 2)).toContain(
+    expect(board(null, second, { kind: "ppks", level: 2 })).toContain(
       `href="/kegiatan/ppks?tahap=2&amp;hal=2&amp;peserta=${TEST_SCHEDULE.id}">Peserta</a>`,
     );
+  });
+});
+
+describe("the list of the board on Kegiatan tambahan", () => {
+  const extra: ScheduleScope = { kind: "extra" };
+  const list = { schedules: [TEST_EXTRA_SCHEDULE], matching: 30, page: 2 };
+
+  it("offers no tahap choice", () => {
+    const shown = board(null, list, extra);
+
+    expect(shown).toContain("Jadwal dan kehadiran");
+    expect(shown).not.toContain("Semua");
+    expect(shown).not.toContain("Penanaman");
+  });
+
+  it('leads "Peserta" and the pages to the tab Kegiatan tambahan', () => {
+    const shown = board(null, list, extra);
+
+    expect(shown).toContain(
+      `href="/kegiatan/tambahan?hal=2&amp;peserta=${TEST_EXTRA_SCHEDULE.id}">Peserta</a>`,
+    );
+    expect(shown).toContain('href="/kegiatan/tambahan"');
   });
 });

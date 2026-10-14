@@ -1,5 +1,7 @@
 import { stageNameOf } from "@/academic-periods/stages";
 import { shownDay } from "@/ui/day";
+import type { ShownChoice } from "./chosen-participants";
+import type { ScheduleTarget } from "./schedule-row";
 import {
   UPLOAD_UNIT_WORDS,
   type UploadRange,
@@ -43,6 +45,30 @@ export function uploadWords(range: UploadRange): string {
 /** Whom a schedule is for, such as Semester 3 (Penumbuhan). */
 export function targetWords(semester: number): string {
   return `Semester ${semester} (${stageNameOf(semester)})`;
+}
+
+/**
+ * Whom a schedule of an extra activity is for: how many students were
+ * chosen one by one, the classes, one angkatan, or two and more.
+ */
+export function choiceWords(choice: ShownChoice): string {
+  switch (choice.kind) {
+    case "students":
+      return `${shownCount(choice.chosen)} mahasiswa terpilih`;
+    case "classes":
+      return `Kelas ${choice.classNames.join(", ")}`;
+    case "cohorts":
+      if (choice.cohortYears.length === 1) {
+        return `Angkatan ${choice.cohortYears[0]}`;
+      }
+      return `Lintas angkatan ${choice.cohortYears.join(", ")}`;
+  }
+}
+
+/** Whom any schedule is for, as Sasaran shows it. */
+export function sasaranWords(target: ScheduleTarget): string {
+  if (target.kind === "semester") return targetWords(target.semester);
+  return choiceWords(target.choice);
 }
 
 /** How many take part, and the target of the activity when it has one. */

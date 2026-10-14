@@ -11,6 +11,7 @@ import { ACTIVITY_FIELD_ID, ActivitySelect } from "./activity-select";
 import {
   choicesWith,
   type FormParts,
+  keptChoice,
   participantsOn,
   startingValues,
   valuesOf,
@@ -42,7 +43,10 @@ export function ScheduleForm({
   onCancel: () => void;
 }) {
   const start = schedule ? valuesOf(schedule) : startingValues(parts.today);
-  const choices = choicesWith(parts.choices, schedule?.activity ?? null);
+  const choices = choicesWith(
+    parts.choices,
+    schedule ? keptChoice(schedule) : null,
+  );
   const [activityId, setActivityId] = useState(start.activityId);
   const [startsOn, setStartsOn] = useState(start.startsOn);
   const [isRequired, setIsRequired] = useState(start.isRequired);

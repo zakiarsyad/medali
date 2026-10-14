@@ -2,9 +2,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { AttendanceNumbers } from "./attendance-numbers";
 import { AttendanceNumbersView } from "./attendance-numbers-view";
+import type { ScheduleKind } from "./schedule-list-address";
 
-function shown(numbers: AttendanceNumbers): string {
-  return renderToStaticMarkup(<AttendanceNumbersView numbers={numbers} />);
+function shown(
+  numbers: AttendanceNumbers,
+  kind: ScheduleKind = "ppks",
+): string {
+  return renderToStaticMarkup(
+    <AttendanceNumbersView numbers={numbers} kind={kind} />,
+  );
 }
 
 function card(label: string, amount: string, note: string): RegExp {
@@ -28,6 +34,15 @@ describe("AttendanceNumbersView", () => {
     expect(view).toMatch(card("Kegiatan terlaksana", "12", "PPKS wajib"));
     expect(view).toMatch(card("Menunggu verifikasi", "31", "foto kehadiran"));
     expect(view).toMatch(card("Terjadwal", "5", "akan datang"));
+  });
+
+  it("counts the required extra activities held on the tab Kegiatan tambahan", () => {
+    const view = shown(
+      { mean: { percent: 90, students: 4 }, held: 2, waiting: 0, coming: 1 },
+      "extra",
+    );
+
+    expect(view).toMatch(card("Kegiatan terlaksana", "2", "tambahan wajib"));
   });
 
   it('shows "-" as the mean while no student has a score, and a whole mean with its decimal', () => {

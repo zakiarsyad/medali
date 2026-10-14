@@ -16,16 +16,30 @@ import { scheduleStatus } from "./schedule-status";
 import {
   activityDetail,
   participantWords,
+  sasaranWords,
   shownCount,
   shownDays,
   shownHours,
-  targetWords,
   uploadWords,
 } from "./schedule-words";
 import { StatusBadge } from "./status-badge";
 
 /** The cells before the attendance, and the actions, count as columns too. */
 const COLUMNS = 8;
+
+/**
+ * How many Aktif students a schedule is for: of a PPKS activity, those of
+ * the angkatan in its semester during its period; of an extra one, the
+ * head count read with it.
+ */
+function participantsOf(
+  schedule: ScheduleRow,
+  counts: readonly CohortCount[],
+): number {
+  const { target } = schedule;
+  if (target.kind === "chosen") return target.participants;
+  return countParticipants(counts, target.semester, schedule.period);
+}
 
 function ScheduleCells({
   schedule,
@@ -36,12 +50,7 @@ function ScheduleCells({
   counts: CohortCount[];
   now: CampusMoment;
 }) {
-  const { activity } = schedule;
-  const participants = countParticipants(
-    counts,
-    activity.semester,
-    schedule.period,
-  );
+  const { activity, target } = schedule;
   return (
     <>
       <td data-title="Jadwal">
@@ -62,9 +71,12 @@ function ScheduleCells({
         </span>
       </td>
       <td data-title="Sasaran">
-        {targetWords(activity.semester)}
+        {sasaranWords(target)}
         <span className={shared.detail}>
-          {participantWords(participants, activity.targetParticipants)}
+          {participantWords(
+            participantsOf(schedule, counts),
+            activity.targetParticipants,
+          )}
         </span>
       </td>
       <td data-title="Status">

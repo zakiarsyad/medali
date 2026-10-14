@@ -86,6 +86,16 @@ export function valuesOf(schedule: ScheduleRow): FormValues {
 }
 
 /**
+ * The PPKS activity a schedule holds, as the form offers it, or null for
+ * a schedule of an extra activity, which has no semester.
+ */
+export function keptChoice(schedule: ScheduleRow): ActivityChoice | null {
+  const { target } = schedule;
+  if (target.kind !== "semester") return null;
+  return { ...schedule.activity, semester: target.semester };
+}
+
+/**
  * The activities the form offers: those in the Kurikulum list, and the
  * one the schedule already holds when it was removed from the list since,
  * so the schedule can be changed and keep it.
