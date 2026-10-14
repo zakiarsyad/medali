@@ -133,6 +133,19 @@ Decided while building, because the issue did not say:
     before an announcement is "Umumkan (n) mahasiswa tidak hadir pada
     (kegiatan)?", without the prototype's line on clarification, which
     is not part of this work.
+14. Staff, BAM among them, see Hadir and Kehadiran of an activity once
+    it is announced, also one announced before it ended. Until then an
+    activity that is over shows "Belum diumumkan" and one that is not
+    over a dash. A draft is shown only to BAM, in Penghitungan
+    kehadiran.
+15. Kehadiran is the share of those counted who were Hadir, rounded to a
+    whole percentage. Hadir, Kehadiran and the list in Rincian count only
+    the students the account may see: Ketua Program Studi those of their
+    own study program.
+16. Rincian lists by name everyone who was absent or has a note, each
+    with Hadir or Tidak hadir and the note, or says "Semua peserta hadir
+    tanpa catatan." Before the announcement it shows only "Pengumuman
+    BAM: Belum diumumkan".
 
 ## Steps
 
@@ -141,5 +154,5 @@ Decided while building, because the issue did not say:
 - [x] 2. The rights to count and to see attendance are added to the
   permission list, with their checks.
 - [x] 3. "Penghitungan kehadiran" lets BAM tick, note, save and announce.
-- [ ] 4. Staff see Hadir, Kehadiran and the absent list in Rincian.
+- [x] 4. Staff see Hadir, Kehadiran and the absent list in Rincian.
 - [ ] 5. Residents see the numbers and Riwayat.

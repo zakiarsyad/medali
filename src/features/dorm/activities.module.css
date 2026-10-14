@@ -330,3 +330,27 @@
   border-top: var(--save-bar-line) solid var(--line);
   background: var(--surface);
 }
+
+.bad {
+  border: var(--line-width) solid var(--bad);
+  background: var(--surface);
+  color: var(--bad);
+}
+
+/* Who was absent or has a note, under Rincian of an announced count. */
+.markedList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.markedRow {
+  composes: countRow;
+}
+
+.markedNote {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}

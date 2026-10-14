@@ -75,6 +75,7 @@ function OpenList({
       day={view.day}
       activities={view.activities}
       residents={view.residents}
+      attendance={view.attendance}
       now={now}
       actionsOf={actionsOf}
       leaveQuestion={leaveQuestion}

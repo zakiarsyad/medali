@@ -2,6 +2,8 @@ import styles from "./activities.module.css";
 import type { RundownLine } from "./activity-ids";
 import type { ActivityRow } from "./activity-row";
 import { audienceWords, organiserLine } from "./activity-words";
+import type { AnnouncedAttendance } from "./announced-attendance";
+import { AttendanceDetail } from "./attendance-detail";
 
 /** Rincian kegiatan: each line its time, then what happens. */
 export function Rundown({ lines }: { lines: RundownLine[] }) {
@@ -24,15 +26,22 @@ export function Rundown({ lines }: { lines: RundownLine[] }) {
 
 /**
  * What "Rincian" opens: the penanggung jawab, the peserta with how many
- * they are, and Rincian kegiatan.
+ * they are, and Rincian kegiatan, and for an account that may see the
+ * attendance what BAM announced of it.
  */
 export function ActivityDetail({
   activity,
   participants,
+  attendance,
 }: {
   activity: ActivityRow;
   /** How many residents take part, among those the account may see. */
   participants: number;
+  /**
+   * The announced count of the activity on its day, undefined when there
+   * is none, or null for an account that may not see the attendance.
+   */
+  attendance: AnnouncedAttendance | undefined | null;
 }) {
   const count = participants.toLocaleString("id-ID");
   return (
@@ -50,6 +59,7 @@ export function ActivityDetail({
         </div>
       </dl>
       <Rundown lines={activity.rundown} />
+      {attendance !== null && <AttendanceDetail attendance={attendance} />}
     </div>
   );
 }

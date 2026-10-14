@@ -5,9 +5,11 @@ import type { ActivitiesParams } from "./activities-address";
 import type { ResidentsByDorm } from "./activity-audience";
 import { listOneOffs, listRoutines, type OneOffPage } from "./activity-lists";
 import type { ActivityRow } from "./activity-row";
+import type { DayAttendance } from "./announced-attendance";
 import { loadCountPanel } from "./count-panel-view";
 import type { CountPanelView } from "./count-view";
 import { readDailyActivities } from "./daily-activities";
+import { readDayAttendance } from "./day-attendance";
 import { countResidentsByDorm } from "./resident-counts";
 
 /** What the list that is open shows. Only that list is read. */
@@ -23,6 +25,11 @@ export type ActivitiesView =
        * with activities; null otherwise.
        */
       count: CountPanelView | null;
+      /**
+       * The announced counts of the day, for an account that may see the
+       * attendance; null otherwise.
+       */
+      attendance: DayAttendance | null;
     }
   | { view: "rutin"; routines: ActivityRow[] }
   | { view: "nonrutin"; list: OneOffPage };
@@ -33,6 +40,11 @@ export interface Reader {
   visible: SQL;
   /** Whether the account may count the attendance. */
   mayCount: boolean;
+  /**
+   * The students whose attendance the account may see, or null for an
+   * account that may not see the attendance.
+   */
+  attendanceVisible: SQL | null;
   /** The moment on campus the screen is read at. */
   now: CampusMoment;
 }
@@ -53,9 +65,13 @@ export async function loadActivitiesView(
   if (params.view === "nonrutin") {
     return { view: "nonrutin", list: await listOneOffs(db, params.page) };
   }
-  const [activities, residents] = await Promise.all([
+  const { attendanceVisible } = reader;
+  const [activities, residents, attendance] = await Promise.all([
     readDailyActivities(db, params.day),
     countResidentsByDorm(db, reader.visible),
+    attendanceVisible === null
+      ? null
+      : readDayAttendance(db, params.day, attendanceVisible),
   ]);
   const count = reader.mayCount
     ? await loadCountPanel(
@@ -66,5 +82,6 @@ export async function loadActivitiesView(
         reader.now,
       )
     : null;
-  return { view: "harian", day: params.day, activities, residents, count };
+  const { day } = params;
+  return { view: "harian", day, activities, residents, count, attendance };
 }

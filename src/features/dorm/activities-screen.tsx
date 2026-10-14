@@ -22,6 +22,7 @@ export async function ActivitiesScreen({
   visible,
   mayManage,
   mayCount,
+  attendanceVisible,
 }: {
   tabs: TabLinksProps;
   searchParams: SearchParams;
@@ -30,6 +31,8 @@ export async function ActivitiesScreen({
   mayManage: boolean;
   /** Whether the account may count and announce the attendance. */
   mayCount: boolean;
+  /** The students whose attendance it may see; null for none. */
+  attendanceVisible: SQL | null;
 }) {
   // The server's clock in campus time, so every browser sees one state.
   const moment = new Date();
@@ -38,6 +41,7 @@ export async function ActivitiesScreen({
   const view = await loadActivitiesView(database(), params, {
     visible,
     mayCount,
+    attendanceVisible,
     now,
   });
   return (

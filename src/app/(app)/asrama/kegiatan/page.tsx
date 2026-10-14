@@ -30,6 +30,11 @@ export default async function DormActivitiesPage(
         visible={visibleTo(rowLimitForAction(account, "view_dorm_activities"))}
         mayManage={may(account.roles, "manage_dorm_activities")}
         mayCount={may(account.roles, "count_dorm_attendance")}
+        attendanceVisible={
+          may(account.roles, "view_dorm_attendance")
+            ? visibleTo(rowLimitForAction(account, "view_dorm_attendance"))
+            : null
+        }
       />
     );
   }
