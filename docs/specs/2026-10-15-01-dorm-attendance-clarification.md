@@ -108,7 +108,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The table for dorm clarifications is added, with sample
   clarifications in every status.
-- [ ] 2. The rights to ask, check and decide are added to the permission
+- [x] 2. The rights to ask, check and decide are added to the permission
   list, with their checks.
 - [ ] 3. Residents send a clarification with a file from Riwayat.
 - [ ] 4. Klarifikasi kehadiran shows the numbers, filters and cards.
