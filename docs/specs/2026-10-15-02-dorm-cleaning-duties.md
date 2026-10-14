@@ -77,9 +77,12 @@ room's duties.
 
 ## Decided
 
-1. Wismantara takes no part in cleaning before its rooms are plotted. It
-   has no rooms in this work, so it gets no duties, and its part of the
-   schedule says its rooms are not plotted. Its places can still be kept.
+1. A dorm takes no part in cleaning before its rooms are plotted: a dorm
+   with no room that has residents gets no duties, and its part of the
+   schedule says "Kamar asrama ini belum diploting." Its places can still
+   be kept. The suggestion assumed Wismantara has no rooms, but the merged
+   app now plots Wismantara rooms too, so a Wismantara room with residents
+   takes part like the others; its sample data has places but no duties.
 2. A duty is given only for today or a later date, not for the past.
 
 Decided while building, because the issue did not say:
@@ -127,6 +130,17 @@ Decided while building, because the issue did not say:
     filled, taken in turn.
 14. Every duty shows Terjadwal; the other statuses come with Cleaning
     assessment.
+15. Only the account that removed a place can press "Urungkan", as for a
+    dorm activity.
+16. The number of residents counts kakak pendamping placed in the room,
+    as Ploting kamar does. A past duty whose room is now empty or removed
+    shows no number.
+17. The resident's list holds the last 20 duties of their room by date,
+    newest first, upcoming dates included.
+18. "Tugaskan semua kamar" asks nothing and says "Semua kamar sudah
+    dijadwalkan." when every room already has its duty that day.
+19. In "Semua asrama", the page links of a dorm's own-room duties switch
+    to that dorm.
 
 ## Steps
 
