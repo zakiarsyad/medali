@@ -1,6 +1,7 @@
 /**
- * The version of a schedule last changed at that moment. Every change
- * sets a new moment, so a form opened before a change holds an old one.
+ * The version of a row last changed at that moment, such as a schedule or
+ * a dorm activity. Every change sets a new moment, so a form opened
+ * before a change holds an old one.
  */
 export function versionOf(changedAt: Date): string {
   return changedAt.toISOString();

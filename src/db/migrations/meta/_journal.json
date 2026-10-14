@@ -218,6 +218,13 @@
       "when": 1791931990912,
       "tag": "0030_attendance-clarifications",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1791951390809,
+      "tag": "0031_dorm-activities",
+      "breakpoints": true
     }
   ]
 }

@@ -4,6 +4,7 @@ import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { activitySchedules } from "@/db/schema";
+import { hourAndMinute } from "@/db/stored-time";
 import type { Parsed } from "@/parsed";
 import { SCHEDULES_NOT_ALLOWED } from "./not-allowed";
 import {
@@ -12,7 +13,6 @@ import {
   type SentSchedule,
 } from "./schedule-input";
 import { placeOf, type SavedSchedule } from "./schedule-place";
-import { hourAndMinute } from "./stored-time";
 
 /**
  * What an add answers when its key is that of a schedule it did not just

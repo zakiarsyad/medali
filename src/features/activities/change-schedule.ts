@@ -3,6 +3,7 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
+import { momentOf } from "@/db/row-version";
 import { activitySchedules } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { SCHEDULES_NOT_ALLOWED } from "./not-allowed";
@@ -12,7 +13,6 @@ import {
   type SentSchedule,
 } from "./schedule-input";
 import { placeOf, type SavedSchedule } from "./schedule-place";
-import { momentOf } from "./schedule-version";
 
 /** What a change or a removal answers when the schedule is not there. */
 export const SCHEDULE_NOT_FOUND = {

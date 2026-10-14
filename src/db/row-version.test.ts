@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { momentOf, versionOf } from "./schedule-version";
+import { momentOf, versionOf } from "./row-version";
 
 describe("versionOf and momentOf", () => {
   it("give back the moment a version was made from", () => {
