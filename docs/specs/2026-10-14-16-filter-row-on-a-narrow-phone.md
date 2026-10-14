@@ -70,6 +70,6 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. A field in the shared row of filters is never wider than its
+- [x] 1. A field in the shared row of filters is never wider than its
   panel, with a check, and Pengguna dan peran does not scroll sideways
   on a screen 320px wide.
