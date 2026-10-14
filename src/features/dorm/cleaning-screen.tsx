@@ -116,9 +116,11 @@ export async function CleaningScreen({
             <h2 className={`${shared.heading} ${styles.title}`}>
               Jadwal pembersihan
             </h2>
-            <p className={styles.sub}>
-              Pilih tanggal, lalu tugaskan kamar untuk setiap tempat.
-            </p>
+            {mayManage && (
+              <p className={styles.sub}>
+                Pilih tanggal, lalu tugaskan kamar untuk setiap tempat.
+              </p>
+            )}
           </div>
           <CleaningDaySwitch params={params} today={today} />
         </div>
