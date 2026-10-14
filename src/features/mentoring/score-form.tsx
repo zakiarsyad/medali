@@ -76,7 +76,7 @@ export function ScoreForm({
           setTyped(withTyped(typed, studentId, text))
         }
       />
-      <div className={styles.saveScores}>
+      <div className={`${styles.saveBar} ${styles.saveScores}`}>
         <button
           type="submit"
           className={shared.button}
