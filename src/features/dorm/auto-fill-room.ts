@@ -60,7 +60,10 @@ async function firstWaiting(
     )
     .orderBy(asc(students.nim))
     .limit(howMany)
-    .for("update", { of: students });
+    // Not the stronger "update": a save that writes lines pointing at two
+    // of these students in another order would wait for this one while
+    // this one waits for it, until the database gives one of them up.
+    .for("no key update", { of: students });
   return waiting.map((resident) => resident.id);
 }
 

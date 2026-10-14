@@ -82,8 +82,8 @@ async function changeAccountOf(
  * The address goes on the student's account; one that another account
  * holds is refused, and nothing is changed.
  * A kakak pendamping whose changed data no longer fits the duty stops
- * being one: no longer active, living in a dorm now, or not of the jenis
- * kelamin of the dorm they serve.
+ * being one: no longer active, living in Dana Rakca or Cipta Bakti now,
+ * or not of the jenis kelamin of the dorm they serve.
  * The student leaves the group they were in for the one chosen, or for
  * none, in the same save, and the move is logged. A group that does not
  * fit the data being saved is refused, and nothing is changed.

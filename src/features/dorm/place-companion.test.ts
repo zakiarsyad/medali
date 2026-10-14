@@ -1,7 +1,8 @@
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, dormRoomPlaces } from "@/db/schema";
+import { academicPeriods, dormRoomPlaces, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestProgram,
@@ -14,7 +15,13 @@ import { changeRoom } from "./change-room";
 import { placeCompanion, takeOutCompanion } from "./place-companion";
 import { placeResident } from "./place-resident";
 import { removeRoom } from "./remove-room";
-import { addTestCompanion, companionOf, residentsOfRoom } from "./test-records";
+import { countResidents, type ResidentScope } from "./room-list";
+import {
+  addTestCompanion,
+  companionOf,
+  EVERYONE,
+  residentsOfRoom,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -331,6 +338,36 @@ describe("placeCompanion", () => {
       const placed = await place(db, roomId, companion);
 
       expect(placed.ok).toBe(true);
+      expect(await residentsOfRoom(db, oldRoom)).toEqual([]);
+    });
+  });
+
+  it("leaves one who lives in Wismantara again with the room as kakak pendamping only", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, companion } = await addTestRows(db);
+      const oldRoom = await addTestRoom(db, {
+        number: "KP303",
+        dorm: "wismantara_putri",
+      });
+      await placeTestResident(db, oldRoom, companion);
+      await place(db, roomId, companion);
+
+      await db
+        .update(students)
+        .set({ isInternational: true })
+        .where(eq(students.id, companion));
+      const scope: ResidentScope = {
+        dorm: "wismantara_putri",
+        dormCohorts: [2062],
+        visible: EVERYONE,
+      };
+
+      expect((await companionOf(db, companion))?.roomId).toBe(roomId);
+      expect(await countResidents(db, scope)).toEqual({
+        residents: 1,
+        placed: 0,
+        placedAsCompanion: 1,
+      });
     });
   });
 

@@ -64,13 +64,17 @@ async function place(
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
   await freeStalePlacesIn(tx, dormCohorts, room.id);
-  await freeStalePlacesOf(tx, dormCohorts, [studentId]);
   const [resident] = await tx
     .select({ name: students.name })
     .from(students)
     .where(and(eq(students.id, studentId), livesIn(room.dorm, dormCohorts)))
-    .for("update");
+    // Enough to keep the other saves that give this student a room out,
+    // without making a save that only points at the student wait.
+    .for("no key update");
   if (!resident) return notResident(room.dorm);
+  // Only once the student is held, as placing a kakak pendamping does:
+  // the other way round the two would wait for each other.
+  await freeStalePlacesOf(tx, dormCohorts, [studentId]);
   const companionRoom = await readCompanionRoom(tx, studentId);
   if (companionRoom) return placedAsCompanion(companionRoom);
   if ((await countTaken(tx, room.id)) >= room.capacity) return ROOM_FULL;

@@ -20,7 +20,7 @@ import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL, type SentPlace } from "./place-resident";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, type LockedRoom, lockRoom } from "./room-lock";
-import { freeStalePlacesIn } from "./stale-places";
+import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
 
 const STOPPED = {
   ok: false,
@@ -69,7 +69,9 @@ async function lockStudent(
     .select({ name: students.name, livesIn: dormInSql(dormCohorts) })
     .from(students)
     .where(eq(students.id, studentId))
-    .for("update");
+    // Enough to keep the other saves that give this student a room out,
+    // without making a save that only points at the student wait.
+    .for("no key update");
   return student ?? null;
 }
 
@@ -100,13 +102,19 @@ async function place(
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
-  await freeStalePlacesIn(tx, dormCohorts, room.id);
   const student = await lockStudent(tx, dormCohorts, studentId);
   if (!student) return COMPANION_NOT_FOUND;
   const companion = await lockCompanion(tx, studentId);
   if (!companion) return COMPANION_NOT_FOUND;
   const refused = refusal(companion, room);
   if (refused) return refused;
+  // Places are deleted only once the student is held: a place this
+  // student left behind may be in this very room, and deleting it first
+  // would make two placings of the student wait for each other.
+  await freeStalePlacesIn(tx, dormCohorts, room.id);
+  // A place left behind in a dorm the student stopped living in would
+  // count again, as a second room, once they live there again.
+  await freeStalePlacesOf(tx, dormCohorts, [studentId]);
   if (student.livesIn !== null) {
     const kept = await residentRefusal(tx, studentId, student.livesIn);
     if (kept) return kept;
