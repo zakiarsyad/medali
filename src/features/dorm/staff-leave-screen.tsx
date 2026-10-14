@@ -17,15 +17,15 @@ export const NO_LEAVE_MATCHES = "Tidak ada pengajuan pada filter ini.";
 
 /** Whether an account may only see the cards, and change nothing. */
 function onlySees(rights: LeaveRights): boolean {
-  return !rights.decide && !rights.verify && !rights.validate;
+  return !rights.decide && !rights.verify && !rights.validate && !rights.record;
 }
 
 /**
  * Perizinan asrama for staff: the numbers Menunggu verifikasi and Izin 30
  * hari terakhir, the search with the status and kind choices, and one
  * page of request cards. Pengelola Asrama approves and rejects there,
- * BAM - BPHK verifies reports of a return and Pengelola validates them;
- * every other role only reads.
+ * BAM - BPHK verifies reports of a return and Pengelola validates them,
+ * and both record a return directly; every other role only reads.
  */
 export function StaffLeaveScreen({
   tabs,
@@ -77,6 +77,7 @@ export function StaffLeaveScreen({
           key={address}
           cards={list.cards}
           rights={rights}
+          asOf={board.asOf}
           emptyWords={NO_LEAVE_MATCHES}
         />
         {list.matching > 0 && (

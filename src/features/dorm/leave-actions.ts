@@ -20,6 +20,7 @@ import { LEAVE_ADDRESS } from "./leave-address";
 import type { SentLeave } from "./leave-input";
 import type { LeaveNote } from "./leave-note";
 import { KIND_WORDS } from "./leave-words";
+import { recordReturn } from "./record-return";
 import { type DecidedStatus, REPORT_DECIDED_WORDS } from "./return-messages";
 import {
   RETURN_PHOTO_FAULTS,
@@ -124,6 +125,35 @@ async function validator(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "validate_dorm_return")) forbidden();
   return account;
+}
+
+/** The signed-in account when it may record a return directly. */
+async function recorder(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "record_dorm_return")) forbidden();
+  return account;
+}
+
+/**
+ * "Catat sudah kembali" on a card, with "Waktu kembali". Who recorded is
+ * the signed-in account, and now is the server's clock, never a field. A
+ * refusal stays on its card, which a reload would take away.
+ */
+export async function recordReturnAction(
+  leaveId: string,
+  returnedAt: string,
+): Promise<FormState> {
+  const actor = await recorder();
+  const recorded = await recordReturn(
+    database(),
+    actor,
+    String(leaveId),
+    String(returnedAt),
+    new Date(),
+  );
+  if (!recorded.ok) return { error: recorded.error, done: null };
+  revalidatePath(LEAVE_ADDRESS);
+  return { error: null, done: recorded.value };
 }
 
 /** The signed-in account when it may report back from its own leave. */

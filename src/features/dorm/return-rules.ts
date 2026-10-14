@@ -3,8 +3,15 @@ import type { LeaveKind, LeaveStatus, ReportStatus } from "./leave-ids";
 import { REPORT_OPENS_MINUTES } from "./leave-ids";
 import {
   ALREADY_BACK,
+  ITMK_NOT_RECORDED,
   LEAVE_NOT_APPROVED,
+  LEAVE_NOT_STARTED,
   NEEDS_NO_REPORT,
+  RECORD_NOT_APPROVED,
+  REPORT_STILL_WAITS,
+  RETURN_BEFORE_START,
+  RETURN_IN_FUTURE,
+  RETURN_RECORDED_FIRST,
   reportNotOpen,
 } from "./return-messages";
 
@@ -80,6 +87,43 @@ export function reportFault(leave: ReturningLeave, at: Date) {
   return null;
 }
 
+/**
+ * Whether a resident is out of the dorm on a leave at a moment: approved
+ * Izin pesiar or Izin khusus that has started, with no return and no
+ * report that waits.
+ */
+export function isOut(
+  leave: ReturningLeave,
+  hasOpenReport: boolean,
+  now: Date,
+): boolean {
+  if (!needsReturn(leave.kind)) return false;
+  if (leave.status !== "approved") return false;
+  if (leave.startsAt > now) return false;
+  return !hasOpenReport;
+}
+
+/**
+ * Why "Catat sudah kembali" is refused for a leave at a moment, or null
+ * when the return may be recorded: the resident must be out, and the
+ * time of the return must lie between the start and now.
+ */
+export function recordFault(
+  leave: ReturningLeave,
+  hasOpenReport: boolean,
+  returnedAt: Date,
+  now: Date,
+) {
+  if (!needsReturn(leave.kind)) return ITMK_NOT_RECORDED;
+  if (leave.status === "completed") return RETURN_RECORDED_FIRST;
+  if (leave.status !== "approved") return RECORD_NOT_APPROVED;
+  if (leave.startsAt > now) return LEAVE_NOT_STARTED;
+  if (hasOpenReport) return REPORT_STILL_WAITS;
+  if (returnedAt > now) return RETURN_IN_FUTURE;
+  if (returnedAt < leave.startsAt) return RETURN_BEFORE_START;
+  return null;
+}
+
 /** The latest report of a leave as the resident's history reads it. */
 export interface LatestReport {
   status: ReportStatus;
@@ -89,7 +133,9 @@ export interface LatestReport {
 }
 
 /** Whether a report still waits for BAM - BPHK or Pengelola Asrama. */
-export function isOpenReport(report: LatestReport | null): boolean {
+export function isOpenReport(
+  report: Pick<LatestReport, "status"> | null,
+): boolean {
   if (report === null) return false;
   return report.status === "waiting" || report.status === "verified";
 }

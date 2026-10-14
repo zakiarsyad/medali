@@ -12,6 +12,7 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
@@ -25,15 +26,18 @@ import {
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
 import { dormInSql } from "@/dorms/resident-condition";
+import { shownMoment } from "@/ui/day";
 import { pageWithin } from "@/ui/list-pages";
 import type { ActivityRow } from "./activity-row";
 import { LEAVE_CARDS_PAGE_SIZE, type LeaveFilters } from "./leave-address";
-import { type LeaveCard, warningsOf } from "./leave-card";
+import { type LeaveCard, type ReturnWords, warningsOf } from "./leave-card";
 import { coveredActivities } from "./leave-cover";
 import { APPROVED_STATUSES } from "./leave-ids";
 import { rowOfLeave } from "./leave-row";
 import { readActivityRows } from "./leave-store";
+import { campusTimeOf } from "./leave-time";
 import { type ReportCard, reportCardOf } from "./return-card";
+import { isOpenReport, isOut, timelinessOf } from "./return-rules";
 import { type LatestStoredReport, readLatestReports } from "./return-store";
 
 /** The two numbers above the list. */
@@ -55,6 +59,8 @@ export interface LeaveList {
 export interface LeaveBoard {
   counts: LeaveCounts;
   list: LeaveList;
+  /** The moment it was read, as a time on campus such as 2026-10-14T16:20. */
+  asOf: string;
 }
 
 const DAYS_COUNTED = 30;
@@ -117,6 +123,8 @@ function orderOf(filters: LeaveFilters) {
   return [desc(dormLeaves.startsAt), asc(dormLeaves.id)];
 }
 
+const recorder = alias(accounts, "recorder");
+
 function readPage(
   db: Database,
   condition: SQL | undefined,
@@ -132,6 +140,7 @@ function readPage(
       dorm,
       room: dormRooms.number,
       decidedBy: accounts.name,
+      recordedBy: recorder.name,
     })
     .from(dormLeaves)
     .innerJoin(students, eq(students.id, dormLeaves.studentId))
@@ -144,6 +153,7 @@ function readPage(
       ),
     )
     .leftJoin(accounts, eq(accounts.id, dormLeaves.decidedBy))
+    .leftJoin(recorder, eq(recorder.id, dormLeaves.returnRecordedBy))
     .where(condition)
     .orderBy(...orderOf(filters))
     .limit(LEAVE_CARDS_PAGE_SIZE)
@@ -182,6 +192,16 @@ function reportOf(
   return reportCardOf(stored.report, stored, endsAt);
 }
 
+function returnedOf(row: PageRow): ReturnWords | null {
+  const { returnedAt, returnRecordedBy, endsAt } = row.leave;
+  if (returnedAt === null) return null;
+  return {
+    at: shownMoment(returnedAt),
+    timeliness: timelinessOf(returnedAt, endsAt),
+    recordedBy: returnRecordedBy === null ? null : (row.recordedBy ?? "-"),
+  };
+}
+
 function cardOf(
   row: PageRow,
   activities: ActivityRow[],
@@ -199,6 +219,7 @@ function cardOf(
     row.decidedBy === null
       ? null
       : { by: row.decidedBy, note: leave.decisionNote };
+  const latest = reports.get(leave.id);
   return {
     ...rowOfLeave(leave, covered),
     name: row.name,
@@ -206,7 +227,9 @@ function cardOf(
     room: roomWords(dorm, row.room),
     decision,
     warnings: warningsOf({ ...leave, ...span }, now),
-    report: reportOf(reports.get(leave.id), leave.endsAt),
+    report: reportOf(latest, leave.endsAt),
+    isOut: isOut(leave, isOpenReport(latest?.report ?? null), now),
+    returned: returnedOf(row),
   };
 }
 
@@ -250,5 +273,6 @@ export async function readLeaveBoard(
       matching: total,
       page: shownPage,
     },
+    asOf: campusTimeOf(now),
   };
 }

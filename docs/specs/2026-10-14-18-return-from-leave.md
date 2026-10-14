@@ -103,5 +103,5 @@ return directly, and see who is still out and who is late.
 - [x] 3. Residents send the report photo and see its state.
 - [x] 4. BAM - BPHK verifies and rejects; Pengelola validates and
   rejects.
-- [ ] 5. "Catat sudah kembali" records a return directly.
+- [x] 5. "Catat sudah kembali" records a return directly.
 - [ ] 6. The out and late numbers, labels and filters show.

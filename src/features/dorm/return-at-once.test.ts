@@ -4,7 +4,12 @@ import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { memoryStore } from "@/files/memory-store";
 import type { Parsed } from "@/parsed";
 import { validateReturn, verifyReturn } from "./decide-return";
-import { reportDecidedFirst } from "./return-messages";
+import { recordReturn } from "./record-return";
+import {
+  ALREADY_BACK,
+  RETURN_RECORDED_FIRST,
+  reportDecidedFirst,
+} from "./return-messages";
 import { RETURN_PHOTO_FILE_NAME } from "./return-photo";
 import { sendReturnReport } from "./send-return-report";
 import { addTestResidents, leaveById, type TestResident } from "./test-leave";
@@ -37,7 +42,7 @@ async function resident(place: number): Promise<TestResident> {
     own.db,
     2930,
     "Prodi Uji Lapor Sekaligus",
-    ["9937920001", "9937920002", "9937920003", "9937920004"],
+    ["9937920001", "9937920002", "9937920003", "9937920004", "9937920005"],
   );
   const found = residents[place];
   if (!found) throw new Error("There is no such resident.");
@@ -74,6 +79,51 @@ describe("a report of a return sent twice at the same moment", () => {
     expect(both.later).toEqual(both.sooner);
     expect(await reportsOf(own.db, leaveId)).toHaveLength(1);
     expect(store.files.size).toBe(1);
+  });
+});
+
+const AFTER = campusAt("2930-10-13T17:00");
+
+describe("two returns of one leave at the same moment", () => {
+  it("lets the return recorded first win: a second record waits, then is refused", async () => {
+    const { manager, leaveId } = await outingOf(3);
+    const bam = await addTestActor(own.db, "BAM Uji Catat 3", ["bam_bphk"]);
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => recordReturn(db, bam, leaveId, "2930-10-13T16:10", AFTER),
+      (db) => recordReturn(db, manager, leaveId, "2930-10-13T16:15", AFTER),
+    );
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual(RETURN_RECORDED_FIRST);
+    expect(await leaveById(own.db, leaveId)).toMatchObject({
+      returnedAt: campusAt("2930-10-13T16:10"),
+      returnRecordedBy: bam.id,
+    });
+  });
+
+  it("keeps no report sent while the return is recorded: it waits, then is refused", async () => {
+    const { out, manager, leaveId } = await outingOf(4);
+    const store = memoryStore();
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => recordReturn(db, manager, leaveId, "2930-10-13T16:10", AFTER),
+      (db) =>
+        sendReturnReport(
+          db,
+          store,
+          out,
+          leaveId,
+          crypto.randomUUID(),
+          PHOTO,
+          AFTER,
+        ),
+    );
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual(ALREADY_BACK);
+    expect(await reportsOf(own.db, leaveId)).toEqual([]);
+    expect(store.files.size).toBe(0);
   });
 });
 

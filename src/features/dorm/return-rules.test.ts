@@ -1,15 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
   ALREADY_BACK,
+  ITMK_NOT_RECORDED,
   LEAVE_NOT_APPROVED,
+  LEAVE_NOT_STARTED,
   NEEDS_NO_REPORT,
+  RECORD_NOT_APPROVED,
+  REPORT_STILL_WAITS,
+  RETURN_BEFORE_START,
+  RETURN_IN_FUTURE,
+  RETURN_RECORDED_FIRST,
   reportNotOpen,
 } from "./return-messages";
 import {
+  isOut,
   type LatestReport,
   lateMinutes,
   ownReturnOf,
   type ReturningLeave,
+  recordFault,
   reportFault,
   reportOpensAt,
   timelinessOf,
@@ -101,6 +110,70 @@ describe("reportFault", () => {
         LEAVE_NOT_APPROVED,
       );
     }
+  });
+});
+
+describe("isOut", () => {
+  it("counts approved Izin pesiar or Izin khusus that has started and has no return or report", () => {
+    expect(isOut(OUTING, false, on("2026-10-14T09:00"))).toBe(true);
+    expect(isOut(OUTING, false, on("2026-10-15T09:00"))).toBe(true);
+    expect(
+      isOut({ ...OUTING, kind: "special" }, false, on("2026-10-14T12:00")),
+    ).toBe(true);
+  });
+
+  it("does not count leave before its start, with a report that waits, ITMK, or leave that is not approved", () => {
+    const now = on("2026-10-14T12:00");
+
+    expect(isOut(OUTING, false, on("2026-10-14T08:59"))).toBe(false);
+    expect(isOut(OUTING, true, now)).toBe(false);
+    expect(isOut({ ...OUTING, kind: "skip_activities" }, false, now)).toBe(
+      false,
+    );
+    for (const status of ["completed", "submitted", "cancelled"] as const) {
+      expect(isOut({ ...OUTING, status }, false, now)).toBe(false);
+    }
+  });
+});
+
+describe("recordFault", () => {
+  const NOW = on("2026-10-14T16:30");
+
+  it("lets a return between the start and now through, late or early", () => {
+    for (const at of [
+      "2026-10-14T09:00",
+      "2026-10-14T12:00",
+      "2026-10-14T16:30",
+    ]) {
+      expect(recordFault(OUTING, false, on(at), NOW)).toBeNull();
+    }
+  });
+
+  it("refuses a time in the future or before the departure", () => {
+    expect(recordFault(OUTING, false, on("2026-10-14T16:31"), NOW)).toEqual(
+      RETURN_IN_FUTURE,
+    );
+    expect(recordFault(OUTING, false, on("2026-10-14T08:59"), NOW)).toEqual(
+      RETURN_BEFORE_START,
+    );
+  });
+
+  it("refuses leave that is not out: back already, with a report that waits, not started, or not approved", () => {
+    const at = on("2026-10-14T16:00");
+
+    expect(
+      recordFault({ ...OUTING, status: "completed" }, false, at, NOW),
+    ).toEqual(RETURN_RECORDED_FIRST);
+    expect(recordFault(OUTING, true, at, NOW)).toEqual(REPORT_STILL_WAITS);
+    expect(recordFault(OUTING, false, at, on("2026-10-14T08:00"))).toEqual(
+      LEAVE_NOT_STARTED,
+    );
+    expect(
+      recordFault({ ...OUTING, status: "rejected" }, false, at, NOW),
+    ).toEqual(RECORD_NOT_APPROVED);
+    expect(
+      recordFault({ ...OUTING, kind: "skip_activities" }, false, at, NOW),
+    ).toEqual(ITMK_NOT_RECORDED);
   });
 });
 

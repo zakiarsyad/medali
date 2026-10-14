@@ -102,6 +102,50 @@ export function reportDecidedFirst(status: DecidedStatus) {
   );
 }
 
+export const RECORD_NOT_ALLOWED = refusal(
+  "Anda tidak berhak mencatat kepulangan ke asrama.",
+);
+
+export const RETURN_TIME_NEEDED = refusal(
+  "Isi Waktu kembali dengan tanggal dan jam.",
+);
+
+export const RETURN_IN_FUTURE = refusal(
+  "Waktu kembali tidak boleh di masa depan.",
+);
+
+export const RETURN_BEFORE_START = refusal(
+  "Waktu kembali tidak boleh sebelum waktu berangkat.",
+);
+
+export const ITMK_NOT_RECORDED = refusal(
+  "ITMK tidak perlu dicatat kembali ke asrama.",
+);
+
+export const RECORD_NOT_APPROVED = refusal(
+  "Kepulangan hanya dicatat untuk izin yang disetujui.",
+);
+
+export const LEAVE_NOT_STARTED = refusal(
+  "Izin ini belum dimulai, jadi kepulangan belum dapat dicatat.",
+);
+
+/** What a recorded return answers when the return was recorded or validated first. */
+export const RETURN_RECORDED_FIRST = refusal(
+  "Kepulangan dari izin ini sudah tercatat lebih dulu, jadi catatan Anda tidak disimpan. Muat ulang halaman.",
+);
+
+/** What a recorded return answers while a report of the resident waits. */
+export const REPORT_STILL_WAITS = refusal(
+  "Penghuni sudah mengirim laporan kembali yang menunggu pemeriksaan. Periksa laporan itu, bukan mencatat langsung.",
+);
+
+/** What a kept return answers, such as Dicatat kembali 14 Okt 2026, 16.20, terlambat 20 menit. */
+export function returnRecordedWords(at: string, lateMinutes: number): string {
+  if (lateMinutes === 0) return `Dicatat kembali ${at}, tepat waktu.`;
+  return `Dicatat kembali ${at}, terlambat ${lateMinutes} menit.`;
+}
+
 /** What a kept decision on a report answers, by what it made the report. */
 export const REPORT_DECIDED_WORDS: Record<DecidedStatus, string> = {
   verified: "Laporan kembali diverifikasi dan diteruskan ke Pengelola Asrama.",

@@ -40,6 +40,7 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
           decide: may(account.roles, "decide_dorm_leave"),
           verify: may(account.roles, "verify_dorm_return"),
           validate: may(account.roles, "validate_dorm_return"),
+          record: may(account.roles, "record_dorm_return"),
         }}
       />
     );

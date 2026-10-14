@@ -8,6 +8,7 @@ import { decideLeaveAction } from "./leave-actions";
 import type { LeaveCard } from "./leave-card";
 import { LeaveCardView } from "./leave-card-view";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
+import { RecordReturnForm } from "./record-return-form";
 import { ReturnDecide } from "./return-decide";
 import type { DecidedStatus } from "./return-messages";
 import { ReturnReportView } from "./return-report-view";
@@ -20,6 +21,8 @@ export interface LeaveRights {
   verify: boolean;
   /** Validate and reject reports BAM verified: Pengelola Asrama. */
   validate: boolean;
+  /** Record a return directly: Pengelola Asrama and BAM - BPHK. */
+  record: boolean;
 }
 
 /** What the server answered to the last decision made on a card. */
@@ -78,24 +81,31 @@ function LeaveDecide({
   );
 }
 
+/** What was kept of the decisions made on a card here. */
+export interface DoneHere {
+  leave: "approved" | "rejected" | null;
+  report: DecidedStatus | null;
+  /** Whether "Catat sudah kembali" was kept. */
+  recorded: boolean;
+}
+
 /**
- * The card as a decision made on it here left it: a decided request has
- * its new status and no warning, a decided report its new status, and
- * leave whose report was validated is Selesai.
+ * The card as the decisions made on it here left it: a decided request
+ * has its new status and no warning, a decided report its new status,
+ * and leave whose report was validated or whose return was recorded is
+ * Selesai, and no longer out.
  */
-export function cardAfter(
-  card: LeaveCard,
-  leaveDecided: "approved" | "rejected" | null,
-  reportDecided: DecidedStatus | null,
-): LeaveCard {
+export function cardAfter(card: LeaveCard, done: DoneHere): LeaveCard {
   let shown = card;
-  if (leaveDecided !== null) {
-    shown = { ...shown, status: leaveDecided, warnings: [] };
+  if (done.leave !== null) {
+    shown = { ...shown, status: done.leave, warnings: [] };
   }
-  if (reportDecided !== null && shown.report !== null) {
-    shown = { ...shown, report: { ...shown.report, status: reportDecided } };
+  if (done.report !== null && shown.report !== null) {
+    shown = { ...shown, report: { ...shown.report, status: done.report } };
   }
-  if (reportDecided === "validated") shown = { ...shown, status: "completed" };
+  if (done.report === "validated" || done.recorded) {
+    shown = { ...shown, status: "completed", isOut: false };
+  }
   return shown;
 }
 
@@ -137,26 +147,38 @@ function ReportChecks({
 function LeaveCardItem({
   card,
   rights,
+  asOf,
 }: {
   card: LeaveCard;
   rights: LeaveRights;
+  asOf: string;
 }) {
   const [leaveAnswer, setLeaveAnswer] = useState<Answer<
     "approved" | "rejected"
   > | null>(null);
   const [reportAnswer, setReportAnswer] =
     useState<Answer<DecidedStatus> | null>(null);
-  const shown = cardAfter(
-    card,
-    leaveAnswer?.decided ?? null,
-    reportAnswer?.decided ?? null,
-  );
+  const [recordAnswer, setRecordAnswer] = useState<FormState | null>(null);
+  const shown = cardAfter(card, {
+    leave: leaveAnswer?.decided ?? null,
+    report: reportAnswer?.decided ?? null,
+    recorded: Boolean(recordAnswer?.done),
+  });
   return (
     <LeaveCardView card={shown}>
       {rights.decide && shown.status === "submitted" && (
         <LeaveDecide id={card.id} onAnswer={setLeaveAnswer} />
       )}
       {leaveAnswer && <FormMessage state={leaveAnswer.state} />}
+      {rights.record && shown.isOut && (
+        <RecordReturnForm
+          leaveId={card.id}
+          end={card.end}
+          asOf={asOf}
+          onAnswer={setRecordAnswer}
+        />
+      )}
+      {recordAnswer && <FormMessage state={recordAnswer} />}
       {shown.report && (
         <ReturnReportView report={shown.report}>
           <ReportChecks
@@ -182,10 +204,13 @@ function LeaveCardItem({
 export function LeaveCards({
   cards,
   rights,
+  asOf,
   emptyWords,
 }: {
   cards: LeaveCard[];
   rights: LeaveRights;
+  /** The moment the page was read, as a time on campus. */
+  asOf: string;
   /** What is said when there is no card to show. */
   emptyWords: string;
 }) {
@@ -195,7 +220,7 @@ export function LeaveCards({
   return (
     <ul className={styles.cards}>
       {shown.map((card) => (
-        <LeaveCardItem key={card.id} card={card} rights={rights} />
+        <LeaveCardItem key={card.id} card={card} rights={rights} asOf={asOf} />
       ))}
     </ul>
   );
