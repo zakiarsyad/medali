@@ -68,6 +68,20 @@ describe("the lists of Kegiatan asrama on a phone", () => {
   });
 });
 
+describe("Kegiatan asrama of a resident on a phone", () => {
+  it("stacks the cards of Hari ini in one column: a card never asks for more than the screen has", () => {
+    expect(read("resident-activities-view.tsx")).toContain(
+      "<ul className={styles.cards}>",
+    );
+    expect(ruleOf(".cards")).toContain(
+      "minmax(min(100%, var(--column-min-width)), 1fr)",
+    );
+    expect(ruleOf(".card")).toContain("min-width: 0;");
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".cardHead")).toContain("flex-wrap: wrap;");
+  });
+});
+
 describe("the activity form on a phone", () => {
   const FORM = read("activity-form.tsx");
 
