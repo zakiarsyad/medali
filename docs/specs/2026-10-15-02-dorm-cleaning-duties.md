@@ -137,4 +137,4 @@ Decided while building, because the issue did not say:
 - [x] 3. Places can be added, renamed and removed.
 - [x] 4. The schedule gives places and own rooms to rooms, and cancels
   duties.
-- [ ] 5. Residents see their room's duties.
+- [x] 5. Residents see their room's duties.

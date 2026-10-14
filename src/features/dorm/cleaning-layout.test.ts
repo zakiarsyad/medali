@@ -36,6 +36,18 @@ describe("Jadwal pembersihan on a phone", () => {
   });
 });
 
+describe("the duties of a resident's room on a phone", () => {
+  it("show each duty as a card that names every value, and a room name that folds", () => {
+    const view = read("cleaning-resident-view.tsx");
+
+    expect(view).toMatch(/<table className=.*shared\.stacked/);
+    for (const title of ["Tanggal", "Tempat", "Status"]) {
+      expect(view).toContain(`data-title="${title}"`);
+    }
+    expect(ruleOf(".roomValue")).toContain("overflow-wrap: anywhere;");
+  });
+});
+
 describe("Tempat pembersihan on a phone", () => {
   it("stacks the dorms in one column, each a card", () => {
     expect(read("cleaning-places-board.tsx")).toContain(

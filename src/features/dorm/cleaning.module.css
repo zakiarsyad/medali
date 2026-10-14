@@ -77,6 +77,13 @@
   composes: numberNote from "./rooms.module.css";
 }
 
+/* A room's name is words, not a number: smaller, and it folds on a phone. */
+.roomValue {
+  composes: numberValue from "./rooms.module.css";
+  font-size: var(--text-lg);
+  overflow-wrap: anywhere;
+}
+
 .daySwitch {
   composes: daySwitch from "./activities.module.css";
 }
