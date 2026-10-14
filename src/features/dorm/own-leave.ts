@@ -10,12 +10,23 @@ import type { ActivityRow } from "./activity-row";
 import { coveredActivities } from "./leave-cover";
 import { type LeaveRow, rowOfLeave } from "./leave-row";
 import { readActivityRows } from "./leave-store";
+import { type LatestReport, type OwnReturn, ownReturnOf } from "./return-rules";
+import {
+  type LatestStoredReport,
+  readLatestReports,
+  rejectionNoteOf,
+} from "./return-store";
 import { readStudentDorm } from "./student-dorm";
+
+/** A request in "Riwayat izin saya", with what it says about the return. */
+export interface OwnLeaveRow extends LeaveRow {
+  return: OwnReturn;
+}
 
 /** One page of "Riwayat izin saya", the latest start first. */
 export interface OwnLeave {
   dorm: DormId;
-  rows: LeaveRow[];
+  rows: OwnLeaveRow[];
   /** How many requests the resident has in all. */
   matching: number;
   /** The page shown: the one asked for, or the last one there is. */
@@ -52,10 +63,21 @@ function readRowsFor(
   return readActivityRows(db, [dorm], first, last);
 }
 
+function latestOf(stored: LatestStoredReport | undefined): LatestReport | null {
+  if (stored === undefined) return null;
+  const { report } = stored;
+  return {
+    status: report.status,
+    sentAt: report.sentAt,
+    rejectionNote: rejectionNoteOf(report),
+  };
+}
+
 /**
  * "Riwayat izin saya": one page of the requests of the account's own
  * student, the latest start first, each ITMK with how many of their
- * dorm activities it covers. Only the account's own student is ever
+ * dorm activities it covers, and each other approved leave with its
+ * report of a return or its actual return at `moment`. Only the account's own student is ever
  * read. Refused for an account without the right, and for a student who
  * lives in no dorm today.
  */
@@ -80,7 +102,13 @@ export async function readOwnLeave(
     .orderBy(desc(dormLeaves.startsAt), desc(dormLeaves.sentAt))
     .limit(PAGE_SIZE)
     .offset((shownPage - 1) * PAGE_SIZE);
-  const activityRows = await readRowsFor(db, stored, dorm);
+  const [activityRows, reports] = await Promise.all([
+    readRowsFor(db, stored, dorm),
+    readLatestReports(
+      db,
+      stored.map((each) => each.id),
+    ),
+  ]);
   const rows = stored.map((each) => {
     const covered =
       each.kind === "skip_activities"
@@ -89,7 +117,11 @@ export async function readOwnLeave(
             end: each.endsAt,
           })
         : [];
-    return rowOfLeave(each, covered);
+    const report = latestOf(reports.get(each.id));
+    return {
+      ...rowOfLeave(each, covered),
+      return: ownReturnOf(each, report, moment),
+    };
   });
   return {
     kind: "shown",

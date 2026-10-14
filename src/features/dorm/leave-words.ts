@@ -34,6 +34,7 @@ export const STATUS_WORDS: Record<LeaveStatus, string> = {
   approved: "Disetujui",
   rejected: "Ditolak",
   cancelled: "Dibatalkan",
+  completed: "Selesai",
 };
 
 export const SPECIAL_REASON_WORDS: Record<SpecialReason, string> = {

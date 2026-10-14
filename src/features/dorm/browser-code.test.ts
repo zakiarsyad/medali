@@ -21,6 +21,14 @@ describe("the screen parts of Kegiatan asrama that run in the browser", () => {
     expect(databaseCodeReachedFrom(path)).toEqual([]);
   });
 
+  it.each([`${FOLDER}/own-leave-view.tsx`, `${FOLDER}/return-camera.tsx`])(
+    "%s, of Perizinan asrama, takes no database code along",
+    (path) => {
+      expect(browserFilesIn(FOLDER)).toContain(path);
+      expect(databaseCodeReachedFrom(path)).toEqual([]);
+    },
+  );
+
   it("finds database code that is taken by way of another file", () => {
     expect(
       databaseCodeReachedFrom(`${FOLDER}/activities-screen.tsx`).length,

@@ -9,29 +9,35 @@ import {
   type LeaveListParams,
   leaveListAddress,
 } from "./leave-address";
-import { LeaveCards } from "./leave-cards";
+import { LeaveCards, type LeaveRights } from "./leave-cards";
 import { LeaveFilterRow } from "./leave-filters";
 import type { LeaveBoard } from "./leave-list";
 
 export const NO_LEAVE_MATCHES = "Tidak ada pengajuan pada filter ini.";
 
+/** Whether an account may only see the cards, and change nothing. */
+function onlySees(rights: LeaveRights): boolean {
+  return !rights.decide && !rights.verify && !rights.validate && !rights.record;
+}
+
 /**
- * Perizinan asrama for staff: the numbers Menunggu verifikasi and Izin 30
- * hari terakhir, the search with the status and kind choices, and one
- * page of request cards. Pengelola Asrama approves and rejects there;
- * every other role only reads.
+ * Perizinan asrama for staff: the numbers Menunggu verifikasi, Laporan
+ * kembali menunggu, Sedang di luar, Terlambat kembali and Izin 30 hari
+ * terakhir, the search with the status and kind choices, and one
+ * page of request cards. Pengelola Asrama approves and rejects there,
+ * BAM - BPHK verifies reports of a return and Pengelola validates them,
+ * and both record a return directly; every other role only reads.
  */
 export function StaffLeaveScreen({
   tabs,
   params,
   board,
-  mayDecide,
+  rights,
 }: {
   tabs: TabLinksProps;
   params: LeaveListParams;
   board: LeaveBoard;
-  /** Whether the account may approve and reject, or only see. */
-  mayDecide: boolean;
+  rights: LeaveRights;
 }) {
   const { counts, list } = board;
   const { filters } = params;
@@ -43,7 +49,7 @@ export function StaffLeaveScreen({
         penghuni asrama.
       </PageHead>
       <TabLinks {...tabs} />
-      {!mayDecide && (
+      {onlySees(rights) && (
         <p className={styles.note}>
           Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
           dan rinciannya.
@@ -54,6 +60,21 @@ export function StaffLeaveScreen({
           label="Menunggu verifikasi"
           amount={counts.waiting}
           note="pengajuan"
+        />
+        <NumberCard
+          label="Laporan kembali menunggu"
+          amount={counts.waitingReports}
+          note="verifikasi BAM atau validasi"
+        />
+        <NumberCard
+          label="Sedang di luar"
+          amount={counts.out}
+          note="izin disetujui"
+        />
+        <NumberCard
+          label="Terlambat kembali"
+          amount={counts.late}
+          note="termasuk yang sudah kembali"
         />
         <NumberCard
           label="Izin 30 hari terakhir"
@@ -71,7 +92,8 @@ export function StaffLeaveScreen({
         <LeaveCards
           key={address}
           cards={list.cards}
-          mayDecide={mayDecide}
+          rights={rights}
+          asOf={board.asOf}
           emptyWords={NO_LEAVE_MATCHES}
         />
         {list.matching > 0 && (

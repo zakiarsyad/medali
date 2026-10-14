@@ -1,6 +1,8 @@
 import type { LeaveRow } from "./leave-row";
 import { fitsKind, startPassedWords } from "./leave-rules";
 import { KIND_SHORT_WORDS } from "./leave-words";
+import type { ReportCard } from "./return-card";
+import type { Timeliness } from "./return-rules";
 
 /*
  * A leave request as its card shows it to staff. Read by the screen
@@ -22,6 +24,23 @@ export interface LeaveCard extends LeaveRow {
   decision: DecisionWords | null;
   /** What Pengelola Asrama should look at before deciding. */
   warnings: string[];
+  /** The latest report of a return, or null while there is none. */
+  report: ReportCard | null;
+  /** Whether the resident is out on it now, with no report that waits. */
+  isOut: boolean;
+  /** Whether its return is late: out past the return time, or reported or back after it. */
+  isLate: boolean;
+  /** The actual return of leave that is Selesai; null before it. */
+  returned: ReturnWords | null;
+}
+
+/** The actual return of a leave as its card says it. */
+export interface ReturnWords {
+  /** When, such as 14 Okt 2026, 16.20. */
+  at: string;
+  timeliness: Timeliness;
+  /** Who recorded it directly; null when a report was validated. */
+  recordedBy: string | null;
 }
 
 /**
