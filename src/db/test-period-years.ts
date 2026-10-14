@@ -80,12 +80,24 @@ export function unnamedYears(
   return added.filter((year) => !isNamed(year, named));
 }
 
-export function unnamedYearsMessage(path: string, years: number[]): string {
+function sampleDataYearsAdvice(): string[] {
   return [
+    `A year before ${FIRST_OWN_YEAR} is left to the app's sample data. A file that loads the sample data says so instead, or besides its own years, like:`,
+    `${FIXED_WORDS}: ${SAMPLE_DATA_WORDS}.`,
+    `${FIXED_WORDS}: 2700 to 2701, and ${SAMPLE_DATA_WORDS}.`,
+    `A file that adds such a year itself moves it to ${FIRST_OWN_YEAR} or later.`,
+  ];
+}
+
+export function unnamedYearsMessage(path: string, years: number[]): string {
+  const message = [
     `${path} added the Tahun akademik ${years.join(", ")}, which its first line does not name.`,
-    "Name the first and the last year the file adds in its first line, with years no other test file has, like:",
+    `Name the first and the last year the file adds in its first line, from ${FIRST_OWN_YEAR} to ${LAST_OWN_YEAR}, with years no other test file has, like:`,
     `${FIXED_WORDS}: 2700 to 2701.`,
-  ].join("\n");
+  ];
+  const addsSampleDataYear = years.some((year) => year < FIRST_OWN_YEAR);
+  if (!addsSampleDataYear) return message.join("\n");
+  return [...message, ...sampleDataYearsAdvice()].join("\n");
 }
 
 /** The paths of the files whose line of sample years cannot be read. */

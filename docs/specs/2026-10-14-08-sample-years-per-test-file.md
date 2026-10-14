@@ -105,8 +105,15 @@ Decided while building, because the issue did not say:
    a year of its own.
 7. Two periods of different years can still wait for each other when
    their days overlap, because the database refuses overlapping days.
-   Every test file gives a year its usual days, and no failure was
-   seen for this, so it is not checked.
+   Nearly every test file gives a year its usual days. One check, of
+   opening a survey period on the day of today, gives a year of its
+   own the days around today, which are also days of the app's sample
+   data. No failure was seen for this, so it is not checked and that
+   check stays as it is.
+8. The line "those of the app's sample data" is taken at its word: a
+   file with that line may add any year before 2090. No file adds one
+   except by loading the sample data, so it is not checked how the
+   year was added.
 
 ## Steps
 

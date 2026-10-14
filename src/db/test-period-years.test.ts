@@ -180,6 +180,20 @@ describe("the years a test file added without naming them", () => {
     expect(message).toContain("2026, 2160");
     expect(message).toContain("// Sample Tahun akademik of this file: ");
   });
+
+  it("are told with the words for the app's sample data when one is before 2090", () => {
+    const message = unnamedYearsMessage("src/one.test.ts", [2026, 2160]);
+
+    expect(message).toContain("A year before 2090 is left to the app's");
+    expect(message).toContain(`2700 to 2701, and ${SAMPLE_DATA}.`);
+    expect(message).toContain(`file: ${SAMPLE_DATA}.`);
+  });
+
+  it("are told without the app's sample data when all are from 2090 on", () => {
+    const message = unnamedYearsMessage("src/one.test.ts", [2160]);
+
+    expect(message).not.toContain("sample data");
+  });
 });
 
 describe("the sample years of the test files", () => {
