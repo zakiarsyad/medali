@@ -10,7 +10,7 @@ function studentWords(student: RecordStudent): string {
 }
 
 /** The students found for what was typed, each a press that picks them. */
-function Offered({
+export function Offered({
   query,
   found,
   onPick,

@@ -23,6 +23,7 @@ import type { SentSchedule } from "./schedule-input";
  * is a key no activity has: a check that saves gives its own.
  */
 export const SENT_SCHEDULE: SentSchedule = {
+  kind: "ppks",
   activityId: "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
   startsOn: "2120-09-10",
   endsOn: "2120-09-11",
@@ -32,6 +33,7 @@ export const SENT_SCHEDULE: SentSchedule = {
   uploadUnit: "day",
   location: "Aula uji",
   isRequired: true,
+  participants: { mode: "", values: [] },
 };
 
 /** The key a form made for the schedule it adds. */

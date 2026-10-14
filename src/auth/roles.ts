@@ -156,7 +156,7 @@ const ALL_MENTORS = [
 const ALL_MENTORING = ["notes", "meetings", "scores"] as const;
 
 const VIEW_ALL_TABS: RoleTabs = {
-  activities: ["ppks"],
+  activities: ["ppks", "extra"],
   mentors: ALL_MENTORS,
   mentoring: ALL_MENTORING,
   assessment: ALL_ASSESSMENT,
@@ -270,7 +270,7 @@ export const ROLES: Record<RoleId, Role> = {
       "dorm",
     ],
     tabs: {
-      activities: ["ppks"],
+      activities: ["ppks", "extra"],
       mentoring: ALL_MENTORING,
       dorm: ["health"],
       assessment: ALL_ASSESSMENT,
@@ -394,7 +394,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PU",
     pages: ["curriculum", "activities", "mentors", "settings"],
     tabs: {
-      activities: ["verification", "ppks"],
+      activities: ["verification", "ppks", "extra"],
       mentors: ALL_MENTORS,
       settings: ["new_students"],
     },

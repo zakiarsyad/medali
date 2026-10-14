@@ -5,23 +5,28 @@ import styles from "./activities.module.css";
 import type { ScheduleList } from "./list-schedules";
 import type { CohortCount } from "./participants";
 import type { ListAttendance } from "./schedule-attendance";
-import { scheduleListAddress } from "./schedule-list-address";
+import {
+  type ScheduleScope,
+  scheduleListAddress,
+} from "./schedule-list-address";
 import type { ScheduleRow } from "./schedule-row";
 import { ScheduleTable } from "./schedule-table";
 import { StageChoices } from "./stage-choices";
 
-/** "Jadwal dan kehadiran": the tahap choice, the schedules and their pages. */
+/**
+ * "Jadwal dan kehadiran": the schedules of a scope and their pages, with
+ * the tahap choice above those of the PPKS activities.
+ */
 export function ScheduleListPanel({
   list,
-  level,
+  scope,
   counts,
   now,
   attendance,
   onChange,
 }: {
   list: ScheduleList;
-  /** The tahap chosen, or null for every tahap. */
-  level: number | null;
+  scope: ScheduleScope;
   counts: CohortCount[];
   now: CampusMoment;
   attendance: ListAttendance;
@@ -32,7 +37,7 @@ export function ScheduleListPanel({
     <section className={shared.panel}>
       <div className={styles.panelHead}>
         <h2 className={shared.heading}>Jadwal dan kehadiran</h2>
-        <StageChoices open={level} />
+        {scope.kind === "ppks" && <StageChoices open={scope.level} />}
       </div>
       {list.matching === 0 ? (
         <p className={shared.empty}>Belum ada jadwal kegiatan.</p>
@@ -43,14 +48,14 @@ export function ScheduleListPanel({
             counts={counts}
             now={now}
             attendance={attendance}
-            addressOf={(open) => scheduleListAddress(level, list.page, open)}
+            addressOf={(open) => scheduleListAddress(scope, list.page, open)}
             onChange={onChange}
           />
           <ListPager
             page={list.page}
             matching={list.matching}
             noun="jadwal"
-            addressOf={(page) => scheduleListAddress(level, page)}
+            addressOf={(page) => scheduleListAddress(scope, page)}
           />
         </>
       )}

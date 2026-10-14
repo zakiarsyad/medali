@@ -3,14 +3,18 @@ import {
   type ScoredSchedule,
   scorePercent,
 } from "./attendance-score";
-import { isInSemester, type PeriodParts } from "./participants";
+import { isInSemester, type PeriodParts, wasStudentIn } from "./participants";
 import type { UploadRange } from "./upload-range";
 
 /** A schedule of the running period, with what the score reads of it. */
 export interface CountedSchedule extends UploadRange {
   id: string;
-  /** The semester of its activity, which decides whom it is meant for. */
-  semester: number;
+  /**
+   * The semester of its PPKS activity, which decides whom it is meant
+   * for, or null for a special or additional activity, which is meant for
+   * those it names.
+   */
+  semester: number | null;
   isRequired: boolean;
 }
 
@@ -25,7 +29,26 @@ export type KeptStatus = "valid" | "dispensation";
 export interface StudentGroup {
   cohortYear: number;
   kept: Readonly<Record<string, KeptStatus>>;
+  /** The keys of the schedules of special or additional activities that name them. */
+  chosenIn: readonly string[];
   students: number;
+}
+
+/**
+ * Whether a schedule of the period is meant for the students of a group.
+ * One of a special or additional activity is meant for those it names
+ * only when they were students in the period, as they see it only then.
+ */
+function isMeantFor(
+  group: StudentGroup,
+  schedule: CountedSchedule,
+  period: PeriodParts,
+): boolean {
+  if (schedule.semester !== null) {
+    return isInSemester(group.cohortYear, schedule.semester, period);
+  }
+  if (!wasStudentIn(group.cohortYear, period)) return false;
+  return group.chosenIn.includes(schedule.id);
 }
 
 /** Rerata nilai kehadiran, and how many students it is the mean of. */
@@ -42,7 +65,7 @@ function scoredFor(
   period: PeriodParts,
 ): ScoredSchedule[] {
   return schedules
-    .filter(({ semester }) => isInSemester(group.cohortYear, semester, period))
+    .filter((schedule) => isMeantFor(group, schedule, period))
     .map((schedule) => ({
       ...schedule,
       attendance: group.kept[schedule.id] ?? null,
@@ -53,7 +76,8 @@ function scoredFor(
  * The mean of Nilai kehadiran kegiatan over the students who have one,
  * on a day on campus. Each student's score is counted by the same rule
  * as on their own page, over the schedules of the period meant for
- * their angkatan. A student with nothing counted yet has no score and
+ * their angkatan and those of special or additional activities they take
+ * part in. A student with nothing counted yet has no score and
  * is left out of the mean.
  */
 export function meanScore(

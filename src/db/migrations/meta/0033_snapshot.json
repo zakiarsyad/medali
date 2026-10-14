@@ -1,5 +1,5 @@
 {
-  "id": "ec284b27-0091-4134-aff7-b46bf7aefc8c",
+  "id": "01e093d8-c0b5-45fb-ad51-7658b34ff4d0",
   "prevId": "cfeb2108-0dfa-4428-bfb8-8f5d1ce1bc08",
   "version": "7",
   "dialect": "postgresql",
@@ -933,6 +933,146 @@
         "activity_clarifications_accepted_as_present_or_dispensation": {
           "name": "activity_clarifications_accepted_as_present_or_dispensation",
           "value": "(\"activity_clarifications\".\"status\" = 'accepted') = (\"activity_clarifications\".\"accepted_as\" is not null) and (\"activity_clarifications\".\"accepted_as\" is null or \"activity_clarifications\".\"accepted_as\" in ('valid', 'dispensation'))"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.activity_schedule_participants": {
+      "name": "activity_schedule_participants",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "schedule_id": {
+          "name": "schedule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "class_name": {
+          "name": "class_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cohort_year": {
+          "name": "cohort_year",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "activity_schedule_participants_student": {
+          "name": "activity_schedule_participants_student",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "activity_schedule_participants_class": {
+          "name": "activity_schedule_participants_class",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "class_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "activity_schedule_participants_cohort": {
+          "name": "activity_schedule_participants_cohort",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "cohort_year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "activity_schedule_participants_schedule_id_activity_schedules_id_fk": {
+          "name": "activity_schedule_participants_schedule_id_activity_schedules_id_fk",
+          "tableFrom": "activity_schedule_participants",
+          "tableTo": "activity_schedules",
+          "columnsFrom": [
+            "schedule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "activity_schedule_participants_student_id_students_id_fk": {
+          "name": "activity_schedule_participants_student_id_students_id_fk",
+          "tableFrom": "activity_schedule_participants",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "activity_schedule_participants_names_one": {
+          "name": "activity_schedule_participants_names_one",
+          "value": "num_nonnulls(\"activity_schedule_participants\".\"student_id\", \"activity_schedule_participants\".\"class_name\", \"activity_schedule_participants\".\"cohort_year\") = 1"
         }
       },
       "isRLSEnabled": false
@@ -2237,225 +2377,6 @@
         "dorm_companions_room_only_while_active": {
           "name": "dorm_companions_room_only_while_active",
           "value": "\"dorm_companions\".\"is_active\" or \"dorm_companions\".\"room_id\" is null"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.dorm_leaves": {
-      "name": "dorm_leaves",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "dorm_leave_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "starts_at": {
-          "name": "starts_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ends_at": {
-          "name": "ends_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "special_reason": {
-          "name": "special_reason",
-          "type": "dorm_leave_special_reason",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "purpose": {
-          "name": "purpose",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "destination": {
-          "name": "destination",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "contact": {
-          "name": "contact",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "dorm_leave_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'submitted'"
-        },
-        "sent_at": {
-          "name": "sent_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "decided_by": {
-          "name": "decided_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decided_at": {
-          "name": "decided_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decision_note": {
-          "name": "decision_note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "cancelled_at": {
-          "name": "cancelled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "dorm_leaves_student": {
-          "name": "dorm_leaves_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "starts_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "dorm_leaves_status": {
-          "name": "dorm_leaves_status",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "starts_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "dorm_leaves_student_id_students_id_fk": {
-          "name": "dorm_leaves_student_id_students_id_fk",
-          "tableFrom": "dorm_leaves",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "dorm_leaves_decided_by_accounts_id_fk": {
-          "name": "dorm_leaves_decided_by_accounts_id_fk",
-          "tableFrom": "dorm_leaves",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "decided_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "dorm_leaves_ends_after_start": {
-          "name": "dorm_leaves_ends_after_start",
-          "value": "\"dorm_leaves\".\"ends_at\" > \"dorm_leaves\".\"starts_at\""
-        },
-        "dorm_leaves_special_reason_only_for_special": {
-          "name": "dorm_leaves_special_reason_only_for_special",
-          "value": "(\"dorm_leaves\".\"kind\" = 'special') = (\"dorm_leaves\".\"special_reason\" is not null)"
-        },
-        "dorm_leaves_skip_activities_has_no_destination": {
-          "name": "dorm_leaves_skip_activities_has_no_destination",
-          "value": "\"dorm_leaves\".\"kind\" <> 'skip_activities' or (\"dorm_leaves\".\"destination\" = '' and \"dorm_leaves\".\"contact\" = '')"
-        },
-        "dorm_leaves_purpose_length": {
-          "name": "dorm_leaves_purpose_length",
-          "value": "char_length(\"dorm_leaves\".\"purpose\") between 5 and 500"
-        },
-        "dorm_leaves_destination_length": {
-          "name": "dorm_leaves_destination_length",
-          "value": "char_length(\"dorm_leaves\".\"destination\") <= 200"
-        },
-        "dorm_leaves_contact_length": {
-          "name": "dorm_leaves_contact_length",
-          "value": "char_length(\"dorm_leaves\".\"contact\") <= 100"
-        },
-        "dorm_leaves_decision_note_length": {
-          "name": "dorm_leaves_decision_note_length",
-          "value": "char_length(\"dorm_leaves\".\"decision_note\") <= 500"
-        },
-        "dorm_leaves_decided_when_approved_or_rejected": {
-          "name": "dorm_leaves_decided_when_approved_or_rejected",
-          "value": "(\"dorm_leaves\".\"status\" in ('approved', 'rejected')) = (\"dorm_leaves\".\"decided_at\" is not null) and (\"dorm_leaves\".\"decided_at\" is null) = (\"dorm_leaves\".\"decided_by\" is null)"
-        },
-        "dorm_leaves_rejected_has_note": {
-          "name": "dorm_leaves_rejected_has_note",
-          "value": "\"dorm_leaves\".\"status\" <> 'rejected' or \"dorm_leaves\".\"decision_note\" <> ''"
-        },
-        "dorm_leaves_cancelled_has_moment": {
-          "name": "dorm_leaves_cancelled_has_moment",
-          "value": "(\"dorm_leaves\".\"status\" = 'cancelled') = (\"dorm_leaves\".\"cancelled_at\" is not null)"
         }
       },
       "isRLSEnabled": false
@@ -5595,36 +5516,6 @@
         "daily",
         "weekly",
         "monthly"
-      ]
-    },
-    "public.dorm_leave_kind": {
-      "name": "dorm_leave_kind",
-      "schema": "public",
-      "values": [
-        "outing",
-        "skip_activities",
-        "special"
-      ]
-    },
-    "public.dorm_leave_special_reason": {
-      "name": "dorm_leave_special_reason",
-      "schema": "public",
-      "values": [
-        "sick",
-        "family",
-        "competition",
-        "administration",
-        "other"
-      ]
-    },
-    "public.dorm_leave_status": {
-      "name": "dorm_leave_status",
-      "schema": "public",
-      "values": [
-        "submitted",
-        "approved",
-        "rejected",
-        "cancelled"
       ]
     },
     "public.email_change_action": {

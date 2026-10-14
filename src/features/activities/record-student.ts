@@ -15,8 +15,7 @@ export const RECORD_SEARCH_LIMIT = 10;
 /**
  * The Aktif students whose name or NIM holds the text, by name, 10 at
  * most, for an account that may verify attendance. Anyone else is
- * offered nobody, and so is an empty or too long text, or what is no
- * text at all: `query` comes from outside.
+ * offered nobody.
  */
 export async function searchRecordStudents(
   db: Database,
@@ -24,6 +23,19 @@ export async function searchRecordStudents(
   query: unknown,
 ): Promise<RecordStudent[]> {
   if (!mayVerify(account)) return [];
+  return findActiveStudents(db, query);
+}
+
+/**
+ * The Aktif students whose name or NIM holds the text, by name, 10 at
+ * most. An empty or too long text finds nobody, and so does what is no
+ * text at all: `query` comes from outside. Whether the account may ask
+ * is checked by the caller.
+ */
+export async function findActiveStudents(
+  db: Database,
+  query: unknown,
+): Promise<RecordStudent[]> {
   const text = typeof query === "string" ? searchText(query) : null;
   if (text === null) return [];
   const pattern = containsPattern(text);
@@ -51,6 +63,8 @@ export interface ActiveStudent {
   id: string;
   name: string;
   cohortYear: number;
+  /** Null for a student with no class. */
+  className: string | null;
 }
 
 /**
@@ -68,6 +82,7 @@ export async function readActiveStudent(
       id: students.id,
       name: students.name,
       cohortYear: students.cohortYear,
+      className: students.className,
     })
     .from(students)
     .where(and(eq(students.id, id), ACTIVE_MEMBER));

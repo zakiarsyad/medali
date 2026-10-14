@@ -8,7 +8,7 @@ export function StageChoices({ open }: { open: number | null }) {
   return (
     <nav className={styles.choices} aria-label="Tahap">
       <Link
-        href={scheduleListAddress(null)}
+        href={scheduleListAddress({ kind: "ppks", level: null })}
         className={styles.choice}
         aria-current={open === null ? "true" : undefined}
       >
@@ -17,7 +17,7 @@ export function StageChoices({ open }: { open: number | null }) {
       {STAGES.map((name, place) => (
         <Link
           key={name}
-          href={scheduleListAddress(place + 1)}
+          href={scheduleListAddress({ kind: "ppks", level: place + 1 })}
           className={styles.choice}
           aria-current={open === place + 1 ? "true" : undefined}
         >

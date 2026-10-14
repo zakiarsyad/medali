@@ -1,10 +1,11 @@
-import { and, count, eq, inArray, or, type SQL, sql } from "drizzle-orm";
+import { and, count, eq, or, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { activitySchedules, students } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { AttendanceStatus } from "./attendance-status";
+import { meantStudents } from "./meant-students";
 import { newestAt } from "./newest-attendances";
-import { type CohortCount, meantCohortYears } from "./participants";
+import type { CohortCount } from "./participants";
 import {
   type AttendanceCount,
   type AttendanceCounts,
@@ -12,7 +13,7 @@ import {
 } from "./schedule-attendance";
 import type { ScheduleRow } from "./schedule-row";
 
-type Counted = Pick<ScheduleRow, "id" | "startsOn" | "activity" | "period">;
+type Counted = Pick<ScheduleRow, "id" | "startsOn" | "target" | "period">;
 
 const NOBODY: AttendanceCount = {
   targeted: 0,
@@ -26,13 +27,9 @@ function meantBy(
   schedule: Counted,
   cohorts: readonly CohortCount[],
 ): SQL | undefined {
-  const { semester } = schedule.activity;
-  const years = meantCohortYears(cohorts, semester, schedule.period);
-  if (years.length === 0) return undefined;
-  return and(
-    eq(activitySchedules.id, schedule.id),
-    inArray(students.cohortYear, years),
-  );
+  const meant = meantStudents(schedule, cohorts);
+  if (meant === undefined) return undefined;
+  return and(eq(activitySchedules.id, schedule.id), meant);
 }
 
 /**

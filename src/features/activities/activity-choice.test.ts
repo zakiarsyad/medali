@@ -26,6 +26,15 @@ describe("choicesBySemester", () => {
     expect(grouped.get(5)?.map((each) => each.id)).toEqual(["c"]);
   });
 
+  it("puts the special and additional activities, of no semester, in one group first", () => {
+    const special = { ...choice("s", 1), semester: null };
+
+    const grouped = choicesBySemester([choice("a", 1), special]);
+
+    expect([...grouped.keys()]).toEqual([null, 1]);
+    expect(grouped.get(null)).toEqual([special]);
+  });
+
   it("gives no group for no choices", () => {
     expect(choicesBySemester([]).size).toBe(0);
   });

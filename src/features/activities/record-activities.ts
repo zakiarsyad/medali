@@ -34,7 +34,8 @@ export async function readRecordActivities(
   const student = await readActiveStudent(db, studentId);
   if (student === null) return [];
   const periods = await readAcademicPeriods(db);
-  const meant = meantFor(semestersByPeriod(student.cohortYear, periods));
+  const semesters = semestersByPeriod(student.cohortYear, periods);
+  const meant = meantFor(semesters, student);
   const schedules = await db
     .select({
       id: activitySchedules.id,

@@ -97,13 +97,13 @@ export async function readStudentActivities(
   const ofRunning = semesters.filter(
     ({ periodId }) => periodId === running?.id,
   );
-  const meant = meantFor(semesters);
+  const meant = meantFor(semesters, student);
 
   const [begun, coming, history, counted] = await Promise.all([
     readBegunSchedules(db, meant, now.day),
     readComingSchedules(db, meant, now.day),
     readPastSchedules(db, meant, now.day, historyPage),
-    readAllSchedules(db, meantFor(ofRunning)),
+    readAllSchedules(db, meantFor(ofRunning, student)),
   ]);
   const current = begun.filter((schedule) => isCurrent(schedule, now));
   const attended = [...current, ...history.schedules, ...counted];

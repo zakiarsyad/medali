@@ -23,7 +23,10 @@ import {
 } from "./schema";
 import { addSampleActivityAttendances } from "./seed-activity-attendances";
 import { addSampleClarifications } from "./seed-activity-clarifications";
-import { addSampleActivitySchedules } from "./seed-activity-schedules";
+import {
+  addSampleActivitySchedules,
+  addSampleExtraSchedules,
+} from "./seed-activity-schedules";
 import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDormCounts } from "./seed-dorm-counts";
 import { addSampleDormLeaves } from "./seed-dorm-leaves";
@@ -150,10 +153,11 @@ async function addSampleFirstYears(
  * still to be formed, with a few evaluations of their mentors, one
  * replacement of a mentor, one closed survey period, a few notes their mentors wrote, the first two
  * meetings of the running period with their attendance lists and the
- * scores of that period for part of the groups, and schedules of the PPKS
+ * scores of that period for part of the groups, schedules of the PPKS
  * activities that are over, open today and still to come, with the
  * attendance of the sample students at them in every status and their
- * clarifications of it in every status. Every role
+ * clarifications of it in every status, and two schedules of the special
+ * and additional activities for chosen angkatan and classes. Every role
  * given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -210,6 +214,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
       today,
       sampleActor,
     );
+    await addSampleExtraSchedules(tx, periods, today, sampleActor);
     await addSampleActivityAttendances(tx, schedules, SAMPLE_STUDENTS, today);
     await addSampleClarifications(tx, schedules, SAMPLE_STUDENTS, today);
     await addSampleFirstYears(tx, running, programIds, sampleActor);

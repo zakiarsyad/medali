@@ -10,16 +10,26 @@ export interface CohortCount {
 export type PeriodParts = Pick<AcademicPeriod, "startYear" | "term">;
 
 /**
+ * Whether the students of an angkatan were students during a period: an
+ * angkatan that starts after the first year of the period was not yet.
+ */
+export function wasStudentIn(
+  cohortYear: number,
+  period: Pick<PeriodParts, "startYear">,
+): boolean {
+  return cohortYear <= period.startYear;
+}
+
+/**
  * The semester the students of an angkatan are in during a period. An
- * angkatan that starts after the first year of the period is in none:
- * its students were not students yet, though the semester rule alone
- * would put them in semester 1.
+ * angkatan whose students were not students yet is in none, though the
+ * semester rule alone would put them in semester 1.
  */
 export function semesterIn(
   cohortYear: number,
   period: PeriodParts,
 ): number | null {
-  if (cohortYear > period.startYear) return null;
+  if (!wasStudentIn(cohortYear, period)) return null;
   return studentSemester(cohortYear, period);
 }
 
