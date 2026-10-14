@@ -11,6 +11,7 @@ import {
   filterNamed,
   SIKU_FILTERS,
   type SikuParams,
+  START_PARAMS,
   sikuAddress,
 } from "./siku-address";
 
@@ -36,24 +37,22 @@ export function SikuFilterRow({ params }: { params: SikuParams }) {
     if (params.query !== asked) setTyped(params.query);
   }
 
-  const { query: heldQuery, filter, allFalls, allRises } = params;
+  const { query: heldQuery, filter, allFalls, allRises, historyPage } = params;
   useEffect(() => {
     const query = searchText(typed) ?? "";
     if (query === heldQuery) return;
     const timer = setTimeout(() => {
       setAsked(query);
-      const kept = { filter, allFalls, allRises };
-      router.replace(sikuAddress({ ...kept, query, page: 1 }), {
-        scroll: false,
-      });
+      const kept = { ...START_PARAMS, filter, allFalls, allRises, historyPage };
+      router.replace(sikuAddress({ ...kept, query }), { scroll: false });
     }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [typed, heldQuery, filter, allFalls, allRises, router]);
+  }, [typed, heldQuery, filter, allFalls, allRises, historyPage, router]);
 
   function choose(sent: string) {
     const query = searchText(typed) ?? "";
-    const chosen = filterNamed(sent);
-    router.push(sikuAddress({ ...params, query, filter: chosen, page: 1 }), {
+    const chosen = { query, filter: filterNamed(sent), page: 1 };
+    router.push(sikuAddress({ ...params, ...chosen, seenEntry: null }), {
       scroll: false,
     });
   }

@@ -1,3 +1,4 @@
+import { isUuid } from "@/db/is-uuid";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
@@ -43,6 +44,12 @@ export interface SikuParams {
   /** Whether the ranking shows every fall, or only the largest ones. */
   allFalls: boolean;
   allRises: boolean;
+  /** The page of "Riwayat penambahan dan pengurangan SIKU". */
+  historyPage: number;
+  /** The entry whose students "Lihat mahasiswa" shows, or null for none. */
+  seenEntry: string | null;
+  /** The page of those students. */
+  seenPage: number;
 }
 
 export const START_PARAMS: SikuParams = {
@@ -51,7 +58,16 @@ export const START_PARAMS: SikuParams = {
   page: 1,
   allFalls: false,
   allRises: false,
+  historyPage: 1,
+  seenEntry: null,
+  seenPage: 1,
 };
+
+/** How many entries one page of the history shows. */
+export const HISTORY_PAGE_SIZE = 20;
+
+/** How many students one page of "Lihat mahasiswa" shows. */
+export const SEEN_PAGE_SIZE = 25;
 
 const PAGE = /^[1-9]\d{0,5}$/;
 const ALL = "semua";
@@ -78,7 +94,14 @@ export function readSikuParams(params: SearchParams): SikuParams {
     page: pageNamed(firstParam(params.hal)),
     allFalls: firstParam(params.turun) === ALL,
     allRises: firstParam(params.naik) === ALL,
+    historyPage: pageNamed(firstParam(params.riwayat)),
+    seenEntry: entryNamed(firstParam(params.lihat)),
+    seenPage: pageNamed(firstParam(params.lihathal)),
   };
+}
+
+function entryNamed(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
 }
 
 /**
@@ -93,6 +116,13 @@ export function sikuAddress(params: SikuParams): string {
   if (params.page > 1) search.set("hal", String(params.page));
   if (params.allFalls) search.set("turun", ALL);
   if (params.allRises) search.set("naik", ALL);
+  if (params.historyPage > 1) {
+    search.set("riwayat", String(params.historyPage));
+  }
+  if (params.seenEntry !== null) search.set("lihat", params.seenEntry);
+  if (params.seenEntry !== null && params.seenPage > 1) {
+    search.set("lihathal", String(params.seenPage));
+  }
   const text = search.toString();
   if (text === "") return SIKU_ADDRESS;
   return `${SIKU_ADDRESS}?${text}`;

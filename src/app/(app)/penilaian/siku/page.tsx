@@ -4,6 +4,10 @@ import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import {
+  HistoryPanel,
+  SeenStudentsDialog,
+} from "@/features/siku/history-panel";
 import { readSikuParams } from "@/features/siku/siku-address";
 import {
   readSikuList,
@@ -11,6 +15,10 @@ import {
   readSikuRanking,
 } from "@/features/siku/siku-board";
 import { SikuForm } from "@/features/siku/siku-form";
+import {
+  readSeenStudents,
+  readSikuHistory,
+} from "@/features/siku/siku-history";
 import { readGroupChoices } from "@/features/siku/siku-picks";
 import { StaffSikuScreen } from "@/features/siku/staff-siku-screen";
 import { visibleTo } from "@/features/students/visible-students";
@@ -31,11 +39,16 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const visible = visibleTo(rowLimitForAction(account, "view_siku"));
   const { score: base } = await readBaseScore(db);
   const mayAdjust = may(account.roles, "adjust_siku");
-  const [numbers, ranking, list, groups] = await Promise.all([
+  const { seenEntry } = params;
+  const [numbers, ranking, list, groups, history, seen] = await Promise.all([
     readSikuNumbers(db, visible, base),
     readSikuRanking(db, visible, base, params),
     readSikuList(db, visible, base, params),
     mayAdjust ? readGroupChoices(db) : [],
+    readSikuHistory(db, visible, params.historyPage),
+    seenEntry === null
+      ? null
+      : readSeenStudents(db, visible, seenEntry, params.seenPage),
   ]);
   const form = mayAdjust ? (
     <SikuForm
@@ -46,15 +59,24 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
     />
   ) : null;
   return (
-    <StaffSikuScreen
-      tabs={tabs}
-      params={params}
-      base={base}
-      numbers={numbers}
-      ranking={ranking}
-      list={list}
-      form={form}
-      history={null}
-    />
+    <>
+      <StaffSikuScreen
+        tabs={tabs}
+        params={params}
+        base={base}
+        numbers={numbers}
+        ranking={ranking}
+        list={list}
+        form={form}
+        history={
+          <HistoryPanel
+            history={history}
+            params={params}
+            mayCancel={mayAdjust}
+          />
+        }
+      />
+      {seen && <SeenStudentsDialog seen={seen} params={params} />}
+    </>
   );
 }

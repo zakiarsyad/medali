@@ -8,6 +8,7 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { cancelSikuEntry } from "./cancel-entry";
 import { saveSikuEntry } from "./save-entry";
 import { SIKU_ADDRESS } from "./siku-address";
 import {
@@ -66,4 +67,13 @@ export async function searchSikuStudentsAction(
 export async function groupPicksAction(groupId: string): Promise<SikuPick[]> {
   await enterer();
   return readGroupPicks(database(), groupId);
+}
+
+/** "Batalkan" on an entry of the history. Who cancelled is the signed-in account. */
+export async function cancelSikuEntryAction(id: string): Promise<FormState> {
+  const actor = await enterer();
+  const cancelled = await cancelSikuEntry(database(), actor, String(id));
+  if (!cancelled.ok) return { error: cancelled.error, done: null };
+  revalidatePath(SIKU_ADDRESS);
+  return { error: null, done: "Penyesuaian dibatalkan." };
 }

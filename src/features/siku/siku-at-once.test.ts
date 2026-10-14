@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { sikuAdjustmentChanges, sikuAdjustments } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import type { Parsed } from "@/parsed";
+import { cancelSikuEntry } from "./cancel-entry";
 import { saveSikuEntry } from "./save-entry";
+import { ALREADY_CANCELLED } from "./siku-messages";
 import {
   addTestActor,
   addTestStudents,
@@ -74,5 +77,44 @@ describe("Simpan pressed twice at the same moment", () => {
       .where(eq(sikuAdjustmentChanges.adjustmentId, id));
     expect(kept).toHaveLength(1);
     expect(lines).toHaveLength(1);
+  });
+});
+
+describe("Batalkan pressed twice at the same moment", () => {
+  it("cancels the entry once, with one log line: the second waits, then is refused", async () => {
+    const { penilai, studentIds } = await prepared();
+    const id = crypto.randomUUID();
+    const saved = await saveSikuEntry(
+      own.db,
+      penilai,
+      id,
+      {
+        kind: "loss",
+        reason: "discipline_penalty",
+        points: "5",
+        day: "2026-10-12",
+        note: "",
+        basis: "",
+        studentIds,
+      },
+      MOMENT,
+    );
+    if (!saved.ok) throw new Error(saved.error);
+
+    const both = await own.atOnce<Parsed<null>>(
+      (db) => cancelSikuEntry(db, penilai, id),
+      (db) => cancelSikuEntry(db, penilai, id),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: null });
+    expect(both.later).toEqual(ALREADY_CANCELLED);
+    const lines = await own.db
+      .select({ action: sikuAdjustmentChanges.action })
+      .from(sikuAdjustmentChanges)
+      .where(eq(sikuAdjustmentChanges.adjustmentId, id));
+    expect(lines.map((line) => line.action).sort()).toEqual([
+      "cancelled",
+      "entered",
+    ]);
   });
 });

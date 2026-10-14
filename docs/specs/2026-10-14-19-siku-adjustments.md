@@ -118,7 +118,7 @@ and a student sees their own SIKU and why.
 - [x] 2. The SIKU rule (dasar + gains − losses, 0–100), with checks.
 - [x] 3. The tab shows the numbers, "Daftar nilai SIKU" and the ranking.
 - [x] 4. The form adds a gain or a loss for chosen students.
-- [ ] 5. The history, with "Lihat mahasiswa" and "Batalkan".
+- [x] 5. The history, with "Lihat mahasiswa" and "Batalkan".
 - [ ] 6. The student's own numbers and "Transparansi nilai SIKU".
 
 ## Decisions made while building
@@ -143,3 +143,10 @@ and a student sees their own SIKU and why.
   today under Tanggal, as the prototype does. Keterangan is optional and
   holds at most 500 characters; "Dasar atau nomor surat" at most 200.
 - One entry holds at most 2.000 students.
+- The history shows only the entries in force, as the prototype does: a
+  cancelled entry stays stored with who cancelled it and when, and in the
+  log, but leaves the list. It shows an entry only when it names a
+  student the reader may see, and counts only those students; "Lihat
+  mahasiswa" lists only them, 25 a page, in a box over the tab.
+- "Oleh" in the history shows the name of the staff member, for staff
+  only.
