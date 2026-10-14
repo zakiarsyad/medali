@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { CountPanel } from "./count-panel";
 import type { CountPanelView, KeptCount, Participant } from "./count-view";
+import type { LeaveMarks } from "./leave-marks";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
 
 vi.mock("./count-actions", () => ({ saveCountAction: vi.fn() }));
@@ -42,12 +43,13 @@ function panel(view: CountPanelView): string {
   );
 }
 
-function open(kept: KeptCount | null): string {
+function open(kept: KeptCount | null, onLeave: LeaveMarks = {}): string {
   return panel({
     kind: "open",
     activity: TEST_ROW,
     participants: PARTICIPANTS,
     kept,
+    onLeave,
   });
 }
 
@@ -129,5 +131,26 @@ describe("Penghitungan kehadiran", () => {
     );
     expect(shown).not.toContain(">Simpan</button>");
     expect(shown).toContain(">Umumkan ulang</button>");
+  });
+
+  it("shows a participant on approved leave as Izin or ITMK, with a box that cannot be ticked", () => {
+    const [, BUDI] = PARTICIPANTS;
+    const shown = open(DRAFT, {
+      [ANI?.id ?? ""]: "leave",
+      [BUDI?.id ?? ""]: "itmk",
+    });
+
+    expect(shown).toContain(
+      'disabled="" aria-label="Tidak hadir Ani Wiratama"',
+    );
+    expect(shown).not.toContain(
+      'aria-label="Tidak hadir Ani Wiratama" checked=""',
+    );
+    expect(shown).toContain(
+      'disabled="" aria-label="Tidak hadir Budi Hasibuan"',
+    );
+    expect(shown).toContain(">Izin</span>");
+    expect(shown).toContain(">Hadir · ITMK</span>");
+    expect(shown).toContain("0 dari 2 peserta ditandai tidak hadir.");
   });
 });

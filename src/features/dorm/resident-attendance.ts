@@ -22,6 +22,7 @@ import {
   dormActivityVersions,
   dormAttendanceCounts,
   dormAttendanceMarks,
+  students,
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
 import type { DormId } from "@/dorms/dorms";
@@ -38,6 +39,14 @@ import {
   type TimedMark,
   tallyOf,
 } from "./history";
+import {
+  type CoveredOwnMarks,
+  coveredOwnMarks,
+  historyWithLeave,
+  tallyWithLeave,
+} from "./history-leave";
+import type { ApprovedLeave } from "./leave-marks";
+import { readApprovedLeaves } from "./leave-store";
 import { readStudentDorm } from "./student-dorm";
 
 /** How many activities Riwayat shows. */
@@ -223,7 +232,49 @@ export async function readOwnAttendance(
     absent: earlier.absent + today.absent,
   };
   const marks = [...overToday, ...marksOver(past, now)];
-  const announced = await readAnnouncedKeys(db, held);
+  const [announced, covered] = await Promise.all([
+    readAnnouncedKeys(db, held),
+    readCoveredMarks(db, studentId, moment, now),
+  ]);
   const history = historyOf(held, marks, announced, HISTORY_SHOWN);
-  return { kind: "shown", attendance: { ...totals, history } };
+  return {
+    kind: "shown",
+    attendance: {
+      ...tallyWithLeave(totals, covered),
+      history: historyWithLeave(history, covered),
+    },
+  };
+}
+
+/** The days on campus from the first to the last day of each leave. */
+function daysOfLeaves(leaves: ApprovedLeave[]): SQL | undefined {
+  return or(
+    ...leaves.map((leave) =>
+      and(
+        gte(dormAttendanceCounts.day, campusDay(leave.start)),
+        lte(dormAttendanceCounts.day, campusDay(leave.end)),
+      ),
+    ),
+  );
+}
+
+/**
+ * The student's own announced marks, of activities over at a moment,
+ * that an approved leave of theirs covers. Only the days of their leave
+ * are read.
+ */
+async function readCoveredMarks(
+  db: Database,
+  studentId: string,
+  moment: Date,
+  now: CampusMoment,
+): Promise<CoveredOwnMarks> {
+  const leaves = await readApprovedLeaves(
+    db,
+    { start: new Date(0), end: moment },
+    eq(students.id, studentId),
+  );
+  if (leaves.length === 0) return new Map();
+  const marks = await readOwnMarks(db, studentId, daysOfLeaves(leaves));
+  return coveredOwnMarks(marks, leaves, studentId, now);
 }

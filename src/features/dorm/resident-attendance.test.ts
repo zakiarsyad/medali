@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods } from "@/db/schema";
+import { academicPeriods, dormLeaves } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import type { CountInput } from "./count-input";
@@ -74,6 +74,67 @@ async function count(
 function residentOf(studentId: string | null, roles: RoleId[] = ["student"]) {
   return { roles, studentId };
 }
+
+describe("readOwnAttendance with approved leave", () => {
+  it("shows an activity in the time of Izin pesiar as Izin, out of the percentage, and one in ITMK as Hadir with ITMK", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { ani, morning, evening } = records;
+      await count(db, records, {
+        activityId: morning,
+        day: YESTERDAY,
+        marks: { [ani]: { isAbsent: true, note: "" } },
+      });
+      await count(db, records, {
+        activityId: evening,
+        day: YESTERDAY,
+        marks: { [ani]: { isAbsent: true, note: "" } },
+      });
+      // Approved after the counts were announced.
+      const approved = {
+        studentId: ani,
+        purpose: "Kontrol ke dokter",
+        destination: "",
+        contact: "",
+        status: "approved" as const,
+        sentAt: NIGHT,
+        decidedBy: records.counter.id,
+        decidedAt: NIGHT,
+      };
+      await db.insert(dormLeaves).values([
+        {
+          ...approved,
+          id: crypto.randomUUID(),
+          kind: "outing",
+          startsAt: new Date(`${YESTERDAY}T05:00:00+07:00`),
+          endsAt: new Date(`${YESTERDAY}T08:00:00+07:00`),
+        },
+        {
+          ...approved,
+          id: crypto.randomUUID(),
+          kind: "skip_activities",
+          startsAt: new Date(`${YESTERDAY}T19:00:00+07:00`),
+          endsAt: new Date(`${YESTERDAY}T21:30:00+07:00`),
+        },
+      ]);
+
+      const answer = await readOwnAttendance(db, residentOf(ani), NIGHT);
+
+      if (answer.kind !== "shown") throw new Error("It was refused.");
+      expect(answer.attendance.present).toBe(1);
+      expect(answer.attendance.absent).toBe(0);
+      const yesterday = answer.attendance.history.filter(
+        (entry) => entry.day === YESTERDAY,
+      );
+      expect(
+        yesterday.map(({ name, status, note }) => [name, status, note]),
+      ).toEqual([
+        ["Belajar malam uji", "present", "ITMK"],
+        ["Apel pagi uji", "leave", ""],
+      ]);
+    });
+  });
+});
 
 describe("readOwnAttendance", () => {
   it("gives the resident's numbers and Riwayat: Hadir, Tidak hadir with the note, and Belum diumumkan for a draft and for one not counted", async () => {

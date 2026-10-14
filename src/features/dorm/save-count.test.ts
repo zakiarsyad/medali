@@ -4,7 +4,11 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, dormAttendanceChanges } from "@/db/schema";
+import {
+  academicPeriods,
+  dormAttendanceChanges,
+  dormLeaves,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import type { CountInput } from "./count-input";
@@ -15,6 +19,7 @@ import {
   NOT_A_PARTICIPANT,
   NOT_HELD_THAT_DAY,
   NOT_STARTED,
+  ON_LEAVE,
 } from "./count-messages";
 import { readStoredCount } from "./count-store";
 import { saveCount } from "./save-count";
@@ -108,6 +113,49 @@ describe("saveCount", () => {
         [records.cici]: { isAbsent: false, note: "" },
       });
       expect(await logOf(db, kept?.id ?? "")).toEqual([]);
+    });
+  });
+
+  it("refuses to mark absent a participant whose approved leave covers the activity, and keeps her note", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await db.insert(dormLeaves).values({
+        id: crypto.randomUUID(),
+        studentId: records.ani,
+        kind: "outing",
+        startsAt: new Date(`${DAY}T05:00:00+07:00`),
+        endsAt: new Date(`${DAY}T07:00:00+07:00`),
+        purpose: "Kontrol ke dokter",
+        destination: "Klinik",
+        contact: "",
+        status: "approved",
+        sentAt: MOMENT,
+        decidedBy: records.counter.id,
+        decidedAt: MOMENT,
+      });
+
+      const absent = await saveCount(
+        db,
+        records.counter,
+        countOf(records),
+        MOMENT,
+      );
+      const noted = await saveCount(
+        db,
+        records.counter,
+        countOf(records, {
+          marks: { [records.ani]: { isAbsent: false, note: "Izin dokter" } },
+        }),
+        MOMENT,
+      );
+
+      expect(absent).toEqual(ON_LEAVE);
+      expect(noted.ok).toBe(true);
+      const kept = await readStoredCount(db, records.activityId, DAY);
+      expect(kept?.marks[records.ani]).toEqual({
+        isAbsent: false,
+        note: "Izin dokter",
+      });
     });
   });
 

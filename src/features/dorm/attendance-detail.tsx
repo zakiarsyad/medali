@@ -4,11 +4,15 @@ import styles from "./activities.module.css";
 import type {
   AnnouncedAttendance,
   MarkedParticipant,
+  PresenceStatus,
 } from "./announced-attendance";
 
-/** Hadir, or Tidak hadir in the look of an absence. */
-export function PresenceBadge({ isAbsent }: { isAbsent: boolean }) {
-  if (!isAbsent) {
+/** Hadir, Tidak hadir in the look of an absence, or Izin. */
+export function PresenceBadge({ status }: { status: PresenceStatus }) {
+  if (status === "leave") {
+    return <span className={`${shared.badge} ${styles.plain}`}>Izin</span>;
+  }
+  if (status === "present") {
     return <span className={`${shared.badge} ${styles.ok}`}>Hadir</span>;
   }
   return <span className={`${shared.badge} ${styles.bad}`}>Tidak hadir</span>;
@@ -28,7 +32,7 @@ function MarkedList({ marked }: { marked: MarkedParticipant[] }) {
             <b>{row.name}</b>
             <span className={shared.detail}>{row.nim}</span>
           </span>
-          <PresenceBadge isAbsent={row.isAbsent} />
+          <PresenceBadge status={row.status} />
           <span className={styles.markedNote}>{row.note || "-"}</span>
         </li>
       ))}

@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { academicPeriods, students } from "@/db/schema";
+import { academicPeriods, dormLeaves, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { readDayAttendance } from "./day-attendance";
@@ -71,12 +71,56 @@ describe("readDayAttendance", () => {
         present: 1,
         absent: 2,
         marked: [
-          { name: "Ani Rekap Uji", isAbsent: true, note: "Sakit" },
-          { name: "Budi Rekap Uji", isAbsent: false, note: "Terlambat" },
-          { name: "Cici Rekap Uji", isAbsent: true, note: "" },
+          { name: "Ani Rekap Uji", status: "absent", note: "Sakit" },
+          { name: "Budi Rekap Uji", status: "present", note: "Terlambat" },
+          { name: "Cici Rekap Uji", status: "absent", note: "" },
         ],
       });
       expect(await readDayAttendance(db, "2730-10-13", EVERYONE)).toEqual({});
+    });
+  });
+
+  it("counts a participant on approved leave as Izin, out of Hadir and Tidak hadir, and one on ITMK as Hadir with ITMK, also once announced before", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await saveCount(db, records.counter, count(records, true), MOMENT);
+      const leave = {
+        startsAt: new Date(`${DAY}T05:00:00+07:00`),
+        endsAt: new Date(`${DAY}T07:00:00+07:00`),
+        purpose: "Kontrol ke dokter",
+        destination: "",
+        contact: "",
+        status: "approved" as const,
+        sentAt: MOMENT,
+        decidedBy: records.counter.id,
+        decidedAt: MOMENT,
+      };
+      await db.insert(dormLeaves).values([
+        {
+          ...leave,
+          id: crypto.randomUUID(),
+          studentId: records.ani,
+          kind: "outing",
+        },
+        {
+          ...leave,
+          id: crypto.randomUUID(),
+          studentId: records.cici,
+          kind: "skip_activities",
+        },
+      ]);
+
+      const shown = await readDayAttendance(db, DAY, EVERYONE);
+
+      expect(shown[records.activityId]).toMatchObject({
+        present: 2,
+        absent: 0,
+        marked: [
+          { name: "Ani Rekap Uji", status: "leave", note: "Sakit" },
+          { name: "Budi Rekap Uji", status: "present", note: "Terlambat" },
+          { name: "Cici Rekap Uji", status: "present", note: "ITMK" },
+        ],
+      });
     });
   });
 

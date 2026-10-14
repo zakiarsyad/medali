@@ -1,4 +1,15 @@
-import { and, eq, gt, gte, inArray, isNull, lt, lte, or } from "drizzle-orm";
+import {
+  and,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  lte,
+  or,
+  type SQL,
+} from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormActivityVersions, dormLeaves, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
@@ -6,6 +17,7 @@ import { audiencesCovering } from "./activity-audience";
 import { readVersions } from "./activity-reads";
 import type { ActivityRow } from "./activity-row";
 import type { LeaveSpan } from "./leave-cover";
+import type { ApprovedLeave } from "./leave-marks";
 
 /*
  * What asking for, cancelling, deciding and showing leave share.
@@ -49,6 +61,53 @@ export async function overlapsOwn(
     )
     .limit(1);
   return found !== undefined;
+}
+
+/**
+ * The approved leave whose time overlaps a span, of the students `which`
+ * picks from the student rows: of every student when it is not given.
+ */
+export async function readApprovedLeaves(
+  db: Database,
+  span: LeaveSpan,
+  which?: SQL,
+): Promise<ApprovedLeave[]> {
+  const rows = await db
+    .select({
+      studentId: dormLeaves.studentId,
+      kind: dormLeaves.kind,
+      start: dormLeaves.startsAt,
+      end: dormLeaves.endsAt,
+    })
+    .from(dormLeaves)
+    .innerJoin(students, eq(students.id, dormLeaves.studentId))
+    .where(
+      and(
+        eq(dormLeaves.status, "approved"),
+        lt(dormLeaves.startsAt, span.end),
+        gt(dormLeaves.endsAt, span.start),
+        which,
+      ),
+    );
+  return rows;
+}
+
+/** An activity's time on its day, as a span of moments. */
+export function spanOfHeld(held: {
+  day: string;
+  startTime: string;
+  endTime: string;
+}): LeaveSpan {
+  return {
+    start: new Date(`${held.day}T${held.startTime}:00+07:00`),
+    end: new Date(`${held.day}T${held.endTime}:00+07:00`),
+  };
+}
+
+/** A whole day on campus, as a span of moments. */
+export function spanOfDay(day: string): LeaveSpan {
+  const start = new Date(`${day}T00:00:00+07:00`);
+  return { start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
 }
 
 /**
