@@ -5,6 +5,7 @@ import {
   dormActivityDaysOff,
   dormActivityVersions,
 } from "@/db/schema";
+import type { SentActivity } from "./activity-input";
 import type { ActivityRow } from "./activity-row";
 
 /** Made-up dorm activities for the checks of this area. */
@@ -49,6 +50,42 @@ export const TEST_ONE_OFF: ActivityRow = {
   organiserName: "",
   rundown: [],
 };
+
+/** A daily activity as its form sends it, with nothing wrong in it. */
+export const SENT_ROUTINE: SentActivity = {
+  name: "Apel pagi uji",
+  category: "roll_call",
+  location: "Lapangan uji",
+  pattern: "daily",
+  weekdays: [],
+  monthDay: "1",
+  startsOn: "2026-08-01",
+  endsOn: "",
+  day: "",
+  startTime: "05:30",
+  endTime: "06:15",
+  organiser: "coach",
+  organiserName: "Tim Pelatih Uji",
+  audience: "all",
+  isRequired: true,
+  daysOff: [],
+  rundownTimes: ["05:30"],
+  rundownActivities: ["Apel uji"],
+};
+
+/** A one-off activity as its form sends it, with nothing wrong in it. */
+export const SENT_ONE_OFF: SentActivity = {
+  ...SENT_ROUTINE,
+  name: "Malam keakraban uji",
+  pattern: "once",
+  startsOn: "",
+  day: "2026-10-20",
+  startTime: "19:00",
+  endTime: "21:00",
+};
+
+/** The key a form made for the activity it adds. */
+export const NEW_ACTIVITY_ID = "5d4c3b2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a";
 
 type TestVersion = Partial<typeof dormActivityVersions.$inferInsert>;
 

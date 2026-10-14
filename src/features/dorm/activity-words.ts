@@ -102,6 +102,19 @@ export function organiserLine(
   return organiserName === "" ? full : `${full} · ${organiserName}`;
 }
 
+/**
+ * What the message after a save says, as in the prototype: 'Kegiatan
+ * "Apel pagi" disimpan (setiap hari) untuk semua penghuni.'
+ */
+export function savedWords(
+  saved: Repeat & { name: string; audience: Audience },
+): string {
+  const repeat = repeatWords(saved);
+  const when = repeat === "" ? "" : ` (${repeat.toLowerCase()})`;
+  const who = audienceWords(saved.audience).toLowerCase();
+  return `Kegiatan "${saved.name}" disimpan${when} untuk ${who}.`;
+}
+
 /** The hours of an activity, such as 05:30–06:15. */
 export function hoursWords(startTime: string, endTime: string): string {
   return `${startTime}–${endTime}`;

@@ -59,3 +59,16 @@ export function isCurrent(
 ): boolean {
   return row.shownUntil === null && row.removedFrom === null;
 }
+
+/**
+ * Whether "Ubah" and "Hapus kegiatan" are offered for a row: it is what
+ * its activity holds now, and a one-off activity is today or later. A
+ * one-off activity of a day gone by stays as it was held.
+ */
+export function mayChange(
+  row: Pick<ActivityRow, "shownUntil" | "removedFrom" | "pattern" | "startsOn">,
+  today: string,
+): boolean {
+  if (!isCurrent(row)) return false;
+  return isRoutine(row) || row.startsOn >= today;
+}

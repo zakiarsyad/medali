@@ -98,7 +98,7 @@ residents see what is on today and next.
   the permission list, with their checks.
 - [x] 3. Jadwal harian, Kegiatan rutin and Kegiatan non rutin show the
   schedule with "Rincian", read only.
-- [ ] 4. The form adds and changes repeating and one-off activities;
+- [x] 4. The form adds and changes repeating and one-off activities;
   a change leaves past dates as they were.
 - [ ] 5. "Tiada kegiatan" and "Hapus kegiatan" with undo work.
 - [ ] 6. Residents see Hari ini and Akan datang.

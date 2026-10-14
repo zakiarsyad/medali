@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { SQL } from "drizzle-orm";
 import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
@@ -44,7 +45,12 @@ export async function ActivitiesScreen({
           dan rinciannya.
         </p>
       )}
-      <ActivityBoard params={params} view={view} now={now} />
+      <ActivityBoard
+        params={params}
+        view={view}
+        now={now}
+        form={mayManage ? { newActivityId: randomUUID() } : null}
+      />
     </>
   );
 }

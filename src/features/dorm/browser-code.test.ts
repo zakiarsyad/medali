@@ -4,10 +4,13 @@ import { browserFilesIn, databaseCodeReachedFrom } from "@/ui/browser-code";
 const FOLDER = "src/features/dorm";
 
 /** The screen parts of Kegiatan asrama that run in the browser. */
-const ACTIVITY_PARTS = [`${FOLDER}/activity-board.tsx`];
+const ACTIVITY_PARTS = [
+  `${FOLDER}/activity-board.tsx`,
+  `${FOLDER}/activity-form.tsx`,
+];
 
 describe("the screen parts of Kegiatan asrama that run in the browser", () => {
-  it("are found: the board", () => {
+  it("are found: the board and the form", () => {
     const browserFiles = browserFilesIn(FOLDER);
 
     for (const path of ACTIVITY_PARTS) expect(browserFiles).toContain(path);

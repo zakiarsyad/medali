@@ -2,10 +2,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { ActivitiesParams } from "./activities-address";
 import type { ActivitiesView } from "./activities-view";
-import { ActivityBoard } from "./activity-board";
+import { ActivityBoard, type FormParts } from "./activity-board";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("./activity-actions", () => ({ saveActivityAction: vi.fn() }));
 
 const NOW = { day: "2026-10-14", time: "18:00" };
 const RESIDENTS = {
@@ -19,9 +20,18 @@ function params(view: ActivitiesParams["view"]): ActivitiesParams {
   return { view, day: NOW.day, page: 1 };
 }
 
-function board(view: ActivitiesView): string {
+const FORM: FormParts = {
+  newActivityId: "00000000-0000-4000-8000-00000000f001",
+};
+
+function board(view: ActivitiesView, form: FormParts | null = null): string {
   return renderToStaticMarkup(
-    <ActivityBoard params={params(view.view)} view={view} now={NOW} />,
+    <ActivityBoard
+      params={params(view.view)}
+      view={view}
+      now={NOW}
+      form={form}
+    />,
   );
 }
 
@@ -146,4 +156,32 @@ describe("the board for an account that only reads", () => {
       expect(shown).not.toContain("<form");
     },
   );
+});
+
+describe("the board for Pengelola Asrama", () => {
+  it("offers both ways to add an activity, the form still closed", () => {
+    const shown = board(DAILY, FORM);
+
+    expect(shown).toContain("Tambah kegiatan rutin</button>");
+    expect(shown).toContain("Tambah kegiatan non rutin</button>");
+    expect(shown).not.toContain("<form");
+  });
+
+  it("offers Ubah on each activity that can still be changed", () => {
+    const routines: ActivitiesView = { view: "rutin", routines: [TEST_ROW] };
+
+    expect(board(DAILY, FORM).match(/>Ubah<\/button>/g)).toHaveLength(2);
+    expect(board(routines, FORM).match(/>Ubah<\/button>/g)).toHaveLength(1);
+  });
+
+  it("offers no Ubah on a one-off activity of a day gone by, nor on an earlier version", () => {
+    const past = { ...TEST_ONE_OFF, startsOn: "2026-10-01" };
+    const list = { activities: [past], matching: 1, page: 1 };
+    const earlier = { ...TEST_ROW, shownUntil: "2026-10-13" };
+
+    expect(board({ view: "nonrutin", list }, FORM)).not.toContain("Ubah");
+    expect(board({ ...DAILY, activities: [earlier] }, FORM)).not.toContain(
+      "Ubah",
+    );
+  });
 });

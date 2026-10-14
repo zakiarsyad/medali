@@ -67,3 +67,35 @@ describe("the lists of Kegiatan asrama on a phone", () => {
     );
   });
 });
+
+describe("the activity form on a phone", () => {
+  const FORM = read("activity-form.tsx");
+
+  it("lays its fields out on the shared form grid, which is one column at phone width", () => {
+    expect(FORM).toContain("<div className={shared.form}>");
+  });
+
+  it("never lets a list be wider than its field, however long a choice is", () => {
+    expect(FORM).toMatch(/shared\.field\} \$\{styles\.fits\}/);
+    expect(ruleOf(".fits")).toContain("min-width: 0;");
+    expect(ruleOf(".fits select")).toContain("max-width: 100%;");
+  });
+
+  it("folds a line of Rincian kegiatan, the marked days and the buttons instead of widening the page", () => {
+    expect(ruleOf(".line")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".lineTime")).toContain("max-width: 100%;");
+    expect(ruleOf(".lineActivity")).toContain("max-width: 100%;");
+    expect(ruleOf(".chips")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".pushedEnd")).toContain("flex-wrap: wrap;");
+  });
+
+  it("stops below the top bar when Ubah brings it into view", () => {
+    const BOARD = read("activity-board.tsx");
+
+    expect(BOARD).toContain("styles.formPanel");
+    expect(BOARD).toContain("panel.current?.scrollIntoView(");
+    expect(ruleOf(".formPanel")).toContain(
+      "scroll-margin-top: var(--below-top-bar);",
+    );
+  });
+});

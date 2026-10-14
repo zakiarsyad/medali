@@ -8,6 +8,7 @@ import {
   organiserLine,
   placeWords,
   repeatWords,
+  savedWords,
   validityWords,
 } from "./activity-words";
 
@@ -55,6 +56,36 @@ describe("repeatWords", () => {
   ] as const)("says %j as %j", (repeat, words) => {
     expect(repeatWords({ ...repeat, weekdays: [...repeat.weekdays] })).toBe(
       words,
+    );
+  });
+});
+
+describe("savedWords", () => {
+  it("names the activity, how it repeats and who takes part", () => {
+    const saved = {
+      name: "Apel pagi",
+      pattern: "weekly" as const,
+      weekdays: [1, 3],
+      monthDay: null,
+      audience: "women" as const,
+    };
+
+    expect(savedWords(saved)).toBe(
+      'Kegiatan "Apel pagi" disimpan (setiap senin, rabu) untuk penghuni putri.',
+    );
+  });
+
+  it("leaves out how a one-off activity repeats", () => {
+    const saved = {
+      name: "Malam keakraban",
+      pattern: "once" as const,
+      weekdays: [],
+      monthDay: null,
+      audience: "all" as const,
+    };
+
+    expect(savedWords(saved)).toBe(
+      'Kegiatan "Malam keakraban" disimpan untuk semua penghuni.',
     );
   });
 });

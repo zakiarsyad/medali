@@ -113,3 +113,80 @@
 .quietLine {
   composes: quietLine from "./rooms.module.css";
 }
+
+/* "Ubah" scrolls here: the panel must stop below the top bar, not under it. */
+.formPanel {
+  scroll-margin-top: var(--below-top-bar);
+}
+
+/* A line of a form that takes its whole width. */
+.full {
+  grid-column: 1 / -1;
+}
+
+/* A list is as wide as its longest choice unless told otherwise. */
+.fits {
+  min-width: 0;
+}
+
+.fits select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* A part of a form with several fields under one name. */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A line of Rincian kegiatan in the form: the time is the shorter field. */
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.lineTime {
+  flex: 1 1 var(--score-box-width);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.lineActivity {
+  flex: 4 1 var(--box-min-width);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  align-items: baseline;
+  margin-top: var(--space-md);
+}
+
+.pushedEnd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-left: auto;
+}

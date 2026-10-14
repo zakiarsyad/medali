@@ -1,27 +1,41 @@
 "use client";
 
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import type { CampusMoment } from "@/academic-periods/campus-clock";
+import shared from "@/ui/data-screen.module.css";
+import { FormMessage } from "@/ui/form-message";
 import styles from "./activities.module.css";
-import type { ActivitiesParams } from "./activities-address";
-import { activitiesAddress } from "./activities-address";
+import { type ActivitiesParams, activitiesAddress } from "./activities-address";
 import type { ActivitiesView } from "./activities-view";
+import { ActivityForm, type FormTarget } from "./activity-form";
+import { type ActivityRow, isRoutine, mayChange } from "./activity-row";
 import { DailyPanel } from "./daily-panel";
 import { OneOffPanel } from "./one-off-panel";
 import { RoutinePanel } from "./routine-panel";
 import { ViewSwitch } from "./view-switch";
+
+/** What the form needs, for an account that may change the activities. */
+export interface FormParts {
+  /** The key the next activity a form adds is kept under. */
+  newActivityId: string;
+}
+
+type ActionsOf = ((activity: ActivityRow) => ReactNode) | null;
 
 /** The list the address asks for. */
 function OpenList({
   view,
   params,
   now,
+  actionsOf,
 }: {
   view: ActivitiesView;
   params: ActivitiesParams;
   now: CampusMoment;
+  actionsOf: ActionsOf;
 }) {
   if (view.view === "rutin") {
-    return <RoutinePanel routines={view.routines} actionsOf={null} />;
+    return <RoutinePanel routines={view.routines} actionsOf={actionsOf} />;
   }
   if (view.view === "nonrutin") {
     return (
@@ -29,7 +43,7 @@ function OpenList({
         list={view.list}
         now={now}
         addressOf={(page) => activitiesAddress({ ...params, page }, now.day)}
-        actionsOf={null}
+        actionsOf={actionsOf}
       />
     );
   }
@@ -39,31 +53,121 @@ function OpenList({
       activities={view.activities}
       residents={view.residents}
       now={now}
-      actionsOf={null}
+      actionsOf={actionsOf}
     />
   );
 }
 
+function AddButtons({ onAdd }: { onAdd: (isRoutine: boolean) => void }) {
+  return (
+    <div className={shared.actions}>
+      <button
+        type="button"
+        className={shared.quiet}
+        onClick={() => onAdd(true)}
+      >
+        Tambah kegiatan rutin
+      </button>
+      <button
+        type="button"
+        className={shared.button}
+        onClick={() => onAdd(false)}
+      >
+        Tambah kegiatan non rutin
+      </button>
+    </div>
+  );
+}
+
 /**
- * Kegiatan asrama for staff: the switch between the three lists, and the
- * list that is open.
+ * Kegiatan asrama for staff: the switch between the three lists, the
+ * list that is open, and for an account that may change the activities
+ * the buttons that add one and the form, above the list. It holds what
+ * the form is open for, as "Ubah" in a list opens the form, and only one
+ * form is open at a time.
  */
 export function ActivityBoard({
   params,
   view,
   now,
+  form,
 }: {
   params: ActivitiesParams;
   view: ActivitiesView;
   /** The moment on campus the states are told at. */
   now: CampusMoment;
+  /** What the form needs, or null for an account that only reads. */
+  form: FormParts | null;
 }) {
+  const [target, setTarget] = useState<FormTarget | null>(null);
+  const [said, setSaid] = useState<string | null>(null);
+  const panel = useRef<HTMLElement>(null);
+
+  // The form is above the list, so "Ubah" far down brings it into view.
+  useEffect(() => {
+    if (target?.activity) panel.current?.scrollIntoView({ behavior: "smooth" });
+  }, [target]);
+
+  function openFor(opened: FormTarget) {
+    setSaid(null);
+    setTarget(opened);
+  }
+
+  function closeWith(message: string) {
+    setSaid(message);
+    setTarget(null);
+  }
+
+  function rowActions(activity: ActivityRow): ReactNode {
+    if (!mayChange(activity, now.day)) return null;
+    const change = () => openFor({ isRoutine: isRoutine(activity), activity });
+    return (
+      <button type="button" className={shared.link} onClick={change}>
+        Ubah
+      </button>
+    );
+  }
+
   return (
     <>
       <div className={styles.toolbar}>
         <ViewSwitch params={params} today={now.day} />
+        {form && !target && (
+          <AddButtons
+            onAdd={(isRoutine) => openFor({ isRoutine, activity: null })}
+          />
+        )}
       </div>
-      <OpenList view={view} params={params} now={now} />
+      {said && (
+        <div className={styles.message}>
+          <FormMessage state={{ error: null, done: said }} />
+        </div>
+      )}
+      {form && target && (
+        <section className={`${shared.panel} ${styles.formPanel}`} ref={panel}>
+          <ActivityForm
+            // Made anew for each activity and each of its versions, so its
+            // fields hold what that one has.
+            key={
+              target.activity
+                ? target.activity.id + target.activity.version
+                : String(target.isRoutine)
+            }
+            target={target}
+            newActivityId={form.newActivityId}
+            day={params.day}
+            onSaved={closeWith}
+            onCancel={() => setTarget(null)}
+            removal={null}
+          />
+        </section>
+      )}
+      <OpenList
+        view={view}
+        params={params}
+        now={now}
+        actionsOf={form ? rowActions : null}
+      />
     </>
   );
 }
