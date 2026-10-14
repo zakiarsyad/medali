@@ -2,6 +2,7 @@ import { forbidden } from "next/navigation";
 import { campusDay } from "@/academic-periods/campus-day";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
 import {
@@ -21,9 +22,9 @@ import {
   readSeenStudents,
   readSikuHistory,
 } from "@/features/siku/siku-history";
+import { SikuInputPanel } from "@/features/siku/siku-input-panel";
 import { readGroupChoices } from "@/features/siku/siku-picks";
 import { StaffSikuScreen } from "@/features/siku/staff-siku-screen";
-import { visibleTo } from "@/features/students/visible-students";
 
 /**
  * The tab Penilaian SIKU. Staff see the SIKU of the students they may
@@ -58,11 +59,16 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
       : readSeenStudents(db, visible, seenEntry, params.seenPage),
   ]);
   const form = mayAdjust ? (
-    <SikuForm
-      newEntryId={crypto.randomUUID()}
+    <SikuInputPanel
       base={base}
-      today={campusDay()}
-      groups={groups}
+      form={
+        <SikuForm
+          newEntryId={crypto.randomUUID()}
+          base={base}
+          today={campusDay()}
+          groups={groups}
+        />
+      }
     />
   ) : null;
   return (

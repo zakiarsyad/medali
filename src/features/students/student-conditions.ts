@@ -1,10 +1,8 @@
-import { ilike, isNull, or, type SQL, sql } from "drizzle-orm";
+import { ilike, or, type SQL, sql } from "drizzle-orm";
 import { containsPattern } from "@/db/contains-pattern";
 import { students } from "@/db/schema";
 
 /** The conditions that more than one list of students reads by. */
-
-export const NOT_REMOVED = isNull(students.deletedAt);
 
 /** Students whose name or NIM holds the text. No text finds everyone. */
 export function matchesSearch(query: string): SQL | undefined {

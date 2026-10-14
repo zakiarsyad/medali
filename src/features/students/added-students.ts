@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { NOT_REMOVED } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import {
   accounts,
@@ -27,7 +28,7 @@ import {
   type ListedGroup,
   listedGroupOf,
 } from "./listed-group";
-import { countWhere, matchesSearch, NOT_REMOVED } from "./student-conditions";
+import { countWhere, matchesSearch } from "./student-conditions";
 import type { StoredStudent } from "./student-input";
 
 const inputter = alias(accounts, "inputter");

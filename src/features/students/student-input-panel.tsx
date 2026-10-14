@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { ModeSwitch } from "@/ui/mode-switch";
 import styles from "./new-students.module.css";
 import { FORM_ANCHOR } from "./new-students-address";
 import { StudentForm, type StudentFormProps } from "./student-form";
@@ -13,33 +14,6 @@ const MODES = [
 ] as const;
 
 type Mode = (typeof MODES)[number][0];
-
-function ModeSwitch({
-  mode,
-  onChoose,
-}: {
-  mode: Mode;
-  onChoose: (mode: Mode) => void;
-}) {
-  return (
-    <fieldset className={styles.modes}>
-      <legend className={shared.hidden}>Cara input</legend>
-      {MODES.map(([value, label]) => (
-        <button
-          key={value}
-          type="button"
-          className={
-            value === mode ? `${styles.mode} ${styles.modeOn}` : styles.mode
-          }
-          aria-pressed={value === mode}
-          onClick={() => onChoose(value)}
-        >
-          {label}
-        </button>
-      ))}
-    </fieldset>
-  );
-}
 
 /**
  * The panel that puts students in: one by one through the form, or many
@@ -61,7 +35,9 @@ export function StudentInputPanel(props: StudentFormProps) {
               : "Satu per satu lewat formulir, atau banyak sekaligus lewat unggah berkas."}
           </p>
         </div>
-        {!editing && <ModeSwitch mode={mode} onChoose={setMode} />}
+        {!editing && (
+          <ModeSwitch modes={MODES} mode={mode} onChoose={setMode} />
+        )}
       </div>
       {mode === "upload" && !editing ? (
         <StudentUpload cohortYears={props.cohortYears} />

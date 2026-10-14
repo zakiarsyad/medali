@@ -3,12 +3,12 @@
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { rowLimitForAction } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { saveBaseScore } from "@/features/curriculum/save-base-score";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
-import { visibleTo } from "@/features/students/visible-students";
 import { START_PARAMS } from "./siku-address";
 import { readSikuList, readSikuNumbers, readSikuRanking } from "./siku-board";
 import {

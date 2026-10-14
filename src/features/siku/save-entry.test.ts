@@ -8,6 +8,7 @@ import {
   sikuAdjustmentChanges,
   sikuAdjustmentStudents,
   sikuAdjustments,
+  sikuUploads,
   students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -59,6 +60,31 @@ function entryById(db: Database, id: string) {
 }
 
 describe("saveSikuEntry", () => {
+  it("refuses the key of an uploaded file, saving nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai } = await addRecords(db);
+      const id = crypto.randomUUID();
+      await db.insert(sikuUploads).values({
+        id,
+        fileName: "siku.csv",
+        fingerprint: "a".repeat(64),
+        enteredBy: penilai.id,
+        enteredAt: MOMENT,
+      });
+
+      const saved = await saveSikuEntry(
+        db,
+        penilai,
+        id,
+        sentFor([ani]),
+        MOMENT,
+      );
+
+      expect(saved).toEqual(ENTRY_ALREADY_SENT);
+      expect(await entryById(db, id)).toEqual([]);
+    });
+  });
+
   it("keeps a loss for every chosen student, with the period it was made in, who and as which role, and one log line", async () => {
     await inTestDatabase(async (db) => {
       const { periods, ani, budi, penilai } = await addRecords(db);

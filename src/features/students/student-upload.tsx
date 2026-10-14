@@ -1,26 +1,25 @@
 "use client";
 
 import { Fragment, useState, useTransition } from "react";
+import { checkFileShape, MAX_FILE_ROWS } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
+import { FileDrop } from "@/ui/file-drop";
+import styles from "@/ui/file-upload.module.css";
 import {
   previewStudentFileAction,
   type SavedFileShown,
   saveStudentFileAction,
 } from "./actions";
-import { FileDrop } from "./file-drop";
 import type { FilePreview } from "./file-preview";
 import { FilePreviewView, SkippedRows } from "./file-preview-view";
-import styles from "./new-students.module.css";
 import {
   FILE_COLUMNS,
-  MAX_FILE_ROWS,
   OPTIONAL_COLUMNS,
   TEMPLATE_FILE_NAME,
   templateCsv,
   yearRange,
 } from "./student-file-columns";
 import { useNotify } from "./student-notice";
-import { checkFileShape } from "./uploaded-file";
 
 const TEMPLATE_LINK = `data:text/csv;charset=utf-8,${encodeURIComponent(templateCsv())}`;
 

@@ -3,11 +3,11 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { type AccountForAccess, rowLimitForAction } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
-import { visibleTo } from "@/features/students/visible-students";
 import { memoryStore, unreachableStore } from "@/files/memory-store";
 import { openReturnPhoto } from "./open-return-photo";
 import { addTestResidents } from "./test-leave";

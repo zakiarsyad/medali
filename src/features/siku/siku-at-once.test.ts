@@ -1,12 +1,17 @@
 // Sample NIMs of this file: 9964000400 to 9964000499.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { sikuAdjustmentChanges, sikuAdjustments } from "@/db/schema";
+import {
+  sikuAdjustmentChanges,
+  sikuAdjustments,
+  sikuUploads,
+} from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import type { Parsed } from "@/parsed";
 import { cancelSikuEntry } from "./cancel-entry";
 import { saveSikuEntry } from "./save-entry";
-import { ALREADY_CANCELLED } from "./siku-messages";
+import { FILE_ALREADY_SENT, saveSikuFile } from "./save-siku-file";
+import { ALREADY_CANCELLED, ENTRY_ALREADY_SENT } from "./siku-messages";
 import {
   addTestActor,
   addTestStudents,
@@ -116,5 +121,71 @@ describe("Batalkan pressed twice at the same moment", () => {
       "cancelled",
       "entered",
     ]);
+  });
+});
+
+describe("a form entry and a file saved at the same moment with the same key", () => {
+  // The students of `prepared`, a gain for one and a loss for the other.
+  const FILE = {
+    name: "siku-sekaligus.csv",
+    bytes: new TextEncoder().encode(
+      [
+        "nim,jenis,alasan,poin,keterangan",
+        "9964000401,tambah,1,2,",
+        "9964000402,kurang,3,1,",
+      ].join("\n"),
+    ),
+  };
+
+  function formFor(studentIds: string[]) {
+    return {
+      kind: "gain",
+      reason: "peer_mentoring",
+      points: "2",
+      day: "2026-10-12",
+      note: "",
+      basis: "",
+      studentIds,
+    };
+  }
+
+  async function keptUnder(id: string) {
+    const entries = await own.db
+      .select()
+      .from(sikuAdjustments)
+      .where(eq(sikuAdjustments.id, id));
+    const uploads = await own.db
+      .select()
+      .from(sikuUploads)
+      .where(eq(sikuUploads.id, id));
+    return { entries: entries.length, uploads: uploads.length };
+  }
+
+  it("keeps the form entry when it comes first: the file waits, then is refused", async () => {
+    const { penilai, studentIds } = await prepared();
+    const id = crypto.randomUUID();
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => saveSikuEntry(db, penilai, id, formFor(studentIds), MOMENT),
+      (db) => saveSikuFile(db, penilai, id, FILE, true, MOMENT),
+    );
+
+    expect(both.sooner.ok).toBe(true);
+    expect(both.later).toEqual(FILE_ALREADY_SENT);
+    expect(await keptUnder(id)).toEqual({ entries: 1, uploads: 0 });
+  });
+
+  it("keeps the file when it comes first: the form entry waits, then is refused", async () => {
+    const { penilai, studentIds } = await prepared();
+    const id = crypto.randomUUID();
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => saveSikuFile(db, penilai, id, FILE, true, MOMENT),
+      (db) => saveSikuEntry(db, penilai, id, formFor(studentIds), MOMENT),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: { saved: 2 } });
+    expect(both.later).toEqual(ENTRY_ALREADY_SENT);
+    expect(await keptUnder(id)).toEqual({ entries: 0, uploads: 1 });
   });
 });

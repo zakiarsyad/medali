@@ -9,6 +9,7 @@ import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
 import { fileStorage } from "@/files/file-storage";
+import { sentCsvFile } from "@/files/sent-csv-file";
 import type { Parsed } from "@/parsed";
 import { readCampusEmailEnding } from "@/settings";
 import { text, texts } from "@/ui/form-data";
@@ -27,13 +28,12 @@ import {
 import { isNim } from "./input-limits";
 import { inputStudent } from "./input-student";
 import { savedMessage, saveStudentFile } from "./save-student-file";
-import { previewStudentFile, type UploadedFile } from "./student-file-check";
+import { previewStudentFile } from "./student-file-check";
 import {
   cohortChoices,
   type InputContext,
   parseStudent,
 } from "./student-input";
-import { checkFileShape } from "./uploaded-file";
 
 async function studentInputter(): Promise<Account> {
   const account = await currentAccount();
@@ -139,26 +139,11 @@ export async function removeStudentAction(
   return { error: null, done: `${removed.value} dihapus.` };
 }
 
-const NO_FILE = {
-  ok: false,
-  error: "Berkas tidak diterima. Pilih berkas CSV, lalu coba lagi.",
-} as const;
-
-/** The file of a sent form, refused by name or size before it is read. */
-async function sentFile(form: FormData): Promise<Parsed<UploadedFile>> {
-  const file = form.get("file");
-  if (!(file instanceof File)) return NO_FILE;
-  const wrongShape = checkFileShape(file.name, file.size);
-  if (wrongShape) return { ok: false, error: wrongShape };
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  return { ok: true, value: { name: file.name, bytes } };
-}
-
 export async function previewStudentFileAction(
   form: FormData,
 ): Promise<Parsed<FilePreview>> {
   const inputter = await studentInputter();
-  const file = await sentFile(form);
+  const file = await sentCsvFile(form);
   if (!file.ok) return file;
   const db = database();
   const context = await inputContext(db);
@@ -176,7 +161,7 @@ export async function saveStudentFileAction(
   form: FormData,
 ): Promise<Parsed<SavedFileShown>> {
   const inputter = await studentInputter();
-  const file = await sentFile(form);
+  const file = await sentCsvFile(form);
   if (!file.ok) return file;
   const db = database();
   const context = await inputContext(db);

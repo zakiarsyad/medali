@@ -54,6 +54,7 @@ function EntryTable({
               </td>
               <td className={shared.detail} data-title="Dicatat oleh">
                 {ROLES[entry.enteredAs].title}
+                {entry.fromFile && " lewat unggah berkas"}
               </td>
               <td
                 className={`${styles.strong} ${kind === "gain" ? styles.gain : styles.loss}`}

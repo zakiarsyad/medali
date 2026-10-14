@@ -1,3 +1,4 @@
+import { shortLine } from "@/files/csv-file";
 import { type FileCells, yearRange } from "./student-file-columns";
 import {
   type InputContext,
@@ -7,7 +8,6 @@ import {
   UNKNOWN_PROVINCE,
   UNKNOWN_SEX,
 } from "./student-input";
-import { shortLine } from "./uploaded-file";
 
 const SHOWN_TEXT_LENGTH = 40;
 

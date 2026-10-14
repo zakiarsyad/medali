@@ -1,4 +1,5 @@
 import type { Database } from "@/db/connect";
+import { CSV_FILE_RULE, FAULT_MESSAGES, shortLine } from "@/files/csv-file";
 import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
@@ -9,7 +10,6 @@ import {
   type NewBatch,
 } from "./add-student-batch";
 import type { UploadedFile } from "./student-file-check";
-import { FAULT_MESSAGES, STUDENT_FILE_RULE, shortLine } from "./uploaded-file";
 
 const FOLDER = "student-files";
 const FILE_NAME_MAX_LENGTH = 255;
@@ -30,7 +30,7 @@ async function keepStudentFile(
   file: UploadedFile,
 ): Promise<Parsed<BatchFile>> {
   try {
-    const kept = await keepFile(store, FOLDER, file, STUDENT_FILE_RULE);
+    const kept = await keepFile(store, FOLDER, file, CSV_FILE_RULE);
     if (!kept.ok) return { ok: false, error: FAULT_MESSAGES[kept.fault] };
     return {
       ok: true,

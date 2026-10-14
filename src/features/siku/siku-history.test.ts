@@ -3,10 +3,10 @@
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { rowLimitForAction } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { visibleTo } from "@/features/students/visible-students";
 import { readSeenStudents, readSikuHistory } from "./siku-history";
 import {
   addTestActor,
@@ -117,8 +117,8 @@ describe("readSikuHistory", () => {
 
       for (const reader of [penilai, direktur]) {
         const history = await readSikuHistory(db, seenBy(reader), 1);
-        expect(history.entries.map((entry) => entry.reason)).toContain(
-          "discipline_penalty",
+        expect(history.entries).toContainEqual(
+          expect.objectContaining({ reason: "discipline_penalty" }),
         );
       }
     });

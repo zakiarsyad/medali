@@ -2,9 +2,9 @@
 // Sample NIMs of this file: 9962000700 to 9962000799.
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
+import { detailVisibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
-import { detailVisibleTo } from "@/features/students/visible-students";
 import { listScoredMembers } from "./group-scores";
 import { addTestPeriod, type TestPeriod } from "./test-meetings";
 import {
