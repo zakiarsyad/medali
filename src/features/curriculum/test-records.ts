@@ -1,6 +1,6 @@
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accounts } from "@/db/schema";
+import { academicPeriods, accounts, activitySchedules } from "@/db/schema";
 import type { SentBreakdown } from "./breakdown-input";
 import type { SentPpksActivity } from "./ppks-activity-input";
 
@@ -13,6 +13,62 @@ export async function addTestActor(
   const [account] = await db.insert(accounts).values({ name }).returning();
   if (!account) throw new Error("The account was not added.");
   return { id: account.id, roles };
+}
+
+/**
+ * A made-up odd period of that start year. The year must be one that only
+ * the calling test file adds, as its first line names.
+ */
+export async function addTestPeriod(
+  db: Database,
+  startYear: number,
+): Promise<string> {
+  const [period] = await db
+    .insert(academicPeriods)
+    .values({
+      startYear,
+      term: "odd",
+      startsOn: `${startYear}-08-01`,
+      endsOn: `${startYear + 1}-01-31`,
+    })
+    .returning({ id: academicPeriods.id });
+  if (!period) throw new Error("The period was not added.");
+  return period.id;
+}
+
+/** A made-up schedule of an activity, removed when `isRemoved` is set. */
+export async function addTestSchedule(
+  db: Database,
+  {
+    activityId,
+    periodId,
+    actorId,
+    isRemoved = false,
+  }: {
+    activityId: string;
+    periodId: string;
+    actorId: string;
+    isRemoved?: boolean;
+  },
+): Promise<void> {
+  const removed = isRemoved
+    ? { deletedAt: new Date(), deletedBy: actorId }
+    : {};
+  await db.insert(activitySchedules).values({
+    activityId,
+    academicPeriodId: periodId,
+    startsOn: "2026-09-10",
+    endsOn: "2026-09-10",
+    startTime: "07:30",
+    endTime: "11:30",
+    uploadCount: 1,
+    uploadUnit: "day",
+    location: "",
+    isRequired: true,
+    changedAt: new Date(),
+    changedBy: actorId,
+    ...removed,
+  });
 }
 
 /** A PPKS activity as a form sends it, with nothing wrong in it. */

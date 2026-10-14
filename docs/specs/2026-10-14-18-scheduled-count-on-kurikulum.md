@@ -89,6 +89,6 @@ The issue did not say, so these were decided:
 
 ## Steps
 
-- [ ] 1. Both tables show "Dijadwalkan" with the count per activity.
+- [x] 1. Both tables show "Dijadwalkan" with the count per activity.
 - [ ] 2. "Hapus" warns with the live count when the activity is
   scheduled.

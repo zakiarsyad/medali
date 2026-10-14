@@ -18,6 +18,8 @@ export interface PpksActivity {
   description: string;
   /** Tells one saved state of the activity from the next one. */
   version: string;
+  /** How many of its schedules in Kegiatan karakter are not removed. */
+  scheduledCount: number;
 }
 
 /**
