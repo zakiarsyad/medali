@@ -97,6 +97,6 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. "Tetapkan" and a student save at the same moment, with its
+- [x] 1. "Tetapkan" and a student save at the same moment, with its
   check.
 - [ ] 2. "Tetapkan" and a removal at the same moment, with its check.
