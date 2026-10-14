@@ -94,6 +94,48 @@ describe("the table of dorm leave requests", () => {
       "a decision on a request that waits",
       (records) => ({ decidedBy: records.accountId, decidedAt: new Date() }),
     ],
+    [
+      "Selesai without the time of the return",
+      (records) => ({
+        status: "completed",
+        decidedBy: records.accountId,
+        decidedAt: new Date(),
+      }),
+    ],
+    [
+      "a return on leave that is not Selesai",
+      (records) => ({
+        status: "approved",
+        decidedBy: records.accountId,
+        decidedAt: new Date(),
+        returnedAt: new Date("2026-10-20T07:00:00Z"),
+      }),
+    ],
+    [
+      "a return before the start",
+      (records) => ({
+        status: "completed",
+        decidedBy: records.accountId,
+        decidedAt: new Date(),
+        returnedAt: new Date("2026-10-20T01:59:00Z"),
+      }),
+    ],
+    [
+      "a return of ITMK",
+      (records) => ({
+        kind: "skip_activities",
+        destination: "",
+        contact: "",
+        status: "completed",
+        decidedBy: records.accountId,
+        decidedAt: new Date(),
+        returnedAt: new Date("2026-10-20T07:00:00Z"),
+      }),
+    ],
+    [
+      "who recorded a return without the return",
+      (records) => ({ returnRecordedBy: records.accountId }),
+    ],
   ])("refuses %s", async (_name, more) => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
@@ -120,6 +162,24 @@ describe("the table of dorm leave requests", () => {
       });
 
       expect(await db.select().from(dormLeaves)).toHaveLength(2);
+    });
+  });
+
+  it("keeps leave that is Selesai with the time of the return and who recorded it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await addLeave(db, records, {
+        status: "completed",
+        decidedBy: records.accountId,
+        decidedAt: new Date(),
+        returnedAt: new Date("2026-10-20T08:25:00Z"),
+        returnRecordedBy: records.accountId,
+      });
+
+      const [kept] = await db.select().from(dormLeaves);
+      expect(kept?.status).toBe("completed");
+      expect(kept?.returnRecordedBy).toBe(records.accountId);
     });
   });
 });

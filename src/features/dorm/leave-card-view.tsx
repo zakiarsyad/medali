@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 import styles from "./leave.module.css";
-import { KindBadge, StatusBadge } from "./leave-badges";
+import {
+  KindBadge,
+  LateBadge,
+  OutBadge,
+  StatusBadge,
+  TimelinessBadge,
+} from "./leave-badges";
 import type { LeaveCard } from "./leave-card";
 import { coveredWords } from "./leave-cover";
 import { timeLabels } from "./leave-words";
@@ -26,10 +32,11 @@ function orDash(words: string): string {
 
 /**
  * One request as staff see it: the student and where they live, its
- * kind and status, the times with the length, Keperluan, and Tujuan and
+ * kind and status, or Di luar asrama while the resident is out, with
+ * Terlambat when the return is late, the times with the length, Keperluan, and Tujuan and
  * Kontak or, for ITMK, the dorm activities it covers. Who decided it and
- * their note, and any warning, follow. `children` holds what the card
- * offers below that.
+ * their note, the actual return with who recorded it, and any warning,
+ * follow. `children` holds what the card offers below that.
  */
 export function LeaveCardView({
   card,
@@ -51,7 +58,8 @@ export function LeaveCardView({
         </div>
         <div className={styles.badges}>
           <KindBadge kind={card.kind} />
-          <StatusBadge status={card.status} />
+          {card.isOut ? <OutBadge /> : <StatusBadge status={card.status} />}
+          {card.isLate && <LateBadge />}
         </div>
       </div>
       <dl className={styles.facts}>
@@ -73,7 +81,18 @@ export function LeaveCardView({
             {card.decision.note !== "" && ` · ${card.decision.note}`}
           </Fact>
         )}
+        {card.returned && (
+          <Fact title="Kembali aktual">
+            {card.returned.at}{" "}
+            <TimelinessBadge timeliness={card.returned.timeliness} />
+          </Fact>
+        )}
       </dl>
+      {card.returned?.recordedBy && (
+        <p className={styles.quietLine}>
+          Kembali dicatat {card.returned.recordedBy} (dicatat langsung).
+        </p>
+      )}
       {card.warnings.map((warning) => (
         <p key={warning} className={styles.warning}>
           {warning}

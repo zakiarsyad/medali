@@ -39,6 +39,7 @@ import {
   LEAVE_STATUSES,
   PURPOSE_MAX_LENGTH,
   PURPOSE_MIN_LENGTH,
+  REPORT_STATUSES,
   SPECIAL_REASONS,
 } from "@/features/dorm/leave-ids";
 import {
@@ -123,6 +124,11 @@ export const dormLeaveStatus = pgEnum("dorm_leave_status", LEAVE_STATUSES);
 export const dormLeaveSpecialReason = pgEnum(
   "dorm_leave_special_reason",
   SPECIAL_REASONS,
+);
+
+export const dormReturnReportStatus = pgEnum(
+  "dorm_return_report_status",
+  REPORT_STATUSES,
 );
 
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
@@ -824,10 +830,24 @@ export const dormLeaves = pgTable(
     /** What Pengelola Asrama noted; empty when nothing was noted. */
     decisionNote: text().notNull().default(""),
     cancelledAt: timestamp({ withTimezone: true }),
+    /**
+     * When the resident was back: the time of their validated report, or
+     * the time staff recorded. Empty until the leave is Selesai.
+     */
+    returnedAt: timestamp({ withTimezone: true }),
+    /** Who recorded the return directly; empty when a report was validated. */
+    returnRecordedBy: uuid().references(() => accounts.id),
   },
   (table) => [
     index("dorm_leaves_student").on(table.studentId, table.startsAt),
     index("dorm_leaves_status").on(table.status, table.startsAt),
+    // Approved Izin pesiar and Izin khusus: those out of the dorm now are
+    // among them, while the ITMK and the leave that is Selesai pile up.
+    index("dorm_leaves_out")
+      .on(table.startsAt)
+      .where(
+        sql`${table.status} = 'approved' and ${table.kind} <> 'skip_activities'`,
+      ),
     check(
       "dorm_leaves_ends_after_start",
       sql`${table.endsAt} > ${table.startsAt}`,
@@ -856,9 +876,27 @@ export const dormLeaves = pgTable(
       "dorm_leaves_decision_note_length",
       sql`char_length(${table.decisionNote}) <= ${sql.raw(String(DECISION_NOTE_MAX_LENGTH))}`,
     ),
+    // The status is read as text in these checks: the value Selesai is
+    // added to its type in the same change, which may not use it yet.
     check(
-      "dorm_leaves_decided_when_approved_or_rejected",
-      sql`(${table.status} in ('approved', 'rejected')) = (${table.decidedAt} is not null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
+      "dorm_leaves_decided_when_approved_rejected_or_completed",
+      sql`(${table.status}::text in ('approved', 'rejected', 'completed')) = (${table.decidedAt} is not null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
+    ),
+    check(
+      "dorm_leaves_returned_when_completed",
+      sql`(${table.status}::text = 'completed') = (${table.returnedAt} is not null)`,
+    ),
+    check(
+      "dorm_leaves_return_recorded_only_when_returned",
+      sql`${table.returnRecordedBy} is null or ${table.returnedAt} is not null`,
+    ),
+    check(
+      "dorm_leaves_returned_after_start",
+      sql`${table.returnedAt} is null or ${table.returnedAt} >= ${table.startsAt}`,
+    ),
+    check(
+      "dorm_leaves_skip_activities_needs_no_return",
+      sql`${table.kind} <> 'skip_activities' or ${table.returnedAt} is null`,
     ),
     check(
       "dorm_leaves_rejected_has_note",
@@ -867,6 +905,66 @@ export const dormLeaves = pgTable(
     check(
       "dorm_leaves_cancelled_has_moment",
       sql`(${table.status} = 'cancelled') = (${table.cancelledAt} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * A resident's report that they are back from Izin pesiar or Izin khusus,
+ * with a photo taken at the dorm. The key is made by the form that sent
+ * it, so a report sent twice is kept once. BAM - BPHK verifies it first,
+ * then Pengelola Asrama validates it; either may reject it with a note.
+ * A rejected report keeps its row, and the resident sends a new one: a
+ * leave has at most one report that is not rejected.
+ */
+export const dormReturnReports = pgTable(
+  "dorm_return_reports",
+  {
+    id: uuid().primaryKey(),
+    leaveId: uuid()
+      .notNull()
+      .references(() => dormLeaves.id),
+    /** Where the photo is in the file storage. Empty when none is kept. */
+    photoKey: text().unique(),
+    /** When the report arrived, by the server's clock: the time it reports. */
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+    status: dormReturnReportStatus().notNull().default("waiting"),
+    /** Who of BAM - BPHK verified or rejected it, when, and their note. */
+    verifiedBy: uuid().references(() => accounts.id),
+    verifiedAt: timestamp({ withTimezone: true }),
+    verifyNote: text().notNull().default(""),
+    /** Who of Pengelola Asrama validated or rejected it, when, and their note. */
+    validatedBy: uuid().references(() => accounts.id),
+    validatedAt: timestamp({ withTimezone: true }),
+    validateNote: text().notNull().default(""),
+  },
+  (table) => [
+    index("dorm_return_reports_leave").on(table.leaveId, table.sentAt),
+    uniqueIndex("dorm_return_reports_one_open")
+      .on(table.leaveId)
+      .where(sql`${table.status} <> 'rejected'`),
+    index("dorm_return_reports_waiting")
+      .on(table.sentAt)
+      .where(sql`${table.status} in ('waiting', 'verified')`),
+    check(
+      "dorm_return_reports_verified_unless_waiting",
+      sql`(${table.status} = 'waiting') = (${table.verifiedAt} is null) and (${table.verifiedAt} is null) = (${table.verifiedBy} is null)`,
+    ),
+    check(
+      "dorm_return_reports_validated_when_validated",
+      sql`(${table.status} = 'validated' or ${table.validatedAt} is null or ${table.status} = 'rejected') and (${table.status} <> 'validated' or ${table.validatedAt} is not null) and (${table.validatedAt} is null) = (${table.validatedBy} is null)`,
+    ),
+    check(
+      "dorm_return_reports_rejected_has_note",
+      sql`${table.status} <> 'rejected' or ${table.verifyNote} <> '' or ${table.validateNote} <> ''`,
+    ),
+    check(
+      "dorm_return_reports_verify_note_length",
+      sql`char_length(${table.verifyNote}) <= ${sql.raw(String(DECISION_NOTE_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_return_reports_validate_note_length",
+      sql`char_length(${table.validateNote}) <= ${sql.raw(String(DECISION_NOTE_MAX_LENGTH))}`,
     ),
   ],
 );

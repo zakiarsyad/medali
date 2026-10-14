@@ -14,13 +14,23 @@ export const LEAVE_ADDRESS = "/asrama/izin";
 /** How many request cards one page of the staff list shows. */
 export const LEAVE_CARDS_PAGE_SIZE = 20;
 
+/**
+ * Where the return from leave stands, for narrowing the staff list: a
+ * report waits, the resident is out, or the return is late.
+ */
+export type ReturnChoice = "reports" | "out" | "late";
+
 /** The statuses the staff list can be narrowed to, and every status. */
-export type StatusChoice = LeaveStatus | "all";
+export type StatusChoice = LeaveStatus | ReturnChoice | "all";
 
 /** The choices in the order the list offers them; the first is chosen at the start. */
 export const STATUS_CHOICE_ORDER: StatusChoice[] = [
   "submitted",
+  "reports",
+  "out",
+  "late",
   "approved",
+  "completed",
   "rejected",
   "cancelled",
   "all",
@@ -29,7 +39,11 @@ export const STATUS_CHOICE_ORDER: StatusChoice[] = [
 /** Each status choice as the address names it. */
 export const STATUS_CHOICES: Record<StatusChoice, string> = {
   submitted: "diajukan",
+  reports: "laporan-kembali",
+  out: "di-luar",
+  late: "terlambat",
   approved: "disetujui",
+  completed: "selesai",
   rejected: "ditolak",
   cancelled: "dibatalkan",
   all: "semua",
@@ -37,7 +51,11 @@ export const STATUS_CHOICES: Record<StatusChoice, string> = {
 
 export const STATUS_CHOICE_WORDS: Record<StatusChoice, string> = {
   submitted: "Menunggu verifikasi",
+  reports: "Laporan kembali menunggu",
+  out: "Sedang di luar",
+  late: "Terlambat kembali",
   approved: "Disetujui",
+  completed: "Selesai",
   rejected: "Ditolak",
   cancelled: "Dibatalkan",
   all: "Semua",

@@ -1,5 +1,5 @@
 {
-  "id": "4be87739-fab3-4fac-a75e-99b62fb4ea41",
+  "id": "438db54b-742b-4f39-ac67-e99cda2452b9",
   "prevId": "a8f3b5d3-6abe-411a-a7cf-19856c1a93e7",
   "version": "7",
   "dialect": "postgresql",
@@ -2479,6 +2479,18 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "returned_at": {
+          "name": "returned_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "return_recorded_by": {
+          "name": "return_recorded_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2523,6 +2535,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "dorm_leaves_out": {
+          "name": "dorm_leaves_out",
+          "columns": [
+            {
+              "expression": "starts_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"dorm_leaves\".\"status\" = 'approved' and \"dorm_leaves\".\"kind\" <> 'skip_activities'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2545,6 +2573,19 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "decided_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_leaves_return_recorded_by_accounts_id_fk": {
+          "name": "dorm_leaves_return_recorded_by_accounts_id_fk",
+          "tableFrom": "dorm_leaves",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "return_recorded_by"
           ],
           "columnsTo": [
             "id"
@@ -2585,9 +2626,25 @@
           "name": "dorm_leaves_decision_note_length",
           "value": "char_length(\"dorm_leaves\".\"decision_note\") <= 500"
         },
-        "dorm_leaves_decided_when_approved_or_rejected": {
-          "name": "dorm_leaves_decided_when_approved_or_rejected",
-          "value": "(\"dorm_leaves\".\"status\" in ('approved', 'rejected')) = (\"dorm_leaves\".\"decided_at\" is not null) and (\"dorm_leaves\".\"decided_at\" is null) = (\"dorm_leaves\".\"decided_by\" is null)"
+        "dorm_leaves_decided_when_approved_rejected_or_completed": {
+          "name": "dorm_leaves_decided_when_approved_rejected_or_completed",
+          "value": "(\"dorm_leaves\".\"status\"::text in ('approved', 'rejected', 'completed')) = (\"dorm_leaves\".\"decided_at\" is not null) and (\"dorm_leaves\".\"decided_at\" is null) = (\"dorm_leaves\".\"decided_by\" is null)"
+        },
+        "dorm_leaves_returned_when_completed": {
+          "name": "dorm_leaves_returned_when_completed",
+          "value": "(\"dorm_leaves\".\"status\"::text = 'completed') = (\"dorm_leaves\".\"returned_at\" is not null)"
+        },
+        "dorm_leaves_return_recorded_only_when_returned": {
+          "name": "dorm_leaves_return_recorded_only_when_returned",
+          "value": "\"dorm_leaves\".\"return_recorded_by\" is null or \"dorm_leaves\".\"returned_at\" is not null"
+        },
+        "dorm_leaves_returned_after_start": {
+          "name": "dorm_leaves_returned_after_start",
+          "value": "\"dorm_leaves\".\"returned_at\" is null or \"dorm_leaves\".\"returned_at\" >= \"dorm_leaves\".\"starts_at\""
+        },
+        "dorm_leaves_skip_activities_needs_no_return": {
+          "name": "dorm_leaves_skip_activities_needs_no_return",
+          "value": "\"dorm_leaves\".\"kind\" <> 'skip_activities' or \"dorm_leaves\".\"returned_at\" is null"
         },
         "dorm_leaves_rejected_has_note": {
           "name": "dorm_leaves_rejected_has_note",
@@ -2596,6 +2653,212 @@
         "dorm_leaves_cancelled_has_moment": {
           "name": "dorm_leaves_cancelled_has_moment",
           "value": "(\"dorm_leaves\".\"status\" = 'cancelled') = (\"dorm_leaves\".\"cancelled_at\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.dorm_return_reports": {
+      "name": "dorm_return_reports",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "leave_id": {
+          "name": "leave_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "photo_key": {
+          "name": "photo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "dorm_return_report_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'waiting'"
+        },
+        "verified_by": {
+          "name": "verified_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verify_note": {
+          "name": "verify_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "validated_by": {
+          "name": "validated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validated_at": {
+          "name": "validated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validate_note": {
+          "name": "validate_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        }
+      },
+      "indexes": {
+        "dorm_return_reports_leave": {
+          "name": "dorm_return_reports_leave",
+          "columns": [
+            {
+              "expression": "leave_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sent_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_return_reports_one_open": {
+          "name": "dorm_return_reports_one_open",
+          "columns": [
+            {
+              "expression": "leave_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"dorm_return_reports\".\"status\" <> 'rejected'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_return_reports_waiting": {
+          "name": "dorm_return_reports_waiting",
+          "columns": [
+            {
+              "expression": "sent_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"dorm_return_reports\".\"status\" in ('waiting', 'verified')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_return_reports_leave_id_dorm_leaves_id_fk": {
+          "name": "dorm_return_reports_leave_id_dorm_leaves_id_fk",
+          "tableFrom": "dorm_return_reports",
+          "tableTo": "dorm_leaves",
+          "columnsFrom": [
+            "leave_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_return_reports_verified_by_accounts_id_fk": {
+          "name": "dorm_return_reports_verified_by_accounts_id_fk",
+          "tableFrom": "dorm_return_reports",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "verified_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_return_reports_validated_by_accounts_id_fk": {
+          "name": "dorm_return_reports_validated_by_accounts_id_fk",
+          "tableFrom": "dorm_return_reports",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "validated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "dorm_return_reports_photoKey_unique": {
+          "name": "dorm_return_reports_photoKey_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "photo_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "dorm_return_reports_verified_unless_waiting": {
+          "name": "dorm_return_reports_verified_unless_waiting",
+          "value": "(\"dorm_return_reports\".\"status\" = 'waiting') = (\"dorm_return_reports\".\"verified_at\" is null) and (\"dorm_return_reports\".\"verified_at\" is null) = (\"dorm_return_reports\".\"verified_by\" is null)"
+        },
+        "dorm_return_reports_validated_when_validated": {
+          "name": "dorm_return_reports_validated_when_validated",
+          "value": "(\"dorm_return_reports\".\"status\" = 'validated' or \"dorm_return_reports\".\"validated_at\" is null or \"dorm_return_reports\".\"status\" = 'rejected') and (\"dorm_return_reports\".\"status\" <> 'validated' or \"dorm_return_reports\".\"validated_at\" is not null) and (\"dorm_return_reports\".\"validated_at\" is null) = (\"dorm_return_reports\".\"validated_by\" is null)"
+        },
+        "dorm_return_reports_rejected_has_note": {
+          "name": "dorm_return_reports_rejected_has_note",
+          "value": "\"dorm_return_reports\".\"status\" <> 'rejected' or \"dorm_return_reports\".\"verify_note\" <> '' or \"dorm_return_reports\".\"validate_note\" <> ''"
+        },
+        "dorm_return_reports_verify_note_length": {
+          "name": "dorm_return_reports_verify_note_length",
+          "value": "char_length(\"dorm_return_reports\".\"verify_note\") <= 500"
+        },
+        "dorm_return_reports_validate_note_length": {
+          "name": "dorm_return_reports_validate_note_length",
+          "value": "char_length(\"dorm_return_reports\".\"validate_note\") <= 500"
         }
       },
       "isRLSEnabled": false
@@ -5110,12 +5373,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "upload_id": {
-          "name": "upload_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -5130,21 +5387,6 @@
             },
             {
               "expression": "entered_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "siku_adjustments_upload": {
-          "name": "siku_adjustments_upload",
-          "columns": [
-            {
-              "expression": "upload_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -5189,19 +5431,6 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "cancelled_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "siku_adjustments_upload_id_siku_uploads_id_fk": {
-          "name": "siku_adjustments_upload_id_siku_uploads_id_fk",
-          "tableFrom": "siku_adjustments",
-          "tableTo": "siku_uploads",
-          "columnsFrom": [
-            "upload_id"
           ],
           "columnsTo": [
             "id"
@@ -5294,84 +5523,6 @@
         "siku_base_score_one_row": {
           "name": "siku_base_score_one_row",
           "value": "\"siku_base_score\".\"id\" = 1"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.siku_uploads": {
-      "name": "siku_uploads",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "file_name": {
-          "name": "file_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fingerprint": {
-          "name": "fingerprint",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "entered_by": {
-          "name": "entered_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "entered_at": {
-          "name": "entered_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "siku_uploads_fingerprint": {
-          "name": "siku_uploads_fingerprint",
-          "columns": [
-            {
-              "expression": "fingerprint",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "siku_uploads_entered_by_accounts_id_fk": {
-          "name": "siku_uploads_entered_by_accounts_id_fk",
-          "tableFrom": "siku_uploads",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "entered_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "siku_uploads_fingerprint_is_sha256": {
-          "name": "siku_uploads_fingerprint_is_sha256",
-          "value": "\"siku_uploads\".\"fingerprint\" ~ '^[0-9a-f]{64}$'"
         }
       },
       "isRLSEnabled": false
@@ -6222,7 +6373,18 @@
         "submitted",
         "approved",
         "rejected",
-        "cancelled"
+        "cancelled",
+        "completed"
+      ]
+    },
+    "public.dorm_return_report_status": {
+      "name": "dorm_return_report_status",
+      "schema": "public",
+      "values": [
+        "waiting",
+        "verified",
+        "rejected",
+        "validated"
       ]
     },
     "public.email_change_action": {

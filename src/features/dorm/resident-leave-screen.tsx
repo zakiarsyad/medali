@@ -45,6 +45,7 @@ export function ResidentLeaveScreen({
   room,
   leave,
   newLeaveId,
+  newReportId,
 }: {
   tabs: TabLinksProps;
   /** Where the resident lives, as the Asrama page header says it. */
@@ -52,6 +53,8 @@ export function ResidentLeaveScreen({
   leave: OwnLeave;
   /** The key the next request is kept under. */
   newLeaveId: string;
+  /** The key the next report of a return is kept under. */
+  newReportId: string;
 }) {
   const lede =
     "Ajukan izin keluar asrama atau Izin Tidak Mengikuti Kegiatan (ITMK) dan pantau statusnya.";
@@ -72,7 +75,7 @@ export function ResidentLeaveScreen({
       </div>
       <section className={shared.panel}>
         <h2 className={shared.heading}>Riwayat izin saya</h2>
-        <OwnLeaveView leave={leave} />
+        <OwnLeaveView leave={leave} newReportId={newReportId} />
       </section>
     </>
   );
