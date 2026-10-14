@@ -138,7 +138,7 @@ export function SeenStudentsDialog({
         page={seen.page}
         matching={seen.matching}
         pageSize={SEEN_PAGE_SIZE}
-        noun="mahasiswa"
+        noun={fromFile ? "baris" : "mahasiswa"}
         keepsPlace
         stepsOnOnePage={false}
         addressOf={(page) => sikuAddress({ ...params, seenPage: page })}

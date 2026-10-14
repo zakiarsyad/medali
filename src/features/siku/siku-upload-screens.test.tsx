@@ -1,10 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { SeenStudentsDialog } from "./history-panel";
 import { HistoryTable } from "./history-table";
 import type { OwnEntry } from "./own-siku";
 import { OwnSikuScreen } from "./own-siku-screen";
 import { repeatedFile, savedMessage } from "./save-siku-file";
+import { START_PARAMS } from "./siku-address";
 import { SAVE_AGAIN, savedBeforeNote } from "./siku-file-preview";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
 const UPLOAD = {
   source: "upload",
@@ -51,6 +55,42 @@ describe("an upload in the history list", () => {
   it("offers Lihat mahasiswa and Batalkan on both", () => {
     expect(html.split("Lihat mahasiswa")).toHaveLength(3);
     expect(html.split("Batalkan")).toHaveLength(3);
+  });
+});
+
+describe("Lihat mahasiswa on an upload", () => {
+  // One student with two rows: the count is of rows, not of students.
+  const row = {
+    name: "Mahasiswa Contoh",
+    nim: "9964009001",
+    program: "Program Contoh",
+  };
+  const html = renderToStaticMarkup(
+    <SeenStudentsDialog
+      seen={{
+        entry: UPLOAD,
+        students: [
+          {
+            ...row,
+            id: "00000000-0000-4000-8000-000000000204",
+            change: { kind: "gain", reason: "peer_mentoring", points: 2 },
+          },
+          {
+            ...row,
+            id: "00000000-0000-4000-8000-000000000205",
+            change: { kind: "loss", reason: "discipline_penalty", points: 1 },
+          },
+        ],
+        matching: 2,
+        page: 1,
+      }}
+      params={START_PARAMS}
+    />,
+  );
+
+  it("counts the rows of the file", () => {
+    expect(html).toContain("dari 2 baris");
+    expect(html).not.toContain("dari 2 mahasiswa");
   });
 });
 

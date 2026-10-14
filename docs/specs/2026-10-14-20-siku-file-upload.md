@@ -113,7 +113,8 @@ Kepala Unit and Penilai Mahasiswa.
   mahasiswa does.
 - In the history the upload shows "Unggah berkas" with its file name,
   "-" for points, and how many different students it holds that the
-  reader may see. "Lihat mahasiswa" lists one line per row, 25 a page.
+  reader may see. "Lihat mahasiswa" lists one line per row, 25 a page, and counts them as
+  "baris".
 - The reading and the limits of a CSV file, and the place to pick or drop
   one, are shared with Pengguna baru mahasiswa, so both keep the same
   rules.
