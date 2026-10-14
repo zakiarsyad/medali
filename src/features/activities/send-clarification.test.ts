@@ -1,6 +1,7 @@
 // Sample Tahun akademik of this file: 2300 to 2300.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { testPaper, testPngPicture } from "@/clarifications/test-paper";
 import type { Database } from "@/db/connect";
 import {
   activityClarifications,
@@ -23,7 +24,6 @@ import {
   type SentClarification,
   sendClarification,
 } from "./send-clarification";
-import { testPaper, testPngPicture } from "./test-paper";
 import { testPhoto } from "./test-photo";
 import {
   addTestActivity,

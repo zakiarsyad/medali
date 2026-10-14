@@ -110,6 +110,6 @@ Decided while building, because the issue did not say:
   clarifications in every status.
 - [x] 2. The rights to ask, check and decide are added to the permission
   list, with their checks.
-- [ ] 3. Residents send a clarification with a file from Riwayat.
+- [x] 3. Residents send a clarification with a file from Riwayat.
 - [ ] 4. Klarifikasi kehadiran shows the numbers, filters and cards.
 - [ ] 5. BAM checks and Pengelola decides, and attendance changes.

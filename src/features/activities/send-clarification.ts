@@ -6,6 +6,11 @@ import {
   CLARIFICATION_FILE_RULE,
   FILE_MISSING,
 } from "@/clarifications/clarification-file";
+import {
+  explanationFault,
+  keptFileName,
+  REASON_MISSING,
+} from "@/clarifications/clarification-input";
 import type { Database } from "@/db/connect";
 import { activityClarifications } from "@/db/schema";
 import { fileFault, type SentFile } from "@/files/file-check";
@@ -13,11 +18,6 @@ import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
 import type { Parsed } from "@/parsed";
 import { waitForOtherAttendanceWrites } from "./attendance-lock";
-import {
-  explanationFault,
-  keptFileName,
-  REASON_MISSING,
-} from "./clarification-input";
 import { type ClarificationReason, reasonOf } from "./clarification-reasons";
 import { clarificationTimeOpen, mayBeClarified } from "./clarification-time";
 import { readOwnClarifications } from "./own-clarifications";

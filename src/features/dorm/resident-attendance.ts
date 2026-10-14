@@ -29,6 +29,11 @@ import type { DormId } from "@/dorms/dorms";
 import { audiencesCovering } from "./activity-audience";
 import { readVersions } from "./activity-reads";
 import {
+  type ClarifiedEntry,
+  clarificationCell,
+  waitingCount,
+} from "./clarification-time";
+import {
   type HeldActivity,
   type HistoryEntry,
   heldKey,
@@ -47,6 +52,7 @@ import {
 } from "./history-leave";
 import type { ApprovedLeave } from "./leave-marks";
 import { readApprovedLeaves } from "./leave-store";
+import { readOwnClarifications, readOwnStatuses } from "./own-clarifications";
 import { readStudentDorm } from "./student-dorm";
 
 /** How many activities Riwayat shows. */
@@ -58,7 +64,9 @@ export interface OwnAttendance {
   present: number;
   absent: number;
   /** The last activities that are over, the latest first. */
-  history: HistoryEntry[];
+  history: ClarifiedEntry[];
+  /** "Klarifikasi aktif": the resident's clarifications that wait. */
+  waitingClarifications: number;
 }
 
 export type OwnAttendanceAnswer =
@@ -237,13 +245,40 @@ export async function readOwnAttendance(
     readCoveredMarks(db, studentId, moment, now),
   ]);
   const history = historyOf(held, marks, announced, HISTORY_SHOWN);
+  const withLeave = historyWithLeave(history, covered);
+  const [clarified, statuses] = await Promise.all([
+    clarifiedHistory(db, studentId, withLeave, now.day),
+    readOwnStatuses(db, studentId),
+  ]);
   return {
     kind: "shown",
     attendance: {
       ...tallyWithLeave(totals, covered),
-      history: historyWithLeave(history, covered),
+      history: clarified,
+      waitingClarifications: waitingCount(statuses),
     },
   };
+}
+
+/** Riwayat with what the Klarifikasi cell of each row shows `today`. */
+async function clarifiedHistory(
+  db: Database,
+  studentId: string,
+  history: HistoryEntry[],
+  today: string,
+): Promise<ClarifiedEntry[]> {
+  const oldest = history.at(-1);
+  if (oldest === undefined) return [];
+  const shown = await readOwnClarifications(db, studentId, oldest.day);
+  return history.map((entry) => ({
+    ...entry,
+    clarification: clarificationCell({
+      status: entry.status,
+      day: entry.day,
+      today,
+      newest: shown.get(heldKey(entry)) ?? null,
+    }),
+  }));
 }
 
 /** The days on campus from the first to the last day of each leave. */

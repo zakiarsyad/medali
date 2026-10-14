@@ -1,10 +1,7 @@
-import {
-  FILE_MISSING,
-  FILE_WRONG_KIND,
-} from "@/clarifications/clarification-file";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { FILE_MISSING, FILE_WRONG_KIND } from "./clarification-file";
 import {
   explanationFault,
   isPictureName,
@@ -22,9 +19,15 @@ import {
 export const CLARIFICATION_SEND_FAILED =
   "Klarifikasi tidak terkirim. Periksa koneksi internet, lalu tekan Kirim klarifikasi lagi.";
 
+/**
+ * The fields that name what a clarification is of, such as the schedule
+ * of a character activity, by the names the server reads them by.
+ */
+export type ClarifiedTarget = Readonly<Record<string, string>>;
+
 /** What the form holds when "Kirim klarifikasi" is pressed. */
 export interface ClarificationDraft {
-  scheduleId: string;
+  target: ClarifiedTarget;
   reason: string;
   explanation: string;
   /** Null when no file was picked. */
@@ -40,14 +43,14 @@ export interface SendEdges {
   rethrow: (error: unknown) => void;
 }
 
-/** What the fields of the form of one schedule hold. A browser sends an empty file when none was picked. */
+/** What the fields of the form of one row hold. A browser sends an empty file when none was picked. */
 export function draftOf(
-  scheduleId: string,
+  target: ClarifiedTarget,
   form: FormData,
 ): ClarificationDraft {
   const file = form.get("file");
   return {
-    scheduleId,
+    target,
     reason: text(form, "reason"),
     explanation: text(form, "explanation"),
     file: file instanceof File && file.size > 0 ? file : null,
@@ -56,7 +59,9 @@ export function draftOf(
 
 function formOf(draft: ClarificationDraft, file: Blob, name: string): FormData {
   const form = new FormData();
-  form.set("scheduleId", draft.scheduleId);
+  for (const [field, value] of Object.entries(draft.target)) {
+    form.set(field, value);
+  }
   form.set("reason", draft.reason);
   form.set("explanation", draft.explanation);
   form.set("file", file, name);

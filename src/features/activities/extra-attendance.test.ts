@@ -1,6 +1,7 @@
 // Sample Tahun akademik of this file: 2760 to 2760.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { testPaper } from "@/clarifications/test-paper";
 import type { Database } from "@/db/connect";
 import {
   activityAttendances,
@@ -21,7 +22,6 @@ import { replaceParticipants } from "./save-participants";
 import { NOT_OWN_ACTIVITY, sendAttendancePhoto } from "./send-attendance-photo";
 import { sendClarification } from "./send-clarification";
 import { readStudentActivities } from "./student-activities";
-import { testPaper } from "./test-paper";
 import { testPhoto } from "./test-photo";
 import {
   addTestActivity,

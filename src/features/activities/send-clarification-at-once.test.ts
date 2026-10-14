@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { testPaper } from "@/clarifications/test-paper";
 import {
   academicPeriods,
   accounts,
@@ -10,7 +11,6 @@ import {
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { memoryStore } from "@/files/memory-store";
 import { sendClarification } from "./send-clarification";
-import { testPaper } from "./test-paper";
 import {
   addTestActivity,
   addTestActor,

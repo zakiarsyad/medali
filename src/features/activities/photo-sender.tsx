@@ -3,6 +3,7 @@
 import { unstable_rethrow } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { FormState } from "@/ui/form-message";
+import { shrinkPhoto } from "@/ui/shrink-photo";
 import { sendAttendancePhotoAction } from "./actions";
 import { PhotoSenderView } from "./photo-sender-view";
 import {
@@ -10,7 +11,6 @@ import {
   type StartSend,
   type UploadEdges,
 } from "./photo-upload";
-import { shrinkPhoto } from "./shrink-photo";
 
 /** The upload's ties to this browser and to the server. */
 const EDGES: UploadEdges = {

@@ -354,3 +354,14 @@
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+/*
+ * The name of a file a resident sent, under its badge in Riwayat: it may
+ * have no spaces to fold at, so it folds anywhere instead of widening the
+ * table or the card of a phone.
+ */
+.sentFile {
+  display: block;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}

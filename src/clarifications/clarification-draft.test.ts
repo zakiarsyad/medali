@@ -25,7 +25,7 @@ function picture(name = "foto.png"): File {
 
 function draft(more: Partial<ClarificationDraft> = {}): ClarificationDraft {
   return {
-    scheduleId: SCHEDULE_ID,
+    target: { scheduleId: SCHEDULE_ID },
     reason: "sick",
     explanation: EXPLANATION,
     file: paper(),
@@ -61,10 +61,10 @@ describe("draftOf", () => {
     form.set("file", paper());
     form.set("scheduleId", "yang-lain");
 
-    const read = draftOf(SCHEDULE_ID, form);
+    const read = draftOf({ scheduleId: SCHEDULE_ID }, form);
 
     expect(read).toMatchObject({
-      scheduleId: SCHEDULE_ID,
+      target: { scheduleId: SCHEDULE_ID },
       reason: "campus_duty",
       explanation: EXPLANATION,
     });
@@ -75,9 +75,9 @@ describe("draftOf", () => {
     const form = new FormData();
     form.set("file", new File([], ""));
 
-    expect(draftOf(SCHEDULE_ID, form).file).toBeNull();
-    expect(draftOf(SCHEDULE_ID, new FormData())).toEqual({
-      scheduleId: SCHEDULE_ID,
+    expect(draftOf({ scheduleId: SCHEDULE_ID }, form).file).toBeNull();
+    expect(draftOf({ scheduleId: SCHEDULE_ID }, new FormData())).toEqual({
+      target: { scheduleId: SCHEDULE_ID },
       reason: "",
       explanation: "",
       file: null,
