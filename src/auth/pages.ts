@@ -13,6 +13,11 @@ export const PAGES = [
     title: "Kegiatan karakter",
     tabs: [
       { id: "verification", path: "verifikasi", title: "Verifikasi presensi" },
+      {
+        id: "clarification",
+        path: "klarifikasi",
+        title: "Klarifikasi kehadiran",
+      },
       { id: "ppks", path: "ppks", title: "Kegiatan PPKS" },
     ],
   },

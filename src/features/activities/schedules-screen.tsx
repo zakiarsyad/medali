@@ -10,6 +10,8 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { readActivityChoices } from "./activity-choices";
 import { readAttendanceNumbers } from "./attendance-numbers";
 import { AttendanceNumbersView } from "./attendance-numbers-view";
+import { readClarificationPanel } from "./clarification-panel";
+import { ClarificationPanelView } from "./clarification-panel-view";
 import { readCohortCounts } from "./cohort-counts";
 import type { FormParts, FormPeriod } from "./form-values";
 import { readListAttendance } from "./list-attendance";
@@ -40,10 +42,11 @@ async function readFormLists(
 
 /**
  * The tab "Kegiatan PPKS": the attendance numbers, the schedules of the
- * PPKS activities with how many attended, and for an account that may
- * manage activities the form that adds one. `visible` is the students
- * the account sees: every number of students and every name here is
- * read through it.
+ * PPKS activities with how many attended, for an account that may
+ * manage activities the form that adds one, and the clarifications of
+ * the students the account sees, when there are any. `visible` is the
+ * students the account sees: every number of students and every name
+ * here is read through it.
  */
 export async function SchedulesScreen({
   tabs,
@@ -60,12 +63,13 @@ export async function SchedulesScreen({
   // The server's clock in campus time, so every browser sees one status.
   const moment = new Date();
   const now = { day: campusDay(moment), time: campusTime(moment) };
-  const [list, counts, formLists, numbers] = await Promise.all([
+  const [list, counts, formLists, numbers, clarifications] = await Promise.all([
     listSchedules(db, params.level, params.page),
     readCohortCounts(db),
     // Read only for an account that gets the form.
     mayManage ? readFormLists(db) : null,
     readAttendanceNumbers(db, visible, params.level, now.day),
+    readClarificationPanel(db, visible),
   ]);
   // Asked only for the schedules of the page shown, so after the list.
   const attendance = await readListAttendance(
@@ -99,6 +103,7 @@ export async function SchedulesScreen({
         attendance={attendance}
         form={form}
       />
+      {clarifications && <ClarificationPanelView panel={clarifications} />}
     </>
   );
 }

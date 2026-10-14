@@ -1,6 +1,7 @@
 import { connect } from "@/db/connect";
 import { noteFilesEmptied, startWaitsForFiles } from "@/db/deploy-start";
 import { samplePhotosAdded } from "@/db/seed-attendance-photos";
+import { samplePapersAdded } from "@/db/seed-clarification-papers";
 import {
   currentStage,
   deployBranch,
@@ -23,9 +24,11 @@ async function deploy(): Promise<string> {
     });
     // Only after the step above, which refuses anywhere but a preview: the
     // sample attendance of a database that was started over has no photo
-    // yet, and one that kept its data has none left without.
+    // yet, and one that kept its data has none left without. The same
+    // goes for the papers of the sample clarifications.
     const photos = await samplePhotosAdded(connection.db, fileStorage());
-    return `${emptied}\n${photos}`;
+    const papers = await samplePapersAdded(connection.db, fileStorage());
+    return `${emptied}\n${photos}\n${papers}`;
   } finally {
     await connection.close();
   }

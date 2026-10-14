@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 /** Waits for a pause in the typing, so not every letter asks the server. */
-const SEARCH_DELAY_MS = 250;
+export const SEARCH_DELAY_MS = 250;
 
 /**
  * What the server finds for a text as the person types it. A blank text

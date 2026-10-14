@@ -104,7 +104,7 @@ function refusal(error: string) {
 }
 
 async function scoreOf(db: Database, student: TestStudentAccount) {
-  const answer = await readStudentActivities(db, student, AT, 1);
+  const answer = await readStudentActivities(db, student, AT, 1, true);
   if (answer.kind !== "found") throw new Error("The student was refused.");
   return answer.activities;
 }

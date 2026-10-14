@@ -176,11 +176,17 @@ then removed once by the first `main` deploy after they are filled in.
 After that, the same step gives the sample attendance its photos: every
 attendance that has a time sent and no photo gets a copy of one drawn
 picture with no person in it. A deploy that kept its data finds none
-left without. The build log says "Sample attendance photos added", with
-how many. While the four settings are empty no photo is kept, and the
-cards of "Verifikasi presensi" say "Foto tidak tersimpan di sini."; the
-first deploy after they are filled in adds the photos. On a local
-computer `pnpm files:setup` does the same, after `pnpm db:setup`.
+left without. It then gives the sample clarifications their papers the
+same way: every clarification without a file gets a copy of one drawn
+paper that names no person. The build log says "Sample attendance photos
+added", with how many, and then "Sample clarification papers added",
+with how many. While the four settings are empty no photo and no paper
+is kept: the cards of "Verifikasi presensi" say "Foto tidak tersimpan di
+sini.", and a clarification names no file to open, neither on its card
+in "Klarifikasi kehadiran" nor in the student's "Riwayat kehadiran". The
+first deploy after the settings are filled in adds the photos and the
+papers. On a local computer `pnpm files:setup` does the same, after
+`pnpm db:setup`.
 
 ## Google sign-in
 

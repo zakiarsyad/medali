@@ -839,6 +839,24 @@ describe("may", () => {
     }
   });
 
+  it("lets Penilai Mahasiswa decide clarifications of character activities, under the name of the prototype's list of rights", () => {
+    expect(may(["assessor"], "decide_activity_clarifications")).toBe(true);
+    expect(ACTION_TITLES.decide_activity_clarifications).toBe(
+      "Verifikasi dan validasi klarifikasi kegiatan karakter",
+    );
+  });
+
+  it("refuses every other role to decide clarifications, Kepala Unit, Pegawai UPK and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "assessor");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    expect(others).toEqual(
+      expect.arrayContaining(["head_of_unit", "upk_staff", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "decide_activity_clarifications")).toBe(false);
+    }
+  });
+
   it("answers no to an action that is not on the list", () => {
     // An action name that may arrive from outside the typed code.
     const unknown = "delete_everything" as Action;
@@ -1043,14 +1061,34 @@ describe("tabsFor", () => {
     }
   });
 
-  it.each(["student", "assessor"] as const)(
-    "leaves %s on Kegiatan karakter without a tab, so the page stays empty",
-    (role) => {
-      expect(mayOpenPage([role], "activities")).toBe(true);
-      expect(tabsFor([role], "activities")).toEqual([]);
-      expect(mayOpenTab([role], "activities", "ppks")).toBe(false);
-    },
-  );
+  it("leaves Mahasiswa on Kegiatan karakter without a tab: the page itself is theirs", () => {
+    expect(mayOpenPage(["student"], "activities")).toBe(true);
+    expect(tabsFor(["student"], "activities")).toEqual([]);
+    expect(mayOpenTab(["student"], "activities", "ppks")).toBe(false);
+  });
+
+  it("gives Penilai Mahasiswa the tab Klarifikasi kehadiran as their only tab of Kegiatan karakter", () => {
+    expect(paths(tabsFor(["assessor"], "activities"))).toEqual(["klarifikasi"]);
+    expect(mayOpenTab(["assessor"], "activities", "clarification")).toBe(true);
+    expect(mayOpenTab(["assessor"], "activities", "ppks")).toBe(false);
+  });
+
+  it("refuses the tab Klarifikasi kehadiran to every other role", () => {
+    const others = ROLE_IDS.filter((role) => role !== "assessor");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(mayOpenTab([role], "activities", "clarification")).toBe(false);
+      expect(paths(tabsFor([role], "activities"))).not.toContain("klarifikasi");
+    }
+  });
+
+  it("gives the right to decide clarifications to every role with its tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "decide_activity_clarifications")).toBe(
+        mayOpenTab([role], "activities", "clarification"),
+      );
+    }
+  });
 
   it("gives the tab Kegiatan PPKS to every role that may manage activities", () => {
     const managers = ROLE_IDS.filter((role) =>
@@ -1564,12 +1602,10 @@ describe("the permission list", () => {
   /**
    * The pages a role opens while none of their tabs is for that role.
    * Mahasiswa sees their own activities on Kegiatan karakter itself,
-   * without a tab. It stays the empty page for Penilai Mahasiswa until
-   * their own view of it is built.
+   * without a tab.
    */
   const NO_TAB_YET: Partial<Record<RoleId, string[]>> = {
     student: ["activities"],
-    assessor: ["activities"],
   };
 
   it.each(ROLE_IDS)(

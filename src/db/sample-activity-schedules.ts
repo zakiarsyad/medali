@@ -109,8 +109,10 @@ const SLOTS: Slot[] = [
 
 /**
  * Holdings for the students in their second year, so that one sample
- * student has a whole history to show: three that are over, two whose
- * upload is still open after their last day, and two to come.
+ * student has a whole history to show: three that are over, three whose
+ * upload closed a few days ago, so that a clarification can still be
+ * sent for them, two whose upload is still open after their last day,
+ * and two to come.
  */
 const SECOND_YEAR_SLOTS: Slot[] = [
   { startsIn: -60, days: 1, ...MORNING, ...ONE_DAY, location: "Aula asrama" },
@@ -128,7 +130,22 @@ const SECOND_YEAR_SLOTS: Slot[] = [
     ...ONE_DAY,
     location: "Auditorium Kampus Bintaro",
   },
+  { startsIn: -7, days: 1, ...MORNING, ...ONE_DAY, location: "Aula asrama" },
   { startsIn: -6, days: 1, ...EVENING, ...ONE_WEEK, location: "Aula asrama" },
+  {
+    startsIn: -5,
+    days: 1,
+    ...AFTERNOON,
+    ...ONE_DAY,
+    location: "Lapangan asrama",
+  },
+  {
+    startsIn: -4,
+    days: 1,
+    ...EVENING,
+    ...ONE_DAY,
+    location: "Asrama masing-masing",
+  },
   {
     startsIn: -3,
     days: 1,

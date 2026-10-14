@@ -1,61 +1,36 @@
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import styles from "./activities.module.css";
-import { HISTORY_LOOKS } from "./badge-look";
+import {
+  CLARIFICATION_DAYS,
+  type ShownClarification,
+} from "./clarification-time";
 import { historyAddress } from "./history-address";
-import { HISTORY_WORDS, historyStatus } from "./history-status";
-import { LookBadge } from "./look-badge";
-import { shownDays } from "./schedule-words";
-import { lastUploadDay } from "./student-activity-words";
-import type { StudentSchedule } from "./student-schedule";
+import { historyRowOf } from "./history-row";
+import { HistoryTable } from "./history-table";
 import { HISTORY_PAGE_SIZE, type ScheduleHistory } from "./student-schedules";
 
-function HistoryCells({
-  schedule,
-  today,
-}: {
-  schedule: StudentSchedule;
-  today: string;
-}) {
-  const { attendance } = schedule;
-  const status = historyStatus(attendance?.status ?? null, schedule, today);
-  return (
-    <>
-      <td data-title="Tanggal">
-        {shownDays(schedule.startsOn, schedule.endsOn)}
-      </td>
-      <td data-title="Kegiatan">
-        {schedule.name}
-        {!schedule.isRequired && (
-          <span className={shared.detail}>(tidak wajib)</span>
-        )}
-      </td>
-      <td data-title="Status">
-        <LookBadge words={HISTORY_WORDS[status]} look={HISTORY_LOOKS[status]} />
-        {status === "not_sent" && (
-          <span className={shared.detail}>
-            sampai {lastUploadDay(schedule)}
-          </span>
-        )}
-      </td>
-      <td data-title="Keterangan">{attendance?.note ?? ""}</td>
-    </>
-  );
-}
+const HOW_TO_CLARIFY = `Tercatat tidak hadir padahal punya alasan? Ajukan klarifikasi dengan lampiran paling lambat ${CLARIFICATION_DAYS} hari setelah masa unggah foto berakhir. Klarifikasi diperiksa Penilai Mahasiswa.`;
 
 /**
  * "Riwayat kehadiran": the schedules whose last day is over, the newest
- * first, each with where the student's attendance stands. A table, and
- * cards on a phone.
+ * first, each with where the student's attendance stands and what they
+ * asked to have clarified, and under them how a clarification is asked.
  */
 export function AttendanceHistory({
   history,
+  clarifications,
   today,
 }: {
   history: ScheduleHistory;
+  /** The student's newest clarification for a schedule, by its key. */
+  clarifications: Record<string, ShownClarification>;
   /** The day on campus the statuses are told on. */
   today: string;
 }) {
+  const rows = history.schedules.map((schedule) =>
+    historyRowOf(schedule, today, clarifications[schedule.id] ?? null),
+  );
   return (
     <section className={styles.part}>
       <h2 className={shared.heading}>Riwayat kehadiran</h2>
@@ -64,25 +39,10 @@ export function AttendanceHistory({
           <p className={shared.empty}>Belum ada riwayat.</p>
         ) : (
           <>
-            <div className={shared.tableWrap}>
-              <table className={`${shared.table} ${shared.stacked}`}>
-                <thead>
-                  <tr>
-                    <th>Tanggal</th>
-                    <th>Kegiatan</th>
-                    <th>Status</th>
-                    <th>Keterangan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.schedules.map((schedule) => (
-                    <tr key={schedule.id}>
-                      <HistoryCells schedule={schedule} today={today} />
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <HistoryTable rows={rows} />
+            <p className={`${styles.cardText} ${styles.message}`}>
+              {HOW_TO_CLARIFY}
+            </p>
             <ListPager
               page={history.page}
               matching={history.matching}

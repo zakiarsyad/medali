@@ -10,6 +10,7 @@ import {
   addTestActivity,
   addTestActor,
   addTestAttendance,
+  addTestClarification,
   addTestPeriods,
   addTestProgram,
   addTestSchedule,
@@ -74,8 +75,15 @@ async function shownTo(
   db: Database,
   account: TestStudentAccount,
   page = 1,
+  keepsFiles = true,
 ): Promise<StudentActivities> {
-  const answer = await readStudentActivities(db, account, NOW, page);
+  const answer = await readStudentActivities(
+    db,
+    account,
+    NOW,
+    page,
+    keepsFiles,
+  );
   if (answer.kind !== "found") throw new Error("The student was refused.");
   return answer.activities;
 }
@@ -94,10 +102,10 @@ describe("readStudentActivities", () => {
       };
       const nobody = { ...records.student, studentId: null };
 
-      expect(await readStudentActivities(db, staff, NOW, 1)).toEqual({
+      expect(await readStudentActivities(db, staff, NOW, 1, true)).toEqual({
         kind: "refused",
       });
-      expect(await readStudentActivities(db, nobody, NOW, 1)).toEqual({
+      expect(await readStudentActivities(db, nobody, NOW, 1, true)).toEqual({
         kind: "refused",
       });
     });
@@ -193,6 +201,89 @@ describe("readStudentActivities", () => {
       expect(first.history).toMatchObject({ matching: 21, page: 1 });
       expect(idsOf(beyond.history.schedules)).toEqual(added.slice(20));
       expect(beyond.history).toMatchObject({ matching: 21, page: 2 });
+    });
+  });
+
+  it("shows the student their own newest clarification for a schedule of the history, and never another student's", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staffId, student } = records;
+      const { studentId } = student;
+      const other = await addTestStudentAccount(db, records.programId, {
+        nim: "9972100003",
+        name: "Mahasiswa Uji Lain Klar",
+        cohortYear: 2159,
+      });
+      const askedAgain = await addTestSchedule(db, scheduleIn(records, -5));
+      const othersOnly = await addTestSchedule(db, scheduleIn(records, -6));
+      await addTestClarification(db, staffId, {
+        scheduleId: askedAgain,
+        studentId,
+        status: "rejected",
+        note: "Surat tidak terbaca.",
+        sentAt: new Date("2160-10-10T03:00:00Z"),
+      });
+      await addTestClarification(db, staffId, {
+        scheduleId: askedAgain,
+        studentId,
+        status: "submitted",
+        sentAt: new Date("2160-10-11T03:00:00Z"),
+      });
+      await addTestClarification(db, staffId, {
+        scheduleId: othersOnly,
+        studentId: other.studentId,
+        status: "accepted",
+      });
+
+      const { clarifications } = await shownTo(db, student);
+
+      expect(clarifications).toEqual({
+        [askedAgain]: { status: "submitted", note: "", file: null },
+      });
+    });
+  });
+
+  it("names the file of the student's newest clarification where it is kept, and none where no file is kept or this place has no file storage", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staffId, student } = records;
+      const { studentId } = student;
+      const withFile = await addTestSchedule(db, scheduleIn(records, -5));
+      const withoutFile = await addTestSchedule(db, scheduleIn(records, -6));
+      await addTestClarification(db, staffId, {
+        scheduleId: withFile,
+        studentId,
+        status: "rejected",
+        fileKey: "attendance-clarifications/uji-riwayat-lama.pdf",
+        fileName: "surat-lama.pdf",
+        sentAt: new Date("2160-10-10T03:00:00Z"),
+      });
+      const newest = await addTestClarification(db, staffId, {
+        scheduleId: withFile,
+        studentId,
+        status: "submitted",
+        fileKey: "attendance-clarifications/uji-riwayat-baru.pdf",
+        fileName: "surat-baru.pdf",
+        sentAt: new Date("2160-10-11T03:00:00Z"),
+      });
+      await addTestClarification(db, staffId, {
+        scheduleId: withoutFile,
+        studentId,
+        status: "accepted",
+      });
+
+      const kept = await shownTo(db, student);
+      const notKept = await shownTo(db, student, 1, false);
+
+      expect(kept.clarifications).toEqual({
+        [withFile]: {
+          status: "submitted",
+          note: "",
+          file: { clarificationId: newest, name: "surat-baru.pdf" },
+        },
+        [withoutFile]: { status: "accepted", note: "", file: null },
+      });
+      expect(notKept.clarifications[withFile]?.file).toBeNull();
     });
   });
 

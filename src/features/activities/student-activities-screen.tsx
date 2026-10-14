@@ -27,7 +27,11 @@ export function StudentActivitiesScreen({
         cards={current.map((schedule) => cardOf(schedule, now))}
       />
       <ComingActivities schedules={coming} />
-      <AttendanceHistory history={history} today={now.day} />
+      <AttendanceHistory
+        history={history}
+        clarifications={activities.clarifications}
+        today={now.day}
+      />
     </>
   );
 }
