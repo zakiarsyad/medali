@@ -6,6 +6,10 @@ import type { Parsed } from "@/parsed";
 export const MAX_FILE_ROWS = 1000;
 export const MAX_FILE_BYTES = 1024 * 1024;
 
+/** How many ready rows and skipped rows the preview of a file shows. */
+export const PREVIEW_ROWS = 6;
+export const PREVIEW_SKIPPED = 30;
+
 /** An uploaded list is CSV only, and no larger than the template says. */
 export const CSV_FILE_RULE: FileRule = {
   kinds: [CSV],
