@@ -1,5 +1,6 @@
-// Sample NIMs of this file: 9963000001 to 9966000199.
-import { eq } from "drizzle-orm";
+// Sample NIMs of this file: 9963000001 to 9966000199, and 9974000001 to
+// 9974000199.
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { accounts, mentorGroupMembers, students } from "@/db/schema";
@@ -11,6 +12,7 @@ import {
   STUDENT_CHANGED,
 } from "@/features/students/change-student";
 import { placementsOf } from "@/features/students/test-group-reads";
+import { waitForOtherMentorChanges } from "@/mentoring/mentor-change-lock";
 import { fixAssignment } from "./fix-assignment";
 import { addCompleteTestDraft, testDraftOf } from "./test-drafts";
 import { testLiveGroupsOf } from "./test-live-groups";
@@ -212,5 +214,36 @@ describe("a penetapan fixed while one of its students is removed", () => {
     expect(await placementsOf(own.db, made.student.id)).toEqual([
       [expect.any(String), null, made.staff.id],
     ]);
+  });
+});
+
+describe("a penetapan that waits for a save of one of its students", () => {
+  it("does not make a change of mentors wait meanwhile, which that save may itself wait for", async () => {
+    const year = 2074;
+    const made = await addDraftWithAddedStudent(
+      own.db,
+      year,
+      9974000001,
+      "UJITUNGGUMHS",
+    );
+    let fixing: Promise<unknown> | undefined;
+
+    const removed = await own.db.transaction(async (tx) => {
+      const answer = await removeStudent(tx, made.staff, made.nim);
+      fixing = fixAssignment(own.otherDb, made.head, decreeOf(year));
+      // Kept from failing the check before it is awaited below.
+      fixing.catch(() => {});
+      // Long enough for the penetapan to reach the student and wait.
+      await tx.execute(sql`select pg_sleep(0.4)`);
+      // A penetapan that already makes changes of mentors wait and this
+      // save would each wait for the other: the database gives one of
+      // them up, and where it does not notice, this save fails here.
+      await tx.execute(sql`set local lock_timeout = '2s'`);
+      await waitForOtherMentorChanges(tx);
+      return answer;
+    });
+
+    expect(removed).toEqual({ ok: true, value: made.student.name });
+    expect(await fixing).toEqual(DONE);
   });
 });

@@ -94,6 +94,11 @@ Decided while building, because the issue did not say:
 7. The checks send the real "Tetapkan" together with the real save and
    the real removal of Pengguna baru mahasiswa, not a stand-in for
    them, so they fail if either side stops waiting.
+8. "Tetapkan" holds its students before it makes other changes of
+   mentors wait, not after. Otherwise a student save, a mentor
+   replacement and "Tetapkan" sent together could each wait for the
+   next, and one of them would get the general error page. Confirmed
+   by a check.
 
 ## Steps
 

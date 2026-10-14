@@ -73,10 +73,13 @@ export function fixAssignment(
   return takeStep(db, actor, input, "fix", async (tx, stored) => {
     const decree = wholeDecree(input);
     if (!decree.ok) return decree;
+    // Before the wait below, never while it is held: a student save may
+    // wait for a group that a mentor replacement holds, and that
+    // replacement would wait for a fix that waits for the student.
+    await holdDraftStudents(tx, stored.id);
     // A fix holds only its own angkatan: without this, two fixed at the
     // same moment would each read the other's mentors as free.
     await waitForOtherMentorChanges(tx);
-    await holdDraftStudents(tx, stored.id);
     const draft = await readCompleteDraft(tx, stored.cohortYear);
     if (!draft.ok) return draft;
     const groups = draft.value.groups.map(groupToStart);
