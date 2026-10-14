@@ -1,8 +1,10 @@
 import { Fragment } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import styles from "./activities.module.css";
 import { CLARIFICATION_LOOKS, HISTORY_LOOKS } from "./badge-look";
 import type { CardsState } from "./cards-state";
+import { fileAddressOf } from "./clarification-card";
 import { ClarificationForm } from "./clarification-form";
 import {
   CLARIFICATION_ACTION_WORDS,
@@ -18,8 +20,8 @@ const TITLES = ["Tanggal", "Kegiatan", "Status", "Keterangan", "Klarifikasi"];
 
 /**
  * What the Klarifikasi cell of a row shows: the newest clarification
- * with the note of a rejection, and the way to ask, or that the time to
- * ask is over. A row with nothing to say keeps the cell empty, so it
+ * with the file the student sent, which a press downloads, and the note
+ * of a rejection, and the way to ask, or that the time to ask is over. A row with nothing to say keeps the cell empty, so it
  * takes no room on a phone.
  */
 function ClarificationCellView({
@@ -29,7 +31,7 @@ function ClarificationCellView({
   cell: ClarificationCell;
   onOpen: () => void;
 }) {
-  const { badge, note, action } = cell;
+  const { badge, note, file, action } = cell;
   return (
     <>
       {badge !== null && (
@@ -37,6 +39,14 @@ function ClarificationCellView({
           words={CLARIFICATION_BADGE_WORDS[badge]}
           look={CLARIFICATION_LOOKS[badge]}
         />
+      )}
+      {file !== null && (
+        <a
+          href={fileAddressOf(file.clarificationId, false)}
+          className={`${shared.link} ${styles.sentFile}`}
+        >
+          Lampiran: {file.name}
+        </a>
       )}
       {note !== "" && <span className={shared.detail}>{note}</span>}
       {action === "closed" && (

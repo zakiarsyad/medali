@@ -95,7 +95,11 @@ describe("clarificationCell", () => {
       ...more,
     });
   }
-  const NOTHING = { badge: null, note: "", action: null };
+  const NOTHING = { badge: null, note: "", file: null, action: null };
+  const FILE = {
+    clarificationId: "00000000-0000-4000-8000-0000000000d1",
+    name: "surat-keterangan.pdf",
+  };
 
   it("offers to ask when the student was absent and the time is open", () => {
     expect(cell({})).toEqual({ ...NOTHING, action: "ask" });
@@ -129,21 +133,27 @@ describe("clarificationCell", () => {
   });
 
   it("shows a clarification that waits, with nothing to press", () => {
-    const newest = { status: "submitted", note: "" } as const;
+    const newest = { status: "submitted", note: "", file: null } as const;
 
     expect(cell({ newest })).toEqual({
       badge: "submitted",
       note: "",
+      file: null,
       action: null,
     });
   });
 
   it("shows an accepted clarification beside the attendance it gave", () => {
-    const newest = { status: "accepted", note: "Surat sesuai." } as const;
+    const newest = {
+      status: "accepted",
+      note: "Surat sesuai.",
+      file: null,
+    } as const;
 
     expect(cell({ attendance: "valid", newest })).toEqual({
       badge: "accepted",
       note: "",
+      file: null,
       action: null,
     });
     expect(cell({ attendance: "dispensation", newest }).badge).toBe("accepted");
@@ -153,11 +163,13 @@ describe("clarificationCell", () => {
     const newest = {
       status: "rejected",
       note: "Surat tidak terbaca.",
+      file: null,
     } as const;
 
     expect(cell({ newest })).toEqual({
       badge: "rejected",
       note: "Surat tidak terbaca.",
+      file: null,
       action: "ask_again",
     });
     expect(cell({ attendance: "rejected", newest }).action).toBe("ask_again");
@@ -167,11 +179,13 @@ describe("clarificationCell", () => {
     const newest = {
       status: "rejected",
       note: "Surat tidak terbaca.",
+      file: null,
     } as const;
 
     expect(cell({ newest, today: DAY_AFTER })).toEqual({
       badge: "rejected",
       note: "Surat tidak terbaca.",
+      file: null,
       action: null,
     });
   });
@@ -180,15 +194,26 @@ describe("clarificationCell", () => {
     const newest = {
       status: "rejected",
       note: "Surat tidak terbaca.",
+      file: null,
     } as const;
 
     expect(cell({ attendance: "valid", newest }).action).toBeNull();
     expect(cell({ attendance: "waiting", newest }).action).toBeNull();
   });
+
+  it.each(["submitted", "accepted", "rejected"] as const)(
+    "shows the file of a clarification that is %s, for the student to open",
+    (status) => {
+      const newest = { status, note: "", file: FILE };
+
+      expect(cell({ newest }).file).toEqual(FILE);
+      expect(cell({ newest, today: DAY_AFTER }).file).toEqual(FILE);
+    },
+  );
 });
 
 describe("takesClarification", () => {
-  const SHOWN = { badge: null, note: "" };
+  const SHOWN = { badge: null, note: "", file: null };
 
   it("is yes for a first and for a second try", () => {
     expect(takesClarification({ ...SHOWN, action: "ask" })).toBe(true);

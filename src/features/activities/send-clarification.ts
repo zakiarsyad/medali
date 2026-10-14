@@ -101,7 +101,13 @@ async function answerOfKept(
   schedule: OwnSchedule,
   today: string,
 ): Promise<Parsed<string> | null> {
-  const asked = await readOwnClarifications(db, studentId, [schedule.id]);
+  // Only the status is read here: whether a file can be opened plays no part.
+  const asked = await readOwnClarifications(
+    db,
+    studentId,
+    [schedule.id],
+    false,
+  );
   if (asked.get(schedule.id)?.status === "submitted") return SENT;
   const kept = await readOwnAttendances(db, studentId, [schedule.id]);
   const attendance = kept.get(schedule.id)?.status ?? null;

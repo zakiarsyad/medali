@@ -29,6 +29,14 @@ describe("the student's Kegiatan karakter on a phone", () => {
     expect(ruleOf(".comingItem")).toContain("overflow-wrap: anywhere;");
   });
 
+  it("folds the long name of a sent file in the history, on a line of its own under the badge", () => {
+    const history = readFileSync(`${FOLDER}/history-table-view.tsx`, "utf8");
+
+    expect(history).toContain("styles.sentFile");
+    expect(ruleOf(".sentFile")).toContain("display: block;");
+    expect(ruleOf(".sentFile")).toContain("overflow-wrap: anywhere;");
+  });
+
   it("makes each schedule of the history a card of its own, every value named", () => {
     const history = readFileSync(`${FOLDER}/history-table-view.tsx`, "utf8");
 

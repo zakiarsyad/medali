@@ -218,12 +218,24 @@ describe("StudentActivitiesScreen", () => {
         rejected,
       ]),
       clarifications: {
-        [waiting.id]: { status: "submitted", note: "" },
-        [accepted.id]: { status: "accepted", note: "" },
-        [rejected.id]: { status: "rejected", note: "Surat tidak terbaca." },
+        [waiting.id]: {
+          status: "submitted",
+          note: "",
+          file: { clarificationId: "abc", name: "surat-keterangan.pdf" },
+        },
+        [accepted.id]: { status: "accepted", note: "", file: null },
+        [rejected.id]: {
+          status: "rejected",
+          note: "Surat tidak terbaca.",
+          file: null,
+        },
       },
     });
 
+    expect(screen.match(/>Lampiran: [^<]+<\/a>/g)).toEqual([
+      ">Lampiran: surat-keterangan.pdf</a>",
+    ]);
+    expect(screen).toContain('href="/kegiatan/klarifikasi/lampiran/abc"');
     expect(screen).toContain("Klarifikasi diajukan</span>");
     expect(screen).toContain("Klarifikasi diterima</span>");
     expect(screen).toContain(

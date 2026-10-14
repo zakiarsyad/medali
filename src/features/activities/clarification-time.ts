@@ -47,11 +47,20 @@ export function mayBeClarified(
   return status === "absent" || status === "rejected";
 }
 
+/** The file a student sent with a clarification, as far as their row names it. */
+export interface SentClarificationFile {
+  /** The key of the clarification, which its file is asked by. */
+  clarificationId: string;
+  name: string;
+}
+
 /** The newest clarification of a student for a schedule, as far as their row shows it. */
 export interface ShownClarification {
   status: ClarificationStatus;
   /** What Penilai Mahasiswa noted. Empty when nothing was noted. */
   note: string;
+  /** Null when no file of it is kept here. */
+  file: SentClarificationFile | null;
 }
 
 /** What can be done or read in the Klarifikasi cell of a row. */
@@ -63,6 +72,8 @@ export interface ClarificationCell {
   badge: ClarificationStatus | null;
   /** The note of a rejection, or empty. */
   note: string;
+  /** The file of the newest clarification, or null with none to open. */
+  file: SentClarificationFile | null;
   action: ClarificationAction | null;
 }
 
@@ -80,10 +91,10 @@ export const CLARIFICATION_ACTION_WORDS: Record<ClarificationAction, string> = {
 
 /**
  * What the Klarifikasi cell of one schedule shows a student on a day on
- * campus. With a clarification sent, its status, and after a rejection
- * its note and a second try while the attendance may still be clarified
- * and the time is open. With none sent, the first try where the
- * attendance may be clarified, or that the time is over.
+ * campus. With a clarification sent, its status and its file, and after
+ * a rejection its note and a second try while the attendance may still
+ * be clarified and the time is open. With none sent, the first try where
+ * the attendance may be clarified, or that the time is over.
  */
 export function clarificationCell(parts: {
   attendance: AttendanceStatus | null;
@@ -95,16 +106,19 @@ export function clarificationCell(parts: {
   const mayAsk = mayBeClarified(attendance, schedule, today);
   const isOpen = clarificationTimeOpen(schedule, today);
   if (newest === null) {
-    if (!mayAsk) return { badge: null, note: "", action: null };
-    return { badge: null, note: "", action: isOpen ? "ask" : "closed" };
+    const nothingSent = { badge: null, note: "", file: null };
+    if (!mayAsk) return { ...nothingSent, action: null };
+    return { ...nothingSent, action: isOpen ? "ask" : "closed" };
   }
+  const { file } = newest;
   if (newest.status !== "rejected") {
-    return { badge: newest.status, note: "", action: null };
+    return { badge: newest.status, note: "", file, action: null };
   }
   const mayAskAgain = mayAsk && isOpen;
   return {
     badge: "rejected",
     note: newest.note,
+    file,
     action: mayAskAgain ? "ask_again" : null,
   };
 }

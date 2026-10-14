@@ -21,7 +21,7 @@ describe("historyRowOf", () => {
       status: "not_sent",
       uploadUntil: "14 Okt 2026",
       note: "",
-      clarification: { badge: null, note: "", action: null },
+      clarification: { badge: null, note: "", file: null, action: null },
     });
   });
 
@@ -62,7 +62,7 @@ describe("historyRowOf", () => {
         sentAt: null,
       },
     } as const;
-    const newest = { status: "accepted", note: "" } as const;
+    const newest = { status: "accepted", note: "", file: null } as const;
 
     expect(historyRowOf(accepted, ABSENT, newest)).toMatchObject({
       status: "dispensation",
@@ -71,15 +71,21 @@ describe("historyRowOf", () => {
     });
   });
 
-  it("shows a rejected clarification with its note, and a second try while the time is open", () => {
+  it("shows a rejected clarification with its note and its file, and a second try while the time is open", () => {
+    const file = {
+      clarificationId: "00000000-0000-4000-8000-0000000000d1",
+      name: "surat-keterangan.pdf",
+    };
     const newest = {
       status: "rejected",
       note: "Surat tidak terbaca.",
+      file,
     } as const;
 
     expect(historyRowOf(SCHEDULE, ABSENT, newest).clarification).toEqual({
       badge: "rejected",
       note: "Surat tidak terbaca.",
+      file,
       action: "ask_again",
     });
   });

@@ -141,7 +141,7 @@ async function expectNothingChanged(db: Database, records: Records) {
 }
 
 async function shownToStudent(db: Database, records: Records) {
-  const answer = await readStudentActivities(db, records.student, NOW, 1);
+  const answer = await readStudentActivities(db, records.student, NOW, 1, true);
   if (answer.kind !== "found") throw new Error("The student was refused.");
   return answer.activities;
 }
@@ -438,6 +438,7 @@ describe("rejecting a clarification", () => {
       expect(historyRowOf(schedule, TODAY, newest).clarification).toEqual({
         badge: "rejected",
         note: "Lampiran tidak terbaca.",
+        file: null,
         action: "ask_again",
       });
       expect(

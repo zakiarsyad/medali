@@ -5,6 +5,7 @@ import { database } from "@/db/database";
 import { readHistoryPage } from "@/features/activities/history-address";
 import { readStudentActivities } from "@/features/activities/student-activities";
 import { StudentActivitiesScreen } from "@/features/activities/student-activities-screen";
+import { fileStorage } from "@/files/file-storage";
 import { EmptyPage } from "@/ui/empty-page";
 
 /**
@@ -23,6 +24,7 @@ export default async function ActivitiesPage(props: PageProps<"/kegiatan">) {
     account,
     new Date(),
     historyPage,
+    fileStorage() !== null,
   );
   if (answer.kind === "refused") forbidden();
   return <StudentActivitiesScreen activities={answer.activities} />;

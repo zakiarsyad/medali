@@ -125,16 +125,50 @@ describe("the table of Riwayat kehadiran", () => {
       const row = historyRowOf(TEST_STUDENT_SCHEDULE, TODAY, {
         status,
         note: "Surat tidak terbaca.",
+        file: null,
       });
 
       expect(board([row]).words()).toContain(`${badge}</span>`);
     },
   );
 
+  it.each(["submitted", "accepted", "rejected"] as const)(
+    "names the file of a clarification that is %s under its badge, as a link that downloads it",
+    (status) => {
+      const row = historyRowOf(TEST_STUDENT_SCHEDULE, TODAY, {
+        status,
+        note: "",
+        file: { clarificationId: "abc", name: "surat-keterangan.pdf" },
+      });
+
+      const words = board([row]).words();
+
+      expect(words).toMatch(
+        /<\/span><a href="\/kegiatan\/klarifikasi\/lampiran\/abc" class="[^"]+">Lampiran: surat-keterangan\.pdf<\/a>/,
+      );
+      expect(words).not.toContain("lihat=1");
+    },
+  );
+
+  it("names no file for a clarification whose file is not kept here", () => {
+    const row = historyRowOf(TEST_STUDENT_SCHEDULE, TODAY, {
+      status: "submitted",
+      note: "",
+      file: null,
+    });
+
+    const words = board([row]).words();
+
+    expect(words).toContain("Klarifikasi diajukan</span>");
+    expect(words).not.toContain("Lampiran:");
+    expect(words).not.toContain("<a ");
+  });
+
   it('shows the note of a rejection and offers "Ajukan ulang" while the time is open', () => {
     const rejected = {
       status: "rejected",
       note: "Surat tidak terbaca.",
+      file: null,
     } as const;
     const open = board([historyRowOf(TEST_STUDENT_SCHEDULE, TODAY, rejected)]);
     const over = board([
@@ -200,6 +234,7 @@ describe("the table of Riwayat kehadiran", () => {
     const waiting = historyRowOf(TEST_STUDENT_SCHEDULE, TODAY, {
       status: "submitted",
       note: "",
+      file: null,
     });
 
     expect(table.forms([waiting])).toEqual([]);
