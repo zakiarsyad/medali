@@ -321,6 +321,61 @@ describe("may", () => {
     }
   });
 
+  const cleaningJudges: RoleId[] = ["bam_bphk", "bam_household"];
+
+  it.each(cleaningJudges)("lets %s judge a cleaning duty", (role) => {
+    expect(may([role], "judge_dorm_cleaning")).toBe(true);
+  });
+
+  it("refuses every other role to judge a cleaning duty, Pengelola Asrama, BAM - KI and the read-only roles among them", () => {
+    const others = ROLE_IDS.filter((role) => !cleaningJudges.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "dorm_manager",
+        "bam_compliance",
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "judge_dorm_cleaning")).toBe(false);
+    }
+  });
+
+  it("lets Pengelola Asrama validate or send back a cleaning judgement", () => {
+    expect(may(["dorm_manager"], "validate_dorm_cleaning")).toBe(true);
+  });
+
+  it("refuses every other role to validate a cleaning judgement, the BAM roles and the read-only roles among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        ...BAM_ROLES,
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "validate_dorm_cleaning")).toBe(false);
+    }
+  });
+
+  it("gives the rights to judge and to validate cleaning only to roles that see it", () => {
+    for (const role of ROLE_IDS) {
+      for (const right of [
+        "judge_dorm_cleaning",
+        "validate_dorm_cleaning",
+      ] as const) {
+        if (!may([role], right)) continue;
+        expect(may([role], "view_dorm_cleaning")).toBe(true);
+      }
+    }
+  });
+
   it("gives a right to read cleaning to every role with the tab Pembersihan asrama", () => {
     for (const role of ROLE_IDS) {
       const reads =

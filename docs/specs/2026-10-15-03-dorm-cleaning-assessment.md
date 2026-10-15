@@ -172,7 +172,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. Duties keep their judgement, sending back and validation, with
   sample results for the past week.
-- [ ] 2. The rights to judge and to validate cleaning are added to the
+- [x] 2. The rights to judge and to validate cleaning are added to the
   permission list, with their checks.
 - [ ] 3. BAM judges a duty Memenuhi or Tidak memenuhi.
 - [ ] 4. Pengelola Asrama validates or sends back, and a failed duty is
