@@ -169,7 +169,7 @@ residents' notes into the same record.
 
 ## Steps
 
-- [ ] 1. Health notes are stored, never erased, with sample notes; who
+- [x] 1. Health notes are stored, never erased, with sample notes; who
   may write and read them is added to the permission list, with checks.
 - [ ] 2. The final-category rule and the suggestion rule, with checks.
 - [ ] 3. The form writes a note for a non-dorm student.

@@ -77,6 +77,8 @@ export const ACTIONS = [
   "assess_character",
   "set_grade_weights",
   "enter_fitness_scores",
+  "view_health_notes",
+  "view_health_recap",
   "view_discipline_records",
 ] as const;
 
@@ -175,6 +177,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   assess_character: "Asesmen karakter",
   set_grade_weights: "Bobot penilaian",
   enter_fitness_scores: "Penilaian jasmani",
+  view_health_notes: "Melihat catatan kesehatan",
+  view_health_recap: "Rekap data kesehatan seluruh mahasiswa",
   view_discipline_records: "Melihat catatan disiplin mahasiswa",
 };
 
@@ -326,6 +330,8 @@ export const ROLES: Record<RoleId, Role> = {
       "assess_character",
       "set_grade_weights",
       "enter_fitness_scores",
+      "view_health_notes",
+      "view_health_recap",
       "view_discipline_records",
     ],
     rows: "all",
@@ -414,6 +420,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_scores",
       "give_mentoring_scores",
       "view_siku",
+      "view_health_notes",
       "view_discipline_records",
     ],
     rows: "own_mentees",
@@ -613,6 +620,7 @@ export const ROLES: Record<RoleId, Role> = {
       "upload_skpm",
       "assess_character",
       "enter_fitness_scores",
+      "view_health_notes",
     ],
     rows: "all",
   },
