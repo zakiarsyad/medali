@@ -1,6 +1,7 @@
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { CLARIFICATION_FILE_RULE } from "@/clarifications/clarification-file";
 import { CLARIFICATION_FOLDER } from "@/features/activities/send-clarification";
+import { APPEAL_PROOF_FOLDER } from "@/features/dorm/appeal-ids";
 import { DORM_CLARIFICATION_FOLDER } from "@/features/dorm/clarification-ids";
 import type { FileStore } from "@/files/file-store";
 import { keepFile } from "@/files/keep-file";
@@ -9,7 +10,11 @@ import {
   SAMPLE_PAPER_NAME,
   samplePaperBytes,
 } from "./sample-clarification-paper";
-import { activityClarifications, dormClarifications } from "./schema";
+import {
+  activityClarifications,
+  dormClarifications,
+  dormViolationAppeals,
+} from "./schema";
 
 /** How many papers are on their way to the file storage at a time. */
 const AT_A_TIME = 8;
@@ -89,11 +94,41 @@ async function addDormPapers(db: Database, store: FileStore): Promise<number> {
   return without.length;
 }
 
+/** The appeals of dorm violations that name a proof not kept yet. */
+async function addAppealPapers(
+  db: Database,
+  store: FileStore,
+): Promise<number> {
+  const without = await db
+    .select({ id: dormViolationAppeals.id })
+    .from(dormViolationAppeals)
+    .where(
+      and(
+        isNull(dormViolationAppeals.fileKey),
+        isNotNull(dormViolationAppeals.fileName),
+      ),
+    );
+  await givePapers(
+    store,
+    without.map(({ id }) => id),
+    {
+      folder: APPEAL_PROOF_FOLDER,
+      saveKey: (id, fileKey) =>
+        db
+          .update(dormViolationAppeals)
+          .set({ fileKey })
+          .where(eq(dormViolationAppeals.id, id)),
+    },
+  );
+  return without.length;
+}
+
 /**
  * Gives the drawn sample paper to every clarification without a file, of
- * the character activities and of the dorm, and says how many got one.
- * That is the sample clarifications alone: the file a person sends is
- * kept before its clarification is saved. Each gets a copy of its own, as
+ * the character activities and of the dorm, and to every appeal of a
+ * dorm violation that names a proof not kept, and says how many got one.
+ * That is the sample ones alone: the file a person sends is kept before
+ * its clarification or appeal is saved. Each gets a copy of its own, as
  * each sent file has. Run a second time it finds none left. It is for
  * sample data only, so it is never run on the campus server.
  */
@@ -103,7 +138,8 @@ export async function addSamplePapers(
 ): Promise<number> {
   const activities = await addActivityPapers(db, store);
   const dorm = await addDormPapers(db, store);
-  return activities + dorm;
+  const appeals = await addAppealPapers(db, store);
+  return activities + dorm + appeals;
 }
 
 /**

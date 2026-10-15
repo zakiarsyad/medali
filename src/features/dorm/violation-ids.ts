@@ -13,8 +13,17 @@ export const PUNISHMENTS = [
 
 export type Punishment = (typeof PUNISHMENTS)[number];
 
-/** What a line of the log of a violation records. */
-export const VIOLATION_CHANGE_ACTIONS = ["entered", "cancelled"] as const;
+/**
+ * What a line of the log of a violation records: its entry, its cancel,
+ * the appeal of its resident and the decision on that appeal.
+ */
+export const VIOLATION_CHANGE_ACTIONS = [
+  "entered",
+  "cancelled",
+  "appealed",
+  "appeal_accepted",
+  "appeal_rejected",
+] as const;
 
 /** The reasons the form offers; any other reason may be typed. */
 export const VIOLATION_REASONS = [

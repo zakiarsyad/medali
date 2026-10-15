@@ -6,15 +6,15 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AnnouncementPanel } from "./announcement-panel";
-import type { OwnViolations } from "./own-violations";
+import { OwnViolationTable } from "./own-violation-table";
+import type { OwnRecordData, OwnViolations } from "./own-violations";
 import {
   ALL_PERIODS,
   type OwnViolationParams,
   ownViolationsAddress,
   VIOLATIONS_ADDRESS,
 } from "./violation-address";
-import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
-import { AnnouncedTable } from "./violation-lists";
+import { APPEAL_HOURS, VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import styles from "./violations.module.css";
 
 export const NO_OWN_VIOLATIONS = "Tidak ada pelanggaran pada periode ini.";
@@ -32,15 +32,15 @@ function keptBeside(
 
 function PeriodChoice({
   own,
-  params,
+  keep,
 }: {
-  own: Shown;
-  params: OwnViolationParams;
+  own: OwnRecordData;
+  keep: [string, string][];
 }) {
   const shown = own.shownPeriod === "all" ? ALL_PERIODS : own.shownPeriod;
   return (
     <AutoSubmitForm action={VIOLATIONS_ADDRESS}>
-      {keptBeside(params, { periodId: null, page: 1 }).map(([name, value]) => (
+      {keep.map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
       <select
@@ -60,49 +60,82 @@ function PeriodChoice({
   );
 }
 
-function HistoryPanel({
+/**
+ * The resident's own record: "Pelanggaran tercatat", "Dalam masa
+ * advokasi" and "Advokasi diterima", and "Rekam jejak pelanggaran saya"
+ * with its period and "Ajukan advokasi". `keep` holds the other parts of
+ * the address, which a new period keeps; `addressOfPage` gives the
+ * address of a page of the record.
+ */
+export function OwnRecord({
   own,
-  params,
   now,
+  keep,
+  addressOfPage,
+  title = null,
 }: {
-  own: Shown;
-  params: OwnViolationParams;
+  own: OwnRecordData;
   now: Date;
+  keep: [string, string][];
+  addressOfPage: (page: number) => string;
+  /** A heading above the numbers, where other numbers stand on the same screen. */
+  title?: string | null;
 }) {
   const { history } = own;
   return (
-    <section className={shared.panel}>
-      <div className={styles.panelHead}>
-        <div>
-          <h2 className={shared.heading}>Rekam jejak pelanggaran saya</h2>
-          <p className={styles.sub}>
-            Pelanggaran yang sudah diumumkan atas nama Anda
-          </p>
+    <>
+      {title !== null && (
+        <h2 className={`${shared.heading} ${styles.spaced}`}>{title}</h2>
+      )}
+      <NumberCards>
+        <NumberCard
+          label="Pelanggaran tercatat"
+          amount={own.recorded}
+          note={
+            own.semester === null
+              ? "belum ada periode akademik"
+              : `semester ${own.semester.title}`
+          }
+        />
+        <NumberCard
+          label="Dalam masa advokasi"
+          amount={own.inAppeal}
+          note={`batas ${APPEAL_HOURS} jam setelah diumumkan`}
+        />
+        <NumberCard
+          label="Advokasi diterima"
+          amount={own.accepted}
+          note="tidak dihitung"
+        />
+      </NumberCards>
+      <section className={shared.panel}>
+        <div className={styles.panelHead}>
+          <div>
+            <h2 className={shared.heading}>Rekam jejak pelanggaran saya</h2>
+            <p className={styles.sub}>
+              Pelanggaran yang sudah diumumkan atas nama Anda
+            </p>
+          </div>
+          <PeriodChoice own={own} keep={keep} />
         </div>
-        <PeriodChoice own={own} params={params} />
-      </div>
-      {history.rows.length === 0 ? (
-        <p className={shared.empty}>{NO_OWN_VIOLATIONS}</p>
-      ) : (
-        <AnnouncedTable
-          rows={history.rows}
-          now={now}
-          reader="resident"
-          withStudent={false}
-        />
-      )}
-      {history.matching > 0 && (
-        <ListPager
-          page={history.page}
-          matching={history.matching}
-          pageSize={VIOLATIONS_PAGE_SIZE}
-          noun="pelanggaran"
-          keepsPlace
-          stepsOnOnePage={false}
-          addressOf={(page) => ownViolationsAddress({ ...params, page })}
-        />
-      )}
-    </section>
+        {history.rows.length === 0 ? (
+          <p className={shared.empty}>{NO_OWN_VIOLATIONS}</p>
+        ) : (
+          <OwnViolationTable rows={history.rows} now={now} />
+        )}
+        {history.matching > 0 && (
+          <ListPager
+            page={history.page}
+            matching={history.matching}
+            pageSize={VIOLATIONS_PAGE_SIZE}
+            noun="pelanggaran"
+            keepsPlace
+            stepsOnOnePage={false}
+            addressOf={addressOfPage}
+          />
+        )}
+      </section>
+    </>
   );
 }
 
@@ -129,18 +162,12 @@ export function OwnViolationsView({
     <>
       <PageHead title="Pelanggaran">{room}</PageHead>
       <TabLinks {...tabs} />
-      <NumberCards>
-        <NumberCard
-          label="Pelanggaran tercatat"
-          amount={own.recorded}
-          note={
-            own.semester === null
-              ? "belum ada periode akademik"
-              : `semester ${own.semester.title}`
-          }
-        />
-      </NumberCards>
-      <HistoryPanel own={own} params={params} now={now} />
+      <OwnRecord
+        own={own}
+        now={now}
+        keep={keptBeside(params, { periodId: null, page: 1 })}
+        addressOfPage={(page) => ownViolationsAddress({ ...params, page })}
+      />
       <AnnouncementPanel
         announcement={own.announcement}
         now={now}

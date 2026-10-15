@@ -19,6 +19,8 @@ export const PUNISHMENT_WORDS: Record<Punishment, string> = {
 export const STATUS_WORDS: Record<ViolationStatus, string> = {
   scheduled: "Terjadwal",
   appeal: "Masa advokasi",
+  appeal_waiting: "Advokasi diproses",
+  appeal_accepted: "Advokasi diterima",
   escalated: "Naik ke Pengelola",
 };
 

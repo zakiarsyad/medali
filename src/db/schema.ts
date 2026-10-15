@@ -38,6 +38,12 @@ import {
   type RundownLine,
 } from "@/features/dorm/activity-ids";
 import {
+  APPEAL_NOTE_MAX_LENGTH,
+  APPEAL_REASON_MAX_LENGTH,
+  APPEAL_REASON_MIN_LENGTH,
+  APPEAL_STATUSES,
+} from "@/features/dorm/appeal-ids";
+import {
   ACCEPTED_AS,
   CLARIFICATION_NOTE_MAX_LENGTH,
   DORM_CLARIFICATION_REASONS,
@@ -213,6 +219,11 @@ export const dormViolationPunishment = pgEnum(
 export const dormViolationChangeAction = pgEnum(
   "dorm_violation_change_action",
   VIOLATION_CHANGE_ACTIONS,
+);
+
+export const dormViolationAppealStatus = pgEnum(
+  "dorm_violation_appeal_status",
+  APPEAL_STATUSES,
 );
 
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
@@ -1409,6 +1420,63 @@ export const dormViolationChanges = pgTable(
     action: dormViolationChangeAction().notNull(),
   },
   (table) => [index("dorm_violation_changes_violation").on(table.violationId)],
+);
+
+/**
+ * The appeal (advokasi) of a resident on their own announced violation,
+ * sent within its appeal time, with its reason, the proof file when one
+ * came with it, and the decision of BAM. A violation has one appeal at
+ * most. The proof is where it is in the file storage, its name, kind and
+ * size; the place is empty only for sample data where no file storage
+ * is set. Each send and each decision has its line in the log of
+ * violations.
+ */
+export const dormViolationAppeals = pgTable(
+  "dorm_violation_appeals",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    violationId: uuid()
+      .notNull()
+      .unique()
+      .references(() => dormViolations.id),
+    reason: text().notNull(),
+    fileKey: text().unique(),
+    fileName: text(),
+    fileContentType: text(),
+    /** In bytes. */
+    fileSize: integer(),
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+    status: dormViolationAppealStatus().notNull().default("waiting"),
+    decidedBy: uuid().references(() => accounts.id),
+    decidedAt: timestamp({ withTimezone: true }),
+    /** Catatan BAM; empty when nothing was noted. */
+    decisionNote: text().notNull().default(""),
+  },
+  (table) => [
+    index("dorm_violation_appeals_waiting")
+      .on(table.sentAt)
+      .where(sql`${table.status} = 'waiting'`),
+    check(
+      "dorm_violation_appeals_reason_length",
+      sql`char_length(${table.reason}) between ${sql.raw(String(APPEAL_REASON_MIN_LENGTH))} and ${sql.raw(String(APPEAL_REASON_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_violation_appeals_proof_is_whole",
+      sql`(${table.fileName} is null) = (${table.fileContentType} is null) and (${table.fileName} is null) = (${table.fileSize} is null) and (${table.fileKey} is null or ${table.fileName} is not null)`,
+    ),
+    check(
+      "dorm_violation_appeals_decided_when_decided",
+      sql`(${table.status} <> 'waiting') = (${table.decidedAt} is not null) and (${table.decidedAt} is null) = (${table.decidedBy} is null)`,
+    ),
+    check(
+      "dorm_violation_appeals_rejected_has_note",
+      sql`${table.status} <> 'rejected' or ${table.decisionNote} <> ''`,
+    ),
+    check(
+      "dorm_violation_appeals_note_length",
+      sql`char_length(${table.decisionNote}) <= ${sql.raw(String(APPEAL_NOTE_MAX_LENGTH))}`,
+    ),
+  ],
 );
 
 /**

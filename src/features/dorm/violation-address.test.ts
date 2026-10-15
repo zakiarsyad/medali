@@ -12,6 +12,7 @@ const KEY = "00000000-0000-4000-8000-000000000001";
 describe("readStaffViolationParams", () => {
   it("starts with nothing chosen and every first page", () => {
     expect(readStaffViolationParams({})).toEqual({
+      appealPage: 1,
       schedulePage: 1,
       day: null,
       announcementPage: 1,
@@ -20,12 +21,15 @@ describe("readStaffViolationParams", () => {
       page: 1,
       studentId: null,
       studentPage: 1,
+      ownPeriodId: null,
+      ownPage: 1,
     });
   });
 
   it("reads what the address chose", () => {
     expect(
       readStaffViolationParams({
+        advokasi: "6",
         jadwal: "2",
         tgl: "2026-10-12",
         umum: "3",
@@ -34,8 +38,11 @@ describe("readStaffViolationParams", () => {
         hal: "4",
         mhs: KEY,
         mhshal: "5",
+        periode: "semua",
+        rekam: "7",
       }),
     ).toEqual({
+      appealPage: 6,
       schedulePage: 2,
       day: "2026-10-12",
       announcementPage: 3,
@@ -44,6 +51,8 @@ describe("readStaffViolationParams", () => {
       page: 4,
       studentId: KEY,
       studentPage: 5,
+      ownPeriodId: "all",
+      ownPage: 7,
     });
   });
 
@@ -75,6 +84,9 @@ describe("staffViolationsAddress", () => {
       cari: "Ani",
       hal: "2",
       mhs: KEY,
+      advokasi: "3",
+      periode: KEY,
+      rekam: "2",
     });
     const address = staffViolationsAddress(params);
     const search = Object.fromEntries(

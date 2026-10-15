@@ -50,12 +50,44 @@ describe("the form of BAM on a phone", () => {
   });
 });
 
+describe("the appeal form of a resident on a phone", () => {
+  const FORM = read("appeal-form.tsx");
+
+  it("lays its fields out in one column on the shared form grid, never wider than their room", () => {
+    expect(FORM).toContain("<form className={shared.form}");
+    expect(
+      FORM.match(/shared\.field\} \$\{styles\.field\} \$\{styles\.full\}/g),
+    ).toHaveLength(2);
+    expect(ruleOf(".full")).toContain("grid-column: 1 / -1;");
+  });
+
+  it("lets the camera be picked for the proof", () => {
+    expect(FORM).toContain('const TAKEN_KINDS = "image/*,application/pdf";');
+    expect(FORM).toContain("accept={TAKEN_KINDS}");
+  });
+});
+
+describe("the cards of Advokasi masuk on a phone", () => {
+  it("stand in one column when two do not fit, and fold a long word", () => {
+    expect(ruleOf(".cards")).toContain(
+      "minmax(min(100%, var(--card-min-width)), 1fr)",
+    );
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("fold Catatan BAM and the two decisions onto lines of their own", () => {
+    expect(ruleOf(".decide")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".decideNote")).toContain("min-width: 0;");
+  });
+});
+
 describe("the lists of Pelanggaran on a phone", () => {
   it("show each violation, each waiting row and each student as a card that names every value", () => {
     for (const name of [
       "violation-lists.tsx",
       "violation-schedule-table.tsx",
       "violation-rekap.tsx",
+      "own-violation-table.tsx",
     ]) {
       expect(read(name)).toMatch(/<table className=.*shared\.stacked/);
     }
@@ -72,6 +104,10 @@ describe("the screen parts of Pelanggaran that run in the browser", () => {
     `${FOLDER}/violation-form.tsx`,
     `${FOLDER}/violation-schedule-table.tsx`,
     `${FOLDER}/rekap-filters.tsx`,
+    `${FOLDER}/appeal-form.tsx`,
+    `${FOLDER}/own-violation-table.tsx`,
+    `${FOLDER}/appeal-cards.tsx`,
+    `${FOLDER}/appeal-decide.tsx`,
   ];
 
   it("are found", () => {

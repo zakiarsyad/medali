@@ -3,10 +3,12 @@
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods } from "@/db/schema";
+import { academicPeriods, dormViolationAppeals } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { decideViolationAppeal } from "./decide-appeal";
 import { readOwnViolations } from "./own-violations";
 import { saveViolations } from "./save-violations";
+import { sendViolationAppeal } from "./send-appeal";
 import {
   addViolationActor,
   addViolationSetting,
@@ -101,6 +103,91 @@ describe("readOwnViolations", () => {
       expect(
         own.history.rows.every((row) => row.name === "Ani Uji Pelanggaran"),
       ).toBe(true);
+    });
+  });
+
+  it("shows the resident their own appeal with its reason, and the announcement no appeal of anyone", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await setUp(db);
+      const before = await readOwnViolations(db, ani, FIRST, NOW);
+      if (before.kind !== "shown") throw new Error("It was refused.");
+      const today = before.history.rows[0]?.id ?? "";
+      const reason = "Saya sedang izin resmi pada jam tersebut.";
+      const appealed = await sendViolationAppeal(
+        db,
+        null,
+        ani,
+        { violationId: today, reason, file: null },
+        NOW,
+      );
+      if (!appealed.ok) throw new Error(appealed.error);
+
+      const own = await readOwnViolations(db, ani, FIRST, NOW);
+
+      if (own.kind !== "shown") throw new Error("It was refused.");
+      expect(own.history.rows.map((row) => row.ownAppeal)).toEqual([
+        {
+          id: expect.any(String),
+          status: "waiting",
+          reason,
+          note: "",
+          proofName: null,
+        },
+        null,
+      ]);
+      for (const row of own.announcement.rows) {
+        expect(JSON.stringify(row)).not.toContain(reason);
+      }
+    });
+  });
+
+  it("counts an appeal that waits under Dalam masa advokasi, and an accepted one under Advokasi diterima, never as Pelanggaran tercatat", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await setUp(db);
+      const before = await readOwnViolations(db, ani, FIRST, NOW);
+      if (before.kind !== "shown") throw new Error("It was refused.");
+      const today = before.history.rows[0]?.id ?? "";
+      const appealed = await sendViolationAppeal(
+        db,
+        null,
+        ani,
+        {
+          violationId: today,
+          reason: "Saya sedang izin resmi pada jam itu.",
+          file: null,
+        },
+        NOW,
+      );
+      if (!appealed.ok) throw new Error(appealed.error);
+      // A day later, long after the appeal time.
+      const later = new Date(NOW.getTime() + 24 * 60 * 60 * 1000);
+      const waiting = await readOwnViolations(db, ani, FIRST, later);
+      const [appeal] = await db.select().from(dormViolationAppeals);
+      const ki = await addViolationActor(db, "BAM Uji Saya KI", [
+        "bam_compliance",
+      ]);
+      await decideViolationAppeal(
+        db,
+        ki,
+        appeal?.id ?? "",
+        { kind: "accept", note: "Izin tercatat." },
+        later,
+      );
+      const accepted = await readOwnViolations(db, ani, FIRST, later);
+
+      if (waiting.kind !== "shown" || accepted.kind !== "shown") {
+        throw new Error("It was refused.");
+      }
+      expect([before.recorded, before.inAppeal, before.accepted]).toEqual([
+        1, 1, 0,
+      ]);
+      expect([waiting.recorded, waiting.inAppeal, waiting.accepted]).toEqual([
+        1, 1, 0,
+      ]);
+      expect([accepted.recorded, accepted.inAppeal, accepted.accepted]).toEqual(
+        [1, 0, 1],
+      );
+      expect(accepted.history.rows[0]?.ownAppeal?.note).toBe("Izin tercatat.");
     });
   });
 

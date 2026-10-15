@@ -5,6 +5,7 @@ import type { Database } from "@/db/connect";
 import {
   academicPeriods,
   accounts,
+  dormViolationAppeals,
   dormViolationChanges,
   dormViolations,
 } from "@/db/schema";
@@ -107,6 +108,58 @@ export function violationsUnder(db: Database, key: string) {
     .from(dormViolations)
     .where(eq(dormViolations.batchId, key))
     .orderBy(asc(dormViolations.enteredAt));
+}
+
+/**
+ * A violation of a resident of Dana Rakca on a day, added straight to
+ * the table, announced at 21:00 that day. Gives back its key.
+ */
+export async function addTestViolation(
+  db: Database,
+  studentId: string,
+  byId: string,
+  day: string,
+  more: Partial<typeof dormViolations.$inferInsert> = {},
+): Promise<string> {
+  const [added] = await db
+    .insert(dormViolations)
+    .values({
+      batchId: crypto.randomUUID(),
+      studentId,
+      dorm: "dana_rakca",
+      day,
+      reason: "Terlambat apel pagi",
+      punishment: "warning",
+      announcedAt: new Date(`${day}T21:00:00+07:00`),
+      enteredBy: byId,
+      enteredAt: new Date(`${day}T20:00:00+07:00`),
+      ...more,
+    })
+    .returning({ id: dormViolations.id });
+  if (!added) throw new Error("The violation was not added.");
+  return added.id;
+}
+
+/**
+ * An appeal of a violation, added straight to the table, waiting, sent
+ * when `more` says or else at the moment it is added. Gives back its key.
+ */
+export async function addTestAppeal(
+  db: Database,
+  violationId: string,
+  more: Partial<typeof dormViolationAppeals.$inferInsert> = {},
+): Promise<string> {
+  const [added] = await db
+    .insert(dormViolationAppeals)
+    .values({
+      violationId,
+      reason: "Saya sedang izin resmi pada jam tersebut.",
+      sentAt: new Date(),
+      ...more,
+    })
+    .returning({ id: dormViolationAppeals.id });
+  if (!added) throw new Error("The appeal was not added.");
+  return added.id;
 }
 
 /** The log lines of a violation, the earliest first. */

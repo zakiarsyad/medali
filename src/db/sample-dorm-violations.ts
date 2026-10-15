@@ -1,13 +1,26 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import { daysAfter } from "@/academic-periods/days-after";
+import type { AppealStatus } from "@/features/dorm/appeal-ids";
 import {
   ANNOUNCEMENT_TIME,
   type Punishment,
 } from "@/features/dorm/violation-ids";
 
 /*
- * Made-up dorm violations only, of the made-up residents.
+ * Made-up dorm violations only, of the made-up residents, and made-up
+ * appeals of them.
  */
+
+/** A sample appeal of a violation, sent within its appeal time. */
+export interface SampleAppeal {
+  status: AppealStatus;
+  reason: string;
+  /** Catatan BAM; empty for one that waits. */
+  note: string;
+  /** Whether the drawn sample paper comes with it as its proof. */
+  hasProof: boolean;
+  sentAt: Date;
+}
 
 /** A sample violation, with the moment it is announced. */
 export interface SampleViolation {
@@ -20,6 +33,7 @@ export interface SampleViolation {
   announcedAt: Date;
   /** Whether BAM cancelled it before its announcement. */
   isCancelled: boolean;
+  appeal: SampleAppeal | null;
 }
 
 /** How many sample residents the violations are spread over. */
@@ -59,13 +73,50 @@ function violation(
     otherPunishment: "",
     announcedAt,
     isCancelled: false,
+    appeal: null,
   };
+}
+
+/**
+ * The appeals of the first resident's violations of every third day
+ * before today, each sent an hour after its announcement: three days
+ * back accepted with its proof, six days back rejected, and nine days
+ * back still waiting, as BAM has no deadline.
+ */
+const PAST_APPEALS: Record<number, Omit<SampleAppeal, "sentAt">> = {
+  3: {
+    status: "accepted",
+    reason:
+      "Saya sedang izin resmi pulang ke rumah pada jam tersebut, surat izin terlampir.",
+    note: "Izin resmi tercatat pada jam tersebut.",
+    hasProof: true,
+  },
+  6: {
+    status: "rejected",
+    reason: "Saya sudah hadir tepat waktu, nama saya ada di daftar hadir.",
+    note: "Tidak ada nama Anda pada daftar hadir hari itu.",
+    hasProof: false,
+  },
+  9: {
+    status: "waiting",
+    reason:
+      "Saya bertugas sebagai panitia kegiatan kampus sehingga terlambat kembali.",
+    note: "",
+    hasProof: false,
+  },
+};
+
+function pastAppeal(back: number, announcedAt: Date): SampleAppeal | null {
+  const appeal = PAST_APPEALS[back];
+  if (appeal === undefined) return null;
+  return { ...appeal, sentAt: new Date(announcedAt.getTime() + HOUR_MS) };
 }
 
 /**
  * Two violations on each of the days before today, announced at 21:00 of
  * their day, and a third for the first resident on every third day, so
- * that one resident has several. One of them has Hukuman lainnya.
+ * that one resident has several, with an appeal in each status. One of
+ * them has Hukuman lainnya.
  */
 function pastViolations(today: string): SampleViolation[] {
   const past: SampleViolation[] = [];
@@ -74,7 +125,10 @@ function pastViolations(today: string): SampleViolation[] {
     const announcedAt = campusMoment(day, ANNOUNCEMENT_TIME);
     past.push(violation(back * 7, day, announcedAt, back));
     past.push(violation(back * 11 + 3, day, announcedAt, back + 1));
-    if (back % 3 === 0) past.push(violation(0, day, announcedAt, back + 2));
+    if (back % 3 !== 0) continue;
+    const ofFirst = violation(0, day, announcedAt, back + 2);
+    ofFirst.appeal = pastAppeal(back, announcedAt);
+    past.push(ofFirst);
   }
   const [first] = past;
   if (first) {
@@ -84,13 +138,27 @@ function pastViolations(today: string): SampleViolation[] {
   return past;
 }
 
-/** Three violations announced an hour ago, still in Masa advokasi. */
+/**
+ * Three violations announced an hour ago, in their appeal time: the one
+ * of the sixth resident has an appeal with its proof, sent half an hour
+ * ago, which waits; the other two are in Masa advokasi.
+ */
 function appealing(now: Date): SampleViolation[] {
   const announcedAt = new Date(now.getTime() - HOUR_MS);
   const day = campusDay(announcedAt);
-  return [0, 5, 9].map((resident, place) =>
+  const [first, appealed, last] = [0, 5, 9].map((resident, place) =>
     violation(resident, day, announcedAt, place),
   );
+  if (!first || !appealed || !last) return [];
+  appealed.appeal = {
+    status: "waiting",
+    reason:
+      "Saya sedang sakit dan beristirahat di klinik asrama pada jam tersebut.",
+    note: "",
+    hasProof: true,
+    sentAt: new Date(now.getTime() - HOUR_MS / 2),
+  };
+  return [first, appealed, last];
 }
 
 /**
@@ -119,8 +187,10 @@ function waiting(now: Date): SampleViolation[] {
 
 /**
  * The made-up violations around now: announced ones on the days before
- * today, which went up to Pengelola Asrama, three in Masa advokasi, and
- * three of today waiting for their announcement, one of them cancelled.
+ * today, which went up to Pengelola Asrama, three in their appeal time,
+ * and three of today waiting for their announcement, one of them
+ * cancelled. Four of the announced ones have an appeal: two waiting, one
+ * accepted and one rejected.
  */
 export function sampleDormViolations(now: Date): SampleViolation[] {
   return [

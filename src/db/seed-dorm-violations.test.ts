@@ -1,7 +1,14 @@
 // Sample Tahun akademik of this file: those of the app's sample data.
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { violationStatus } from "@/features/dorm/violation-status";
-import { accountRoles, dormViolationChanges, dormViolations } from "./schema";
+import {
+  accountRoles,
+  accounts,
+  dormViolationAppeals,
+  dormViolationChanges,
+  dormViolations,
+} from "./schema";
 import { fillWithSampleData } from "./seed";
 import { withTestDatabase } from "./test-database";
 
@@ -25,7 +32,9 @@ describe("the sample dorm violations", { timeout: 20_000 }, () => {
 
       const shown = kept.filter((violation) => violation.cancelledAt === null);
       const statuses = new Set(
-        shown.map((violation) => violationStatus(violation.announcedAt, now)),
+        shown.map((violation) =>
+          violationStatus(violation.announcedAt, null, now),
+        ),
       );
       expect([...statuses].sort()).toEqual([
         "appeal",
@@ -56,6 +65,50 @@ describe("the sample dorm violations", { timeout: 20_000 }, () => {
       expect(cancels.map((line) => line.violationId)).toEqual(
         cancelled.map((each) => each.id),
       );
+    });
+  });
+
+  it("have appeals waiting, accepted and rejected, each sent by the resident's own account and logged with its decision", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const appeals = await db
+        .select({
+          violationId: dormViolationAppeals.violationId,
+          status: dormViolationAppeals.status,
+          decidedBy: dormViolationAppeals.decidedBy,
+          studentId: dormViolations.studentId,
+        })
+        .from(dormViolationAppeals)
+        .innerJoin(
+          dormViolations,
+          eq(dormViolations.id, dormViolationAppeals.violationId),
+        );
+      const lines = await db.select().from(dormViolationChanges);
+      const owners = await db
+        .select({ id: accounts.id, studentId: accounts.studentId })
+        .from(accounts);
+
+      expect(appeals.map((each) => each.status).sort()).toEqual([
+        "accepted",
+        "rejected",
+        "waiting",
+        "waiting",
+      ]);
+      for (const appeal of appeals) {
+        const ofIt = lines.filter(
+          (line) => line.violationId === appeal.violationId,
+        );
+        const sent = ofIt.find((line) => line.action === "appealed");
+        const sender = owners.find((each) => each.id === sent?.changedBy);
+        expect(sender?.studentId).toBe(appeal.studentId);
+        const decisions = ofIt.filter((line) =>
+          ["appeal_accepted", "appeal_rejected"].includes(line.action),
+        );
+        expect(decisions.map((line) => line.changedBy)).toEqual(
+          appeal.decidedBy === null ? [] : [appeal.decidedBy],
+        );
+      }
     });
   });
 });

@@ -158,7 +158,8 @@ async function addSampleFirstYears(
  * every status, the residents' leave requests around today in every
  * status, the cleaning places of every dorm with a week of cleaning
  * duties around today, the residents' dorm violations around now,
- * waiting, in Masa advokasi and gone up to Pengelola Asrama, and the
+ * waiting, in Masa advokasi and gone up to Pengelola Asrama, with their
+ * appeals waiting, accepted and rejected, and the
  * kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
  * still to be formed, with a few evaluations of their mentors, one
