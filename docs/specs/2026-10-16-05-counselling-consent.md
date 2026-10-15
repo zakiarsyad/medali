@@ -104,7 +104,7 @@ written only while consent is given.
 
 - [x] 1. The tables for consent and its log are added, with made-up
   students in every consent status.
-- [ ] 2. The rights to ask for and record consent (Konselor) and to
+- [x] 2. The rights to ask for and record consent (Konselor) and to
   answer one's own (Mahasiswa) are added to the permission list, with
   their checks.
 - [ ] 3. Konselor's Konseling page shows the emergency notice and
