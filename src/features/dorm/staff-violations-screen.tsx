@@ -187,6 +187,7 @@ export function StaffViolationsScreen({
       />
       <RekapPanel
         rekap={board.rekap}
+        marks={board.marks}
         params={params}
         semesters={board.semesters}
         shownSemester={board.semester?.id ?? null}

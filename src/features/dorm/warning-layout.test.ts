@@ -10,16 +10,26 @@ function read(name: string): string {
 describe("Proses of a call on a phone", () => {
   const BOX = read("warning-process-dialog.tsx");
   const SCHEDULE = read("call-schedule-form.tsx");
+  const ISSUE = read("issue-letter-form.tsx");
 
   it("lays its parts and fields out on the shared form grid, which is one column at phone width", () => {
-    expect(BOX).toContain("<div className={shared.form}>");
-    expect(SCHEDULE).toContain("<div className={shared.form}>");
+    for (const form of [BOX, SCHEDULE, ISSUE]) {
+      expect(form).toContain("<div className={shared.form}>");
+    }
   });
 
   it("never lets a field be wider than its room", () => {
-    expect(SCHEDULE).not.toMatch(/className=\{shared\.field\}/);
-    expect(SCHEDULE).toMatch(/\$\{shared\.field\} \$\{styles\.field\}/);
+    for (const form of [SCHEDULE, ISSUE]) {
+      expect(form).not.toMatch(/className=\{shared\.field\}/);
+      expect(form).toMatch(/\$\{shared\.field\} \$\{styles\.field\}/);
+    }
     expect(BOX).toContain("<section className={styles.field}>");
+  });
+
+  it("asks before issuing an SP, which cannot be undone", () => {
+    expect(ISSUE).toContain(
+      "if (!window.confirm(issueQuestion(name, level))) return;",
+    );
   });
 
   it("shows its lists as cards that name every value", () => {

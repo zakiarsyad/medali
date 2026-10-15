@@ -2,6 +2,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import shared from "@/ui/data-screen.module.css";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { CallScheduleForm } from "./call-schedule-form";
+import { IssueLetterForm } from "./issue-letter-form";
 import {
   type StaffViolationParams,
   staffViolationsAddress,
@@ -57,8 +58,10 @@ export function RejectedTable({ rows }: { rows: RejectedClarification[] }) {
 
 /**
  * "Proses" of one resident called for an SP, for Pengelola Asrama, in a
- * box over the tab: why they are called, "1. Jadwalkan klarifikasi", the
- * rejected clarifications and the counted violations. On a phone its
+ * box over the tab: why they are called, "1. Jadwalkan klarifikasi", "2.
+ * Catat klarifikasi dan terbitkan SP", the rejected clarifications and
+ * the counted violations. Once the SP is issued the resident is no
+ * longer called, so the box does not open again. On a phone its
  * parts stand in one column.
  */
 export function WarningProcessDialog({
@@ -107,6 +110,17 @@ export function WarningProcessDialog({
           <p className={styles.sub}>
             Jadwal tampil di menu Asrama &gt; Pelanggaran milik mahasiswa.
           </p>
+        </section>
+        <section className={styles.field}>
+          <h3 className={shared.heading}>
+            2. Catat klarifikasi dan terbitkan SP {call.level}
+          </h3>
+          <IssueLetterForm
+            key={call.level}
+            studentId={call.studentId}
+            name={call.name}
+            level={call.level}
+          />
         </section>
       </div>
       <RejectedTable rows={process.rejected} />

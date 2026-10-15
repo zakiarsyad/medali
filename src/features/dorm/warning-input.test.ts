@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   PLACE_LENGTH,
+  PROPOSAL_NOTE_TOO_LONG,
   parseCallSchedule,
+  parseIssue,
+  RESULT_LENGTH,
+  RESULT_NEEDED,
   SCHEDULE_IN_PAST,
   SCHEDULE_INCOMPLETE,
   SCHEDULE_NOT_KNOWN,
@@ -89,6 +93,55 @@ describe("parseCallSchedule", () => {
     expect(schedule({ place: "a".repeat(101) })).toEqual({
       ok: false,
       error: PLACE_LENGTH,
+    });
+  });
+});
+
+describe("parseIssue", () => {
+  const RESULT = "  Mahasiswa hadir dan mengakui pelanggarannya. ";
+
+  function issue(result: unknown, proposalNote: unknown, level: 1 | 2 = 1) {
+    return parseIssue({ result, proposalNote }, level);
+  }
+
+  it("takes Hasil klarifikasi of 10 letters or more without spaces around it", () => {
+    expect(issue(RESULT, "")).toEqual({
+      ok: true,
+      value: {
+        result: "Mahasiswa hadir dan mengakui pelanggarannya.",
+        proposalNote: "",
+      },
+    });
+    expect(issue("a".repeat(10), "").ok).toBe(true);
+  });
+
+  it("refuses Hasil klarifikasi that is empty, under 10 letters, or over 1,000", () => {
+    expect(issue("  ", "")).toEqual({ ok: false, error: RESULT_NEEDED });
+    expect(issue(42, "")).toEqual({ ok: false, error: RESULT_NEEDED });
+    expect(issue("a".repeat(9), "")).toEqual({
+      ok: false,
+      error: RESULT_LENGTH,
+    });
+    expect(issue("a".repeat(1001), "")).toEqual({
+      ok: false,
+      error: RESULT_LENGTH,
+    });
+  });
+
+  it("keeps the proposal note of SP 2 only, which may be empty, up to 1,000 letters", () => {
+    expect(issue(RESULT, " Perlu ", 2)).toMatchObject({
+      value: { proposalNote: "Perlu" },
+    });
+    expect(issue(RESULT, null, 2)).toMatchObject({
+      value: { proposalNote: "" },
+    });
+    expect(issue(RESULT, "Perlu", 1)).toMatchObject({
+      value: { proposalNote: "" },
+    });
+    expect(issue(RESULT, "a".repeat(1000), 2).ok).toBe(true);
+    expect(issue(RESULT, "a".repeat(1001), 2)).toEqual({
+      ok: false,
+      error: PROPOSAL_NOTE_TOO_LONG,
     });
   });
 });

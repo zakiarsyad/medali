@@ -122,6 +122,38 @@ function readPage(
     .offset((page - 1) * WARNINGS_PAGE_SIZE);
 }
 
+/**
+ * The highest SP issued to each of some students in a semester, by
+ * student; a student with none is left out.
+ */
+export async function readLetterMarks(
+  db: Database,
+  semesterId: string,
+  studentIds: string[],
+): Promise<Record<string, WarningLevel>> {
+  const marks: Record<string, WarningLevel> = {};
+  if (studentIds.length === 0) return marks;
+  const rows = await db
+    .select({
+      studentId: dormWarningLetters.studentId,
+      level: dormWarningLetters.level,
+    })
+    .from(dormWarningLetters)
+    .where(
+      and(
+        eq(dormWarningLetters.periodId, semesterId),
+        inArray(dormWarningLetters.studentId, studentIds),
+        isNotNull(dormWarningLetters.issuedAt),
+      ),
+    );
+  for (const row of rows) {
+    const level = row.level === 2 ? 2 : 1;
+    const kept = marks[row.studentId] ?? 0;
+    if (level > kept) marks[row.studentId] = level;
+  }
+  return marks;
+}
+
 /** The calls not issued yet of some students in a semester, by student and level. */
 export async function readSchedules(
   db: Database,

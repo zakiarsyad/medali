@@ -68,6 +68,21 @@ describe("WarningProcessDialog", () => {
     expect(shown).toContain("1 klarifikasi kehadiran kegiatan asrama ditolak");
     expect(shown).toContain("BAM: Tidak ada surat dokter.");
     expect(shown).toContain(NO_COUNTED);
+    expect(shown).toContain("2. Catat klarifikasi dan terbitkan SP 1");
+    expect(shown).toContain("Hasil klarifikasi");
+    expect(shown).toContain(">Terbitkan SP 1<");
+    expect(shown).not.toContain("Catatan pengajuan hukuman disiplin");
+  });
+
+  it("asks for the proposal note with SP 2", () => {
+    const shown = box({
+      ...PROCESS,
+      call: { ...PROCESS.call, level: 2, mark: 1 },
+    });
+
+    expect(shown).toContain("2. Catat klarifikasi dan terbitkan SP 2");
+    expect(shown).toContain("Catatan pengajuan hukuman disiplin ke Kepala UPK");
+    expect(shown).toContain(">Terbitkan SP 2 dan ajukan hukuman disiplin<");
   });
 
   it("shows the call already sent, with Ubah jadwal", () => {

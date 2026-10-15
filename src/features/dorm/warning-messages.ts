@@ -32,3 +32,6 @@ export const OWN_CALL = refusal(
 
 export const CALL_SENT = "Panggilan klarifikasi dikirim ke mahasiswa.";
 export const CALL_MOVED = "Jadwal klarifikasi diubah.";
+export const SP1_ISSUED = "SP 1 terbit.";
+export const SP2_ISSUED =
+  "SP 2 terbit dan hukuman disiplin diajukan ke Kepala UPK.";

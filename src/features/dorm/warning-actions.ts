@@ -7,6 +7,7 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import type { FormState } from "@/ui/form-message";
+import { issueWarningLetter, type SentIssue } from "./issue-letter";
 import { type SentCall, scheduleWarningCall } from "./schedule-call";
 import { VIOLATIONS_ADDRESS } from "./violation-address";
 
@@ -44,4 +45,28 @@ export async function scheduleWarningCallAction(
   revalidatePath(VIOLATIONS_ADDRESS);
   if (!saved.ok) return { error: saved.error, done: null };
   return { error: null, done: saved.value };
+}
+
+/**
+ * "Terbitkan SP 1" or "Terbitkan SP 2 dan ajukan hukuman disiplin" in
+ * "Proses", once confirmed. The tab is read again whatever the answer.
+ */
+export async function issueWarningLetterAction(
+  sent: SentIssue,
+): Promise<FormState> {
+  const actor = await manager();
+  const issued = await issueWarningLetter(
+    database(),
+    actor,
+    {
+      studentId: sent.studentId,
+      level: sent.level,
+      result: sent.result,
+      proposalNote: sent.proposalNote,
+    },
+    new Date(),
+  );
+  revalidatePath(VIOLATIONS_ADDRESS);
+  if (!issued.ok) return { error: issued.error, done: null };
+  return { error: null, done: issued.value };
 }

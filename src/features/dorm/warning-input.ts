@@ -7,6 +7,10 @@ import {
   type CallSchedule,
   PLACE_MAX_LENGTH,
   PLACE_MIN_LENGTH,
+  PROPOSAL_NOTE_MAX_LENGTH,
+  RESULT_MAX_LENGTH,
+  RESULT_MIN_LENGTH,
+  type WarningLevel,
 } from "./warning-ids";
 
 /*
@@ -77,4 +81,37 @@ export function parseCallSchedule(
     return refused(PLACE_LENGTH);
   }
   return { ok: true, value: { day, time, place } };
+}
+
+export const RESULT_NEEDED = "Isi hasil klarifikasi.";
+export const RESULT_LENGTH = `Hasil klarifikasi ${RESULT_MIN_LENGTH} sampai ${RESULT_MAX_LENGTH.toLocaleString("id-ID")} karakter.`;
+export const PROPOSAL_NOTE_TOO_LONG = `Catatan pengajuan hukuman disiplin paling banyak ${PROPOSAL_NOTE_MAX_LENGTH.toLocaleString("id-ID")} karakter.`;
+
+/** Hasil klarifikasi and the proposal note of an SP, as they are kept. */
+export interface IssueText {
+  result: string;
+  /** Of SP 2 only; empty for SP 1, or when nothing was noted. */
+  proposalNote: string;
+}
+
+/**
+ * What "Terbitkan SP" sends for an SP of `level`. Nothing sent is
+ * trusted: Hasil klarifikasi is needed, 10 to 1,000 letters; the note
+ * of SP 2 may be empty, up to 1,000 letters, and SP 1 keeps none.
+ */
+export function parseIssue(
+  sent: { result: unknown; proposalNote: unknown },
+  level: WarningLevel,
+): Parsed<IssueText> {
+  const result = keptText(sent.result);
+  if (result === "") return refused(RESULT_NEEDED);
+  const letters = lettersIn(result);
+  if (letters < RESULT_MIN_LENGTH || letters > RESULT_MAX_LENGTH) {
+    return refused(RESULT_LENGTH);
+  }
+  const proposalNote = level === 2 ? keptText(sent.proposalNote) : "";
+  if (lettersIn(proposalNote) > PROPOSAL_NOTE_MAX_LENGTH) {
+    return refused(PROPOSAL_NOTE_TOO_LONG);
+  }
+  return { ok: true, value: { result, proposalNote } };
 }

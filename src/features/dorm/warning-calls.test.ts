@@ -20,7 +20,7 @@ import {
   issuedBy,
   periodIdOf,
 } from "./test-warnings";
-import { readWarningCalls } from "./warning-calls";
+import { readLetterMarks, readWarningCalls } from "./warning-calls";
 
 const inTestDatabase = withTestDatabase();
 
@@ -250,6 +250,42 @@ describe("readWarningCalls", () => {
 
       expect(calls.calls.map((call) => call.studentId)).toEqual([bea]);
       expect(calls.active).toBe(1);
+    });
+  });
+});
+
+describe("readLetterMarks", () => {
+  it("gives the highest SP issued in the semester, leaving out a call not issued and a student with none", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, bea, cici, bamId, periodId } = await setUp(db);
+      for (const level of [1, 2]) {
+        await addTestLetter(db, {
+          studentId: ani,
+          periodId,
+          level,
+          ...issuedBy(bamId),
+        });
+      }
+      await addTestLetter(db, {
+        studentId: bea,
+        periodId,
+        level: 1,
+        ...issuedBy(bamId),
+      });
+      await addTestLetter(db, {
+        studentId: bea,
+        periodId,
+        level: 2,
+        callDay: "3291-10-21",
+        callTime: "16:00",
+        callPlace: "Aula",
+      });
+
+      expect(await readLetterMarks(db, periodId, [ani, bea, cici])).toEqual({
+        [ani]: 2,
+        [bea]: 1,
+      });
+      expect(await readLetterMarks(db, periodId, [])).toEqual({});
     });
   });
 });

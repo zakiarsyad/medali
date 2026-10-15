@@ -26,6 +26,7 @@ const BOARD: StaffViolations = {
   semesters: [],
   semester: null,
   student: null,
+  marks: {},
 };
 
 /** The own record of a BAM member who lives in the dorm, with one violation still open to appeal. */
@@ -67,13 +68,13 @@ const WARNINGS: WarningCalls = {
   page: 1,
 };
 
-function screen(): string {
+function screen(board = BOARD): string {
   const params = readStaffViolationParams({});
   return renderToStaticMarkup(
     <StaffViolationsScreen
       tabs={{ pagePath: "asrama", tabs: [], open: "pel" }}
       params={params}
-      board={BOARD}
+      board={board}
       now={NOW}
       form={null}
       schedule={null}
@@ -116,5 +117,31 @@ describe("the staff screen", () => {
     expect(shown).toContain("Panggilan klarifikasi aktif");
     expect(shown).toContain("2 mahasiswa sudah menerima SP");
     expect(shown).toContain("Panggilan klarifikasi dan surat peringatan");
+  });
+
+  it("marks a student of the rekap with the SP of the semester", () => {
+    const row = {
+      name: "Penghuni Uji",
+      dorm: "dana_rakca",
+      escalated: 8,
+      inAppeal: 0,
+      accepted: 0,
+    } as const;
+    const shown = screen({
+      ...BOARD,
+      rekap: {
+        rows: [
+          { ...row, studentId: "s-1", nim: "9900990301" },
+          { ...row, studentId: "s-2", nim: "9900990302" },
+        ],
+        matching: 2,
+        page: 1,
+      },
+      marks: { "s-1": 2 },
+    });
+
+    expect(shown).toContain(">Status</th>");
+    expect(shown).toContain(">SP 2</span>");
+    expect(shown).not.toContain(">SP 1</span>");
   });
 });

@@ -17,6 +17,8 @@ import {
   type ViolationNumbers,
 } from "./violation-board";
 import { periodDays } from "./violation-periods";
+import { readLetterMarks } from "./warning-calls";
+import type { WarningLevel } from "./warning-ids";
 
 /** What the staff screen of Pelanggaran shows, but Jadwal publikasi. */
 export interface StaffViolations {
@@ -28,6 +30,8 @@ export interface StaffViolations {
   semester: SemesterChoice | null;
   /** The student whose box is open, or null for none. */
   student: StudentViolations | null;
+  /** The highest SP of the semester of each student of the rekap page who has one. */
+  marks: Record<string, WarningLevel>;
 }
 
 const NO_REKAP: Rekap = { rows: [], matching: 0, page: 1 };
@@ -45,7 +49,8 @@ function semesterOf(
 /**
  * Everything the staff screen reads, of the students `visible` holds, at
  * `now` by the server's clock: the numbers, one day of the announcement,
- * the rekap of the semester and the box of one student.
+ * the rekap of the semester with the SP of each student, and the box of
+ * one student.
  */
 export async function readStaffViolations(
   db: Database,
@@ -81,5 +86,13 @@ export async function readStaffViolations(
   }));
   const semester =
     period === null ? null : { id: period.id, title: periodTitle(period) };
-  return { numbers, announcement, rekap, semesters, semester, student };
+  const marks =
+    period === null
+      ? {}
+      : await readLetterMarks(
+          db,
+          period.id,
+          rekap.rows.map((row) => row.studentId),
+        );
+  return { numbers, announcement, rekap, semesters, semester, student, marks };
 }
