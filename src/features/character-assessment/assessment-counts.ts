@@ -1,4 +1,4 @@
-import { rerataTenths } from "./assessment-score";
+import { rerataTenths } from "@/character-scores/assessment-score";
 
 /**
  * Students who stand alike for the numbers of the tab: how many, and

@@ -1,6 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import {
+  levelOf,
+  rerataOf,
+  type Scores,
+} from "@/character-scores/assessment-score";
+import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -16,8 +22,7 @@ import {
   STARTING_SCORE,
 } from "./assessment-ids";
 import type { AssessmentPick } from "./assessment-picks";
-import { levelOf, rerataOf, type Scores } from "./assessment-score";
-import { SOURCE_WORDS, shownRerata } from "./assessment-words";
+import { SOURCE_WORDS } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import { Medal } from "./medal";
 import { PredicateBadge } from "./predicate-badge";

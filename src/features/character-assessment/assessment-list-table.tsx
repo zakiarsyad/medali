@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { rerataOf } from "@/character-scores/assessment-score";
+import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { MEDALI_VALUES } from "@/ui/medali-values";
@@ -6,8 +8,7 @@ import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentListRow } from "./assessment-board";
-import { rerataOf } from "./assessment-score";
-import { NOT_ASSESSED, SOURCE_WORDS, shownRerata } from "./assessment-words";
+import { NOT_ASSESSED, SOURCE_WORDS } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import type { LatestAssessment } from "./latest-assessments";
 import { PredicateBadge } from "./predicate-badge";

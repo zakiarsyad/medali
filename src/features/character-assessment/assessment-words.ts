@@ -3,8 +3,8 @@
  * browser, so nothing here may take from the database code.
  */
 
+import type { Predicate } from "@/character-scores/assessment-score";
 import type { AssessmentSource } from "./assessment-ids";
-import type { Predicate } from "./assessment-score";
 
 /** "Sumber asesmen", in the prototype's words. */
 export const SOURCE_WORDS: Record<AssessmentSource, string> = {
@@ -29,15 +29,6 @@ export const NOT_ASSESSED = "Belum diasesmen";
 /** The note for a role that only reads the tab, in the prototype's words. */
 export const READ_ONLY_NOTE =
   "Hasil asesmen MEDALI diinput oleh Penilai Mahasiswa atau Kepala Unit Pembangunan Karakter.";
-
-/** A Rerata with one decimal, such as 80,3, or "-" for none. */
-export function shownRerata(rerata: number | null): string {
-  if (rerata === null) return "-";
-  return rerata.toLocaleString("id-ID", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
 
 /** A part of a whole as a whole percent, such as 45%, or 0% of nobody. */
 export function shownShare(part: number, whole: number): string {

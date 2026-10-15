@@ -15,6 +15,28 @@ function ValueTags({ keys }: { keys: PpksActivity["valueKeys"] }) {
 }
 
 /**
+ * A typed target, written with a dot for thousands. Without one, the
+ * number the app fills in, written the same way and marked so staff can
+ * tell it from a typed one, or "-" when the list has none to fill in.
+ */
+function Target({
+  typed,
+  auto,
+}: {
+  typed: number | null;
+  auto: number | null;
+}) {
+  if (typed !== null) return typed.toLocaleString("id-ID");
+  if (auto === null) return "-";
+  return (
+    <>
+      {auto.toLocaleString("id-ID")}{" "}
+      <span className={styles.autoMark}>otomatis</span>
+    </>
+  );
+}
+
+/**
  * The activities of one list, or that there are none. Each row has "Ubah"
  * when `onChange` is given.
  */
@@ -22,10 +44,13 @@ export function PpksTable({
   activities,
   emptyText,
   onChange,
+  autoTarget,
 }: {
   activities: PpksActivity[];
   emptyText: string;
   onChange: ((activity: PpksActivity) => void) | null;
+  /** The target of an activity with none typed, or null for none. */
+  autoTarget: number | null;
 }) {
   if (activities.length === 0) {
     return <p className={shared.empty}>{emptyText}</p>;
@@ -67,7 +92,7 @@ export function PpksTable({
                 ))}
               </td>
               <td data-title="Target peserta">
-                {activity.targetParticipants ?? "-"}
+                <Target typed={activity.targetParticipants} auto={autoTarget} />
               </td>
               <td data-title="Dijadwalkan">{activity.scheduledCount}×</td>
               {onChange && (
