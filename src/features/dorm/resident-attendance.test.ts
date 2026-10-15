@@ -222,6 +222,35 @@ describe("readOwnAttendance", () => {
     });
   });
 
+  it("reads only the account's own student for a resident who is also a BAM member, the same as with Mahasiswa alone", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await count(db, records, {
+        activityId: records.morning,
+        day: YESTERDAY,
+        marks: {
+          [records.ani]: { isAbsent: true, note: "Sakit" },
+          [records.budi]: { isAbsent: true, note: "Izin pulang" },
+        },
+      });
+
+      const alone = await readOwnAttendance(db, residentOf(records.ani), NIGHT);
+      const withBam = await readOwnAttendance(
+        db,
+        residentOf(records.ani, ["student", "bam_bphk"]),
+        NIGHT,
+      );
+
+      if (withBam.kind !== "shown")
+        throw new Error("The resident was refused.");
+      expect(withBam.attendance.absent).toBe(1);
+      const notes = withBam.attendance.history.map((entry) => entry.note);
+      expect(notes).toContain("Sakit");
+      expect(notes).not.toContain("Izin pulang");
+      expect(withBam).toEqual(alone);
+    });
+  });
+
   it("counts an activity announced while it runs only once it is over", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
