@@ -1,0 +1,136 @@
+/* The heading of a part, with a line beside it that folds under it on a phone. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-md);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* The parts under the list: side by side here, one under the other once they do not fit. */
+.parts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: 0 var(--space-lg);
+}
+
+.parts > * {
+  min-width: 0;
+}
+
+.subheading {
+  margin: var(--space-xl) 0 var(--space-sm);
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+.bars {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each column may shrink to nothing, so a bar always fits the width of a phone. */
+.bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.barLabel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.meter {
+  width: 100%;
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+  appearance: none;
+}
+
+.meter::-webkit-meter-bar {
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.meter::-webkit-meter-optimum-value,
+.meter::-webkit-meter-suboptimum-value,
+.meter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-md);
+  background: var(--navy3);
+}
+
+.meter::-moz-meter-bar {
+  border-radius: var(--radius-md);
+  background: var(--navy3);
+}
+
+.gold::-webkit-meter-optimum-value,
+.gold::-webkit-meter-suboptimum-value,
+.gold::-webkit-meter-even-less-good-value {
+  background: var(--gold);
+}
+
+.gold::-moz-meter-bar {
+  background: var(--gold);
+}
+
+.barValue {
+  font-weight: var(--weight-heavy);
+  text-align: right;
+}
+
+.outList {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The time due back beside the resident here; above them once it does not fit. */
+.outItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--line-width) solid var(--line2);
+}
+
+.when {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.outBody {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.more {
+  margin: var(--space-sm) 0 0;
+}
+
+.none {
+  margin: 0 0 var(--space-sm);
+  color: var(--muted);
+}
