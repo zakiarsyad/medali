@@ -1,0 +1,220 @@
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.strong {
+  font-weight: var(--weight-heavy);
+}
+
+.note {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.predicate {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.dot {
+  width: var(--swatch-size);
+  height: var(--swatch-size);
+  border-radius: var(--radius-round);
+}
+
+.gold {
+  background: var(--emas);
+}
+
+.silver {
+  background: var(--perak);
+}
+
+.bronze {
+  background: var(--perunggu);
+}
+
+.guidance {
+  background: var(--bina);
+}
+
+/*
+ * The form and the medal side by side on a laptop. On a phone the
+ * smallest width of a panel gives way and they stack in one column.
+ */
+.sideBySide {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: 0 var(--space-lg);
+  align-items: start;
+}
+
+.sideBySide > * {
+  min-width: 0;
+}
+
+.full {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
+}
+
+.picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+}
+
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.slider {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  align-items: center;
+}
+
+.sliderName {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  min-width: var(--class-min-width);
+  font-weight: var(--weight-semibold);
+}
+
+.range {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--navy3);
+}
+
+.score {
+  min-width: var(--space-2xl);
+  font-weight: var(--weight-heavy);
+  text-align: right;
+}
+
+.level {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.previewHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.medalBox {
+  display: flex;
+  justify-content: center;
+}
+
+.medal {
+  width: 100%;
+  max-width: var(--medal-width);
+  height: auto;
+  overflow: visible;
+}
+
+.medalRim {
+  fill: var(--goldsoft);
+  stroke: var(--gold);
+  stroke-width: var(--line-width-strong);
+}
+
+.medalFace {
+  fill: var(--surface);
+  stroke: var(--gold);
+  stroke-opacity: 0.55;
+  stroke-width: var(--line-width);
+}
+
+.medalRing {
+  fill: none;
+  stroke: var(--gold);
+  stroke-opacity: 0.28;
+  stroke-width: var(--line-width);
+}
+
+.medalLast {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: var(--line-width-strong);
+  stroke-dasharray: 4 3;
+}
+
+.medalShape {
+  fill: var(--navy3);
+  fill-opacity: 0.22;
+  stroke: var(--navy3);
+  stroke-width: var(--line-width-strong);
+  stroke-linejoin: round;
+}
+
+.medalDot {
+  stroke: var(--surface);
+  stroke-width: var(--line-width-strong);
+}
+
+.dotM {
+  fill: var(--vM);
+}
+
+.dotE {
+  fill: var(--vE);
+}
+
+.dotD {
+  fill: var(--vD);
+}
+
+.dotA {
+  fill: var(--vA);
+}
+
+.dotL {
+  fill: var(--vL);
+}
+
+.dotI {
+  fill: var(--vI);
+}
+
+.medalLabel {
+  fill: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-heavy);
+}
+
+.medalScore {
+  fill: var(--muted);
+  font-weight: var(--weight-semibold);
+}

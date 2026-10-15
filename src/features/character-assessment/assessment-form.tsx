@@ -1,0 +1,237 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import shared from "@/ui/data-screen.module.css";
+import { text } from "@/ui/form-data";
+import { FormMessage, type FormState } from "@/ui/form-message";
+import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
+import { sendForm } from "@/ui/send-form";
+import { ValueSwatch } from "@/ui/value-swatch";
+import { saveAssessmentAction } from "./assessment-actions";
+import {
+  ASSESSMENT_SOURCES,
+  NOTE_MAX_LENGTH,
+  SCORE_MAX,
+  SCORE_MIN,
+  STARTING_SCORE,
+} from "./assessment-ids";
+import type { AssessmentPick } from "./assessment-picks";
+import { levelOf, rerataOf, type Scores } from "./assessment-score";
+import { SOURCE_WORDS, shownRerata } from "./assessment-words";
+import styles from "./character-assessment.module.css";
+import { Medal } from "./medal";
+import { PredicateBadge } from "./predicate-badge";
+import { StudentPicker } from "./student-picker";
+
+const START: FormState = { error: null, done: null };
+
+/** The text of each value's main indicator from Kurikulum, level 1 to 4. */
+export type LevelTexts = Record<ValueKey, readonly string[]>;
+
+const STARTING_SCORES: Scores = {
+  M: STARTING_SCORE,
+  E: STARTING_SCORE,
+  D: STARTING_SCORE,
+  A: STARTING_SCORE,
+  L: STARTING_SCORE,
+  I: STARTING_SCORE,
+};
+
+/** The scores a sent form held, which the server has just kept. */
+function sentScores(form: FormData): Scores {
+  return {
+    M: Number(text(form, "score_M")),
+    E: Number(text(form, "score_E")),
+    D: Number(text(form, "score_D")),
+    A: Number(text(form, "score_A")),
+    L: Number(text(form, "score_L")),
+    I: Number(text(form, "score_I")),
+  };
+}
+
+export function ScoreSliders({
+  scores,
+  levelTexts,
+  onChange,
+}: {
+  scores: Scores;
+  levelTexts: LevelTexts;
+  onChange: (key: ValueKey, score: number) => void;
+}) {
+  return (
+    <div className={styles.sliders}>
+      {MEDALI_VALUES.map(({ key, name }) => {
+        const level = levelOf(scores[key]);
+        return (
+          <div key={key} className={styles.slider}>
+            <span className={styles.sliderName}>
+              <ValueSwatch value={key} />
+              {name}
+            </span>
+            <input
+              type="range"
+              name={`score_${key}`}
+              className={styles.range}
+              min={SCORE_MIN}
+              max={SCORE_MAX}
+              step={1}
+              value={scores[key]}
+              aria-label={`Skor ${name}`}
+              onChange={(event) => onChange(key, Number(event.target.value))}
+            />
+            <output className={styles.score}>{scores[key]}</output>
+            <small className={styles.level}>
+              Level {level} · {levelTexts[key][level - 1]}
+            </small>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function MedalPreview({
+  picked,
+  scores,
+}: {
+  picked: AssessmentPick | null;
+  scores: Scores;
+}) {
+  if (!picked) {
+    return (
+      <p className={shared.empty}>
+        Pilih mahasiswa untuk melihat pratinjau medali. Skor asesmen terakhir
+        dimuat sebagai titik awal.
+      </p>
+    );
+  }
+  const rerata = rerataOf(scores);
+  const { latest } = picked;
+  return (
+    <>
+      <div className={styles.previewHead}>
+        <h3 className={shared.heading}>Pratinjau medali</h3>
+        <PredicateBadge rerata={rerata} />
+      </div>
+      <div className={styles.medalBox}>
+        <Medal scores={scores} last={latest} />
+      </div>
+      <p className={styles.sub}>
+        Rerata baru <b>{shownRerata(rerata)}</b>
+        {latest
+          ? `, asesmen sebelumnya ${shownRerata(rerataOf(latest))}. Garis putus-putus menunjukkan skor asesmen terakhir.`
+          : `. Mahasiswa ini belum pernah diasesmen; slider dimulai dari ${STARTING_SCORE}.`}
+      </p>
+    </>
+  );
+}
+
+/**
+ * "Input capaian MEDALI" beside "Pratinjau medali". A student is picked,
+ * and six sliders start at their latest scores, or at 75. The medal
+ * shows the new shape over the last one. After an assessment is kept,
+ * the student stays picked with it as their last one, and the form gets
+ * a new key for the next.
+ */
+export function AssessmentForm({
+  newAssessmentId,
+  levelTexts,
+}: {
+  newAssessmentId: string;
+  levelTexts: LevelTexts;
+}) {
+  // Kept as it was when the form opened: two presses of "Simpan asesmen"
+  // must send the same key.
+  const [id, setId] = useState(newAssessmentId);
+  const [picked, setPicked] = useState<AssessmentPick | null>(null);
+  const [scores, setScores] = useState<Scores>(STARTING_SCORES);
+  const [note, setNote] = useState("");
+
+  function pick(student: AssessmentPick) {
+    setPicked(student);
+    setScores(student.latest ?? STARTING_SCORES);
+  }
+
+  function change(key: ValueKey, score: number) {
+    setScores((before) => ({ ...before, [key]: score }));
+  }
+
+  async function save(before: FormState, sent: FormData): Promise<FormState> {
+    const after = await saveAssessmentAction(before, sent);
+    if (after.done) {
+      const saved = sentScores(sent);
+      setPicked((was) => was && { ...was, latest: saved });
+      setNote("");
+      setId(crypto.randomUUID());
+    }
+    return after;
+  }
+
+  const [state, action, pending] = useActionState(save, START);
+
+  return (
+    <div className={styles.sideBySide}>
+      <section className={shared.panel}>
+        <h2 className={shared.heading}>Input capaian MEDALI</h2>
+        {/* noValidate: the server says what is wrong, in the app's own words. */}
+        <form onSubmit={(event) => sendForm(event, action)} noValidate>
+          <input type="hidden" name="id" value={id} />
+          <input type="hidden" name="studentId" value={picked?.id ?? ""} />
+          <span className={shared.label}>Mahasiswa</span>
+          <StudentPicker
+            picked={picked}
+            onPick={pick}
+            onClear={() => setPicked(null)}
+          />
+          {picked && (
+            <ScoreSliders
+              scores={scores}
+              levelTexts={levelTexts}
+              onChange={change}
+            />
+          )}
+          <div className={shared.form}>
+            <label className={`${shared.field} ${styles.full}`}>
+              Sumber asesmen
+              <select
+                name="source"
+                className={shared.input}
+                defaultValue={ASSESSMENT_SOURCES[0]}
+              >
+                {ASSESSMENT_SOURCES.map((each) => (
+                  <option key={each} value={each}>
+                    {SOURCE_WORDS[each]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={`${shared.field} ${styles.full}`}>
+              Catatan penilai
+              <textarea
+                name="note"
+                className={shared.input}
+                maxLength={NOTE_MAX_LENGTH}
+                placeholder="Dasar pemberian skor, contoh perilaku yang diamati"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+              />
+            </label>
+            <div className={`${shared.actions} ${styles.full}`}>
+              <button
+                type="submit"
+                className={shared.button}
+                disabled={pending || picked === null}
+              >
+                Simpan asesmen
+              </button>
+              <FormMessage state={state} />
+            </div>
+          </div>
+        </form>
+      </section>
+      <section className={shared.panel}>
+        <MedalPreview picked={picked} scores={scores} />
+      </section>
+    </div>
+  );
+}
