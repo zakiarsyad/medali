@@ -14,6 +14,7 @@ export default async function NewStudentsPage(
     <NewStudentsScreen
       params={params}
       tabs={{ pagePath: "pengaturan", tabs: opened.tabs, open: "mahasiswa" }}
+      mayBeShownRoom={may(opened.account.roles, "view_student_room")}
     />
   );
 }

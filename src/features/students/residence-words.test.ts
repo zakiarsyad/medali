@@ -13,10 +13,30 @@ describe("residenceWords", () => {
   });
 
   it("names the dorm, the floor and the room of a resident with a room", () => {
-    const room = { plotted: true, floor: 3, number: "305" } as const;
+    const room = {
+      plotted: true,
+      dorm: "dana_rakca",
+      floor: 3,
+      number: "305",
+      asCompanion: false,
+    } as const;
 
     expect(residenceWords({ dorm: "dana_rakca", room })).toBe(
       "Asrama Dana Rakca, lantai 3, kamar 305",
+    );
+  });
+
+  it("names the kakak pendamping room of a resident of another dorm", () => {
+    const room = {
+      plotted: true,
+      dorm: "dana_rakca",
+      floor: 1,
+      number: "102",
+      asCompanion: true,
+    } as const;
+
+    expect(residenceWords({ dorm: "wismantara_putri", room })).toBe(
+      "Asrama Dana Rakca, lantai 1, kamar 102 (kakak pendamping)",
     );
   });
 

@@ -1,5 +1,5 @@
 import { database } from "@/db/database";
-import { readStudentRoom, roomHeader } from "@/dorms/student-room";
+import { ownRoomWords, readOwnRoom } from "@/dorms/student-room";
 import { currentDorm } from "./current-dorm";
 
 /**
@@ -11,5 +11,5 @@ export async function residentHeader(
 ): Promise<string | null> {
   const dorm = await currentDorm(studentId);
   if (studentId === null || dorm === null) return null;
-  return roomHeader(dorm, await readStudentRoom(database(), studentId, dorm));
+  return ownRoomWords(await readOwnRoom(database(), studentId, dorm));
 }

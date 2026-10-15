@@ -75,5 +75,5 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The read of a student's own room gives the kakak pendamping
   room when the resident has no room in their own dorm, with a check.
-- [ ] 2. The Asrama page header, Profil saya, the student detail and the
+- [x] 2. The Asrama page header, Profil saya, the student detail and the
   Asrama column show it with "(kakak pendamping)".

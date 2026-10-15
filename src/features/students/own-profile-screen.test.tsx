@@ -153,7 +153,13 @@ describe("OwnProfileScreen", () => {
       ...STUDENT,
       residence: {
         dorm: "dana_rakca",
-        room: { plotted: true, floor: 2, number: "204" },
+        room: {
+          plotted: true,
+          dorm: "dana_rakca",
+          floor: 2,
+          number: "204",
+          asCompanion: false,
+        },
       },
     });
 

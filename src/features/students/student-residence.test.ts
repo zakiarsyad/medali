@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
+import {
+  dormCompanions,
+  dormRoomPlaces,
+  dormRooms,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { DormId } from "@/dorms/dorms";
 import type { RunningPeriod } from "./semester-now";
@@ -25,6 +30,7 @@ const NO_SUCH_ID = "00000000-0000-4000-8000-000000000000";
 /** A floor and a room number that no other file of checks uses. */
 const FLOOR = 7;
 const ROOM_NUMBER = "U9107";
+const COMPANION_ROOM_NUMBER = "U9108";
 
 function account(
   roles: RoleId[],
@@ -75,7 +81,13 @@ describe("the Asrama line of a student's detail", () => {
 
       expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
         dorm: "dana_rakca",
-        room: { plotted: true, floor: FLOOR, number: ROOM_NUMBER },
+        room: {
+          plotted: true,
+          dorm: "dana_rakca",
+          floor: FLOOR,
+          number: ROOM_NUMBER,
+          asCompanion: false,
+        },
       });
     });
   });
@@ -125,8 +137,10 @@ describe("the Asrama line of a student's detail", () => {
 
       expect((await residenceFor(db, asking, id))?.room).toEqual({
         plotted: true,
+        dorm: "dana_rakca",
         floor: FLOOR,
         number: ROOM_NUMBER,
+        asCompanion: false,
       });
     });
   });
@@ -209,6 +223,108 @@ describe("the Asrama line of a student's detail", () => {
         dorm: "wismantara_putri",
         room: null,
       });
+    });
+  });
+});
+
+/** A Pembibitan woman of Wismantara Putri, kakak pendamping in a room. */
+async function addWismantaraCompanion(db: Database) {
+  const program = await addTestProgram(db, "Prodi Uji Asrama Pendamping");
+  const id = await addTestStudent(db, program, {
+    nim: "9900400307",
+    name: "Detail Uji Pendamping",
+    cohortYear: 2023,
+    isSeedling: true,
+  });
+  const [room] = await db
+    .insert(dormRooms)
+    .values({
+      dorm: "dana_rakca",
+      floor: 1,
+      number: COMPANION_ROOM_NUMBER,
+      capacity: 4,
+    })
+    .returning({ id: dormRooms.id });
+  if (!room) throw new Error("The room was not added.");
+  await db
+    .insert(dormCompanions)
+    .values({ studentId: id, dorm: "dana_rakca", roomId: room.id });
+  return { program, id };
+}
+
+describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => {
+  it("gives Kepala Unit the kakak pendamping room", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addWismantaraCompanion(db);
+
+      expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
+        dorm: "wismantara_putri",
+        room: {
+          plotted: true,
+          dorm: "dana_rakca",
+          floor: 1,
+          number: COMPANION_ROOM_NUMBER,
+          asCompanion: true,
+        },
+      });
+    });
+  });
+
+  it("gives the dorm only again once the duty is stopped", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addWismantaraCompanion(db);
+
+      await db
+        .update(dormCompanions)
+        .set({ isActive: false, roomId: null })
+        .where(eq(dormCompanions.studentId, id));
+
+      expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
+        dorm: "wismantara_putri",
+        room: null,
+      });
+    });
+  });
+
+  it("gives Direktur the dorm only, with no room in the answer", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addWismantaraCompanion(db);
+
+      const answer = await readStudentDetail(
+        db,
+        account(["director"]),
+        id,
+        ODD_2026,
+      );
+
+      expect(answer).toMatchObject({
+        kind: "found",
+        student: { residence: { dorm: "wismantara_putri", room: null } },
+      });
+      expect(JSON.stringify(answer)).not.toContain(COMPANION_ROOM_NUMBER);
+    });
+  });
+
+  it("gives no room to a role that may not see the student", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addWismantaraCompanion(db);
+      const otherProgram = await addTestProgram(db, "Prodi Uji Asrama Lain");
+
+      const refused = await readStudentDetail(
+        db,
+        account(["dorm_manager"]),
+        id,
+        ODD_2026,
+      );
+      const outside = await readStudentDetail(
+        db,
+        account(["head_of_program"], otherProgram),
+        id,
+        ODD_2026,
+      );
+
+      expect(refused).toEqual({ kind: "refused" });
+      expect(outside).toEqual({ kind: "not_found" });
     });
   });
 });

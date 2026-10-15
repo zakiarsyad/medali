@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import {
   accounts,
+  dormCompanions,
+  dormRooms,
   studentBatches,
   studentBatchFiles,
   students,
@@ -316,6 +318,77 @@ describe("listAddedStudents", () => {
         ["9900000232", "wismantara_putra"],
         ["9900000233", null],
         ["9900000234", null],
+      ]);
+    });
+  });
+
+  it("gives a resident's kakak pendamping room only to an account that may see rooms", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Daftar");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const input = {
+        inputBy: staff.id,
+        inputSource: "form" as const,
+        inputAt: LATER,
+      };
+      const seedling = await addTestStudent(db, program, {
+        nim: "9900000241",
+        name: "Pendamping Uji A",
+        cohortYear: 2023,
+        isSeedling: true,
+        ...input,
+      });
+      const senior = await addTestStudent(db, program, {
+        nim: "9900000242",
+        name: "Pendamping Uji B",
+        cohortYear: 2023,
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000243",
+        name: "Pendamping Uji C",
+        ...input,
+      });
+      const [room] = await db
+        .insert(dormRooms)
+        .values({ dorm: "dana_rakca", floor: 1, number: "U0241", capacity: 4 })
+        .returning({ id: dormRooms.id });
+      await db.insert(dormCompanions).values([
+        { studentId: seedling, dorm: "dana_rakca", roomId: room?.id },
+        { studentId: senior, dorm: "dana_rakca", roomId: room?.id },
+      ]);
+
+      const roomsOf = async (mayBeShownRoom: boolean) => {
+        const listed = await listAddedStudents(
+          db,
+          "Pendamping Uji",
+          DORM_COHORTS,
+          1,
+          mayBeShownRoom,
+        );
+        return listed.students.map((student) => [
+          student.nim,
+          student.companionRoom,
+        ]);
+      };
+
+      expect(await roomsOf(true)).toEqual([
+        [
+          "9900000241",
+          {
+            dorm: "dana_rakca",
+            floor: 1,
+            number: "U0241",
+            asCompanion: true,
+          },
+        ],
+        ["9900000242", null],
+        ["9900000243", null],
+      ]);
+      expect(await roomsOf(false)).toEqual([
+        ["9900000241", null],
+        ["9900000242", null],
+        ["9900000243", null],
       ]);
     });
   });

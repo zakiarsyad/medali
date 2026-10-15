@@ -58,9 +58,12 @@ function NothingListed({ anyAdded }: { anyAdded: boolean }) {
 export async function NewStudentsScreen({
   params,
   tabs,
+  mayBeShownRoom,
 }: {
   params: NewStudentsParams;
   tabs: TabLinksProps;
+  /** Whether the account may see the floor and the room of a student. */
+  mayBeShownRoom: boolean;
 }) {
   const db = database();
   const [studentYears, period, programs, editing, groups] = await Promise.all([
@@ -73,7 +76,13 @@ export async function NewStudentsScreen({
   const dormCohorts = dormCohortsOf(studentYears, period);
   const [counts, list] = await Promise.all([
     countStudents(db, dormCohorts),
-    listAddedStudents(db, params.query, dormCohorts, params.page),
+    listAddedStudents(
+      db,
+      params.query,
+      dormCohorts,
+      params.page,
+      mayBeShownRoom,
+    ),
   ]);
   const place = { query: params.query, page: list.page };
   const thisYear = new Date().getFullYear();
