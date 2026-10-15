@@ -54,6 +54,8 @@ export interface SikuParams {
   requestFilter: RequestFilter;
   /** The page of those requests. */
   requestPage: number;
+  /** The student whose detail is open over the tab, or null for none. */
+  detailId: string | null;
 }
 
 /** Which requests the staff panel shows: those of one status, or all. */
@@ -95,6 +97,7 @@ export const START_PARAMS: SikuParams = {
   seenPage: 1,
   requestFilter: "waiting",
   requestPage: 1,
+  detailId: null,
 };
 
 /** How many entries one page of the history shows. */
@@ -129,10 +132,11 @@ export function readSikuParams(params: SearchParams): SikuParams {
     allFalls: firstParam(params.turun) === ALL,
     allRises: firstParam(params.naik) === ALL,
     historyPage: pageNamed(firstParam(params.riwayat)),
-    seenEntry: entryNamed(firstParam(params.lihat)),
+    seenEntry: idNamed(firstParam(params.lihat)),
     seenPage: pageNamed(firstParam(params.lihathal)),
     requestFilter: requestFilterNamed(firstParam(params.pengajuan)),
     requestPage: pageNamed(firstParam(params.pengajuanhal)),
+    detailId: idNamed(firstParam(params.profil)),
   };
 }
 
@@ -144,7 +148,7 @@ export function requestFilterNamed(sent: string): RequestFilter {
   return named ?? "waiting";
 }
 
-function entryNamed(sent: string): string | null {
+function idNamed(sent: string): string | null {
   return isUuid(sent) ? sent : null;
 }
 
@@ -173,6 +177,7 @@ export function sikuAddress(params: SikuParams): string {
   if (params.requestPage > 1) {
     search.set("pengajuanhal", String(params.requestPage));
   }
+  if (params.detailId !== null) search.set("profil", params.detailId);
   const text = search.toString();
   if (text === "") return SIKU_ADDRESS;
   return `${SIKU_ADDRESS}?${text}`;

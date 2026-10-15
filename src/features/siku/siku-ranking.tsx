@@ -4,13 +4,16 @@ import styles from "./siku.module.css";
 import { type SikuParams, sikuAddress } from "./siku-address";
 import type { SikuRanking, SikuRow } from "./siku-board";
 import { signedChange, signedPoints } from "./siku-words";
+import { StudentName } from "./student-name";
 
 function RankTable({
   rows,
   isFall,
+  params,
 }: {
   rows: readonly SikuRow[];
   isFall: boolean;
+  params: SikuParams;
 }) {
   if (rows.length === 0) return <p className={shared.empty}>Tidak ada.</p>;
   return (
@@ -33,7 +36,11 @@ function RankTable({
                 {place + 1}
               </td>
               <td data-title="Mahasiswa">
-                <b className={shared.typed}>{row.name}</b>
+                <StudentName
+                  studentId={row.id}
+                  name={row.name}
+                  params={params}
+                />
                 <small className={shared.detail}>
                   {row.nim} · {row.program}
                 </small>
@@ -61,11 +68,13 @@ function RankPanel({
   total,
   isFall,
   allAddress,
+  params,
 }: {
   title: string;
   rows: readonly SikuRow[];
   total: number;
   isFall: boolean;
+  params: SikuParams;
   /** The address that shows every one, or null when every one shows. */
   allAddress: string | null;
 }) {
@@ -77,7 +86,7 @@ function RankPanel({
           {total.toLocaleString("id-ID")} mahasiswa
         </span>
       </div>
-      <RankTable rows={rows} isFall={isFall} />
+      <RankTable rows={rows} isFall={isFall} params={params} />
       {allAddress !== null && rows.length < total && (
         <p className={styles.more}>
           <Link href={allAddress} className={shared.link} scroll={false}>
@@ -117,6 +126,7 @@ export function SikuRankingPanels({
           rows={ranking.falls}
           total={ranking.fallCount}
           isFall
+          params={params}
           allAddress={
             params.allFalls ? null : sikuAddress({ ...params, allFalls: true })
           }
@@ -126,6 +136,7 @@ export function SikuRankingPanels({
           rows={ranking.rises}
           total={ranking.riseCount}
           isFall={false}
+          params={params}
           allAddress={
             params.allRises ? null : sikuAddress({ ...params, allRises: true })
           }

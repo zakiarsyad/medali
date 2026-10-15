@@ -1,6 +1,7 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import {
@@ -13,6 +14,7 @@ import {
   noteRowsFor,
   writtenRowsFor,
 } from "@/features/mentoring/visible-notes";
+import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
@@ -52,11 +54,18 @@ export default async function MentoringNotesPage(
             openMentorAddress(account, mentorId, group)
           }
           morePanelsOf={(studentId) => (
-            <StudentNotesPanel
-              account={account}
-              visible={visible}
-              studentId={studentId}
-            />
+            <>
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={baseScoreNow()}
+              />
+              <StudentNotesPanel
+                account={account}
+                visible={visible}
+                studentId={studentId}
+              />
+            </>
           )}
         />
       )}

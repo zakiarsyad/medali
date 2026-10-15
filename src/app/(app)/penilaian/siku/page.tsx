@@ -5,6 +5,10 @@ import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
+import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
+import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import {
   HistoryPanel,
   SeenStudentsDialog,
@@ -18,7 +22,7 @@ import { readRequestBoard } from "@/features/siku/request-board";
 import { RequestCards } from "@/features/siku/request-cards";
 import { RequestForm } from "@/features/siku/request-form";
 import { RequestPanel } from "@/features/siku/request-panel";
-import { readSikuParams } from "@/features/siku/siku-address";
+import { readSikuParams, sikuAddress } from "@/features/siku/siku-address";
 import {
   readSikuList,
   readSikuNumbers,
@@ -32,13 +36,19 @@ import {
 import { SikuInputPanel } from "@/features/siku/siku-input-panel";
 import { readGroupChoices } from "@/features/siku/siku-picks";
 import { StaffSikuScreen } from "@/features/siku/staff-siku-screen";
+import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
+import { askedDetailOrBrief } from "@/features/students/asked-detail";
+import { runningPeriodNow } from "@/features/students/running-period-now";
+import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 
 /**
  * The tab Penilaian SIKU. Staff see the SIKU of the students they may
  * see through the roles that read it: Ketua Program Studi those of their
  * own program only, Pengasuh their own mentees only. A student sees only
  * their own SIKU, whatever the address asks for. Nilai dasar is the one
- * set in Kurikulum.
+ * set in Kurikulum. A name in the lists opens the student over the tab:
+ * the whole detail for a role that may open it, else name, NIM, program
+ * studi and status, each with "Rincian nilai SIKU".
  */
 export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const opened = await openPage("penilaian", "siku");
@@ -80,7 +90,7 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const mayAdjust = may(account.roles, "adjust_siku");
   const { seenEntry } = params;
   const mayDecide = may(account.roles, "decide_siku_additions");
-  const [numbers, ranking, list, groups, history, seen, board] =
+  const [numbers, ranking, list, groups, history, seen, board, detail] =
     await Promise.all([
       readSikuNumbers(db, visible, base),
       readSikuRanking(db, visible, base, params),
@@ -91,7 +101,10 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
         ? null
         : readSeenStudents(db, visible, seenEntry, params.seenPage),
       readRequestBoard(db, visible, params.requestFilter, params.requestPage),
+      askedDetailOrBrief(account, params.detailId, visible),
     ]);
+  const noteLimit = noteRowsFor(account);
+  const notesVisible = noteLimit === null ? null : visibleTo(noteLimit);
   const form = mayAdjust ? (
     <SikuInputPanel
       base={base}
@@ -131,7 +144,40 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
           />
         }
       />
-      {seen && <SeenStudentsDialog seen={seen} params={params} />}
+      {seen && !detail && <SeenStudentsDialog seen={seen} params={params} />}
+      {detail && (
+        <StudentDetailDialog
+          detail={detail}
+          period={await runningPeriodNow()}
+          openedFrom="siku_lists"
+          closeAddress={sikuAddress({ ...params, detailId: null })}
+          groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
+          morePanelsOf={(studentId) => (
+            <>
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={Promise.resolve(base)}
+              />
+              <StudentNotesPanel
+                account={account}
+                visible={notesVisible}
+                studentId={studentId}
+              />
+            </>
+          )}
+          briefPanelsOf={(studentId) => (
+            <StudentSikuPanel
+              account={account}
+              studentId={studentId}
+              base={Promise.resolve(base)}
+            />
+          )}
+        />
+      )}
     </>
   );
 }

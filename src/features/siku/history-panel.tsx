@@ -16,6 +16,7 @@ import type {
   SikuHistory,
 } from "./siku-history";
 import { KIND_WORDS, REASON_WORDS, signedPoints } from "./siku-words";
+import { StudentName } from "./student-name";
 
 /**
  * "Riwayat penambahan dan pengurangan SIKU": the entries in force of the
@@ -124,7 +125,11 @@ export function SeenStudentsDialog({
             {seen.students.map((student) => (
               <tr key={student.id}>
                 <td className={shared.rowHeading} data-title="Mahasiswa">
-                  <b className={shared.typed}>{student.name}</b>
+                  <StudentName
+                    studentId={student.studentId}
+                    name={student.name}
+                    params={params}
+                  />
                 </td>
                 <td data-title="NIM">{student.nim}</td>
                 <td data-title="Program studi">{student.program}</td>

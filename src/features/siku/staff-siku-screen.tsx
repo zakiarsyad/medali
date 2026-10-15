@@ -92,7 +92,7 @@ export function StaffSikuScreen({
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar nilai SIKU</h2>
         <SikuFilterRow params={params} />
-        <SikuListTable rows={list.rows} base={base} />
+        <SikuListTable rows={list.rows} base={base} params={params} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

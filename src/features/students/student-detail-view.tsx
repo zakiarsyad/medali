@@ -1,5 +1,3 @@
-import shared from "@/ui/data-screen.module.css";
-import { STATUS_LABELS } from "./labels";
 import { residenceWords } from "./residence-words";
 import { type RunningPeriod, semesterNow } from "./semester-now";
 import type { StudentDetail } from "./student-detail";
@@ -9,6 +7,7 @@ import {
   MainFacts,
   OriginAgencyFact,
 } from "./student-fact-parts";
+import { StudentHead } from "./student-head";
 import styles from "./student-list.module.css";
 import { StudentMentorFact } from "./student-mentor-fact";
 import type {
@@ -48,14 +47,10 @@ export function StudentDetailView({
 }) {
   return (
     <>
-      <h2 className={shared.heading}>{student.name}</h2>
-      <p className={shared.detail}>
-        {student.nim} · {student.studyProgram}
-      </p>
-      <p className={styles.tags}>
-        <span className={shared.badge}>{STATUS_LABELS[student.status]}</span>
-        <CategoryTags student={student} />
-      </p>
+      <StudentHead
+        student={student}
+        tags={<CategoryTags student={student} />}
+      />
       <dl className={styles.facts}>
         <MainFacts student={student} semester={semesterNow(student, period)} />
         <Fact title="Asrama">{residenceWords(student.residence)}</Fact>
