@@ -37,10 +37,22 @@ export interface RejectedClarification {
   note: string;
 }
 
+/** The resident a box of "Proses" is of. */
+export interface ProcessStudent {
+  studentId: string;
+  name: string;
+  nim: string;
+}
+
 /** What "Proses" of one resident shows. */
 export interface WarningProcess {
   semesterTitle: string;
-  call: WarningCall;
+  student: ProcessStudent;
+  /**
+   * Their call, or null once they are no longer called, such as after
+   * their violations were reduced in the open box.
+   */
+  call: WarningCall | null;
   rejected: RejectedClarification[];
   /** The violations of the semester gone up to Pengelola Asrama, the latest first. */
   counted: AnnouncedViolation[];
@@ -102,12 +114,25 @@ function readCounted(
     .orderBy(desc(dormViolations.day), asc(dormViolations.id));
 }
 
+async function readStudent(
+  db: Database,
+  student: SQL,
+): Promise<ProcessStudent | null> {
+  const [found] = await db
+    .select({ studentId: students.id, name: students.name, nim: students.nim })
+    .from(students)
+    .where(student);
+  return found ?? null;
+}
+
 /**
  * What "Proses" of a resident `visible` holds shows, in the running
  * semester at `now` by the server's clock: their call, the rejected
- * clarifications and the counted violations behind it. Null for a
- * student not called, not seen, or while no period is stored. All of one
- * semester of one resident, so the lists are not paged.
+ * clarifications and the counted violations behind it. A resident no
+ * longer called gets no call, so a box that reduced their violations
+ * stays open to say so. Null for a student not seen, or while no period
+ * is stored. All of one semester of one resident, so the lists are not
+ * paged.
  */
 export async function readWarningProcess(
   db: Database,
@@ -118,12 +143,19 @@ export async function readWarningProcess(
   const semester = await readWarningSemester(db, now);
   if (semester === null) return null;
   const student = and(visible, eq(students.id, studentId)) ?? visible;
-  const calls = await readCallsIn(db, semester, student, now, 1);
-  const [call] = calls.calls;
-  if (!call) return null;
-  const [rejected, counted] = await Promise.all([
+  const shown = await readStudent(db, student);
+  if (shown === null) return null;
+  const [calls, rejected, counted] = await Promise.all([
+    readCallsIn(db, semester, student, now, 1),
     readRejected(db, semester, student),
     readCounted(db, semester, student, now),
   ]);
-  return { semesterTitle: semester.title, call, rejected, counted };
+  const [call = null] = calls.calls;
+  return {
+    semesterTitle: semester.title,
+    student: shown,
+    call,
+    rejected,
+    counted,
+  };
 }

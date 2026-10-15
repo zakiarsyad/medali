@@ -25,9 +25,9 @@ import {
   reductionReasonFault,
   reductionStanding,
 } from "./reduction-rules";
+import type { CallAfter } from "./reduction-words";
 import { APPEAL_OF_VIOLATION } from "./violation-announcement";
 import { REDUCTIONS_PER_SEND_MAX } from "./violation-ids";
-import type { WarningLevel } from "./warning-ids";
 import { readStandingOf, readWarningSemester } from "./warning-standing";
 
 /** A reduction as the form sends it: nothing in it is trusted. */
@@ -50,20 +50,12 @@ interface CheckedReduction {
   reason: string;
 }
 
-/** Where the resident stands toward an SP after the reduction. */
-export interface StandingAfter {
-  /** Their violations of the running semester that still count. */
-  counted: number;
-  /** The SP they are still called for, or null when no call is active. */
-  level: WarningLevel | null;
-}
-
 /** What a reduction did. */
 export interface Reduced {
   /** The days of the violations reduced, the earliest first. */
   days: string[];
-  /** Null while no period is stored. */
-  standing: StandingAfter | null;
+  /** Where the resident stands toward an SP after it, or null while no period is stored. */
+  standing: CallAfter | null;
 }
 
 function pickedIds(sent: unknown): Parsed<string[]> {
@@ -168,7 +160,7 @@ async function standingAfter(
   visible: SQL,
   studentId: string,
   now: Date,
-): Promise<StandingAfter | null> {
+): Promise<CallAfter | null> {
   const semester = await readWarningSemester(db, now);
   if (semester === null) return null;
   const found = await readStandingOf(db, semester, visible, studentId, now);

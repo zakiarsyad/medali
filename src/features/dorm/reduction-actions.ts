@@ -7,8 +7,12 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import type { FormState } from "@/ui/form-message";
-import { reduceViolations, type SentOneReduction } from "./reduce-violations";
-import { oneReducedWords } from "./reduction-words";
+import {
+  reduceViolations,
+  type SentOneReduction,
+  type SentReduction,
+} from "./reduce-violations";
+import { manyReducedWords, oneReducedWords } from "./reduction-words";
 import { VIOLATIONS_ADDRESS } from "./violation-address";
 
 /**
@@ -46,4 +50,28 @@ export async function reduceOneViolationAction(
   if (!reduced.ok) return { error: reduced.error, done: null };
   const [day = ""] = reduced.value.days;
   return { error: null, done: oneReducedWords(day) };
+}
+
+/**
+ * "Kurangi (n) pelanggaran" with the ticks of "Proses", once confirmed:
+ * the answer says whether the call of the resident is still active.
+ */
+export async function reduceViolationsAction(
+  sent: SentReduction,
+): Promise<FormState> {
+  const actor = await reducer();
+  const reduced = await reduceViolations(
+    database(),
+    actor,
+    {
+      studentId: sent.studentId,
+      violationIds: sent.violationIds,
+      reason: sent.reason,
+    },
+    new Date(),
+  );
+  revalidatePath(VIOLATIONS_ADDRESS);
+  if (!reduced.ok) return { error: reduced.error, done: null };
+  const { days, standing } = reduced.value;
+  return { error: null, done: manyReducedWords(days.length, standing) };
 }

@@ -112,6 +112,19 @@ Decided while building, because the issue did not say:
 12. A reduction that names a violation of another student, one not
     there, or one reduced already is refused, and nothing is reduced.
     The second of two presses is told the violation is reduced already.
+13. In "Proses" each counted violation has the tick "Kurangi", with
+    Dasar pengurangan under the list. The button reads "Kurangi
+    pelanggaran terpilih", switched off, until one is ticked, then
+    "Kurangi (n) pelanggaran". The confirmation says "Sisa (n)
+    pelanggaran tercatat.". One press reduces at most 50, all or none.
+14. The answer says "(n) pelanggaran dikurangi." and then "Panggilan
+    klarifikasi tidak lagi aktif (n pelanggaran tercatat)." or
+    "Panggilan SP (1 or 2) masih aktif (n pelanggaran tercatat).". A
+    resident also called for a rejected clarification stays called.
+15. The box of "Proses" stays open once the resident is no longer
+    called, so the answer can be read: in place of its two parts it then
+    says "Mahasiswa ini tidak sedang dalam panggilan klarifikasi.". This
+    also holds after an SP is issued there, where the box used to close.
 
 ## Steps
 
@@ -121,7 +134,7 @@ Decided while building, because the issue did not say:
   checks.
 - [x] 3. Pengelola Asrama reduces one violation from the list per
   student.
-- [ ] 4. Pengelola Asrama reduces several at once while processing a
+- [x] 4. Pengelola Asrama reduces several at once while processing a
   call.
 - [ ] 5. The list of reductions shows, with undo.
 - [ ] 6. Residents see a reduced violation in their record.

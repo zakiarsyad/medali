@@ -3,6 +3,7 @@ import shared from "@/ui/data-screen.module.css";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { CallScheduleForm } from "./call-schedule-form";
 import { IssueLetterForm } from "./issue-letter-form";
+import { NO_COUNTED, ReduceManyForm } from "./reduce-many-form";
 import { RejectedTable } from "./rejected-table";
 import {
   type StaffViolationParams,
@@ -10,46 +11,28 @@ import {
 } from "./violation-address";
 import { AnnouncedTable } from "./violation-lists";
 import styles from "./violations.module.css";
+import type { WarningCall } from "./warning-calls";
 import { LetterMark } from "./warning-calls-panel";
 import { DEFAULT_CALL_PLACE, DEFAULT_CALL_TIME } from "./warning-ids";
 import { firstOfferedDay, lastCallDay } from "./warning-input";
 import type { WarningProcess } from "./warning-process";
 import { causeWords } from "./warning-words";
 
-export const NO_COUNTED = "Tidak ada pelanggaran tercatat semester ini.";
+export const NOT_CALLED_NOW =
+  "Mahasiswa ini tidak sedang dalam panggilan klarifikasi.";
 
 /**
- * "Proses" of one resident called for an SP, for Pengelola Asrama, in a
- * box over the tab: why they are called, "1. Jadwalkan klarifikasi", "2.
- * Catat klarifikasi dan terbitkan SP", the rejected clarifications and
- * the counted violations. Once the SP is issued the resident is no
- * longer called, so the box does not open again. On a phone its
- * parts stand in one column.
+ * Why the resident is called, "1. Jadwalkan klarifikasi" and "2. Catat
+ * klarifikasi dan terbitkan SP", side by side, in one column on a phone.
  */
-export function WarningProcessDialog({
-  process,
-  params,
-  now,
-}: {
-  process: WarningProcess;
-  params: StaffViolationParams;
-  now: Date;
-}) {
-  const { call } = process;
+function CallParts({ call, now }: { call: WarningCall; now: Date }) {
   const offered = call.schedule ?? {
     day: firstOfferedDay(now),
     time: DEFAULT_CALL_TIME,
     place: DEFAULT_CALL_PLACE,
   };
   return (
-    <ModalDialog
-      label="Proses panggilan klarifikasi"
-      closeAddress={staffViolationsAddress({ ...params, callStudentId: null })}
-    >
-      <h2 className={shared.heading}>{call.name}</h2>
-      <p className={styles.sub}>
-        {call.nim} · {call.room} · semester {process.semesterTitle}
-      </p>
+    <>
       <p className={styles.spaced}>
         <span className={`${shared.badge} ${styles.warn}`}>
           Penetapan SP {call.level}
@@ -85,19 +68,83 @@ export function WarningProcessDialog({
           />
         </section>
       </div>
+    </>
+  );
+}
+
+/** The counted violations, read only. */
+function CountedTable({
+  process,
+  now,
+}: {
+  process: WarningProcess;
+  now: Date;
+}) {
+  if (process.counted.length === 0) {
+    return <p className={shared.empty}>{NO_COUNTED}</p>;
+  }
+  return (
+    <AnnouncedTable
+      rows={process.counted}
+      now={now}
+      reader="staff"
+      withStudent={false}
+    />
+  );
+}
+
+/**
+ * "Proses" of one resident called for an SP, for Pengelola Asrama, in a
+ * box over the tab: why they are called, "1. Jadwalkan klarifikasi", "2.
+ * Catat klarifikasi dan terbitkan SP", the rejected clarifications and
+ * the counted violations, each with a tick "Kurangi" for an account that
+ * `reduces`. Once the resident is no longer called, after an SP is issued
+ * or violations are reduced, the box says so in place of the two parts,
+ * and the answer of the ticks stays, as they keep their place in the box.
+ * On a phone its parts stand in one column.
+ */
+export function WarningProcessDialog({
+  process,
+  params,
+  now,
+  reduces,
+}: {
+  process: WarningProcess;
+  params: StaffViolationParams;
+  now: Date;
+  reduces: boolean;
+}) {
+  const { call, student } = process;
+  const room = call === null ? "" : ` · ${call.room}`;
+  return (
+    <ModalDialog
+      label="Proses panggilan klarifikasi"
+      closeAddress={staffViolationsAddress({ ...params, callStudentId: null })}
+    >
+      <h2 className={shared.heading}>{student.name}</h2>
+      <p className={styles.sub}>
+        {student.nim}
+        {room} · semester {process.semesterTitle}
+      </p>
+      {call === null ? (
+        <p className={styles.spaced}>{NOT_CALLED_NOW}</p>
+      ) : (
+        <CallParts call={call} now={now} />
+      )}
       <RejectedTable rows={process.rejected} />
       <p className={`${shared.label} ${styles.spaced}`}>
-        {call.counted} pelanggaran tercatat semester ini
+        {process.counted.length} pelanggaran tercatat semester ini
       </p>
-      {process.counted.length === 0 ? (
-        <p className={shared.empty}>{NO_COUNTED}</p>
-      ) : (
-        <AnnouncedTable
+      {reduces ? (
+        <ReduceManyForm
+          key={student.studentId}
+          studentId={student.studentId}
+          name={student.name}
           rows={process.counted}
           now={now}
-          reader="staff"
-          withStudent={false}
         />
+      ) : (
+        <CountedTable process={process} now={now} />
       )}
     </ModalDialog>
   );

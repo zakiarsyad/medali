@@ -69,17 +69,26 @@ describe("readWarningProcess", () => {
     });
   });
 
-  it("is null for a resident not called, or one the account does not see", async () => {
+  it("gives no call for a resident not called, with their counted violations, and is null for one the account does not see", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea, bamId } = await setUp(db);
       await addTestViolations(db, ani, bamId, 7, "3293-10-01");
       await addTestViolations(db, bea, bamId, 6, "3293-10-01");
 
-      expect(await readWarningProcess(db, EVERYONE, bea, NOW)).toBeNull();
+      const notCalled = await readWarningProcess(db, EVERYONE, bea, NOW);
+      expect(notCalled).toMatchObject({
+        call: null,
+        student: { studentId: bea, name: "Bea Uji Pelanggaran" },
+      });
+      expect(notCalled?.counted).toHaveLength(6);
       expect(
         await readWarningProcess(db, eq(students.id, bea), ani, NOW),
       ).toBeNull();
-      expect(await readWarningProcess(db, EVERYONE, ani, NOW)).not.toBeNull();
+      expect(
+        (await readWarningProcess(db, EVERYONE, ani, NOW))?.call,
+      ).toMatchObject({
+        level: 1,
+      });
     });
   });
 });
