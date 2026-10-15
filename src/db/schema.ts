@@ -28,6 +28,13 @@ import {
   SCORE_MIN as ASSESSMENT_SCORE_MIN,
   ASSESSMENT_SOURCES,
 } from "@/features/character-assessment/assessment-ids";
+import {
+  GRADE_LETTERS,
+  type GradeScheme,
+  SCHEME_NUMBER_MAX,
+  SCHEME_NUMBER_MIN,
+  WEIGHT_TOTAL,
+} from "@/features/character-grades/scheme-ids";
 import { ASSIGNMENT_METHODS } from "@/features/cohort-assignments/methods";
 import {
   ACTIVITY_CATEGORIES,
@@ -2981,6 +2988,61 @@ export const characterAssessments = pgTable(
     check(
       "character_assessments_note_length",
       sql`char_length(${table.note}) <= ${sql.raw(String(ASSESSMENT_NOTE_MAX_LENGTH))}`,
+    ),
+  ],
+);
+
+export const gradeLetter = pgEnum("grade_letter", GRADE_LETTERS);
+
+/** A weight or a lower limit of the grade scheme is in its range. */
+function inSchemeRange(number: AnyPgColumn): SQL {
+  return sql`${number} between ${sql.raw(String(SCHEME_NUMBER_MIN))} and ${sql.raw(String(SCHEME_NUMBER_MAX))}`;
+}
+
+/**
+ * Every setting of the character grade scheme, with the whole scheme
+ * before it, who set it and when: the latest is the one in force, and
+ * without any it is the starting one. A setting names the one it
+ * replaced, or none for the starting one, and each is replaced at most
+ * once, so two saves made from the same form are never both kept. Rows
+ * here cannot be changed or deleted; the database refuses it.
+ */
+export const characterGradeSchemes = pgTable(
+  "character_grade_schemes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    attendanceWeight: smallint().notNull(),
+    mentoringWeight: smallint().notNull(),
+    sikuWeight: smallint().notNull(),
+    skpmWeight: smallint().notNull(),
+    aFrom: smallint().notNull(),
+    bFrom: smallint().notNull(),
+    cFrom: smallint().notNull(),
+    dFrom: smallint().notNull(),
+    passLetter: gradeLetter().notNull(),
+    before: jsonb().$type<GradeScheme>().notNull(),
+    replaces: uuid().references((): AnyPgColumn => characterGradeSchemes.id),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("character_grade_schemes_set_at").on(table.setAt),
+    unique("character_grade_schemes_replaced_once")
+      .on(table.replaces)
+      .nullsNotDistinct(),
+    check(
+      "character_grade_schemes_in_range",
+      sql`${inSchemeRange(table.attendanceWeight)} and ${inSchemeRange(table.mentoringWeight)} and ${inSchemeRange(table.sikuWeight)} and ${inSchemeRange(table.skpmWeight)} and ${inSchemeRange(table.aFrom)} and ${inSchemeRange(table.bFrom)} and ${inSchemeRange(table.cFrom)} and ${inSchemeRange(table.dFrom)}`,
+    ),
+    check(
+      "character_grade_schemes_weights_total",
+      sql`${table.attendanceWeight} + ${table.mentoringWeight} + ${table.sikuWeight} + ${table.skpmWeight} = ${sql.raw(String(WEIGHT_TOTAL))}`,
+    ),
+    check(
+      "character_grade_schemes_limits_go_down",
+      sql`${table.aFrom} > ${table.bFrom} and ${table.bFrom} > ${table.cFrom} and ${table.cFrom} > ${table.dFrom}`,
     ),
   ],
 );

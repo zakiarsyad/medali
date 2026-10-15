@@ -749,6 +749,47 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit set the character grade scheme, on Penilaian karakter", () => {
+    expect(ACTION_TITLES.set_grade_weights).toBe("Bobot penilaian");
+    expect(may(["head_of_unit"], "set_grade_weights")).toBe(true);
+    expect(mayOpenTab(["head_of_unit"], "assessment", "character")).toBe(true);
+  });
+
+  it("refuses every other role to set the character grade scheme, Penilai Mahasiswa, Pengasuh, Direktur, Ketua Program Studi and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "assessor",
+        "mentor",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "set_grade_weights")).toBe(false);
+    }
+  });
+
+  it("opens Penilaian karakter to Direktur, Ketua Program Studi, Pengasuh and Penilai Mahasiswa to read, and to no other role", () => {
+    const readers: RoleId[] = [
+      "director",
+      "head_of_program",
+      "mentor",
+      "assessor",
+    ];
+    for (const role of readers) {
+      expect(mayOpenTab([role], "assessment", "character")).toBe(true);
+    }
+    const others = ROLE_IDS.filter(
+      (role) => role !== "head_of_unit" && !readers.includes(role),
+    );
+    expect(others).toContain("student");
+    for (const role of others) {
+      expect(mayOpenTab([role], "assessment", "character")).toBe(false);
+    }
+  });
+
   it("opens Asesmen karakter to Direktur, Ketua Program Studi and Pengasuh to read, and not to Mahasiswa", () => {
     for (const role of ["director", "head_of_program", "mentor"] as const) {
       expect(mayOpenTab([role], "assessment", "character_test")).toBe(true);
