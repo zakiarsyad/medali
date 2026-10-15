@@ -103,7 +103,7 @@ their capaian karakter everywhere else in the app.
 
 - [x] 1. Assessments are stored with source, note and who; the right
   "Asesmen karakter" is added, with checks; sample assessments.
-- [ ] 2. The rule for Rerata and predikat, with checks.
+- [x] 2. The rule for Rerata and predikat, with checks.
 - [ ] 3. The tab shows the numbers and "Hasil asesmen karakter".
 - [ ] 4. The form with sliders and "Pratinjau medali" saves one student.
 - [ ] 5. A row opens the student's earlier assessments.
@@ -128,3 +128,9 @@ their capaian karakter everywhere else in the app.
   among them D3 Pajak students for the sample Ketua Program Studi and
   mentees of the sample Pengasuh, and leaves most Aktif students without
   one.
+- The predikat is given by the Rerata as shown, to one decimal. The
+  prototype gives it by the unrounded average; with six whole scores the
+  two never fall on different sides of 65, 75 or 85, so the answer is
+  the same.
+- "Rerata capaian" is the average of the students' latest Rerata, each
+  as shown, to one decimal; with nobody assessed it shows "-".
