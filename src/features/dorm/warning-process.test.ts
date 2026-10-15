@@ -8,7 +8,13 @@ import { withTestDatabase } from "@/db/test-database";
 import { addTestClarification } from "./test-clarifications";
 import { EVERYONE } from "./test-records";
 import { addViolationActor, addViolationSetting } from "./test-violations";
-import { addTestRejection, addTestViolations } from "./test-warnings";
+import {
+  addTestLetter,
+  addTestRejection,
+  addTestViolations,
+  issuedBy,
+  periodIdOf,
+} from "./test-warnings";
 import { readWarningProcess } from "./warning-process";
 
 const inTestDatabase = withTestDatabase();
@@ -78,6 +84,7 @@ describe("readWarningProcess", () => {
       const notCalled = await readWarningProcess(db, EVERYONE, bea, NOW);
       expect(notCalled).toMatchObject({
         call: null,
+        mark: null,
         student: { studentId: bea, name: "Bea Uji Pelanggaran" },
       });
       expect(notCalled?.counted).toHaveLength(6);
@@ -89,6 +96,24 @@ describe("readWarningProcess", () => {
       ).toMatchObject({
         level: 1,
       });
+    });
+  });
+
+  it("gives the highest SP issued in the semester to a resident no longer called", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, bamId } = await setUp(db);
+      const periodId = await periodIdOf(db, 3293);
+      await addTestViolations(db, ani, bamId, 7, "3293-10-01");
+      await addTestLetter(db, {
+        studentId: ani,
+        periodId,
+        level: 1,
+        ...issuedBy(bamId, new Date("3293-10-15T09:00:00Z")),
+      });
+
+      const process = await readWarningProcess(db, EVERYONE, ani, NOW);
+
+      expect(process).toMatchObject({ call: null, mark: 1 });
     });
   });
 });

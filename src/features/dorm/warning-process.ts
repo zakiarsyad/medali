@@ -17,7 +17,12 @@ import {
   APPEAL_OF_VIOLATION,
 } from "./violation-announcement";
 import { escalatedBy, inPeriodDays } from "./violation-conditions";
-import { readCallsIn, type WarningCall } from "./warning-calls";
+import {
+  readCallsIn,
+  readLetterMarks,
+  type WarningCall,
+} from "./warning-calls";
+import type { WarningLevel } from "./warning-ids";
 import {
   latestClarifications,
   readWarningSemester,
@@ -53,6 +58,8 @@ export interface WarningProcess {
    * their violations were reduced in the open box.
    */
   call: WarningCall | null;
+  /** The highest SP issued to them in the semester, or null for none. */
+  mark: WarningLevel | null;
   rejected: RejectedClarification[];
   /** The violations of the semester gone up to Pengelola Asrama, the latest first. */
   counted: AnnouncedViolation[];
@@ -145,16 +152,18 @@ export async function readWarningProcess(
   const student = and(visible, eq(students.id, studentId)) ?? visible;
   const shown = await readStudent(db, student);
   if (shown === null) return null;
-  const [calls, rejected, counted] = await Promise.all([
+  const [calls, rejected, counted, marks] = await Promise.all([
     readCallsIn(db, semester, student, now, 1),
     readRejected(db, semester, student),
     readCounted(db, semester, student, now),
+    readLetterMarks(db, semester.id, [shown.studentId]),
   ]);
   const [call = null] = calls.calls;
   return {
     semesterTitle: semester.title,
     student: shown,
     call,
+    mark: marks[shown.studentId] ?? null,
     rejected,
     counted,
   };

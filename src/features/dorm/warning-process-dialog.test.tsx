@@ -43,6 +43,7 @@ const PROCESS: WarningProcess = {
   semesterTitle: "Ganjil 2026/2027",
   student: STUDENT,
   call: CALL,
+  mark: null,
   rejected: [
     {
       id: "00000000-0000-4000-8000-0000000000c2",
@@ -118,6 +119,39 @@ describe("the ticks Kurangi in Proses", () => {
     expect(shown).not.toContain("1. Jadwalkan klarifikasi");
     expect(shown).not.toContain("Terbitkan SP");
     expect(shown.match(/type="checkbox"/g)).toHaveLength(2);
+  });
+});
+
+describe("the box of a resident whose SP was just issued", () => {
+  it("says SP 1 was issued in place of the two parts", () => {
+    const shown = box(
+      {
+        ...PROCESS,
+        call: null,
+        mark: 1,
+        counted: [counted("2026-10-12")],
+      },
+      true,
+    );
+
+    expect(shown).toContain("SP 1 sudah terbit semester ini.");
+    expect(shown).not.toContain(NOT_CALLED_NOW);
+    expect(shown).not.toContain("Terbitkan SP");
+    expect(shown).toContain("Kurangi pelanggaran terpilih");
+  });
+
+  it("says SP 2 was issued", () => {
+    const shown = box({ ...PROCESS, call: null, mark: 2 }, true);
+
+    expect(shown).toContain("SP 2 sudah terbit semester ini.");
+    expect(shown).not.toContain(NOT_CALLED_NOW);
+  });
+
+  it("keeps the two parts while the resident is still called, with an SP before", () => {
+    const shown = box({ ...PROCESS, call: { ...CALL, level: 2 }, mark: 1 });
+
+    expect(shown).toContain("2. Catat klarifikasi dan terbitkan SP 2");
+    expect(shown).not.toContain("sudah terbit semester ini");
   });
 });
 

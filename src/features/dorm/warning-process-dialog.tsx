@@ -13,13 +13,28 @@ import { AnnouncedTable } from "./violation-lists";
 import styles from "./violations.module.css";
 import type { WarningCall } from "./warning-calls";
 import { LetterMark } from "./warning-calls-panel";
-import { DEFAULT_CALL_PLACE, DEFAULT_CALL_TIME } from "./warning-ids";
+import {
+  DEFAULT_CALL_PLACE,
+  DEFAULT_CALL_TIME,
+  type WarningLevel,
+} from "./warning-ids";
 import { firstOfferedDay, lastCallDay } from "./warning-input";
 import type { WarningProcess } from "./warning-process";
 import { causeWords } from "./warning-words";
 
 export const NOT_CALLED_NOW =
   "Mahasiswa ini tidak sedang dalam panggilan klarifikasi.";
+
+/**
+ * What the box says in place of its two parts once the resident is no
+ * longer called: the highest SP issued to them this semester, which is
+ * true both just after "Terbitkan SP" and after a reduction ended a call
+ * for the next SP, or else that they are not called.
+ */
+function endedCallWords(mark: WarningLevel | null): string {
+  if (mark === null) return NOT_CALLED_NOW;
+  return `SP ${mark} sudah terbit semester ini.`;
+}
 
 /**
  * Why the resident is called, "1. Jadwalkan klarifikasi" and "2. Catat
@@ -99,8 +114,9 @@ function CountedTable({
  * Catat klarifikasi dan terbitkan SP", the rejected clarifications and
  * the counted violations, each with a tick "Kurangi" for an account that
  * `reduces`. Once the resident is no longer called, after an SP is issued
- * or violations are reduced, the box says so in place of the two parts,
- * and the answer of the ticks stays, as they keep their place in the box.
+ * or violations are reduced, the box says which SP they have, or that
+ * they are not called, in place of the two parts, and the answer of the
+ * ticks stays, as they keep their place in the box.
  * On a phone its parts stand in one column.
  */
 export function WarningProcessDialog({
@@ -127,7 +143,7 @@ export function WarningProcessDialog({
         {room} · semester {process.semesterTitle}
       </p>
       {call === null ? (
-        <p className={styles.spaced}>{NOT_CALLED_NOW}</p>
+        <p className={styles.spaced}>{endedCallWords(process.mark)}</p>
       ) : (
         <CallParts call={call} now={now} />
       )}

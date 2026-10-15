@@ -122,9 +122,11 @@ Decided while building, because the issue did not say:
     "Panggilan SP (1 or 2) masih aktif (n pelanggaran tercatat).". A
     resident also called for a rejected clarification stays called.
 15. The box of "Proses" stays open once the resident is no longer
-    called, so the answer can be read: in place of its two parts it then
-    says "Mahasiswa ini tidak sedang dalam panggilan klarifikasi.". This
-    also holds after an SP is issued there, where the box used to close.
+    called, so the answer can be read. In place of its two parts it then
+    says "SP (1 or 2) sudah terbit semester ini." for a resident with an
+    SP of the semester, the highest one, or else "Mahasiswa ini tidak
+    sedang dalam panggilan klarifikasi.". This also holds after an SP is
+    issued there, where the box used to close, so the issued SP is seen.
 16. "Riwayat pengurangan pelanggaran" stands under the rekap and follows
     its semester choice: the violations of a day of that semester that
     are reduced now, the latest reduced first, 20 a page. Each row shows
