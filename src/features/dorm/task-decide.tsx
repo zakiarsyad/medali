@@ -7,6 +7,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./leave.module.css";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
 import { type DecisionAnswer, REJECTION_NEEDS_NOTE } from "./leave-messages";
+import own from "./tasks.module.css";
 import { taskOutcome } from "./tasks-card";
 
 /** A button that agrees, such as Setujui, and the decision it sends. */
@@ -76,7 +77,7 @@ export function TaskDecide({
 
   return (
     <>
-      <div className={styles.decide}>
+      <div className={`${styles.decide} ${own.decide}`}>
         <input
           className={shared.input}
           aria-label="Catatan"
@@ -89,7 +90,7 @@ export function TaskDecide({
           <button
             key={agree.decision}
             type="button"
-            className={place === 0 ? shared.button : shared.quiet}
+            className={`${place === 0 ? shared.button : shared.quiet} ${own.decideControl}`}
             disabled={pending}
             onClick={() => send(agree.decision)}
           >
@@ -98,7 +99,7 @@ export function TaskDecide({
         ))}
         <button
           type="button"
-          className={shared.quiet}
+          className={`${shared.quiet} ${own.decideControl}`}
           disabled={pending}
           onClick={reject}
         >

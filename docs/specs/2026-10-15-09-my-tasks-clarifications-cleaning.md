@@ -127,6 +127,11 @@ effect as on their Asrama tabs.
 11. The number beside Tugas saya is worked out again right after each
     decision this account makes, on Tugas saya, on Klarifikasi
     kehadiran or on Pembersihan asrama.
+12. On a phone a cleaning row becomes a card with each value beside its
+    column title, as on Pembersihan asrama. The deciding buttons of
+    every card on Tugas saya, those of leave and return reports too,
+    each take the whole width of the card, tall enough for a thumb, as
+    the deciding buttons of Kegiatan already do.
 
 ## Steps
 
@@ -137,4 +142,4 @@ effect as on their Asrama tabs.
 - [x] 3. The section "Penilaian kebersihan menunggu validasi" with
   Validasi and Tolak.
 - [x] 4. The two number cards; stale and double decisions are refused.
-- [ ] 5. Phone layout for both sections.
+- [x] 5. Phone layout for both sections.

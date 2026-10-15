@@ -57,7 +57,7 @@ export function CleaningTasks({ tasks }: { tasks: CleaningTask[] }) {
     <TaskItems isEmpty={tasks.length === 0}>
       {(onSettled) => (
         <div className={shared.tableWrap}>
-          <table className={shared.table}>
+          <table className={`${shared.table} ${shared.stacked}`}>
             <thead>
               <tr>
                 <th>Tanggal</th>
