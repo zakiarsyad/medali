@@ -5,6 +5,8 @@ import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
+import { readAppealInbox } from "@/features/dorm/appeal-inbox";
+import { AppealInboxPanel } from "@/features/dorm/appeal-inbox-panel";
 import { readOwnViolations } from "@/features/dorm/own-violations";
 import { OwnViolationsView } from "@/features/dorm/own-violations-view";
 import { residentHeader } from "@/features/dorm/resident-header";
@@ -22,7 +24,8 @@ import type { TabLinksProps } from "@/ui/tab-links";
 /**
  * The staff screen: BAM records violations, schedules their announcement
  * and cancels one that waits; Pengelola Asrama and Kepala Unit read them.
- * Only those who record see what waits for its announcement.
+ * Only those who record see what waits for its announcement, and only
+ * BAM - BPHK and BAM - KI see the appeals that wait, with their reasons.
  */
 async function StaffScreen({
   account,
@@ -59,6 +62,22 @@ async function StaffScreen({
       ownStudentId={account.studentId}
     />
   ) : null;
+  const decides = may(account.roles, "decide_dorm_violation_appeals");
+  const inbox = decides
+    ? await readAppealInbox(
+        db,
+        visibleTo(rowLimitForAction(account, "decide_dorm_violation_appeals")),
+        params.appealPage,
+      )
+    : null;
+  const appeals =
+    inbox === null ? null : (
+      <AppealInboxPanel
+        inbox={inbox}
+        params={params}
+        ownStudentId={account.studentId}
+      />
+    );
   return (
     <StaffViolationsScreen
       tabs={tabs}
@@ -67,6 +86,7 @@ async function StaffScreen({
       now={now}
       form={form}
       schedule={schedule}
+      appeals={appeals}
     />
   );
 }

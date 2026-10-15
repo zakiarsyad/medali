@@ -4,7 +4,13 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { dormViolationAppeals } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { ALREADY_APPEALED, APPEAL_SENT } from "./appeal-messages";
+import { DECIDED_WORDS } from "./appeal-decision";
+import {
+  ALREADY_APPEALED,
+  APPEAL_DECIDED_BEFORE,
+  APPEAL_SENT,
+} from "./appeal-messages";
+import { decideViolationAppeal } from "./decide-appeal";
 import { sendViolationAppeal } from "./send-appeal";
 import {
   addTestViolation,
@@ -64,5 +70,54 @@ describe("Kirim advokasi pressed twice at the same moment", () => {
     expect(kept).toHaveLength(1);
     const lines = await linesOf(own.db, violationId);
     expect(lines.map((line) => line.action)).toEqual(["appealed"]);
+  });
+});
+
+describe("two BAM members deciding one appeal at the same moment", () => {
+  it("lets the first win whole: the second waits, then is refused, and the log has one decision", async () => {
+    const { residents: ids } = await residents();
+    const bea = ids[1] ?? "";
+    const bphk = await addViolationActor(own.db, "BAM Uji Putus A", [
+      "bam_bphk",
+    ]);
+    const ki = await addViolationActor(own.db, "BAM Uji Putus B", [
+      "bam_compliance",
+    ]);
+    const resident = await addViolationActor(own.db, "Bea", ["student"], bea);
+    const violationId = await addTestViolation(own.db, bea, bphk.id, DAY);
+    const sent = { violationId, reason: REASON, file: null };
+    const appealed = await sendViolationAppeal(
+      own.db,
+      null,
+      resident,
+      sent,
+      MOMENT,
+    );
+    if (!appealed.ok) throw new Error(appealed.error);
+    const [appeal] = await own.db
+      .select()
+      .from(dormViolationAppeals)
+      .where(eq(dormViolationAppeals.violationId, violationId));
+    const id = appeal?.id ?? "";
+    const accept = { kind: "accept", note: "" };
+    const reject = { kind: "reject", note: "Tidak ada izin." };
+
+    const both = await own.atOnce(
+      (db) => decideViolationAppeal(db, bphk, id, accept, MOMENT),
+      (db) => decideViolationAppeal(db, ki, id, reject, MOMENT),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: DECIDED_WORDS.accept });
+    expect(both.later).toEqual(APPEAL_DECIDED_BEFORE);
+    const [kept] = await own.db
+      .select()
+      .from(dormViolationAppeals)
+      .where(eq(dormViolationAppeals.id, id));
+    expect(kept).toMatchObject({ status: "accepted", decidedBy: bphk.id });
+    const lines = await linesOf(own.db, violationId);
+    expect(lines.map((line) => line.action)).toEqual([
+      "appealed",
+      "appeal_accepted",
+    ]);
   });
 });

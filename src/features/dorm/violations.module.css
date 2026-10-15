@@ -93,3 +93,46 @@
   min-width: 0;
   max-width: 100%;
 }
+
+/* The cards of "Advokasi masuk", as many beside each other as fit. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--card-min-width)), 1fr)
+    );
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+  padding: var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.card p {
+  margin: 0;
+}
+
+/* Catatan BAM and the two decisions fold onto lines of their own on a phone. */
+.decide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: flex-end;
+  margin-top: var(--space-xs);
+  padding-top: var(--space-sm);
+  border-top: var(--line-width) solid var(--line2);
+}
+
+.decideNote {
+  flex: 1 1 var(--box-min-width);
+  min-width: 0;
+}

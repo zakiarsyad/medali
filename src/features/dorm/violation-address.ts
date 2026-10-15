@@ -13,6 +13,8 @@ export const VIOLATIONS_ADDRESS = "/asrama/pel";
 
 /** What the staff screen of Pelanggaran shows. */
 export interface StaffViolationParams {
+  /** The page of "Advokasi masuk", counted from 1. */
+  appealPage: number;
   /** The page of Jadwal publikasi, counted from 1. */
   schedulePage: number;
   /** The violation day of "Pengumuman pelanggaran", or null for the latest. */
@@ -68,6 +70,7 @@ export function readStaffViolationParams(
   params: SearchParams,
 ): StaffViolationParams {
   return {
+    appealPage: pageOf(firstParam(params.advokasi)),
     schedulePage: pageOf(firstParam(params.jadwal)),
     day: dayOf(firstParam(params.tgl)),
     announcementPage: pageOf(firstParam(params.umum)),
@@ -104,6 +107,7 @@ function setPage(search: URLSearchParams, name: string, page: number) {
 /** The address of the staff screen. What is not chosen and first pages are left out. */
 export function staffViolationsAddress(params: StaffViolationParams): string {
   const search = new URLSearchParams();
+  setPage(search, "advokasi", params.appealPage);
   setPage(search, "jadwal", params.schedulePage);
   if (params.day !== null) search.set("tgl", params.day);
   setPage(search, "umum", params.announcementPage);

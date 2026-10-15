@@ -130,6 +130,18 @@ Decided while building, because the issue did not say:
     time lasts; or "-".
 11. Sending an appeal adds a line to the log of the violation, as each
     decision does, since it changes where a discipline record stands.
+12. "Advokasi masuk" stands under "Jadwal publikasi" for BAM - BPHK and
+    BAM - KI only, the soonest sent first, 20 a page. Each card shows the
+    name, "NIM · diajukan" with the hour, "Pelanggaran" with the day,
+    reason and punishment, the reason of the appeal, and "Lihat bukti:"
+    with the name of the proof, which downloads it.
+13. A decider's own appeal stays on their list, without "Catatan BAM",
+    "Terima" and "Tolak", and says "Advokasi atas pelanggaran Anda
+    sendiri diputuskan oleh anggota BAM yang lain."; a hand-made decision
+    on it is answered the same.
+14. Catatan BAM may be left empty on "Terima". A decision on an appeal
+    decided already is refused with "Advokasi ini sudah diputuskan oleh
+    anggota BAM yang lain. Muat ulang halaman."
 
 ## Steps
 
@@ -139,5 +151,5 @@ Decided while building, because the issue did not say:
   list, with their checks.
 - [x] 3. Residents send an appeal with an optional proof file and see
   its result.
-- [ ] 4. BAM sees "Advokasi masuk" and accepts or rejects.
+- [x] 4. BAM sees "Advokasi masuk" and accepts or rejects.
 - [ ] 5. The violation's status and the numbers follow the appeal.

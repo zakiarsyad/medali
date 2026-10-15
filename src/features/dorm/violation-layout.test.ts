@@ -67,6 +67,20 @@ describe("the appeal form of a resident on a phone", () => {
   });
 });
 
+describe("the cards of Advokasi masuk on a phone", () => {
+  it("stand in one column when two do not fit, and fold a long word", () => {
+    expect(ruleOf(".cards")).toContain(
+      "minmax(min(100%, var(--card-min-width)), 1fr)",
+    );
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("fold Catatan BAM and the two decisions onto lines of their own", () => {
+    expect(ruleOf(".decide")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".decideNote")).toContain("min-width: 0;");
+  });
+});
+
 describe("the lists of Pelanggaran on a phone", () => {
   it("show each violation, each waiting row and each student as a card that names every value", () => {
     for (const name of [
@@ -92,6 +106,8 @@ describe("the screen parts of Pelanggaran that run in the browser", () => {
     `${FOLDER}/rekap-filters.tsx`,
     `${FOLDER}/appeal-form.tsx`,
     `${FOLDER}/own-violation-table.tsx`,
+    `${FOLDER}/appeal-cards.tsx`,
+    `${FOLDER}/appeal-decide.tsx`,
   ];
 
   it("are found", () => {

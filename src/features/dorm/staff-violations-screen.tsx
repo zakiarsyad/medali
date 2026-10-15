@@ -93,7 +93,7 @@ function keptBesideDay(params: StaffViolationParams): [string, string][] {
 /**
  * Pelanggaran for staff: the three numbers, "Input dan publikasi
  * pelanggaran" and "Jadwal publikasi" for those who record and a note for
- * those who only read, "Rekap pelanggaran per mahasiswa" with the box of
+ * those who only read, "Advokasi masuk" for those who decide, "Rekap pelanggaran per mahasiswa" with the box of
  * one student, and "Pengumuman pelanggaran".
  */
 export function StaffViolationsScreen({
@@ -103,6 +103,7 @@ export function StaffViolationsScreen({
   now,
   form,
   schedule,
+  appeals,
 }: {
   tabs: TabLinksProps;
   params: StaffViolationParams;
@@ -112,6 +113,8 @@ export function StaffViolationsScreen({
   form: ReactNode;
   /** "Jadwal publikasi", or null for an account that only reads. */
   schedule: ViolationSchedule | null;
+  /** "Advokasi masuk", or null for an account that does not decide appeals. */
+  appeals: ReactNode;
 }) {
   return (
     <>
@@ -130,6 +133,7 @@ export function StaffViolationsScreen({
       {schedule !== null && (
         <SchedulePanel schedule={schedule} params={params} />
       )}
+      {appeals}
       <RekapPanel
         rekap={board.rekap}
         params={params}
