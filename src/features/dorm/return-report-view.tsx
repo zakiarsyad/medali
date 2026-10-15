@@ -12,8 +12,11 @@ import {
 export function ReturnPhoto({
   report,
 }: {
-  report: Pick<ReportCard, "id" | "hasPhoto">;
+  report: Pick<ReportCard, "id" | "hasPhoto" | "removed">;
 }) {
+  if (report.removed !== null) {
+    return <p className={styles.noReportPhoto}>{report.removed}</p>;
+  }
   if (!report.hasPhoto) {
     return <p className={styles.noReportPhoto}>{NO_RETURN_PHOTO_HERE}</p>;
   }

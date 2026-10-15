@@ -5,6 +5,7 @@ import {
   dormAttendanceMarks,
   dormClarifications,
 } from "@/db/schema";
+import { removedFileWords } from "@/ui/removed-file";
 import type { AcceptedClarification } from "./clarification-effect";
 import { type ShownClarification, shownNote } from "./clarification-time";
 import { heldKey } from "./history";
@@ -29,6 +30,7 @@ export async function readOwnClarifications(
       decisionNote: dormClarifications.decisionNote,
       fileKey: dormClarifications.fileKey,
       fileName: dormClarifications.fileName,
+      fileRemovedAt: dormClarifications.fileRemovedAt,
     })
     .from(dormClarifications)
     .innerJoin(
@@ -46,11 +48,13 @@ export async function readOwnClarifications(
   for (const row of rows) {
     const key = heldKey(row);
     if (newest.has(key)) continue;
+    const isKept = row.fileKey !== null && row.fileRemovedAt === null;
     newest.set(key, {
       id: row.id,
       status: row.status,
       note: shownNote(row.status, row.verifyNote, row.decisionNote),
-      fileName: row.fileKey === null ? null : row.fileName,
+      fileName: isKept ? row.fileName : null,
+      removed: removedFileWords(row.fileRemovedAt),
     });
   }
   return newest;

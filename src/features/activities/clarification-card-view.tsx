@@ -94,7 +94,9 @@ export function ClarificationCardView({
               {card.explanation}
             </Fact>
             <Fact title="Lampiran">
-              <FileName file={card.file} onOpen={onOpenFile} />
+              {card.removed ?? (
+                <FileName file={card.file} onOpen={onOpenFile} />
+              )}
             </Fact>
           </>
         )}

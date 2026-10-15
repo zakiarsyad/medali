@@ -440,6 +440,7 @@ describe("rejecting a clarification", () => {
         badge: "rejected",
         note: "Lampiran tidak terbaca.",
         file: null,
+        removed: null,
         action: "ask_again",
       });
       expect(

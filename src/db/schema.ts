@@ -86,6 +86,7 @@ import {
   RESULT_MIN_LENGTH,
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
+import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
   PHOTOS_MIN,
@@ -541,6 +542,51 @@ export const sikuBaseScore = pgTable(
   },
   (table) => [check("siku_base_score_one_row", sql`${table.id} = 1`)],
 );
+
+/**
+ * One row at most: how many days proof photos and attachments are kept
+ * after the academic period they were sent in ended, once Kepala Unit
+ * has set it. Until then no proof file is removed.
+ */
+export const proofFileKeeping = pgTable(
+  "proof_file_keeping",
+  {
+    id: smallint().primaryKey().default(1),
+    keepDays: smallint().notNull(),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+  },
+  (table) => [
+    check("proof_file_keeping_one_row", sql`${table.id} = 1`),
+    check(
+      "proof_file_keeping_days_in_range",
+      sql`${table.keepDays} between ${sql.raw(String(KEEP_DAYS_MIN))} and ${sql.raw(String(KEEP_DAYS_MAX))}`,
+    ),
+  ],
+);
+
+/**
+ * Every press of "Hapus berkas lama" that removed files: who, when, the
+ * days that were set then, and how many files of each kind went. It
+ * names no student. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const proofFileRemovals = pgTable("proof_file_removals", {
+  id: uuid().primaryKey().defaultRandom(),
+  removedBy: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  removedAt: timestamp({ withTimezone: true }).notNull(),
+  keepDays: smallint().notNull(),
+  attendancePhotos: integer().notNull(),
+  sikuPhotos: integer().notNull(),
+  returnPhotos: integer().notNull(),
+  activityClarificationFiles: integer().notNull(),
+  dormClarificationFiles: integer().notNull(),
+  appealProofs: integer().notNull(),
+});
 
 /**
  * The activities of the curriculum, without dates: the PPKS activities of
@@ -1053,6 +1099,8 @@ export const dormReturnReports = pgTable(
       .references(() => dormLeaves.id),
     /** Where the photo is in the file storage. Empty when none is kept. */
     photoKey: text().unique(),
+    /** When the photo was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     /** When the report arrived, by the server's clock: the time it reports. */
     sentAt: timestamp({ withTimezone: true }).notNull(),
     status: dormReturnReportStatus().notNull().default("waiting"),
@@ -1124,6 +1172,8 @@ export const dormClarifications = pgTable(
      * where no file storage is set.
      */
     fileKey: text().unique(),
+    /** When the file was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     fileName: text().notNull(),
     fileContentType: text().notNull(),
     /** In bytes. */
@@ -1482,6 +1532,8 @@ export const dormViolationAppeals = pgTable(
       .references(() => dormViolations.id),
     reason: text().notNull(),
     fileKey: text().unique(),
+    /** When the file was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     fileName: text(),
     fileContentType: text(),
     /** In bytes. */
@@ -2340,6 +2392,8 @@ export const activityAttendances = pgTable(
     status: activityAttendanceStatus().notNull(),
     /** Where the photo is in the file storage. Empty when none is kept. */
     photoKey: text().unique(),
+    /** When the photo was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     sentAt: timestamp({ withTimezone: true }),
     /** What the history shows as Keterangan. Empty when nothing was noted. */
     note: text().notNull(),
@@ -2415,6 +2469,8 @@ export const activityClarifications = pgTable(
      * where no file storage is set.
      */
     fileKey: text().unique(),
+    /** When the file was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     fileName: text().notNull(),
     fileContentType: text().notNull(),
     /** In bytes. */
@@ -2691,6 +2747,8 @@ export const sikuRequestPhotos = pgTable(
     place: smallint().notNull(),
     photoKey: text().unique(),
     thumbKey: text().unique(),
+    /** When both copies were removed as old proof; from then on neither is served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     unique("siku_request_photos_place").on(table.requestId, table.place),

@@ -193,6 +193,7 @@ describe("readClarifications", () => {
             isPdf: true,
             facts: "Dokumen PDF · 20 KB",
           },
+          removed: null,
         },
       ]);
     });

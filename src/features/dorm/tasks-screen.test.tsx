@@ -326,6 +326,7 @@ const CLARIFICATION: ClarificationTask = {
   explanation: "Demam dan beristirahat di kamar.",
   status: "verified",
   hasFile: true,
+  removed: null,
   file: {
     name: "surat-keterangan.pdf",
     isPdf: true,

@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
 import { shownMoment } from "@/ui/day";
+import { removedFileWords } from "@/ui/removed-file";
 import {
   type ClarificationCard,
   type ClarificationSummary,
@@ -60,6 +61,7 @@ const DETAILS = {
   ...SUMMARY,
   explanation: activityClarifications.explanation,
   fileKey: activityClarifications.fileKey,
+  fileRemovedAt: activityClarifications.fileRemovedAt,
   fileName: activityClarifications.fileName,
   fileContentType: activityClarifications.fileContentType,
   fileSize: activityClarifications.fileSize,
@@ -145,7 +147,8 @@ export function cardOf(
   stored: StoredCard,
   keepsFiles: boolean,
 ): ClarificationCard {
-  const hasFile = keepsFiles && stored.fileKey !== null;
+  const isRemoved = stored.fileRemovedAt !== null;
+  const hasFile = keepsFiles && stored.fileKey !== null && !isRemoved;
   const isPdf = isPdfType(stored.fileContentType);
   return {
     ...summaryOf(stored),
@@ -157,5 +160,6 @@ export function cardOf(
           facts: fileFacts(isPdf, stored.fileSize),
         }
       : null,
+    removed: removedFileWords(stored.fileRemovedAt),
   };
 }

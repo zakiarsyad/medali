@@ -267,7 +267,12 @@ describe("readStudentActivities", () => {
       const { clarifications } = await shownTo(db, student);
 
       expect(clarifications).toEqual({
-        [askedAgain]: { status: "submitted", note: "", file: null },
+        [askedAgain]: {
+          status: "submitted",
+          note: "",
+          file: null,
+          removed: null,
+        },
       });
     });
   });
@@ -309,10 +314,38 @@ describe("readStudentActivities", () => {
           status: "submitted",
           note: "",
           file: { clarificationId: newest, name: "surat-baru.pdf" },
+          removed: null,
         },
-        [withoutFile]: { status: "accepted", note: "", file: null },
+        [withoutFile]: {
+          status: "accepted",
+          note: "",
+          file: null,
+          removed: null,
+        },
       });
       expect(notKept.clarifications[withFile]?.file).toBeNull();
+    });
+  });
+
+  it("says when the file of the student's clarification was removed as old proof, and offers it no more", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staffId, student } = records;
+      const scheduleId = await addTestSchedule(db, scheduleIn(records, -5));
+      await addTestClarification(db, staffId, {
+        scheduleId,
+        studentId: student.studentId,
+        status: "rejected",
+        fileKey: "attendance-clarifications/uji-riwayat-dihapus.pdf",
+        fileRemovedAt: new Date("2362-04-01T03:00:00Z"),
+      });
+
+      const { clarifications } = await shownTo(db, student);
+
+      expect(clarifications[scheduleId]).toMatchObject({
+        file: null,
+        removed: "Berkas sudah dihapus pada 1 Apr 2362.",
+      });
     });
   });
 

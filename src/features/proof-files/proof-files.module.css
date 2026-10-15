@@ -1,0 +1,19 @@
+.daysRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: flex-end;
+  margin-top: var(--space-md);
+}
+
+.removeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-top: var(--space-md);
+}
+
+.message {
+  margin-top: var(--space-md);
+}

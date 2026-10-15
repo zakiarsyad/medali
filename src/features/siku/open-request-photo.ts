@@ -1,4 +1,4 @@
-import { and, eq, type SQL } from "drizzle-orm";
+import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
@@ -43,7 +43,14 @@ async function keyWithin(
     .from(sikuRequestPhotos)
     .innerJoin(sikuRequests, eq(sikuRequests.id, sikuRequestPhotos.requestId))
     .innerJoin(students, eq(students.id, sikuRequests.studentId))
-    .where(and(eq(sikuRequestPhotos.id, photoId), NOT_WITHDRAWN, which));
+    .where(
+      and(
+        eq(sikuRequestPhotos.id, photoId),
+        isNull(sikuRequestPhotos.fileRemovedAt),
+        NOT_WITHDRAWN,
+        which,
+      ),
+    );
   if (!photo) return null;
   return isSmall ? photo.thumbKey : photo.photoKey;
 }

@@ -43,6 +43,8 @@ export interface ShownClarification {
   note: string;
   /** Null when no file of it is kept here. */
   fileName: string | null;
+  /** What the row says once the file was removed as old proof, or null. */
+  removed: string | null;
 }
 
 /** The file a resident sent, as far as their row names it. */
@@ -62,6 +64,8 @@ export interface ClarificationCell {
   /** The note of a rejection or a closing, or empty. */
   note: string;
   file: SentFile | null;
+  /** What the cell says once that file was removed as old proof, or null. */
+  removed: string | null;
   action: ClarificationAction | null;
 }
 
@@ -110,7 +114,7 @@ export function clarificationCell(parts: {
   const isAbsent = status === "absent";
   const isOpen = clarificationOpen(day, today);
   if (newest === null) {
-    const nothingSent = { badge: null, note: "", file: null };
+    const nothingSent = { badge: null, note: "", file: null, removed: null };
     if (!isAbsent) return { ...nothingSent, action: null };
     return { ...nothingSent, action: isOpen ? "ask" : "closed" };
   }
@@ -118,14 +122,16 @@ export function clarificationCell(parts: {
     newest.fileName === null
       ? null
       : { clarificationId: newest.id, name: newest.fileName };
+  const { removed } = newest;
   if (!isOver(newest.status)) {
-    return { badge: newest.status, note: "", file, action: null };
+    return { badge: newest.status, note: "", file, removed, action: null };
   }
   const mayAskAgain = isAbsent && isOpen;
   return {
     badge: newest.status,
     note: newest.note,
     file,
+    removed,
     action: mayAskAgain ? "ask_again" : null,
   };
 }

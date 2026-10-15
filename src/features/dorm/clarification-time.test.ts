@@ -20,6 +20,7 @@ function newest(more: Partial<ShownClarification> = {}): ShownClarification {
     status: "submitted",
     note: "",
     fileName: "surat.pdf",
+    removed: null,
     ...more,
   };
 }
@@ -67,6 +68,7 @@ describe("clarificationCell", () => {
       badge: null,
       note: "",
       file: null,
+      removed: null,
       action: "ask",
     });
   });
@@ -82,6 +84,7 @@ describe("clarificationCell", () => {
         badge: null,
         note: "",
         file: null,
+        removed: null,
         action: null,
       });
     },
@@ -96,6 +99,7 @@ describe("clarificationCell", () => {
         badge: status,
         note: "",
         file: { clarificationId: shown.id, name: "surat.pdf" },
+        removed: null,
         action: null,
       });
     },
@@ -123,7 +127,7 @@ describe("clarificationCell", () => {
 
 describe("takesClarification", () => {
   it("is true only for a cell that offers to send one", () => {
-    const cell = { badge: null, note: "", file: null };
+    const cell = { badge: null, note: "", file: null, removed: null };
 
     expect(takesClarification({ ...cell, action: "ask" })).toBe(true);
     expect(takesClarification({ ...cell, action: "ask_again" })).toBe(true);

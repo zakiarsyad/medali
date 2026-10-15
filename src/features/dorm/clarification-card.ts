@@ -38,6 +38,8 @@ export interface DormClarificationCard {
    * for the roles that only read: they are told only that there is one.
    */
   file: ClarificationFile | null;
+  /** What the card says once the file was removed as old proof, or null. */
+  removed: string | null;
   /** The time it was sent, as the card says it. */
   sent: string;
   /** The check of BAM, or null before it. */
