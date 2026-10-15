@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   appealEndOf,
   lastEscalatedAnnouncement,
+  recordStatus,
   violationStatus,
 } from "./violation-status";
 
@@ -70,6 +71,29 @@ describe("violationStatus", () => {
   it("is Naik ke Pengelola once its appeal is rejected, also within the 3 hours", () => {
     expect(violationStatus(ANNOUNCED, "rejected", minutesLater(30))).toBe(
       "escalated",
+    );
+  });
+});
+
+describe("recordStatus", () => {
+  it("is Dikurangi for a reduced violation, whatever the clock says", () => {
+    expect(recordStatus(ANNOUNCED, null, true, minutesLater(300))).toBe(
+      "reduced",
+    );
+    expect(recordStatus(ANNOUNCED, "rejected", true, minutesLater(90))).toBe(
+      "reduced",
+    );
+  });
+
+  it("is what violationStatus says for a violation not reduced", () => {
+    expect(recordStatus(ANNOUNCED, null, false, minutesLater(30))).toBe(
+      "appeal",
+    );
+    expect(recordStatus(ANNOUNCED, null, false, minutesLater(180))).toBe(
+      "escalated",
+    );
+    expect(recordStatus(ANNOUNCED, "accepted", false, minutesLater(30))).toBe(
+      "appeal_accepted",
     );
   });
 });

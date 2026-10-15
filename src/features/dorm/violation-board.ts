@@ -18,6 +18,7 @@ import {
   escalatedBy,
   inAppealOrWaitingAt,
   inPeriodDays,
+  NOT_REDUCED,
 } from "./violation-conditions";
 import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import type { PeriodDays } from "./violation-periods";
@@ -77,7 +78,8 @@ async function countWhere(db: Database, where: SQL | undefined) {
  * "Diumumkan hari ini", "Dalam masa advokasi", which holds Advokasi
  * diproses too, and "Naik ke Pengelola Asrama", of the students
  * `visible` holds, at `now` by the server's clock. The last counts the
- * violation days of the semester only.
+ * violation days of the semester only. The first never counts a reduced
+ * violation, so it matches the announcement for every reader.
  */
 export async function readViolationNumbers(
   db: Database,
@@ -88,7 +90,7 @@ export async function readViolationNumbers(
   const todayStart = campusDayStart(campusDay(now));
   const ofSemester = semester === null ? sql`false` : inPeriodDays(semester);
   const [today, appeal, escalated] = await Promise.all([
-    countWhere(db, and(visible, announcedToday(now, todayStart))),
+    countWhere(db, and(visible, announcedToday(now, todayStart), NOT_REDUCED)),
     countWhere(db, and(visible, inAppealOrWaitingAt(now))),
     countWhere(db, and(visible, escalatedBy(now), ofSemester)),
   ]);

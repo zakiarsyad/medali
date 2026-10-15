@@ -15,7 +15,8 @@ export type Punishment = (typeof PUNISHMENTS)[number];
 
 /**
  * What a line of the log of a violation records: its entry, its cancel,
- * the appeal of its resident and the decision on that appeal.
+ * the appeal of its resident and the decision on that appeal, and its
+ * reduction by Pengelola Asrama and the undoing of that.
  */
 export const VIOLATION_CHANGE_ACTIONS = [
   "entered",
@@ -23,7 +24,19 @@ export const VIOLATION_CHANGE_ACTIONS = [
   "appealed",
   "appeal_accepted",
   "appeal_rejected",
+  "reduced",
+  "reduction_undone",
 ] as const;
+
+/**
+ * How long "Dasar pengurangan (hasil klarifikasi yang diterima)" is,
+ * without spaces around it. The least is the prototype's value.
+ */
+export const REDUCTION_REASON_MIN_LENGTH = 5;
+export const REDUCTION_REASON_MAX_LENGTH = 500;
+
+/** The most violations one press of "Kurangi" reduces. */
+export const REDUCTIONS_PER_SEND_MAX = 50;
 
 /** The reasons the form offers; any other reason may be typed. */
 export const VIOLATION_REASONS = [

@@ -71,10 +71,12 @@ async function ownRecordOf(
 }
 
 /**
- * "Proses" of the resident the address names, for Pengelola Asrama only.
- * Null for any other account, for none named, for the account's own
- * student, whose call another Pengelola Asrama processes, and for a
- * resident not called: the box then does not open.
+ * "Proses" of the resident the address names, for Pengelola Asrama only,
+ * with the ticks "Kurangi". Null for any other account, for none named,
+ * and for the account's own student, whose call another Pengelola Asrama
+ * processes: the box then does not open. A resident no longer called
+ * keeps the box, which says so, so the answer of a reduction that ended
+ * the call stays in it.
  */
 async function callProcessOf(
   account: Account,
@@ -92,7 +94,14 @@ async function callProcessOf(
     now,
   );
   if (process === null) return null;
-  return <WarningProcessDialog process={process} params={params} now={now} />;
+  return (
+    <WarningProcessDialog
+      process={process}
+      params={params}
+      now={now}
+      reduces={may(account.roles, "reduce_dorm_violations")}
+    />
+  );
 }
 
 /**
@@ -122,6 +131,7 @@ async function StaffScreen({
       params,
       now,
       may(account.roles, "view_dorm_warning_results"),
+      may(account.roles, "view_dorm_violation_reductions"),
     ),
     readWarningCalls(db, visible, now, params.callPage),
   ]);
@@ -170,6 +180,7 @@ async function StaffScreen({
       warnings={warnings}
       processes={may(account.roles, "issue_dorm_warning_letters")}
       ownStudentId={account.studentId}
+      reduces={may(account.roles, "reduce_dorm_violations")}
       callProcess={await callProcessOf(account, params, now)}
       ownRecord={await ownRecordOf(account, params, now)}
     />

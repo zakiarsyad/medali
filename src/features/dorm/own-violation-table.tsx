@@ -81,11 +81,7 @@ function RowCells({
       </td>
       <td data-title="Diumumkan">{shownHour(row.announcedAt)}</td>
       <td data-title="Status">
-        <StatusBadge
-          announcedAt={row.announcedAt}
-          appeal={row.appeal}
-          now={now}
-        />
+        <StatusBadge row={row} now={now} />
       </td>
       <td data-title="Advokasi">
         {row.ownAppeal !== null && <AppealCell appeal={row.ownAppeal} />}
