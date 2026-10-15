@@ -213,7 +213,7 @@ describe("issueWarningLetter", () => {
     ["capitals", (key: string) => key.toUpperCase()],
     [
       "mixed case",
-      (key: string) => key.slice(0, 18).toUpperCase() + key.slice(18),
+      (key: string) => key.replace(/[a-f]/, (letter) => letter.toUpperCase()),
     ],
   ])(
     "refuses the SP of a Pengelola Asrama for themselves with the key in %s, and saves nothing",
@@ -227,6 +227,7 @@ describe("issueWarningLetter", () => {
           ani,
         );
 
+        expect(written(ani)).not.toBe(ani);
         expect(await issue(db, self, written(ani), 1)).toEqual(OWN_CALL);
         expect(await lettersOf(db, ani)).toEqual([]);
       });

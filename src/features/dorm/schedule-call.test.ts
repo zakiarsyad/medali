@@ -59,13 +59,9 @@ async function setUp(db: Database) {
   return { ani, bea, cici, bam, manager, periodId };
 }
 
-/** The key with every other character in capitals. */
+/** The key with only its first letter in capitals. */
 function mixedCase(key: string): string {
-  return [...key]
-    .map((character, at) =>
-      at % 2 === 0 ? character.toUpperCase() : character,
-    )
-    .join("");
+  return key.replace(/[a-f]/, (letter) => letter.toUpperCase());
 }
 
 function send(
@@ -242,6 +238,7 @@ describe("scheduleWarningCall", () => {
           ani,
         );
 
+        expect(written(ani)).not.toBe(ani);
         expect(await send(db, self, written(ani))).toEqual(OWN_CALL);
         expect(await lettersOf(db, ani)).toEqual([]);
       });
