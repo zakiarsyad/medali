@@ -169,7 +169,7 @@ function boxRow(day: string, more: Partial<AnnouncedViolation> = {}) {
     day,
     studentId: BOX_STUDENT,
     name: "Penghuni Uji Kurangi",
-    nim: "9900990401",
+    nim: "9900990502",
     dorm: "dana_rakca",
     reason: "Terlambat apel pagi",
     punishment: "warning",
@@ -201,7 +201,7 @@ function withBox(studentId = BOX_STUDENT): StaffViolations {
     student: {
       studentId,
       name: "Penghuni Uji Kurangi",
-      nim: "9900990401",
+      nim: "9900990502",
       rows,
       matching: rows.length,
       page: 1,
