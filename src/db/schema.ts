@@ -7,6 +7,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -74,6 +75,17 @@ import {
   SIKU_KINDS,
   SIKU_REASONS,
 } from "@/features/siku/siku-ids";
+import {
+  ACTIVITY_MAX_LENGTH,
+  DAY_TEXT_MAX_LENGTH,
+  LABEL_MAX_LENGTH,
+  POINTS_FOR_100_MAX,
+  POINTS_FOR_100_MIN,
+  ROW_POINTS_MAX,
+  ROW_POINTS_MIN,
+  SKPM_UPLOAD_ACTIONS,
+  SKPM_UPLOAD_MODES,
+} from "@/features/skpm/skpm-ids";
 import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
@@ -192,6 +204,13 @@ export const sikuRequestStatus = pgEnum(
 export const sikuAdjustmentChangeAction = pgEnum(
   "siku_adjustment_change_action",
   ["entered", "cancelled"],
+);
+
+export const skpmUploadMode = pgEnum("skpm_upload_mode", SKPM_UPLOAD_MODES);
+
+export const skpmUploadAction = pgEnum(
+  "skpm_upload_action",
+  SKPM_UPLOAD_ACTIONS,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -2358,6 +2377,149 @@ export const sikuRequestPhotos = pgTable(
     check(
       "siku_request_photos_both_kept",
       sql`(${table.photoKey} is null) = (${table.thumbKey} is null)`,
+    ),
+  ],
+);
+
+/**
+ * One CSV file of SKPM activity points, saved at once in the academic
+ * period that ran then. Its rows are those that name it. The key is made
+ * by the screen that showed the file, so a file sent twice is kept once.
+ * The file itself is never kept: only its name as shown and a SHA-256
+ * fingerprint of its bytes. A removed upload keeps its row, with who
+ * removed it and when, and counts no more. An upload made with "Ganti
+ * semua data" leaves out every upload before it while it is not removed.
+ */
+export const skpmUploads = pgTable(
+  "skpm_uploads",
+  {
+    id: uuid().primaryKey(),
+    fileName: text().notNull(),
+    fingerprint: text().notNull(),
+    mode: skpmUploadMode().notNull(),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    rowCount: smallint().notNull(),
+    studentCount: smallint().notNull(),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+    removedBy: uuid().references(() => accounts.id),
+    removedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("skpm_uploads_entered_at").on(table.enteredAt),
+    check(
+      "skpm_uploads_fingerprint_is_sha256",
+      sql`${table.fingerprint} ~ '^[0-9a-f]{64}$'`,
+    ),
+    check(
+      "skpm_uploads_counts",
+      sql`${table.studentCount} between 1 and ${table.rowCount}`,
+    ),
+    check(
+      "skpm_uploads_removal_is_whole",
+      sql`(${table.removedBy} is null) = (${table.removedAt} is null)`,
+    ),
+  ],
+);
+
+/**
+ * One activity of one student from an SKPM file, as the file has it.
+ * `line` is its row number in the file. An empty Tingkat, Peran or
+ * Tanggal is null.
+ */
+export const skpmRows = pgTable(
+  "skpm_rows",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    uploadId: uuid()
+      .notNull()
+      .references(() => skpmUploads.id),
+    /** A file's empty lines count too, so this may pass 32,767. */
+    line: integer().notNull(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    /** Kegiatan. */
+    activity: text().notNull(),
+    /** Kategori. */
+    category: text().notNull(),
+    /** Tingkat. */
+    level: text(),
+    /** Peran. */
+    activityRole: text(),
+    /** Tanggal as the file writes it: the prototype keeps any text. */
+    day: text(),
+    points: numeric({ precision: 6, scale: 2, mode: "number" }).notNull(),
+  },
+  (table) => [
+    unique("skpm_rows_line").on(table.uploadId, table.line),
+    index("skpm_rows_student").on(table.studentId),
+    check(
+      "skpm_rows_points_in_range",
+      sql`${table.points} between ${sql.raw(String(ROW_POINTS_MIN))} and ${sql.raw(String(ROW_POINTS_MAX))}`,
+    ),
+    check(
+      "skpm_rows_activity_length",
+      sql`char_length(${table.activity}) between 1 and ${sql.raw(String(ACTIVITY_MAX_LENGTH))}`,
+    ),
+    check(
+      "skpm_rows_label_lengths",
+      sql`char_length(${table.category}) between 1 and ${sql.raw(String(LABEL_MAX_LENGTH))} and char_length(${table.level}) between 1 and ${sql.raw(String(LABEL_MAX_LENGTH))} and char_length(${table.activityRole}) between 1 and ${sql.raw(String(LABEL_MAX_LENGTH))}`,
+    ),
+    check(
+      "skpm_rows_day_length",
+      sql`char_length(${table.day}) between 1 and ${sql.raw(String(DAY_TEXT_MAX_LENGTH))}`,
+    ),
+  ],
+);
+
+/**
+ * Every upload and every removal of an SKPM upload: who and when. An
+ * upload cannot be changed otherwise, so what it was before and after is
+ * the action. Rows here cannot be changed or deleted; the database
+ * refuses it.
+ */
+export const skpmUploadChanges = pgTable(
+  "skpm_upload_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    uploadId: uuid()
+      .notNull()
+      .references(() => skpmUploads.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    action: skpmUploadAction().notNull(),
+  },
+  (table) => [index("skpm_upload_changes_upload").on(table.uploadId)],
+);
+
+/**
+ * Every setting of "Poin untuk nilai 100", with the number before it:
+ * the latest is the one in force, and without any it is the starting
+ * one. Rows here cannot be changed or deleted; the database refuses it.
+ */
+export const skpmConversions = pgTable(
+  "skpm_conversions",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    pointsForHundred: smallint().notNull(),
+    pointsBefore: smallint().notNull(),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("skpm_conversions_set_at").on(table.setAt),
+    check(
+      "skpm_conversions_in_range",
+      sql`${table.pointsForHundred} between ${sql.raw(String(POINTS_FOR_100_MIN))} and ${sql.raw(String(POINTS_FOR_100_MAX))} and ${table.pointsBefore} between ${sql.raw(String(POINTS_FOR_100_MIN))} and ${sql.raw(String(POINTS_FOR_100_MAX))}`,
     ),
   ],
 );

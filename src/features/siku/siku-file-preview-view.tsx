@@ -1,40 +1,11 @@
 import type { ReactNode } from "react";
-import { PREVIEW_SKIPPED } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
-import styles from "@/ui/file-upload.module.css";
+import { FileSummary, MoreRows, SkippedRows } from "@/ui/file-preview-parts";
 import type { SikuFilePreview } from "./siku-file-preview";
 import { KIND_WORDS, REASON_WORDS, signedPoints } from "./siku-words";
 
-function shown(amount: number): string {
-  return amount.toLocaleString("id-ID");
-}
-
-function Summary({
-  name,
-  preview,
-}: {
-  name: string;
-  preview: SikuFilePreview;
-}) {
-  const { ready, skipped } = preview;
-  return (
-    <p
-      className={
-        skipped > 0
-          ? `${styles.fileResult} ${styles.fileWarn}`
-          : styles.fileResult
-      }
-      role="status"
-    >
-      <b>{name}</b>: {shown(ready)} baris siap disimpan
-      {skipped > 0 && `, ${shown(skipped)} baris dilewati`}.
-    </p>
-  );
-}
-
 /** The first ready rows, in a box that scrolls sideways on a phone. */
 function ReadyRows({ preview }: { preview: SikuFilePreview }) {
-  const more = preview.ready - preview.firstRows.length;
   return (
     <>
       <div className={shared.tableWrap}>
@@ -67,34 +38,8 @@ function ReadyRows({ preview }: { preview: SikuFilePreview }) {
           </tbody>
         </table>
       </div>
-      {more > 0 && (
-        <p className={shared.detail}>dan {shown(more)} baris lainnya.</p>
-      )}
+      <MoreRows more={preview.ready - preview.firstRows.length} />
     </>
-  );
-}
-
-/** The skipped rows with why. Nothing when no row is skipped. */
-function SkippedRows({ preview }: { preview: SikuFilePreview }) {
-  if (preview.skipped === 0) return null;
-  return (
-    <details className={styles.skipped}>
-      <summary>Lihat baris yang dilewati</summary>
-      <ul>
-        {preview.firstSkipped.map(({ row, nim, reason }) => (
-          <li key={row}>
-            Baris {shown(row)}
-            {nim && ` (${nim})`}: {reason}
-          </li>
-        ))}
-      </ul>
-      {preview.skipped > PREVIEW_SKIPPED && (
-        <p className={shared.detail}>
-          Menampilkan {PREVIEW_SKIPPED} dari {shown(preview.skipped)} baris yang
-          dilewati.
-        </p>
-      )}
-    </details>
   );
 }
 
@@ -113,9 +58,13 @@ export function SikuFilePreviewView({
 }) {
   return (
     <>
-      <Summary name={name} preview={preview} />
+      <FileSummary
+        name={name}
+        ready={preview.ready}
+        skipped={preview.skipped}
+      />
       {preview.ready > 0 && <ReadyRows preview={preview} />}
-      <SkippedRows preview={preview} />
+      <SkippedRows skipped={preview.skipped} first={preview.firstSkipped} />
       {preview.ready > 0 && <div className={shared.actions}>{children}</div>}
     </>
   );
