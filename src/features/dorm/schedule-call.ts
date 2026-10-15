@@ -44,9 +44,13 @@ export async function callToChange(
   if (!may(actor.roles, "issue_dorm_warning_letters")) {
     return WARNING_NOT_ALLOWED;
   }
-  const { studentId } = sent;
-  if (typeof studentId !== "string" || !isUuid(studentId)) return NOT_CALLED;
-  if (studentId === actor.studentId) return OWN_CALL;
+  if (typeof sent.studentId !== "string" || !isUuid(sent.studentId)) {
+    return NOT_CALLED;
+  }
+  // The database reads a key in capitals as the same student, so the
+  // comparison with the account's own student must ignore case too.
+  const studentId = sent.studentId.toLowerCase();
+  if (studentId === actor.studentId?.toLowerCase()) return OWN_CALL;
   const visible = visibleTo(
     rowLimitForAction(actor, "issue_dorm_warning_letters"),
   );

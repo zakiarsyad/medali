@@ -67,8 +67,13 @@ function dayOf(sent: string): string | null {
   return isDay(sent) ? sent : null;
 }
 
+/**
+ * A key of the address in small letters. The database reads a key in
+ * capitals as the same row, so a comparison with the account's own
+ * student, as for "Proses", must see the one written form.
+ */
 function keyOf(sent: string): string | null {
-  return isUuid(sent) ? sent : null;
+  return isUuid(sent) ? sent.toLowerCase() : null;
 }
 
 function ownPeriodOf(sent: string): string | "all" | null {
