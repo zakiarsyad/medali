@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { daysAfter } from "@/academic-periods/days-after";
 import { DORM_IDS } from "@/dorms/dorms";
+import type { Database } from "./connect";
 import { SAMPLE_CLEANING_PLACES } from "./sample-dorm-cleaning";
 import {
   accountRoles,
@@ -37,7 +38,7 @@ describe("the sample dorm cleaning", { timeout: 20_000 }, () => {
     });
   });
 
-  it("gives a week of duties in Dana Rakca and Cipta Bakti to rooms with residents, by the sample Pengelola Asrama", async () => {
+  it("gives a week of duties in Dana Rakca and Cipta Bakti to rooms with residents, by the sample Pengelola Asrama, with the judgements of the past days", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
       const today = campusDay();
@@ -68,44 +69,51 @@ describe("the sample dorm cleaning", { timeout: 20_000 }, () => {
         expect(duty.day >= daysAfter(today, -3)).toBe(true);
         expect(duty.day <= daysAfter(today, 3)).toBe(true);
       }
-    });
-  });
 
-  it("judges the past duties by the sample BAM - Kerumahtanggaan, validates all but one, repeats each one not met, and logs each step", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-      const today = campusDay();
-
-      const duties = await db.select().from(dormCleaningDuties);
-      const changes = await db.select().from(dormCleaningChanges);
-      const [judge] = await db
-        .select({ id: accountRoles.accountId })
-        .from(accountRoles)
-        .where(eq(accountRoles.role, "bam_household"));
-
-      const judged = duties.filter((duty) => duty.status !== "scheduled");
-      const validated = judged.filter((duty) => duty.status === "validated");
-      const notMet = validated.filter((duty) => duty.result === "not_met");
-      const repeats = duties.filter((duty) => duty.repeatOf !== null);
-      expect(judged.length).toBeGreaterThan(0);
-      expect(judged.length - validated.length).toBe(2);
-      expect(notMet.length).toBeGreaterThan(0);
-      for (const duty of judged) {
-        expect(duty.day < today).toBe(true);
-        expect(duty.judgedBy).toBe(judge?.id);
-      }
-      for (const duty of notMet) {
-        expect(duty.judgeNote).not.toBe("");
-        const repeat = repeats.find((each) => each.repeatOf === duty.id);
-        expect(repeat).toMatchObject({
-          placeId: duty.placeId,
-          roomId: duty.roomId,
-          status: "scheduled",
-        });
-        expect((repeat?.day ?? "") > today).toBe(true);
-      }
-      expect(repeats).toHaveLength(notMet.length);
-      expect(changes).toHaveLength(judged.length + validated.length);
+      // Read from the same sample set: loading it again for a check of its
+      // own makes the whole run slower than its time allows.
+      await expectSampleJudgements(db, duties, today);
     });
   });
 });
+
+/**
+ * The past duties are judged by the sample BAM - Kerumahtanggaan and
+ * validated, all but one, each one not met is repeated, and each step is
+ * logged.
+ */
+async function expectSampleJudgements(
+  db: Database,
+  duties: (typeof dormCleaningDuties.$inferSelect)[],
+  today: string,
+): Promise<void> {
+  const changes = await db.select().from(dormCleaningChanges);
+  const [judge] = await db
+    .select({ id: accountRoles.accountId })
+    .from(accountRoles)
+    .where(eq(accountRoles.role, "bam_household"));
+
+  const judged = duties.filter((duty) => duty.status !== "scheduled");
+  const validated = judged.filter((duty) => duty.status === "validated");
+  const notMet = validated.filter((duty) => duty.result === "not_met");
+  const repeats = duties.filter((duty) => duty.repeatOf !== null);
+  expect(judged.length).toBeGreaterThan(0);
+  expect(judged.length - validated.length).toBe(2);
+  expect(notMet.length).toBeGreaterThan(0);
+  for (const duty of judged) {
+    expect(duty.day < today).toBe(true);
+    expect(duty.judgedBy).toBe(judge?.id);
+  }
+  for (const duty of notMet) {
+    expect(duty.judgeNote).not.toBe("");
+    const repeat = repeats.find((each) => each.repeatOf === duty.id);
+    expect(repeat).toMatchObject({
+      placeId: duty.placeId,
+      roomId: duty.roomId,
+      status: "scheduled",
+    });
+    expect((repeat?.day ?? "") > today).toBe(true);
+  }
+  expect(repeats).toHaveLength(notMet.length);
+  expect(changes).toHaveLength(judged.length + validated.length);
+}
