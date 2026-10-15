@@ -1,4 +1,4 @@
-// Sample NIMs of this file: 9986110000 to 9986110099.
+// Sample NIMs of this file: 9986113000 to 9986113099.
 
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -29,7 +29,7 @@ describe("Kurangi pressed twice at the same moment", () => {
       own.db,
       2026,
       "Prodi Uji Kurangi Sekaligus",
-      ["9986110001", "9986110002", "9986110003", "9986110004", "9986110005"],
+      ["9986113001", "9986113002", "9986113003", "9986113004", "9986113005"],
     );
     const ani = setting.residents[0] ?? "";
     const bam = await addViolationActor(own.db, "BAM Uji Kurangi", [
