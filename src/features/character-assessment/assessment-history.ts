@@ -1,5 +1,6 @@
 import { and, desc, eq, type SQL } from "drizzle-orm";
 import type { Term } from "@/academic-periods/academic-period";
+import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
 import {
   academicPeriods,
@@ -10,7 +11,6 @@ import {
 } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { AssessmentSource } from "./assessment-ids";
-import type { Scores } from "./assessment-score";
 import { scoresOf } from "./latest-assessments";
 
 /** One assessment of a student, as the history shows it. */

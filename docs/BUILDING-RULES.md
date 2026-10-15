@@ -29,6 +29,9 @@ while building.
   come, the wait that keeps two changes of who holds which group apart,
   the status a survey period has by its dates, and which survey period
   runs on a day, read by every area that needs them.
+- `src/character-scores/`: the scores of a character assessment, their
+  Rerata and predikat, how a Rerata is shown, and each student's latest
+  assessment, read by every area that shows character scores.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.

@@ -1,12 +1,12 @@
 import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { type AccountForAccess, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
+import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { students, studyPrograms } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
-import type { Scores } from "./assessment-score";
 import { readLatestOf } from "./latest-assessments";
 
 /** How many students one search offers. */

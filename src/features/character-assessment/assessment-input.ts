@@ -1,3 +1,4 @@
+import type { Scores } from "@/character-scores/assessment-score";
 import { isUuid } from "@/db/is-uuid";
 import type { Parsed } from "@/parsed";
 import type { ValueKey } from "@/ui/medali-values";
@@ -14,7 +15,6 @@ import {
   NOTE_TOO_LONG,
   UNKNOWN_SOURCE,
 } from "./assessment-messages";
-import type { Scores } from "./assessment-score";
 
 /** "Input capaian MEDALI" as the browser sent it, nothing of it trusted. */
 export interface SentAssessment {

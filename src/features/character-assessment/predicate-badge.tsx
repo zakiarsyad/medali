@@ -1,5 +1,5 @@
+import { predicateOf } from "@/character-scores/assessment-score";
 import shared from "@/ui/data-screen.module.css";
-import { predicateOf } from "./assessment-score";
 import { PREDICATE_WORDS } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 

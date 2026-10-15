@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
@@ -13,7 +14,7 @@ import type { AssessmentList } from "./assessment-board";
 import type { AssessmentNumbers } from "./assessment-counts";
 import { AssessmentFilterRow } from "./assessment-filters";
 import { AssessmentListTable } from "./assessment-list-table";
-import { READ_ONLY_NOTE, shownRerata, shownShare } from "./assessment-words";
+import { READ_ONLY_NOTE, shownShare } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 
 /** What a role that only reads the tab is told: who enters the assessments. */

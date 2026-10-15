@@ -1,5 +1,5 @@
+import type { Scores } from "@/character-scores/assessment-score";
 import { MEDALI_VALUES } from "@/ui/medali-values";
-import type { Scores } from "./assessment-score";
 import styles from "./character-assessment.module.css";
 import {
   axisEnd,

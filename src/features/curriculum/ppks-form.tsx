@@ -26,6 +26,22 @@ import { RemovePpksButton } from "./remove-ppks-button";
 const START: FormState = { error: null, done: null };
 
 /**
+ * What Target peserta starts with. A new activity starts with the number
+ * the app would fill in, so saving it keeps that number as a typed one.
+ * A 0 is left out: saved as typed, it would stay 0 once students are
+ * counted. An activity without a target stays empty, so saving it keeps
+ * the number filled in by the app.
+ */
+function startingTarget(
+  activity: PpksActivity | null,
+  autoTarget: number | null,
+): number | "" {
+  if (activity) return activity.targetParticipants ?? "";
+  if (autoTarget === null || autoTarget === 0) return "";
+  return autoTarget;
+}
+
+/**
  * The form that adds an activity or changes one: a PPKS activity of one
  * semester, or a special or additional one, which has no semester.
  */
@@ -33,6 +49,7 @@ export function PpksForm({
   semester,
   activity,
   newActivityId,
+  autoTarget,
   values,
   onSaved,
   onRemoved,
@@ -43,6 +60,8 @@ export function PpksForm({
   activity: PpksActivity | null;
   /** The key of the activity this form adds, so two presses add it once. */
   newActivityId: string;
+  /** The target the app fills in for this list, or null for none. */
+  autoTarget: number | null;
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
   onSaved: (message: string) => void;
@@ -135,7 +154,7 @@ export function PpksForm({
             type="number"
             min={0}
             className={shared.input}
-            defaultValue={activity?.targetParticipants ?? ""}
+            defaultValue={startingTarget(activity, autoTarget)}
           />
         </label>
         <label className={shared.role}>

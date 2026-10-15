@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import type { ValueKey } from "@/ui/medali-values";
@@ -9,6 +10,7 @@ import { BreakdownForm } from "./breakdown-form";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
 import type { TahapBreakdown } from "./stage-breakdown";
+import type { TahapScores } from "./tahap-scores";
 
 /**
  * What the six nilai mean at the chosen tahap, one box each, with the form
@@ -19,9 +21,12 @@ export function BreakdownPanel({
   breakdown,
   values,
   mayChange,
+  scores,
 }: {
   tahapName: string;
   breakdown: TahapBreakdown;
+  /** The averages of the viewer's assessed students in the tahap, or null for none. */
+  scores: TahapScores | null;
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
   mayChange: boolean;
@@ -41,12 +46,21 @@ export function BreakdownPanel({
 
   return (
     <section className={shared.panel}>
-      <h2 className={shared.heading}>
-        Penjabaran MEDALI tahap {tahapName.toLowerCase()}
-      </h2>
-      <p className={shared.detail}>
-        {breakdown.note} Indikator tahap dipilih dari indikator utama.
-      </p>
+      <div className={styles.panelHead}>
+        <div>
+          <h2 className={shared.heading}>
+            Penjabaran MEDALI tahap {tahapName.toLowerCase()}
+          </h2>
+          <p className={shared.detail}>
+            {breakdown.note} Indikator tahap dipilih dari indikator utama.
+          </p>
+        </div>
+        {scores && (
+          <span className={shared.detail}>
+            Rerata tahap {shownRerata(scores.rerata)}
+          </span>
+        )}
+      </div>
       {saved && (
         <div className={styles.message}>
           <FormMessage state={{ error: null, done: saved }} />
@@ -72,6 +86,7 @@ export function BreakdownPanel({
             <BreakdownBox
               key={value.key}
               value={value}
+              score={scores?.values[value.key] ?? null}
               indicators={indicators.filter(({ code }) =>
                 value.indicatorCodes.includes(code),
               )}
