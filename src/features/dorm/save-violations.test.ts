@@ -248,4 +248,58 @@ describe("saveViolations", () => {
       expect(await violationsUnder(db, key)).toHaveLength(1);
     });
   });
+
+  it("refuses a list sent again with another announcement hour, keeping the first hour", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const actor = await bam(db);
+      const key = crypto.randomUUID();
+      const row = sentRow(setting.residents[0] ?? "");
+      await saveViolations(db, actor, key, sentList(TODAY, [row]), MOMENT);
+
+      const later = sentList(TODAY, [row], { announceTime: "22:00" });
+      expect(await saveViolations(db, actor, key, later, MOMENT)).toEqual(
+        LIST_ALREADY_SENT,
+      );
+      const kept = await violationsUnder(db, key);
+      expect(kept.map((each) => each.announcedAt)).toEqual([
+        new Date("3151-10-12T14:00:00Z"),
+      ]);
+    });
+  });
+
+  it("answers a second press that lands just after the announcement hour as the first", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const actor = await bam(db);
+      const key = crypto.randomUUID();
+      const list = sentList(TODAY, [sentRow(setting.residents[0] ?? "")]);
+      const justBefore = new Date("3151-10-12T13:59:59Z");
+      const justAfter = new Date("3151-10-12T14:00:01Z");
+
+      const first = await saveViolations(db, actor, key, list, justBefore);
+      const second = await saveViolations(db, actor, key, list, justAfter);
+
+      expect(second).toEqual(first);
+      expect(await violationsUnder(db, key)).toHaveLength(1);
+    });
+  });
+
+  it("answers a list sent again as the first time when both hours had passed at their saves", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const actor = await bam(db);
+      const key = crypto.randomUUID();
+      const row = sentRow(setting.residents[0] ?? "");
+      const passed = sentList(TODAY, [row], { announceTime: "08:00" });
+      const first = await saveViolations(db, actor, key, passed, MOMENT);
+
+      const alsoPassed = sentList(TODAY, [row], { announceTime: "09:00" });
+      const aMinuteLater = new Date(MOMENT.getTime() + 60_000);
+      expect(
+        await saveViolations(db, actor, key, alsoPassed, aMinuteLater),
+      ).toEqual(first);
+      expect(await violationsUnder(db, key)).toHaveLength(1);
+    });
+  });
 });

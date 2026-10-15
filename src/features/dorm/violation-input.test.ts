@@ -132,6 +132,7 @@ describe("parseViolations", () => {
       ok: true,
       value: {
         day: "2026-10-12",
+        requestedAt: new Date("2026-10-12T14:00:00Z"),
         announcedAt: new Date("2026-10-12T14:00:00Z"),
         rows: [
           {

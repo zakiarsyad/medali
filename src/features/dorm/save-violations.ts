@@ -50,12 +50,27 @@ function rowKey(row: ViolationRowInput): string {
 }
 
 /**
+ * Whether a kept row and the list sent again ask for the same hour. An
+ * hour that had passed is kept as the moment of its save, so any hour
+ * sent again that had also passed by then counts as the same. The hour as
+ * sent is compared, not the moment it becomes: a second press landing
+ * just after the hour would otherwise announce at its own moment.
+ */
+function isSameAnnouncement(
+  kept: StoredViolation,
+  input: ViolationsInput,
+): boolean {
+  const requested = input.requestedAt.getTime();
+  if (requested === kept.announcedAt.getTime()) return true;
+  const keptHadPassed = kept.announcedAt.getTime() === kept.enteredAt.getTime();
+  return keptHadPassed && requested <= kept.enteredAt.getTime();
+}
+
+/**
  * Whether the rows kept under a key are the list this form saved before:
- * by the same account, with the same day and every row the same. A list
- * changed after it was sent is not the same: taking it for one would
- * drop the change while saying it was saved. The announcement moment is
- * not compared, as an hour that has passed is taken as the moment of the
- * save.
+ * by the same account, with the same day, the same announcement hour and
+ * every row the same. A list changed after it was sent is not the same:
+ * taking it for one would drop the change while saying it was saved.
  */
 function isSameList(
   kept: StoredViolation[],
@@ -63,7 +78,10 @@ function isSameList(
   input: ViolationsInput,
 ): boolean {
   const isOwn = kept.every(
-    (row) => row.enteredBy === actorId && row.day === input.day,
+    (row) =>
+      row.enteredBy === actorId &&
+      row.day === input.day &&
+      isSameAnnouncement(row, input),
   );
   if (!isOwn || kept.length !== input.rows.length) return false;
   const keptRows = kept.map(rowKey).sort();

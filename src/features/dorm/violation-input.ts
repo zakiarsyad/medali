@@ -45,6 +45,8 @@ export interface ViolationRowInput {
 
 export interface ViolationsInput {
   day: string;
+  /** The announcement hour as sent, before a passed one becomes `now`. */
+  requestedAt: Date;
   announcedAt: Date;
   rows: ViolationRowInput[];
 }
@@ -120,10 +122,7 @@ export function parseViolationRow(
   };
 }
 
-/**
- * The moment of the announcement, at `now` or later: an hour that has
- * passed means the violations are announced as they are saved.
- */
+/** The announcement hour as sent, on campus. */
 function announcementOf(
   sent: SentViolations,
   day: string,
@@ -134,7 +133,7 @@ function announcementOf(
   if (sent.announceDay < day) return refused(ANNOUNCED_BEFORE_DAY);
   const lastDay = daysAfter(campusDay(now), ANNOUNCEMENT_DAYS_AHEAD);
   if (sent.announceDay > lastDay) return refused(ANNOUNCEMENT_TOO_FAR);
-  return { ok: true, value: at < now ? now : at };
+  return { ok: true, value: at };
 }
 
 function rowsOf(
@@ -154,7 +153,9 @@ function rowsOf(
 
 /**
  * Checks the whole list as sent, at `now` by the server's clock. One row
- * refused refuses all of them.
+ * refused refuses all of them. The announcement is at `now` or later: an
+ * hour that has passed means the violations are announced as they are
+ * saved.
  */
 export function parseViolations(
   sent: SentViolations,
@@ -163,12 +164,18 @@ export function parseViolations(
 ): Parsed<ViolationsInput> {
   if (!isDay(sent.day)) return refused(NO_DAY);
   if (sent.day > campusDay(now)) return refused(DAY_IN_FUTURE);
-  const announcedAt = announcementOf(sent, sent.day, now);
-  if (!announcedAt.ok) return announcedAt;
+  const requested = announcementOf(sent, sent.day, now);
+  if (!requested.ok) return requested;
   const rows = rowsOf(sent.rows, ownStudentId);
   if (!rows.ok) return rows;
+  const requestedAt = requested.value;
   return {
     ok: true,
-    value: { day: sent.day, announcedAt: announcedAt.value, rows: rows.value },
+    value: {
+      day: sent.day,
+      requestedAt,
+      announcedAt: requestedAt < now ? now : requestedAt,
+      rows: rows.value,
+    },
   };
 }
