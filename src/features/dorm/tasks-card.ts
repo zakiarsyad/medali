@@ -1,4 +1,6 @@
 import type { FormState } from "@/ui/form-message";
+import type { DormClarificationCard } from "./clarification-card";
+import type { CleaningResult } from "./cleaning-ids";
 import type { LeaveKind } from "./leave-ids";
 import type { DecisionAnswer } from "./leave-messages";
 
@@ -81,6 +83,30 @@ export interface ReturnTask {
   hasPhoto: boolean;
 }
 
+/**
+ * A clarification BAM passed on, which waits for the decision of
+ * Pengelola Asrama, as its card on Klarifikasi kehadiran shows it.
+ */
+export type ClarificationTask = DormClarificationCard;
+
+/** A cleaning duty BAM assessed, which waits for validation. */
+export interface CleaningTask {
+  id: string;
+  /** Tanggal, such as 12 Okt 2026. */
+  day: string;
+  /** Tempat: the place, or the room's own room, such as Kamar 101 (kamar sendiri). */
+  place: string;
+  /** Kamar, with its dorm, such as Dana Rakca · Kamar 101. */
+  room: string;
+  /** Whether it is a "Pembersihan ulang" of a duty not met. */
+  isRepeat: boolean;
+  result: CleaningResult;
+  /** BAM's note; empty when none was written. */
+  judgeNote: string;
+  judgedByName: string | null;
+  judgedAt: Date | null;
+}
+
 /** The oldest items of a section, and how many wait in all. */
 export interface TaskSection<Item> {
   items: Item[];
@@ -94,11 +120,21 @@ export interface TaskSection<Item> {
 export interface DormTasks {
   leaves: TaskSection<LeaveTask> | null;
   returns: TaskSection<ReturnTask> | null;
+  clarifications: TaskSection<ClarificationTask> | null;
+  cleaning: TaskSection<CleaningTask> | null;
   /** Perlu dipantau: residents still out past their return time. */
   outLate: number | null;
 }
 
 /** How many items wait for a decision in all; Perlu dipantau is no decision. */
 export function waitingIn(tasks: DormTasks): number {
-  return (tasks.leaves?.total ?? 0) + (tasks.returns?.total ?? 0);
+  const sections = [
+    tasks.leaves,
+    tasks.returns,
+    tasks.clarifications,
+    tasks.cleaning,
+  ];
+  let total = 0;
+  for (const section of sections) total += section?.total ?? 0;
+  return total;
 }

@@ -109,6 +109,7 @@ describe("two decisions on one dorm clarification at the same moment", () => {
 
     expect(both.sooner).toEqual({ ok: true, value: "accepted" });
     expect(both.later).toEqual(DECIDED_FIRST);
+    expect(both.later).toMatchObject({ stale: true });
     expect(await clarificationById(own.db, id)).toMatchObject({
       status: "accepted",
       acceptedAs: "present",

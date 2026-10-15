@@ -101,7 +101,7 @@ function matching(filters: ClarificationFilters, visible: SQL) {
   );
 }
 
-async function countCards(db: Database, condition: SQL | undefined) {
+export async function countCards(db: Database, condition: SQL | undefined) {
   const [counted] = await db
     .select({ matching: count() })
     .from(dormClarifications)
@@ -113,12 +113,12 @@ async function countCards(db: Database, condition: SQL | undefined) {
 const verifier = alias(accounts, "verifier");
 const decider = alias(accounts, "decider");
 
-function readPage(
-  db: Database,
-  condition: SQL | undefined,
-  dorm: SQL<DormId | null>,
-  page: number,
-) {
+/**
+ * The clarifications with what their cards show: the resident and where
+ * they live today, the activity as it was held, and who checked and
+ * decided each. The caller says which, in what order and how many.
+ */
+export function selectCardRows(db: Database, dorm: SQL<DormId | null>) {
   return db
     .select({
       clarification: dormClarifications,
@@ -149,14 +149,23 @@ function readPage(
       ),
     )
     .leftJoin(verifier, eq(verifier.id, dormClarifications.verifiedBy))
-    .leftJoin(decider, eq(decider.id, dormClarifications.decidedBy))
+    .leftJoin(decider, eq(decider.id, dormClarifications.decidedBy));
+}
+
+function readPage(
+  db: Database,
+  condition: SQL | undefined,
+  dorm: SQL<DormId | null>,
+  page: number,
+) {
+  return selectCardRows(db, dorm)
     .where(condition)
     .orderBy(desc(dormClarifications.sentAt), desc(dormClarifications.id))
     .limit(CLARIFICATIONS_PAGE_SIZE)
     .offset((page - 1) * CLARIFICATIONS_PAGE_SIZE);
 }
 
-type PageRow = Awaited<ReturnType<typeof readPage>>[number];
+type PageRow = Awaited<ReturnType<typeof selectCardRows>>[number];
 
 function verificationOf(row: PageRow): CheckWords | null {
   const { clarification } = row;
@@ -177,7 +186,10 @@ function decisionOf(row: PageRow): CheckWords | null {
   };
 }
 
-function cardOf(row: PageRow, mayOpenFiles: boolean): DormClarificationCard {
+export function cardOf(
+  row: PageRow,
+  mayOpenFiles: boolean,
+): DormClarificationCard {
   const { clarification } = row;
   const hasFile = clarification.fileKey !== null;
   const startTime = hourAndMinute(row.startTime);

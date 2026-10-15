@@ -1,7 +1,7 @@
 // Sample Tahun akademik of this file: 3050 to 3050.
 // Sample NIMs of this file: 9937980600 to 9937980699.
 import { describe, expect, it } from "vitest";
-import type { RoleId } from "@/auth/role-ids";
+import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import {
@@ -319,6 +319,40 @@ describe("the decision of Pengelola Asrama", () => {
       expect(await decide(db, manager, id, "reject", "Salah.")).toEqual(
         DECIDED_FIRST,
       );
+    });
+  });
+
+  it("marks the refusal of one decided first as out of date, so Tugas saya reads its list again", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, manager, id } = await addRecords(db);
+      await verify(db, bam, id, "pass");
+      await decide(db, manager, id, "leave");
+
+      const late = await decide(db, manager, id, "present");
+
+      expect(late).toMatchObject({ ok: false, stale: true });
+      expect(await clarificationById(db, id)).toMatchObject({
+        status: "accepted",
+        acceptedAs: "leave",
+      });
+    });
+  });
+
+  it("is refused to every role but Pengelola Asrama, sent by hand as Tugas saya sends it", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, id } = await addRecords(db);
+      await verify(db, bam, id, "pass");
+      const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+
+      for (const role of others) {
+        const actor = await addTestActor(db, `Bukan Pengelola ${role}`, [role]);
+        expect(await decide(db, actor, id, "present")).toEqual(
+          DECIDE_NOT_ALLOWED,
+        );
+      }
+      expect(await clarificationById(db, id)).toMatchObject({
+        status: "verified",
+      });
     });
   });
 });
