@@ -101,7 +101,7 @@ their capaian karakter everywhere else in the app.
 
 ## Steps
 
-- [ ] 1. Assessments are stored with source, note and who; the right
+- [x] 1. Assessments are stored with source, note and who; the right
   "Asesmen karakter" is added, with checks; sample assessments.
 - [ ] 2. The rule for Rerata and predikat, with checks.
 - [ ] 3. The tab shows the numbers and "Hasil asesmen karakter".
@@ -109,3 +109,22 @@ their capaian karakter everywhere else in the app.
 - [ ] 5. A row opens the student's earlier assessments.
 
 ## Decisions made while building
+
+- The tab is read by the roles that hold it, as Data SKPM: Kepala Unit
+  and Penilai Mahasiswa see every student, Direktur / Wakil Direktur
+  every student, Ketua Program Studi their own program, Pengasuh their
+  own mentees. No other role holds it, and a student does not.
+- An assessment keeps the six whole scores, its source, "Catatan
+  penilai", the academic period that ran when it was saved, who saved it
+  and when.
+- An assessment is never changed or deleted, which the database itself
+  refuses. So the assessments are their own log that cannot be edited:
+  each save is one line with who, when and the scores, and what came
+  before it is the student's earlier assessment. No second log is kept.
+- "Catatan penilai" holds 500 characters at most, as the Keterangan of
+  SIKU; a longer one is refused.
+- The sample data gives some students two or three assessments, some
+  only one from an earlier period, some only one from the last few days,
+  among them D3 Pajak students for the sample Ketua Program Studi and
+  mentees of the sample Pengasuh, and leaves most Aktif students without
+  one.

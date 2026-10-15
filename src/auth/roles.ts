@@ -62,6 +62,7 @@ export const ACTIONS = [
   "ask_siku_addition",
   "decide_siku_additions",
   "upload_skpm",
+  "assess_character",
   "view_discipline_records",
 ] as const;
 
@@ -135,6 +136,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   ask_siku_addition: "Ajukan penambahan SIKU dengan foto bukti",
   decide_siku_additions: "Persetujuan pengajuan penambahan SIKU",
   upload_skpm: "Unggah data SKPM",
+  assess_character: "Asesmen karakter",
   view_discipline_records: "Melihat catatan disiplin mahasiswa",
 };
 
@@ -270,6 +272,7 @@ export const ROLES: Record<RoleId, Role> = {
       "adjust_siku",
       "decide_siku_additions",
       "upload_skpm",
+      "assess_character",
       "view_discipline_records",
     ],
     rows: "all",
@@ -534,6 +537,7 @@ export const ROLES: Record<RoleId, Role> = {
       "adjust_siku",
       "decide_siku_additions",
       "upload_skpm",
+      "assess_character",
     ],
     rows: "all",
   },

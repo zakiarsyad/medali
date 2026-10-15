@@ -27,6 +27,7 @@ import {
   addSampleActivitySchedules,
   addSampleExtraSchedules,
 } from "./seed-activity-schedules";
+import { addSampleCharacterAssessments } from "./seed-character-assessments";
 import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCleaning } from "./seed-dorm-cleaning";
@@ -255,5 +256,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     const sikuEntryIds = await addSampleSikuAdjustments(tx, today);
     await addSampleSikuRequests(tx, today, sikuEntryIds);
     await addSampleSkpm(tx, today);
+    await addSampleCharacterAssessments(tx, today);
   });
 }
