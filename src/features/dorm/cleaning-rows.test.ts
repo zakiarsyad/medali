@@ -6,10 +6,25 @@ import {
   placeRows,
   residentsOf,
 } from "./cleaning-rows";
+import type { ScheduledDuty } from "./cleaning-schedule";
 
 const MANDI = { id: "p1", dorm: "dana_rakca", name: "Kamar Mandi" } as const;
 const APEL = { id: "p2", dorm: "dana_rakca", name: "Lapangan Apel" } as const;
-const DUTY = { id: "d1", placeId: "p2", roomId: "r1", roomNumber: "101" };
+const DUTY: ScheduledDuty = {
+  id: "d1",
+  placeId: "p2",
+  roomId: "r1",
+  roomNumber: "101",
+  isRepeat: false,
+  status: "scheduled",
+  result: null,
+  judgeNote: "",
+  judgedByName: null,
+  judgedAt: null,
+  sentBackReason: "",
+  validatedByName: null,
+  validatedAt: null,
+};
 const ROOMS = [{ id: "r1", number: "101", residents: 3 }];
 
 describe("placeRows", () => {

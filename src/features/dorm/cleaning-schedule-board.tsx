@@ -14,7 +14,14 @@ import {
   cancelDutyAction,
 } from "./cleaning-actions";
 import { type CleaningParams, cleaningAddress } from "./cleaning-address";
+import { type DutyRights, offersOf } from "./cleaning-assessment";
+import {
+  AssessmentCell,
+  CleaningStatusBadge,
+  RepeatBadge,
+} from "./cleaning-duty-parts";
 import { OWN_ROOM_PAGE_SIZE } from "./cleaning-ids";
+import { CleaningJudgeForm } from "./cleaning-judge-form";
 import { NOT_PLOTTED } from "./cleaning-messages";
 import type { OccupiedRoom } from "./cleaning-rooms";
 import {
@@ -25,6 +32,7 @@ import {
   roomWords,
 } from "./cleaning-rows";
 import type { OwnRoomPage, ScheduledDuty } from "./cleaning-schedule";
+import { CleaningValidateButtons } from "./cleaning-validate-buttons";
 
 type OnSaid = (text: string) => void;
 
@@ -36,6 +44,13 @@ export interface ScheduleScope {
   rooms: OccupiedRoom[];
   /** Whether the account may give and cancel duties on the date shown. */
   mayChange: boolean;
+  /** What the account may do with duties. */
+  rights: DutyRights;
+}
+
+/** Whether the schedule has a column of buttons for the account. */
+function hasActions(scope: ScheduleScope): boolean {
+  return scope.mayChange || scope.rights.judge || scope.rights.validate;
 }
 
 function AssignForm({
@@ -120,25 +135,35 @@ function DutyRow({
   onSaid: OnSaid;
 }) {
   const question = `Batalkan tugas ${roomWords(duty.roomNumber)} untuk ${label} pada ${dayWords(scope.params.day)}?`;
+  const offers = offersOf(duty, scope.params.day, scope.today, scope.rights);
   return (
     <tr>
       <td className={shared.rowHeading} data-title="Tempat">
-        <b>{label}</b>
+        <b>{label}</b> {duty.isRepeat && <RepeatBadge />}
       </td>
       <RoomCell duty={duty} rooms={scope.rooms} />
       <td data-title="Status">
-        <span className={shared.badge}>Terjadwal</span>
+        <CleaningStatusBadge status={duty.status} />
       </td>
-      {scope.mayChange && (
+      <AssessmentCell duty={duty} />
+      {hasActions(scope) && (
         <td className={shared.rowActions}>
-          <ChangeButton
-            send={() => cancelDutyAction(duty.id)}
-            question={question}
-            look={shared.danger}
-            onDone={onSaid}
-          >
-            Batalkan tugas
-          </ChangeButton>
+          {offers.judge && (
+            <CleaningJudgeForm dutyId={duty.id} onSaid={onSaid} />
+          )}
+          {offers.validate && (
+            <CleaningValidateButtons dutyId={duty.id} onSaid={onSaid} />
+          )}
+          {offers.cancel && (
+            <ChangeButton
+              send={() => cancelDutyAction(duty.id)}
+              question={question}
+              look={shared.danger}
+              onDone={onSaid}
+            >
+              Batalkan tugas
+            </ChangeButton>
+          )}
         </td>
       )}
     </tr>
@@ -168,7 +193,8 @@ function EmptyRow({
         )}
       </td>
       <td data-title="Status" />
-      {scope.mayChange && <td />}
+      <td data-title="Penilaian" />
+      {hasActions(scope) && <td />}
     </tr>
   );
 }
@@ -188,7 +214,8 @@ function ScheduleTable({
             <th>Tempat</th>
             <th>Kamar bertugas</th>
             <th>Status</th>
-            {scope.mayChange && (
+            <th>Penilaian</th>
+            {hasActions(scope) && (
               <th>
                 <span className={shared.hidden}>Tindakan</span>
               </th>
@@ -239,9 +266,11 @@ function OwnRoomsLine({
 /**
  * One dorm's part of Jadwal pembersihan on the date shown: each place with
  * the room that cleans it, and the rooms that clean their own room, a page
- * at a time. For an account that may change them, on today or a later
- * date, the forms that give and cancel duties. What a change says stays
- * here, as the row it was made on changes with it.
+ * at a time, each with where it stands and its judgement. For an account
+ * that may change them, on today or a later date, the forms that give and
+ * cancel duties, and for one that may judge or validate, the buttons to
+ * do so. What a change says stays here, as the row it was made on changes
+ * with it.
  */
 export function CleaningScheduleBoard({
   scope,
@@ -256,6 +285,10 @@ export function CleaningScheduleBoard({
 }) {
   const [said, setSaid] = useState<string | null>(null);
   const { dorm, params, today } = scope;
+  // A page link of one dorm in Semua asrama switches to that dorm, whose
+  // ranking starts on its first page.
+  const scorePageIn = (shown: DormId) =>
+    shown === params.dorm ? params.scorePage : 1;
   const isPlotted = scope.rooms.length > 0;
   return (
     <section className={styles.dormSchedule} aria-label={DORM_NAMES[dorm]}>
@@ -318,7 +351,10 @@ export function CleaningScheduleBoard({
             keepsPlace
             stepsOnOnePage={false}
             addressOf={(page) =>
-              cleaningAddress({ dorm, day: params.day, page }, today)
+              cleaningAddress(
+                { dorm, day: params.day, page, scorePage: scorePageIn(dorm) },
+                today,
+              )
             }
           />
         </>

@@ -30,7 +30,11 @@ export default async function DormCleaningPage(
         tabs={tabs}
         params={readCleaningParams(await props.searchParams, today)}
         today={today}
-        mayManage={may(account.roles, "manage_dorm_cleaning")}
+        rights={{
+          judge: may(account.roles, "judge_dorm_cleaning"),
+          validate: may(account.roles, "validate_dorm_cleaning"),
+          manage: may(account.roles, "manage_dorm_cleaning"),
+        }}
       />
     );
   }

@@ -11,11 +11,21 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
-import { dormCleaningDuties, dormCleaningPlaces, dormRooms } from "@/db/schema";
+import {
+  accounts,
+  dormCleaningDuties,
+  dormCleaningPlaces,
+  dormRooms,
+} from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
-import { OWN_ROOM_PAGE_SIZE } from "./cleaning-ids";
+import {
+  type CleaningResult,
+  type CleaningStatus,
+  OWN_ROOM_PAGE_SIZE,
+} from "./cleaning-ids";
 import type { CleaningPlace } from "./cleaning-place-list";
 import type { OccupiedRoom } from "./cleaning-rooms";
 
@@ -27,6 +37,17 @@ export interface ScheduledDuty {
   /** Null once the room is removed: its number is kept. */
   roomId: string | null;
   roomNumber: string;
+  /** Whether it is a "Pembersihan ulang" of a duty not met. */
+  isRepeat: boolean;
+  status: CleaningStatus;
+  result: CleaningResult | null;
+  judgeNote: string;
+  judgedByName: string | null;
+  judgedAt: Date | null;
+  /** The reason of the last judgement sent back, empty when none was. */
+  sentBackReason: string;
+  validatedByName: string | null;
+  validatedAt: Date | null;
 }
 
 /** One page of the rooms cleaning their own room on a date. */
@@ -38,11 +59,19 @@ export interface OwnRoomPage {
 }
 
 /**
- * Whether a duty shows: one of a removed place shows only on the days
- * before the place was removed. A duty of a room's own room has no place,
- * so it always shows. The read joins the places to the duties.
+ * A duty that was never judged: Terjadwal, and never sent back. A judged
+ * one has lines in the log, which keep it.
  */
-export const DUTY_SHOWN: SQL = sql`(${dormCleaningPlaces.removedFrom} is null or ${dormCleaningPlaces.removedFrom} > ${dormCleaningDuties.day})`;
+export const NEVER_JUDGED: SQL = sql`(${dormCleaningDuties.status} = 'scheduled' and ${dormCleaningDuties.sentBackReason} = '')`;
+
+/**
+ * Whether a duty shows: one of a removed place that was never judged
+ * shows only on the days before the place was removed. A judged one
+ * always shows, so it can still be decided and its result is seen where
+ * it counts. A duty of a room's own room has no place, so it always
+ * shows. The read joins the places to the duties.
+ */
+export const DUTY_SHOWN: SQL = sql`(${dormCleaningPlaces.removedFrom} is null or ${dormCleaningPlaces.removedFrom} > ${dormCleaningDuties.day} or not ${NEVER_JUDGED})`;
 
 /** The join that finds the room of a duty, while the room is still there. */
 export const ROOM_OF_DUTY = eq(dormRooms.id, dormCleaningDuties.roomId);
@@ -54,18 +83,41 @@ export const ROOM_OF_DUTY = eq(dormRooms.id, dormCleaningDuties.roomId);
  */
 export const DUTY_ROOM_NUMBER = sql<string>`coalesce(${dormRooms.number}, ${dormCleaningDuties.roomNumber})`;
 
+const judges = alias(accounts, "judges");
+const validators = alias(accounts, "validators");
+
 const DUTY = {
   id: dormCleaningDuties.id,
   placeId: dormCleaningDuties.placeId,
   roomId: dormCleaningDuties.roomId,
   roomNumber: DUTY_ROOM_NUMBER,
+  isRepeat: sql<boolean>`${dormCleaningDuties.repeatOf} is not null`,
+  status: dormCleaningDuties.status,
+  result: dormCleaningDuties.result,
+  judgeNote: dormCleaningDuties.judgeNote,
+  judgedByName: judges.name,
+  judgedAt: dormCleaningDuties.judgedAt,
+  sentBackReason: dormCleaningDuties.sentBackReason,
+  validatedByName: validators.name,
+  validatedAt: dormCleaningDuties.validatedAt,
 };
+
+const JUDGE_OF_DUTY = eq(judges.id, dormCleaningDuties.judgedBy);
+const VALIDATOR_OF_DUTY = eq(validators.id, dormCleaningDuties.validatedBy);
 
 const PLACE_OF_DUTY = eq(dormCleaningPlaces.id, dormCleaningDuties.placeId);
 
 /**
+ * A removed place keeps showing on a date where it has a duty that was
+ * judged, so that duty has its row on the schedule.
+ */
+function hasJudgedDutyOn(day: string): SQL {
+  return sql`exists (select 1 from ${dormCleaningDuties} where ${dormCleaningDuties.placeId} = ${dormCleaningPlaces.id} and ${dormCleaningDuties.day} = ${day} and not ${NEVER_JUDGED})`;
+}
+
+/**
  * The places of some dorms that show on a date, by dorm and by name: those
- * not removed, and those removed after it.
+ * not removed, those removed after it, and those with a judged duty on it.
  */
 export async function readPlacesOn(
   db: Database,
@@ -85,6 +137,7 @@ export async function readPlacesOn(
         or(
           isNull(dormCleaningPlaces.removedFrom),
           gt(dormCleaningPlaces.removedFrom, day),
+          hasJudgedDutyOn(day),
         ),
       ),
     )
@@ -105,6 +158,8 @@ export async function readPlaceDutiesOn(
     .from(dormCleaningDuties)
     .innerJoin(dormCleaningPlaces, PLACE_OF_DUTY)
     .leftJoin(dormRooms, ROOM_OF_DUTY)
+    .leftJoin(judges, JUDGE_OF_DUTY)
+    .leftJoin(validators, VALIDATOR_OF_DUTY)
     .where(
       and(
         eq(dormCleaningDuties.day, day),
@@ -159,6 +214,8 @@ export async function readOwnRoomPage(
     .select(DUTY)
     .from(dormCleaningDuties)
     .leftJoin(dormRooms, ROOM_OF_DUTY)
+    .leftJoin(judges, JUDGE_OF_DUTY)
+    .leftJoin(validators, VALIDATOR_OF_DUTY)
     .where(ownRoomsOf(dorm, day))
     .orderBy(asc(DUTY_ROOM_NUMBER), asc(dormCleaningDuties.id))
     .limit(OWN_ROOM_PAGE_SIZE)

@@ -109,22 +109,112 @@ describe("readOwnCleaning", () => {
 
       const own = await readOwnCleaning(db, studentOf(setting.resident), TODAY);
 
+      const unjudged = { status: "scheduled", isRepeat: false, result: null };
       expect(own).toEqual({
         kind: "shown",
         dorm: DORM,
         room: { number: "BR101", residents: 2 },
+        score: { plus: 0, minus: 0 },
         scheduled: 2,
         duties: [
           {
             day: "3130-10-14",
             place: "Selasar Uji Penghuni",
             roomNumber: "BR101",
+            ...unjudged,
           },
-          { day: TODAY, place: null, roomNumber: "BR101" },
+          { day: TODAY, place: null, roomNumber: "BR101", ...unjudged },
           {
             day: "3130-10-11",
             place: "Selasar Uji Penghuni",
             roomNumber: "BR101",
+            ...unjudged,
+          },
+        ],
+      });
+    });
+  });
+
+  it("shows the room's score and each result with its note only once validated, and marks a repeat", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const { ownRoom, otherRoom, placeId, staff } = setting;
+      const judged = {
+        result: "not_met",
+        judgeNote: "Lantai belum dipel.",
+        judgedBy: staff.id,
+        judgedAt: new Date(),
+      } as const;
+      const validated = {
+        status: "validated",
+        validatedBy: staff.id,
+        validatedAt: new Date(),
+      } as const;
+      const room = { dorm: DORM, roomNumber: "BR101", createdBy: staff.id };
+      const [failed] = await db
+        .insert(dormCleaningDuties)
+        .values({
+          ...room,
+          day: "3130-10-09",
+          roomId: ownRoom,
+          placeId,
+          ...judged,
+          ...validated,
+        })
+        .returning();
+      await db.insert(dormCleaningDuties).values([
+        {
+          ...room,
+          day: "3130-10-10",
+          roomId: ownRoom,
+          ...judged,
+          result: "met",
+          judgeNote: "Rapi.",
+          ...validated,
+        },
+        {
+          ...room,
+          day: "3130-10-11",
+          roomId: ownRoom,
+          placeId,
+          status: "judged",
+          ...judged,
+        },
+        {
+          ...room,
+          day: TODAY,
+          roomId: ownRoom,
+          repeatOf: failed?.id,
+        },
+        {
+          ...room,
+          day: "3130-10-08",
+          roomId: otherRoom,
+          roomNumber: "BR102",
+          ...judged,
+          ...validated,
+        },
+      ]);
+
+      const own = await readOwnCleaning(db, studentOf(setting.resident), TODAY);
+
+      expect(own).toMatchObject({
+        kind: "shown",
+        score: { plus: 1, minus: 1 },
+        scheduled: 1,
+        duties: [
+          { day: TODAY, status: "scheduled", isRepeat: true, result: null },
+          { day: "3130-10-11", status: "judged", result: null },
+          {
+            day: "3130-10-10",
+            status: "validated",
+            result: { result: "met", note: "Rapi." },
+          },
+          {
+            day: "3130-10-09",
+            status: "validated",
+            isRepeat: false,
+            result: { result: "not_met", note: "Lantai belum dipel." },
           },
         ],
       });

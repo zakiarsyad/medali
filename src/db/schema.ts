@@ -38,6 +38,10 @@ import {
   DORM_CLARIFICATION_STATUSES,
 } from "@/features/dorm/clarification-ids";
 import {
+  CLEANING_NOTE_MAX_LENGTH,
+  CLEANING_RESULTS,
+  CLEANING_STATUSES,
+  CLEANING_STEPS,
   PLACE_NAME_MAX_LENGTH,
   PLACE_NAME_MIN_LENGTH,
 } from "@/features/dorm/cleaning-ids";
@@ -175,6 +179,18 @@ export const dormClarificationAcceptedAs = pgEnum(
   "dorm_clarification_accepted_as",
   ACCEPTED_AS,
 );
+
+export const dormCleaningStatus = pgEnum(
+  "dorm_cleaning_status",
+  CLEANING_STATUSES,
+);
+
+export const dormCleaningResult = pgEnum(
+  "dorm_cleaning_result",
+  CLEANING_RESULTS,
+);
+
+export const dormCleaningStep = pgEnum("dorm_cleaning_step", CLEANING_STEPS);
 
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
 
@@ -1166,11 +1182,17 @@ export const dormCleaningPlaces = pgTable(
   ],
 );
 
+const CLEANING_NOTE_MAX = sql.raw(String(CLEANING_NOTE_MAX_LENGTH));
+
 /**
  * One room's cleaning duty on one day: a shared place of its dorm, or its
  * own room when no place is given. A place has one duty a day, and a room
  * one duty for its own room a day. The room number is kept, so a duty of
- * a room that was removed since still says which room did it.
+ * a room that was removed since still says which room did it. BAM judges
+ * it, then Pengelola Asrama validates the judgement or sends it back,
+ * which makes it Terjadwal again with the reason kept. A duty made again
+ * after a validated Tidak memenuhi names the duty it repeats; a duty has
+ * at most one repeat.
  */
 export const dormCleaningDuties = pgTable(
   "dorm_cleaning_duties",
@@ -1185,6 +1207,19 @@ export const dormCleaningDuties = pgTable(
       .notNull()
       .references(() => accounts.id),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    repeatOf: uuid().references((): AnyPgColumn => dormCleaningDuties.id),
+    status: dormCleaningStatus().notNull().default("scheduled"),
+    /** What BAM judged it, who, when, and the Catatan. */
+    result: dormCleaningResult(),
+    judgeNote: text().notNull().default(""),
+    judgedBy: uuid().references(() => accounts.id),
+    judgedAt: timestamp({ withTimezone: true }),
+    /** The last judgement Pengelola Asrama sent back: who, when and why. */
+    sentBackReason: text().notNull().default(""),
+    sentBackBy: uuid().references(() => accounts.id),
+    sentBackAt: timestamp({ withTimezone: true }),
+    validatedBy: uuid().references(() => accounts.id),
+    validatedAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     uniqueIndex("dorm_cleaning_duties_one_per_place_and_day")
@@ -1193,9 +1228,66 @@ export const dormCleaningDuties = pgTable(
     uniqueIndex("dorm_cleaning_duties_one_own_room_per_day")
       .on(table.roomId, table.day)
       .where(sql`${table.placeId} is null`),
+    uniqueIndex("dorm_cleaning_duties_one_repeat")
+      .on(table.repeatOf)
+      .where(sql`${table.repeatOf} is not null`),
     index("dorm_cleaning_duties_room_day").on(table.roomId, table.day),
     index("dorm_cleaning_duties_day_dorm").on(table.day, table.dorm),
+    index("dorm_cleaning_duties_waiting")
+      .on(table.dorm)
+      .where(
+        sql`${table.status} = 'judged' or (${table.status} = 'scheduled' and ${table.repeatOf} is not null)`,
+      ),
+    check(
+      "dorm_cleaning_duties_judged_unless_scheduled",
+      sql`(${table.status} = 'scheduled') = (${table.result} is null) and (${table.result} is null) = (${table.judgedAt} is null) and (${table.judgedAt} is null) = (${table.judgedBy} is null)`,
+    ),
+    check(
+      "dorm_cleaning_duties_validated_when_validated",
+      sql`(${table.status} = 'validated') = (${table.validatedAt} is not null) and (${table.validatedAt} is null) = (${table.validatedBy} is null)`,
+    ),
+    check(
+      "dorm_cleaning_duties_not_met_has_note",
+      sql`${table.result} is distinct from 'not_met' or ${table.judgeNote} <> ''`,
+    ),
+    check(
+      "dorm_cleaning_duties_sent_back_is_whole",
+      sql`(${table.sentBackAt} is null) = (${table.sentBackBy} is null) and (${table.sentBackAt} is null) = (${table.sentBackReason} = '')`,
+    ),
+    check(
+      "dorm_cleaning_duties_judge_note_length",
+      sql`char_length(${table.judgeNote}) <= ${CLEANING_NOTE_MAX}`,
+    ),
+    check(
+      "dorm_cleaning_duties_sent_back_reason_length",
+      sql`char_length(${table.sentBackReason}) <= ${CLEANING_NOTE_MAX}`,
+    ),
   ],
+);
+
+/**
+ * Every judgement of a cleaning duty, every sending back and every
+ * validation: who, when, which step, the result it judged, sent back or
+ * validated, and the Catatan or the reason. Rows here cannot be changed
+ * or deleted; the database refuses it. A duty is held by its log lines,
+ * so it cannot be deleted either.
+ */
+export const dormCleaningChanges = pgTable(
+  "dorm_cleaning_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    dutyId: uuid()
+      .notNull()
+      .references(() => dormCleaningDuties.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    step: dormCleaningStep().notNull(),
+    result: dormCleaningResult().notNull(),
+    note: text().notNull(),
+  },
+  (table) => [index("dorm_cleaning_changes_duty").on(table.dutyId)],
 );
 
 /**

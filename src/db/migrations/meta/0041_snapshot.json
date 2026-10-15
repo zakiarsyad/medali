@@ -1,5 +1,5 @@
 {
-  "id": "f0526055-2db0-4bea-b7c6-e57d5712a056",
+  "id": "42e1b6d6-cb9d-4124-b167-b3a329f53ab2",
   "prevId": "50ddfac1-0aa5-45f6-bcf9-27f367ee4974",
   "version": "7",
   "dialect": "postgresql",
@@ -2659,6 +2659,108 @@
       },
       "isRLSEnabled": false
     },
+    "public.dorm_cleaning_changes": {
+      "name": "dorm_cleaning_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "duty_id": {
+          "name": "duty_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "step": {
+          "name": "step",
+          "type": "dorm_cleaning_step",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "dorm_cleaning_result",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "dorm_cleaning_changes_duty": {
+          "name": "dorm_cleaning_changes_duty",
+          "columns": [
+            {
+              "expression": "duty_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_cleaning_changes_duty_id_dorm_cleaning_duties_id_fk": {
+          "name": "dorm_cleaning_changes_duty_id_dorm_cleaning_duties_id_fk",
+          "tableFrom": "dorm_cleaning_changes",
+          "tableTo": "dorm_cleaning_duties",
+          "columnsFrom": [
+            "duty_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_cleaning_changes_changed_by_accounts_id_fk": {
+          "name": "dorm_cleaning_changes_changed_by_accounts_id_fk",
+          "tableFrom": "dorm_cleaning_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.dorm_cleaning_duties": {
       "name": "dorm_cleaning_duties",
       "schema": "",
@@ -2713,6 +2815,77 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "repeat_of": {
+          "name": "repeat_of",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "dorm_cleaning_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'scheduled'"
+        },
+        "result": {
+          "name": "result",
+          "type": "dorm_cleaning_result",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "judge_note": {
+          "name": "judge_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "judged_by": {
+          "name": "judged_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "judged_at": {
+          "name": "judged_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_back_reason": {
+          "name": "sent_back_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "sent_back_by": {
+          "name": "sent_back_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_back_at": {
+          "name": "sent_back_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validated_by": {
+          "name": "validated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "validated_at": {
+          "name": "validated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2760,6 +2933,22 @@
           "method": "btree",
           "with": {}
         },
+        "dorm_cleaning_duties_one_repeat": {
+          "name": "dorm_cleaning_duties_one_repeat",
+          "columns": [
+            {
+              "expression": "repeat_of",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"dorm_cleaning_duties\".\"repeat_of\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "dorm_cleaning_duties_room_day": {
           "name": "dorm_cleaning_duties_room_day",
           "columns": [
@@ -2798,6 +2987,22 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_cleaning_duties_waiting": {
+          "name": "dorm_cleaning_duties_waiting",
+          "columns": [
+            {
+              "expression": "dorm",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"dorm_cleaning_duties\".\"status\" = 'judged' or (\"dorm_cleaning_duties\".\"status\" = 'scheduled' and \"dorm_cleaning_duties\".\"repeat_of\" is not null)",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2842,12 +3047,89 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "dorm_cleaning_duties_repeat_of_dorm_cleaning_duties_id_fk": {
+          "name": "dorm_cleaning_duties_repeat_of_dorm_cleaning_duties_id_fk",
+          "tableFrom": "dorm_cleaning_duties",
+          "tableTo": "dorm_cleaning_duties",
+          "columnsFrom": [
+            "repeat_of"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_cleaning_duties_judged_by_accounts_id_fk": {
+          "name": "dorm_cleaning_duties_judged_by_accounts_id_fk",
+          "tableFrom": "dorm_cleaning_duties",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "judged_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_cleaning_duties_sent_back_by_accounts_id_fk": {
+          "name": "dorm_cleaning_duties_sent_back_by_accounts_id_fk",
+          "tableFrom": "dorm_cleaning_duties",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "sent_back_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_cleaning_duties_validated_by_accounts_id_fk": {
+          "name": "dorm_cleaning_duties_validated_by_accounts_id_fk",
+          "tableFrom": "dorm_cleaning_duties",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "validated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "dorm_cleaning_duties_judged_unless_scheduled": {
+          "name": "dorm_cleaning_duties_judged_unless_scheduled",
+          "value": "(\"dorm_cleaning_duties\".\"status\" = 'scheduled') = (\"dorm_cleaning_duties\".\"result\" is null) and (\"dorm_cleaning_duties\".\"result\" is null) = (\"dorm_cleaning_duties\".\"judged_at\" is null) and (\"dorm_cleaning_duties\".\"judged_at\" is null) = (\"dorm_cleaning_duties\".\"judged_by\" is null)"
+        },
+        "dorm_cleaning_duties_validated_when_validated": {
+          "name": "dorm_cleaning_duties_validated_when_validated",
+          "value": "(\"dorm_cleaning_duties\".\"status\" = 'validated') = (\"dorm_cleaning_duties\".\"validated_at\" is not null) and (\"dorm_cleaning_duties\".\"validated_at\" is null) = (\"dorm_cleaning_duties\".\"validated_by\" is null)"
+        },
+        "dorm_cleaning_duties_not_met_has_note": {
+          "name": "dorm_cleaning_duties_not_met_has_note",
+          "value": "\"dorm_cleaning_duties\".\"result\" is distinct from 'not_met' or \"dorm_cleaning_duties\".\"judge_note\" <> ''"
+        },
+        "dorm_cleaning_duties_sent_back_is_whole": {
+          "name": "dorm_cleaning_duties_sent_back_is_whole",
+          "value": "(\"dorm_cleaning_duties\".\"sent_back_at\" is null) = (\"dorm_cleaning_duties\".\"sent_back_by\" is null) and (\"dorm_cleaning_duties\".\"sent_back_at\" is null) = (\"dorm_cleaning_duties\".\"sent_back_reason\" = '')"
+        },
+        "dorm_cleaning_duties_judge_note_length": {
+          "name": "dorm_cleaning_duties_judge_note_length",
+          "value": "char_length(\"dorm_cleaning_duties\".\"judge_note\") <= 200"
+        },
+        "dorm_cleaning_duties_sent_back_reason_length": {
+          "name": "dorm_cleaning_duties_sent_back_reason_length",
+          "value": "char_length(\"dorm_cleaning_duties\".\"sent_back_reason\") <= 200"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.dorm_cleaning_places": {
@@ -6608,466 +6890,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.skpm_conversions": {
-      "name": "skpm_conversions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "points_for_hundred": {
-          "name": "points_for_hundred",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "points_before": {
-          "name": "points_before",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "set_by": {
-          "name": "set_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "set_at": {
-          "name": "set_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "skpm_conversions_set_at": {
-          "name": "skpm_conversions_set_at",
-          "columns": [
-            {
-              "expression": "set_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "skpm_conversions_set_by_accounts_id_fk": {
-          "name": "skpm_conversions_set_by_accounts_id_fk",
-          "tableFrom": "skpm_conversions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "set_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "skpm_conversions_in_range": {
-          "name": "skpm_conversions_in_range",
-          "value": "\"skpm_conversions\".\"points_for_hundred\" between 1 and 1000 and \"skpm_conversions\".\"points_before\" between 1 and 1000"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.skpm_rows": {
-      "name": "skpm_rows",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "upload_id": {
-          "name": "upload_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "line": {
-          "name": "line",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "activity": {
-          "name": "activity",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "category": {
-          "name": "category",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "level": {
-          "name": "level",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "activity_role": {
-          "name": "activity_role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day": {
-          "name": "day",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "points": {
-          "name": "points",
-          "type": "numeric(6, 2)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "skpm_rows_student": {
-          "name": "skpm_rows_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "skpm_rows_upload_id_skpm_uploads_id_fk": {
-          "name": "skpm_rows_upload_id_skpm_uploads_id_fk",
-          "tableFrom": "skpm_rows",
-          "tableTo": "skpm_uploads",
-          "columnsFrom": [
-            "upload_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "skpm_rows_student_id_students_id_fk": {
-          "name": "skpm_rows_student_id_students_id_fk",
-          "tableFrom": "skpm_rows",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "skpm_rows_line": {
-          "name": "skpm_rows_line",
-          "nullsNotDistinct": false,
-          "columns": [
-            "upload_id",
-            "line"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "skpm_rows_points_in_range": {
-          "name": "skpm_rows_points_in_range",
-          "value": "\"skpm_rows\".\"points\" between 0 and 1000"
-        },
-        "skpm_rows_activity_length": {
-          "name": "skpm_rows_activity_length",
-          "value": "char_length(\"skpm_rows\".\"activity\") between 1 and 200"
-        },
-        "skpm_rows_label_lengths": {
-          "name": "skpm_rows_label_lengths",
-          "value": "char_length(\"skpm_rows\".\"category\") between 1 and 100 and char_length(\"skpm_rows\".\"level\") between 1 and 100 and char_length(\"skpm_rows\".\"activity_role\") between 1 and 100"
-        },
-        "skpm_rows_day_length": {
-          "name": "skpm_rows_day_length",
-          "value": "char_length(\"skpm_rows\".\"day\") between 1 and 30"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.skpm_upload_changes": {
-      "name": "skpm_upload_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "upload_id": {
-          "name": "upload_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "action": {
-          "name": "action",
-          "type": "skpm_upload_action",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "skpm_upload_changes_upload": {
-          "name": "skpm_upload_changes_upload",
-          "columns": [
-            {
-              "expression": "upload_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "skpm_upload_changes_upload_id_skpm_uploads_id_fk": {
-          "name": "skpm_upload_changes_upload_id_skpm_uploads_id_fk",
-          "tableFrom": "skpm_upload_changes",
-          "tableTo": "skpm_uploads",
-          "columnsFrom": [
-            "upload_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "skpm_upload_changes_changed_by_accounts_id_fk": {
-          "name": "skpm_upload_changes_changed_by_accounts_id_fk",
-          "tableFrom": "skpm_upload_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.skpm_uploads": {
-      "name": "skpm_uploads",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "file_name": {
-          "name": "file_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "fingerprint": {
-          "name": "fingerprint",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "mode": {
-          "name": "mode",
-          "type": "skpm_upload_mode",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_id": {
-          "name": "period_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "row_count": {
-          "name": "row_count",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "student_count": {
-          "name": "student_count",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "entered_by": {
-          "name": "entered_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "entered_at": {
-          "name": "entered_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "removed_by": {
-          "name": "removed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "removed_at": {
-          "name": "removed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "skpm_uploads_entered_at": {
-          "name": "skpm_uploads_entered_at",
-          "columns": [
-            {
-              "expression": "entered_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "skpm_uploads_period_id_academic_periods_id_fk": {
-          "name": "skpm_uploads_period_id_academic_periods_id_fk",
-          "tableFrom": "skpm_uploads",
-          "tableTo": "academic_periods",
-          "columnsFrom": [
-            "period_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "skpm_uploads_entered_by_accounts_id_fk": {
-          "name": "skpm_uploads_entered_by_accounts_id_fk",
-          "tableFrom": "skpm_uploads",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "entered_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "skpm_uploads_removed_by_accounts_id_fk": {
-          "name": "skpm_uploads_removed_by_accounts_id_fk",
-          "tableFrom": "skpm_uploads",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "removed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "skpm_uploads_fingerprint_is_sha256": {
-          "name": "skpm_uploads_fingerprint_is_sha256",
-          "value": "\"skpm_uploads\".\"fingerprint\" ~ '^[0-9a-f]{64}$'"
-        },
-        "skpm_uploads_counts": {
-          "name": "skpm_uploads_counts",
-          "value": "\"skpm_uploads\".\"student_count\" between 1 and \"skpm_uploads\".\"row_count\""
-        },
-        "skpm_uploads_removal_is_whole": {
-          "name": "skpm_uploads_removal_is_whole",
-          "value": "(\"skpm_uploads\".\"removed_by\" is null) = (\"skpm_uploads\".\"removed_at\" is null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.stage_breakdowns": {
       "name": "stage_breakdowns",
       "schema": "",
@@ -7917,6 +7739,32 @@
         "closed"
       ]
     },
+    "public.dorm_cleaning_result": {
+      "name": "dorm_cleaning_result",
+      "schema": "public",
+      "values": [
+        "met",
+        "not_met"
+      ]
+    },
+    "public.dorm_cleaning_status": {
+      "name": "dorm_cleaning_status",
+      "schema": "public",
+      "values": [
+        "scheduled",
+        "judged",
+        "validated"
+      ]
+    },
+    "public.dorm_cleaning_step": {
+      "name": "dorm_cleaning_step",
+      "schema": "public",
+      "values": [
+        "judged",
+        "sent_back",
+        "validated"
+      ]
+    },
     "public.dorm_leave_kind": {
       "name": "dorm_leave_kind",
       "schema": "public",
@@ -8107,22 +7955,6 @@
         "approved",
         "rejected",
         "withdrawn"
-      ]
-    },
-    "public.skpm_upload_action": {
-      "name": "skpm_upload_action",
-      "schema": "public",
-      "values": [
-        "uploaded",
-        "removed"
-      ]
-    },
-    "public.skpm_upload_mode": {
-      "name": "skpm_upload_mode",
-      "schema": "public",
-      "values": [
-        "add",
-        "replace"
       ]
     },
     "public.student_status": {

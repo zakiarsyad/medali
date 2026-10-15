@@ -127,6 +127,59 @@
   overflow-wrap: anywhere;
 }
 
+/* The look of a badge by what it says: waiting, good, bad or plain. */
+.ok {
+  composes: ok from "./leave.module.css";
+}
+
+.warn {
+  composes: warn from "./leave.module.css";
+}
+
+.bad {
+  composes: bad from "./leave.module.css";
+}
+
+.plain {
+  composes: plain from "./leave.module.css";
+}
+
+/* Catatan with Memenuhi and Tidak memenuhi: they fold under each other on a phone. */
+.judge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.judge input {
+  flex: 1 1 var(--typed-min-width);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.judge > p {
+  flex: 1 1 100%;
+}
+
+/* Why the last judgement was sent back, while the duty waits again. */
+.sentBack {
+  display: block;
+  color: var(--bad);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+/* A room's Skor above 0, and below it. */
+.good {
+  color: var(--ok);
+}
+
+.poor {
+  color: var(--bad);
+}
+
 /* What a change says, with "Urungkan" beside it after a removal. */
 .said {
   display: flex;
