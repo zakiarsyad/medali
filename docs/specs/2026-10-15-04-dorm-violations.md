@@ -100,7 +100,7 @@ count per student for the semester.
   waiting, in Masa advokasi and Naik ke Pengelola.
 - [x] 2. The rights to record and to read violations are added to the
   permission list, with their checks.
-- [ ] 3. BAM records violations and schedules the announcement.
+- [x] 3. BAM records violations and schedules the announcement.
 - [ ] 4. BAM sees "Jadwal publikasi" and cancels a waiting row.
 - [ ] 5. Staff see the numbers, the announcement per day and the count
   per student.
