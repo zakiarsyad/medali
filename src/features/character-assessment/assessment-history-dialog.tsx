@@ -1,12 +1,13 @@
 import { periodTitle } from "@/academic-periods/period-labels";
+import { rerataOf } from "@/character-scores/assessment-score";
+import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { MEDALI_VALUES } from "@/ui/medali-values";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentHistory, HistoryEntry } from "./assessment-history";
-import { rerataOf } from "./assessment-score";
-import { SOURCE_WORDS, shownRerata } from "./assessment-words";
+import { SOURCE_WORDS } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import { PredicateBadge } from "./predicate-badge";
 

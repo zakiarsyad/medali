@@ -1,4 +1,5 @@
 import type { RoleId } from "@/auth/role-ids";
+import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
 import {
   academicPeriods,
@@ -10,7 +11,6 @@ import {
 } from "@/db/schema";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import type { AssessmentSource } from "./assessment-ids";
-import type { Scores } from "./assessment-score";
 
 /** Made-up records for the checks of this area. */
 

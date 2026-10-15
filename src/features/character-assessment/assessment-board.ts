@@ -9,6 +9,7 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
+import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { students, studyPrograms } from "@/db/schema";
@@ -20,11 +21,7 @@ import {
   type AssessmentParams,
 } from "./assessment-address";
 import { type AssessmentNumbers, countAssessed } from "./assessment-counts";
-import {
-  type LatestAssessment,
-  latestAssessments,
-  readLatestOf,
-} from "./latest-assessments";
+import { type LatestAssessment, readLatestOf } from "./latest-assessments";
 
 /** One student of "Hasil asesmen karakter". */
 export interface AssessmentListRow {
