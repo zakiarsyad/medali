@@ -42,6 +42,7 @@ import { addSampleMentoringNotes } from "./seed-mentoring-notes";
 import { addSampleMentoringScores } from "./seed-mentoring-scores";
 import { addSampleSikuAdjustments } from "./seed-siku-adjustments";
 import { addSampleSikuRequests } from "./seed-siku-requests";
+import { addSampleSkpm } from "./seed-skpm";
 import { addSampleSurveyPeriods } from "./seed-survey-periods";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
@@ -257,5 +258,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleSurveyPeriods(tx, periods, sampleActor);
     const sikuEntryIds = await addSampleSikuAdjustments(tx, today);
     await addSampleSikuRequests(tx, today, sikuEntryIds);
+    await addSampleSkpm(tx, today);
   });
 }
