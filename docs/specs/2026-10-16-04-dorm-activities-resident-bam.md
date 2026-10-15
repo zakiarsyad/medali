@@ -63,6 +63,6 @@ both parts.
 
 ## Steps
 
-- [ ] 1. Kegiatan asrama shows the resident part above the staff screen
+- [x] 1. Kegiatan asrama shows the resident part above the staff screen
   for an account that lives in the dorm and may see the dorm schedule,
   with a check for an account holding Mahasiswa and a BAM role.

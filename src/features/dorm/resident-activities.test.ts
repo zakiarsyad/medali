@@ -132,12 +132,49 @@ describe("readResidentActivities", () => {
     });
   });
 
-  it("refuses a student who does not live in the dorm", async () => {
+  it("gives a resident who is also a BAM member only the activities of their own dorm, the same as with Mahasiswa alone", async () => {
+    await inTestDatabase(async (db) => {
+      const { woman } = await addResidents(db);
+      const by = (await addTestActor(db, "Pengelola", ["dorm_manager"])).id;
+      for (const audience of ["dana_rakca", "cipta_bakti", "men"] as const) {
+        await addTestActivity(db, by, {
+          versions: [{ ...FROM, name: `Untuk ${audience}`, audience }],
+        });
+      }
+
+      const alone = await readResidentActivities(
+        db,
+        studentAccount(woman),
+        MOMENT,
+      );
+      const withBam = await readResidentActivities(
+        db,
+        studentAccount(woman, ["student", "bam_bphk"]),
+        MOMENT,
+      );
+
+      if (withBam.kind !== "shown")
+        throw new Error("The resident was refused.");
+      expect(withBam.activities.today.map((row) => row.name)).toEqual([
+        "Untuk dana_rakca",
+      ]);
+      expect(withBam).toEqual(alone);
+    });
+  });
+
+  it("refuses a student who does not live in the dorm, also one who is a BAM member", async () => {
     await inTestDatabase(async (db) => {
       const { senior } = await addResidents(db);
 
       expect(
         await readResidentActivities(db, studentAccount(senior), MOMENT),
+      ).toEqual({ kind: "refused" });
+      expect(
+        await readResidentActivities(
+          db,
+          studentAccount(senior, ["student", "bam_bphk"]),
+          MOMENT,
+        ),
       ).toEqual({ kind: "refused" });
     });
   });
