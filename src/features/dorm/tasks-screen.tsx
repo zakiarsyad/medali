@@ -1,18 +1,22 @@
 import Link from "next/link";
 import { PageHead } from "@/ui/page-head";
+import { ClarificationTasks } from "./clarification-tasks";
 import { LeaveTasks } from "./leave-tasks";
 import { ReturnTasks } from "./return-tasks";
 import { type TaskNumber, TaskNumbers } from "./task-numbers";
 import { TaskSection } from "./task-section";
 import styles from "./tasks.module.css";
 import {
+  ALL_PASSED_ON_ADDRESS,
   ALL_WAITING_LEAVE_ADDRESS,
   ALL_WAITING_REPORTS_ADDRESS,
+  CLARIFICATION_SECTION_ID,
   LATE_ADDRESS,
   LEAVE_SECTION_ID,
   RETURN_SECTION_ID,
 } from "./tasks-address";
 import {
+  type ClarificationTask,
   type DormTasks,
   type LeaveTask,
   type ReturnTask,
@@ -67,7 +71,7 @@ function LeaveSection({ section }: { section: Section<LeaveTask> }) {
       purpose="Setujui atau tolak pengajuan izin pesiar, ITMK, dan izin khusus. Penolakan wajib disertai catatan."
       total={section.total}
       shown={section.items.length}
-      allAddress={ALL_WAITING_LEAVE_ADDRESS}
+      all={{ address: ALL_WAITING_LEAVE_ADDRESS, tab: "Perizinan asrama" }}
     >
       <LeaveTasks tasks={section.items} />
     </TaskSection>
@@ -82,9 +86,28 @@ function ReturnSection({ section }: { section: Section<ReturnTask> }) {
       purpose="Sudah diverifikasi BAM. Validasi menandai mahasiswa sudah kembali ke asrama."
       total={section.total}
       shown={section.items.length}
-      allAddress={ALL_WAITING_REPORTS_ADDRESS}
+      all={{ address: ALL_WAITING_REPORTS_ADDRESS, tab: "Perizinan asrama" }}
     >
       <ReturnTasks tasks={section.items} />
+    </TaskSection>
+  );
+}
+
+function ClarificationSection({
+  section,
+}: {
+  section: Section<ClarificationTask>;
+}) {
+  return (
+    <TaskSection
+      id={CLARIFICATION_SECTION_ID}
+      title="Klarifikasi kehadiran menunggu validasi"
+      purpose="Sudah diterima BAM. Terima sebagai hadir atau izin, atau tolak. Penolakan memicu penetapan SP."
+      total={section.total}
+      shown={section.items.length}
+      all={{ address: ALL_PASSED_ON_ADDRESS, tab: "Klarifikasi kehadiran" }}
+    >
+      <ClarificationTasks tasks={section.items} />
     </TaskSection>
   );
 }
@@ -109,6 +132,9 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
       )}
       {tasks.leaves && <LeaveSection section={tasks.leaves} />}
       {tasks.returns && <ReturnSection section={tasks.returns} />}
+      {tasks.clarifications && (
+        <ClarificationSection section={tasks.clarifications} />
+      )}
     </>
   );
 }

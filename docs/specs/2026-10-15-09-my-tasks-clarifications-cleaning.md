@@ -83,12 +83,25 @@ effect as on their Asrama tabs.
    through its right to decide them, as on Klarifikasi kehadiran. The
    cleaning duties are those of every dorm, as on Pembersihan asrama,
    where a duty names a room by number only and never a student.
+3. A clarification card is the one on Klarifikasi kehadiran, with its
+   status, when it was sent and BAM's check with who and when; a press
+   on the file name opens the file over the page, as there. The section
+   says what the prototype says: "Sudah diterima BAM. Terima sebagai
+   hadir atau izin, atau tolak. Penolakan memicu penetapan SP."
+4. A kept decision says what Klarifikasi kehadiran already says:
+   "Klarifikasi diterima; status kehadiran diperbarui." or
+   "Klarifikasi ditolak.", above the list of the section, as the card
+   leaves it. "Tolak" with an empty note sends nothing and says "Tulis
+   alasan penolakan di kolom catatan."; with a note it asks first, such
+   as "Tolak klarifikasi (name), Apel pagi, 12 Okt 2026, 05.00–06.00?".
+5. When more than 20 wait, "Lihat semua di Klarifikasi kehadiran"
+   opens that tab at Diverifikasi BAM, where all of them are.
 
 ## Steps
 
 - [x] 1. The server adds clarifications and cleaning assessments to the
   count and the lists, with its checks.
-- [ ] 2. The section "Klarifikasi kehadiran menunggu validasi" with its
+- [x] 2. The section "Klarifikasi kehadiran menunggu validasi" with its
   three decisions.
 - [ ] 3. The section "Penilaian kebersihan menunggu validasi" with
   Validasi and Tolak.

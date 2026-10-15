@@ -10,7 +10,7 @@ import { TaskCards } from "./task-cards";
 import { TaskDecide } from "./task-decide";
 import type { LeaveTask } from "./tasks-card";
 
-const APPROVE = { label: "Setujui", decision: "approve" };
+const APPROVE = [{ label: "Setujui", decision: "approve" }];
 
 /** What is asked before a request is rejected, such as Tolak Izin pesiar Ani, 14 Okt 2026, 09.00? */
 export function rejectLeaveQuestion(task: LeaveTask): string {
@@ -50,7 +50,7 @@ function LeaveTaskCard({
         <p className={styles.warning}>Waktu mulai sudah lewat.</p>
       )}
       <TaskDecide
-        agree={APPROVE}
+        agrees={APPROVE}
         question={rejectLeaveQuestion(task)}
         decide={(decision, note) => decideLeaveAction(task.id, decision, note)}
         onSettled={onSettled}

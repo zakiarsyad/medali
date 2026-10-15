@@ -9,11 +9,15 @@ import { database } from "@/db/database";
 import { fileStorage } from "@/files/file-storage";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
-import type { FormState } from "@/ui/form-message";
 import { ACTIVITIES_ADDRESS } from "./activities-address";
 import { CLARIFICATIONS_ADDRESS } from "./clarification-address";
 import { doneWords } from "./clarification-decision";
 import { decideDormClarification } from "./decide-clarification";
+import {
+  type DecisionAnswer,
+  keptDecision,
+  refusedDecision,
+} from "./leave-messages";
 import { sendDormClarification } from "./send-clarification";
 
 /**
@@ -40,9 +44,9 @@ async function decider(): Promise<Account> {
   return account;
 }
 
-function stateOf(answer: Parsed<unknown>, kind: string): FormState {
-  if (!answer.ok) return { error: answer.error, done: null };
-  return { error: null, done: doneWords(kind) };
+function answerOf(answer: Parsed<unknown>, kind: string): DecisionAnswer {
+  if (!answer.ok) return refusedDecision(answer);
+  return keptDecision(doneWords(kind));
 }
 
 /** The tab and the attendance a check or a decision changes are read again. */
@@ -51,12 +55,20 @@ function readAgain(): void {
   revalidatePath(ACTIVITIES_ADDRESS);
 }
 
+/**
+ * Klarifikasi kehadiran, Tugas saya, and the number beside Tugas saya in
+ * the menu of every page change with a decision of Pengelola Asrama.
+ */
+function showDecision(): void {
+  revalidatePath("/", "layout");
+}
+
 /** "Terima, teruskan ke pengelola" or "Tolak klarifikasi" of BAM, with its Catatan. */
 export async function verifyDormClarificationAction(
   id: string,
   kind: string,
   note: string,
-): Promise<FormState> {
+): Promise<DecisionAnswer> {
   const account = await checker();
   const answer = await decideDormClarification(database(), account, "verify", {
     id,
@@ -64,26 +76,26 @@ export async function verifyDormClarificationAction(
     note,
   });
   readAgain();
-  return stateOf(answer, kind);
+  return answerOf(answer, kind);
 }
 
 /**
  * "Terima sebagai hadir", "Terima sebagai izin" or "Tolak" of Pengelola
- * Asrama, with its Catatan.
+ * Asrama, with its Catatan, on Klarifikasi kehadiran and on Tugas saya.
  */
 export async function decideDormClarificationAction(
   id: string,
   kind: string,
   note: string,
-): Promise<FormState> {
+): Promise<DecisionAnswer> {
   const account = await decider();
   const answer = await decideDormClarification(database(), account, "decide", {
     id,
     kind,
     note,
   });
-  readAgain();
-  return stateOf(answer, kind);
+  showDecision();
+  return answerOf(answer, kind);
 }
 
 /**

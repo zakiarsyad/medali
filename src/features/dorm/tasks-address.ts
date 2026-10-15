@@ -1,3 +1,5 @@
+import { clarificationListAddress } from "./clarification-address";
+import { CLEANING_ADDRESS } from "./cleaning-address";
 import { type LeaveFilters, leaveListAddress } from "./leave-address";
 
 /*
@@ -8,6 +10,8 @@ import { type LeaveFilters, leaveListAddress } from "./leave-address";
 /** Where the number cards jump to: the sections of the page. */
 export const LEAVE_SECTION_ID = "tugas-izin";
 export const RETURN_SECTION_ID = "tugas-lapor";
+export const CLARIFICATION_SECTION_ID = "tugas-klar";
+export const CLEANING_SECTION_ID = "tugas-bersih";
 
 function onPerizinan(status: LeaveFilters["status"]): string {
   return leaveListAddress({ query: "", status, kind: "all" });
@@ -21,3 +25,12 @@ export const ALL_WAITING_REPORTS_ADDRESS = onPerizinan("reports");
 
 /** Perizinan asrama at Terlambat kembali: those still out late among them. */
 export const LATE_ADDRESS = onPerizinan("late");
+
+/** Klarifikasi kehadiran at Diverifikasi BAM: every one BAM passed on. */
+export const ALL_PASSED_ON_ADDRESS = clarificationListAddress({
+  query: "",
+  status: "verified",
+});
+
+/** Pembersihan asrama, whose "Menunggu validasi" counts every assessment that waits. */
+export const ALL_ASSESSED_ADDRESS = CLEANING_ADDRESS;

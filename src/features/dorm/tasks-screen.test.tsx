@@ -2,11 +2,20 @@
 // the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { rejectClarificationQuestion } from "./clarification-tasks";
 import { rejectLeaveQuestion } from "./leave-tasks";
 import { rejectReturnQuestion } from "./return-tasks";
-import type { DormTasks, LeaveTask, ReturnTask } from "./tasks-card";
+import type {
+  ClarificationTask,
+  DormTasks,
+  LeaveTask,
+  ReturnTask,
+} from "./tasks-card";
 import { DormTasksScreen } from "./tasks-screen";
 
+vi.mock("./clarification-actions", () => ({
+  decideDormClarificationAction: vi.fn(),
+}));
 vi.mock("./leave-actions", () => ({
   decideLeaveAction: vi.fn(),
   validateReturnAction: vi.fn(),
@@ -103,6 +112,8 @@ describe("Izin menunggu persetujuan", () => {
       ...NOTHING,
       leaves: { items: [LEAVE], total: 1 },
       returns: null,
+      clarifications: null,
+      cleaning: null,
     });
 
     expect(html).toContain("1 menunggu");
@@ -238,6 +249,82 @@ describe("Laporan kembali menunggu validasi", () => {
   it("asks before a rejection, naming the student and the report time", () => {
     expect(rejectReturnQuestion(REPORT)).toBe(
       "Tolak laporan kembali Penghuni Kembali, 14 Okt 2026, 16.12?",
+    );
+  });
+});
+
+const CLARIFICATION: ClarificationTask = {
+  id: "00000000-0000-4000-8000-0000000000f1",
+  sentAt: "2026-10-13T03:00:00.000Z",
+  name: "Penghuni Klarifikasi",
+  nim: "9986110003",
+  room: "Asrama Dana Rakca, kamar 101",
+  activity: "Apel pagi",
+  held: "12 Okt 2026, 05.00–06.00",
+  reason: "Sakit",
+  explanation: "Demam dan beristirahat di kamar.",
+  status: "verified",
+  hasFile: true,
+  file: {
+    name: "surat-keterangan.pdf",
+    isPdf: true,
+    facts: "Dokumen PDF · 1 KB",
+  },
+  sent: "13 Okt 2026, 10.00",
+  verification: {
+    result: "Diterima BAM: Surat sah.",
+    by: "(BAM Contoh, 13 Okt 2026, 12.00)",
+  },
+  decision: null,
+};
+
+describe("Klarifikasi kehadiran menunggu validasi", () => {
+  it("says Beres and Tidak ada yang menunggu. when nothing waits", () => {
+    const html = screenOf({ ...NOTHING, leaves: null, returns: null });
+
+    expect(html).toContain("Klarifikasi kehadiran menunggu validasi");
+    expect(html).toContain("Beres");
+    expect(html).toContain("Tidak ada yang menunggu.");
+  });
+
+  it("shows the student, room, activity, reason, explanation, the file and BAM's note, with the three decisions", () => {
+    const html = screenOf({
+      ...NOTHING,
+      clarifications: { items: [CLARIFICATION], total: 1 },
+    });
+
+    for (const words of [
+      "1 menunggu",
+      "Penghuni Klarifikasi",
+      "9986110003 · Asrama Dana Rakca, kamar 101",
+      "Apel pagi",
+      "12 Okt 2026, 05.00–06.00",
+      "Sakit",
+      "Demam dan beristirahat di kamar.",
+      "surat-keterangan.pdf",
+      "Diterima BAM: Surat sah.",
+      "(BAM Contoh, 13 Okt 2026, 12.00)",
+      "Terima sebagai hadir",
+      "Terima sebagai izin",
+      ">Tolak</button>",
+    ]) {
+      expect(html).toContain(words);
+    }
+  });
+
+  it("leads to every clarification BAM passed on when more wait than it shows", () => {
+    const html = screenOf({
+      ...NOTHING,
+      clarifications: { items: [CLARIFICATION], total: 21 },
+    });
+
+    expect(html).toContain('href="/asrama/klar?status=diverifikasi"');
+    expect(html).toContain("Lihat semua di Klarifikasi kehadiran");
+  });
+
+  it("asks before a rejection, naming the student and the activity as it was held", () => {
+    expect(rejectClarificationQuestion(CLARIFICATION)).toBe(
+      "Tolak klarifikasi Penghuni Klarifikasi, Apel pagi, 12 Okt 2026, 05.00–06.00?",
     );
   });
 });

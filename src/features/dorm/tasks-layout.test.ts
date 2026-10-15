@@ -59,6 +59,7 @@ describe("Tugas saya on a phone", () => {
 
 describe("the screen parts of Tugas saya that run in the browser", () => {
   const PARTS = [
+    `${FOLDER}/clarification-tasks.tsx`,
     `${FOLDER}/leave-tasks.tsx`,
     `${FOLDER}/return-tasks.tsx`,
     `${FOLDER}/task-cards.tsx`,
