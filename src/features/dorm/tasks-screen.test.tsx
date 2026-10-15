@@ -34,7 +34,9 @@ const NOTHING: DormTasks = {
   returns: { items: [], total: 0 },
   clarifications: { items: [], total: 0 },
   cleaning: { items: [], total: 0 },
+  warnings: { items: [], total: 0 },
   outLate: 0,
+  waitingAppeals: 0,
 };
 
 const LEAVE: LeaveTask = {

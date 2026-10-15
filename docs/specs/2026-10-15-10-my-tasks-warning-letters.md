@@ -64,9 +64,27 @@ points out advokasi that wait for BAM.
 2. The running semester and its start come from "Academic period"; this
    spec has no rule of its own.
 
+## Decisions made while building
+
+1. "Penetapan SP" holds every student the account may see through its
+   right to issue SPs who is due for one, as "Panggilan klarifikasi dan
+   surat peringatan" on Pelanggaran does, also one who no longer lives
+   in the dorm: the two lists never disagree.
+2. The account's own student is left out of the list and of the number,
+   as their row on Pelanggaran has no "Proses": another Pengelola Asrama
+   sets their SP.
+3. Students due for the same SP are in the order of their name. The
+   section shows 20 at most, as the other sections do.
+4. "Perlu dipantau" counts every advokasi that waits for BAM among the
+   students the account may see on Pelanggaran, as the number "Dalam
+   masa advokasi" there does for BAM.
+5. The number beside Tugas saya is worked out again right after an SP is
+   issued on Pelanggaran. A student who becomes due as time passes, or
+   by a decision of BAM, shows the next time a page is loaded.
+
 ## Steps
 
-- [ ] 1. The server adds students due for an SP to the count and reads
+- [x] 1. The server adds students due for an SP to the count and reads
   the list, with its checks.
 - [ ] 2. The section "Penetapan SP" with "Proses" opening the form on
   Pelanggaran.
