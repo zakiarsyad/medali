@@ -91,6 +91,6 @@ them. The grades themselves come with Character grade list.
   with the prototype's numbers; the right "Bobot penilaian" is added for
   Kepala Unit, with its checks. Fitness test scores uses the same right.
 - [x] 2. The letter and pass rules, with checks.
-- [ ] 3. The tab and "Skema bobot" show, read only.
+- [x] 3. The tab and "Skema bobot" show, read only.
 - [ ] 4. Kepala Unit changes and saves the scheme, with the confirmation
   and the refusal of a second save.
