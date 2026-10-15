@@ -28,6 +28,7 @@ import {
   addSampleExtraSchedules,
 } from "./seed-activity-schedules";
 import { addSampleCharacterAssessments } from "./seed-character-assessments";
+import { addSampleCounsellingConsents } from "./seed-counselling-consents";
 import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCleaning } from "./seed-dorm-cleaning";
@@ -173,7 +174,8 @@ async function addSampleFirstYears(
  * clarifications of it in every status, and two schedules of the special
  * and additional activities for chosen angkatan and classes, SIKU
  * gains and losses of the sample students, and their requests for a SIKU
- * gain in every status. Every role given is logged as the
+ * gain in every status, and consents to counselling in every status.
+ * Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
  */
@@ -265,5 +267,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleSikuRequests(tx, today, sikuEntryIds);
     await addSampleSkpm(tx, today);
     await addSampleCharacterAssessments(tx, today);
+    await addSampleCounsellingConsents(tx, today);
   });
 }
