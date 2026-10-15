@@ -80,6 +80,7 @@ describe("the screen parts of Pembersihan asrama that run in the browser", () =>
     `${FOLDER}/cleaning-schedule-board.tsx`,
     `${FOLDER}/cleaning-day-switch.tsx`,
     `${FOLDER}/cleaning-judge-form.tsx`,
+    `${FOLDER}/cleaning-validate-buttons.tsx`,
   ];
 
   it("are found", () => {

@@ -32,6 +32,7 @@ import {
   roomWords,
 } from "./cleaning-rows";
 import type { OwnRoomPage, ScheduledDuty } from "./cleaning-schedule";
+import { CleaningValidateButtons } from "./cleaning-validate-buttons";
 
 type OnSaid = (text: string) => void;
 
@@ -149,6 +150,9 @@ function DutyRow({
         <td className={shared.rowActions}>
           {offers.judge && (
             <CleaningJudgeForm dutyId={duty.id} onSaid={onSaid} />
+          )}
+          {offers.validate && (
+            <CleaningValidateButtons dutyId={duty.id} onSaid={onSaid} />
           )}
           {offers.cancel && (
             <ChangeButton

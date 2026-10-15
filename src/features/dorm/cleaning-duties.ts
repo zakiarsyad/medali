@@ -52,7 +52,7 @@ function parseDutyDay(sent: string, today: string): Parsed<string> {
 }
 
 /** The place, held until the change ends, while it is not removed. */
-async function lockPlace(tx: Database, placeId: string) {
+export async function lockPlace(tx: Database, placeId: string) {
   const [place] = await tx
     .select({ id: dormCleaningPlaces.id, dorm: dormCleaningPlaces.dorm })
     .from(dormCleaningPlaces)

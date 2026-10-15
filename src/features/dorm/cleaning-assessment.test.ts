@@ -4,6 +4,7 @@ import {
   isNeverJudged,
   offersOf,
   parseJudgement,
+  parseSendBackReason,
 } from "./cleaning-assessment";
 
 const TODAY = "2026-10-15";
@@ -52,6 +53,35 @@ describe("parseJudgement", () => {
     expect(parseJudgement("met", "a".repeat(201))).toEqual({
       ok: false,
       error: "Catatan paling banyak 200 huruf.",
+    });
+  });
+});
+
+describe("parseSendBackReason", () => {
+  const needed = {
+    ok: false,
+    error: "Tulis alasan penolakan minimal 5 huruf.",
+  };
+
+  it("takes a reason of 5 letters or more, without the spaces around it", () => {
+    expect(parseSendBackReason("  Kurang  ")).toEqual({
+      ok: true,
+      value: "Kurang",
+    });
+    expect(parseSendBackReason("Ulang")).toEqual({ ok: true, value: "Ulang" });
+  });
+
+  it("refuses a reason under 5 letters, an empty one and one that is not a text", () => {
+    expect(parseSendBackReason("Ulan")).toEqual(needed);
+    expect(parseSendBackReason("   ")).toEqual(needed);
+    expect(parseSendBackReason(undefined)).toEqual(needed);
+  });
+
+  it("refuses a reason longer than 200 letters", () => {
+    expect(parseSendBackReason("a".repeat(200)).ok).toBe(true);
+    expect(parseSendBackReason("a".repeat(201))).toEqual({
+      ok: false,
+      error: "Alasan penolakan paling banyak 200 huruf.",
     });
   });
 });

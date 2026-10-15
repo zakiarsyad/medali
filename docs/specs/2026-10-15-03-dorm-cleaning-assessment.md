@@ -175,7 +175,7 @@ Decided while building, because the issue did not say:
 - [x] 2. The rights to judge and to validate cleaning are added to the
   permission list, with their checks.
 - [x] 3. BAM judges a duty Memenuhi or Tidak memenuhi.
-- [ ] 4. Pengelola Asrama validates or sends back, and a failed duty is
+- [x] 4. Pengelola Asrama validates or sends back, and a failed duty is
   scheduled again.
 - [ ] 5. Staff see the two numbers and "Skor kebersihan kamar".
 - [ ] 6. Residents see their room's results and score.

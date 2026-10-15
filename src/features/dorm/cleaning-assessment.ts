@@ -5,11 +5,14 @@ import {
   CLEANING_RESULTS,
   type CleaningResult,
   type CleaningStatus,
+  SEND_BACK_MIN_LETTERS,
 } from "./cleaning-ids";
 import {
   CLEANING_NOTE_TOO_LONG,
   JUDGE_NOTE_NEEDED,
   RESULT_UNKNOWN,
+  SEND_BACK_REASON_NEEDED,
+  SEND_BACK_REASON_TOO_LONG,
 } from "./cleaning-messages";
 
 /*
@@ -83,6 +86,18 @@ export function parseJudgement(
   }
   if (result === "not_met" && trimmed === "") return JUDGE_NOTE_NEEDED;
   return { ok: true, value: { result, note: trimmed } };
+}
+
+/**
+ * The reason for "Tolak penilaian", as sent from outside: at least 5
+ * letters, without the spaces around it.
+ */
+export function parseSendBackReason(reason: unknown): Parsed<string> {
+  const trimmed = trimmedNote(reason);
+  const letters = lettersIn(trimmed);
+  if (letters < SEND_BACK_MIN_LETTERS) return SEND_BACK_REASON_NEEDED;
+  if (letters > CLEANING_NOTE_MAX_LENGTH) return SEND_BACK_REASON_TOO_LONG;
+  return { ok: true, value: trimmed };
 }
 
 /**
