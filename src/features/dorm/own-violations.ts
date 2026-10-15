@@ -17,9 +17,16 @@ import {
   ANNOUNCED_FIELDS,
   type AnnouncedViolation,
   type Announcement,
+  APPEAL_OF_VIOLATION,
   readAnnouncement,
 } from "./violation-announcement";
-import { announcedBy, escalatedBy, inPeriodDays } from "./violation-conditions";
+import {
+  APPEAL_ACCEPTED,
+  announcedBy,
+  escalatedBy,
+  inAppealOrWaitingAt,
+  inPeriodDays,
+} from "./violation-conditions";
 import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import { periodDays } from "./violation-periods";
 
@@ -52,6 +59,10 @@ export type OwnViolations =
       dorm: DormId;
       /** "Pelanggaran tercatat": gone up to Pengelola Asrama, in the running semester. */
       recorded: number;
+      /** "Dalam masa advokasi": in Masa advokasi or Advokasi diproses now, of any day. */
+      inAppeal: number;
+      /** "Advokasi diterima": accepted, in the running semester. */
+      accepted: number;
       /** The running semester, or null while no period is stored. */
       semester: SemesterChoice | null;
       periods: SemesterChoice[];
@@ -94,10 +105,7 @@ async function readHistory(
     .select(OWN_FIELDS)
     .from(dormViolations)
     .innerJoin(students, eq(students.id, dormViolations.studentId))
-    .leftJoin(
-      dormViolationAppeals,
-      eq(dormViolationAppeals.violationId, dormViolations.id),
-    )
+    .leftJoin(dormViolationAppeals, APPEAL_OF_VIOLATION)
     .where(where)
     .orderBy(
       desc(dormViolations.day),
@@ -112,7 +120,9 @@ async function readHistory(
 /**
  * Pelanggaran for a resident, at `now` by the server's clock: how many of
  * their own violations of the running semester went up to Pengelola
- * Asrama, their own announced violations of the period chosen, and the
+ * Asrama and how many of them had their appeal accepted, how many of
+ * their own are in their appeal time or wait for BAM, their own
+ * announced violations of the period chosen, and the
  * announcement of the dorm they live in today, of its residents only.
  * The student is the account's own, never one the address names. Refused
  * for an account without the right, or whose student lives in no dorm.
@@ -139,17 +149,24 @@ export async function readOwnViolations(
   const chosenDays = chosen === null ? null : periodDays(periods, chosen.id);
   const ofPeriod = chosenDays === null ? undefined : inPeriodDays(chosenDays);
   const ofDorm = and(eq(dormViolations.dorm, dorm), NOT_REMOVED);
-  const [recorded, history, announcement] = await Promise.all([
+  const ofRunning = (where: SQL | undefined) =>
     runningDays === null
       ? 0
-      : countWhere(db, and(own, escalatedBy(now), inPeriodDays(runningDays))),
-    readHistory(db, and(own, announcedBy(now), ofPeriod), params.page),
-    readAnnouncement(db, ofDorm, now, params.day, params.announcementPage),
-  ]);
+      : countWhere(db, and(own, where, inPeriodDays(runningDays)));
+  const [recorded, inAppeal, accepted, history, announcement] =
+    await Promise.all([
+      ofRunning(escalatedBy(now)),
+      countWhere(db, and(own, inAppealOrWaitingAt(now))),
+      ofRunning(APPEAL_ACCEPTED),
+      readHistory(db, and(own, announcedBy(now), ofPeriod), params.page),
+      readAnnouncement(db, ofDorm, now, params.day, params.announcementPage),
+    ]);
   return {
     kind: "shown",
     dorm,
     recorded,
+    inAppeal,
+    accepted,
     semester:
       running === null ? null : { id: running.id, title: periodTitle(running) },
     periods: periods.map((each) => ({ id: each.id, title: periodTitle(each) })),

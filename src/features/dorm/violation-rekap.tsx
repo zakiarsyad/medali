@@ -37,7 +37,8 @@ function RekapTable({
             <th>Mahasiswa</th>
             <th>Asrama</th>
             <th>Tercatat</th>
-            <th>Masa advokasi</th>
+            <th>Proses advokasi</th>
+            <th>Advokasi diterima</th>
           </tr>
         </thead>
         <tbody>
@@ -63,7 +64,10 @@ function RekapTable({
                 <td data-title="Tercatat">
                   <b>{shownCount(row.escalated)}</b>
                 </td>
-                <td data-title="Masa advokasi">{shownCount(row.inAppeal)}</td>
+                <td data-title="Proses advokasi">{shownCount(row.inAppeal)}</td>
+                <td data-title="Advokasi diterima">
+                  {shownCount(row.accepted)}
+                </td>
               </PressableRow>
             );
           })}
@@ -76,8 +80,9 @@ function RekapTable({
 /**
  * "Rekap pelanggaran per mahasiswa": each student with an announced
  * violation of the semester, with Tercatat, the violations that went up
- * to Pengelola Asrama, and those in Masa advokasi. Pressing a row opens
- * that student's violations.
+ * to Pengelola Asrama, Proses advokasi, those in Masa advokasi or
+ * Advokasi diproses, and Advokasi diterima. Pressing a row opens that
+ * student's violations.
  */
 export function RekapPanel({
   rekap,

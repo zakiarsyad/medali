@@ -87,6 +87,7 @@ async function StaffScreen({
       form={form}
       schedule={schedule}
       appeals={appeals}
+      waitingAppeals={inbox?.waiting ?? null}
     />
   );
 }

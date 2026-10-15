@@ -1,8 +1,9 @@
 import { and, asc, count, desc, eq, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { dormViolations, students } from "@/db/schema";
+import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
+import type { AppealStatus } from "./appeal-ids";
 import { announcedBy } from "./violation-conditions";
 import { type Punishment, VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 
@@ -18,6 +19,8 @@ export interface AnnouncedViolation {
   punishment: Punishment;
   otherPunishment: string;
   announcedAt: Date;
+  /** Only the result of its appeal, or null without one: never its reason. */
+  appeal: AppealStatus | null;
 }
 
 /** A violation day with announced violations, and how many. */
@@ -38,7 +41,16 @@ export interface Announcement {
   page: number;
 }
 
-/** What a list of announced violations reads of each. */
+/** The appeal of a violation, for the lists, which read only its status. */
+export const APPEAL_OF_VIOLATION = eq(
+  dormViolationAppeals.violationId,
+  dormViolations.id,
+);
+
+/**
+ * What a list of announced violations reads of each. Its read joins the
+ * students, and the appeals by `APPEAL_OF_VIOLATION` with a left join.
+ */
 export const ANNOUNCED_FIELDS = {
   id: dormViolations.id,
   day: dormViolations.day,
@@ -50,6 +62,7 @@ export const ANNOUNCED_FIELDS = {
   punishment: dormViolations.punishment,
   otherPunishment: dormViolations.otherPunishment,
   announcedAt: dormViolations.announcedAt,
+  appeal: dormViolationAppeals.status,
 };
 
 /** The days with announced violations, the latest first. */
@@ -89,6 +102,7 @@ export async function readAnnouncement(
     .select(ANNOUNCED_FIELDS)
     .from(dormViolations)
     .innerJoin(students, eq(students.id, dormViolations.studentId))
+    .leftJoin(dormViolationAppeals, APPEAL_OF_VIOLATION)
     .where(and(announced, eq(dormViolations.day, chosen.day)))
     .orderBy(
       asc(dormViolations.announcedAt),

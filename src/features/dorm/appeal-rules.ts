@@ -26,7 +26,7 @@ export function appealStanding(
   now: Date,
 ): AppealStanding {
   if (hasAppeal) return "appealed";
-  const status = violationStatus(announcedAt, now);
+  const status = violationStatus(announcedAt, null, now);
   if (status === "scheduled") return "not_announced";
   if (status === "appeal") return "open";
   return "over";

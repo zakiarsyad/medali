@@ -14,7 +14,7 @@ import {
   ownViolationsAddress,
   VIOLATIONS_ADDRESS,
 } from "./violation-address";
-import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
+import { APPEAL_HOURS, VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import styles from "./violations.module.css";
 
 export const NO_OWN_VIOLATIONS = "Tidak ada pelanggaran pada periode ini.";
@@ -133,6 +133,16 @@ export function OwnViolationsView({
               ? "belum ada periode akademik"
               : `semester ${own.semester.title}`
           }
+        />
+        <NumberCard
+          label="Dalam masa advokasi"
+          amount={own.inAppeal}
+          note={`batas ${APPEAL_HOURS} jam setelah diumumkan`}
+        />
+        <NumberCard
+          label="Advokasi diterima"
+          amount={own.accepted}
+          note="tidak dihitung"
         />
       </NumberCards>
       <HistoryPanel own={own} params={params} now={now} />

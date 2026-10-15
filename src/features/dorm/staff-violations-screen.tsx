@@ -51,7 +51,24 @@ function SchedulePanel({
   );
 }
 
-function Numbers({ board }: { board: StaffViolations }) {
+/**
+ * What "Dalam masa advokasi" says under its number: to those who decide,
+ * how many appeals wait for them; to everyone else, how long the appeal
+ * time lasts.
+ */
+function inAppealNote(waitingAppeals: number | null): string {
+  if (waitingAppeals === null)
+    return `batas ${APPEAL_HOURS} jam setelah diumumkan`;
+  return `${waitingAppeals} advokasi menunggu keputusan`;
+}
+
+function Numbers({
+  board,
+  waitingAppeals,
+}: {
+  board: StaffViolations;
+  waitingAppeals: number | null;
+}) {
   const { numbers, semester } = board;
   return (
     <NumberCards>
@@ -63,7 +80,7 @@ function Numbers({ board }: { board: StaffViolations }) {
       <NumberCard
         label="Dalam masa advokasi"
         amount={numbers.inAppeal}
-        note={`batas ${APPEAL_HOURS} jam setelah diumumkan`}
+        note={inAppealNote(waitingAppeals)}
       />
       <NumberCard
         label="Naik ke Pengelola Asrama"
@@ -104,6 +121,7 @@ export function StaffViolationsScreen({
   form,
   schedule,
   appeals,
+  waitingAppeals,
 }: {
   tabs: TabLinksProps;
   params: StaffViolationParams;
@@ -115,6 +133,8 @@ export function StaffViolationsScreen({
   schedule: ViolationSchedule | null;
   /** "Advokasi masuk", or null for an account that does not decide appeals. */
   appeals: ReactNode;
+  /** How many appeals wait, for an account that decides them, or else null. */
+  waitingAppeals: number | null;
 }) {
   return (
     <>
@@ -124,7 +144,7 @@ export function StaffViolationsScreen({
         {APPEAL_HOURS} jam; setelah itu pelanggaran naik ke Pengelola Asrama.
       </PageHead>
       <TabLinks {...tabs} />
-      <Numbers board={board} />
+      <Numbers board={board} waitingAppeals={waitingAppeals} />
       {form === null ? (
         <p className={styles.note}>{READ_ONLY_NOTE}</p>
       ) : (

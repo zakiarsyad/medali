@@ -32,7 +32,9 @@ describe("the sample dorm violations", { timeout: 20_000 }, () => {
 
       const shown = kept.filter((violation) => violation.cancelledAt === null);
       const statuses = new Set(
-        shown.map((violation) => violationStatus(violation.announcedAt, now)),
+        shown.map((violation) =>
+          violationStatus(violation.announcedAt, null, now),
+        ),
       );
       expect([...statuses].sort()).toEqual([
         "appeal",

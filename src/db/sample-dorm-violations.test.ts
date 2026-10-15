@@ -13,23 +13,28 @@ const MORNING = new Date("2026-10-14T03:00:00Z");
 const EVENING = new Date("2026-10-14T13:30:00Z");
 
 describe("sampleDormViolations", () => {
-  it.each([MORNING, EVENING])(
-    "has violations waiting, in Masa advokasi and gone up to Pengelola Asrama at %s",
-    (now) => {
-      const shown = sampleDormViolations(now).filter(
-        (violation) => !violation.isCancelled,
-      );
-      const statuses = new Set(
-        shown.map((violation) => violationStatus(violation.announcedAt, now)),
-      );
+  it.each([MORNING, EVENING])("has violations in every status at %s", (now) => {
+    const shown = sampleDormViolations(now).filter(
+      (violation) => !violation.isCancelled,
+    );
+    const statuses = new Set(
+      shown.map((violation) =>
+        violationStatus(
+          violation.announcedAt,
+          violation.appeal?.status ?? null,
+          now,
+        ),
+      ),
+    );
 
-      expect([...statuses].sort()).toEqual([
-        "appeal",
-        "escalated",
-        "scheduled",
-      ]);
-    },
-  );
+    expect([...statuses].sort()).toEqual([
+      "appeal",
+      "appeal_accepted",
+      "appeal_waiting",
+      "escalated",
+      "scheduled",
+    ]);
+  });
 
   it("cancels only a violation that waits for its announcement", () => {
     const cancelled = sampleDormViolations(MORNING).filter(
@@ -98,7 +103,7 @@ describe("sampleDormViolations", () => {
     const open = ofFirst.filter(
       (violation) =>
         violation.appeal === null &&
-        violationStatus(violation.announcedAt, MORNING) === "appeal",
+        violationStatus(violation.announcedAt, null, MORNING) === "appeal",
     );
     const statuses = ofFirst.map((violation) => violation.appeal?.status);
 

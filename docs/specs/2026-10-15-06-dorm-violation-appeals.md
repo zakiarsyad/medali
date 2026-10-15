@@ -142,6 +142,22 @@ Decided while building, because the issue did not say:
 14. Catatan BAM may be left empty on "Terima". A decision on an appeal
     decided already is refused with "Advokasi ini sudah diputuskan oleh
     anggota BAM yang lain. Muat ulang halaman."
+15. A rejected appeal makes its violation Naik ke Pengelola at once,
+    also within the 3 hours, with "advokasi ditolak" under it. An
+    accepted one shows Advokasi diterima and never counts as Tercatat
+    or under "Naik ke Pengelola Asrama".
+16. "Dalam masa advokasi" counts the violations in Masa advokasi or
+    Advokasi diproses now, of any day, on the staff screen and for a
+    resident their own. Under it BAM - BPHK and BAM - KI read "(n)
+    advokasi menunggu keputusan"; every other role reads "batas 3 jam
+    setelah diumumkan", so the roles that only read learn no more than
+    the results.
+17. A resident's "Advokasi diterima" counts their own accepted appeals
+    of the running semester, as "Pelanggaran tercatat" does.
+18. In the rekap the column Masa advokasi becomes "Proses advokasi",
+    Masa advokasi and Advokasi diproses together, and "Advokasi
+    diterima" is added, as in the prototype. Every list shows only the
+    status of an appeal, never its reason.
 
 ## Steps
 
@@ -152,4 +168,4 @@ Decided while building, because the issue did not say:
 - [x] 3. Residents send an appeal with an optional proof file and see
   its result.
 - [x] 4. BAM sees "Advokasi masuk" and accepts or rejects.
-- [ ] 5. The violation's status and the numbers follow the appeal.
+- [x] 5. The violation's status and the numbers follow the appeal.
