@@ -18,7 +18,6 @@ import {
   REDUCTION_UNDONE,
 } from "./reduction-words";
 import { undoReduction } from "./undo-reduction";
-import { VIOLATIONS_ADDRESS } from "./violation-address";
 
 /**
  * The signed-in account when it may reduce violations and undo a
@@ -33,9 +32,10 @@ async function reducer(): Promise<Account> {
 
 /**
  * "Kurangi" on a violation in the box of one student, once confirmed.
- * Who reduced it is the signed-in account, never a field. The tab is read
- * again whatever the answer: a refusal often means the row is out of
- * date.
+ * Who reduced it is the signed-in account, never a field. Pelanggaran,
+ * Tugas saya and the number beside Tugas saya in the menu of every page
+ * are read again whatever the answer, here and after every reduction or
+ * undoing: a refusal often means the row is out of date.
  */
 export async function reduceOneViolationAction(
   sent: SentOneReduction,
@@ -51,7 +51,7 @@ export async function reduceOneViolationAction(
     },
     new Date(),
   );
-  revalidatePath(VIOLATIONS_ADDRESS);
+  revalidatePath("/", "layout");
   if (!reduced.ok) return { error: reduced.error, done: null };
   const [day = ""] = reduced.value.days;
   return { error: null, done: oneReducedWords(day) };
@@ -75,7 +75,7 @@ export async function reduceViolationsAction(
     },
     new Date(),
   );
-  revalidatePath(VIOLATIONS_ADDRESS);
+  revalidatePath("/", "layout");
   if (!reduced.ok) return { error: reduced.error, done: null };
   const { days, standing } = reduced.value;
   return { error: null, done: manyReducedWords(days.length, standing) };
@@ -88,7 +88,7 @@ export async function reduceViolationsAction(
 export async function undoReductionAction(id: string): Promise<FormState> {
   const actor = await reducer();
   const undone = await undoReduction(database(), actor, String(id));
-  revalidatePath(VIOLATIONS_ADDRESS);
+  revalidatePath("/", "layout");
   if (!undone.ok) return { error: undone.error, done: null };
   return { error: null, done: REDUCTION_UNDONE };
 }

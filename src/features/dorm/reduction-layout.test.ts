@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { linesOf } from "@/auth/asks-who";
 
 const FOLDER = "src/features/dorm";
 
@@ -46,4 +47,29 @@ describe("the forms that reduce violations, on a phone", () => {
       "if (!window.confirm(reduceManyQuestion(picked.length, name, left))) return;",
     );
   });
+});
+
+describe("a reduction or its undoing, once sent", () => {
+  const ACTIONS = read("reduction-actions.ts");
+
+  it.each([
+    "reduceOneViolationAction",
+    "reduceViolationsAction",
+    "undoReductionAction",
+  ])(
+    "%s reads every page again, even when refused, as it may change Tugas saya and the number beside it in the menu",
+    (action) => {
+      const lines = linesOf(ACTIONS, action);
+      const rereads = lines.filter((line) =>
+        line.startsWith("revalidatePath("),
+      );
+      const refusal = lines.findIndex((line) => line.includes(".ok) return"));
+
+      expect(rereads).toEqual(['revalidatePath("/", "layout");']);
+      expect(refusal).toBeGreaterThan(-1);
+      expect(lines.indexOf('revalidatePath("/", "layout");')).toBeLessThan(
+        refusal,
+      );
+    },
+  );
 });
