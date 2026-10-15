@@ -106,7 +106,7 @@ their capaian karakter everywhere else in the app.
 - [x] 2. The rule for Rerata and predikat, with checks.
 - [x] 3. The tab shows the numbers and "Hasil asesmen karakter".
 - [x] 4. The form with sliders and "Pratinjau medali" saves one student.
-- [ ] 5. A row opens the student's earlier assessments.
+- [x] 5. A row opens the student's earlier assessments.
 
 ## Decisions made while building
 
@@ -173,3 +173,14 @@ their capaian karakter everywhere else in the app.
 - "Simpan asesmen" pressed twice is answered as the first press. The
   same form sent again with other scores, another source or note, or by
   another account is refused and saves nothing.
+- A press anywhere on the row of a student with an assessment, or on
+  their name, opens "Riwayat asesmen karakter" over the tab, as a row of
+  a kelompok pengasuhan opens a student. A student without one opens
+  nothing.
+- The history lists every assessment, the newest first: Tanggal with the
+  period under it, Sumber with who entered it under it, the six scores,
+  Rerata and Predikat, and for Kepala Unit and Penilai Mahasiswa a last
+  column "Catatan penilai", "-" when empty. For the other roles the note
+  is never read from the database.
+- For a student who is not Aktif or whom the account may not see,
+  nothing opens, whatever the address asks for.

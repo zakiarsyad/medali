@@ -12,6 +12,7 @@ import {
   FILTER_CHOICES,
   FILTER_WORDS,
   filterNamed,
+  START_PARAMS,
 } from "./assessment-address";
 
 /**
@@ -42,17 +43,18 @@ export function AssessmentFilterRow({ params }: { params: AssessmentParams }) {
     if (query === heldQuery) return;
     const timer = setTimeout(() => {
       setAsked(query);
-      router.replace(assessmentAddress({ query, filter, page: 1 }), {
-        scroll: false,
-      });
+      const kept = { ...START_PARAMS, filter };
+      router.replace(assessmentAddress({ ...kept, query }), { scroll: false });
     }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
   }, [typed, heldQuery, filter, router]);
 
   function choose(sent: string) {
     const query = searchText(typed) ?? "";
-    const chosen = { query, filter: filterNamed(sent), page: 1 };
-    router.push(assessmentAddress(chosen), { scroll: false });
+    const chosen = { query, filter: filterNamed(sent) };
+    router.push(assessmentAddress({ ...START_PARAMS, ...chosen }), {
+      scroll: false,
+    });
   }
 
   return (

@@ -2,6 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { START_PARAMS } from "./assessment-address";
 import type { AssessmentListRow } from "./assessment-board";
+import type { AssessmentHistory } from "./assessment-history";
+import { AssessmentHistoryDialog } from "./assessment-history-dialog";
 import { AssessmentListTable } from "./assessment-list-table";
 import { AssessmentScreen, ReadOnlyNote } from "./assessment-screen";
 
@@ -41,7 +43,9 @@ const NUMBERS = {
 };
 
 describe("Hasil asesmen karakter", () => {
-  const html = renderToStaticMarkup(<AssessmentListTable rows={ROWS} />);
+  const html = renderToStaticMarkup(
+    <AssessmentListTable rows={ROWS} params={START_PARAMS} />,
+  );
 
   it("shows Tanggal, Sumber with who entered it, the six scores, Rerata and Predikat", () => {
     expect(html).toContain('<td data-title="Tanggal">12 Okt 2026</td>');
@@ -53,8 +57,13 @@ describe("Hasil asesmen karakter", () => {
     expect(html).toContain("Perak");
   });
 
-  it("shows Belum diasesmen for a student without one", () => {
+  it("shows Belum diasesmen for a student without one, whose row opens nothing", () => {
     expect(html).toContain("Belum diasesmen");
+    expect(html).not.toContain(`riwayat=${BUDI}`);
+  });
+
+  it("opens the earlier assessments of a student with one", () => {
+    expect(html).toContain(`href="/penilaian/asesmen?riwayat=${ANI}"`);
   });
 
   it("becomes cards on a phone", () => {
@@ -95,5 +104,67 @@ describe("the tab", () => {
     expect(screen(null)).toContain(
       "Hasil asesmen MEDALI diinput oleh Penilai Mahasiswa atau Kepala Unit Pembangunan Karakter.",
     );
+  });
+});
+
+describe("the earlier assessments of a student", () => {
+  const history: AssessmentHistory = {
+    id: ANI,
+    name: "Ani Contoh",
+    nim: "9986050001",
+    program: "D3 Akuntansi",
+    entries: [
+      {
+        id: "00000000-0000-4000-8000-000000000411",
+        enteredAt: new Date("2026-10-12T03:00:00Z"),
+        period: { startYear: 2026, term: "odd" },
+        source: "medali_instrument",
+        enteredBy: "Penilai Contoh",
+        scores: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+        note: "Catatan rahasia penilai.",
+      },
+      {
+        id: "00000000-0000-4000-8000-000000000412",
+        enteredAt: new Date("2026-03-02T03:00:00Z"),
+        period: { startYear: 2025, term: "even" },
+        source: "self_assessment",
+        enteredBy: "Kepala Contoh",
+        scores: { M: 60, E: 62, D: 58, A: 64, L: 60, I: 62 },
+        note: "",
+      },
+    ],
+  };
+
+  it("lists every one, newest first, with Tanggal, period, Sumber, who, the six scores, Rerata and Predikat", () => {
+    const html = renderToStaticMarkup(
+      <AssessmentHistoryDialog
+        history={history}
+        params={START_PARAMS}
+        withNotes
+      />,
+    );
+
+    expect(html.indexOf("12 Okt 2026")).toBeLessThan(
+      html.indexOf("2 Mar 2026"),
+    );
+    expect(html).toContain("Ganjil 2026/2027");
+    expect(html).toContain("Genap 2025/2026");
+    expect(html).toContain("Kepala Contoh");
+    expect(html).toContain("Perlu pembinaan");
+    expect(html).toContain("Catatan rahasia penilai.");
+    expect(html).toMatch(/<table class="[^"]*stacked/);
+  });
+
+  it("has no Catatan penilai for a role that only reads", () => {
+    const html = renderToStaticMarkup(
+      <AssessmentHistoryDialog
+        history={history}
+        params={START_PARAMS}
+        withNotes={false}
+      />,
+    );
+
+    expect(html).not.toContain("Catatan penilai");
+    expect(html).not.toContain("Catatan rahasia penilai.");
   });
 });

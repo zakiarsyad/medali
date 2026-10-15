@@ -86,7 +86,7 @@ export function AssessmentScreen({
         <h2 className={shared.heading}>Hasil asesmen karakter</h2>
         <p className={styles.sub}>Hasil asesmen terakhir tiap mahasiswa.</p>
         <AssessmentFilterRow params={params} />
-        <AssessmentListTable rows={list.rows} />
+        <AssessmentListTable rows={list.rows} params={params} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

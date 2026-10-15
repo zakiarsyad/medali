@@ -1,6 +1,10 @@
+import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { MEDALI_VALUES } from "@/ui/medali-values";
+import { PressableRow } from "@/ui/pressable-row";
+import pressable from "@/ui/pressable-row.module.css";
+import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentListRow } from "./assessment-board";
 import { rerataOf } from "./assessment-score";
 import { NOT_ASSESSED, SOURCE_WORDS, shownRerata } from "./assessment-words";
@@ -39,14 +43,67 @@ function LatestCells({ latest }: { latest: LatestAssessment }) {
   );
 }
 
+function StudentCell({
+  row,
+  historyAddress,
+}: {
+  row: AssessmentListRow;
+  historyAddress: string | null;
+}) {
+  const name = <b className={shared.typed}>{row.name}</b>;
+  return (
+    <td className={shared.rowHeading} data-title="Mahasiswa">
+      {historyAddress === null ? (
+        name
+      ) : (
+        <Link href={historyAddress} scroll={false} className={pressable.open}>
+          {name}
+        </Link>
+      )}
+      <small className={shared.detail}>
+        {row.nim} · {row.program}
+      </small>
+    </td>
+  );
+}
+
+function StudentRow({
+  row,
+  params,
+}: {
+  row: AssessmentListRow;
+  params: AssessmentParams;
+}) {
+  if (row.latest === null) {
+    return (
+      <tr>
+        <StudentCell row={row} historyAddress={null} />
+        <td colSpan={AFTER_STUDENT} data-title="Asesmen">
+          <span className={shared.badge}>{NOT_ASSESSED}</span>
+        </td>
+      </tr>
+    );
+  }
+  const historyAddress = assessmentAddress({ ...params, historyId: row.id });
+  return (
+    <PressableRow address={historyAddress}>
+      <StudentCell row={row} historyAddress={historyAddress} />
+      <LatestCells latest={row.latest} />
+    </PressableRow>
+  );
+}
+
 /**
  * "Hasil asesmen karakter": each student with their latest assessment,
- * or "Belum diasesmen". On a phone each student is a block of its own.
+ * or "Belum diasesmen". Pressing a student with one opens their earlier
+ * assessments. On a phone each student is a block of its own.
  */
 export function AssessmentListTable({
   rows,
+  params,
 }: {
   rows: readonly AssessmentListRow[];
+  params: AssessmentParams;
 }) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_ASSESSMENT_MATCHES}</p>;
@@ -69,22 +126,8 @@ export function AssessmentListTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ id, name, nim, program, latest }) => (
-            <tr key={id}>
-              <td className={shared.rowHeading} data-title="Mahasiswa">
-                <b className={shared.typed}>{name}</b>
-                <small className={shared.detail}>
-                  {nim} · {program}
-                </small>
-              </td>
-              {latest ? (
-                <LatestCells latest={latest} />
-              ) : (
-                <td colSpan={AFTER_STUDENT} data-title="Asesmen">
-                  <span className={shared.badge}>{NOT_ASSESSED}</span>
-                </td>
-              )}
-            </tr>
+          {rows.map((row) => (
+            <StudentRow key={row.id} row={row} params={params} />
           ))}
         </tbody>
       </table>

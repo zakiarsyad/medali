@@ -13,6 +13,8 @@ import {
   AssessmentForm,
   type LevelTexts,
 } from "@/features/character-assessment/assessment-form";
+import { readAssessmentHistory } from "@/features/character-assessment/assessment-history";
+import { AssessmentHistoryDialog } from "@/features/character-assessment/assessment-history-dialog";
 import { assessmentVisibleTo } from "@/features/character-assessment/assessment-readers";
 import {
   AssessmentScreen,
@@ -24,7 +26,9 @@ import { readMainIndicators } from "@/features/curriculum/stored-main-indicators
  * The tab Asesmen karakter. Each role sees the students its roles that
  * open the tab see: Ketua Program Studi those of their own program only,
  * Pengasuh their own mentees only. Kepala Unit and Penilai Mahasiswa may
- * also enter an assessment; the others are told who does.
+ * also enter an assessment, and alone read "Catatan penilai"; the others
+ * are told who enters. A student's earlier assessments open over the tab
+ * only for a student the account sees.
  */
 export default async function AssessmentPage(
   props: PageProps<"/penilaian/asesmen">,
@@ -35,29 +39,42 @@ export default async function AssessmentPage(
   const params = readAssessmentParams(await props.searchParams);
   const db = database();
   const visible = assessmentVisibleTo(account);
+  const mayAssess = may(account.roles, "assess_character");
   const running = await readRunningPeriod(db);
-  const [numbers, list] = await Promise.all([
+  const [numbers, list, history] = await Promise.all([
     readAssessmentNumbers(db, visible, running?.id ?? null),
     readAssessmentList(db, visible, params),
+    params.historyId === null
+      ? null
+      : readAssessmentHistory(db, visible, params.historyId, mayAssess),
   ]);
   return (
-    <AssessmentScreen
-      tabs={tabs}
-      params={params}
-      numbers={numbers}
-      periodName={running ? periodTitle(running) : null}
-      list={list}
-      manage={
-        may(account.roles, "assess_character") ? (
-          <AssessmentForm
-            newAssessmentId={crypto.randomUUID()}
-            levelTexts={await readLevelTexts(db)}
-          />
-        ) : (
-          <ReadOnlyNote />
-        )
-      }
-    />
+    <>
+      <AssessmentScreen
+        tabs={tabs}
+        params={params}
+        numbers={numbers}
+        periodName={running ? periodTitle(running) : null}
+        list={list}
+        manage={
+          mayAssess ? (
+            <AssessmentForm
+              newAssessmentId={crypto.randomUUID()}
+              levelTexts={await readLevelTexts(db)}
+            />
+          ) : (
+            <ReadOnlyNote />
+          )
+        }
+      />
+      {history && (
+        <AssessmentHistoryDialog
+          history={history}
+          params={params}
+          withNotes={mayAssess}
+        />
+      )}
+    </>
   );
 }
 

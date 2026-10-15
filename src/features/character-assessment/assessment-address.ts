@@ -1,3 +1,4 @@
+import { isUuid } from "@/db/is-uuid";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
@@ -34,12 +35,15 @@ export interface AssessmentParams {
   filter: AssessmentFilter;
   /** The page of the list, counted from 1. */
   page: number;
+  /** The student whose earlier assessments are open over the tab, or null. */
+  historyId: string | null;
 }
 
 export const START_PARAMS: AssessmentParams = {
   query: "",
   filter: "all",
   page: 1,
+  historyId: null,
 };
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -56,6 +60,10 @@ export function filterNamed(sent: string): AssessmentFilter {
   return named ?? "all";
 }
 
+function idNamed(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
+}
+
 /**
  * What the address asks the tab for. Nothing in an address is trusted:
  * a part that is not understood counts as not chosen, and a text too
@@ -66,6 +74,7 @@ export function readAssessmentParams(params: SearchParams): AssessmentParams {
     query: searchText(firstParam(params.cari)) ?? "",
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
+    historyId: idNamed(firstParam(params.riwayat)),
   };
 }
 
@@ -80,6 +89,7 @@ export function assessmentAddress(params: AssessmentParams): string {
     search.set("saring", FILTER_CHOICES[params.filter]);
   }
   if (params.page > 1) search.set("hal", String(params.page));
+  if (params.historyId !== null) search.set("riwayat", params.historyId);
   const text = search.toString();
   if (text === "") return ASSESSMENT_ADDRESS;
   return `${ASSESSMENT_ADDRESS}?${text}`;
