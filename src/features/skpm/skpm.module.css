@@ -4,6 +4,19 @@
   font-size: var(--text-md);
 }
 
+.subheading {
+  margin: var(--space-lg) 0 var(--space-xs);
+  font-size: var(--text-base);
+}
+
+.conversionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: flex-end;
+  margin: var(--space-md) 0;
+}
+
 .strong {
   font-weight: var(--weight-heavy);
 }

@@ -1,6 +1,7 @@
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
+import { ConversionPanel } from "@/features/skpm/conversion-panel";
 import { readSkpmParams } from "@/features/skpm/skpm-address";
 import {
   readSkpmDetail,
@@ -12,6 +13,7 @@ import { SkpmDetailDialog } from "@/features/skpm/skpm-detail-dialog";
 import { ReadOnlyNote } from "@/features/skpm/skpm-read-only";
 import { skpmVisibleTo } from "@/features/skpm/skpm-readers";
 import { SkpmScreen } from "@/features/skpm/skpm-screen";
+import { conversionNote } from "@/features/skpm/skpm-words";
 
 /**
  * The tab Data SKPM. Each role sees the students its roles that open the
@@ -46,7 +48,12 @@ export default async function SkpmPage(props: PageProps<"/penilaian/skpm">) {
         numbers={numbers}
         list={list}
         manage={
-          mayUpload ? null : (
+          mayUpload ? (
+            <ConversionPanel
+              pointsForHundred={pointsForHundred}
+              note={conversionNote(conversion.set)}
+            />
+          ) : (
             <ReadOnlyNote pointsForHundred={pointsForHundred} />
           )
         }

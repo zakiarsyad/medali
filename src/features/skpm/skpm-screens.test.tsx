@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { ConversionPanel } from "./conversion-panel";
 import { START_PARAMS } from "./skpm-address";
 import { SkpmListTable } from "./skpm-list-table";
 import { ReadOnlyNote } from "./skpm-read-only";
@@ -46,6 +47,28 @@ describe("Nilai SKPM per mahasiswa", () => {
 
   it("becomes cards on a phone", () => {
     expect(html).toMatch(/<table class="[^"]*stacked/);
+  });
+});
+
+describe("Konversi poin ke nilai", () => {
+  const html = renderToStaticMarkup(
+    <ConversionPanel
+      pointsForHundred={40}
+      note="Ditetapkan 15 Okt 2026 oleh Penilai Contoh."
+    />,
+  );
+
+  it("offers Poin untuk nilai 100, 1 to 1000, with Simpan konversi", () => {
+    expect(html).toContain("Poin untuk nilai 100");
+    expect(html).toMatch(/min="1" max="1000"/);
+    expect(html).toContain('value="40"');
+    expect(html).toContain("Simpan konversi");
+  });
+
+  it("explains the rule and says who set it and when", () => {
+    expect(html).toContain(
+      "Nilai SKPM = total poin ÷ 40 × 100, paling tinggi 100. Ditetapkan 15 Okt 2026 oleh Penilai Contoh.",
+    );
   });
 });
 

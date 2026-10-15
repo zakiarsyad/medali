@@ -21,6 +21,28 @@ export const POINTS_FOR_100_MIN = 1;
 export const POINTS_FOR_100_MAX = 1000;
 export const STARTING_POINTS_FOR_100 = 50;
 
+/**
+ * The kategori and the tingkat of the SKPM guidelines, as the prototype
+ * lists them. A file may say another: its text is kept.
+ */
+export const SKPM_CATEGORIES = [
+  "Organisasi kemahasiswaan",
+  "Kepanitiaan",
+  "Lomba atau kompetisi",
+  "Pengabdian masyarakat",
+  "Seminar atau pelatihan",
+  "Prestasi akademik",
+  "Lainnya",
+] as const;
+
+export const SKPM_LEVELS = [
+  "Kampus",
+  "Kota/kabupaten",
+  "Provinsi",
+  "Nasional",
+  "Internasional",
+] as const;
+
 /** The kategori an activity row gets when the file leaves it empty. */
 export const OTHER_CATEGORY = "Lainnya";
 

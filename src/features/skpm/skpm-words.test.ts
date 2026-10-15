@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { readOnlyNote, shownOneDecimal, shownPoints } from "./skpm-words";
+import {
+  conversionNote,
+  readOnlyNote,
+  shownOneDecimal,
+  shownPoints,
+} from "./skpm-words";
 
 describe("the numbers of Data SKPM", () => {
   it("shows a score with one decimal, and a dash for none", () => {
@@ -12,6 +17,18 @@ describe("the numbers of Data SKPM", () => {
     expect(shownPoints(8)).toBe("8");
     expect(shownPoints(7.5)).toBe("7,5");
     expect(shownPoints(1000)).toBe("1.000");
+  });
+
+  it("says who set the points for 100 and when, or that it is the starting number", () => {
+    expect(conversionNote(null)).toBe(
+      "Angka awal, sesuaikan dengan pedoman SKPM.",
+    );
+    expect(
+      conversionNote({
+        at: new Date("2026-10-15T03:00:00Z"),
+        by: "Penilai Contoh",
+      }),
+    ).toBe("Ditetapkan 15 Okt 2026 oleh Penilai Contoh.");
   });
 
   it("tells a role that only reads who uploads and how many points equal 100", () => {
