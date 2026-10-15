@@ -1,5 +1,5 @@
 // Sample Tahun akademik of this file: 3310 to 3310.
-// Sample NIMs of this file: 9986100000 to 9986100099.
+// Sample NIMs of this file: 9986109000 to 9986109099.
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -24,7 +24,7 @@ const WAITING = {
 async function addRecords(db: Database, residentCount = 4) {
   const nims = Array.from(
     { length: residentCount },
-    (_, place) => `99861000${String(place + 1).padStart(2, "0")}`,
+    (_, place) => `99861090${String(place + 1).padStart(2, "0")}`,
   );
   const residents = await addTestResidents(db, 3310, "Prodi Uji Tugas", nims);
   const manager = await addTestActor(db, "Pengelola Uji Tugas", [
@@ -79,7 +79,7 @@ describe("readDormTasks", () => {
         later,
       ]);
       expect(tasks.leaves?.items[0]).toMatchObject({
-        nim: "9986100002",
+        nim: "9986109002",
         kind: "special",
         start: "13 Okt 3310, 09.00",
         end: "14 Okt 3310, 16.00",
