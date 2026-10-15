@@ -170,7 +170,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. Duties keep their judgement, sending back and validation, with
+- [x] 1. Duties keep their judgement, sending back and validation, with
   sample results for the past week.
 - [ ] 2. The rights to judge and to validate cleaning are added to the
   permission list, with their checks.

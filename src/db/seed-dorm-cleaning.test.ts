@@ -7,6 +7,7 @@ import { DORM_IDS } from "@/dorms/dorms";
 import { SAMPLE_CLEANING_PLACES } from "./sample-dorm-cleaning";
 import {
   accountRoles,
+  dormCleaningChanges,
   dormCleaningDuties,
   dormCleaningPlaces,
   dormRoomPlaces,
@@ -51,8 +52,9 @@ describe("the sample dorm cleaning", { timeout: 20_000 }, () => {
         .where(eq(accountRoles.role, "dorm_manager"));
 
       const days = 7;
+      const first = duties.filter((duty) => duty.repeatOf === null);
       for (const dorm of ["dana_rakca", "cipta_bakti"] as const) {
-        const ofDorm = duties.filter((duty) => duty.dorm === dorm);
+        const ofDorm = first.filter((duty) => duty.dorm === dorm);
         expect(ofDorm).toHaveLength(days * SAMPLE_CLEANING_PLACES.length);
       }
       const livedIn = lived.map((place) => place.roomId);
@@ -61,9 +63,49 @@ describe("the sample dorm cleaning", { timeout: 20_000 }, () => {
         expect(livedIn).toContain(duty.roomId);
         expect(duty.placeId).not.toBeNull();
         expect(duty.createdBy).toBe(manager?.id);
+      }
+      for (const duty of first) {
         expect(duty.day >= daysAfter(today, -3)).toBe(true);
         expect(duty.day <= daysAfter(today, 3)).toBe(true);
       }
+    });
+  });
+
+  it("judges the past duties by the sample BAM - Kerumahtanggaan, validates all but one, repeats each one not met, and logs each step", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+      const today = campusDay();
+
+      const duties = await db.select().from(dormCleaningDuties);
+      const changes = await db.select().from(dormCleaningChanges);
+      const [judge] = await db
+        .select({ id: accountRoles.accountId })
+        .from(accountRoles)
+        .where(eq(accountRoles.role, "bam_household"));
+
+      const judged = duties.filter((duty) => duty.status !== "scheduled");
+      const validated = judged.filter((duty) => duty.status === "validated");
+      const notMet = validated.filter((duty) => duty.result === "not_met");
+      const repeats = duties.filter((duty) => duty.repeatOf !== null);
+      expect(judged.length).toBeGreaterThan(0);
+      expect(judged.length - validated.length).toBe(2);
+      expect(notMet.length).toBeGreaterThan(0);
+      for (const duty of judged) {
+        expect(duty.day < today).toBe(true);
+        expect(duty.judgedBy).toBe(judge?.id);
+      }
+      for (const duty of notMet) {
+        expect(duty.judgeNote).not.toBe("");
+        const repeat = repeats.find((each) => each.repeatOf === duty.id);
+        expect(repeat).toMatchObject({
+          placeId: duty.placeId,
+          roomId: duty.roomId,
+          status: "scheduled",
+        });
+        expect((repeat?.day ?? "") > today).toBe(true);
+      }
+      expect(repeats).toHaveLength(notMet.length);
+      expect(changes).toHaveLength(judged.length + validated.length);
     });
   });
 });

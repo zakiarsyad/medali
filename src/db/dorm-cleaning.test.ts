@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "./connect";
 import {
   accounts,
+  dormCleaningChanges,
   dormCleaningDuties,
   dormCleaningPlaces,
   dormRooms,
@@ -174,6 +175,195 @@ describe("the cleaning duties", () => {
         .where(eq(dormCleaningDuties.roomNumber, "UB105"));
       expect(kept).toHaveLength(1);
       expect(kept[0]?.roomId).toBeNull();
+    });
+  });
+});
+
+type DutyValues = Partial<typeof dormCleaningDuties.$inferInsert>;
+
+/** One own-room duty of a new room, with what else is given, and its id. */
+async function addJudgedDuty(
+  db: Database,
+  number: string,
+  values: (by: string) => DutyValues,
+): Promise<{ id: string; by: string }> {
+  const by = await addAccount(db);
+  const roomId = await addRoom(db, number);
+  const [duty] = await db
+    .insert(dormCleaningDuties)
+    .values({
+      day: DAY,
+      dorm: "cipta_bakti",
+      roomId,
+      roomNumber: number,
+      createdBy: by,
+      ...values(by),
+    })
+    .returning();
+  if (!duty) throw new Error("The duty was not added.");
+  return { id: duty.id, by };
+}
+
+function judged(by: string): DutyValues {
+  return {
+    status: "judged",
+    result: "met",
+    judgedBy: by,
+    judgedAt: new Date(),
+  };
+}
+
+describe("the judgement of a cleaning duty", () => {
+  it("starts Terjadwal, with no result", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addJudgedDuty(db, "UB201", () => ({}));
+      const [kept] = await db
+        .select()
+        .from(dormCleaningDuties)
+        .where(eq(dormCleaningDuties.id, id));
+      expect(kept).toMatchObject({
+        status: "scheduled",
+        result: null,
+        judgeNote: "",
+        repeatOf: null,
+      });
+    });
+  });
+
+  it("keeps a result with who judged and when", async () => {
+    await inTestDatabase(async (db) => {
+      await addJudgedDuty(db, "UB202", judged);
+    });
+  });
+
+  it("refuses a judged duty without who judged it", async () => {
+    await inTestDatabase(async (db) => {
+      const adding = addJudgedDuty(db, "UB203", (by) => ({
+        ...judged(by),
+        judgedBy: null,
+      }));
+      await expect(adding).rejects.toThrow();
+    });
+  });
+
+  it("refuses a result on a duty that is still Terjadwal", async () => {
+    await inTestDatabase(async (db) => {
+      const adding = addJudgedDuty(db, "UB204", (by) => ({
+        ...judged(by),
+        status: "scheduled",
+      }));
+      await expect(adding).rejects.toThrow();
+    });
+  });
+
+  it("refuses Tidak memenuhi without a note", async () => {
+    await inTestDatabase(async (db) => {
+      const adding = addJudgedDuty(db, "UB205", (by) => ({
+        ...judged(by),
+        result: "not_met",
+      }));
+      await expect(adding).rejects.toThrow();
+    });
+  });
+
+  it("refuses Divalidasi without who validated it", async () => {
+    await inTestDatabase(async (db) => {
+      const adding = addJudgedDuty(db, "UB206", (by) => ({
+        ...judged(by),
+        status: "validated",
+      }));
+      await expect(adding).rejects.toThrow();
+    });
+  });
+
+  it("refuses a sending back without its reason", async () => {
+    await inTestDatabase(async (db) => {
+      const adding = addJudgedDuty(db, "UB207", (by) => ({
+        sentBackBy: by,
+        sentBackAt: new Date(),
+      }));
+      await expect(adding).rejects.toThrow();
+    });
+  });
+
+  it("refuses a second repeat of one duty", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addJudgedDuty(db, "UB208", () => ({}));
+      await addJudgedDuty(db, "UB209", () => ({ repeatOf: id }));
+      const again = addJudgedDuty(db, "UB210", () => ({ repeatOf: id }));
+      await expect(again).rejects.toThrow();
+    });
+  });
+});
+
+async function addChangeLine(db: Database) {
+  const { id, by } = await addJudgedDuty(db, "UB301", judged);
+  const [line] = await db
+    .insert(dormCleaningChanges)
+    .values({
+      dutyId: id,
+      changedBy: by,
+      step: "judged",
+      result: "met",
+      note: "",
+    })
+    .returning();
+  if (!line) throw new Error("The log line was not added.");
+  return { line, dutyId: id, by };
+}
+
+describe("the log of cleaning judgements", () => {
+  it("keeps who, when, the step, the result and the note", async () => {
+    await inTestDatabase(async (db) => {
+      const { line, dutyId, by } = await addChangeLine(db);
+      expect(line).toMatchObject({
+        dutyId,
+        changedBy: by,
+        step: "judged",
+        result: "met",
+        note: "",
+      });
+      expect(line.changedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  it("refuses to change a line", async () => {
+    await inTestDatabase(async (db) => {
+      const { line } = await addChangeLine(db);
+      const change = db
+        .update(dormCleaningChanges)
+        .set({ note: "Diubah." })
+        .where(eq(dormCleaningChanges.id, line.id));
+      await expect(change).rejects.toThrow();
+    });
+  });
+
+  it("refuses to delete a line", async () => {
+    await inTestDatabase(async (db) => {
+      const { line } = await addChangeLine(db);
+      const removal = db
+        .delete(dormCleaningChanges)
+        .where(eq(dormCleaningChanges.id, line.id));
+      await expect(removal).rejects.toThrow();
+    });
+  });
+
+  it("refuses to be emptied", async () => {
+    await inTestDatabase(async (db) => {
+      await addChangeLine(db);
+      await expect(
+        db.execute(sql`truncate dorm_cleaning_changes`),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("keeps its duty from being deleted", async () => {
+    await inTestDatabase(async (db) => {
+      const { dutyId } = await addChangeLine(db);
+      const removal = db
+        .delete(dormCleaningDuties)
+        .where(eq(dormCleaningDuties.id, dutyId));
+      await expect(removal).rejects.toThrow();
     });
   });
 });
