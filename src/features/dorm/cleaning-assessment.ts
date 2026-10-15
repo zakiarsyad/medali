@@ -34,6 +34,34 @@ export const RESULT_WORDS: Record<CleaningResult, string> = {
   not_met: "Tidak memenuhi",
 };
 
+/** What a validated result gives its room. */
+export const RESULT_POINTS: Record<CleaningResult, number> = {
+  met: 1,
+  not_met: -1,
+};
+
+/** A room's Skor: its + minus its −. */
+export function scoreOf(plus: number, minus: number): number {
+  return plus * RESULT_POINTS.met + minus * RESULT_POINTS.not_met;
+}
+
+/** A score as the screen says it, such as +3, 0 or −2, with a true minus sign. */
+export function scoreWords(score: number): string {
+  const amount = Math.abs(score).toLocaleString("id-ID");
+  if (score > 0) return `+${amount}`;
+  if (score < 0) return `−${amount}`;
+  return amount;
+}
+
+/** The No of a row of the ranking: its place among all, not only on its page. */
+export function rankNumber(
+  page: number,
+  pageSize: number,
+  index: number,
+): number {
+  return (page - 1) * pageSize + index + 1;
+}
+
 /** A judgement sent, checked. */
 export interface Judgement {
   result: CleaningResult;

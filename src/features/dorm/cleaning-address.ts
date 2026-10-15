@@ -12,6 +12,8 @@ export interface CleaningParams {
   day: string;
   /** The page of the rooms cleaning their own room, counted from 1. */
   page: number;
+  /** The page of "Skor kebersihan kamar", counted from 1. */
+  scorePage: number;
 }
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -35,11 +37,18 @@ export function readCleaningParams(
   const dorm = firstParam(params.asrama);
   const day = firstParam(params.tgl);
   const page = firstParam(params.hal);
+  const scorePage = firstParam(params.skor);
   return {
     dorm: DORM_IDS.find((id) => id === dorm) ?? null,
     day: isOpenable(day) ? day : today,
-    page: PAGE.test(page) ? Number(page) : 1,
+    page: pageOf(page),
+    scorePage: pageOf(scorePage),
   };
+}
+
+/** A page number of the address, or the first page when it is not one. */
+function pageOf(sent: string): number {
+  return PAGE.test(sent) ? Number(sent) : 1;
 }
 
 /** The dorms the screen shows: the one picked, or all four. */
@@ -47,15 +56,16 @@ export function shownDorms(params: Pick<CleaningParams, "dorm">) {
   return params.dorm === null ? DORM_IDS : [params.dorm];
 }
 
-/** The address of the screen. Semua asrama, today and the first page are left out. */
+/** The address of the screen. Semua asrama, today and the first pages are left out. */
 export function cleaningAddress(
-  { dorm, day, page }: CleaningParams,
+  { dorm, day, page, scorePage }: CleaningParams,
   today: string,
 ): string {
   const params = new URLSearchParams();
   if (dorm !== null) params.set("asrama", dorm);
   if (day !== today) params.set("tgl", day);
   if (page > 1) params.set("hal", String(page));
+  if (scorePage > 1) params.set("skor", String(scorePage));
   const text = params.toString();
   return text === "" ? CLEANING_ADDRESS : `${CLEANING_ADDRESS}?${text}`;
 }

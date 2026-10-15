@@ -171,6 +171,15 @@
   overflow-wrap: anywhere;
 }
 
+/* A room's Skor above 0, and below it. */
+.good {
+  color: var(--ok);
+}
+
+.poor {
+  color: var(--bad);
+}
+
 /* What a change says, with "Urungkan" beside it after a removal. */
 .said {
   display: flex;

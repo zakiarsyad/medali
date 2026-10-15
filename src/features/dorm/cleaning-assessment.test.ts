@@ -5,6 +5,9 @@ import {
   offersOf,
   parseJudgement,
   parseSendBackReason,
+  rankNumber,
+  scoreOf,
+  scoreWords,
 } from "./cleaning-assessment";
 
 const TODAY = "2026-10-15";
@@ -54,6 +57,26 @@ describe("parseJudgement", () => {
       ok: false,
       error: "Catatan paling banyak 200 huruf.",
     });
+  });
+});
+
+describe("the score of a room", () => {
+  it("is +1 for each Memenuhi and −1 for each Tidak memenuhi", () => {
+    expect(scoreOf(0, 0)).toBe(0);
+    expect(scoreOf(5, 2)).toBe(3);
+    expect(scoreOf(1, 4)).toBe(-3);
+  });
+
+  it("is said with its sign, and a true minus sign", () => {
+    expect(scoreWords(3)).toBe("+3");
+    expect(scoreWords(0)).toBe("0");
+    expect(scoreWords(-2)).toBe("−2");
+  });
+
+  it("numbers the rows of a later page after those of the pages before", () => {
+    expect(rankNumber(1, 20, 0)).toBe(1);
+    expect(rankNumber(2, 20, 0)).toBe(21);
+    expect(rankNumber(3, 20, 4)).toBe(45);
   });
 });
 

@@ -285,6 +285,10 @@ export function CleaningScheduleBoard({
 }) {
   const [said, setSaid] = useState<string | null>(null);
   const { dorm, params, today } = scope;
+  // A page link of one dorm in Semua asrama switches to that dorm, whose
+  // ranking starts on its first page.
+  const scorePageIn = (shown: DormId) =>
+    shown === params.dorm ? params.scorePage : 1;
   const isPlotted = scope.rooms.length > 0;
   return (
     <section className={styles.dormSchedule} aria-label={DORM_NAMES[dorm]}>
@@ -347,7 +351,10 @@ export function CleaningScheduleBoard({
             keepsPlace
             stepsOnOnePage={false}
             addressOf={(page) =>
-              cleaningAddress({ dorm, day: params.day, page }, today)
+              cleaningAddress(
+                { dorm, day: params.day, page, scorePage: scorePageIn(dorm) },
+                today,
+              )
             }
           />
         </>

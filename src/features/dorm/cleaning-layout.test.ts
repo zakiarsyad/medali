@@ -51,6 +51,17 @@ describe("Jadwal pembersihan on a phone", () => {
   });
 });
 
+describe("Skor kebersihan kamar on a phone", () => {
+  it("shows each room as a card that names every value", () => {
+    const ranking = read("cleaning-ranking.tsx");
+
+    expect(ranking).toMatch(/<table className=.*shared\.stacked/);
+    for (const title of ["No", "Kamar", "+", "−", "Skor"]) {
+      expect(ranking).toContain(`data-title="${title}"`);
+    }
+  });
+});
+
 describe("the duties of a resident's room on a phone", () => {
   it("show each duty as a card that names every value, and a room name that folds", () => {
     const view = read("cleaning-resident-view.tsx");
