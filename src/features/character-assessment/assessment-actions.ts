@@ -6,9 +6,13 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import { sentCsvFile } from "@/files/sent-csv-file";
+import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { ASSESSMENT_ADDRESS } from "./assessment-address";
+import { previewAssessmentFile } from "./assessment-file-check";
+import type { AssessmentFilePreview } from "./assessment-file-preview";
 import {
   type AssessmentPick,
   searchAssessmentStudents,
@@ -47,6 +51,16 @@ export async function saveAssessmentAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(ASSESSMENT_ADDRESS);
   return { error: null, done: savedMessage(saved.value) };
+}
+
+/** "Unggah berkas": what a picked file would do. Saves nothing. */
+export async function previewAssessmentFileAction(
+  form: FormData,
+): Promise<Parsed<AssessmentFilePreview>> {
+  const actor = await assessor();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  return previewAssessmentFile(database(), actor, file.value);
 }
 
 /** The Aktif students the form offers for what was typed. */

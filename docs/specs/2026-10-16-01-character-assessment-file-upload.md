@@ -71,7 +71,7 @@ Kepala Unit and Penilai Mahasiswa.
   skipped and why, with checks.
 - [x] 2. "Unggah berkas" shows with the note, "Sumber asesmen" and "Unduh
   templat CSV".
-- [ ] 3. Picking a file shows the preview.
+- [x] 3. Picking a file shows the preview.
 - [ ] 4. "Simpan (n) baris" saves the rows as the newest assessments.
 
 ## Decisions made while building
@@ -82,3 +82,13 @@ Kepala Unit and Penilai Mahasiswa.
   says what a file takes.
 - "Sumber asesmen" for a file starts on "Observasi pengasuh", as the form
   does.
+- The preview shows nim, nama, the six scores, Rerata and predikat of the
+  first six ready rows, and at most 30 skipped rows, as the SIKU upload
+  does. When a NIM is in the file twice, the row shown is the one used.
+- A removed student counts as a NIM that is not in the data, as in the
+  SIKU upload, and so does a student the account may not assess: the
+  row is skipped with "NIM tidak ada dalam data mahasiswa." Today
+  Kepala Unit and Penilai Mahasiswa may assess every student, so the
+  second never shows.
+- The NIM ganda count only rows that would have been ready: a row of the
+  same NIM that is skipped is listed with its reason instead.
