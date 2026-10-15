@@ -33,6 +33,10 @@ const PART_IN_SENTENCE: Record<GradePart, string> = {
 export const READ_ONLY_NOTE =
   "Skema bobot ditetapkan oleh Kepala Unit Pembangunan Karakter.";
 
+/** The confirm "Simpan skema" asks before it saves. */
+export const SAVE_QUESTION =
+  "Simpan skema bobot? Nilai akhir semua mahasiswa akan dihitung ulang dengan skema ini.";
+
 /** The weights as typed, with a weight that is not a number as 0, as the prototype counts it. */
 export function shownWeights(
   typed: Record<GradePart, string>,
