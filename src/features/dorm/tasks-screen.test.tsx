@@ -11,6 +11,7 @@ import type {
   DormTasks,
   LeaveTask,
   ReturnTask,
+  WarningTask,
 } from "./tasks-card";
 import { DormTasksScreen } from "./tasks-screen";
 
@@ -107,9 +108,9 @@ describe("Tugas saya", () => {
     ).not.toContain("Semua tugas sudah beres.");
   });
 
-  it("names the four kinds of work in its intro", () => {
+  it("names the five kinds of work in its intro", () => {
     expect(screenOf(NOTHING)).toContain(
-      "persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, dan penilaian kebersihan.",
+      "persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, penilaian kebersihan, dan penetapan SP.",
     );
   });
 
@@ -147,6 +148,7 @@ describe("Izin menunggu persetujuan", () => {
       returns: null,
       clarifications: null,
       cleaning: null,
+      warnings: null,
     });
 
     expect(html).toContain("1 menunggu");
@@ -437,5 +439,91 @@ describe("Penilaian kebersihan menunggu validasi", () => {
 
     expect(html).toContain('href="/asrama/bersih"');
     expect(html).toContain("Lihat semua di Pembersihan asrama");
+  });
+});
+
+const DUE: WarningTask = {
+  studentId: "00000000-0000-4000-8000-0000000000e1",
+  name: "Penghuni Contoh",
+  nim: "9986110005",
+  room: "Asrama Dana Rakca, kamar 101",
+  level: 2,
+  mark: 1,
+  counted: 8,
+  rejected: 2,
+};
+
+describe("Penetapan SP", () => {
+  it("says Beres and Tidak ada yang menunggu. when nobody is due", () => {
+    const html = screenOf({
+      ...NOTHING,
+      leaves: null,
+      returns: null,
+      clarifications: null,
+      cleaning: null,
+    });
+
+    expect(html).toContain("Penetapan SP");
+    expect(html).toContain("Beres");
+    expect(html).toContain("Tidak ada yang menunggu.");
+  });
+
+  it("shows the student with NIM and room, the SP due and the one held, Pelanggaran and Klarifikasi ditolak", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 1 },
+    });
+
+    for (const words of [
+      "<th>Mahasiswa</th>",
+      "<th>Penetapan</th>",
+      "<th>Pelanggaran</th>",
+      "<th>Klarifikasi ditolak</th>",
+      "Penghuni Contoh",
+      "9986110005 · Asrama Dana Rakca, kamar 101",
+      "Penetapan SP 2",
+      ">SP 1</span>",
+      ">8</td>",
+      ">2</td>",
+      "1 menunggu",
+    ]) {
+      expect(html).toContain(words);
+    }
+  });
+
+  it("says no SP held, and a dash for no rejected clarification", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: {
+        items: [{ ...DUE, level: 1, mark: null, counted: 7, rejected: 0 }],
+        total: 1,
+      },
+    });
+
+    expect(html).toContain("Penetapan SP 1");
+    expect(html).not.toContain(">SP 1</span>");
+    expect(html).toContain(">-</td>");
+  });
+
+  it("opens the SP form of the student on Pelanggaran through the page address", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 1 },
+    });
+
+    expect(html).toContain(
+      'href="/asrama/pel?proses=00000000-0000-4000-8000-0000000000e1"',
+    );
+    expect(html).toContain('aria-label="Proses Penghuni Contoh"');
+  });
+
+  it("leads to Pelanggaran when more are due than it shows", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 21 },
+    });
+
+    expect(html).toContain('href="/asrama/pel"');
+    expect(html).toContain("Lihat semua di Pelanggaran");
   });
 });

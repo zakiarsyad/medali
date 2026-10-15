@@ -86,7 +86,7 @@ points out advokasi that wait for BAM.
 
 - [x] 1. The server adds students due for an SP to the count and reads
   the list, with its checks.
-- [ ] 2. The section "Penetapan SP" with "Proses" opening the form on
+- [x] 2. The section "Penetapan SP" with "Proses" opening the form on
   Pelanggaran.
 - [ ] 3. The number card, and the advokasi line in "Perlu dipantau".
 - [ ] 4. Phone layout for the section.

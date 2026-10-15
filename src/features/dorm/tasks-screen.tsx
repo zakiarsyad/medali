@@ -9,6 +9,7 @@ import { TaskSection } from "./task-section";
 import styles from "./tasks.module.css";
 import {
   ALL_ASSESSED_ADDRESS,
+  ALL_DUE_ADDRESS,
   ALL_PASSED_ON_ADDRESS,
   ALL_WAITING_LEAVE_ADDRESS,
   ALL_WAITING_REPORTS_ADDRESS,
@@ -17,6 +18,7 @@ import {
   LATE_ADDRESS,
   LEAVE_SECTION_ID,
   RETURN_SECTION_ID,
+  WARNING_SECTION_ID,
 } from "./tasks-address";
 import {
   type ClarificationTask,
@@ -25,8 +27,10 @@ import {
   type LeaveTask,
   type ReturnTask,
   type TaskSection as Section,
+  type WarningTask,
   waitingIn,
 } from "./tasks-card";
+import { WarningTasks } from "./warning-tasks";
 
 function AllClear() {
   return (
@@ -145,6 +149,21 @@ function CleaningSection({ section }: { section: Section<CleaningTask> }) {
   );
 }
 
+function WarningSection({ section }: { section: Section<WarningTask> }) {
+  return (
+    <TaskSection
+      id={WARNING_SECTION_ID}
+      title="Penetapan SP"
+      purpose="Mahasiswa yang memenuhi ketentuan SP dari pelanggaran asrama atau klarifikasi kehadiran yang ditolak."
+      total={section.total}
+      shown={section.items.length}
+      all={{ address: ALL_DUE_ADDRESS, tab: "Pelanggaran" }}
+    >
+      <WarningTasks tasks={section.items} />
+    </TaskSection>
+  );
+}
+
 /**
  * Tugas saya of Pengelola Asrama: the title, what the page is for,
  * "Semua tugas sudah beres." while nothing waits for them, and a section
@@ -155,8 +174,9 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
     <>
       <PageHead title="Tugas saya">
         Semua hal yang menunggu tindakan Pengelola Asrama dalam satu halaman:
-        persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, dan
-        penilaian kebersihan. Selesaikan langsung di sini tanpa berpindah menu.
+        persetujuan izin, validasi laporan kembali, klarifikasi kehadiran,
+        penilaian kebersihan, dan penetapan SP. Selesaikan langsung di sini
+        tanpa berpindah menu.
       </PageHead>
       {waitingIn(tasks) === 0 && <AllClear />}
       <TaskNumbers numbers={numbersOf(tasks)} />
@@ -169,6 +189,7 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
         <ClarificationSection section={tasks.clarifications} />
       )}
       {tasks.cleaning && <CleaningSection section={tasks.cleaning} />}
+      {tasks.warnings && <WarningSection section={tasks.warnings} />}
     </>
   );
 }
