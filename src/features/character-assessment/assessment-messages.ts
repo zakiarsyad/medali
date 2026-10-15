@@ -1,0 +1,53 @@
+/** What a save answers to a role without the right Asesmen karakter. */
+export const NOT_ALLOWED_TO_ASSESS = {
+  ok: false,
+  error:
+    "Anda tidak berhak menginput asesmen karakter. Hasil asesmen MEDALI diinput oleh Penilai Mahasiswa atau Kepala Unit Pembangunan Karakter.",
+} as const;
+
+export const NO_PERIOD = {
+  ok: false,
+  error:
+    "Belum ada periode akademik yang berjalan, sehingga asesmen belum dapat disimpan.",
+} as const;
+
+export const NO_STUDENT = {
+  ok: false,
+  error: "Pilih mahasiswa terlebih dahulu.",
+} as const;
+
+/**
+ * What a save answers for a student who is not Aktif now, who does not
+ * exist, or whom the account may not see. Nothing of it is kept.
+ */
+export const STUDENT_NOT_FOUND = {
+  ok: false,
+  error:
+    "Mahasiswa ini tidak aktif lagi atau tidak ditemukan, jadi asesmen tidak disimpan. Muat ulang halaman, lalu pilih lagi.",
+} as const;
+
+export const INVALID_SCORES = {
+  ok: false,
+  error: "Skor setiap nilai harus bilangan bulat 40–100.",
+} as const;
+
+export const UNKNOWN_SOURCE = {
+  ok: false,
+  error: "Pilih sumber asesmen dari daftar.",
+} as const;
+
+export const NOTE_TOO_LONG = {
+  ok: false,
+  error: "Catatan penilai paling banyak 500 karakter.",
+} as const;
+
+/**
+ * What a save answers when its key is that of an assessment it did not
+ * just add: the form was sent before and changed since, or the key is
+ * not its own.
+ */
+export const ASSESSMENT_ALREADY_SENT = {
+  ok: false,
+  error:
+    "Formulir ini sudah pernah terkirim, jadi isian yang sekarang tidak disimpan. Muat ulang halaman, periksa Hasil asesmen karakter, lalu simpan lagi bila masih perlu.",
+} as const;

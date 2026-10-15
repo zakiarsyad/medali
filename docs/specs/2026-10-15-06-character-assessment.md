@@ -105,7 +105,7 @@ their capaian karakter everywhere else in the app.
   "Asesmen karakter" is added, with checks; sample assessments.
 - [x] 2. The rule for Rerata and predikat, with checks.
 - [x] 3. The tab shows the numbers and "Hasil asesmen karakter".
-- [ ] 4. The form with sliders and "Pratinjau medali" saves one student.
+- [x] 4. The form with sliders and "Pratinjau medali" saves one student.
 - [ ] 5. A row opens the student's earlier assessments.
 
 ## Decisions made while building
@@ -154,3 +154,22 @@ their capaian karakter everywhere else in the app.
 - No other screen shows capaian karakter yet. The read of each
   student's latest assessment is made once, for the screens that will
   show it.
+- A student is picked as in "Input nilai SIKU": a name or a NIM is
+  typed, and the server offers up to 10 Aktif students the account may
+  assess. No picker of one student was shared yet, so the tab has its
+  own of the same kind.
+- Beside each slider stands "Level (n) · (main indicator)". "Sumber
+  asesmen" starts at "Observasi pengasuh", the first of the list, as in
+  the prototype.
+- Under the medal it says "Rerata baru (n)", then the Rerata of the last
+  assessment and that the dashed line is that one, or, for a student
+  never assessed, that the sliders start at 75.
+- After "Simpan asesmen" the student stays picked, with the saved scores
+  as the new dashed line, and "Catatan penilai" is emptied, so the next
+  student can be picked at once.
+- Saving refuses while no academic period runs, as Data SKPM does. A
+  student who is not Aktif, was removed or is outside what the account
+  may see is refused with nothing kept.
+- "Simpan asesmen" pressed twice is answered as the first press. The
+  same form sent again with other scores, another source or note, or by
+  another account is refused and saves nothing.
