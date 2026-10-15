@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 3312 to 3312.
+// Sample Tahun akademik of this file: 3712 to 3712.
 // Sample NIMs of this file: 9986112000 to 9986112099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -30,13 +30,13 @@ import { readAnnouncement } from "./violation-announcement";
 
 const inTestDatabase = withTestDatabase();
 
-// 10:00 on campus on 20 October 3312.
-const NOW = new Date("3312-10-20T03:00:00Z");
+// 10:00 on campus on 20 October 3712.
+const NOW = new Date("3712-10-20T03:00:00Z");
 const REASON = "Terbukti sedang izin resmi pada jam itu.";
 
 /** Ani has 7 counted violations, so she is called for SP 1; Bea has 8. */
 async function setUp(db: Database) {
-  const setting = await addViolationSetting(db, 3312, "Prodi Uji Kurangi", [
+  const setting = await addViolationSetting(db, 3712, "Prodi Uji Kurangi", [
     "9986112001",
     "9986112002",
     "9986112003",
@@ -48,8 +48,8 @@ async function setUp(db: Database) {
   const manager = await addViolationActor(db, "Pengelola Uji Kurangi", [
     "dorm_manager",
   ]);
-  const aniIds = await addTestViolations(db, ani, bam.id, 7, "3312-10-01");
-  const beaIds = await addTestViolations(db, bea, bam.id, 8, "3312-10-01");
+  const aniIds = await addTestViolations(db, ani, bam.id, 7, "3712-10-01");
+  const beaIds = await addTestViolations(db, bea, bam.id, 8, "3712-10-01");
   return { ani, bea, cici, bam, manager, aniIds, beaIds };
 }
 
@@ -79,7 +79,7 @@ describe("reduceViolations", () => {
 
       expect(await reduce(db, manager, ani, [first])).toEqual({
         ok: true,
-        value: { days: ["3312-10-01"], standing: { counted: 6, level: null } },
+        value: { days: ["3712-10-01"], standing: { counted: 6, level: null } },
       });
 
       expect(await markOf(db, first)).toMatchObject({
@@ -103,11 +103,11 @@ describe("reduceViolations", () => {
     await inTestDatabase(async (db) => {
       const { ani, manager, aniIds } = await setUp(db);
       const [first = ""] = aniIds;
-      const before = await readAnnouncement(db, EVERYONE, NOW, "3312-10-01", 1);
+      const before = await readAnnouncement(db, EVERYONE, NOW, "3712-10-01", 1);
 
       await reduce(db, manager, ani, [first]);
 
-      const after = await readAnnouncement(db, EVERYONE, NOW, "3312-10-01", 1);
+      const after = await readAnnouncement(db, EVERYONE, NOW, "3712-10-01", 1);
       expect(before.rows.map((row) => row.id)).toContain(first);
       expect(after.rows.map((row) => row.id)).not.toContain(first);
       expect(after.matching).toBe(before.matching - 1);
@@ -152,9 +152,9 @@ describe("reduceViolations", () => {
   it("leaves a reduced violation out of Diumumkan hari ini for every reader, as the announcement does", async () => {
     await inTestDatabase(async (db) => {
       const { cici, bam, manager } = await setUp(db);
-      const today = await addTestViolation(db, cici, bam.id, "3312-10-20", {
-        announcedAt: new Date("3312-10-20T06:00:00+07:00"),
-        enteredAt: new Date("3312-10-20T05:00:00+07:00"),
+      const today = await addTestViolation(db, cici, bam.id, "3712-10-20", {
+        announcedAt: new Date("3712-10-20T06:00:00+07:00"),
+        enteredAt: new Date("3712-10-20T05:00:00+07:00"),
       });
       const reduced = await reduce(db, manager, cici, [today]);
       if (!reduced.ok) throw new Error(reduced.error);
@@ -171,7 +171,7 @@ describe("reduceViolations", () => {
         );
         expect(board.numbers.announcedToday).toBe(0);
         expect(board.announcement.days.map((each) => each.day)).not.toContain(
-          "3312-10-20",
+          "3712-10-20",
         );
       }
     });
@@ -203,7 +203,7 @@ describe("reduceViolations", () => {
       const both = await reduce(db, manager, ani, [first, second]);
       expect(both).toMatchObject({
         ok: true,
-        value: { days: ["3312-10-01", "3312-10-02"] },
+        value: { days: ["3712-10-01", "3712-10-02"] },
       });
       expect((await markOf(db, beaIds[0] ?? ""))?.reducedAt).toBeNull();
       expect(await reduce(db, manager, bea, [beaIds[0] ?? ""])).toMatchObject({
@@ -244,19 +244,19 @@ describe("reduceViolations", () => {
   it("refuses a violation in Masa advokasi, with its appeal waiting or accepted, or not announced yet", async () => {
     await inTestDatabase(async (db) => {
       const { cici, bam, manager } = await setUp(db);
-      const recent = await addTestViolation(db, cici, bam.id, "3312-10-20", {
+      const recent = await addTestViolation(db, cici, bam.id, "3712-10-20", {
         announcedAt: new Date(NOW.getTime() - 60 * 60 * 1000),
         enteredAt: new Date(NOW.getTime() - 2 * 60 * 60 * 1000),
       });
-      const waiting = await addTestViolation(db, cici, bam.id, "3312-10-10");
+      const waiting = await addTestViolation(db, cici, bam.id, "3712-10-10");
       await addTestAppeal(db, waiting);
-      const accepted = await addTestViolation(db, cici, bam.id, "3312-10-11");
+      const accepted = await addTestViolation(db, cici, bam.id, "3712-10-11");
       await addTestAppeal(db, accepted, {
         status: "accepted",
         decidedBy: bam.id,
         decidedAt: NOW,
       });
-      const coming = await addTestViolation(db, cici, bam.id, "3312-10-20", {
+      const coming = await addTestViolation(db, cici, bam.id, "3712-10-20", {
         enteredAt: new Date(NOW.getTime() - 60 * 60 * 1000),
       });
 
@@ -270,7 +270,7 @@ describe("reduceViolations", () => {
   it("reduces a violation whose appeal was rejected", async () => {
     await inTestDatabase(async (db) => {
       const { cici, bam, manager } = await setUp(db);
-      const rejected = await addTestViolation(db, cici, bam.id, "3312-10-12");
+      const rejected = await addTestViolation(db, cici, bam.id, "3712-10-12");
       await addTestAppeal(db, rejected, {
         status: "rejected",
         decidedBy: bam.id,

@@ -1,5 +1,5 @@
 // Sample Tahun akademik of this file: 3311 to 3311.
-// Sample NIMs of this file: 9986111000 to 9986111099.
+// Sample NIMs of this file: 9986114000 to 9986114099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -42,11 +42,11 @@ const REASON = "Terbukti sedang izin resmi pada jam itu.";
 /** Ani has 7 counted violations and SP 1; Pengelola Asrama reduced her first. */
 async function setUp(db: Database) {
   const setting = await addViolationSetting(db, 3311, "Prodi Uji Batal", [
-    "9986111001",
-    "9986111002",
-    "9986111003",
-    "9986111004",
-    "9986111005",
+    "9986114001",
+    "9986114002",
+    "9986114003",
+    "9986114004",
+    "9986114005",
   ]);
   const [ani = "", bea = ""] = setting.residents;
   const bam = await addViolationActor(db, "BAM Uji Batal", ["bam_bphk"]);
