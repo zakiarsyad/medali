@@ -5,9 +5,12 @@ import type { MeanScore } from "./mean-score";
 import type { ScheduleKind } from "./schedule-list-address";
 import { shownCount } from "./schedule-words";
 
-/** The line under Rerata nilai kehadiran: how many students it is the mean of. */
+/**
+ * The line under Rerata nilai kehadiran: how many students it is the mean
+ * of, over activities and meetings alike.
+ */
 export function meanNote(mean: MeanScore): string {
-  return `${shownCount(mean.students)} mahasiswa`;
+  return `${shownCount(mean.students)} mahasiswa, semua jenis kegiatan`;
 }
 
 /** What Kegiatan terlaksana counts on each tab. */

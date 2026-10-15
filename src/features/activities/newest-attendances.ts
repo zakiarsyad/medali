@@ -6,7 +6,7 @@ import { NEWEST_FIRST } from "./student-schedules";
 /**
  * The newest attendance of each student at each of some schedules, as a
  * table to join: one row for a student and a schedule, and none where
- * nothing was sent or recorded. `scheduleIds` must not be empty.
+ * nothing was sent or recorded. With no schedules it holds no row.
  */
 export function newestAt(db: Database, scheduleIds: readonly string[]) {
   const { scheduleId, studentId, status } = activityAttendances;

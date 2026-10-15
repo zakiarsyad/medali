@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { type MarkTally, NO_MARKS } from "./attendance-score";
 import {
   type CountedSchedule,
   meanScore,
@@ -32,12 +33,54 @@ function group(
   cohortYear = 2025,
   chosenIn: string[] = [],
 ): StudentGroup {
-  return { cohortYear, kept, chosenIn, students };
+  return { cohortYear, kept, chosenIn, marks: NO_MARKS, students };
+}
+
+/** A group whose students are marked alike at the meetings of the period. */
+function withMarks(
+  marked: StudentGroup,
+  marks: Partial<MarkTally>,
+): StudentGroup {
+  return { ...marked, marks: { ...NO_MARKS, ...marks } };
 }
 
 const CLOSED = [schedule("a", "2026-10-01"), schedule("b", "2026-10-05")];
 
 describe("meanScore", () => {
+  it("counts each student's meetings with their activities, with the same weight", () => {
+    const groups = [
+      withMarks(group(1, { a: "valid", b: "valid" }), {
+        present: 1,
+        absent: 1,
+      }),
+      withMarks(group(1), { present: 2 }),
+    ];
+
+    // 3 of 4 is 75, and 2 of 4 is 50.
+    expect(meanScore(groups, CLOSED, PERIOD, TODAY)).toEqual({
+      percent: 62.5,
+      students: 2,
+    });
+  });
+
+  it("counts the students with meetings only, when no schedule counts in the period", () => {
+    const groups = [withMarks(group(2), { present: 1, absent: 1 })];
+
+    expect(meanScore(groups, [], PERIOD, TODAY)).toEqual({
+      percent: 50,
+      students: 2,
+    });
+  });
+
+  it("leaves out a student with meetings marked Izin or Sakit only", () => {
+    const groups = [withMarks(group(3), { excused: 2, sick: 1 })];
+
+    expect(meanScore(groups, [], PERIOD, TODAY)).toEqual({
+      percent: null,
+      students: 0,
+    });
+  });
+
   it("is the mean of the students' scores, each group counted as many times as it has students", () => {
     const groups = [
       group(3, { a: "valid", b: "valid" }),

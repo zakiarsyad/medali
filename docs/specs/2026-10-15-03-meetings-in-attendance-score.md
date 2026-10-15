@@ -104,10 +104,13 @@ The issue did not say, so these were decided:
 9. The number keeps the form the app already shows, such as "85,7%".
 10. Pengasuh's average is over their mentees of today, and counts each
     mentee's meetings in every group they were in this period.
+11. When the running period has saved meetings but no required activity
+    schedule yet, the average counts the meetings alone, instead of
+    showing "-" as before.
 
 ## Steps
 
 - [x] 1. The rule for Nilai kehadiran takes in saved meetings, with
   checks for Hadir, Alpa, Izin, Sakit, no list and a change of group.
 - [x] 2. The student's number shows activities and meetings.
-- [ ] 3. "Rerata nilai kehadiran" on both staff tabs uses the same rule.
+- [x] 3. "Rerata nilai kehadiran" on both staff tabs uses the same rule.
