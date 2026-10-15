@@ -149,6 +149,34 @@ describe("reduceViolations", () => {
     });
   });
 
+  it("leaves a reduced violation out of Diumumkan hari ini for every reader, as the announcement does", async () => {
+    await inTestDatabase(async (db) => {
+      const { cici, bam, manager } = await setUp(db);
+      const today = await addTestViolation(db, cici, bam.id, "3312-10-20", {
+        announcedAt: new Date("3312-10-20T06:00:00+07:00"),
+        enteredAt: new Date("3312-10-20T05:00:00+07:00"),
+      });
+      const reduced = await reduce(db, manager, cici, [today]);
+      if (!reduced.ok) throw new Error(reduced.error);
+      const params = readStaffViolationParams({});
+
+      for (const withReductions of [true, false]) {
+        const board = await readStaffViolations(
+          db,
+          EVERYONE,
+          params,
+          NOW,
+          withReductions,
+          withReductions,
+        );
+        expect(board.numbers.announcedToday).toBe(0);
+        expect(board.announcement.days.map((each) => each.day)).not.toContain(
+          "3312-10-20",
+        );
+      }
+    });
+  });
+
   it("says the call is still active while the count still reaches the SP", async () => {
     await inTestDatabase(async (db) => {
       const { bea, manager, beaIds } = await setUp(db);
