@@ -34,6 +34,21 @@ describe("Jadwal pembersihan on a phone", () => {
     expect(ruleOf(".assign select")).toContain("max-width: 100%;");
     expect(ruleOf(".ownLine")).toContain("flex-wrap: wrap;");
   });
+
+  it("names the judgement of each duty on its card", () => {
+    expect(read("cleaning-duty-parts.tsx")).toContain('data-title="Penilaian"');
+  });
+
+  it("folds Catatan, Memenuhi and Tidak memenuhi under each other, never wider than the card", () => {
+    expect(read("cleaning-judge-form.tsx")).toContain(
+      "className={styles.judge}",
+    );
+    expect(ruleOf(".judge")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".judge")).toContain("min-width: 0;");
+    expect(ruleOf(".judge input")).toContain("min-width: 0;");
+    expect(ruleOf(".judge input")).toContain("max-width: 100%;");
+    expect(ruleOf(".sentBack")).toContain("overflow-wrap: anywhere;");
+  });
 });
 
 describe("the duties of a resident's room on a phone", () => {
@@ -64,6 +79,7 @@ describe("the screen parts of Pembersihan asrama that run in the browser", () =>
     `${FOLDER}/cleaning-place-form.tsx`,
     `${FOLDER}/cleaning-schedule-board.tsx`,
     `${FOLDER}/cleaning-day-switch.tsx`,
+    `${FOLDER}/cleaning-judge-form.tsx`,
   ];
 
   it("are found", () => {

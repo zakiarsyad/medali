@@ -11,11 +11,21 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import type { Database } from "@/db/connect";
-import { dormCleaningDuties, dormCleaningPlaces, dormRooms } from "@/db/schema";
+import {
+  accounts,
+  dormCleaningDuties,
+  dormCleaningPlaces,
+  dormRooms,
+} from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
-import { OWN_ROOM_PAGE_SIZE } from "./cleaning-ids";
+import {
+  type CleaningResult,
+  type CleaningStatus,
+  OWN_ROOM_PAGE_SIZE,
+} from "./cleaning-ids";
 import type { CleaningPlace } from "./cleaning-place-list";
 import type { OccupiedRoom } from "./cleaning-rooms";
 
@@ -27,6 +37,17 @@ export interface ScheduledDuty {
   /** Null once the room is removed: its number is kept. */
   roomId: string | null;
   roomNumber: string;
+  /** Whether it is a "Pembersihan ulang" of a duty not met. */
+  isRepeat: boolean;
+  status: CleaningStatus;
+  result: CleaningResult | null;
+  judgeNote: string;
+  judgedByName: string | null;
+  judgedAt: Date | null;
+  /** The reason of the last judgement sent back, empty when none was. */
+  sentBackReason: string;
+  validatedByName: string | null;
+  validatedAt: Date | null;
 }
 
 /** One page of the rooms cleaning their own room on a date. */
@@ -54,12 +75,27 @@ export const ROOM_OF_DUTY = eq(dormRooms.id, dormCleaningDuties.roomId);
  */
 export const DUTY_ROOM_NUMBER = sql<string>`coalesce(${dormRooms.number}, ${dormCleaningDuties.roomNumber})`;
 
+const judges = alias(accounts, "judges");
+const validators = alias(accounts, "validators");
+
 const DUTY = {
   id: dormCleaningDuties.id,
   placeId: dormCleaningDuties.placeId,
   roomId: dormCleaningDuties.roomId,
   roomNumber: DUTY_ROOM_NUMBER,
+  isRepeat: sql<boolean>`${dormCleaningDuties.repeatOf} is not null`,
+  status: dormCleaningDuties.status,
+  result: dormCleaningDuties.result,
+  judgeNote: dormCleaningDuties.judgeNote,
+  judgedByName: judges.name,
+  judgedAt: dormCleaningDuties.judgedAt,
+  sentBackReason: dormCleaningDuties.sentBackReason,
+  validatedByName: validators.name,
+  validatedAt: dormCleaningDuties.validatedAt,
 };
+
+const JUDGE_OF_DUTY = eq(judges.id, dormCleaningDuties.judgedBy);
+const VALIDATOR_OF_DUTY = eq(validators.id, dormCleaningDuties.validatedBy);
 
 const PLACE_OF_DUTY = eq(dormCleaningPlaces.id, dormCleaningDuties.placeId);
 
@@ -105,6 +141,8 @@ export async function readPlaceDutiesOn(
     .from(dormCleaningDuties)
     .innerJoin(dormCleaningPlaces, PLACE_OF_DUTY)
     .leftJoin(dormRooms, ROOM_OF_DUTY)
+    .leftJoin(judges, JUDGE_OF_DUTY)
+    .leftJoin(validators, VALIDATOR_OF_DUTY)
     .where(
       and(
         eq(dormCleaningDuties.day, day),
@@ -159,6 +197,8 @@ export async function readOwnRoomPage(
     .select(DUTY)
     .from(dormCleaningDuties)
     .leftJoin(dormRooms, ROOM_OF_DUTY)
+    .leftJoin(judges, JUDGE_OF_DUTY)
+    .leftJoin(validators, VALIDATOR_OF_DUTY)
     .where(ownRoomsOf(dorm, day))
     .orderBy(asc(DUTY_ROOM_NUMBER), asc(dormCleaningDuties.id))
     .limit(OWN_ROOM_PAGE_SIZE)

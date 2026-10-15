@@ -5,6 +5,7 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { dayWords } from "./activity-words";
 import styles from "./cleaning.module.css";
 import type { CleaningParams } from "./cleaning-address";
+import type { DutyRights } from "./cleaning-assessment";
 import { CleaningDaySwitch } from "./cleaning-day-switch";
 import { CleaningPlacesBoard, type DormPlaces } from "./cleaning-places-board";
 import { isChangeable, placeRows } from "./cleaning-rows";
@@ -64,14 +65,15 @@ export async function CleaningScreen({
   tabs,
   params,
   today,
-  mayManage,
+  rights,
 }: {
   tabs: TabLinksProps;
   params: CleaningParams;
   today: string;
-  /** Whether the account may change places and duties, or only see them. */
-  mayManage: boolean;
+  /** What the account may do with places and duties; nothing when it only sees them. */
+  rights: DutyRights;
 }) {
+  const mayManage = rights.manage;
   const view = await loadCleaning(database(), params, today);
   const groups: DormPlaces[] = view.schedules.map((schedule) => ({
     dorm: schedule.dorm,
@@ -133,6 +135,7 @@ export async function CleaningScreen({
               today,
               rooms: schedule.rooms,
               mayChange,
+              rights,
             }}
             rows={placeRows(schedule.places, view.placeDuties)}
             ownRooms={schedule.ownRooms}

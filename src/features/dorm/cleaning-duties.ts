@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, isNull } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, not, type SQL, sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
@@ -18,6 +18,7 @@ import {
   DUTY_ASSIGNED,
   DUTY_CANCELLED,
   DUTY_NOT_FOUND,
+  JUDGED_NOT_CANCELLED,
   NOT_PLOTTED,
   ownRoomsAssigned,
   PLACE_TAKEN,
@@ -198,8 +199,34 @@ export async function assignOwnRooms(
 }
 
 /**
- * "Batalkan tugas": removes a duty of today or later. A duty gone by stays
- * as history. `today` is the day on campus.
+ * A duty that was never judged: Terjadwal, and never sent back. A judged
+ * one has lines in the log, which keep it.
+ */
+const NEVER_JUDGED: SQL = sql`(${dormCleaningDuties.status} = 'scheduled' and ${dormCleaningDuties.sentBackReason} = '')`;
+
+/** Whether a duty of today or later was judged, so it cannot be cancelled. */
+async function isJudged(
+  db: Database,
+  dutyId: string,
+  today: string,
+): Promise<boolean> {
+  const [kept] = await db
+    .select({ id: dormCleaningDuties.id })
+    .from(dormCleaningDuties)
+    .where(
+      and(
+        eq(dormCleaningDuties.id, dutyId),
+        gte(dormCleaningDuties.day, today),
+        not(NEVER_JUDGED),
+      ),
+    );
+  return kept !== undefined;
+}
+
+/**
+ * "Batalkan tugas": removes a duty of today or later that was never
+ * judged. A duty gone by stays as history, and so does a judged one.
+ * `today` is the day on campus.
  */
 export async function cancelDuty(
   db: Database,
@@ -216,16 +243,19 @@ export async function cancelDuty(
       and(
         eq(dormCleaningDuties.id, dutyId),
         gte(dormCleaningDuties.day, today),
+        NEVER_JUDGED,
       ),
     )
     .returning({ id: dormCleaningDuties.id });
-  if (!cancelled) return DUTY_NOT_FOUND;
-  return { ok: true, value: DUTY_CANCELLED };
+  if (cancelled) return { ok: true, value: DUTY_CANCELLED };
+  if (await isJudged(db, dutyId, today)) return JUDGED_NOT_CANCELLED;
+  return DUTY_NOT_FOUND;
 }
 
 /**
- * Removes the duties of a room from a day on, for a room that is being
- * removed. Its duties before that day stay, with its number.
+ * Removes the duties of a room from a day on that were never judged, for
+ * a room that is being removed. Its duties before that day and its judged
+ * ones stay, with its number.
  */
 export async function dropDutiesFrom(
   tx: Database,
@@ -238,6 +268,7 @@ export async function dropDutiesFrom(
       and(
         eq(dormCleaningDuties.roomId, roomId),
         gte(dormCleaningDuties.day, day),
+        NEVER_JUDGED,
       ),
     );
 }
