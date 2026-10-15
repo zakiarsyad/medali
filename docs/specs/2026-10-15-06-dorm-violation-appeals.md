@@ -92,9 +92,25 @@ Asrama like any other.
    proof. Pengelola Asrama, Kepala Unit and the other BAM roles see only
    the result.
 
+Decided while building, because the issue did not say:
+
+4. Alasan advokasi holds 15 to 500 letters and Catatan BAM at most 500,
+   not counting spaces around them.
+5. Sample data: the first sample resident by name has an accepted
+   appeal with a made-up paper as proof on their violation of three days
+   ago, a rejected one six days ago, one still waiting nine days ago,
+   and a violation of an hour ago still in Masa advokasi to appeal. The
+   sixth resident's violation of an hour ago has a waiting appeal with
+   the paper as proof. Each is sent an hour after its announcement, or
+   half an hour ago for the last; BAM - KI accepts and BAM - BPHK
+   rejects, an hour after it was sent.
+6. The proof of a sample appeal is the same drawn paper the sample
+   clarifications get, added to the file storage by the same sample
+   files command.
+
 ## Steps
 
-- [ ] 1. The table for appeals is added, with sample appeals waiting,
+- [x] 1. The table for appeals is added, with sample appeals waiting,
   accepted and rejected.
 - [ ] 2. The rights to appeal and to decide are added to the permission
   list, with their checks.

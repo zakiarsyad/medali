@@ -6,6 +6,7 @@ import type { Database } from "./connect";
 import {
   academicPeriods,
   accounts,
+  dormViolationAppeals,
   dormViolationChanges,
   dormViolations,
   students,
@@ -236,6 +237,108 @@ describe("the log of dorm violations", () => {
       await expect(
         db.execute(sql`truncate dorm_violation_changes`),
       ).rejects.toThrow();
+    });
+  });
+});
+
+function addAppeal(
+  db: Database,
+  violationId: string,
+  more: Partial<typeof dormViolationAppeals.$inferInsert> = {},
+) {
+  return db
+    .insert(dormViolationAppeals)
+    .values({
+      violationId,
+      reason: "Saya sedang izin resmi pada jam itu.",
+      sentAt: ANNOUNCED,
+      ...more,
+    })
+    .returning();
+}
+
+async function addAnnounced(db: Database): Promise<Records & { id: string }> {
+  const records = await addRecords(db);
+  const [violation] = await addViolation(db, records);
+  if (!violation) throw new Error("The violation was not added.");
+  return { ...records, id: violation.id };
+}
+
+describe("an appeal of a dorm violation", () => {
+  it("is one per violation", async () => {
+    await inTestDatabase(async (db) => {
+      const violation = await addAnnounced(db);
+
+      await expect(addAppeal(db, violation.id)).resolves.toHaveLength(1);
+      await expect(addAppeal(db, violation.id)).rejects.toThrow();
+    });
+  });
+
+  it("is refused a reason under 15 or over 500 letters", async () => {
+    await inTestDatabase(async (db) => {
+      const violation = await addAnnounced(db);
+
+      for (const reason of ["a".repeat(14), "a".repeat(501)]) {
+        await expect(
+          inOwnStep(db, (tx) => addAppeal(tx, violation.id, { reason })),
+        ).rejects.toThrow();
+      }
+      await expect(
+        addAppeal(db, violation.id, { reason: "a".repeat(15) }),
+      ).resolves.toHaveLength(1);
+    });
+  });
+
+  it("names its proof whole or not at all", async () => {
+    await inTestDatabase(async (db) => {
+      const violation = await addAnnounced(db);
+
+      await expect(
+        inOwnStep(db, (tx) =>
+          addAppeal(tx, violation.id, { fileName: "bukti.pdf" }),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        inOwnStep(db, (tx) =>
+          addAppeal(tx, violation.id, { fileKey: "dorm-violation-appeals/a" }),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        addAppeal(db, violation.id, {
+          fileName: "bukti.pdf",
+          fileContentType: "application/pdf",
+          fileSize: 1000,
+        }),
+      ).resolves.toHaveLength(1);
+    });
+  });
+
+  it("is decided only with who and when, and rejected only with a note", async () => {
+    await inTestDatabase(async (db) => {
+      const violation = await addAnnounced(db);
+      const by = violation.accountId;
+      const decided = { decidedBy: by, decidedAt: ANNOUNCED };
+
+      await expect(
+        inOwnStep(db, (tx) =>
+          addAppeal(tx, violation.id, { status: "accepted" }),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        inOwnStep(db, (tx) => addAppeal(tx, violation.id, decided)),
+      ).rejects.toThrow();
+      await expect(
+        inOwnStep(db, (tx) =>
+          addAppeal(tx, violation.id, { ...decided, status: "rejected" }),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        addAppeal(db, violation.id, {
+          ...decided,
+          status: "rejected",
+          decisionNote: "Tidak ada izin tercatat.",
+        }),
+      ).resolves.toHaveLength(1);
     });
   });
 });

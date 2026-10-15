@@ -1,5 +1,5 @@
 // Sample Tahun akademik of this file: 2290 to 2290.
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { CLARIFICATION_FILE_RULE } from "@/clarifications/clarification-file";
 import {
@@ -16,6 +16,10 @@ import {
   addTestCount,
   addTestClarification as addTestDormClarification,
 } from "@/features/dorm/test-clarifications";
+import {
+  addTestAppeal,
+  addTestViolation,
+} from "@/features/dorm/test-violations";
 import { fileFault } from "@/files/file-check";
 import { PDF } from "@/files/file-kinds";
 import { memoryStore } from "@/files/memory-store";
@@ -24,7 +28,11 @@ import {
   SAMPLE_PAPER_NAME,
   samplePaperBytes,
 } from "./sample-clarification-paper";
-import { activityClarifications, dormClarifications } from "./schema";
+import {
+  activityClarifications,
+  dormClarifications,
+  dormViolationAppeals,
+} from "./schema";
 import {
   addSamplePapers,
   samplePapersAdded,
@@ -33,7 +41,7 @@ import { withTestDatabase } from "./test-database";
 
 /*
  * This file's own sample values: the Tahun akademik 2290, the programs
- * UJIKERTASCONTOH and UJIKERTASASRAMA, and the NIMs 9973600000 to
+ * UJIKERTASCONTOH, UJIKERTASASRAMA and UJIKERTASADVOKASI, and the NIMs 9973600000 to
  * 9973600099.
  */
 
@@ -247,6 +255,49 @@ describe("addSamplePapers for the dorm", () => {
         bytes: samplePaperBytes(),
         contentType: "application/pdf",
       });
+    });
+  });
+});
+
+describe("addSamplePapers for the appeals of dorm violations", () => {
+  it("gives the paper only to an appeal that names a proof not kept, in a folder of its own", async () => {
+    await inTestDatabase(async (db) => {
+      const bam = await addTestActor(db, "BAM Uji Bukti Contoh", ["bam_bphk"]);
+      const programId = await addTestProgram(db, "UJIKERTASADVOKASI");
+      const { studentId } = await addTestStudentAccount(db, programId, {
+        nim: "9973600003",
+        name: "Penghuni Uji Bukti Contoh",
+        cohortYear: 2289,
+      });
+      const proof = {
+        fileName: SAMPLE_PAPER_NAME,
+        fileContentType: PDF.contentType,
+        fileSize: samplePaperBytes().length,
+      };
+      const withProof = await addTestAppeal(
+        db,
+        await addTestViolation(db, studentId, bam.id, "2290-09-10"),
+        proof,
+      );
+      const withoutProof = await addTestAppeal(
+        db,
+        await addTestViolation(db, studentId, bam.id, "2290-09-11"),
+      );
+      const store = memoryStore();
+
+      expect(await addSamplePapers(db, store)).toBe(1);
+
+      const kept = await db
+        .select({
+          id: dormViolationAppeals.id,
+          fileKey: dormViolationAppeals.fileKey,
+        })
+        .from(dormViolationAppeals)
+        .where(inArray(dormViolationAppeals.id, [withProof, withoutProof]));
+      const keyOf = (id: string) => kept.find((each) => each.id === id);
+      expect(keyOf(withProof)?.fileKey).toMatch(/^dorm-violation-appeals\//);
+      expect(keyOf(withoutProof)?.fileKey).toBeNull();
+      expect(await addSamplePapers(db, store)).toBe(0);
     });
   });
 });
