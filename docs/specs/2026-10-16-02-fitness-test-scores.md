@@ -110,11 +110,18 @@ results are health data, so each role sees only its own students.
     and when, like the Skema bobot. A save made on limits that someone
     else has changed meanwhile is refused with "Ambang sudah diubah oleh
     (name). Muat ulang.", as Skema bobot does. Read-only roles see the
-    limits without fields to type in, and "Ambang ditetapkan oleh Kepala
-    Unit Pembangunan Karakter."
+    limits in fields that cannot be typed in, as in the prototype, and
+    "Ambang ditetapkan oleh Kepala Unit Pembangunan Karakter."
+    "Simpan ambang" asks no confirmation, as in the prototype.
 11. The list is sorted with the most serious category first, then the
     lowest score, then the name; "Belum dites" comes last. Each row shows
     the name, NIM and program.
+12. Limits that do not go down say "Ambang harus menurun: prima > baik
+    > perlu perhatian."; limits that are not whole numbers 1–100 save
+    nothing too, with the clearer "Ambang harus bilangan bulat 1–100."
+13. A save with no test date says "Isi tanggal tes."; a save naming a
+    student who is not an Aktif member of the chosen group saves nothing
+    and says so.
 
 ## Steps
 
