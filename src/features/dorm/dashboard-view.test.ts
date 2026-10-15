@@ -376,30 +376,49 @@ describe("loadDashboard", () => {
     });
   });
 
-  it("counts only the students of their own program for Ketua Program Studi", async () => {
+  it("counts and names only the students of their own program for Ketua Program Studi", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       await addYesterdaysCount(db, records);
-      await db
-        .insert(dormLeaves)
-        .values([
-          leaveOf(records, records.ani, {}),
-          leaveOf(records, records.cici, {}),
-        ]);
+      await db.insert(dormLeaves).values([
+        leaveOf(records, records.ani, {}),
+        leaveOf(records, records.cici, {}),
+        leaveOf(records, records.dedi, {
+          status: "submitted",
+          decidedBy: null,
+          decidedAt: null,
+        }),
+      ]);
+      const own = OWN_PROGRAM(records);
 
       const view = await loadDashboard(
         db,
-        { visible: OWN_PROGRAM(records), namesVisible: null },
+        { visible: own, namesVisible: own },
         MOMENT,
       );
 
       expect(view.residents).toMatchObject({ dana_rakca: 1, cipta_bakti: 1 });
-      expect(view.leave.out).toBe(1);
+      expect(view.leave).toEqual({ out: 1, outLate: 0, waiting: 0 });
       expect(view.overall.attendance).toEqual({
         present: 1,
         absent: 1,
         leave: 0,
       });
+      expect(view.byDorm).toMatchObject({
+        dana_rakca: { present: 0, absent: 1, leave: 0 },
+        cipta_bakti: { present: 1, absent: 0, leave: 0 },
+      });
+      const [today, yesterday] = view.activities.lines;
+      expect(today?.participants).toBe(2);
+      expect(yesterday?.participants).toBe(2);
+      expect(view.monthLeave).toEqual({
+        outing: 1,
+        skip_activities: 0,
+        special: 0,
+      });
+      expect(view.out?.residents.map((each) => each.name)).toEqual([
+        "Penghuni Uji Dashboard 01",
+      ]);
     });
   });
 });

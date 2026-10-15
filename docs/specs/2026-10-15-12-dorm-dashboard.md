@@ -145,4 +145,4 @@ Decided while building, because the issue did not say:
 - [x] 4. The bars per penanggung jawab and per dorm show.
 - [x] 5. "Perizinan bulan ini" and "Sedang di luar asrama" show, with
   names for the allowed roles only.
-- [ ] 6. Ketua Program Studi sees only their study program.
+- [x] 6. Ketua Program Studi sees only their study program.
