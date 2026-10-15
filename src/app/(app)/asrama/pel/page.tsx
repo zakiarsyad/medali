@@ -122,6 +122,7 @@ async function StaffScreen({
       params,
       now,
       may(account.roles, "view_dorm_warning_results"),
+      may(account.roles, "view_dorm_violation_reductions"),
     ),
     readWarningCalls(db, visible, now, params.callPage),
   ]);
@@ -170,6 +171,7 @@ async function StaffScreen({
       warnings={warnings}
       processes={may(account.roles, "issue_dorm_warning_letters")}
       ownStudentId={account.studentId}
+      reduces={may(account.roles, "reduce_dorm_violations")}
       callProcess={await callProcessOf(account, params, now)}
       ownRecord={await ownRecordOf(account, params, now)}
     />

@@ -35,6 +35,9 @@ export const VIOLATION_CHANGE_ACTIONS = [
 export const REDUCTION_REASON_MIN_LENGTH = 5;
 export const REDUCTION_REASON_MAX_LENGTH = 500;
 
+/** The most violations one press of "Kurangi" reduces. */
+export const REDUCTIONS_PER_SEND_MAX = 50;
+
 /** The reasons the form offers; any other reason may be typed. */
 export const VIOLATION_REASONS = [
   "Terlambat apel pagi",

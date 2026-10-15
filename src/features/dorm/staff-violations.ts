@@ -1,4 +1,4 @@
-import type { SQL } from "drizzle-orm";
+import { and, type SQL } from "drizzle-orm";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { campusDay } from "@/academic-periods/campus-day";
 import { periodTitle } from "@/academic-periods/period-labels";
@@ -17,6 +17,7 @@ import {
   type StudentViolations,
   type ViolationNumbers,
 } from "./violation-board";
+import { NOT_REDUCED } from "./violation-conditions";
 import { periodDays } from "./violation-periods";
 import { readLetterMarks } from "./warning-calls";
 import type { WarningLevel } from "./warning-ids";
@@ -54,15 +55,21 @@ function semesterOf(
  * `now` by the server's clock: the numbers, one day of the announcement,
  * the rekap of the semester with the SP of each student, and the box of
  * one student with their SPs: with Hasil klarifikasi and the proposal
- * note only `withResults`.
+ * note only `withResults`. A reduced violation shows, as Dikurangi with
+ * its reason, only `withReductions`; to anyone else it is gone, as it is
+ * from the announcement.
  */
 export async function readStaffViolations(
   db: Database,
-  visible: SQL,
+  visibleStudents: SQL,
   params: StaffViolationParams,
   now: Date,
   withResults: boolean,
+  withReductions: boolean,
 ): Promise<StaffViolations> {
+  const visible = withReductions
+    ? visibleStudents
+    : (and(visibleStudents, NOT_REDUCED) ?? visibleStudents);
   const periods = await readAcademicPeriods(db);
   const period = semesterOf(periods, params.periodId, campusDay(now));
   const days = period === null ? null : periodDays(periods, period.id);

@@ -4,7 +4,7 @@ import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
 import type { AppealStatus } from "./appeal-ids";
-import { announcedBy } from "./violation-conditions";
+import { announcedBy, NOT_REDUCED } from "./violation-conditions";
 import { type Punishment, VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 
 /** An announced violation, as the lists of the tab show it. */
@@ -21,6 +21,10 @@ export interface AnnouncedViolation {
   announcedAt: Date;
   /** Only the result of its appeal, or null without one: never its reason. */
   appeal: AppealStatus | null;
+  /** When Pengelola Asrama reduced it, or null while it is not reduced. */
+  reducedAt: Date | null;
+  /** Dasar pengurangan; empty while it is not reduced. */
+  reductionReason: string;
 }
 
 /** A violation day with announced violations, and how many. */
@@ -63,6 +67,8 @@ export const ANNOUNCED_FIELDS = {
   otherPunishment: dormViolations.otherPunishment,
   announcedAt: dormViolations.announcedAt,
   appeal: dormViolationAppeals.status,
+  reducedAt: dormViolations.reducedAt,
+  reductionReason: dormViolations.reductionReason,
 };
 
 /** The days with announced violations, the latest first. */
@@ -83,8 +89,8 @@ async function readDays(
  * "Pengumuman pelanggaran": the violations announced at `now`, by the
  * server's clock, of the students `scope` holds, for one violation day:
  * the day asked for when it has any, or else the latest. Nothing shows
- * before its hour, and a cancelled one never. The earliest announced
- * first, then by name, 20 a page.
+ * before its hour, and a cancelled or reduced one never. The earliest
+ * announced first, then by name, 20 a page.
  */
 export async function readAnnouncement(
   db: Database,
@@ -93,7 +99,7 @@ export async function readAnnouncement(
   askedDay: string | null,
   page: number,
 ): Promise<Announcement> {
-  const announced = and(announcedBy(now), scope);
+  const announced = and(announcedBy(now), NOT_REDUCED, scope);
   const days = await readDays(db, announced);
   const chosen = days.find((each) => each.day === askedDay) ?? days[0];
   if (!chosen) return { days, day: null, rows: [], matching: 0, page: 1 };

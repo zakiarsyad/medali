@@ -135,6 +135,7 @@ export function StaffViolationsScreen({
   warnings,
   processes,
   ownStudentId,
+  reduces,
   callProcess,
   ownRecord,
 }: {
@@ -156,6 +157,8 @@ export function StaffViolationsScreen({
   processes: boolean;
   /** The student the account belongs to, whose row has no "Proses", or null. */
   ownStudentId: string | null;
+  /** Whether the account reduces violations: Pengelola Asrama. */
+  reduces: boolean;
   /** "Proses" of one resident in a box, or null for none. */
   callProcess: ReactNode;
   /** The account's own record, for a resident who is also staff, or null. */
@@ -220,6 +223,7 @@ export function StaffViolationsScreen({
           params={params}
           semesterTitle={board.semester.title}
           now={now}
+          reduces={reduces && board.student.studentId !== ownStudentId}
         />
       )}
     </>

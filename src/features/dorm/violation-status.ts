@@ -11,14 +11,16 @@ import { APPEAL_HOURS } from "./violation-ids";
  * announced and may still be appealed. Advokasi diproses: its appeal
  * waits for BAM. Advokasi diterima: its appeal was accepted and it never
  * counts. Naik ke Pengelola: the appeal time is over without an appeal,
- * or its appeal was rejected, and it counts.
+ * or its appeal was rejected, and it counts. Dikurangi: it went up and
+ * Pengelola Asrama reduced it, so it no longer counts.
  */
 export type ViolationStatus =
   | "scheduled"
   | "appeal"
   | "appeal_waiting"
   | "appeal_accepted"
-  | "escalated";
+  | "escalated"
+  | "reduced";
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -50,4 +52,19 @@ export function violationStatus(
   if (appeal === "rejected") return "escalated";
   if (now < appealEndOf(announcedAt)) return "appeal";
   return "escalated";
+}
+
+/**
+ * Where a violation stands on a record, with the moment it was reduced,
+ * or null when it is not: only a violation that went up is reduced, and
+ * it stays Dikurangi until the reduction is undone.
+ */
+export function recordStatus(
+  announcedAt: Date,
+  appeal: AppealStatus | null,
+  reducedAt: Date | null,
+  now: Date,
+): ViolationStatus {
+  if (reducedAt !== null) return "reduced";
+  return violationStatus(announcedAt, appeal, now);
 }

@@ -93,6 +93,25 @@ Decided while building, because the issue did not say:
    Pengelola Asrama only, and reading "Riwayat pengurangan pelanggaran"
    ("Melihat riwayat pengurangan pelanggaran asrama") for Pengelola
    Asrama and Kepala Unit only. Every other role gets neither.
+8. Only a violation at Naik ke Pengelola can be reduced: not one waiting
+   for its announcement, in Masa advokasi, with its appeal waiting or
+   accepted, or cancelled. One whose appeal was rejected can. The server
+   checks this by its own clock.
+9. In the box of one student, Pengelola Asrama sees a column
+   "Pengurangan" with "Kurangi" on each violation at Naik ke Pengelola.
+   It opens the reason under the row with "Kurangi" and "Batal"; the
+   confirmation names the day and the student. The answer says
+   "Pelanggaran (day) dikurangi dan dihapus dari pengumuman.".
+10. A reduced violation stays in the box of the student as "Dikurangi"
+    with its reason, for Pengelola Asrama and Kepala Unit. The BAM roles,
+    which do not read reductions, no longer see it there, as in the
+    prototype, and it no longer counts for anyone.
+11. Pengelola Asrama does not reduce their own violations, as with
+    appeals and SPs: their own box has no "Kurangi", and a hand-made
+    reduction of their own is refused.
+12. A reduction that names a violation of another student, one not
+    there, or one reduced already is refused, and nothing is reduced.
+    The second of two presses is told the violation is reduced already.
 
 ## Steps
 
@@ -100,7 +119,7 @@ Decided while building, because the issue did not say:
   dorm violations, with sample reductions.
 - [x] 2. The right to reduce is added to the permission list, with its
   checks.
-- [ ] 3. Pengelola Asrama reduces one violation from the list per
+- [x] 3. Pengelola Asrama reduces one violation from the list per
   student.
 - [ ] 4. Pengelola Asrama reduces several at once while processing a
   call.

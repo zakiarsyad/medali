@@ -5,11 +5,15 @@ import { OwnRecord } from "./own-violations-view";
 import type { StaffViolations } from "./staff-violations";
 import { StaffViolationsScreen } from "./staff-violations-screen";
 import { readStaffViolationParams } from "./violation-address";
+import type { AnnouncedViolation } from "./violation-announcement";
 import type { WarningCalls } from "./warning-calls";
 
 vi.mock("./appeal-actions", () => ({
   sendViolationAppealAction: vi.fn(),
   decideViolationAppealAction: vi.fn(),
+}));
+vi.mock("./reduction-actions", () => ({
+  reduceOneViolationAction: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
@@ -54,6 +58,8 @@ const OWN: OwnRecordData = {
         otherPunishment: "",
         announcedAt: new Date("2026-10-12T14:00:00Z"),
         appeal: null,
+        reducedAt: null,
+        reductionReason: "",
         ownAppeal: null,
       },
     ],
@@ -70,7 +76,10 @@ const WARNINGS: WarningCalls = {
   page: 1,
 };
 
-function screen(board = BOARD): string {
+/** The student the account of the screen belongs to. */
+const OWN_STUDENT = "00000000-0000-4000-8000-0000000000e2";
+
+function screen(board = BOARD, reduces = false): string {
   const params = readStaffViolationParams({});
   return renderToStaticMarkup(
     <StaffViolationsScreen
@@ -84,7 +93,8 @@ function screen(board = BOARD): string {
       waitingAppeals={null}
       warnings={WARNINGS}
       processes={false}
-      ownStudentId={null}
+      ownStudentId={OWN_STUDENT}
+      reduces={reduces}
       callProcess={null}
       ownRecord={
         <OwnRecord
@@ -146,5 +156,83 @@ describe("the staff screen", () => {
     expect(shown).toContain(">Status</th>");
     expect(shown).toContain(">SP 2</span>");
     expect(shown).not.toContain(">SP 1</span>");
+  });
+});
+
+/** A violation of the student in the box, announced at 21:00 on its day. */
+function boxRow(day: string, more: Partial<AnnouncedViolation> = {}) {
+  return {
+    id: `00000000-0000-4000-8000-00000000${day.replaceAll("-", "").slice(4)}`,
+    day,
+    studentId: BOX_STUDENT,
+    name: "Penghuni Uji Kurangi",
+    nim: "9900990401",
+    dorm: "dana_rakca",
+    reason: "Terlambat apel pagi",
+    punishment: "warning",
+    otherPunishment: "",
+    announcedAt: new Date(`${day}T21:00:00+07:00`),
+    appeal: null,
+    reducedAt: null,
+    reductionReason: "",
+    ...more,
+  } satisfies AnnouncedViolation;
+}
+
+const BOX_STUDENT = "00000000-0000-4000-8000-0000000000f1";
+
+/** The box of a student with one violation in Masa advokasi, one gone up and one reduced. */
+function withBox(studentId = BOX_STUDENT): StaffViolations {
+  const rows = [
+    boxRow("2026-10-12", { studentId }),
+    boxRow("2026-10-10", { studentId }),
+    boxRow("2026-10-09", {
+      studentId,
+      reducedAt: new Date("2026-10-11T03:00:00Z"),
+      reductionReason: "Terbukti sedang izin resmi.",
+    }),
+  ];
+  return {
+    ...BOARD,
+    semester: { id: "p-1", title: "Ganjil 2026/2027" },
+    student: {
+      studentId,
+      name: "Penghuni Uji Kurangi",
+      nim: "9900990401",
+      rows,
+      matching: rows.length,
+      page: 1,
+    },
+  };
+}
+
+describe("the box of one student", () => {
+  it("gives Pengelola Asrama Kurangi on the violation at Naik ke Pengelola only", () => {
+    const shown = screen(withBox(), true);
+
+    expect(shown).toContain(">Pengurangan</th>");
+    expect(shown.match(/>Kurangi<\/button>/g)).toHaveLength(1);
+    expect(shown).toContain(">Masa advokasi</span>");
+  });
+
+  it("shows a reduced violation as Dikurangi with its reason", () => {
+    const shown = screen(withBox(), true);
+
+    expect(shown).toContain(">Dikurangi</span>");
+    expect(shown).toContain("Terbukti sedang izin resmi.");
+  });
+
+  it("gives no Kurangi to an account that only reads", () => {
+    const shown = screen(withBox(), false);
+
+    expect(shown).toContain(">Naik ke Pengelola</span>");
+    expect(shown).not.toContain(">Kurangi<");
+    expect(shown).not.toContain(">Pengurangan</th>");
+  });
+
+  it("gives no Kurangi on the account's own violations", () => {
+    const shown = screen(withBox(OWN_STUDENT), true);
+
+    expect(shown).not.toContain(">Kurangi<");
   });
 });

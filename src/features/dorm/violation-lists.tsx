@@ -1,12 +1,11 @@
 import { DORM_SHORT_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
-import type { AppealStatus } from "./appeal-ids";
 import type { AnnouncedViolation } from "./violation-announcement";
 import {
   appealEndOf,
+  recordStatus,
   type ViolationStatus,
-  violationStatus,
 } from "./violation-status";
 import { punishmentText, STATUS_WORDS, shownHour } from "./violation-words";
 import styles from "./violations.module.css";
@@ -20,24 +19,25 @@ const STATUS_LOOKS: Record<ViolationStatus, string | undefined> = {
   appeal_waiting: styles.warn,
   appeal_accepted: styles.ok,
   escalated: styles.bad,
+  reduced: styles.ok,
 };
+
+/** What the status of a violation is drawn from. */
+export type StatusOf = Pick<
+  AnnouncedViolation,
+  "announcedAt" | "appeal" | "reducedAt" | "reductionReason"
+>;
 
 /**
  * Where an announced violation stands at `now`: Masa advokasi with the
- * hour it ends, Advokasi diproses, Advokasi diterima, or Naik ke
- * Pengelola, with "advokasi ditolak" when its appeal was rejected. Only
- * the result of an appeal, never its reason.
+ * hour it ends, Advokasi diproses, Advokasi diterima, Naik ke Pengelola,
+ * with "advokasi ditolak" when its appeal was rejected, or Dikurangi
+ * with Dasar pengurangan. Only the result of an appeal, never its
+ * reason.
  */
-export function StatusBadge({
-  announcedAt,
-  appeal,
-  now,
-}: {
-  announcedAt: Date;
-  appeal: AppealStatus | null;
-  now: Date;
-}) {
-  const status = violationStatus(announcedAt, appeal, now);
+export function StatusBadge({ row, now }: { row: StatusOf; now: Date }) {
+  const { announcedAt, appeal } = row;
+  const status = recordStatus(announcedAt, appeal, row.reducedAt, now);
   return (
     <>
       <span className={`${shared.badge} ${STATUS_LOOKS[status] ?? ""}`}>
@@ -50,6 +50,11 @@ export function StatusBadge({
       )}
       {appeal === "rejected" && (
         <small className={shared.detail}>advokasi ditolak</small>
+      )}
+      {status === "reduced" && (
+        <small className={`${shared.detail} ${shared.typed}`}>
+          {row.reductionReason}
+        </small>
       )}
     </>
   );
@@ -71,6 +76,50 @@ function StudentCell({
         </small>
       )}
     </td>
+  );
+}
+
+/** The titles of the columns of a list of one student's violations. */
+export const ONE_STUDENT_TITLES = [
+  "Tanggal",
+  "Alasan pelanggaran",
+  "Hukuman",
+  "Diumumkan",
+  "Status",
+];
+
+/**
+ * The cells of one violation: Tanggal, the student unless the list is of
+ * one student, Alasan pelanggaran, Hukuman, Diumumkan and Status.
+ */
+export function ViolationCells({
+  row,
+  now,
+  reader,
+  withStudent,
+}: {
+  row: AnnouncedViolation;
+  now: Date;
+  reader: ListReader;
+  withStudent: boolean;
+}) {
+  return (
+    <>
+      <td data-title="Tanggal">{shownDay(row.day)}</td>
+      {withStudent && <StudentCell row={row} reader={reader} />}
+      <td data-title="Alasan pelanggaran">
+        <span className={shared.typed}>{row.reason}</span>
+      </td>
+      <td data-title="Hukuman">
+        <span className={shared.typed}>
+          {punishmentText(row.punishment, row.otherPunishment)}
+        </span>
+      </td>
+      <td data-title="Diumumkan">{shownHour(row.announcedAt)}</td>
+      <td data-title="Status">
+        <StatusBadge row={row} now={now} />
+      </td>
+    </>
   );
 }
 
@@ -105,24 +154,12 @@ export function AnnouncedTable({
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
-              <td data-title="Tanggal">{shownDay(row.day)}</td>
-              {withStudent && <StudentCell row={row} reader={reader} />}
-              <td data-title="Alasan pelanggaran">
-                <span className={shared.typed}>{row.reason}</span>
-              </td>
-              <td data-title="Hukuman">
-                <span className={shared.typed}>
-                  {punishmentText(row.punishment, row.otherPunishment)}
-                </span>
-              </td>
-              <td data-title="Diumumkan">{shownHour(row.announcedAt)}</td>
-              <td data-title="Status">
-                <StatusBadge
-                  announcedAt={row.announcedAt}
-                  appeal={row.appeal}
-                  now={now}
-                />
-              </td>
+              <ViolationCells
+                row={row}
+                now={now}
+                reader={reader}
+                withStudent={withStudent}
+              />
             </tr>
           ))}
         </tbody>

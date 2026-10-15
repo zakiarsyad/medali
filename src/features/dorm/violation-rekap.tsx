@@ -4,6 +4,7 @@ import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { PressableRow } from "@/ui/pressable-row";
+import { ReducibleTable } from "./reducible-table";
 import { RekapFilterRow, type SemesterChoice } from "./rekap-filters";
 import type { ShownLetter } from "./student-letters";
 import {
@@ -136,13 +137,18 @@ export function RekapPanel({
   );
 }
 
-/** One student's SPs and violations of the semester, in a box over the tab. */
+/**
+ * One student's SPs and violations of the semester, in a box over the
+ * tab, with "Kurangi" on each violation at Naik ke Pengelola for an
+ * account that `reduces`.
+ */
 export function StudentViolationsDialog({
   student,
   letters,
   params,
   semesterTitle,
   now,
+  reduces,
 }: {
   student: StudentViolations;
   /** Their SPs of the semester, with what the account may read of them. */
@@ -150,6 +156,8 @@ export function StudentViolationsDialog({
   params: StaffViolationParams;
   semesterTitle: string;
   now: Date;
+  /** Whether the account reduces this student's violations: Pengelola Asrama, never for their own. */
+  reduces: boolean;
 }) {
   return (
     <ModalDialog
@@ -173,12 +181,21 @@ export function StudentViolationsDialog({
           ))}
         </div>
       )}
-      <AnnouncedTable
-        rows={student.rows}
-        now={now}
-        reader="staff"
-        withStudent={false}
-      />
+      {reduces ? (
+        <ReducibleTable
+          rows={student.rows}
+          studentId={student.studentId}
+          name={student.name}
+          now={now}
+        />
+      ) : (
+        <AnnouncedTable
+          rows={student.rows}
+          now={now}
+          reader="staff"
+          withStudent={false}
+        />
+      )}
       <ListPager
         page={student.page}
         matching={student.matching}

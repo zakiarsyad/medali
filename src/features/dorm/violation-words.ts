@@ -22,6 +22,7 @@ export const STATUS_WORDS: Record<ViolationStatus, string> = {
   appeal_waiting: "Advokasi diproses",
   appeal_accepted: "Advokasi diterima",
   escalated: "Naik ke Pengelola",
+  reduced: "Dikurangi",
 };
 
 /** The punishment as a list shows it: what Hukuman lainnya is, when it is that. */
