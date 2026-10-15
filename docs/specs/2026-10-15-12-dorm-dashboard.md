@@ -129,12 +129,15 @@ Decided while building, because the issue did not say:
     read names, destinations or rooms for them.
 15. Nothing is stored for the dashboard: every number is counted from
     the records each time the tab opens.
+16. "Penghuni asrama" and "Kehadiran per asrama" name the four dorms the
+    app keeps, Wismantara Putra and Wismantara Putri apart, where the
+    prototype names Wismantara as one.
 
 ## Steps
 
 - [x] 1. The right to see Dashboard asrama, and the right to see names
   on it, are added to the permission list, with their checks.
-- [ ] 2. The four numbers show.
+- [x] 2. The four numbers show.
 - [ ] 3. "Kehadiran kegiatan" shows, with the link to the activity.
 - [ ] 4. The bars per penanggung jawab and per dorm show.
 - [ ] 5. "Perizinan bulan ini" and "Sedang di luar asrama" show, with

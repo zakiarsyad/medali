@@ -82,7 +82,8 @@ export interface LeaveBoard {
 const DAYS_COUNTED = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-async function countWhere(db: Database, condition: SQL | undefined) {
+/** How many requests match, with their students. */
+export async function countWhere(db: Database, condition: SQL | undefined) {
   const [counted] = await db
     .select({ matching: count() })
     .from(dormLeaves)
