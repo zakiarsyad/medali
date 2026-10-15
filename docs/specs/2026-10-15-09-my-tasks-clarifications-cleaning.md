@@ -75,9 +75,18 @@ effect as on their Asrama tabs.
 
 ## Decisions made while building
 
+1. Both sections show their 20 oldest items with how many wait in all,
+   as the sections of leave and return reports do. "Oldest" means the
+   earliest sent for a clarification and the earliest date for a
+   cleaning duty.
+2. The clarifications are those of every student the account may see
+   through its right to decide them, as on Klarifikasi kehadiran. The
+   cleaning duties are those of every dorm, as on Pembersihan asrama,
+   where a duty names a room by number only and never a student.
+
 ## Steps
 
-- [ ] 1. The server adds clarifications and cleaning assessments to the
+- [x] 1. The server adds clarifications and cleaning assessments to the
   count and the lists, with its checks.
 - [ ] 2. The section "Klarifikasi kehadiran menunggu validasi" with its
   three decisions.

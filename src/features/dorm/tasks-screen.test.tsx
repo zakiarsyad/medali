@@ -18,6 +18,8 @@ vi.mock("next/navigation", () => ({
 const NOTHING: DormTasks = {
   leaves: { items: [], total: 0 },
   returns: { items: [], total: 0 },
+  clarifications: { items: [], total: 0 },
+  cleaning: { items: [], total: 0 },
   outLate: 0,
 };
 
