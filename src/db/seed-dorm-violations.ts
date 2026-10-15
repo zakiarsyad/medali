@@ -52,38 +52,37 @@ export async function addSampleDormViolations(
     await sampleAccount(db, "bam_compliance"),
   ];
   const keys = new Map<number, string>();
+  const rows: (typeof dormViolations.$inferInsert)[] = [];
+  const lines: (typeof dormViolationChanges.$inferInsert)[] = [];
   for (const violation of sampleDormViolations(now)) {
     const resident = residents[violation.resident];
     if (!resident) throw new Error("A sample resident is missing.");
+    const id = crypto.randomUUID();
     const by = recorders[Number(violation.day.slice(-1)) % 2] ?? "";
     const enteredAt = enteredAtOf(violation, now);
     const cancel = violation.isCancelled
       ? { cancelledBy: by, cancelledAt: now }
       : {};
-    const [added] = await db
-      .insert(dormViolations)
-      .values({
-        batchId: batchOf(keys, violation.announcedAt),
-        studentId: resident.id,
-        dorm: resident.dorm,
-        day: violation.day,
-        reason: violation.reason,
-        punishment: violation.punishment,
-        otherPunishment: violation.otherPunishment,
-        announcedAt: violation.announcedAt,
-        enteredBy: by,
-        enteredAt,
-        ...cancel,
-      })
-      .returning({ id: dormViolations.id });
-    if (!added) throw new Error("A sample violation was not added.");
-    const entered = { violationId: added.id, changedBy: by };
-    await db
-      .insert(dormViolationChanges)
-      .values({ ...entered, changedAt: enteredAt, action: "entered" });
-    if (!violation.isCancelled) continue;
-    await db
-      .insert(dormViolationChanges)
-      .values({ ...entered, changedAt: now, action: "cancelled" });
+    rows.push({
+      id,
+      batchId: batchOf(keys, violation.announcedAt),
+      studentId: resident.id,
+      dorm: resident.dorm,
+      day: violation.day,
+      reason: violation.reason,
+      punishment: violation.punishment,
+      otherPunishment: violation.otherPunishment,
+      announcedAt: violation.announcedAt,
+      enteredBy: by,
+      enteredAt,
+      ...cancel,
+    });
+    const line = { violationId: id, changedBy: by };
+    lines.push({ ...line, changedAt: enteredAt, action: "entered" });
+    if (violation.isCancelled) {
+      lines.push({ ...line, changedAt: now, action: "cancelled" });
+    }
   }
+  await db.insert(dormViolations).values(rows);
+  await db.insert(dormViolationChanges).values(lines);
 }
