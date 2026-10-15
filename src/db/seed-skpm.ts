@@ -32,23 +32,19 @@ async function addLogLines(
   enteredAt: Date,
   removedAt: Date | null,
 ): Promise<void> {
-  await db
-    .insert(skpmUploadChanges)
-    .values({
-      uploadId,
-      changedBy: by,
-      changedAt: enteredAt,
-      action: "uploaded",
-    });
+  await db.insert(skpmUploadChanges).values({
+    uploadId,
+    changedBy: by,
+    changedAt: enteredAt,
+    action: "uploaded",
+  });
   if (removedAt === null) return;
-  await db
-    .insert(skpmUploadChanges)
-    .values({
-      uploadId,
-      changedBy: by,
-      changedAt: removedAt,
-      action: "removed",
-    });
+  await db.insert(skpmUploadChanges).values({
+    uploadId,
+    changedBy: by,
+    changedAt: removedAt,
+    action: "removed",
+  });
 }
 
 /**
