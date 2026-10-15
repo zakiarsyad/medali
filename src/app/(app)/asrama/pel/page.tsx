@@ -27,6 +27,7 @@ import {
 import { ViolationForm } from "@/features/dorm/violation-form";
 import { readViolationSchedule } from "@/features/dorm/violation-schedule";
 import { violationScreensOf } from "@/features/dorm/violation-screens";
+import { readWarningCalls } from "@/features/dorm/warning-calls";
 import type { SearchParams } from "@/ui/search-params";
 import type { TabLinksProps } from "@/ui/tab-links";
 
@@ -86,12 +87,11 @@ async function StaffScreen({
 }) {
   const params = readStaffViolationParams(searchParams);
   const db = database();
-  const board = await readStaffViolations(
-    db,
-    visibleTo(rowLimitForAction(account, "view_dorm_violations")),
-    params,
-    now,
-  );
+  const visible = visibleTo(rowLimitForAction(account, "view_dorm_violations"));
+  const [board, warnings] = await Promise.all([
+    readStaffViolations(db, visible, params, now),
+    readWarningCalls(db, visible, now, params.callPage),
+  ]);
   const records = may(account.roles, "record_dorm_violations");
   const schedule = records
     ? await readViolationSchedule(
@@ -134,6 +134,7 @@ async function StaffScreen({
       schedule={schedule}
       appeals={appeals}
       waitingAppeals={inbox?.waiting ?? null}
+      warnings={warnings}
       ownRecord={await ownRecordOf(account, params, now)}
     />
   );

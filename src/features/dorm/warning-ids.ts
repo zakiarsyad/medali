@@ -24,6 +24,14 @@ export const SP2_VIOLATIONS = 12;
 export const SP1_REJECTIONS = 1;
 export const SP2_REJECTIONS = 2;
 
+/** When and where a resident is called to explain. */
+export interface CallSchedule {
+  day: string;
+  /** As 16:00. */
+  time: string;
+  place: string;
+}
+
 /** What a line of the log of a call and its SP records. */
 export const WARNING_CHANGE_ACTIONS = ["scheduled", "issued"] as const;
 

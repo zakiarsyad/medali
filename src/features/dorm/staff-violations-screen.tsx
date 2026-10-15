@@ -15,6 +15,8 @@ import { RekapPanel, StudentViolationsDialog } from "./violation-rekap";
 import type { ViolationSchedule } from "./violation-schedule";
 import { ViolationScheduleTable } from "./violation-schedule-table";
 import styles from "./violations.module.css";
+import type { WarningCalls } from "./warning-calls";
+import { WarningCallsPanel } from "./warning-calls-panel";
 
 export const READ_ONLY_NOTE =
   "Pelanggaran dicatat oleh Badan Asrama Mahasiswa. Anda dapat melihat rekap dan rinciannya.";
@@ -65,9 +67,11 @@ function inAppealNote(waitingAppeals: number | null): string {
 function Numbers({
   board,
   waitingAppeals,
+  warnings,
 }: {
   board: StaffViolations;
   waitingAppeals: number | null;
+  warnings: WarningCalls;
 }) {
   const { numbers, semester } = board;
   return (
@@ -91,6 +95,11 @@ function Numbers({
             : `semester ${semester.title}`
         }
       />
+      <NumberCard
+        label="Panggilan klarifikasi aktif"
+        amount={warnings.active}
+        note={`${warnings.withLetter} mahasiswa sudah menerima SP`}
+      />
     </NumberCards>
   );
 }
@@ -110,8 +119,9 @@ function keptBesideDay(params: StaffViolationParams): [string, string][] {
 /**
  * Pelanggaran for staff: the three numbers, "Input dan publikasi
  * pelanggaran" and "Jadwal publikasi" for those who record and a note for
- * those who only read, "Advokasi masuk" for those who decide, "Rekap pelanggaran per mahasiswa" with the box of
- * one student, and "Pengumuman pelanggaran".
+ * those who only read, "Advokasi masuk" for those who decide,
+ * "Panggilan klarifikasi dan surat peringatan", "Rekap pelanggaran per
+ * mahasiswa" with the box of one student, and "Pengumuman pelanggaran".
  */
 export function StaffViolationsScreen({
   tabs,
@@ -122,6 +132,7 @@ export function StaffViolationsScreen({
   schedule,
   appeals,
   waitingAppeals,
+  warnings,
   ownRecord,
 }: {
   tabs: TabLinksProps;
@@ -136,6 +147,8 @@ export function StaffViolationsScreen({
   appeals: ReactNode;
   /** How many appeals wait, for an account that decides them, or else null. */
   waitingAppeals: number | null;
+  /** "Panggilan klarifikasi dan surat peringatan" of the running semester. */
+  warnings: WarningCalls;
   /** The account's own record, for a resident who is also staff, or null. */
   ownRecord: ReactNode;
 }) {
@@ -147,7 +160,11 @@ export function StaffViolationsScreen({
         {APPEAL_HOURS} jam; setelah itu pelanggaran naik ke Pengelola Asrama.
       </PageHead>
       <TabLinks {...tabs} />
-      <Numbers board={board} waitingAppeals={waitingAppeals} />
+      <Numbers
+        board={board}
+        waitingAppeals={waitingAppeals}
+        warnings={warnings}
+      />
       {form === null ? (
         <p className={styles.note}>{READ_ONLY_NOTE}</p>
       ) : (
@@ -157,6 +174,7 @@ export function StaffViolationsScreen({
         <SchedulePanel schedule={schedule} params={params} />
       )}
       {appeals}
+      <WarningCallsPanel calls={warnings} params={params} />
       <RekapPanel
         rekap={board.rekap}
         params={params}

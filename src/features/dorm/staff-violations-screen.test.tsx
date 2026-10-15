@@ -5,6 +5,7 @@ import { OwnRecord } from "./own-violations-view";
 import type { StaffViolations } from "./staff-violations";
 import { StaffViolationsScreen } from "./staff-violations-screen";
 import { readStaffViolationParams } from "./violation-address";
+import type { WarningCalls } from "./warning-calls";
 
 vi.mock("./appeal-actions", () => ({
   sendViolationAppealAction: vi.fn(),
@@ -58,6 +59,14 @@ const OWN: OwnRecordData = {
   },
 };
 
+const WARNINGS: WarningCalls = {
+  semester: null,
+  calls: [],
+  active: 3,
+  withLetter: 2,
+  page: 1,
+};
+
 function screen(): string {
   const params = readStaffViolationParams({});
   return renderToStaticMarkup(
@@ -70,6 +79,7 @@ function screen(): string {
       schedule={null}
       appeals={null}
       waitingAppeals={null}
+      warnings={WARNINGS}
       ownRecord={
         <OwnRecord
           own={OWN}
@@ -94,5 +104,15 @@ describe("the staff screen of a resident who is also staff", () => {
     expect(shown.indexOf("Pengumuman pelanggaran")).toBeLessThan(
       shown.indexOf("Pelanggaran saya</h2>"),
     );
+  });
+});
+
+describe("the staff screen", () => {
+  it("shows how many residents are called, with how many already have an SP, and the list of calls", () => {
+    const shown = screen();
+
+    expect(shown).toContain("Panggilan klarifikasi aktif");
+    expect(shown).toContain("2 mahasiswa sudah menerima SP");
+    expect(shown).toContain("Panggilan klarifikasi dan surat peringatan");
   });
 });
