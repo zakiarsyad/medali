@@ -1,0 +1,137 @@
+.note {
+  composes: note from "./rooms.module.css";
+}
+
+.switch {
+  composes: switch from "./rooms.module.css";
+}
+
+.choice {
+  composes: choice from "./rooms.module.css";
+}
+
+.head {
+  composes: head from "./rooms.module.css";
+}
+
+.title {
+  composes: title from "./rooms.module.css";
+}
+
+.sub {
+  composes: quietLine from "./rooms.module.css";
+}
+
+/* One box per dorm, side by side, and one column on a phone. */
+.boxes {
+  composes: cards from "./rooms.module.css";
+}
+
+.box {
+  composes: card from "./rooms.module.css";
+}
+
+.places {
+  composes: residents from "./rooms.module.css";
+}
+
+/* A name typed as one long word folds, so the box never grows wider. */
+.place {
+  composes: resident from "./rooms.module.css";
+}
+
+.placeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+}
+
+.renameForm {
+  composes: roomForm from "./rooms.module.css";
+  flex: 1 1 100%;
+  margin-top: 0;
+}
+
+.quiet {
+  composes: quietLine from "./rooms.module.css";
+}
+
+.numbers {
+  composes: numbers from "./rooms.module.css";
+}
+
+.number {
+  composes: number from "./rooms.module.css";
+}
+
+.numberLabel {
+  composes: numberLabel from "./rooms.module.css";
+}
+
+.numberValue {
+  composes: numberValue from "./rooms.module.css";
+}
+
+.numberNote {
+  composes: numberNote from "./rooms.module.css";
+}
+
+/* A room's name is words, not a number: smaller, and it folds on a phone. */
+.roomValue {
+  composes: numberValue from "./rooms.module.css";
+  font-size: var(--text-lg);
+  overflow-wrap: anywhere;
+}
+
+.daySwitch {
+  composes: daySwitch from "./activities.module.css";
+}
+
+/* The part of the schedule of one dorm. */
+.dormSchedule {
+  margin-top: var(--space-lg);
+}
+
+.dormTitle {
+  margin: 0 0 var(--space-sm);
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+/* The room picked for a place and "Tugaskan": they fold under each other on a phone. */
+.assign {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: center;
+  min-width: 0;
+}
+
+.assign select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.assign > p {
+  flex: 1 1 100%;
+}
+
+.ownLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  margin: var(--space-md) 0;
+  overflow-wrap: anywhere;
+}
+
+/* What a change says, with "Urungkan" beside it after a removal. */
+.said {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  margin-top: var(--space-md);
+}

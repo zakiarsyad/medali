@@ -12,6 +12,7 @@ import type { FormState } from "@/ui/form-message";
 import { addRoom } from "./add-room";
 import { autoFillRoom } from "./auto-fill-room";
 import { changeRoom } from "./change-room";
+import { CLEANING_ADDRESS } from "./cleaning-address";
 import { COMPANIONS_ADDRESS } from "./companions-address";
 import { placeCompanion, takeOutCompanion } from "./place-companion";
 import { placeResident, type SentPlace } from "./place-resident";
@@ -32,8 +33,10 @@ function answer(
 ): FormState {
   if (!changed.ok) return { error: changed.error, done: null };
   revalidatePath(ROOMS_ADDRESS);
-  // Kakak pendamping shows the room of each one, so it is read anew too.
+  // Kakak pendamping shows the room of each one, and Pembersihan asrama
+  // the rooms with residents and their duties, so both are read anew too.
   revalidatePath(COMPANIONS_ADDRESS);
+  revalidatePath(CLEANING_ADDRESS);
   return { error: null, done: done(changed.value) };
 }
 

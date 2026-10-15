@@ -1,52 +1,11 @@
-import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./activities.module.css";
 import {
   markDayOffAction,
   removeActivityAction,
   restoreActivityAction,
 } from "./activity-actions";
-
-/**
- * A button that sends one change and passes on what was done; a refusal
- * stays beside it. A change that takes something away asks first.
- */
-function ChangeButton({
-  send,
-  question,
-  look,
-  onDone,
-  children,
-}: {
-  send: () => Promise<FormState>;
-  /** The question asked before a change that takes something away. */
-  question: string | null;
-  look: string | undefined;
-  onDone: (message: string) => void;
-  children: string;
-}) {
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startSending] = useTransition();
-
-  function press() {
-    if (question !== null && !window.confirm(question)) return;
-    startSending(async () => {
-      const after = await send();
-      if (after.done) onDone(after.done);
-      setError(after.error);
-    });
-  }
-
-  return (
-    <>
-      <button type="button" className={look} onClick={press} disabled={pending}>
-        {children}
-      </button>
-      <FormMessage state={{ error, done: null }} />
-    </>
-  );
-}
+import { ChangeButton } from "./change-button";
 
 /** "Tiada kegiatan" on one day of a repeating activity. It asks first. */
 export function DayOffButton({
