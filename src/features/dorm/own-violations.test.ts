@@ -7,6 +7,7 @@ import { academicPeriods } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readOwnViolations } from "./own-violations";
 import { saveViolations } from "./save-violations";
+import { sendViolationAppeal } from "./send-appeal";
 import {
   addViolationActor,
   addViolationSetting,
@@ -101,6 +102,41 @@ describe("readOwnViolations", () => {
       expect(
         own.history.rows.every((row) => row.name === "Ani Uji Pelanggaran"),
       ).toBe(true);
+    });
+  });
+
+  it("shows the resident their own appeal with its reason, and the announcement no appeal of anyone", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await setUp(db);
+      const before = await readOwnViolations(db, ani, FIRST, NOW);
+      if (before.kind !== "shown") throw new Error("It was refused.");
+      const today = before.history.rows[0]?.id ?? "";
+      const reason = "Saya sedang izin resmi pada jam tersebut.";
+      const appealed = await sendViolationAppeal(
+        db,
+        null,
+        ani,
+        { violationId: today, reason, file: null },
+        NOW,
+      );
+      if (!appealed.ok) throw new Error(appealed.error);
+
+      const own = await readOwnViolations(db, ani, FIRST, NOW);
+
+      if (own.kind !== "shown") throw new Error("It was refused.");
+      expect(own.history.rows.map((row) => row.ownAppeal)).toEqual([
+        {
+          id: expect.any(String),
+          status: "waiting",
+          reason,
+          note: "",
+          proofName: null,
+        },
+        null,
+      ]);
+      for (const row of own.announcement.rows) {
+        expect(JSON.stringify(row)).not.toContain(reason);
+      }
     });
   });
 

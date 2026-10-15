@@ -112,6 +112,24 @@ Decided while building, because the issue did not say:
    with reading their reason and proof ("Menerima dan menolak advokasi
    pelanggaran asrama, dan membuka alasan serta buktinya") for BAM -
    BPHK and BAM - KI. Every other role gets neither.
+8. Only a student who lives in a dorm today may appeal, as only they
+   open the tab, and only from the announcement hour until 3 hours
+   later by the server's clock. A violation not announced yet, or of
+   another resident, answers "Pelanggaran ini tidak ditemukan. Muat
+   ulang halaman." A second appeal of a violation is refused with
+   "Pelanggaran ini sudah diajukan advokasi, dan advokasi tidak dapat
+   diubah. Muat ulang halaman untuk melihat statusnya."
+9. The proof takes what the file of a clarification takes: a PDF, JPEG
+   or PNG picture of at most 5 MB, a picture made smaller in the browser
+   first. Where the file storage is not set, an appeal with a proof is
+   refused and nothing is kept; one without a proof is kept.
+10. In "Rekam jejak pelanggaran saya" the column Advokasi shows the
+    appeal as Diajukan, Diterima or Ditolak, the first 80 letters of its
+    reason, "BAM: " with the note, and "Lihat bukti: " with the name of
+    the proof, which downloads it; or "Ajukan advokasi" while the appeal
+    time lasts; or "-".
+11. Sending an appeal adds a line to the log of the violation, as each
+    decision does, since it changes where a discipline record stands.
 
 ## Steps
 
@@ -119,7 +137,7 @@ Decided while building, because the issue did not say:
   accepted and rejected.
 - [x] 2. The rights to appeal and to decide are added to the permission
   list, with their checks.
-- [ ] 3. Residents send an appeal with an optional proof file and see
+- [x] 3. Residents send an appeal with an optional proof file and see
   its result.
 - [ ] 4. BAM sees "Advokasi masuk" and accepts or rejects.
 - [ ] 5. The violation's status and the numbers follow the appeal.

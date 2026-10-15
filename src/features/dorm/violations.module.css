@@ -75,6 +75,11 @@
   composes: bad from "./leave.module.css";
 }
 
+/* An accepted appeal: the violation does not count. */
+.ok {
+  composes: ok from "./leave.module.css";
+}
+
 /* A heading with a choice beside it, which folds under it on a phone. */
 .panelHead {
   display: flex;

@@ -115,6 +115,11 @@ export function staffViolationsAddress(params: StaffViolationParams): string {
   return withSearch(search);
 }
 
+/** Where the proof of an appeal is downloaded from the server. */
+export function appealProofAddress(appealId: string): string {
+  return `${VIOLATIONS_ADDRESS}/bukti/${appealId}`;
+}
+
 /** The address of the screen of a resident, read the same way. */
 export function ownViolationsAddress(params: OwnViolationParams): string {
   const search = new URLSearchParams();

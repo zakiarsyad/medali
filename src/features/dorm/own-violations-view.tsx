@@ -6,6 +6,7 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AnnouncementPanel } from "./announcement-panel";
+import { OwnViolationTable } from "./own-violation-table";
 import type { OwnViolations } from "./own-violations";
 import {
   ALL_PERIODS,
@@ -14,7 +15,6 @@ import {
   VIOLATIONS_ADDRESS,
 } from "./violation-address";
 import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
-import { AnnouncedTable } from "./violation-lists";
 import styles from "./violations.module.css";
 
 export const NO_OWN_VIOLATIONS = "Tidak ada pelanggaran pada periode ini.";
@@ -84,12 +84,7 @@ function HistoryPanel({
       {history.rows.length === 0 ? (
         <p className={shared.empty}>{NO_OWN_VIOLATIONS}</p>
       ) : (
-        <AnnouncedTable
-          rows={history.rows}
-          now={now}
-          reader="resident"
-          withStudent={false}
-        />
+        <OwnViolationTable rows={history.rows} now={now} />
       )}
       {history.matching > 0 && (
         <ListPager

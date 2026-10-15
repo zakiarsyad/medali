@@ -6,9 +6,10 @@ import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import { type AccountForAccess, may } from "@/auth/access";
 import { NOT_REMOVED } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
-import { dormViolations, students } from "@/db/schema";
+import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
+import type { AppealStatus } from "./appeal-ids";
 import type { SemesterChoice } from "./rekap-filters";
 import { readStudentDorm } from "./student-dorm";
 import type { OwnViolationParams } from "./violation-address";
@@ -22,9 +23,24 @@ import { announcedBy, escalatedBy, inPeriodDays } from "./violation-conditions";
 import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import { periodDays } from "./violation-periods";
 
+/** The appeal of a resident's own violation, as only they see it. */
+export interface OwnAppeal {
+  id: string;
+  status: AppealStatus;
+  reason: string;
+  /** Catatan BAM; empty when nothing was noted. */
+  note: string;
+  /** The name of the proof, or null for an appeal without one. */
+  proofName: string | null;
+}
+
+export interface OwnViolation extends AnnouncedViolation {
+  ownAppeal: OwnAppeal | null;
+}
+
 /** "Rekam jejak pelanggaran saya": one page of the resident's own violations. */
 export interface OwnHistory {
-  rows: AnnouncedViolation[];
+  rows: OwnViolation[];
   matching: number;
   page: number;
 }
@@ -55,6 +71,18 @@ async function countWhere(db: Database, where: SQL | undefined) {
   return counted?.amount ?? 0;
 }
 
+/** A violation with no appeal reads its appeal as null. */
+const OWN_FIELDS = {
+  ...ANNOUNCED_FIELDS,
+  ownAppeal: {
+    id: dormViolationAppeals.id,
+    status: dormViolationAppeals.status,
+    reason: dormViolationAppeals.reason,
+    note: dormViolationAppeals.decisionNote,
+    proofName: dormViolationAppeals.fileName,
+  },
+};
+
 async function readHistory(
   db: Database,
   where: SQL | undefined,
@@ -63,9 +91,13 @@ async function readHistory(
   const matching = await countWhere(db, where);
   const shown = pageWithin(page, matching, VIOLATIONS_PAGE_SIZE);
   const rows = await db
-    .select(ANNOUNCED_FIELDS)
+    .select(OWN_FIELDS)
     .from(dormViolations)
     .innerJoin(students, eq(students.id, dormViolations.studentId))
+    .leftJoin(
+      dormViolationAppeals,
+      eq(dormViolationAppeals.violationId, dormViolations.id),
+    )
     .where(where)
     .orderBy(
       desc(dormViolations.day),
