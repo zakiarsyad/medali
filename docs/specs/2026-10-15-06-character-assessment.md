@@ -104,7 +104,7 @@ their capaian karakter everywhere else in the app.
 - [x] 1. Assessments are stored with source, note and who; the right
   "Asesmen karakter" is added, with checks; sample assessments.
 - [x] 2. The rule for Rerata and predikat, with checks.
-- [ ] 3. The tab shows the numbers and "Hasil asesmen karakter".
+- [x] 3. The tab shows the numbers and "Hasil asesmen karakter".
 - [ ] 4. The form with sliders and "Pratinjau medali" saves one student.
 - [ ] 5. A row opens the student's earlier assessments.
 
@@ -134,3 +134,23 @@ their capaian karakter everywhere else in the app.
   the same.
 - "Rerata capaian" is the average of the students' latest Rerata, each
   as shown, to one decimal; with nobody assessed it shows "-".
+- The numbers and the list hold the Aktif students only, as Data SKPM
+  and the prototype do.
+- The lines under the numbers say: "dari (n) mahasiswa aktif (p%)" and
+  "enam nilai MEDALI", as in the prototype; "asesmen terakhir pada
+  (period)", or "belum ada periode akademik berjalan" while none runs;
+  and "belum punya hasil asesmen" in place of the prototype's "tidak
+  dihitung di Dashboard", since no Dashboard shows capaian karakter yet.
+- The words at the top of the tab and over the list leave out the
+  prototype's mention of the Dashboard, the profile and uploading a
+  file, none of which is built.
+- The filter offers "Semua mahasiswa" and "Belum diasesmen". The list
+  puts the newest latest assessment first and the students without one
+  last, then goes by name. A student without one shows "Belum
+  diasesmen" across the row, as in the prototype.
+- The six score columns are headed by the letter of the value, with its
+  name when pointed at, as in the prototype; on a phone each card names
+  the value in full.
+- No other screen shows capaian karakter yet. The read of each
+  student's latest assessment is made once, for the screens that will
+  show it.
