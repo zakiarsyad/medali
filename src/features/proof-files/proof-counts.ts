@@ -15,8 +15,8 @@ export interface ProofCounts {
 
 /**
  * How many files of each kind are kept and how many may be removed now.
- * A file marked as removed is no longer kept, and the next removal
- * finishes it.
+ * A file marked by a removal that stopped is still in the file storage,
+ * so it counts as kept until it leaves, and the next removal finishes it.
  */
 export function countProofs(
   groups: readonly SentGroup[],
@@ -25,12 +25,10 @@ export function countProofs(
   const kept = noCounts();
   const removable = noCounts();
   for (const group of groups) {
-    if (group.isMarked) {
-      removable[group.kind] += group.files;
-      continue;
-    }
     kept[group.kind] += group.files;
-    if (isRemovable(group, rule)) removable[group.kind] += group.files;
+    if (group.isMarked || isRemovable(group, rule)) {
+      removable[group.kind] += group.files;
+    }
   }
   return { kept, removable };
 }

@@ -86,7 +86,8 @@ keeps its status, its decision and who decided.
 1. A record is marked as removed before its file leaves the file
    storage, and the place of the file is cleared only once the file is
    gone. A marked record whose file is still there is finished by the
-   next press, and is not counted as kept.
+   next press. Until then its file is still in the file storage, so it
+   counts both as kept and as one that may be removed now.
 2. A marked file is never handed out again, even while it still waits
    to leave the file storage.
 3. The academic period a file was sent in is the one whose dates hold

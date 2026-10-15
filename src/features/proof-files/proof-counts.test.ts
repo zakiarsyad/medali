@@ -43,14 +43,24 @@ describe("countProofs", () => {
     });
   });
 
-  it("takes a marked file as no longer kept, and as one to finish", () => {
+  it("counts a marked file still in the storage as kept, and as one to finish", () => {
     const counts = countProofs(
       [group({ isMarked: true, files: 2 }), group({ files: 1 })],
       RULE,
     );
 
-    expect(counts.kept.attendance_photo).toBe(1);
+    expect(counts.kept.attendance_photo).toBe(3);
     expect(counts.removable.attendance_photo).toBe(3);
+  });
+
+  it("never shows more files to remove than are kept", () => {
+    const counts = countProofs(
+      [group({ status: "waiting", isMarked: true, files: 5 })],
+      { ...RULE, keepDays: 365 },
+    );
+
+    expect(counts.kept.attendance_photo).toBe(5);
+    expect(counts.removable.attendance_photo).toBe(5);
   });
 
   it("lets nothing go while the number of days is not set", () => {
