@@ -98,7 +98,7 @@ count per student for the semester.
 
 - [x] 1. The table for dorm violations is added, with sample violations
   waiting, in Masa advokasi and Naik ke Pengelola.
-- [ ] 2. The rights to record and to read violations are added to the
+- [x] 2. The rights to record and to read violations are added to the
   permission list, with their checks.
 - [ ] 3. BAM records violations and schedules the announcement.
 - [ ] 4. BAM sees "Jadwal publikasi" and cancels a waiting row.

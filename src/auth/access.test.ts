@@ -957,6 +957,94 @@ describe("may", () => {
     }
   });
 
+  const violationRecorders: RoleId[] = [
+    "bam_bphk",
+    "bam_compliance",
+    "bam_spiritual",
+    "bam_catering",
+    "bam_arts_sports",
+    "bam_health",
+  ];
+
+  it.each(violationRecorders)(
+    "lets %s record dorm violations, schedule and cancel their announcement",
+    (role) => {
+      expect(may([role], "record_dorm_violations")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "violations")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to record dorm violations, BAM - Kerumahtanggaan, Pengelola Asrama, Kepala Unit and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !violationRecorders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_household",
+        "dorm_manager",
+        "head_of_unit",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "record_dorm_violations")).toBe(false);
+    }
+  });
+
+  const violationReaders: RoleId[] = [
+    ...violationRecorders,
+    "dorm_manager",
+    "head_of_unit",
+  ];
+
+  it.each(violationReaders)("lets %s see the dorm violations", (role) => {
+    expect(may([role], "view_dorm_violations")).toBe(true);
+  });
+
+  it("refuses every other role to see the dorm violations, Direktur, Ketua Program Studi, Pengasuh, BAM - Kerumahtanggaan and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !violationReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "mentor",
+        "bam_household",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_violations")).toBe(false);
+      expect(mayOpenTab([role], "dorm", "violations")).toBe(role === "student");
+    }
+  });
+
+  it("lets Mahasiswa see only their own violations and their dorm's announcement, on a page that asks them to live in the dorm", () => {
+    expect(may(["student"], "view_own_dorm_violations")).toBe(true);
+    expect(may(["student"], "view_dorm_violations")).toBe(false);
+    expect(may(["student"], "record_dorm_violations")).toBe(false);
+    expect(mayOpenTab(["student"], "dorm", "violations")).toBe(true);
+    expect(needsDormResident(["student"], "dorm")).toBe(true);
+    for (const role of ROLE_IDS.filter((each) => each !== "student")) {
+      expect(may([role], "view_own_dorm_violations")).toBe(false);
+    }
+  });
+
+  it("gives the right to record violations only to roles that see them", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "record_dorm_violations")) continue;
+      expect(may([role], "view_dorm_violations")).toBe(true);
+    }
+  });
+
+  it("gives a way to see violations to every role with the tab Pelanggaran, and to no other", () => {
+    for (const role of ROLE_IDS) {
+      const reads =
+        may([role], "view_dorm_violations") ||
+        may([role], "view_own_dorm_violations");
+      expect(reads).toBe(mayOpenTab([role], "dorm", "violations"));
+    }
+  });
+
   const detailReaders: RoleId[] = [
     "head_of_unit",
     "director",
@@ -1539,6 +1627,7 @@ describe("may", () => {
       "report_dorm_return",
       "ask_dorm_clarification",
       "view_own_dorm_cleaning",
+      "view_own_dorm_violations",
       "view_own_siku",
       "ask_siku_addition",
     ]);
