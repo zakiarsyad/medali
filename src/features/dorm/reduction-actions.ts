@@ -12,7 +12,12 @@ import {
   type SentOneReduction,
   type SentReduction,
 } from "./reduce-violations";
-import { manyReducedWords, oneReducedWords } from "./reduction-words";
+import {
+  manyReducedWords,
+  oneReducedWords,
+  REDUCTION_UNDONE,
+} from "./reduction-words";
+import { undoReduction } from "./undo-reduction";
 import { VIOLATIONS_ADDRESS } from "./violation-address";
 
 /**
@@ -74,4 +79,16 @@ export async function reduceViolationsAction(
   if (!reduced.ok) return { error: reduced.error, done: null };
   const { days, standing } = reduced.value;
   return { error: null, done: manyReducedWords(days.length, standing) };
+}
+
+/**
+ * "Batalkan" on a row of "Riwayat pengurangan pelanggaran", once
+ * confirmed. Who undid it is the signed-in account.
+ */
+export async function undoReductionAction(id: string): Promise<FormState> {
+  const actor = await reducer();
+  const undone = await undoReduction(database(), actor, String(id));
+  revalidatePath(VIOLATIONS_ADDRESS);
+  if (!undone.ok) return { error: undone.error, done: null };
+  return { error: null, done: REDUCTION_UNDONE };
 }

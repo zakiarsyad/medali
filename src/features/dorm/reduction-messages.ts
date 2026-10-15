@@ -27,7 +27,11 @@ export const NOT_ESCALATED = refusal(
 );
 
 export const OWN_REDUCTION = refusal(
-  "Pelanggaran atas diri Anda sendiri dikurangi oleh Pengelola Asrama yang lain.",
+  "Pengurangan pelanggaran atas diri Anda sendiri dilakukan atau dibatalkan oleh Pengelola Asrama yang lain.",
+);
+
+export const ALREADY_UNDONE = refusal(
+  "Pengurangan ini sudah dibatalkan. Muat ulang halaman.",
 );
 
 export const NONE_PICKED = refusal("Pilih pelanggaran yang akan dikurangi.");

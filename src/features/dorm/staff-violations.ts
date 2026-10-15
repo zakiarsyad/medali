@@ -5,6 +5,7 @@ import { periodTitle } from "@/academic-periods/period-labels";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
+import { type ReductionList, readReductionList } from "./reduction-list";
 import type { SemesterChoice } from "./rekap-filters";
 import { readStudentLetters, type ShownLetter } from "./student-letters";
 import type { StaffViolationParams } from "./violation-address";
@@ -36,6 +37,11 @@ export interface StaffViolations {
   marks: Record<string, WarningLevel>;
   /** The SPs of the semester of the student whose box is open. */
   letters: ShownLetter[];
+  /**
+   * "Riwayat pengurangan pelanggaran" of the semester, or null for an
+   * account that does not read reductions, or while no period is stored.
+   */
+  reductions: ReductionList | null;
 }
 
 const NO_REKAP: Rekap = { rows: [], matching: 0, page: 1 };
@@ -56,7 +62,8 @@ function semesterOf(
  * the rekap of the semester with the SP of each student, and the box of
  * one student with their SPs: with Hasil klarifikasi and the proposal
  * note only `withResults`. A reduced violation shows, as Dikurangi with
- * its reason, only `withReductions`; to anyone else it is gone, as it is
+ * its reason, and "Riwayat pengurangan pelanggaran" is read, only
+ * `withReductions`; to anyone else a reduced violation is gone, as it is
  * from the announcement.
  */
 export async function readStaffViolations(
@@ -75,23 +82,28 @@ export async function readStaffViolations(
   const days = period === null ? null : periodDays(periods, period.id);
   const { studentId } = params;
   // Read side by side: none of them waits for another.
-  const [announcement, numbers, rekap, student] = await Promise.all([
-    readAnnouncement(db, visible, now, params.day, params.announcementPage),
-    readViolationNumbers(db, visible, now, days),
-    days === null
-      ? NO_REKAP
-      : readViolationRekap(db, visible, now, days, params.query, params.page),
-    days === null || studentId === null
-      ? null
-      : readStudentViolations(
-          db,
-          visible,
-          studentId,
-          now,
-          days,
-          params.studentPage,
-        ),
-  ]);
+  const [announcement, numbers, rekap, student, reductions] = await Promise.all(
+    [
+      readAnnouncement(db, visible, now, params.day, params.announcementPage),
+      readViolationNumbers(db, visible, now, days),
+      days === null
+        ? NO_REKAP
+        : readViolationRekap(db, visible, now, days, params.query, params.page),
+      days === null || studentId === null
+        ? null
+        : readStudentViolations(
+            db,
+            visible,
+            studentId,
+            now,
+            days,
+            params.studentPage,
+          ),
+      days === null || !withReductions
+        ? null
+        : readReductionList(db, visible, days, params.reductionPage),
+    ],
+  );
   const semesters = periods.map((each) => ({
     id: each.id,
     title: periodTitle(each),
@@ -111,6 +123,7 @@ export async function readStaffViolations(
     student,
     marks,
     letters,
+    reductions,
   };
 }
 

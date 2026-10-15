@@ -5,6 +5,7 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AnnouncementPanel } from "./announcement-panel";
+import { ReductionsPanel } from "./reductions-panel";
 import type { StaffViolations } from "./staff-violations";
 import {
   type StaffViolationParams,
@@ -121,7 +122,8 @@ function keptBesideDay(params: StaffViolationParams): [string, string][] {
  * pelanggaran" and "Jadwal publikasi" for those who record and a note for
  * those who only read, "Advokasi masuk" for those who decide,
  * "Panggilan klarifikasi dan surat peringatan", "Rekap pelanggaran per
- * mahasiswa" with the box of one student, and "Pengumuman pelanggaran".
+ * mahasiswa" with the box of one student, "Riwayat pengurangan
+ * pelanggaran" for those who read it, and "Pengumuman pelanggaran".
  */
 export function StaffViolationsScreen({
   tabs,
@@ -199,6 +201,14 @@ export function StaffViolationsScreen({
         semesters={board.semesters}
         shownSemester={board.semester?.id ?? null}
       />
+      {board.reductions !== null && (
+        <ReductionsPanel
+          reductions={board.reductions}
+          params={params}
+          undoes={reduces}
+          ownStudentId={ownStudentId}
+        />
+      )}
       <AnnouncementPanel
         announcement={board.announcement}
         now={now}

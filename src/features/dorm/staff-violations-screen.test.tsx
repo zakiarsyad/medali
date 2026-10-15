@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { OwnRecordData } from "./own-violations";
 import { OwnRecord } from "./own-violations-view";
+import type { ShownReduction } from "./reduction-list";
 import type { StaffViolations } from "./staff-violations";
 import { StaffViolationsScreen } from "./staff-violations-screen";
 import { readStaffViolationParams } from "./violation-address";
@@ -14,6 +15,7 @@ vi.mock("./appeal-actions", () => ({
 }));
 vi.mock("./reduction-actions", () => ({
   reduceOneViolationAction: vi.fn(),
+  undoReductionAction: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
@@ -32,6 +34,7 @@ const BOARD: StaffViolations = {
   student: null,
   marks: {},
   letters: [],
+  reductions: null,
 };
 
 /** The own record of a BAM member who lives in the dorm, with one violation still open to appeal. */
@@ -234,5 +237,74 @@ describe("the box of one student", () => {
     const shown = screen(withBox(OWN_STUDENT), true);
 
     expect(shown).not.toContain(">Kurangi<");
+  });
+});
+
+/** A reduction of a student, by a sample Pengelola Asrama. */
+function reduction(studentId: string): ShownReduction {
+  return {
+    id: `${studentId.slice(0, -2)}aa`,
+    studentId,
+    name: "Penghuni Uji Riwayat",
+    nim: "9900990501",
+    day: "2026-10-09",
+    reason: "Terlambat apel pagi",
+    punishment: "warning",
+    otherPunishment: "",
+    reductionReason: "Terbukti sedang izin resmi.",
+    reducedBy: "Pengelola Uji",
+    reducedAt: new Date("2026-10-11T03:00:00Z"),
+  };
+}
+
+function withReductions(rows: ShownReduction[]): StaffViolations {
+  return {
+    ...BOARD,
+    reductions: { rows, matching: rows.length, page: 1 },
+  };
+}
+
+describe("Riwayat pengurangan pelanggaran", () => {
+  it("lists the student, the violation, the reason, who and when, with Batalkan for Pengelola Asrama", () => {
+    const shown = screen(withReductions([reduction(BOX_STUDENT)]), true);
+
+    expect(shown).toContain(">Riwayat pengurangan pelanggaran</h2>");
+    for (const said of [
+      "Penghuni Uji Riwayat",
+      "9900990501",
+      "9 Okt 2026 · Terlambat apel pagi",
+      "Teguran",
+      "Terbukti sedang izin resmi.",
+      "Pengelola Uji",
+      "11 Okt 2026 10:00",
+    ]) {
+      expect(shown).toContain(said);
+    }
+    expect(shown).toContain(">Batalkan</button>");
+  });
+
+  it("gives Kepala Unit the list without Batalkan", () => {
+    const shown = screen(withReductions([reduction(BOX_STUDENT)]), false);
+
+    expect(shown).toContain("Terbukti sedang izin resmi.");
+    expect(shown).not.toContain(">Batalkan</button>");
+  });
+
+  it("gives no Batalkan on the account's own reduction", () => {
+    const shown = screen(withReductions([reduction(OWN_STUDENT)]), true);
+
+    expect(shown).not.toContain(">Batalkan</button>");
+  });
+
+  it("says when there is none", () => {
+    const shown = screen(withReductions([]), true);
+
+    expect(shown).toContain("Belum ada pengurangan pada semester ini.");
+  });
+
+  it("is not drawn for an account that does not read it", () => {
+    expect(screen(BOARD, false)).not.toContain(
+      "Riwayat pengurangan pelanggaran",
+    );
   });
 });

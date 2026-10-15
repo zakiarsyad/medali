@@ -24,6 +24,14 @@ export function oneReducedWords(day: string): string {
 
 export const CALL_ENDED = "Panggilan klarifikasi tidak lagi aktif";
 
+export const NO_REDUCTIONS = "Belum ada pengurangan pada semester ini.";
+
+export const UNDO_QUESTION =
+  "Batalkan pengurangan ini? Pelanggaran kembali tercatat dan tampil di pengumuman.";
+
+export const REDUCTION_UNDONE =
+  "Pengurangan dibatalkan. Pelanggaran kembali tercatat dan tampil di pengumuman.";
+
 /** What the button of the ticks says, with how many are ticked. */
 export function reduceButtonWords(ticked: number): string {
   if (ticked === 0) return "Kurangi pelanggaran terpilih";

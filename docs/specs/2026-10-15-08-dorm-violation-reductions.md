@@ -125,6 +125,18 @@ Decided while building, because the issue did not say:
     called, so the answer can be read: in place of its two parts it then
     says "Mahasiswa ini tidak sedang dalam panggilan klarifikasi.". This
     also holds after an SP is issued there, where the box used to close.
+16. "Riwayat pengurangan pelanggaran" stands under the rekap and follows
+    its semester choice: the violations of a day of that semester that
+    are reduced now, the latest reduced first, 20 a page. Each row shows
+    the student with the NIM, the day, reason and punishment of the
+    violation, Dasar pengurangan, and who reduced it with the hour.
+17. An undone reduction leaves the list; its two lines stay in the log.
+    "Batalkan" asks "Batalkan pengurangan ini? Pelanggaran kembali
+    tercatat dan tampil di pengumuman." and says "Pengurangan
+    dibatalkan. Pelanggaran kembali tercatat dan tampil di pengumuman.".
+    Any Pengelola Asrama may undo a reduction another made, but not one
+    of their own violations. A second undo is refused with "Pengurangan
+    ini sudah dibatalkan. Muat ulang halaman.".
 
 ## Steps
 
@@ -136,5 +148,5 @@ Decided while building, because the issue did not say:
   student.
 - [x] 4. Pengelola Asrama reduces several at once while processing a
   call.
-- [ ] 5. The list of reductions shows, with undo.
+- [x] 5. The list of reductions shows, with undo.
 - [ ] 6. Residents see a reduced violation in their record.
