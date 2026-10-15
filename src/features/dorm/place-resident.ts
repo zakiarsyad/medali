@@ -15,7 +15,7 @@ import type { Parsed } from "@/parsed";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, lockRoom } from "./room-lock";
-import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
+import { freeStalePlaces } from "./stale-places";
 
 /** What a save answers when the room has no free place left. */
 export const ROOM_FULL = {
@@ -66,7 +66,6 @@ async function place(
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
-  await freeStalePlacesIn(tx, dormCohorts, room.id);
   const [resident] = await tx
     .select({ name: students.name })
     .from(students)
@@ -75,9 +74,10 @@ async function place(
     // without making a save that only points at the student wait.
     .for("no key update");
   if (!resident) return notResident(room.dorm);
-  // Only once the student is held, as placing a kakak pendamping does:
-  // the other way round the two would wait for each other.
-  await freeStalePlacesOf(tx, dormCohorts, [studentId]);
+  // Only once the student is held, as placing a kakak pendamping does: a
+  // place this student left behind may be in this very room, and deleting
+  // it first would make two placings of the student wait for each other.
+  await freeStalePlaces(tx, dormCohorts, room.id, [studentId]);
   const companionRoom = await readCompanionRoom(tx, studentId);
   if (companionRoom) return placedAsCompanion(companionRoom);
   if ((await countTaken(tx, room.id)) >= room.capacity) return ROOM_FULL;
