@@ -51,7 +51,10 @@ describe("the form of BAM on a phone", () => {
 });
 
 describe("the screen parts of Pelanggaran that run in the browser", () => {
-  const PARTS = [`${FOLDER}/violation-form.tsx`];
+  const PARTS = [
+    `${FOLDER}/violation-form.tsx`,
+    `${FOLDER}/violation-schedule-table.tsx`,
+  ];
 
   it("are found", () => {
     const browserFiles = browserFilesIn(FOLDER);

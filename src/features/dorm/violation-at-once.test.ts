@@ -1,6 +1,7 @@
 // Sample NIMs of this file: 9982030000 to 9982030099.
 import { describe, expect, it } from "vitest";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import { cancelViolation } from "./cancel-violation";
 import { saveViolations } from "./save-violations";
 import {
   addViolationActor,
@@ -11,6 +12,7 @@ import {
   type ViolationSetting,
   violationsUnder,
 } from "./test-violations";
+import { ALREADY_CANCELLED } from "./violation-messages";
 
 /*
  * Two presses at the same moment need two connections that both see the
@@ -60,5 +62,35 @@ describe("Simpan dan jadwalkan publikasi pressed twice at the same moment", () =
     for (const row of kept) {
       expect(await linesOf(own.db, row.id)).toHaveLength(1);
     }
+  });
+});
+
+describe("two cancels of one violation at the same moment", () => {
+  it("lets the first win whole: the second waits, then is refused, and the log has one cancel", async () => {
+    const { residents: ids } = await residents();
+    const recorder = await addViolationActor(own.db, "BAM Uji Batal A", [
+      "bam_bphk",
+    ]);
+    const other = await addViolationActor(own.db, "BAM Uji Batal B", [
+      "bam_compliance",
+    ]);
+    const key = crypto.randomUUID();
+    const list = sentList(TODAY, [sentRow(ids[2] ?? "")]);
+    const saved = await saveViolations(own.db, recorder, key, list, MOMENT);
+    if (!saved.ok) throw new Error(saved.error);
+    const [violation] = await violationsUnder(own.db, key);
+    const id = violation?.id ?? "";
+
+    const both = await own.atOnce(
+      (db) => cancelViolation(db, recorder, id, MOMENT),
+      (db) => cancelViolation(db, other, id, MOMENT),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: null });
+    expect(both.later).toEqual(ALREADY_CANCELLED);
+    const [kept] = await violationsUnder(own.db, key);
+    expect(kept?.cancelledBy).toBe(recorder.id);
+    const lines = await linesOf(own.db, id);
+    expect(lines.map((line) => line.action)).toEqual(["entered", "cancelled"]);
   });
 });

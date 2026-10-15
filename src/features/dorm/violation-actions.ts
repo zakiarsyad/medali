@@ -9,6 +9,7 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { cancelViolation } from "./cancel-violation";
 import { saveViolations } from "./save-violations";
 import { VIOLATIONS_ADDRESS } from "./violation-address";
 import type { SentViolationRow } from "./violation-input";
@@ -65,6 +66,15 @@ export async function saveViolationsAction(
     error: null,
     done: `${count} pelanggaran disimpan dan dijadwalkan diumumkan ${shownHour(announcedAt)}. Advokasi dapat diajukan sampai ${shownHour(appealEndOf(announcedAt))}.`,
   };
+}
+
+/** "Batalkan" on a row of Jadwal publikasi. Who cancelled is the signed-in account. */
+export async function cancelViolationAction(id: string): Promise<FormState> {
+  const actor = await recorder();
+  const cancelled = await cancelViolation(database(), actor, String(id));
+  if (!cancelled.ok) return { error: cancelled.error, done: null };
+  revalidatePath(VIOLATIONS_ADDRESS);
+  return { error: null, done: "Publikasi dibatalkan." };
 }
 
 /** The residents the form offers for what was typed. */
