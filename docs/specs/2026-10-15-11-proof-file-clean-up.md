@@ -99,12 +99,21 @@ keeps its status, its decision and who decided.
    storage is set, is not counted.
 6. The change log line also keeps the number of days that was set when
    the files were removed.
+7. What counts as a final decision for each kind: an attendance that is
+   Hadir, Ditolak or Dispensasi; a SIKU request approved, rejected or
+   withdrawn; a return report validated or rejected (one only verified
+   by BAM still waits for Pengelola Asrama); a clarification accepted or
+   rejected, and a dorm clarification also when it was closed because
+   BAM announced the count again; an appeal accepted or rejected.
+8. "Ended more than the set number of days ago" means the day after the
+   period's last day plus the set days has passed: with 30 days, a period
+   that ended on 31 January is removable from 3 March.
 
 ## Steps
 
 - [x] 1. The setting for how long files are kept, and the right to set
   it and to remove files, with their checks.
-- [ ] 2. One rule that says which files are removable, with its check.
+- [x] 2. One rule that says which files are removable, with its check.
 - [ ] 3. The page with the setting and the table of counts.
 - [ ] 4. "Hapus berkas lama" with the confirmation, safe to press again.
 - [ ] 5. "Berkas sudah dihapus pada (date)" on each of the six kinds of

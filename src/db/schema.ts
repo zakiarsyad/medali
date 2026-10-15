@@ -1076,6 +1076,8 @@ export const dormReturnReports = pgTable(
       .references(() => dormLeaves.id),
     /** Where the photo is in the file storage. Empty when none is kept. */
     photoKey: text().unique(),
+    /** When the photo was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     /** When the report arrived, by the server's clock: the time it reports. */
     sentAt: timestamp({ withTimezone: true }).notNull(),
     status: dormReturnReportStatus().notNull().default("waiting"),
@@ -1147,6 +1149,8 @@ export const dormClarifications = pgTable(
      * where no file storage is set.
      */
     fileKey: text().unique(),
+    /** When the file was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     fileName: text().notNull(),
     fileContentType: text().notNull(),
     /** In bytes. */
@@ -1479,6 +1483,8 @@ export const dormViolationAppeals = pgTable(
       .references(() => dormViolations.id),
     reason: text().notNull(),
     fileKey: text().unique(),
+    /** When the file was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     fileName: text(),
     fileContentType: text(),
     /** In bytes. */
@@ -2337,6 +2343,8 @@ export const activityAttendances = pgTable(
     status: activityAttendanceStatus().notNull(),
     /** Where the photo is in the file storage. Empty when none is kept. */
     photoKey: text().unique(),
+    /** When the photo was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     sentAt: timestamp({ withTimezone: true }),
     /** What the history shows as Keterangan. Empty when nothing was noted. */
     note: text().notNull(),
@@ -2412,6 +2420,8 @@ export const activityClarifications = pgTable(
      * where no file storage is set.
      */
     fileKey: text().unique(),
+    /** When the file was removed as old proof; from then on it is never served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
     fileName: text().notNull(),
     fileContentType: text().notNull(),
     /** In bytes. */
@@ -2688,6 +2698,8 @@ export const sikuRequestPhotos = pgTable(
     place: smallint().notNull(),
     photoKey: text().unique(),
     thumbKey: text().unique(),
+    /** When both copies were removed as old proof; from then on neither is served. */
+    fileRemovedAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     unique("siku_request_photos_place").on(table.requestId, table.place),
