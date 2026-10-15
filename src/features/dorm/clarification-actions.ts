@@ -14,6 +14,7 @@ import { CLARIFICATIONS_ADDRESS } from "./clarification-address";
 import { doneWords } from "./clarification-decision";
 import { decideDormClarification } from "./decide-clarification";
 import {
+  type Decided,
   type DecisionAnswer,
   keptDecision,
   refusedDecision,
@@ -44,7 +45,7 @@ async function decider(): Promise<Account> {
   return account;
 }
 
-function answerOf(answer: Parsed<unknown>, kind: string): DecisionAnswer {
+function answerOf(answer: Decided<unknown>, kind: string): DecisionAnswer {
   if (!answer.ok) return refusedDecision(answer);
   return keptDecision(doneWords(kind));
 }

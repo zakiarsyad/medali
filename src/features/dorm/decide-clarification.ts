@@ -7,7 +7,6 @@ import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { dormClarificationChanges, dormClarifications } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
-import type { Parsed } from "@/parsed";
 import {
   type CheckedDecision,
   CLARIFICATION_NOT_FOUND,
@@ -20,6 +19,7 @@ import {
   VERIFY_NOT_ALLOWED,
 } from "./clarification-decision";
 import type { AcceptedAs, DormClarificationStatus } from "./clarification-ids";
+import type { Decided } from "./leave-messages";
 
 type Decider = Pick<Account, "id" | "roles">;
 
@@ -91,7 +91,7 @@ async function decideIn(
   step: ClarificationStep,
   id: string,
   decision: CheckedDecision,
-): Promise<Parsed<DormClarificationStatus>> {
+): Promise<Decided<DormClarificationStatus>> {
   const before = WAITS_FOR[step];
   const changes = changesOf(step, decision, actor.id);
   const [decided] = await tx
@@ -142,7 +142,7 @@ export async function decideDormClarification(
   actor: Decider,
   step: ClarificationStep,
   sent: { id: string; kind: unknown; note: unknown },
-): Promise<Parsed<DormClarificationStatus>> {
+): Promise<Decided<DormClarificationStatus>> {
   const right = STEP_RIGHTS[step];
   if (!may(actor.roles, right.action)) return right.refusal;
   if (!isUuid(sent.id)) return CLARIFICATION_NOT_FOUND;

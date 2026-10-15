@@ -85,6 +85,32 @@ describe("Tugas saya", () => {
     expect(html).toContain('id="tugas-lapor"');
   });
 
+  it("shows the number cards Klarifikasi kehadiran and Penilaian kebersihan, which jump to their sections and count toward the all-clear", () => {
+    const html = screenOf({
+      ...NOTHING,
+      clarifications: { items: [], total: 2 },
+    });
+
+    expect(html).toMatch(
+      /<a href="#tugas-klar" class="_numberOn_\w+"><span class="_amount_\w+">2<\/span><span>Klarifikasi kehadiran<\/span><\/a>/,
+    );
+    expect(html).toMatch(
+      /<a href="#tugas-bersih" class="_number_\w+"><span class="_amount_\w+">0<\/span><span>Penilaian kebersihan<\/span><\/a>/,
+    );
+    expect(html).toContain('id="tugas-klar"');
+    expect(html).toContain('id="tugas-bersih"');
+    expect(html).not.toContain("Semua tugas sudah beres.");
+    expect(
+      screenOf({ ...NOTHING, cleaning: { items: [], total: 1 } }),
+    ).not.toContain("Semua tugas sudah beres.");
+  });
+
+  it("names the four kinds of work in its intro", () => {
+    expect(screenOf(NOTHING)).toContain(
+      "persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, dan penilaian kebersihan.",
+    );
+  });
+
   it("says how many residents are out past their return time, with a link to Perizinan asrama", () => {
     const html = screenOf({ ...NOTHING, outLate: 2 });
 

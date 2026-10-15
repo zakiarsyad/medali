@@ -11,6 +11,7 @@ import type { FormState } from "@/ui/form-message";
 import { CLEANING_ADDRESS } from "./cleaning-address";
 import { judgeDuty } from "./judge-cleaning";
 import {
+  type Decided,
   type DecisionAnswer,
   keptDecision,
   refusedDecision,
@@ -47,7 +48,7 @@ async function cleaningValidator(): Promise<Account> {
  * asrama, Tugas saya, and the number beside Tugas saya in the menu of
  * every page change with a kept one.
  */
-function decisionAnswer(decided: Parsed<string>): DecisionAnswer {
+function decisionAnswer(decided: Decided<string>): DecisionAnswer {
   if (!decided.ok) return refusedDecision(decided);
   revalidatePath("/", "layout");
   return keptDecision(decided.value);

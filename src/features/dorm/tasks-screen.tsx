@@ -64,6 +64,20 @@ function numbersOf(tasks: DormTasks): TaskNumber[] {
       sectionId: RETURN_SECTION_ID,
     });
   }
+  if (tasks.clarifications) {
+    numbers.push({
+      label: "Klarifikasi kehadiran",
+      amount: tasks.clarifications.total,
+      sectionId: CLARIFICATION_SECTION_ID,
+    });
+  }
+  if (tasks.cleaning) {
+    numbers.push({
+      label: "Penilaian kebersihan",
+      amount: tasks.cleaning.total,
+      sectionId: CLEANING_SECTION_ID,
+    });
+  }
   return numbers;
 }
 
@@ -141,8 +155,8 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
     <>
       <PageHead title="Tugas saya">
         Semua hal yang menunggu tindakan Pengelola Asrama dalam satu halaman:
-        persetujuan izin dan validasi laporan kembali. Selesaikan langsung di
-        sini tanpa berpindah menu.
+        persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, dan
+        penilaian kebersihan. Selesaikan langsung di sini tanpa berpindah menu.
       </PageHead>
       {waitingIn(tasks) === 0 && <AllClear />}
       <TaskNumbers numbers={numbersOf(tasks)} />

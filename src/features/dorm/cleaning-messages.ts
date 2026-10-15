@@ -5,6 +5,7 @@ import {
   PLACE_NAME_MIN_LENGTH,
   SEND_BACK_MIN_LETTERS,
 } from "./cleaning-ids";
+import type { StaleRefusal } from "./leave-messages";
 
 /*
  * What Pembersihan asrama answers. Read by the screen parts in the
@@ -149,16 +150,23 @@ export const VALIDATE_NOT_ALLOWED = {
   error: "Anda tidak berhak memvalidasi penilaian pembersihan asrama.",
 } as const;
 
-export const NOT_JUDGED_YET = {
+/**
+ * Said of a duty that is no longer Dinilai BAM, as when it was sent back
+ * first: the list it was pressed on is out of date.
+ */
+export const NOT_JUDGED_YET: StaleRefusal = {
   ok: false,
   error: "Tugas ini belum dinilai BAM. Muat ulang halaman.",
-} as const;
+  stale: true,
+};
 
-export const DECIDED_FIRST = {
+/** Said of a duty validated first: the list it was pressed on is out of date. */
+export const DECIDED_FIRST: StaleRefusal = {
   ok: false,
   error:
     "Penilaian ini sudah diputuskan oleh petugas lain. Muat ulang halaman.",
-} as const;
+  stale: true,
+};
 
 export const SEND_BACK_REASON_NEEDED = {
   ok: false,

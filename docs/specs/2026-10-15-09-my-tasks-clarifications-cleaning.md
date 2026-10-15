@@ -113,6 +113,20 @@ effect as on their Asrama tabs.
    row with "Tulis alasan penolakan minimal 5 huruf.".
 8. When more than 20 wait, "Lihat semua di Pembersihan asrama" opens
    that tab, whose "Menunggu validasi" counts all of them.
+9. The two number cards come after the two there are, named as in the
+   prototype, and stand out the same way when above 0. The intro now
+   names the four kinds of work this page brings: "persetujuan izin,
+   validasi laporan kembali, klarifikasi kehadiran, dan penilaian
+   kebersihan."
+10. A press on an item decided elsewhere first is refused, and Tugas
+    saya says "Sudah diproses. Daftar diperbarui." above the list of its
+    section and reads the page again, as for leave. This counts a
+    clarification closed because BAM withdrew the absence, and an
+    assessment already sent back to BAM. The Asrama tabs keep their own
+    longer messages.
+11. The number beside Tugas saya is worked out again right after each
+    decision this account makes, on Tugas saya, on Klarifikasi
+    kehadiran or on Pembersihan asrama.
 
 ## Steps
 
@@ -122,5 +136,5 @@ effect as on their Asrama tabs.
   three decisions.
 - [x] 3. The section "Penilaian kebersihan menunggu validasi" with
   Validasi and Tolak.
-- [ ] 4. The two number cards; stale and double decisions are refused.
+- [x] 4. The two number cards; stale and double decisions are refused.
 - [ ] 5. Phone layout for both sections.

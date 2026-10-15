@@ -29,6 +29,7 @@ const DECIDED_FIRST = {
   ok: false,
   error:
     "Penilaian ini sudah diputuskan oleh petugas lain. Muat ulang halaman.",
+  stale: true,
 };
 
 async function judgedDuty(room: string, result: "met" | "not_met") {
@@ -106,6 +107,7 @@ describe("two decisions on one cleaning duty at the same moment", () => {
     expect(both.later).toEqual({
       ok: false,
       error: "Tugas ini belum dinilai BAM. Muat ulang halaman.",
+      stale: true,
     });
     expect((await dutyById(own.db, duty.id)).status).toBe("scheduled");
     expect(await repeatsOfDuty(own.db, duty.id)).toEqual([]);

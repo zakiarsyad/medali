@@ -6,7 +6,6 @@ import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { dormCleaningChanges, dormCleaningDuties } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
-import type { Parsed } from "@/parsed";
 import { dayWords } from "./activity-words";
 import { parseSendBackReason } from "./cleaning-assessment";
 import { lockPlace } from "./cleaning-duties";
@@ -21,6 +20,7 @@ import {
   validatedNotMet,
 } from "./cleaning-messages";
 import { scheduleRepeat } from "./cleaning-repeat";
+import type { Decided, StaleRefusal } from "./leave-messages";
 import { lockRoom } from "./room-lock";
 
 type Validator = Pick<Account, "id" | "roles">;
@@ -32,7 +32,7 @@ type Validator = Pick<Account, "id" | "roles">;
 async function whyNotDecided(
   tx: Database,
   dutyId: string,
-): Promise<{ ok: false; error: string }> {
+): Promise<{ ok: false; error: string } | StaleRefusal> {
   const [kept] = await tx
     .select({ status: dormCleaningDuties.status })
     .from(dormCleaningDuties)
@@ -67,7 +67,7 @@ async function validateIn(
   validator: Validator,
   dutyId: string,
   today: string,
-): Promise<Parsed<string>> {
+): Promise<Decided<string>> {
   await lockPlaceAndRoomOf(tx, dutyId);
   const [duty] = await tx
     .update(dormCleaningDuties)
@@ -111,7 +111,7 @@ export async function validateDuty(
   validator: Validator,
   dutyId: string,
   today = campusDay(),
-): Promise<Parsed<string>> {
+): Promise<Decided<string>> {
   if (!may(validator.roles, "validate_dorm_cleaning")) {
     return VALIDATE_NOT_ALLOWED;
   }
@@ -137,7 +137,7 @@ async function sendBackIn(
   validator: Validator,
   dutyId: string,
   reason: string,
-): Promise<Parsed<string>> {
+): Promise<Decided<string>> {
   const result = await lockJudged(tx, dutyId);
   if (!result) return whyNotDecided(tx, dutyId);
   const [sent] = await tx
@@ -178,7 +178,7 @@ export async function sendBackDuty(
   validator: Validator,
   dutyId: string,
   reason: unknown,
-): Promise<Parsed<string>> {
+): Promise<Decided<string>> {
   if (!may(validator.roles, "validate_dorm_cleaning")) {
     return VALIDATE_NOT_ALLOWED;
   }
