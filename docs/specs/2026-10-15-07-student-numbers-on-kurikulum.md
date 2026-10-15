@@ -69,9 +69,22 @@ five; the scores cover only the students each may see.
 3. Each student's semester is read from "Academic period"; this spec has
    no rule of its own for it.
 
+## Decisions made while building
+
+The issue did not say, so these were decided:
+
+4. A tahap box counts the active students of every program whose
+   semester, worked out from their angkatan and the running academic
+   period, falls in that tahap. Students on Cuti, Non aktif or removed
+   do not count. While no period runs yet, no student has a semester:
+   every tahap shows "0 mahasiswa aktif".
+5. The number sits under the description of the tahap, as in the
+   prototype, written with a dot for thousands, such as "1.250
+   mahasiswa aktif".
+
 ## Steps
 
-- [ ] 1. The count of active students per tahap shows in the tahap
+- [x] 1. The count of active students per tahap shows in the tahap
   boxes.
 - [ ] 2. Target peserta of a PPKS activity defaults to the semester's
   count.

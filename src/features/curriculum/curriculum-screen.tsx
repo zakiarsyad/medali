@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { database } from "@/db/database";
 import { PageHead } from "@/ui/page-head";
 import { BaseScorePanel } from "./base-score-panel";
@@ -8,6 +9,8 @@ import { readBaseScore, STARTING_BASE_SCORE } from "./stored-base-score";
 import { readMainIndicators } from "./stored-main-indicators";
 import { readPpksActivities } from "./stored-ppks-activities";
 import { readStageBreakdowns } from "./stored-stage-breakdowns";
+import { readCohortCounts } from "./stored-student-numbers";
+import { semesterCounts } from "./student-numbers";
 import { TahapPanels } from "./tahap-panels";
 
 export async function CurriculumScreen({
@@ -18,12 +21,15 @@ export async function CurriculumScreen({
   mayManageActivities: boolean;
 }) {
   const db = database();
-  const [indicators, baseScore, activities, breakdowns] = await Promise.all([
-    readMainIndicators(db),
-    readBaseScore(db),
-    readPpksActivities(db),
-    readStageBreakdowns(db),
-  ]);
+  const [indicators, baseScore, activities, breakdowns, period, cohorts] =
+    await Promise.all([
+      readMainIndicators(db),
+      readBaseScore(db),
+      readPpksActivities(db),
+      readStageBreakdowns(db),
+      readRunningPeriod(db),
+      readCohortCounts(db),
+    ]);
   return (
     <>
       <PageHead title="Kurikulum pembangunan karakter">
@@ -47,6 +53,7 @@ export async function CurriculumScreen({
         }))}
         mayManageActivities={mayManageActivities}
         newActivityId={randomUUID()}
+        semesterCounts={semesterCounts(cohorts, period)}
       >
         <BaseScorePanel
           score={baseScore.score}

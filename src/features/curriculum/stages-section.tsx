@@ -9,6 +9,7 @@ import type { PpksActivity } from "./ppks-activities";
 import { type FormTarget, PpksPanel } from "./ppks-panel";
 import type { TahapBreakdown } from "./stage-breakdown";
 import { type Parity, semesterOf, TAHAP } from "./stages";
+import { type SemesterCounts, tahapCount } from "./student-numbers";
 
 const PARITIES: { parity: Parity; label: string; short: string }[] = [
   { parity: "odd", label: "Semester ganjil", short: "ganjil" },
@@ -48,6 +49,7 @@ export function StagesSection({
   mayChange,
   mayManage,
   newActivityId,
+  semesterCounts,
 }: {
   /** The chosen tahap, from 1 to 4. */
   tahapNo: number;
@@ -61,6 +63,8 @@ export function StagesSection({
   mayManage: boolean;
   /** The key for the next activity a form adds. */
   newActivityId: string;
+  /** The active students of every program in each semester. */
+  semesterCounts: SemesterCounts;
 }) {
   const [parity, setParity] = useState<Parity>("odd");
   const semester = semesterOf(tahapNo, parity);
@@ -138,6 +142,10 @@ export function StagesSection({
             </span>
             <span className={styles.stageName}>{tahap.name}</span>
             <span className={styles.stageText}>{tahap.description}</span>
+            <span className={styles.stageCount}>
+              {tahapCount(semesterCounts, tahap.no).toLocaleString("id-ID")}{" "}
+              mahasiswa aktif
+            </span>
           </button>
         ))}
       </div>
