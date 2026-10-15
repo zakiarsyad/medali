@@ -1,7 +1,6 @@
 import { and, asc, count, eq, isNull, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormCompanions, dormRooms, students } from "@/db/schema";
-import type { DormId } from "@/dorms/dorms";
 import type { CompanionDormId } from "./companion-dorms";
 import { UNPLACED_SHOWN } from "./room-limits";
 import type { PlacedResident, Resident } from "./room-list";
@@ -78,31 +77,6 @@ async function countCompanions(
     .innerJoin(students, eq(students.id, dormCompanions.studentId))
     .where(inScope(scope));
   return counted ?? { active: 0, placed: 0 };
-}
-
-/** A room with its dorm, as a message names where a student is placed. */
-export interface RoomInDorm {
-  dorm: DormId;
-  floor: number;
-  number: string;
-}
-
-/** The room a student is placed in as kakak pendamping, or null without one. */
-export async function readCompanionRoom(
-  db: Database,
-  studentId: string,
-): Promise<RoomInDorm | null> {
-  const [room] = await db
-    .select({
-      dorm: dormRooms.dorm,
-      floor: dormRooms.floor,
-      number: dormRooms.number,
-    })
-    .from(dormCompanions)
-    .innerJoin(dormRooms, eq(dormRooms.id, dormCompanions.roomId))
-    .where(eq(dormCompanions.studentId, studentId))
-    .limit(1);
-  return room ?? null;
 }
 
 /** Reads the kakak pendamping of a dorm for the floor that is open. */

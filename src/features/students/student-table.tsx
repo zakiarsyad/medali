@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DORM_NAMES } from "@/dorms/dorms";
+import { ownRoomWords } from "@/dorms/student-room";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
@@ -50,8 +51,10 @@ function InputSource({ student }: { student: AddedStudent }) {
   );
 }
 
-function Dorm({ dorm }: { dorm: AddedStudent["dorm"] }) {
+function Dorm({ student }: { student: AddedStudent }) {
+  const { dorm, companionRoom } = student;
   if (dorm === null) return <span className={shared.detail}>Non asrama</span>;
+  if (companionRoom) return ownRoomWords(companionRoom);
   return DORM_NAMES[dorm];
 }
 
@@ -101,7 +104,7 @@ function StudentRow({
       </td>
       <td data-title="Angkatan">{student.cohortYear}</td>
       <td data-title="Asrama">
-        <Dorm dorm={student.dorm} />
+        <Dorm student={student} />
       </td>
       <td data-title="Kelompok pengasuhan">
         <MentorGroup group={student.group} />
