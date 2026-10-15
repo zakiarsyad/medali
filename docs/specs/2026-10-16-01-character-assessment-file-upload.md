@@ -72,7 +72,7 @@ Kepala Unit and Penilai Mahasiswa.
 - [x] 2. "Unggah berkas" shows with the note, "Sumber asesmen" and "Unduh
   templat CSV".
 - [x] 3. Picking a file shows the preview.
-- [ ] 4. "Simpan (n) baris" saves the rows as the newest assessments.
+- [x] 4. "Simpan (n) baris" saves the rows as the newest assessments.
 
 ## Decisions made while building
 
@@ -92,3 +92,24 @@ Kepala Unit and Penilai Mahasiswa.
   second never shows.
 - The NIM ganda count only rows that would have been ready: a row of the
   same NIM that is skipped is listed with its reason instead.
+- Each row of a file is kept as an assessment of its own, like one from
+  the form, so it is its own line in the log that cannot be changed or
+  deleted. Every row is tied to its upload, which keeps the file's name
+  and a fingerprint of its content, never the file itself; an upload
+  cannot be changed or deleted either.
+- A row from a file has no "Catatan penilai".
+- Hasil asesmen karakter and the earlier assessments of a student show
+  the file beside the source, as "Instrumen asesmen MEDALI · Unggah
+  (file name)".
+- "Simpan" pressed twice for the same picked file is answered as the
+  first press. The same key sent with another file, another "Sumber
+  asesmen", or by another account is refused and saves nothing.
+- At "Simpan" the server reads the file again: a row whose student
+  stopped being Aktif since the preview is skipped then, and the message
+  counts only the rows saved.
+- The same file may be saved again later without a warning, unlike in
+  the SIKU upload: its rows simply become the newest assessments again,
+  as a second form would.
+- The rows of a file are saved in the academic period that runs on the
+  day of saving, and nothing is saved while no period runs, as with the
+  form.

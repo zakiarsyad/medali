@@ -2,7 +2,11 @@ import { eq, inArray } from "drizzle-orm";
 import type { Scores } from "@/character-scores/assessment-score";
 import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
-import { accounts, type characterAssessments } from "@/db/schema";
+import {
+  accounts,
+  type characterAssessments,
+  characterAssessmentUploads,
+} from "@/db/schema";
 import type { AssessmentSource } from "./assessment-ids";
 
 type StoredScores = Pick<
@@ -26,6 +30,8 @@ export function scoresOf(row: StoredScores): Scores {
 export interface LatestAssessment {
   enteredAt: Date;
   source: AssessmentSource;
+  /** The name of the file it was uploaded in, or null for the form. */
+  fileName: string | null;
   /** The name of the account that entered it. */
   enteredBy: string;
   scores: Scores;
@@ -44,6 +50,7 @@ export async function readLatestOf(
       studentId: latest.studentId,
       enteredAt: latest.enteredAt,
       source: latest.source,
+      fileName: characterAssessmentUploads.fileName,
       enteredBy: accounts.name,
       scoreM: latest.scoreM,
       scoreE: latest.scoreE,
@@ -54,12 +61,17 @@ export async function readLatestOf(
     })
     .from(latest)
     .innerJoin(accounts, eq(accounts.id, latest.enteredBy))
+    .leftJoin(
+      characterAssessmentUploads,
+      eq(characterAssessmentUploads.id, latest.uploadId),
+    )
     .where(inArray(latest.studentId, studentIds));
   for (const row of rows) {
-    const { studentId, enteredAt, source, enteredBy } = row;
+    const { studentId, enteredAt, source, fileName, enteredBy } = row;
     found.set(studentId, {
       enteredAt,
       source,
+      fileName,
       enteredBy,
       scores: scoresOf(row),
     });

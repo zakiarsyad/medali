@@ -18,6 +18,7 @@ import {
   searchAssessmentStudents,
 } from "./assessment-picks";
 import { saveAssessment, savedMessage } from "./save-assessment";
+import { saveAssessmentFile, savedFileMessage } from "./save-assessment-file";
 
 /**
  * The signed-in account when it has the right Asesmen karakter. Any
@@ -61,6 +62,29 @@ export async function previewAssessmentFileAction(
   const file = await sentCsvFile(form);
   if (!file.ok) return file;
   return previewAssessmentFile(database(), actor, file.value);
+}
+
+/**
+ * "Simpan (n) baris": the file is read and checked again by the server.
+ * `id` is the key the screen made for the file; `source` is the
+ * "Sumber asesmen" picked for the whole file.
+ */
+export async function saveAssessmentFileAction(
+  form: FormData,
+): Promise<Parsed<string>> {
+  const actor = await assessor();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  const saved = await saveAssessmentFile(
+    database(),
+    actor,
+    text(form, "id"),
+    text(form, "source"),
+    file.value,
+  );
+  if (!saved.ok) return saved;
+  revalidatePath(ASSESSMENT_ADDRESS);
+  return { ok: true, value: savedFileMessage(saved.value) };
 }
 
 /** The Aktif students the form offers for what was typed. */

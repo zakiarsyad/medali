@@ -5,7 +5,10 @@ import { checkFileShape, MAX_FILE_ROWS } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
 import { FileDrop } from "@/ui/file-drop";
 import styles from "@/ui/file-upload.module.css";
-import { previewAssessmentFileAction } from "./assessment-actions";
+import {
+  previewAssessmentFileAction,
+  saveAssessmentFileAction,
+} from "./assessment-actions";
 import {
   ASSESSMENT_FILE_COLUMNS,
   ASSESSMENT_FILE_NOTE,
@@ -21,6 +24,8 @@ const TEMPLATE_LINK = `data:text/csv;charset=utf-8,${encodeURIComponent(assessme
 
 /** A picked file with what the server says it would do. */
 interface Checked {
+  /** The key made for the file, so a second press saves it once. */
+  id: string;
   file: File;
   preview: AssessmentFilePreview;
 }
@@ -71,20 +76,60 @@ function SourcePick({
   );
 }
 
+/** "Simpan (n) baris" and "Batal". */
+function SaveButtons({
+  ready,
+  saving,
+  onSave,
+  onCancel,
+}: {
+  ready: number;
+  saving: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        className={shared.button}
+        disabled={saving}
+        onClick={onSave}
+      >
+        {saving
+          ? "Menyimpan…"
+          : `Simpan ${ready.toLocaleString("id-ID")} baris`}
+      </button>
+      <button
+        type="button"
+        className={shared.quiet}
+        disabled={saving}
+        onClick={onCancel}
+      >
+        Batal
+      </button>
+    </>
+  );
+}
+
 /**
  * "Unggah berkas" of "Input capaian MEDALI": what the columns take, the
  * source of the whole file, the template, and the place to pick or drop
  * a file. A picked file is checked by the server and shown before
- * anything is saved.
+ * anything is saved; "Simpan" sends it again, with the key made for it,
+ * so a second press saves it once.
  */
 export function AssessmentUpload() {
   const [source, setSource] = useState<string>(ASSESSMENT_SOURCES[0]);
   const [checked, setChecked] = useState<Checked | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
   const [reading, startReading] = useTransition();
+  const [saving, startSaving] = useTransition();
 
   function refuse(message: string) {
     setChecked(null);
+    setDone(null);
     setError(message);
   }
 
@@ -95,10 +140,25 @@ export function AssessmentUpload() {
       const preview = await previewAssessmentFileAction(formWith(file));
       if (!preview.ok) return refuse(preview.error);
       setError(null);
-      setChecked({ file, preview: preview.value });
+      setDone(null);
+      setChecked({ id: crypto.randomUUID(), file, preview: preview.value });
     });
   }
 
+  function save(sent: Checked) {
+    const form = formWith(sent.file);
+    form.set("id", sent.id);
+    form.set("source", source);
+    startSaving(async () => {
+      const saved = await saveAssessmentFileAction(form);
+      if (!saved.ok) return refuse(saved.error);
+      setChecked(null);
+      setError(null);
+      setDone(saved.value);
+    });
+  }
+
+  const busy = reading || saving;
   return (
     <>
       <ColumnNotes />
@@ -112,7 +172,7 @@ export function AssessmentUpload() {
           Unduh templat CSV
         </a>
       </div>
-      <FileDrop disabled={reading} onPick={pick} />
+      <FileDrop disabled={busy} onPick={pick} />
       {reading && (
         <p className={shared.detail} role="status">
           Membaca berkas…
@@ -123,18 +183,22 @@ export function AssessmentUpload() {
           {error}
         </p>
       )}
+      {done && !reading && (
+        <p className={styles.fileResult} role="status">
+          {done}
+        </p>
+      )}
       {checked && !reading && (
         <AssessmentFilePreviewView
           name={checked.file.name}
           preview={checked.preview}
         >
-          <button
-            type="button"
-            className={shared.quiet}
-            onClick={() => setChecked(null)}
-          >
-            Batal
-          </button>
+          <SaveButtons
+            ready={checked.preview.ready}
+            saving={saving}
+            onSave={() => save(checked)}
+            onCancel={() => setChecked(null)}
+          />
         </AssessmentFilePreviewView>
       )}
     </>

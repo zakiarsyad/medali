@@ -26,6 +26,7 @@ export function latestAssessments(db: Database) {
       periodId: characterAssessments.periodId,
       enteredBy: characterAssessments.enteredBy,
       enteredAt: characterAssessments.enteredAt,
+      uploadId: characterAssessments.uploadId,
     })
     .from(characterAssessments)
     .orderBy(

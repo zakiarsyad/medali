@@ -21,6 +21,7 @@ const ROWS: AssessmentListRow[] = [
     latest: {
       enteredAt: new Date("2026-10-12T03:00:00Z"),
       source: "medali_instrument",
+      fileName: "asesmen-oktober.csv",
       enteredBy: "Penilai Contoh",
       scores: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
     },
@@ -47,9 +48,11 @@ describe("Hasil asesmen karakter", () => {
     <AssessmentListTable rows={ROWS} params={START_PARAMS} />,
   );
 
-  it("shows Tanggal, Sumber with who entered it, the six scores, Rerata and Predikat", () => {
+  it("shows Tanggal, Sumber with the uploaded file and who entered it, the six scores, Rerata and Predikat", () => {
     expect(html).toContain('<td data-title="Tanggal">12 Okt 2026</td>');
-    expect(html).toContain("Instrumen asesmen MEDALI");
+    expect(html).toContain(
+      "Instrumen asesmen MEDALI · Unggah asesmen-oktober.csv",
+    );
     expect(html).toContain("Penilai Contoh");
     expect(html).toContain('<td data-title="Mandiri">80</td>');
     expect(html).toContain('<td data-title="Integritas">86</td>');
@@ -119,6 +122,7 @@ describe("the earlier assessments of a student", () => {
         enteredAt: new Date("2026-10-12T03:00:00Z"),
         period: { startYear: 2026, term: "odd" },
         source: "medali_instrument",
+        fileName: "asesmen-oktober.csv",
         enteredBy: "Penilai Contoh",
         scores: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
         note: "Catatan rahasia penilai.",
@@ -128,6 +132,7 @@ describe("the earlier assessments of a student", () => {
         enteredAt: new Date("2026-03-02T03:00:00Z"),
         period: { startYear: 2025, term: "even" },
         source: "self_assessment",
+        fileName: null,
         enteredBy: "Kepala Contoh",
         scores: { M: 60, E: 62, D: 58, A: 64, L: 60, I: 62 },
         note: "",
@@ -150,6 +155,10 @@ describe("the earlier assessments of a student", () => {
     expect(html).toContain("Ganjil 2026/2027");
     expect(html).toContain("Genap 2025/2026");
     expect(html).toContain("Kepala Contoh");
+    expect(html).toContain(
+      "Instrumen asesmen MEDALI · Unggah asesmen-oktober.csv",
+    );
+    expect(html).toContain(">Penilaian diri</span>");
     expect(html).toContain("Perlu pembinaan");
     expect(html).toContain("Catatan rahasia penilai.");
     expect(html).toMatch(/<table class="[^"]*stacked/);
