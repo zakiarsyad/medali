@@ -1,9 +1,11 @@
 import { forbidden } from "next/navigation";
 import { may, rowLimitForAction } from "@/auth/access";
+import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { ActivitiesScreen } from "@/features/dorm/activities-screen";
+import { activitiesScreensOf } from "@/features/dorm/activities-screens";
 import { readOwnWarning } from "@/features/dorm/own-warning";
 import { ActivitiesWarning } from "@/features/dorm/own-warning-view";
 import { readResidentActivities } from "@/features/dorm/resident-activities";
@@ -14,12 +16,38 @@ import { PageHead } from "@/ui/page-head";
 import { TabLinks } from "@/ui/tab-links";
 
 /**
+ * The resident part: today's and the next activities of the student's
+ * group, and their own attendance, with a warning when a clarification
+ * of theirs was rejected or they have an SP. Null for an account whose
+ * roles give no resident part, or whose student lives in no dorm today.
+ */
+async function residentPartOf(account: Account, moment: Date) {
+  if (!activitiesScreensOf(account.roles).own) return null;
+  const answer = await readResidentActivities(database(), account, moment);
+  if (answer.kind === "refused") return null;
+  const [own, warning] = await Promise.all([
+    may(account.roles, "view_own_dorm_attendance")
+      ? readOwnAttendance(database(), account, moment)
+      : null,
+    readOwnWarning(database(), account, moment),
+  ]);
+  return (
+    <>
+      {warning !== null && <ActivitiesWarning warning={warning} />}
+      <ResidentActivitiesView
+        activities={answer.activities}
+        attendance={own?.kind === "shown" ? own.attendance : null}
+      />
+    </>
+  );
+}
+
+/**
  * The tab Kegiatan asrama. Staff see the schedule; the Peserta are
  * counted among the students the account sees through the roles that may
  * see it: for Ketua Program Studi their own students only. A student who
- * lives in the dorm sees today's and the next activities of their group,
- * and their own attendance, with a warning when a clarification of
- * theirs was rejected or they have an SP.
+ * lives in the dorm sees the resident part. A resident who is also staff
+ * sees the resident part above the staff screen.
  */
 export default async function DormActivitiesPage(
   props: PageProps<"/asrama/kegiatan">,
@@ -27,7 +55,8 @@ export default async function DormActivitiesPage(
   const opened = await openPage("asrama", "kegiatan");
   const { account } = opened;
   const tabs = { pagePath: "asrama", tabs: opened.tabs, open: "kegiatan" };
-  if (may(account.roles, "view_dorm_activities")) {
+  const residentPart = await residentPartOf(account, new Date());
+  if (activitiesScreensOf(account.roles).staff) {
     return (
       <ActivitiesScreen
         tabs={tabs}
@@ -40,29 +69,18 @@ export default async function DormActivitiesPage(
             ? visibleTo(rowLimitForAction(account, "view_dorm_attendance"))
             : null
         }
+        ownPart={residentPart}
       />
     );
   }
-  const moment = new Date();
-  const answer = await readResidentActivities(database(), account, moment);
-  if (answer.kind === "refused") forbidden();
-  const [own, warning] = await Promise.all([
-    may(account.roles, "view_own_dorm_attendance")
-      ? readOwnAttendance(database(), account, moment)
-      : null,
-    readOwnWarning(database(), account, moment),
-  ]);
+  if (residentPart === null) forbidden();
   return (
     <>
       <PageHead title="Kegiatan asrama">
         {await residentHeader(account.studentId)}
       </PageHead>
       <TabLinks {...tabs} />
-      {warning !== null && <ActivitiesWarning warning={warning} />}
-      <ResidentActivitiesView
-        activities={answer.activities}
-        attendance={own?.kind === "shown" ? own.attendance : null}
-      />
+      {residentPart}
     </>
   );
 }

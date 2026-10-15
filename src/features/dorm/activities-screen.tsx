@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { SQL } from "drizzle-orm";
+import type { ReactNode } from "react";
 import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
 import { database } from "@/db/database";
@@ -14,7 +15,8 @@ import { ActivityBoard } from "./activity-board";
 /**
  * Kegiatan asrama for staff: Jadwal harian, Kegiatan rutin and Kegiatan
  * non rutin. `visible` is the students the account may see: the Peserta
- * are counted among them.
+ * are counted among them. `ownPart` is the resident part of an account
+ * that also lives in the dorm, shown above the schedule.
  */
 export async function ActivitiesScreen({
   tabs,
@@ -23,6 +25,7 @@ export async function ActivitiesScreen({
   mayManage,
   mayCount,
   attendanceVisible,
+  ownPart,
 }: {
   tabs: TabLinksProps;
   searchParams: SearchParams;
@@ -33,6 +36,8 @@ export async function ActivitiesScreen({
   mayCount: boolean;
   /** The students whose attendance it may see; null for none. */
   attendanceVisible: SQL | null;
+  /** The account's own resident part; null when it has none. */
+  ownPart: ReactNode;
 }) {
   // The server's clock in campus time, so every browser sees one state.
   const moment = new Date();
@@ -50,6 +55,7 @@ export async function ActivitiesScreen({
         Jadwal kegiatan rutin dan non rutin para penghuni asrama.
       </PageHead>
       <TabLinks {...tabs} />
+      {ownPart}
       {!mayManage && (
         <p className={styles.note}>
           Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
