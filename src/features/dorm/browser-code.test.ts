@@ -3,44 +3,22 @@ import { browserFilesIn, databaseCodeReachedFrom } from "@/ui/browser-code";
 
 const FOLDER = "src/features/dorm";
 
-/** The screen parts of Kegiatan asrama that run in the browser. */
-const ACTIVITY_PARTS = [
-  `${FOLDER}/activity-board.tsx`,
-  `${FOLDER}/activity-form.tsx`,
-  `${FOLDER}/count-form.tsx`,
-];
+const browserFiles = browserFilesIn(FOLDER);
 
-describe("the screen parts of Kegiatan asrama that run in the browser", () => {
-  it("are found: the board and the form", () => {
-    const browserFiles = browserFilesIn(FOLDER);
-
-    for (const path of ACTIVITY_PARTS) expect(browserFiles).toContain(path);
+describe("the screen parts of the Asrama menu that run in the browser", () => {
+  it.each([
+    `${FOLDER}/activity-form.tsx`,
+    `${FOLDER}/clarification-form.tsx`,
+    `${FOLDER}/name-companion-form.tsx`,
+    `${FOLDER}/own-leave-view.tsx`,
+    `${FOLDER}/return-camera.tsx`,
+  ])("are found, such as %s", (path) => {
+    expect(browserFiles).toContain(path);
   });
 
-  it.each(ACTIVITY_PARTS)("%s takes no database code along", (path) => {
+  it.each(browserFiles)("%s takes no database code along", (path) => {
     expect(databaseCodeReachedFrom(path)).toEqual([]);
   });
-
-  it.each([`${FOLDER}/own-leave-view.tsx`, `${FOLDER}/return-camera.tsx`])(
-    "%s, of Perizinan asrama, takes no database code along",
-    (path) => {
-      expect(browserFilesIn(FOLDER)).toContain(path);
-      expect(databaseCodeReachedFrom(path)).toEqual([]);
-    },
-  );
-
-  it.each([
-    `${FOLDER}/history-table.tsx`,
-    `${FOLDER}/clarification-form.tsx`,
-    `${FOLDER}/clarification-cards.tsx`,
-    `${FOLDER}/clarification-filters.tsx`,
-  ])(
-    "%s, of a clarification of an absence, takes no database code along",
-    (path) => {
-      expect(browserFilesIn(FOLDER)).toContain(path);
-      expect(databaseCodeReachedFrom(path)).toEqual([]);
-    },
-  );
 
   it("finds database code that is taken by way of another file", () => {
     expect(

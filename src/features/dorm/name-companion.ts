@@ -11,7 +11,6 @@ import {
   COMPANION_DORM_IDS,
   type CompanionDormId,
   companionDormOf,
-  livesWithCompanions,
 } from "./companion-dorms";
 import { NOTE_MAX_LENGTH } from "./companion-limits";
 import {
@@ -19,6 +18,7 @@ import {
   COMPANIONS_NOT_ALLOWED,
   NO_PERIOD_TO_NAME,
 } from "./companion-messages";
+import { livesWithCompanions } from "./lives-with-companions";
 
 /** A kakak pendamping as the form sends it. */
 export interface SentCompanion {
