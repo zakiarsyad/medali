@@ -6,9 +6,12 @@ import { ORGANISER_NAMES } from "./activity-words";
 import board from "./dashboard.module.css";
 import type { CountedAttendance } from "./dashboard-lines";
 import type { Attendance } from "./dashboard-tally";
-import { type BarFill, rateBar } from "./dashboard-words";
-
-export const NO_ANNOUNCED = "Belum ada kegiatan yang diumumkan.";
+import {
+  type ActivitiesCounted,
+  type BarFill,
+  noActivityWords,
+  rateBar,
+} from "./dashboard-words";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
@@ -83,18 +86,19 @@ export function AttendanceBars({
   byOrganiser,
   byDorm,
   residents,
-  activities,
+  overall,
 }: {
   byOrganiser: Record<Organiser, CountedAttendance>;
   byDorm: Record<DormId, Attendance>;
   residents: ResidentsByDorm;
-  /** How many announced activities are counted in all. */
-  activities: number;
+  /** How many activities are counted and announced in all. */
+  overall: ActivitiesCounted;
 }) {
+  const none = noActivityWords(overall);
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Kehadiran per penanggung jawab</h2>
-      {activities === 0 && <p className={board.none}>{NO_ANNOUNCED}</p>}
+      {none !== null && <p className={board.none}>{none}.</p>}
       <Bars
         bars={ORGANISERS.map((organiser) =>
           organiserBar(organiser, byOrganiser[organiser]),

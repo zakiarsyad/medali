@@ -86,6 +86,8 @@ export interface OutResident {
 export interface OutList {
   residents: OutResident[];
   hasMore: boolean;
+  /** How many of the students `visible` holds are out, the list's or not. */
+  total: number;
 }
 
 /**
@@ -101,7 +103,8 @@ export async function readOutList(
   dormCohorts: number[],
 ): Promise<OutList> {
   const dorm = dormInSql(dormCohorts);
-  const rows = await db
+  const out = and(visible, outAt(now));
+  const readRows = db
     .select({
       leaveId: dormLeaves.id,
       name: students.name,
@@ -124,10 +127,11 @@ export async function readOutList(
         sql`${dormRooms.dorm} = ${dorm}`,
       ),
     )
-    .where(and(visible, outAt(now)))
+    .where(out)
     .orderBy(asc(dormLeaves.endsAt), asc(dormLeaves.id))
     // One more than is shown, to tell whether there are more.
     .limit(OUT_SHOWN + 1);
+  const [rows, total] = await Promise.all([readRows, countWhere(db, out)]);
   const residents = rows.slice(0, OUT_SHOWN).map((row) => ({
     leaveId: row.leaveId,
     name: row.name,
@@ -138,5 +142,5 @@ export async function readOutList(
     // Out now, so no report of their return waits.
     isLate: isLateReturn(row, null, now),
   }));
-  return { residents, hasMore: rows.length > OUT_SHOWN };
+  return { residents, hasMore: rows.length > OUT_SHOWN, total };
 }

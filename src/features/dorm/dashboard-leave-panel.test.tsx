@@ -5,6 +5,7 @@ import {
   LeavePanel,
   NO_MONTH_LEAVE,
   NOBODY_OUT,
+  ONLY_SEEN_NAMES,
 } from "./dashboard-leave-panel";
 
 const MONTH = { outing: 3, skip_activities: 1, special: 0 };
@@ -42,7 +43,7 @@ describe("LeavePanel", () => {
   });
 
   it("lists who is out with the kind, time due back, Tujuan, room and Terlambat, for an account with the right", () => {
-    const out = { residents: [ANI], hasMore: false };
+    const out = { residents: [ANI], hasMore: false, total: 1 };
     const shown = render({ byKind: MONTH, out, outCount: 1 });
 
     expect(shown).toContain("Ani Uji Dashboard");
@@ -54,7 +55,7 @@ describe("LeavePanel", () => {
   });
 
   it("leads to Perizinan asrama when more are out than the list shows", () => {
-    const out = { residents: [ANI], hasMore: true };
+    const out = { residents: [ANI], hasMore: true, total: 21 };
     const shown = render({ byKind: MONTH, out, outCount: 21 });
 
     expect(shown).toContain(
@@ -63,11 +64,42 @@ describe("LeavePanel", () => {
   });
 
   it("says Tidak ada. when nobody is out", () => {
-    const out = { residents: [], hasMore: false };
+    const out = { residents: [], hasMore: false, total: 0 };
 
     expect(render({ byKind: MONTH, out, outCount: 0 })).toContain(NOBODY_OUT);
     expect(render({ byKind: MONTH, out: null, outCount: 0 })).toContain(
       NOBODY_OUT,
+    );
+  });
+
+  it("says how many are out when none of them may be named to the account", () => {
+    const out = { residents: [], hasMore: false, total: 0 };
+    const shown = render({ byKind: MONTH, out, outCount: 5 });
+
+    expect(shown).toContain("5 penghuni sedang di luar asrama.");
+    expect(shown).not.toContain(NOBODY_OUT);
+  });
+
+  it("says the list names only those the account may see when it holds fewer than are out", () => {
+    const out = { residents: [ANI], hasMore: false, total: 1 };
+
+    expect(render({ byKind: MONTH, out, outCount: 5 })).toContain(
+      ONLY_SEEN_NAMES,
+    );
+    expect(render({ byKind: MONTH, out, outCount: 1 })).not.toContain(
+      ONLY_SEEN_NAMES,
+    );
+  });
+
+  it("says so also when the list leads to Perizinan asrama, by how many the account may see in all", () => {
+    const some = { residents: [ANI], hasMore: true, total: 25 };
+    const every = { ...some, total: 60 };
+
+    expect(render({ byKind: MONTH, out: some, outCount: 60 })).toContain(
+      ONLY_SEEN_NAMES,
+    );
+    expect(render({ byKind: MONTH, out: every, outCount: 60 })).not.toContain(
+      ONLY_SEEN_NAMES,
     );
   });
 

@@ -158,6 +158,7 @@ describe("loadDashboard", () => {
       expect(view.overall).toEqual({
         attendance: { present: 3, absent: 0, leave: 1 },
         activities: 1,
+        announced: 1,
       });
       expect(shown[records.activityId]).toMatchObject({
         present: 3,
@@ -214,6 +215,7 @@ describe("loadDashboard", () => {
       expect(after.overall).toEqual({
         attendance: { present: 2, absent: 2, leave: 0 },
         activities: 1,
+        announced: 1,
       });
       expect(after.leave.out).toBe(1);
     });
@@ -317,6 +319,7 @@ describe("loadDashboard", () => {
 
       expect(view.out).toEqual({
         hasMore: false,
+        total: 2,
         residents: [
           expect.objectContaining({
             name: "Penghuni Uji Dashboard 02",
@@ -357,6 +360,7 @@ describe("loadDashboard", () => {
       expect(view.leave.out).toBe(21);
       expect(view.out?.residents).toHaveLength(20);
       expect(view.out?.hasMore).toBe(true);
+      expect(view.out?.total).toBe(21);
     });
   });
 
@@ -419,6 +423,49 @@ describe("loadDashboard", () => {
       expect(view.out?.residents.map((each) => each.name)).toEqual([
         "Penghuni Uji Dashboard 01",
       ]);
+    });
+  });
+
+  it("counts every resident out but tells how many it names, for Ketua Program Studi with a role that sees everyone", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await db
+        .insert(dormLeaves)
+        .values([
+          leaveOf(records, records.ani, {}),
+          leaveOf(records, records.cici, {}),
+        ]);
+
+      const view = await loadDashboard(
+        db,
+        { visible: EVERYONE, namesVisible: OWN_PROGRAM(records) },
+        MOMENT,
+      );
+
+      expect(view.leave.out).toBe(2);
+      expect(view.out?.residents).toHaveLength(1);
+      expect(view.out?.total).toBe(1);
+    });
+  });
+
+  it("counts no activity for Ketua Program Studi when none of their students has a mark in the announced ones", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addTestCount(db, {
+        activityId: records.activityId,
+        day: YESTERDAY,
+        byId: records.counter.id,
+        marks: { [records.cici]: { isAbsent: false, note: "" } },
+      });
+      const own = OWN_PROGRAM(records);
+
+      const view = await loadDashboard(
+        db,
+        { visible: own, namesVisible: own },
+        MOMENT,
+      );
+
+      expect(view.overall).toMatchObject({ activities: 0, announced: 1 });
     });
   });
 });

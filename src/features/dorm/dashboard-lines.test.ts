@@ -176,6 +176,7 @@ describe("overallAttendance", () => {
     expect(overallAttendance(LINES, GROUPS, [])).toEqual({
       attendance: { present: 12, absent: 4, leave: 0 },
       activities: 2,
+      announced: 2,
     });
   });
 
@@ -183,6 +184,21 @@ describe("overallAttendance", () => {
     expect(overallAttendance([line({})], GROUPS, [])).toEqual({
       attendance: { present: 0, absent: 0, leave: 0 },
       activities: 0,
+      announced: 0,
+    });
+  });
+
+  it("counts only the activities with a mark of a student the account sees", () => {
+    const seen = GROUPS.filter((group) => group.countId === "c1");
+
+    expect(overallAttendance(LINES, seen, [])).toEqual({
+      attendance: { present: 9, absent: 1, leave: 0 },
+      activities: 1,
+      announced: 2,
+    });
+    expect(overallAttendance(LINES, [], [])).toMatchObject({
+      activities: 0,
+      announced: 2,
     });
   });
 });
@@ -190,12 +206,21 @@ describe("overallAttendance", () => {
 describe("attendanceByOrganiser", () => {
   it("adds up each penanggung jawab's announced activities that are over", () => {
     expect(attendanceByOrganiser(LINES, GROUPS, [])).toEqual({
-      upk: { attendance: { present: 0, absent: 0, leave: 0 }, activities: 0 },
+      upk: {
+        attendance: { present: 0, absent: 0, leave: 0 },
+        activities: 0,
+        announced: 0,
+      },
       coach: {
         attendance: { present: 9, absent: 1, leave: 0 },
         activities: 1,
+        announced: 1,
       },
-      bam: { attendance: { present: 3, absent: 3, leave: 0 }, activities: 1 },
+      bam: {
+        attendance: { present: 3, absent: 3, leave: 0 },
+        activities: 1,
+        announced: 1,
+      },
     });
   });
 });

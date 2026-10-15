@@ -61,7 +61,17 @@ describe("countBar", () => {
 
 describe("attendanceNote", () => {
   it("says how many activities were counted, leave left out, or that none is announced yet", () => {
-    expect(attendanceNote(14)).toBe("14 kegiatan, izin tidak dihitung");
-    expect(attendanceNote(0)).toBe("Belum ada kegiatan yang diumumkan");
+    expect(attendanceNote({ activities: 14, announced: 14 })).toBe(
+      "14 kegiatan, izin tidak dihitung",
+    );
+    expect(attendanceNote({ activities: 0, announced: 0 })).toBe(
+      "Belum ada kegiatan yang diumumkan",
+    );
+  });
+
+  it("says no activity had a student the account sees, when some are announced but none of them has one", () => {
+    expect(attendanceNote({ activities: 0, announced: 3 })).toBe(
+      "Belum ada kegiatan yang diikuti penghuni yang Anda lihat",
+    );
   });
 });

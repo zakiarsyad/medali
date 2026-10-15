@@ -135,6 +135,19 @@ Decided while building, because the issue did not say:
 17. With no announced activity that is over, "Kehadiran per penanggung
     jawab" says "Belum ada kegiatan yang diumumkan." above its bars,
     each of which shows "-".
+18. The activities counted in "(n) kegiatan" are only those with at
+    least one mark of a student the account sees, so Ketua Program Studi
+    counts only the activities of their study program. When announced
+    activities that are over exist but none has a mark of a student the
+    account sees, "Kehadiran 7 hari terakhir" and "Kehadiran per
+    penanggung jawab" say "Belum ada kegiatan yang diikuti penghuni yang
+    Anda lihat." instead of "Belum ada kegiatan yang diumumkan.", and the
+    bars still show "-". When the residents whose names the account may
+    see are fewer than the number out, as for an account with roles that
+    see different residents, the list says "Nama hanya ditampilkan untuk
+    penghuni yang boleh Anda lihat.", also when it leads to Perizinan
+    asrama; when it names nobody, it shows "(n) penghuni sedang di luar
+    asrama." instead of "Tidak ada.".
 
 ## Steps
 

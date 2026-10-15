@@ -37,7 +37,7 @@ function DashboardNumbers({ view }: { view: DashboardView }) {
       <NumberCard
         label="Kehadiran 7 hari terakhir"
         amount={rateWords(attendanceRate(present, present + absent))}
-        note={attendanceNote(overall.activities)}
+        note={attendanceNote(overall)}
       />
     </NumberCards>
   );
@@ -75,7 +75,7 @@ export function DashboardScreen({
           byOrganiser={view.byOrganiser}
           byDorm={view.byDorm}
           residents={view.residents}
-          activities={view.overall.activities}
+          overall={view.overall}
         />
         <LeavePanel
           byKind={view.monthLeave}

@@ -49,8 +49,26 @@ export function countBar(amount: number, total: number): BarFill {
   return { share: total === 0 ? 0 : amount / total, words: shown(amount) };
 }
 
+/** How many activities Kehadiran counts, and how many are announced and over. */
+export interface ActivitiesCounted {
+  activities: number;
+  announced: number;
+}
+
+/**
+ * Why Kehadiran counts no activity, or null when it counts some: none is
+ * announced, or none announced has a student the account sees.
+ */
+export function noActivityWords(counted: ActivitiesCounted): string | null {
+  if (counted.activities > 0) return null;
+  if (counted.announced === 0) return "Belum ada kegiatan yang diumumkan";
+  return "Belum ada kegiatan yang diikuti penghuni yang Anda lihat";
+}
+
 /** Under "Kehadiran 7 hari terakhir": how many activities it counts. */
-export function attendanceNote(activities: number): string {
-  if (activities === 0) return "Belum ada kegiatan yang diumumkan";
-  return `${shown(activities)} kegiatan, izin tidak dihitung`;
+export function attendanceNote(counted: ActivitiesCounted): string {
+  return (
+    noActivityWords(counted) ??
+    `${shown(counted.activities)} kegiatan, izin tidak dihitung`
+  );
 }

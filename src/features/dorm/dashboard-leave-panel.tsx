@@ -12,6 +12,8 @@ import { KIND_WORDS } from "./leave-words";
 
 export const NO_MONTH_LEAVE = "Belum ada pengajuan izin bulan ini.";
 export const NOBODY_OUT = "Tidak ada.";
+export const ONLY_SEEN_NAMES =
+  "Nama hanya ditampilkan untuk penghuni yang boleh Anda lihat.";
 
 /** Perizinan asrama, narrowed to those out of the dorm now. */
 const ALL_OUT_ADDRESS = leaveListAddress({
@@ -59,10 +61,14 @@ function placeWords(resident: OutResident): string {
   return `${resident.destination} · ${resident.room}`;
 }
 
-function OutNames({ out }: { out: OutList }) {
-  if (out.residents.length === 0) {
-    return <p className={board.none}>{NOBODY_OUT}</p>;
-  }
+/*
+ * An account with roles that see different residents, such as Ketua
+ * Program Studi with a BAM role, counts every resident out but may be
+ * named only some of them.
+ */
+function OutNames({ out, outCount }: { out: OutList; outCount: number }) {
+  if (out.residents.length === 0) return <OutCount amount={outCount} />;
+  const namesFewer = out.total < outCount;
   return (
     <>
       <ul className={board.outList}>
@@ -85,6 +91,7 @@ function OutNames({ out }: { out: OutList }) {
           <Link href={ALL_OUT_ADDRESS}>Lihat semua di Perizinan asrama</Link>
         </p>
       )}
+      {namesFewer && <p className={board.more}>{ONLY_SEEN_NAMES}</p>}
     </>
   );
 }
@@ -119,7 +126,11 @@ export function LeavePanel({
     <section className={shared.panel}>
       <MonthLeave byKind={byKind} />
       <h3 className={board.subheading}>Sedang di luar asrama</h3>
-      {out === null ? <OutCount amount={outCount} /> : <OutNames out={out} />}
+      {out === null ? (
+        <OutCount amount={outCount} />
+      ) : (
+        <OutNames out={out} outCount={outCount} />
+      )}
     </section>
   );
 }

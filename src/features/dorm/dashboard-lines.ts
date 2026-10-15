@@ -163,7 +163,10 @@ export function kehadiranOf(
 /** The attendance of some activities, and how many they are. */
 export interface CountedAttendance {
   attendance: Attendance;
+  /** The announced activities that are over with a mark the account sees. */
   activities: number;
+  /** Every announced activity that is over, whoever has a mark in it. */
+  announced: number;
 }
 
 function countedOf(
@@ -176,12 +179,28 @@ function countedOf(
   for (const line of lines) {
     if (isCounted(line) && line.countId !== null) ids.add(line.countId);
   }
-  const attendance = tallyWhere(
-    groups,
-    changed,
-    (place) => ids.has(place.countId) && keeps(place),
-  );
-  return { attendance, activities: ids.size };
+  const taken = (place: Place) => ids.has(place.countId) && keeps(place);
+  const attendance = tallyWhere(groups, changed, taken);
+  return {
+    attendance,
+    activities: countsWithMarks(groups, taken),
+    announced: ids.size,
+  };
+}
+
+/**
+ * How many counts have a mark `taken` keeps, so an account that sees only
+ * some students, such as Ketua Program Studi, counts only their activities.
+ */
+function countsWithMarks(
+  groups: MarkGroup[],
+  taken: (place: Place) => boolean,
+): number {
+  const ids = new Set<string>();
+  for (const group of groups) {
+    if (taken(group)) ids.add(group.countId);
+  }
+  return ids.size;
 }
 
 /** Kehadiran 7 hari terakhir: the announced activities that are over. */
