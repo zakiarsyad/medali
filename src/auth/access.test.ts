@@ -1068,6 +1068,51 @@ describe("may", () => {
     }
   });
 
+  it("lets only Mahasiswa appeal a violation of their own", () => {
+    expect(may(["student"], "appeal_own_dorm_violation")).toBe(true);
+    for (const role of ROLE_IDS.filter((each) => each !== "student")) {
+      expect(may([role], "appeal_own_dorm_violation")).toBe(false);
+    }
+  });
+
+  const appealDeciders: RoleId[] = ["bam_bphk", "bam_compliance"];
+
+  it.each(appealDeciders)(
+    "lets %s accept and reject appeals of dorm violations",
+    (role) => {
+      expect(may([role], "decide_dorm_violation_appeals")).toBe(true);
+      expect(may([role], "view_dorm_violations")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to decide appeals, Pengelola Asrama, Kepala Unit, the other BAM roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !appealDeciders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "dorm_manager",
+        "head_of_unit",
+        "bam_spiritual",
+        "bam_catering",
+        "bam_arts_sports",
+        "bam_health",
+        "bam_household",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "decide_dorm_violation_appeals")).toBe(false);
+    }
+  });
+
+  it("gives Kepala Unit plain titles for the rights of appeals", () => {
+    expect(ACTION_TITLES.appeal_own_dorm_violation).toBe(
+      "Mengajukan advokasi atas pelanggaran asrama sendiri",
+    );
+    expect(ACTION_TITLES.decide_dorm_violation_appeals).toContain(
+      "advokasi pelanggaran asrama",
+    );
+  });
+
   it("gives a way to see violations to every role with the tab Pelanggaran, and to no other", () => {
     for (const role of ROLE_IDS) {
       const reads =
@@ -1660,6 +1705,7 @@ describe("may", () => {
       "ask_dorm_clarification",
       "view_own_dorm_cleaning",
       "view_own_dorm_violations",
+      "appeal_own_dorm_violation",
       "view_own_siku",
       "ask_siku_addition",
     ]);

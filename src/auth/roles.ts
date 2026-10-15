@@ -38,6 +38,8 @@ export const ACTIONS = [
   "view_dorm_violations",
   "record_dorm_violations",
   "view_own_dorm_violations",
+  "appeal_own_dorm_violation",
+  "decide_dorm_violation_appeals",
   "view_student_detail",
   "view_student_room",
   "view_mentor_groups",
@@ -112,6 +114,10 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Mencatat pelanggaran asrama, menjadwalkan, dan membatalkan pengumumannya",
   view_own_dorm_violations:
     "Melihat pelanggaran asrama sendiri dan pengumuman pelanggaran asramanya",
+  appeal_own_dorm_violation:
+    "Mengajukan advokasi atas pelanggaran asrama sendiri",
+  decide_dorm_violation_appeals:
+    "Menerima dan menolak advokasi pelanggaran asrama, dan membuka alasan serta buktinya",
   view_student_detail: "Melihat detail mahasiswa",
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
@@ -392,6 +398,7 @@ export const ROLES: Record<RoleId, Role> = {
       "ask_dorm_clarification",
       "view_own_dorm_cleaning",
       "view_own_dorm_violations",
+      "appeal_own_dorm_violation",
       "view_own_siku",
       "ask_siku_addition",
     ],
@@ -442,6 +449,7 @@ export const ROLES: Record<RoleId, Role> = {
       ...BAM_DORM_ACTIVITY_ACTIONS,
       ...BAM_CLARIFICATION_ACTIONS,
       ...BAM_VIOLATION_ACTIONS,
+      "decide_dorm_violation_appeals",
     ],
     rows: "all",
   },
@@ -454,6 +462,7 @@ export const ROLES: Record<RoleId, Role> = {
       ...BAM_DORM_ACTIVITY_ACTIONS,
       ...BAM_CLARIFICATION_ACTIONS,
       ...BAM_VIOLATION_ACTIONS,
+      "decide_dorm_violation_appeals",
     ],
     rows: "all",
   },

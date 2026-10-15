@@ -107,12 +107,17 @@ Decided while building, because the issue did not say:
 6. The proof of a sample appeal is the same drawn paper the sample
    clarifications get, added to the file storage by the same sample
    files command.
+7. Two new rights: appealing one's own violation ("Mengajukan advokasi
+   atas pelanggaran asrama sendiri") for Mahasiswa, and deciding appeals
+   with reading their reason and proof ("Menerima dan menolak advokasi
+   pelanggaran asrama, dan membuka alasan serta buktinya") for BAM -
+   BPHK and BAM - KI. Every other role gets neither.
 
 ## Steps
 
 - [x] 1. The table for appeals is added, with sample appeals waiting,
   accepted and rejected.
-- [ ] 2. The rights to appeal and to decide are added to the permission
+- [x] 2. The rights to appeal and to decide are added to the permission
   list, with their checks.
 - [ ] 3. Residents send an appeal with an optional proof file and see
   its result.
