@@ -1,0 +1,154 @@
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.totalRight {
+  color: var(--ok);
+}
+
+.totalWrong {
+  color: var(--bad);
+}
+
+/*
+ * The four weights side by side on a laptop. On a phone the smallest width
+ * of a box gives way and they stack in one column.
+ */
+.weights {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--box-min-width)), 1fr)
+    );
+  gap: var(--space-md);
+}
+
+.weightBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-lg);
+  background: var(--surface2);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.numberRow {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.numberInput {
+  width: var(--score-box-width);
+  max-width: 100%;
+}
+
+.swatch {
+  display: inline-block;
+  width: var(--swatch-size);
+  height: var(--swatch-size);
+  margin-right: var(--space-xs);
+  border-radius: var(--radius-sm);
+}
+
+/* One cell per percent: each part is as wide as its share. */
+.bar {
+  display: flex;
+  height: var(--bar-height);
+  margin: var(--space-lg) 0 var(--space-sm);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.cell {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.attendance {
+  background: var(--navy3);
+}
+
+.mentoring {
+  background: var(--gold);
+}
+
+.siku {
+  background: var(--vI);
+}
+
+.skpm {
+  background: var(--vE);
+}
+
+.rest {
+  background: none;
+}
+
+.subheading {
+  display: block;
+  margin: var(--space-md) 0 var(--space-xs);
+  color: var(--muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.letters {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--score-box-width)), 1fr)
+    );
+  gap: var(--space-sm);
+}
+
+.letterBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  font-size: var(--text-md);
+}
+
+.letter {
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+.passField {
+  max-width: var(--card-min-width);
+  margin-top: var(--space-md);
+}
+
+.fault {
+  margin: 0;
+  color: var(--bad);
+  font-size: var(--text-sm);
+}
+
+.saveRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-top: var(--space-md);
+}
+
+.note {
+  margin: var(--space-md) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
