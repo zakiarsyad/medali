@@ -14,21 +14,21 @@ function rejectedWords(rejected: number): string {
 function WarningTaskRow({ task }: { task: WarningTask }) {
   return (
     <tr>
-      <td>
+      <td className={shared.rowHeading} data-title="Mahasiswa">
         <b>{task.name}</b>
         <small className={shared.detail}>
           {task.nim} · {task.room}
         </small>
       </td>
-      <td>
+      <td data-title="Penetapan">
         <span className={`${shared.badge} ${styles.warn}`}>
           Penetapan SP {task.level}
         </span>{" "}
         <LetterMark level={task.mark} />
       </td>
-      <td>{task.counted.toLocaleString("id-ID")}</td>
-      <td>{rejectedWords(task.rejected)}</td>
-      <td>
+      <td data-title="Pelanggaran">{task.counted.toLocaleString("id-ID")}</td>
+      <td data-title="Klarifikasi ditolak">{rejectedWords(task.rejected)}</td>
+      <td className={shared.rowActions}>
         <Link
           href={processLetterAddress(task.studentId)}
           className={shared.button}
@@ -51,7 +51,7 @@ export function WarningTasks({ tasks }: { tasks: WarningTask[] }) {
     return <p className={shared.empty}>{NOTHING_WAITS}</p>;
   return (
     <div className={shared.tableWrap}>
-      <table className={shared.table}>
+      <table className={`${shared.table} ${shared.stacked}`}>
         <thead>
           <tr>
             <th>Mahasiswa</th>

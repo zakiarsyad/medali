@@ -89,4 +89,4 @@ points out advokasi that wait for BAM.
 - [x] 2. The section "Penetapan SP" with "Proses" opening the form on
   Pelanggaran.
 - [x] 3. The number card, and the advokasi line in "Perlu dipantau".
-- [ ] 4. Phone layout for the section.
+- [x] 4. Phone layout for the section.

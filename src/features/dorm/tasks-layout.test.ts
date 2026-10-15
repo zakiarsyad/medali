@@ -85,6 +85,18 @@ describe("clarifications and cleaning assessments on a phone", () => {
   });
 });
 
+describe("Penetapan SP on a phone", () => {
+  it("turns each row into a card, every value under its column title, Proses last", () => {
+    const code = read("warning-tasks.tsx");
+
+    expect(code).toContain("shared.stacked");
+    expect(findMissingStackedTitles(code)).toEqual([]);
+    expect(code).toMatch(
+      /<td className=\{shared\.rowActions\}>\s*<Link[^>]*>\s*Proses\s*<\/Link>\s*<\/td>\s*<\/tr>/,
+    );
+  });
+});
+
 describe("the screen parts of Tugas saya that run in the browser", () => {
   const PARTS = [
     `${FOLDER}/clarification-tasks.tsx`,
