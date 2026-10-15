@@ -68,6 +68,16 @@ describe("the resident's warning on Kegiatan asrama", () => {
     );
     expect(shown).not.toContain("penetapan SP");
   });
+
+  it("after SP 1 from violations alone, says the SP but promises no SP 2 from one more rejection", () => {
+    const shown = onActivities({
+      ...NONE,
+      standing: { ...NONE.standing, counted: 7, rejected: 0, hasFirst: true },
+    });
+
+    expect(shown).toContain("Status saat ini: <b>SP 1</b>.");
+    expect(shown).not.toContain("Satu kali lagi");
+  });
 });
 
 describe("the resident's warning on Pelanggaran", () => {

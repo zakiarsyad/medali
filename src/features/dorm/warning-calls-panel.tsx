@@ -23,8 +23,31 @@ export function LetterMark({ level }: { level: WarningLevel | null }) {
   return <span className={`${shared.badge} ${styles.bad}`}>SP {level}</span>;
 }
 
-/** The address of "Proses" of a resident, or null for an account that only reads. */
-type ProcessAddress = ((studentId: string) => string) | null;
+/**
+ * The address of "Proses" of a resident, or null on a row the account
+ * may not process; the whole is null for an account that only reads.
+ */
+type ProcessAddress = ((studentId: string) => string | null) | null;
+
+function ProcessLink({
+  address,
+  call,
+}: {
+  address: string | null;
+  call: WarningCall;
+}) {
+  if (address === null) return null;
+  return (
+    <Link
+      href={address}
+      className={shared.quiet}
+      scroll={false}
+      aria-label={`Proses ${call.name}`}
+    >
+      Proses
+    </Link>
+  );
+}
 
 function CallRow({
   call,
@@ -54,14 +77,7 @@ function CallRow({
       <td data-title="Jadwal">{scheduleWords(call.schedule)}</td>
       {processAddress !== null && (
         <td>
-          <Link
-            href={processAddress(call.studentId)}
-            className={shared.quiet}
-            scroll={false}
-            aria-label={`Proses ${call.name}`}
-          >
-            Proses
-          </Link>
+          <ProcessLink address={processAddress(call.studentId)} call={call} />
         </td>
       )}
     </tr>
@@ -105,22 +121,27 @@ function CallTable({
 /**
  * "Panggilan klarifikasi dan surat peringatan": each resident called for
  * an SP in the running semester, with why, the SP already issued and the
- * schedule of the call, 20 a page; with "Proses" for Pengelola Asrama.
+ * schedule of the call, 20 a page; with "Proses" for Pengelola Asrama,
+ * but not on the row of their own student, which the server refuses.
  */
 export function WarningCallsPanel({
   calls,
   params,
   processes,
+  ownStudentId,
 }: {
   calls: WarningCalls;
   params: StaffViolationParams;
   /** Whether the account schedules calls and issues SPs. */
   processes: boolean;
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
 }) {
-  const processAddress = processes
-    ? (studentId: string) =>
-        staffViolationsAddress({ ...params, callStudentId: studentId })
-    : null;
+  function addressOf(studentId: string): string | null {
+    if (studentId === ownStudentId) return null;
+    return staffViolationsAddress({ ...params, callStudentId: studentId });
+  }
+  const processAddress = processes ? addressOf : null;
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>

@@ -84,6 +84,7 @@ function screen(board = BOARD): string {
       waitingAppeals={null}
       warnings={WARNINGS}
       processes={false}
+      ownStudentId={null}
       callProcess={null}
       ownRecord={
         <OwnRecord

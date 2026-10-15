@@ -3,6 +3,7 @@ import { NumberCard } from "@/ui/number-cards";
 import type { OwnWarning } from "./own-warning";
 import { RejectedTable } from "./rejected-table";
 import { VIOLATIONS_ADDRESS } from "./violation-address";
+import { SP2_REJECTIONS } from "./warning-ids";
 import { letterMark, progressOf } from "./warning-rule";
 import { callWords, causeWords, receivedWords } from "./warning-words";
 import styles from "./warnings.module.css";
@@ -11,14 +12,18 @@ import styles from "./warnings.module.css";
  * The warning on Kegiatan asrama of a resident with a rejected
  * clarification or an SP in the running semester, as in the prototype:
  * how many were rejected, the SP they are called for, their SP, and
- * after SP 1 that one more rejection leads to SP 2. Nothing for others.
+ * after SP 1 that one more rejection leads to SP 2, only when it would.
+ * Nothing for others.
  */
 export function ActivitiesWarning({ warning }: { warning: OwnWarning }) {
   const { standing } = warning;
   const mark = letterMark(standing);
   if (standing.rejected === 0 && mark === null) return null;
   const isOneFromSecond =
-    standing.hasFirst && !standing.hasSecond && standing.level === null;
+    standing.hasFirst &&
+    !standing.hasSecond &&
+    standing.level === null &&
+    standing.rejected === SP2_REJECTIONS - 1;
   return (
     <p className={styles.callBox}>
       {standing.rejected > 0 && (

@@ -72,8 +72,9 @@ async function ownRecordOf(
 
 /**
  * "Proses" of the resident the address names, for Pengelola Asrama only.
- * Null for any other account, for none named, and for a resident not
- * called: the box then does not open.
+ * Null for any other account, for none named, for the account's own
+ * student, whose call another Pengelola Asrama processes, and for a
+ * resident not called: the box then does not open.
  */
 async function callProcessOf(
   account: Account,
@@ -82,6 +83,7 @@ async function callProcessOf(
 ) {
   const { callStudentId } = params;
   if (callStudentId === null) return null;
+  if (callStudentId === account.studentId) return null;
   if (!may(account.roles, "issue_dorm_warning_letters")) return null;
   const process = await readWarningProcess(
     database(),
@@ -167,6 +169,7 @@ async function StaffScreen({
       waitingAppeals={inbox?.waiting ?? null}
       warnings={warnings}
       processes={may(account.roles, "issue_dorm_warning_letters")}
+      ownStudentId={account.studentId}
       callProcess={await callProcessOf(account, params, now)}
       ownRecord={await ownRecordOf(account, params, now)}
     />

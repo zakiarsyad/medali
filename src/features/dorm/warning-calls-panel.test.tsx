@@ -30,12 +30,17 @@ function calls(more: Partial<WarningCalls> = {}): WarningCalls {
   };
 }
 
-function panel(shown: WarningCalls, processes = false): string {
+function panel(
+  shown: WarningCalls,
+  processes = false,
+  ownStudentId: string | null = null,
+): string {
   return renderToStaticMarkup(
     <WarningCallsPanel
       calls={shown}
       params={readStaffViolationParams({})}
       processes={processes}
+      ownStudentId={ownStudentId}
     />,
   );
 }
@@ -88,6 +93,17 @@ describe("WarningCallsPanel", () => {
     );
     expect(panel(calls(), true)).toContain(">Proses<");
     expect(panel(calls())).not.toContain("Proses");
+  });
+
+  it("offers no Proses on the row of the account's own student, which another Pengelola Asrama processes", () => {
+    const other = {
+      ...CALL,
+      studentId: "00000000-0000-4000-8000-0000000000c9",
+    };
+    const shown = panel(calls({ calls: [CALL, other] }), true, CALL.studentId);
+
+    expect(shown).not.toContain(`proses=${CALL.studentId}`);
+    expect(shown).toContain(`proses=${other.studentId}`);
   });
 
   it("is paged, 20 residents a page", () => {

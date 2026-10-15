@@ -134,6 +134,7 @@ export function StaffViolationsScreen({
   waitingAppeals,
   warnings,
   processes,
+  ownStudentId,
   callProcess,
   ownRecord,
 }: {
@@ -153,6 +154,8 @@ export function StaffViolationsScreen({
   warnings: WarningCalls;
   /** Whether the account schedules calls and issues SPs: Pengelola Asrama. */
   processes: boolean;
+  /** The student the account belongs to, whose row has no "Proses", or null. */
+  ownStudentId: string | null;
   /** "Proses" of one resident in a box, or null for none. */
   callProcess: ReactNode;
   /** The account's own record, for a resident who is also staff, or null. */
@@ -184,6 +187,7 @@ export function StaffViolationsScreen({
         calls={warnings}
         params={params}
         processes={processes}
+        ownStudentId={ownStudentId}
       />
       <RekapPanel
         rekap={board.rekap}
