@@ -1,9 +1,9 @@
-import { createHash } from "node:crypto";
 import { and, eq, max } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { sikuAdjustments, sikuUploads } from "@/db/schema";
 import { sourceName } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
+import { fingerprintOf } from "@/files/file-fingerprint";
 import { IN_FORCE } from "./siku-totals";
 
 /** What an upload keeps of its file: the name as shown, and a fingerprint. */
@@ -16,7 +16,7 @@ export interface UploadMark {
 export function uploadMarkOf(file: SentFile): UploadMark {
   return {
     fileName: sourceName(file.name),
-    fingerprint: createHash("sha256").update(file.bytes).digest("hex"),
+    fingerprint: fingerprintOf(file.bytes),
   };
 }
 

@@ -17,8 +17,8 @@ const ANI: FileStudent = { id: "id-ani", name: "Ani Contoh", active: true };
 const BUDI: FileStudent = { id: "id-budi", name: "Budi Contoh", active: false };
 
 const KNOWN = new Map([
-  ["9900230001", ANI],
-  ["9900240002", BUDI],
+  ["9985040001", ANI],
+  ["9985040002", BUDI],
 ]);
 
 function lines(text: string) {
@@ -36,13 +36,13 @@ describe("readSkpmFile", () => {
     const read = lines(
       [
         "poin,nim,nama_kegiatan,kategori,tingkat,peran,tanggal",
-        "8,9900230001,Lomba debat,Lomba atau kompetisi,Nasional,Peserta,2026-10-12",
+        "8,9985040001,Lomba debat,Lomba atau kompetisi,Nasional,Peserta,2026-10-12",
       ].join("\n"),
     );
     const scored = lines(
       [
         "nim,kegiatan,kategori,tingkat,peran,tanggal,kredit",
-        "9900230001,Seminar,,,,,3",
+        "9985040001,Seminar,,,,,3",
       ].join("\n"),
     );
 
@@ -50,7 +50,7 @@ describe("readSkpmFile", () => {
       {
         row: 2,
         cells: {
-          nim: "9900230001",
+          nim: "9985040001",
           kegiatan: "Lomba debat",
           kategori: "Lomba atau kompetisi",
           tingkat: "Nasional",
@@ -64,11 +64,11 @@ describe("readSkpmFile", () => {
   });
 
   it("reads a file without titles in the order of the template", () => {
-    const read = lines("9900230001,Seminar,Lainnya,Kampus,Peserta,,4");
+    const read = lines("9985040001,Seminar,Lainnya,Kampus,Peserta,,4");
     expect(read[0]).toEqual({
       row: 1,
       cells: {
-        nim: "9900230001",
+        nim: "9985040001",
         kegiatan: "Seminar",
         kategori: "Lainnya",
         tingkat: "Kampus",
@@ -84,7 +84,7 @@ describe("readSkpmFile", () => {
   });
 
   it("names the missing columns", () => {
-    expect(readSkpmFile("nim,kegiatan,poin\n9900230001,Seminar,4")).toEqual({
+    expect(readSkpmFile("nim,kegiatan,poin\n9985040001,Seminar,4")).toEqual({
       ok: false,
       error:
         "Kolom tidak ditemukan: kategori, tingkat, peran, tanggal. Samakan judul kolom dengan templat.",
@@ -92,7 +92,7 @@ describe("readSkpmFile", () => {
   });
 
   it("refuses a file with no row, and one with more than 1,000 rows", () => {
-    const many = Array.from({ length: 1001 }, () => "9900230001,Seminar,,,,,1");
+    const many = Array.from({ length: 1001 }, () => "9985040001,Seminar,,,,,1");
 
     expect(readSkpmFile(`${TITLES}\n`)).toEqual({
       ok: false,
@@ -110,7 +110,7 @@ describe("readSkpmFile", () => {
 describe("skpmFileRows", () => {
   it("keeps a filled row with its student and every text as the file has it", () => {
     const { ready, skipped } = rowsOf(
-      "9900230001,Lomba debat,Lomba antarbangsa,Asia,Juri,12/10/2026,8",
+      "9985040001,Lomba debat,Lomba antarbangsa,Asia,Juri,12/10/2026,8",
     );
 
     expect(skipped).toEqual([]);
@@ -118,7 +118,7 @@ describe("skpmFileRows", () => {
       {
         row: 2,
         studentId: "id-ani",
-        nim: "9900230001",
+        nim: "9985040001",
         name: "Ani Contoh",
         activity: "Lomba debat",
         category: "Lomba antarbangsa",
@@ -131,7 +131,7 @@ describe("skpmFileRows", () => {
   });
 
   it("gives an empty kategori Lainnya, and keeps an empty tingkat, peran and tanggal empty", () => {
-    const { ready } = rowsOf("9900230001,Seminar,,,,,4");
+    const { ready } = rowsOf("9985040001,Seminar,,,,,4");
     expect(ready[0]).toMatchObject({
       category: "Lainnya",
       level: null,
@@ -142,9 +142,9 @@ describe("skpmFileRows", () => {
 
   it("keeps every row of a student", () => {
     const { ready } = rowsOf(
-      "9900230001,Seminar,,,,,4",
-      "9900230001,Seminar,,,,,4",
-      "9900230001,Lomba,,,,,8",
+      "9985040001,Seminar,,,,,4",
+      "9985040001,Seminar,,,,,4",
+      "9985040001,Lomba,,,,,8",
     );
     expect(ready.map((row) => [row.row, row.points])).toEqual([
       [2, 4],
@@ -155,14 +155,14 @@ describe("skpmFileRows", () => {
 
   it("takes points from 0 to 1000 with decimals after a comma or a point, kept to two places", () => {
     const { ready, skipped } = rowsOf(
-      "9900230001,A,,,,,0",
-      "9900230001,B,,,,,1000",
-      '9900230001,C,,,,,"2,25"',
-      "9900230001,D,,,,,3.333",
+      "9985040001,A,,,,,0",
+      "9985040001,B,,,,,1000",
+      '9985040001,C,,,,,"2,25"',
+      "9985040001,D,,,,,3.333",
     );
     const semicolons = skpmFileRows(
       lines(
-        [TITLES.replaceAll(",", ";"), "9900230001;Seminar;;;;;7,5"].join("\n"),
+        [TITLES.replaceAll(",", ";"), "9985040001;Seminar;;;;;7,5"].join("\n"),
       ),
       KNOWN,
     );
@@ -173,13 +173,13 @@ describe("skpmFileRows", () => {
   });
 
   it.each([
-    ["an unknown NIM", "9900999999,Seminar,,,,,4", UNKNOWN_NIM],
-    ["a student who is not Aktif", "9900240002,Seminar,,,,,4", NOT_ACTIVE],
-    ["an empty kegiatan", "9900230001,,,,,,4", NO_ACTIVITY],
-    ["empty points", "9900230001,Seminar,,,,,", POINTS_NOT_IN_RANGE],
-    ["points over 1000", "9900230001,Seminar,,,,,1001", POINTS_NOT_IN_RANGE],
-    ["points below 0", "9900230001,Seminar,,,,,-1", POINTS_NOT_IN_RANGE],
-    ["words for points", "9900230001,Seminar,,,,,lima", POINTS_NOT_IN_RANGE],
+    ["an unknown NIM", "9985040099,Seminar,,,,,4", UNKNOWN_NIM],
+    ["a student who is not Aktif", "9985040002,Seminar,,,,,4", NOT_ACTIVE],
+    ["an empty kegiatan", "9985040001,,,,,,4", NO_ACTIVITY],
+    ["empty points", "9985040001,Seminar,,,,,", POINTS_NOT_IN_RANGE],
+    ["points over 1000", "9985040001,Seminar,,,,,1001", POINTS_NOT_IN_RANGE],
+    ["points below 0", "9985040001,Seminar,,,,,-1", POINTS_NOT_IN_RANGE],
+    ["words for points", "9985040001,Seminar,,,,,lima", POINTS_NOT_IN_RANGE],
   ])("skips %s with the prototype's reason", (_, line, reason) => {
     const { ready, skipped } = rowsOf(line);
     expect(ready).toEqual([]);
@@ -201,7 +201,7 @@ describe("skpmFileRows", () => {
 
   it("keeps a text on one line and cuts one longer than is kept", () => {
     const long = "a".repeat(250);
-    const { ready } = rowsOf(`9900230001,"Seminar\nnasional ${long}",,,,,4`);
+    const { ready } = rowsOf(`9985040001,"Seminar\nnasional ${long}",,,,,4`);
     expect(ready[0]?.activity).toBe(`Seminar nasional ${long}`.slice(0, 200));
   });
 });
@@ -211,12 +211,12 @@ describe("fileNims", () => {
     const read = lines(
       [
         TITLES,
-        "9900230001,A,,,,,1",
-        "9900230001,B,,,,,1",
+        "9985040001,A,,,,,1",
+        "9985040001,B,,,,,1",
         ",C,,,,,1",
-        "9900240002,D,,,,,1",
+        "9985040002,D,,,,,1",
       ].join("\n"),
     );
-    expect(fileNims(read)).toEqual(["9900230001", "9900240002"]);
+    expect(fileNims(read)).toEqual(["9985040001", "9985040002"]);
   });
 });

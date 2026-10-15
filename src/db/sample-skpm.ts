@@ -140,6 +140,8 @@ export const SAMPLE_SKPM_UPLOADS: SampleSkpmUpload[] = [
       row("9900240015", COMMITTEE, 8, 18),
       row("9900250016", SEMINAR, 5, 16),
       row("9900250017", LITERACY, 6, 15),
+      row("9900230052", DEBATE, 12, 14),
+      row("9900240014", LITERACY, 9, 13),
     ],
   },
   {

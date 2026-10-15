@@ -1,7 +1,6 @@
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
-import { ConversionPanel } from "@/features/skpm/conversion-panel";
 import { readSkpmParams } from "@/features/skpm/skpm-address";
 import {
   readSkpmDetail,
@@ -10,10 +9,10 @@ import {
 } from "@/features/skpm/skpm-board";
 import { readConversion } from "@/features/skpm/skpm-conversion";
 import { SkpmDetailDialog } from "@/features/skpm/skpm-detail-dialog";
-import { ReadOnlyNote } from "@/features/skpm/skpm-read-only";
+import { SkpmManage } from "@/features/skpm/skpm-manage";
 import { skpmVisibleTo } from "@/features/skpm/skpm-readers";
 import { SkpmScreen } from "@/features/skpm/skpm-screen";
-import { conversionNote } from "@/features/skpm/skpm-words";
+import { readUploadHistory } from "@/features/skpm/skpm-uploads";
 
 /**
  * The tab Data SKPM. Each role sees the students its roles that open the
@@ -31,14 +30,14 @@ export default async function SkpmPage(props: PageProps<"/penilaian/skpm">) {
   const visible = skpmVisibleTo(account);
   const conversion = await readConversion(db);
   const { pointsForHundred } = conversion;
-  const [numbers, list, detail] = await Promise.all([
+  const [numbers, list, history, detail] = await Promise.all([
     readSkpmNumbers(db, visible, pointsForHundred),
     readSkpmList(db, visible, pointsForHundred, params),
+    readUploadHistory(db, params.historyPage),
     params.detailId === null
       ? null
       : readSkpmDetail(db, visible, pointsForHundred, params.detailId),
   ]);
-  const mayUpload = may(account.roles, "upload_skpm");
   return (
     <>
       <SkpmScreen
@@ -48,14 +47,12 @@ export default async function SkpmPage(props: PageProps<"/penilaian/skpm">) {
         numbers={numbers}
         list={list}
         manage={
-          mayUpload ? (
-            <ConversionPanel
-              pointsForHundred={pointsForHundred}
-              note={conversionNote(conversion.set)}
-            />
-          ) : (
-            <ReadOnlyNote pointsForHundred={pointsForHundred} />
-          )
+          <SkpmManage
+            mayUpload={may(account.roles, "upload_skpm")}
+            conversion={conversion}
+            history={history}
+            params={params}
+          />
         }
       />
       {detail && <SkpmDetailDialog detail={detail} params={params} />}

@@ -2,9 +2,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ConversionPanel } from "./conversion-panel";
 import { START_PARAMS } from "./skpm-address";
+import { skpmTemplateCsv } from "./skpm-file-columns";
+import { SkpmFilePreviewView } from "./skpm-file-preview-view";
 import { SkpmListTable } from "./skpm-list-table";
 import { ReadOnlyNote } from "./skpm-read-only";
 import { SkpmScreen } from "./skpm-screen";
+import { SkpmUpload } from "./skpm-upload";
+import { UploadHistoryTable } from "./upload-history-table";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
@@ -15,14 +19,14 @@ const ROWS = [
   {
     id: ANI,
     name: "Ani Contoh",
-    nim: "9900230001",
+    nim: "9985060001",
     program: "D3 Akuntansi",
     totals: { activities: 3, total: 30, score: 60 },
   },
   {
     id: BUDI,
     name: "Budi Contoh",
-    nim: "9900240002",
+    nim: "9985060002",
     program: "D3 Pajak",
     totals: null,
   },
@@ -47,6 +51,157 @@ describe("Nilai SKPM per mahasiswa", () => {
 
   it("becomes cards on a phone", () => {
     expect(html).toMatch(/<table class="[^"]*stacked/);
+  });
+});
+
+describe("Unggah data SKPM", () => {
+  const html = renderToStaticMarkup(<SkpmUpload />);
+
+  it("offers Tambahkan, chosen at first, and Ganti semua data", () => {
+    expect(html).toMatch(/aria-pressed="true"[^>]*>Tambahkan</);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>Ganti semua data</);
+    expect(html).toContain(
+      "Baris dalam unggahan ini ditambahkan ke data SKPM yang sudah ada.",
+    );
+  });
+
+  it("names the columns, says which may be empty, and gives the limits", () => {
+    expect(html).toContain(
+      "Kolom: <b>nim</b>, <b>kegiatan</b>, <b>kategori</b>, <b>tingkat</b>, <b>peran</b>, <b>tanggal</b>, <b>poin</b>. Kolom tingkat, peran, dan tanggal boleh kosong.",
+    );
+    expect(html).toContain("Satu berkas paling banyak 1.000 baris dan 1 MB.");
+  });
+
+  it("offers the template and a place to pick or drop a CSV file", () => {
+    expect(html).toContain('download="templat-skpm.csv"');
+    expect(html).toContain(">Unduh templat CSV</a>");
+    expect(html).toContain("Pilih berkas CSV");
+    expect(html).toContain("atau seret berkas ke sini");
+  });
+
+  it("holds a template with the titles and one made-up activity", () => {
+    expect(skpmTemplateCsv().split("\n")).toEqual([
+      "nim,kegiatan,kategori,tingkat,peran,tanggal,poin",
+      "4121239999,Lomba debat anggaran,Lomba atau kompetisi,Nasional,Peserta,2025-10-12,8",
+      "",
+    ]);
+  });
+});
+
+describe("a picked SKPM file", () => {
+  const preview = {
+    ready: 7,
+    students: 2,
+    firstRows: [
+      {
+        row: 2,
+        studentId: ANI,
+        nim: "9985060001",
+        name: "Ani Contoh",
+        activity: "Seminar",
+        category: "Lainnya",
+        level: null,
+        activityRole: null,
+        day: null,
+        points: 7.5,
+      },
+    ],
+    skipped: 1,
+    firstSkipped: [
+      {
+        row: 9,
+        nim: "9985060099",
+        reason: "NIM tidak ada dalam data mahasiswa.",
+      },
+    ],
+  };
+  const html = renderToStaticMarkup(
+    <SkpmFilePreviewView name="skpm.csv" preview={preview}>
+      <button type="button">Simpan 7 baris</button>
+    </SkpmFilePreviewView>,
+  );
+
+  it("says how many rows are ready and skipped, and shows the first rows as cards on a phone", () => {
+    expect(html).toContain(
+      "<b>skpm.csv</b>: 7 baris siap disimpan, 1 baris dilewati.",
+    );
+    expect(html).toContain("dan 6 baris lainnya.");
+    expect(html).toContain("7,5");
+    expect(html).toMatch(/<table class="[^"]*stacked/);
+  });
+
+  it("lists the skipped rows with their number and reason", () => {
+    expect(html).toContain("Lihat baris yang dilewati");
+    expect(html).toContain(
+      "Baris 9 (9985060099): NIM tidak ada dalam data mahasiswa.",
+    );
+  });
+});
+
+describe("Riwayat unggahan", () => {
+  const base = {
+    enteredAt: new Date("2026-10-14T03:05:00Z"),
+    rows: 16,
+    students: 10,
+    enteredBy: "Penilai Contoh",
+  };
+  const lines = [
+    {
+      ...base,
+      id: "00000000-0000-4000-8000-000000000401",
+      fileName: "skpm-baru.csv",
+      mode: "replace",
+      state: { kind: "in_force" },
+    },
+    {
+      ...base,
+      id: "00000000-0000-4000-8000-000000000402",
+      fileName: "skpm-lama.csv",
+      mode: "add",
+      state: { kind: "replaced" },
+    },
+    {
+      ...base,
+      id: "00000000-0000-4000-8000-000000000403",
+      fileName: "skpm-salah.csv",
+      mode: "add",
+      state: {
+        kind: "removed",
+        at: new Date("2026-10-15T02:00:00Z"),
+        by: "Kepala Contoh",
+      },
+    },
+  ] as const;
+
+  it("shows time, file, rows, students, mode and who, with Hapus for those who may", () => {
+    const html = renderToStaticMarkup(
+      <UploadHistoryTable lines={lines} mayRemove />,
+    );
+
+    expect(html).toContain("14 Okt 2026, 10.05");
+    expect(html).toContain("skpm-baru.csv");
+    expect(html).toContain('<td data-title="Baris">16</td>');
+    expect(html).toContain('<td data-title="Mahasiswa">10</td>');
+    expect(html).toContain("Ganti semua");
+    expect(html).toContain("Penilai Contoh");
+    expect(html.split(">Hapus</button>")).toHaveLength(3);
+  });
+
+  it("marks a replaced upload tergantikan, and a removed one with who removed it and when", () => {
+    const html = renderToStaticMarkup(
+      <UploadHistoryTable lines={lines} mayRemove />,
+    );
+
+    expect(html.split("tergantikan")).toHaveLength(2);
+    expect(html).toContain("Dihapus 15 Okt 2026, 09.00 oleh Kepala Contoh");
+  });
+
+  it("offers no Hapus to a role that only reads", () => {
+    const html = renderToStaticMarkup(
+      <UploadHistoryTable lines={lines} mayRemove={false} />,
+    );
+
+    expect(html).not.toContain(">Hapus</button>");
   });
 });
 

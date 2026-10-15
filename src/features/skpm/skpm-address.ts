@@ -38,6 +38,8 @@ export interface SkpmParams {
   page: number;
   /** The student whose "Rincian" is open over the tab, or null for none. */
   detailId: string | null;
+  /** The page of "Riwayat unggahan". */
+  historyPage: number;
 }
 
 export const START_PARAMS: SkpmParams = {
@@ -45,7 +47,11 @@ export const START_PARAMS: SkpmParams = {
   filter: "all",
   page: 1,
   detailId: null,
+  historyPage: 1,
 };
+
+/** How many uploads one page of "Riwayat unggahan" shows. */
+export const HISTORY_PAGE_SIZE = 20;
 
 const PAGE = /^[1-9]\d{0,5}$/;
 
@@ -74,6 +80,7 @@ export function readSkpmParams(params: SearchParams): SkpmParams {
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
     detailId: idNamed(firstParam(params.rincian)),
+    historyPage: pageNamed(firstParam(params.riwayat)),
   };
 }
 
@@ -89,6 +96,9 @@ export function skpmAddress(params: SkpmParams): string {
   }
   if (params.page > 1) search.set("hal", String(params.page));
   if (params.detailId !== null) search.set("rincian", params.detailId);
+  if (params.historyPage > 1) {
+    search.set("riwayat", String(params.historyPage));
+  }
   const text = search.toString();
   if (text === "") return SKPM_ADDRESS;
   return `${SKPM_ADDRESS}?${text}`;

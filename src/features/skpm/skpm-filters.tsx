@@ -37,17 +37,17 @@ export function SkpmFilterRow({ params }: { params: SkpmParams }) {
     if (params.query !== asked) setTyped(params.query);
   }
 
-  const { query: heldQuery, filter } = params;
+  const { query: heldQuery, filter, historyPage } = params;
   useEffect(() => {
     const query = searchText(typed) ?? "";
     if (query === heldQuery) return;
     const timer = setTimeout(() => {
       setAsked(query);
-      const kept = { ...START_PARAMS, filter };
+      const kept = { ...START_PARAMS, filter, historyPage };
       router.replace(skpmAddress({ ...kept, query }), { scroll: false });
     }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [typed, heldQuery, filter, router]);
+  }, [typed, heldQuery, filter, historyPage, router]);
 
   function choose(sent: string) {
     const query = searchText(typed) ?? "";
