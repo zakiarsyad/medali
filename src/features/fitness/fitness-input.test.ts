@@ -5,6 +5,7 @@ import {
   LIMITS_NOT_WHOLE,
   NO_SCORE,
   NO_TEST_DAY,
+  pairedRows,
   parseLimits,
   parseScores,
   parseTestDay,
@@ -160,5 +161,19 @@ describe("yearStartOf", () => {
   it("gives New Year's Day of the year of a day", () => {
     expect(yearStartOf("2026-10-16")).toBe("2026-01-01");
     expect(yearStartOf("2025-12-31")).toBe("2025-01-01");
+  });
+});
+
+describe("pairedRows", () => {
+  it("puts each student beside the score sent at the same place", () => {
+    expect(pairedRows([ANI, BUDI], ["80", ""])).toEqual([
+      { studentId: ANI, typed: "80" },
+      { studentId: BUDI, typed: "" },
+    ]);
+  });
+
+  it("gives nothing for lists of two lengths", () => {
+    expect(pairedRows([ANI, BUDI], ["80"])).toBeNull();
+    expect(pairedRows([ANI], ["80", "70"])).toBeNull();
   });
 });

@@ -64,6 +64,17 @@ export function untestedLine(untested: number): string {
   return `${shown(untested)} mahasiswa belum mengikuti tes kebugaran.`;
 }
 
+/** What "Simpan skor" says once the scores are kept. */
+export function savedScoresMessage(saved: number): string {
+  return `${shown(saved)} skor tes kebugaran disimpan.`;
+}
+
+/** The line beside "Simpan skor" while scores are typed. */
+export function readyLine(filled: number): string {
+  if (filled === 0) return "Isi skor yang tersedia; kolom kosong dilewati.";
+  return `${shown(filled)} skor siap disimpan.`;
+}
+
 /** "Rerata skor" with one decimal, such as 75,3, or "-" for none. */
 export function shownMean(mean: number | null): string {
   if (mean === null) return "-";

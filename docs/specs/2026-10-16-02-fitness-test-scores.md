@@ -123,4 +123,4 @@ results are health data, so each role sees only its own students.
 - [x] 2. The category rule, with checks.
 - [x] 3. The tab shows the numbers, "Kategori" and the list.
 - [x] 4. "Simpan ambang" changes the limits.
-- [ ] 5. The group form saves scores.
+- [x] 5. The group form saves scores.

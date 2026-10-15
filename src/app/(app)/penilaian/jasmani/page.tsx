@@ -7,12 +7,14 @@ import {
   readFitnessList,
   readFitnessNumbers,
 } from "@/features/fitness/fitness-board";
+import { readFitnessGroupChoices } from "@/features/fitness/fitness-groups";
 import { testYearOf } from "@/features/fitness/fitness-input";
 import { readFitnessLimits } from "@/features/fitness/fitness-limits";
 import { fitnessVisibleTo } from "@/features/fitness/fitness-readers";
 import { FitnessScreen, ReadOnlyNote } from "@/features/fitness/fitness-screen";
 import { LimitsForm } from "@/features/fitness/limits-form";
 import { ReadOnlyLimits } from "@/features/fitness/read-only-limits";
+import { ScoreForm } from "@/features/fitness/score-form";
 
 /**
  * The tab Penilaian jasmani. Each role sees the Aktif students its roles
@@ -33,11 +35,12 @@ export default async function FitnessPage(
   const visible = fitnessVisibleTo(account);
   const inForce = await readFitnessLimits(db);
   const { limits } = inForce;
-  const [numbers, list] = await Promise.all([
+  const mayEnter = may(account.roles, "enter_fitness_scores");
+  const [numbers, list, groups] = await Promise.all([
     readFitnessNumbers(db, visible, limits, today),
     readFitnessList(db, visible, limits, params),
+    mayEnter ? readFitnessGroupChoices(db) : [],
   ]);
-  const mayEnter = may(account.roles, "enter_fitness_scores");
   const maySetLimits = may(account.roles, "set_grade_weights");
   return (
     <FitnessScreen
@@ -47,7 +50,18 @@ export default async function FitnessPage(
       limits={limits}
       params={params}
       list={list}
-      manage={mayEnter ? null : <ReadOnlyNote />}
+      manage={
+        mayEnter ? (
+          <ScoreForm
+            groups={groups}
+            today={today}
+            limits={limits}
+            newKey={crypto.randomUUID()}
+          />
+        ) : (
+          <ReadOnlyNote />
+        )
+      }
       limitsPart={
         maySetLimits ? (
           <LimitsForm inForce={inForce} />

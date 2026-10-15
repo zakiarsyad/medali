@@ -6,11 +6,14 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
-import { text } from "@/ui/form-data";
+import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { FITNESS_ADDRESS } from "./fitness-address";
-import { LIMITS_VERSION_FIELD } from "./fitness-input";
+import { type GroupMember, readGroupMembers } from "./fitness-groups";
+import { LIMITS_VERSION_FIELD, pairedRows } from "./fitness-input";
+import { savedScoresMessage } from "./fitness-words";
 import { LIMITS_SAVED_MESSAGE, saveFitnessLimits } from "./save-fitness-limits";
+import { NOT_GROUP_MEMBERS, saveFitnessScores } from "./save-fitness-scores";
 
 /**
  * The signed-in account when it has the right "Bobot penilaian". Any
@@ -19,6 +22,16 @@ import { LIMITS_SAVED_MESSAGE, saveFitnessLimits } from "./save-fitness-limits";
 async function limitsSetter(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "set_grade_weights")) forbidden();
+  return account;
+}
+
+/**
+ * The signed-in account when it has the right "Penilaian jasmani". Any
+ * other is refused before anything of what it sent is read.
+ */
+async function scoreEnterer(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "enter_fitness_scores")) forbidden();
   return account;
 }
 
@@ -41,4 +54,33 @@ export async function saveLimitsAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(FITNESS_ADDRESS);
   return { error: null, done: LIMITS_SAVED_MESSAGE };
+}
+
+/**
+ * "Simpan skor". Who entered the scores is the signed-in account, never
+ * a field, and the year of the test is worked out from its day.
+ */
+export async function saveScoresAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const actor = await scoreEnterer();
+  const rows = pairedRows(texts(form, "student"), texts(form, "score"));
+  if (rows === null) return { error: NOT_GROUP_MEMBERS.error, done: null };
+  const saved = await saveFitnessScores(database(), actor, text(form, "id"), {
+    groupId: text(form, "groupId"),
+    testedOn: text(form, "testedOn"),
+    rows,
+  });
+  if (!saved.ok) return { error: saved.error, done: null };
+  revalidatePath(FITNESS_ADDRESS);
+  return { error: null, done: savedScoresMessage(saved.value) };
+}
+
+/** "Kelompok mahasiswa": the Aktif members of the group chosen, with Skor saat ini. */
+export async function groupMembersAction(
+  groupId: string,
+): Promise<GroupMember[]> {
+  const actor = await scoreEnterer();
+  return readGroupMembers(database(), actor, groupId);
 }

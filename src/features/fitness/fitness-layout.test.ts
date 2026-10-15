@@ -8,6 +8,7 @@ const SCREEN = readFileSync(`${FOLDER}/fitness-screen.tsx`, "utf8");
 const LIST = readFileSync(`${FOLDER}/fitness-list-table.tsx`, "utf8");
 const PANEL = readFileSync(`${FOLDER}/category-panel.tsx`, "utf8");
 const LIMITS = readFileSync(`${FOLDER}/limits-view.tsx`, "utf8");
+const FORM = readFileSync(`${FOLDER}/score-form.tsx`, "utf8");
 
 /** What a rule of the style file holds, without the breaks between its lines. */
 function ruleOf(selector: string): string {
@@ -26,6 +27,7 @@ const LAYOUT_RULES = [
   ".limits",
   ".limitBox",
   ".saveRow",
+  ".full",
 ];
 
 describe("Penilaian jasmani on a phone", () => {
@@ -61,6 +63,24 @@ describe("Penilaian jasmani on a phone", () => {
       "minmax(min(100%, var(--score-box-width)), 1fr)",
     );
     expect(ruleOf(".numberInput")).toContain("max-width: 100%;");
+  });
+
+  it("makes each member of the group form a block of its own, with its fields in the shared form grid", () => {
+    expect(FORM).toMatch(
+      /className=\{`\$\{shared\.table\} \$\{shared\.stacked\}`\}/,
+    );
+    for (const title of [
+      "Mahasiswa",
+      "Skor saat ini",
+      "Skor baru",
+      "Kategori",
+    ]) {
+      expect(FORM).toContain(`data-title="${title}"`);
+    }
+    expect(FORM).toContain("<div className={shared.form}>");
+    expect(FORM).toContain("<div className={styles.saveRow}>");
+    expect(ruleOf(".saveRow")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".full")).toContain("min-width: 0;");
   });
 
   it("forces no width wider than a phone", () => {

@@ -125,3 +125,19 @@ export function yearStartOf(day: string): string {
 
 /** The field of "Ambang skor" that carries the version its form was opened on. */
 export const LIMITS_VERSION_FIELD = "version";
+
+/**
+ * The rows of a sent group form: each student with the "Skor baru" sent
+ * beside it. Null when the two lists are not of one length, which no
+ * form of the app sends.
+ */
+export function pairedRows(
+  studentIds: readonly string[],
+  typed: readonly string[],
+): SentScore[] | null {
+  if (studentIds.length !== typed.length) return null;
+  return studentIds.map((studentId, place) => ({
+    studentId,
+    typed: typed[place] ?? "",
+  }));
+}
