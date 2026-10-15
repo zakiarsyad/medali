@@ -4,6 +4,14 @@
   font-size: var(--text-md);
 }
 
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
 .strong {
   font-weight: var(--weight-heavy);
 }

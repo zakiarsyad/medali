@@ -69,9 +69,16 @@ Kepala Unit and Penilai Mahasiswa.
 
 - [x] 1. The rules that read the file and decide, row by row, ready or
   skipped and why, with checks.
-- [ ] 2. "Unggah berkas" shows with the note, "Sumber asesmen" and "Unduh
+- [x] 2. "Unggah berkas" shows with the note, "Sumber asesmen" and "Unduh
   templat CSV".
 - [ ] 3. Picking a file shows the preview.
 - [ ] 4. "Simpan (n) baris" saves the rows as the newest assessments.
 
 ## Decisions made while building
+
+- "Unggah berkas" takes the whole width of the page, without the medal
+  beside it, so the preview of a file has room. The prototype's "Format
+  berkas" box with a sample medal is left out; the note over the columns
+  says what a file takes.
+- "Sumber asesmen" for a file starts on "Observasi pengasuh", as the form
+  does.
