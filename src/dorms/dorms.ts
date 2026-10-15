@@ -15,6 +15,14 @@ export const DORM_NAMES: Record<DormId, string> = {
   cipta_bakti: "Asrama Cipta Bakti",
 };
 
+/** Each dorm without the word Asrama, where its name stands beside others. */
+export const DORM_SHORT_NAMES: Record<DormId, string> = {
+  wismantara_putra: "Wismantara Putra",
+  wismantara_putri: "Wismantara Putri",
+  dana_rakca: "Dana Rakca",
+  cipta_bakti: "Cipta Bakti",
+};
+
 /** Who lives in each dorm, as the screens say it. */
 export const DORM_RESIDENTS: Record<DormId, string> = {
   wismantara_putra: "mahasiswa laki-laki",

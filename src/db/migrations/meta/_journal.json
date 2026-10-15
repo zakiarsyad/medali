@@ -281,6 +281,13 @@
       "when": 1792009927155,
       "tag": "0039_siku-addition-requests",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792011420938,
+      "tag": "0040_dorm-cleaning",
+      "breakpoints": true
     }
   ]
 }
