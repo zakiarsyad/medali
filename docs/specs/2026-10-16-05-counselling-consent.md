@@ -107,7 +107,7 @@ written only while consent is given.
 - [x] 2. The rights to ask for and record consent (Konselor) and to
   answer one's own (Mahasiswa) are added to the permission list, with
   their checks.
-- [ ] 3. Konselor's Konseling page shows the emergency notice and
+- [x] 3. Konselor's Konseling page shows the emergency notice and
   "Persetujuan konseling" with the request and the paper form.
 - [ ] 4. The student's Konseling page shows the request, "Setujui",
   "Tolak" and "Cabut persetujuan".

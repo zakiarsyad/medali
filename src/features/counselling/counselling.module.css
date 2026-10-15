@@ -1,0 +1,97 @@
+/* The parts of Konseling, one under the other at every width. */
+.parts {
+  display: grid;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.parts > * {
+  margin-top: 0;
+}
+
+/* A box that must be read first: the emergency notice, or a request waiting. */
+.warnBox {
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--warn);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.warnBox p {
+  margin: var(--space-xs) 0 var(--space-sm);
+}
+
+.sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The lines of a panel, evenly apart. */
+.stack {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.stack > * {
+  margin: 0;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: baseline;
+  margin: 0;
+}
+
+.found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  margin-top: var(--space-xs);
+}
+
+.found button {
+  max-width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  overflow-wrap: anywhere;
+}
+
+.ok,
+.warn,
+.bad,
+.plain {
+  border: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.bad {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+.plain {
+  color: var(--muted);
+}
