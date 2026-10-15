@@ -13,11 +13,7 @@ import {
 } from "@/dorms/test-records";
 import type { RoomsParams } from "./rooms-address";
 import { loadRooms, type RoomsView } from "./rooms-view";
-import {
-  countStaleIn,
-  freeStalePlaces,
-  freeStalePlacesIn,
-} from "./stale-places";
+import { freeStalePlaces, freeStalePlacesIn } from "./stale-places";
 import { EVERYONE, residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -330,18 +326,6 @@ describe("freeStalePlaces", () => {
 
       expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
       expect(await residentsOfRoom(db, otherRoom)).toHaveLength(2);
-    });
-  });
-});
-
-describe("countStaleIn", () => {
-  it("counts the stale places of the room only, and deletes nothing", async () => {
-    await inTestDatabase(async (db) => {
-      const { roomId, otherRoom } = await addLeftBehind(db);
-
-      expect(await countStaleIn(db, [2560], roomId)).toBe(1);
-      expect(await countStaleIn(db, [2560], otherRoom)).toBe(2);
-      expect(await residentsOfRoom(db, roomId)).toHaveLength(2);
     });
   });
 });

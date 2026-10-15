@@ -61,6 +61,9 @@ Decided while building, because the issue did not say:
 3. "Isi otomatis" counts the free places of a room without the
    left-behind ones before it picks the residents, and counts again once
    they are removed, so it never fills more than the kapasitas.
+4. Placing a resident now refuses a student who does not live in the
+   dorm before it removes any left-behind place, so a refused placing
+   leaves the room's left-behind places for the next save to remove.
 
 ## Steps
 

@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, or, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
 import { dormInSql } from "@/dorms/resident-condition";
@@ -75,19 +75,4 @@ export async function freeStalePlaces(
       inArray(dormRoomPlaces.studentId, studentIds),
     ),
   );
-}
-
-/** How many places of a room are stale, read without deleting them. */
-export async function countStaleIn(
-  db: Database,
-  dormCohorts: number[],
-  roomId: string,
-): Promise<number> {
-  const [stale] = await db
-    .select({ places: count() })
-    .from(dormRoomPlaces)
-    .innerJoin(dormRooms, eq(dormRooms.id, dormRoomPlaces.roomId))
-    .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
-    .where(and(eq(dormRoomPlaces.roomId, roomId), isStale(dormCohorts)));
-  return stale?.places ?? 0;
 }

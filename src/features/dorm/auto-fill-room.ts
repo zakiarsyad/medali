@@ -1,4 +1,14 @@
-import { and, asc, eq, inArray, isNotNull, isNull, not } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  not,
+  sql,
+} from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -17,7 +27,7 @@ import { NO_PERIOD, ROOM_FULL } from "./place-resident";
 import { NOT_FOUND, parseId } from "./room-input";
 import { PLACED_AS_COMPANION, roomIn } from "./room-list";
 import { countTaken, type LockedRoom, lockRoom } from "./room-lock";
-import { countStaleIn, freeStalePlaces } from "./stale-places";
+import { freeStalePlaces } from "./stale-places";
 
 const NOBODY_WAITING = {
   ok: false,
@@ -92,16 +102,33 @@ async function withoutCompanionRoom(
 
 /**
  * The free places of a room, with its stale places counted as free. They
- * are deleted only once the residents who take them are held.
+ * are deleted only once the residents who take them are held. One
+ * statement reads both counts at one moment: with two, another save could
+ * delete a stale place in between, and the room would look full.
  */
 async function freeWithStale(
   tx: Database,
   dormCohorts: number[],
   room: LockedRoom,
 ): Promise<number> {
-  const taken = await countTaken(tx, room.id);
-  const stale = await countStaleIn(tx, dormCohorts, room.id);
-  return room.capacity - taken + stale;
+  const residents = tx
+    .select({ places: count() })
+    .from(dormRoomPlaces)
+    .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
+    .where(
+      and(eq(dormRoomPlaces.roomId, room.id), livesIn(room.dorm, dormCohorts)),
+    );
+  const companions = tx
+    .select({ places: count() })
+    .from(dormCompanions)
+    .where(eq(dormCompanions.roomId, room.id));
+  const [taken] = await tx
+    .select({
+      places: sql<number>`(${residents}) + (${companions})`.mapWith(Number),
+    })
+    .from(dormRooms)
+    .where(eq(dormRooms.id, room.id));
+  return room.capacity - (taken?.places ?? 0);
 }
 
 async function fill(
