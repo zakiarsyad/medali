@@ -132,7 +132,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The right to see Dashboard asrama, and the right to see names
+- [x] 1. The right to see Dashboard asrama, and the right to see names
   on it, are added to the permission list, with their checks.
 - [ ] 2. The four numbers show.
 - [ ] 3. "Kehadiran kegiatan" shows, with the link to the activity.
