@@ -108,6 +108,13 @@ keeps its status, its decision and who decided.
 8. "Ended more than the set number of days ago" means the day after the
    period's last day plus the set days has passed: with 30 days, a period
    that ended on 31 January is removable from 3 March.
+9. "Hapus berkas lama" is also off when no file may be removed now. It
+   asks with the phone's or computer's own question box, as other
+   removals in the app do.
+10. One press removes every file that may go; it is not split into
+    parts. When the file storage stops answering, the page says so and
+    asks to press again, and that press finishes the rest. A place with
+    no file storage refuses the removal with a message.
 
 ## Steps
 
@@ -115,7 +122,7 @@ keeps its status, its decision and who decided.
   it and to remove files, with their checks.
 - [x] 2. One rule that says which files are removable, with its check.
 - [x] 3. The page with the setting and the table of counts.
-- [ ] 4. "Hapus berkas lama" with the confirmation, safe to press again.
+- [x] 4. "Hapus berkas lama" with the confirmation, safe to press again.
 - [ ] 5. "Berkas sudah dihapus pada (date)" on each of the six kinds of
   record.
 - [ ] 6. The log line, the refusals and the phone layout.

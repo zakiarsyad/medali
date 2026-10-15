@@ -6,3 +6,6 @@
 export const KEEP_DAYS_MIN = 30;
 
 export const KEEP_DAYS_MAX = 3650;
+
+export const NOT_SET_WORDS =
+  "Lama simpan belum diatur. Tidak ada berkas yang dihapus.";
