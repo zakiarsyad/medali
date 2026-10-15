@@ -109,5 +109,5 @@ The issue did not say, so these were decided:
 
 - [x] 1. The rule for Nilai kehadiran takes in saved meetings, with
   checks for Hadir, Alpa, Izin, Sakit, no list and a change of group.
-- [ ] 2. The student's number shows activities and meetings.
+- [x] 2. The student's number shows activities and meetings.
 - [ ] 3. "Rerata nilai kehadiran" on both staff tabs uses the same rule.

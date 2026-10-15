@@ -77,7 +77,7 @@ describe("StudentActivitiesScreen", () => {
     expect(screen).toContain("izin atau sakit, tidak dihitung");
   });
 
-  it("shows the score as a percentage with how many of how many, and the other numbers", () => {
+  it("shows the score of activities and meetings as a percentage with how many of how many, and the other numbers", () => {
     const next = {
       ...TEST_STUDENT_SCHEDULE,
       name: "Kegiatan depan",
@@ -86,16 +86,18 @@ describe("StudentActivitiesScreen", () => {
     };
     const screen = shown({
       score: {
-        activities: { attended: 7, counted: 8 },
-        meetings: { attended: 0, counted: 0 },
+        activities: { attended: 9, counted: 10 },
+        meetings: { attended: 3, counted: 4 },
       },
       waiting: 2,
       dispensations: 1,
       coming: [next],
     });
 
-    expect(screen).toContain(">87,5%</dd>");
-    expect(screen).toContain("7/8 kegiatan karakter");
+    expect(screen).toContain(">85,7%</dd>");
+    expect(screen).toContain(
+      ">9/10 kegiatan karakter · 3/4 pertemuan pengasuhan</dd>",
+    );
     expect(screen).toContain(">2</dd>");
     expect(screen).toContain(">1</dd>");
     expect(screen).toContain(">Kegiatan depan</dd>");
