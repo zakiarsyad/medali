@@ -49,14 +49,21 @@ describe("the brief of a student", () => {
         closeAddress="/kembali"
         groupAddressOf={() => null}
         mentorAddressOf={() => null}
-        morePanelsOf={(studentId) => <p>Panel lain {studentId}</p>}
+        morePanelsOf={() => <p>Catatan pengasuhan</p>}
+        briefPanelsOf={(studentId) => <p>Rincian nilai SIKU {studentId}</p>}
       />,
     );
 
     expect(box).toContain("Mahasiswa Uji Ringkas");
     expect(box).toContain("NIM-UJI · Prodi Uji Ringkas");
     expect(box).toContain("Cuti");
-    expect(box).toContain("Panel lain 00000000-0000-4000-8000-000000000001");
+    expect(box).toContain(
+      "Rincian nilai SIKU 00000000-0000-4000-8000-000000000001",
+    );
+    // A Ketua Program Studi who is also Penilai Mahasiswa, opening a
+    // student of another program: the notes panel of the whole detail
+    // would say "0 catatan" of a student whose notes they may not read.
+    expect(box).not.toContain("Catatan pengasuhan");
     expect(box).not.toContain("Asrama");
     expect(box).not.toContain("Pengasuh");
     expect(box).not.toContain("Angkatan");

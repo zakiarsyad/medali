@@ -40,6 +40,7 @@ export function StudentDetailDialog({
   groupAddressOf,
   mentorAddressOf,
   morePanelsOf,
+  briefPanelsOf,
 }: {
   detail: DetailOrBrief;
   period: RunningPeriod;
@@ -49,6 +50,11 @@ export function StudentDetailDialog({
   groupAddressOf: GroupAddressOf;
   mentorAddressOf: MentorAddressOf;
   morePanelsOf: MorePanelsOf;
+  /**
+   * The only panels under the brief of a student, which shows nothing
+   * else of the detail. None when not given.
+   */
+  briefPanelsOf?: MorePanelsOf;
 }) {
   if (detail.kind === "not_found") {
     return (
@@ -68,7 +74,7 @@ export function StudentDetailDialog({
     return (
       <ModalDialog label="Profil mahasiswa" closeAddress={closeAddress}>
         <StudentHead student={detail.student} />
-        {morePanelsOf(detail.student.id)}
+        {briefPanelsOf?.(detail.student.id)}
       </ModalDialog>
     );
   }

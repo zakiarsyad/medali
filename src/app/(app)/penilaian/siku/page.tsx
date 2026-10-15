@@ -169,6 +169,13 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
               />
             </>
           )}
+          briefPanelsOf={(studentId) => (
+            <StudentSikuPanel
+              account={account}
+              studentId={studentId}
+              base={Promise.resolve(base)}
+            />
+          )}
         />
       )}
     </>
