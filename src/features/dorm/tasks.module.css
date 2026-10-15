@@ -1,0 +1,9 @@
+/* A box of words above the sections, such as "Semua tugas sudah beres." */
+.box {
+  margin: 0 0 var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  overflow-wrap: anywhere;
+}

@@ -562,6 +562,20 @@ describe("may", () => {
     }
   });
 
+  it("opens Tugas saya to Pengelola Asrama", () => {
+    expect(mayOpenPage(["dorm_manager"], "tasks")).toBe(true);
+  });
+
+  it("refuses Tugas saya to every other role, BAM - BPHK and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_bphk", "head_of_unit", "student"]),
+    );
+    for (const role of others) {
+      expect(mayOpenPage([role], "tasks")).toBe(false);
+    }
+  });
+
   const sikuReaders: RoleId[] = [
     "head_of_unit",
     "director",

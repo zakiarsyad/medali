@@ -74,9 +74,18 @@ validate. Each decision is the same one as on Perizinan asrama.
 2. "Perlu dipantau" does not count toward the number in the menu, as in
    the prototype; it is not a decision.
 
+## Decisions made while building
+
+1. The intro is the prototype's, naming only the two kinds of work this
+   version brings: "Semua hal yang menunggu tindakan Pengelola Asrama
+   dalam satu halaman: persetujuan izin dan validasi laporan kembali.
+   Selesaikan langsung di sini tanpa berpindah menu." The all-clear box
+   says "Semua tugas sudah beres. Tidak ada yang menunggu tindakan Anda
+   saat ini.", as in the prototype.
+
 ## Steps
 
-- [ ] 1. The right to open Tugas saya is checked for Pengelola Asrama
+- [x] 1. The right to open Tugas saya is checked for Pengelola Asrama
   only, and the page shows the title, intro and the all-clear box.
 - [ ] 2. The server counts and reads what waits, 20 per section, with
   its checks.
