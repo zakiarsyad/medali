@@ -82,12 +82,26 @@ validate. Each decision is the same one as on Perizinan asrama.
    Selesaikan langsung di sini tanpa berpindah menu." The all-clear box
    says "Semua tugas sudah beres. Tidak ada yang menunggu tindakan Anda
    saat ini.", as in the prototype.
+2. "Oldest" means the earliest start for a leave request, the order
+   Perizinan asrama already uses for Menunggu verifikasi, and the
+   earliest report time for a return report.
+3. The sections hold every student the account may see, as the numbers
+   on Perizinan asrama do, also one who no longer lives in the dorm:
+   their request still waits for a decision.
+4. "Laporan kembali menunggu validasi" holds only the reports BAM -
+   BPHK has verified, as in the prototype. A report still waiting for
+   BAM is not shown or counted there, since Pengelola Asrama cannot
+   decide it yet.
+5. "Perlu dipantau" counts the residents who are still out past their
+   return time: leave that has started, with no return and no report
+   that waits. Those already back late, or whose report waits, are not
+   counted; it is the part of "Terlambat kembali" that is still out.
 
 ## Steps
 
 - [x] 1. The right to open Tugas saya is checked for Pengelola Asrama
   only, and the page shows the title, intro and the all-clear box.
-- [ ] 2. The server counts and reads what waits, 20 per section, with
+- [x] 2. The server counts and reads what waits, 20 per section, with
   its checks.
 - [ ] 3. The section "Izin menunggu persetujuan" with Setujui and Tolak.
 - [ ] 4. The section "Laporan kembali menunggu validasi" with its photo.

@@ -1,5 +1,6 @@
 import { PageHead } from "@/ui/page-head";
 import styles from "./tasks.module.css";
+import { type DormTasks, waitingIn } from "./tasks-card";
 
 function AllClear() {
   return (
@@ -14,7 +15,7 @@ function AllClear() {
  * Tugas saya of Pengelola Asrama: the title, what the page is for, and
  * "Semua tugas sudah beres." while nothing waits for them.
  */
-export function DormTasksScreen({ waiting }: { waiting: number }) {
+export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
   return (
     <>
       <PageHead title="Tugas saya">
@@ -22,7 +23,7 @@ export function DormTasksScreen({ waiting }: { waiting: number }) {
         persetujuan izin dan validasi laporan kembali. Selesaikan langsung di
         sini tanpa berpindah menu.
       </PageHead>
-      {waiting === 0 && <AllClear />}
+      {waitingIn(tasks) === 0 && <AllClear />}
     </>
   );
 }
