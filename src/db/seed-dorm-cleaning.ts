@@ -128,9 +128,17 @@ function rowsOf(
   });
 }
 
-/** The id of the duty added at a place in the list. */
-function idAt(added: { id: string }[], index: number | null): string {
-  const id = index === null ? undefined : added[index]?.id;
+/** What tells the sample duties of a dorm apart: a place has one a day. */
+function keyOf(duty: {
+  day: string;
+  placeId?: string | null | undefined;
+}): string {
+  return `${duty.day} ${duty.placeId ?? ""}`;
+}
+
+/** The id of the added duty that has a key. */
+function idOf(added: Map<string, string>, key: string): string {
+  const id = added.get(key);
   if (id === undefined) throw new Error("A sample duty was not added.");
   return id;
 }
@@ -154,22 +162,30 @@ async function addDutiesOf(
   if (first.length === 0) return;
   const ids = { places, rooms: roomIds };
   const firstRows = rowsOf(dorm, first, ids, staff);
-  const added = await db
+  const inserted = await db
     .insert(dormCleaningDuties)
     .values(firstRows)
-    .returning({ id: dormCleaningDuties.id });
+    .returning({
+      id: dormCleaningDuties.id,
+      day: dormCleaningDuties.day,
+      placeId: dormCleaningDuties.placeId,
+    });
+  const added = new Map(inserted.map((duty) => [keyOf(duty), duty.id]));
 
   const repeats = duties.filter((duty) => duty.repeatOf !== null);
-  const repeatRows = rowsOf(dorm, repeats, ids, staff).map((row, index) => ({
-    ...row,
-    repeatOf: idAt(added, repeats[index]?.repeatOf ?? null),
-  }));
+  const repeatRows = rowsOf(dorm, repeats, ids, staff).map((row, index) => {
+    const repeated = duties[repeats[index]?.repeatOf ?? -1];
+    if (!repeated) throw new Error("A sample repeat names no duty.");
+    const [repeatedRow] = rowsOf(dorm, [repeated], ids, staff);
+    if (!repeatedRow) throw new Error("A sample repeat names no duty.");
+    return { ...row, repeatOf: idOf(added, keyOf(repeatedRow)) };
+  });
   if (repeatRows.length > 0) {
     await db.insert(dormCleaningDuties).values(repeatRows);
   }
 
-  const changes = firstRows.flatMap((row, index) =>
-    changesOf(idAt(added, index), row),
+  const changes = firstRows.flatMap((row) =>
+    changesOf(idOf(added, keyOf(row)), row),
   );
   if (changes.length > 0) await db.insert(dormCleaningChanges).values(changes);
 }
