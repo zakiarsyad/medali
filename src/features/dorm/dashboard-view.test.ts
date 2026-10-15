@@ -160,6 +160,11 @@ describe("loadDashboard", () => {
         present: 3,
         absent: 0,
       });
+      expect(view.byDorm).toMatchObject({
+        dana_rakca: { present: 1, absent: 0, leave: 1 },
+        cipta_bakti: { present: 2, absent: 0, leave: 0 },
+      });
+      expect(view.byOrganiser.coach).toEqual(view.overall);
     });
   });
 

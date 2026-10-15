@@ -3,13 +3,16 @@ import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { Database } from "@/db/connect";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
-import { DORM_IDS } from "@/dorms/dorms";
+import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { ResidentsByDorm } from "./activity-audience";
+import type { Organiser } from "./activity-ids";
 import { readAnnouncedCounts, readCountMarks } from "./dashboard-attendance";
 import { type LeaveNumbers, readLeaveNumbers } from "./dashboard-leave";
 import {
   type ActivityLine,
+  attendanceByDorm,
+  attendanceByOrganiser,
   type CountedAttendance,
   daysShown,
   linesOf,
@@ -17,7 +20,7 @@ import {
   type ShownLine,
   shownLineOf,
 } from "./dashboard-lines";
-import type { Changed, MarkGroup } from "./dashboard-tally";
+import type { Attendance, Changed, MarkGroup } from "./dashboard-tally";
 import { readActivityRows } from "./leave-store";
 import { countResidentsByDorm } from "./resident-counts";
 
@@ -39,6 +42,10 @@ export interface DashboardView {
   /** Kehadiran 7 hari terakhir. */
   overall: CountedAttendance;
   activities: LinePage;
+  /** Kehadiran per penanggung jawab. */
+  byOrganiser: Record<Organiser, CountedAttendance>;
+  /** Kehadiran per asrama. */
+  byDorm: Record<DormId, Attendance>;
 }
 
 /** Who reads Dashboard asrama. */
@@ -102,5 +109,7 @@ export async function loadDashboard(
     leave,
     overall: overallAttendance(lines, groups, changed),
     activities: pageOfLines(lines, page, counted, residents),
+    byOrganiser: attendanceByOrganiser(lines, groups, changed),
+    byDorm: attendanceByDorm(lines, groups, changed),
   };
 }

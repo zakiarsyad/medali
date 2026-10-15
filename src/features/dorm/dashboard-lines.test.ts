@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   type ActivityLine,
+  attendanceByDorm,
+  attendanceByOrganiser,
   attendanceOfLine,
   firstDayShown,
   kehadiranOf,
@@ -181,6 +183,39 @@ describe("overallAttendance", () => {
     expect(overallAttendance([line({})], GROUPS, [])).toEqual({
       attendance: { present: 0, absent: 0, leave: 0 },
       activities: 0,
+    });
+  });
+});
+
+describe("attendanceByOrganiser", () => {
+  it("adds up each penanggung jawab's announced activities that are over", () => {
+    expect(attendanceByOrganiser(LINES, GROUPS, [])).toEqual({
+      upk: { attendance: { present: 0, absent: 0, leave: 0 }, activities: 0 },
+      coach: {
+        attendance: { present: 9, absent: 1, leave: 0 },
+        activities: 1,
+      },
+      bam: { attendance: { present: 3, absent: 3, leave: 0 }, activities: 1 },
+    });
+  });
+});
+
+describe("attendanceByDorm", () => {
+  it("adds up each dorm's residents in the announced activities that are over", () => {
+    const changed: Changed[] = [
+      {
+        countId: "c2",
+        dorm: "cipta_bakti",
+        isAbsent: true,
+        becomes: "present",
+      },
+    ];
+
+    expect(attendanceByDorm(LINES, GROUPS, changed)).toEqual({
+      wismantara_putra: { present: 0, absent: 0, leave: 0 },
+      wismantara_putri: { present: 0, absent: 0, leave: 0 },
+      dana_rakca: { present: 9, absent: 1, leave: 0 },
+      cipta_bakti: { present: 4, absent: 2, leave: 0 },
     });
   });
 });

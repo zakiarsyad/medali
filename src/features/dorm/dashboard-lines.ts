@@ -1,7 +1,9 @@
 import type { CampusMoment } from "@/academic-periods/campus-clock";
 import { daysAfter } from "@/academic-periods/days-after";
+import type { DormId } from "@/dorms/dorms";
 import { countAudience, type ResidentsByDorm } from "./activity-audience";
 import { takingPlaceOn } from "./activity-days";
+import type { Organiser } from "./activity-ids";
 import type { ActivityRow } from "./activity-row";
 import { type ActivityState, activityState } from "./activity-state";
 import { attendanceRate } from "./attendance-rate";
@@ -189,4 +191,46 @@ export function overallAttendance(
   changed: Changed[],
 ): CountedAttendance {
   return countedOf(lines, groups, changed);
+}
+
+/**
+ * Kehadiran per penanggung jawab: the announced activities that are over
+ * of each, and how many they are.
+ */
+export function attendanceByOrganiser(
+  lines: ActivityLine[],
+  groups: MarkGroup[],
+  changed: Changed[],
+): Record<Organiser, CountedAttendance> {
+  const byOrganiser = (organiser: Organiser) =>
+    countedOf(
+      lines.filter((line) => line.activity.organiser === organiser),
+      groups,
+      changed,
+    );
+  return {
+    upk: byOrganiser("upk"),
+    coach: byOrganiser("coach"),
+    bam: byOrganiser("bam"),
+  };
+}
+
+/**
+ * Kehadiran per asrama: the residents of each dorm, by the dorm they live
+ * in today, in the announced activities that are over.
+ */
+export function attendanceByDorm(
+  lines: ActivityLine[],
+  groups: MarkGroup[],
+  changed: Changed[],
+): Record<DormId, Attendance> {
+  const byDorm = (dorm: DormId) =>
+    countedOf(lines, groups, changed, (place) => place.dorm === dorm)
+      .attendance;
+  return {
+    wismantara_putra: byDorm("wismantara_putra"),
+    wismantara_putri: byDorm("wismantara_putri"),
+    dana_rakca: byDorm("dana_rakca"),
+    cipta_bakti: byDorm("cipta_bakti"),
+  };
 }

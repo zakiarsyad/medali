@@ -1,5 +1,7 @@
 import { DORM_IDS, DORM_SHORT_NAMES } from "@/dorms/dorms";
 import type { ResidentsByDorm } from "./activity-audience";
+import { attendanceRate, rateWords } from "./attendance-rate";
+import type { Attendance } from "./dashboard-tally";
 
 /*
  * How Dashboard asrama says its numbers. Read by the screen parts in the
@@ -27,6 +29,24 @@ export function totalResidents(residents: ResidentsByDorm): number {
 export function outNote(outLate: number): string {
   if (outLate === 0) return "dengan izin disetujui";
   return `${shown(outLate)} terlambat kembali`;
+}
+
+/** How far a bar is filled, from 0 to 1, and the words beside it. */
+export interface BarFill {
+  share: number;
+  words: string;
+}
+
+/** A bar of Kehadiran: its rate, or empty with "-" when no one was counted. */
+export function rateBar(attendance: Attendance): BarFill {
+  const { present, absent } = attendance;
+  const rate = attendanceRate(present, present + absent);
+  return { share: rate === null ? 0 : rate / 100, words: rateWords(rate) };
+}
+
+/** A bar of a number, filled by its share of the total. */
+export function countBar(amount: number, total: number): BarFill {
+  return { share: total === 0 ? 0 : amount / total, words: shown(amount) };
 }
 
 /** Under "Kehadiran 7 hari terakhir": how many activities it counts. */

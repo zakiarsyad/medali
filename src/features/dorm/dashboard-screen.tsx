@@ -2,7 +2,9 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { attendanceRate, rateWords } from "./attendance-rate";
+import board from "./dashboard.module.css";
 import { DashboardActivities } from "./dashboard-activities";
+import { AttendanceBars } from "./dashboard-bars";
 import type { DashboardView } from "./dashboard-view";
 import {
   attendanceNote,
@@ -67,6 +69,14 @@ export function DashboardScreen({
         today={view.today}
         mayCount={mayCount}
       />
+      <div className={board.parts}>
+        <AttendanceBars
+          byOrganiser={view.byOrganiser}
+          byDorm={view.byDorm}
+          residents={view.residents}
+          activities={view.overall.activities}
+        />
+      </div>
     </>
   );
 }
