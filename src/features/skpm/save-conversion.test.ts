@@ -57,11 +57,11 @@ describe("saveConversion", () => {
         rows: [{ studentId: ani, points: 30 }],
       });
 
-      expect(await saveConversion(db, penilai, "40", MOMENT)).toEqual({
+      expect(await saveConversion(db, penilai, "40", () => MOMENT)).toEqual({
         ok: true,
         value: 40,
       });
-      expect(await saveConversion(db, kepala, " 60 ", LATER)).toEqual({
+      expect(await saveConversion(db, kepala, " 60 ", () => LATER)).toEqual({
         ok: true,
         value: 60,
       });
@@ -103,7 +103,7 @@ describe("saveConversion", () => {
           "assessor",
         ]);
 
-        expect(await saveConversion(db, penilai, sent, MOMENT)).toEqual(
+        expect(await saveConversion(db, penilai, sent, () => MOMENT)).toEqual(
           INVALID_POINTS,
         );
         expect(await db.select().from(skpmConversions)).toEqual([]);
@@ -120,7 +120,7 @@ describe("saveConversion", () => {
     await inTestDatabase(async (db) => {
       const actor = await addTestActor(db, "Tanpa Hak Konversi", [role]);
 
-      expect(await saveConversion(db, actor, "40", MOMENT)).toEqual(
+      expect(await saveConversion(db, actor, "40", () => MOMENT)).toEqual(
         NOT_ALLOWED_TO_UPLOAD,
       );
       expect(await db.select().from(skpmConversions)).toEqual([]);
