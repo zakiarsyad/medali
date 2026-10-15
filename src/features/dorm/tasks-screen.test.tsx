@@ -130,6 +130,32 @@ describe("Tugas saya", () => {
       "Semua tugas sudah beres.",
     );
   });
+
+  it("says how many advokasi wait for BAM, with a link to Pelanggaran, and keeps them out of the all-clear", () => {
+    const html = screenOf({ ...NOTHING, waitingAppeals: 3 });
+
+    expect(html).toContain("Perlu dipantau:");
+    expect(html).toContain(
+      '3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran</a>).',
+    );
+    expect(html).not.toContain("belum kembali melewati batas izin");
+    expect(html).toContain("Semua tugas sudah beres.");
+  });
+
+  it("puts residents out late and advokasi waiting in one Perlu dipantau box", () => {
+    const html = screenOf({ ...NOTHING, outLate: 2, waitingAppeals: 3 });
+
+    expect(html.match(/Perlu dipantau:/g)).toHaveLength(1);
+    expect(html).toContain(
+      'Perizinan asrama</a>); 3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran</a>).',
+    );
+  });
+
+  it("shows no advokasi line to an account that may not see Pelanggaran", () => {
+    const html = screenOf({ ...NOTHING, waitingAppeals: null });
+
+    expect(html).not.toContain("advokasi");
+  });
 });
 
 describe("Izin menunggu persetujuan", () => {
@@ -454,6 +480,25 @@ const DUE: WarningTask = {
 };
 
 describe("Penetapan SP", () => {
+  it("shows the number card Penetapan SP, which jumps to its section and counts toward the all-clear", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 2 },
+    });
+
+    expect(html).toMatch(
+      /<a href="#tugas-sp" class="_numberOn_\w+"><span class="_amount_\w+">2<\/span><span>Penetapan SP<\/span><\/a>/,
+    );
+    expect(html).toContain('id="tugas-sp"');
+    expect(html).not.toContain("Semua tugas sudah beres.");
+  });
+
+  it("shows no number card Penetapan SP to an account that may not issue SPs", () => {
+    const html = screenOf({ ...NOTHING, warnings: null });
+
+    expect(html).not.toContain("Penetapan SP");
+  });
+
   it("says Beres and Tidak ada yang menunggu. when nobody is due", () => {
     const html = screenOf({
       ...NOTHING,

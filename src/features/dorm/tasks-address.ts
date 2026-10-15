@@ -43,9 +43,12 @@ export const ALL_ASSESSED_ADDRESS = CLEANING_ADDRESS;
 
 /**
  * Pelanggaran, whose "Panggilan klarifikasi dan surat peringatan" lists
- * every student due for an SP, and whose "Advokasi masuk" BAM decides.
+ * every student due for an SP.
  */
 export const ALL_DUE_ADDRESS = VIOLATIONS_ADDRESS;
+
+/** Pelanggaran, whose "Dalam masa advokasi" counts the advokasi that wait for BAM. */
+export const WAITING_APPEALS_ADDRESS = VIOLATIONS_ADDRESS;
 
 /**
  * Pelanggaran with "Proses" of a student open over it, the SP form in

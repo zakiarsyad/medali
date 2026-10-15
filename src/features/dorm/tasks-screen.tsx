@@ -18,6 +18,7 @@ import {
   LATE_ADDRESS,
   LEAVE_SECTION_ID,
   RETURN_SECTION_ID,
+  WAITING_APPEALS_ADDRESS,
   WARNING_SECTION_ID,
 } from "./tasks-address";
 import {
@@ -41,12 +42,40 @@ function AllClear() {
   );
 }
 
-/** Perlu dipantau: the residents still out past their return time. */
-function WatchBox({ outLate }: { outLate: number }) {
+function OutLateLine({ outLate }: { outLate: number }) {
+  return (
+    <>
+      {outLate} mahasiswa belum kembali melewati batas izin (
+      <Link href={LATE_ADDRESS}>Perizinan asrama</Link>)
+    </>
+  );
+}
+
+function WaitingAppealsLine({ waitingAppeals }: { waitingAppeals: number }) {
+  return (
+    <>
+      {waitingAppeals} advokasi pelanggaran menunggu keputusan BAM (
+      <Link href={WAITING_APPEALS_ADDRESS}>Pelanggaran</Link>)
+    </>
+  );
+}
+
+/**
+ * Perlu dipantau: the residents still out past their return time and the
+ * advokasi that wait for BAM, each only when there are any. No decision
+ * of Pengelola Asrama, so neither counts toward the number in the menu.
+ */
+function WatchBox({ tasks }: { tasks: DormTasks }) {
+  const outLate = tasks.outLate ?? 0;
+  const waitingAppeals = tasks.waitingAppeals ?? 0;
+  const anyOutLate = outLate > 0;
+  const anyAppeals = waitingAppeals > 0;
+  if (!anyOutLate && !anyAppeals) return null;
   return (
     <p className={`${styles.box} ${styles.watch}`}>
-      <b>Perlu dipantau:</b> {outLate} mahasiswa belum kembali melewati batas
-      izin (<Link href={LATE_ADDRESS}>Perizinan asrama</Link>).
+      <b>Perlu dipantau:</b> {anyOutLate && <OutLateLine outLate={outLate} />}
+      {anyOutLate && anyAppeals && "; "}
+      {anyAppeals && <WaitingAppealsLine waitingAppeals={waitingAppeals} />}.
     </p>
   );
 }
@@ -80,6 +109,13 @@ function numbersOf(tasks: DormTasks): TaskNumber[] {
       label: "Penilaian kebersihan",
       amount: tasks.cleaning.total,
       sectionId: CLEANING_SECTION_ID,
+    });
+  }
+  if (tasks.warnings) {
+    numbers.push({
+      label: "Penetapan SP",
+      amount: tasks.warnings.total,
+      sectionId: WARNING_SECTION_ID,
     });
   }
   return numbers;
@@ -180,9 +216,7 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
       </PageHead>
       {waitingIn(tasks) === 0 && <AllClear />}
       <TaskNumbers numbers={numbersOf(tasks)} />
-      {tasks.outLate !== null && tasks.outLate > 0 && (
-        <WatchBox outLate={tasks.outLate} />
-      )}
+      <WatchBox tasks={tasks} />
       {tasks.leaves && <LeaveSection section={tasks.leaves} />}
       {tasks.returns && <ReturnSection section={tasks.returns} />}
       {tasks.clarifications && (
