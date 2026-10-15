@@ -54,7 +54,9 @@ function ReturnTaskCard({
         {task.bamNote !== "" && <Fact title="Catatan BAM">{task.bamNote}</Fact>}
       </dl>
       <div className={own.photo}>
-        <ReturnPhoto report={{ id: task.reportId, hasPhoto: task.hasPhoto }} />
+        <ReturnPhoto
+          report={{ id: task.reportId, hasPhoto: task.hasPhoto, removed: null }}
+        />
       </div>
       <TaskDecide
         agrees={VALIDATE}

@@ -115,6 +115,13 @@ keeps its status, its decision and who decided.
     parts. When the file storage stops answering, the page says so and
     asks to press again, and that press finishes the rest. A place with
     no file storage refuses the removal with a message.
+11. "Berkas sudah dihapus pada (date)" stands wherever a decided
+    record showed its photo or file: Verifikasi presensi, Klarifikasi
+    kehadiran and the student's Riwayat, Penilaian SIKU and the
+    student's requests, Perizinan asrama, the dorm Klarifikasi kehadiran
+    and the resident's Riwayat, and the resident's own violations. Lists
+    of records that still wait, such as Tugas saya and Advokasi masuk,
+    never hold a removed file, so they are left as they are.
 
 ## Steps
 
@@ -123,6 +130,6 @@ keeps its status, its decision and who decided.
 - [x] 2. One rule that says which files are removable, with its check.
 - [x] 3. The page with the setting and the table of counts.
 - [x] 4. "Hapus berkas lama" with the confirmation, safe to press again.
-- [ ] 5. "Berkas sudah dihapus pada (date)" on each of the six kinds of
+- [x] 5. "Berkas sudah dihapus pada (date)" on each of the six kinds of
   record.
 - [ ] 6. The log line, the refusals and the phone layout.

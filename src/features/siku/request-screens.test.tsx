@@ -54,8 +54,12 @@ const WAITING: OwnRequest = {
   decidedAt: null,
   note: "",
   photos: [
-    { id: "00000000-0000-4000-8000-000000000311", isKept: true },
-    { id: "00000000-0000-4000-8000-000000000312", isKept: false },
+    { id: "00000000-0000-4000-8000-000000000311", isKept: true, removed: null },
+    {
+      id: "00000000-0000-4000-8000-000000000312",
+      isKept: false,
+      removed: null,
+    },
   ],
 };
 
@@ -109,6 +113,22 @@ describe("Pengajuan saya", () => {
     expect(html).not.toContain("Tarik pengajuan");
   });
 
+  it("says when a photo was removed as old proof, in place of the photo", () => {
+    const removed = "Berkas sudah dihapus pada 16 Okt 2026.";
+    const photo = {
+      id: "00000000-0000-4000-8000-000000000313",
+      isKept: false,
+      removed,
+    };
+    const html = renderToStaticMarkup(
+      <OwnRequestList requests={[{ ...APPROVED, photos: [photo] }]} />,
+    );
+
+    expect(html).toContain(removed);
+    expect(html).not.toContain(PHOTO_NOT_KEPT);
+    expect(html).not.toContain("/penilaian/siku/foto/");
+  });
+
   it("shows a request whose gain was cancelled as Dibatalkan, and says so", () => {
     const html = renderToStaticMarkup(
       <OwnRequestList requests={[CANCELLED]} />,
@@ -159,7 +179,9 @@ const CARD: RequestCard = {
   decidedAt: null,
   note: "",
   hasSameGain: false,
-  photos: [{ id: "00000000-0000-4000-8000-000000000411", isKept: true }],
+  photos: [
+    { id: "00000000-0000-4000-8000-000000000411", isKept: true, removed: null },
+  ],
 };
 
 const BOARD: RequestBoard = {

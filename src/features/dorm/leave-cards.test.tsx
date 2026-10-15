@@ -15,6 +15,7 @@ vi.mock("./leave-actions", () => ({
 const REPORT: ReportCard = {
   id: "00000000-0000-4000-8000-0000000000b1",
   hasPhoto: true,
+  removed: null,
   status: "waiting",
   sentAt: "14 Okt 2026, 16.12",
   timeliness: { late: true, words: "Terlambat 12 menit" },

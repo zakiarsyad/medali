@@ -22,6 +22,7 @@ export const TEST_CLARIFICATION: ClarificationCard = {
     isPdf: true,
     facts: "Dokumen PDF · 12 KB",
   },
+  removed: null,
 };
 
 /** The tab with nothing sent yet, at Diajukan. */

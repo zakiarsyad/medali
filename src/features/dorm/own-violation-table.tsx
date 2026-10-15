@@ -54,6 +54,9 @@ function AppealCell({ appeal }: { appeal: OwnAppeal }) {
           Lihat bukti: {appeal.proofName}
         </a>
       )}
+      {appeal.removed !== null && (
+        <small className={shared.detail}>{appeal.removed}</small>
+      )}
     </>
   );
 }

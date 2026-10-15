@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
@@ -64,7 +64,13 @@ async function fileWithin(
       contentType: dormClarifications.fileContentType,
     })
     .from(dormClarifications)
-    .where(and(eq(dormClarifications.id, clarificationId), ofStudent));
+    .where(
+      and(
+        eq(dormClarifications.id, clarificationId),
+        isNull(dormClarifications.fileRemovedAt),
+        ofStudent,
+      ),
+    );
   if (!clarification || clarification.key === null) return null;
   return { ...clarification, key: clarification.key };
 }

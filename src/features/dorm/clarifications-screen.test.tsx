@@ -28,6 +28,7 @@ const CARD: DormClarificationCard = {
   explanation: "Demam dan beristirahat di kamar.",
   status: "verified",
   hasFile: true,
+  removed: null,
   file: { name: "surat-dokter.pdf", isPdf: true, facts: "Dokumen PDF · 2 KB" },
   sent: "13 Okt 2026, 12.00",
   verification: {
@@ -115,6 +116,15 @@ describe("ClarificationsScreen", () => {
     expect(shown).toContain("<dt>Lampiran</dt><dd>Terlampir</dd>");
     expect(shown).not.toContain("surat-dokter.pdf");
     expect(shown).toContain("Anda dapat melihat rekap dan rinciannya.");
+  });
+
+  it("says when the file was removed as old proof, in place of its name", () => {
+    const removed = "Berkas sudah dihapus pada 1 Apr 2027.";
+    const card = { ...CARD, hasFile: false, file: null, removed };
+    const shown = screen({ ...BOARD, list: { ...BOARD.list, cards: [card] } });
+
+    expect(shown).toContain(`<dt>Lampiran</dt><dd>${removed}</dd>`);
+    expect(shown).not.toContain("surat-dokter.pdf");
   });
 
   it("does not say so to a role that checks or decides", () => {

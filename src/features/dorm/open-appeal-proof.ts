@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
@@ -62,7 +62,13 @@ async function proofWithin(
       dormViolations,
       eq(dormViolations.id, dormViolationAppeals.violationId),
     )
-    .where(and(eq(dormViolationAppeals.id, appealId), ofStudent));
+    .where(
+      and(
+        eq(dormViolationAppeals.id, appealId),
+        isNull(dormViolationAppeals.fileRemovedAt),
+        ofStudent,
+      ),
+    );
   if (!appeal || appeal.key === null) return null;
   if (appeal.name === null || appeal.contentType === null) return null;
   return {

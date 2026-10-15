@@ -59,6 +59,7 @@ async function photoKeyWithin(
     .where(
       and(
         eq(activityAttendances.id, attendanceId),
+        isNull(activityAttendances.fileRemovedAt),
         ofStudent,
         isNull(activitySchedules.deletedAt),
       ),

@@ -1,4 +1,4 @@
-import { and, eq, type SQL } from "drizzle-orm";
+import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
@@ -35,7 +35,13 @@ async function photoKeyWithin(
     .from(dormReturnReports)
     .innerJoin(dormLeaves, eq(dormLeaves.id, dormReturnReports.leaveId))
     .innerJoin(students, eq(students.id, dormLeaves.studentId))
-    .where(and(eq(dormReturnReports.id, reportId), which));
+    .where(
+      and(
+        eq(dormReturnReports.id, reportId),
+        isNull(dormReturnReports.fileRemovedAt),
+        which,
+      ),
+    );
   return report?.photoKey ?? null;
 }
 

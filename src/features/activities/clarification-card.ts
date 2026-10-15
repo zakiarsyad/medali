@@ -44,6 +44,8 @@ export interface ClarificationCard extends ClarificationSummary {
   explanation: string;
   /** Null when no file is kept for it here. */
   file: ClarificationFile | null;
+  /** What the card says once the file was removed as old proof, or null. */
+  removed: string | null;
 }
 
 export const CLARIFICATION_STATUS_WORDS: Record<ClarificationStatus, string> = {

@@ -13,6 +13,7 @@ function report(more: Partial<KeptReport> = {}): KeptReport {
   return {
     id: "00000000-0000-4000-8000-0000000000a1",
     photoKey: "return-photos/a1",
+    fileRemovedAt: null,
     status: "waiting",
     sentAt: on("2026-10-14T16:12"),
     verifiedAt: null,
@@ -28,6 +29,7 @@ describe("reportCardOf", () => {
     expect(reportCardOf(report(), NAMES, END)).toEqual({
       id: "00000000-0000-4000-8000-0000000000a1",
       hasPhoto: true,
+      removed: null,
       status: "waiting",
       sentAt: "14 Okt 2026, 16.12",
       timeliness: { late: true, words: "Terlambat 12 menit" },
@@ -94,5 +96,18 @@ describe("reportCardOf", () => {
     expect(reportCardOf(report({ photoKey: null }), NAMES, END).hasPhoto).toBe(
       false,
     );
+  });
+
+  it("says when the photo was removed as old proof, and offers it no more", () => {
+    const removed = report({
+      status: "rejected",
+      fileRemovedAt: on("2027-04-01T09:00"),
+    });
+
+    const card = reportCardOf(removed, NAMES, END);
+
+    expect(card.hasPhoto).toBe(false);
+    expect(card.removed).toBe("Berkas sudah dihapus pada 1 Apr 2027.");
+    expect(card.status).toBe("rejected");
   });
 });

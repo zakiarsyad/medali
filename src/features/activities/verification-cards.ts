@@ -9,6 +9,7 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
+import { removedFileWords } from "@/ui/removed-file";
 import { isOutsideDates } from "./outside-dates";
 import {
   CARDS_PAGE_SIZE,
@@ -55,6 +56,7 @@ const CARD = {
   note: activityAttendances.note,
   sentAt: activityAttendances.sentAt,
   photoKey: activityAttendances.photoKey,
+  fileRemovedAt: activityAttendances.fileRemovedAt,
   name: students.name,
   nim: students.nim,
   program: studyPrograms.name,
@@ -90,7 +92,7 @@ export function cardOf(
   stored: StoredCard,
   keepsPhotos: boolean,
 ): VerificationCard {
-  const { sentAt, photoKey, startsOn, endsOn, ...card } = stored;
+  const { sentAt, photoKey, fileRemovedAt, startsOn, endsOn, ...card } = stored;
   // The read asks only for attendances with a time sent.
   if (sentAt === null) {
     throw new Error(`The attendance ${stored.id} has no time sent.`);
@@ -100,7 +102,8 @@ export function cardOf(
     sentAt: sentAt.toISOString(),
     sent: sentTimeWords(sentAt),
     isOutsideDates: isOutsideDates(sentAt, { startsOn, endsOn }),
-    hasPhoto: keepsPhotos && photoKey !== null,
+    hasPhoto: keepsPhotos && photoKey !== null && fileRemovedAt === null,
+    removed: removedFileWords(fileRemovedAt),
   };
 }
 

@@ -39,7 +39,13 @@ function view(cell: ClarificationCell, state: HistoryState = NO_ROW_OPEN) {
 
 describe("the Klarifikasi cell of Riwayat", () => {
   it("says Batas klarifikasi lewat once the seven days are over", () => {
-    const shown = view({ badge: null, note: "", file: null, action: "closed" });
+    const shown = view({
+      badge: null,
+      note: "",
+      file: null,
+      removed: null,
+      action: "closed",
+    });
 
     expect(shown).toContain("Batas klarifikasi lewat");
     expect(shown).not.toContain("<button");
@@ -50,6 +56,7 @@ describe("the Klarifikasi cell of Riwayat", () => {
       badge: "submitted",
       note: "",
       file: { clarificationId: CLARIFICATION_ID, name: "surat.pdf" },
+      removed: null,
       action: null,
     });
 
@@ -63,6 +70,7 @@ describe("the Klarifikasi cell of Riwayat", () => {
       badge: "rejected",
       note: "Tidak ada surat keterangan dari klinik asrama.",
       file: null,
+      removed: null,
       action: "ask_again",
     });
 
@@ -72,7 +80,13 @@ describe("the Klarifikasi cell of Riwayat", () => {
   });
 
   it("opens the form under the row whose Ajukan klarifikasi was pressed, and shows the answer under it", () => {
-    const cell = { badge: null, note: "", file: null, action: "ask" } as const;
+    const cell = {
+      badge: null,
+      note: "",
+      file: null,
+      removed: null,
+      action: "ask",
+    } as const;
     const open = view(cell, { openKey: KEY, answer: null });
     const answered = view(cell, {
       openKey: null,
@@ -89,7 +103,7 @@ describe("the Klarifikasi cell of Riwayat", () => {
 
   it("opens no form on a row that may not be asked any more", () => {
     const shown = view(
-      { badge: "submitted", note: "", file: null, action: null },
+      { badge: "submitted", note: "", file: null, removed: null, action: null },
       { openKey: KEY, answer: null },
     );
 

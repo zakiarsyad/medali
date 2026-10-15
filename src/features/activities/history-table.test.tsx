@@ -126,6 +126,7 @@ describe("the table of Riwayat kehadiran", () => {
         status,
         note: "Surat tidak terbaca.",
         file: null,
+        removed: null,
       });
 
       expect(board([row]).words()).toContain(`${badge}</span>`);
@@ -139,6 +140,7 @@ describe("the table of Riwayat kehadiran", () => {
         status,
         note: "",
         file: { clarificationId: "abc", name: "surat-keterangan.pdf" },
+        removed: null,
       });
 
       const words = board([row]).words();
@@ -155,6 +157,7 @@ describe("the table of Riwayat kehadiran", () => {
       status: "submitted",
       note: "",
       file: null,
+      removed: null,
     });
 
     const words = board([row]).words();
@@ -169,6 +172,7 @@ describe("the table of Riwayat kehadiran", () => {
       status: "rejected",
       note: "Surat tidak terbaca.",
       file: null,
+      removed: null,
     } as const;
     const open = board([historyRowOf(TEST_STUDENT_SCHEDULE, TODAY, rejected)]);
     const over = board([
@@ -235,6 +239,7 @@ describe("the table of Riwayat kehadiran", () => {
       status: "submitted",
       note: "",
       file: null,
+      removed: null,
     });
 
     expect(table.forms([waiting])).toEqual([]);

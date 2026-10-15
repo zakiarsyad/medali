@@ -132,12 +132,40 @@ describe("readOwnViolations", () => {
           reason,
           note: "",
           proofName: null,
+          removed: null,
         },
         null,
       ]);
       for (const row of own.announcement.rows) {
         expect(JSON.stringify(row)).not.toContain(reason);
       }
+    });
+  });
+
+  it("says when the proof of the resident's appeal was removed as old proof, and names it no more", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await setUp(db);
+      const before = await readOwnViolations(db, ani, FIRST, NOW);
+      if (before.kind !== "shown") throw new Error("It was refused.");
+      const today = before.history.rows[0]?.id ?? "";
+      await db.insert(dormViolationAppeals).values({
+        violationId: today,
+        reason: "Saya sedang izin resmi pada jam tersebut.",
+        fileName: "bukti-izin.pdf",
+        fileContentType: "application/pdf",
+        fileSize: 64,
+        fileRemovedAt: new Date("3159-02-03T03:00:00Z"),
+        sentAt: NOW,
+      });
+
+      const own = await readOwnViolations(db, ani, FIRST, NOW);
+
+      if (own.kind !== "shown") throw new Error("It was refused.");
+      expect(own.history.rows[0]?.ownAppeal).toMatchObject({
+        status: "waiting",
+        proofName: null,
+        removed: "Berkas sudah dihapus pada 3 Feb 3159.",
+      });
     });
   });
 
