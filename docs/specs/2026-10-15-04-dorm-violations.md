@@ -96,7 +96,7 @@ count per student for the semester.
 
 ## Steps
 
-- [ ] 1. The table for dorm violations is added, with sample violations
+- [x] 1. The table for dorm violations is added, with sample violations
   waiting, in Masa advokasi and Naik ke Pengelola.
 - [ ] 2. The rights to record and to read violations are added to the
   permission list, with their checks.
