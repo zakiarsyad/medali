@@ -62,6 +62,7 @@ describe("an upload in the history list", () => {
 describe("Lihat mahasiswa on an upload", () => {
   // One student with two rows: the count is of rows, not of students.
   const row = {
+    studentId: "00000000-0000-4000-8000-000000000206",
     name: "Mahasiswa Contoh",
     nim: "9964009001",
     program: "Program Contoh",

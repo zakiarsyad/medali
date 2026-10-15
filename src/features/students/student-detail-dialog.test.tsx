@@ -27,7 +27,41 @@ const PLACES_OUTSIDE_THE_STUDENT_LIST: [DetailOpenedFrom, string][] = [
   ["mentor_page", "kembali ke halaman pengasuh."],
   ["notes_list", "kembali ke daftar catatan."],
   ["scores_list", "kembali ke daftar nilai."],
+  ["siku_lists", "kembali ke Penilaian SIKU."],
 ];
+
+describe("the brief of a student", () => {
+  it("shows the name, NIM, program studi, status and the panels of other areas, and nothing else of the detail", () => {
+    const box = renderToStaticMarkup(
+      <StudentDetailDialog
+        detail={{
+          kind: "brief",
+          student: {
+            id: "00000000-0000-4000-8000-000000000001",
+            name: "Mahasiswa Uji Ringkas",
+            nim: "NIM-UJI",
+            studyProgram: "Prodi Uji Ringkas",
+            status: "on_leave",
+          },
+        }}
+        period={{ startYear: 2026, term: "odd" }}
+        openedFrom="siku_lists"
+        closeAddress="/kembali"
+        groupAddressOf={() => null}
+        mentorAddressOf={() => null}
+        morePanelsOf={(studentId) => <p>Panel lain {studentId}</p>}
+      />,
+    );
+
+    expect(box).toContain("Mahasiswa Uji Ringkas");
+    expect(box).toContain("NIM-UJI · Prodi Uji Ringkas");
+    expect(box).toContain("Cuti");
+    expect(box).toContain("Panel lain 00000000-0000-4000-8000-000000000001");
+    expect(box).not.toContain("Asrama");
+    expect(box).not.toContain("Pengasuh");
+    expect(box).not.toContain("Angkatan");
+  });
+});
 
 describe("the box Mahasiswa tidak ditemukan", () => {
   it("sends the reader back to the Mahasiswa list from the Mahasiswa list", () => {

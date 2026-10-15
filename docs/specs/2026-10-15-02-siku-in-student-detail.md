@@ -101,6 +101,14 @@ built again.
    line of the student at once: one student has few.
 7. The panel shows in every place the detail opens, above "Catatan
    pengasuhan", as in the prototype.
+8. A name in the Penilaian SIKU lists opens the whole detail for a role
+   that may open it. Otherwise it opens name, NIM, program studi and
+   status for any student the tab shows the role, a student on Cuti
+   from "Lihat mahasiswa" included, without the SIKU panel then. So a
+   Ketua Program Studi who is also Penilai Mahasiswa sees this short
+   detail for a student of another program.
+9. Closing a detail opened from "Lihat mahasiswa" brings that list
+   back.
 
 ## Steps
 
@@ -108,4 +116,4 @@ built again.
   role and its own students, with its checks.
 - [x] 2. The student detail shows "Rincian nilai SIKU", reusing the
   panel from SIKU adjustments.
-- [ ] 3. Names in the Penilaian SIKU lists open the student detail.
+- [x] 3. Names in the Penilaian SIKU lists open the student detail.

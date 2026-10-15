@@ -78,6 +78,7 @@ export interface SeenChange {
  */
 export interface SeenStudent {
   id: string;
+  studentId: string;
   name: string;
   nim: string;
   program: string;
@@ -233,6 +234,7 @@ function selectLines(db: Database) {
   return db
     .select({
       id: sikuAdjustments.id,
+      studentId: students.id,
       name: students.name,
       nim: students.nim,
       program: studyPrograms.name,
@@ -302,7 +304,11 @@ async function readFormStudents(
     .orderBy(asc(students.name), asc(students.nim))
     .limit(SEEN_PAGE_SIZE)
     .offset((shown - 1) * SEEN_PAGE_SIZE);
-  const lines = rows.map((row) => ({ ...row, change: null }));
+  const lines = rows.map((row) => ({
+    ...row,
+    studentId: row.id,
+    change: null,
+  }));
   return { entry, students: lines, matching: entry.students, page: shown };
 }
 

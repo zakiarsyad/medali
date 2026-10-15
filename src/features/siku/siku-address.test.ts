@@ -7,6 +7,7 @@ import {
 } from "./siku-address";
 
 const ENTRY = "0b8f3c1e-0000-4000-8000-000000000001";
+const STUDENT = "0b8f3c1e-0000-4000-8000-000000000002";
 
 describe("readSikuParams", () => {
   it("reads nothing chosen from a bare address", () => {
@@ -26,8 +27,10 @@ describe("readSikuParams", () => {
         lihathal: "4",
         pengajuan: "ditolak",
         pengajuanhal: "5",
+        profil: STUDENT,
       }),
     ).toEqual({
+      detailId: STUDENT,
       query: "ayu",
       filter: "lost",
       page: 3,
@@ -53,6 +56,7 @@ describe("readSikuParams", () => {
         lihathal: "x",
         pengajuan: "dibatalkan",
         pengajuanhal: "0",
+        profil: "bukan-id",
       }),
     ).toEqual(START_PARAMS);
     expect(readSikuParams({ hal: ["2", "5"] }).page).toBe(2);
@@ -84,12 +88,13 @@ describe("sikuAddress", () => {
       seenPage: 2,
       requestFilter: "all",
       requestPage: 2,
+      detailId: STUDENT,
     } as const;
 
     const address = sikuAddress(params);
 
     expect(address).toBe(
-      `/penilaian/siku?cari=Ayu+L&saring=dasar&hal=2&turun=semua&riwayat=3&lihat=${ENTRY}&lihathal=2&pengajuan=semua&pengajuanhal=2`,
+      `/penilaian/siku?cari=Ayu+L&saring=dasar&hal=2&turun=semua&riwayat=3&lihat=${ENTRY}&lihathal=2&pengajuan=semua&pengajuanhal=2&profil=${STUDENT}`,
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readSikuParams(Object.fromEntries(search))).toEqual(params);
