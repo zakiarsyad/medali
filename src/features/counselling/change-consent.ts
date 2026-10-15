@@ -11,13 +11,21 @@ import {
   type ConsentState,
   type CounsellorMove,
   consentAfter,
+  type StudentMove,
 } from "./consent-rules";
-import { type ConsentView, NO_CONSENT_VERSION } from "./consent-view";
 import {
+  type ConsentView,
+  NO_CONSENT_VERSION,
+  withoutCounsellor,
+} from "./consent-view";
+import {
+  APPROVED_MESSAGE,
   CHANGED_SINCE,
+  DECLINED_MESSAGE,
   PAPER_RECORDED_MESSAGE,
   STUDENT_NOT_FOUND,
   sentToMessage,
+  WITHDRAWN_MESSAGE,
 } from "./consent-words";
 
 /**
@@ -38,7 +46,7 @@ export const NOT_ALLOWED = {
 
 const NOT_FOUND = { kind: "refused", error: STUDENT_NOT_FOUND } as const;
 
-export interface Press {
+interface Press {
   actorId: string;
   studentId: string;
   move: ConsentMove;
@@ -167,10 +175,7 @@ async function applyTo(
  * changing nothing, when the consent changed since its screen showed it
  * or the move is not allowed from the status it finds.
  */
-export function applyPress(
-  db: Database,
-  press: Press,
-): Promise<ConsentOutcome> {
+function applyPress(db: Database, press: Press): Promise<ConsentOutcome> {
   return db.transaction(async (tx) => {
     const current = await lockConsent(tx, press.studentId);
     if (current === null) return applyFirst(tx, press);
@@ -179,7 +184,7 @@ export function applyPress(
 }
 
 /** A version as sent, or null when what was sent is no text. */
-export function sentVersion(version: unknown): string | null {
+function sentVersion(version: unknown): string | null {
   return typeof version === "string" ? version : null;
 }
 
@@ -209,4 +214,43 @@ export async function changeConsentAsCounsellor(
     done,
     now,
   });
+}
+
+const STUDENT_MESSAGES: Record<StudentMove, string> = {
+  approve: APPROVED_MESSAGE,
+  decline: DECLINED_MESSAGE,
+  withdraw: WITHDRAWN_MESSAGE,
+};
+
+/** An outcome as the student sees it: without the Konselor's name. */
+function asStudentSees(outcome: ConsentOutcome): ConsentOutcome {
+  if (outcome.kind === "refused" || outcome.consent === null) return outcome;
+  return { ...outcome, consent: withoutCounsellor(outcome.consent) };
+}
+
+/**
+ * "Setujui", "Tolak" or "Cabut persetujuan" on the student's own
+ * consent. The student is the signed-in account's own, never one that
+ * was sent, so nobody answers for another student. `version` is the
+ * consent the student's page showed. Refused for any role without the
+ * right, giving nothing back.
+ */
+export async function changeOwnConsent(
+  db: Database,
+  actor: AccountForAccess,
+  move: StudentMove,
+  version: unknown,
+  now: Date = new Date(),
+): Promise<ConsentOutcome> {
+  if (!may(actor.roles, "answer_own_counselling_consent")) return NOT_ALLOWED;
+  if (actor.studentId === null) return NOT_ALLOWED;
+  const outcome = await applyPress(db, {
+    actorId: actor.id,
+    studentId: actor.studentId,
+    move,
+    version: sentVersion(version),
+    done: STUDENT_MESSAGES[move],
+    now,
+  });
+  return asStudentSees(outcome);
 }

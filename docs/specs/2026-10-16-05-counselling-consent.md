@@ -109,5 +109,5 @@ written only while consent is given.
   their checks.
 - [x] 3. Konselor's Konseling page shows the emergency notice and
   "Persetujuan konseling" with the request and the paper form.
-- [ ] 4. The student's Konseling page shows the request, "Setujui",
+- [x] 4. The student's Konseling page shows the request, "Setujui",
   "Tolak" and "Cabut persetujuan".

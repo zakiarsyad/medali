@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
+import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { versionOf } from "@/db/row-version";
 import { accounts, counsellingConsents } from "@/db/schema";
-import type { ConsentView } from "./consent-view";
+import { type ConsentView, withoutCounsellor } from "./consent-view";
 
 /** The current consent of a student, or null when they were never asked. */
 export async function readConsentOf(
@@ -29,4 +30,18 @@ export async function readConsentOf(
     counsellorName: isOwnAnswer ? null : found.changedByName,
     version: versionOf(found.changedAt),
   };
+}
+
+/**
+ * The signed-in student's own consent, or null when they were never
+ * asked: always their own, never a student that was sent.
+ */
+export async function readOwnConsent(
+  db: Database,
+  actor: AccountForAccess,
+): Promise<ConsentView | null> {
+  if (!may(actor.roles, "answer_own_counselling_consent")) return null;
+  if (actor.studentId === null) return null;
+  const consent = await readConsentOf(db, actor.studentId);
+  return consent === null ? null : withoutCounsellor(consent);
 }

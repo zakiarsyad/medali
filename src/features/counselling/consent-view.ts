@@ -23,6 +23,14 @@ export interface ConsentView {
 /** The version a press sends for a student who was never asked. */
 export const NO_CONSENT_VERSION = "";
 
+/**
+ * A consent as the student's own page shows it: the Konselor who asked
+ * or recorded it is not named there, as in the prototype.
+ */
+export function withoutCounsellor(consent: ConsentView): ConsentView {
+  return { ...consent, counsellorName: null };
+}
+
 /** The version of a student's consent, or of none. */
 export function versionOfConsent(consent: ConsentView | null): string {
   return consent?.version ?? NO_CONSENT_VERSION;
