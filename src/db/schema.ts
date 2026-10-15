@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
@@ -22,6 +22,12 @@ import {
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import { DORM_IDS } from "@/dorms/dorms";
+import {
+  NOTE_MAX_LENGTH as ASSESSMENT_NOTE_MAX_LENGTH,
+  SCORE_MAX as ASSESSMENT_SCORE_MAX,
+  SCORE_MIN as ASSESSMENT_SCORE_MIN,
+  ASSESSMENT_SOURCES,
+} from "@/features/character-assessment/assessment-ids";
 import { ASSIGNMENT_METHODS } from "@/features/cohort-assignments/methods";
 import {
   ACTIVITY_CATEGORIES,
@@ -239,6 +245,11 @@ export const skpmUploadMode = pgEnum("skpm_upload_mode", SKPM_UPLOAD_MODES);
 export const skpmUploadAction = pgEnum(
   "skpm_upload_action",
   SKPM_UPLOAD_ACTIONS,
+);
+
+export const characterAssessmentSource = pgEnum(
+  "character_assessment_source",
+  ASSESSMENT_SOURCES,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -2698,6 +2709,57 @@ export const skpmConversions = pgTable(
     check(
       "skpm_conversions_in_range",
       sql`${table.pointsForHundred} between ${sql.raw(String(POINTS_FOR_100_MIN))} and ${sql.raw(String(POINTS_FOR_100_MAX))} and ${table.pointsBefore} between ${sql.raw(String(POINTS_FOR_100_MIN))} and ${sql.raw(String(POINTS_FOR_100_MAX))}`,
+    ),
+  ],
+);
+
+/** A score of one MEDALI value in a character assessment is in its range. */
+function inAssessmentRange(score: AnyPgColumn): SQL {
+  return sql`${score} between ${sql.raw(String(ASSESSMENT_SCORE_MIN))} and ${sql.raw(String(ASSESSMENT_SCORE_MAX))}`;
+}
+
+/**
+ * One character assessment of a student: a whole score from 40 to 100
+ * for each MEDALI value, its source, the note of the one who entered it,
+ * and the academic period that ran when it was saved. A student's latest
+ * one counts; the earlier ones stay as history. The key is made by the
+ * form that sent it, so a form sent twice is kept once. Rows here cannot
+ * be changed or deleted; the database refuses it, so the assessments are
+ * their own log, and a wrong one is replaced by a new one.
+ */
+export const characterAssessments = pgTable(
+  "character_assessments",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    scoreM: smallint().notNull(),
+    scoreE: smallint().notNull(),
+    scoreD: smallint().notNull(),
+    scoreA: smallint().notNull(),
+    scoreL: smallint().notNull(),
+    scoreI: smallint().notNull(),
+    source: characterAssessmentSource().notNull(),
+    /** Catatan penilai; empty when nothing was noted. */
+    note: text().notNull(),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("character_assessments_student").on(table.studentId, table.enteredAt),
+    check(
+      "character_assessments_scores_in_range",
+      sql`${inAssessmentRange(table.scoreM)} and ${inAssessmentRange(table.scoreE)} and ${inAssessmentRange(table.scoreD)} and ${inAssessmentRange(table.scoreA)} and ${inAssessmentRange(table.scoreL)} and ${inAssessmentRange(table.scoreI)}`,
+    ),
+    check(
+      "character_assessments_note_length",
+      sql`char_length(${table.note}) <= ${sql.raw(String(ASSESSMENT_NOTE_MAX_LENGTH))}`,
     ),
   ],
 );
