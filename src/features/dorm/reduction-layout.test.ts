@@ -30,6 +30,14 @@ describe("the forms that reduce violations, on a phone", () => {
     expect(TABLE).toContain('data-title="Pengurangan"');
   });
 
+  it("sends Batalkan through the sender that answers a lost request, once at a time", () => {
+    const UNDO = read("reductions-table.tsx");
+    expect(UNDO).toContain("onAnswer(await sendUndo(id, EDGES));");
+    expect(UNDO).toContain("rethrow: unstable_rethrow,");
+    expect(UNDO).toContain("if (isOnItsWay.current) return;");
+    expect(UNDO).not.toContain("await undoReductionAction(");
+  });
+
   it("ask before reducing", () => {
     expect(ONE).toContain(
       "if (!window.confirm(reduceOneQuestion(day, name))) return;",

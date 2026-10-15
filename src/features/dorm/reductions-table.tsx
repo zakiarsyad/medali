@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { unstable_rethrow } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { undoReductionAction } from "./reduction-actions";
 import type { ShownReduction } from "./reduction-list";
 import { NO_REDUCTIONS, UNDO_QUESTION } from "./reduction-words";
+import { sendUndo, type UndoEdges } from "./undo-send";
 import { punishmentText, shownHour } from "./violation-words";
 
 const START: FormState = { error: null, done: null };
+
+/** The undoing's ties to the server and to the framework. */
+const EDGES: UndoEdges = {
+  send: undoReductionAction,
+  rethrow: unstable_rethrow,
+};
 
 function UndoButton({
   id,
@@ -19,10 +27,21 @@ function UndoButton({
   onAnswer: (answer: FormState) => void;
 }) {
   const [pending, startSending] = useTransition();
+  // Set at the press itself: `pending` is known only once the button is
+  // drawn again, and a second press can come before that.
+  const isOnItsWay = useRef(false);
 
   function press() {
+    if (isOnItsWay.current) return;
     if (!window.confirm(UNDO_QUESTION)) return;
-    startSending(async () => onAnswer(await undoReductionAction(id)));
+    isOnItsWay.current = true;
+    startSending(async () => {
+      try {
+        onAnswer(await sendUndo(id, EDGES));
+      } finally {
+        isOnItsWay.current = false;
+      }
+    });
   }
 
   return (
