@@ -67,7 +67,7 @@ Kepala Unit and Penilai Mahasiswa.
 
 ## Steps
 
-- [ ] 1. The rules that read the file and decide, row by row, ready or
+- [x] 1. The rules that read the file and decide, row by row, ready or
   skipped and why, with checks.
 - [ ] 2. "Unggah berkas" shows with the note, "Sumber asesmen" and "Unduh
   templat CSV".
