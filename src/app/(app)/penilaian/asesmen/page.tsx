@@ -9,12 +9,10 @@ import {
   readAssessmentList,
   readAssessmentNumbers,
 } from "@/features/character-assessment/assessment-board";
-import {
-  AssessmentForm,
-  type LevelTexts,
-} from "@/features/character-assessment/assessment-form";
+import type { LevelTexts } from "@/features/character-assessment/assessment-form";
 import { readAssessmentHistory } from "@/features/character-assessment/assessment-history";
 import { AssessmentHistoryDialog } from "@/features/character-assessment/assessment-history-dialog";
+import { AssessmentInputPanel } from "@/features/character-assessment/assessment-input-panel";
 import { assessmentVisibleTo } from "@/features/character-assessment/assessment-readers";
 import {
   AssessmentScreen,
@@ -58,7 +56,7 @@ export default async function AssessmentPage(
         list={list}
         manage={
           mayAssess ? (
-            <AssessmentForm
+            <AssessmentInputPanel
               newAssessmentId={crypto.randomUUID()}
               levelTexts={await readLevelTexts(db)}
             />

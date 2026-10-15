@@ -86,6 +86,7 @@ describe("saveAssessment", () => {
           periodId,
           enteredBy: penilai.id,
           enteredAt: MOMENT,
+          uploadId: null,
         },
       ]);
     });

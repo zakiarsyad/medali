@@ -74,6 +74,7 @@ describe("Hasil asesmen karakter for a role that sees every student", () => {
       expect(list.rows[0]?.latest).toEqual({
         enteredAt: ODD_LATER,
         source: "peer_assessment",
+        fileName: null,
         enteredBy: "Penilai Uji Asesmen",
         scores: GOLD,
       });

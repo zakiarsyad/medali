@@ -14,15 +14,20 @@ function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
 }
 
-/** How many rows of a picked file are ready and how many skipped. */
+/**
+ * How many rows of a picked file are ready and how many skipped, and,
+ * for a file that keeps the last row of a NIM, how many gave way to it.
+ */
 export function FileSummary({
   name,
   ready,
   skipped,
+  duplicates = 0,
 }: {
   name: string;
   ready: number;
   skipped: number;
+  duplicates?: number;
 }) {
   return (
     <p
@@ -34,7 +39,10 @@ export function FileSummary({
       role="status"
     >
       <b>{name}</b>: {shown(ready)} baris siap disimpan
-      {skipped > 0 && `, ${shown(skipped)} baris dilewati`}.
+      {skipped > 0 && `, ${shown(skipped)} baris dilewati`}
+      {duplicates > 0 &&
+        `, ${shown(duplicates)} NIM ganda (dipakai baris terakhir)`}
+      .
     </p>
   );
 }

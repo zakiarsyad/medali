@@ -7,7 +7,7 @@ import { MEDALI_VALUES } from "@/ui/medali-values";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentHistory, HistoryEntry } from "./assessment-history";
-import { SOURCE_WORDS } from "./assessment-words";
+import { shownSource } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import { PredicateBadge } from "./predicate-badge";
 
@@ -26,7 +26,9 @@ function EntryRow({
         <small className={shared.detail}>{periodTitle(entry.period)}</small>
       </td>
       <td data-title="Sumber">
-        {SOURCE_WORDS[entry.source]}
+        <span className={shared.typed}>
+          {shownSource(entry.source, entry.fileName)}
+        </span>
         <small className={`${shared.detail} ${shared.typed}`}>
           {entry.enteredBy}
         </small>

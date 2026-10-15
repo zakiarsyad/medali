@@ -8,7 +8,7 @@ import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentListRow } from "./assessment-board";
-import { NOT_ASSESSED, SOURCE_WORDS } from "./assessment-words";
+import { NOT_ASSESSED, shownSource } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import type { LatestAssessment } from "./latest-assessments";
 import { PredicateBadge } from "./predicate-badge";
@@ -24,7 +24,9 @@ function LatestCells({ latest }: { latest: LatestAssessment }) {
     <>
       <td data-title="Tanggal">{DAY.format(latest.enteredAt)}</td>
       <td data-title="Sumber">
-        {SOURCE_WORDS[latest.source]}
+        <span className={shared.typed}>
+          {shownSource(latest.source, latest.fileName)}
+        </span>
         <small className={`${shared.detail} ${shared.typed}`}>
           {latest.enteredBy}
         </small>

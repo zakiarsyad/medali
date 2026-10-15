@@ -15,6 +15,15 @@ export const SOURCE_WORDS: Record<AssessmentSource, string> = {
   medali_instrument: "Instrumen asesmen MEDALI",
 };
 
+/** "Sumber asesmen", with the name of the file a row was uploaded in. */
+export function shownSource(
+  source: AssessmentSource,
+  fileName: string | null,
+): string {
+  if (fileName === null) return SOURCE_WORDS[source];
+  return `${SOURCE_WORDS[source]} · Unggah ${fileName}`;
+}
+
 /** The predikat of the Skala predikat MEDALI. */
 export const PREDICATE_WORDS: Record<Predicate, string> = {
   gold: "Emas",

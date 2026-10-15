@@ -51,3 +51,19 @@ export const ASSESSMENT_ALREADY_SENT = {
   error:
     "Formulir ini sudah pernah terkirim, jadi isian yang sekarang tidak disimpan. Muat ulang halaman, periksa Hasil asesmen karakter, lalu simpan lagi bila masih perlu.",
 } as const;
+
+export const NOTHING_TO_SAVE = {
+  ok: false,
+  error:
+    "Tidak ada baris yang bisa disimpan. Periksa berkas, lalu unggah lagi.",
+} as const;
+
+/**
+ * What a file's save answers when its key is that of an upload it did
+ * not just add: another file, another source, or another account's.
+ */
+export const FILE_ALREADY_SENT = {
+  ok: false,
+  error:
+    "Berkas ini sudah pernah terkirim, jadi tidak disimpan lagi. Muat ulang halaman, periksa Hasil asesmen karakter, lalu unggah lagi bila masih perlu.",
+} as const;

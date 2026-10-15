@@ -6,6 +6,7 @@ import {
   academicPeriods,
   accounts,
   characterAssessments,
+  characterAssessmentUploads,
   students,
   studyPrograms,
 } from "@/db/schema";
@@ -19,6 +20,8 @@ export interface HistoryEntry {
   enteredAt: Date;
   period: { startYear: number; term: Term };
   source: AssessmentSource;
+  /** The name of the file it was uploaded in, or null for the form. */
+  fileName: string | null;
   /** The name of the account that entered it. */
   enteredBy: string;
   scores: Scores;
@@ -47,6 +50,7 @@ async function readEntries(
       startYear: academicPeriods.startYear,
       term: academicPeriods.term,
       source: characterAssessments.source,
+      fileName: characterAssessmentUploads.fileName,
       enteredBy: accounts.name,
       scoreM: characterAssessments.scoreM,
       scoreE: characterAssessments.scoreE,
@@ -61,6 +65,10 @@ async function readEntries(
       eq(academicPeriods.id, characterAssessments.periodId),
     )
     .innerJoin(accounts, eq(accounts.id, characterAssessments.enteredBy))
+    .leftJoin(
+      characterAssessmentUploads,
+      eq(characterAssessmentUploads.id, characterAssessments.uploadId),
+    )
     .where(eq(characterAssessments.studentId, studentId))
     .orderBy(
       desc(characterAssessments.enteredAt),
@@ -71,6 +79,7 @@ async function readEntries(
     enteredAt: row.enteredAt,
     period: { startYear: row.startYear, term: row.term },
     source: row.source,
+    fileName: row.fileName,
     enteredBy: row.enteredBy,
     scores: scoresOf(row),
     note: null,
