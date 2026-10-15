@@ -1,35 +1,50 @@
 import { randomUUID } from "node:crypto";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
+import type { RowLimit } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { PageHead } from "@/ui/page-head";
 import { BaseScorePanel } from "./base-score-panel";
 import { changeNote } from "./change-note";
 import { GradeScalePanel } from "./grade-scale-panel";
+import { TAHAP } from "./stages";
 import { readBaseScore, STARTING_BASE_SCORE } from "./stored-base-score";
 import { readMainIndicators } from "./stored-main-indicators";
 import { readPpksActivities } from "./stored-ppks-activities";
 import { readStageBreakdowns } from "./stored-stage-breakdowns";
-import { readCohortCounts } from "./stored-student-numbers";
+import { readCohortCounts, readScoreGroups } from "./stored-student-numbers";
 import { semesterCounts } from "./student-numbers";
 import { TahapPanels } from "./tahap-panels";
+import { tahapScores } from "./tahap-scores";
 
 export async function CurriculumScreen({
   mayChange,
   mayManageActivities,
+  limit,
 }: {
   mayChange: boolean;
   mayManageActivities: boolean;
+  /** The students whose scores the viewer may see. */
+  limit: RowLimit;
 }) {
   const db = database();
-  const [indicators, baseScore, activities, breakdowns, period, cohorts] =
-    await Promise.all([
-      readMainIndicators(db),
-      readBaseScore(db),
-      readPpksActivities(db),
-      readStageBreakdowns(db),
-      readRunningPeriod(db),
-      readCohortCounts(db),
-    ]);
+  const [
+    indicators,
+    baseScore,
+    activities,
+    breakdowns,
+    period,
+    cohorts,
+    scoreGroups,
+  ] = await Promise.all([
+    readMainIndicators(db),
+    readBaseScore(db),
+    readPpksActivities(db),
+    readStageBreakdowns(db),
+    readRunningPeriod(db),
+    readCohortCounts(db),
+    readScoreGroups(db, visibleTo(limit)),
+  ]);
   return (
     <>
       <PageHead title="Kurikulum pembangunan karakter">
@@ -54,6 +69,7 @@ export async function CurriculumScreen({
         mayManageActivities={mayManageActivities}
         newActivityId={randomUUID()}
         semesterCounts={semesterCounts(cohorts, period)}
+        scores={TAHAP.map(({ no }) => tahapScores(scoreGroups, period, no))}
       >
         <BaseScorePanel
           score={baseScore.score}

@@ -6,6 +6,7 @@ import { type FormTarget, PpksPanel } from "./ppks-panel";
 import { stageBreakdown, type TahapBreakdown } from "./stage-breakdown";
 import { StagesSection } from "./stages-section";
 import { type SemesterCounts, semesterCounts } from "./student-numbers";
+import type { TahapScores } from "./tahap-scores";
 
 const VALUES = mainIndicators(new Map());
 
@@ -51,12 +52,25 @@ const SPECIAL: PpksActivity = {
   name: "Kegiatan khusus uji",
 };
 
+/** Tahap 1 with assessed students; the others with none. */
+const SCORES: (TahapScores | null)[] = [
+  {
+    values: { M: 85, E: 69, D: 77, A: 72, L: 81.5, I: 64.9 },
+    rerata: 78.3,
+  },
+  null,
+  null,
+  null,
+];
+
 function section({
   counts = COUNTS,
   activities = [],
+  scores = SCORES,
 }: {
   counts?: SemesterCounts;
   activities?: PpksActivity[];
+  scores?: (TahapScores | null)[];
 } = {}) {
   return renderToStaticMarkup(
     <StagesSection
@@ -69,6 +83,7 @@ function section({
       mayManage={false}
       newActivityId="7c1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f"
       semesterCounts={counts}
+      scores={scores}
     />,
   );
 }
@@ -142,5 +157,25 @@ describe("the activity form", () => {
 
   it("starts a special activity with Target peserta empty", () => {
     expect(form(null, "new")).toMatch(/name="target" value=""/);
+  });
+});
+
+describe("Penjabaran MEDALI", () => {
+  it("shows Rerata tahap and the score of each nilai, coloured by its predikat", () => {
+    const html = section();
+
+    expect(html).toContain("Rerata tahap 78,3");
+    expect(html).toMatch(/_emas_[^"]*"><\/i>85,0/);
+    expect(html).toMatch(/_perak_[^"]*"><\/i>77,0/);
+    expect(html).toMatch(/_perunggu_[^"]*"><\/i>72,0/);
+    expect(html).toMatch(/_bina_[^"]*"><\/i>64,9/);
+  });
+
+  it("shows no score while the tahap has no assessed student", () => {
+    const html = section({ scores: [null, null, null, null] });
+
+    expect(html).toContain("Penjabaran MEDALI tahap penanaman");
+    expect(html).not.toContain("Rerata tahap");
+    expect(html).not.toMatch(/_emas_|_perak_|_perunggu_|_bina_/);
   });
 });

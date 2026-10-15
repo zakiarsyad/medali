@@ -7,6 +7,7 @@ import type { PpksActivity } from "./ppks-activities";
 import type { TahapBreakdown } from "./stage-breakdown";
 import { StagesSection } from "./stages-section";
 import type { SemesterCounts } from "./student-numbers";
+import type { TahapScores } from "./tahap-scores";
 
 /**
  * The panels that follow the chosen tahap: the main indicators mark its
@@ -22,6 +23,7 @@ export function TahapPanels({
   mayManageActivities,
   newActivityId,
   semesterCounts,
+  scores,
   children,
 }: {
   /** Every nilai with its main indicators as they are now. */
@@ -40,6 +42,8 @@ export function TahapPanels({
   newActivityId: string;
   /** The active students of every program in each semester. */
   semesterCounts: SemesterCounts;
+  /** The averages of the viewer's assessed students in each tahap. */
+  scores: readonly (TahapScores | null)[];
   children: ReactNode;
 }) {
   const [tahapNo, setTahapNo] = useState(1);
@@ -62,6 +66,7 @@ export function TahapPanels({
         mayManage={mayManageActivities}
         newActivityId={newActivityId}
         semesterCounts={semesterCounts}
+        scores={scores}
       />
     </>
   );

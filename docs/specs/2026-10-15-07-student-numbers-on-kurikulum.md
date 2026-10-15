@@ -95,6 +95,23 @@ The issue did not say, so these were decided:
 8. The list of special and additional activities follows no semester,
    so it has no number filled in by the app: a row with no target
    still shows "-", and its form starts empty.
+9. The scores of the chosen tahap count only the active students the
+   viewer may see whose semester falls in that tahap and who have any
+   assessment; each student's latest one counts. A nilai shows the
+   average of their latest score for that nilai, to one decimal. Rerata
+   tahap is the average of their Rerata, worked out as Rerata capaian
+   on Asesmen karakter is, to one decimal. With no assessed student, or
+   while no period runs, nothing shows and the boxes look as before.
+10. A nilai's score has the dot of the predikat its average falls in,
+    in the colours of the Skala predikat MEDALI, instead of the
+    prototype's shaded background. "Rerata tahap (score)" sits at the
+    right of the panel's heading, as in the prototype.
+11. A person with several roles sees the scores of the students of
+    only the roles that open Kurikulum. A role that does not open the
+    page adds no students.
+12. On a phone the tahap boxes, the nilai boxes and the heading of the
+    panel each stack, and the scores stay beside the name of their
+    nilai, so nothing scrolls sideways.
 
 ## Steps
 
@@ -102,5 +119,5 @@ The issue did not say, so these were decided:
   boxes.
 - [x] 2. Target peserta of a PPKS activity defaults to the semester's
   count.
-- [ ] 3. Rerata tahap and the score per nilai show in Penjabaran MEDALI,
+- [x] 3. Rerata tahap and the score per nilai show in Penjabaran MEDALI,
   limited to the viewer's students.

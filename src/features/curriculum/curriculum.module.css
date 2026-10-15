@@ -224,6 +224,11 @@
   font-size: var(--text-sm);
 }
 
+.valueScore {
+  margin-left: auto;
+  font-weight: var(--weight-semibold);
+}
+
 .autoMark {
   color: var(--muted);
   font-size: var(--text-xs);
