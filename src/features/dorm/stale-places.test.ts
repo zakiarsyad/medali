@@ -13,7 +13,7 @@ import {
 } from "@/dorms/test-records";
 import type { RoomsParams } from "./rooms-address";
 import { loadRooms, type RoomsView } from "./rooms-view";
-import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
+import { freeStalePlaces, freeStalePlacesIn } from "./stale-places";
 import { EVERYONE, residentsOfRoom } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -276,30 +276,56 @@ describe("freeStalePlacesIn", () => {
   });
 });
 
-describe("freeStalePlacesOf", () => {
-  it("deletes the stale place of the students given only", async () => {
+/**
+ * A resident placed in a room, and three students on leave: one placed in
+ * that room, two in another.
+ */
+async function addLeftBehind(db: Database) {
+  const placed = await addPlacedResident(db);
+  const more = { cohortYear: 2560, status: "on_leave" as const };
+  const leftIn = await addTestStudent(db, placed.program, {
+    ...more,
+    nim: "9923800002",
+    name: "Penghuni Uji Cuti",
+  });
+  const given = await addTestStudent(db, placed.program, {
+    ...more,
+    nim: "9923800003",
+    name: "Penghuni Uji Cuti Lain",
+  });
+  const notGiven = await addTestStudent(db, placed.program, {
+    ...more,
+    nim: "9923800004",
+    name: "Penghuni Uji Cuti Ketiga",
+  });
+  const otherRoom = await addTestRoom(db, { number: "S102" });
+  await placeTestResident(db, placed.roomId, leftIn);
+  await placeTestResident(db, otherRoom, given);
+  await placeTestResident(db, otherRoom, notGiven);
+  return { ...placed, otherRoom, given, notGiven };
+}
+
+describe("freeStalePlaces", () => {
+  it("deletes the stale places of the room and of the students given only", async () => {
     await inTestDatabase(async (db) => {
-      const { program, roomId, studentId } = await addPlacedResident(db);
-      const more = { cohortYear: 2560, status: "on_leave" as const };
-      const given = await addTestStudent(db, program, {
-        ...more,
-        nim: "9923800002",
-        name: "Penghuni Uji Cuti",
-      });
-      const notGiven = await addTestStudent(db, program, {
-        ...more,
-        nim: "9923800003",
-        name: "Penghuni Uji Cuti Lain",
-      });
-      await placeTestResident(db, roomId, given);
-      await placeTestResident(db, roomId, notGiven);
+      const { roomId, studentId, otherRoom, given, notGiven } =
+        await addLeftBehind(db);
 
-      await freeStalePlacesOf(db, [2560], [given, studentId]);
-      await freeStalePlacesOf(db, [2560], []);
+      await freeStalePlaces(db, [2560], roomId, [given, studentId]);
 
-      expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
-        [studentId, notGiven].sort(),
-      );
+      expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
+      expect(await residentsOfRoom(db, otherRoom)).toEqual([notGiven]);
+    });
+  });
+
+  it("deletes the stale places of the room when no student is given", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, studentId, otherRoom } = await addLeftBehind(db);
+
+      await freeStalePlaces(db, [2560], roomId, []);
+
+      expect(await residentsOfRoom(db, roomId)).toEqual([studentId]);
+      expect(await residentsOfRoom(db, otherRoom)).toHaveLength(2);
     });
   });
 });
