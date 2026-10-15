@@ -8,7 +8,12 @@ import {
   returnPhotoAddress,
 } from "./return-card";
 
-function ReturnPhoto({ report }: { report: ReportCard }) {
+/** The photo of a report, which opens whole in a new tab, or why there is none. */
+export function ReturnPhoto({
+  report,
+}: {
+  report: Pick<ReportCard, "id" | "hasPhoto">;
+}) {
   if (!report.hasPhoto) {
     return <p className={styles.noReportPhoto}>{NO_RETURN_PHOTO_HERE}</p>;
   }

@@ -1,3 +1,5 @@
+import type { Parsed } from "@/parsed";
+import type { FormState } from "@/ui/form-message";
 import type { LeaveStatus } from "./leave-ids";
 import { STATUS_WORDS } from "./leave-words";
 
@@ -60,10 +62,46 @@ export function tooLateToCancel(status: LeaveStatus) {
   } as const;
 }
 
+/**
+ * A refusal of a decision because the request or report was decided or
+ * cancelled first: the list it was pressed on is out of date.
+ */
+export interface StaleRefusal {
+  ok: false;
+  error: string;
+  stale: true;
+}
+
+/** What a decision on a request or a report gives: what it made it, or why not. */
+export type Decided<T> = Parsed<T> | StaleRefusal;
+
 /** What a decision answers when the request no longer waits. */
-export function tooLateToDecide(status: LeaveStatus) {
+export function tooLateToDecide(status: LeaveStatus): StaleRefusal {
   return {
     ok: false,
     error: `Izin ini sudah ${statusWords(status)} lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman.`,
-  } as const;
+    stale: true,
+  };
+}
+
+/** What a decision on a request or a report answers the screen. */
+export interface DecisionAnswer extends FormState {
+  /** Whether it was refused as decided or cancelled first. */
+  stale: boolean;
+}
+
+/** A refused decision as the screen is answered. */
+export function refusedDecision(
+  refusal: { ok: false; error: string } | StaleRefusal,
+): DecisionAnswer {
+  return {
+    error: refusal.error,
+    done: null,
+    stale: "stale" in refusal && refusal.stale,
+  };
+}
+
+/** A kept decision as the screen is answered. */
+export function keptDecision(done: string | null): DecisionAnswer {
+  return { error: null, done, stale: false };
 }

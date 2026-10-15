@@ -9,7 +9,7 @@ import type { Parsed } from "@/parsed";
 import { lettersIn } from "@/ui/letters-in";
 import { NOTE_TOO_LONG } from "./decide-leave";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
-import { REJECTION_NEEDS_NOTE } from "./leave-messages";
+import { type Decided, REJECTION_NEEDS_NOTE } from "./leave-messages";
 import {
   type DecidedStatus,
   NO_VALIDATE_DECISION,
@@ -88,7 +88,7 @@ export async function verifyReturn(
   reportId: string,
   decision: string,
   note: string,
-): Promise<Parsed<DecidedStatus>> {
+): Promise<Decided<DecidedStatus>> {
   if (!may(actor.roles, "verify_dorm_return")) return VERIFY_NOT_ALLOWED;
   if (!isUuid(reportId)) return REPORT_NOT_FOUND;
   const sent = parsedDecision(
@@ -137,7 +137,7 @@ async function validate(
   actor: Decider,
   reportId: string,
   decision: Decision,
-): Promise<Parsed<DecidedStatus>> {
+): Promise<Decided<DecidedStatus>> {
   const before = await statusOf(tx, reportId);
   if (!before) return REPORT_NOT_FOUND;
   // Held first, so a return recorded at the same moment is never saved beside this one.
@@ -187,7 +187,7 @@ export async function validateReturn(
   reportId: string,
   decision: string,
   note: string,
-): Promise<Parsed<DecidedStatus>> {
+): Promise<Decided<DecidedStatus>> {
   if (!may(actor.roles, "validate_dorm_return")) return VALIDATE_NOT_ALLOWED;
   if (!isUuid(reportId)) return REPORT_NOT_FOUND;
   const sent = parsedDecision(

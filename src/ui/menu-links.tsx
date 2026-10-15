@@ -21,6 +21,11 @@ export function MenuLinks({ menu }: { menu: MenuItem[] }) {
             aria-current={isOpen(pathname, item.path) ? "page" : undefined}
           >
             {item.title}
+            {item.count !== undefined && item.count > 0 && (
+              <span className={styles.count}>
+                {item.count.toLocaleString("id-ID")}
+              </span>
+            )}
           </Link>
         </li>
       ))}
