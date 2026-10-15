@@ -24,23 +24,51 @@ describe("lastEscalatedAnnouncement", () => {
     const at = lastEscalatedAnnouncement(minutesLater(180));
 
     expect(at).toEqual(ANNOUNCED);
-    expect(violationStatus(at, minutesLater(180))).toBe("escalated");
+    expect(violationStatus(at, null, minutesLater(180))).toBe("escalated");
   });
 });
 
 describe("violationStatus", () => {
   it("is Terjadwal before the announcement hour", () => {
-    expect(violationStatus(ANNOUNCED, minutesLater(-1))).toBe("scheduled");
+    expect(violationStatus(ANNOUNCED, null, minutesLater(-1))).toBe(
+      "scheduled",
+    );
   });
 
   it("is Masa advokasi from the announcement hour itself", () => {
-    expect(violationStatus(ANNOUNCED, ANNOUNCED)).toBe("appeal");
-    expect(violationStatus(ANNOUNCED, minutesLater(179))).toBe("appeal");
+    expect(violationStatus(ANNOUNCED, null, ANNOUNCED)).toBe("appeal");
+    expect(violationStatus(ANNOUNCED, null, minutesLater(179))).toBe("appeal");
   });
 
   it("is Naik ke Pengelola from 3 hours after the announcement", () => {
-    expect(violationStatus(ANNOUNCED, minutesLater(180))).toBe("escalated");
-    expect(violationStatus(ANNOUNCED, minutesLater(60 * 24 * 30))).toBe(
+    expect(violationStatus(ANNOUNCED, null, minutesLater(180))).toBe(
+      "escalated",
+    );
+    expect(violationStatus(ANNOUNCED, null, minutesLater(60 * 24 * 30))).toBe(
+      "escalated",
+    );
+  });
+
+  it("is Advokasi diproses while its appeal waits, also long after 3 hours", () => {
+    expect(violationStatus(ANNOUNCED, "waiting", minutesLater(30))).toBe(
+      "appeal_waiting",
+    );
+    expect(
+      violationStatus(ANNOUNCED, "waiting", minutesLater(60 * 24 * 30)),
+    ).toBe("appeal_waiting");
+  });
+
+  it("is Advokasi diterima once its appeal is accepted, never going up", () => {
+    expect(violationStatus(ANNOUNCED, "accepted", minutesLater(30))).toBe(
+      "appeal_accepted",
+    );
+    expect(
+      violationStatus(ANNOUNCED, "accepted", minutesLater(60 * 24 * 30)),
+    ).toBe("appeal_accepted");
+  });
+
+  it("is Naik ke Pengelola once its appeal is rejected, also within the 3 hours", () => {
+    expect(violationStatus(ANNOUNCED, "rejected", minutesLater(30))).toBe(
       "escalated",
     );
   });

@@ -1,3 +1,4 @@
+import type { AppealStatus } from "./appeal-ids";
 import { APPEAL_HOURS } from "./violation-ids";
 
 /*
@@ -7,10 +8,17 @@ import { APPEAL_HOURS } from "./violation-ids";
 
 /**
  * Terjadwal: it waits for its announcement hour. Masa advokasi: it is
- * announced and may still be appealed. Naik ke Pengelola: the appeal
- * time is over and it counts.
+ * announced and may still be appealed. Advokasi diproses: its appeal
+ * waits for BAM. Advokasi diterima: its appeal was accepted and it never
+ * counts. Naik ke Pengelola: the appeal time is over without an appeal,
+ * or its appeal was rejected, and it counts.
  */
-export type ViolationStatus = "scheduled" | "appeal" | "escalated";
+export type ViolationStatus =
+  | "scheduled"
+  | "appeal"
+  | "appeal_waiting"
+  | "appeal_accepted"
+  | "escalated";
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -27,9 +35,19 @@ export function lastEscalatedAnnouncement(now: Date): Date {
   return new Date(now.getTime() - APPEAL_HOURS * HOUR_MS);
 }
 
-/** Where a violation announced at a moment stands at another moment. */
-export function violationStatus(announcedAt: Date, now: Date): ViolationStatus {
+/**
+ * Where a violation announced at a moment stands at another moment, with
+ * the status of its appeal, or null without one.
+ */
+export function violationStatus(
+  announcedAt: Date,
+  appeal: AppealStatus | null,
+  now: Date,
+): ViolationStatus {
   if (now < announcedAt) return "scheduled";
+  if (appeal === "waiting") return "appeal_waiting";
+  if (appeal === "accepted") return "appeal_accepted";
+  if (appeal === "rejected") return "escalated";
   if (now < appealEndOf(announcedAt)) return "appeal";
   return "escalated";
 }

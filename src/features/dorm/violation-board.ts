@@ -1,20 +1,22 @@
 import { and, asc, count, desc, eq, type SQL, sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { Database } from "@/db/connect";
-import { dormViolations, students } from "@/db/schema";
+import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
 import { matchesSearch } from "./room-list";
 import {
   ANNOUNCED_FIELDS,
   type AnnouncedViolation,
+  APPEAL_OF_VIOLATION,
 } from "./violation-announcement";
 import {
+  APPEAL_ACCEPTED,
   announcedBy,
   announcedToday,
   campusDayStart,
   escalatedBy,
-  inAppealAt,
+  inAppealOrWaitingAt,
   inPeriodDays,
 } from "./violation-conditions";
 import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
@@ -24,7 +26,7 @@ import type { PeriodDays } from "./violation-periods";
 export interface ViolationNumbers {
   /** Announced on today's campus day, up to now. */
   announcedToday: number;
-  /** In Masa advokasi now, whatever their day. */
+  /** In Masa advokasi or Advokasi diproses now, whatever their day. */
   inAppeal: number;
   /** Gone up to Pengelola Asrama, of a violation day of the semester. */
   escalated: number;
@@ -39,7 +41,10 @@ export interface RekapRow {
   dorm: DormId;
   /** Gone up to Pengelola Asrama: Tercatat. */
   escalated: number;
+  /** In Masa advokasi or Advokasi diproses: Proses advokasi. */
   inAppeal: number;
+  /** Advokasi diterima, which does not count. */
+  accepted: number;
 }
 
 export interface Rekap {
@@ -69,9 +74,10 @@ async function countWhere(db: Database, where: SQL | undefined) {
 }
 
 /**
- * "Diumumkan hari ini", "Dalam masa advokasi" and "Naik ke Pengelola
- * Asrama", of the students `visible` holds, at `now` by the server's
- * clock. The last counts the violation days of the semester only.
+ * "Diumumkan hari ini", "Dalam masa advokasi", which holds Advokasi
+ * diproses too, and "Naik ke Pengelola Asrama", of the students
+ * `visible` holds, at `now` by the server's clock. The last counts the
+ * violation days of the semester only.
  */
 export async function readViolationNumbers(
   db: Database,
@@ -83,7 +89,7 @@ export async function readViolationNumbers(
   const ofSemester = semester === null ? sql`false` : inPeriodDays(semester);
   const [today, appeal, escalated] = await Promise.all([
     countWhere(db, and(visible, announcedToday(now, todayStart))),
-    countWhere(db, and(visible, inAppealAt(now))),
+    countWhere(db, and(visible, inAppealOrWaitingAt(now))),
     countWhere(db, and(visible, escalatedBy(now), ofSemester)),
   ]);
   return { announcedToday: today, inAppeal: appeal, escalated };
@@ -97,9 +103,9 @@ const LATEST_DORM = sql<DormId>`(array_agg(${dormViolations.dorm} order by ${dor
 /**
  * "Rekap pelanggaran per mahasiswa": each student `visible` holds with an
  * announced violation on a day of the semester, whose name or NIM holds
- * the search text, with how many went up to Pengelola Asrama and how
- * many are in Masa advokasi. The most Tercatat first, then by name, 20 a
- * page.
+ * the search text, with how many went up to Pengelola Asrama, how many
+ * are in Masa advokasi or Advokasi diproses, and how many had their
+ * appeal accepted. The most Tercatat first, then by name, 20 a page.
  */
 export async function readViolationRekap(
   db: Database,
@@ -132,7 +138,8 @@ export async function readViolationRekap(
       nim: students.nim,
       dorm: LATEST_DORM,
       escalated,
-      inAppeal: countOf(inAppealAt(now)),
+      inAppeal: countOf(inAppealOrWaitingAt(now)),
+      accepted: countOf(APPEAL_ACCEPTED),
     })
     .from(dormViolations)
     .innerJoin(students, eq(students.id, dormViolations.studentId))
@@ -170,6 +177,7 @@ export async function readStudentViolations(
     .select(ANNOUNCED_FIELDS)
     .from(dormViolations)
     .innerJoin(students, eq(students.id, dormViolations.studentId))
+    .leftJoin(dormViolationAppeals, APPEAL_OF_VIOLATION)
     .where(where)
     .orderBy(
       desc(dormViolations.day),

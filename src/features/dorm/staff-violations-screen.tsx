@@ -51,7 +51,24 @@ function SchedulePanel({
   );
 }
 
-function Numbers({ board }: { board: StaffViolations }) {
+/**
+ * What "Dalam masa advokasi" says under its number: to those who decide,
+ * how many appeals wait for them; to everyone else, how long the appeal
+ * time lasts.
+ */
+function inAppealNote(waitingAppeals: number | null): string {
+  if (waitingAppeals === null)
+    return `batas ${APPEAL_HOURS} jam setelah diumumkan`;
+  return `${waitingAppeals} advokasi menunggu keputusan`;
+}
+
+function Numbers({
+  board,
+  waitingAppeals,
+}: {
+  board: StaffViolations;
+  waitingAppeals: number | null;
+}) {
   const { numbers, semester } = board;
   return (
     <NumberCards>
@@ -63,7 +80,7 @@ function Numbers({ board }: { board: StaffViolations }) {
       <NumberCard
         label="Dalam masa advokasi"
         amount={numbers.inAppeal}
-        note={`batas ${APPEAL_HOURS} jam setelah diumumkan`}
+        note={inAppealNote(waitingAppeals)}
       />
       <NumberCard
         label="Naik ke Pengelola Asrama"
@@ -93,7 +110,7 @@ function keptBesideDay(params: StaffViolationParams): [string, string][] {
 /**
  * Pelanggaran for staff: the three numbers, "Input dan publikasi
  * pelanggaran" and "Jadwal publikasi" for those who record and a note for
- * those who only read, "Rekap pelanggaran per mahasiswa" with the box of
+ * those who only read, "Advokasi masuk" for those who decide, "Rekap pelanggaran per mahasiswa" with the box of
  * one student, and "Pengumuman pelanggaran".
  */
 export function StaffViolationsScreen({
@@ -103,6 +120,9 @@ export function StaffViolationsScreen({
   now,
   form,
   schedule,
+  appeals,
+  waitingAppeals,
+  ownRecord,
 }: {
   tabs: TabLinksProps;
   params: StaffViolationParams;
@@ -112,6 +132,12 @@ export function StaffViolationsScreen({
   form: ReactNode;
   /** "Jadwal publikasi", or null for an account that only reads. */
   schedule: ViolationSchedule | null;
+  /** "Advokasi masuk", or null for an account that does not decide appeals. */
+  appeals: ReactNode;
+  /** How many appeals wait, for an account that decides them, or else null. */
+  waitingAppeals: number | null;
+  /** The account's own record, for a resident who is also staff, or null. */
+  ownRecord: ReactNode;
 }) {
   return (
     <>
@@ -121,7 +147,7 @@ export function StaffViolationsScreen({
         {APPEAL_HOURS} jam; setelah itu pelanggaran naik ke Pengelola Asrama.
       </PageHead>
       <TabLinks {...tabs} />
-      <Numbers board={board} />
+      <Numbers board={board} waitingAppeals={waitingAppeals} />
       {form === null ? (
         <p className={styles.note}>{READ_ONLY_NOTE}</p>
       ) : (
@@ -130,6 +156,7 @@ export function StaffViolationsScreen({
       {schedule !== null && (
         <SchedulePanel schedule={schedule} params={params} />
       )}
+      {appeals}
       <RekapPanel
         rekap={board.rekap}
         params={params}
@@ -151,6 +178,7 @@ export function StaffViolationsScreen({
           })
         }
       />
+      {ownRecord}
       {board.student !== null && board.semester !== null && (
         <StudentViolationsDialog
           student={board.student}

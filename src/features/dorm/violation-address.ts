@@ -13,6 +13,8 @@ export const VIOLATIONS_ADDRESS = "/asrama/pel";
 
 /** What the staff screen of Pelanggaran shows. */
 export interface StaffViolationParams {
+  /** The page of "Advokasi masuk", counted from 1. */
+  appealPage: number;
   /** The page of Jadwal publikasi, counted from 1. */
   schedulePage: number;
   /** The violation day of "Pengumuman pelanggaran", or null for the latest. */
@@ -29,6 +31,10 @@ export interface StaffViolationParams {
   studentId: string | null;
   /** The page of the box, counted from 1. */
   studentPage: number;
+  /** The period of the account's own record, for a resident who is also staff. */
+  ownPeriodId: string | "all" | null;
+  /** The page of the account's own record, counted from 1. */
+  ownPage: number;
 }
 
 /** What the screen of a resident shows. */
@@ -59,6 +65,15 @@ function keyOf(sent: string): string | null {
   return isUuid(sent) ? sent : null;
 }
 
+function ownPeriodOf(sent: string): string | "all" | null {
+  return sent === ALL_PERIODS ? "all" : keyOf(sent);
+}
+
+function setOwnPeriod(search: URLSearchParams, periodId: string | null) {
+  if (periodId === "all") search.set("periode", ALL_PERIODS);
+  if (periodId !== null && periodId !== "all") search.set("periode", periodId);
+}
+
 /**
  * What the address asks the staff screen for. Nothing in an address is
  * trusted: a part that is not understood counts as not chosen, a page as
@@ -68,6 +83,7 @@ export function readStaffViolationParams(
   params: SearchParams,
 ): StaffViolationParams {
   return {
+    appealPage: pageOf(firstParam(params.advokasi)),
     schedulePage: pageOf(firstParam(params.jadwal)),
     day: dayOf(firstParam(params.tgl)),
     announcementPage: pageOf(firstParam(params.umum)),
@@ -76,6 +92,8 @@ export function readStaffViolationParams(
     page: pageOf(firstParam(params.hal)),
     studentId: keyOf(firstParam(params.mhs)),
     studentPage: pageOf(firstParam(params.mhshal)),
+    ownPeriodId: ownPeriodOf(firstParam(params.periode)),
+    ownPage: pageOf(firstParam(params.rekam)),
   };
 }
 
@@ -83,9 +101,8 @@ export function readStaffViolationParams(
 export function readOwnViolationParams(
   params: SearchParams,
 ): OwnViolationParams {
-  const period = firstParam(params.periode);
   return {
-    periodId: period === ALL_PERIODS ? "all" : keyOf(period),
+    periodId: ownPeriodOf(firstParam(params.periode)),
     page: pageOf(firstParam(params.hal)),
     day: dayOf(firstParam(params.tgl)),
     announcementPage: pageOf(firstParam(params.umum)),
@@ -104,6 +121,7 @@ function setPage(search: URLSearchParams, name: string, page: number) {
 /** The address of the staff screen. What is not chosen and first pages are left out. */
 export function staffViolationsAddress(params: StaffViolationParams): string {
   const search = new URLSearchParams();
+  setPage(search, "advokasi", params.appealPage);
   setPage(search, "jadwal", params.schedulePage);
   if (params.day !== null) search.set("tgl", params.day);
   setPage(search, "umum", params.announcementPage);
@@ -112,16 +130,20 @@ export function staffViolationsAddress(params: StaffViolationParams): string {
   setPage(search, "hal", params.page);
   if (params.studentId !== null) search.set("mhs", params.studentId);
   setPage(search, "mhshal", params.studentPage);
+  setOwnPeriod(search, params.ownPeriodId);
+  setPage(search, "rekam", params.ownPage);
   return withSearch(search);
+}
+
+/** Where the proof of an appeal is downloaded from the server. */
+export function appealProofAddress(appealId: string): string {
+  return `${VIOLATIONS_ADDRESS}/bukti/${appealId}`;
 }
 
 /** The address of the screen of a resident, read the same way. */
 export function ownViolationsAddress(params: OwnViolationParams): string {
   const search = new URLSearchParams();
-  if (params.periodId === "all") search.set("periode", ALL_PERIODS);
-  if (params.periodId !== null && params.periodId !== "all") {
-    search.set("periode", params.periodId);
-  }
+  setOwnPeriod(search, params.periodId);
   setPage(search, "hal", params.page);
   if (params.day !== null) search.set("tgl", params.day);
   setPage(search, "umum", params.announcementPage);

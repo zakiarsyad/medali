@@ -1,31 +1,55 @@
 import { DORM_SHORT_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import type { AppealStatus } from "./appeal-ids";
 import type { AnnouncedViolation } from "./violation-announcement";
-import { appealEndOf, violationStatus } from "./violation-status";
+import {
+  appealEndOf,
+  type ViolationStatus,
+  violationStatus,
+} from "./violation-status";
 import { punishmentText, STATUS_WORDS, shownHour } from "./violation-words";
 import styles from "./violations.module.css";
 
 /** Who looks at a list: staff see the NIM and the dorm, a resident sees a name only. */
 export type ListReader = "staff" | "resident";
 
-/** Masa advokasi with the hour it ends, or Naik ke Pengelola, at `now`. */
+const STATUS_LOOKS: Record<ViolationStatus, string | undefined> = {
+  scheduled: undefined,
+  appeal: styles.warn,
+  appeal_waiting: styles.warn,
+  appeal_accepted: styles.ok,
+  escalated: styles.bad,
+};
+
+/**
+ * Where an announced violation stands at `now`: Masa advokasi with the
+ * hour it ends, Advokasi diproses, Advokasi diterima, or Naik ke
+ * Pengelola, with "advokasi ditolak" when its appeal was rejected. Only
+ * the result of an appeal, never its reason.
+ */
 export function StatusBadge({
   announcedAt,
+  appeal,
   now,
 }: {
   announcedAt: Date;
+  appeal: AppealStatus | null;
   now: Date;
 }) {
-  const status = violationStatus(announcedAt, now);
-  const look = status === "appeal" ? styles.warn : styles.bad;
+  const status = violationStatus(announcedAt, appeal, now);
   return (
     <>
-      <span className={`${shared.badge} ${look}`}>{STATUS_WORDS[status]}</span>
+      <span className={`${shared.badge} ${STATUS_LOOKS[status] ?? ""}`}>
+        {STATUS_WORDS[status]}
+      </span>
       {status === "appeal" && (
         <small className={shared.detail}>
           advokasi s.d. {shownHour(appealEndOf(announcedAt))}
         </small>
+      )}
+      {appeal === "rejected" && (
+        <small className={shared.detail}>advokasi ditolak</small>
       )}
     </>
   );
@@ -93,7 +117,11 @@ export function AnnouncedTable({
               </td>
               <td data-title="Diumumkan">{shownHour(row.announcedAt)}</td>
               <td data-title="Status">
-                <StatusBadge announcedAt={row.announcedAt} now={now} />
+                <StatusBadge
+                  announcedAt={row.announcedAt}
+                  appeal={row.appeal}
+                  now={now}
+                />
               </td>
             </tr>
           ))}

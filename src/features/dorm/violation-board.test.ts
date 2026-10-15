@@ -8,6 +8,7 @@ import { cancelViolation } from "./cancel-violation";
 import { saveViolations } from "./save-violations";
 import { EVERYONE } from "./test-records";
 import {
+  addTestAppeal,
   addViolationActor,
   addViolationSetting,
   sentList,
@@ -21,6 +22,7 @@ import {
   readViolationRekap,
 } from "./violation-board";
 import type { SentViolationRow } from "./violation-input";
+import { violationStatus } from "./violation-status";
 
 const inTestDatabase = withTestDatabase();
 
@@ -228,6 +230,104 @@ describe("readAnnouncement", () => {
       const shown = await readAnnouncement(db, EVERYONE, before, null, 1);
 
       expect(shown.day).toBe("3157-02-02");
+    });
+  });
+});
+
+/**
+ * The setting of `setUp` with appeals: Ani's of 3 February waits, Cici's
+ * of that day is rejected, and Bea's of 30 January was accepted.
+ */
+async function withAppeals(db: Database) {
+  const setting = await setUp(db);
+  const bam = await addViolationActor(db, "BAM Uji Rekap Advokasi", [
+    "bam_compliance",
+  ]);
+  const decided = { decidedBy: bam.id, decidedAt: NOW };
+  const announced = await readAnnouncement(db, EVERYONE, NOW, null, 1);
+  const old = await readAnnouncement(db, EVERYONE, NOW, "3157-01-30", 1);
+  const idOf = (rows: { id: string; name: string }[], name: string) =>
+    rows.find((row) => row.name === name)?.id ?? "";
+  await addTestAppeal(db, idOf(announced.rows, "Ani Uji Pelanggaran"));
+  await addTestAppeal(db, idOf(announced.rows, "Cici Uji Pelanggaran"), {
+    ...decided,
+    status: "rejected",
+    decisionNote: "Tidak ada izin.",
+  });
+  await addTestAppeal(db, idOf(old.rows, "Bea Uji Pelanggaran"), {
+    ...decided,
+    status: "accepted",
+  });
+  return setting;
+}
+
+describe("the numbers and lists with appeals", () => {
+  it("count Advokasi diproses as in the appeal time, a rejected appeal as gone up, and an accepted one never", async () => {
+    await inTestDatabase(async (db) => {
+      await withAppeals(db);
+
+      expect(await readViolationNumbers(db, EVERYONE, NOW, EVEN)).toEqual({
+        announcedToday: 2,
+        inAppeal: 1,
+        escalated: 2,
+      });
+      expect(
+        (await readViolationNumbers(db, EVERYONE, NOW, ODD)).escalated,
+      ).toBe(2);
+      // A year later Ani's appeal still waits, so hers never goes up.
+      const later = new Date("3158-02-03T15:00:00Z");
+      expect(
+        (await readViolationNumbers(db, EVERYONE, later, EVEN)).inAppeal,
+      ).toBe(1);
+    });
+  });
+
+  it("give the rekap Tercatat, Proses advokasi and Advokasi diterima per student", async () => {
+    await inTestDatabase(async (db) => {
+      await withAppeals(db);
+
+      const even = await readViolationRekap(db, EVERYONE, NOW, EVEN, "", 1);
+      const odd = await readViolationRekap(db, EVERYONE, NOW, ODD, "", 1);
+
+      const counts = (rekap: typeof even) =>
+        rekap.rows.map((row) => [
+          row.name,
+          row.escalated,
+          row.inAppeal,
+          row.accepted,
+        ]);
+      expect(counts(even)).toEqual([
+        ["Ani Uji Pelanggaran", 1, 1, 0],
+        ["Cici Uji Pelanggaran", 1, 0, 0],
+      ]);
+      expect(counts(odd)).toEqual([
+        ["Ani Uji Pelanggaran", 2, 0, 0],
+        ["Bea Uji Pelanggaran", 0, 0, 1],
+      ]);
+    });
+  });
+
+  it("read only the result of an appeal for each row, the same status the counts give", async () => {
+    await inTestDatabase(async (db) => {
+      await withAppeals(db);
+
+      const announced = await readAnnouncement(db, EVERYONE, NOW, null, 1);
+      const old = await readAnnouncement(db, EVERYONE, NOW, "3157-01-30", 1);
+      const statuses = [...announced.rows, ...old.rows].map((row) => [
+        row.name,
+        violationStatus(row.announcedAt, row.appeal, NOW),
+      ]);
+
+      expect(statuses).toEqual([
+        ["Ani Uji Pelanggaran", "appeal_waiting"],
+        ["Cici Uji Pelanggaran", "escalated"],
+        ["Ani Uji Pelanggaran", "escalated"],
+        ["Ani Uji Pelanggaran", "escalated"],
+        ["Bea Uji Pelanggaran", "appeal_accepted"],
+      ]);
+      for (const row of announced.rows) {
+        expect(JSON.stringify(row)).not.toContain("Saya sedang izin");
+      }
     });
   });
 });

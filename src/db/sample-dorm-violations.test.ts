@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
-import { violationStatus } from "@/features/dorm/violation-status";
+import { appealEndOf, violationStatus } from "@/features/dorm/violation-status";
 import {
   nextAnnouncement,
   SAMPLE_VIOLATION_RESIDENTS,
@@ -13,23 +13,28 @@ const MORNING = new Date("2026-10-14T03:00:00Z");
 const EVENING = new Date("2026-10-14T13:30:00Z");
 
 describe("sampleDormViolations", () => {
-  it.each([MORNING, EVENING])(
-    "has violations waiting, in Masa advokasi and gone up to Pengelola Asrama at %s",
-    (now) => {
-      const shown = sampleDormViolations(now).filter(
-        (violation) => !violation.isCancelled,
-      );
-      const statuses = new Set(
-        shown.map((violation) => violationStatus(violation.announcedAt, now)),
-      );
+  it.each([MORNING, EVENING])("has violations in every status at %s", (now) => {
+    const shown = sampleDormViolations(now).filter(
+      (violation) => !violation.isCancelled,
+    );
+    const statuses = new Set(
+      shown.map((violation) =>
+        violationStatus(
+          violation.announcedAt,
+          violation.appeal?.status ?? null,
+          now,
+        ),
+      ),
+    );
 
-      expect([...statuses].sort()).toEqual([
-        "appeal",
-        "escalated",
-        "scheduled",
-      ]);
-    },
-  );
+    expect([...statuses].sort()).toEqual([
+      "appeal",
+      "appeal_accepted",
+      "appeal_waiting",
+      "escalated",
+      "scheduled",
+    ]);
+  });
 
   it("cancels only a violation that waits for its announcement", () => {
     const cancelled = sampleDormViolations(MORNING).filter(
@@ -61,6 +66,51 @@ describe("sampleDormViolations", () => {
     }
     const ofFirst = violations.filter((violation) => violation.resident === 0);
     expect(ofFirst.length).toBeGreaterThan(3);
+  });
+
+  it.each([MORNING, EVENING])(
+    "has appeals waiting, accepted and rejected, each sent within its appeal time and before %s",
+    (now) => {
+      const appealed = sampleDormViolations(now).filter(
+        (violation) => violation.appeal !== null,
+      );
+      const statuses = appealed.map((violation) => violation.appeal?.status);
+
+      expect(statuses.sort()).toEqual([
+        "accepted",
+        "rejected",
+        "waiting",
+        "waiting",
+      ]);
+      for (const { appeal, announcedAt, isCancelled } of appealed) {
+        const sentAt = appeal?.sentAt ?? new Date(0);
+        expect(isCancelled).toBe(false);
+        expect(sentAt.getTime()).toBeGreaterThan(announcedAt.getTime());
+        expect(sentAt.getTime()).toBeLessThan(
+          appealEndOf(announcedAt).getTime(),
+        );
+        expect(sentAt.getTime()).toBeLessThanOrEqual(now.getTime());
+        expect((appeal?.reason.length ?? 0) >= 15).toBe(true);
+        expect(appeal?.status === "rejected" && appeal.note === "").toBe(false);
+      }
+    },
+  );
+
+  it("leaves the first resident a violation in Masa advokasi to appeal, beside one appeal in each status", () => {
+    const ofFirst = sampleDormViolations(MORNING).filter(
+      (violation) => violation.resident === 0,
+    );
+    const open = ofFirst.filter(
+      (violation) =>
+        violation.appeal === null &&
+        violationStatus(violation.announcedAt, null, MORNING) === "appeal",
+    );
+    const statuses = ofFirst.map((violation) => violation.appeal?.status);
+
+    expect(open).toHaveLength(1);
+    expect(statuses).toEqual(
+      expect.arrayContaining(["accepted", "rejected", "waiting"]),
+    );
   });
 
   it("has one Hukuman lainnya, which says what it is", () => {
