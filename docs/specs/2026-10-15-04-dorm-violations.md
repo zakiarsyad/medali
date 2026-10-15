@@ -94,6 +94,89 @@ count per student for the semester.
 4. "Terlambat kembali dari izin" and a missed cleaning duty are not
    recorded automatically; BAM records them by hand.
 
+Decided while building, because the issue did not say:
+
+5. Three new rights: recording violations, with scheduling and
+   cancelling their announcement ("Mencatat pelanggaran asrama,
+   menjadwalkan, dan membatalkan pengumumannya"), for BAM - BPHK, KI,
+   Kerohanian, Konsumsi, Senipora and Kesehatan; reading them ("Melihat
+   pelanggaran asrama") for those six, Pengelola Asrama and Kepala Unit;
+   and a resident's own ("Melihat pelanggaran asrama sendiri dan
+   pengumuman pelanggaran asramanya") for Mahasiswa. Direktur, Ketua
+   Program Studi, Pengasuh and BAM - Kerumahtanggaan get none, as the
+   tab is not theirs.
+6. Alasan pelanggaran offers the prototype's eight reasons, and any other
+   may be typed. It holds 3 to 200 letters, Hukuman lainnya at most 100,
+   not counting spaces around them.
+7. A BAM member's own student is the student their account belongs to:
+   the search never offers them, and the server refuses a row for them.
+   An account that is no student has no such limit.
+8. Only a student who lives in a dorm on the day of the save can be
+   picked, from any dorm. A violation keeps the dorm its resident lives
+   in then, and the announcement of a dorm shows the violations kept
+   with it.
+9. The form starts at today and 21:00. One save keeps at most 50
+   violations, all of them or none. The announcement may be set at most
+   7 days after today. An hour that has already passed announces the
+   violations at the moment they are saved, so the 3 hours of appeal
+   always start when residents can see them.
+10. "Simpan dan jadwalkan publikasi" pressed twice keeps the list once
+    and answers both the same. The same form sent again with other
+    content, or by another account, is refused and nothing is saved.
+11. "Batalkan" is per row, and any account that may record may cancel a
+    row another recorded. It asks "Batalkan publikasi pelanggaran ini?"
+    and says "Publikasi dibatalkan.". From the announcement hour on, by
+    the server's clock, it is refused with "Pelanggaran ini sudah
+    diumumkan, jadi tidak dapat dibatalkan lagi.". A cancelled row keeps
+    who cancelled it and when, and shows nowhere.
+12. Only those who record see "Jadwal publikasi": Pengelola Asrama and
+    Kepala Unit see a violation once it is announced. It lists every
+    waiting row, the soonest announcement first, 20 a page, each with
+    the hour it is announced and "advokasi s.d." the hour the appeal time
+    ends.
+13. A violation is Terjadwal before its hour, in Masa advokasi from its
+    hour until 3 hours later, and Naik ke Pengelola from then on.
+14. "Diumumkan hari ini" counts the violations whose announcement hour
+    fell on today, campus time, and has passed. "Dalam masa advokasi"
+    counts those in Masa advokasi now, of any date. "Naik ke Pengelola
+    Asrama" counts those that went up with a violation date in the
+    semester chosen for the rekap.
+15. The semester choice offers every stored academic period, newest
+    first, and starts at the running one.
+16. "Rekap pelanggaran per mahasiswa" lists each student with an
+    announced violation in the semester: Mahasiswa with the NIM, Asrama
+    (the dorm of their latest violation), Tercatat (those that went up)
+    and Masa advokasi; the most Tercatat first, then by name, 20 a page.
+    Pressing a row opens a box with that student's announced violations
+    of the semester, the latest first, 20 a page. The prototype's
+    columns on appeals, clarifications and warning letters wait for
+    those features.
+17. "Pengumuman pelanggaran" offers every violation date with an
+    announced violation, with how many, the latest first, and starts at
+    the latest; it lists them 20 a page, the earliest announced first,
+    then by name. Staff see the name, NIM and dorm; a resident sees the
+    names only.
+18. A resident's "Pelanggaran tercatat" counts their own violations of
+    the running semester that went up. "Rekam jejak pelanggaran saya"
+    offers "Semua periode" and every stored period, starts at the running
+    one, and lists 20 a page, the latest first.
+19. The empty lists say "Belum ada pelanggaran di daftar.", "Tidak ada
+    pelanggaran yang menunggu diumumkan.", "Belum ada pelanggaran yang
+    diumumkan.", "Tidak ada pelanggaran pada semester ini.", "Tidak ada
+    pelanggaran pada periode ini." and "Tidak ada penghuni asrama yang
+    cocok.". A save says "(n) pelanggaran disimpan dan dijadwalkan
+    diumumkan (hour). Advokasi dapat diajukan sampai (hour).".
+20. Each entry and each cancel adds a line to the log with who, when and
+    which; the database refuses to change or delete a line, and a
+    violation with a line cannot be deleted.
+21. Sample data, in the running period, of the first 24 sample residents
+    by name: two violations on each of the ten days before today and a
+    third for the first resident every third day, announced at 21:00 of
+    their day, one with Hukuman lainnya; three announced an hour ago, in
+    Masa advokasi; and three of today waiting for the next 21:00 at
+    least an hour away, one of them cancelled. The sample BAM - BPHK
+    records those of even dates and the sample BAM - KI the others.
+
 ## Steps
 
 - [x] 1. The table for dorm violations is added, with sample violations
@@ -104,4 +187,4 @@ count per student for the semester.
 - [x] 4. BAM sees "Jadwal publikasi" and cancels a waiting row.
 - [x] 5. Staff see the numbers, the announcement per day and the count
   per student.
-- [ ] 6. Residents see their own record and the announcement.
+- [x] 6. Residents see their own record and the announcement.

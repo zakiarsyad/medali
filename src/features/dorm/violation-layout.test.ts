@@ -50,6 +50,23 @@ describe("the form of BAM on a phone", () => {
   });
 });
 
+describe("the lists of Pelanggaran on a phone", () => {
+  it("show each violation, each waiting row and each student as a card that names every value", () => {
+    for (const name of [
+      "violation-lists.tsx",
+      "violation-schedule-table.tsx",
+      "violation-rekap.tsx",
+    ]) {
+      expect(read(name)).toMatch(/<table className=.*shared\.stacked/);
+    }
+  });
+
+  it("fold a heading and its choice under each other", () => {
+    expect(ruleOf(".panelHead")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".panelHead > *")).toContain("max-width: 100%;");
+  });
+});
+
 describe("the screen parts of Pelanggaran that run in the browser", () => {
   const PARTS = [
     `${FOLDER}/violation-form.tsx`,
