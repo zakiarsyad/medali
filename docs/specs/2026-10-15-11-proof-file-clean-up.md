@@ -122,6 +122,10 @@ keeps its status, its decision and who decided.
     and the resident's Riwayat, and the resident's own violations. Lists
     of records that still wait, such as Tugas saya and Advokasi masuk,
     never hold a removed file, so they are left as they are.
+12. The change log line is written together with the marks, so it
+    counts the files that press set to go. A press that only finishes
+    files marked by an earlier press that stopped writes no second line
+    for them, and a press that removes nothing writes no line.
 
 ## Steps
 
@@ -132,4 +136,4 @@ keeps its status, its decision and who decided.
 - [x] 4. "Hapus berkas lama" with the confirmation, safe to press again.
 - [x] 5. "Berkas sudah dihapus pada (date)" on each of the six kinds of
   record.
-- [ ] 6. The log line, the refusals and the phone layout.
+- [x] 6. The log line, the refusals and the phone layout.

@@ -17,7 +17,7 @@ import type { Parsed } from "@/parsed";
 import { NOT_SET_WORDS } from "./keep-days";
 import { NOT_ALLOWED } from "./not-allowed";
 import type { SentGroup } from "./proof-counts";
-import { type CountsByKind, noCounts, PROOF_KINDS } from "./proof-kinds";
+import { noCounts, PROOF_KINDS, totalOf } from "./proof-kinds";
 import {
   campusDayOf,
   keepsFile,
@@ -25,6 +25,7 @@ import {
   type ProofSource,
 } from "./proof-sources";
 import { DECIDED_STATUSES, isRemovable, type KeepingRule } from "./removable";
+import { writeRemovalLine } from "./removal-log";
 import { readSentGroups } from "./sent-groups";
 import { readKeepDays } from "./stored-keep-days";
 
@@ -160,21 +161,27 @@ async function finishMarked(
   return marked.length;
 }
 
-/** Marks every file that may go now, all kinds at once. */
+/**
+ * Marks every file that may go now, all kinds at once, with one line in
+ * the log of removals when any was marked. A file marked by an earlier
+ * press that stopped is in that press's line already.
+ */
 async function markAll(
   db: Database,
-  rule: KeepingRule,
+  rule: KeepingRule & { keepDays: number },
+  by: string,
   at: Date,
-): Promise<CountsByKind> {
+): Promise<void> {
   const groups = await readSentGroups(db);
-  const marked = noCounts();
+  const counts = noCounts();
   await db.transaction(async (tx) => {
     for (const kind of PROOF_KINDS) {
       const days = removableDays(groups, kind, rule);
-      marked[kind] = await markRemovable(tx, PROOF_SOURCES[kind], days, at);
+      counts[kind] = await markRemovable(tx, PROOF_SOURCES[kind], days, at);
     }
+    if (totalOf(counts) === 0) return;
+    await writeRemovalLine(tx, { by, at, keepDays: rule.keepDays, counts });
   });
-  return marked;
 }
 
 /**
@@ -195,7 +202,8 @@ export async function removeOldProofs(
   const keepDays = await readKeepDays(db);
   if (keepDays === null) return NOT_SET_REFUSAL;
   const periods = await readAcademicPeriods(db);
-  await markAll(db, { keepDays, periods, today: campusDay(now) }, now);
+  const rule = { keepDays, periods, today: campusDay(now) };
+  await markAll(db, rule, actor.id, now);
 
   let removed = 0;
   for (const kind of PROOF_KINDS) {

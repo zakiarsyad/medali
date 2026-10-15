@@ -566,6 +566,27 @@ export const proofFileKeeping = pgTable(
 );
 
 /**
+ * Every press of "Hapus berkas lama" that removed files: who, when, the
+ * days that were set then, and how many files of each kind went. It
+ * names no student. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const proofFileRemovals = pgTable("proof_file_removals", {
+  id: uuid().primaryKey().defaultRandom(),
+  removedBy: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  removedAt: timestamp({ withTimezone: true }).notNull(),
+  keepDays: smallint().notNull(),
+  attendancePhotos: integer().notNull(),
+  sikuPhotos: integer().notNull(),
+  returnPhotos: integer().notNull(),
+  activityClarificationFiles: integer().notNull(),
+  dormClarificationFiles: integer().notNull(),
+  appealProofs: integer().notNull(),
+});
+
+/**
  * The activities of the curriculum, without dates: the PPKS activities of
  * each semester, and the special and additional ones, which belong to no
  * semester. A removed one keeps its row, marked with who removed it and

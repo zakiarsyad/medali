@@ -3,6 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
+import { proofFileRemovals } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestPeriods } from "@/features/activities/test-records";
 import type { FileStore } from "@/files/file-store";
@@ -261,6 +262,56 @@ describe("removeOldProofs", () => {
           expect(store.files.has(place)).toBe(false);
         }
       }
+      expect(await db.select().from(proofFileRemovals)).toHaveLength(1);
+    });
+  });
+});
+
+describe("the log of removed proof files", () => {
+  it("gets one line: who, when, the days set and how many of each kind, naming no student", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, store } = await addSettingWithDays(db, "9989510009");
+
+      await removeOldProofs(db, store, actor, NOW);
+
+      const lines = await db.select().from(proofFileRemovals);
+      expect(lines).toEqual([
+        {
+          id: expect.any(String),
+          removedBy: actor.id,
+          removedAt: NOW,
+          keepDays: 30,
+          attendancePhotos: 1,
+          sikuPhotos: 1,
+          returnPhotos: 1,
+          activityClarificationFiles: 1,
+          dormClarificationFiles: 1,
+          appealProofs: 1,
+        },
+      ]);
+      expect(JSON.stringify(lines)).not.toContain("Mahasiswa Uji Berkas");
+    });
+  });
+
+  it("gets no line when nothing went", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, store } = await addSettingWithDays(db, "9989510010");
+      await removeOldProofs(db, store, actor, NOW);
+
+      await removeOldProofs(db, store, actor, NOW);
+
+      expect(await db.select().from(proofFileRemovals)).toHaveLength(1);
+    });
+  });
+
+  it("gets no line when the removal is refused", async () => {
+    await inTestDatabase(async (db) => {
+      const { store } = await addSettingWithDays(db, "9989510011");
+      const other = await addTestActor(db, "Pengasuh Uji Hapus", ["mentor"]);
+
+      await removeOldProofs(db, store, other, NOW);
+
+      expect(await db.select().from(proofFileRemovals)).toEqual([]);
     });
   });
 });

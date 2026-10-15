@@ -344,6 +344,13 @@
       "when": 1792079389453,
       "tag": "0048_proof-file-removal-marks",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1792080597136,
+      "tag": "0049_proof-file-removal-log",
+      "breakpoints": true
     }
   ]
 }

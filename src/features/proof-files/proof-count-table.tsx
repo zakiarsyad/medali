@@ -2,11 +2,14 @@ import shared from "@/ui/data-screen.module.css";
 import type { ProofCounts } from "./proof-counts";
 import { PROOF_KIND_TITLES, PROOF_KINDS } from "./proof-kinds";
 
-/** One row per kind of proof file: how many are kept and how many may go now. */
+/**
+ * One row per kind of proof file: how many are kept and how many may go
+ * now. On a phone each row stands as a card, with no sideways scroll.
+ */
 export function ProofCountTable({ counts }: { counts: ProofCounts }) {
   return (
     <div className={shared.tableWrap}>
-      <table className={shared.table}>
+      <table className={`${shared.table} ${shared.stacked}`}>
         <thead>
           <tr>
             <th>Jenis berkas</th>
