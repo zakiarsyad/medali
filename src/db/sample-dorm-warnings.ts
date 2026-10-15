@@ -2,6 +2,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { daysAfter } from "@/academic-periods/days-after";
 import {
   ANNOUNCEMENT_TIME,
+  APPEAL_HOURS,
   type Punishment,
   VIOLATION_REASONS,
 } from "@/features/dorm/violation-ids";
@@ -29,6 +30,12 @@ export const SAMPLE_WARNING_RESIDENTS = {
   secondLetter: SAMPLE_VIOLATION_RESIDENTS + 2,
 } as const;
 
+/** A reduction by Pengelola Asrama of a sample violation. */
+export interface SampleReduction {
+  at: Date;
+  reason: string;
+}
+
 /** A sample violation that went up to Pengelola Asrama long ago. */
 export interface SampleCountedViolation {
   resident: number;
@@ -36,6 +43,8 @@ export interface SampleCountedViolation {
   reason: string;
   punishment: Punishment;
   announcedAt: Date;
+  /** Its reduction, or null for one that still counts. */
+  reduction: SampleReduction | null;
 }
 
 export interface SampleCall {
@@ -66,6 +75,9 @@ export interface SampleWarnings {
 }
 
 const PUNISHMENTS: Punishment[] = ["warning", "direct_action", "tks"];
+
+/** An hour after the appeal time of an announcement ends. */
+const REDUCED_AFTER_MS = (APPEAL_HOURS + 1) * 60 * 60 * 1000;
 
 /** A moment on campus, as a day and an hour such as 16:00. */
 function campusMoment(day: string, time: string): Date {
@@ -98,6 +110,7 @@ function violationsOf(
       reason: VIOLATION_REASONS[place % VIOLATION_REASONS.length] ?? "",
       punishment: PUNISHMENTS[place % PUNISHMENTS.length] ?? "warning",
       announcedAt: campusMoment(day, ANNOUNCEMENT_TIME),
+      reduction: null,
     });
   }
   return made;
@@ -126,11 +139,36 @@ function heldCall(
 }
 
 /**
+ * The violations with the latest of a resident reduced at 10:00 so many
+ * days before today, or, early in the period where its violations share
+ * a day, an hour after its appeal time ended.
+ */
+function reduceLatest(
+  violations: SampleCountedViolation[],
+  resident: number,
+  back: number,
+  today: string,
+  reason: string,
+): SampleCountedViolation[] {
+  const latest = violations.findLast((each) => each.resident === resident);
+  if (!latest) return violations;
+  const planned = campusMoment(daysAfter(today, -back), "10:00").getTime();
+  const earliest = latest.announcedAt.getTime() + REDUCED_AFTER_MS;
+  const at = new Date(Math.max(planned, earliest));
+  return violations.map((each) =>
+    each === latest ? { ...each, reduction: { at, reason } } : each,
+  );
+}
+
+/**
  * Three residents past the ones the other sample violations are spread
  * over: one with 7 counted violations, called for tomorrow at 16:00; one
  * with 8, given SP 1 ten days ago; and one with 12, given SP 1 fourteen
  * days ago and SP 2 three days ago, with its proposal to Kepala Unit.
  * Their violations fall on the days of the running period before that.
+ * The latest violation of the second was reduced five days ago, and the
+ * latest of the third yesterday, each after an accepted clarification:
+ * their SPs stay, and the first is still called.
  */
 export function sampleDormWarnings(
   now: Date,
@@ -138,7 +176,7 @@ export function sampleDormWarnings(
 ): SampleWarnings {
   const today = campusDay(now);
   const { called, firstLetter, secondLetter } = SAMPLE_WARNING_RESIDENTS;
-  const violations = [
+  const counted = [
     ...violationsOf(called, SP1_VIOLATIONS, 18, today, periodStart),
     ...violationsOf(firstLetter, SP1_VIOLATIONS + 1, 20, today, periodStart),
     ...violationsOf(secondLetter, SP1_VIOLATIONS, 22, today, periodStart),
@@ -150,6 +188,20 @@ export function sampleDormWarnings(
       periodStart,
     ),
   ];
+  const firstReduced = reduceLatest(
+    counted,
+    firstLetter,
+    5,
+    today,
+    "Klarifikasi diterima: mahasiswa terbukti sedang izin resmi pada jam itu.",
+  );
+  const violations = reduceLatest(
+    firstReduced,
+    secondLetter,
+    1,
+    today,
+    "Klarifikasi diterima: mahasiswa sedang bertugas di kegiatan kampus.",
+  );
   const tomorrow = daysAfter(today, 1);
   const letters: SampleLetter[] = [
     {

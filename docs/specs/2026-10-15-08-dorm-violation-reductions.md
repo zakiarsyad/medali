@@ -73,9 +73,25 @@ towards an SP. Every reduction is listed and can be undone.
 3. Only Pengelola Asrama and Kepala Unit read "Riwayat pengurangan
    pelanggaran"; never BAM roles or other residents.
 
+Decided while building, because the issue did not say:
+
+4. A reduction is a mark on the violation: Dasar pengurangan, who and
+   when. Undoing it takes the mark away. The log keeps a line for each
+   reduction and each undoing, with the reason it concerned, so a
+   reduction undone keeps its reason in the log. The database refuses a
+   mark without all three parts, one before the announcement, and one
+   on a cancelled violation.
+5. "Dasar pengurangan (hasil klarifikasi yang diterima)" holds 5 to 500
+   letters, not counting spaces around them.
+6. Sample data: the latest violation of the sample resident with SP 1
+   was reduced five days ago, and the latest of the one with SP 2
+   yesterday, both by the sample Pengelola Asrama, each with a reason.
+   Their SPs stay. The sample resident called for SP 1 has no reduction,
+   so the call can be tried.
+
 ## Steps
 
-- [ ] 1. The reduction mark with its reason, who and when is added to
+- [x] 1. The reduction mark with its reason, who and when is added to
   dorm violations, with sample reductions.
 - [ ] 2. The right to reduce is added to the permission list, with its
   checks.

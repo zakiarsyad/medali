@@ -74,6 +74,8 @@ import {
   PUNISHMENTS,
   REASON_MAX_LENGTH,
   REASON_MIN_LENGTH,
+  REDUCTION_REASON_MAX_LENGTH,
+  REDUCTION_REASON_MIN_LENGTH,
   VIOLATION_CHANGE_ACTIONS,
 } from "@/features/dorm/violation-ids";
 import {
@@ -1350,6 +1352,9 @@ export const dormCleaningChanges = pgTable(
  * resident lived in when it was recorded, as the announcement of a dorm
  * shows it. A violation is never deleted: one cancelled before its
  * announcement keeps its row, with who and when, and is never shown.
+ * One Pengelola Asrama reduced after it went up to them keeps its row
+ * too, marked with the reason, who and when, and no longer counts; an
+ * undone reduction takes the mark away, and the log keeps both.
  */
 export const dormViolations = pgTable(
   "dorm_violations",
@@ -1373,9 +1378,16 @@ export const dormViolations = pgTable(
     enteredAt: timestamp({ withTimezone: true }).notNull(),
     cancelledBy: uuid().references(() => accounts.id),
     cancelledAt: timestamp({ withTimezone: true }),
+    reducedBy: uuid().references(() => accounts.id),
+    reducedAt: timestamp({ withTimezone: true }),
+    /** Dasar pengurangan; empty unless the violation is reduced. */
+    reductionReason: text().notNull().default(""),
   },
   (table) => [
     index("dorm_violations_batch").on(table.batchId),
+    index("dorm_violations_reduced")
+      .on(table.reducedAt)
+      .where(sql`${table.reducedAt} is not null`),
     index("dorm_violations_student").on(table.studentId, table.day),
     index("dorm_violations_day").on(table.day),
     index("dorm_violations_announced")
@@ -1409,15 +1421,29 @@ export const dormViolations = pgTable(
       "dorm_violations_cancelled_before_announced",
       sql`${table.cancelledAt} is null or ${table.cancelledAt} < ${table.announcedAt}`,
     ),
+    check(
+      "dorm_violations_reduction_is_whole",
+      sql`(${table.reducedBy} is null) = (${table.reducedAt} is null) and (${table.reducedAt} is null) = (${table.reductionReason} = '')`,
+    ),
+    check(
+      "dorm_violations_reduction_reason_length",
+      sql`${table.reductionReason} = '' or char_length(${table.reductionReason}) between ${sql.raw(String(REDUCTION_REASON_MIN_LENGTH))} and ${sql.raw(String(REDUCTION_REASON_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_violations_reduced_once_announced_and_not_cancelled",
+      sql`${table.reducedAt} is null or (${table.reducedAt} >= ${table.announcedAt} and ${table.cancelledAt} is null)`,
+    ),
   ],
 );
 
 /**
- * Every entry and every cancel of a dorm violation: who and when. A
- * violation cannot be changed otherwise, so what it was before and after
- * is the action. Rows here cannot be changed or deleted; the database
- * refuses it. A violation is held by its log lines, so it cannot be
- * deleted either.
+ * Every entry, cancel, appeal, decision, reduction and undone reduction
+ * of a dorm violation: who and when. A violation cannot be changed
+ * otherwise, so what it was before and after is the action, with the
+ * reason of the reduction a reduction or its undoing concerns, which an
+ * undoing takes off the violation. Rows here cannot be changed or
+ * deleted; the database refuses it. A violation is held by its log
+ * lines, so it cannot be deleted either.
  */
 export const dormViolationChanges = pgTable(
   "dorm_violation_changes",
@@ -1431,6 +1457,8 @@ export const dormViolationChanges = pgTable(
       .references(() => accounts.id),
     changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     action: dormViolationChangeAction().notNull(),
+    /** Dasar pengurangan of a reduction or its undoing; empty for every other line. */
+    reductionReason: text().notNull().default(""),
   },
   (table) => [index("dorm_violation_changes_violation").on(table.violationId)],
 );

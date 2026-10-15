@@ -5,6 +5,7 @@ import type { SampleResident } from "./sample-dorm-counts";
 import {
   type SampleCountedViolation,
   type SampleLetter,
+  type SampleReduction,
   sampleDormWarnings,
 } from "./sample-dorm-warnings";
 import {
@@ -39,12 +40,43 @@ function residentOf(residents: SampleResident[], place: number) {
   return resident;
 }
 
-/** Adds the violations, each recorded half an hour before its announcement. */
+/** Who recorded the sample violations, and who reduced some of them. */
+interface SampleActors {
+  recorder: string;
+  manager: string;
+}
+
+/** The mark and the log line of a reduction, or nothing for a violation that counts. */
+function reductionOf(
+  violationId: string,
+  reduction: SampleReduction | null,
+  by: string,
+) {
+  if (reduction === null) return { mark: {}, lines: [] };
+  const line: typeof dormViolationChanges.$inferInsert = {
+    violationId,
+    changedBy: by,
+    changedAt: reduction.at,
+    action: "reduced",
+    reductionReason: reduction.reason,
+  };
+  const mark = {
+    reducedBy: by,
+    reducedAt: reduction.at,
+    reductionReason: reduction.reason,
+  };
+  return { mark, lines: [line] };
+}
+
+/**
+ * Adds the violations, each recorded half an hour before its
+ * announcement, and the reductions of some of them.
+ */
 async function addViolations(
   db: Database,
   violations: SampleCountedViolation[],
   residents: SampleResident[],
-  by: string,
+  by: SampleActors,
 ): Promise<void> {
   const rows: (typeof dormViolations.$inferInsert)[] = [];
   const lines: (typeof dormViolationChanges.$inferInsert)[] = [];
@@ -52,6 +84,7 @@ async function addViolations(
     const resident = residentOf(residents, violation.resident);
     const id = crypto.randomUUID();
     const enteredAt = new Date(violation.announcedAt.getTime() - HALF_HOUR_MS);
+    const reduced = reductionOf(id, violation.reduction, by.manager);
     rows.push({
       id,
       batchId: crypto.randomUUID(),
@@ -61,15 +94,19 @@ async function addViolations(
       reason: violation.reason,
       punishment: violation.punishment,
       announcedAt: violation.announcedAt,
-      enteredBy: by,
+      enteredBy: by.recorder,
       enteredAt,
+      ...reduced.mark,
     });
-    lines.push({
-      violationId: id,
-      changedBy: by,
-      changedAt: enteredAt,
-      action: "entered",
-    });
+    lines.push(
+      {
+        violationId: id,
+        changedBy: by.recorder,
+        changedAt: enteredAt,
+        action: "entered",
+      },
+      ...reduced.lines,
+    );
   }
   await db.insert(dormViolations).values(rows);
   await db.insert(dormViolationChanges).values(lines);
@@ -122,7 +159,7 @@ async function addLetters(
 /**
  * Adds the sample calls and warning letters of the running sample
  * period, with the violations that led to them: recorded by the sample
- * BAM - BPHK, called and issued by the sample Pengelola Asrama.
+ * BAM - BPHK, called, issued and reduced by the sample Pengelola Asrama.
  */
 export async function addSampleDormWarnings(
   db: Database,
@@ -131,17 +168,16 @@ export async function addSampleDormWarnings(
 ): Promise<void> {
   const residents = await sampleResidents(db, period);
   const { violations, letters } = sampleDormWarnings(now, period.startsOn);
-  await addViolations(
-    db,
-    violations,
-    residents,
-    await sampleAccount(db, "bam_bphk"),
-  );
+  const manager = await sampleAccount(db, "dorm_manager");
+  await addViolations(db, violations, residents, {
+    recorder: await sampleAccount(db, "bam_bphk"),
+    manager,
+  });
   await addLetters(
     db,
     letters,
     residents,
     await periodIdOf(db, period),
-    await sampleAccount(db, "dorm_manager"),
+    manager,
   );
 }

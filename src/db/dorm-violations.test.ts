@@ -342,3 +342,93 @@ describe("an appeal of a dorm violation", () => {
     });
   });
 });
+
+/** A reduction four hours after the announcement, by `by`. */
+function reducedBy(by: string) {
+  return {
+    reducedBy: by,
+    reducedAt: new Date(ANNOUNCED.getTime() + 4 * 60 * 60 * 1000),
+    reductionReason: "Terbukti sedang izin resmi.",
+  };
+}
+
+describe("a reduction of a dorm violation", () => {
+  it("keeps the reason, who and when together", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const whole = reducedBy(records.accountId);
+
+      for (const part of [
+        { reducedAt: whole.reducedAt },
+        { reducedBy: whole.reducedBy, reducedAt: whole.reducedAt },
+        { reductionReason: whole.reductionReason },
+      ]) {
+        await expect(
+          inOwnStep(db, (tx) => addViolation(tx, records, part)),
+        ).rejects.toThrow();
+      }
+      await expect(addViolation(db, records, whole)).resolves.toHaveLength(1);
+    });
+  });
+
+  it("is refused a reason under 5 or over 500 letters", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const whole = reducedBy(records.accountId);
+
+      for (const reductionReason of ["a".repeat(4), "a".repeat(501)]) {
+        await expect(
+          inOwnStep(db, (tx) =>
+            addViolation(tx, records, { ...whole, reductionReason }),
+          ),
+        ).rejects.toThrow();
+      }
+      await expect(
+        addViolation(db, records, { ...whole, reductionReason: "a".repeat(5) }),
+      ).resolves.toHaveLength(1);
+    });
+  });
+
+  it("is refused before the announcement and on a cancelled violation", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const whole = reducedBy(records.accountId);
+      const before = new Date(ANNOUNCED.getTime() - 1000);
+
+      await expect(
+        inOwnStep(db, (tx) =>
+          addViolation(tx, records, { ...whole, reducedAt: before }),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        inOwnStep(db, (tx) =>
+          addViolation(tx, records, {
+            ...whole,
+            cancelledAt: before,
+            cancelledBy: records.accountId,
+          }),
+        ),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("is undone by taking the mark away, and the violation stays", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const [violation] = await addViolation(
+        db,
+        records,
+        reducedBy(records.accountId),
+      );
+      if (!violation) throw new Error("The violation was not added.");
+
+      const [undone] = await db
+        .update(dormViolations)
+        .set({ reducedBy: null, reducedAt: null, reductionReason: "" })
+        .where(eq(dormViolations.id, violation.id))
+        .returning();
+
+      expect(undone).toMatchObject({ id: violation.id, reducedAt: null });
+    });
+  });
+});
