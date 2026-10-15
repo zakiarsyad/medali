@@ -18,6 +18,12 @@ import { validateReturn, verifyReturn } from "./decide-return";
 import { describeLeave } from "./describe-leave";
 import { LEAVE_ADDRESS } from "./leave-address";
 import type { SentLeave } from "./leave-input";
+import {
+  type Decided,
+  type DecisionAnswer,
+  keptDecision,
+  refusedDecision,
+} from "./leave-messages";
 import type { LeaveNote } from "./leave-note";
 import { KIND_WORDS } from "./leave-words";
 import { recordReturn } from "./record-return";
@@ -85,6 +91,12 @@ export async function cancelLeaveAction(id: string): Promise<FormState> {
   return { error: null, done: "Pengajuan dibatalkan." };
 }
 
+function showDecision(): void {
+  // Perizinan asrama, Tugas saya, and the number beside Tugas saya in
+  // the menu of every page change with a decision.
+  revalidatePath("/", "layout");
+}
+
 const DECIDED_WORDS: Record<string, string> = {
   approved: "Izin disetujui.",
   rejected: "Izin ditolak.",
@@ -99,7 +111,7 @@ export async function decideLeaveAction(
   id: string,
   decision: string,
   note: string,
-): Promise<FormState> {
+): Promise<DecisionAnswer> {
   const actor = await decider();
   const decided = await decideLeave(
     database(),
@@ -108,9 +120,9 @@ export async function decideLeaveAction(
     String(decision),
     String(note),
   );
-  if (!decided.ok) return { error: decided.error, done: null };
-  revalidatePath(LEAVE_ADDRESS);
-  return { error: null, done: DECIDED_WORDS[decided.value] ?? null };
+  if (!decided.ok) return refusedDecision(decided);
+  showDecision();
+  return keptDecision(DECIDED_WORDS[decided.value] ?? null);
 }
 
 /** The signed-in account when it may verify reports of a return. */
@@ -163,10 +175,10 @@ async function reporter(): Promise<Account> {
   return account;
 }
 
-function answerOf(decided: Parsed<DecidedStatus>): FormState {
-  if (!decided.ok) return { error: decided.error, done: null };
-  revalidatePath(LEAVE_ADDRESS);
-  return { error: null, done: REPORT_DECIDED_WORDS[decided.value] };
+function answerOf(decided: Decided<DecidedStatus>): DecisionAnswer {
+  if (!decided.ok) return refusedDecision(decided);
+  showDecision();
+  return keptDecision(REPORT_DECIDED_WORDS[decided.value]);
 }
 
 /**
@@ -178,7 +190,7 @@ export async function verifyReturnAction(
   reportId: string,
   decision: string,
   note: string,
-): Promise<FormState> {
+): Promise<DecisionAnswer> {
   const actor = await verifier();
   const decided = await verifyReturn(
     database(),
@@ -195,7 +207,7 @@ export async function validateReturnAction(
   reportId: string,
   decision: string,
   note: string,
-): Promise<FormState> {
+): Promise<DecisionAnswer> {
   const actor = await validator();
   const decided = await validateReturn(
     database(),

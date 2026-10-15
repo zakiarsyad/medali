@@ -10,6 +10,7 @@ import { lettersIn } from "@/ui/letters-in";
 import { DECISION_NOTE_MAX_LENGTH, type LeaveStatus } from "./leave-ids";
 import {
   DECIDE_NOT_ALLOWED,
+  type Decided,
   LEAVE_NOT_FOUND,
   REJECTION_NEEDS_NOTE,
   tooLateToDecide,
@@ -61,7 +62,7 @@ export async function decideLeave(
   id: string,
   decision: string,
   note: string,
-): Promise<Parsed<LeaveStatus>> {
+): Promise<Decided<LeaveStatus>> {
   if (!may(actor.roles, "decide_dorm_leave")) return DECIDE_NOT_ALLOWED;
   if (!isUuid(id)) return LEAVE_NOT_FOUND;
   const sent = checked(decision, note);

@@ -32,6 +32,11 @@ export function outAt(now: Date): SQL {
   );
 }
 
+/** Leave the resident is still out on at a moment, past its return time. */
+export function outLateAt(now: Date): SQL {
+  return and(outAt(now), lt(dormLeaves.endsAt, now)) ?? sql`false`;
+}
+
 /**
  * Leave that is late at a moment: out past its return time, reported
  * after it, or back after it.
@@ -41,7 +46,7 @@ export function lateAt(now: Date): SQL {
     eq(dormLeaves.status, "completed"),
     gt(dormLeaves.returnedAt, dormLeaves.endsAt),
   );
-  const outLate = and(outAt(now), lt(dormLeaves.endsAt, now));
+  const outLate = outLateAt(now);
   const reportedLate = and(
     APPROVED_TO_RETURN,
     reportWaits(sql`${dormReturnReports.sentAt} > ${dormLeaves.endsAt}`),

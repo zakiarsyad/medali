@@ -11,7 +11,14 @@ import type { LeaveCard } from "./leave-card";
 import { coveredWords } from "./leave-cover";
 import { timeLabels } from "./leave-words";
 
-function Fact({ title, children }: { title: string; children: ReactNode }) {
+/** One fact of a card: its name over its value. */
+export function Fact({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <div>
       <dt>{title}</dt>

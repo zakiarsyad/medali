@@ -38,7 +38,7 @@ async function resident(place: number): Promise<TestResident> {
     own.db,
     2026,
     "Prodi Uji Izin Sekaligus",
-    ["9937850001", "9937850002", "9937850003", "9937850004"],
+    ["9937850001", "9937850002", "9937850003", "9937850004", "9937850005"],
   );
   const found = residents[place];
   if (!found) throw new Error("There is no such resident.");
@@ -84,6 +84,25 @@ describe("a cancel and a decision of one request at the same moment", () => {
     const kept = await leaveById(own.db, id);
     expect(kept?.status).toBe("approved");
     expect(kept?.cancelledAt).toBeNull();
+  });
+});
+
+describe("one decision pressed twice at the same moment", () => {
+  it("keeps one decision: the second waits, then is refused as decided first", async () => {
+    const { id, manager } = await waitingRequest(4);
+
+    const both = await own.atOnce<Parsed<unknown>>(
+      (db) => decideLeave(db, manager, id, "approve", ""),
+      (db) => decideLeave(db, manager, id, "reject", "Ditekan dua kali."),
+    );
+
+    expect(both.sooner).toEqual({ ok: true, value: "approved" });
+    expect(both.later).toEqual(tooLateToDecide("approved"));
+    expect(both.later).toMatchObject({ stale: true });
+    expect(await leaveById(own.db, id)).toMatchObject({
+      status: "approved",
+      decisionNote: "",
+    });
   });
 });
 

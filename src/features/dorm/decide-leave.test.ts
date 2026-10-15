@@ -128,6 +128,7 @@ describe("decideLeave", () => {
         ok: false,
         error:
           "Izin ini sudah disetujui lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman.",
+        stale: true,
       });
       expect((await leaveById(db, id))?.status).toBe("approved");
     });
