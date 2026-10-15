@@ -96,6 +96,16 @@ validate. Each decision is the same one as on Perizinan asrama.
    return time: leave that has started, with no return and no report
    that waits. Those already back late, or whose report waits, are not
    counted; it is the part of "Terlambat kembali" that is still out.
+6. A leave card shows what the spec lists and no more, as in the
+   prototype: Tujuan only when one was given, no Kontak, and "Waktu
+   mulai sudah lewat." for every kind of leave.
+7. A kept decision says what Perizinan asrama already says: "Izin
+   disetujui." or "Izin ditolak.". The message stays above the list of
+   its section, as the card itself leaves the list.
+8. "Tolak" with an empty note sends nothing and says "Tulis alasan
+   penolakan di kolom catatan.", the words the server already uses. With
+   a note it asks first, such as "Tolak Izin pesiar (name), 14 Okt 2026,
+   09.00?". A refusal from the server stays on its card.
 
 ## Steps
 
@@ -103,7 +113,7 @@ validate. Each decision is the same one as on Perizinan asrama.
   only, and the page shows the title, intro and the all-clear box.
 - [x] 2. The server counts and reads what waits, 20 per section, with
   its checks.
-- [ ] 3. The section "Izin menunggu persetujuan" with Setujui and Tolak.
+- [x] 3. The section "Izin menunggu persetujuan" with Setujui and Tolak.
 - [ ] 4. The section "Laporan kembali menunggu validasi" with its photo.
 - [ ] 5. The number cards, the number in the menu and "Perlu dipantau".
 - [ ] 6. Stale and double decisions are refused; phone layout.

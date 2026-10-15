@@ -28,6 +28,7 @@ import {
   RETURN_PHOTO_RULE,
 } from "./return-photo";
 import { sendReturnReport } from "./send-return-report";
+import { TASKS_ADDRESS } from "./tasks-address";
 
 /**
  * The signed-in account when it may ask for leave. Any other is refused
@@ -110,6 +111,7 @@ export async function decideLeaveAction(
   );
   if (!decided.ok) return { error: decided.error, done: null };
   revalidatePath(LEAVE_ADDRESS);
+  revalidatePath(TASKS_ADDRESS);
   return { error: null, done: DECIDED_WORDS[decided.value] ?? null };
 }
 

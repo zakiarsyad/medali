@@ -9,6 +9,9 @@ import type { LeaveKind } from "./leave-ids";
 /** How many items a section shows at most: the oldest. */
 export const TASKS_SHOWN = 20;
 
+/** What a section says when nothing in it waits. */
+export const NOTHING_WAITS = "Tidak ada yang menunggu.";
+
 /** A leave request that waits for approval. */
 export interface LeaveTask {
   id: string;

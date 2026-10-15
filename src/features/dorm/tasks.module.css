@@ -7,3 +7,43 @@
   background: var(--surface2);
   overflow-wrap: anywhere;
 }
+
+/* The title of a section beside its badge, the badge under it on a phone. */
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sectionHead > div {
+  min-width: 0;
+}
+
+.purpose {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.waiting,
+.clear {
+  border: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.waiting {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.clear {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.more {
+  margin: var(--space-md) 0 0;
+  font-size: var(--text-md);
+}

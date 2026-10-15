@@ -1,6 +1,14 @@
 import { PageHead } from "@/ui/page-head";
+import { LeaveTasks } from "./leave-tasks";
+import { TaskSection } from "./task-section";
 import styles from "./tasks.module.css";
-import { type DormTasks, waitingIn } from "./tasks-card";
+import { ALL_WAITING_LEAVE_ADDRESS, LEAVE_SECTION_ID } from "./tasks-address";
+import {
+  type DormTasks,
+  type LeaveTask,
+  type TaskSection as Section,
+  waitingIn,
+} from "./tasks-card";
 
 function AllClear() {
   return (
@@ -11,9 +19,25 @@ function AllClear() {
   );
 }
 
+function LeaveSection({ section }: { section: Section<LeaveTask> }) {
+  return (
+    <TaskSection
+      id={LEAVE_SECTION_ID}
+      title="Izin menunggu persetujuan"
+      purpose="Setujui atau tolak pengajuan izin pesiar, ITMK, dan izin khusus. Penolakan wajib disertai catatan."
+      total={section.total}
+      shown={section.items.length}
+      allAddress={ALL_WAITING_LEAVE_ADDRESS}
+    >
+      <LeaveTasks tasks={section.items} />
+    </TaskSection>
+  );
+}
+
 /**
- * Tugas saya of Pengelola Asrama: the title, what the page is for, and
- * "Semua tugas sudah beres." while nothing waits for them.
+ * Tugas saya of Pengelola Asrama: the title, what the page is for,
+ * "Semua tugas sudah beres." while nothing waits for them, and a section
+ * for each kind of item they may decide.
  */
 export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
   return (
@@ -24,6 +48,7 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
         sini tanpa berpindah menu.
       </PageHead>
       {waitingIn(tasks) === 0 && <AllClear />}
+      {tasks.leaves && <LeaveSection section={tasks.leaves} />}
     </>
   );
 }
