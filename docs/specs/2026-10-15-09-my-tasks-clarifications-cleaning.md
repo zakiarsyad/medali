@@ -96,6 +96,23 @@ effect as on their Asrama tabs.
    as "Tolak klarifikasi (name), Apel pagi, 12 Okt 2026, 05.00–06.00?".
 5. When more than 20 wait, "Lihat semua di Klarifikasi kehadiran"
    opens that tab at Diverifikasi BAM, where all of them are.
+6. A cleaning row shows Tanggal as a short date; Tempat as the place,
+   or the room's own room such as "Kamar 101 (kamar sendiri)", marked
+   "Pembersihan ulang" when it is one; Kamar with its dorm, such as
+   "Dana Rakca · Kamar 101", as rows of every dorm share one list; and
+   under "Penilaian BAM" the result, the note and "Dinilai (name) ·
+   (time)", as on Pembersihan asrama. The section says what the
+   prototype says: "Sudah dinilai BAM. Memenuhi memberi +1 poin, tidak
+   memenuhi −1 poin dan menjadwalkan pembersihan ulang."
+7. A kept decision says what Pembersihan asrama already says, above the
+   list of the section: "Divalidasi: +1 poin untuk kamar.",
+   "Divalidasi: −1 poin. Pembersihan ulang dijadwalkan (day)." or
+   "Penilaian dikembalikan ke BAM.". "Tolak" opens in the row the same
+   small form as "Tolak penilaian" there: the reason, "Kirim
+   penolakan" and "Batal". A reason that is too short is refused in the
+   row with "Tulis alasan penolakan minimal 5 huruf.".
+8. When more than 20 wait, "Lihat semua di Pembersihan asrama" opens
+   that tab, whose "Menunggu validasi" counts all of them.
 
 ## Steps
 
@@ -103,7 +120,7 @@ effect as on their Asrama tabs.
   count and the lists, with its checks.
 - [x] 2. The section "Klarifikasi kehadiran menunggu validasi" with its
   three decisions.
-- [ ] 3. The section "Penilaian kebersihan menunggu validasi" with
+- [x] 3. The section "Penilaian kebersihan menunggu validasi" with
   Validasi and Tolak.
 - [ ] 4. The two number cards; stale and double decisions are refused.
 - [ ] 5. Phone layout for both sections.

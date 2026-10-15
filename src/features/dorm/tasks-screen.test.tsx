@@ -7,6 +7,7 @@ import { rejectLeaveQuestion } from "./leave-tasks";
 import { rejectReturnQuestion } from "./return-tasks";
 import type {
   ClarificationTask,
+  CleaningTask,
   DormTasks,
   LeaveTask,
   ReturnTask,
@@ -15,6 +16,10 @@ import { DormTasksScreen } from "./tasks-screen";
 
 vi.mock("./clarification-actions", () => ({
   decideDormClarificationAction: vi.fn(),
+}));
+vi.mock("./cleaning-assessment-actions", () => ({
+  validateDutyAction: vi.fn(),
+  sendBackDutyAction: vi.fn(),
 }));
 vi.mock("./leave-actions", () => ({
   decideLeaveAction: vi.fn(),
@@ -326,5 +331,83 @@ describe("Klarifikasi kehadiran menunggu validasi", () => {
     expect(rejectClarificationQuestion(CLARIFICATION)).toBe(
       "Tolak klarifikasi Penghuni Klarifikasi, Apel pagi, 12 Okt 2026, 05.00–06.00?",
     );
+  });
+});
+
+const ASSESSMENT: CleaningTask = {
+  id: "00000000-0000-4000-8000-0000000000a1",
+  day: "12 Okt 2026",
+  place: "Lorong lantai 1",
+  room: "Dana Rakca · Kamar 101",
+  isRepeat: false,
+  result: "not_met",
+  judgeNote: "Lantai belum dipel.",
+  judgedByName: "BAM Contoh",
+  judgedAt: new Date("2026-10-12T03:00:00Z"),
+};
+
+describe("Penilaian kebersihan menunggu validasi", () => {
+  it("says Beres and Tidak ada yang menunggu. when nothing waits", () => {
+    const html = screenOf({
+      ...NOTHING,
+      leaves: null,
+      returns: null,
+      clarifications: null,
+    });
+
+    expect(html).toContain("Penilaian kebersihan menunggu validasi");
+    expect(html).toContain("Beres");
+    expect(html).toContain("Tidak ada yang menunggu.");
+  });
+
+  it("shows Tanggal, Tempat, Kamar and Penilaian BAM with the note and who assessed, with Validasi and Tolak", () => {
+    const html = screenOf({
+      ...NOTHING,
+      cleaning: { items: [ASSESSMENT], total: 1 },
+    });
+
+    for (const words of [
+      "<th>Tanggal</th>",
+      "<th>Tempat</th>",
+      "<th>Kamar</th>",
+      "<th>Penilaian BAM</th>",
+      "12 Okt 2026",
+      "Lorong lantai 1",
+      "Dana Rakca · Kamar 101",
+      "Tidak memenuhi",
+      "Lantai belum dipel.",
+      "Dinilai BAM Contoh · 12 Okt 2026, 10.00",
+      ">Validasi</button>",
+      ">Tolak</button>",
+    ]) {
+      expect(html).toContain(words);
+    }
+    expect(html).not.toContain("Pembersihan ulang");
+  });
+
+  it("marks a repeat cleaning, and says Memenuhi without a note", () => {
+    const html = screenOf({
+      ...NOTHING,
+      cleaning: {
+        items: [
+          { ...ASSESSMENT, isRepeat: true, result: "met", judgeNote: "" },
+        ],
+        total: 1,
+      },
+    });
+
+    expect(html).toContain("Pembersihan ulang");
+    expect(html).toContain("Memenuhi");
+    expect(html).not.toContain("Lantai belum dipel.");
+  });
+
+  it("leads to Pembersihan asrama when more wait than it shows", () => {
+    const html = screenOf({
+      ...NOTHING,
+      cleaning: { items: [ASSESSMENT], total: 30 },
+    });
+
+    expect(html).toContain('href="/asrama/bersih"');
+    expect(html).toContain("Lihat semua di Pembersihan asrama");
   });
 });

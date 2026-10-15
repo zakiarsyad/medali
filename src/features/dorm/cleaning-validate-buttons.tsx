@@ -2,37 +2,39 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import { FormMessage } from "@/ui/form-message";
 import styles from "./cleaning.module.css";
 import {
   sendBackDutyAction,
   validateDutyAction,
 } from "./cleaning-assessment-actions";
 import { CLEANING_NOTE_MAX_LENGTH } from "./cleaning-ids";
+import type { DecisionAnswer } from "./leave-messages";
 
 /**
- * "Validasi" and "Tolak penilaian" for a duty Pengelola Asrama may decide.
- * "Tolak penilaian" asks for its reason here, in the row. What a decision
- * says goes up to the schedule, as the row changes with it; a refusal
- * stays here.
+ * "Validasi" and the rejecting button for a duty Pengelola Asrama may
+ * decide: "Tolak penilaian" on Pembersihan asrama, "Tolak" on Tugas
+ * saya. The rejecting button asks for its reason here, in the row. Both
+ * wait for the answer, so a second press sends nothing. `onAnswer` takes
+ * what the server answered and gives back what stays here.
  */
 export function CleaningValidateButtons({
   dutyId,
-  onSaid,
+  rejectLabel,
+  onAnswer,
 }: {
   dutyId: string;
-  onSaid: (text: string) => void;
+  rejectLabel: string;
+  onAnswer: (answer: DecisionAnswer) => string | null;
 }) {
   const [isAsking, setIsAsking] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startSending] = useTransition();
 
-  function send(decide: () => Promise<FormState>) {
+  function send(decide: () => Promise<DecisionAnswer>) {
     startSending(async () => {
-      const after = await decide();
-      setError(after.error);
-      if (after.done) onSaid(after.done);
+      setError(onAnswer(await decide()));
     });
   }
 
@@ -83,7 +85,7 @@ export function CleaningValidateButtons({
         onClick={() => setIsAsking(true)}
         disabled={pending}
       >
-        Tolak penilaian
+        {rejectLabel}
       </button>
       <FormMessage state={{ error, done: null }} />
     </div>

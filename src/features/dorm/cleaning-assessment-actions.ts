@@ -10,6 +10,11 @@ import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
 import { CLEANING_ADDRESS } from "./cleaning-address";
 import { judgeDuty } from "./judge-cleaning";
+import {
+  type DecisionAnswer,
+  keptDecision,
+  refusedDecision,
+} from "./leave-messages";
 import { sendBackDuty, validateDuty } from "./validate-cleaning";
 
 /** What the browser sent, which is not trusted to be a text. */
@@ -37,18 +42,31 @@ async function cleaningValidator(): Promise<Account> {
   return account;
 }
 
-/** "Validasi" of Pengelola Asrama on a duty BAM judged. */
-export async function validateDutyAction(dutyId: string): Promise<FormState> {
-  const validator = await cleaningValidator();
-  const validated = await validateDuty(database(), validator, asText(dutyId));
-  return answer(validated);
+/**
+ * A decision of Pengelola Asrama as the screen is answered. Pembersihan
+ * asrama, Tugas saya, and the number beside Tugas saya in the menu of
+ * every page change with a kept one.
+ */
+function decisionAnswer(decided: Parsed<string>): DecisionAnswer {
+  if (!decided.ok) return refusedDecision(decided);
+  revalidatePath("/", "layout");
+  return keptDecision(decided.value);
 }
 
-/** "Tolak penilaian" of Pengelola Asrama, with its reason. */
+/** "Validasi" of Pengelola Asrama on a duty BAM judged, on Pembersihan asrama and on Tugas saya. */
+export async function validateDutyAction(
+  dutyId: string,
+): Promise<DecisionAnswer> {
+  const validator = await cleaningValidator();
+  const validated = await validateDuty(database(), validator, asText(dutyId));
+  return decisionAnswer(validated);
+}
+
+/** "Tolak penilaian" of Pengelola Asrama, with its reason, on Pembersihan asrama and on Tugas saya. */
 export async function sendBackDutyAction(
   dutyId: string,
   reason: string,
-): Promise<FormState> {
+): Promise<DecisionAnswer> {
   const validator = await cleaningValidator();
   const sent = await sendBackDuty(
     database(),
@@ -56,7 +74,7 @@ export async function sendBackDutyAction(
     asText(dutyId),
     reason,
   );
-  return answer(sent);
+  return decisionAnswer(sent);
 }
 
 /** "Memenuhi" or "Tidak memenuhi" of BAM on a duty, with its Catatan. */

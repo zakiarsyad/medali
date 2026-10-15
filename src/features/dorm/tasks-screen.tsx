@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { PageHead } from "@/ui/page-head";
 import { ClarificationTasks } from "./clarification-tasks";
+import { CleaningTasks } from "./cleaning-tasks";
 import { LeaveTasks } from "./leave-tasks";
 import { ReturnTasks } from "./return-tasks";
 import { type TaskNumber, TaskNumbers } from "./task-numbers";
 import { TaskSection } from "./task-section";
 import styles from "./tasks.module.css";
 import {
+  ALL_ASSESSED_ADDRESS,
   ALL_PASSED_ON_ADDRESS,
   ALL_WAITING_LEAVE_ADDRESS,
   ALL_WAITING_REPORTS_ADDRESS,
   CLARIFICATION_SECTION_ID,
+  CLEANING_SECTION_ID,
   LATE_ADDRESS,
   LEAVE_SECTION_ID,
   RETURN_SECTION_ID,
 } from "./tasks-address";
 import {
   type ClarificationTask,
+  type CleaningTask,
   type DormTasks,
   type LeaveTask,
   type ReturnTask,
@@ -112,6 +116,21 @@ function ClarificationSection({
   );
 }
 
+function CleaningSection({ section }: { section: Section<CleaningTask> }) {
+  return (
+    <TaskSection
+      id={CLEANING_SECTION_ID}
+      title="Penilaian kebersihan menunggu validasi"
+      purpose="Sudah dinilai BAM. Memenuhi memberi +1 poin, tidak memenuhi −1 poin dan menjadwalkan pembersihan ulang."
+      total={section.total}
+      shown={section.items.length}
+      all={{ address: ALL_ASSESSED_ADDRESS, tab: "Pembersihan asrama" }}
+    >
+      <CleaningTasks tasks={section.items} />
+    </TaskSection>
+  );
+}
+
 /**
  * Tugas saya of Pengelola Asrama: the title, what the page is for,
  * "Semua tugas sudah beres." while nothing waits for them, and a section
@@ -135,6 +154,7 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
       {tasks.clarifications && (
         <ClarificationSection section={tasks.clarifications} />
       )}
+      {tasks.cleaning && <CleaningSection section={tasks.cleaning} />}
     </>
   );
 }
