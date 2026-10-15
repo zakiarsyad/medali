@@ -101,6 +101,7 @@ export const PAGES = [
         title: "Pengguna baru mahasiswa",
       },
       { id: "academic_periods", path: "periode", title: "Periode akademik" },
+      { id: "proof_files", path: "berkas", title: "Berkas bukti" },
     ],
   },
 ] as const satisfies readonly PageDefinition[];

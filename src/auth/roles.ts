@@ -8,6 +8,7 @@ export const ACTIONS = [
   "change_curriculum",
   "manage_activities",
   "set_academic_periods",
+  "manage_proof_files",
   "view_dorm_rooms",
   "manage_dorm_rooms",
   "view_dorm_companions",
@@ -83,6 +84,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   change_curriculum: "Mengubah kurikulum",
   manage_activities: "Mengelola kegiatan",
   set_academic_periods: "Mengatur periode akademik",
+  manage_proof_files:
+    "Mengatur lama simpan berkas bukti dan menghapus berkas bukti lama",
   view_dorm_rooms: "Melihat ploting kamar",
   manage_dorm_rooms: "Mengelola ploting kamar",
   view_dorm_companions: "Melihat kakak pendamping",
@@ -271,7 +274,7 @@ export const ROLES: Record<RoleId, Role> = {
     tabs: {
       ...VIEW_ALL_TABS,
       dorm: ALL_DORM,
-      settings: ["users", "new_students", "academic_periods"],
+      settings: ["users", "new_students", "academic_periods", "proof_files"],
     },
     actions: [
       "manage_users",
@@ -279,6 +282,7 @@ export const ROLES: Record<RoleId, Role> = {
       "change_curriculum",
       "manage_activities",
       "set_academic_periods",
+      "manage_proof_files",
       "view_dorm_rooms",
       "view_dorm_companions",
       "view_dorm_cleaning",

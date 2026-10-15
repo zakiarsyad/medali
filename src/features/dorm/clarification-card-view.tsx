@@ -66,6 +66,7 @@ function FileFact({
   card: DormClarificationCard;
   onOpen: (() => void) | undefined;
 }) {
+  if (card.removed !== null) return card.removed;
   if (card.file === null || onOpen === undefined) {
     return fileNotOpenedWords(card.hasFile);
   }

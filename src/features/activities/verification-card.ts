@@ -25,6 +25,8 @@ export interface VerificationCard {
   isOutsideDates: boolean;
   /** Whether a file is kept for it here, so the picture can be shown. */
   hasPhoto: boolean;
+  /** What the card says once the photo was removed as old proof, or null. */
+  removed: string | null;
   status: AttendanceStatus;
   /** The reason of a rejection, or what else was noted. Empty with none. */
   note: string;

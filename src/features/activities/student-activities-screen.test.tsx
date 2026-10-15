@@ -227,12 +227,19 @@ describe("StudentActivitiesScreen", () => {
           status: "submitted",
           note: "",
           file: { clarificationId: "abc", name: "surat-keterangan.pdf" },
+          removed: null,
         },
-        [accepted.id]: { status: "accepted", note: "", file: null },
+        [accepted.id]: {
+          status: "accepted",
+          note: "",
+          file: null,
+          removed: null,
+        },
         [rejected.id]: {
           status: "rejected",
           note: "Surat tidak terbaca.",
           file: null,
+          removed: null,
         },
       },
     });

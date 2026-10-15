@@ -21,7 +21,13 @@ describe("historyRowOf", () => {
       status: "not_sent",
       uploadUntil: "14 Okt 2026",
       note: "",
-      clarification: { badge: null, note: "", file: null, action: null },
+      clarification: {
+        badge: null,
+        note: "",
+        file: null,
+        removed: null,
+        action: null,
+      },
     });
   });
 
@@ -62,7 +68,12 @@ describe("historyRowOf", () => {
         sentAt: null,
       },
     } as const;
-    const newest = { status: "accepted", note: "", file: null } as const;
+    const newest = {
+      status: "accepted",
+      note: "",
+      file: null,
+      removed: null,
+    } as const;
 
     expect(historyRowOf(accepted, ABSENT, newest)).toMatchObject({
       status: "dispensation",
@@ -80,12 +91,14 @@ describe("historyRowOf", () => {
       status: "rejected",
       note: "Surat tidak terbaca.",
       file,
+      removed: null,
     } as const;
 
     expect(historyRowOf(SCHEDULE, ABSENT, newest).clarification).toEqual({
       badge: "rejected",
       note: "Surat tidak terbaca.",
       file,
+      removed: null,
       action: "ask_again",
     });
   });

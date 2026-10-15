@@ -19,6 +19,7 @@ import type { DormId } from "@/dorms/dorms";
 import { dormInSql } from "@/dorms/resident-condition";
 import { shownDay, shownMoment } from "@/ui/day";
 import { pageWithin } from "@/ui/list-pages";
+import { removedFileWords } from "@/ui/removed-file";
 import { hoursWords } from "./activity-words";
 import {
   CLARIFICATIONS_PAGE_SIZE,
@@ -191,7 +192,8 @@ export function cardOf(
   mayOpenFiles: boolean,
 ): DormClarificationCard {
   const { clarification } = row;
-  const hasFile = clarification.fileKey !== null;
+  const hasFile =
+    clarification.fileKey !== null && clarification.fileRemovedAt === null;
   const startTime = hourAndMinute(row.startTime);
   const endTime = hourAndMinute(row.endTime);
   return {
@@ -207,6 +209,7 @@ export function cardOf(
     status: clarification.status,
     hasFile,
     file: hasFile && mayOpenFiles ? shownFileOf(clarification) : null,
+    removed: removedFileWords(clarification.fileRemovedAt),
     sent: shownMoment(clarification.sentAt),
     verification: verificationOf(row),
     decision: decisionOf(row),

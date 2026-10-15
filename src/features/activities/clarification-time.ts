@@ -61,6 +61,8 @@ export interface ShownClarification {
   note: string;
   /** Null when no file of it is kept here. */
   file: SentClarificationFile | null;
+  /** What the row says once the file was removed as old proof, or null. */
+  removed: string | null;
 }
 
 /** What can be done or read in the Klarifikasi cell of a row. */
@@ -74,6 +76,8 @@ export interface ClarificationCell {
   note: string;
   /** The file of the newest clarification, or null with none to open. */
   file: SentClarificationFile | null;
+  /** What the cell says once that file was removed as old proof, or null. */
+  removed: string | null;
   action: ClarificationAction | null;
 }
 
@@ -106,19 +110,20 @@ export function clarificationCell(parts: {
   const mayAsk = mayBeClarified(attendance, schedule, today);
   const isOpen = clarificationTimeOpen(schedule, today);
   if (newest === null) {
-    const nothingSent = { badge: null, note: "", file: null };
+    const nothingSent = { badge: null, note: "", file: null, removed: null };
     if (!mayAsk) return { ...nothingSent, action: null };
     return { ...nothingSent, action: isOpen ? "ask" : "closed" };
   }
-  const { file } = newest;
+  const { file, removed } = newest;
   if (newest.status !== "rejected") {
-    return { badge: newest.status, note: "", file, action: null };
+    return { badge: newest.status, note: "", file, removed, action: null };
   }
   const mayAskAgain = mayAsk && isOpen;
   return {
     badge: "rejected",
     note: newest.note,
     file,
+    removed,
     action: mayAskAgain ? "ask_again" : null,
   };
 }

@@ -98,7 +98,9 @@ export function RequestPhotoThumbs({
                 />
               </button>
             ) : (
-              <span className={styles.missingPhoto}>{PHOTO_NOT_KEPT}</span>
+              <span className={styles.missingPhoto}>
+                {photo.removed ?? PHOTO_NOT_KEPT}
+              </span>
             )}
           </li>
         ))}

@@ -14,6 +14,7 @@ const NOTHING: ClarificationCell = {
   badge: null,
   note: "",
   file: null,
+  removed: null,
   action: null,
 };
 

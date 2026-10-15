@@ -13,6 +13,9 @@ import {
 } from "./verification-card";
 
 function Photo({ card }: { card: VerificationCard }) {
+  if (card.removed !== null) {
+    return <p className={styles.noPhoto}>{card.removed}</p>;
+  }
   if (!card.hasPhoto) return <p className={styles.noPhoto}>{NO_PHOTO_HERE}</p>;
   return (
     // biome-ignore lint/performance/noImgElement: the picture is private and is given only after the server has checked who asks, which the image optimiser of the server cannot pass.

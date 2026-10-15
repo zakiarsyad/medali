@@ -69,6 +69,7 @@ async function fileWithin(
     .where(
       and(
         eq(activityClarifications.id, clarificationId),
+        isNull(activityClarifications.fileRemovedAt),
         ofStudent,
         isNull(activitySchedules.deletedAt),
       ),

@@ -31,7 +31,7 @@ function ClarificationCellView({
   cell: ClarificationCell;
   onOpen: () => void;
 }) {
-  const { badge, note, file, action } = cell;
+  const { badge, note, file, removed, action } = cell;
   return (
     <>
       {badge !== null && (
@@ -48,6 +48,7 @@ function ClarificationCellView({
           Lampiran: {file.name}
         </a>
       )}
+      {removed !== null && <span className={shared.detail}>{removed}</span>}
       {note !== "" && <span className={shared.detail}>{note}</span>}
       {action === "closed" && (
         <span className={shared.detail}>

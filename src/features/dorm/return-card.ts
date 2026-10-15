@@ -1,4 +1,5 @@
 import { shownMoment } from "@/ui/day";
+import { removedFileWords } from "@/ui/removed-file";
 import { LEAVE_ADDRESS } from "./leave-address";
 import type { ReportStatus } from "./leave-ids";
 import { type Timeliness, timelinessOf } from "./return-rules";
@@ -22,6 +23,8 @@ export interface CheckWords {
 export interface ReportCard {
   id: string;
   hasPhoto: boolean;
+  /** What the card says once the photo was removed as old proof, or null. */
+  removed: string | null;
   status: ReportStatus;
   /** When it was sent, such as 14 Okt 2026, 16.12. */
   sentAt: string;
@@ -36,6 +39,7 @@ export interface ReportCard {
 export interface KeptReport {
   id: string;
   photoKey: string | null;
+  fileRemovedAt: Date | null;
   status: ReportStatus;
   sentAt: Date;
   verifiedAt: Date | null;
@@ -88,7 +92,8 @@ export function reportCardOf(
 ): ReportCard {
   return {
     id: report.id,
-    hasPhoto: report.photoKey !== null,
+    hasPhoto: report.photoKey !== null && report.fileRemovedAt === null,
+    removed: removedFileWords(report.fileRemovedAt),
     status: report.status,
     sentAt: shownMoment(report.sentAt),
     timeliness: timelinessOf(report.sentAt, endsAt),

@@ -14,6 +14,7 @@ export const TEST_CARD: VerificationCard = {
   sent: "Dikirim 13 Okt 2026, 12.00",
   isOutsideDates: false,
   hasPhoto: true,
+  removed: null,
   status: "waiting",
   note: "",
   decidedBy: null,

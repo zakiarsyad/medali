@@ -9,6 +9,7 @@ import type { Database } from "@/db/connect";
 import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
+import { removedFileWords } from "@/ui/removed-file";
 import type { AppealStatus } from "./appeal-ids";
 import { type OwnWarning, readOwnWarning } from "./own-warning";
 import type { SemesterChoice } from "./rekap-filters";
@@ -40,6 +41,8 @@ export interface OwnAppeal {
   note: string;
   /** The name of the proof, or null for an appeal without one. */
   proofName: string | null;
+  /** What the row says once the proof was removed as old proof, or null. */
+  removed: string | null;
 }
 
 export interface OwnViolation extends AnnouncedViolation {
@@ -99,8 +102,24 @@ const OWN_FIELDS = {
     reason: dormViolationAppeals.reason,
     note: dormViolationAppeals.decisionNote,
     proofName: dormViolationAppeals.fileName,
+    proofRemovedAt: dormViolationAppeals.fileRemovedAt,
   },
 };
+
+interface StoredAppeal extends Omit<OwnAppeal, "removed"> {
+  proofRemovedAt: Date | null;
+}
+
+/** A proof removed as old proof is named no more, only when it was removed. */
+function ownAppealOf(stored: StoredAppeal): OwnAppeal {
+  const { proofRemovedAt, ...appeal } = stored;
+  if (proofRemovedAt === null) return { ...appeal, removed: null };
+  return {
+    ...appeal,
+    proofName: null,
+    removed: removedFileWords(proofRemovedAt),
+  };
+}
 
 async function readHistory(
   db: Database,
@@ -122,7 +141,11 @@ async function readHistory(
     )
     .limit(VIOLATIONS_PAGE_SIZE)
     .offset((shown - 1) * VIOLATIONS_PAGE_SIZE);
-  return { rows, matching, page: shown };
+  const ownRows = rows.map((row) => ({
+    ...row,
+    ownAppeal: row.ownAppeal === null ? null : ownAppealOf(row.ownAppeal),
+  }));
+  return { rows: ownRows, matching, page: shown };
 }
 
 /**

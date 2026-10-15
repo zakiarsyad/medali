@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { activityClarifications } from "@/db/schema";
+import { removedFileWords } from "@/ui/removed-file";
 import type { ShownClarification } from "./clarification-time";
 
 /** Whether a file is kept is asked, not where: the place of a file stays on the server. */
@@ -11,6 +12,7 @@ const SHOWN = {
   note: activityClarifications.note,
   fileName: activityClarifications.fileName,
   hasFile: isNotNull(activityClarifications.fileKey).mapWith(Boolean),
+  removedAt: activityClarifications.fileRemovedAt,
 };
 
 /**
@@ -40,13 +42,14 @@ export async function readOwnClarifications(
     .orderBy(desc(activityClarifications.sentAt));
   for (const row of rows) {
     if (newest.has(row.scheduleId)) continue;
-    const canBeOpened = keepsFiles && row.hasFile;
+    const canBeOpened = keepsFiles && row.hasFile && row.removedAt === null;
     newest.set(row.scheduleId, {
       status: row.status,
       note: row.note,
       file: canBeOpened
         ? { clarificationId: row.id, name: row.fileName }
         : null,
+      removed: removedFileWords(row.removedAt),
     });
   }
   return newest;
