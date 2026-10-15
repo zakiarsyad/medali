@@ -1284,6 +1284,80 @@ describe("may", () => {
     );
   });
 
+  const dashboardReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "dorm_manager",
+    ...BAM_ROLES,
+  ];
+
+  it.each(dashboardReaders)("lets %s see Dashboard asrama", (role) => {
+    expect(may([role], "view_dorm_dashboard")).toBe(true);
+  });
+
+  it("refuses every other role Dashboard asrama, Mahasiswa, Pengasuh, Konselor and Pegawai UPK among them", () => {
+    const others = ROLE_IDS.filter((role) => !dashboardReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["student", "mentor", "counsellor", "upk_staff"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_dashboard")).toBe(false);
+    }
+  });
+
+  it("gives the right to see Dashboard asrama to every role with its tab, and to no other", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_dorm_dashboard")).toBe(
+        mayOpenTab([role], "dorm", "overview"),
+      );
+    }
+  });
+
+  const dashboardNameReaders: RoleId[] = [
+    "dorm_manager",
+    "bam_bphk",
+    "head_of_unit",
+    "director",
+    "head_of_program",
+  ];
+
+  it.each(dashboardNameReaders)(
+    "lets %s see who is out of the dorm on Dashboard asrama, as on Perizinan asrama",
+    (role) => {
+      expect(may([role], "view_dorm_dashboard_names")).toBe(true);
+      expect(may([role], "view_dorm_dashboard")).toBe(true);
+      expect(may([role], "view_dorm_leave")).toBe(true);
+    },
+  );
+
+  it("refuses every other role the names on Dashboard asrama, the other BAM roles among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !dashboardNameReaders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_compliance",
+        "bam_household",
+        "bam_spiritual",
+        "bam_catering",
+        "bam_arts_sports",
+        "bam_health",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_dashboard_names")).toBe(false);
+    }
+  });
+
+  it("gives Kepala Unit plain titles for the rights of Dashboard asrama", () => {
+    expect(ACTION_TITLES.view_dorm_dashboard).toBe("Melihat dashboard asrama");
+    expect(ACTION_TITLES.view_dorm_dashboard_names).toBe(
+      "Melihat nama, tujuan, dan kamar penghuni yang sedang di luar asrama di dashboard asrama",
+    );
+  });
+
   it("gives a way to see violations to every role with the tab Pelanggaran, and to no other", () => {
     for (const role of ROLE_IDS) {
       const reads =
@@ -2293,6 +2367,26 @@ describe("rowLimitForAction and rowLimitForPage", () => {
 
     expect(rowLimitForAction(both, "view_mentor_groups")).toEqual(
       onlyPrograms([7]),
+    );
+  });
+
+  it("keeps Ketua Program Studi to their program on Dashboard asrama, for its numbers and its names", () => {
+    const head = account(["head_of_program"], 7);
+
+    expect(rowLimitForAction(head, "view_dorm_dashboard")).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(rowLimitForAction(head, "view_dorm_dashboard_names")).toEqual(
+      onlyPrograms([7]),
+    );
+  });
+
+  it("gives a student who is also BAM - KI the numbers of every resident on Dashboard asrama, and no names", () => {
+    const both = account(["student", "bam_compliance"]);
+
+    expect(rowLimitForAction(both, "view_dorm_dashboard")).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(both, "view_dorm_dashboard_names")).toEqual(
+      NO_ROW,
     );
   });
 

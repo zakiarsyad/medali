@@ -45,6 +45,8 @@ export const ACTIONS = [
   "view_dorm_warning_results",
   "reduce_dorm_violations",
   "view_dorm_violation_reductions",
+  "view_dorm_dashboard",
+  "view_dorm_dashboard_names",
   "view_student_detail",
   "view_student_room",
   "view_mentor_groups",
@@ -134,6 +136,9 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Mengurangi pelanggaran asrama dan membatalkan pengurangannya",
   view_dorm_violation_reductions:
     "Melihat riwayat pengurangan pelanggaran asrama",
+  view_dorm_dashboard: "Melihat dashboard asrama",
+  view_dorm_dashboard_names:
+    "Melihat nama, tujuan, dan kamar penghuni yang sedang di luar asrama di dashboard asrama",
   view_student_detail: "Melihat detail mahasiswa",
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
@@ -242,8 +247,9 @@ const VIEW_ALL_TABS: RoleTabs = {
   dorm: ALL_DORM_BUT_VIOLATIONS,
 };
 
-/** What every BAM role may do with the dorm activities. */
+/** What every BAM role may do with the dorm activities, and Dashboard asrama. */
 const BAM_DORM_ACTIVITY_ACTIONS = [
+  "view_dorm_dashboard",
   "view_dorm_activities",
   "view_dorm_attendance",
   "count_dorm_attendance",
@@ -293,6 +299,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_violations",
       "view_dorm_warning_results",
       "view_dorm_violation_reductions",
+      "view_dorm_dashboard",
+      "view_dorm_dashboard_names",
       "view_student_detail",
       "view_student_room",
       "view_mentor_groups",
@@ -329,6 +337,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_attendance",
       "view_dorm_leave",
       "view_dorm_clarifications",
+      "view_dorm_dashboard",
+      "view_dorm_dashboard_names",
       "view_student_detail",
       "view_mentor_groups",
       "view_mentors",
@@ -355,6 +365,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_attendance",
       "view_dorm_leave",
       "view_dorm_clarifications",
+      "view_dorm_dashboard",
+      "view_dorm_dashboard_names",
       "view_student_detail",
       "view_mentor_groups",
       "view_mentors",
@@ -454,6 +466,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_warning_results",
       "reduce_dorm_violations",
       "view_dorm_violation_reductions",
+      "view_dorm_dashboard",
+      "view_dorm_dashboard_names",
     ],
     rows: "all",
   },
@@ -475,6 +489,7 @@ export const ROLES: Record<RoleId, Role> = {
       ...BAM_CLARIFICATION_ACTIONS,
       ...BAM_VIOLATION_ACTIONS,
       "decide_dorm_violation_appeals",
+      "view_dorm_dashboard_names",
     ],
     rows: "all",
   },
