@@ -114,7 +114,13 @@ async function StaffScreen({
   const db = database();
   const visible = visibleTo(rowLimitForAction(account, "view_dorm_violations"));
   const [board, warnings] = await Promise.all([
-    readStaffViolations(db, visible, params, now),
+    readStaffViolations(
+      db,
+      visible,
+      params,
+      now,
+      may(account.roles, "view_dorm_warning_results"),
+    ),
     readWarningCalls(db, visible, now, params.callPage),
   ]);
   const records = may(account.roles, "record_dorm_violations");

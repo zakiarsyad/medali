@@ -212,6 +212,7 @@ export function StaffViolationsScreen({
       {board.student !== null && board.semester !== null && (
         <StudentViolationsDialog
           student={board.student}
+          letters={board.letters}
           params={params}
           semesterTitle={board.semester.title}
           now={now}

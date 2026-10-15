@@ -50,6 +50,36 @@ export function receivedWords(letter: {
   return `${said} ${PROPOSED}`;
 }
 
+/** A sentence that ends once, however the text was written. */
+function sentence(text: string): string {
+  return `${text.replace(TRAILING_STOPS, "")}.`;
+}
+
+/**
+ * An SP as staff read it in the box of one student: the SP and its day
+ * on campus, with Hasil klarifikasi and the proposal note when the
+ * account may read them, null otherwise.
+ */
+export function issuedWords(letter: {
+  level: WarningLevel;
+  issuedAt: Date;
+  result: string | null;
+  proposalNote: string | null;
+}): string {
+  const parts = [
+    `Surat Peringatan ${letter.level} terbit pada ${DAY.format(letter.issuedAt)}.`,
+  ];
+  if (letter.result !== null) {
+    parts.push(`Hasil klarifikasi: ${sentence(letter.result)}`);
+  }
+  if (letter.proposalNote !== null && letter.proposalNote !== "") {
+    parts.push(
+      `Catatan pengajuan hukuman disiplin ke Kepala UPK: ${sentence(letter.proposalNote)}`,
+    );
+  }
+  return parts.join(" ");
+}
+
 /** The button that issues an SP of `level`. */
 export function issueButtonWords(level: WarningLevel): string {
   if (level === 1) return "Terbitkan SP 1";

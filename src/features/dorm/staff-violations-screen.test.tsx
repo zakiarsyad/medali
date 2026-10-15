@@ -27,6 +27,7 @@ const BOARD: StaffViolations = {
   semester: null,
   student: null,
   marks: {},
+  letters: [],
 };
 
 /** The own record of a BAM member who lives in the dorm, with one violation still open to appeal. */

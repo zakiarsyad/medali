@@ -5,6 +5,7 @@ import { ListPager } from "@/ui/list-pager";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { PressableRow } from "@/ui/pressable-row";
 import { RekapFilterRow, type SemesterChoice } from "./rekap-filters";
+import type { ShownLetter } from "./student-letters";
 import {
   type StaffViolationParams,
   staffViolationsAddress,
@@ -15,6 +16,8 @@ import { AnnouncedTable } from "./violation-lists";
 import styles from "./violations.module.css";
 import { LetterMark } from "./warning-calls-panel";
 import type { WarningLevel } from "./warning-ids";
+import { issuedWords } from "./warning-words";
+import warnings from "./warnings.module.css";
 
 export const NO_REKAP = "Tidak ada pelanggaran pada semester ini.";
 
@@ -133,14 +136,17 @@ export function RekapPanel({
   );
 }
 
-/** One student's violations of the semester, in a box over the tab. */
+/** One student's SPs and violations of the semester, in a box over the tab. */
 export function StudentViolationsDialog({
   student,
+  letters,
   params,
   semesterTitle,
   now,
 }: {
   student: StudentViolations;
+  /** Their SPs of the semester, with what the account may read of them. */
+  letters: ShownLetter[];
   params: StaffViolationParams;
   semesterTitle: string;
   now: Date;
@@ -158,6 +164,15 @@ export function StudentViolationsDialog({
       <p className={styles.sub}>
         NIM {student.nim} · semester {semesterTitle}
       </p>
+      {letters.length > 0 && (
+        <div className={warnings.boxes}>
+          {letters.map((letter) => (
+            <p key={letter.level} className={warnings.box}>
+              {issuedWords(letter)}
+            </p>
+          ))}
+        </div>
+      )}
       <AnnouncedTable
         rows={student.rows}
         now={now}

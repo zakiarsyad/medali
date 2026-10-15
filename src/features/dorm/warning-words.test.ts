@@ -3,6 +3,7 @@ import {
   callWords,
   causeWords,
   issueButtonWords,
+  issuedWords,
   issueQuestion,
   NOT_SCHEDULED,
   receivedWords,
@@ -64,6 +65,36 @@ describe("receivedWords", () => {
       }),
     ).toBe(
       "pada 10 Okt 2026. Hasil klarifikasi: Tidak hadir pada panggilan. Pengelola Asrama mengajukan proses hukuman disiplin ke Kepala Unit Pembangunan Karakter.",
+    );
+  });
+});
+
+describe("issuedWords", () => {
+  const AT = new Date("2026-10-10T09:30:00Z");
+
+  it("says the SP and its day, and the result and the note only to those who may read them", () => {
+    expect(
+      issuedWords({ level: 1, issuedAt: AT, result: null, proposalNote: null }),
+    ).toBe("Surat Peringatan 1 terbit pada 10 Okt 2026.");
+    expect(
+      issuedWords({
+        level: 2,
+        issuedAt: AT,
+        result: "Tidak hadir pada panggilan.",
+        proposalNote: "Pelanggaran berulang.",
+      }),
+    ).toBe(
+      "Surat Peringatan 2 terbit pada 10 Okt 2026. Hasil klarifikasi: Tidak hadir pada panggilan. Catatan pengajuan hukuman disiplin ke Kepala UPK: Pelanggaran berulang.",
+    );
+    expect(
+      issuedWords({
+        level: 2,
+        issuedAt: AT,
+        result: "Hadir.",
+        proposalNote: "",
+      }),
+    ).toBe(
+      "Surat Peringatan 2 terbit pada 10 Okt 2026. Hasil klarifikasi: Hadir.",
     );
   });
 });
