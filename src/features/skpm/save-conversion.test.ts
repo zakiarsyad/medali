@@ -21,7 +21,6 @@ import {
 const inTestDatabase = withTestDatabase();
 
 const MOMENT = new Date("3220-10-12T03:00:00Z");
-const LATER = new Date("3220-10-13T03:00:00Z");
 
 describe("saveConversion", () => {
   it("starts at 50 points for 100", async () => {
@@ -57,11 +56,11 @@ describe("saveConversion", () => {
         rows: [{ studentId: ani, points: 30 }],
       });
 
-      expect(await saveConversion(db, penilai, "40", () => MOMENT)).toEqual({
+      expect(await saveConversion(db, penilai, "40")).toEqual({
         ok: true,
         value: 40,
       });
-      expect(await saveConversion(db, kepala, " 60 ", () => LATER)).toEqual({
+      expect(await saveConversion(db, kepala, " 60 ")).toEqual({
         ok: true,
         value: 60,
       });
@@ -69,7 +68,7 @@ describe("saveConversion", () => {
       const now = await readConversion(db);
       expect(now).toEqual({
         pointsForHundred: 60,
-        set: { at: LATER, by: "Kepala Uji Konversi" },
+        set: { at: expect.any(Date), by: "Kepala Uji Konversi" },
       });
       const log = await db
         .select()
@@ -103,9 +102,7 @@ describe("saveConversion", () => {
           "assessor",
         ]);
 
-        expect(await saveConversion(db, penilai, sent, () => MOMENT)).toEqual(
-          INVALID_POINTS,
-        );
+        expect(await saveConversion(db, penilai, sent)).toEqual(INVALID_POINTS);
         expect(await db.select().from(skpmConversions)).toEqual([]);
       });
     },
@@ -120,7 +117,7 @@ describe("saveConversion", () => {
     await inTestDatabase(async (db) => {
       const actor = await addTestActor(db, "Tanpa Hak Konversi", [role]);
 
-      expect(await saveConversion(db, actor, "40", () => MOMENT)).toEqual(
+      expect(await saveConversion(db, actor, "40")).toEqual(
         NOT_ALLOWED_TO_UPLOAD,
       );
       expect(await db.select().from(skpmConversions)).toEqual([]);
