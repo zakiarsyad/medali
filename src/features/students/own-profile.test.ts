@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { accounts, dormRoomPlaces, mentorGroupMembers } from "@/db/schema";
+import {
+  accounts,
+  dormCompanions,
+  dormRoomPlaces,
+  mentorGroupMembers,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestRoom, ODD_2026, placeTestResident } from "@/dorms/test-records";
 import { readOwnProfile } from "./own-profile";
@@ -23,6 +28,7 @@ const NO_SUCH_ID = "00000000-0000-4000-8000-000000000000";
 /** Room numbers that no other file of checks uses. */
 const ROOM_NUMBER = "U9221";
 const NEXT_ROOM_NUMBER = "U9222";
+const COMPANION_ROOM_NUMBER = "U9223";
 
 function account(roles: RoleId[], studentId: string | null): AccountForAccess {
   return { id: NO_SUCH_ID, roles, studyProgramId: null, studentId };
@@ -213,7 +219,13 @@ describe("readOwnProfile", () => {
 
       expect(profile?.residence).toStrictEqual({
         dorm: "dana_rakca",
-        room: { plotted: true, floor: 2, number: ROOM_NUMBER },
+        room: {
+          plotted: true,
+          dorm: "dana_rakca",
+          floor: 2,
+          number: ROOM_NUMBER,
+          asCompanion: false,
+        },
       });
     });
   });
@@ -250,7 +262,13 @@ describe("readOwnProfile", () => {
       expect(before?.residence?.room).toMatchObject({ number: ROOM_NUMBER });
       expect((await ownProfileOf(db, resident))?.residence).toStrictEqual({
         dorm: "dana_rakca",
-        room: { plotted: true, floor: 3, number: NEXT_ROOM_NUMBER },
+        room: {
+          plotted: true,
+          dorm: "dana_rakca",
+          floor: 3,
+          number: NEXT_ROOM_NUMBER,
+          asCompanion: false,
+        },
       });
     });
   });
@@ -283,6 +301,33 @@ describe("readOwnProfile", () => {
       expect((await ownProfileOf(db, man))?.residence).toStrictEqual({
         dorm: "wismantara_putra",
         room: null,
+      });
+    });
+  });
+
+  it("gives a resident of Asrama Wismantara their kakak pendamping room", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Profil Wismantara");
+      const woman = await addTestStudent(db, program, {
+        nim: "9900002208",
+        name: "Profil Uji Pendamping",
+        cohortYear: 2023,
+        isSeedling: true,
+      });
+      const room = await addTestRoom(db, { number: COMPANION_ROOM_NUMBER });
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: woman, dorm: "dana_rakca", roomId: room });
+
+      expect((await ownProfileOf(db, woman))?.residence).toStrictEqual({
+        dorm: "wismantara_putri",
+        room: {
+          plotted: true,
+          dorm: "dana_rakca",
+          floor: 1,
+          number: COMPANION_ROOM_NUMBER,
+          asCompanion: true,
+        },
       });
     });
   });

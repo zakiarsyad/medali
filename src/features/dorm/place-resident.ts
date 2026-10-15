@@ -6,10 +6,13 @@ import { dormRoomPlaces, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
 import { livesIn } from "@/dorms/resident-condition";
-import { roomHeader } from "@/dorms/student-room";
+import {
+  type RoomInDorm,
+  readCompanionRoom,
+  roomHeader,
+} from "@/dorms/student-room";
 import type { Parsed } from "@/parsed";
 import { NOT_ALLOWED } from "./not-allowed";
-import { type RoomInDorm, readCompanionRoom } from "./room-companions";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, lockRoom } from "./room-lock";
 import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";

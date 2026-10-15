@@ -26,6 +26,7 @@ function student(nim: string, group: AddedStudent["group"]): AddedStudent {
     inputSource: "form",
     fileId: null,
     dorm: null,
+    companionRoom: null,
     group,
   };
 }
@@ -78,6 +79,41 @@ test("the column says Belum ditetapkan for a student in no group", () => {
 
   expect(cell).toContain(">Belum ditetapkan</span>");
   expect(cell).not.toContain("KP ");
+});
+
+function dormCellOf(listed: AddedStudent): string {
+  const table = renderToStaticMarkup(
+    <StudentTable students={[listed]} place={{ query: "", page: 1 }} />,
+  );
+  return table.match(/<td data-title="Asrama">.*?<\/td>/)?.[0] ?? "";
+}
+
+test("the column Asrama names the dorm of a resident", () => {
+  const resident: AddedStudent = {
+    ...student("9900003302", null),
+    dorm: "wismantara_putri",
+  };
+
+  expect(dormCellOf(resident)).toBe(
+    '<td data-title="Asrama">Asrama Wismantara Putri</td>',
+  );
+});
+
+test("the column Asrama names the kakak pendamping room of a resident placed in one", () => {
+  const companion: AddedStudent = {
+    ...student("9900003303", null),
+    dorm: "wismantara_putri",
+    companionRoom: {
+      dorm: "dana_rakca",
+      floor: 1,
+      number: "102",
+      asCompanion: true,
+    },
+  };
+
+  expect(dormCellOf(companion)).toBe(
+    '<td data-title="Asrama">Asrama Dana Rakca, lantai 1, kamar 102 (kakak pendamping)</td>',
+  );
 });
 
 test("the numbers hold Belum punya kelompok pengasuhan, with where to set it", () => {
