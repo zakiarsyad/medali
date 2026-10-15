@@ -102,7 +102,7 @@ keeps its status, its decision and who decided.
 
 ## Steps
 
-- [ ] 1. The setting for how long files are kept, and the right to set
+- [x] 1. The setting for how long files are kept, and the right to set
   it and to remove files, with their checks.
 - [ ] 2. One rule that says which files are removable, with its check.
 - [ ] 3. The page with the setting and the table of counts.

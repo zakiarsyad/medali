@@ -140,6 +140,20 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit manage the proof files", () => {
+    expect(may(["head_of_unit"], "manage_proof_files")).toBe(true);
+    expect(mayOpenTab(["head_of_unit"], "settings", "proof_files")).toBe(true);
+  });
+
+  it("refuses every other role to manage the proof files", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "manage_proof_files")).toBe(false);
+      expect(mayOpenTab([role], "settings", "proof_files")).toBe(false);
+    }
+  });
+
   const roomViewers: RoleId[] = [
     "head_of_unit",
     "director",

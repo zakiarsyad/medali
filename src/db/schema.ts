@@ -84,6 +84,7 @@ import {
   RESULT_MIN_LENGTH,
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
+import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
   PHOTOS_MIN,
@@ -538,6 +539,30 @@ export const sikuBaseScore = pgTable(
       .references(() => accounts.id),
   },
   (table) => [check("siku_base_score_one_row", sql`${table.id} = 1`)],
+);
+
+/**
+ * One row at most: how many days proof photos and attachments are kept
+ * after the academic period they were sent in ended, once Kepala Unit
+ * has set it. Until then no proof file is removed.
+ */
+export const proofFileKeeping = pgTable(
+  "proof_file_keeping",
+  {
+    id: smallint().primaryKey().default(1),
+    keepDays: smallint().notNull(),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+  },
+  (table) => [
+    check("proof_file_keeping_one_row", sql`${table.id} = 1`),
+    check(
+      "proof_file_keeping_days_in_range",
+      sql`${table.keepDays} between ${sql.raw(String(KEEP_DAYS_MIN))} and ${sql.raw(String(KEEP_DAYS_MAX))}`,
+    ),
+  ],
 );
 
 /**
