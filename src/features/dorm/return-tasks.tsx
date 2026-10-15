@@ -11,7 +11,7 @@ import { TaskDecide } from "./task-decide";
 import own from "./tasks.module.css";
 import type { ReturnTask } from "./tasks-card";
 
-const VALIDATE = { label: "Validasi kembali", decision: "validate" };
+const VALIDATE = [{ label: "Validasi kembali", decision: "validate" }];
 
 /** What is asked before a report is rejected, such as Tolak laporan kembali Ani, 14 Okt 2026, 16.12? */
 export function rejectReturnQuestion(task: ReturnTask): string {
@@ -57,7 +57,7 @@ function ReturnTaskCard({
         <ReturnPhoto report={{ id: task.reportId, hasPhoto: task.hasPhoto }} />
       </div>
       <TaskDecide
-        agree={VALIDATE}
+        agrees={VALIDATE}
         question={rejectReturnQuestion(task)}
         decide={(decision, note) =>
           validateReturnAction(task.reportId, decision, note)

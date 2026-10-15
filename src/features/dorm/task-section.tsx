@@ -25,7 +25,7 @@ export function TaskSection({
   purpose,
   total,
   shown,
-  allAddress,
+  all,
   children,
 }: {
   /** Where its number card jumps to. */
@@ -36,8 +36,8 @@ export function TaskSection({
   total: number;
   /** How many of them it shows. */
   shown: number;
-  /** Where every item that waits is listed. */
-  allAddress: string;
+  /** The tab where every item that waits is listed, and its name. */
+  all: { address: string; tab: string };
   children: ReactNode;
 }) {
   return (
@@ -54,7 +54,7 @@ export function TaskSection({
       {children}
       {total > shown && (
         <p className={styles.more}>
-          <Link href={allAddress}>Lihat semua di Perizinan asrama</Link>
+          <Link href={all.address}>{`Lihat semua di ${all.tab}`}</Link>
         </p>
       )}
     </section>

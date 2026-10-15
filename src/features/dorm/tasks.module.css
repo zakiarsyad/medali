@@ -109,3 +109,17 @@
 .photo {
   max-width: var(--card-min-width);
 }
+
+/*
+ * The buttons that decide an item stand side by side here, and each
+ * takes the whole width of its card on a phone, tall enough for a
+ * thumb. Named with its row, so it counts for more than the shared look
+ * of a button.
+ */
+.decide .decideControl {
+  flex: 0 1 var(--decide-control-basis);
+  min-width: 0;
+  max-width: 100%;
+  padding-top: var(--decide-control-padding);
+  padding-bottom: var(--decide-control-padding);
+}

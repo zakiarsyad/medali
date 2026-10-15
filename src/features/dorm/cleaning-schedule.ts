@@ -105,7 +105,11 @@ const DUTY = {
 const JUDGE_OF_DUTY = eq(judges.id, dormCleaningDuties.judgedBy);
 const VALIDATOR_OF_DUTY = eq(validators.id, dormCleaningDuties.validatedBy);
 
-const PLACE_OF_DUTY = eq(dormCleaningPlaces.id, dormCleaningDuties.placeId);
+/** The join that finds the place of a duty; none for a room's own room. */
+export const PLACE_OF_DUTY = eq(
+  dormCleaningPlaces.id,
+  dormCleaningDuties.placeId,
+);
 
 /**
  * A removed place keeps showing on a date where it has a duty that was

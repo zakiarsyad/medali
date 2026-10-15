@@ -20,12 +20,19 @@ import { purposeWords } from "./leave-row";
 import { outLateAt } from "./return-conditions";
 import { lateMinutes } from "./return-rules";
 import {
+  type ClarificationTask,
+  type CleaningTask,
   type DormTasks,
   type LeaveTask,
   type ReturnTask,
   TASKS_SHOWN,
   type TaskSection,
 } from "./tasks-card";
+import {
+  countPassedOn,
+  readClarificationSection,
+} from "./tasks-clarifications";
+import { countJudgedDuties, readCleaningSection } from "./tasks-cleaning";
 
 const WAITING_LEAVE = eq(dormLeaves.status, "submitted");
 const VERIFIED_REPORT = eq(dormReturnReports.status, "verified");
@@ -191,14 +198,36 @@ async function countOutLate(
   return countLeaves(db, and(visible, outLateAt(now)));
 }
 
+function readClarifications(
+  db: Database,
+  account: AccountForAccess,
+  dorm: SQL<DormId | null>,
+): Promise<TaskSection<ClarificationTask>> | null {
+  const visible = visibleThrough(account, "decide_dorm_clarification");
+  if (visible === null) return null;
+  const mayOpenFiles = may(account.roles, "open_dorm_clarification_files");
+  return readClarificationSection(db, visible, dorm, mayOpenFiles);
+}
+
+function readCleaning(
+  db: Database,
+  account: AccountForAccess,
+): Promise<TaskSection<CleaningTask>> | null {
+  if (!may(account.roles, "validate_dorm_cleaning")) return null;
+  return readCleaningSection(db);
+}
+
 /**
  * What waits for an account on Tugas saya, among the students it may see
  * through each right: the leave requests that wait, the earliest start
  * first, when it may decide them; the reports of a return that BAM -
- * BPHK verified, the earliest sent first, when it may validate them; and
- * how many residents are still out past their return time, when it may
- * see leave. Each section holds its oldest items only, with how many
- * wait in all. A fixed number of reads, however many wait.
+ * BPHK verified, the earliest sent first, when it may validate them; the
+ * clarifications BAM passed on, the earliest sent first, when it may
+ * decide them; the cleaning duties BAM assessed, of every dorm, the
+ * earliest date first, when it may validate them; and how many residents
+ * are still out past their return time, when it may see leave. Each
+ * section holds its oldest items only, with how many wait in all. A
+ * fixed number of reads, however many wait.
  */
 export async function readDormTasks(
   db: Database,
@@ -207,26 +236,29 @@ export async function readDormTasks(
 ): Promise<DormTasks> {
   const dormCohorts = await readDormCohorts(db, campusDay(now));
   const dorm = dormInSql(dormCohorts ?? []);
-  const [leaves, returns, outLate] = await Promise.all([
-    readLeaveSection(
-      db,
-      visibleThrough(account, "decide_dorm_leave"),
-      dorm,
-      now,
-    ),
-    readReturnSection(
-      db,
-      visibleThrough(account, "validate_dorm_return"),
-      dorm,
-    ),
-    countOutLate(db, visibleThrough(account, "view_dorm_leave"), now),
-  ]);
-  return { leaves, returns, outLate };
+  const [leaves, returns, clarifications, cleaning, outLate] =
+    await Promise.all([
+      readLeaveSection(
+        db,
+        visibleThrough(account, "decide_dorm_leave"),
+        dorm,
+        now,
+      ),
+      readReturnSection(
+        db,
+        visibleThrough(account, "validate_dorm_return"),
+        dorm,
+      ),
+      readClarifications(db, account, dorm),
+      readCleaning(db, account),
+      countOutLate(db, visibleThrough(account, "view_dorm_leave"), now),
+    ]);
+  return { leaves, returns, clarifications, cleaning, outLate };
 }
 
 /**
  * The number beside Tugas saya in the menu: how many items wait for a
- * decision this account may make. Two counts at most, and none for an
+ * decision this account may make. Four counts at most, and none for an
  * account that decides nothing here.
  */
 export async function countDormTasks(
@@ -235,11 +267,19 @@ export async function countDormTasks(
 ): Promise<number> {
   const leaveVisible = visibleThrough(account, "decide_dorm_leave");
   const reportVisible = visibleThrough(account, "validate_dorm_return");
-  const [leaves, reports] = await Promise.all([
+  const clarificationVisible = visibleThrough(
+    account,
+    "decide_dorm_clarification",
+  );
+  const counts = await Promise.all([
     leaveVisible === null
       ? 0
       : countLeaves(db, and(leaveVisible, WAITING_LEAVE)),
     reportVisible === null ? 0 : countReports(db, reportVisible),
+    clarificationVisible === null ? 0 : countPassedOn(db, clarificationVisible),
+    may(account.roles, "validate_dorm_cleaning") ? countJudgedDuties(db) : 0,
   ]);
-  return leaves + reports;
+  let total = 0;
+  for (const counted of counts) total += counted;
+  return total;
 }

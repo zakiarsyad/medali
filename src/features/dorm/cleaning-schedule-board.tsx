@@ -152,7 +152,14 @@ function DutyRow({
             <CleaningJudgeForm dutyId={duty.id} onSaid={onSaid} />
           )}
           {offers.validate && (
-            <CleaningValidateButtons dutyId={duty.id} onSaid={onSaid} />
+            <CleaningValidateButtons
+              dutyId={duty.id}
+              rejectLabel="Tolak penilaian"
+              onAnswer={(answer) => {
+                if (answer.done) onSaid(answer.done);
+                return answer.error;
+              }}
+            />
           )}
           {offers.cancel && (
             <ChangeButton

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { browserFilesIn, databaseCodeReachedFrom } from "@/ui/browser-code";
+import { findMissingStackedTitles } from "@/ui/stacked-titles";
 
 const FOLDER = "src/features/dorm";
 
@@ -57,8 +58,37 @@ describe("Tugas saya on a phone", () => {
   });
 });
 
+describe("clarifications and cleaning assessments on a phone", () => {
+  it("turns each cleaning row into a card, every value under its column title", () => {
+    const code = read("cleaning-tasks.tsx");
+
+    expect(code).toContain("shared.stacked");
+    expect(findMissingStackedTitles(code)).toEqual([]);
+  });
+
+  it("stacks the buttons that decide an item, each the whole width of its card", () => {
+    const code = read("task-decide.tsx");
+
+    expect(code).toMatch(
+      /className=\{`\$\{styles\.decide\} \$\{own\.decide\}`\}/,
+    );
+    expect(code.match(/own\.decideControl/g)).toHaveLength(2);
+    const control = ruleOf("tasks.module.css", ".decide .decideControl");
+    expect(control).toContain("flex: 0 1 var(--decide-control-basis);");
+    expect(control).toContain("max-width: 100%;");
+  });
+
+  it("keeps the cards of clarifications in one column, as for leave", () => {
+    expect(read("clarification-tasks.tsx")).toContain(
+      "<ul className={styles.cards}>",
+    );
+  });
+});
+
 describe("the screen parts of Tugas saya that run in the browser", () => {
   const PARTS = [
+    `${FOLDER}/clarification-tasks.tsx`,
+    `${FOLDER}/cleaning-tasks.tsx`,
     `${FOLDER}/leave-tasks.tsx`,
     `${FOLDER}/return-tasks.tsx`,
     `${FOLDER}/task-cards.tsx`,

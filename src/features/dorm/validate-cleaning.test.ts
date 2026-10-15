@@ -1,7 +1,7 @@
 // Room numbers of this file: NV101 to NV199.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import type { RoleId } from "@/auth/role-ids";
+import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { dormCleaningDuties, dormCleaningPlaces } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -27,10 +27,12 @@ const DECIDED_FIRST = {
   ok: false,
   error:
     "Penilaian ini sudah diputuskan oleh petugas lain. Muat ulang halaman.",
+  stale: true,
 };
 const NOT_JUDGED = {
   ok: false,
   error: "Tugas ini belum dinilai BAM. Muat ulang halaman.",
+  stale: true,
 };
 
 interface Setting {
@@ -339,4 +341,39 @@ describe("sendBackDuty", () => {
       });
     },
   );
+});
+
+describe("the decisions Pembersihan asrama and Tugas saya send", () => {
+  it("are refused to every role but Pengelola Asrama, sent by hand, and save nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { dutyId } = await setUp(db, "NV116", "not_met");
+      const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+
+      for (const role of others) {
+        const actor = await addTestActor(db, `Bukan Validator ${role}`, [role]);
+        expect(await validateDuty(db, actor, dutyId, TODAY)).toEqual(
+          NOT_ALLOWED,
+        );
+        expect(await sendBackDuty(db, actor, dutyId, "Ulangi")).toEqual(
+          NOT_ALLOWED,
+        );
+      }
+      expect((await dutyById(db, dutyId)).status).toBe("judged");
+      expect(await changesOfDuty(db, dutyId)).toEqual([]);
+      expect(await repeatsOfDuty(db, dutyId)).toEqual([]);
+    });
+  });
+
+  it("refuses a validation of one sent back first as out of date, with no point and no repeat", async () => {
+    await inTestDatabase(async (db) => {
+      const { dutyId, manager } = await setUp(db, "NV117", "not_met");
+      await sendBackDuty(db, manager, dutyId, "Belum diperiksa.");
+
+      const late = await validateDuty(db, manager, dutyId, TODAY);
+
+      expect(late).toEqual(NOT_JUDGED);
+      expect(late).toMatchObject({ stale: true });
+      expect(await repeatsOfDuty(db, dutyId)).toEqual([]);
+    });
+  });
 });

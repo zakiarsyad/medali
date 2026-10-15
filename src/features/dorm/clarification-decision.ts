@@ -4,6 +4,7 @@ import {
   CLARIFICATION_NOTE_MAX_LENGTH,
   type DormClarificationStatus,
 } from "./clarification-ids";
+import type { StaleRefusal } from "./leave-messages";
 
 /*
  * The rules of a check or a decision on a dorm clarification, apart from
@@ -52,9 +53,16 @@ export const DECIDE_NOT_ALLOWED = refusal(
 export const CLARIFICATION_NOT_FOUND = refusal(
   "Klarifikasi ini tidak ditemukan. Muat ulang halaman.",
 );
-export const DECIDED_FIRST = refusal(
-  "Klarifikasi ini sudah diputuskan oleh petugas lain. Muat ulang halaman.",
-);
+/**
+ * Said of one decided or closed first: the list it was pressed on is out
+ * of date.
+ */
+export const DECIDED_FIRST: StaleRefusal = {
+  ok: false,
+  error:
+    "Klarifikasi ini sudah diputuskan oleh petugas lain. Muat ulang halaman.",
+  stale: true,
+};
 export const STILL_WAITS_FOR_BAM = refusal(
   "Klarifikasi ini masih menunggu verifikasi Badan Asrama Mahasiswa.",
 );

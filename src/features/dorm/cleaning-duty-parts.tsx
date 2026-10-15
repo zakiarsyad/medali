@@ -46,7 +46,7 @@ export function RepeatBadge() {
 }
 
 /** Who did a step and when, such as Nama · 12 Okt 2026, 10.00. */
-function byWords(name: string | null, at: Date | null): string {
+export function byWords(name: string | null, at: Date | null): string {
   const moment = at === null ? "" : shownMoment(at);
   return [name ?? "", moment].filter((part) => part !== "").join(" · ");
 }

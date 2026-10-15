@@ -1,11 +1,17 @@
 // Sample Tahun akademik of this file: 3310 to 3310.
 // Sample NIMs of this file: 9986109000 to 9986109099.
+// Room numbers of this file: NT101 to NT199.
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import type { DormClarificationStatus } from "./clarification-ids";
+import type { CountMarks } from "./count-ids";
 import { TASKS_SHOWN } from "./tasks-card";
 import { countDormTasks, readDormTasks } from "./tasks-list";
+import { addTestActivity } from "./test-activities";
+import { addTestClarification, addTestCount } from "./test-clarifications";
+import { addTestDuty, judgedBy } from "./test-cleaning";
 import { addTestResidents } from "./test-leave";
 import { addTestActor } from "./test-records";
 import { addApprovedLeave, addTestReport, campusAt } from "./test-returns";
@@ -38,6 +44,46 @@ function idAt(ids: string[], place: number): string {
   const found = ids[place];
   if (found === undefined) throw new Error("There is no such resident.");
   return found;
+}
+
+/**
+ * A clarification of an absence at one activity for each of the first
+ * residents, as `each` says, with what its status needs done by `bamId`.
+ */
+async function addClarifications(
+  db: Database,
+  residents: string[],
+  bamId: string,
+  each: {
+    status: DormClarificationStatus;
+    sentAt?: Date;
+    fileKey?: string;
+  }[],
+): Promise<string[]> {
+  const activityId = await addTestActivity(db, bamId, {
+    versions: [{ startsOn: "3310-10-01" }],
+  });
+  const marks: CountMarks = {};
+  for (const studentId of residents) {
+    marks[studentId] = { isAbsent: true, note: "" };
+  }
+  const countId = await addTestCount(db, {
+    activityId,
+    day: "3310-10-12",
+    byId: bamId,
+    marks,
+  });
+  const ids: string[] = [];
+  for (const [place, clarification] of each.entries()) {
+    ids.push(
+      await addTestClarification(db, bamId, {
+        countId,
+        studentId: idAt(residents, place),
+        ...clarification,
+      }),
+    );
+  }
+  return ids;
 }
 
 function accountOf(id: string, roles: RoleId[]) {
@@ -211,6 +257,89 @@ describe("readDormTasks", () => {
     });
   });
 
+  it("lists only the clarifications BAM passed on, the earliest sent first, as their cards show them", async () => {
+    await inTestDatabase(async (db) => {
+      const { residents, manager, bam } = await addRecords(db);
+      const ids = await addClarifications(db, residents, bam.id, [
+        { status: "verified", sentAt: new Date("3310-10-13T05:00:00Z") },
+        {
+          status: "verified",
+          sentAt: new Date("3310-10-13T03:00:00Z"),
+          fileKey: "dorm-clarifications/uji-tugas.pdf",
+        },
+        { status: "submitted" },
+        { status: "accepted" },
+      ]);
+
+      const tasks = await readDormTasks(
+        db,
+        accountOf(manager.id, manager.roles),
+        NOW,
+      );
+
+      expect(tasks.clarifications?.total).toBe(2);
+      expect(tasks.clarifications?.items.map((item) => item.id)).toEqual([
+        idAt(ids, 1),
+        idAt(ids, 0),
+      ]);
+      expect(tasks.clarifications?.items[0]).toMatchObject({
+        nim: "9986109002",
+        status: "verified",
+        reason: "Sakit",
+        explanation: "Demam dan beristirahat di kamar.",
+        file: { name: "surat-keterangan.pdf" },
+        verification: { result: "Diterima BAM" },
+        decision: null,
+      });
+    });
+  });
+
+  it("lists the cleaning duties BAM assessed, of every dorm, the earliest date first, with the place, the room and who assessed", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, manager } = await addRecords(db);
+      const later = await addTestDuty(
+        db,
+        { room: "NT101", place: "Lorong Uji Tugas NT101" },
+        { ...judgedBy(bam.id, "not_met"), day: "3310-10-12" },
+      );
+      const ownRoom = await addTestDuty(
+        db,
+        { room: "NT102", place: "Lorong Uji Tugas NT102" },
+        { ...judgedBy(bam.id, "met"), day: "3310-10-11", placeId: null },
+      );
+      await addTestDuty(
+        db,
+        { room: "NT103", place: "Lorong Uji Tugas NT103" },
+        { day: "3310-10-10" },
+      );
+
+      const tasks = await readDormTasks(
+        db,
+        accountOf(manager.id, manager.roles),
+        NOW,
+      );
+
+      expect(tasks.cleaning?.total).toBe(2);
+      expect(tasks.cleaning?.items).toEqual([
+        expect.objectContaining({
+          id: ownRoom.id,
+          day: "11 Okt 3310",
+          place: "Kamar NT102 (kamar sendiri)",
+          room: "Dana Rakca · Kamar NT102",
+          result: "met",
+          judgeNote: "",
+        }),
+        expect.objectContaining({
+          id: later.id,
+          place: "Lorong Uji Tugas NT101",
+          result: "not_met",
+          judgeNote: "Lantai belum dipel.",
+          judgedByName: "BAM Uji Tugas",
+        }),
+      ]);
+    });
+  });
+
   it("gives BAM - BPHK and Kepala Unit no section, as they decide neither", async () => {
     await inTestDatabase(async (db) => {
       const { residents, manager, bam } = await addRecords(db);
@@ -229,10 +358,12 @@ describe("readDormTasks", () => {
         NOW,
       );
 
-      expect(ofBam.leaves).toBeNull();
-      expect(ofBam.returns).toBeNull();
-      expect(ofHead.leaves).toBeNull();
-      expect(ofHead.returns).toBeNull();
+      for (const tasks of [ofBam, ofHead]) {
+        expect(tasks.leaves).toBeNull();
+        expect(tasks.returns).toBeNull();
+        expect(tasks.clarifications).toBeNull();
+        expect(tasks.cleaning).toBeNull();
+      }
     });
   });
 });
@@ -279,6 +410,31 @@ describe("countDormTasks", () => {
       expect(
         await countDormTasks(db, accountOf(manager.id, ["head_of_unit"])),
       ).toBe(0);
+    });
+  });
+
+  it("counts the clarifications BAM passed on and the cleaning duties BAM assessed, and none of those that still wait for BAM", async () => {
+    await inTestDatabase(async (db) => {
+      const { residents, manager, bam } = await addRecords(db);
+      await addClarifications(db, residents, bam.id, [
+        { status: "verified" },
+        { status: "submitted" },
+      ]);
+      await addTestDuty(
+        db,
+        { room: "NT111", place: "Lorong Uji Tugas NT111" },
+        judgedBy(bam.id, "met"),
+      );
+      await addTestDuty(
+        db,
+        { room: "NT112", place: "Lorong Uji Tugas NT112" },
+        {},
+      );
+
+      expect(
+        await countDormTasks(db, accountOf(manager.id, manager.roles)),
+      ).toBe(2);
+      expect(await countDormTasks(db, accountOf(bam.id, bam.roles))).toBe(0);
     });
   });
 });
