@@ -11,6 +11,9 @@ vi.mock("./leave-actions", () => ({
   decideLeaveAction: vi.fn(),
   validateReturnAction: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
 
 const NOTHING: DormTasks = {
   leaves: { items: [], total: 0 },

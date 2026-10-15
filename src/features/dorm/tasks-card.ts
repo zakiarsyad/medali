@@ -12,6 +12,9 @@ export const TASKS_SHOWN = 20;
 /** What a section says when nothing in it waits. */
 export const NOTHING_WAITS = "Tidak ada yang menunggu.";
 
+/** What a press on an item says when it was decided or cancelled elsewhere first. */
+export const ALREADY_SETTLED = "Sudah diproses. Daftar diperbarui.";
+
 /** A leave request that waits for approval. */
 export interface LeaveTask {
   id: string;

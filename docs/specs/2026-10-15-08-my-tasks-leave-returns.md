@@ -128,6 +128,14 @@ validate. Each decision is the same one as on Perizinan asrama.
     after each decision this account makes, on Tugas saya or on
     Perizinan asrama. A request sent or cancelled by a resident in the
     meantime shows the next time a page is loaded.
+14. A press on an item that was decided or cancelled elsewhere first is
+    refused, and Tugas saya says "Sudah diproses. Daftar diperbarui."
+    above the list of its section and reads the page again at once, so
+    the item leaves the list and the numbers are new. Perizinan asrama
+    keeps its own longer message, which says where the item stands.
+15. While a decision is being sent, both buttons of its card wait, so a
+    double press sends one. If two still reach the server, it keeps the
+    first and refuses the second as decided first.
 
 ## Steps
 
@@ -138,4 +146,4 @@ validate. Each decision is the same one as on Perizinan asrama.
 - [x] 3. The section "Izin menunggu persetujuan" with Setujui and Tolak.
 - [x] 4. The section "Laporan kembali menunggu validasi" with its photo.
 - [x] 5. The number cards, the number in the menu and "Perlu dipantau".
-- [ ] 6. Stale and double decisions are refused; phone layout.
+- [x] 6. Stale and double decisions are refused; phone layout.

@@ -26,10 +26,10 @@ export function reportedWords(task: ReturnTask): string {
 
 function ReturnTaskCard({
   task,
-  onKept,
+  onSettled,
 }: {
   task: ReturnTask;
-  onKept: (answer: FormState) => void;
+  onSettled: (said: FormState) => void;
 }) {
   return (
     <>
@@ -62,7 +62,7 @@ function ReturnTaskCard({
         decide={(decision, note) =>
           validateReturnAction(task.reportId, decision, note)
         }
-        onKept={onKept}
+        onSettled={onSettled}
       />
     </>
   );
@@ -78,7 +78,9 @@ export function ReturnTasks({ tasks }: { tasks: ReturnTask[] }) {
     <TaskCards
       items={tasks}
       keyOf={(task) => task.reportId}
-      cardOf={(task, onKept) => <ReturnTaskCard task={task} onKept={onKept} />}
+      cardOf={(task, onSettled) => (
+        <ReturnTaskCard task={task} onSettled={onSettled} />
+      )}
     />
   );
 }

@@ -1,4 +1,5 @@
 import type { ReportStatus } from "./leave-ids";
+import type { StaleRefusal } from "./leave-messages";
 
 /*
  * What reporting back, and checking and recording a return, answer.
@@ -96,10 +97,13 @@ const DECIDED_WORDS: Record<DecidedStatus, string> = {
 };
 
 /** What a decision answers when the report was decided by someone else first. */
-export function reportDecidedFirst(status: DecidedStatus) {
-  return refusal(
-    `Laporan ini sudah ${DECIDED_WORDS[status]} lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman.`,
-  );
+export function reportDecidedFirst(status: DecidedStatus): StaleRefusal {
+  return {
+    ...refusal(
+      `Laporan ini sudah ${DECIDED_WORDS[status]} lebih dulu, jadi keputusan Anda tidak disimpan. Muat ulang halaman.`,
+    ),
+    stale: true,
+  };
 }
 
 export const RECORD_NOT_ALLOWED = refusal(

@@ -19,10 +19,10 @@ export function rejectLeaveQuestion(task: LeaveTask): string {
 
 function LeaveTaskCard({
   task,
-  onKept,
+  onSettled,
 }: {
   task: LeaveTask;
-  onKept: (answer: FormState) => void;
+  onSettled: (said: FormState) => void;
 }) {
   const labels = timeLabels(task.kind);
   return (
@@ -53,7 +53,7 @@ function LeaveTaskCard({
         agree={APPROVE}
         question={rejectLeaveQuestion(task)}
         decide={(decision, note) => decideLeaveAction(task.id, decision, note)}
-        onKept={onKept}
+        onSettled={onSettled}
       />
     </>
   );
@@ -68,7 +68,9 @@ export function LeaveTasks({ tasks }: { tasks: LeaveTask[] }) {
     <TaskCards
       items={tasks}
       keyOf={(task) => task.id}
-      cardOf={(task, onKept) => <LeaveTaskCard task={task} onKept={onKept} />}
+      cardOf={(task, onSettled) => (
+        <LeaveTaskCard task={task} onSettled={onSettled} />
+      )}
     />
   );
 }

@@ -8,9 +8,10 @@ import { NOTHING_WAITS } from "./tasks-card";
 
 /**
  * The cards of one section of Tugas saya, or "Tidak ada yang menunggu.".
- * A kept decision takes its item off the list, which the server reads
- * again, so its answer stays above the list, also once the list is
- * empty. `cardOf` gives each card the way to hand that answer up.
+ * An item leaves the list once it is settled, decided here or elsewhere,
+ * as the server reads the list again; what was said of it stays above
+ * the list, also once the list is empty. `cardOf` gives each card the
+ * way to hand that up.
  */
 export function TaskCards<Item>({
   items,
@@ -19,19 +20,19 @@ export function TaskCards<Item>({
 }: {
   items: Item[];
   keyOf: (item: Item) => string;
-  cardOf: (item: Item, onKept: (answer: FormState) => void) => ReactNode;
+  cardOf: (item: Item, onSettled: (said: FormState) => void) => ReactNode;
 }) {
-  const [kept, setKept] = useState<FormState | null>(null);
+  const [said, setSaid] = useState<FormState | null>(null);
   return (
     <>
-      {kept && <FormMessage state={kept} />}
+      {said && <FormMessage state={said} />}
       {items.length === 0 ? (
         <p className={shared.empty}>{NOTHING_WAITS}</p>
       ) : (
         <ul className={styles.cards}>
           {items.map((item) => (
             <li key={keyOf(item)} className={styles.card}>
-              {cardOf(item, setKept)}
+              {cardOf(item, setSaid)}
             </li>
           ))}
         </ul>

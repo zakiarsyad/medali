@@ -42,7 +42,14 @@ async function resident(place: number): Promise<TestResident> {
     own.db,
     2930,
     "Prodi Uji Lapor Sekaligus",
-    ["9937920001", "9937920002", "9937920003", "9937920004", "9937920005"],
+    [
+      "9937920001",
+      "9937920002",
+      "9937920003",
+      "9937920004",
+      "9937920005",
+      "9937920006",
+    ],
   );
   const found = residents[place];
   if (!found) throw new Error("There is no such resident.");
@@ -172,5 +179,21 @@ describe("two decisions on one report at the same moment", () => {
     expect(both.sooner).toEqual({ ok: true, value: "validated" });
     expect(both.later).toEqual(reportDecidedFirst("validated"));
     expect((await leaveById(own.db, leaveId))?.status).toBe("completed");
+  });
+
+  it("keeps one validation pressed twice: the second waits, then is refused as decided first", async () => {
+    const { manager, leaveId, reportId } = await reportOf(5, "verified");
+    const press = (db: Parameters<typeof validateReturn>[0]) =>
+      validateReturn(db, manager, reportId, "validate", "");
+
+    const both = await own.atOnce<Parsed<unknown>>(press, press);
+
+    expect(both.sooner).toEqual({ ok: true, value: "validated" });
+    expect(both.later).toEqual(reportDecidedFirst("validated"));
+    expect(both.later).toMatchObject({ stale: true });
+    expect(await leaveById(own.db, leaveId)).toMatchObject({
+      status: "completed",
+      returnedAt: campusAt("2930-10-13T15:50"),
+    });
   });
 });

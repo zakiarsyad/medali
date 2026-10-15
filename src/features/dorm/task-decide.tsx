@@ -1,40 +1,55 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./leave.module.css";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
-import { REJECTION_NEEDS_NOTE } from "./leave-messages";
+import { type DecisionAnswer, REJECTION_NEEDS_NOTE } from "./leave-messages";
+import { ALREADY_SETTLED } from "./tasks-card";
 
 /**
  * Catatan, the agreeing button and "Tolak" on an item of Tugas saya.
  * "Tolak" without a note sends nothing and asks for the reason; with a
- * note it asks `question` first. A kept decision goes to `onKept`; a
- * refusal stays under the buttons.
+ * note it asks `question` first. Both buttons wait for the answer, so a
+ * second press sends nothing. When the item leaves the list, because the
+ * decision was kept or because it was decided or cancelled elsewhere
+ * first, what to say goes to `onSettled`, and for the second the list
+ * is read again. Any other refusal stays under the buttons.
  */
 export function TaskDecide({
   agree,
   question,
   decide,
-  onKept,
+  onSettled,
 }: {
   /** The agreeing button, such as Setujui, and the decision it sends. */
   agree: { label: string; decision: string };
   /** What is asked before a rejection is sent. */
   question: string;
-  decide: (decision: string, note: string) => Promise<FormState>;
-  onKept: (answer: FormState) => void;
+  decide: (decision: string, note: string) => Promise<DecisionAnswer>;
+  onSettled: (said: FormState) => void;
 }) {
+  const router = useRouter();
   const [note, setNote] = useState("");
   const [refusal, setRefusal] = useState<string | null>(null);
   const [pending, startSending] = useTransition();
 
+  function answered(answer: DecisionAnswer) {
+    if (answer.stale) {
+      setRefusal(null);
+      onSettled({ error: ALREADY_SETTLED, done: null });
+      router.refresh();
+      return;
+    }
+    setRefusal(answer.error);
+    if (answer.done) onSettled(answer);
+  }
+
   function send(decision: string) {
     startSending(async () => {
-      const answer = await decide(decision, note);
-      setRefusal(answer.error);
-      if (answer.done) onKept(answer);
+      answered(await decide(decision, note));
     });
   }
 
