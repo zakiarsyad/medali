@@ -15,9 +15,9 @@ function ValueTags({ keys }: { keys: PpksActivity["valueKeys"] }) {
 }
 
 /**
- * A typed target as it is. Without one, the number the app fills in,
- * marked so staff can tell it from a typed one, or "-" when the list
- * has none to fill in.
+ * A typed target, written with a dot for thousands. Without one, the
+ * number the app fills in, written the same way and marked so staff can
+ * tell it from a typed one, or "-" when the list has none to fill in.
  */
 function Target({
   typed,
@@ -26,7 +26,7 @@ function Target({
   typed: number | null;
   auto: number | null;
 }) {
-  if (typed !== null) return typed;
+  if (typed !== null) return typed.toLocaleString("id-ID");
   if (auto === null) return "-";
   return (
     <>

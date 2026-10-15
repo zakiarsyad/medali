@@ -86,9 +86,13 @@ The issue did not say, so these were decided:
    semester just before; semester 1 with none shows 0. Only one semester
    back is looked at, as in the prototype. While no period runs, it
    shows 0. The word "otomatis" sits small beside the number; on a
-   phone it stays inside the activity's block.
+   phone it stays inside the activity's block. Every Target peserta,
+   typed or filled in by the app, is written with a dot for
+   thousands.
 7. "Tambah kegiatan PPKS" starts Target peserta with that same number.
-   Whatever is saved is a typed target. Emptying the field saves no
+   When that number is 0, the field starts empty instead, so a saved
+   activity is not held at 0 once students are counted. Whatever is
+   saved is a typed target. Emptying the field saves no
    target, so the row shows the number filled in by the app again.
    "Ubah" on an activity with no target keeps the field empty, so
    saving it keeps it filled in by the app.

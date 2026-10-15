@@ -28,15 +28,17 @@ const START: FormState = { error: null, done: null };
 /**
  * What Target peserta starts with. A new activity starts with the number
  * the app would fill in, so saving it keeps that number as a typed one.
- * An activity without a target stays empty, so saving it keeps the
- * number filled in by the app.
+ * A 0 is left out: saved as typed, it would stay 0 once students are
+ * counted. An activity without a target stays empty, so saving it keeps
+ * the number filled in by the app.
  */
 function startingTarget(
   activity: PpksActivity | null,
   autoTarget: number | null,
 ): number | "" {
   if (activity) return activity.targetParticipants ?? "";
-  return autoTarget ?? "";
+  if (autoTarget === null || autoTarget === 0) return "";
+  return autoTarget;
 }
 
 /**

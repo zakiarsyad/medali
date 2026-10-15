@@ -42,7 +42,7 @@ const TYPED: PpksActivity = {
   ...ACTIVITY,
   id: "00000000-0000-4000-8000-000000000502",
   name: "Kegiatan uji dengan target",
-  targetParticipants: 40,
+  targetParticipants: 1240,
 };
 
 const SPECIAL: PpksActivity = {
@@ -113,10 +113,10 @@ describe("Target peserta", () => {
     );
   });
 
-  it("shows a typed target as it is, without otomatis", () => {
+  it("shows a typed target with a thousands dot, without otomatis", () => {
     const html = section({ activities: [TYPED] });
 
-    expect(html).toContain('data-title="Target peserta">40</td>');
+    expect(html).toContain('data-title="Target peserta">1.240</td>');
     expect(html).not.toContain("otomatis");
   });
 
@@ -129,7 +129,11 @@ describe("Target peserta", () => {
 });
 
 describe("the activity form", () => {
-  function form(semester: number | null, open: FormTarget) {
+  function form(
+    semester: number | null,
+    open: FormTarget,
+    counted: number | null = semester === null ? null : 1250,
+  ) {
     return renderToStaticMarkup(
       <PpksPanel
         semester={semester}
@@ -142,13 +146,21 @@ describe("the activity form", () => {
         isFormOpen
         onOpen={() => {}}
         onClose={() => {}}
-        autoTarget={semester === null ? null : 1250}
+        autoTarget={counted}
       />,
     );
   }
 
   it("starts a new PPKS activity with the semester's number in Target peserta", () => {
     expect(form(1, "new")).toMatch(/name="target" value="1250"/);
+  });
+
+  it("starts a new PPKS activity with Target peserta empty when no active student is counted", () => {
+    expect(form(1, "new", 0)).toMatch(/name="target" value=""/);
+  });
+
+  it("fills Target peserta with the plain typed number when changing an activity with a target", () => {
+    expect(form(1, TYPED)).toMatch(/name="target" value="1240"/);
   });
 
   it("keeps Target peserta empty when changing an activity without a target", () => {
