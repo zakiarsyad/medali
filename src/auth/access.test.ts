@@ -609,6 +609,38 @@ describe("may", () => {
     }
   });
 
+  it.each(["head_of_unit", "assessor"] as const)(
+    "lets %s upload SKPM data, remove an upload and set the conversion, on Data SKPM",
+    (role) => {
+      expect(may([role], "upload_skpm")).toBe(true);
+      expect(mayOpenTab([role], "assessment", "skpm")).toBe(true);
+    },
+  );
+
+  it("refuses every other role to upload SKPM data, Pengasuh, Direktur, Ketua Program Studi and Mahasiswa among them", () => {
+    expect(ACTION_TITLES.upload_skpm).toBe("Unggah data SKPM");
+    const uploaders: RoleId[] = ["head_of_unit", "assessor"];
+    const others = ROLE_IDS.filter((role) => !uploaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "mentor",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "upload_skpm")).toBe(false);
+    }
+  });
+
+  it("opens Data SKPM to Direktur, Ketua Program Studi and Pengasuh to read, and not to Mahasiswa", () => {
+    for (const role of ["director", "head_of_program", "mentor"] as const) {
+      expect(mayOpenTab([role], "assessment", "skpm")).toBe(true);
+    }
+    expect(mayOpenTab(["student"], "assessment", "skpm")).toBe(false);
+  });
+
   const disciplineReaders: RoleId[] = [
     "head_of_unit",
     "director",
