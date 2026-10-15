@@ -11,6 +11,7 @@ import {
   SCORE_NOT_WHOLE,
   scoreOf,
   testYearOf,
+  yearStartOf,
 } from "./fitness-input";
 
 const ANI = "00000000-0000-4000-8000-000000000501";
@@ -152,5 +153,12 @@ describe("testYearOf", () => {
     expect(testYearOf("2026-10-16")).toBe(2026);
     expect(testYearOf("2025-12-31")).toBe(2025);
     expect(testYearOf("2026-01-01")).toBe(2026);
+  });
+});
+
+describe("yearStartOf", () => {
+  it("gives New Year's Day of the year of a day", () => {
+    expect(yearStartOf("2026-10-16")).toBe("2026-01-01");
+    expect(yearStartOf("2025-12-31")).toBe("2025-01-01");
   });
 });

@@ -3,8 +3,8 @@ import styles from "./number-cards.module.css";
 
 /**
  * One number of a screen: what it counts, the number, and a line under
- * it. A number that is written with more than digits, such as "2 / 4" or
- * "87%", is given as text and shown as it is.
+ * it when there is one. A number that is written with more than digits,
+ * such as "2 / 4" or "87%", is given as text and shown as it is.
  */
 export function NumberCard({
   label,
@@ -13,7 +13,7 @@ export function NumberCard({
 }: {
   label: string;
   amount: number | string;
-  note: string;
+  note?: string;
 }) {
   const shown =
     typeof amount === "number" ? amount.toLocaleString("id-ID") : amount;
@@ -21,7 +21,7 @@ export function NumberCard({
     <div className={styles.number}>
       <dt className={styles.label}>{label}</dt>
       <dd className={styles.value}>{shown}</dd>
-      <dd className={styles.note}>{note}</dd>
+      {note !== undefined && <dd className={styles.note}>{note}</dd>}
     </div>
   );
 }

@@ -54,6 +54,15 @@ export function scoreOf(typed: string): number | null {
   return wholeWithin(typed, SCORE_MIN, SCORE_MAX);
 }
 
+/** Limits as their form shows them before anything is typed. */
+export function typedLimitsOf(limits: FitnessLimits): SentLimits {
+  return {
+    excellentFrom: String(limits.excellentFrom),
+    goodFrom: String(limits.goodFrom),
+    attentionFrom: String(limits.attentionFrom),
+  };
+}
+
 function limitsGoDown(limits: FitnessLimits): boolean {
   return (
     limits.excellentFrom > limits.goodFrom &&
@@ -107,4 +116,9 @@ export function parseTestDay(sent: string, today: string): Parsed<string> {
 /** "Tahun tes": the year of the day of the test. */
 export function testYearOf(day: string): number {
   return Number(day.slice(0, 4));
+}
+
+/** The first day of the year a day is in, such as 2026-01-01. */
+export function yearStartOf(day: string): string {
+  return `${testYearOf(day)}-01-01`;
 }
