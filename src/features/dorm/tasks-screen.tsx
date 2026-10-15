@@ -1,11 +1,18 @@
 import { PageHead } from "@/ui/page-head";
 import { LeaveTasks } from "./leave-tasks";
+import { ReturnTasks } from "./return-tasks";
 import { TaskSection } from "./task-section";
 import styles from "./tasks.module.css";
-import { ALL_WAITING_LEAVE_ADDRESS, LEAVE_SECTION_ID } from "./tasks-address";
+import {
+  ALL_WAITING_LEAVE_ADDRESS,
+  ALL_WAITING_REPORTS_ADDRESS,
+  LEAVE_SECTION_ID,
+  RETURN_SECTION_ID,
+} from "./tasks-address";
 import {
   type DormTasks,
   type LeaveTask,
+  type ReturnTask,
   type TaskSection as Section,
   waitingIn,
 } from "./tasks-card";
@@ -34,6 +41,21 @@ function LeaveSection({ section }: { section: Section<LeaveTask> }) {
   );
 }
 
+function ReturnSection({ section }: { section: Section<ReturnTask> }) {
+  return (
+    <TaskSection
+      id={RETURN_SECTION_ID}
+      title="Laporan kembali menunggu validasi"
+      purpose="Sudah diverifikasi BAM. Validasi menandai mahasiswa sudah kembali ke asrama."
+      total={section.total}
+      shown={section.items.length}
+      allAddress={ALL_WAITING_REPORTS_ADDRESS}
+    >
+      <ReturnTasks tasks={section.items} />
+    </TaskSection>
+  );
+}
+
 /**
  * Tugas saya of Pengelola Asrama: the title, what the page is for,
  * "Semua tugas sudah beres." while nothing waits for them, and a section
@@ -49,6 +71,7 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
       </PageHead>
       {waitingIn(tasks) === 0 && <AllClear />}
       {tasks.leaves && <LeaveSection section={tasks.leaves} />}
+      {tasks.returns && <ReturnSection section={tasks.returns} />}
     </>
   );
 }

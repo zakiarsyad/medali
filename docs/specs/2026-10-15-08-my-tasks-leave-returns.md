@@ -106,6 +106,16 @@ validate. Each decision is the same one as on Perizinan asrama.
    penolakan di kolom catatan.", the words the server already uses. With
    a note it asks first, such as "Tolak Izin pesiar (name), 14 Okt 2026,
    09.00?". A refusal from the server stays on its card.
+9. A return card shows the report time under "Lapor", in red with
+   "terlambat (n) menit" when it came after Batas kembali, and Catatan
+   BAM only when BAM wrote one. The photo is small on the card and
+   opens whole in a new tab, from the same place as on Perizinan
+   asrama; where no photo is kept, the card says "Foto tidak tersimpan
+   di sini.", as already decided.
+10. "Validasi kembali" and "Tolak" say what Perizinan asrama already
+    says: "Kepulangan divalidasi. Izin selesai." and "Laporan kembali
+    ditolak. Mahasiswa perlu mengirim ulang.". "Tolak" asks first, such
+    as "Tolak laporan kembali (name), 14 Okt 2026, 16.12?".
 
 ## Steps
 
@@ -114,6 +124,6 @@ validate. Each decision is the same one as on Perizinan asrama.
 - [x] 2. The server counts and reads what waits, 20 per section, with
   its checks.
 - [x] 3. The section "Izin menunggu persetujuan" with Setujui and Tolak.
-- [ ] 4. The section "Laporan kembali menunggu validasi" with its photo.
+- [x] 4. The section "Laporan kembali menunggu validasi" with its photo.
 - [ ] 5. The number cards, the number in the menu and "Perlu dipantau".
 - [ ] 6. Stale and double decisions are refused; phone layout.

@@ -168,6 +168,7 @@ async function reporter(): Promise<Account> {
 function answerOf(decided: Parsed<DecidedStatus>): FormState {
   if (!decided.ok) return { error: decided.error, done: null };
   revalidatePath(LEAVE_ADDRESS);
+  revalidatePath(TASKS_ADDRESS);
   return { error: null, done: REPORT_DECIDED_WORDS[decided.value] };
 }
 

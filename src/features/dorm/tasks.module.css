@@ -47,3 +47,13 @@
   margin: var(--space-md) 0 0;
   font-size: var(--text-md);
 }
+
+/* A report sent after Batas kembali. */
+.late {
+  color: var(--bad);
+}
+
+/* The photo of a report: small on the card, whole once opened. */
+.photo {
+  max-width: var(--card-min-width);
+}

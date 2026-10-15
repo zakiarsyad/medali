@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import type { FormState } from "@/ui/form-message";
 import styles from "./leave.module.css";
 import { decideLeaveAction } from "./leave-actions";
 import { KindBadge } from "./leave-badges";
 import { Fact } from "./leave-card-view";
 import { KIND_WORDS, timeLabels } from "./leave-words";
+import { TaskCards } from "./task-cards";
 import { TaskDecide } from "./task-decide";
-import { type LeaveTask, NOTHING_WAITS } from "./tasks-card";
+import type { LeaveTask } from "./tasks-card";
 
 const APPROVE = { label: "Setujui", decision: "approve" };
 
@@ -18,26 +17,16 @@ export function rejectLeaveQuestion(task: LeaveTask): string {
   return `Tolak ${KIND_WORDS[task.kind]} ${task.name}, ${task.start}?`;
 }
 
-function LeaveTaskItem({
+function LeaveTaskCard({
   task,
   onKept,
 }: {
   task: LeaveTask;
   onKept: (answer: FormState) => void;
 }) {
-  const [refusal, setRefusal] = useState<string | null>(null);
   const labels = timeLabels(task.kind);
-
-  function answered(answer: FormState) {
-    if (answer.done) {
-      onKept(answer);
-      return;
-    }
-    setRefusal(answer.error);
-  }
-
   return (
-    <li className={styles.card}>
+    <>
       <div className={styles.cardHead}>
         <div>
           <b>{task.name}</b>
@@ -64,34 +53,22 @@ function LeaveTaskItem({
         agree={APPROVE}
         question={rejectLeaveQuestion(task)}
         decide={(decision, note) => decideLeaveAction(task.id, decision, note)}
-        onAnswer={answered}
+        onKept={onKept}
       />
-      <FormMessage state={{ error: refusal, done: null }} />
-    </li>
+    </>
   );
 }
 
 /**
- * The leave requests that wait, each with Catatan, "Setujui" and "Tolak",
- * the same decision as on Perizinan asrama. A kept decision takes the
- * request off the list, which the server reads again, and its answer
- * stays above the list, also once the list is empty; a refusal stays on
- * its card.
+ * The leave requests that wait, each with Catatan, "Setujui" and "Tolak":
+ * the same decision as on Perizinan asrama.
  */
 export function LeaveTasks({ tasks }: { tasks: LeaveTask[] }) {
-  const [kept, setKept] = useState<FormState | null>(null);
   return (
-    <>
-      {kept && <FormMessage state={kept} />}
-      {tasks.length === 0 ? (
-        <p className={shared.empty}>{NOTHING_WAITS}</p>
-      ) : (
-        <ul className={styles.cards}>
-          {tasks.map((task) => (
-            <LeaveTaskItem key={task.id} task={task} onKept={setKept} />
-          ))}
-        </ul>
-      )}
-    </>
+    <TaskCards
+      items={tasks}
+      keyOf={(task) => task.id}
+      cardOf={(task, onKept) => <LeaveTaskCard task={task} onKept={onKept} />}
+    />
   );
 }
