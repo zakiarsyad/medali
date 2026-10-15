@@ -1,76 +1,15 @@
 import type { ReactNode } from "react";
-import { ROLES } from "@/auth/roles";
 import shared from "@/ui/data-screen.module.css";
-import { shownDay } from "@/ui/day";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
-import type { OwnEntry, OwnSiku } from "./own-siku";
+import type { OwnSiku } from "./own-siku";
 import { waitingWords } from "./request-status";
 import styles from "./siku.module.css";
-import { GAIN_REASONS, LOSS_REASONS, type SikuKind } from "./siku-ids";
-import { isHeldWithin, sikuOf } from "./siku-score";
-import { basisOf, REASON_WORDS, signedPoints } from "./siku-words";
-
-export const HELD_WITHIN = "Nilai SIKU dibatasi 0–100.";
-
-const NONE_YET: Record<SikuKind, string> = {
-  gain: "Belum ada penambahan.",
-  loss: "Belum ada pengurangan.",
-};
-
-function EntryTable({
-  entries,
-  kind,
-}: {
-  entries: readonly OwnEntry[];
-  kind: SikuKind;
-}) {
-  if (entries.length === 0) {
-    return <p className={shared.detail}>{NONE_YET[kind]}</p>;
-  }
-  return (
-    <div className={shared.tableWrap}>
-      <table className={`${shared.table} ${shared.stacked}`}>
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Alasan</th>
-            <th>Keterangan</th>
-            <th>Dicatat oleh</th>
-            <th>Poin</th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((entry) => (
-            <tr key={entry.id}>
-              <td data-title="Tanggal">{shownDay(entry.day)}</td>
-              <td data-title="Alasan">{REASON_WORDS[entry.reason]}</td>
-              <td data-title="Keterangan">
-                <span className={shared.typed}>
-                  {entry.note === "" ? "-" : entry.note}
-                </span>
-                {basisOf(entry) !== "" && (
-                  <span className={shared.detail}>Dasar: {basisOf(entry)}</span>
-                )}
-              </td>
-              <td className={shared.detail} data-title="Dicatat oleh">
-                {ROLES[entry.enteredAs].title}
-                {entry.fromFile && " lewat unggah berkas"}
-              </td>
-              <td
-                className={`${styles.strong} ${kind === "gain" ? styles.gain : styles.loss}`}
-                data-title="Poin"
-              >
-                {signedPoints(entry.points, kind)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+import { SikuBreakdown } from "./siku-breakdown";
+import { GAIN_REASONS, LOSS_REASONS } from "./siku-ids";
+import { sikuOf } from "./siku-score";
+import { REASON_WORDS, signedPoints } from "./siku-words";
 
 /**
  * Penilaian SIKU of a student: their four numbers, their requests for a
@@ -95,8 +34,6 @@ export function OwnSikuScreen({
 }) {
   const { totals, entries } = siku;
   const final = sikuOf(base, totals);
-  const gains = entries.filter((entry) => entry.kind === "gain");
-  const losses = entries.filter((entry) => entry.kind === "loss");
   const lossWords = LOSS_REASONS.map((reason) =>
     REASON_WORDS[reason].toLowerCase(),
   ).join("; ");
@@ -138,34 +75,7 @@ export function OwnSikuScreen({
       {requests?.panels}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Transparansi nilai SIKU</h2>
-        <div className={styles.sum}>
-          <div>
-            <small>Nilai dasar</small>
-            <b>{base}</b>
-          </div>
-          <span className={styles.sign}>+</span>
-          <div className={styles.gain}>
-            <small>Penambahan ({gains.length})</small>
-            <b>{totals.gains}</b>
-          </div>
-          <span className={styles.sign}>−</span>
-          <div className={styles.loss}>
-            <small>Pengurangan ({losses.length})</small>
-            <b>{totals.losses}</b>
-          </div>
-          <span className={styles.sign}>=</span>
-          <div className={styles.total}>
-            <small>SIKU akhir</small>
-            <b>{final}</b>
-          </div>
-        </div>
-        {isHeldWithin(base, totals) && (
-          <p className={shared.detail}>{HELD_WITHIN}</p>
-        )}
-        <h3 className={styles.subheading}>Penambahan</h3>
-        <EntryTable entries={gains} kind="gain" />
-        <h3 className={styles.subheading}>Pengurangan</h3>
-        <EntryTable entries={losses} kind="loss" />
+        <SikuBreakdown base={base} totals={totals} lines={entries} />
         <h3 className={styles.subheading}>
           Kegiatan yang dapat menambah nilai SIKU
         </h3>

@@ -27,7 +27,48 @@ const PLACES_OUTSIDE_THE_STUDENT_LIST: [DetailOpenedFrom, string][] = [
   ["mentor_page", "kembali ke halaman pengasuh."],
   ["notes_list", "kembali ke daftar catatan."],
   ["scores_list", "kembali ke daftar nilai."],
+  ["siku_lists", "kembali ke Penilaian SIKU."],
 ];
+
+describe("the brief of a student", () => {
+  it("shows the name, NIM, program studi, status and the panels of other areas, and nothing else of the detail", () => {
+    const box = renderToStaticMarkup(
+      <StudentDetailDialog
+        detail={{
+          kind: "brief",
+          student: {
+            id: "00000000-0000-4000-8000-000000000001",
+            name: "Mahasiswa Uji Ringkas",
+            nim: "NIM-UJI",
+            studyProgram: "Prodi Uji Ringkas",
+            status: "on_leave",
+          },
+        }}
+        period={{ startYear: 2026, term: "odd" }}
+        openedFrom="siku_lists"
+        closeAddress="/kembali"
+        groupAddressOf={() => null}
+        mentorAddressOf={() => null}
+        morePanelsOf={() => <p>Catatan pengasuhan</p>}
+        briefPanelsOf={(studentId) => <p>Rincian nilai SIKU {studentId}</p>}
+      />,
+    );
+
+    expect(box).toContain("Mahasiswa Uji Ringkas");
+    expect(box).toContain("NIM-UJI · Prodi Uji Ringkas");
+    expect(box).toContain("Cuti");
+    expect(box).toContain(
+      "Rincian nilai SIKU 00000000-0000-4000-8000-000000000001",
+    );
+    // A Ketua Program Studi who is also Penilai Mahasiswa, opening a
+    // student of another program: the notes panel of the whole detail
+    // would say "0 catatan" of a student whose notes they may not read.
+    expect(box).not.toContain("Catatan pengasuhan");
+    expect(box).not.toContain("Asrama");
+    expect(box).not.toContain("Pengasuh");
+    expect(box).not.toContain("Angkatan");
+  });
+});
 
 describe("the box Mahasiswa tidak ditemukan", () => {
   it("sends the reader back to the Mahasiswa list from the Mahasiswa list", () => {

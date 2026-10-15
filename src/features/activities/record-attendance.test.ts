@@ -180,10 +180,10 @@ describe("recordAttendance", () => {
       await record(db, records, { kind: "leave", note: "Surat izin 7" });
 
       const after = await scoreOf(db, records.student);
-      expect(before.score).toEqual({ attended: 0, counted: 1 });
-      expect(scorePercent(before.score)).toBe(0);
-      expect(after.score).toEqual({ attended: 0, counted: 0 });
-      expect(scorePercent(after.score)).toBeNull();
+      expect(before.score.activities).toEqual({ attended: 0, counted: 1 });
+      expect(scorePercent(before.score.activities)).toBe(0);
+      expect(after.score.activities).toEqual({ attended: 0, counted: 0 });
+      expect(scorePercent(after.score.activities)).toBeNull();
       expect(after.dispensations).toBe(1);
     });
   });
@@ -195,7 +195,7 @@ describe("recordAttendance", () => {
       await record(db, records);
 
       const { score } = await scoreOf(db, records.student);
-      expect(score).toEqual({ attended: 1, counted: 1 });
+      expect(score.activities).toEqual({ attended: 1, counted: 1 });
     });
   });
 

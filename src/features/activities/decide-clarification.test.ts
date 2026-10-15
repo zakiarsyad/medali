@@ -319,12 +319,12 @@ describe("accepting a clarification", () => {
   it("as present raises Nilai kehadiran kegiatan of the student, by the rule the score already has", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const before = (await shownToStudent(db, records)).score;
+      const before = (await shownToStudent(db, records)).score.activities;
 
       await decide(db, records, "present");
 
       expect(before).toEqual({ attended: 0, counted: 1 });
-      expect((await shownToStudent(db, records)).score).toEqual({
+      expect((await shownToStudent(db, records)).score.activities).toEqual({
         attended: 1,
         counted: 1,
       });
@@ -338,7 +338,7 @@ describe("accepting a clarification", () => {
       await decide(db, records, "dispensation");
 
       const shown = await shownToStudent(db, records);
-      expect(shown.score).toEqual({ attended: 0, counted: 0 });
+      expect(shown.score.activities).toEqual({ attended: 0, counted: 0 });
       expect(shown.dispensations).toBe(1);
     });
   });

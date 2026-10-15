@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   attendanceScore,
+  type MarkTally,
+  meetingDispensations,
+  meetingScore,
+  NO_MARKS,
   type ScoredSchedule,
   scoreNote,
   scorePercent,
   shownScore,
+  totalScore,
 } from "./attendance-score";
 
 const TODAY = "2026-10-13";
@@ -120,21 +125,101 @@ describe("scorePercent", () => {
   });
 });
 
-describe("what the number Nilai kehadiran kegiatan shows", () => {
-  it("writes the percentage with one decimal, with a comma", () => {
-    expect(shownScore({ attended: 1, counted: 3 })).toBe("33,3%");
-    expect(shownScore({ attended: 4, counted: 4 })).toBe("100,0%");
-    expect(shownScore({ attended: 0, counted: 2 })).toBe("0,0%");
+function marks(more: Partial<MarkTally>): MarkTally {
+  return { ...NO_MARKS, ...more };
+}
+
+describe("meetingScore", () => {
+  it("counts a meeting marked Hadir as attended", () => {
+    expect(meetingScore(marks({ present: 2 }))).toEqual({
+      attended: 2,
+      counted: 2,
+    });
   });
 
-  it("says how many of how many below it", () => {
-    expect(scoreNote({ attended: 1, counted: 3 })).toBe(
-      "1/3 kegiatan karakter",
+  it("counts a meeting marked Alpa as not attended", () => {
+    expect(meetingScore(marks({ present: 1, absent: 2 }))).toEqual({
+      attended: 1,
+      counted: 3,
+    });
+  });
+
+  it("leaves a meeting marked Izin or Sakit out, on both sides", () => {
+    expect(meetingScore(marks({ present: 1, excused: 1, sick: 1 }))).toEqual({
+      attended: 1,
+      counted: 1,
+    });
+  });
+
+  it("counts nothing without a saved list that holds the student", () => {
+    expect(meetingScore(NO_MARKS)).toEqual({ attended: 0, counted: 0 });
+  });
+});
+
+describe("meetingDispensations", () => {
+  it("counts the meetings marked Izin and those marked Sakit", () => {
+    const tally = marks({ present: 1, excused: 2, sick: 1, absent: 1 });
+
+    expect(meetingDispensations(tally)).toBe(3);
+  });
+});
+
+const NONE = { attended: 0, counted: 0 };
+
+describe("totalScore", () => {
+  it("counts the activities and the meetings together, with the same weight", () => {
+    const parts = {
+      activities: { attended: 9, counted: 10 },
+      meetings: { attended: 3, counted: 4 },
+    };
+
+    expect(totalScore(parts)).toEqual({ attended: 12, counted: 14 });
+    expect(scorePercent(totalScore(parts))).toBe(85.7);
+  });
+});
+
+describe("what the number Nilai kehadiran kegiatan shows", () => {
+  it("writes the percentage of activities and meetings with one decimal, with a comma", () => {
+    expect(
+      shownScore({
+        activities: { attended: 9, counted: 10 },
+        meetings: { attended: 3, counted: 4 },
+      }),
+    ).toBe("85,7%");
+    expect(
+      shownScore({ activities: { attended: 4, counted: 4 }, meetings: NONE }),
+    ).toBe("100,0%");
+    expect(
+      shownScore({ activities: NONE, meetings: { attended: 0, counted: 2 } }),
+    ).toBe("0,0%");
+  });
+
+  it("says how many of how many activities and meetings below it", () => {
+    expect(
+      scoreNote({
+        activities: { attended: 1, counted: 3 },
+        meetings: { attended: 2, counted: 4 },
+      }),
+    ).toBe("1/3 kegiatan karakter · 2/4 pertemuan pengasuhan");
+  });
+
+  it("shows 0/0 meetings for a student with activities only, as one with no kelompok pengasuhan", () => {
+    expect(
+      scoreNote({ activities: { attended: 1, counted: 3 }, meetings: NONE }),
+    ).toBe("1/3 kegiatan karakter · 0/0 pertemuan pengasuhan");
+  });
+
+  it("counts a student with meetings only", () => {
+    const parts = { activities: NONE, meetings: { attended: 1, counted: 2 } };
+
+    expect(shownScore(parts)).toBe("50,0%");
+    expect(scoreNote(parts)).toBe(
+      "0/0 kegiatan karakter · 1/2 pertemuan pengasuhan",
     );
   });
 
-  it('shows "-" and "belum ada kegiatan wajib" with none', () => {
-    const none = { attended: 0, counted: 0 };
+  it('shows "-" and "belum ada kegiatan wajib" with nothing counted', () => {
+    const none = { activities: NONE, meetings: NONE };
 
     expect(shownScore(none)).toBe("-");
     expect(scoreNote(none)).toBe("belum ada kegiatan wajib");

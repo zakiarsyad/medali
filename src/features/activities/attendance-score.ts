@@ -1,3 +1,4 @@
+import type { AttendanceMark } from "@/mentoring/meeting-ids";
 import type { AttendanceStatus } from "./attendance-status";
 import { type UploadRange, uploadDeadline } from "./upload-range";
 
@@ -57,13 +58,60 @@ export function shownPercent(percent: number | null): string {
   return `${ONE_DECIMAL.format(percent)}%`;
 }
 
-/** The score as its number shows it. */
-export function shownScore(score: AttendanceScore): string {
-  return shownPercent(scorePercent(score));
+/**
+ * How many times a student is marked each way on the saved lists of the
+ * meetings with their Pengasuh in a period. A meeting whose list is not
+ * saved, or does not hold the student, gives them no mark.
+ */
+export type MarkTally = Readonly<Record<AttendanceMark, number>>;
+
+export const NO_MARKS: MarkTally = {
+  present: 0,
+  excused: 0,
+  sick: 0,
+  absent: 0,
+};
+
+/**
+ * The meetings' part of the score: Hadir is attended and Alpa is not.
+ * Izin and Sakit are left out on both sides, as a dispensation is.
+ */
+export function meetingScore(tally: MarkTally): AttendanceScore {
+  return { attended: tally.present, counted: tally.present + tally.absent };
 }
 
-/** The line under the number: how many of how many. */
-export function scoreNote(score: AttendanceScore): string {
-  if (score.counted === 0) return "belum ada kegiatan wajib";
-  return `${score.attended}/${score.counted} kegiatan karakter`;
+/** The meetings that add to Dispensasi: those marked Izin or Sakit. */
+export function meetingDispensations(tally: MarkTally): number {
+  return tally.excused + tally.sick;
+}
+
+/** What Nilai kehadiran kegiatan is counted over, part by part. */
+export interface ScoreParts {
+  activities: AttendanceScore;
+  meetings: AttendanceScore;
+}
+
+/** The two parts together: a meeting weighs the same as an activity. */
+export function totalScore(parts: ScoreParts): AttendanceScore {
+  return {
+    attended: parts.activities.attended + parts.meetings.attended,
+    counted: parts.activities.counted + parts.meetings.counted,
+  };
+}
+
+/** The score as its number shows it. */
+export function shownScore(parts: ScoreParts): string {
+  return shownPercent(scorePercent(totalScore(parts)));
+}
+
+function shownPart(part: AttendanceScore): string {
+  return `${part.attended}/${part.counted}`;
+}
+
+/** The line under the number: how many of how many, part by part. */
+export function scoreNote(parts: ScoreParts): string {
+  if (totalScore(parts).counted === 0) return "belum ada kegiatan wajib";
+  const activities = `${shownPart(parts.activities)} kegiatan karakter`;
+  const meetings = `${shownPart(parts.meetings)} pertemuan pengasuhan`;
+  return `${activities} · ${meetings}`;
 }

@@ -5,11 +5,19 @@ import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { type AttendanceScore, attendanceScore } from "./attendance-score";
+import {
+  attendanceScore,
+  type MarkTally,
+  meetingDispensations,
+  meetingScore,
+  NO_MARKS,
+  type ScoreParts,
+} from "./attendance-score";
 import type { AttendanceStatus } from "./attendance-status";
 import type { ShownClarification } from "./clarification-time";
+import { readOwnMarks } from "./meeting-marks";
 import { readOwnClarifications } from "./own-clarifications";
-import { readOwnStudent } from "./own-student";
+import { type OwnStudent, readOwnStudent } from "./own-student";
 import { semestersByPeriod } from "./participants";
 import { scheduleStatus } from "./schedule-status";
 import type { StudentSchedule } from "./student-schedule";
@@ -30,7 +38,7 @@ export interface StudentActivities {
   /** The semester they are in now, or null while none is known. */
   semester: number | null;
   /** Nilai kehadiran kegiatan, over the running period. */
-  score: AttendanceScore;
+  score: ScoreParts;
   /** The photos of the running period that wait to be checked. */
   waiting: number;
   /** The dispensations of the running period. */
@@ -72,6 +80,21 @@ function scored(schedule: StudentSchedule) {
 }
 
 /**
+ * The student's own marks at the meetings of the running period. A
+ * student who is not Aktif counts none, as they take part in no activity.
+ */
+function readCountedMarks(
+  db: Database,
+  student: OwnStudent,
+  runningId: string | undefined,
+): Promise<MarkTally> {
+  if (!student.isActive || runningId === undefined) {
+    return Promise.resolve(NO_MARKS);
+  }
+  return readOwnMarks(db, student.id, runningId);
+}
+
+/**
  * The activities of the student of an account, at a moment: the running
  * and the coming ones, one page of the history, and the numbers of the
  * running period. Only schedules meant for them are read, and only their
@@ -99,11 +122,12 @@ export async function readStudentActivities(
   );
   const meant = meantFor(semesters, student);
 
-  const [begun, coming, history, counted] = await Promise.all([
+  const [begun, coming, history, counted, marks] = await Promise.all([
     readBegunSchedules(db, meant, now.day),
     readComingSchedules(db, meant, now.day),
     readPastSchedules(db, meant, now.day, historyPage),
     readAllSchedules(db, meantFor(ofRunning, student)),
+    readCountedMarks(db, student, running?.id),
   ]);
   const current = begun.filter((schedule) => isCurrent(schedule, now));
   const attended = [...current, ...history.schedules, ...counted];
@@ -130,9 +154,13 @@ export async function readStudentActivities(
     activities: {
       now,
       semester: ofRunning[0]?.semester ?? null,
-      score: attendanceScore(countedOwn.map(scored), now.day),
+      score: {
+        activities: attendanceScore(countedOwn.map(scored), now.day),
+        meetings: meetingScore(marks),
+      },
       waiting: countWith(countedOwn, "waiting"),
-      dispensations: countWith(countedOwn, "dispensation"),
+      dispensations:
+        countWith(countedOwn, "dispensation") + meetingDispensations(marks),
       current: current.map(withOwn),
       coming,
       history: { ...history, schedules: history.schedules.map(withOwn) },

@@ -36,7 +36,10 @@ export const TEST_SENT_PHOTO = {
 export const TEST_EMPTY_ACTIVITIES: StudentActivities = {
   now: TEST_NOW,
   semester: 3,
-  score: { attended: 0, counted: 0 },
+  score: {
+    activities: { attended: 0, counted: 0 },
+    meetings: { attended: 0, counted: 0 },
+  },
   waiting: 0,
   dispensations: 0,
   current: [],

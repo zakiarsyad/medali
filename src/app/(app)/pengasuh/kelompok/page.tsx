@@ -3,6 +3,7 @@ import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import {
   groupAddress,
   readGroupListParams,
@@ -19,6 +20,7 @@ import { groupRowsFor } from "@/features/mentor-groups/visible-groups";
 import { mentorRowsFor } from "@/features/mentor-groups/visible-mentors";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
 import { noteRowsFor } from "@/features/mentoring/visible-notes";
+import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
@@ -71,11 +73,18 @@ async function GroupPage({
             openMentorAddress(account, mentorId, group)
           }
           morePanelsOf={(studentId) => (
-            <StudentNotesPanel
-              account={account}
-              visible={notesVisible}
-              studentId={studentId}
-            />
+            <>
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={baseScoreNow()}
+              />
+              <StudentNotesPanel
+                account={account}
+                visible={notesVisible}
+                studentId={studentId}
+              />
+            </>
           )}
         />
       )}

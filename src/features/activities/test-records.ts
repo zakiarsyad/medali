@@ -6,6 +6,9 @@ import {
   activityAttendances,
   activityClarifications,
   activitySchedules,
+  mentorGroupMembers,
+  mentorGroupMentors,
+  mentorGroups,
   ppksActivities,
   students,
   studyPrograms,
@@ -281,5 +284,43 @@ export async function addTestClarification(
     })
     .returning({ id: activityClarifications.id });
   if (!added) throw new Error("The clarification was not added.");
+  return added.id;
+}
+
+export interface TestMentorGroup {
+  studyProgramId: number;
+  cohortYear: number;
+  /** Tells the group from the others of its program studi and angkatan. */
+  number: number;
+  /** The Pengasuh who holds it today. */
+  mentorId: string;
+  memberIds: string[];
+}
+
+/** A group held by its Pengasuh since the first day of August 2000. */
+export async function addTestMentorGroup(
+  db: Database,
+  group: TestMentorGroup,
+): Promise<string> {
+  const startsOn = "2000-08-01";
+  const [added] = await db
+    .insert(mentorGroups)
+    .values({
+      studyProgramId: group.studyProgramId,
+      cohortYear: group.cohortYear,
+      entryPath: "regular",
+      number: group.number,
+      startsOn,
+    })
+    .returning({ id: mentorGroups.id });
+  if (!added) throw new Error("The mentor group was not added.");
+  await db
+    .insert(mentorGroupMentors)
+    .values({ groupId: added.id, mentorId: group.mentorId, startsOn });
+  const members = group.memberIds.map((studentId) => ({
+    studentId,
+    groupId: added.id,
+  }));
+  if (members.length > 0) await db.insert(mentorGroupMembers).values(members);
   return added.id;
 }

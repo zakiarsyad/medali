@@ -1,8 +1,10 @@
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import styles from "./siku.module.css";
+import type { SikuParams } from "./siku-address";
 import type { SikuListRow } from "./siku-board";
 import { REASON_WORDS, signedPoints } from "./siku-words";
+import { StudentName } from "./student-name";
 
 export const NO_SIKU_MATCHES = "Tidak ada data pada filter ini.";
 
@@ -20,9 +22,11 @@ function lastWords(row: SikuListRow): string {
 export function SikuListTable({
   rows,
   base,
+  params,
 }: {
   rows: readonly SikuListRow[];
   base: number;
+  params: SikuParams;
 }) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_SIKU_MATCHES}</p>;
@@ -44,7 +48,11 @@ export function SikuListTable({
           {rows.map((row) => (
             <tr key={row.id}>
               <td className={shared.rowHeading} data-title="Mahasiswa">
-                <b className={shared.typed}>{row.name}</b>
+                <StudentName
+                  studentId={row.id}
+                  name={row.name}
+                  params={params}
+                />
                 <small className={shared.detail}>
                   {row.nim} · {row.program}
                 </small>

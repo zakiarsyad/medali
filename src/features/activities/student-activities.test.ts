@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { daysAfter } from "@/academic-periods/days-after";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestMeeting } from "@/mentoring/test-meetings";
 import {
   readStudentActivities,
   type StudentActivities,
@@ -12,6 +13,7 @@ import {
   addTestActor,
   addTestAttendance,
   addTestClarification,
+  addTestMentorGroup,
   addTestPeriods,
   addTestProgram,
   addTestSchedule,
@@ -69,6 +71,32 @@ function scheduleIn(records: Records, days: number) {
     academicPeriodId: records.periodId,
     changedBy: records.staffId,
     startsOn: daysAfter(TODAY, days),
+  };
+}
+
+/** A group of the student's angkatan, held by the staff account. */
+function addGroupOf(
+  db: Database,
+  records: Records,
+  memberIds: string[],
+  number = 1,
+): Promise<string> {
+  return addTestMentorGroup(db, {
+    studyProgramId: records.programId,
+    cohortYear: 2360,
+    number,
+    mentorId: records.staffId,
+    memberIds,
+  });
+}
+
+/** A meeting of a group in the running period, saved by the staff account. */
+function meetingOf(records: Records, groupId: string, number: number) {
+  return {
+    groupId,
+    periodId: records.periodId,
+    number,
+    savedBy: records.staffId,
   };
 }
 
@@ -373,9 +401,94 @@ describe("readStudentActivities", () => {
 
       const shown = await shownTo(db, student);
 
-      expect(shown.score).toEqual({ attended: 1, counted: 3 });
+      expect(shown.score.activities).toEqual({ attended: 1, counted: 3 });
       expect(shown.waiting).toBe(1);
       expect(shown.dispensations).toBe(1);
+    });
+  });
+
+  it("counts the student's own marks at the saved meetings of the running period: Hadir attended, Alpa not, Izin and Sakit as dispensations", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { student } = records;
+      const groupId = await addGroupOf(db, records, [student.studentId]);
+      const marks = ["present", "absent", "excused", "sick"] as const;
+      for (const [index, mark] of marks.entries()) {
+        await addTestMeeting(db, meetingOf(records, groupId, index + 1), {
+          [student.studentId]: mark,
+        });
+      }
+
+      const shown = await shownTo(db, student);
+
+      expect(shown.score.meetings).toEqual({ attended: 1, counted: 2 });
+      expect(shown.dispensations).toBe(2);
+    });
+  });
+
+  it("counts no meeting whose saved list does not hold the student", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const other = await addTestStudentAccount(db, records.programId, {
+        nim: "9972100004",
+        name: "Mahasiswa Uji Lain Temu",
+        cohortYear: 2360,
+      });
+      const groupId = await addGroupOf(db, records, [
+        records.student.studentId,
+        other.studentId,
+      ]);
+      await addTestMeeting(db, meetingOf(records, groupId, 1), {
+        [other.studentId]: "present",
+      });
+
+      const shown = await shownTo(db, records.student);
+
+      expect(shown.score.meetings).toEqual({ attended: 0, counted: 0 });
+      expect(shown.dispensations).toBe(0);
+    });
+  });
+
+  it("counts the meetings of both groups of a student who moved, each once", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { studentId } = records.student;
+      const left = await addGroupOf(db, records, [], 1);
+      const joined = await addGroupOf(db, records, [studentId], 2);
+      await addTestMeeting(db, meetingOf(records, left, 1), {
+        [studentId]: "present",
+      });
+      await addTestMeeting(db, meetingOf(records, joined, 1), {
+        [studentId]: "absent",
+      });
+      await addTestMeeting(db, meetingOf(records, joined, 2), {
+        [studentId]: "present",
+      });
+
+      const shown = await shownTo(db, records.student);
+
+      expect(shown.score.meetings).toEqual({ attended: 2, counted: 3 });
+    });
+  });
+
+  it("counts only the meetings of the running period", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { studentId } = records.student;
+      const earlier = await addTestPeriods(db, 2360);
+      const groupId = await addGroupOf(db, records, [studentId]);
+      await addTestMeeting(
+        db,
+        { ...meetingOf(records, groupId, 1), periodId: earlier.oddId },
+        { [studentId]: "present" },
+      );
+      await addTestMeeting(db, meetingOf(records, groupId, 1), {
+        [studentId]: "absent",
+      });
+
+      const shown = await shownTo(db, records.student);
+
+      expect(shown.score.meetings).toEqual({ attended: 0, counted: 1 });
     });
   });
 
@@ -391,13 +504,24 @@ describe("readStudentActivities", () => {
       await addTestSchedule(db, scheduleIn(records, 0));
       await addTestSchedule(db, scheduleIn(records, -5));
       await addTestSchedule(db, scheduleIn(records, 5));
+      const groupId = await addGroupOf(db, records, [onLeave.studentId]);
+      await addTestMeeting(db, meetingOf(records, groupId, 1), {
+        [onLeave.studentId]: "present",
+      });
+      await addTestMeeting(db, meetingOf(records, groupId, 2), {
+        [onLeave.studentId]: "sick",
+      });
 
       const shown = await shownTo(db, onLeave);
 
       expect(shown.current).toEqual([]);
       expect(shown.coming).toEqual([]);
       expect(shown.history.matching).toBe(0);
-      expect(shown.score).toEqual({ attended: 0, counted: 0 });
+      expect(shown.score).toEqual({
+        activities: { attended: 0, counted: 0 },
+        meetings: { attended: 0, counted: 0 },
+      });
+      expect(shown.dispensations).toBe(0);
     });
   });
 });

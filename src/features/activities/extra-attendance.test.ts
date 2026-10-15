@@ -338,7 +338,7 @@ describe("Nilai kehadiran and a schedule of an extra activity", () => {
       const own = await activitiesOf(db, records.chosen, AFTER_UPLOAD);
 
       expect(mean).toEqual({ percent: 100, students: 1 });
-      expect(own.score).toEqual({ attended: 1, counted: 1 });
+      expect(own.score.activities).toEqual({ attended: 1, counted: 1 });
     });
   });
 
@@ -366,7 +366,7 @@ describe("Nilai kehadiran and a schedule of an extra activity", () => {
       const own = await activitiesOf(db, records.chosen, AFTER_UPLOAD);
 
       expect(mean).toEqual({ percent: 100, students: 1 });
-      expect(own.score).toEqual({ attended: 1, counted: 1 });
+      expect(own.score.activities).toEqual({ attended: 1, counted: 1 });
     });
   });
 });
@@ -486,7 +486,7 @@ describe("participants changed after photos came in", () => {
       expect(mean).toEqual({ percent: 0, students: 1 });
       const own = await activitiesOf(db, records.chosen, AFTER_UPLOAD);
       expect(own.history.schedules).toEqual([]);
-      expect(own.score).toEqual({ attended: 0, counted: 0 });
+      expect(own.score.activities).toEqual({ attended: 0, counted: 0 });
     });
   });
 });
