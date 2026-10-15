@@ -35,6 +35,9 @@ export const ACTIONS = [
   "verify_dorm_clarification",
   "decide_dorm_clarification",
   "open_dorm_clarification_files",
+  "view_dorm_violations",
+  "record_dorm_violations",
+  "view_own_dorm_violations",
   "view_student_detail",
   "view_student_room",
   "view_mentor_groups",
@@ -104,6 +107,11 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Menerima dan menolak klarifikasi kehadiran kegiatan asrama yang diteruskan BAM",
   open_dorm_clarification_files:
     "Membuka lampiran klarifikasi kehadiran kegiatan asrama",
+  view_dorm_violations: "Melihat pelanggaran asrama",
+  record_dorm_violations:
+    "Mencatat pelanggaran asrama, menjadwalkan, dan membatalkan pengumumannya",
+  view_own_dorm_violations:
+    "Melihat pelanggaran asrama sendiri dan pengumuman pelanggaran asramanya",
   view_student_detail: "Melihat detail mahasiswa",
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_mentor_groups: "Melihat kelompok pengasuhan",
@@ -218,6 +226,12 @@ const BAM_DORM_ACTIVITY_ACTIONS = [
   "count_dorm_attendance",
 ] as const satisfies readonly Action[];
 
+/** What the BAM roles that record dorm violations may do with them. */
+const BAM_VIOLATION_ACTIONS = [
+  "view_dorm_violations",
+  "record_dorm_violations",
+] as const satisfies readonly Action[];
+
 /** What BAM - BPHK and BAM - KI may do with the clarifications of dorm absences. */
 const BAM_CLARIFICATION_ACTIONS = [
   "view_dorm_clarifications",
@@ -252,6 +266,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_attendance",
       "view_dorm_leave",
       "view_dorm_clarifications",
+      "view_dorm_violations",
       "view_student_detail",
       "view_student_room",
       "view_mentor_groups",
@@ -376,6 +391,7 @@ export const ROLES: Record<RoleId, Role> = {
       "report_dorm_return",
       "ask_dorm_clarification",
       "view_own_dorm_cleaning",
+      "view_own_dorm_violations",
       "view_own_siku",
       "ask_siku_addition",
     ],
@@ -405,6 +421,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_clarifications",
       "decide_dorm_clarification",
       "open_dorm_clarification_files",
+      "view_dorm_violations",
     ],
     rows: "all",
   },
@@ -424,6 +441,7 @@ export const ROLES: Record<RoleId, Role> = {
       "record_dorm_return",
       ...BAM_DORM_ACTIVITY_ACTIONS,
       ...BAM_CLARIFICATION_ACTIONS,
+      ...BAM_VIOLATION_ACTIONS,
     ],
     rows: "all",
   },
@@ -432,7 +450,11 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BK",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "clarification", "violations"] },
-    actions: [...BAM_DORM_ACTIVITY_ACTIONS, ...BAM_CLARIFICATION_ACTIONS],
+    actions: [
+      ...BAM_DORM_ACTIVITY_ACTIONS,
+      ...BAM_CLARIFICATION_ACTIONS,
+      ...BAM_VIOLATION_ACTIONS,
+    ],
     rows: "all",
   },
   bam_household: {
@@ -455,7 +477,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BH",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations"] },
-    actions: BAM_DORM_ACTIVITY_ACTIONS,
+    actions: [...BAM_DORM_ACTIVITY_ACTIONS, ...BAM_VIOLATION_ACTIONS],
     rows: "all",
   },
   bam_catering: {
@@ -463,7 +485,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BS",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations"] },
-    actions: BAM_DORM_ACTIVITY_ACTIONS,
+    actions: [...BAM_DORM_ACTIVITY_ACTIONS, ...BAM_VIOLATION_ACTIONS],
     rows: "all",
   },
   bam_arts_sports: {
@@ -471,7 +493,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BP",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations"] },
-    actions: BAM_DORM_ACTIVITY_ACTIONS,
+    actions: [...BAM_DORM_ACTIVITY_ACTIONS, ...BAM_VIOLATION_ACTIONS],
     rows: "all",
   },
   bam_health: {
@@ -479,7 +501,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "BE",
     pages: ["dorm"],
     tabs: { dorm: ["overview", "activities", "violations", "health"] },
-    actions: BAM_DORM_ACTIVITY_ACTIONS,
+    actions: [...BAM_DORM_ACTIVITY_ACTIONS, ...BAM_VIOLATION_ACTIONS],
     rows: "all",
   },
   upk_staff: {
