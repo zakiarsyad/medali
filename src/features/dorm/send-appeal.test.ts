@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 3240 to 3240.
+// Sample Tahun akademik of this file: 3280 to 3280.
 // Sample NIMs of this file: 9982100000 to 9982100099.
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
@@ -27,9 +27,9 @@ import {
 
 const inTestDatabase = withTestDatabase();
 
-const DAY = "3240-10-12";
+const DAY = "3280-10-12";
 // 21:00 on campus on the day, when the violation is announced.
-const ANNOUNCED = new Date("3240-10-12T14:00:00Z");
+const ANNOUNCED = new Date("3280-10-12T14:00:00Z");
 const MINUTE_MS = 60 * 1000;
 const REASON = "Saya sedang izin resmi pulang pada jam tersebut.";
 const SENT = { ok: true, value: APPEAL_SENT };
@@ -40,7 +40,7 @@ function minutesLater(minutes: number): Date {
 
 /** Ani's violation, announced at 21:00; Ani and Bea, of her dorm, with accounts. */
 async function setUp(db: Database) {
-  const setting = await addViolationSetting(db, 3240, "Prodi Uji Advokasi", [
+  const setting = await addViolationSetting(db, 3280, "Prodi Uji Advokasi", [
     "9982100001",
     "9982100002",
     "9982100003",
