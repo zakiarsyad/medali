@@ -351,6 +351,13 @@
       "when": 1792094650685,
       "tag": "0049_character-assessment-uploads",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792098272566,
+      "tag": "0050_character-grade-schemes",
+      "breakpoints": true
     }
   ]
 }
