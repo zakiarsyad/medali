@@ -122,6 +122,7 @@ export function StaffViolationsScreen({
   schedule,
   appeals,
   waitingAppeals,
+  ownRecord,
 }: {
   tabs: TabLinksProps;
   params: StaffViolationParams;
@@ -135,6 +136,8 @@ export function StaffViolationsScreen({
   appeals: ReactNode;
   /** How many appeals wait, for an account that decides them, or else null. */
   waitingAppeals: number | null;
+  /** The account's own record, for a resident who is also staff, or null. */
+  ownRecord: ReactNode;
 }) {
   return (
     <>
@@ -175,6 +178,7 @@ export function StaffViolationsScreen({
           })
         }
       />
+      {ownRecord}
       {board.student !== null && board.semester !== null && (
         <StudentViolationsDialog
           student={board.student}

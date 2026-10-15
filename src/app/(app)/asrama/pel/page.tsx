@@ -7,19 +7,65 @@ import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readAppealInbox } from "@/features/dorm/appeal-inbox";
 import { AppealInboxPanel } from "@/features/dorm/appeal-inbox-panel";
-import { readOwnViolations } from "@/features/dorm/own-violations";
-import { OwnViolationsView } from "@/features/dorm/own-violations-view";
+import {
+  readOwnRecord,
+  readOwnViolations,
+} from "@/features/dorm/own-violations";
+import {
+  OwnRecord,
+  OwnViolationsView,
+} from "@/features/dorm/own-violations-view";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { readStaffViolations } from "@/features/dorm/staff-violations";
 import { StaffViolationsScreen } from "@/features/dorm/staff-violations-screen";
 import {
   readOwnViolationParams,
   readStaffViolationParams,
+  type StaffViolationParams,
+  staffViolationsAddress,
 } from "@/features/dorm/violation-address";
 import { ViolationForm } from "@/features/dorm/violation-form";
 import { readViolationSchedule } from "@/features/dorm/violation-schedule";
+import { violationScreensOf } from "@/features/dorm/violation-screens";
 import type { SearchParams } from "@/ui/search-params";
 import type { TabLinksProps } from "@/ui/tab-links";
+
+/**
+ * The own record of a resident who is also staff, below the staff
+ * panels: their own violations only, with "Ajukan advokasi". Null for an
+ * account whose roles give no own record, or whose student lives in no
+ * dorm today.
+ */
+async function ownRecordOf(
+  account: Account,
+  params: StaffViolationParams,
+  now: Date,
+) {
+  if (!violationScreensOf(account.roles).own) return null;
+  const own = await readOwnRecord(
+    database(),
+    account,
+    { periodId: params.ownPeriodId, page: params.ownPage },
+    now,
+  );
+  if (own.kind === "refused") return null;
+  const beside = staffViolationsAddress({
+    ...params,
+    ownPeriodId: null,
+    ownPage: 1,
+  });
+  return (
+    <OwnRecord
+      own={own}
+      now={now}
+      title="Pelanggaran saya"
+      keep={[...new URL(beside, "http://medali").searchParams.entries()]}
+      addressOfPage={(page) =>
+        staffViolationsAddress({ ...params, ownPage: page })
+      }
+    />
+  );
+}
 
 /**
  * The staff screen: BAM records violations, schedules their announcement
@@ -88,6 +134,7 @@ async function StaffScreen({
       schedule={schedule}
       appeals={appeals}
       waitingAppeals={inbox?.waiting ?? null}
+      ownRecord={await ownRecordOf(account, params, now)}
     />
   );
 }
@@ -95,7 +142,8 @@ async function StaffScreen({
 /**
  * The tab Pelanggaran. Staff see every resident's violations; a student
  * who lives in the dorm sees their own and the announcement of their own
- * dorm, and no address can ask for another. The server's clock decides
+ * dorm, and no address can ask for another. A resident who is also staff
+ * sees the staff screen with their own record below it. The server's clock decides
  * what is announced.
  */
 export default async function DormViolationsPage(
@@ -106,7 +154,7 @@ export default async function DormViolationsPage(
   const tabs = { pagePath: "asrama", tabs: opened.tabs, open: "pel" };
   const searchParams = await props.searchParams;
   const now = new Date();
-  if (may(account.roles, "view_dorm_violations")) {
+  if (violationScreensOf(account.roles).staff) {
     return (
       <StaffScreen
         account={account}

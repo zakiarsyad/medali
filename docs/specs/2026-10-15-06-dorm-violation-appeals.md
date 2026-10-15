@@ -158,6 +158,11 @@ Decided while building, because the issue did not say:
     Masa advokasi and Advokasi diproses together, and "Advokasi
     diterima" is added, as in the prototype. Every list shows only the
     status of an appeal, never its reason.
+19. A resident who also holds a BAM role, or any other role that sees
+    the staff screen, sees that screen as before with their own record
+    below it, under the heading "Pelanggaran saya": their own numbers and
+    "Rekam jejak pelanggaran saya" with "Ajukan advokasi". It shows only
+    their own violations, and only while they live in a dorm.
 
 ## Steps
 

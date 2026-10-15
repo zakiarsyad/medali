@@ -52,25 +52,30 @@ export interface OwnHistory {
   page: number;
 }
 
+/** A resident's own record: their numbers and "Rekam jejak pelanggaran saya". */
+export interface OwnRecordData {
+  dorm: DormId;
+  /** "Pelanggaran tercatat": gone up to Pengelola Asrama, in the running semester. */
+  recorded: number;
+  /** "Dalam masa advokasi": in Masa advokasi or Advokasi diproses now, of any day. */
+  inAppeal: number;
+  /** "Advokasi diterima": accepted, in the running semester. */
+  accepted: number;
+  /** The running semester, or null while no period is stored. */
+  semester: SemesterChoice | null;
+  periods: SemesterChoice[];
+  /** The period the history shows: a key, or "all" for every one. */
+  shownPeriod: string;
+  history: OwnHistory;
+}
+
+export type OwnRecordRead =
+  | { kind: "refused" }
+  | ({ kind: "shown" } & OwnRecordData);
+
 export type OwnViolations =
   | { kind: "refused" }
-  | {
-      kind: "shown";
-      dorm: DormId;
-      /** "Pelanggaran tercatat": gone up to Pengelola Asrama, in the running semester. */
-      recorded: number;
-      /** "Dalam masa advokasi": in Masa advokasi or Advokasi diproses now, of any day. */
-      inAppeal: number;
-      /** "Advokasi diterima": accepted, in the running semester. */
-      accepted: number;
-      /** The running semester, or null while no period is stored. */
-      semester: SemesterChoice | null;
-      periods: SemesterChoice[];
-      /** The period the history shows: a key, or "all" for every one. */
-      shownPeriod: string;
-      history: OwnHistory;
-      announcement: Announcement;
-    };
+  | ({ kind: "shown"; announcement: Announcement } & OwnRecordData);
 
 const REFUSED = { kind: "refused" } as const;
 
@@ -118,21 +123,20 @@ async function readHistory(
 }
 
 /**
- * Pelanggaran for a resident, at `now` by the server's clock: how many of
- * their own violations of the running semester went up to Pengelola
+ * The own record of a resident, at `now` by the server's clock: how many
+ * of their own violations of the running semester went up to Pengelola
  * Asrama and how many of them had their appeal accepted, how many of
- * their own are in their appeal time or wait for BAM, their own
- * announced violations of the period chosen, and the
- * announcement of the dorm they live in today, of its residents only.
- * The student is the account's own, never one the address names. Refused
- * for an account without the right, or whose student lives in no dorm.
+ * their own are in their appeal time or wait for BAM, and their own
+ * announced violations of the period chosen. The student is the
+ * account's own, never one the address names. Refused for an account
+ * without the right, or whose student lives in no dorm.
  */
-export async function readOwnViolations(
+export async function readOwnRecord(
   db: Database,
   account: AccountForAccess,
-  params: OwnViolationParams,
+  params: Pick<OwnViolationParams, "periodId" | "page">,
   now: Date,
-): Promise<OwnViolations> {
+): Promise<OwnRecordRead> {
   const { studentId } = account;
   if (!may(account.roles, "view_own_dorm_violations")) return REFUSED;
   if (studentId === null) return REFUSED;
@@ -148,19 +152,16 @@ export async function readOwnViolations(
       : (periods.find((each) => each.id === params.periodId) ?? running);
   const chosenDays = chosen === null ? null : periodDays(periods, chosen.id);
   const ofPeriod = chosenDays === null ? undefined : inPeriodDays(chosenDays);
-  const ofDorm = and(eq(dormViolations.dorm, dorm), NOT_REMOVED);
   const ofRunning = (where: SQL | undefined) =>
     runningDays === null
       ? 0
       : countWhere(db, and(own, where, inPeriodDays(runningDays)));
-  const [recorded, inAppeal, accepted, history, announcement] =
-    await Promise.all([
-      ofRunning(escalatedBy(now)),
-      countWhere(db, and(own, inAppealOrWaitingAt(now))),
-      ofRunning(APPEAL_ACCEPTED),
-      readHistory(db, and(own, announcedBy(now), ofPeriod), params.page),
-      readAnnouncement(db, ofDorm, now, params.day, params.announcementPage),
-    ]);
+  const [recorded, inAppeal, accepted, history] = await Promise.all([
+    ofRunning(escalatedBy(now)),
+    countWhere(db, and(own, inAppealOrWaitingAt(now))),
+    ofRunning(APPEAL_ACCEPTED),
+    readHistory(db, and(own, announcedBy(now), ofPeriod), params.page),
+  ]);
   return {
     kind: "shown",
     dorm,
@@ -172,6 +173,29 @@ export async function readOwnViolations(
     periods: periods.map((each) => ({ id: each.id, title: periodTitle(each) })),
     shownPeriod: chosen === null ? "all" : chosen.id,
     history,
-    announcement,
   };
+}
+
+/**
+ * Pelanggaran for a resident: their own record, and the announcement of
+ * the dorm they live in today, of its residents only. Refused as the
+ * record is.
+ */
+export async function readOwnViolations(
+  db: Database,
+  account: AccountForAccess,
+  params: OwnViolationParams,
+  now: Date,
+): Promise<OwnViolations> {
+  const record = await readOwnRecord(db, account, params, now);
+  if (record.kind === "refused") return record;
+  const ofDorm = and(eq(dormViolations.dorm, record.dorm), NOT_REMOVED);
+  const announcement = await readAnnouncement(
+    db,
+    ofDorm,
+    now,
+    params.day,
+    params.announcementPage,
+  );
+  return { ...record, announcement };
 }
