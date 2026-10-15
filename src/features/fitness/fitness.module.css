@@ -1,0 +1,185 @@
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.note {
+  margin: var(--space-sm) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.readOnly {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/*
+ * The input and "Kategori" side by side on a laptop. On a phone the
+ * smallest width of a panel gives way and they stack in one column.
+ */
+.sideBySide {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: 0 var(--space-lg);
+  align-items: start;
+}
+
+.sideBySide > * {
+  min-width: 0;
+}
+
+.bars {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each column may shrink to nothing, so a bar always fits the width of a phone. */
+.bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+  font-size: var(--text-md);
+}
+
+.barLabel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.range {
+  color: var(--muted);
+}
+
+.meter {
+  width: 100%;
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+  appearance: none;
+}
+
+.meter::-webkit-meter-bar {
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.meter::-webkit-meter-optimum-value,
+.meter::-webkit-meter-suboptimum-value,
+.meter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-md);
+  background: var(--category-colour);
+}
+
+.meter::-moz-meter-bar {
+  border-radius: var(--radius-md);
+  background: var(--category-colour);
+}
+
+.barValue {
+  font-weight: var(--weight-heavy);
+  text-align: right;
+}
+
+.excellent {
+  --category-colour: var(--ok);
+}
+
+.good {
+  --category-colour: var(--fit-good);
+}
+
+.attention {
+  --category-colour: var(--warn);
+}
+
+.medical {
+  --category-colour: var(--bad);
+}
+
+.untested {
+  --category-colour: var(--faint);
+}
+
+/* A badge of a category: its words in its colour. */
+.category {
+  color: var(--category-colour);
+}
+
+.subheading {
+  display: block;
+  margin: var(--space-lg) 0 var(--space-xs);
+  color: var(--muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+/*
+ * The three limits side by side, each as wide as a number box at least;
+ * they fold onto more lines when a phone has no room for three.
+ */
+.limits {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--score-box-width)), 1fr)
+    );
+  gap: var(--space-sm);
+}
+
+.limitBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.numberInput {
+  width: var(--score-box-width);
+  max-width: 100%;
+}
+
+.saveRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-top: var(--space-md);
+}
+
+.score {
+  font-weight: var(--weight-heavy);
+}
+
+.full {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.fault {
+  margin: 0;
+  color: var(--bad);
+  font-size: var(--text-sm);
+}
+
+.ready {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
