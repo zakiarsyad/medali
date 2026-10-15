@@ -3,6 +3,7 @@ import type { DormClarificationCard } from "./clarification-card";
 import type { CleaningResult } from "./cleaning-ids";
 import type { LeaveKind } from "./leave-ids";
 import type { DecisionAnswer } from "./leave-messages";
+import type { WarningLevel } from "./warning-ids";
 
 /*
  * What waits for Pengelola Asrama on Tugas saya, as the cards show it.
@@ -107,6 +108,22 @@ export interface CleaningTask {
   judgedAt: Date | null;
 }
 
+/** A resident who meets the rule for an SP not issued yet. */
+export interface WarningTask {
+  studentId: string;
+  name: string;
+  nim: string;
+  room: string;
+  /** The SP that is due. */
+  level: WarningLevel;
+  /** The highest SP they already hold in the semester, or none. */
+  mark: WarningLevel | null;
+  /** Pelanggaran: their violations of the semester gone up to Pengelola Asrama. */
+  counted: number;
+  /** Klarifikasi ditolak: their rejected clarifications of the semester that still count. */
+  rejected: number;
+}
+
 /** The oldest items of a section, and how many wait in all. */
 export interface TaskSection<Item> {
   items: Item[];
@@ -122,8 +139,12 @@ export interface DormTasks {
   returns: TaskSection<ReturnTask> | null;
   clarifications: TaskSection<ClarificationTask> | null;
   cleaning: TaskSection<CleaningTask> | null;
+  /** Penetapan SP: the highest SP first, then by name. */
+  warnings: TaskSection<WarningTask> | null;
   /** Perlu dipantau: residents still out past their return time. */
   outLate: number | null;
+  /** Perlu dipantau: advokasi that wait for BAM, or null without the right to see Pelanggaran. */
+  waitingAppeals: number | null;
 }
 
 /** How many items wait for a decision in all; Perlu dipantau is no decision. */
@@ -133,6 +154,7 @@ export function waitingIn(tasks: DormTasks): number {
     tasks.returns,
     tasks.clarifications,
     tasks.cleaning,
+    tasks.warnings,
   ];
   let total = 0;
   for (const section of sections) total += section?.total ?? 0;

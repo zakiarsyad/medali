@@ -11,6 +11,7 @@ import type {
   DormTasks,
   LeaveTask,
   ReturnTask,
+  WarningTask,
 } from "./tasks-card";
 import { DormTasksScreen } from "./tasks-screen";
 
@@ -34,7 +35,9 @@ const NOTHING: DormTasks = {
   returns: { items: [], total: 0 },
   clarifications: { items: [], total: 0 },
   cleaning: { items: [], total: 0 },
+  warnings: { items: [], total: 0 },
   outLate: 0,
+  waitingAppeals: 0,
 };
 
 const LEAVE: LeaveTask = {
@@ -105,9 +108,9 @@ describe("Tugas saya", () => {
     ).not.toContain("Semua tugas sudah beres.");
   });
 
-  it("names the four kinds of work in its intro", () => {
+  it("names the five kinds of work in its intro", () => {
     expect(screenOf(NOTHING)).toContain(
-      "persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, dan penilaian kebersihan.",
+      "persetujuan izin, validasi laporan kembali, klarifikasi kehadiran, penilaian kebersihan, dan penetapan SP.",
     );
   });
 
@@ -127,6 +130,32 @@ describe("Tugas saya", () => {
       "Semua tugas sudah beres.",
     );
   });
+
+  it("says how many advokasi wait for BAM, with a link to Pelanggaran, and keeps them out of the all-clear", () => {
+    const html = screenOf({ ...NOTHING, waitingAppeals: 3 });
+
+    expect(html).toContain("Perlu dipantau:");
+    expect(html).toContain(
+      '3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran</a>).',
+    );
+    expect(html).not.toContain("belum kembali melewati batas izin");
+    expect(html).toContain("Semua tugas sudah beres.");
+  });
+
+  it("puts residents out late and advokasi waiting in one Perlu dipantau box", () => {
+    const html = screenOf({ ...NOTHING, outLate: 2, waitingAppeals: 3 });
+
+    expect(html.match(/Perlu dipantau:/g)).toHaveLength(1);
+    expect(html).toContain(
+      'Perizinan asrama</a>); 3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran</a>).',
+    );
+  });
+
+  it("shows no advokasi line to an account that may not see Pelanggaran", () => {
+    const html = screenOf({ ...NOTHING, waitingAppeals: null });
+
+    expect(html).not.toContain("advokasi");
+  });
 });
 
 describe("Izin menunggu persetujuan", () => {
@@ -145,6 +174,7 @@ describe("Izin menunggu persetujuan", () => {
       returns: null,
       clarifications: null,
       cleaning: null,
+      warnings: null,
     });
 
     expect(html).toContain("1 menunggu");
@@ -435,5 +465,110 @@ describe("Penilaian kebersihan menunggu validasi", () => {
 
     expect(html).toContain('href="/asrama/bersih"');
     expect(html).toContain("Lihat semua di Pembersihan asrama");
+  });
+});
+
+const DUE: WarningTask = {
+  studentId: "00000000-0000-4000-8000-0000000000e1",
+  name: "Penghuni Contoh",
+  nim: "9986110005",
+  room: "Asrama Dana Rakca, kamar 101",
+  level: 2,
+  mark: 1,
+  counted: 8,
+  rejected: 2,
+};
+
+describe("Penetapan SP", () => {
+  it("shows the number card Penetapan SP, which jumps to its section and counts toward the all-clear", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 2 },
+    });
+
+    expect(html).toMatch(
+      /<a href="#tugas-sp" class="_numberOn_\w+"><span class="_amount_\w+">2<\/span><span>Penetapan SP<\/span><\/a>/,
+    );
+    expect(html).toContain('id="tugas-sp"');
+    expect(html).not.toContain("Semua tugas sudah beres.");
+  });
+
+  it("shows no number card Penetapan SP to an account that may not issue SPs", () => {
+    const html = screenOf({ ...NOTHING, warnings: null });
+
+    expect(html).not.toContain("Penetapan SP");
+  });
+
+  it("says Beres and Tidak ada yang menunggu. when nobody is due", () => {
+    const html = screenOf({
+      ...NOTHING,
+      leaves: null,
+      returns: null,
+      clarifications: null,
+      cleaning: null,
+    });
+
+    expect(html).toContain("Penetapan SP");
+    expect(html).toContain("Beres");
+    expect(html).toContain("Tidak ada yang menunggu.");
+  });
+
+  it("shows the student with NIM and room, the SP due and the one held, Pelanggaran and Klarifikasi ditolak", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 1 },
+    });
+
+    for (const words of [
+      "<th>Mahasiswa</th>",
+      "<th>Penetapan</th>",
+      "<th>Pelanggaran</th>",
+      "<th>Klarifikasi ditolak</th>",
+      "Penghuni Contoh",
+      "9986110005 · Asrama Dana Rakca, kamar 101",
+      "Penetapan SP 2",
+      ">SP 1</span>",
+      ">8</td>",
+      ">2</td>",
+      "1 menunggu",
+    ]) {
+      expect(html).toContain(words);
+    }
+  });
+
+  it("says no SP held, and a dash for no rejected clarification", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: {
+        items: [{ ...DUE, level: 1, mark: null, counted: 7, rejected: 0 }],
+        total: 1,
+      },
+    });
+
+    expect(html).toContain("Penetapan SP 1");
+    expect(html).not.toContain(">SP 1</span>");
+    expect(html).toContain(">-</td>");
+  });
+
+  it("opens the SP form of the student on Pelanggaran through the page address", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 1 },
+    });
+
+    expect(html).toContain(
+      'href="/asrama/pel?proses=00000000-0000-4000-8000-0000000000e1"',
+    );
+    expect(html).toContain('aria-label="Proses Penghuni Contoh"');
+  });
+
+  it("leads to Pelanggaran when more are due than it shows", () => {
+    const html = screenOf({
+      ...NOTHING,
+      warnings: { items: [DUE], total: 21 },
+    });
+
+    expect(html).toContain('href="/asrama/pel"');
+    expect(html).toContain("Lihat semua di Pelanggaran");
   });
 });

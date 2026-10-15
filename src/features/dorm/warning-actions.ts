@@ -49,7 +49,9 @@ export async function scheduleWarningCallAction(
 
 /**
  * "Terbitkan SP 1" or "Terbitkan SP 2 dan ajukan hukuman disiplin" in
- * "Proses", once confirmed. The tab is read again whatever the answer.
+ * "Proses", once confirmed. Pelanggaran, Tugas saya and the number
+ * beside Tugas saya in the menu of every page are read again whatever
+ * the answer.
  */
 export async function issueWarningLetterAction(
   sent: SentIssue,
@@ -66,7 +68,7 @@ export async function issueWarningLetterAction(
     },
     new Date(),
   );
-  revalidatePath(VIOLATIONS_ADDRESS);
+  revalidatePath("/", "layout");
   if (!issued.ok) return { error: issued.error, done: null };
   return { error: null, done: issued.value };
 }

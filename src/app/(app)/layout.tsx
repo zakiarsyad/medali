@@ -24,7 +24,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const [dorm, waiting] = await Promise.all([
     currentDorm(account.studentId),
     mayOpenPage(account.roles, "tasks")
-      ? countDormTasks(database(), account)
+      ? countDormTasks(database(), account, new Date())
       : 0,
   ]);
   const menu = pagesForAccount(account.roles, dorm !== null).map((page) =>

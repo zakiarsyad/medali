@@ -1,6 +1,11 @@
 import { clarificationListAddress } from "./clarification-address";
 import { CLEANING_ADDRESS } from "./cleaning-address";
 import { type LeaveFilters, leaveListAddress } from "./leave-address";
+import {
+  readStaffViolationParams,
+  staffViolationsAddress,
+  VIOLATIONS_ADDRESS,
+} from "./violation-address";
 
 /*
  * Where the parts of Tugas saya lead. Read by the screen parts in the
@@ -12,6 +17,7 @@ export const LEAVE_SECTION_ID = "tugas-izin";
 export const RETURN_SECTION_ID = "tugas-lapor";
 export const CLARIFICATION_SECTION_ID = "tugas-klar";
 export const CLEANING_SECTION_ID = "tugas-bersih";
+export const WARNING_SECTION_ID = "tugas-sp";
 
 function onPerizinan(status: LeaveFilters["status"]): string {
   return leaveListAddress({ query: "", status, kind: "all" });
@@ -34,3 +40,23 @@ export const ALL_PASSED_ON_ADDRESS = clarificationListAddress({
 
 /** Pembersihan asrama, whose "Menunggu validasi" counts every assessment that waits. */
 export const ALL_ASSESSED_ADDRESS = CLEANING_ADDRESS;
+
+/**
+ * Pelanggaran, whose "Panggilan klarifikasi dan surat peringatan" lists
+ * every student due for an SP.
+ */
+export const ALL_DUE_ADDRESS = VIOLATIONS_ADDRESS;
+
+/** Pelanggaran, whose "Dalam masa advokasi" counts the advokasi that wait for BAM. */
+export const WAITING_APPEALS_ADDRESS = VIOLATIONS_ADDRESS;
+
+/**
+ * Pelanggaran with "Proses" of a student open over it, the SP form in
+ * view, also after a refresh or from a shared link.
+ */
+export function processLetterAddress(studentId: string): string {
+  return staffViolationsAddress({
+    ...readStaffViolationParams({}),
+    callStudentId: studentId,
+  });
+}
