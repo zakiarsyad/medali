@@ -114,7 +114,7 @@ keeps its status, its decision and who decided.
 - [x] 1. The setting for how long files are kept, and the right to set
   it and to remove files, with their checks.
 - [x] 2. One rule that says which files are removable, with its check.
-- [ ] 3. The page with the setting and the table of counts.
+- [x] 3. The page with the setting and the table of counts.
 - [ ] 4. "Hapus berkas lama" with the confirmation, safe to press again.
 - [ ] 5. "Berkas sudah dihapus pada (date)" on each of the six kinds of
   record.
