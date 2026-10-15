@@ -65,3 +65,26 @@
 .spaced {
   margin-top: var(--space-md);
 }
+
+/* The look of a status: Masa advokasi waits, Naik ke Pengelola counts. */
+.warn {
+  composes: warn from "./leave.module.css";
+}
+
+.bad {
+  composes: bad from "./leave.module.css";
+}
+
+/* A heading with a choice beside it, which folds under it on a phone. */
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.panelHead > * {
+  min-width: 0;
+  max-width: 100%;
+}

@@ -19,6 +19,14 @@ export function appealEndOf(announcedAt: Date): Date {
   return new Date(announcedAt.getTime() + APPEAL_HOURS * HOUR_MS);
 }
 
+/**
+ * The latest announcement whose appeal time is over at a moment: every
+ * violation announced then or earlier has gone up to Pengelola Asrama.
+ */
+export function lastEscalatedAnnouncement(now: Date): Date {
+  return new Date(now.getTime() - APPEAL_HOURS * HOUR_MS);
+}
+
 /** Where a violation announced at a moment stands at another moment. */
 export function violationStatus(announcedAt: Date, now: Date): ViolationStatus {
   if (now < announcedAt) return "scheduled";

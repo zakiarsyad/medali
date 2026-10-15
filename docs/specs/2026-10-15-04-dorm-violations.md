@@ -102,6 +102,6 @@ count per student for the semester.
   permission list, with their checks.
 - [x] 3. BAM records violations and schedules the announcement.
 - [x] 4. BAM sees "Jadwal publikasi" and cancels a waiting row.
-- [ ] 5. Staff see the numbers, the announcement per day and the count
+- [x] 5. Staff see the numbers, the announcement per day and the count
   per student.
 - [ ] 6. Residents see their own record and the announcement.

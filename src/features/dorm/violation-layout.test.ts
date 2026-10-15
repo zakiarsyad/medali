@@ -54,6 +54,7 @@ describe("the screen parts of Pelanggaran that run in the browser", () => {
   const PARTS = [
     `${FOLDER}/violation-form.tsx`,
     `${FOLDER}/violation-schedule-table.tsx`,
+    `${FOLDER}/rekap-filters.tsx`,
   ];
 
   it("are found", () => {
