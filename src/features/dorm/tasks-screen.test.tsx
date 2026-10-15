@@ -49,6 +49,39 @@ describe("Tugas saya", () => {
 
     expect(html).not.toContain("Semua tugas sudah beres.");
   });
+
+  it("shows one number card per section, which jumps to it, and makes one with something waiting stand out", () => {
+    const html = screenOf({
+      ...NOTHING,
+      leaves: { items: [LEAVE], total: 3 },
+    });
+
+    expect(html).toMatch(
+      /<a href="#tugas-izin" class="_numberOn_\w+"><span class="_amount_\w+">3<\/span><span>Izin menunggu persetujuan<\/span><\/a>/,
+    );
+    expect(html).toMatch(
+      /<a href="#tugas-lapor" class="_number_\w+"><span class="_amount_\w+">0<\/span><span>Laporan kembali<\/span><\/a>/,
+    );
+    expect(html).toContain('id="tugas-izin"');
+    expect(html).toContain('id="tugas-lapor"');
+  });
+
+  it("says how many residents are out past their return time, with a link to Perizinan asrama", () => {
+    const html = screenOf({ ...NOTHING, outLate: 2 });
+
+    expect(html).toContain("Perlu dipantau:");
+    expect(html).toContain("2 mahasiswa belum kembali melewati batas izin");
+    expect(html).toContain('href="/asrama/izin?status=terlambat"');
+  });
+
+  it("shows no Perlu dipantau while nobody is out late, and keeps it out of the all-clear", () => {
+    const html = screenOf(NOTHING);
+
+    expect(html).not.toContain("Perlu dipantau");
+    expect(screenOf({ ...NOTHING, outLate: 2 })).toContain(
+      "Semua tugas sudah beres.",
+    );
+  });
 });
 
 describe("Izin menunggu persetujuan", () => {

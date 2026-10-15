@@ -1,11 +1,14 @@
+import Link from "next/link";
 import { PageHead } from "@/ui/page-head";
 import { LeaveTasks } from "./leave-tasks";
 import { ReturnTasks } from "./return-tasks";
+import { type TaskNumber, TaskNumbers } from "./task-numbers";
 import { TaskSection } from "./task-section";
 import styles from "./tasks.module.css";
 import {
   ALL_WAITING_LEAVE_ADDRESS,
   ALL_WAITING_REPORTS_ADDRESS,
+  LATE_ADDRESS,
   LEAVE_SECTION_ID,
   RETURN_SECTION_ID,
 } from "./tasks-address";
@@ -24,6 +27,36 @@ function AllClear() {
       ini.
     </p>
   );
+}
+
+/** Perlu dipantau: the residents still out past their return time. */
+function WatchBox({ outLate }: { outLate: number }) {
+  return (
+    <p className={`${styles.box} ${styles.watch}`}>
+      <b>Perlu dipantau:</b> {outLate} mahasiswa belum kembali melewati batas
+      izin (<Link href={LATE_ADDRESS}>Perizinan asrama</Link>).
+    </p>
+  );
+}
+
+/** One number card for each section the account has. */
+function numbersOf(tasks: DormTasks): TaskNumber[] {
+  const numbers: TaskNumber[] = [];
+  if (tasks.leaves) {
+    numbers.push({
+      label: "Izin menunggu persetujuan",
+      amount: tasks.leaves.total,
+      sectionId: LEAVE_SECTION_ID,
+    });
+  }
+  if (tasks.returns) {
+    numbers.push({
+      label: "Laporan kembali",
+      amount: tasks.returns.total,
+      sectionId: RETURN_SECTION_ID,
+    });
+  }
+  return numbers;
 }
 
 function LeaveSection({ section }: { section: Section<LeaveTask> }) {
@@ -70,6 +103,10 @@ export function DormTasksScreen({ tasks }: { tasks: DormTasks }) {
         sini tanpa berpindah menu.
       </PageHead>
       {waitingIn(tasks) === 0 && <AllClear />}
+      <TaskNumbers numbers={numbersOf(tasks)} />
+      {tasks.outLate !== null && tasks.outLate > 0 && (
+        <WatchBox outLate={tasks.outLate} />
+      )}
       {tasks.leaves && <LeaveSection section={tasks.leaves} />}
       {tasks.returns && <ReturnSection section={tasks.returns} />}
     </>

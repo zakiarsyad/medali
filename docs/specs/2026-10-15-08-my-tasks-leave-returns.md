@@ -116,6 +116,18 @@ validate. Each decision is the same one as on Perizinan asrama.
     says: "Kepulangan divalidasi. Izin selesai." and "Laporan kembali
     ditolak. Mahasiswa perlu mengirim ulang.". "Tolak" asks first, such
     as "Tolak laporan kembali (name), 14 Okt 2026, 16.12?".
+11. The number cards are named "Izin menunggu persetujuan" and
+    "Laporan kembali", as in the prototype. A card with a number above 0
+    has a gold background and border.
+12. "Perlu dipantau" says "(n) mahasiswa belum kembali melewati batas
+    izin (Perizinan asrama).", as in the prototype. Its link opens
+    Perizinan asrama at "Terlambat kembali", where those students are.
+    It shows beside the all-clear box too, as it is no decision.
+13. The number beside Tugas saya shows only when it is above 0, as in
+    the prototype. It is worked out each time a page is loaded and right
+    after each decision this account makes, on Tugas saya or on
+    Perizinan asrama. A request sent or cancelled by a resident in the
+    meantime shows the next time a page is loaded.
 
 ## Steps
 
@@ -125,5 +137,5 @@ validate. Each decision is the same one as on Perizinan asrama.
   its checks.
 - [x] 3. The section "Izin menunggu persetujuan" with Setujui and Tolak.
 - [x] 4. The section "Laporan kembali menunggu validasi" with its photo.
-- [ ] 5. The number cards, the number in the menu and "Perlu dipantau".
+- [x] 5. The number cards, the number in the menu and "Perlu dipantau".
 - [ ] 6. Stale and double decisions are refused; phone layout.

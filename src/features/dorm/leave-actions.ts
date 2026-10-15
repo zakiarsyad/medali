@@ -28,7 +28,6 @@ import {
   RETURN_PHOTO_RULE,
 } from "./return-photo";
 import { sendReturnReport } from "./send-return-report";
-import { TASKS_ADDRESS } from "./tasks-address";
 
 /**
  * The signed-in account when it may ask for leave. Any other is refused
@@ -86,6 +85,12 @@ export async function cancelLeaveAction(id: string): Promise<FormState> {
   return { error: null, done: "Pengajuan dibatalkan." };
 }
 
+function showDecision(): void {
+  // Perizinan asrama, Tugas saya, and the number beside Tugas saya in
+  // the menu of every page change with a decision.
+  revalidatePath("/", "layout");
+}
+
 const DECIDED_WORDS: Record<string, string> = {
   approved: "Izin disetujui.",
   rejected: "Izin ditolak.",
@@ -110,8 +115,7 @@ export async function decideLeaveAction(
     String(note),
   );
   if (!decided.ok) return { error: decided.error, done: null };
-  revalidatePath(LEAVE_ADDRESS);
-  revalidatePath(TASKS_ADDRESS);
+  showDecision();
   return { error: null, done: DECIDED_WORDS[decided.value] ?? null };
 }
 
@@ -167,8 +171,7 @@ async function reporter(): Promise<Account> {
 
 function answerOf(decided: Parsed<DecidedStatus>): FormState {
   if (!decided.ok) return { error: decided.error, done: null };
-  revalidatePath(LEAVE_ADDRESS);
-  revalidatePath(TASKS_ADDRESS);
+  showDecision();
   return { error: null, done: REPORT_DECIDED_WORDS[decided.value] };
 }
 

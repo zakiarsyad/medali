@@ -8,6 +8,58 @@
   overflow-wrap: anywhere;
 }
 
+.watch {
+  border-color: var(--warn);
+}
+
+/*
+ * The number cards: as many beside each other as fit, folding onto more
+ * rows as the screen narrows, and one a row on a narrow phone.
+ */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--box-min-width)), 1fr)
+    );
+  gap: var(--space-md);
+  margin: 0 0 var(--space-lg);
+  padding: 0;
+  list-style: none;
+}
+
+.number,
+.numberOn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+  height: 100%;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+/* A card with something waiting stands out. */
+.numberOn {
+  border-color: var(--warn);
+  background: var(--goldsoft);
+  color: var(--ink);
+}
+
+.amount {
+  color: var(--navy);
+  font-size: var(--text-title);
+  font-weight: var(--weight-heavy);
+  line-height: var(--leading-title);
+}
+
 /* The title of a section beside its badge, the badge under it on a phone. */
 .sectionHead {
   display: flex;

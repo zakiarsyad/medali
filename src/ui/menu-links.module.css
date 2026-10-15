@@ -8,7 +8,9 @@
 }
 
 .link {
-  display: block;
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   color: var(--sideink);
@@ -19,6 +21,17 @@
 
 .link:hover {
   background: var(--sidehover);
+}
+
+/* How many items wait on the page, at the end of its line. */
+.count {
+  margin-left: auto;
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-round);
+  background: var(--bad);
+  color: var(--sidestrong);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
 }
 
 .link[aria-current="page"] {
