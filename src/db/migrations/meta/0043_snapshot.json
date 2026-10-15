@@ -1,5 +1,5 @@
 {
-  "id": "dd96efa0-6c88-43ba-b527-a121484d3bc4",
+  "id": "a2e1af1a-d1ea-49df-aa28-23d479bfad3a",
   "prevId": "f5378e71-9a9b-4001-aa00-dd24e7723293",
   "version": "7",
   "dialect": "postgresql",
@@ -1244,169 +1244,6 @@
         "activity_schedules_upload_count_0_to_52": {
           "name": "activity_schedules_upload_count_0_to_52",
           "value": "\"activity_schedules\".\"upload_count\" between 0 and 52"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.character_assessments": {
-      "name": "character_assessments",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "score_m": {
-          "name": "score_m",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "score_e": {
-          "name": "score_e",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "score_d": {
-          "name": "score_d",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "score_a": {
-          "name": "score_a",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "score_l": {
-          "name": "score_l",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "score_i": {
-          "name": "score_i",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source": {
-          "name": "source",
-          "type": "character_assessment_source",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "period_id": {
-          "name": "period_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "entered_by": {
-          "name": "entered_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "entered_at": {
-          "name": "entered_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "character_assessments_student": {
-          "name": "character_assessments_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "entered_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "character_assessments_student_id_students_id_fk": {
-          "name": "character_assessments_student_id_students_id_fk",
-          "tableFrom": "character_assessments",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "character_assessments_period_id_academic_periods_id_fk": {
-          "name": "character_assessments_period_id_academic_periods_id_fk",
-          "tableFrom": "character_assessments",
-          "tableTo": "academic_periods",
-          "columnsFrom": [
-            "period_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "character_assessments_entered_by_accounts_id_fk": {
-          "name": "character_assessments_entered_by_accounts_id_fk",
-          "tableFrom": "character_assessments",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "entered_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "character_assessments_scores_in_range": {
-          "name": "character_assessments_scores_in_range",
-          "value": "\"character_assessments\".\"score_m\" between 40 and 100 and \"character_assessments\".\"score_e\" between 40 and 100 and \"character_assessments\".\"score_d\" between 40 and 100 and \"character_assessments\".\"score_a\" between 40 and 100 and \"character_assessments\".\"score_l\" between 40 and 100 and \"character_assessments\".\"score_i\" between 40 and 100"
-        },
-        "character_assessments_note_length": {
-          "name": "character_assessments_note_length",
-          "value": "char_length(\"character_assessments\".\"note\") <= 500"
         }
       },
       "isRLSEnabled": false
@@ -4098,6 +3935,327 @@
         "dorm_rooms_capacity_in_range": {
           "name": "dorm_rooms_capacity_in_range",
           "value": "\"dorm_rooms\".\"capacity\" between 1 and 12"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.dorm_violation_changes": {
+      "name": "dorm_violation_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "violation_id": {
+          "name": "violation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "action": {
+          "name": "action",
+          "type": "dorm_violation_change_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "dorm_violation_changes_violation": {
+          "name": "dorm_violation_changes_violation",
+          "columns": [
+            {
+              "expression": "violation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_violation_changes_violation_id_dorm_violations_id_fk": {
+          "name": "dorm_violation_changes_violation_id_dorm_violations_id_fk",
+          "tableFrom": "dorm_violation_changes",
+          "tableTo": "dorm_violations",
+          "columnsFrom": [
+            "violation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_violation_changes_changed_by_accounts_id_fk": {
+          "name": "dorm_violation_changes_changed_by_accounts_id_fk",
+          "tableFrom": "dorm_violation_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dorm_violations": {
+      "name": "dorm_violations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "batch_id": {
+          "name": "batch_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dorm": {
+          "name": "dorm",
+          "type": "dorm",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day": {
+          "name": "day",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "punishment": {
+          "name": "punishment",
+          "type": "dorm_violation_punishment",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "other_punishment": {
+          "name": "other_punishment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "announced_at": {
+          "name": "announced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_by": {
+          "name": "entered_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_at": {
+          "name": "entered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cancelled_by": {
+          "name": "cancelled_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "dorm_violations_batch": {
+          "name": "dorm_violations_batch",
+          "columns": [
+            {
+              "expression": "batch_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_violations_student": {
+          "name": "dorm_violations_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "day",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_violations_day": {
+          "name": "dorm_violations_day",
+          "columns": [
+            {
+              "expression": "day",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_violations_announced": {
+          "name": "dorm_violations_announced",
+          "columns": [
+            {
+              "expression": "announced_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"dorm_violations\".\"cancelled_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_violations_student_id_students_id_fk": {
+          "name": "dorm_violations_student_id_students_id_fk",
+          "tableFrom": "dorm_violations",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_violations_entered_by_accounts_id_fk": {
+          "name": "dorm_violations_entered_by_accounts_id_fk",
+          "tableFrom": "dorm_violations",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "entered_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_violations_cancelled_by_accounts_id_fk": {
+          "name": "dorm_violations_cancelled_by_accounts_id_fk",
+          "tableFrom": "dorm_violations",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "cancelled_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "dorm_violations_reason_length": {
+          "name": "dorm_violations_reason_length",
+          "value": "char_length(\"dorm_violations\".\"reason\") between 3 and 200"
+        },
+        "dorm_violations_other_punishment_only_for_other": {
+          "name": "dorm_violations_other_punishment_only_for_other",
+          "value": "(\"dorm_violations\".\"punishment\" = 'other') = (\"dorm_violations\".\"other_punishment\" <> '')"
+        },
+        "dorm_violations_other_punishment_length": {
+          "name": "dorm_violations_other_punishment_length",
+          "value": "char_length(\"dorm_violations\".\"other_punishment\") <= 100"
+        },
+        "dorm_violations_announced_from_its_day": {
+          "name": "dorm_violations_announced_from_its_day",
+          "value": "(\"dorm_violations\".\"announced_at\" at time zone 'Asia/Jakarta')::date >= \"dorm_violations\".\"day\""
+        },
+        "dorm_violations_entered_from_its_day": {
+          "name": "dorm_violations_entered_from_its_day",
+          "value": "(\"dorm_violations\".\"entered_at\" at time zone 'Asia/Jakarta')::date >= \"dorm_violations\".\"day\""
+        },
+        "dorm_violations_cancel_is_whole": {
+          "name": "dorm_violations_cancel_is_whole",
+          "value": "(\"dorm_violations\".\"cancelled_by\" is null) = (\"dorm_violations\".\"cancelled_at\" is null)"
+        },
+        "dorm_violations_cancelled_before_announced": {
+          "name": "dorm_violations_cancelled_before_announced",
+          "value": "\"dorm_violations\".\"cancelled_at\" is null or \"dorm_violations\".\"cancelled_at\" < \"dorm_violations\".\"announced_at\""
         }
       },
       "isRLSEnabled": false
@@ -8244,17 +8402,6 @@
         "absent"
       ]
     },
-    "public.character_assessment_source": {
-      "name": "character_assessment_source",
-      "schema": "public",
-      "values": [
-        "mentor_observation",
-        "self_assessment",
-        "peer_assessment",
-        "mentor_board_meeting",
-        "medali_instrument"
-      ]
-    },
     "public.cohort_assignment_change_action": {
       "name": "cohort_assignment_change_action",
       "schema": "public",
@@ -8438,6 +8585,24 @@
         "verified",
         "rejected",
         "validated"
+      ]
+    },
+    "public.dorm_violation_change_action": {
+      "name": "dorm_violation_change_action",
+      "schema": "public",
+      "values": [
+        "entered",
+        "cancelled"
+      ]
+    },
+    "public.dorm_violation_punishment": {
+      "name": "dorm_violation_punishment",
+      "schema": "public",
+      "values": [
+        "direct_action",
+        "warning",
+        "tks",
+        "other"
       ]
     },
     "public.email_change_action": {

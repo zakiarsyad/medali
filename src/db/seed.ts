@@ -33,6 +33,7 @@ import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCleaning } from "./seed-dorm-cleaning";
 import { addSampleDormCounts } from "./seed-dorm-counts";
 import { addSampleDormLeaves } from "./seed-dorm-leaves";
+import { addSampleDormViolations } from "./seed-dorm-violations";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
@@ -156,7 +157,9 @@ async function addSampleFirstYears(
  * before today and the residents' clarifications of their absences in
  * every status, the residents' leave requests around today in every
  * status, the cleaning places of every dorm with a week of cleaning
- * duties around today, and the kelompok pengasuhan of
+ * duties around today, the residents' dorm violations around now,
+ * waiting, in Masa advokasi and gone up to Pengelola Asrama, and the
+ * kelompok pengasuhan of
  * every sample student but those of the new angkatan, whose groups are
  * still to be formed, with a few evaluations of their mentors, one
  * replacement of a mentor, one closed survey period, a few notes their mentors wrote, the first two
@@ -241,6 +244,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     );
     await addSampleDormLeaves(tx, running, today);
     await addSampleDormCleaning(tx, today);
+    await addSampleDormViolations(tx, running);
     await addSampleDormClarifications(tx, dormCounts, running);
     const grouped = [
       ...SAMPLE_STUDENTS,

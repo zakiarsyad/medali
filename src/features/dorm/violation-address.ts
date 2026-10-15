@@ -1,0 +1,129 @@
+import { isDay } from "@/db/is-day";
+import { isUuid } from "@/db/is-uuid";
+import { firstParam, type SearchParams } from "@/ui/search-params";
+import { searchText } from "@/ui/search-text";
+
+/*
+ * The address of Pelanggaran asrama and what it asks for. Read by the
+ * screen parts in the browser, so nothing here may take from the
+ * database code.
+ */
+
+export const VIOLATIONS_ADDRESS = "/asrama/pel";
+
+/** What the staff screen of Pelanggaran shows. */
+export interface StaffViolationParams {
+  /** The page of Jadwal publikasi, counted from 1. */
+  schedulePage: number;
+  /** The violation day of "Pengumuman pelanggaran", or null for the latest. */
+  day: string | null;
+  /** The page of "Pengumuman pelanggaran", counted from 1. */
+  announcementPage: number;
+  /** The semester of the rekap, or null for the running one. */
+  periodId: string | null;
+  /** The text to find in a name or a NIM. Empty when nothing is searched. */
+  query: string;
+  /** The page of the rekap, counted from 1. */
+  page: number;
+  /** The student whose violations show in a box, or null for none. */
+  studentId: string | null;
+  /** The page of the box, counted from 1. */
+  studentPage: number;
+}
+
+/** What the screen of a resident shows. */
+export interface OwnViolationParams {
+  /** The period of "Rekam jejak pelanggaran saya", or "all" for every one, or null for the running one. */
+  periodId: string | "all" | null;
+  /** The page of "Rekam jejak pelanggaran saya", counted from 1. */
+  page: number;
+  day: string | null;
+  announcementPage: number;
+}
+
+/** How the address names "Semua periode". */
+export const ALL_PERIODS = "semua";
+
+const PAGE = /^[1-9]\d{0,5}$/;
+
+/** A page number of the address, or the first page when it is not one. */
+export function pageOf(sent: string): number {
+  return PAGE.test(sent) ? Number(sent) : 1;
+}
+
+function dayOf(sent: string): string | null {
+  return isDay(sent) ? sent : null;
+}
+
+function keyOf(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
+}
+
+/**
+ * What the address asks the staff screen for. Nothing in an address is
+ * trusted: a part that is not understood counts as not chosen, a page as
+ * the first one, and a text too long to search for is left out.
+ */
+export function readStaffViolationParams(
+  params: SearchParams,
+): StaffViolationParams {
+  return {
+    schedulePage: pageOf(firstParam(params.jadwal)),
+    day: dayOf(firstParam(params.tgl)),
+    announcementPage: pageOf(firstParam(params.umum)),
+    periodId: keyOf(firstParam(params.sem)),
+    query: searchText(firstParam(params.cari)) ?? "",
+    page: pageOf(firstParam(params.hal)),
+    studentId: keyOf(firstParam(params.mhs)),
+    studentPage: pageOf(firstParam(params.mhshal)),
+  };
+}
+
+/** What the address asks the screen of a resident for, read as for staff. */
+export function readOwnViolationParams(
+  params: SearchParams,
+): OwnViolationParams {
+  const period = firstParam(params.periode);
+  return {
+    periodId: period === ALL_PERIODS ? "all" : keyOf(period),
+    page: pageOf(firstParam(params.hal)),
+    day: dayOf(firstParam(params.tgl)),
+    announcementPage: pageOf(firstParam(params.umum)),
+  };
+}
+
+function withSearch(search: URLSearchParams): string {
+  const text = search.toString();
+  return text === "" ? VIOLATIONS_ADDRESS : `${VIOLATIONS_ADDRESS}?${text}`;
+}
+
+function setPage(search: URLSearchParams, name: string, page: number) {
+  if (page > 1) search.set(name, String(page));
+}
+
+/** The address of the staff screen. What is not chosen and first pages are left out. */
+export function staffViolationsAddress(params: StaffViolationParams): string {
+  const search = new URLSearchParams();
+  setPage(search, "jadwal", params.schedulePage);
+  if (params.day !== null) search.set("tgl", params.day);
+  setPage(search, "umum", params.announcementPage);
+  if (params.periodId !== null) search.set("sem", params.periodId);
+  if (params.query !== "") search.set("cari", params.query);
+  setPage(search, "hal", params.page);
+  if (params.studentId !== null) search.set("mhs", params.studentId);
+  setPage(search, "mhshal", params.studentPage);
+  return withSearch(search);
+}
+
+/** The address of the screen of a resident, read the same way. */
+export function ownViolationsAddress(params: OwnViolationParams): string {
+  const search = new URLSearchParams();
+  if (params.periodId === "all") search.set("periode", ALL_PERIODS);
+  if (params.periodId !== null && params.periodId !== "all") {
+    search.set("periode", params.periodId);
+  }
+  setPage(search, "hal", params.page);
+  if (params.day !== null) search.set("tgl", params.day);
+  setPage(search, "umum", params.announcementPage);
+  return withSearch(search);
+}

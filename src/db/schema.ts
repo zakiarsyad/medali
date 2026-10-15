@@ -64,6 +64,13 @@ import {
   SPECIAL_REASONS,
 } from "@/features/dorm/leave-ids";
 import {
+  OTHER_PUNISHMENT_MAX_LENGTH,
+  PUNISHMENTS,
+  REASON_MAX_LENGTH,
+  REASON_MIN_LENGTH,
+  VIOLATION_CHANGE_ACTIONS,
+} from "@/features/dorm/violation-ids";
+import {
   PHOTOS_MAX,
   PHOTOS_MIN,
   REPORT_MAX_LENGTH,
@@ -197,6 +204,16 @@ export const dormCleaningResult = pgEnum(
 );
 
 export const dormCleaningStep = pgEnum("dorm_cleaning_step", CLEANING_STEPS);
+
+export const dormViolationPunishment = pgEnum(
+  "dorm_violation_punishment",
+  PUNISHMENTS,
+);
+
+export const dormViolationChangeAction = pgEnum(
+  "dorm_violation_change_action",
+  VIOLATION_CHANGE_ACTIONS,
+);
 
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
 
@@ -1299,6 +1316,99 @@ export const dormCleaningChanges = pgTable(
     note: text().notNull(),
   },
   (table) => [index("dorm_cleaning_changes_duty").on(table.dutyId)],
+);
+
+/**
+ * A violation of the dorm rules BAM recorded for a resident, with its
+ * reason, its punishment and the moment it is announced. Rows saved by
+ * one press of "Simpan dan jadwalkan publikasi" share the key its form
+ * made, so a form sent twice is kept once. The dorm is the one the
+ * resident lived in when it was recorded, as the announcement of a dorm
+ * shows it. A violation is never deleted: one cancelled before its
+ * announcement keeps its row, with who and when, and is never shown.
+ */
+export const dormViolations = pgTable(
+  "dorm_violations",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    batchId: uuid().notNull(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    dorm: dorm().notNull(),
+    /** Tanggal pelanggaran. */
+    day: date().notNull(),
+    reason: text().notNull(),
+    punishment: dormViolationPunishment().notNull(),
+    /** What Hukuman lainnya is; empty for every other punishment. */
+    otherPunishment: text().notNull().default(""),
+    announcedAt: timestamp({ withTimezone: true }).notNull(),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+    cancelledBy: uuid().references(() => accounts.id),
+    cancelledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("dorm_violations_batch").on(table.batchId),
+    index("dorm_violations_student").on(table.studentId, table.day),
+    index("dorm_violations_day").on(table.day),
+    index("dorm_violations_announced")
+      .on(table.announcedAt)
+      .where(sql`${table.cancelledAt} is null`),
+    check(
+      "dorm_violations_reason_length",
+      sql`char_length(${table.reason}) between ${sql.raw(String(REASON_MIN_LENGTH))} and ${sql.raw(String(REASON_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_violations_other_punishment_only_for_other",
+      sql`(${table.punishment} = 'other') = (${table.otherPunishment} <> '')`,
+    ),
+    check(
+      "dorm_violations_other_punishment_length",
+      sql`char_length(${table.otherPunishment}) <= ${sql.raw(String(OTHER_PUNISHMENT_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_violations_announced_from_its_day",
+      sql`(${table.announcedAt} at time zone 'Asia/Jakarta')::date >= ${table.day}`,
+    ),
+    check(
+      "dorm_violations_entered_from_its_day",
+      sql`(${table.enteredAt} at time zone 'Asia/Jakarta')::date >= ${table.day}`,
+    ),
+    check(
+      "dorm_violations_cancel_is_whole",
+      sql`(${table.cancelledBy} is null) = (${table.cancelledAt} is null)`,
+    ),
+    check(
+      "dorm_violations_cancelled_before_announced",
+      sql`${table.cancelledAt} is null or ${table.cancelledAt} < ${table.announcedAt}`,
+    ),
+  ],
+);
+
+/**
+ * Every entry and every cancel of a dorm violation: who and when. A
+ * violation cannot be changed otherwise, so what it was before and after
+ * is the action. Rows here cannot be changed or deleted; the database
+ * refuses it. A violation is held by its log lines, so it cannot be
+ * deleted either.
+ */
+export const dormViolationChanges = pgTable(
+  "dorm_violation_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    violationId: uuid()
+      .notNull()
+      .references(() => dormViolations.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    action: dormViolationChangeAction().notNull(),
+  },
+  (table) => [index("dorm_violation_changes_violation").on(table.violationId)],
 );
 
 /**
