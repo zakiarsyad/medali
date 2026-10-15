@@ -1145,6 +1145,62 @@ describe("may", () => {
     );
   });
 
+  it("lets only Pengelola Asrama schedule calls and issue warning letters", () => {
+    expect(may(["dorm_manager"], "issue_dorm_warning_letters")).toBe(true);
+    expect(may(["dorm_manager"], "view_dorm_violations")).toBe(true);
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "bam_bphk",
+        "bam_compliance",
+        "director",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "issue_dorm_warning_letters")).toBe(false);
+    }
+  });
+
+  const warningResultReaders: RoleId[] = ["dorm_manager", "head_of_unit"];
+
+  it.each(warningResultReaders)(
+    "lets %s read Hasil klarifikasi of a warning letter",
+    (role) => {
+      expect(may([role], "view_dorm_warning_results")).toBe(true);
+      expect(may([role], "view_dorm_violations")).toBe(true);
+    },
+  );
+
+  it("refuses every other role Hasil klarifikasi, the BAM roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !warningResultReaders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_bphk",
+        "bam_compliance",
+        "bam_spiritual",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_warning_results")).toBe(false);
+    }
+  });
+
+  it("gives Kepala Unit plain titles for the rights of warning letters", () => {
+    expect(ACTION_TITLES.issue_dorm_warning_letters).toBe(
+      "Menjadwalkan panggilan klarifikasi dan menerbitkan surat peringatan asrama",
+    );
+    expect(ACTION_TITLES.view_dorm_warning_results).toBe(
+      "Membaca hasil klarifikasi surat peringatan asrama dan catatan pengajuan hukuman disiplin",
+    );
+  });
+
   it("gives a way to see violations to every role with the tab Pelanggaran, and to no other", () => {
     for (const role of ROLE_IDS) {
       const reads =

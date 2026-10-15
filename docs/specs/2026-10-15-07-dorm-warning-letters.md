@@ -124,12 +124,20 @@ Decided while building, because the issue did not say:
 7. An issued SP cannot be changed, and a call or SP cannot be deleted
    once it has a line in the log; the database refuses both. Each line
    keeps who, when, and the schedule after it.
+8. Two new rights: scheduling calls and issuing SPs ("Menjadwalkan
+   panggilan klarifikasi dan menerbitkan surat peringatan asrama") for
+   Pengelola Asrama only, and reading Hasil klarifikasi with the
+   proposal note ("Membaca hasil klarifikasi surat peringatan asrama dan
+   catatan pengajuan hukuman disiplin") for Pengelola Asrama and Kepala
+   Unit only. The list of calls is read with the right to see
+   Pelanggaran, and a resident's own call and SP with the right to see
+   their own violations, so no other role gains anything.
 
 ## Steps
 
 - [x] 1. The table for calls and SPs is added, with a sample resident
   called, one with SP 1 and one with SP 2.
-- [ ] 2. The right to issue an SP is added to the permission list, with
+- [x] 2. The right to issue an SP is added to the permission list, with
   its checks.
 - [ ] 3. The list of calls shows who must be called and why.
 - [ ] 4. Pengelola Asrama schedules and changes the call.
