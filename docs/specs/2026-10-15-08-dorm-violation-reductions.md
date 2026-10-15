@@ -88,12 +88,17 @@ Decided while building, because the issue did not say:
    yesterday, both by the sample Pengelola Asrama, each with a reason.
    Their SPs stay. The sample resident called for SP 1 has no reduction,
    so the call can be tried.
+7. Two new rights: reducing a violation and undoing a reduction
+   ("Mengurangi pelanggaran asrama dan membatalkan pengurangannya") for
+   Pengelola Asrama only, and reading "Riwayat pengurangan pelanggaran"
+   ("Melihat riwayat pengurangan pelanggaran asrama") for Pengelola
+   Asrama and Kepala Unit only. Every other role gets neither.
 
 ## Steps
 
 - [x] 1. The reduction mark with its reason, who and when is added to
   dorm violations, with sample reductions.
-- [ ] 2. The right to reduce is added to the permission list, with its
+- [x] 2. The right to reduce is added to the permission list, with its
   checks.
 - [ ] 3. Pengelola Asrama reduces one violation from the list per
   student.
