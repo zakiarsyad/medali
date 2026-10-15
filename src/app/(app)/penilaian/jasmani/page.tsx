@@ -11,13 +11,15 @@ import { testYearOf } from "@/features/fitness/fitness-input";
 import { readFitnessLimits } from "@/features/fitness/fitness-limits";
 import { fitnessVisibleTo } from "@/features/fitness/fitness-readers";
 import { FitnessScreen, ReadOnlyNote } from "@/features/fitness/fitness-screen";
+import { LimitsForm } from "@/features/fitness/limits-form";
 import { ReadOnlyLimits } from "@/features/fitness/read-only-limits";
 
 /**
  * The tab Penilaian jasmani. Each role sees the Aktif students its roles
  * that open the tab see: Ketua Program Studi those of their own program
  * only, Pengasuh their own mentees only. The others are told who enters
- * the scores.
+ * the scores. Kepala Unit, with the right "Bobot penilaian", alone
+ * changes "Ambang skor"; every other role reads it.
  */
 export default async function FitnessPage(
   props: PageProps<"/penilaian/jasmani">,
@@ -36,6 +38,7 @@ export default async function FitnessPage(
     readFitnessList(db, visible, limits, params),
   ]);
   const mayEnter = may(account.roles, "enter_fitness_scores");
+  const maySetLimits = may(account.roles, "set_grade_weights");
   return (
     <FitnessScreen
       tabs={tabs}
@@ -45,7 +48,13 @@ export default async function FitnessPage(
       params={params}
       list={list}
       manage={mayEnter ? null : <ReadOnlyNote />}
-      limitsPart={<ReadOnlyLimits inForce={inForce} />}
+      limitsPart={
+        maySetLimits ? (
+          <LimitsForm inForce={inForce} />
+        ) : (
+          <ReadOnlyLimits inForce={inForce} />
+        )
+      }
     />
   );
 }

@@ -122,3 +122,6 @@ export function testYearOf(day: string): number {
 export function yearStartOf(day: string): string {
   return `${testYearOf(day)}-01-01`;
 }
+
+/** The field of "Ambang skor" that carries the version its form was opened on. */
+export const LIMITS_VERSION_FIELD = "version";
