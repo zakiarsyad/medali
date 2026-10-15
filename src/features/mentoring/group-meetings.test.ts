@@ -5,12 +5,9 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestMeeting } from "@/mentoring/test-meetings";
 import { listActiveMembers, readMarks, readMeetings } from "./group-meetings";
-import {
-  addTestMeeting,
-  addTestPeriod,
-  type TestPeriod,
-} from "./test-meetings";
+import { addTestPeriod, type TestPeriod } from "./test-meetings";
 import {
   addTestAccount,
   addTestGroup,

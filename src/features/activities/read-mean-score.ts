@@ -16,6 +16,7 @@ import {
   meanScore,
   type StudentGroup,
 } from "./mean-score";
+import { markTallies } from "./meeting-marks";
 import { newestAt } from "./newest-attendances";
 
 const NO_SCORE: MeanScore = { percent: null, students: 0 };
@@ -62,23 +63,32 @@ function chosenIn(extraIds: readonly string[]): SQL<string[]> {
   >`array(select distinct ${chosen.scheduleId}::text from ${chosen} where ${inArray(chosen.scheduleId, [...extraIds])} and ${names} order by 1)`;
 }
 
+/** A count of marks of a student, or 0 for one on no meeting list. */
+function markCount(column: SQL.Aliased<number>) {
+  return sql<number>`coalesce(${column}, 0)`;
+}
+
 /**
  * The Aktif students an account sees, put together in the database into
- * groups that stand the same at every one of the schedules: only what
- * changes a score is kept of each, a valid attendance or a dispensation,
- * with the schedules of special or additional activities they take part
- * in. So one row comes back for many students, and nobody is named.
+ * groups that stand the same at every one of the schedules and are marked
+ * alike at the meetings of the period: only what changes a score is kept
+ * of each, a valid attendance or a dispensation, with the schedules of
+ * special or additional activities they take part in and how often each
+ * mark was given them. So one row comes back for many students, and
+ * nobody is named.
  */
-function readGroups(
+async function readGroups(
   db: Database,
   visible: SQL,
   schedules: readonly CountedSchedule[],
+  periodId: string,
 ): Promise<StudentGroup[]> {
   const scheduleIds = schedules.map((schedule) => schedule.id);
   const extraIds = schedules
     .filter((schedule) => schedule.semester === null)
     .map((schedule) => schedule.id);
   const newest = newestAt(db, scheduleIds);
+  const tallies = markTallies(db, periodId);
   const changesScore = sql`${newest.status} in ('valid', 'dispensation')`;
   const perStudent = db
     .select({
@@ -89,28 +99,55 @@ function readGroups(
         "kept",
       ),
       chosenIn: chosenIn(extraIds).as("chosen_in"),
+      present: markCount(tallies.present).as("present"),
+      excused: markCount(tallies.excused).as("excused"),
+      sick: markCount(tallies.sick).as("sick"),
+      absent: markCount(tallies.absent).as("absent"),
     })
     .from(students)
     .leftJoin(newest, eq(newest.studentId, students.id))
+    .leftJoin(tallies, eq(tallies.studentId, students.id))
     .where(and(ACTIVE_MEMBER, visible))
-    .groupBy(students.id)
+    .groupBy(
+      students.id,
+      tallies.present,
+      tallies.excused,
+      tallies.sick,
+      tallies.absent,
+    )
     .as("per_student");
-  return db
+  const rows = await db
     .select({
       cohortYear: perStudent.cohortYear,
       kept: perStudent.kept,
       chosenIn: perStudent.chosenIn,
+      present: perStudent.present,
+      excused: perStudent.excused,
+      sick: perStudent.sick,
+      absent: perStudent.absent,
       students: count(),
     })
     .from(perStudent)
-    .groupBy(perStudent.cohortYear, perStudent.kept, perStudent.chosenIn);
+    .groupBy(
+      perStudent.cohortYear,
+      perStudent.kept,
+      perStudent.chosenIn,
+      perStudent.present,
+      perStudent.excused,
+      perStudent.sick,
+      perStudent.absent,
+    );
+  return rows.map(({ present, excused, sick, absent, ...row }) => ({
+    ...row,
+    marks: { present, excused, sick, absent },
+  }));
 }
 
 /**
  * Rerata nilai kehadiran of the students an account sees, over the
  * period that runs on `today`. `visible` limits the students, so Ketua
  * Program Studi and Pengasuh get the mean of their own students only.
- * Each schedule counts in the period it keeps only.
+ * Each schedule and each meeting counts in the period it keeps only.
  */
 export async function readMeanScore(
   db: Database,
@@ -120,7 +157,6 @@ export async function readMeanScore(
   const running = runningPeriodOn(await readAcademicPeriods(db), today);
   if (running === null) return NO_SCORE;
   const schedules = await readCounted(db, running.id);
-  if (schedules.length === 0) return NO_SCORE;
-  const groups = await readGroups(db, visible, schedules);
+  const groups = await readGroups(db, visible, schedules, running.id);
   return meanScore(groups, schedules, running, today);
 }

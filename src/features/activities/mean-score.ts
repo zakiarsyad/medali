@@ -1,7 +1,10 @@
 import {
   attendanceScore,
+  type MarkTally,
+  meetingScore,
   type ScoredSchedule,
   scorePercent,
+  totalScore,
 } from "./attendance-score";
 import { isInSemester, type PeriodParts, wasStudentIn } from "./participants";
 import type { UploadRange } from "./upload-range";
@@ -23,14 +26,16 @@ export type KeptStatus = "valid" | "dispensation";
 
 /**
  * Students of one angkatan who stand the same at every schedule: their
- * valid attendances and dispensations, by the key of the schedule. They
- * all have the same score, so it is counted once for all of them.
+ * valid attendances and dispensations, by the key of the schedule, and
+ * who are marked alike at the meetings of the period. They all have the
+ * same score, so it is counted once for all of them.
  */
 export interface StudentGroup {
   cohortYear: number;
   kept: Readonly<Record<string, KeptStatus>>;
   /** The keys of the schedules of special or additional activities that name them. */
   chosenIn: readonly string[];
+  marks: MarkTally;
   students: number;
 }
 
@@ -77,8 +82,8 @@ function scoredFor(
  * on a day on campus. Each student's score is counted by the same rule
  * as on their own page, over the schedules of the period meant for
  * their angkatan and those of special or additional activities they take
- * part in. A student with nothing counted yet has no score and
- * is left out of the mean.
+ * part in, and over their marks at the meetings of the period. A student
+ * with nothing counted yet has no score and is left out of the mean.
  */
 export function meanScore(
   groups: readonly StudentGroup[],
@@ -89,8 +94,13 @@ export function meanScore(
   let total = 0;
   let students = 0;
   for (const group of groups) {
-    const score = attendanceScore(scoredFor(group, schedules, period), today);
-    const percent = scorePercent(score);
+    const scored = scoredFor(group, schedules, period);
+    const percent = scorePercent(
+      totalScore({
+        activities: attendanceScore(scored, today),
+        meetings: meetingScore(group.marks),
+      }),
+    );
     if (percent === null) continue;
     total += percent * group.students;
     students += group.students;

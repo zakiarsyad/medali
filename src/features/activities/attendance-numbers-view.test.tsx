@@ -29,7 +29,11 @@ describe("AttendanceNumbersView", () => {
     });
 
     expect(view).toMatch(
-      card("Rerata nilai kehadiran", "87,5%", "1.250 mahasiswa"),
+      card(
+        "Rerata nilai kehadiran",
+        "87,5%",
+        "1.250 mahasiswa, semua jenis kegiatan",
+      ),
     );
     expect(view).toMatch(card("Kegiatan terlaksana", "12", "PPKS wajib"));
     expect(view).toMatch(card("Menunggu verifikasi", "31", "foto kehadiran"));
@@ -59,9 +63,15 @@ describe("AttendanceNumbersView", () => {
       coming: 1,
     });
 
-    expect(none).toMatch(card("Rerata nilai kehadiran", "-", "0 mahasiswa"));
+    expect(none).toMatch(
+      card("Rerata nilai kehadiran", "-", "0 mahasiswa, semua jenis kegiatan"),
+    );
     expect(whole).toMatch(
-      card("Rerata nilai kehadiran", "40,0%", "5 mahasiswa"),
+      card(
+        "Rerata nilai kehadiran",
+        "40,0%",
+        "5 mahasiswa, semua jenis kegiatan",
+      ),
     );
   });
 });
