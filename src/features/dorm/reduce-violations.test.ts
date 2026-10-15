@@ -272,6 +272,23 @@ describe("reduceViolations", () => {
     });
   });
 
+  it("refuses a Pengelola Asrama their own violation sent with their id in capitals", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, aniIds } = await setUp(db);
+      const own = await addViolationActor(
+        db,
+        "Pengelola Uji Kurangi Huruf Besar",
+        ["dorm_manager", "student"],
+        ani,
+      );
+
+      expect(
+        await reduce(db, own, ani.toUpperCase(), aniIds.slice(0, 1)),
+      ).toEqual(OWN_REDUCTION);
+      expect((await markOf(db, aniIds[0] ?? ""))?.reducedAt).toBeNull();
+    });
+  });
+
   it("refuses a reason under 5 letters, nothing picked, and what is not a violation", async () => {
     await inTestDatabase(async (db) => {
       const { ani, manager, aniIds } = await setUp(db);

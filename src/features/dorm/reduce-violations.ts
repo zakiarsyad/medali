@@ -73,11 +73,14 @@ function checked(
   sent: SentReduction,
   actor: AccountForAccess,
 ): Parsed<CheckedReduction> {
-  const { studentId, reason } = sent;
-  if (typeof studentId !== "string" || !isUuid(studentId)) {
+  const { reason } = sent;
+  if (typeof sent.studentId !== "string" || !isUuid(sent.studentId)) {
     return REDUCED_NOT_FOUND;
   }
-  if (studentId === actor.studentId) return OWN_REDUCTION;
+  // The database reads a key in capitals as the same student, so the
+  // comparison with the account's own student must ignore case too.
+  const studentId = sent.studentId.toLowerCase();
+  if (studentId === actor.studentId?.toLowerCase()) return OWN_REDUCTION;
   const ids = pickedIds(sent.violationIds);
   if (!ids.ok) return ids;
   const text = typeof reason === "string" ? reason : "";
