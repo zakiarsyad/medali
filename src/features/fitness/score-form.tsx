@@ -76,7 +76,7 @@ function MemberRow({
   );
 }
 
-function MemberTable({
+export function MemberTable({
   members,
   typed,
   limits,
