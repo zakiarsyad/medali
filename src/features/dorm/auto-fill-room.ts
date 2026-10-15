@@ -16,8 +16,8 @@ import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL } from "./place-resident";
 import { NOT_FOUND, parseId } from "./room-input";
 import { PLACED_AS_COMPANION, roomIn } from "./room-list";
-import { countTaken, lockRoom } from "./room-lock";
-import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
+import { countTaken, type LockedRoom, lockRoom } from "./room-lock";
+import { countStaleIn, freeStalePlaces } from "./stale-places";
 
 const NOBODY_WAITING = {
   ok: false,
@@ -90,6 +90,20 @@ async function withoutCompanionRoom(
   return studentIds.filter((id) => !taken.has(id));
 }
 
+/**
+ * The free places of a room, with its stale places counted as free. They
+ * are deleted only once the residents who take them are held.
+ */
+async function freeWithStale(
+  tx: Database,
+  dormCohorts: number[],
+  room: LockedRoom,
+): Promise<number> {
+  const taken = await countTaken(tx, room.id);
+  const stale = await countStaleIn(tx, dormCohorts, room.id);
+  return room.capacity - taken + stale;
+}
+
 async function fill(
   tx: Database,
   dormCohorts: number[],
@@ -97,17 +111,24 @@ async function fill(
 ): Promise<Parsed<string>> {
   const room = await lockRoom(tx, roomId);
   if (!room) return NOT_FOUND;
-  await freeStalePlacesIn(tx, dormCohorts, room.id);
-  const free = room.capacity - (await countTaken(tx, room.id));
+  const free = await freeWithStale(tx, dormCohorts, room);
   if (free <= 0) return ROOM_FULL;
   const held = await firstWaiting(tx, room.dorm, dormCohorts, free);
   const waiting = await withoutCompanionRoom(tx, held);
   if (waiting.length === 0) return NOBODY_WAITING;
-  await freeStalePlacesOf(tx, dormCohorts, waiting);
+  // Only once the residents are held: every save takes the places it
+  // deletes last, so it never holds one while it waits for a student.
+  await freeStalePlaces(tx, dormCohorts, room.id, waiting);
+  const freeNow = room.capacity - (await countTaken(tx, room.id));
+  if (freeNow <= 0) return ROOM_FULL;
 
   const placed = await tx
     .insert(dormRoomPlaces)
-    .values(waiting.map((studentId) => ({ roomId: room.id, studentId })))
+    .values(
+      waiting
+        .slice(0, freeNow)
+        .map((studentId) => ({ roomId: room.id, studentId })),
+    )
     .onConflictDoNothing()
     .returning({ studentId: dormRoomPlaces.studentId });
   if (placed.length === 0) return NOBODY_PLACED;

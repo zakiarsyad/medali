@@ -20,7 +20,7 @@ import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL, type SentPlace } from "./place-resident";
 import { NOT_FOUND, parseId } from "./room-input";
 import { countTaken, type LockedRoom, lockRoom } from "./room-lock";
-import { freeStalePlacesIn, freeStalePlacesOf } from "./stale-places";
+import { freeStalePlaces } from "./stale-places";
 
 const STOPPED = {
   ok: false,
@@ -110,11 +110,10 @@ async function place(
   if (refused) return refused;
   // Places are deleted only once the student is held: a place this
   // student left behind may be in this very room, and deleting it first
-  // would make two placings of the student wait for each other.
-  await freeStalePlacesIn(tx, dormCohorts, room.id);
-  // A place left behind in a dorm the student stopped living in would
-  // count again, as a second room, once they live there again.
-  await freeStalePlacesOf(tx, dormCohorts, [studentId]);
+  // would make two placings of the student wait for each other. A place
+  // left behind in a dorm the student stopped living in would count
+  // again, as a second room, once they live there again.
+  await freeStalePlaces(tx, dormCohorts, room.id, [studentId]);
   if (student.livesIn !== null) {
     const kept = await residentRefusal(tx, studentId, student.livesIn);
     if (kept) return kept;

@@ -1,4 +1,4 @@
-import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, or, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
 import { dormInSql } from "@/dorms/resident-condition";
@@ -8,29 +8,43 @@ import { dormInSql } from "@/dorms/resident-condition";
  * their room: one who stopped being a resident, was removed, or now lives
  * in another dorm. A read never deletes one: it leaves it out instead.
  * Only a change that must count the places of a room deletes them, and
- * only those it needs gone, so two changes in two rooms never wait for
- * each other.
+ * only those it needs gone. Every such change holds the places it deletes
+ * in one go, in the order of the student, so two changes that need some
+ * of the same places gone take them one after the other, and never each
+ * hold one the other waits for.
  */
 
-async function deleteStale(
+function isStale(dormCohorts: number[]): SQL {
+  return sql`${dormInSql(dormCohorts)} is distinct from ${dormRooms.dorm}`;
+}
+
+async function lockStale(
   db: Database,
   dormCohorts: number[],
-  which: SQL,
-): Promise<void> {
-  const stale = db
+  which: SQL | undefined,
+): Promise<string[]> {
+  const stale = await db
     .select({ studentId: dormRoomPlaces.studentId })
     .from(dormRoomPlaces)
     .innerJoin(dormRooms, eq(dormRooms.id, dormRoomPlaces.roomId))
     .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
-    .where(
-      and(
-        which,
-        sql`${dormInSql(dormCohorts)} is distinct from ${dormRooms.dorm}`,
-      ),
-    );
+    .where(and(which, isStale(dormCohorts)))
+    // The database holds the rows in the order they are sorted in.
+    .orderBy(asc(dormRoomPlaces.studentId))
+    .for("update", { of: dormRoomPlaces });
+  return stale.map((place) => place.studentId);
+}
+
+async function deleteStale(
+  db: Database,
+  dormCohorts: number[],
+  which: SQL | undefined,
+): Promise<void> {
+  const studentIds = await lockStale(db, dormCohorts, which);
+  if (studentIds.length === 0) return;
   await db
     .delete(dormRoomPlaces)
-    .where(inArray(dormRoomPlaces.studentId, stale));
+    .where(inArray(dormRoomPlaces.studentId, studentIds));
 }
 
 /** Deletes the stale places of one room, which the change holds. */
@@ -43,18 +57,37 @@ export async function freeStalePlacesIn(
 }
 
 /**
- * Deletes the stale places some students still have in any room, so that
- * an old place does not keep them from getting a new one.
+ * Deletes the stale places of one room, which the change holds, and those
+ * the students it places still have in any room, so that an old place
+ * does not keep them from getting a new one. The students are held first.
  */
-export async function freeStalePlacesOf(
+export async function freeStalePlaces(
   db: Database,
   dormCohorts: number[],
+  roomId: string,
   studentIds: string[],
 ): Promise<void> {
-  if (studentIds.length === 0) return;
   await deleteStale(
     db,
     dormCohorts,
-    inArray(dormRoomPlaces.studentId, studentIds),
+    or(
+      eq(dormRoomPlaces.roomId, roomId),
+      inArray(dormRoomPlaces.studentId, studentIds),
+    ),
   );
+}
+
+/** How many places of a room are stale, read without deleting them. */
+export async function countStaleIn(
+  db: Database,
+  dormCohorts: number[],
+  roomId: string,
+): Promise<number> {
+  const [stale] = await db
+    .select({ places: count() })
+    .from(dormRoomPlaces)
+    .innerJoin(dormRooms, eq(dormRooms.id, dormRoomPlaces.roomId))
+    .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
+    .where(and(eq(dormRoomPlaces.roomId, roomId), isStale(dormCohorts)));
+  return stale?.places ?? 0;
 }

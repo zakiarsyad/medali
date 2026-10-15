@@ -66,4 +66,4 @@ Decided while building, because the issue did not say:
 
 - [x] 1. A check that runs two such saves at the same moment and fails
   today.
-- [ ] 2. The three saves remove left-behind places in one fixed order.
+- [x] 2. The three saves remove left-behind places in one fixed order.
