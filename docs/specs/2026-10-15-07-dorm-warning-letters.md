@@ -143,6 +143,6 @@ Decided while building, because the issue did not say:
 - [x] 4. Pengelola Asrama schedules and changes the call.
 - [x] 5. Pengelola Asrama records the result and issues SP 1 or SP 2
   with the proposal.
-- [ ] 6. Residents see their count, call and SP.
+- [x] 6. Residents see their count, call and SP.
 - [ ] 7. The panel on Klarifikasi kehadiran and the warning on Kegiatan
   asrama are added.

@@ -214,14 +214,41 @@ export async function readCallOf(
 ): Promise<CallOf | null> {
   const semester = await readWarningSemester(db, now);
   if (semester === null) return null;
+  const found = await readStandingOf(db, semester, visible, studentId, now);
+  if (found === null || found.level === null) return null;
+  return { semesterId: semester.id, level: found.level };
+}
+
+/** Where a student stands in a semester, with the SP they are called for or null. */
+export type StandingWithLevel = WarningStanding & {
+  level: WarningLevel | null;
+};
+
+/**
+ * Where a student `visible` holds stands in a semester at `now`, by the
+ * server's clock. One with nothing counted and no SP stands at nothing;
+ * null only for a student not seen.
+ */
+export async function readStandingOf(
+  db: Database,
+  semester: WarningSemester,
+  visible: SQL,
+  studentId: string,
+  now: Date,
+): Promise<StandingWithLevel | null> {
   const standing = standingsOf(db, semester, now);
   const [found] = await db
-    .select({ level: standing.level })
-    .from(standing)
-    .innerJoin(students, eq(students.id, standing.studentId))
+    .select({
+      counted: sql<number>`coalesce(${standing.counted}, 0)::int`,
+      rejected: sql<number>`coalesce(${standing.rejected}, 0)::int`,
+      hasFirst: sql<boolean>`coalesce(${standing.hasFirst}, false)`,
+      hasSecond: sql<boolean>`coalesce(${standing.hasSecond}, false)`,
+      level: standing.level,
+    })
+    .from(students)
+    .leftJoin(standing, eq(standing.studentId, students.id))
     .where(and(visible, eq(students.id, studentId)));
-  if (!found || found.level === null) return null;
-  return { semesterId: semester.id, level: found.level };
+  return found ?? null;
 }
 
 /** The standing a read gives back, without what else came with it. */

@@ -38,6 +38,7 @@ const OWN: OwnRecordData = {
   semester: null,
   periods: [],
   shownPeriod: "all",
+  warning: null,
   history: {
     rows: [
       {

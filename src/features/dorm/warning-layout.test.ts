@@ -33,14 +33,15 @@ describe("Proses of a call on a phone", () => {
   });
 
   it("shows its lists as cards that name every value", () => {
-    expect(BOX).toMatch(/<table className=.*shared\.stacked/);
+    const REJECTED = read("rejected-table.tsx");
+    expect(REJECTED).toMatch(/<table className=.*shared\.stacked/);
     for (const title of [
       "Tanggal",
       "Kegiatan",
       "Alasan klarifikasi",
       "Ditolak oleh",
     ]) {
-      expect(BOX).toContain(`data-title="${title}"`);
+      expect(REJECTED).toContain(`data-title="${title}"`);
     }
   });
 });

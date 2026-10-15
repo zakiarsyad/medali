@@ -3,6 +3,7 @@ import {
   causesOf,
   letterMark,
   neededLevel,
+  progressOf,
   type WarningStanding,
 } from "./warning-rule";
 
@@ -67,6 +68,41 @@ describe("causesOf", () => {
     expect(
       causesOf(standing({ ...afterFirst, counted: 9, rejected: 2 }), 2),
     ).toEqual(["klarifikasi kehadiran ditolak lagi (2 kali)"]);
+  });
+});
+
+describe("progressOf", () => {
+  it("counts toward the call for SP 1 out of 7, with how many are left", () => {
+    expect(progressOf(standing({ counted: 3 }))).toEqual({
+      label: "Menuju panggilan SP 1",
+      amount: "3/7",
+      note: "4 pelanggaran lagi",
+    });
+    expect(progressOf(standing({ counted: 9 }))).toEqual({
+      label: "Menuju panggilan SP 1",
+      amount: "7/7",
+      note: "panggilan aktif",
+    });
+  });
+
+  it("after SP 1, counts toward SP 2 out of 12 in all, and says when SP 2 is issued", () => {
+    expect(progressOf(standing({ hasFirst: true, counted: 8 }))).toEqual({
+      label: "Menuju SP 2",
+      amount: "8/12",
+      note: "4 pelanggaran lagi",
+    });
+    expect(progressOf(standing({ hasFirst: true, counted: 12 }))).toEqual({
+      label: "Menuju SP 2",
+      amount: "12/12",
+      note: "panggilan aktif",
+    });
+    expect(
+      progressOf(standing({ hasFirst: true, hasSecond: true, counted: 13 })),
+    ).toEqual({
+      label: "Menuju SP 2",
+      amount: "12/12",
+      note: "SP 2 sudah terbit",
+    });
   });
 });
 

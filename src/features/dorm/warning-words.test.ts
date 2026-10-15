@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  callWords,
   causeWords,
   issueButtonWords,
   issueQuestion,
   NOT_SCHEDULED,
+  receivedWords,
   scheduleWords,
+  WILL_BE_SCHEDULED,
 } from "./warning-words";
 
 describe("scheduleWords", () => {
@@ -21,6 +24,47 @@ describe("causeWords", () => {
     expect(
       causeWords(["7 pelanggaran tercatat", "klarifikasi kehadiran ditolak"]),
     ).toBe("7 pelanggaran tercatat dan klarifikasi kehadiran ditolak");
+  });
+});
+
+describe("callWords", () => {
+  it("tells the resident when and where to come, or that the call will be scheduled", () => {
+    expect(
+      callWords({
+        day: "2026-10-21",
+        time: "16:00",
+        place: "Kantor Pengelola Asrama",
+      }),
+    ).toBe(
+      "Hadir untuk klarifikasi pada 21 Okt 2026 pukul 16:00 di Kantor Pengelola Asrama.",
+    );
+    expect(callWords(null)).toBe(WILL_BE_SCHEDULED);
+    expect(WILL_BE_SCHEDULED).toBe(
+      "Pengelola Asrama akan menjadwalkan klarifikasi.",
+    );
+  });
+});
+
+describe("receivedWords", () => {
+  it("says the SP, its day on campus and the result, and for SP 2 the proposal", () => {
+    expect(
+      receivedWords({
+        level: 1,
+        issuedAt: new Date("2026-10-10T18:00:00Z"),
+        result: "Mahasiswa hadir dan mengakui pelanggarannya. ",
+      }),
+    ).toBe(
+      "pada 11 Okt 2026. Hasil klarifikasi: Mahasiswa hadir dan mengakui pelanggarannya.",
+    );
+    expect(
+      receivedWords({
+        level: 2,
+        issuedAt: new Date("2026-10-10T03:00:00Z"),
+        result: "Tidak hadir pada panggilan.",
+      }),
+    ).toBe(
+      "pada 10 Okt 2026. Hasil klarifikasi: Tidak hadir pada panggilan. Pengelola Asrama mengajukan proses hukuman disiplin ke Kepala Unit Pembangunan Karakter.",
+    );
   });
 });
 

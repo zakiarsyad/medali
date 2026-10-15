@@ -69,6 +69,31 @@ export function causesOf(
   return causes;
 }
 
+/** How far a resident's counted violations are from their next SP, as a number card says it. */
+export interface WarningProgress {
+  label: "Menuju panggilan SP 1" | "Menuju SP 2";
+  /** As 3/7. */
+  amount: string;
+  note: string;
+}
+
+/**
+ * The counted violations of the semester toward the call for SP 1, out
+ * of 7, or after SP 1 toward SP 2, out of 12 in all, as in the prototype.
+ * A rejected clarification calls on its own and is not counted here.
+ */
+export function progressOf(standing: WarningStanding): WarningProgress {
+  const target = standing.hasFirst ? SP2_VIOLATIONS : SP1_VIOLATIONS;
+  const label = standing.hasFirst ? "Menuju SP 2" : "Menuju panggilan SP 1";
+  const amount = `${Math.min(standing.counted, target)}/${target}`;
+  if (standing.hasSecond) return { label, amount, note: "SP 2 sudah terbit" };
+  if (standing.counted >= target) {
+    return { label, amount, note: "panggilan aktif" };
+  }
+  const left = target - standing.counted;
+  return { label, amount, note: `${left} pelanggaran lagi` };
+}
+
 /** The highest SP a resident was issued in the semester, or none. */
 export function letterMark(standing: WarningStanding): WarningLevel | null {
   if (standing.hasSecond) return 2;

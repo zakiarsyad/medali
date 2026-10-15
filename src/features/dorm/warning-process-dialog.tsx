@@ -3,6 +3,7 @@ import shared from "@/ui/data-screen.module.css";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { CallScheduleForm } from "./call-schedule-form";
 import { IssueLetterForm } from "./issue-letter-form";
+import { RejectedTable } from "./rejected-table";
 import {
   type StaffViolationParams,
   staffViolationsAddress,
@@ -12,49 +13,10 @@ import styles from "./violations.module.css";
 import { LetterMark } from "./warning-calls-panel";
 import { DEFAULT_CALL_PLACE, DEFAULT_CALL_TIME } from "./warning-ids";
 import { firstOfferedDay, lastCallDay } from "./warning-input";
-import type { RejectedClarification, WarningProcess } from "./warning-process";
+import type { WarningProcess } from "./warning-process";
 import { causeWords } from "./warning-words";
 
 export const NO_COUNTED = "Tidak ada pelanggaran tercatat semester ini.";
-
-/** The clarifications of a resident's absences that were rejected and still count. */
-export function RejectedTable({ rows }: { rows: RejectedClarification[] }) {
-  if (rows.length === 0) return null;
-  return (
-    <>
-      <p className={`${shared.label} ${styles.spaced}`}>
-        {rows.length} klarifikasi kehadiran kegiatan asrama ditolak
-      </p>
-      <div className={shared.tableWrap}>
-        <table className={`${shared.table} ${shared.stacked}`}>
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Kegiatan</th>
-              <th>Alasan klarifikasi</th>
-              <th>Ditolak oleh</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td data-title="Tanggal">{row.day}</td>
-                <td data-title="Kegiatan">{row.activity}</td>
-                <td data-title="Alasan klarifikasi">
-                  {row.reason}
-                  <p className={styles.sub}>{row.explanation}</p>
-                </td>
-                <td data-title="Ditolak oleh">
-                  {row.rejectedBy}: {row.note}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
-  );
-}
 
 /**
  * "Proses" of one resident called for an SP, for Pengelola Asrama, in a
