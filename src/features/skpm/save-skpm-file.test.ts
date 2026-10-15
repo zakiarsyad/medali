@@ -259,6 +259,27 @@ describe("saveSkpmFile", () => {
     });
   });
 
+  it("keeps a row whose number in the file is past 32,767, after many empty lines", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      const empty = Array.from({ length: 33_000 }, () => "");
+      const id = crypto.randomUUID();
+      const file = csv([TITLES, ...empty, "9985030001,Seminar,,,,,4"]);
+
+      const saved = await saveSkpmFile(db, penilai, id, "add", file, MOMENT);
+
+      expect(saved).toEqual({
+        ok: true,
+        value: { saved: 1, fileName: "skpm-oktober.csv" },
+      });
+      const [row] = await db
+        .select()
+        .from(skpmRows)
+        .where(eq(skpmRows.uploadId, id));
+      expect(row?.line).toBe(33_002);
+    });
+  });
+
   it("checks the file again when saving: a student no longer Aktif is skipped", async () => {
     await inTestDatabase(async (db) => {
       const { budi, penilai } = await addRecords(db);

@@ -2438,7 +2438,8 @@ export const skpmRows = pgTable(
     uploadId: uuid()
       .notNull()
       .references(() => skpmUploads.id),
-    line: smallint().notNull(),
+    /** A file's empty lines count too, so this may pass 32,767. */
+    line: integer().notNull(),
     studentId: uuid()
       .notNull()
       .references(() => students.id),

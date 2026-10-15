@@ -12,7 +12,7 @@ CREATE TABLE "skpm_conversions" (
 CREATE TABLE "skpm_rows" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"upload_id" uuid NOT NULL,
-	"line" smallint NOT NULL,
+	"line" integer NOT NULL,
 	"student_id" uuid NOT NULL,
 	"activity" text NOT NULL,
 	"category" text NOT NULL,
