@@ -167,6 +167,11 @@ Decided while building, because the issue did not say:
     Dinilai BAM and waits; today and later are Terjadwal.
 21. On a phone each duty is a card, as the schedule already is, with
     Catatan and both buttons folding under each other.
+22. A duty that was ever judged keeps showing, and counting, after its
+    place is removed, also on the day of the removal and later, with the
+    place's name, so it can still be validated or sent back and its
+    result is seen where it counts. Only duties never judged leave the
+    schedule with their place.
 
 ## Steps
 

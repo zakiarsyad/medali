@@ -59,11 +59,19 @@ export interface OwnRoomPage {
 }
 
 /**
- * Whether a duty shows: one of a removed place shows only on the days
- * before the place was removed. A duty of a room's own room has no place,
- * so it always shows. The read joins the places to the duties.
+ * A duty that was never judged: Terjadwal, and never sent back. A judged
+ * one has lines in the log, which keep it.
  */
-export const DUTY_SHOWN: SQL = sql`(${dormCleaningPlaces.removedFrom} is null or ${dormCleaningPlaces.removedFrom} > ${dormCleaningDuties.day})`;
+export const NEVER_JUDGED: SQL = sql`(${dormCleaningDuties.status} = 'scheduled' and ${dormCleaningDuties.sentBackReason} = '')`;
+
+/**
+ * Whether a duty shows: one of a removed place that was never judged
+ * shows only on the days before the place was removed. A judged one
+ * always shows, so it can still be decided and its result is seen where
+ * it counts. A duty of a room's own room has no place, so it always
+ * shows. The read joins the places to the duties.
+ */
+export const DUTY_SHOWN: SQL = sql`(${dormCleaningPlaces.removedFrom} is null or ${dormCleaningPlaces.removedFrom} > ${dormCleaningDuties.day} or not ${NEVER_JUDGED})`;
 
 /** The join that finds the room of a duty, while the room is still there. */
 export const ROOM_OF_DUTY = eq(dormRooms.id, dormCleaningDuties.roomId);
@@ -100,8 +108,16 @@ const VALIDATOR_OF_DUTY = eq(validators.id, dormCleaningDuties.validatedBy);
 const PLACE_OF_DUTY = eq(dormCleaningPlaces.id, dormCleaningDuties.placeId);
 
 /**
+ * A removed place keeps showing on a date where it has a duty that was
+ * judged, so that duty has its row on the schedule.
+ */
+function hasJudgedDutyOn(day: string): SQL {
+  return sql`exists (select 1 from ${dormCleaningDuties} where ${dormCleaningDuties.placeId} = ${dormCleaningPlaces.id} and ${dormCleaningDuties.day} = ${day} and not ${NEVER_JUDGED})`;
+}
+
+/**
  * The places of some dorms that show on a date, by dorm and by name: those
- * not removed, and those removed after it.
+ * not removed, those removed after it, and those with a judged duty on it.
  */
 export async function readPlacesOn(
   db: Database,
@@ -121,6 +137,7 @@ export async function readPlacesOn(
         or(
           isNull(dormCleaningPlaces.removedFrom),
           gt(dormCleaningPlaces.removedFrom, day),
+          hasJudgedDutyOn(day),
         ),
       ),
     )

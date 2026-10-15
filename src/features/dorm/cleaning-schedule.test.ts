@@ -12,6 +12,7 @@ import {
   readPlaceDutiesOn,
   readPlacesOn,
 } from "./cleaning-schedule";
+import { countWaiting } from "./cleaning-scores";
 import { addTestActor, type TestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -106,6 +107,46 @@ describe("the schedule of a removed place", () => {
         duties: 1,
         counted: 1,
       });
+    });
+  });
+
+  it("keeps showing and counting a duty that was judged, on the day the place is removed and after", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const by = setting.actor.id;
+      const duty = {
+        dorm: DORM,
+        placeId: setting.placeId,
+        roomNumber: "BJ101",
+        createdBy: by,
+      };
+      await db.insert(dormCleaningDuties).values([
+        {
+          ...duty,
+          day: REMOVED_ON,
+          status: "judged",
+          result: "met",
+          judgedBy: by,
+          judgedAt: new Date(),
+        },
+        {
+          ...duty,
+          day: AFTER,
+          sentBackReason: "Belum diperiksa.",
+          sentBackBy: by,
+          sentBackAt: new Date(),
+        },
+      ]);
+      await removeCleaningPlace(db, setting.actor, setting.placeId, REMOVED_ON);
+
+      for (const day of [REMOVED_ON, AFTER]) {
+        expect((await readPlacesOn(db, DORMS, day)).map((p) => p.name)).toEqual(
+          ["Aula Uji Jadwal"],
+        );
+        expect(await readPlaceDutiesOn(db, DORMS, day)).toHaveLength(1);
+        expect(await countDutiesOn(db, DORMS, day)).toBe(1);
+      }
+      expect(await countWaiting(db, DORMS)).toEqual({ waiting: 1, repeats: 0 });
     });
   });
 });

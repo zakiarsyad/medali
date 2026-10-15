@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, isNull, not, type SQL, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, not } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
@@ -27,6 +27,7 @@ import {
 } from "./cleaning-messages";
 import { parseDorm } from "./cleaning-place-input";
 import { type OccupiedRoom, readOccupiedRooms } from "./cleaning-rooms";
+import { NEVER_JUDGED } from "./cleaning-schedule";
 import { lockRoom } from "./room-lock";
 
 type Actor = Pick<Account, "id" | "roles">;
@@ -197,12 +198,6 @@ export async function assignOwnRooms(
     saveOwnRooms(tx, actor, dorm.value, day.value, today),
   );
 }
-
-/**
- * A duty that was never judged: Terjadwal, and never sent back. A judged
- * one has lines in the log, which keep it.
- */
-const NEVER_JUDGED: SQL = sql`(${dormCleaningDuties.status} = 'scheduled' and ${dormCleaningDuties.sentBackReason} = '')`;
 
 /** Whether a duty of today or later was judged, so it cannot be cancelled. */
 async function isJudged(
