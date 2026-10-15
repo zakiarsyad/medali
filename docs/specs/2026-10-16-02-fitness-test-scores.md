@@ -118,7 +118,7 @@ results are health data, so each role sees only its own students.
 
 ## Steps
 
-- [ ] 1. Fitness scores and the three limits are stored; the right
+- [x] 1. Fitness scores and the three limits are stored; the right
   "Penilaian jasmani" is added, with checks; sample scores.
 - [ ] 2. The category rule, with checks.
 - [ ] 3. The tab shows the numbers, "Kategori" and the list.
