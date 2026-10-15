@@ -106,9 +106,28 @@ what was said and issues the SP. The resident sees all of it.
 
 Decided while building, because the issue did not say:
 
+5. Tempat holds 3 to 100 letters, Hasil klarifikasi 10 to 1,000 and
+   "Catatan pengajuan hukuman disiplin ke Kepala UPK" at most 1,000, not
+   counting spaces around them. The note may be left empty, as in the
+   prototype.
+6. Sample data, in the running period, of the three sample residents by
+   name after the 24 the sample violations are spread over: the first
+   has 7 counted violations and is called for tomorrow at 16:00 in
+   Kantor Pengelola Asrama; the second has 8 and was given SP 1 ten days
+   ago; the third has 12 and was given SP 1 fourteen days ago and SP 2
+   three days ago, with a proposal note. Each call was sent two days
+   before it was held, or an hour ago for the one still to come, and
+   each SP was issued at 16:30 on the day of its call, all by the sample
+   Pengelola Asrama. The sample clarifications rejected by BAM and by
+   Pengelola Asrama call their two residents for SP 1, not scheduled
+   yet.
+7. An issued SP cannot be changed, and a call or SP cannot be deleted
+   once it has a line in the log; the database refuses both. Each line
+   keeps who, when, and the schedule after it.
+
 ## Steps
 
-- [ ] 1. The table for calls and SPs is added, with a sample resident
+- [x] 1. The table for calls and SPs is added, with a sample resident
   called, one with SP 1 and one with SP 2.
 - [ ] 2. The right to issue an SP is added to the permission list, with
   its checks.

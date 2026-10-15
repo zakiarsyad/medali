@@ -77,6 +77,14 @@ import {
   VIOLATION_CHANGE_ACTIONS,
 } from "@/features/dorm/violation-ids";
 import {
+  PLACE_MAX_LENGTH as CALL_PLACE_MAX_LENGTH,
+  PLACE_MIN_LENGTH as CALL_PLACE_MIN_LENGTH,
+  PROPOSAL_NOTE_MAX_LENGTH,
+  RESULT_MAX_LENGTH,
+  RESULT_MIN_LENGTH,
+  WARNING_CHANGE_ACTIONS,
+} from "@/features/dorm/warning-ids";
+import {
   PHOTOS_MAX,
   PHOTOS_MIN,
   REPORT_MAX_LENGTH,
@@ -224,6 +232,11 @@ export const dormViolationChangeAction = pgEnum(
 export const dormViolationAppealStatus = pgEnum(
   "dorm_violation_appeal_status",
   APPEAL_STATUSES,
+);
+
+export const dormWarningLetterChangeAction = pgEnum(
+  "dorm_warning_letter_change_action",
+  WARNING_CHANGE_ACTIONS,
 );
 
 export const sikuKind = pgEnum("siku_kind", SIKU_KINDS);
@@ -1477,6 +1490,100 @@ export const dormViolationAppeals = pgTable(
       sql`char_length(${table.decisionNote}) <= ${sql.raw(String(APPEAL_NOTE_MAX_LENGTH))}`,
     ),
   ],
+);
+
+/**
+ * The call (panggilan klarifikasi) of a resident to explain, and the
+ * warning letter (Surat Peringatan) Pengelola Asrama issues after it: SP
+ * 1, or SP 2 with a proposal of a discipline punishment to Kepala Unit,
+ * in a semester. A resident has one of each level per semester at most.
+ * The schedule is set by "Kirim panggilan" and may change until the SP
+ * is issued; an SP may be issued without a call. Once issued, with who,
+ * when and Hasil klarifikasi, the row cannot change; the database refuses
+ * it. Every schedule and every issue has its line in the log.
+ */
+export const dormWarningLetters = pgTable(
+  "dorm_warning_letters",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    level: smallint().notNull(),
+    callDay: date(),
+    callTime: time(),
+    callPlace: text(),
+    /** Hasil klarifikasi; empty until the SP is issued. */
+    result: text().notNull().default(""),
+    /**
+     * Catatan pengajuan hukuman disiplin ke Kepala UPK, of an issued SP 2;
+     * empty when nothing was noted, and for SP 1.
+     */
+    proposalNote: text().notNull().default(""),
+    issuedBy: uuid().references(() => accounts.id),
+    issuedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    unique("dorm_warning_letters_one_per_level_and_period").on(
+      table.studentId,
+      table.periodId,
+      table.level,
+    ),
+    index("dorm_warning_letters_period").on(table.periodId),
+    check("dorm_warning_letters_level_1_or_2", sql`${table.level} in (1, 2)`),
+    check(
+      "dorm_warning_letters_call_is_whole",
+      sql`(${table.callDay} is null) = (${table.callTime} is null) and (${table.callDay} is null) = (${table.callPlace} is null)`,
+    ),
+    check(
+      "dorm_warning_letters_call_place_length",
+      sql`char_length(${table.callPlace}) between ${sql.raw(String(CALL_PLACE_MIN_LENGTH))} and ${sql.raw(String(CALL_PLACE_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_warning_letters_issue_is_whole",
+      sql`(${table.issuedAt} is null) = (${table.issuedBy} is null) and (${table.issuedAt} is null) = (${table.result} = '')`,
+    ),
+    check(
+      "dorm_warning_letters_result_length",
+      sql`${table.result} = '' or char_length(${table.result}) between ${sql.raw(String(RESULT_MIN_LENGTH))} and ${sql.raw(String(RESULT_MAX_LENGTH))}`,
+    ),
+    check(
+      "dorm_warning_letters_proposal_only_on_issued_sp2",
+      sql`${table.proposalNote} = '' or (${table.level} = 2 and ${table.issuedAt} is not null)`,
+    ),
+    check(
+      "dorm_warning_letters_proposal_note_length",
+      sql`char_length(${table.proposalNote}) <= ${sql.raw(String(PROPOSAL_NOTE_MAX_LENGTH))}`,
+    ),
+  ],
+);
+
+/**
+ * Every schedule of a call and every issue of a warning letter: who,
+ * when, and the schedule after it, empty for an SP issued without one.
+ * Rows here cannot be changed or deleted; the database refuses it. A
+ * letter is held by its log lines, so it cannot be deleted either.
+ */
+export const dormWarningLetterChanges = pgTable(
+  "dorm_warning_letter_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    letterId: uuid()
+      .notNull()
+      .references(() => dormWarningLetters.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    action: dormWarningLetterChangeAction().notNull(),
+    callDay: date(),
+    callTime: time(),
+    callPlace: text(),
+  },
+  (table) => [index("dorm_warning_letter_changes_letter").on(table.letterId)],
 );
 
 /**
