@@ -7,6 +7,7 @@ import { academicPeriods, dormViolationAppeals } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { decideViolationAppeal } from "./decide-appeal";
 import { readOwnViolations } from "./own-violations";
+import { reduceViolations } from "./reduce-violations";
 import { saveViolations } from "./save-violations";
 import { sendViolationAppeal } from "./send-appeal";
 import {
@@ -16,6 +17,7 @@ import {
   sentRow,
 } from "./test-violations";
 import type { OwnViolationParams } from "./violation-address";
+import { recordStatus } from "./violation-status";
 
 const inTestDatabase = withTestDatabase();
 
@@ -103,6 +105,56 @@ describe("readOwnViolations", () => {
       expect(
         own.history.rows.every((row) => row.name === "Ani Uji Pelanggaran"),
       ).toBe(true);
+    });
+  });
+
+  it("shows the resident their reduced violation as Dikurangi with its reason, which no longer counts nor is announced", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await setUp(db);
+      const manager = await addViolationActor(db, "Pengelola Uji Saya", [
+        "dorm_manager",
+      ]);
+      const before = await readOwnViolations(db, ani, FIRST, NOW);
+      if (before.kind !== "shown") throw new Error("It was refused.");
+      const gone = before.history.rows.find((row) => row.day === "3159-02-02");
+      const reason = "Terbukti sedang izin resmi pada jam itu.";
+      await reduceViolations(
+        db,
+        manager,
+        {
+          studentId: ani.studentId,
+          violationIds: [gone?.id],
+          reason,
+        },
+        NOW,
+      );
+
+      const own = await readOwnViolations(
+        db,
+        ani,
+        { ...FIRST, day: "3159-02-02" },
+        NOW,
+      );
+
+      if (own.kind !== "shown") throw new Error("It was refused.");
+      expect(before.recorded).toBe(1);
+      expect(own.recorded).toBe(0);
+      const reduced = own.history.rows.find((row) => row.id === gone?.id);
+      expect(reduced).toMatchObject({
+        reducedAt: NOW,
+        reductionReason: reason,
+      });
+      expect(
+        recordStatus(
+          reduced?.announcedAt ?? NOW,
+          reduced?.appeal ?? null,
+          reduced?.reducedAt ?? null,
+          NOW,
+        ),
+      ).toBe("reduced");
+      expect(own.announcement.rows.map((row) => row.id)).not.toContain(
+        gone?.id,
+      );
     });
   });
 

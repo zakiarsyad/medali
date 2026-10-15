@@ -137,6 +137,11 @@ Decided while building, because the issue did not say:
     Any Pengelola Asrama may undo a reduction another made, but not one
     of their own violations. A second undo is refused with "Pengurangan
     ini sudah dibatalkan. Muat ulang halaman.".
+18. In "Rekam jejak pelanggaran saya" a reduced violation shows
+    "Dikurangi" with Dasar pengurangan under it, but not who reduced it
+    or when. It no longer counts in "Pelanggaran tercatat", "Menuju
+    panggilan SP 1" or "Menuju SP 2", and leaves the announcement of the
+    dorm, for every resident.
 
 ## Steps
 
@@ -149,4 +154,4 @@ Decided while building, because the issue did not say:
 - [x] 4. Pengelola Asrama reduces several at once while processing a
   call.
 - [x] 5. The list of reductions shows, with undo.
-- [ ] 6. Residents see a reduced violation in their record.
+- [x] 6. Residents see a reduced violation in their record.
