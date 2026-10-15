@@ -55,16 +55,16 @@ export function violationStatus(
 }
 
 /**
- * Where a violation stands on a record, with the moment it was reduced,
- * or null when it is not: only a violation that went up is reduced, and
- * it stays Dikurangi until the reduction is undone.
+ * Where a violation stands on a record, with whether it is reduced: only
+ * a violation that went up is reduced, and it stays Dikurangi until the
+ * reduction is undone.
  */
 export function recordStatus(
   announcedAt: Date,
   appeal: AppealStatus | null,
-  reducedAt: Date | null,
+  reduced: boolean,
   now: Date,
 ): ViolationStatus {
-  if (reducedAt !== null) return "reduced";
+  if (reduced) return "reduced";
   return violationStatus(announcedAt, appeal, now);
 }

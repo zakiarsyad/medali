@@ -139,7 +139,7 @@ describe("reduceViolations", () => {
       );
 
       const shown = reader.student?.rows.find((row) => row.id === first);
-      expect(shown).toMatchObject({ reducedAt: NOW, reductionReason: REASON });
+      expect(shown).toMatchObject({ reduced: true, reductionReason: REASON });
       expect(bam.student?.rows.map((row) => row.id)).not.toContain(first);
       expect(bam.student?.rows).toHaveLength(6);
       const counted = (board: typeof bam) =>

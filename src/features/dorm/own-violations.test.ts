@@ -140,15 +140,13 @@ describe("readOwnViolations", () => {
       expect(before.recorded).toBe(1);
       expect(own.recorded).toBe(0);
       const reduced = own.history.rows.find((row) => row.id === gone?.id);
-      expect(reduced).toMatchObject({
-        reducedAt: NOW,
-        reductionReason: reason,
-      });
+      expect(reduced).toMatchObject({ reduced: true, reductionReason: reason });
+      expect(reduced).not.toHaveProperty("reducedAt");
       expect(
         recordStatus(
           reduced?.announcedAt ?? NOW,
           reduced?.appeal ?? null,
-          reduced?.reducedAt ?? null,
+          reduced?.reduced ?? false,
           NOW,
         ),
       ).toBe("reduced");

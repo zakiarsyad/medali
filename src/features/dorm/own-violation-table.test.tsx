@@ -25,7 +25,7 @@ const ROW: OwnViolation = {
   otherPunishment: "",
   announcedAt: new Date("2026-10-09T14:00:00Z"),
   appeal: null,
-  reducedAt: null,
+  reduced: false,
   reductionReason: "",
   ownAppeal: null,
 };
@@ -37,7 +37,7 @@ describe("Rekam jejak pelanggaran saya", () => {
         rows={[
           {
             ...ROW,
-            reducedAt: new Date("2026-10-11T03:00:00Z"),
+            reduced: true,
             reductionReason: "Terbukti sedang izin resmi.",
           },
         ]}

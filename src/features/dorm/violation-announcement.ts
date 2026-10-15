@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
@@ -21,8 +21,8 @@ export interface AnnouncedViolation {
   announcedAt: Date;
   /** Only the result of its appeal, or null without one: never its reason. */
   appeal: AppealStatus | null;
-  /** When Pengelola Asrama reduced it, or null while it is not reduced. */
-  reducedAt: Date | null;
+  /** Only whether Pengelola Asrama reduced it: residents never see who or when. */
+  reduced: boolean;
   /** Dasar pengurangan; empty while it is not reduced. */
   reductionReason: string;
 }
@@ -67,7 +67,7 @@ export const ANNOUNCED_FIELDS = {
   otherPunishment: dormViolations.otherPunishment,
   announcedAt: dormViolations.announcedAt,
   appeal: dormViolationAppeals.status,
-  reducedAt: dormViolations.reducedAt,
+  reduced: sql<boolean>`${dormViolations.reducedAt} is not null`,
   reductionReason: dormViolations.reductionReason,
 };
 

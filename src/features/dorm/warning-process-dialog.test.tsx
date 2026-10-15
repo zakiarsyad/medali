@@ -83,7 +83,7 @@ function counted(day: string): AnnouncedViolation {
     otherPunishment: "",
     announcedAt: new Date(`${day}T21:00:00+07:00`),
     appeal: null,
-    reducedAt: null,
+    reduced: false,
     reductionReason: "",
   };
 }

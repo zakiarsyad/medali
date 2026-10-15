@@ -77,22 +77,22 @@ describe("violationStatus", () => {
 
 describe("recordStatus", () => {
   it("is Dikurangi for a reduced violation, whatever the clock says", () => {
-    expect(
-      recordStatus(ANNOUNCED, null, minutesLater(240), minutesLater(300)),
-    ).toBe("reduced");
-    expect(
-      recordStatus(ANNOUNCED, "rejected", minutesLater(60), minutesLater(90)),
-    ).toBe("reduced");
+    expect(recordStatus(ANNOUNCED, null, true, minutesLater(300))).toBe(
+      "reduced",
+    );
+    expect(recordStatus(ANNOUNCED, "rejected", true, minutesLater(90))).toBe(
+      "reduced",
+    );
   });
 
   it("is what violationStatus says for a violation not reduced", () => {
-    expect(recordStatus(ANNOUNCED, null, null, minutesLater(30))).toBe(
+    expect(recordStatus(ANNOUNCED, null, false, minutesLater(30))).toBe(
       "appeal",
     );
-    expect(recordStatus(ANNOUNCED, null, null, minutesLater(180))).toBe(
+    expect(recordStatus(ANNOUNCED, null, false, minutesLater(180))).toBe(
       "escalated",
     );
-    expect(recordStatus(ANNOUNCED, "accepted", null, minutesLater(30))).toBe(
+    expect(recordStatus(ANNOUNCED, "accepted", false, minutesLater(30))).toBe(
       "appeal_accepted",
     );
   });

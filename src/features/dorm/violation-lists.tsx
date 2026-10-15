@@ -25,7 +25,7 @@ const STATUS_LOOKS: Record<ViolationStatus, string | undefined> = {
 /** What the status of a violation is drawn from. */
 export type StatusOf = Pick<
   AnnouncedViolation,
-  "announcedAt" | "appeal" | "reducedAt" | "reductionReason"
+  "announcedAt" | "appeal" | "reduced" | "reductionReason"
 >;
 
 /**
@@ -37,7 +37,7 @@ export type StatusOf = Pick<
  */
 export function StatusBadge({ row, now }: { row: StatusOf; now: Date }) {
   const { announcedAt, appeal } = row;
-  const status = recordStatus(announcedAt, appeal, row.reducedAt, now);
+  const status = recordStatus(announcedAt, appeal, row.reduced, now);
   return (
     <>
       <span className={`${shared.badge} ${STATUS_LOOKS[status] ?? ""}`}>

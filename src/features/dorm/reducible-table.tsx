@@ -13,7 +13,7 @@ const TITLES = [...ONE_STUDENT_TITLES, "Pengurangan"];
 
 /** Whether a violation went up to Pengelola Asrama and is not reduced, at `now`. */
 export function isReducible(row: AnnouncedViolation, now: Date): boolean {
-  const status = recordStatus(row.announcedAt, row.appeal, row.reducedAt, now);
+  const status = recordStatus(row.announcedAt, row.appeal, row.reduced, now);
   return status === "escalated";
 }
 

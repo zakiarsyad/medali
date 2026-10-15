@@ -61,7 +61,7 @@ const OWN: OwnRecordData = {
         otherPunishment: "",
         announcedAt: new Date("2026-10-12T14:00:00Z"),
         appeal: null,
-        reducedAt: null,
+        reduced: false,
         reductionReason: "",
         ownAppeal: null,
       },
@@ -176,7 +176,7 @@ function boxRow(day: string, more: Partial<AnnouncedViolation> = {}) {
     otherPunishment: "",
     announcedAt: new Date(`${day}T21:00:00+07:00`),
     appeal: null,
-    reducedAt: null,
+    reduced: false,
     reductionReason: "",
     ...more,
   } satisfies AnnouncedViolation;
@@ -191,7 +191,7 @@ function withBox(studentId = BOX_STUDENT): StaffViolations {
     boxRow("2026-10-10", { studentId }),
     boxRow("2026-10-09", {
       studentId,
-      reducedAt: new Date("2026-10-11T03:00:00Z"),
+      reduced: true,
       reductionReason: "Terbukti sedang izin resmi.",
     }),
   ];
