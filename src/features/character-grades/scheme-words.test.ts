@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { weightTotal } from "./grade-letter";
 import { STARTING_SCHEME } from "./scheme-ids";
 import {
   barCells,
@@ -84,4 +85,25 @@ describe("barCells", () => {
     expect(cells).toHaveLength(125);
     expect(cells).not.toContain("rest");
   });
+});
+
+describe("the total, the bar and the sentence while the weights are typed", () => {
+  it.each([
+    ["15", 90, "15% × kehadiran kegiatan"],
+    ["35", 110, "35% × kehadiran kegiatan"],
+  ])(
+    "follow a Kehadiran kegiatan of %s at once, to a total of %s",
+    (attendance, total, term) => {
+      const weights = shownWeights({
+        attendance,
+        mentoring: "25",
+        siku: "25",
+        skpm: "25",
+      });
+
+      expect(weightTotal(weights)).toBe(total);
+      expect(barCells(weights)).toHaveLength(Math.max(total, 100));
+      expect(formulaSentence(weights)).toContain(term);
+    },
+  );
 });

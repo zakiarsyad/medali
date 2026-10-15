@@ -130,3 +130,8 @@ export function parseScheme(sent: SentScheme): Parsed<GradeScheme> {
   if (!isGradeLetter(passLetter)) return { ok: false, error: NO_PASS_LETTER };
   return { ok: true, value: { weights, lowerLimits, passLetter } };
 }
+
+/** Whether "Simpan skema" may be pressed: only for a scheme the server would take. */
+export function maySave(typed: SentScheme): boolean {
+  return parseScheme(typed).ok;
+}

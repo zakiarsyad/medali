@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   LIMITS_NOT_DOWN,
+  maySave,
   NO_PASS_LETTER,
   NOT_WHOLE,
   parseScheme,
@@ -142,5 +143,42 @@ describe("schemeFaults", () => {
 
     expect(faults.total).toBe(TOTAL_NOT_100);
     expect(faults.order).toBe(LIMITS_NOT_DOWN);
+  });
+});
+
+describe("maySave", () => {
+  it("lets Simpan skema be pressed for weights that total 100", () => {
+    expect(maySave(STARTING_SENT)).toBe(true);
+    expect(
+      maySave(
+        sent({
+          weights: {
+            attendance: "40",
+            mentoring: "20",
+            siku: "20",
+            skpm: "20",
+          },
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it.each([
+    ["90", "15"],
+    ["110", "35"],
+  ])(
+    "switches Simpan skema off for weights that total %s, and says the total must be 100",
+    (_, attendance) => {
+      const typed = sent({ weights: { attendance } });
+
+      expect(maySave(typed)).toBe(false);
+      expect(schemeFaults(typed).total).toBe(TOTAL_NOT_100);
+    },
+  );
+
+  it("switches Simpan skema off for any other fault, the total being 100", () => {
+    expect(maySave(sent({ weights: { siku: "x" } }))).toBe(false);
+    expect(maySave(sent({ lowerLimits: { B: "85" } }))).toBe(false);
+    expect(maySave(sent({ passLetter: "F" }))).toBe(false);
   });
 });

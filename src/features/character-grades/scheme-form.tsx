@@ -12,7 +12,7 @@ import styles from "./character-grades.module.css";
 import type { SchemeInForce } from "./grade-scheme";
 import { saveSchemeAction } from "./scheme-actions";
 import { typedOf, VERSION_FIELD } from "./scheme-fields";
-import { parseScheme, schemeFaults } from "./scheme-input";
+import { maySave, schemeFaults } from "./scheme-input";
 import { SchemeView } from "./scheme-view";
 import { SAVE_QUESTION, schemeNote } from "./scheme-words";
 
@@ -28,7 +28,7 @@ export function SchemeForm({ inForce }: { inForce: SchemeInForce }) {
   const [typed, setTyped] = useState(() => typedOf(inForce.scheme));
   const [state, save, pending] = useActionState(saveSchemeAction, START);
   const faults = schemeFaults(typed);
-  const canSave = parseScheme(typed).ok;
+  const canSave = maySave(typed);
 
   // Sent from here, not by the browser: the browser would empty the
   // fields of a sent form, and a refused scheme must stay to be corrected.
