@@ -110,6 +110,26 @@ export function clarificationListAddress(
   return `${CLARIFICATIONS_ADDRESS}?${search}`;
 }
 
+/** The page of "Klarifikasi ditolak dan penetapan SP", counted from 1. */
+export function readRejectedPanelPage(params: SearchParams): number {
+  const page = firstParam(params.sp);
+  return PAGE.test(page) ? Number(page) : 1;
+}
+
+/**
+ * The address of a page of "Klarifikasi ditolak dan penetapan SP",
+ * keeping the cards as they are. The first page is left out.
+ */
+export function rejectedPanelAddress(
+  list: ClarificationListParams,
+  panelPage: number,
+): string {
+  const address = clarificationListAddress(list.filters, list.page);
+  if (panelPage <= 1) return address;
+  const joiner = address.includes("?") ? "&" : "?";
+  return `${address}${joiner}sp=${panelPage}`;
+}
+
 /**
  * What the list says when nothing matches the filters: of the status
  * chosen, or of the search when a name or NIM is searched.

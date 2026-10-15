@@ -72,7 +72,7 @@ const NONE: WarningCalls = {
   page: 1,
 };
 
-type Standings = ReturnType<typeof standingsOf>;
+export type Standings = ReturnType<typeof standingsOf>;
 
 async function readNumbers(db: Database, standing: Standings, visible: SQL) {
   const [counted] = await db
@@ -86,10 +86,15 @@ async function readNumbers(db: Database, standing: Standings, visible: SQL) {
   return { active: counted?.active ?? 0, withLetter: counted?.withLetter ?? 0 };
 }
 
-function readPage(
+/**
+ * One page of the students `where` holds among `standing`, in `order`,
+ * each with where they live today and where they stand.
+ */
+export function readStandingPage(
   db: Database,
   standing: Standings,
-  visible: SQL,
+  where: SQL | undefined,
+  order: SQL[],
   dorm: SQL<DormId | null>,
   page: number,
 ) {
@@ -116,8 +121,8 @@ function readPage(
         sql`${dormRooms.dorm} = ${dorm}`,
       ),
     )
-    .where(and(visible, isNotNull(standing.level)))
-    .orderBy(asc(students.name), asc(students.nim))
+    .where(where)
+    .orderBy(...order)
     .limit(WARNINGS_PAGE_SIZE)
     .offset((page - 1) * WARNINGS_PAGE_SIZE);
 }
@@ -218,7 +223,14 @@ export async function readCallsIn(
   ]);
   const shown = pageWithin(page, numbers.active, WARNINGS_PAGE_SIZE);
   const dorm = dormInSql(dormCohorts ?? []);
-  const rows = await readPage(db, standing, visible, dorm, shown);
+  const rows = await readStandingPage(
+    db,
+    standing,
+    and(visible, isNotNull(standing.level)),
+    [asc(students.name), asc(students.nim)],
+    dorm,
+    shown,
+  );
   const schedules = await readSchedules(
     db,
     semester.id,

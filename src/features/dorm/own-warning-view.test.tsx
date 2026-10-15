@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { OwnWarning } from "./own-warning";
-import { OwnWarningBoxes, WarningProgressCard } from "./own-warning-view";
+import {
+  ActivitiesWarning,
+  OwnWarningBoxes,
+  WarningProgressCard,
+} from "./own-warning-view";
 
 const NONE: OwnWarning = {
   semesterTitle: "Ganjil 2026/2027",
@@ -26,6 +30,45 @@ function boxes(warning: OwnWarning): string {
     </>,
   );
 }
+
+function onActivities(warning: OwnWarning): string {
+  return renderToStaticMarkup(<ActivitiesWarning warning={warning} />);
+}
+
+describe("the resident's warning on Kegiatan asrama", () => {
+  it("shows nothing with no rejected clarification and no SP", () => {
+    expect(onActivities(NONE)).toBe("");
+  });
+
+  it("tells of the rejected clarifications and the call for SP 1, with the way to Pelanggaran", () => {
+    const shown = onActivities({
+      ...NONE,
+      standing: { ...NONE.standing, rejected: 1, level: 1 },
+    });
+
+    expect(shown).toContain(
+      "<b>1 klarifikasi kehadiran Anda ditolak</b> pada semester Ganjil 2026/2027.",
+    );
+    expect(shown).toContain(
+      "Anda masuk <b>penetapan SP 1</b> oleh Pengelola Asrama.",
+    );
+    expect(shown).toContain('href="/asrama/pel"');
+    expect(shown).toContain("Lihat di menu Pelanggaran");
+  });
+
+  it("after SP 1, says the SP and that one more rejection leads to SP 2", () => {
+    const shown = onActivities({
+      ...NONE,
+      standing: { ...NONE.standing, rejected: 1, hasFirst: true },
+    });
+
+    expect(shown).toContain("Status saat ini: <b>SP 1</b>.");
+    expect(shown).toContain(
+      "Satu kali lagi klarifikasi kehadiran ditolak akan memicu SP 2 dan pengajuan hukuman disiplin.",
+    );
+    expect(shown).not.toContain("penetapan SP");
+  });
+});
 
 describe("the resident's warning on Pelanggaran", () => {
   it("shows only the count toward the call for SP 1 while nothing more is due", () => {
