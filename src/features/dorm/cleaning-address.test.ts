@@ -14,16 +14,27 @@ describe("readCleaningParams", () => {
       dorm: null,
       day: TODAY,
       page: 1,
+      scorePage: 1,
     });
   });
 
-  it("reads the dorm, the date and the page, the first of each when given twice", () => {
+  it("reads the dorm, the date and the pages, the first of each when given twice", () => {
     expect(
       readCleaningParams(
-        { asrama: ["cipta_bakti", "dana_rakca"], tgl: "2026-10-20", hal: "2" },
+        {
+          asrama: ["cipta_bakti", "dana_rakca"],
+          tgl: "2026-10-20",
+          hal: "2",
+          skor: ["3", "4"],
+        },
         TODAY,
       ),
-    ).toEqual({ dorm: "cipta_bakti", day: "2026-10-20", page: 2 });
+    ).toEqual({
+      dorm: "cipta_bakti",
+      day: "2026-10-20",
+      page: 2,
+      scorePage: 3,
+    });
   });
 
   it("opens Semua asrama for a dorm that is not one", () => {
@@ -43,6 +54,7 @@ describe("readCleaningParams", () => {
     "opens the first page for the page %s",
     (hal) => {
       expect(readCleaningParams({ hal }, TODAY).page).toBe(1);
+      expect(readCleaningParams({ skor: hal }, TODAY).scorePage).toBe(1);
     },
   );
 });
@@ -55,10 +67,10 @@ describe("shownDorms", () => {
 });
 
 describe("cleaningAddress", () => {
-  it("leaves Semua asrama, today and the first page out", () => {
-    expect(cleaningAddress({ dorm: null, day: TODAY, page: 1 }, TODAY)).toBe(
-      "/asrama/bersih",
-    );
+  it("leaves Semua asrama, today and the first pages out", () => {
+    expect(
+      cleaningAddress({ dorm: null, day: TODAY, page: 1, scorePage: 1 }, TODAY),
+    ).toBe("/asrama/bersih");
   });
 
   it("gives back what it is read as", () => {
@@ -66,6 +78,7 @@ describe("cleaningAddress", () => {
       dorm: "wismantara_putri",
       day: "2026-10-12",
       page: 3,
+      scorePage: 2,
     };
     const query = cleaningAddress(params, TODAY).split("?")[1] ?? "";
     const read = readCleaningParams(

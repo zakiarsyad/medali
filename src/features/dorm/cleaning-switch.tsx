@@ -16,7 +16,7 @@ function Choice({
 }: SwitchProps & { dorm: DormId | null; children: string }) {
   return (
     <Link
-      href={cleaningAddress({ ...params, dorm, page: 1 }, today)}
+      href={cleaningAddress({ ...params, dorm, page: 1, scorePage: 1 }, today)}
       className={styles.choice}
       aria-current={dorm === params.dorm ? "true" : undefined}
     >

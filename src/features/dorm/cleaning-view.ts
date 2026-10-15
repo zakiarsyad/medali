@@ -12,6 +12,12 @@ import {
   readPlacesOn,
   type ScheduledDuty,
 } from "./cleaning-schedule";
+import {
+  countWaiting,
+  type RankingPage,
+  readRanking,
+  type WaitingCounts,
+} from "./cleaning-scores";
 
 /** What Jadwal pembersihan shows of one dorm on the date picked. */
 export interface DormSchedule {
@@ -34,6 +40,9 @@ export interface CleaningView {
   schedules: DormSchedule[];
   /** How many duties show on the date, of places and of own rooms. */
   dutiesOnDay: number;
+  /** "Menunggu validasi" and "Pembersihan ulang", of every date. */
+  waiting: WaitingCounts;
+  ranking: RankingPage;
 }
 
 async function readDormSchedule(
@@ -62,14 +71,23 @@ export async function loadCleaning(
   today: string,
 ): Promise<CleaningView> {
   const dorms = shownDorms(params);
-  const [places, roomsByDorm, placesOnDay, placeDuties, dutiesOnDay] =
-    await Promise.all([
-      readCleaningPlaces(db, dorms),
-      readOccupiedRoomsOf(db, dorms, today),
-      readPlacesOn(db, dorms, params.day),
-      readPlaceDutiesOn(db, dorms, params.day),
-      countDutiesOn(db, dorms, params.day),
-    ]);
+  const [
+    places,
+    roomsByDorm,
+    placesOnDay,
+    placeDuties,
+    dutiesOnDay,
+    waiting,
+    ranking,
+  ] = await Promise.all([
+    readCleaningPlaces(db, dorms),
+    readOccupiedRoomsOf(db, dorms, today),
+    readPlacesOn(db, dorms, params.day),
+    readPlaceDutiesOn(db, dorms, params.day),
+    countDutiesOn(db, dorms, params.day),
+    countWaiting(db, dorms),
+    readRanking(db, dorms, params.scorePage),
+  ]);
   const schedules = await Promise.all(
     dorms.map((dorm) =>
       readDormSchedule(
@@ -81,5 +99,5 @@ export async function loadCleaning(
       ),
     ),
   );
-  return { places, placeDuties, schedules, dutiesOnDay };
+  return { places, placeDuties, schedules, dutiesOnDay, waiting, ranking };
 }

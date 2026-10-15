@@ -288,6 +288,13 @@
       "when": 1792011420938,
       "tag": "0040_dorm-cleaning",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792024092374,
+      "tag": "0041_dorm-cleaning-assessment",
+      "breakpoints": true
     }
   ]
 }

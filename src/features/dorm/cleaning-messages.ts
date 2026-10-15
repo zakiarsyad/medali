@@ -1,4 +1,15 @@
-import { PLACE_NAME_MAX_LENGTH, PLACE_NAME_MIN_LENGTH } from "./cleaning-ids";
+import {
+  CLEANING_NOTE_MAX_LENGTH,
+  type CleaningResult,
+  PLACE_NAME_MAX_LENGTH,
+  PLACE_NAME_MIN_LENGTH,
+  SEND_BACK_MIN_LETTERS,
+} from "./cleaning-ids";
+
+/*
+ * What Pembersihan asrama answers. Read by the screen parts in the
+ * browser, so nothing here may take from the database code.
+ */
 
 /** What a change to Pembersihan asrama answers to a role without the right. */
 export const CLEANING_NOT_ALLOWED = {
@@ -86,3 +97,87 @@ export function placeRemoved(name: string): string {
 export function placeRestored(name: string): string {
   return `Tempat ${name} dikembalikan.`;
 }
+
+export const JUDGED_NOT_CANCELLED = {
+  ok: false,
+  error: "Tugas yang sudah dinilai tidak dapat dibatalkan.",
+} as const;
+
+export const JUDGE_NOT_ALLOWED = {
+  ok: false,
+  error: "Anda tidak berhak menilai pembersihan asrama.",
+} as const;
+
+export const ASSESSED_DUTY_NOT_FOUND = {
+  ok: false,
+  error: "Tugas tidak ditemukan. Muat ulang halaman.",
+} as const;
+
+export const RESULT_UNKNOWN = {
+  ok: false,
+  error: "Pilih Memenuhi atau Tidak memenuhi.",
+} as const;
+
+export const JUDGE_NOTE_NEEDED = {
+  ok: false,
+  error: "Tulis catatan bagian yang belum bersih.",
+} as const;
+
+export const CLEANING_NOTE_TOO_LONG = {
+  ok: false,
+  error: `Catatan paling banyak ${CLEANING_NOTE_MAX_LENGTH} huruf.`,
+} as const;
+
+export const JUDGED_TOO_EARLY = {
+  ok: false,
+  error: "Tugas ini belum dapat dinilai sebelum tanggalnya.",
+} as const;
+
+export const JUDGED_FIRST = {
+  ok: false,
+  error: "Tugas ini sudah dinilai oleh petugas lain. Muat ulang halaman.",
+} as const;
+
+/** What a kept judgement says, by its result. */
+export const JUDGED_WORDS: Record<CleaningResult, string> = {
+  met: "Dinilai memenuhi. Menunggu validasi Pengelola Asrama.",
+  not_met: "Dinilai tidak memenuhi. Menunggu validasi Pengelola Asrama.",
+};
+
+export const VALIDATE_NOT_ALLOWED = {
+  ok: false,
+  error: "Anda tidak berhak memvalidasi penilaian pembersihan asrama.",
+} as const;
+
+export const NOT_JUDGED_YET = {
+  ok: false,
+  error: "Tugas ini belum dinilai BAM. Muat ulang halaman.",
+} as const;
+
+export const DECIDED_FIRST = {
+  ok: false,
+  error:
+    "Penilaian ini sudah diputuskan oleh petugas lain. Muat ulang halaman.",
+} as const;
+
+export const SEND_BACK_REASON_NEEDED = {
+  ok: false,
+  error: `Tulis alasan penolakan minimal ${SEND_BACK_MIN_LETTERS} huruf.`,
+} as const;
+
+export const SEND_BACK_REASON_TOO_LONG = {
+  ok: false,
+  error: `Alasan penolakan paling banyak ${CLEANING_NOTE_MAX_LENGTH} huruf.`,
+} as const;
+
+export const SENT_BACK = "Penilaian dikembalikan ke BAM.";
+
+export const VALIDATED_MET = "Divalidasi: +1 poin untuk kamar.";
+
+/** What a validated Tidak memenuhi says, with the day of its repeat in words. */
+export function validatedNotMet(repeatDay: string): string {
+  return `Divalidasi: −1 poin. Pembersihan ulang dijadwalkan ${repeatDay}.`;
+}
+
+export const VALIDATED_WITHOUT_REPEAT =
+  "Divalidasi: −1 poin. Pembersihan ulang tidak dijadwalkan karena tempat atau kamar sudah dihapus.";

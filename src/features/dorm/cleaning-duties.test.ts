@@ -414,6 +414,47 @@ describe("cancelDuty", () => {
     });
   });
 
+  it("refuses a duty that was judged, also after the judgement was sent back, and keeps it", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const dutyId = await dutyOn(db, setting, TODAY);
+      const by = setting.manager.id;
+      await db
+        .update(dormCleaningDuties)
+        .set({
+          status: "judged",
+          result: "met",
+          judgedBy: by,
+          judgedAt: new Date(),
+        })
+        .where(eq(dormCleaningDuties.id, dutyId));
+      const refused = {
+        ok: false,
+        error: "Tugas yang sudah dinilai tidak dapat dibatalkan.",
+      };
+
+      expect(await cancelDuty(db, setting.manager, dutyId, TODAY)).toEqual(
+        refused,
+      );
+      await db
+        .update(dormCleaningDuties)
+        .set({
+          status: "scheduled",
+          result: null,
+          judgedBy: null,
+          judgedAt: null,
+          sentBackReason: "Belum diperiksa.",
+          sentBackBy: by,
+          sentBackAt: new Date(),
+        })
+        .where(eq(dormCleaningDuties.id, dutyId));
+      expect(await cancelDuty(db, setting.manager, dutyId, TODAY)).toEqual(
+        refused,
+      );
+      expect(await dutiesKept(db)).toHaveLength(1);
+    });
+  });
+
   it.each(READ_ONLY)("refuses %s, and keeps the duty", async (role) => {
     await inTestDatabase(async (db) => {
       const setting = await setUp(db);
@@ -458,6 +499,41 @@ describe("a room removed on Ploting kamar", () => {
           roomNumber,
         })),
       ).toEqual([{ day: YESTERDAY, roomId: null, roomNumber: "BD102" }]);
+    });
+  });
+
+  it("keeps a duty of today that was judged, with the room number", async () => {
+    await inTestDatabase(async (db) => {
+      const { manager, placeId, empty } = await setUp(db);
+      await db.insert(dormCleaningDuties).values({
+        day: TODAY,
+        dorm: DORM,
+        placeId,
+        roomId: empty,
+        roomNumber: "BD102",
+        createdBy: manager.id,
+        status: "judged",
+        result: "met",
+        judgedBy: manager.id,
+        judgedAt: new Date(),
+      });
+
+      const removed = await removeRoom(
+        db,
+        { roles: ["dorm_manager"] },
+        empty,
+        TODAY,
+      );
+
+      expect(removed.ok).toBe(true);
+      const kept = await dutiesKept(db);
+      expect(kept).toHaveLength(1);
+      expect(kept[0]).toMatchObject({
+        day: TODAY,
+        roomId: null,
+        roomNumber: "BD102",
+        status: "judged",
+      });
     });
   });
 

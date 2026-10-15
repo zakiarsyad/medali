@@ -5,8 +5,10 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { dayWords } from "./activity-words";
 import styles from "./cleaning.module.css";
 import type { CleaningParams } from "./cleaning-address";
+import type { DutyRights } from "./cleaning-assessment";
 import { CleaningDaySwitch } from "./cleaning-day-switch";
 import { CleaningPlacesBoard, type DormPlaces } from "./cleaning-places-board";
+import { CleaningRanking } from "./cleaning-ranking";
 import { isChangeable, placeRows } from "./cleaning-rows";
 import { CleaningScheduleBoard } from "./cleaning-schedule-board";
 import { CleaningSwitch } from "./cleaning-switch";
@@ -51,27 +53,40 @@ function CleaningNumbers({ view, day }: { view: CleaningView; day: string }) {
         amount={view.dutiesOnDay}
         note={dayWords(day)}
       />
+      <CleaningNumber
+        label="Menunggu validasi"
+        amount={view.waiting.waiting}
+        note="penilaian BAM"
+      />
+      <CleaningNumber
+        label="Pembersihan ulang"
+        amount={view.waiting.repeats}
+        note="belum dinilai"
+      />
     </dl>
   );
 }
 
 /**
- * Pembersihan asrama for staff: the numbers, the places of the dorms shown
- * and the schedule of one date. It shows rooms by number only, never a
- * student. `today` is the day on campus.
+ * Pembersihan asrama for staff: the numbers, the places of the dorms shown,
+ * the schedule of one date with its judgements, and the ranking of rooms.
+ * It shows rooms by number only, never a student; the only names are
+ * those of the staff who judged and validated. `today` is the day on
+ * campus.
  */
 export async function CleaningScreen({
   tabs,
   params,
   today,
-  mayManage,
+  rights,
 }: {
   tabs: TabLinksProps;
   params: CleaningParams;
   today: string;
-  /** Whether the account may change places and duties, or only see them. */
-  mayManage: boolean;
+  /** What the account may do with places and duties; nothing when it only sees them. */
+  rights: DutyRights;
 }) {
+  const mayManage = rights.manage;
   const view = await loadCleaning(database(), params, today);
   const groups: DormPlaces[] = view.schedules.map((schedule) => ({
     dorm: schedule.dorm,
@@ -89,14 +104,18 @@ export async function CleaningScreen({
       {!mayManage && (
         <p className={styles.note}>
           Pembersihan asrama dikelola oleh Pengelola Asrama dan BAM. Anda dapat
-          melihat tempat dan jadwalnya.
+          melihat tempat, jadwal, penilaian dan skornya.
         </p>
       )}
       <CleaningSwitch params={params} today={today} />
       <CleaningNumbers view={view} day={params.day} />
       <p className={styles.note}>
         Satu tugas pembersihan dikerjakan oleh satu kelompok, yaitu seluruh
-        penghuni satu kamar.
+        penghuni satu kamar. BAM menilai <b>Memenuhi</b> atau{" "}
+        <b>Tidak memenuhi</b>, lalu Pengelola Asrama memvalidasi. Setelah
+        divalidasi, kamar mendapat <b>+1</b> untuk Memenuhi atau <b>−1</b> untuk
+        Tidak memenuhi, dan hasil Tidak memenuhi otomatis dijadwalkan
+        pembersihan ulang keesokan harinya.
       </p>
       <section className={shared.panel}>
         <h2 className={shared.heading}>Tempat pembersihan</h2>
@@ -133,6 +152,7 @@ export async function CleaningScreen({
               today,
               rooms: schedule.rooms,
               mayChange,
+              rights,
             }}
             rows={placeRows(schedule.places, view.placeDuties)}
             ownRooms={schedule.ownRooms}
@@ -140,6 +160,7 @@ export async function CleaningScreen({
           />
         ))}
       </section>
+      <CleaningRanking ranking={view.ranking} params={params} today={today} />
     </>
   );
 }
