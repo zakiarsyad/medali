@@ -85,7 +85,10 @@ describe("StudentActivitiesScreen", () => {
       endsOn: "2026-10-21",
     };
     const screen = shown({
-      score: { attended: 7, counted: 8 },
+      score: {
+        activities: { attended: 7, counted: 8 },
+        meetings: { attended: 0, counted: 0 },
+      },
       waiting: 2,
       dispensations: 1,
       coming: [next],

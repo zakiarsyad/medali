@@ -373,7 +373,7 @@ describe("readStudentActivities", () => {
 
       const shown = await shownTo(db, student);
 
-      expect(shown.score).toEqual({ attended: 1, counted: 3 });
+      expect(shown.score.activities).toEqual({ attended: 1, counted: 3 });
       expect(shown.waiting).toBe(1);
       expect(shown.dispensations).toBe(1);
     });
@@ -397,7 +397,7 @@ describe("readStudentActivities", () => {
       expect(shown.current).toEqual([]);
       expect(shown.coming).toEqual([]);
       expect(shown.history.matching).toBe(0);
-      expect(shown.score).toEqual({ attended: 0, counted: 0 });
+      expect(shown.score.activities).toEqual({ attended: 0, counted: 0 });
     });
   });
 });

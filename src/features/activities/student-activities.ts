@@ -5,7 +5,12 @@ import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { type AttendanceScore, attendanceScore } from "./attendance-score";
+import {
+  attendanceScore,
+  meetingScore,
+  NO_MARKS,
+  type ScoreParts,
+} from "./attendance-score";
 import type { AttendanceStatus } from "./attendance-status";
 import type { ShownClarification } from "./clarification-time";
 import { readOwnClarifications } from "./own-clarifications";
@@ -30,7 +35,7 @@ export interface StudentActivities {
   /** The semester they are in now, or null while none is known. */
   semester: number | null;
   /** Nilai kehadiran kegiatan, over the running period. */
-  score: AttendanceScore;
+  score: ScoreParts;
   /** The photos of the running period that wait to be checked. */
   waiting: number;
   /** The dispensations of the running period. */
@@ -130,7 +135,10 @@ export async function readStudentActivities(
     activities: {
       now,
       semester: ofRunning[0]?.semester ?? null,
-      score: attendanceScore(countedOwn.map(scored), now.day),
+      score: {
+        activities: attendanceScore(countedOwn.map(scored), now.day),
+        meetings: meetingScore(NO_MARKS),
+      },
       waiting: countWith(countedOwn, "waiting"),
       dispensations: countWith(countedOwn, "dispensation"),
       current: current.map(withOwn),
