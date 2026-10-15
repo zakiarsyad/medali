@@ -5,6 +5,7 @@ import { attendanceRate, rateWords } from "./attendance-rate";
 import board from "./dashboard.module.css";
 import { DashboardActivities } from "./dashboard-activities";
 import { AttendanceBars } from "./dashboard-bars";
+import { LeavePanel } from "./dashboard-leave-panel";
 import type { DashboardView } from "./dashboard-view";
 import {
   attendanceNote,
@@ -75,6 +76,11 @@ export function DashboardScreen({
           byDorm={view.byDorm}
           residents={view.residents}
           activities={view.overall.activities}
+        />
+        <LeavePanel
+          byKind={view.monthLeave}
+          out={view.out}
+          outCount={view.leave.out}
         />
       </div>
     </>

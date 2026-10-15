@@ -97,6 +97,39 @@
   text-align: right;
 }
 
+.outList {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The time due back beside the resident here; above them once it does not fit. */
+.outItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--line-width) solid var(--line2);
+}
+
+.when {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.outBody {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.more {
+  margin: var(--space-sm) 0 0;
+}
+
 .none {
   margin: 0 0 var(--space-sm);
   color: var(--muted);

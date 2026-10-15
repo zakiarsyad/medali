@@ -91,6 +91,9 @@ function addYesterdaysCount(db: Database, records: Records) {
   });
 }
 
+/** An account that sees every student, and the names of those out. */
+const EVERY_ROW = { visible: EVERYONE, namesVisible: EVERYONE };
+
 const OWN_PROGRAM = (records: Records) =>
   eq(students.studyProgramId, records.own);
 
@@ -99,7 +102,7 @@ describe("loadDashboard", () => {
     await inTestDatabase(async (db) => {
       await addRecords(db);
 
-      const view = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
 
       expect(view.residents).toMatchObject({ dana_rakca: 2, cipta_bakti: 2 });
     });
@@ -125,7 +128,7 @@ describe("loadDashboard", () => {
         }),
       ]);
 
-      const view = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
 
       expect(view.leave).toEqual({ out: 2, outLate: 1, waiting: 1 });
     });
@@ -149,7 +152,7 @@ describe("loadDashboard", () => {
         status: "accepted",
       });
 
-      const view = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
       const shown = await readDayAttendance(db, YESTERDAY, EVERYONE);
 
       expect(view.overall).toEqual({
@@ -191,7 +194,7 @@ describe("loadDashboard", () => {
         isAnnounced: false,
       });
 
-      const view = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
 
       expect(view.overall.activities).toBe(0);
     });
@@ -200,11 +203,11 @@ describe("loadDashboard", () => {
   it("is right again the next time it is read, after an absence is announced and leave approved", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const before = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const before = await loadDashboard(db, EVERY_ROW, MOMENT);
       await addYesterdaysCount(db, records);
       await db.insert(dormLeaves).values(leaveOf(records, records.ani, {}));
 
-      const after = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const after = await loadDashboard(db, EVERY_ROW, MOMENT);
 
       expect(before.overall.activities).toBe(0);
       expect(before.leave.out).toBe(0);
@@ -221,7 +224,7 @@ describe("loadDashboard", () => {
       const records = await addRecords(db);
       await addYesterdaysCount(db, records);
 
-      const view = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
 
       const { lines, matching, page } = view.activities;
       expect({ matching, page }).toEqual({ matching: 8, page: 1 });
@@ -252,12 +255,124 @@ describe("loadDashboard", () => {
         });
       }
 
-      const second = await loadDashboard(db, { visible: EVERYONE }, MOMENT, 2);
-      const past = await loadDashboard(db, { visible: EVERYONE }, MOMENT, 9);
+      const second = await loadDashboard(db, EVERY_ROW, MOMENT, 2);
+      const past = await loadDashboard(db, EVERY_ROW, MOMENT, 9);
 
       expect(second.activities.matching).toBe(32);
       expect(second.activities.lines).toHaveLength(7);
       expect(past.activities.page).toBe(2);
+    });
+  });
+
+  it("counts the requests of each kind that start this month, in every status", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await db.insert(dormLeaves).values([
+        leaveOf(records, records.ani, {}),
+        leaveOf(records, records.budi, {
+          status: "rejected",
+          decisionNote: "Tidak sesuai ketentuan",
+          startsAt: new Date("3800-10-01T00:00:00+07:00"),
+          endsAt: new Date("3800-10-01T09:00:00+07:00"),
+        }),
+        leaveOf(records, records.cici, {
+          kind: "special",
+          specialReason: "family",
+          startsAt: new Date("3800-10-31T20:00:00+07:00"),
+          endsAt: new Date("3800-11-02T09:00:00+07:00"),
+        }),
+        leaveOf(records, records.dedi, {
+          startsAt: new Date("3800-09-30T20:00:00+07:00"),
+          endsAt: new Date("3800-09-30T23:00:00+07:00"),
+          status: "completed",
+          returnedAt: new Date("3800-09-30T22:00:00+07:00"),
+        }),
+      ]);
+
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
+
+      expect(view.monthLeave).toEqual({
+        outing: 2,
+        skip_activities: 0,
+        special: 1,
+      });
+    });
+  });
+
+  it("lists those out of the dorm, the soonest return first, with their leave, Tujuan, room and lateness", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await db.insert(dormLeaves).values([
+        leaveOf(records, records.ani, {}),
+        leaveOf(records, records.budi, {
+          kind: "special",
+          specialReason: "sick",
+          destination: "",
+          startsAt: new Date(`${YESTERDAY}T08:00:00+07:00`),
+          endsAt: new Date(`${TODAY}T09:00:00+07:00`),
+        }),
+      ]);
+
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
+
+      expect(view.out).toEqual({
+        hasMore: false,
+        residents: [
+          expect.objectContaining({
+            name: "Penghuni Uji Dashboard 02",
+            kind: "special",
+            destination: "",
+            room: "Asrama Cipta Bakti, belum diplot",
+            isLate: true,
+          }),
+          expect.objectContaining({
+            name: "Penghuni Uji Dashboard 01",
+            kind: "outing",
+            destination: "Bintaro",
+            room: "Asrama Dana Rakca, belum diplot",
+            isLate: false,
+          }),
+        ],
+      });
+    });
+  });
+
+  it("shows at most 20 of those out, and says there are more", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const program = await addTestProgram(db, "Prodi Uji Dashboard Banyak");
+      const leaves = [];
+      for (let place = 10; place < 31; place++) {
+        const studentId = await addTestStudent(db, program, {
+          nim: `99380000${place}`,
+          name: `Penghuni Uji Dashboard ${place}`,
+          cohortYear: 3800,
+        });
+        leaves.push(leaveOf(records, studentId, {}));
+      }
+      await db.insert(dormLeaves).values(leaves);
+
+      const view = await loadDashboard(db, EVERY_ROW, MOMENT);
+
+      expect(view.leave.out).toBe(21);
+      expect(view.out?.residents).toHaveLength(20);
+      expect(view.out?.hasMore).toBe(true);
+    });
+  });
+
+  it("reads no names, Tujuan or rooms for an account without the right to them", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await db.insert(dormLeaves).values(leaveOf(records, records.ani, {}));
+
+      const view = await loadDashboard(
+        db,
+        { visible: EVERYONE, namesVisible: null },
+        MOMENT,
+      );
+
+      expect(view.leave.out).toBe(1);
+      expect(view.out).toBeNull();
     });
   });
 
@@ -274,7 +389,7 @@ describe("loadDashboard", () => {
 
       const view = await loadDashboard(
         db,
-        { visible: OWN_PROGRAM(records) },
+        { visible: OWN_PROGRAM(records), namesVisible: null },
         MOMENT,
       );
 

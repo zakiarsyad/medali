@@ -18,7 +18,8 @@ function shown(amount: number): string {
 export interface Bar extends BarFill {
   key: string;
   label: string;
-  note: string;
+  /** The line in brackets after the label, when there is one. */
+  note?: string;
 }
 
 /**
@@ -32,7 +33,10 @@ export function Bars({ bars, gold = false }: { bars: Bar[]; gold?: boolean }) {
       {bars.map((bar) => (
         <li key={bar.key} className={board.bar}>
           <span className={board.barLabel}>
-            {bar.label} <span className={board.sub}>({bar.note})</span>
+            {bar.label}{" "}
+            {bar.note !== undefined && (
+              <span className={board.sub}>({bar.note})</span>
+            )}
           </span>
           <meter
             className={meter}

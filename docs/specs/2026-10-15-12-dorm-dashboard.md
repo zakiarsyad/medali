@@ -143,6 +143,6 @@ Decided while building, because the issue did not say:
 - [x] 2. The four numbers show.
 - [x] 3. "Kehadiran kegiatan" shows, with the link to the activity.
 - [x] 4. The bars per penanggung jawab and per dorm show.
-- [ ] 5. "Perizinan bulan ini" and "Sedang di luar asrama" show, with
+- [x] 5. "Perizinan bulan ini" and "Sedang di luar asrama" show, with
   names for the allowed roles only.
 - [ ] 6. Ketua Program Studi sees only their study program.

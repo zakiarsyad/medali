@@ -10,7 +10,9 @@ import { pageOf } from "@/features/dorm/leave-address";
 /**
  * The tab Dashboard asrama. Its numbers count the students the account
  * sees through the roles that may see it: for Ketua Program Studi their
- * own students only.
+ * own students only. The names, Tujuan and rooms of those out of the
+ * dorm are read only for an account with the right to them, among the
+ * students that right lets it see.
  */
 export default async function DormDashboardPage(
   props: PageProps<"/asrama/dash">,
@@ -19,9 +21,15 @@ export default async function DormDashboardPage(
   const { account } = opened;
   if (!may(account.roles, "view_dorm_dashboard")) forbidden();
   const tabs = { pagePath: "asrama", tabs: opened.tabs, open: "dash" };
+  const reader = {
+    visible: visibleTo(rowLimitForAction(account, "view_dorm_dashboard")),
+    namesVisible: may(account.roles, "view_dorm_dashboard_names")
+      ? visibleTo(rowLimitForAction(account, "view_dorm_dashboard_names"))
+      : null,
+  };
   const view = await loadDashboard(
     database(),
-    { visible: visibleTo(rowLimitForAction(account, "view_dorm_dashboard")) },
+    reader,
     new Date(),
     pageOf(await props.searchParams),
   );

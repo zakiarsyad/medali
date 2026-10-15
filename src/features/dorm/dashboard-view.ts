@@ -8,7 +8,14 @@ import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { ResidentsByDorm } from "./activity-audience";
 import type { Organiser } from "./activity-ids";
 import { readAnnouncedCounts, readCountMarks } from "./dashboard-attendance";
-import { type LeaveNumbers, readLeaveNumbers } from "./dashboard-leave";
+import {
+  type LeaveByKind,
+  type LeaveNumbers,
+  type OutList,
+  readLeaveNumbers,
+  readMonthLeave,
+  readOutList,
+} from "./dashboard-leave";
 import {
   type ActivityLine,
   attendanceByDorm,
@@ -46,12 +53,22 @@ export interface DashboardView {
   byOrganiser: Record<Organiser, CountedAttendance>;
   /** Kehadiran per asrama. */
   byDorm: Record<DormId, Attendance>;
+  /** Perizinan bulan ini. */
+  monthLeave: LeaveByKind;
+  /** Who is out of the dorm, for an account that may see their names; null otherwise. */
+  out: OutList | null;
 }
 
 /** Who reads Dashboard asrama. */
 export interface DashboardReader {
   /** The students whose numbers the account may see. */
   visible: SQL;
+  /**
+   * The students whose names, Tujuan and rooms the account may see among
+   * those out of the dorm, or null for an account without the right: then
+   * none of them is read.
+   */
+  namesVisible: SQL | null;
 }
 
 function pageOfLines(
@@ -86,22 +103,23 @@ export async function loadDashboard(
 ): Promise<DashboardView> {
   const now = { day: campusDay(moment), time: campusTime(moment) };
   const days = daysShown(now.day);
-  const { visible } = reader;
-  const [residents, dormCohorts, leave, rows, counts] = await Promise.all([
-    countResidentsByDorm(db, visible, now.day),
-    readDormCohorts(db, now.day),
-    readLeaveNumbers(db, visible, moment),
-    readActivityRows(db, [...DORM_IDS], days.first, days.last),
-    readAnnouncedCounts(db, days),
-  ]);
+  const { visible, namesVisible } = reader;
+  const [residents, dormCohorts, leave, monthLeave, rows, counts] =
+    await Promise.all([
+      countResidentsByDorm(db, visible, now.day),
+      readDormCohorts(db, now.day),
+      readLeaveNumbers(db, visible, moment),
+      readMonthLeave(db, visible, moment),
+      readActivityRows(db, [...DORM_IDS], days.first, days.last),
+      readAnnouncedCounts(db, days),
+    ]);
   const lines = linesOf(rows, counts, now);
-  const counted = await readCountMarks(
-    db,
-    lines,
-    days,
-    visible,
-    dormCohorts ?? [],
-  );
+  const [counted, out] = await Promise.all([
+    readCountMarks(db, lines, days, visible, dormCohorts ?? []),
+    namesVisible === null
+      ? null
+      : readOutList(db, namesVisible, moment, dormCohorts ?? []),
+  ]);
   const { groups, changed } = counted;
   return {
     today: now.day,
@@ -111,5 +129,7 @@ export async function loadDashboard(
     activities: pageOfLines(lines, page, counted, residents),
     byOrganiser: attendanceByOrganiser(lines, groups, changed),
     byDorm: attendanceByDorm(lines, groups, changed),
+    monthLeave,
+    out,
   };
 }
