@@ -10,6 +10,7 @@ import { dormViolationAppeals, dormViolations, students } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { pageWithin } from "@/ui/list-pages";
 import type { AppealStatus } from "./appeal-ids";
+import { type OwnWarning, readOwnWarning } from "./own-warning";
 import type { SemesterChoice } from "./rekap-filters";
 import { readStudentDorm } from "./student-dorm";
 import type { OwnViolationParams } from "./violation-address";
@@ -67,6 +68,8 @@ export interface OwnRecordData {
   /** The period the history shows: a key, or "all" for every one. */
   shownPeriod: string;
   history: OwnHistory;
+  /** Where they stand toward an SP in the running semester, or null while no period is stored. */
+  warning: OwnWarning | null;
 }
 
 export type OwnRecordRead =
@@ -126,8 +129,9 @@ async function readHistory(
  * The own record of a resident, at `now` by the server's clock: how many
  * of their own violations of the running semester went up to Pengelola
  * Asrama and how many of them had their appeal accepted, how many of
- * their own are in their appeal time or wait for BAM, and their own
- * announced violations of the period chosen. The student is the
+ * their own are in their appeal time or wait for BAM, their own
+ * announced violations of the period chosen, and where they stand
+ * toward an SP. The student is the
  * account's own, never one the address names. Refused for an account
  * without the right, or whose student lives in no dorm.
  */
@@ -156,11 +160,12 @@ export async function readOwnRecord(
     runningDays === null
       ? 0
       : countWhere(db, and(own, where, inPeriodDays(runningDays)));
-  const [recorded, inAppeal, accepted, history] = await Promise.all([
+  const [recorded, inAppeal, accepted, history, warning] = await Promise.all([
     ofRunning(escalatedBy(now)),
     countWhere(db, and(own, inAppealOrWaitingAt(now))),
     ofRunning(APPEAL_ACCEPTED),
     readHistory(db, and(own, announcedBy(now), ofPeriod), params.page),
+    readOwnWarning(db, account, now),
   ]);
   return {
     kind: "shown",
@@ -173,6 +178,7 @@ export async function readOwnRecord(
     periods: periods.map((each) => ({ id: each.id, title: periodTitle(each) })),
     shownPeriod: chosen === null ? "all" : chosen.id,
     history,
+    warning,
   };
 }
 

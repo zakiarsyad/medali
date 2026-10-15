@@ -27,6 +27,9 @@ import {
 import { ViolationForm } from "@/features/dorm/violation-form";
 import { readViolationSchedule } from "@/features/dorm/violation-schedule";
 import { violationScreensOf } from "@/features/dorm/violation-screens";
+import { readWarningCalls } from "@/features/dorm/warning-calls";
+import { readWarningProcess } from "@/features/dorm/warning-process";
+import { WarningProcessDialog } from "@/features/dorm/warning-process-dialog";
 import type { SearchParams } from "@/ui/search-params";
 import type { TabLinksProps } from "@/ui/tab-links";
 
@@ -68,6 +71,31 @@ async function ownRecordOf(
 }
 
 /**
+ * "Proses" of the resident the address names, for Pengelola Asrama only.
+ * Null for any other account, for none named, for the account's own
+ * student, whose call another Pengelola Asrama processes, and for a
+ * resident not called: the box then does not open.
+ */
+async function callProcessOf(
+  account: Account,
+  params: StaffViolationParams,
+  now: Date,
+) {
+  const { callStudentId } = params;
+  if (callStudentId === null) return null;
+  if (callStudentId === account.studentId) return null;
+  if (!may(account.roles, "issue_dorm_warning_letters")) return null;
+  const process = await readWarningProcess(
+    database(),
+    visibleTo(rowLimitForAction(account, "issue_dorm_warning_letters")),
+    callStudentId,
+    now,
+  );
+  if (process === null) return null;
+  return <WarningProcessDialog process={process} params={params} now={now} />;
+}
+
+/**
  * The staff screen: BAM records violations, schedules their announcement
  * and cancels one that waits; Pengelola Asrama and Kepala Unit read them.
  * Only those who record see what waits for its announcement, and only
@@ -86,12 +114,17 @@ async function StaffScreen({
 }) {
   const params = readStaffViolationParams(searchParams);
   const db = database();
-  const board = await readStaffViolations(
-    db,
-    visibleTo(rowLimitForAction(account, "view_dorm_violations")),
-    params,
-    now,
-  );
+  const visible = visibleTo(rowLimitForAction(account, "view_dorm_violations"));
+  const [board, warnings] = await Promise.all([
+    readStaffViolations(
+      db,
+      visible,
+      params,
+      now,
+      may(account.roles, "view_dorm_warning_results"),
+    ),
+    readWarningCalls(db, visible, now, params.callPage),
+  ]);
   const records = may(account.roles, "record_dorm_violations");
   const schedule = records
     ? await readViolationSchedule(
@@ -134,6 +167,10 @@ async function StaffScreen({
       schedule={schedule}
       appeals={appeals}
       waitingAppeals={inbox?.waiting ?? null}
+      warnings={warnings}
+      processes={may(account.roles, "issue_dorm_warning_letters")}
+      ownStudentId={account.studentId}
+      callProcess={await callProcessOf(account, params, now)}
       ownRecord={await ownRecordOf(account, params, now)}
     />
   );

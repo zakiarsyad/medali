@@ -1,0 +1,15 @@
+/* The boxes that tell a resident of their call and of an SP they received. */
+.boxes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.box {
+  composes: note from "./leave.module.css";
+}
+
+.callBox {
+  composes: warning from "./leave.module.css";
+}

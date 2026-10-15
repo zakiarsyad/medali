@@ -6,6 +6,7 @@ import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
 import type { SemesterChoice } from "./rekap-filters";
+import { readStudentLetters, type ShownLetter } from "./student-letters";
 import type { StaffViolationParams } from "./violation-address";
 import { type Announcement, readAnnouncement } from "./violation-announcement";
 import {
@@ -17,6 +18,8 @@ import {
   type ViolationNumbers,
 } from "./violation-board";
 import { periodDays } from "./violation-periods";
+import { readLetterMarks } from "./warning-calls";
+import type { WarningLevel } from "./warning-ids";
 
 /** What the staff screen of Pelanggaran shows, but Jadwal publikasi. */
 export interface StaffViolations {
@@ -28,6 +31,10 @@ export interface StaffViolations {
   semester: SemesterChoice | null;
   /** The student whose box is open, or null for none. */
   student: StudentViolations | null;
+  /** The highest SP of the semester of each student of the rekap page who has one. */
+  marks: Record<string, WarningLevel>;
+  /** The SPs of the semester of the student whose box is open. */
+  letters: ShownLetter[];
 }
 
 const NO_REKAP: Rekap = { rows: [], matching: 0, page: 1 };
@@ -45,13 +52,16 @@ function semesterOf(
 /**
  * Everything the staff screen reads, of the students `visible` holds, at
  * `now` by the server's clock: the numbers, one day of the announcement,
- * the rekap of the semester and the box of one student.
+ * the rekap of the semester with the SP of each student, and the box of
+ * one student with their SPs: with Hasil klarifikasi and the proposal
+ * note only `withResults`.
  */
 export async function readStaffViolations(
   db: Database,
   visible: SQL,
   params: StaffViolationParams,
   now: Date,
+  withResults: boolean,
 ): Promise<StaffViolations> {
   const periods = await readAcademicPeriods(db);
   const period = semesterOf(periods, params.periodId, campusDay(now));
@@ -81,5 +91,38 @@ export async function readStaffViolations(
   }));
   const semester =
     period === null ? null : { id: period.id, title: periodTitle(period) };
-  return { numbers, announcement, rekap, semesters, semester, student };
+  const { marks, letters } =
+    period === null
+      ? NO_WARNINGS
+      : await readWarningsOf(db, period.id, rekap, student, withResults);
+  return {
+    numbers,
+    announcement,
+    rekap,
+    semesters,
+    semester,
+    student,
+    marks,
+    letters,
+  };
+}
+
+const NO_WARNINGS = { marks: {}, letters: [] };
+
+/** The SP marks of the rekap page, and the SPs of the student whose box is open. */
+async function readWarningsOf(
+  db: Database,
+  periodId: string,
+  rekap: Rekap,
+  student: StudentViolations | null,
+  withResults: boolean,
+) {
+  const ids = rekap.rows.map((row) => row.studentId);
+  const [marks, letters] = await Promise.all([
+    readLetterMarks(db, periodId, ids),
+    student === null
+      ? []
+      : readStudentLetters(db, periodId, student.studentId, withResults),
+  ]);
+  return { marks, letters };
 }

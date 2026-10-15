@@ -5,6 +5,7 @@ import { ListPager } from "@/ui/list-pager";
 import { ModalDialog } from "@/ui/modal-dialog";
 import { PressableRow } from "@/ui/pressable-row";
 import { RekapFilterRow, type SemesterChoice } from "./rekap-filters";
+import type { ShownLetter } from "./student-letters";
 import {
   type StaffViolationParams,
   staffViolationsAddress,
@@ -13,6 +14,10 @@ import type { Rekap, StudentViolations } from "./violation-board";
 import { VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import { AnnouncedTable } from "./violation-lists";
 import styles from "./violations.module.css";
+import { LetterMark } from "./warning-calls-panel";
+import type { WarningLevel } from "./warning-ids";
+import { issuedWords } from "./warning-words";
+import warnings from "./warnings.module.css";
 
 export const NO_REKAP = "Tidak ada pelanggaran pada semester ini.";
 
@@ -22,9 +27,11 @@ function shownCount(amount: number): string {
 
 function RekapTable({
   rekap,
+  marks,
   params,
 }: {
   rekap: Rekap;
+  marks: Record<string, WarningLevel>;
   params: StaffViolationParams;
 }) {
   if (rekap.rows.length === 0)
@@ -39,6 +46,7 @@ function RekapTable({
             <th>Tercatat</th>
             <th>Proses advokasi</th>
             <th>Advokasi diterima</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -48,6 +56,7 @@ function RekapTable({
               studentId: row.studentId,
               studentPage: 1,
             });
+            const mark = marks[row.studentId] ?? null;
             return (
               <PressableRow key={row.studentId} address={address}>
                 <td className={shared.rowHeading} data-title="Mahasiswa">
@@ -68,6 +77,9 @@ function RekapTable({
                 <td data-title="Advokasi diterima">
                   {shownCount(row.accepted)}
                 </td>
+                <td data-title="Status">
+                  {mark === null ? "-" : <LetterMark level={mark} />}
+                </td>
               </PressableRow>
             );
           })}
@@ -81,16 +93,18 @@ function RekapTable({
  * "Rekap pelanggaran per mahasiswa": each student with an announced
  * violation of the semester, with Tercatat, the violations that went up
  * to Pengelola Asrama, Proses advokasi, those in Masa advokasi or
- * Advokasi diproses, and Advokasi diterima. Pressing a row opens that
- * student's violations.
+ * Advokasi diproses, Advokasi diterima, and the SP of the semester as
+ * Status. Pressing a row opens that student's violations.
  */
 export function RekapPanel({
   rekap,
+  marks,
   params,
   semesters,
   shownSemester,
 }: {
   rekap: Rekap;
+  marks: Record<string, WarningLevel>;
   params: StaffViolationParams;
   semesters: SemesterChoice[];
   shownSemester: string | null;
@@ -104,7 +118,7 @@ export function RekapPanel({
         semesters={semesters}
         shownSemester={shownSemester}
       />
-      <RekapTable rekap={rekap} params={params} />
+      <RekapTable rekap={rekap} marks={marks} params={params} />
       {rekap.matching > 0 && (
         <ListPager
           page={rekap.page}
@@ -122,14 +136,17 @@ export function RekapPanel({
   );
 }
 
-/** One student's violations of the semester, in a box over the tab. */
+/** One student's SPs and violations of the semester, in a box over the tab. */
 export function StudentViolationsDialog({
   student,
+  letters,
   params,
   semesterTitle,
   now,
 }: {
   student: StudentViolations;
+  /** Their SPs of the semester, with what the account may read of them. */
+  letters: ShownLetter[];
   params: StaffViolationParams;
   semesterTitle: string;
   now: Date;
@@ -147,6 +164,15 @@ export function StudentViolationsDialog({
       <p className={styles.sub}>
         NIM {student.nim} · semester {semesterTitle}
       </p>
+      {letters.length > 0 && (
+        <div className={warnings.boxes}>
+          {letters.map((letter) => (
+            <p key={letter.level} className={warnings.box}>
+              {issuedWords(letter)}
+            </p>
+          ))}
+        </div>
+      )}
       <AnnouncedTable
         rows={student.rows}
         now={now}

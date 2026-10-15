@@ -8,6 +8,7 @@ import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { AnnouncementPanel } from "./announcement-panel";
 import { OwnViolationTable } from "./own-violation-table";
 import type { OwnRecordData, OwnViolations } from "./own-violations";
+import { OwnWarningBoxes, WarningProgressCard } from "./own-warning-view";
 import {
   ALL_PERIODS,
   type OwnViolationParams,
@@ -61,7 +62,8 @@ function PeriodChoice({
 }
 
 /**
- * The resident's own record: "Pelanggaran tercatat", "Dalam masa
+ * The resident's own record: their call and SPs, "Pelanggaran
+ * tercatat", "Menuju panggilan SP 1" or "Menuju SP 2", "Dalam masa
  * advokasi" and "Advokasi diterima", and "Rekam jejak pelanggaran saya"
  * with its period and "Ajukan advokasi". `keep` holds the other parts of
  * the address, which a new period keeps; `addressOfPage` gives the
@@ -87,6 +89,7 @@ export function OwnRecord({
       {title !== null && (
         <h2 className={`${shared.heading} ${styles.spaced}`}>{title}</h2>
       )}
+      {own.warning !== null && <OwnWarningBoxes warning={own.warning} />}
       <NumberCards>
         <NumberCard
           label="Pelanggaran tercatat"
@@ -97,6 +100,7 @@ export function OwnRecord({
               : `semester ${own.semester.title}`
           }
         />
+        {own.warning !== null && <WarningProgressCard warning={own.warning} />}
         <NumberCard
           label="Dalam masa advokasi"
           amount={own.inAppeal}
