@@ -1,3 +1,4 @@
+// Sample NIMs of this file: 9982090000 to 9982090099.
 import { describe, expect, it } from "vitest";
 import {
   ANNOUNCED_ON_SAVE,
@@ -17,7 +18,7 @@ import type { ViolationPick } from "./violation-residents";
 const ANI: ViolationPick = {
   id: "00000000-0000-4000-8000-000000000001",
   name: "Ani",
-  nim: "9900000001",
+  nim: "9982090001",
   dorm: "dana_rakca",
 };
 const OWN = "00000000-0000-4000-8000-000000000002";
