@@ -35,6 +35,10 @@ export interface StaffViolationParams {
   ownPeriodId: string | "all" | null;
   /** The page of the account's own record, counted from 1. */
   ownPage: number;
+  /** The page of "Panggilan klarifikasi dan surat peringatan", counted from 1. */
+  callPage: number;
+  /** The student whose call is open in a box to process, or null for none. */
+  callStudentId: string | null;
 }
 
 /** What the screen of a resident shows. */
@@ -94,6 +98,8 @@ export function readStaffViolationParams(
     studentPage: pageOf(firstParam(params.mhshal)),
     ownPeriodId: ownPeriodOf(firstParam(params.periode)),
     ownPage: pageOf(firstParam(params.rekam)),
+    callPage: pageOf(firstParam(params.panggilan)),
+    callStudentId: keyOf(firstParam(params.proses)),
   };
 }
 
@@ -132,6 +138,8 @@ export function staffViolationsAddress(params: StaffViolationParams): string {
   setPage(search, "mhshal", params.studentPage);
   setOwnPeriod(search, params.ownPeriodId);
   setPage(search, "rekam", params.ownPage);
+  setPage(search, "panggilan", params.callPage);
+  if (params.callStudentId !== null) search.set("proses", params.callStudentId);
   return withSearch(search);
 }
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
@@ -26,7 +27,8 @@ export interface ClarificationRights {
 /**
  * Klarifikasi kehadiran of Asrama for staff: the numbers Menunggu
  * verifikasi BAM, Menunggu validasi pengelola, Diterima and Ditolak, the
- * flow in one note, the search with the status choice, and one page of
+ * flow in one note, "Klarifikasi ditolak dan penetapan SP" for the roles
+ * that get it, the search with the status choice, and one page of
  * clarification cards. The roles that only read are told so.
  */
 export function ClarificationsScreen({
@@ -34,11 +36,14 @@ export function ClarificationsScreen({
   params,
   board,
   rights,
+  rejectedPanel = null,
 }: {
   tabs: TabLinksProps;
   params: ClarificationListParams;
   board: ClarificationBoard;
   rights: ClarificationRights;
+  /** "Klarifikasi ditolak dan penetapan SP", or null for an account that does not get it. */
+  rejectedPanel?: ReactNode;
 }) {
   const { counts, list } = board;
   const { filters } = params;
@@ -83,6 +88,7 @@ export function ClarificationsScreen({
         BAM menerima dan meneruskan ke Pengelola Asrama atau menolaknya, lalu
         Pengelola Asrama menerima sebagai hadir, izin, atau menolak.
       </p>
+      {rejectedPanel}
       <section className={shared.panel}>
         <ClarificationFilterRow filters={filters} />
         {/*

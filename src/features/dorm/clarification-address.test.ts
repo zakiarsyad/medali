@@ -5,6 +5,8 @@ import {
   clarificationListAddress,
   emptyWords,
   readClarificationListParams,
+  readRejectedPanelPage,
+  rejectedPanelAddress,
 } from "./clarification-address";
 
 describe("readClarificationListParams", () => {
@@ -51,6 +53,26 @@ describe("clarificationListAddress", () => {
         page: 2,
       });
     }
+  });
+});
+
+describe("the page of Klarifikasi ditolak dan penetapan SP", () => {
+  it("is read from the address, the first unless understood", () => {
+    expect(readRejectedPanelPage({ sp: "3" })).toBe(3);
+    expect(readRejectedPanelPage({ sp: "x" })).toBe(1);
+    expect(readRejectedPanelPage({})).toBe(1);
+  });
+
+  it("keeps the cards as they are, and leaves out its first page", () => {
+    const list = readClarificationListParams({ cari: "Ani", hal: "2" });
+
+    expect(rejectedPanelAddress(list, 3)).toBe(
+      "/asrama/klar?cari=Ani&hal=2&sp=3",
+    );
+    expect(rejectedPanelAddress(list, 1)).toBe("/asrama/klar?cari=Ani&hal=2");
+    expect(rejectedPanelAddress(readClarificationListParams({}), 2)).toBe(
+      "/asrama/klar?sp=2",
+    );
   });
 });
 
