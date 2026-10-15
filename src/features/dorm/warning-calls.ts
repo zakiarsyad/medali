@@ -74,7 +74,15 @@ const NONE: WarningCalls = {
 
 export type Standings = ReturnType<typeof standingsOf>;
 
-async function readNumbers(db: Database, standing: Standings, visible: SQL) {
+/**
+ * Among the students `visible` holds: how many are called for an SP, and
+ * how many have an SP of the semester.
+ */
+export async function readCallNumbers(
+  db: Database,
+  standing: Standings,
+  visible: SQL,
+) {
   const [counted] = await db
     .select({
       active: sql<number>`(count(*) filter (where ${isNotNull(standing.level)}))::int`,
@@ -218,7 +226,7 @@ export async function readCallsIn(
 ): Promise<WarningCalls> {
   const standing = standingsOf(db, semester, now);
   const [numbers, dormCohorts] = await Promise.all([
-    readNumbers(db, standing, visible),
+    readCallNumbers(db, standing, visible),
     readDormCohorts(db, campusDay(now)),
   ]);
   const shown = pageWithin(page, numbers.active, WARNINGS_PAGE_SIZE);

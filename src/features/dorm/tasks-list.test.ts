@@ -404,11 +404,13 @@ describe("countDormTasks", () => {
       await addApprovedLeave(db, idAt(residents, 3), manager.id, times);
 
       expect(
-        await countDormTasks(db, accountOf(manager.id, manager.roles)),
+        await countDormTasks(db, accountOf(manager.id, manager.roles), NOW),
       ).toBe(2);
-      expect(await countDormTasks(db, accountOf(bam.id, bam.roles))).toBe(0);
+      expect(await countDormTasks(db, accountOf(bam.id, bam.roles), NOW)).toBe(
+        0,
+      );
       expect(
-        await countDormTasks(db, accountOf(manager.id, ["head_of_unit"])),
+        await countDormTasks(db, accountOf(manager.id, ["head_of_unit"]), NOW),
       ).toBe(0);
     });
   });
@@ -432,9 +434,11 @@ describe("countDormTasks", () => {
       );
 
       expect(
-        await countDormTasks(db, accountOf(manager.id, manager.roles)),
+        await countDormTasks(db, accountOf(manager.id, manager.roles), NOW),
       ).toBe(2);
-      expect(await countDormTasks(db, accountOf(bam.id, bam.roles))).toBe(0);
+      expect(await countDormTasks(db, accountOf(bam.id, bam.roles), NOW)).toBe(
+        0,
+      );
     });
   });
 });
