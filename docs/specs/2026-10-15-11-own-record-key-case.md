@@ -61,6 +61,6 @@ however the key is written.
 
 ## Steps
 
-- [ ] 1. The own-record checks for scheduling a call, issuing an SP and
+- [x] 1. The own-record checks for scheduling a call, issuing an SP and
   opening "Proses" hold for a student key in any case, with checks for
   capitals.

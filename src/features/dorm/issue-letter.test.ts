@@ -209,6 +209,42 @@ describe("issueWarningLetter", () => {
     });
   });
 
+  it.each([
+    ["capitals", (key: string) => key.toUpperCase()],
+    [
+      "mixed case",
+      (key: string) => key.slice(0, 18).toUpperCase() + key.slice(18),
+    ],
+  ])(
+    "refuses the SP of a Pengelola Asrama for themselves with the key in %s, and saves nothing",
+    async (_, written) => {
+      await inTestDatabase(async (db) => {
+        const { ani } = await setUp(db);
+        const self = await addViolationActor(
+          db,
+          "Pengelola Penghuni",
+          ["dorm_manager", "student"],
+          ani,
+        );
+
+        expect(await issue(db, self, written(ani), 1)).toEqual(OWN_CALL);
+        expect(await lettersOf(db, ani)).toEqual([]);
+      });
+    },
+  );
+
+  it("issues the SP of another resident sent with the key in capitals", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, manager } = await setUp(db);
+
+      expect(await issue(db, manager, ani.toUpperCase(), 1)).toEqual({
+        ok: true,
+        value: SP1_ISSUED,
+      });
+      expect(await lettersOf(db, ani)).toMatchObject([{ level: 1 }]);
+    });
+  });
+
   it("keeps an issued SP when its cause is later accepted, and the database keeps one SP of a level per semester", async () => {
     await inTestDatabase(async (db) => {
       const { cici, bam, manager, periodId } = await setUp(db);

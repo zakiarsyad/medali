@@ -59,6 +59,15 @@ async function setUp(db: Database) {
   return { ani, bea, cici, bam, manager, periodId };
 }
 
+/** The key with every other character in capitals. */
+function mixedCase(key: string): string {
+  return [...key]
+    .map((character, at) =>
+      at % 2 === 0 ? character.toUpperCase() : character,
+    )
+    .join("");
+}
+
 function send(
   db: Database,
   actor: Parameters<typeof scheduleWarningCall>[1],
@@ -215,6 +224,39 @@ describe("scheduleWarningCall", () => {
       );
 
       expect(await send(db, self, ani)).toEqual(OWN_CALL);
+    });
+  });
+
+  it.each([
+    ["capitals", (key: string) => key.toUpperCase()],
+    ["mixed case", mixedCase],
+  ])(
+    "refuses the call of a Pengelola Asrama who is the resident, with the key in %s, and saves nothing",
+    async (_, written) => {
+      await inTestDatabase(async (db) => {
+        const { ani } = await setUp(db);
+        const self = await addViolationActor(
+          db,
+          "Pengelola Penghuni",
+          ["dorm_manager", "student"],
+          ani,
+        );
+
+        expect(await send(db, self, written(ani))).toEqual(OWN_CALL);
+        expect(await lettersOf(db, ani)).toEqual([]);
+      });
+    },
+  );
+
+  it("saves the call of another resident sent with the key in capitals", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, manager } = await setUp(db);
+
+      expect(await send(db, manager, ani.toUpperCase())).toEqual({
+        ok: true,
+        value: CALL_SENT,
+      });
+      expect(await lettersOf(db, ani)).toHaveLength(1);
     });
   });
 

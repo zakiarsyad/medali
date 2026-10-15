@@ -65,6 +65,17 @@ describe("readStaffViolationParams", () => {
     });
   });
 
+  it("reads a student key in capitals in small letters", () => {
+    const key = "0000000a-000b-400c-800d-00000000000e";
+    const params = readStaffViolationParams({
+      mhs: key.toUpperCase(),
+      proses: key.toUpperCase(),
+    });
+
+    expect(params.studentId).toBe(key);
+    expect(params.callStudentId).toBe(key);
+  });
+
   it("trusts nothing it does not understand", () => {
     expect(
       readStaffViolationParams({
