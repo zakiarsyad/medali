@@ -1,7 +1,12 @@
 // Room numbers of this file: NS101 to NS199.
 import { describe, expect, it } from "vitest";
+import { academicPeriods } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import { ODD_2026 } from "@/dorms/test-records";
+import type { Parsed } from "@/parsed";
 import { judgeDuty } from "./judge-cleaning";
+import { removeRoom } from "./remove-room";
+import { lockRoom } from "./room-lock";
 import {
   addTestDuty,
   changesOfDuty,
@@ -144,5 +149,41 @@ describe("two decisions on one cleaning duty at the same moment", () => {
       judgedBy: bphk.id,
     });
     expect(await changesOfDuty(own.db, duty.id)).toHaveLength(1);
+  });
+});
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+describe("a validation while the room of the duty is being removed", () => {
+  it("lets both finish: the room goes, the result stays validated, and no repeat is given", async () => {
+    await own.db.insert(academicPeriods).values(ODD_2026);
+    const duty = await judgedDuty("NS106", "not_met");
+    let validation: Promise<Parsed<string>> | undefined;
+
+    // A removal holds the room first, as removeRoom does, and only then
+    // deletes it; the validation is sent while the room is held.
+    const removal = await own.db.transaction(async (tx) => {
+      await lockRoom(tx, duty.roomId);
+      validation = validateDuty(own.otherDb, duty.manager, duty.id, TODAY);
+      validation.catch(() => undefined);
+      await wait(400);
+      return removeRoom(tx, { roles: ["dorm_manager"] }, duty.roomId, TODAY);
+    });
+    if (!validation) throw new Error("The validation was not sent.");
+
+    expect(removal).toEqual({ ok: true, value: "NS106" });
+    expect(await validation).toEqual({
+      ok: true,
+      value:
+        "Divalidasi: −1 poin. Pembersihan ulang tidak dijadwalkan karena tempat atau kamar sudah dihapus.",
+    });
+    expect(await dutyById(own.db, duty.id)).toMatchObject({
+      status: "validated",
+      roomId: null,
+      roomNumber: "NS106",
+    });
+    expect(await repeatsOfDuty(own.db, duty.id)).toEqual([]);
   });
 });

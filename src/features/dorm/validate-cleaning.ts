@@ -9,6 +9,7 @@ import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import { dayWords } from "./activity-words";
 import { parseSendBackReason } from "./cleaning-assessment";
+import { lockPlace } from "./cleaning-duties";
 import {
   ASSESSED_DUTY_NOT_FOUND,
   DECIDED_FIRST,
@@ -20,6 +21,7 @@ import {
   validatedNotMet,
 } from "./cleaning-messages";
 import { scheduleRepeat } from "./cleaning-repeat";
+import { lockRoom } from "./room-lock";
 
 type Validator = Pick<Account, "id" | "roles">;
 
@@ -42,12 +44,31 @@ async function whyNotDecided(
 
 const IS_JUDGED = eq(dormCleaningDuties.status, "judged");
 
+/**
+ * Holds the place and the room of a duty before the duty itself, in the
+ * order "Tugaskan" and the removal of a room hold them. Removing a room
+ * holds it, then changes its duties, so a validation that held the duty
+ * first and then waited for the room would deadlock with it.
+ */
+async function lockPlaceAndRoomOf(tx: Database, dutyId: string): Promise<void> {
+  const [duty] = await tx
+    .select({
+      placeId: dormCleaningDuties.placeId,
+      roomId: dormCleaningDuties.roomId,
+    })
+    .from(dormCleaningDuties)
+    .where(eq(dormCleaningDuties.id, dutyId));
+  if (duty?.placeId) await lockPlace(tx, duty.placeId);
+  if (duty?.roomId) await lockRoom(tx, duty.roomId);
+}
+
 async function validateIn(
   tx: Database,
   validator: Validator,
   dutyId: string,
   today: string,
 ): Promise<Parsed<string>> {
+  await lockPlaceAndRoomOf(tx, dutyId);
   const [duty] = await tx
     .update(dormCleaningDuties)
     .set({
