@@ -132,6 +132,27 @@ Decided while building, because the issue did not say:
    Unit only. The list of calls is read with the right to see
    Pelanggaran, and a resident's own call and SP with the right to see
    their own violations, so no other role gains anything.
+9. "Proses" opens a box over the tab with parts 1 and 2 side by side,
+   one column on a phone, then the rejected clarifications and the
+   counted violations of the resident, not paged.
+10. A call must be at a time still to come and at most 30 days ahead.
+    The form starts at tomorrow, 16:00, Kantor Pengelola Asrama.
+11. The form carries the SP it was drawn for; the server refuses it when
+    the resident is now called for another SP.
+12. Pengelola Asrama does not schedule or issue an SP for their own
+    student account, as with appeals: their own row has no "Proses".
+13. The rekap of Pelanggaran gets a "Status" column with the mark "SP 1"
+    or "SP 2". Hasil klarifikasi and the proposal note show in the box
+    of one student, to Pengelola Asrama and Kepala Unit only.
+14. The panel on Klarifikasi kehadiran shows to accounts that see both
+    clarifications and Pelanggaran: Pengelola Asrama, Kepala Unit, BAM -
+    BPHK and BAM - KI. It is hidden while nobody has a rejected
+    clarification, as in the prototype, and is paged 20 at a time.
+15. On Kegiatan asrama, the line that one more rejected clarification
+    leads to SP 2 shows only when one more truly reaches it.
+16. A resident called only for a rejected clarification, with no
+    violation, is not in the rekap, so staff read their result only
+    after a violation is recorded. Left as a gap.
 
 ## Steps
 
