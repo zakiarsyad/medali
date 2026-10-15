@@ -75,16 +75,16 @@ function countedViolations(db: Database, semester: WarningSemester, now: Date) {
 }
 
 /**
- * How many activities of the semester each student's latest
- * clarification was rejected for, by BAM or by Pengelola Asrama. Only
- * the latest clarification of an activity counts: one sent again, or
- * accepted later, takes the rejection's place.
+ * The latest clarification of each student for each activity held on a
+ * day of the semester. Only the latest counts: one sent again, or
+ * accepted later, takes a rejection's place.
  */
-function rejectedClarifications(db: Database, semester: WarningSemester) {
-  const latest = db
+export function latestClarifications(db: Database, semester: WarningSemester) {
+  return db
     .selectDistinctOn(
       [dormClarifications.countId, dormClarifications.studentId],
       {
+        id: dormClarifications.id,
         studentId: dormClarifications.studentId,
         status: dormClarifications.status,
       },
@@ -102,6 +102,14 @@ function rejectedClarifications(db: Database, semester: WarningSemester) {
       desc(dormClarifications.id),
     )
     .as("latest_clarification");
+}
+
+/**
+ * How many activities of the semester each student's latest
+ * clarification was rejected for, by BAM or by Pengelola Asrama.
+ */
+function rejectedClarifications(db: Database, semester: WarningSemester) {
+  const latest = latestClarifications(db, semester);
   return db
     .select({
       studentId: latest.studentId,
@@ -185,6 +193,35 @@ export function standingsOf(
       ),
     )
     .as("standing");
+}
+
+/** The SP a student is called for now, and the semester it is of. */
+export interface CallOf {
+  semesterId: string;
+  level: WarningLevel;
+}
+
+/**
+ * The SP a student `visible` holds is called for in the running semester
+ * at `now`, by the server's clock, or null for a student not called, not
+ * seen, or while no period is stored.
+ */
+export async function readCallOf(
+  db: Database,
+  visible: SQL,
+  studentId: string,
+  now: Date,
+): Promise<CallOf | null> {
+  const semester = await readWarningSemester(db, now);
+  if (semester === null) return null;
+  const standing = standingsOf(db, semester, now);
+  const [found] = await db
+    .select({ level: standing.level })
+    .from(standing)
+    .innerJoin(students, eq(students.id, standing.studentId))
+    .where(and(visible, eq(students.id, studentId)));
+  if (!found || found.level === null) return null;
+  return { semesterId: semester.id, level: found.level };
 }
 
 /** The standing a read gives back, without what else came with it. */

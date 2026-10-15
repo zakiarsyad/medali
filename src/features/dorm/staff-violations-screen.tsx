@@ -133,6 +133,8 @@ export function StaffViolationsScreen({
   appeals,
   waitingAppeals,
   warnings,
+  processes,
+  callProcess,
   ownRecord,
 }: {
   tabs: TabLinksProps;
@@ -149,6 +151,10 @@ export function StaffViolationsScreen({
   waitingAppeals: number | null;
   /** "Panggilan klarifikasi dan surat peringatan" of the running semester. */
   warnings: WarningCalls;
+  /** Whether the account schedules calls and issues SPs: Pengelola Asrama. */
+  processes: boolean;
+  /** "Proses" of one resident in a box, or null for none. */
+  callProcess: ReactNode;
   /** The account's own record, for a resident who is also staff, or null. */
   ownRecord: ReactNode;
 }) {
@@ -174,7 +180,11 @@ export function StaffViolationsScreen({
         <SchedulePanel schedule={schedule} params={params} />
       )}
       {appeals}
-      <WarningCallsPanel calls={warnings} params={params} />
+      <WarningCallsPanel
+        calls={warnings}
+        params={params}
+        processes={processes}
+      />
       <RekapPanel
         rekap={board.rekap}
         params={params}
@@ -197,6 +207,7 @@ export function StaffViolationsScreen({
         }
       />
       {ownRecord}
+      {callProcess}
       {board.student !== null && board.semester !== null && (
         <StudentViolationsDialog
           student={board.student}

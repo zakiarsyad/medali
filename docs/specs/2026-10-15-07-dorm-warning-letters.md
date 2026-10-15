@@ -140,7 +140,7 @@ Decided while building, because the issue did not say:
 - [x] 2. The right to issue an SP is added to the permission list, with
   its checks.
 - [x] 3. The list of calls shows who must be called and why.
-- [ ] 4. Pengelola Asrama schedules and changes the call.
+- [x] 4. Pengelola Asrama schedules and changes the call.
 - [ ] 5. Pengelola Asrama records the result and issues SP 1 or SP 2
   with the proposal.
 - [ ] 6. Residents see their count, call and SP.

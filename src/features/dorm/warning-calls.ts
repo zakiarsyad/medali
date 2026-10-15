@@ -168,6 +168,17 @@ export async function readWarningCalls(
 ): Promise<WarningCalls> {
   const semester = await readWarningSemester(db, now);
   if (semester === null) return NONE;
+  return readCallsIn(db, semester, visible, now, page);
+}
+
+/** The calls of `readWarningCalls`, of a semester already read. */
+export async function readCallsIn(
+  db: Database,
+  semester: WarningSemester,
+  visible: SQL,
+  now: Date,
+  page: number,
+): Promise<WarningCalls> {
   const standing = standingsOf(db, semester, now);
   const [numbers, dormCohorts] = await Promise.all([
     readNumbers(db, standing, visible),

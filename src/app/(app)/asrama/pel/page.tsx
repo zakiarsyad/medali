@@ -28,6 +28,8 @@ import { ViolationForm } from "@/features/dorm/violation-form";
 import { readViolationSchedule } from "@/features/dorm/violation-schedule";
 import { violationScreensOf } from "@/features/dorm/violation-screens";
 import { readWarningCalls } from "@/features/dorm/warning-calls";
+import { readWarningProcess } from "@/features/dorm/warning-process";
+import { WarningProcessDialog } from "@/features/dorm/warning-process-dialog";
 import type { SearchParams } from "@/ui/search-params";
 import type { TabLinksProps } from "@/ui/tab-links";
 
@@ -66,6 +68,29 @@ async function ownRecordOf(
       }
     />
   );
+}
+
+/**
+ * "Proses" of the resident the address names, for Pengelola Asrama only.
+ * Null for any other account, for none named, and for a resident not
+ * called: the box then does not open.
+ */
+async function callProcessOf(
+  account: Account,
+  params: StaffViolationParams,
+  now: Date,
+) {
+  const { callStudentId } = params;
+  if (callStudentId === null) return null;
+  if (!may(account.roles, "issue_dorm_warning_letters")) return null;
+  const process = await readWarningProcess(
+    database(),
+    visibleTo(rowLimitForAction(account, "issue_dorm_warning_letters")),
+    callStudentId,
+    now,
+  );
+  if (process === null) return null;
+  return <WarningProcessDialog process={process} params={params} now={now} />;
 }
 
 /**
@@ -135,6 +160,8 @@ async function StaffScreen({
       appeals={appeals}
       waitingAppeals={inbox?.waiting ?? null}
       warnings={warnings}
+      processes={may(account.roles, "issue_dorm_warning_letters")}
+      callProcess={await callProcessOf(account, params, now)}
       ownRecord={await ownRecordOf(account, params, now)}
     />
   );

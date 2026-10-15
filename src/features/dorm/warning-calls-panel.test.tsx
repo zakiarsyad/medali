@@ -30,9 +30,13 @@ function calls(more: Partial<WarningCalls> = {}): WarningCalls {
   };
 }
 
-function panel(shown: WarningCalls): string {
+function panel(shown: WarningCalls, processes = false): string {
   return renderToStaticMarkup(
-    <WarningCallsPanel calls={shown} params={readStaffViolationParams({})} />,
+    <WarningCallsPanel
+      calls={shown}
+      params={readStaffViolationParams({})}
+      processes={processes}
+    />,
   );
 }
 
@@ -76,6 +80,14 @@ describe("WarningCallsPanel", () => {
 
     expect(shown).toContain(NO_CALLS);
     expect(NO_CALLS).toBe("Tidak ada panggilan klarifikasi aktif.");
+  });
+
+  it("offers Proses, which opens the resident's call, only to an account that processes calls", () => {
+    expect(panel(calls(), true)).toContain(
+      `href="/asrama/pel?proses=${CALL.studentId}"`,
+    );
+    expect(panel(calls(), true)).toContain(">Proses<");
+    expect(panel(calls())).not.toContain("Proses");
   });
 
   it("is paged, 20 residents a page", () => {

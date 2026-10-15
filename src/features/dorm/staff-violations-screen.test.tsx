@@ -80,6 +80,8 @@ function screen(): string {
       appeals={null}
       waitingAppeals={null}
       warnings={WARNINGS}
+      processes={false}
+      callProcess={null}
       ownRecord={
         <OwnRecord
           own={OWN}
