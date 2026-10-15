@@ -39,6 +39,8 @@ export interface StaffViolationParams {
   callPage: number;
   /** The student whose call is open in a box to process, or null for none. */
   callStudentId: string | null;
+  /** The page of "Riwayat pengurangan pelanggaran", counted from 1. */
+  reductionPage: number;
 }
 
 /** What the screen of a resident shows. */
@@ -100,6 +102,7 @@ export function readStaffViolationParams(
     ownPage: pageOf(firstParam(params.rekam)),
     callPage: pageOf(firstParam(params.panggilan)),
     callStudentId: keyOf(firstParam(params.proses)),
+    reductionPage: pageOf(firstParam(params.kurang)),
   };
 }
 
@@ -140,6 +143,7 @@ export function staffViolationsAddress(params: StaffViolationParams): string {
   setPage(search, "rekam", params.ownPage);
   setPage(search, "panggilan", params.callPage);
   if (params.callStudentId !== null) search.set("proses", params.callStudentId);
+  setPage(search, "kurang", params.reductionPage);
   return withSearch(search);
 }
 

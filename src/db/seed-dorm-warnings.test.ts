@@ -57,4 +57,30 @@ describe("the sample calls and warning letters", { timeout: 20_000 }, () => {
       expect(entered).toHaveLength(kept.length);
     });
   });
+
+  it("mark two reductions by the sample Pengelola Asrama, each with its reason and a line in the log", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const kept = await db.select().from(dormViolations);
+      const lines = await db.select().from(dormViolationChanges);
+      const roles = await db.select().from(accountRoles);
+      const managers = roles
+        .filter((each) => each.role === "dorm_manager")
+        .map((each) => each.accountId);
+
+      const reduced = kept.filter((violation) => violation.reducedAt !== null);
+      expect(reduced).toHaveLength(2);
+      for (const violation of reduced) {
+        expect(managers).toContain(violation.reducedBy);
+        const ofIt = lines.filter(
+          (line) =>
+            line.violationId === violation.id && line.action === "reduced",
+        );
+        expect(
+          ofIt.map((line) => [line.changedAt, line.reductionReason]),
+        ).toEqual([[violation.reducedAt, violation.reductionReason]]);
+      }
+    });
+  });
 });

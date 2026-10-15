@@ -1,5 +1,5 @@
 {
-  "id": "5a694bc2-5a09-46b0-ab97-057db9307758",
+  "id": "fbdb4f68-e530-4dfa-bcb2-598618a96029",
   "prevId": "1414843a-1b65-463d-b247-ef8696a8666d",
   "version": "7",
   "dialect": "postgresql",
@@ -4307,6 +4307,13 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
+        },
+        "reduction_reason": {
+          "name": "reduction_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         }
       },
       "indexes": {
@@ -4445,6 +4452,25 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "reduced_by": {
+          "name": "reduced_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reduced_at": {
+          "name": "reduced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reduction_reason": {
+          "name": "reduction_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         }
       },
       "indexes": {
@@ -4459,6 +4485,22 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dorm_violations_reduced": {
+          "name": "dorm_violations_reduced",
+          "columns": [
+            {
+              "expression": "reduced_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"dorm_violations\".\"reduced_at\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -4555,6 +4597,19 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "dorm_violations_reduced_by_accounts_id_fk": {
+          "name": "dorm_violations_reduced_by_accounts_id_fk",
+          "tableFrom": "dorm_violations",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "reduced_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -4588,6 +4643,18 @@
         "dorm_violations_cancelled_before_announced": {
           "name": "dorm_violations_cancelled_before_announced",
           "value": "\"dorm_violations\".\"cancelled_at\" is null or \"dorm_violations\".\"cancelled_at\" < \"dorm_violations\".\"announced_at\""
+        },
+        "dorm_violations_reduction_is_whole": {
+          "name": "dorm_violations_reduction_is_whole",
+          "value": "(\"dorm_violations\".\"reduced_by\" is null) = (\"dorm_violations\".\"reduced_at\" is null) and (\"dorm_violations\".\"reduced_at\" is null) = (\"dorm_violations\".\"reduction_reason\" = '')"
+        },
+        "dorm_violations_reduction_reason_length": {
+          "name": "dorm_violations_reduction_reason_length",
+          "value": "\"dorm_violations\".\"reduction_reason\" = '' or char_length(\"dorm_violations\".\"reduction_reason\") between 5 and 500"
+        },
+        "dorm_violations_reduced_once_announced_and_not_cancelled": {
+          "name": "dorm_violations_reduced_once_announced_and_not_cancelled",
+          "value": "\"dorm_violations\".\"reduced_at\" is null or (\"dorm_violations\".\"reduced_at\" >= \"dorm_violations\".\"announced_at\" and \"dorm_violations\".\"cancelled_at\" is null)"
         }
       },
       "isRLSEnabled": false
@@ -6802,67 +6869,6 @@
         "ppks_activities_semester_1_to_8": {
           "name": "ppks_activities_semester_1_to_8",
           "value": "\"ppks_activities\".\"semester\" between 1 and 8"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.proof_file_keeping": {
-      "name": "proof_file_keeping",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "smallint",
-          "primaryKey": true,
-          "notNull": true,
-          "default": 1
-        },
-        "keep_days": {
-          "name": "keep_days",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "set_at": {
-          "name": "set_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "set_by": {
-          "name": "set_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "proof_file_keeping_set_by_accounts_id_fk": {
-          "name": "proof_file_keeping_set_by_accounts_id_fk",
-          "tableFrom": "proof_file_keeping",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "set_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "proof_file_keeping_one_row": {
-          "name": "proof_file_keeping_one_row",
-          "value": "\"proof_file_keeping\".\"id\" = 1"
-        },
-        "proof_file_keeping_days_in_range": {
-          "name": "proof_file_keeping_days_in_range",
-          "value": "\"proof_file_keeping\".\"keep_days\" between 30 and 3650"
         }
       },
       "isRLSEnabled": false
@@ -9292,7 +9298,9 @@
         "cancelled",
         "appealed",
         "appeal_accepted",
-        "appeal_rejected"
+        "appeal_rejected",
+        "reduced",
+        "reduction_undone"
       ]
     },
     "public.dorm_violation_punishment": {

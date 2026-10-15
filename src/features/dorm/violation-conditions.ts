@@ -11,6 +11,9 @@ import { lastEscalatedAnnouncement } from "./violation-status";
 
 const NOT_CANCELLED = isNull(dormViolations.cancelledAt);
 
+/** Not reduced by Pengelola Asrama, or its reduction undone. */
+export const NOT_REDUCED = isNull(dormViolations.reducedAt);
+
 /** The violation has no appeal. A violation has one at most. */
 const NO_APPEAL = sql`not exists (select 1 from ${dormViolationAppeals} where ${dormViolationAppeals.violationId} = ${dormViolations.id})`;
 
@@ -45,15 +48,16 @@ export function inAppealOrWaitingAt(now: Date): SQL | undefined {
 export const APPEAL_ACCEPTED = and(NOT_CANCELLED, appealIs("accepted"));
 
 /**
- * Not cancelled and gone up to Pengelola Asrama at `now`: its appeal
- * time over without an appeal, or its appeal rejected.
+ * Not cancelled, not reduced, and gone up to Pengelola Asrama at `now`:
+ * its appeal time over without an appeal, or its appeal rejected. Only
+ * these count.
  */
 export function escalatedBy(now: Date): SQL | undefined {
   const timeOver = and(
     lte(dormViolations.announcedAt, lastEscalatedAnnouncement(now)),
     NO_APPEAL,
   );
-  return and(NOT_CANCELLED, or(timeOver, appealIs("rejected")));
+  return and(NOT_CANCELLED, NOT_REDUCED, or(timeOver, appealIs("rejected")));
 }
 
 /** Announced at `now`, from the moment the campus day of `now` began. */

@@ -1229,6 +1229,61 @@ describe("may", () => {
     );
   });
 
+  it("lets only Pengelola Asrama reduce violations and undo a reduction", () => {
+    expect(may(["dorm_manager"], "reduce_dorm_violations")).toBe(true);
+    expect(may(["dorm_manager"], "view_dorm_violations")).toBe(true);
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "bam_bphk",
+        "bam_compliance",
+        "director",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "reduce_dorm_violations")).toBe(false);
+    }
+  });
+
+  const reductionReaders: RoleId[] = ["dorm_manager", "head_of_unit"];
+
+  it.each(reductionReaders)(
+    "lets %s read Riwayat pengurangan pelanggaran",
+    (role) => {
+      expect(may([role], "view_dorm_violation_reductions")).toBe(true);
+      expect(may([role], "view_dorm_violations")).toBe(true);
+    },
+  );
+
+  it("refuses every other role Riwayat pengurangan pelanggaran, the BAM roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !reductionReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_bphk",
+        "bam_compliance",
+        "bam_spiritual",
+        "bam_household",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_violation_reductions")).toBe(false);
+    }
+  });
+
+  it("gives Kepala Unit plain titles for the rights of reductions", () => {
+    expect(ACTION_TITLES.reduce_dorm_violations).toBe(
+      "Mengurangi pelanggaran asrama dan membatalkan pengurangannya",
+    );
+    expect(ACTION_TITLES.view_dorm_violation_reductions).toBe(
+      "Melihat riwayat pengurangan pelanggaran asrama",
+    );
+  });
+
   it("gives a way to see violations to every role with the tab Pelanggaran, and to no other", () => {
     for (const role of ROLE_IDS) {
       const reads =

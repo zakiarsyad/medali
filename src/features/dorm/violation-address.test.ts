@@ -25,6 +25,7 @@ describe("readStaffViolationParams", () => {
       ownPage: 1,
       callPage: 1,
       callStudentId: null,
+      reductionPage: 1,
     });
   });
 
@@ -44,6 +45,7 @@ describe("readStaffViolationParams", () => {
         rekam: "7",
         panggilan: "8",
         proses: KEY,
+        kurang: "9",
       }),
     ).toEqual({
       appealPage: 6,
@@ -59,6 +61,7 @@ describe("readStaffViolationParams", () => {
       ownPage: 7,
       callPage: 8,
       callStudentId: KEY,
+      reductionPage: 9,
     });
   });
 
@@ -95,6 +98,7 @@ describe("staffViolationsAddress", () => {
       rekam: "2",
       panggilan: "3",
       proses: KEY,
+      kurang: "4",
     });
     const address = staffViolationsAddress(params);
     const search = Object.fromEntries(

@@ -60,6 +60,37 @@ describe("sampleDormWarnings", () => {
     }
   });
 
+  it("reduces the latest violation of the residents with SP 1 and SP 2, after its appeal time and before now, and none of the one called", () => {
+    const reduced = violations.filter(
+      (violation) => violation.reduction !== null,
+    );
+    const latestOf = (resident: number) =>
+      violations.findLast((violation) => violation.resident === resident);
+
+    expect(reduced).toEqual([latestOf(firstLetter), latestOf(secondLetter)]);
+    for (const violation of reduced) {
+      const at = violation.reduction?.at ?? NOW;
+      expect(violationStatus(violation.announcedAt, null, at)).toBe(
+        "escalated",
+      );
+      expect(at.getTime()).toBeLessThan(NOW.getTime());
+      expect(violation.reduction?.reason.length).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it("reduces only after the appeal time, even early in the period where the violations share a day", () => {
+    const early = sampleDormWarnings(
+      new Date("2026-08-05T03:00:00Z"),
+      PERIOD_START,
+    );
+    for (const violation of early.violations) {
+      if (violation.reduction === null) continue;
+      expect(
+        violationStatus(violation.announcedAt, null, violation.reduction.at),
+      ).toBe("escalated");
+    }
+  });
+
   it("never puts a violation before the running period, even early in it", () => {
     const early = sampleDormWarnings(
       new Date("2026-08-05T03:00:00Z"),

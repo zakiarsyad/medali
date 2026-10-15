@@ -8,7 +8,13 @@ import { withTestDatabase } from "@/db/test-database";
 import { addTestClarification } from "./test-clarifications";
 import { EVERYONE } from "./test-records";
 import { addViolationActor, addViolationSetting } from "./test-violations";
-import { addTestRejection, addTestViolations } from "./test-warnings";
+import {
+  addTestLetter,
+  addTestRejection,
+  addTestViolations,
+  issuedBy,
+  periodIdOf,
+} from "./test-warnings";
 import { readWarningProcess } from "./warning-process";
 
 const inTestDatabase = withTestDatabase();
@@ -69,17 +75,45 @@ describe("readWarningProcess", () => {
     });
   });
 
-  it("is null for a resident not called, or one the account does not see", async () => {
+  it("gives no call for a resident not called, with their counted violations, and is null for one the account does not see", async () => {
     await inTestDatabase(async (db) => {
       const { ani, bea, bamId } = await setUp(db);
       await addTestViolations(db, ani, bamId, 7, "3293-10-01");
       await addTestViolations(db, bea, bamId, 6, "3293-10-01");
 
-      expect(await readWarningProcess(db, EVERYONE, bea, NOW)).toBeNull();
+      const notCalled = await readWarningProcess(db, EVERYONE, bea, NOW);
+      expect(notCalled).toMatchObject({
+        call: null,
+        mark: null,
+        student: { studentId: bea, name: "Bea Uji Pelanggaran" },
+      });
+      expect(notCalled?.counted).toHaveLength(6);
       expect(
         await readWarningProcess(db, eq(students.id, bea), ani, NOW),
       ).toBeNull();
-      expect(await readWarningProcess(db, EVERYONE, ani, NOW)).not.toBeNull();
+      expect(
+        (await readWarningProcess(db, EVERYONE, ani, NOW))?.call,
+      ).toMatchObject({
+        level: 1,
+      });
+    });
+  });
+
+  it("gives the highest SP issued in the semester to a resident no longer called", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, bamId } = await setUp(db);
+      const periodId = await periodIdOf(db, 3293);
+      await addTestViolations(db, ani, bamId, 7, "3293-10-01");
+      await addTestLetter(db, {
+        studentId: ani,
+        periodId,
+        level: 1,
+        ...issuedBy(bamId, new Date("3293-10-15T09:00:00Z")),
+      });
+
+      const process = await readWarningProcess(db, EVERYONE, ani, NOW);
+
+      expect(process).toMatchObject({ call: null, mark: 1 });
     });
   });
 });
