@@ -2912,11 +2912,37 @@ function inAssessmentRange(score: AnyPgColumn): SQL {
 }
 
 /**
+ * One file of character assessments saved with "Unggah berkas": its name
+ * as shown and a fingerprint of its content, never the file itself. The
+ * key is made by the screen that sent it, so a file sent twice is kept
+ * once. Like the assessments it holds, it cannot be changed or deleted.
+ */
+export const characterAssessmentUploads = pgTable(
+  "character_assessment_uploads",
+  {
+    id: uuid().primaryKey(),
+    fileName: text().notNull(),
+    fingerprint: text().notNull(),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check(
+      "character_assessment_uploads_fingerprint_is_sha256",
+      sql`${table.fingerprint} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
+);
+
+/**
  * One character assessment of a student: a whole score from 40 to 100
  * for each MEDALI value, its source, the note of the one who entered it,
  * and the academic period that ran when it was saved. A student's latest
  * one counts; the earlier ones stay as history. The key is made by the
- * form that sent it, so a form sent twice is kept once. Rows here cannot
+ * form that sent it, so a form sent twice is kept once; a row of a file
+ * names its upload instead, and is null for the form. Rows here cannot
  * be changed or deleted; the database refuses it, so the assessments are
  * their own log, and a wrong one is replaced by a new one.
  */
@@ -2943,9 +2969,11 @@ export const characterAssessments = pgTable(
       .notNull()
       .references(() => accounts.id),
     enteredAt: timestamp({ withTimezone: true }).notNull(),
+    uploadId: uuid().references(() => characterAssessmentUploads.id),
   },
   (table) => [
     index("character_assessments_student").on(table.studentId, table.enteredAt),
+    index("character_assessments_upload").on(table.uploadId),
     check(
       "character_assessments_scores_in_range",
       sql`${inAssessmentRange(table.scoreM)} and ${inAssessmentRange(table.scoreE)} and ${inAssessmentRange(table.scoreD)} and ${inAssessmentRange(table.scoreA)} and ${inAssessmentRange(table.scoreL)} and ${inAssessmentRange(table.scoreI)}`,

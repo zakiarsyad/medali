@@ -34,11 +34,12 @@ describe("Input capaian MEDALI", () => {
     <AssessmentForm
       newAssessmentId="00000000-0000-4000-8000-000000000602"
       levelTexts={LEVEL_TEXTS}
+      head={<h2>Input capaian MEDALI</h2>}
     />,
   );
 
   it("asks for a student first, and cannot be saved before one is picked", () => {
-    expect(html).toContain("Input capaian MEDALI");
+    expect(html).toContain("<h2>Input capaian MEDALI</h2>");
     expect(html).toContain('placeholder="Ketik nama atau NIM mahasiswa aktif"');
     expect(html).toMatch(
       /<button type="submit"[^>]*disabled=""[^>]*>Simpan asesmen</,

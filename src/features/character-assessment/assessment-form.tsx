@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { type ReactNode, useActionState, useState } from "react";
 import {
   levelOf,
   rerataOf,
@@ -22,10 +22,10 @@ import {
   STARTING_SCORE,
 } from "./assessment-ids";
 import type { AssessmentPick } from "./assessment-picks";
-import { SOURCE_WORDS } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import { Medal } from "./medal";
 import { PredicateBadge } from "./predicate-badge";
+import { SourceOptions } from "./source-options";
 import { StudentPicker } from "./student-picker";
 
 const START: FormState = { error: null, done: null };
@@ -136,14 +136,16 @@ export function MedalPreview({
  * and six sliders start at their latest scores, or at 75. The medal
  * shows the new shape over the last one. After an assessment is kept,
  * the student stays picked with it as their last one, and the form gets
- * a new key for the next.
+ * a new key for the next. `head` is the title of the panel.
  */
 export function AssessmentForm({
   newAssessmentId,
   levelTexts,
+  head,
 }: {
   newAssessmentId: string;
   levelTexts: LevelTexts;
+  head: ReactNode;
 }) {
   // Kept as it was when the form opened: two presses of "Simpan asesmen"
   // must send the same key.
@@ -177,7 +179,7 @@ export function AssessmentForm({
   return (
     <div className={styles.sideBySide}>
       <section className={shared.panel}>
-        <h2 className={shared.heading}>Input capaian MEDALI</h2>
+        {head}
         {/* noValidate: the server says what is wrong, in the app's own words. */}
         <form onSubmit={(event) => sendForm(event, action)} noValidate>
           <input type="hidden" name="id" value={id} />
@@ -203,11 +205,7 @@ export function AssessmentForm({
                 className={shared.input}
                 defaultValue={ASSESSMENT_SOURCES[0]}
               >
-                {ASSESSMENT_SOURCES.map((each) => (
-                  <option key={each} value={each}>
-                    {SOURCE_WORDS[each]}
-                  </option>
-                ))}
+                <SourceOptions />
               </select>
             </label>
             <label className={`${shared.field} ${styles.full}`}>

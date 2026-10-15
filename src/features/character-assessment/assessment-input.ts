@@ -63,7 +63,7 @@ function parseScores(sent: Record<ValueKey, string>): Parsed<Scores> {
   return { ok: true, value: { M, E, D, A, L, I } };
 }
 
-function sourceNamed(sent: string): AssessmentSource | null {
+export function sourceNamed(sent: string): AssessmentSource | null {
   return ASSESSMENT_SOURCES.find((each) => each === sent) ?? null;
 }
 

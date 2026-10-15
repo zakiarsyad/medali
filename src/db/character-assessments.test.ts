@@ -7,6 +7,7 @@ import {
   academicPeriods,
   accounts,
   characterAssessments,
+  characterAssessmentUploads,
   students,
   studyPrograms,
 } from "./schema";
@@ -152,6 +153,38 @@ describe("a character assessment", () => {
       ).rejects.toThrow();
       await expect(
         db.execute(sql`truncate character_assessments`),
+      ).rejects.toThrow();
+    });
+  });
+});
+
+describe("a character assessment upload", () => {
+  it("is never changed or deleted: the database refuses it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const id = crypto.randomUUID();
+      await db.insert(characterAssessmentUploads).values({
+        id,
+        fileName: "asesmen.csv",
+        fingerprint: "a".repeat(64),
+        enteredBy: records.accountId,
+        enteredAt: new Date(),
+      });
+
+      await expect(
+        inOwnStep(db, (tx) =>
+          tx
+            .update(characterAssessmentUploads)
+            .set({ fileName: "lain.csv" })
+            .where(eq(characterAssessmentUploads.id, id)),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        inOwnStep(db, (tx) =>
+          tx
+            .delete(characterAssessmentUploads)
+            .where(eq(characterAssessmentUploads.id, id)),
+        ),
       ).rejects.toThrow();
     });
   });
