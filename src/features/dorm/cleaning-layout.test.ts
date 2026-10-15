@@ -67,7 +67,7 @@ describe("the duties of a resident's room on a phone", () => {
     const view = read("cleaning-resident-view.tsx");
 
     expect(view).toMatch(/<table className=.*shared\.stacked/);
-    for (const title of ["Tanggal", "Tempat", "Status"]) {
+    for (const title of ["Tanggal", "Tempat", "Status", "Hasil"]) {
       expect(view).toContain(`data-title="${title}"`);
     }
     expect(ruleOf(".roomValue")).toContain("overflow-wrap: anywhere;");

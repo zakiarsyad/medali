@@ -6,8 +6,10 @@ import {
   parseJudgement,
   parseSendBackReason,
   rankNumber,
+  resultWithPoints,
   scoreOf,
   scoreWords,
+  shownResult,
 } from "./cleaning-assessment";
 
 const TODAY = "2026-10-15";
@@ -77,6 +79,29 @@ describe("the score of a room", () => {
     expect(rankNumber(1, 20, 0)).toBe(1);
     expect(rankNumber(2, 20, 0)).toBe(21);
     expect(rankNumber(3, 20, 4)).toBe(45);
+  });
+});
+
+describe("what a resident sees of a judgement", () => {
+  it("names a validated result with its points", () => {
+    expect(resultWithPoints("met")).toBe("Memenuhi (+1)");
+    expect(resultWithPoints("not_met")).toBe("Tidak memenuhi (−1)");
+  });
+
+  it("shows the result and its note only once it is validated", () => {
+    const judged = {
+      status: "judged",
+      result: "not_met",
+      judgeNote: "Kotor.",
+    } as const;
+    expect(shownResult(judged)).toBeNull();
+    expect(shownResult({ ...judged, status: "validated" })).toEqual({
+      result: "not_met",
+      note: "Kotor.",
+    });
+    expect(
+      shownResult({ status: "scheduled", result: null, judgeNote: "" }),
+    ).toBeNull();
   });
 });
 

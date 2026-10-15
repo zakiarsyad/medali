@@ -128,3 +128,20 @@ export async function readRanking(
     .offset((shown - 1) * RANKING_PAGE_SIZE);
   return { rooms, matching, page: shown };
 }
+
+/** The + and − of one room, for all time: its score as its residents see it. */
+export async function readRoomScore(
+  db: Database,
+  roomId: string,
+): Promise<Pick<RoomScore, "plus" | "minus">> {
+  const [counted] = await db
+    .select({ plus: PLUS, minus: MINUS })
+    .from(dormCleaningDuties)
+    .where(
+      and(
+        eq(dormCleaningDuties.roomId, roomId),
+        eq(dormCleaningDuties.status, "validated"),
+      ),
+    );
+  return { plus: counted?.plus ?? 0, minus: counted?.minus ?? 0 };
+}

@@ -62,6 +62,30 @@ export function rankNumber(
   return (page - 1) * pageSize + index + 1;
 }
 
+/** A validated result as a resident sees it, such as Memenuhi (+1). */
+export function resultWithPoints(result: CleaningResult): string {
+  return `${RESULT_WORDS[result]} (${scoreWords(RESULT_POINTS[result])})`;
+}
+
+/** The result of a duty a resident may see, with its note. */
+export interface ShownResult {
+  result: CleaningResult;
+  note: string;
+}
+
+/**
+ * What a resident sees of a duty's judgement: nothing until Pengelola
+ * Asrama has validated it, as a judgement may still be sent back.
+ */
+export function shownResult(duty: {
+  status: CleaningStatus;
+  result: CleaningResult | null;
+  judgeNote: string;
+}): ShownResult | null {
+  if (duty.status !== "validated" || duty.result === null) return null;
+  return { result: duty.result, note: duty.judgeNote };
+}
+
 /** A judgement sent, checked. */
 export interface Judgement {
   result: CleaningResult;
