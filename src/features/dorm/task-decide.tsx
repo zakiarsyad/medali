@@ -7,7 +7,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./leave.module.css";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
 import { type DecisionAnswer, REJECTION_NEEDS_NOTE } from "./leave-messages";
-import { ALREADY_SETTLED } from "./tasks-card";
+import { taskOutcome } from "./tasks-card";
 
 /**
  * Catatan, the agreeing button and "Tolak" on an item of Tugas saya.
@@ -37,14 +37,10 @@ export function TaskDecide({
   const [pending, startSending] = useTransition();
 
   function answered(answer: DecisionAnswer) {
-    if (answer.stale) {
-      setRefusal(null);
-      onSettled({ error: ALREADY_SETTLED, done: null });
-      router.refresh();
-      return;
-    }
-    setRefusal(answer.error);
-    if (answer.done) onSettled(answer);
+    const outcome = taskOutcome(answer);
+    setRefusal(outcome.onCard);
+    if (outcome.onSection) onSettled(outcome.onSection);
+    if (outcome.reload) router.refresh();
   }
 
   function send(decision: string) {

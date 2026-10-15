@@ -1,4 +1,6 @@
+import type { FormState } from "@/ui/form-message";
 import type { LeaveKind } from "./leave-ids";
+import type { DecisionAnswer } from "./leave-messages";
 
 /*
  * What waits for Pengelola Asrama on Tugas saya, as the cards show it.
@@ -14,6 +16,33 @@ export const NOTHING_WAITS = "Tidak ada yang menunggu.";
 
 /** What a press on an item says when it was decided or cancelled elsewhere first. */
 export const ALREADY_SETTLED = "Sudah diproses. Daftar diperbarui.";
+
+/** What the answer to a press does to its card and its section. */
+export interface TaskOutcome {
+  /** What stays under the buttons of the card. */
+  onCard: string | null;
+  /** What the section says above its list, as the item leaves it. */
+  onSection: FormState | null;
+  /** Whether the page is read again. */
+  reload: boolean;
+}
+
+/**
+ * A kept decision and one refused as decided elsewhere first both take
+ * the item off the list, so what they say goes above the section; any
+ * other refusal stays on the card.
+ */
+export function taskOutcome(answer: DecisionAnswer): TaskOutcome {
+  if (answer.stale) {
+    return {
+      onCard: null,
+      onSection: { error: ALREADY_SETTLED, done: null },
+      reload: true,
+    };
+  }
+  const onSection = answer.done ? { error: null, done: answer.done } : null;
+  return { onCard: answer.error, onSection, reload: false };
+}
 
 /** A leave request that waits for approval. */
 export interface LeaveTask {
