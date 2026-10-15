@@ -18,10 +18,25 @@ export interface Both<Answer> {
   later: Answer;
 }
 
+/** A lock a third connection takes, and keeps until it is let go. */
+export type Hold = (tx: Database) => Promise<unknown>;
+
+/** A save, and the lock that keeps it waiting part-way. */
+export interface HeldSave<Answer> {
+  hold: Hold;
+  save: Save<Answer>;
+}
+
+export interface BothSettled<Answer> {
+  first: PromiseSettledResult<Answer>;
+  second: PromiseSettledResult<Answer>;
+}
+
 interface Opened {
   admin: Connection;
   first: Connection;
   second: Connection;
+  holder: Connection;
 }
 
 function wait(ms: number): Promise<void> {
@@ -32,13 +47,15 @@ async function open(database: string): Promise<Opened> {
   const admin = await makeOwnTestDatabase(database);
   const first = connect(ownTestDatabaseUrl(database));
   const second = connect(ownTestDatabaseUrl(database));
+  const holder = connect(ownTestDatabaseUrl(database));
   await applyTableChanges(first.db);
-  return { admin, first, second };
+  return { admin, first, second, holder };
 }
 
 async function closeAndDrop(opened: Opened, database: string): Promise<void> {
   await opened.first.close();
   await opened.second.close();
+  await opened.holder.close();
   await dropOwnTestDatabase(opened.admin, database);
 }
 
@@ -72,6 +89,69 @@ async function runAtOnce<Answer>(
   });
   if (!later) throw new Error("The second save was not started.");
   return { sooner, later: await later };
+}
+
+/**
+ * Takes a hold in a transaction of its own, and gives back what lets it
+ * go: that ends the transaction and waits until it has ended.
+ */
+async function takeHold(
+  holder: Connection,
+  hold: Hold,
+): Promise<() => Promise<void>> {
+  const taken = Promise.withResolvers<void>();
+  const letGo = Promise.withResolvers<void>();
+  const held = holder.db.transaction(async (tx) => {
+    await hold(tx);
+    taken.resolve();
+    await letGo.promise;
+  });
+  await Promise.race([taken.promise, held]);
+  return async () => {
+    letGo.resolve();
+    await held;
+  };
+}
+
+/** Whether a promise is settled by now, without waiting for it. */
+function settledBy(promise: Promise<unknown>): () => boolean {
+  let settled = false;
+  const markSettled = () => {
+    settled = true;
+  };
+  promise.then(markSettled, markSettled);
+  return () => settled;
+}
+
+/**
+ * Starts two saves at the same moment on two connections, each kept
+ * waiting part-way by a hold of its own. Confirms both wait, then lets the
+ * second save go on, and the first one only once the second has reached
+ * its next wait: a save with nothing to wait for between its own steps
+ * would otherwise finish before the first one goes on, and the two would
+ * never meet. Gives both outcomes, so a save the database gives up shows
+ * as a failed check.
+ */
+async function runHeld<Answer>(
+  opened: Opened,
+  first: HeldSave<Answer>,
+  second: HeldSave<Answer>,
+): Promise<BothSettled<Answer>> {
+  const letFirstGo = await takeHold(opened.holder, first.hold);
+  const letSecondGo = await takeHold(opened.holder, second.hold);
+  const firstSave = first.save(opened.first.db);
+  const secondSave = second.save(opened.second.db);
+  const both = Promise.allSettled([firstSave, secondSave]);
+  const firstIsDone = settledBy(firstSave);
+  const secondIsDone = settledBy(secondSave);
+  await wait(WAIT_MS);
+  const doneWhileHeld = [firstIsDone(), secondIsDone()];
+  await letSecondGo();
+  await wait(WAIT_MS);
+  await letFirstGo();
+  const [firstOutcome, secondOutcome] = await both;
+  expect(doneWhileHeld).toEqual([false, false]);
+  return { first: firstOutcome, second: secondOutcome };
 }
 
 /**
@@ -112,6 +192,12 @@ export function withOwnTestDatabase(name: string) {
       laterSave: Save<Answer>,
     ): Promise<Both<Answer>> {
       return runAtOnce(connections(), soonerSave, laterSave);
+    },
+    heldAtOnce<Answer>(
+      first: HeldSave<Answer>,
+      second: HeldSave<Answer>,
+    ): Promise<BothSettled<Answer>> {
+      return runHeld(connections(), first, second);
     },
   };
 }

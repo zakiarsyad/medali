@@ -10,7 +10,11 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
-import { type Save, withOwnTestDatabase } from "@/db/test-database-at-once";
+import {
+  type Hold,
+  type Save,
+  withOwnTestDatabase,
+} from "@/db/test-database-at-once";
 import {
   addTestProgram,
   addTestRoom,
@@ -445,5 +449,216 @@ describe("Aktifkan while the student goes on leave at the same moment", () => {
     expect(both.sooner.ok).toBe(true);
     expect(both.later.ok).toBe(true);
     expect((await companionOf(own.db, studentId))?.isActive).toBe(false);
+  });
+});
+
+describe("two people placing in two rooms at the same moment, each removing a place the other one needs gone", () => {
+  /** A student row held as a save that gives the student a room holds it. */
+  function holdStudent(studentId: string): Hold {
+    return (tx) =>
+      tx
+        .select({ id: students.id })
+        .from(students)
+        .where(eq(students.id, studentId))
+        .for("no key update");
+  }
+
+  /** A place held as a save that removes it holds it. */
+  function holdPlace(studentId: string): Hold {
+    return (tx) =>
+      tx
+        .select({ studentId: dormRoomPlaces.studentId })
+        .from(dormRoomPlaces)
+        .where(eq(dormRoomPlaces.studentId, studentId))
+        .for("update");
+  }
+
+  function placeIn(roomId: string, studentId: string): RoomSave {
+    return (db) => placeCompanion(db, MANAGER, { roomId, studentId }, DAY);
+  }
+
+  function saved(value: string) {
+    return { status: "fulfilled", value: { ok: true, value } };
+  }
+
+  /**
+   * A resident of Dana Rakca and one of Wismantara Putri, each with a
+   * place left behind in a room of the other one's dorm.
+   */
+  async function addCrossedResidents() {
+    const program = await addTestProgram(own.db, PROGRAM);
+    const one = await addTestStudent(own.db, program, {
+      nim: "9911261101",
+      name: "Penghuni Uji Rakca",
+    });
+    const other = await addTestStudent(own.db, program, {
+      nim: "9911261102",
+      name: "Penghuni Uji Wismantara",
+      isSeedling: true,
+    });
+    const oneRoom = await addTestRoom(own.db, { number: "T301", capacity: 1 });
+    const otherRoom = await addRoom("T302", 1);
+    await placeTestResident(own.db, oneRoom, other);
+    await placeTestResident(own.db, otherRoom, one);
+    return { one, other, oneRoom, otherRoom };
+  }
+
+  /**
+   * A resident of Wismantara Putri and a kakak pendamping of Dana Rakca,
+   * each with a place left behind in a room of the other one's dorm.
+   */
+  async function addCrossedResidentAndCompanion() {
+    const program = await addTestProgram(own.db, PROGRAM);
+    const resident = await addTestStudent(own.db, program, {
+      nim: "9911261201",
+      name: "Penghuni Uji Wismantara",
+      isSeedling: true,
+    });
+    const companion = await addTestStudent(own.db, program, {
+      nim: "9911241202",
+      name: "Kakak Uji Rakca",
+      cohortYear: 2024,
+    });
+    await addTestCompanion(own.db, companion);
+    const residentRoom = await addRoom("T303", 1);
+    const companionRoom = await addTestRoom(own.db, { number: "T304" });
+    await placeTestResident(own.db, residentRoom, companion);
+    await placeTestResident(own.db, companionRoom, resident);
+    return { resident, companion, residentRoom, companionRoom };
+  }
+
+  it("saves two placings of a resident", async () => {
+    const { one, other, oneRoom, otherRoom } = await addCrossedResidents();
+
+    const both = await own.heldAtOnce(
+      { hold: holdStudent(one), save: place(oneRoom, one) },
+      { hold: holdStudent(other), save: place(otherRoom, other) },
+    );
+
+    expect(both.first).toEqual(
+      saved("Penghuni Uji Rakca diplot ke kamar T301."),
+    );
+    expect(both.second).toEqual(
+      saved("Penghuni Uji Wismantara diplot ke kamar T302."),
+    );
+    expect(await residentsOfRoom(own.db, oneRoom)).toEqual([one]);
+    expect(await residentsOfRoom(own.db, otherRoom)).toEqual([other]);
+  });
+
+  it("saves a placing of a resident and Isi otomatis", async () => {
+    const { one, other, oneRoom, otherRoom } = await addCrossedResidents();
+
+    const both = await own.heldAtOnce(
+      { hold: holdStudent(one), save: place(oneRoom, one) },
+      { hold: holdStudent(other), save: fill(otherRoom) },
+    );
+
+    expect(both.first).toEqual(
+      saved("Penghuni Uji Rakca diplot ke kamar T301."),
+    );
+    expect(both.second).toEqual(saved("1 penghuni diplot ke kamar T302."));
+    expect(await residentsOfRoom(own.db, oneRoom)).toEqual([one]);
+    expect(await residentsOfRoom(own.db, otherRoom)).toEqual([other]);
+  });
+
+  it("saves two Isi otomatis", async () => {
+    const { one, other, oneRoom, otherRoom } = await addCrossedResidents();
+
+    const both = await own.heldAtOnce(
+      { hold: holdStudent(one), save: fill(oneRoom) },
+      { hold: holdStudent(other), save: fill(otherRoom) },
+    );
+
+    expect(both.first).toEqual(saved("1 penghuni diplot ke kamar T301."));
+    expect(both.second).toEqual(saved("1 penghuni diplot ke kamar T302."));
+    expect(await residentsOfRoom(own.db, oneRoom)).toEqual([one]);
+    expect(await residentsOfRoom(own.db, otherRoom)).toEqual([other]);
+  });
+
+  it("saves a placing of a resident and one of a kakak pendamping", async () => {
+    const { resident, companion, residentRoom, companionRoom } =
+      await addCrossedResidentAndCompanion();
+
+    const both = await own.heldAtOnce(
+      { hold: holdStudent(resident), save: place(residentRoom, resident) },
+      {
+        hold: holdStudent(companion),
+        save: placeIn(companionRoom, companion),
+      },
+    );
+
+    expect(both.first).toEqual(
+      saved("Penghuni Uji Wismantara diplot ke kamar T303."),
+    );
+    expect(both.second).toEqual(saved("Kakak Uji Rakca diplot ke kamar T304."));
+    expect(await residentsOfRoom(own.db, residentRoom)).toEqual([resident]);
+    expect(await residentsOfRoom(own.db, companionRoom)).toEqual([]);
+    expect((await companionOf(own.db, companion))?.roomId).toBe(companionRoom);
+  });
+
+  it("saves Isi otomatis and a placing of a kakak pendamping", async () => {
+    const { resident, companion, residentRoom, companionRoom } =
+      await addCrossedResidentAndCompanion();
+
+    const both = await own.heldAtOnce(
+      { hold: holdStudent(resident), save: fill(residentRoom) },
+      {
+        hold: holdStudent(companion),
+        save: placeIn(companionRoom, companion),
+      },
+    );
+
+    expect(both.first).toEqual(saved("1 penghuni diplot ke kamar T303."));
+    expect(both.second).toEqual(saved("Kakak Uji Rakca diplot ke kamar T304."));
+    expect(await residentsOfRoom(own.db, residentRoom)).toEqual([resident]);
+    expect(await residentsOfRoom(own.db, companionRoom)).toEqual([]);
+    expect((await companionOf(own.db, companion))?.roomId).toBe(companionRoom);
+  });
+
+  it("saves two placings of a kakak pendamping", async () => {
+    const program = await addTestProgram(own.db, PROGRAM);
+    const senior = { cohortYear: 2024 };
+    const one = await addTestStudent(own.db, program, {
+      ...senior,
+      nim: "9911241301",
+      name: "Kakak Uji Satu",
+    });
+    const other = await addTestStudent(own.db, program, {
+      ...senior,
+      nim: "9911241302",
+      name: "Kakak Uji Dua",
+    });
+    // One more place left behind in each room. Holding it keeps each save
+    // waiting between the place it removes first and the next one.
+    const leftOne = await addTestStudent(own.db, program, {
+      ...senior,
+      nim: "9911241303",
+      name: "Alumni Uji Satu",
+    });
+    const leftOther = await addTestStudent(own.db, program, {
+      ...senior,
+      nim: "9911241304",
+      name: "Alumni Uji Dua",
+    });
+    await addTestCompanion(own.db, one);
+    await addTestCompanion(own.db, other);
+    const oneRoom = await addTestRoom(own.db, { number: "T305" });
+    const otherRoom = await addTestRoom(own.db, { number: "T306" });
+    await placeTestResident(own.db, oneRoom, other);
+    await placeTestResident(own.db, oneRoom, leftOne);
+    await placeTestResident(own.db, otherRoom, one);
+    await placeTestResident(own.db, otherRoom, leftOther);
+
+    const both = await own.heldAtOnce(
+      { hold: holdPlace(leftOne), save: placeIn(oneRoom, one) },
+      { hold: holdPlace(leftOther), save: placeIn(otherRoom, other) },
+    );
+
+    expect(both.first).toEqual(saved("Kakak Uji Satu diplot ke kamar T305."));
+    expect(both.second).toEqual(saved("Kakak Uji Dua diplot ke kamar T306."));
+    expect(await residentsOfRoom(own.db, oneRoom)).toEqual([]);
+    expect(await residentsOfRoom(own.db, otherRoom)).toEqual([]);
+    expect((await companionOf(own.db, one))?.roomId).toBe(oneRoom);
+    expect((await companionOf(own.db, other))?.roomId).toBe(otherRoom);
   });
 });
