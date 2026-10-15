@@ -3,8 +3,10 @@ import {
   type ActivityLine,
   attendanceOfLine,
   firstDayShown,
+  kehadiranOf,
   linesOf,
   overallAttendance,
+  shownLineOf,
 } from "./dashboard-lines";
 import type { Changed, MarkGroup } from "./dashboard-tally";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
@@ -101,10 +103,69 @@ describe("attendanceOfLine", () => {
       { countId: "c1", dorm: "dana_rakca", isAbsent: true, becomes: "leave" },
     ];
 
-    expect(attendanceOfLine(LINES[1] as ActivityLine, GROUPS, changed)).toEqual(
-      { present: 9, absent: 0, leave: 1 },
-    );
-    expect(attendanceOfLine(LINES[3] as ActivityLine, GROUPS, [])).toBeNull();
+    expect(attendanceOfLine(line({ countId: "c1" }), GROUPS, changed)).toEqual({
+      present: 9,
+      absent: 0,
+      leave: 1,
+    });
+    expect(attendanceOfLine(line({}), GROUPS, [])).toBeNull();
+  });
+});
+
+const RESIDENTS = {
+  wismantara_putra: 5,
+  wismantara_putri: 6,
+  dana_rakca: 30,
+  cipta_bakti: 20,
+};
+
+describe("shownLineOf", () => {
+  it("gives an announced activity the Peserta, Hadir, Izin and Tidak hadir of its count", () => {
+    const changed: Changed[] = [
+      { countId: "c1", dorm: "dana_rakca", isAbsent: false, becomes: "leave" },
+    ];
+
+    expect(
+      shownLineOf(line({ countId: "c1" }), GROUPS, changed, RESIDENTS),
+    ).toMatchObject({
+      participants: 10,
+      attendance: { present: 8, absent: 1, leave: 1 },
+    });
+  });
+
+  it("gives an activity not announced its Peserta as Jadwal harian counts them, and no attendance", () => {
+    const women = { ...TEST_ROW, audience: "women" as const };
+
+    expect(
+      shownLineOf(line({ activity: women }), GROUPS, [], RESIDENTS),
+    ).toMatchObject({ participants: 36, attendance: null });
+  });
+});
+
+describe("kehadiranOf", () => {
+  const COUNTED = { present: 9, absent: 3, leave: 1 };
+
+  it("is the rate of an announced activity that is over, Izin left out", () => {
+    expect(kehadiranOf({ state: "over", attendance: COUNTED })).toEqual({
+      kind: "rate",
+      rate: 75,
+    });
+  });
+
+  it("is Belum diumumkan for an activity that is over without a count", () => {
+    expect(kehadiranOf({ state: "over", attendance: null })).toEqual({
+      kind: "not_announced",
+    });
+  });
+
+  it("is the state of an activity that is not over, announced or not", () => {
+    expect(kehadiranOf({ state: "running", attendance: COUNTED })).toEqual({
+      kind: "state",
+      state: "running",
+    });
+    expect(
+      kehadiranOf({ state: "today_not_started", attendance: null }),
+    ).toEqual({ kind: "state", state: "today_not_started" });
   });
 });
 

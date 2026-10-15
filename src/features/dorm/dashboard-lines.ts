@@ -1,13 +1,16 @@
 import type { CampusMoment } from "@/academic-periods/campus-clock";
 import { daysAfter } from "@/academic-periods/days-after";
+import { countAudience, type ResidentsByDorm } from "./activity-audience";
 import { takingPlaceOn } from "./activity-days";
 import type { ActivityRow } from "./activity-row";
 import { type ActivityState, activityState } from "./activity-state";
+import { attendanceRate } from "./attendance-rate";
 import {
   type Attendance,
   type Changed,
   type MarkGroup,
   type Place,
+  participantsOf,
   tallyWhere,
 } from "./dashboard-tally";
 
@@ -102,6 +105,57 @@ export function attendanceOfLine(
   if (line.countId === null) return null;
   const { countId } = line;
   return tallyWhere(groups, changed, (place) => place.countId === countId);
+}
+
+/** A line of Kehadiran kegiatan. */
+export interface ShownLine {
+  day: string;
+  activity: ActivityRow;
+  state: ActivityState;
+  /** Those of its announced count, or as Jadwal harian counts them before. */
+  participants: number;
+  /** Hadir, Tidak hadir and Izin of its announced count; null before it. */
+  attendance: Attendance | null;
+}
+
+/**
+ * A line as Kehadiran kegiatan shows it: an announced activity with the
+ * Peserta of its count, and one not announced with the residents of the
+ * dorms it is for.
+ */
+export function shownLineOf(
+  line: ActivityLine,
+  groups: MarkGroup[],
+  changed: Changed[],
+  residents: ResidentsByDorm,
+): ShownLine {
+  const { day, activity, state } = line;
+  const attendance = attendanceOfLine(line, groups, changed);
+  const participants =
+    attendance === null
+      ? countAudience(residents, activity.audience)
+      : participantsOf(attendance);
+  return { day, activity, state, participants, attendance };
+}
+
+/** What the Kehadiran cell of a line shows. */
+export type Kehadiran =
+  | { kind: "rate"; rate: number | null }
+  | { kind: "not_announced" }
+  | { kind: "state"; state: ActivityState };
+
+/**
+ * Kehadiran of a line: the rate of an announced activity that is over,
+ * "Belum diumumkan" for one over without a count, and the state of one
+ * that is not over.
+ */
+export function kehadiranOf(
+  line: Pick<ShownLine, "state" | "attendance">,
+): Kehadiran {
+  if (line.state !== "over") return { kind: "state", state: line.state };
+  if (line.attendance === null) return { kind: "not_announced" };
+  const { present, absent } = line.attendance;
+  return { kind: "rate", rate: attendanceRate(present, present + absent) };
 }
 
 /** The attendance of some activities, and how many they are. */

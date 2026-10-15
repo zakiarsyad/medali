@@ -4,25 +4,41 @@ import { campusDay } from "@/academic-periods/campus-day";
 import type { Database } from "@/db/connect";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_IDS } from "@/dorms/dorms";
+import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { ResidentsByDorm } from "./activity-audience";
 import { readAnnouncedCounts, readCountMarks } from "./dashboard-attendance";
 import { type LeaveNumbers, readLeaveNumbers } from "./dashboard-leave";
 import {
+  type ActivityLine,
   type CountedAttendance,
   daysShown,
   linesOf,
   overallAttendance,
+  type ShownLine,
+  shownLineOf,
 } from "./dashboard-lines";
+import type { Changed, MarkGroup } from "./dashboard-tally";
 import { readActivityRows } from "./leave-store";
 import { countResidentsByDorm } from "./resident-counts";
 
+/** One page of Kehadiran kegiatan, and how many lines it has in all. */
+export interface LinePage {
+  lines: ShownLine[];
+  matching: number;
+  /** The page shown: the one asked for, or the last one there is. */
+  page: number;
+}
+
 /** What Dashboard asrama shows. */
 export interface DashboardView {
+  /** Today on campus. */
+  today: string;
   /** The residents of each dorm today. */
   residents: ResidentsByDorm;
   leave: LeaveNumbers;
   /** Kehadiran 7 hari terakhir. */
   overall: CountedAttendance;
+  activities: LinePage;
 }
 
 /** Who reads Dashboard asrama. */
@@ -31,15 +47,35 @@ export interface DashboardReader {
   visible: SQL;
 }
 
+function pageOfLines(
+  lines: ActivityLine[],
+  page: number,
+  counted: { groups: MarkGroup[]; changed: Changed[] },
+  residents: ResidentsByDorm,
+): LinePage {
+  const shownPage = pageWithin(page, lines.length);
+  const start = (shownPage - 1) * PAGE_SIZE;
+  const { groups, changed } = counted;
+  return {
+    lines: lines
+      .slice(start, start + PAGE_SIZE)
+      .map((line) => shownLineOf(line, groups, changed, residents)),
+    matching: lines.length,
+    page: shownPage,
+  };
+}
+
 /**
- * Dashboard asrama at a moment, among the students the account may see.
- * Every number is counted from the records each time: nothing is kept
- * for it. A fixed number of reads, however many activities there are.
+ * Dashboard asrama at a moment, among the students the account may see,
+ * with one page of Kehadiran kegiatan. Every number is counted from the
+ * records each time: nothing is kept for it. A fixed number of reads,
+ * however many activities there are.
  */
 export async function loadDashboard(
   db: Database,
   reader: DashboardReader,
   moment: Date,
+  page = 1,
 ): Promise<DashboardView> {
   const now = { day: campusDay(moment), time: campusTime(moment) };
   const days = daysShown(now.day);
@@ -52,16 +88,19 @@ export async function loadDashboard(
     readAnnouncedCounts(db, days),
   ]);
   const lines = linesOf(rows, counts, now);
-  const { groups, changed } = await readCountMarks(
+  const counted = await readCountMarks(
     db,
     lines,
     days,
     visible,
     dormCohorts ?? [],
   );
+  const { groups, changed } = counted;
   return {
+    today: now.day,
     residents,
     leave,
     overall: overallAttendance(lines, groups, changed),
+    activities: pageOfLines(lines, page, counted, residents),
   };
 }

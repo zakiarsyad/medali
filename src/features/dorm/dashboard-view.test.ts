@@ -211,6 +211,51 @@ describe("loadDashboard", () => {
     });
   });
 
+  it("lists today's and the 7 dates before's activities, the latest first, with the numbers of the announced counts", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addYesterdaysCount(db, records);
+
+      const view = await loadDashboard(db, { visible: EVERYONE }, MOMENT);
+
+      const { lines, matching, page } = view.activities;
+      expect({ matching, page }).toEqual({ matching: 8, page: 1 });
+      expect(lines.map((line) => line.day)).toEqual([
+        TODAY,
+        YESTERDAY,
+        "3800-10-12",
+        "3800-10-11",
+        "3800-10-10",
+        "3800-10-09",
+        "3800-10-08",
+        "3800-10-07",
+      ]);
+      expect(lines[0]).toMatchObject({ participants: 4, attendance: null });
+      expect(lines[1]).toMatchObject({
+        participants: 4,
+        attendance: { present: 2, absent: 2, leave: 0 },
+      });
+    });
+  });
+
+  it("shows 25 lines a page, and the last page for a page past it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      for (const startTime of ["06:30", "07:30", "08:30"]) {
+        await addTestActivity(db, records.counter.id, {
+          versions: [{ startsOn: "3800-08-01", startTime, endTime: "09:00" }],
+        });
+      }
+
+      const second = await loadDashboard(db, { visible: EVERYONE }, MOMENT, 2);
+      const past = await loadDashboard(db, { visible: EVERYONE }, MOMENT, 9);
+
+      expect(second.activities.matching).toBe(32);
+      expect(second.activities.lines).toHaveLength(7);
+      expect(past.activities.page).toBe(2);
+    });
+  });
+
   it("counts only the students of their own program for Ketua Program Studi", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);

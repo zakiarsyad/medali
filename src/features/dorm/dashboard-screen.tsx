@@ -2,6 +2,7 @@ import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import { attendanceRate, rateWords } from "./attendance-rate";
+import { DashboardActivities } from "./dashboard-activities";
 import type { DashboardView } from "./dashboard-view";
 import {
   attendanceNote,
@@ -46,9 +47,12 @@ function DashboardNumbers({ view }: { view: DashboardView }) {
 export function DashboardScreen({
   tabs,
   view,
+  mayCount,
 }: {
   tabs: TabLinksProps;
   view: DashboardView;
+  /** Whether the account counts the attendance, for the link of a row. */
+  mayCount: boolean;
 }) {
   return (
     <>
@@ -58,6 +62,11 @@ export function DashboardScreen({
       </PageHead>
       <TabLinks {...tabs} />
       <DashboardNumbers view={view} />
+      <DashboardActivities
+        activities={view.activities}
+        today={view.today}
+        mayCount={mayCount}
+      />
     </>
   );
 }

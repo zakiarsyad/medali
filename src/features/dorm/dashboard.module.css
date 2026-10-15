@@ -1,0 +1,13 @@
+/* The heading of a part, with a line beside it that folds under it on a phone. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-md);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
