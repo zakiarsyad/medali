@@ -9,7 +9,7 @@ import type { PpksActivity } from "./ppks-activities";
 import { type FormTarget, PpksPanel } from "./ppks-panel";
 import type { TahapBreakdown } from "./stage-breakdown";
 import { type Parity, semesterOf, TAHAP } from "./stages";
-import { type SemesterCounts, tahapCount } from "./student-numbers";
+import { autoTarget, type SemesterCounts, tahapCount } from "./student-numbers";
 
 const PARITIES: { parity: Parity; label: string; short: string }[] = [
   { parity: "odd", label: "Semester ganjil", short: "ganjil" },
@@ -87,6 +87,8 @@ export function StagesSection({
   function listOf(listSemester: number | null) {
     return {
       semester: listSemester,
+      autoTarget:
+        listSemester === null ? null : autoTarget(semesterCounts, listSemester),
       activities: activities.filter(
         (activity) => activity.semester === listSemester,
       ),

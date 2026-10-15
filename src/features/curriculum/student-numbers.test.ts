@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  autoTarget,
   type CohortCount,
   semesterCounts,
   studentsIn,
@@ -52,6 +53,45 @@ describe("semesterCounts", () => {
 
     for (let semester = 1; semester <= 8; semester++) {
       expect(studentsIn(counts, semester)).toBe(0);
+    }
+  });
+});
+
+describe("autoTarget", () => {
+  const counts = semesterCounts(COHORTS, ODD_2026);
+
+  it("is the active students of the activity's semester", () => {
+    expect(autoTarget(counts, 3)).toBe(110);
+  });
+
+  it("takes the semester before when the semester has no active student", () => {
+    expect(autoTarget(counts, 4)).toBe(110);
+    expect(autoTarget(counts, 2)).toBe(120);
+  });
+
+  it("does not take the semester before when the semester has students", () => {
+    const counted = semesterCounts(
+      [
+        { cohortYear: 2025, students: 110 },
+        { cohortYear: 2023, students: 4 },
+        { cohortYear: 2022, students: 6 },
+      ],
+      ODD_2026,
+    );
+
+    expect(autoTarget(counted, 8)).toBe(6);
+  });
+
+  it("is 0 for semester 1 without active students, as it has none before it", () => {
+    expect(autoTarget(semesterCounts([], ODD_2026), 1)).toBe(0);
+    expect(autoTarget(semesterCounts(COHORTS, EVEN_2026), 1)).toBe(0);
+  });
+
+  it("is 0 while no period runs", () => {
+    const none = semesterCounts(COHORTS, null);
+
+    for (let semester = 1; semester <= 8; semester++) {
+      expect(autoTarget(none, semester)).toBe(0);
     }
   });
 });

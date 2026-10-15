@@ -81,12 +81,26 @@ The issue did not say, so these were decided:
 5. The number sits under the description of the tahap, as in the
    prototype, written with a dot for thousands, such as "1.250
    mahasiswa aktif".
+6. A PPKS activity of semester S with no Target peserta shows the active
+   students in semester S. When S has none, it shows those in the
+   semester just before; semester 1 with none shows 0. Only one semester
+   back is looked at, as in the prototype. While no period runs, it
+   shows 0. The word "otomatis" sits small beside the number; on a
+   phone it stays inside the activity's block.
+7. "Tambah kegiatan PPKS" starts Target peserta with that same number.
+   Whatever is saved is a typed target. Emptying the field saves no
+   target, so the row shows the number filled in by the app again.
+   "Ubah" on an activity with no target keeps the field empty, so
+   saving it keeps it filled in by the app.
+8. The list of special and additional activities follows no semester,
+   so it has no number filled in by the app: a row with no target
+   still shows "-", and its form starts empty.
 
 ## Steps
 
 - [x] 1. The count of active students per tahap shows in the tahap
   boxes.
-- [ ] 2. Target peserta of a PPKS activity defaults to the semester's
+- [x] 2. Target peserta of a PPKS activity defaults to the semester's
   count.
 - [ ] 3. Rerata tahap and the score per nilai show in Penjabaran MEDALI,
   limited to the viewer's students.

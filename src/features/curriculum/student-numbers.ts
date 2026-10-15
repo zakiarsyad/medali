@@ -44,6 +44,17 @@ export function semesterCounts(
   return counts;
 }
 
+/**
+ * The Target peserta of a PPKS activity that has none typed: the active
+ * students of its semester. A semester without any, such as one whose
+ * new angkatan is not put in yet, takes the semester before it.
+ */
+export function autoTarget(counts: SemesterCounts, semester: number): number {
+  const inSemester = studentsIn(counts, semester);
+  if (inSemester > 0) return inSemester;
+  return studentsIn(counts, semester - 1);
+}
+
 /** The active students whose semester falls in a tahap. */
 export function tahapCount(counts: SemesterCounts, tahapNo: number): number {
   let total = 0;

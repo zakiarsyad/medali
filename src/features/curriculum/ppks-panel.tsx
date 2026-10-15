@@ -37,6 +37,7 @@ export function PpksPanel({
   isFormOpen,
   onOpen,
   onClose,
+  autoTarget,
 }: {
   semester: number | null;
   /** The line under the heading. */
@@ -54,6 +55,11 @@ export function PpksPanel({
   onOpen: (target: FormTarget) => void;
   /** Closes the form this list had open when it was last shown. */
   onClose: () => void;
+  /**
+   * The Target peserta of an activity with none typed, or null for the
+   * special and additional activities, which follow no semester.
+   */
+  autoTarget: number | null;
 }) {
   const [said, setSaid] = useState<Said | null>(null);
   const words = wordsOf(semester);
@@ -102,6 +108,7 @@ export function PpksPanel({
           semester={semester}
           activity={open === "new" ? null : open}
           newActivityId={newActivityId}
+          autoTarget={autoTarget}
           values={values}
           onSaved={(text) => closeWith(text, null)}
           onRemoved={closeWith}
@@ -111,6 +118,7 @@ export function PpksPanel({
       <PpksTable
         activities={activities}
         emptyText={words.empty}
+        autoTarget={autoTarget}
         onChange={mayManage ? openFor : null}
       />
     </section>
