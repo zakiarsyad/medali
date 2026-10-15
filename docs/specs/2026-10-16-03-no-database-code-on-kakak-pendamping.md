@@ -77,5 +77,5 @@ The issue did not say, so these were decided:
 
 - [x] 1. The rule for which Asrama fits a student lives in a file with
   no database code, and the form and the query both take it from there.
-- [ ] 2. The check for browser parts covers every browser part of the
+- [x] 2. The check for browser parts covers every browser part of the
   Asrama menu.
