@@ -104,7 +104,7 @@ them.
 
 ## Steps
 
-- [ ] 1. Sample health notes for residents in every category are
+- [x] 1. Sample health notes for residents in every category are
   added to the record that Health notes brings.
 - [ ] 2. The rights to write and to read dorm health notes are added to
   the permission list, with their checks.

@@ -38,7 +38,10 @@ import { addSampleDormViolations } from "./seed-dorm-violations";
 import { addSampleDormWarnings } from "./seed-dorm-warnings";
 import { addSampleDorms } from "./seed-dorms";
 import { addSampleFitnessScores } from "./seed-fitness-scores";
-import { addSampleHealthNotes } from "./seed-health-notes";
+import {
+  addSampleDormHealthNotes,
+  addSampleHealthNotes,
+} from "./seed-health-notes";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
 import { addSampleMentorReplacements } from "./seed-mentor-replacements";
@@ -176,7 +179,8 @@ async function addSampleFirstYears(
  * clarifications of it in every status, and two schedules of the special
  * and additional activities for chosen angkatan and classes, SIKU
  * gains and losses of the sample students, and their requests for a SIKU
- * gain in every status, and consents to counselling in every status.
+ * gain in every status, consents to counselling in every status, and
+ * health notes of students in and out of the dorm in every category.
  * Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -272,5 +276,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleCounsellingConsents(tx, today);
     await addSampleFitnessScores(tx, groups, today);
     await addSampleHealthNotes(tx, today);
+    await addSampleDormHealthNotes(tx, running, today);
   });
 }
