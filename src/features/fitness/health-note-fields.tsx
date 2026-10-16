@@ -95,8 +95,7 @@ function IllnessNotes({
  * The fields of a note: Tanggal, Pemeriksa, "Riwayat penyakit" with a
  * short note for each illness picked, "Riwayat lain", "Obat yang rutin
  * diminum", "Catatan dan rekomendasi" and "Pertimbangan kategori", with
- * the test's category and the final one beside it. Pemeriksa is not
- * kept by the screen: it is typed anew for each note.
+ * the test's category and the final one beside it.
  */
 export function NoteFields({
   draft,
@@ -137,6 +136,10 @@ export function NoteFields({
           className={shared.input}
           maxLength={SHORT_TEXT_MAX}
           placeholder="Dokter atau tim kesehatan"
+          value={draft.examiner}
+          onChange={(event) =>
+            onDraft({ ...draft, examiner: event.target.value })
+          }
         />
       </label>
       <fieldset className={`${shared.roles} ${styles.full}`}>

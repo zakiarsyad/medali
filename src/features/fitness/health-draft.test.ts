@@ -32,6 +32,7 @@ describe("draftFrom", () => {
 
   it("starts from the latest note, keeping its chosen category as set by hand", () => {
     expect(draftFrom(LATEST)).toEqual({
+      examiner: "",
       illnesses: ["asthma"],
       illnessNotes: { asthma: "sejak SMP" },
       otherHistory: "Sinusitis",
@@ -40,6 +41,14 @@ describe("draftFrom", () => {
       category: "attention",
       categoryTouched: true,
     });
+  });
+
+  it("leaves Pemeriksa empty, to be typed fresh for each note, also after a save fills the form from the note just saved", () => {
+    const typed = { ...draftFrom(LATEST), examiner: "dr. Baru" };
+    const saved = { ...LATEST, examiner: typed.examiner };
+
+    expect(draftFrom(saved).examiner).toBe("");
+    expect(EMPTY_DRAFT.examiner).toBe("");
   });
 
   it("lets the suggestion work for a latest note that follows the test", () => {
