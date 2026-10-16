@@ -3,9 +3,17 @@
  * the browser, so nothing here may take from the database code.
  */
 
+import { DORM_SHORT_NAMES, type DormId } from "@/dorms/dorms";
 import type { ShownCategory } from "./fitness-category";
 import { CATEGORY_WORDS } from "./fitness-words";
-import type { Illness, NoteCategory, NoteContent } from "./health-ids";
+import type {
+  HealthNote,
+  Illness,
+  NoteCategory,
+  NoteContent,
+  Residence,
+} from "./health-ids";
+import type { RecapNumbers, RecapRoom } from "./health-recap";
 
 /** Each choice of "Riwayat penyakit", in the prototype's words. */
 export const ILLNESS_WORDS: Record<Illness, string> = {
@@ -85,4 +93,57 @@ export function categoryHint(
   final: ShownCategory,
 ): string {
   return `Hasil tes: ${smallCategory(test)}. Kategori akhir: ${smallCategory(final)}.`;
+}
+
+/** Who examined: Pemeriksa, or who saved the note when none is named. */
+export function examinerOf(
+  note: Pick<HealthNote, "examiner" | "savedBy">,
+): string {
+  return note.examiner ?? note.savedBy;
+}
+
+function shown(amount: number): string {
+  return amount.toLocaleString("id-ID");
+}
+
+/** The hint of "Mahasiswa aktif". */
+export function residenceHint(numbers: RecapNumbers): string {
+  const nonDorm = numbers.students - numbers.dorm;
+  return `${shown(numbers.dorm)} asrama · ${shown(nonDorm)} non asrama`;
+}
+
+/** The hint of "Sakit atau punya riwayat penyakit": their share of the students. */
+export function listedHint(numbers: RecapNumbers): string {
+  if (numbers.students === 0) return "0% mahasiswa";
+  const share = Math.round((numbers.listed / numbers.students) * 100);
+  return `${share}% mahasiswa`;
+}
+
+/** The hint of "Perlu tindak lanjut medis" in the recap. */
+export function medicalHint(numbers: RecapNumbers): string {
+  if (numbers.medicalWithoutNote === 0) return "catatan lengkap";
+  return `${shown(numbers.medicalWithoutNote)} belum punya catatan`;
+}
+
+/** "Kamar" of the recap: the room of a resident, or Non asrama. */
+export function roomWords(dorm: DormId | null, room: RecapRoom | null): string {
+  if (dorm === null) return "Non asrama";
+  const name = DORM_SHORT_NAMES[dorm];
+  if (room === null) return `${name}, belum diplot`;
+  return `${name}, lantai ${room.floor}, kamar ${room.number}`;
+}
+
+/** Each choice of the recap's filter "Tempat tinggal". */
+export const RESIDENCE_WORDS: Record<Residence, string> = {
+  all: "Asrama dan non asrama",
+  dorm: "Asrama",
+  non_dorm: "Non asrama",
+};
+
+/** What the recap says when nobody matches. */
+export const NOBODY_ILL = "Tidak ada mahasiswa yang sakit pada filter ini.";
+
+/** The line above the recap filtered by an illness. */
+export function illnessLine(matching: number, illness: Illness): string {
+  return `${shown(matching)} mahasiswa dengan riwayat ${ILLNESS_WORDS[illness].toLowerCase()}.`;
 }

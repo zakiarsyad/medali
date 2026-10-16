@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 import { ILLNESSES } from "./health-ids";
 import {
   categoryHint,
+  examinerOf,
   ILLNESS_WORDS,
+  listedHint,
+  medicalHint,
   noteText,
+  residenceHint,
+  roomWords,
   savedNoteMessage,
 } from "./health-words";
 
@@ -62,6 +67,53 @@ describe("categoryHint", () => {
     expect(categoryHint("untested", "untested")).toBe(
       "Hasil tes: belum dites. Kategori akhir: belum dites.",
     );
+  });
+});
+
+describe("examinerOf", () => {
+  it("names Pemeriksa, or who saved the note when none is named", () => {
+    const note = { examiner: null, savedBy: "Penilai Contoh" };
+    expect(examinerOf(note)).toBe("Penilai Contoh");
+    expect(examinerOf({ ...note, examiner: "dr. Contoh" })).toBe("dr. Contoh");
+  });
+});
+
+describe("the hints of the recap's numbers", () => {
+  const NUMBERS = {
+    students: 6,
+    dorm: 1,
+    listed: 5,
+    attention: 1,
+    medical: 2,
+    medicalWithoutNote: 2,
+  };
+
+  it("splits Mahasiswa aktif by where they live", () => {
+    expect(residenceHint(NUMBERS)).toBe("1 asrama · 5 non asrama");
+  });
+
+  it("gives the share of the ill as a whole percent, 0 with no student", () => {
+    expect(listedHint(NUMBERS)).toBe("83% mahasiswa");
+    expect(listedHint({ ...NUMBERS, students: 0, listed: 0 })).toBe(
+      "0% mahasiswa",
+    );
+  });
+
+  it("tells how many in Perlu tindak lanjut medis have no note, or that all have one", () => {
+    expect(medicalHint(NUMBERS)).toBe("2 belum punya catatan");
+    expect(medicalHint({ ...NUMBERS, medicalWithoutNote: 0 })).toBe(
+      "catatan lengkap",
+    );
+  });
+});
+
+describe("roomWords", () => {
+  it("writes Non asrama, a room, or a resident not placed yet", () => {
+    expect(roomWords(null, null)).toBe("Non asrama");
+    expect(
+      roomWords("dana_rakca", { dorm: "dana_rakca", floor: 2, number: "12" }),
+    ).toBe("Dana Rakca, lantai 2, kamar 12");
+    expect(roomWords("cipta_bakti", null)).toBe("Cipta Bakti, belum diplot");
   });
 });
 

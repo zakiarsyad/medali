@@ -23,6 +23,7 @@ import { NOTE_DAY_IN_FUTURE } from "./health-input";
 import type { HealthSubject } from "./health-subject";
 import {
   categoryHint,
+  examinerOf,
   FOLLOW_TEST_WORDS,
   ILLNESS_WORDS,
   NO_NOTE_YET,
@@ -40,11 +41,6 @@ export function SubjectSummary({ subject }: { subject: HealthSubject }) {
       sekarang: <FinalCategoryBadge final={final} showsMark />
     </p>
   );
-}
-
-/** Who examined: Pemeriksa, or who saved the note when none is named. */
-export function examinerOf(note: HealthNote): string {
-  return note.examiner ?? note.savedBy;
 }
 
 /** "Catatan sebelumnya": the notes before the latest, newest first. */

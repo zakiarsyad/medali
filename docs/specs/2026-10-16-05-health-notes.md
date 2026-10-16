@@ -166,6 +166,23 @@ residents' notes into the same record.
 18. Notes are kept like fitness scores: each note is a new row that
     cannot be changed or deleted, so the notes are their own log. The
     form makes the note's key, so a form sent twice is kept once.
+19. Picking a student fills every field from the latest note except
+    Pemeriksa, which is typed anew for each note. After a save the
+    student stays picked and the form starts from the note just saved.
+20. A student without a note who is not in Perlu perhatian or worse
+    shows "Tidak ada catatan", as in the prototype.
+21. The bars of "Kategori" and the numbers "Perlu perhatian" and "Perlu
+    tindak lanjut medis" at the top count the final category. "Sudah
+    dites", "Rerata skor" and "belum mengikuti tes kebugaran" stay about
+    the test itself. "Hasil tes kebugaran" lists the most serious final
+    category first, then the lowest score, then the name, as in the
+    prototype.
+22. In the recap an illness history is an illness picked or "Riwayat
+    lain" filled. Kamar shows the dorm, floor and room, or "belum
+    diplot" for a resident with no room. The search and filters of the
+    recap are sent with "Cari", as on the student list; they keep the
+    choices of "Hasil tes kebugaran", but moving through that list
+    starts the recap's choices again.
 
 ## Steps
 
@@ -175,5 +192,5 @@ residents' notes into the same record.
 - [x] 3. The form writes a note for a non-dorm student.
 - [x] 4. Categories everywhere on the tab use the final category, with
   the "Belum ada catatan" mark.
-- [ ] 5. "Rekap data kesehatan seluruh mahasiswa" for Kepala Unit, with
+- [x] 5. "Rekap data kesehatan seluruh mahasiswa" for Kepala Unit, with
   numbers, filters and the reading log.

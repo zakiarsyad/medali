@@ -13,6 +13,7 @@ export function latestHealthNotes(db: Database) {
       studentId: healthNotes.studentId,
       noteId: healthNotes.id,
       category: healthNotes.category,
+      otherHistory: healthNotes.otherHistory,
     })
     .from(healthNotes)
     .orderBy(
