@@ -1,21 +1,48 @@
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
-import { CategoryBadge } from "./category-badge";
+import { FinalCategoryBadge } from "./category-badge";
 import styles from "./fitness.module.css";
-import type { FitnessListRow } from "./fitness-board";
-import { shownCategoryOf } from "./fitness-category";
-import type { FitnessLimits } from "./fitness-ids";
+import type { FitnessListRow, RowHealth } from "./fitness-board";
+import type { ShownCategory } from "./fitness-category";
+import { SERIOUSNESS } from "./health-category";
+import { NO_NOTE, NOTE_MISSING, noteText } from "./health-words";
 
 export const NO_FITNESS_MATCHES = "Tidak ada data pada filter ini.";
 
+function needsNote(category: ShownCategory): boolean {
+  if (category === "untested") return false;
+  return SERIOUSNESS[category] >= SERIOUSNESS.attention;
+}
+
+/** "Catatan kesehatan" of a student whose notes the account reads. */
+function NoteCell({
+  health,
+  category,
+}: {
+  health: RowHealth;
+  category: ShownCategory;
+}) {
+  if (health.note !== null) return noteText(health.note);
+  if (needsNote(category)) {
+    return (
+      <span
+        className={`${shared.badge} ${styles.category} ${styles.attention}`}
+      >
+        {NOTE_MISSING}
+      </span>
+    );
+  }
+  return <span className={styles.muted}>{NO_NOTE}</span>;
+}
+
 function StudentRow({
   row,
-  limits,
+  showsNotes,
 }: {
   row: FitnessListRow;
-  limits: FitnessLimits;
+  showsNotes: boolean;
 }) {
-  const { latest } = row;
+  const { latest, health, final } = row;
   return (
     <tr>
       <td className={shared.rowHeading} data-title="Mahasiswa">
@@ -29,25 +56,30 @@ function StudentRow({
         {latest ? latest.score : "-"}
       </td>
       <td data-title="Kategori">
-        <CategoryBadge
-          category={shownCategoryOf(latest?.score ?? null, limits)}
-        />
+        <FinalCategoryBadge final={final} showsMark={health !== null} />
       </td>
+      {showsNotes && (
+        <td data-title="Catatan kesehatan">
+          {health && <NoteCell health={health} category={final.category} />}
+        </td>
+      )}
     </tr>
   );
 }
 
 /**
  * "Hasil tes kebugaran": each student with the day of their latest test,
- * its score and its category with the limits in force, or Belum dites.
- * On a phone each student is a block of its own.
+ * its score and their final category, or Belum dites. A role that reads
+ * health notes also gets "Catatan kesehatan", filled on the rows whose
+ * notes it reads. On a phone each student is a block of its own.
  */
 export function FitnessListTable({
   rows,
-  limits,
+  showsNotes,
 }: {
   rows: readonly FitnessListRow[];
-  limits: FitnessLimits;
+  /** Whether the account reads the notes of any student here. */
+  showsNotes: boolean;
 }) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_FITNESS_MATCHES}</p>;
@@ -61,11 +93,12 @@ export function FitnessListTable({
             <th>Tes</th>
             <th>Skor</th>
             <th>Kategori</th>
+            {showsNotes && <th>Catatan kesehatan</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <StudentRow key={row.id} row={row} limits={limits} />
+            <StudentRow key={row.id} row={row} showsNotes={showsNotes} />
           ))}
         </tbody>
       </table>

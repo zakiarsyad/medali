@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryOf, categoryRange, shownCategoryOf } from "./fitness-category";
+import { categoryOf, categoryRange } from "./fitness-category";
 import { type FitnessLimits, STARTING_LIMITS } from "./fitness-ids";
 
 describe("categoryOf", () => {
@@ -21,17 +21,6 @@ describe("categoryOf", () => {
 
     expect(categoryOf(72, STARTING_LIMITS)).toBe("good");
     expect(categoryOf(72, limits)).toBe("attention");
-  });
-});
-
-describe("shownCategoryOf", () => {
-  it("gives Belum dites for a student with no test", () => {
-    expect(shownCategoryOf(null, STARTING_LIMITS)).toBe("untested");
-  });
-
-  it("gives the category of the latest score otherwise, 0 among them", () => {
-    expect(shownCategoryOf(0, STARTING_LIMITS)).toBe("medical");
-    expect(shownCategoryOf(90, STARTING_LIMITS)).toBe("excellent");
   });
 });
 

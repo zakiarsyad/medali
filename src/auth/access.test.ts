@@ -831,6 +831,54 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit, Penilai Mahasiswa and Pengasuh read health notes, on Penilaian jasmani", () => {
+    expect(ACTION_TITLES.view_health_notes).toBe("Melihat catatan kesehatan");
+    for (const role of ["head_of_unit", "assessor", "mentor"] as const) {
+      expect(may([role], "view_health_notes")).toBe(true);
+      expect(mayOpenTab([role], "assessment", "fitness")).toBe(true);
+    }
+  });
+
+  it("refuses every other role to read health notes, Direktur, Ketua Program Studi, Konselor, the BAM roles and Mahasiswa among them", () => {
+    const readers: RoleId[] = ["head_of_unit", "assessor", "mentor"];
+    const others = ROLE_IDS.filter((role) => !readers.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "counsellor",
+        "bam_health",
+        "bam_bphk",
+        "dorm_manager",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_health_notes")).toBe(false);
+    }
+  });
+
+  it("lets Kepala Unit alone read the recap of every student's health", () => {
+    expect(ACTION_TITLES.view_health_recap).toBe(
+      "Rekap data kesehatan seluruh mahasiswa",
+    );
+    expect(may(["head_of_unit"], "view_health_recap")).toBe(true);
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "assessor",
+        "mentor",
+        "director",
+        "head_of_program",
+        "bam_health",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_health_recap")).toBe(false);
+    }
+  });
+
   it("opens Asesmen karakter to Direktur, Ketua Program Studi and Pengasuh to read, and not to Mahasiswa", () => {
     for (const role of ["director", "head_of_program", "mentor"] as const) {
       expect(mayOpenTab([role], "assessment", "character_test")).toBe(true);
@@ -2439,6 +2487,30 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     expect(rowLimitForAction(account(["mentor"]), "view_siku")).toEqual(
       OWN_MENTEES,
     );
+  });
+
+  it("lets each reader of health notes read only its own students' notes, and Ketua Program Studi none", () => {
+    expect(
+      rowLimitForAction(account(["head_of_unit"]), "view_health_notes"),
+    ).toEqual(EVERY_ROW);
+    expect(
+      rowLimitForAction(account(["assessor"]), "view_health_notes"),
+    ).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(account(["mentor"]), "view_health_notes")).toEqual(
+      OWN_MENTEES,
+    );
+    expect(
+      rowLimitForAction(account(["head_of_program"], 7), "view_health_notes"),
+    ).toEqual(NO_ROW);
+  });
+
+  it("keeps Pengasuh who is also Ketua Program Studi to their own mentees' health notes", () => {
+    expect(
+      rowLimitForAction(
+        account(["mentor", "head_of_program"], 7),
+        "view_health_notes",
+      ),
+    ).toEqual(OWN_MENTEES);
   });
 
   it("keeps Pengasuh who is also Konselor to their own mentees on Penilaian SIKU", () => {

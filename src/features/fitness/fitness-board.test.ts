@@ -1,20 +1,22 @@
 // Sample NIMs of this file: 9986200100 to 9986200199.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestStudent } from "@/dorms/test-records";
-import { START_PARAMS } from "./fitness-address";
+import { type FitnessFilter, START_PARAMS } from "./fitness-address";
 import { readFitnessList, readFitnessNumbers } from "./fitness-board";
 import { STARTING_LIMITS } from "./fitness-ids";
-import { fitnessVisibleTo } from "./fitness-readers";
+import { fitnessVisibleTo, healthReadableTo } from "./fitness-readers";
 import {
   addTestActor,
   addTestGroup,
   addTestScores,
   addTestStudents,
 } from "./test-fitness";
+import { addTestNote, type TestNote } from "./test-health";
 
 const inTestDatabase = withTestDatabase();
 
@@ -87,6 +89,8 @@ async function addBoard(db: Database) {
     kepala,
     head: { ...head, studyProgramId: a.programId },
     mentor,
+    other,
+    programA: a.programId,
     ids: { a1, a2, a3, b1, b2 },
   };
 }
@@ -179,6 +183,8 @@ describe("readFitnessList", () => {
         nim: "9986200111",
         program: "Prodi Uji Jasmani B",
         latest: { score: 75, testedOn: "2026-10-01" },
+        final: { category: "good", fromNote: false },
+        health: null,
       });
       expect(list.rows[3]?.latest).toBeNull();
     });
@@ -315,6 +321,174 @@ describe("readFitnessList", () => {
       expect(first.rows).toHaveLength(25);
       expect(second.rows).toHaveLength(2);
       expect(second.page).toBe(2);
+    });
+  });
+});
+
+/**
+ * The board with health notes: A1 (90, Prima) has a note "Perlu
+ * perhatian" saved after an earlier "Baik"; B1 (75, Baik) a note "Baik";
+ * A3 (no test) a note "Perlu perhatian"; B2 (no test) a note that
+ * follows the test.
+ */
+async function addBoardWithNotes(db: Database) {
+  const board = await addBoard(db);
+  const { kepala, ids } = board;
+  const note = (studentId: string, savedOn: string, more: Partial<TestNote>) =>
+    addTestNote(db, kepala, {
+      studentId,
+      savedAt: new Date(`${savedOn}T03:00:00Z`),
+      ...more,
+    });
+  await note(ids.a1, "2026-10-01", { category: "good", advice: "Lama." });
+  await note(ids.a1, "2026-10-12", {
+    category: "attention",
+    illnesses: [{ illness: "asthma", note: "sejak SMP" }],
+    advice: "Rahasia A1.",
+  });
+  await note(ids.b1, "2026-10-12", { category: "good", advice: "Rahasia B1." });
+  await note(ids.a3, "2026-10-12", {
+    category: "attention",
+    advice: "Rahasia A3.",
+  });
+  await note(ids.b2, "2026-10-12", { category: null, advice: "Rahasia B2." });
+  return board;
+}
+
+describe("the final category on the tab", () => {
+  it("counts each student in the more serious of the test and the latest note", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala } = await addBoardWithNotes(db);
+
+      const numbers = await readFitnessNumbers(
+        db,
+        fitnessVisibleTo(kepala),
+        STARTING_LIMITS,
+        TODAY,
+      );
+
+      expect(numbers.byCategory).toEqual({
+        excellent: 0,
+        good: 1,
+        attention: 3,
+        medical: 0,
+      });
+      expect(numbers.untested).toBe(2);
+    });
+  });
+
+  it("lists the most serious final category first, then the lowest score, and marks a category from a note", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, ids } = await addBoardWithNotes(db);
+
+      const list = await readFitnessList(
+        db,
+        fitnessVisibleTo(kepala),
+        STARTING_LIMITS,
+        START_PARAMS,
+        healthReadableTo(kepala),
+      );
+
+      expect(idsOf(list)).toEqual([ids.a2, ids.a1, ids.a3, ids.b1, ids.b2]);
+      const a1 = list.rows[1];
+      expect(a1?.final).toEqual({ category: "attention", fromNote: true });
+      expect(a1?.health?.note?.advice).toBe("Rahasia A1.");
+      expect(a1?.health?.note?.illnesses).toEqual([
+        { illness: "asthma", note: "sejak SMP" },
+      ]);
+      expect(list.rows[0]?.health).toEqual({ note: null });
+      expect(list.rows[3]?.final).toEqual({
+        category: "good",
+        fromNote: false,
+      });
+    });
+  });
+
+  it("narrows by the final category", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, ids } = await addBoardWithNotes(db);
+      const read = (filter: FitnessFilter) =>
+        readFitnessList(
+          db,
+          fitnessVisibleTo(kepala),
+          STARTING_LIMITS,
+          { ...START_PARAMS, filter },
+          healthReadableTo(kepala),
+        );
+
+      expect(idsOf(await read("attention"))).toEqual([ids.a2, ids.a1, ids.a3]);
+      expect(idsOf(await read("excellent"))).toEqual([]);
+    });
+  });
+
+  it("narrows Belum dites to every student with no test, a note with a category among them, as the line under Kategori counts them", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, ids } = await addBoardWithNotes(db);
+      const visible = fitnessVisibleTo(kepala);
+
+      const untested = await readFitnessList(
+        db,
+        visible,
+        STARTING_LIMITS,
+        { ...START_PARAMS, filter: "untested" },
+        healthReadableTo(kepala),
+      );
+      const numbers = await readFitnessNumbers(
+        db,
+        visible,
+        STARTING_LIMITS,
+        TODAY,
+      );
+
+      expect(idsOf(untested)).toEqual([ids.a3, ids.b2]);
+      expect(untested.matching).toBe(numbers.untested);
+    });
+  });
+
+  it.each<RoleId>(["director", "head_of_program"])(
+    "gives %s the category only: no note, no mark, and no note text sent",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { programA, ids } = await addBoardWithNotes(db);
+        const actor = await addTestActor(db, "Pimpinan Uji Jasmani", [role], {
+          studyProgramId: programA,
+        });
+
+        const list = await readFitnessList(
+          db,
+          fitnessVisibleTo(actor),
+          STARTING_LIMITS,
+          START_PARAMS,
+          healthReadableTo(actor),
+        );
+
+        const a1 = list.rows.find((row) => row.id === ids.a1);
+        expect(a1?.final).toEqual({ category: "attention", fromNote: false });
+        for (const row of list.rows) expect(row.health).toBeNull();
+        expect(JSON.stringify(list)).not.toContain("Rahasia");
+      });
+    },
+  );
+
+  it("gives a Ketua Program Studi who is also Pengasuh the notes of their own mentees only", async () => {
+    await inTestDatabase(async (db) => {
+      const { other, programA, ids } = await addBoardWithNotes(db);
+      const roles: RoleId[] = ["head_of_program", "mentor"];
+      const both = { ...other, roles, studyProgramId: programA };
+
+      const list = await readFitnessList(
+        db,
+        fitnessVisibleTo(both),
+        STARTING_LIMITS,
+        START_PARAMS,
+        healthReadableTo(both),
+      );
+
+      const byId = new Map(list.rows.map((row) => [row.id, row]));
+      expect(byId.get(ids.a1)?.health).toBeNull();
+      expect(byId.get(ids.a1)?.final.fromNote).toBe(false);
+      expect(byId.get(ids.b1)?.health?.note?.advice).toBe("Rahasia B1.");
+      expect(JSON.stringify(list)).not.toContain("Rahasia A");
     });
   });
 });

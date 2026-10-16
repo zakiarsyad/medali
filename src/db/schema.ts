@@ -104,6 +104,13 @@ import {
   SCORE_MIN as FITNESS_SCORE_MIN,
   type FitnessLimits,
 } from "@/features/fitness/fitness-ids";
+import {
+  ADVICE_MAX as HEALTH_ADVICE_MAX,
+  NOTE_CATEGORIES as HEALTH_NOTE_CATEGORIES,
+  SHORT_TEXT_MAX as HEALTH_SHORT_TEXT_MAX,
+  ILLNESSES,
+  type RecapReadFilters,
+} from "@/features/fitness/health-ids";
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
@@ -279,6 +286,15 @@ export const skpmUploadMode = pgEnum("skpm_upload_mode", SKPM_UPLOAD_MODES);
 export const skpmUploadAction = pgEnum(
   "skpm_upload_action",
   SKPM_UPLOAD_ACTIONS,
+);
+
+/** A choice of "Riwayat penyakit" of a health note. */
+export const healthIllness = pgEnum("health_illness", ILLNESSES);
+
+/** "Pertimbangan kategori" of a health note, when it does not follow the fitness test. */
+export const healthNoteCategory = pgEnum(
+  "health_note_category",
+  HEALTH_NOTE_CATEGORIES,
 );
 
 export const characterAssessmentSource = pgEnum(
@@ -3222,4 +3238,92 @@ export const fitnessScores = pgTable(
       sql`${table.score} between ${sql.raw(String(FITNESS_SCORE_MIN))} and ${sql.raw(String(FITNESS_SCORE_MAX))}`,
     ),
   ],
+);
+
+/** A text of a health note holds at most `most` characters. */
+function atMost(column: AnyPgColumn, most: number): SQL {
+  return sql`char_length(${column}) <= ${sql.raw(String(most))}`;
+}
+
+/**
+ * One health note of a student: Tanggal, Pemeriksa when one is named,
+ * "Riwayat lain", "Obat yang rutin diminum", "Catatan dan rekomendasi",
+ * and "Pertimbangan kategori", null when it follows the fitness test;
+ * with who saved it and when. The illnesses picked are in
+ * `health_note_illnesses`. The key is made by the form that sent it, so
+ * a form sent twice is kept once. A student's note saved last counts;
+ * the earlier ones stay as history. Rows here cannot be changed or
+ * deleted; the database refuses it, so the notes are their own log.
+ */
+export const healthNotes = pgTable(
+  "health_notes",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    examinedOn: date().notNull(),
+    examiner: text(),
+    otherHistory: text().notNull(),
+    medicine: text().notNull(),
+    advice: text().notNull(),
+    category: healthNoteCategory(),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("health_notes_student_saved_at").on(table.studentId, table.savedAt),
+    check(
+      "health_notes_short_texts",
+      sql`${atMost(table.examiner, HEALTH_SHORT_TEXT_MAX)} and ${atMost(table.otherHistory, HEALTH_SHORT_TEXT_MAX)} and ${atMost(table.medicine, HEALTH_SHORT_TEXT_MAX)}`,
+    ),
+    check(
+      "health_notes_advice_length",
+      atMost(table.advice, HEALTH_ADVICE_MAX),
+    ),
+  ],
+);
+
+/**
+ * One illness picked in a health note, with its short note, empty when
+ * none was written. Rows here cannot be changed or deleted; the database
+ * refuses it.
+ */
+export const healthNoteIllnesses = pgTable(
+  "health_note_illnesses",
+  {
+    noteId: uuid()
+      .notNull()
+      .references(() => healthNotes.id),
+    illness: healthIllness().notNull(),
+    note: text().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.noteId, table.illness] }),
+    check(
+      "health_note_illnesses_note_length",
+      atMost(table.note, HEALTH_SHORT_TEXT_MAX),
+    ),
+  ],
+);
+
+/**
+ * Each reading of "Rekap data kesehatan seluruh mahasiswa": who read it,
+ * when, and the filters used. Never a name, an illness of a student or a
+ * note's text. Rows here cannot be changed or deleted; the database
+ * refuses it.
+ */
+export const healthRecapReadings = pgTable(
+  "health_recap_readings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    readBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    readAt: timestamp({ withTimezone: true }).notNull(),
+    filters: jsonb().$type<RecapReadFilters>().notNull(),
+  },
+  (table) => [index("health_recap_readings_read_at").on(table.readAt)],
 );
