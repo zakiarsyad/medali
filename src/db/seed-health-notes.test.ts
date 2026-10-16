@@ -68,7 +68,11 @@ describe("the sample health notes", { timeout: 20_000 }, () => {
         expect(note.savedAt.getTime()).toBeLessThanOrEqual(now.getTime());
       }
 
-      const [first, second] = await noteResidents(db, running);
+      const residents = await noteResidents(db, running);
+      const noted = new Set(
+        SAMPLE_DORM_HEALTH_NOTES.map((note) => note.resident),
+      );
+      const notedIds = [...noted].map((place) => residents[place] ?? "");
       const [pengasuh] = await db
         .select({ id: accounts.id })
         .from(accounts)
@@ -77,12 +81,11 @@ describe("the sample health notes", { timeout: 20_000 }, () => {
         .select({ id: students.id })
         .from(students)
         .where(
-          and(
-            menteesOf([pengasuh?.id ?? ""]),
-            inArray(students.id, [first ?? "", second ?? ""]),
-          ),
+          and(menteesOf([pengasuh?.id ?? ""]), inArray(students.id, notedIds)),
         );
-      expect(mentees).toHaveLength(2);
+      expect(mentees.map((mentee) => mentee.id).sort()).toEqual(
+        residents.slice(0, 2).sort(),
+      );
 
       const [inProgram] = await db
         .select({ residents: sql<number>`count(*)::int` })

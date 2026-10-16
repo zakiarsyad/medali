@@ -102,7 +102,8 @@ export const SAMPLE_HEALTH_NOTES: SampleHealthNote[] = [
 export interface SampleDormHealthNote {
   /**
    * Which resident it is of, by place in the list of the running period's
-   * residents that puts the sample Pengasuh's mentees first, by name.
+   * residents that puts two of the sample Pengasuh's mentees first, then
+   * the residents outside that Pengasuh's groups, by name.
    */
   resident: number;
   /** How many days before today its Tanggal is. */
@@ -120,7 +121,8 @@ export interface SampleDormHealthNote {
 /**
  * The sample notes of dorm residents, oldest first: one in each
  * "Pertimbangan kategori", and one that follows the fitness test. The
- * first two residents are mentees of the sample Pengasuh, and the first
+ * first two residents are mentees of the sample Pengasuh, the others are
+ * not, and the first
  * has a note saved again, so an earlier note stays as history.
  */
 export const SAMPLE_DORM_HEALTH_NOTES: SampleDormHealthNote[] = [

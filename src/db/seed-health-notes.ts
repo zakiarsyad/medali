@@ -88,10 +88,13 @@ async function samplePengasuh(db: Database): Promise<string> {
   return found.id;
 }
 
+/** How many of the sample Pengasuh's mentees the sample dorm notes are of. */
+const NOTED_MENTEES = 2;
+
 /**
  * The residents of the running period that the sample dorm notes are
- * spread over: the sample Pengasuh's mentees first, then the others,
- * each by name.
+ * spread over: two of the sample Pengasuh's mentees first, then the
+ * residents outside that Pengasuh's groups, each by name.
  */
 export async function noteResidents(
   db: Database,
@@ -107,7 +110,7 @@ export async function noteResidents(
   const isResident = (id: string) => residents.includes(id);
   const residentMentees = menteeIds.filter(isResident);
   const others = residents.filter((id) => !menteeIds.includes(id));
-  return [...residentMentees, ...others];
+  return [...residentMentees.slice(0, NOTED_MENTEES), ...others];
 }
 
 /**
