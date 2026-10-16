@@ -65,7 +65,7 @@ The issue had no open questions.
 
 - [x] 1. The rules that read the file and decide, row by row, ready or
   skipped and why, with checks.
-- [ ] 2. "Unggah berkas" shows with the note, "Tanggal tes" and "Unduh
+- [x] 2. "Unggah berkas" shows with the note, "Tanggal tes" and "Unduh
   templat CSV".
 - [ ] 3. Picking a file shows the preview with categories.
 - [ ] 4. "Simpan (n) baris" saves the rows as the latest tests.
