@@ -37,6 +37,7 @@ import { addSampleDormLeaves } from "./seed-dorm-leaves";
 import { addSampleDormViolations } from "./seed-dorm-violations";
 import { addSampleDormWarnings } from "./seed-dorm-warnings";
 import { addSampleDorms } from "./seed-dorms";
+import { addSampleFitnessScores } from "./seed-fitness-scores";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
 import { addSampleMentorReplacements } from "./seed-mentor-replacements";
@@ -268,5 +269,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleSkpm(tx, today);
     await addSampleCharacterAssessments(tx, today);
     await addSampleCounsellingConsents(tx, today);
+    await addSampleFitnessScores(tx, groups, today);
   });
 }

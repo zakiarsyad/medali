@@ -1,5 +1,5 @@
 {
-  "id": "8aab3ac8-c1d5-490b-987b-d071f71e20ea",
+  "id": "dff461ee-80a3-4da5-81ba-d49699e7edac",
   "prevId": "b5efde04-5f22-48ca-b2bb-af0147306d4d",
   "version": "7",
   "dialect": "postgresql",
@@ -2070,205 +2070,6 @@
         "cohort_assignments_fixed_with_decree_and_day": {
           "name": "cohort_assignments_fixed_with_decree_and_day",
           "value": "\"cohort_assignments\".\"status\" <> 'fixed' or (\"cohort_assignments\".\"decree_number\" is not null and \"cohort_assignments\".\"effective_on\" is not null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.counselling_consent_changes": {
-      "name": "counselling_consent_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "consent_id": {
-          "name": "consent_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status_before": {
-          "name": "status_before",
-          "type": "counselling_consent_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status_after": {
-          "name": "status_after",
-          "type": "counselling_consent_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "way": {
-          "name": "way",
-          "type": "counselling_consent_way",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "counselling_consent_changes_consent": {
-          "name": "counselling_consent_changes_consent",
-          "columns": [
-            {
-              "expression": "consent_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_consent_changes_consent_id_counselling_consents_id_fk": {
-          "name": "counselling_consent_changes_consent_id_counselling_consents_id_fk",
-          "tableFrom": "counselling_consent_changes",
-          "tableTo": "counselling_consents",
-          "columnsFrom": [
-            "consent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_consent_changes_changed_by_accounts_id_fk": {
-          "name": "counselling_consent_changes_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_consent_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "counselling_consent_changes_way_only_when_approved": {
-          "name": "counselling_consent_changes_way_only_when_approved",
-          "value": "(\"counselling_consent_changes\".\"status_after\" = 'approved') = (\"counselling_consent_changes\".\"way\" is not null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.counselling_consents": {
-      "name": "counselling_consents",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "counselling_consent_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "way": {
-          "name": "way",
-          "type": "counselling_consent_way",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "counselling_consents_student_id_students_id_fk": {
-          "name": "counselling_consents_student_id_students_id_fk",
-          "tableFrom": "counselling_consents",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_consents_changed_by_accounts_id_fk": {
-          "name": "counselling_consents_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_consents",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "counselling_consents_one_per_student": {
-          "name": "counselling_consents_one_per_student",
-          "nullsNotDistinct": false,
-          "columns": [
-            "student_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "counselling_consents_way_only_when_approved": {
-          "name": "counselling_consents_way_only_when_approved",
-          "value": "(\"counselling_consents\".\"status\" = 'approved') = (\"counselling_consents\".\"way\" is not null)"
         }
       },
       "isRLSEnabled": false
@@ -5502,6 +5303,301 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.fitness_category_limits": {
+      "name": "fitness_category_limits",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "excellent_from": {
+          "name": "excellent_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "good_from": {
+          "name": "good_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attention_from": {
+          "name": "attention_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "before": {
+          "name": "before",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "replaces": {
+          "name": "replaces",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "set_by": {
+          "name": "set_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "set_at": {
+          "name": "set_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fitness_category_limits_set_at": {
+          "name": "fitness_category_limits_set_at",
+          "columns": [
+            {
+              "expression": "set_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fitness_category_limits_replaces_fitness_category_limits_id_fk": {
+          "name": "fitness_category_limits_replaces_fitness_category_limits_id_fk",
+          "tableFrom": "fitness_category_limits",
+          "tableTo": "fitness_category_limits",
+          "columnsFrom": [
+            "replaces"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fitness_category_limits_set_by_accounts_id_fk": {
+          "name": "fitness_category_limits_set_by_accounts_id_fk",
+          "tableFrom": "fitness_category_limits",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "set_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "fitness_category_limits_replaced_once": {
+          "name": "fitness_category_limits_replaced_once",
+          "nullsNotDistinct": true,
+          "columns": [
+            "replaces"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "fitness_category_limits_in_range": {
+          "name": "fitness_category_limits_in_range",
+          "value": "\"fitness_category_limits\".\"excellent_from\" between 1 and 100 and \"fitness_category_limits\".\"good_from\" between 1 and 100 and \"fitness_category_limits\".\"attention_from\" between 1 and 100"
+        },
+        "fitness_category_limits_go_down": {
+          "name": "fitness_category_limits_go_down",
+          "value": "\"fitness_category_limits\".\"excellent_from\" > \"fitness_category_limits\".\"good_from\" and \"fitness_category_limits\".\"good_from\" > \"fitness_category_limits\".\"attention_from\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.fitness_scores": {
+      "name": "fitness_scores",
+      "schema": "",
+      "columns": {
+        "test_id": {
+          "name": "test_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fitness_scores_student": {
+          "name": "fitness_scores_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fitness_scores_test_id_fitness_tests_id_fk": {
+          "name": "fitness_scores_test_id_fitness_tests_id_fk",
+          "tableFrom": "fitness_scores",
+          "tableTo": "fitness_tests",
+          "columnsFrom": [
+            "test_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fitness_scores_student_id_students_id_fk": {
+          "name": "fitness_scores_student_id_students_id_fk",
+          "tableFrom": "fitness_scores",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "fitness_scores_test_id_student_id_pk": {
+          "name": "fitness_scores_test_id_student_id_pk",
+          "columns": [
+            "test_id",
+            "student_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "fitness_scores_score_in_range": {
+          "name": "fitness_scores_score_in_range",
+          "value": "\"fitness_scores\".\"score\" between 0 and 100"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.fitness_tests": {
+      "name": "fitness_tests",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tested_on": {
+          "name": "tested_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_by": {
+          "name": "entered_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entered_at": {
+          "name": "entered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "fitness_tests_entered_at": {
+          "name": "fitness_tests_entered_at",
+          "columns": [
+            {
+              "expression": "entered_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fitness_tests_group_id_mentor_groups_id_fk": {
+          "name": "fitness_tests_group_id_mentor_groups_id_fk",
+          "tableFrom": "fitness_tests",
+          "tableTo": "mentor_groups",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fitness_tests_entered_by_accounts_id_fk": {
+          "name": "fitness_tests_entered_by_accounts_id_fk",
+          "tableFrom": "fitness_tests",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "entered_by"
           ],
           "columnsTo": [
             "id"
@@ -9769,24 +9865,6 @@
         "submitted",
         "fixed",
         "cancelled"
-      ]
-    },
-    "public.counselling_consent_status": {
-      "name": "counselling_consent_status",
-      "schema": "public",
-      "values": [
-        "waiting",
-        "approved",
-        "declined",
-        "withdrawn"
-      ]
-    },
-    "public.counselling_consent_way": {
-      "name": "counselling_consent_way",
-      "schema": "public",
-      "values": [
-        "online",
-        "paper"
       ]
     },
     "public.dorm": {

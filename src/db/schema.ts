@@ -97,6 +97,13 @@ import {
   RESULT_MIN_LENGTH,
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
+import {
+  LIMIT_MAX as FITNESS_LIMIT_MAX,
+  LIMIT_MIN as FITNESS_LIMIT_MIN,
+  SCORE_MAX as FITNESS_SCORE_MAX,
+  SCORE_MIN as FITNESS_SCORE_MIN,
+  type FitnessLimits,
+} from "@/features/fitness/fitness-ids";
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
@@ -3118,6 +3125,101 @@ export const counsellingConsentChanges = pgTable(
     check(
       "counselling_consent_changes_way_only_when_approved",
       sql`(${table.statusAfter} = 'approved') = (${table.way} is not null)`,
+    ),
+  ],
+);
+
+/** A limit of "Ambang skor" of the fitness test is in its range. */
+function inFitnessLimitRange(limit: AnyPgColumn): SQL {
+  return sql`${limit} between ${sql.raw(String(FITNESS_LIMIT_MIN))} and ${sql.raw(String(FITNESS_LIMIT_MAX))}`;
+}
+
+/**
+ * Every setting of "Ambang skor", the lowest fitness score of Prima, Baik
+ * and Perlu perhatian, with the limits before it, who set them and when:
+ * the latest is the one in force, and without any it is the starting
+ * one. A setting names the one it replaced, or none for the starting
+ * one, and each is replaced at most once, so two saves made from the
+ * same form are never both kept. Rows here cannot be changed or deleted;
+ * the database refuses it.
+ */
+export const fitnessCategoryLimits = pgTable(
+  "fitness_category_limits",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    excellentFrom: smallint().notNull(),
+    goodFrom: smallint().notNull(),
+    attentionFrom: smallint().notNull(),
+    before: jsonb().$type<FitnessLimits>().notNull(),
+    replaces: uuid().references((): AnyPgColumn => fitnessCategoryLimits.id),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("fitness_category_limits_set_at").on(table.setAt),
+    unique("fitness_category_limits_replaced_once")
+      .on(table.replaces)
+      .nullsNotDistinct(),
+    check(
+      "fitness_category_limits_in_range",
+      sql`${inFitnessLimitRange(table.excellentFrom)} and ${inFitnessLimitRange(table.goodFrom)} and ${inFitnessLimitRange(table.attentionFrom)}`,
+    ),
+    check(
+      "fitness_category_limits_go_down",
+      sql`${table.excellentFrom} > ${table.goodFrom} and ${table.goodFrom} > ${table.attentionFrom}`,
+    ),
+  ],
+);
+
+/**
+ * One save of fitness test scores: the kelompok pengasuhan they were
+ * entered for, the day of the test, who saved them and when. The key is
+ * made by the form that sent it, so a form sent twice is kept once. The
+ * year of the test is the year of its day. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const fitnessTests = pgTable(
+  "fitness_tests",
+  {
+    id: uuid().primaryKey(),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    testedOn: date().notNull(),
+    enteredBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    enteredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [index("fitness_tests_entered_at").on(table.enteredAt)],
+);
+
+/**
+ * One student's score of a save of fitness test scores, whole from 0 to
+ * 100. A student's score of the save made last counts; the earlier ones
+ * stay as history. Rows here cannot be changed or deleted; the database
+ * refuses it, so the scores are their own log, and a wrong one is
+ * replaced by a new save.
+ */
+export const fitnessScores = pgTable(
+  "fitness_scores",
+  {
+    testId: uuid()
+      .notNull()
+      .references(() => fitnessTests.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    score: smallint().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.testId, table.studentId] }),
+    index("fitness_scores_student").on(table.studentId),
+    check(
+      "fitness_scores_score_in_range",
+      sql`${table.score} between ${sql.raw(String(FITNESS_SCORE_MIN))} and ${sql.raw(String(FITNESS_SCORE_MAX))}`,
     ),
   ],
 );

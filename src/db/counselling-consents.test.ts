@@ -1,4 +1,4 @@
-// Sample NIMs of this file: 9986200000 to 9986200099.
+// Sample NIMs of this file: 9986300000 to 9986300099.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "./connect";
@@ -31,7 +31,7 @@ async function addRecords(db: Database): Promise<Records> {
   const [student] = await db
     .insert(students)
     .values({
-      nim: "9986200001",
+      nim: "9986300001",
       name: "Mahasiswa Uji Persetujuan",
       studyProgramId: program.id,
       entryPath: "regular",
