@@ -418,7 +418,30 @@ describe("the final category on the tab", () => {
 
       expect(idsOf(await read("attention"))).toEqual([ids.a2, ids.a1, ids.a3]);
       expect(idsOf(await read("excellent"))).toEqual([]);
-      expect(idsOf(await read("untested"))).toEqual([ids.b2]);
+    });
+  });
+
+  it("narrows Belum dites to every student with no test, a note with a category among them, as the line under Kategori counts them", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, ids } = await addBoardWithNotes(db);
+      const visible = fitnessVisibleTo(kepala);
+
+      const untested = await readFitnessList(
+        db,
+        visible,
+        STARTING_LIMITS,
+        { ...START_PARAMS, filter: "untested" },
+        healthReadableTo(kepala),
+      );
+      const numbers = await readFitnessNumbers(
+        db,
+        visible,
+        STARTING_LIMITS,
+        TODAY,
+      );
+
+      expect(idsOf(untested)).toEqual([ids.a3, ids.b2]);
+      expect(untested.matching).toBe(numbers.untested);
     });
   });
 

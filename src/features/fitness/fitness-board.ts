@@ -1,4 +1,14 @@
-import { and, asc, count, eq, ilike, or, type SQL, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  ilike,
+  isNull,
+  or,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { students, studyPrograms } from "@/db/schema";
@@ -104,9 +114,20 @@ export async function readFitnessNumbers(
   );
 }
 
-function filterOf(rank: SQL, filter: FitnessFilter): SQL | undefined {
+type Latest = ReturnType<typeof latestFitnessScores>;
+
+/**
+ * A category narrows by the final category. Belum dites narrows by the
+ * test alone, a student with a note among them, so the list agrees with
+ * the line under "Kategori" that counts who has not taken the test.
+ */
+function filterOf(
+  latest: Latest,
+  rank: SQL,
+  filter: FitnessFilter,
+): SQL | undefined {
   if (filter === "all") return undefined;
-  if (filter === "untested") return sql`${rank} is null`;
+  if (filter === "untested") return isNull(latest.studentId);
   return sql`${rank} = ${sql.raw(String(SERIOUSNESS[filter]))}`;
 }
 
@@ -191,7 +212,7 @@ export async function readFitnessList(
   const where = and(
     seen(visible),
     matching(params.query),
-    filterOf(rank, params.filter),
+    filterOf(latest, rank, params.filter),
   );
   const [counted] = await db
     .select({ matching: count() })
