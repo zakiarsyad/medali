@@ -101,12 +101,19 @@ them.
    Direktur and Ketua Program Studi see numbers only, as the cases say.
 3. A resident sees their own health notes on Profil saya (My health on
    my profile), not on Asrama.
+4. The tab has three rights of its own in the permission list: writing
+   notes (Kepala Unit, BAM - Kesehatan), reading the list of sick
+   residents (the writers, Pengelola Asrama, BAM - BPHK, and Pengasuh
+   for their own mentees), and reading the numbers only (Direktur /
+   Wakil Direktur, and Ketua Program Studi for their own study
+   program). The rights of Health notes on Penilaian give nothing here,
+   and these give nothing on Penilaian.
 
 ## Steps
 
 - [x] 1. Sample health notes for residents in every category are
   added to the record that Health notes brings.
-- [ ] 2. The rights to write and to read dorm health notes are added to
+- [x] 2. The rights to write and to read dorm health notes are added to
   the permission list, with their checks.
 - [ ] 3. The numbers and the list of sick residents show, with search,
   filters and pages.
