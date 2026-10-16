@@ -63,7 +63,7 @@ The issue had no open questions.
 
 ## Steps
 
-- [ ] 1. The rules that read the file and decide, row by row, ready or
+- [x] 1. The rules that read the file and decide, row by row, ready or
   skipped and why, with checks.
 - [ ] 2. "Unggah berkas" shows with the note, "Tanggal tes" and "Unduh
   templat CSV".
