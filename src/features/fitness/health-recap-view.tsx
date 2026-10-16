@@ -48,7 +48,7 @@ export function RecapNumberCards({ numbers }: { numbers: RecapNumbers }) {
       <NumberCard
         label="Sakit atau punya riwayat penyakit"
         amount={numbers.listed}
-        note={listedHint(numbers)}
+        note={listedHint(numbers, "mahasiswa")}
       />
       <NumberCard
         label="Perlu perhatian"
@@ -171,7 +171,9 @@ export function RecapPanel({
         <RecapFilterRow list={list} params={params} />
       </AutoSubmitForm>
       {illness !== "all" && recap.matching > 0 && (
-        <p className={styles.note}>{illnessLine(recap.matching, illness)}</p>
+        <p className={styles.note}>
+          {illnessLine(recap.matching, illness, "mahasiswa")}
+        </p>
       )}
       {recap.matching === 0 ? (
         <p className={shared.empty}>{NOBODY_ILL}</p>

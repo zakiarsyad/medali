@@ -4,6 +4,7 @@ import {
   categoryHint,
   examinerOf,
   ILLNESS_WORDS,
+  illnessLine,
   listedHint,
   medicalHint,
   noteText,
@@ -93,9 +94,15 @@ describe("the hints of the recap's numbers", () => {
   });
 
   it("gives the share of the ill as a whole percent, 0 with no student", () => {
-    expect(listedHint(NUMBERS)).toBe("83% mahasiswa");
-    expect(listedHint({ ...NUMBERS, students: 0, listed: 0 })).toBe(
-      "0% mahasiswa",
+    expect(listedHint(NUMBERS, "mahasiswa")).toBe("83% mahasiswa");
+    expect(listedHint({ ...NUMBERS, students: 0, listed: 0 }, "penghuni")).toBe(
+      "0% penghuni",
+    );
+  });
+
+  it("names the students of a list filtered by an illness as the list names them", () => {
+    expect(illnessLine(3, "asthma", "mahasiswa asrama")).toBe(
+      "3 mahasiswa asrama dengan riwayat asma.",
     );
   });
 

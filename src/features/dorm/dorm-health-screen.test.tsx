@@ -1,0 +1,145 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+import type { RecapRow } from "@/health-notes/sick-list";
+import type { DormHealthList } from "./dorm-health";
+import {
+  DORM_HEALTH_START,
+  type DormHealthParams,
+} from "./dorm-health-address";
+import { DormHealthScreen } from "./dorm-health-screen";
+import { LIST_READER_NOTE } from "./dorm-health-words";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
+
+const TABS = { pagePath: "asrama", tabs: [], open: "sehat" };
+
+const ANI: RecapRow = {
+  id: "00000000-0000-4000-8000-000000000961",
+  name: "Ani Contoh",
+  nim: "9986300961",
+  program: "D3 Pajak",
+  dorm: "dana_rakca",
+  room: { dorm: "dana_rakca", floor: 2, number: "12" },
+  mentorName: "Pengasuh Contoh",
+  final: { category: "attention", fromNote: true },
+  note: {
+    id: "00000000-0000-4000-8000-000000000962",
+    examinedOn: "2026-10-12",
+    examiner: null,
+    illnesses: [{ illness: "asthma", note: "sejak SMP" }],
+    otherHistory: "",
+    medicine: "",
+    advice: "Bawa inhaler.",
+    category: "attention",
+    savedBy: "BAM Contoh",
+  },
+};
+
+const FOUND: DormHealthList = {
+  list: {
+    numbers: {
+      students: 40,
+      dorm: 40,
+      listed: 6,
+      attention: 2,
+      medical: 1,
+      medicalWithoutNote: 1,
+    },
+    rows: [ANI],
+    matching: 1,
+    page: 1,
+  },
+  reach: { kind: "all" },
+};
+
+function screen(
+  found: DormHealthList | null,
+  params: DormHealthParams = DORM_HEALTH_START,
+) {
+  return renderToStaticMarkup(
+    <DormHealthScreen
+      tabs={TABS}
+      found={found}
+      params={params}
+      form={null}
+      readOnlyNote={LIST_READER_NOTE}
+    />,
+  );
+}
+
+describe("Asrama > Kesehatan for a reader of the list", () => {
+  const html = screen(FOUND);
+
+  it("shows the four numbers with their hints", () => {
+    expect(html).toContain("Penghuni asrama");
+    expect(html).toContain("Wismantara, Dana Rakca, Cipta Bakti");
+    expect(html).toContain("Sakit atau punya riwayat penyakit");
+    expect(html).toContain("15% penghuni");
+    expect(html).toContain("Perlu perhatian");
+    expect(html).toContain("pemantauan");
+    expect(html).toContain("Perlu tindak lanjut medis");
+    expect(html).toContain("1 belum punya catatan");
+  });
+
+  it("says who fills the notes, with no form", () => {
+    expect(html).toContain(LIST_READER_NOTE);
+    expect(html).not.toContain("Simpan catatan");
+  });
+
+  it("lists the sick residents with the prototype's columns, as cards on a phone", () => {
+    expect(html).toContain("Mahasiswa asrama yang sakit");
+    expect(html).toMatch(/<table class="[^"]*stacked/);
+    for (const title of [
+      "Mahasiswa",
+      "Kamar",
+      "Pengasuh",
+      "Kategori",
+      "Riwayat penyakit dan catatan",
+      "Dicatat",
+    ]) {
+      expect(html).toContain(`data-title="${title}"`);
+    }
+    expect(html).toContain("Dana Rakca, lantai 2, kamar 12");
+    expect(html).toContain("Riwayat: Asma (sejak SMP). Bawa inhaler.");
+    expect(html).toContain("BAM Contoh");
+  });
+
+  it("offers the search and the filters by dorm, category and illness", () => {
+    expect(html).toContain('placeholder="Cari nama atau NIM"');
+    for (const first of [
+      "Semua asrama",
+      "Semua kategori",
+      "Semua riwayat penyakit",
+    ]) {
+      expect(html).toMatch(new RegExp(`<option value=""[^>]*>${first}<`));
+    }
+    expect(html).toContain('<option value="cipta_bakti">Cipta Bakti</option>');
+    expect(html).toContain('<option value="medis">Perlu tindak lanjut medis');
+    expect(html).toContain('<option value="alergi">Alergi</option>');
+    expect(html).not.toContain(">Lainnya</option>");
+  });
+
+  it("names how many residents have the illness filtered by", () => {
+    expect(
+      screen(FOUND, { ...DORM_HEALTH_START, illness: "asthma" }),
+    ).toContain("1 mahasiswa asrama dengan riwayat asma.");
+  });
+
+  it("says so when nobody matches", () => {
+    const none = { ...FOUND, list: { ...FOUND.list, rows: [], matching: 0 } };
+    expect(screen(none)).toContain(
+      "Tidak ada mahasiswa asrama yang sakit pada filter ini.",
+    );
+  });
+});
+
+describe("Asrama > Kesehatan for an account that may not read the list", () => {
+  const html = screen(null);
+
+  it("shows no number, name, search or filter", () => {
+    expect(html).not.toContain("Penghuni asrama");
+    expect(html).not.toContain("Mahasiswa asrama yang sakit");
+    expect(html).not.toContain("Cari nama atau NIM");
+    expect(html).not.toContain("<select");
+  });
+});

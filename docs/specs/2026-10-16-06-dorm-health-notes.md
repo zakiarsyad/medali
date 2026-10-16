@@ -108,6 +108,22 @@ them.
    Wakil Direktur, and Ketua Program Studi for their own study
    program). The rights of Health notes on Penilaian give nothing here,
    and these give nothing on Penilaian.
+5. "Penghuni asrama" counts the Aktif residents the role may see. Its
+   hint, as in the prototype, is "Wismantara, Dana Rakca, Cipta Bakti"
+   for a role that sees every resident, "anak asuh Anda" for Pengasuh
+   and "prodi Anda" for Ketua Program Studi. The hint of "Sakit atau
+   punya riwayat penyakit" is "(n)% penghuni".
+6. The list holds the residents that the recap of Health notes would
+   list: an illness history, a latest note with its own category, or
+   Perlu tindak lanjut medis; the most serious category first, then by
+   name. Kamar shows the dorm, floor and room, or "belum diplot".
+7. The search and the filters are sent with "Cari", and a choice from a
+   filter sends itself, as on the recap of Health notes. The dorm
+   filter offers "Semua asrama" and the four dorms; the illness filter
+   the nine named illnesses, not "Lainnya".
+8. Readings of the list are not logged: the spec does not ask for it,
+   unlike the recap of Health notes. The owner can add it with a new
+   issue.
 
 ## Steps
 
@@ -115,7 +131,7 @@ them.
   added to the record that Health notes brings.
 - [x] 2. The rights to write and to read dorm health notes are added to
   the permission list, with their checks.
-- [ ] 3. The numbers and the list of sick residents show, with search,
+- [x] 3. The numbers and the list of sick residents show, with search,
   filters and pages.
 - [ ] 4. Writers save a health note, with the category hint.
 - [ ] 5. Pengasuh sees only their own mentees; Direktur and Ketua
