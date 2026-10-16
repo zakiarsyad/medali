@@ -124,6 +124,16 @@ them.
 8. Readings of the list are not logged: the spec does not ask for it,
    unlike the recap of Health notes. The owner can add it with a new
    issue.
+9. The form is the one of Health notes: its fields, checks and limits,
+   the fill from the latest note, "Catatan sebelumnya", the line of the
+   test and the final category, the saved message, and one save for a
+   double press. "Riwayat penyakit" shows ticks, as on Penilaian
+   jasmani, rather than the prototype's buttons. "Mahasiswa" offers
+   only Aktif dorm residents; a student who lives in no dorm is refused
+   and pointed to Penilaian jasmani, as Penilaian points residents here.
+10. The change log of a note is the note itself, as in Health notes:
+    each note is a line of its own with who saved it and when, and it
+    can never be changed or deleted.
 
 ## Steps
 
@@ -133,6 +143,6 @@ them.
   the permission list, with their checks.
 - [x] 3. The numbers and the list of sick residents show, with search,
   filters and pages.
-- [ ] 4. Writers save a health note, with the category hint.
+- [x] 4. Writers save a health note, with the category hint.
 - [ ] 5. Pengasuh sees only their own mentees; Direktur and Ketua
   Program Studi see numbers only.

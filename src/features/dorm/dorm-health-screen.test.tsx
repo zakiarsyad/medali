@@ -6,10 +6,16 @@ import {
   DORM_HEALTH_START,
   type DormHealthParams,
 } from "./dorm-health-address";
+import { DormHealthNoteForm } from "./dorm-health-note-panel";
 import { DormHealthScreen } from "./dorm-health-screen";
 import { LIST_READER_NOTE } from "./dorm-health-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
+vi.mock("./dorm-health-actions", () => ({
+  dormHealthSubjectAction: vi.fn(),
+  saveDormHealthNoteAction: vi.fn(),
+  searchDormHealthStudentsAction: vi.fn(),
+}));
 
 const TABS = { pagePath: "asrama", tabs: [], open: "sehat" };
 
@@ -141,5 +147,35 @@ describe("Asrama > Kesehatan for an account that may not read the list", () => {
     expect(html).not.toContain("Mahasiswa asrama yang sakit");
     expect(html).not.toContain("Cari nama atau NIM");
     expect(html).not.toContain("<select");
+  });
+});
+
+describe("Asrama > Kesehatan for a writer", () => {
+  const html = renderToStaticMarkup(
+    <DormHealthScreen
+      tabs={TABS}
+      found={FOUND}
+      params={DORM_HEALTH_START}
+      form={
+        <DormHealthNoteForm
+          today="2026-10-16"
+          newKey="00000000-0000-4000-8000-000000000969"
+        />
+      }
+      readOnlyNote={LIST_READER_NOTE}
+    />,
+  );
+
+  it("shows Catatan kesehatan with the form for residents in place of the note", () => {
+    expect(html).toContain("Catatan kesehatan");
+    expect(html).toContain("Untuk penghuni asrama.");
+    expect(html).toContain('placeholder="Ketik nama atau NIM penghuni asrama"');
+    expect(html).not.toContain(LIST_READER_NOTE);
+  });
+
+  it("carries the key of the save, so a second press sends the same one", () => {
+    expect(html).toContain(
+      '<input type="hidden" name="id" value="00000000-0000-4000-8000-000000000969"/>',
+    );
   });
 });
