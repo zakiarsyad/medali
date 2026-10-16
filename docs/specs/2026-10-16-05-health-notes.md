@@ -183,6 +183,11 @@ residents' notes into the same record.
     recap are sent with "Cari", as on the student list; they keep the
     choices of "Hasil tes kebugaran", but moving through that list
     starts the recap's choices again.
+23. Direktur / Wakil Direktur and Ketua Program Studi see the final
+    category, as the case "When anyone looks at a category" says. Beside
+    the test score, or with no test, that category can show that a note
+    raised it, but never which illness or what the note says. Kept as
+    specified; the owner can change it with a new issue.
 
 ## Steps
 
