@@ -35,15 +35,6 @@ export function categoryOf(
   return "medical";
 }
 
-/** The category of a student's latest score, or "untested" for none. */
-export function shownCategoryOf(
-  score: number | null,
-  limits: FitnessLimits,
-): ShownCategory {
-  if (score === null) return "untested";
-  return categoryOf(score, limits);
-}
-
 /** The scores a category holds with these limits. */
 export function categoryRange(
   category: FitnessCategory,
