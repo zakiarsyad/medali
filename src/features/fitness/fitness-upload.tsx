@@ -1,21 +1,36 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { isDay } from "@/db/is-day";
 import { checkFileShape, MAX_FILE_ROWS } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
 import { FileDrop } from "@/ui/file-drop";
 import styles from "@/ui/file-upload.module.css";
 import own from "./fitness.module.css";
+import { previewFitnessFileAction } from "./fitness-actions";
 import {
   FITNESS_FILE_COLUMNS,
   FITNESS_FILE_NOTE,
   FITNESS_TEMPLATE_FILE_NAME,
   fitnessTemplateCsv,
 } from "./fitness-file-columns";
+import type { FitnessFilePreview } from "./fitness-file-preview";
+import { FitnessFilePreviewView } from "./fitness-file-preview-view";
 import { DAY_IN_FUTURE } from "./fitness-input";
 
 const TEMPLATE_LINK = `data:text/csv;charset=utf-8,${encodeURIComponent(fitnessTemplateCsv())}`;
+
+/** A picked file with what the server says it would do. */
+interface Checked {
+  file: File;
+  preview: FitnessFilePreview;
+}
+
+function formWith(file: File): FormData {
+  const form = new FormData();
+  form.set("file", file);
+  return form;
+}
 
 function ColumnNotes() {
   return (
@@ -64,14 +79,29 @@ function TestDayPick({
 /**
  * "Unggah berkas" of "Input hasil tes kebugaran": what the columns take,
  * "Tanggal tes" of the whole file, the template, and the place to pick
- * or drop a file.
+ * or drop a file. A picked file is checked by the server and shown, with
+ * the category each score gives, before anything is saved.
  */
 export function FitnessUpload({ today }: { today: string }) {
   const [testedOn, setTestedOn] = useState(today);
+  const [checked, setChecked] = useState<Checked | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reading, startReading] = useTransition();
+
+  function refuse(message: string) {
+    setChecked(null);
+    setError(message);
+  }
 
   function pick(file: File) {
-    setError(checkFileShape(file.name, file.size));
+    const wrongShape = checkFileShape(file.name, file.size);
+    if (wrongShape) return refuse(wrongShape);
+    startReading(async () => {
+      const preview = await previewFitnessFileAction(formWith(file));
+      if (!preview.ok) return refuse(preview.error);
+      setError(null);
+      setChecked({ file, preview: preview.value });
+    });
   }
 
   return (
@@ -87,11 +117,30 @@ export function FitnessUpload({ today }: { today: string }) {
           Unduh templat CSV
         </a>
       </div>
-      <FileDrop disabled={false} onPick={pick} />
-      {error && (
+      <FileDrop disabled={reading} onPick={pick} />
+      {reading && (
+        <p className={shared.detail} role="status">
+          Membaca berkas…
+        </p>
+      )}
+      {error && !reading && (
         <p className={`${styles.fileResult} ${styles.fileWarn}`} role="alert">
           {error}
         </p>
+      )}
+      {checked && !reading && (
+        <FitnessFilePreviewView
+          name={checked.file.name}
+          preview={checked.preview}
+        >
+          <button
+            type="button"
+            className={shared.quiet}
+            onClick={() => setChecked(null)}
+          >
+            Batal
+          </button>
+        </FitnessFilePreviewView>
       )}
     </>
   );

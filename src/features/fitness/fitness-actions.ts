@@ -6,9 +6,13 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import { sentCsvFile } from "@/files/sent-csv-file";
+import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { FITNESS_ADDRESS } from "./fitness-address";
+import { previewFitnessFile } from "./fitness-file-check";
+import type { FitnessFilePreview } from "./fitness-file-preview";
 import { type GroupMember, readGroupMembers } from "./fitness-groups";
 import { LIMITS_VERSION_FIELD, pairedRows } from "./fitness-input";
 import { savedScoresMessage } from "./fitness-words";
@@ -75,6 +79,16 @@ export async function saveScoresAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(FITNESS_ADDRESS);
   return { error: null, done: savedScoresMessage(saved.value) };
+}
+
+/** "Unggah berkas": what a picked file would do. Saves nothing. */
+export async function previewFitnessFileAction(
+  form: FormData,
+): Promise<Parsed<FitnessFilePreview>> {
+  const actor = await scoreEnterer();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  return previewFitnessFile(database(), actor, file.value);
 }
 
 /** "Kelompok mahasiswa": the Aktif members of the group chosen, with Skor saat ini. */
