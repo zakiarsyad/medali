@@ -34,6 +34,12 @@ export const NOTE_CATEGORY_WORDS: Record<NoteCategory, string> = {
 /** What the form and the list say for a student with no note. */
 export const NO_NOTE_YET = "Belum ada catatan kesehatan.";
 
+/** What the list says of a student in Perlu perhatian or worse with no note. */
+export const NOTE_MISSING = "Belum ada catatan";
+
+/** What the list says of any other student with no note. */
+export const NO_NOTE = "Tidak ada catatan";
+
 /** The mark of a category that a note made more serious than the test. */
 export const FROM_NOTE_MARK = "berdasarkan catatan kesehatan";
 

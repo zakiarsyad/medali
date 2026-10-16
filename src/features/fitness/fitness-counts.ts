@@ -1,14 +1,18 @@
 import { categoryOf } from "./fitness-category";
 import type { FitnessCategory, FitnessLimits } from "./fitness-ids";
+import { finalCategory } from "./health-category";
+import type { NoteCategory } from "./health-ids";
 
 /**
- * Students who stand alike for the numbers of the tab: how many, and
- * their latest score and whether its test was in the year now running,
- * or null for those with none.
+ * Students who stand alike for the numbers of the tab: how many, their
+ * latest score and whether its test was in the year now running, or null
+ * for those with none, and the category of their latest health note, or
+ * null when it follows the test or there is none.
  */
 export interface ScoreGroup {
   students: number;
   latest: { score: number; thisYear: boolean } | null;
+  note: NoteCategory | null;
 }
 
 /** The numbers of the tab and of the panel "Kategori". */
@@ -18,10 +22,21 @@ export interface FitnessNumbers {
   testedThisYear: number;
   /** Rerata skor: the average of the latest scores, to one decimal, or null for none. */
   meanScore: number | null;
-  /** How many have their latest score in each category, whatever its year. */
+  /**
+   * How many are in each final category, whatever the year of their
+   * test: the more serious of the latest test and the latest note.
+   */
   byCategory: Record<FitnessCategory, number>;
   /** Belum dites: with no test at all. */
   untested: number;
+}
+
+function testCategoryOf(
+  group: ScoreGroup,
+  limits: FitnessLimits,
+): FitnessCategory | null {
+  if (group.latest === null) return null;
+  return categoryOf(group.latest.score, limits);
 }
 
 /**
@@ -39,11 +54,15 @@ export function countFitness(
   let total = 0;
   for (const group of groups) {
     students += group.students;
+    const { category } = finalCategory(
+      testCategoryOf(group, limits),
+      group.note,
+    );
+    if (category !== "untested") byCategory[category] += group.students;
     if (group.latest === null) continue;
     tested += group.students;
     if (group.latest.thisYear) testedThisYear += group.students;
     total += group.latest.score * group.students;
-    byCategory[categoryOf(group.latest.score, limits)] += group.students;
   }
   const meanScore =
     tested === 0 ? null : Math.round((total / tested) * 10) / 10;

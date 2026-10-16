@@ -10,7 +10,10 @@ import {
 import { readFitnessGroupChoices } from "@/features/fitness/fitness-groups";
 import { testYearOf } from "@/features/fitness/fitness-input";
 import { readFitnessLimits } from "@/features/fitness/fitness-limits";
-import { fitnessVisibleTo } from "@/features/fitness/fitness-readers";
+import {
+  fitnessVisibleTo,
+  healthReadableTo,
+} from "@/features/fitness/fitness-readers";
 import { FitnessScreen, ReadOnlyNote } from "@/features/fitness/fitness-screen";
 import { HealthNotePanel } from "@/features/fitness/health-note-panel";
 import { mayWriteNotes } from "@/features/fitness/health-subject";
@@ -24,7 +27,9 @@ import { ScoreForm } from "@/features/fitness/score-form";
  * only, Pengasuh their own mentees only. The others are told who enters
  * the scores. Kepala Unit, with the right "Bobot penilaian", alone
  * changes "Ambang skor"; every other role reads it. Kepala Unit and
- * Penilai Mahasiswa write health notes of non-dorm students.
+ * Penilai Mahasiswa write health notes of non-dorm students. Every
+ * category is the final one; the note and its mark show only on the
+ * rows whose notes the account reads.
  */
 export default async function FitnessPage(
   props: PageProps<"/penilaian/jasmani">,
@@ -39,9 +44,11 @@ export default async function FitnessPage(
   const inForce = await readFitnessLimits(db);
   const { limits } = inForce;
   const mayEnter = may(account.roles, "enter_fitness_scores");
+  const showsNotes = may(account.roles, "view_health_notes");
+  const readable = healthReadableTo(account);
   const [numbers, list, groups] = await Promise.all([
     readFitnessNumbers(db, visible, limits, today),
-    readFitnessList(db, visible, limits, params),
+    readFitnessList(db, visible, limits, params, readable),
     mayEnter ? readFitnessGroupChoices(db) : [],
   ]);
   const maySetLimits = may(account.roles, "set_grade_weights");
@@ -53,6 +60,7 @@ export default async function FitnessPage(
       limits={limits}
       params={params}
       list={list}
+      showsNotes={showsNotes}
       manage={
         mayEnter ? (
           <ScoreForm

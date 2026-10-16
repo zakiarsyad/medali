@@ -59,6 +59,7 @@ export function FitnessScreen({
   limits,
   params,
   list,
+  showsNotes,
   manage,
   limitsPart,
   health = null,
@@ -70,6 +71,8 @@ export function FitnessScreen({
   limits: FitnessLimits;
   params: FitnessParams;
   list: FitnessList;
+  /** Whether "Hasil tes kebugaran" has the column "Catatan kesehatan". */
+  showsNotes: boolean;
   /** The group form, or the note for a role that only reads. */
   manage: ReactNode;
   /** "Ambang skor", to change or only to read. */
@@ -101,7 +104,7 @@ export function FitnessScreen({
       <section className={shared.panel}>
         <h2 className={shared.heading}>Hasil tes kebugaran</h2>
         <FitnessFilterRow params={params} />
-        <FitnessListTable rows={list.rows} limits={limits} />
+        <FitnessListTable rows={list.rows} showsNotes={showsNotes} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

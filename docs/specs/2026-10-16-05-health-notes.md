@@ -173,7 +173,7 @@ residents' notes into the same record.
   may write and read them is added to the permission list, with checks.
 - [x] 2. The final-category rule and the suggestion rule, with checks.
 - [x] 3. The form writes a note for a non-dorm student.
-- [ ] 4. Categories everywhere on the tab use the final category, with
+- [x] 4. Categories everywhere on the tab use the final category, with
   the "Belum ada catatan" mark.
 - [ ] 5. "Rekap data kesehatan seluruh mahasiswa" for Kepala Unit, with
   numbers, filters and the reading log.

@@ -1,11 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { START_PARAMS } from "./fitness-address";
-import type { FitnessList } from "./fitness-board";
+import type { FitnessList, FitnessListRow } from "./fitness-board";
 import type { FitnessNumbers } from "./fitness-counts";
 import { STARTING_LIMITS, STARTING_VERSION } from "./fitness-ids";
 import { FitnessListTable } from "./fitness-list-table";
 import { FitnessScreen, ReadOnlyNote } from "./fitness-screen";
+import type { NoteContent } from "./health-ids";
 import { ReadOnlyLimits } from "./read-only-limits";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -28,6 +29,8 @@ const LIST: FitnessList = {
       nim: "9986200201",
       program: "D3 Pajak",
       latest: { score: 72, testedOn: "2026-10-01" },
+      final: { category: "good", fromNote: false },
+      health: null,
     },
     {
       id: "00000000-0000-4000-8000-000000000602",
@@ -35,11 +38,53 @@ const LIST: FitnessList = {
       nim: "9986200202",
       program: "D3 Akuntansi",
       latest: null,
+      final: { category: "untested", fromNote: false },
+      health: null,
     },
   ],
   matching: 2,
   page: 1,
 };
+
+const NOTE: NoteContent = {
+  illnesses: [{ illness: "asthma", note: "sejak SMP" }],
+  otherHistory: "",
+  medicine: "",
+  advice: "Bawa inhaler.",
+};
+
+const CITRA: FitnessListRow = {
+  id: "00000000-0000-4000-8000-000000000603",
+  name: "Citra Contoh",
+  nim: "9986200203",
+  program: "D3 Pajak",
+  latest: { score: 88, testedOn: "2026-10-01" },
+  final: { category: "attention", fromNote: true },
+  health: { note: NOTE },
+};
+
+/** Rows as a reader of notes gets them: with a note, one missing, and none needed. */
+const READ_ROWS: FitnessListRow[] = [
+  CITRA,
+  {
+    id: "00000000-0000-4000-8000-000000000604",
+    name: "Dodi Contoh",
+    nim: "9986200204",
+    program: "D3 Pajak",
+    latest: { score: 60, testedOn: "2026-10-01" },
+    final: { category: "attention", fromNote: false },
+    health: { note: null },
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000605",
+    name: "Eka Contoh",
+    nim: "9986200205",
+    program: "D3 Pajak",
+    latest: { score: 90, testedOn: "2026-10-01" },
+    final: { category: "excellent", fromNote: false },
+    health: { note: null },
+  },
+];
 
 function screen(numbers: FitnessNumbers = NUMBERS) {
   return renderToStaticMarkup(
@@ -50,6 +95,7 @@ function screen(numbers: FitnessNumbers = NUMBERS) {
       limits={STARTING_LIMITS}
       params={START_PARAMS}
       list={LIST}
+      showsNotes={false}
       manage={<ReadOnlyNote />}
       limitsPart={null}
     />,
@@ -121,7 +167,7 @@ describe("Penilaian jasmani", () => {
 describe("Hasil tes kebugaran", () => {
   it("shows the name, NIM and program, the day of the test, Skor and Kategori, or Belum dites", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={LIST.rows} limits={STARTING_LIMITS} />,
+      <FitnessListTable rows={LIST.rows} showsNotes={false} />,
     );
 
     expect(html).toContain("Ani Contoh");
@@ -135,22 +181,48 @@ describe("Hasil tes kebugaran", () => {
     );
   });
 
-  it("works the category out again with the limits in force: with Baik from 75, 72 is Perlu perhatian", () => {
+  it("shows no column Catatan kesehatan and no mark to a role that reads no notes", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable
-        rows={LIST.rows}
-        limits={{ ...STARTING_LIMITS, goodFrom: 75 }}
-      />,
+      <FitnessListTable rows={LIST.rows} showsNotes={false} />,
     );
 
-    expect(html).toMatch(
-      /data-title="Kategori"><span[^>]*>Perlu perhatian<\/span>/,
+    expect(html).not.toContain("Catatan kesehatan");
+    expect(html).not.toContain("catatan");
+  });
+
+  it("shows a reader of notes the final category with its mark, the latest note, and Belum ada catatan where one is needed", () => {
+    const html = renderToStaticMarkup(
+      <FitnessListTable rows={READ_ROWS} showsNotes />,
     );
+
+    expect(html).toContain("<th>Catatan kesehatan</th>");
+    expect(html).toMatch(
+      /data-title="Kategori"><span[^>]*>Perlu perhatian<\/span><span[^>]*>berdasarkan catatan kesehatan<\/span><\/td>/,
+    );
+    expect(html).toContain(
+      '<td data-title="Catatan kesehatan">Riwayat: Asma (sejak SMP). Bawa inhaler.</td>',
+    );
+    expect(html).toMatch(
+      /data-title="Catatan kesehatan"><span[^>]*>Belum ada catatan<\/span>/,
+    );
+    expect(html).toMatch(
+      /data-title="Catatan kesehatan"><span[^>]*>Tidak ada catatan<\/span>/,
+    );
+    expect(html.match(/berdasarkan catatan kesehatan/g)).toHaveLength(1);
+  });
+
+  it("leaves the note and the mark out of a row whose notes the account does not read", () => {
+    const html = renderToStaticMarkup(
+      <FitnessListTable rows={[{ ...CITRA, health: null }]} showsNotes />,
+    );
+
+    expect(html).toContain('<td data-title="Catatan kesehatan"></td>');
+    expect(html).not.toContain("berdasarkan catatan kesehatan");
   });
 
   it("says when no student matches", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={[]} limits={STARTING_LIMITS} />,
+      <FitnessListTable rows={[]} showsNotes />,
     );
 
     expect(html).toContain("Tidak ada data pada filter ini.");

@@ -184,6 +184,10 @@
   font-size: var(--text-md);
 }
 
+.muted {
+  color: var(--muted);
+}
+
 /* "berdasarkan catatan kesehatan" beside a category. */
 .mark {
   color: var(--muted);

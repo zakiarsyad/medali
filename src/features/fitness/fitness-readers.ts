@@ -1,5 +1,9 @@
 import type { SQL } from "drizzle-orm";
-import { type AccountForAccess, rowLimitForTab } from "@/auth/access";
+import {
+  type AccountForAccess,
+  rowLimitForAction,
+  rowLimitForTab,
+} from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 
 /**
@@ -10,4 +14,14 @@ import { visibleTo } from "@/auth/visible-students";
  */
 export function fitnessVisibleTo(account: AccountForAccess): SQL {
   return visibleTo(rowLimitForTab(account, "assessment", "fitness"));
+}
+
+/**
+ * The students whose health notes an account reads on the tab: those its
+ * roles with the right to read notes see. Kepala Unit and Penilai
+ * Mahasiswa read every student's, Pengasuh their own mentees'; Direktur
+ * and Ketua Program Studi nobody's.
+ */
+export function healthReadableTo(account: AccountForAccess): SQL {
+  return visibleTo(rowLimitForAction(account, "view_health_notes"));
 }

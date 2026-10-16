@@ -6,11 +6,11 @@ describe("countFitness", () => {
   it("counts the students by the category of their latest score, and those not tested", () => {
     const numbers = countFitness(
       [
-        { students: 2, latest: { score: 90, thisYear: true } },
-        { students: 1, latest: { score: 72, thisYear: false } },
-        { students: 1, latest: { score: 60, thisYear: true } },
-        { students: 3, latest: { score: 40, thisYear: true } },
-        { students: 4, latest: null },
+        { students: 2, latest: { score: 90, thisYear: true }, note: null },
+        { students: 1, latest: { score: 72, thisYear: false }, note: null },
+        { students: 1, latest: { score: 60, thisYear: true }, note: null },
+        { students: 3, latest: { score: 40, thisYear: true }, note: null },
+        { students: 4, latest: null, note: null },
       ],
       STARTING_LIMITS,
     );
@@ -26,7 +26,7 @@ describe("countFitness", () => {
 
   it("keeps the category of a test of last year, but counts it in Sudah dites only for this year", () => {
     const numbers = countFitness(
-      [{ students: 1, latest: { score: 88, thisYear: false } }],
+      [{ students: 1, latest: { score: 88, thisYear: false }, note: null }],
       STARTING_LIMITS,
     );
 
@@ -37,7 +37,7 @@ describe("countFitness", () => {
 
   it("works every category out again with the limits in force: with Baik from 75, 72 is Perlu perhatian", () => {
     const numbers = countFitness(
-      [{ students: 1, latest: { score: 72, thisYear: true } }],
+      [{ students: 1, latest: { score: 72, thisYear: true }, note: null }],
       { ...STARTING_LIMITS, goodFrom: 75 },
     );
 
@@ -49,9 +49,34 @@ describe("countFitness", () => {
     });
   });
 
+  it("counts each student in their final category, the more serious of the test and the latest note", () => {
+    const numbers = countFitness(
+      [
+        {
+          students: 1,
+          latest: { score: 88, thisYear: true },
+          note: "attention",
+        },
+        { students: 1, latest: { score: 50, thisYear: true }, note: "good" },
+        { students: 1, latest: null, note: "attention" },
+        { students: 1, latest: null, note: null },
+      ],
+      STARTING_LIMITS,
+    );
+
+    expect(numbers.byCategory).toEqual({
+      excellent: 0,
+      good: 0,
+      attention: 2,
+      medical: 1,
+    });
+    expect(numbers.meanScore).toBe(69);
+    expect(numbers.untested).toBe(2);
+  });
+
   it("gives no Rerata skor while nobody is tested", () => {
     const numbers = countFitness(
-      [{ students: 5, latest: null }],
+      [{ students: 5, latest: null, note: null }],
       STARTING_LIMITS,
     );
 
