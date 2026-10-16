@@ -886,6 +886,50 @@ describe("may", () => {
     expect(mayOpenTab(["student"], "assessment", "character_test")).toBe(false);
   });
 
+  it("lets Konselor ask for, record and read a counselling consent, on Konseling", () => {
+    expect(ACTION_TITLES.manage_counselling_consent).toContain(
+      "Persetujuan konseling",
+    );
+    expect(may(["counsellor"], "manage_counselling_consent")).toBe(true);
+    expect(mayOpenPage(["counsellor"], "counselling")).toBe(true);
+  });
+
+  it("refuses every other role to ask for, record or read a counselling consent, Kepala Unit, Pengasuh and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "manage_counselling_consent")).toBe(false);
+    }
+  });
+
+  it("lets Mahasiswa answer and withdraw their own counselling consent, on Konseling", () => {
+    expect(may(["student"], "answer_own_counselling_consent")).toBe(true);
+    expect(mayOpenPage(["student"], "counselling")).toBe(true);
+  });
+
+  it("refuses every other role to answer a counselling consent, Konselor among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toContain("counsellor");
+    for (const role of others) {
+      expect(may([role], "answer_own_counselling_consent")).toBe(false);
+    }
+  });
+
+  it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
+    const openers: RoleId[] = ["counsellor", "student"];
+    for (const role of ROLE_IDS) {
+      expect(mayOpenPage([role], "counselling")).toBe(openers.includes(role));
+    }
+  });
+
   const disciplineReaders: RoleId[] = [
     "head_of_unit",
     "director",
@@ -2083,6 +2127,7 @@ describe("may", () => {
       "appeal_own_dorm_violation",
       "view_own_siku",
       "ask_siku_addition",
+      "answer_own_counselling_consent",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });

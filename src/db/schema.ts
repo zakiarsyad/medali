@@ -37,6 +37,10 @@ import {
 } from "@/features/character-grades/scheme-ids";
 import { ASSIGNMENT_METHODS } from "@/features/cohort-assignments/methods";
 import {
+  CONSENT_STATUSES,
+  CONSENT_WAYS,
+} from "@/features/counselling/consent-ids";
+import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -296,6 +300,16 @@ export const healthNoteCategory = pgEnum(
 export const characterAssessmentSource = pgEnum(
   "character_assessment_source",
   ASSESSMENT_SOURCES,
+);
+
+export const counsellingConsentStatus = pgEnum(
+  "counselling_consent_status",
+  CONSENT_STATUSES,
+);
+
+export const counsellingConsentWay = pgEnum(
+  "counselling_consent_way",
+  CONSENT_WAYS,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -3066,6 +3080,67 @@ export const characterGradeSchemes = pgTable(
     check(
       "character_grade_schemes_limits_go_down",
       sql`${table.aFrom} > ${table.bFrom} and ${table.bFrom} > ${table.cFrom} and ${table.cFrom} > ${table.dFrom}`,
+    ),
+  ],
+);
+
+/**
+ * A student's one current consent to counselling: Menunggu, Disetujui,
+ * Ditolak or Dicabut, with how a Disetujui was given, and who changed it
+ * last and when. A student with none has not been asked. A new request
+ * after Ditolak or Dicabut turns the same row back to Menunggu; every
+ * earlier status stays in its log. Never deleted: its log lines hold it.
+ */
+export const counsellingConsents = pgTable(
+  "counselling_consents",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    status: counsellingConsentStatus().notNull(),
+    /** How a Disetujui was given; none for any other status. */
+    way: counsellingConsentWay(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("counselling_consents_one_per_student").on(table.studentId),
+    check(
+      "counselling_consents_way_only_when_approved",
+      sql`(${table.status} = 'approved') = (${table.way} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * Every change of a consent to counselling: who, when, the status before
+ * and after, and how a Disetujui was given. The first request or record
+ * has no status before. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const counsellingConsentChanges = pgTable(
+  "counselling_consent_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    consentId: uuid()
+      .notNull()
+      .references(() => counsellingConsents.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    statusBefore: counsellingConsentStatus(),
+    statusAfter: counsellingConsentStatus().notNull(),
+    way: counsellingConsentWay(),
+  },
+  (table) => [
+    index("counselling_consent_changes_consent").on(table.consentId),
+    check(
+      "counselling_consent_changes_way_only_when_approved",
+      sql`(${table.statusAfter} = 'approved') = (${table.way} is not null)`,
     ),
   ],
 );

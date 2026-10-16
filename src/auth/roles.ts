@@ -80,6 +80,8 @@ export const ACTIONS = [
   "view_health_notes",
   "view_health_recap",
   "view_discipline_records",
+  "manage_counselling_consent",
+  "answer_own_counselling_consent",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -180,6 +182,10 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_health_notes: "Melihat catatan kesehatan",
   view_health_recap: "Rekap data kesehatan seluruh mahasiswa",
   view_discipline_records: "Melihat catatan disiplin mahasiswa",
+  manage_counselling_consent:
+    "Persetujuan konseling: melihat status, mengirim permintaan, dan mencatat form tertulis",
+  answer_own_counselling_consent:
+    "Menyetujui, menolak, dan mencabut persetujuan konseling sendiri",
 };
 
 /**
@@ -447,6 +453,7 @@ export const ROLES: Record<RoleId, Role> = {
       "appeal_own_dorm_violation",
       "view_own_siku",
       "ask_siku_addition",
+      "answer_own_counselling_consent",
     ],
     rows: "self",
   },
@@ -593,7 +600,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KS",
     pages: ["assessment", "counselling"],
     tabs: { assessment: ["mental_health"] },
-    actions: [],
+    actions: ["manage_counselling_consent"],
     rows: "all",
   },
   discipline_officer: {

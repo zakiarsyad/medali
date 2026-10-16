@@ -1,4 +1,4 @@
-// Sample NIMs of this file: 9986300000 to 9986300099.
+// Sample NIMs of this file: 9986300500 to 9986300599.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ADVICE_MAX, SHORT_TEXT_MAX } from "@/features/fitness/health-ids";
@@ -26,7 +26,7 @@ async function addWriter(db: Database) {
   const { studentIds } = await addTestStudents(
     db,
     "Prodi Uji Tabel Kesehatan",
-    ["9986300001"],
+    ["9986300501"],
   );
   const [studentId = ""] = studentIds;
   return { kepala, studentId };

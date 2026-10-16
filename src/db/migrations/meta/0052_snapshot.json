@@ -1,5 +1,5 @@
 {
-  "id": "90f9664d-d408-4efc-a6cc-49753f54f724",
+  "id": "b7b128a2-5fea-416f-ac1c-841ba48e0d73",
   "prevId": "dff461ee-80a3-4da5-81ba-d49699e7edac",
   "version": "7",
   "dialect": "postgresql",
@@ -2070,6 +2070,205 @@
         "cohort_assignments_fixed_with_decree_and_day": {
           "name": "cohort_assignments_fixed_with_decree_and_day",
           "value": "\"cohort_assignments\".\"status\" <> 'fixed' or (\"cohort_assignments\".\"decree_number\" is not null and \"cohort_assignments\".\"effective_on\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.counselling_consent_changes": {
+      "name": "counselling_consent_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "consent_id": {
+          "name": "consent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_before": {
+          "name": "status_before",
+          "type": "counselling_consent_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_after": {
+          "name": "status_after",
+          "type": "counselling_consent_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "way": {
+          "name": "way",
+          "type": "counselling_consent_way",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "counselling_consent_changes_consent": {
+          "name": "counselling_consent_changes_consent",
+          "columns": [
+            {
+              "expression": "consent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "counselling_consent_changes_consent_id_counselling_consents_id_fk": {
+          "name": "counselling_consent_changes_consent_id_counselling_consents_id_fk",
+          "tableFrom": "counselling_consent_changes",
+          "tableTo": "counselling_consents",
+          "columnsFrom": [
+            "consent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counselling_consent_changes_changed_by_accounts_id_fk": {
+          "name": "counselling_consent_changes_changed_by_accounts_id_fk",
+          "tableFrom": "counselling_consent_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "counselling_consent_changes_way_only_when_approved": {
+          "name": "counselling_consent_changes_way_only_when_approved",
+          "value": "(\"counselling_consent_changes\".\"status_after\" = 'approved') = (\"counselling_consent_changes\".\"way\" is not null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.counselling_consents": {
+      "name": "counselling_consents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "counselling_consent_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "way": {
+          "name": "way",
+          "type": "counselling_consent_way",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "counselling_consents_student_id_students_id_fk": {
+          "name": "counselling_consents_student_id_students_id_fk",
+          "tableFrom": "counselling_consents",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counselling_consents_changed_by_accounts_id_fk": {
+          "name": "counselling_consents_changed_by_accounts_id_fk",
+          "tableFrom": "counselling_consents",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "counselling_consents_one_per_student": {
+          "name": "counselling_consents_one_per_student",
+          "nullsNotDistinct": false,
+          "columns": [
+            "student_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "counselling_consents_way_only_when_approved": {
+          "name": "counselling_consents_way_only_when_approved",
+          "value": "(\"counselling_consents\".\"status\" = 'approved') = (\"counselling_consents\".\"way\" is not null)"
         }
       },
       "isRLSEnabled": false
@@ -5598,265 +5797,6 @@
           "tableTo": "accounts",
           "columnsFrom": [
             "entered_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.health_note_illnesses": {
-      "name": "health_note_illnesses",
-      "schema": "",
-      "columns": {
-        "note_id": {
-          "name": "note_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "illness": {
-          "name": "illness",
-          "type": "health_illness",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "health_note_illnesses_note_id_health_notes_id_fk": {
-          "name": "health_note_illnesses_note_id_health_notes_id_fk",
-          "tableFrom": "health_note_illnesses",
-          "tableTo": "health_notes",
-          "columnsFrom": [
-            "note_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "health_note_illnesses_note_id_illness_pk": {
-          "name": "health_note_illnesses_note_id_illness_pk",
-          "columns": [
-            "note_id",
-            "illness"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "health_note_illnesses_note_length": {
-          "name": "health_note_illnesses_note_length",
-          "value": "char_length(\"health_note_illnesses\".\"note\") <= 200"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.health_notes": {
-      "name": "health_notes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "examined_on": {
-          "name": "examined_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "examiner": {
-          "name": "examiner",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "other_history": {
-          "name": "other_history",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "medicine": {
-          "name": "medicine",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "advice": {
-          "name": "advice",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "category": {
-          "name": "category",
-          "type": "health_note_category",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "saved_by": {
-          "name": "saved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_at": {
-          "name": "saved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "health_notes_student_saved_at": {
-          "name": "health_notes_student_saved_at",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "saved_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "health_notes_student_id_students_id_fk": {
-          "name": "health_notes_student_id_students_id_fk",
-          "tableFrom": "health_notes",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "health_notes_saved_by_accounts_id_fk": {
-          "name": "health_notes_saved_by_accounts_id_fk",
-          "tableFrom": "health_notes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "saved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "health_notes_short_texts": {
-          "name": "health_notes_short_texts",
-          "value": "char_length(\"health_notes\".\"examiner\") <= 200 and char_length(\"health_notes\".\"other_history\") <= 200 and char_length(\"health_notes\".\"medicine\") <= 200"
-        },
-        "health_notes_advice_length": {
-          "name": "health_notes_advice_length",
-          "value": "char_length(\"health_notes\".\"advice\") <= 2000"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.health_recap_readings": {
-      "name": "health_recap_readings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "read_by": {
-          "name": "read_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "read_at": {
-          "name": "read_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "filters": {
-          "name": "filters",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "health_recap_readings_read_at": {
-          "name": "health_recap_readings_read_at",
-          "columns": [
-            {
-              "expression": "read_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "health_recap_readings_read_by_accounts_id_fk": {
-          "name": "health_recap_readings_read_by_accounts_id_fk",
-          "tableFrom": "health_recap_readings",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "read_by"
           ],
           "columnsTo": [
             "id"
@@ -10126,6 +10066,24 @@
         "cancelled"
       ]
     },
+    "public.counselling_consent_status": {
+      "name": "counselling_consent_status",
+      "schema": "public",
+      "values": [
+        "waiting",
+        "approved",
+        "declined",
+        "withdrawn"
+      ]
+    },
+    "public.counselling_consent_way": {
+      "name": "counselling_consent_way",
+      "schema": "public",
+      "values": [
+        "online",
+        "paper"
+      ]
+    },
     "public.dorm": {
       "name": "dorm",
       "schema": "public",
@@ -10345,31 +10303,6 @@
         "C",
         "D",
         "E"
-      ]
-    },
-    "public.health_illness": {
-      "name": "health_illness",
-      "schema": "public",
-      "values": [
-        "asthma",
-        "hypertension",
-        "diabetes",
-        "heart_disease",
-        "gastric_disorder",
-        "allergy",
-        "epilepsy",
-        "bone_joint_injury",
-        "infectious_disease",
-        "other"
-      ]
-    },
-    "public.health_note_category": {
-      "name": "health_note_category",
-      "schema": "public",
-      "values": [
-        "good",
-        "attention",
-        "medical"
       ]
     },
     "public.mentor_replacement_reason": {
