@@ -19,7 +19,7 @@ import {
 } from "./fitness-file-columns";
 import type { FitnessFilePreview } from "./fitness-file-preview";
 import { FitnessFilePreviewView } from "./fitness-file-preview-view";
-import { DAY_IN_FUTURE } from "./fitness-input";
+import { FILE_DAY_IN_FUTURE, keepsPicked } from "./fitness-input";
 
 const TEMPLATE_LINK = `data:text/csv;charset=utf-8,${encodeURIComponent(fitnessTemplateCsv())}`;
 
@@ -75,7 +75,7 @@ function TestDayPick({
           value={testedOn}
           onChange={(event) => onChange(event.target.value)}
         />
-        {isFuture && <span className={own.fault}>{DAY_IN_FUTURE}</span>}
+        {isFuture && <span className={own.fault}>{FILE_DAY_IN_FUTURE}</span>}
       </label>
     </div>
   );
@@ -157,6 +157,7 @@ export function FitnessUpload({ today }: { today: string }) {
     form.set("testedOn", testedOn);
     startSaving(async () => {
       const saved = await saveFitnessFileAction(form);
+      if (!saved.ok && keepsPicked(saved.error)) return setError(saved.error);
       if (!saved.ok) return refuse(saved.error);
       setChecked(null);
       setError(null);

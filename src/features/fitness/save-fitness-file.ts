@@ -10,7 +10,7 @@ import type { SentFile } from "@/files/file-check";
 import { fingerprintOf } from "@/files/file-fingerprint";
 import type { Parsed } from "@/parsed";
 import { checkFitnessFile, scorableBy } from "./fitness-file-check";
-import { parseTestDay } from "./fitness-input";
+import { parseFileTestDay } from "./fitness-input";
 import { NOT_ALLOWED_TO_ENTER } from "./save-fitness-scores";
 
 export const NOTHING_TO_SAVE = {
@@ -128,7 +128,7 @@ export async function saveFitnessFile(
   moment: Date = new Date(),
 ): Promise<Parsed<number>> {
   if (!may(actor.roles, "enter_fitness_scores")) return NOT_ALLOWED_TO_ENTER;
-  const testedOn = parseTestDay(sentTestedOn, campusDay(moment));
+  const testedOn = parseFileTestDay(sentTestedOn, campusDay(moment));
   if (!testedOn.ok) return testedOn;
   if (!isUuid(id)) return FILE_ALREADY_SENT;
   const saving = {

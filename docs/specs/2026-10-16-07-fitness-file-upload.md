@@ -96,9 +96,13 @@ The issue had no open questions.
 - The NIM ganda count only rows that would have been ready: a row of the
   same NIM that is skipped is listed with its reason instead.
 - "Tanggal tes" is picked once for the whole file. A day after today
-  shows "Tanggal tes tidak boleh setelah hari ini." under the field at
-  once; picking a file still shows its preview, and the server refuses
-  the save and keeps nothing.
+  shows "Tanggal tes tidak boleh setelah hari ini. Pilih hari ini atau
+  tanggal sebelumnya." under the field at once; picking a file still
+  shows its preview, and the server refuses the save with the same
+  message and keeps nothing. The picked file and its preview stay, so
+  "Tanggal tes" can be changed and "Simpan (n) baris" pressed again
+  without picking the file anew. The group form keeps its shorter
+  message.
 - A file is kept as one save of scores, like one group form: it keeps
   the file's name and a fingerprint of its content, never the file
   itself, and each row is its own line in the log that cannot be changed

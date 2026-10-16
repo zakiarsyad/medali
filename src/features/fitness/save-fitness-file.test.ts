@@ -6,7 +6,7 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { fitnessScores, fitnessTests, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { DAY_IN_FUTURE, NO_TEST_DAY } from "./fitness-input";
+import { FILE_DAY_IN_FUTURE, NO_TEST_DAY } from "./fitness-input";
 import { latestFitnessScores } from "./latest-fitness-scores";
 import {
   FILE_ALREADY_SENT,
@@ -295,7 +295,7 @@ describe("saveFitnessFile", () => {
       "a Tanggal tes after today",
       "2026-10-17",
       csv(ROWS),
-      { ok: false, error: DAY_IN_FUTURE },
+      { ok: false, error: FILE_DAY_IN_FUTURE },
     ],
     ["no Tanggal tes", "", csv(ROWS), { ok: false, error: NO_TEST_DAY }],
     [
