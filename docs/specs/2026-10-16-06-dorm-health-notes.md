@@ -134,6 +134,17 @@ them.
 10. The change log of a note is the note itself, as in Health notes:
     each note is a line of its own with who saved it and when, and it
     can never be changed or deleted.
+11. A person whose roles include one that reads the list sees that
+    list and its numbers, and no numbers-only view beside it. So
+    Pengasuh who is also Ketua Program Studi sees their own mentees
+    only, which shows less to fewer people.
+12. For Direktur and Ketua Program Studi, the "<5" rule covers every
+    number, also "(n) belum punya catatan"; the share "(n)% penghuni"
+    is left out while its number shows as "<5", as it would give the
+    number back. 0 shows as 0. In place of the form they read that
+    the notes are filled by BAM - Kesehatan and Kepala Unit and that
+    only the numbers show for their role. A search or filter in the
+    address is ignored for them.
 
 ## Steps
 
@@ -144,5 +155,5 @@ them.
 - [x] 3. The numbers and the list of sick residents show, with search,
   filters and pages.
 - [x] 4. Writers save a health note, with the category hint.
-- [ ] 5. Pengasuh sees only their own mentees; Direktur and Ketua
+- [x] 5. Pengasuh sees only their own mentees; Direktur and Ketua
   Program Studi see numbers only.

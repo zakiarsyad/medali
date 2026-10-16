@@ -19,9 +19,23 @@ export const LISTED_NOUN = "mahasiswa asrama";
 export const LIST_READER_NOTE =
   "Catatan kesehatan penghuni asrama diisi oleh BAM - Kesehatan dan Kepala Unit Pembangunan Karakter. Anda dapat melihat daftar mahasiswa asrama yang sakit di bawah.";
 
+/** What a role that sees the numbers only is told where the form would be. */
+export const NUMBERS_ONLY_NOTE =
+  "Catatan kesehatan penghuni asrama diisi oleh BAM - Kesehatan dan Kepala Unit Pembangunan Karakter. Nama, riwayat penyakit, dan catatan penghuni tidak ditampilkan untuk peran Anda, hanya angkanya.";
+
+/** What shows in place of the numbers below 5 residents in reach, as in the prototype. */
+export const TOO_FEW_LINE =
+  "Rekap ditampilkan setelah minimal 5 penghuni, agar identitas tidak dapat ditebak.";
+
 /** What the list says when nobody matches. */
 export const NOBODY_SICK =
   "Tidak ada mahasiswa asrama yang sakit pada filter ini.";
+
+/** The hint of "Perlu tindak lanjut medis": how many lack a note, or that none does. */
+export function withoutNoteHint(withoutNote: number | "<5"): string {
+  if (withoutNote === 0) return "catatan lengkap";
+  return `${withoutNote.toLocaleString("id-ID")} belum punya catatan`;
+}
 
 /** The dorms of the residents, the hint of "Penghuni asrama" for who sees them all. */
 const EVERY_DORM = "Wismantara, Dana Rakca, Cipta Bakti";

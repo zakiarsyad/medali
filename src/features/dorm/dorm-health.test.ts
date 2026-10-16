@@ -11,11 +11,15 @@ import {
 } from "@/dorms/test-records";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { addTestNote } from "@/health-notes/test-health";
-import { readDormHealthList } from "./dorm-health";
+import { readDormHealthList, readDormHealthNumbers } from "./dorm-health";
 import {
   DORM_HEALTH_START,
   type DormHealthParams,
 } from "./dorm-health-address";
+import {
+  readDormHealthSubject,
+  searchDormHealthStudents,
+} from "./dorm-health-subject";
 import {
   addHealthActor,
   addHealthGroup,
@@ -108,7 +112,7 @@ async function addResidents(db: Database) {
     advice: "Rahasia Eka.",
     category: "medical",
   });
-  return { programId, hana };
+  return { programId, hana, ids: { ani, budi } };
 }
 
 async function actorWith(db: Database, roles: RoleId[]): Promise<HealthActor> {
@@ -270,6 +274,187 @@ describe("readDormHealthList", () => {
         );
 
         expect(await read(db, actor)).toBeNull();
+      });
+    },
+  );
+});
+
+describe("the list for Pengasuh", () => {
+  it("holds only their own mentees who live in the dorm, in the numbers too", async () => {
+    await inTestDatabase(async (db) => {
+      const { hana } = await addResidents(db);
+
+      const found = await read(db, hana);
+
+      expect(found?.list.numbers.students).toBe(1);
+      expect(found?.list.rows.map((row) => row.name)).toEqual(["Ani Asrama"]);
+      expect(found?.reach).toMatchObject({ menteesOf: [hana.id] });
+    });
+  });
+
+  it("finds nobody when they search for a resident who is not their mentee", async () => {
+    await inTestDatabase(async (db) => {
+      const { hana } = await addResidents(db);
+
+      const found = await read(db, hana, { query: "Budi" });
+
+      expect(found?.list.matching).toBe(0);
+      expect(found?.list.rows).toEqual([]);
+    });
+  });
+
+  it("keeps Pengasuh who is also Ketua Program Studi to their own mentees", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId } = await addResidents(db);
+      const both = await addHealthActor(
+        db,
+        "Pengasuh Kaprodi Uji",
+        ["mentor", "head_of_program"],
+        programId,
+      );
+
+      const found = await read(db, both);
+
+      expect(found?.list.numbers.students).toBe(0);
+      expect(found?.list.rows).toEqual([]);
+    });
+  });
+
+  it("gives Pengasuh no resident to pick and no notes to open", async () => {
+    await inTestDatabase(async (db) => {
+      const { hana, ids } = await addResidents(db);
+
+      expect(await searchDormHealthStudents(db, hana, "Ani", TODAY)).toEqual(
+        [],
+      );
+      expect(
+        await readDormHealthSubject(db, hana, ids.ani, STARTING_LIMITS, TODAY),
+      ).toBeNull();
+    });
+  });
+});
+
+/** Three more Pembibitan residents, Gita of another program, all well. */
+async function addMoreResidents(db: Database, programId: number) {
+  const otherProgram = await addTestProgram(db, "Prodi Uji Asrama Lain");
+  await addTestStudent(db, programId, {
+    nim: "9986300611",
+    name: "Hani Asrama",
+    isSeedling: true,
+  });
+  await addTestStudent(db, programId, {
+    nim: "9986300612",
+    name: "Indra Asrama",
+    isSeedling: true,
+    sex: "male",
+  });
+  await addTestStudent(db, otherProgram, {
+    nim: "9986300613",
+    name: "Gita Asrama",
+    isSeedling: true,
+  });
+}
+
+function count(db: Database, actor: HealthActor) {
+  return readDormHealthNumbers(db, actor, STARTING_LIMITS, TODAY);
+}
+
+describe("readDormHealthNumbers", () => {
+  it("gives Direktur no number below 5 residents in reach", async () => {
+    await inTestDatabase(async (db) => {
+      await addResidents(db);
+
+      const found = await count(db, await actorWith(db, ["director"]));
+
+      expect(found?.counts).toEqual({ kind: "too_few" });
+    });
+  });
+
+  it("gives Direktur the numbers from 5 residents, each of 1 to 4 as <5, and never a name, illness or note", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId } = await addResidents(db);
+      await addMoreResidents(db, programId);
+
+      const found = await count(db, await actorWith(db, ["director"]));
+
+      expect(found).toEqual({
+        counts: {
+          kind: "shown",
+          residents: 7,
+          listed: "<5",
+          attention: "<5",
+          medical: "<5",
+          medicalWithoutNote: "<5",
+          listedShare: null,
+        },
+        reach: { kind: "all" },
+      });
+      const sent = JSON.stringify(found);
+      for (const secret of ["Asrama", "Rahasia", "asthma", "99863006"]) {
+        expect(sent).not.toContain(secret);
+      }
+    });
+  });
+
+  it("counts for Ketua Program Studi only the residents of their own program", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId } = await addResidents(db);
+      await addMoreResidents(db, programId);
+      const kaprodi = await addHealthActor(
+        db,
+        "Kaprodi Uji Asrama",
+        ["head_of_program"],
+        programId,
+      );
+
+      const found = await count(db, kaprodi);
+
+      expect(found?.counts).toMatchObject({ kind: "shown", residents: 6 });
+      expect(found?.reach).toMatchObject({ studyProgramIds: [programId] });
+    });
+  });
+
+  it("gives Direktur and Ketua Program Studi nothing of the list, nor a resident to pick or open", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, ids } = await addResidents(db);
+
+      for (const role of ["director", "head_of_program"] as const) {
+        const actor = await addHealthActor(
+          db,
+          "Pimpinan Uji Asrama",
+          [role],
+          programId,
+        );
+        expect(await read(db, actor, { query: "Ani" })).toBeNull();
+        expect(await searchDormHealthStudents(db, actor, "Ani", TODAY)).toEqual(
+          [],
+        );
+        expect(
+          await readDormHealthSubject(
+            db,
+            actor,
+            ids.ani,
+            STARTING_LIMITS,
+            TODAY,
+          ),
+        ).toBeNull();
+      }
+    });
+  });
+
+  it.each([
+    "head_of_unit",
+    "bam_health",
+    "mentor",
+    "student",
+    "counsellor",
+  ] as const)(
+    "reads nothing for %s, who has no numbers-only right",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        await addResidents(db);
+
+        expect(await count(db, await actorWith(db, [role]))).toBeNull();
       });
     },
   );

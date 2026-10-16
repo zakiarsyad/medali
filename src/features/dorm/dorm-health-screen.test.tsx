@@ -1,14 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { RecapRow } from "@/health-notes/sick-list";
-import type { DormHealthList } from "./dorm-health";
+import type { DormHealthList, DormHealthNumbersOnly } from "./dorm-health";
 import {
   DORM_HEALTH_START,
   type DormHealthParams,
 } from "./dorm-health-address";
 import { DormHealthNoteForm } from "./dorm-health-note-panel";
 import { DormHealthScreen } from "./dorm-health-screen";
-import { LIST_READER_NOTE } from "./dorm-health-words";
+import { LIST_READER_NOTE, NUMBERS_ONLY_NOTE } from "./dorm-health-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 vi.mock("./dorm-health-actions", () => ({
@@ -147,6 +147,65 @@ describe("Asrama > Kesehatan for an account that may not read the list", () => {
     expect(html).not.toContain("Mahasiswa asrama yang sakit");
     expect(html).not.toContain("Cari nama atau NIM");
     expect(html).not.toContain("<select");
+  });
+});
+
+function numbersOnly(counts: DormHealthNumbersOnly["counts"]) {
+  return renderToStaticMarkup(
+    <DormHealthScreen
+      tabs={TABS}
+      found={null}
+      counts={{
+        counts,
+        reach: {
+          kind: "some",
+          studyProgramIds: [7],
+          menteesOf: [],
+          studentIds: [],
+        },
+      }}
+      params={DORM_HEALTH_START}
+      form={null}
+      readOnlyNote={NUMBERS_ONLY_NOTE}
+    />,
+  );
+}
+
+describe("Asrama > Kesehatan for Direktur or Ketua Program Studi", () => {
+  const html = numbersOnly({
+    kind: "shown",
+    residents: 40,
+    listed: 6,
+    attention: "<5",
+    medical: 0,
+    medicalWithoutNote: 0,
+    listedShare: 15,
+  });
+
+  it("shows the four numbers, <5 for 1 to 4, with no list, search or filter", () => {
+    expect(html).toContain("Penghuni asrama");
+    expect(html).toContain("prodi Anda");
+    expect(html).toContain("15% penghuni");
+    expect(html).toContain("&lt;5");
+    expect(html).toContain("catatan lengkap");
+    expect(html).not.toContain("Mahasiswa asrama yang sakit");
+    expect(html).not.toContain("Cari nama atau NIM");
+    expect(html).not.toContain("<select");
+    expect(html).not.toContain("<table");
+  });
+
+  it("says that only the numbers show, with no form", () => {
+    expect(html).toContain(NUMBERS_ONLY_NOTE);
+    expect(html).not.toContain("Simpan catatan");
+  });
+
+  it("shows only the line of the minimum below 5 residents", () => {
+    const few = numbersOnly({ kind: "too_few" });
+    expect(few).toContain(
+      "Rekap ditampilkan setelah minimal 5 penghuni, agar identitas tidak dapat ditebak.",
+    );
+    expect(few).not.toContain("Penghuni asrama");
+    expect(few).not.toContain("Perlu perhatian");
   });
 });
 

@@ -11,12 +11,14 @@ import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import {
   readSickList,
+  readSickNumbers,
   type SickList,
   type SickParts,
   sickParts,
 } from "@/health-notes/sick-list";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { DormHealthParams } from "./dorm-health-address";
+import { type HealthCounts, healthCounts } from "./dorm-health-counts";
 
 /** The list "Mahasiswa asrama yang sakit", with whose residents it holds. */
 export interface DormHealthList {
@@ -46,6 +48,33 @@ export function residentsIn(
 function dormOf(parts: SickParts, params: DormHealthParams): SQL | undefined {
   if (params.dorm === "all") return undefined;
   return sql`${parts.dorm} = ${params.dorm}`;
+}
+
+/** The numbers of the residents' health for a numbers-only role. */
+export interface DormHealthNumbersOnly {
+  counts: HealthCounts;
+  /** The row limit the numbers were read with, which their hint names. */
+  reach: RowLimit;
+}
+
+/**
+ * The numbers of the residents' health, for an account with the right
+ * to the numbers alone, Direktur and Ketua Program Studi: of the Aktif
+ * residents it may see by that right, Ketua Program Studi their own
+ * program only, held back as healthCounts says. No name, illness or note
+ * is read. Null, with nothing read, for any other account.
+ */
+export async function readDormHealthNumbers(
+  db: Database,
+  actor: AccountForAccess,
+  limits: FitnessLimits,
+  today: string,
+): Promise<DormHealthNumbersOnly | null> {
+  if (!may(actor.roles, "view_dorm_health_numbers")) return null;
+  const reach = rowLimitForAction(actor, "view_dorm_health_numbers");
+  const parts = await residentParts(db, limits, today);
+  const numbers = await readSickNumbers(db, parts, residentsIn(parts, reach));
+  return { counts: healthCounts(numbers), reach };
 }
 
 /**
