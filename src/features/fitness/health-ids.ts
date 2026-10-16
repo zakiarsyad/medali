@@ -30,6 +30,30 @@ export const NOTE_CATEGORIES = ["good", "attention", "medical"] as const;
 
 export type NoteCategory = (typeof NOTE_CATEGORIES)[number];
 
+/** An illness picked in a note, with its short note, empty when none. */
+export interface NoteIllness {
+  illness: Illness;
+  note: string;
+}
+
+/** What a note says, as its text is written out. */
+export interface NoteContent {
+  illnesses: readonly NoteIllness[];
+  otherHistory: string;
+  medicine: string;
+  advice: string;
+}
+
+/** A saved health note, as the form shows it. */
+export interface HealthNote extends NoteContent {
+  id: string;
+  examinedOn: string;
+  examiner: string | null;
+  category: NoteCategory | null;
+  /** The name of the account that saved it. */
+  savedBy: string;
+}
+
 /** The most a short field of a note holds: Pemeriksa, Riwayat lain, Obat and each illness's note. */
 export const SHORT_TEXT_MAX = 200;
 

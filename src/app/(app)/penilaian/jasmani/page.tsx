@@ -12,6 +12,8 @@ import { testYearOf } from "@/features/fitness/fitness-input";
 import { readFitnessLimits } from "@/features/fitness/fitness-limits";
 import { fitnessVisibleTo } from "@/features/fitness/fitness-readers";
 import { FitnessScreen, ReadOnlyNote } from "@/features/fitness/fitness-screen";
+import { HealthNotePanel } from "@/features/fitness/health-note-panel";
+import { mayWriteNotes } from "@/features/fitness/health-subject";
 import { LimitsForm } from "@/features/fitness/limits-form";
 import { ReadOnlyLimits } from "@/features/fitness/read-only-limits";
 import { ScoreForm } from "@/features/fitness/score-form";
@@ -21,7 +23,8 @@ import { ScoreForm } from "@/features/fitness/score-form";
  * that open the tab see: Ketua Program Studi those of their own program
  * only, Pengasuh their own mentees only. The others are told who enters
  * the scores. Kepala Unit, with the right "Bobot penilaian", alone
- * changes "Ambang skor"; every other role reads it.
+ * changes "Ambang skor"; every other role reads it. Kepala Unit and
+ * Penilai Mahasiswa write health notes of non-dorm students.
  */
 export default async function FitnessPage(
   props: PageProps<"/penilaian/jasmani">,
@@ -67,6 +70,11 @@ export default async function FitnessPage(
           <LimitsForm inForce={inForce} />
         ) : (
           <ReadOnlyLimits inForce={inForce} />
+        )
+      }
+      health={
+        mayWriteNotes(account.roles) && (
+          <HealthNotePanel today={today} newKey={crypto.randomUUID()} />
         )
       }
     />

@@ -172,7 +172,7 @@ residents' notes into the same record.
 - [x] 1. Health notes are stored, never erased, with sample notes; who
   may write and read them is added to the permission list, with checks.
 - [x] 2. The final-category rule and the suggestion rule, with checks.
-- [ ] 3. The form writes a note for a non-dorm student.
+- [x] 3. The form writes a note for a non-dorm student.
 - [ ] 4. Categories everywhere on the tab use the final category, with
   the "Belum ada catatan" mark.
 - [ ] 5. "Rekap data kesehatan seluruh mahasiswa" for Kepala Unit, with

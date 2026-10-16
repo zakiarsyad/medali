@@ -49,8 +49,8 @@ function Numbers({ numbers, year }: { numbers: FitnessNumbers; year: number }) {
 
 /**
  * Penilaian jasmani: the four numbers, "Input hasil tes kebugaran" beside
- * "Kategori", and "Hasil tes kebugaran", all of the students the account
- * may see.
+ * "Kategori", the health part the account may have, and "Hasil tes
+ * kebugaran", all of the students the account may see.
  */
 export function FitnessScreen({
   tabs,
@@ -61,6 +61,7 @@ export function FitnessScreen({
   list,
   manage,
   limitsPart,
+  health = null,
 }: {
   tabs: TabLinksProps;
   /** The calendar year now running on campus. */
@@ -73,6 +74,8 @@ export function FitnessScreen({
   manage: ReactNode;
   /** "Ambang skor", to change or only to read. */
   limitsPart: ReactNode;
+  /** "Catatan kesehatan" for the roles that write notes; nothing for the others. */
+  health?: ReactNode;
 }) {
   return (
     <>
@@ -94,6 +97,7 @@ export function FitnessScreen({
           {limitsPart}
         </CategoryPanel>
       </div>
+      {health}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Hasil tes kebugaran</h2>
         <FitnessFilterRow params={params} />
