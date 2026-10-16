@@ -97,20 +97,6 @@ import {
   RESULT_MIN_LENGTH,
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
-import {
-  LIMIT_MAX as FITNESS_LIMIT_MAX,
-  LIMIT_MIN as FITNESS_LIMIT_MIN,
-  SCORE_MAX as FITNESS_SCORE_MAX,
-  SCORE_MIN as FITNESS_SCORE_MIN,
-  type FitnessLimits,
-} from "@/features/fitness/fitness-ids";
-import {
-  ADVICE_MAX as HEALTH_ADVICE_MAX,
-  NOTE_CATEGORIES as HEALTH_NOTE_CATEGORIES,
-  SHORT_TEXT_MAX as HEALTH_SHORT_TEXT_MAX,
-  ILLNESSES,
-  type RecapReadFilters,
-} from "@/features/fitness/health-ids";
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
@@ -141,6 +127,20 @@ import {
   SKPM_UPLOAD_ACTIONS,
   SKPM_UPLOAD_MODES,
 } from "@/features/skpm/skpm-ids";
+import {
+  LIMIT_MAX as FITNESS_LIMIT_MAX,
+  LIMIT_MIN as FITNESS_LIMIT_MIN,
+  SCORE_MAX as FITNESS_SCORE_MAX,
+  SCORE_MIN as FITNESS_SCORE_MIN,
+  type FitnessLimits,
+} from "@/health-notes/fitness-ids";
+import {
+  ADVICE_MAX as HEALTH_ADVICE_MAX,
+  NOTE_CATEGORIES as HEALTH_NOTE_CATEGORIES,
+  SHORT_TEXT_MAX as HEALTH_SHORT_TEXT_MAX,
+  ILLNESSES,
+  type RecapReadFilters,
+} from "@/health-notes/health-ids";
 import {
   ATTENDANCE_MARKS,
   type MarksByStudent,

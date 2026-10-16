@@ -7,17 +7,13 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
+import { savedNoteMessage } from "@/health-notes/health-words";
+import type { HealthPick, HealthSubject } from "@/health-notes/note-subject";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { FITNESS_ADDRESS } from "./fitness-address";
-import { readFitnessLimits } from "./fitness-limits";
-import {
-  type HealthPick,
-  type HealthSubject,
-  readHealthSubject,
-  searchHealthStudents,
-} from "./health-subject";
-import { savedNoteMessage } from "./health-words";
+import { readHealthSubject, searchHealthStudents } from "./health-subject";
 import { saveHealthNote } from "./save-health-note";
 
 /**

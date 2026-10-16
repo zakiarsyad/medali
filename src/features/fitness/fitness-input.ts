@@ -5,7 +5,6 @@
  */
 
 import { isDay } from "@/db/is-day";
-import type { Parsed } from "@/parsed";
 import {
   type FitnessLimits,
   LIMIT_MAX,
@@ -13,7 +12,8 @@ import {
   type LimitKey,
   SCORE_MAX,
   SCORE_MIN,
-} from "./fitness-ids";
+} from "@/health-notes/fitness-ids";
+import type { Parsed } from "@/parsed";
 
 /** "Ambang skor" as typed or sent: every limit still a text. */
 export type SentLimits = Record<LimitKey, string>;

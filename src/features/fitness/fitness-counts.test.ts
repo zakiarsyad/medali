@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { countFitness } from "./fitness-counts";
-import { STARTING_LIMITS } from "./fitness-ids";
 
 describe("countFitness", () => {
   it("counts the students by the category of their latest score, and those not tested", () => {

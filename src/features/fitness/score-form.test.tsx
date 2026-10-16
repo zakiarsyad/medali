@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { STARTING_LIMITS } from "./fitness-ids";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { SCORE_NOT_WHOLE } from "./fitness-input";
 import { MemberTable, ScoreForm } from "./score-form";
 

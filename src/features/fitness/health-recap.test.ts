@@ -10,7 +10,8 @@ import {
   addTestStudent,
   placeTestResident,
 } from "@/dorms/test-records";
-import { STARTING_LIMITS } from "./fitness-ids";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
+import { addTestNote } from "@/health-notes/test-health";
 import { readHealthRecap } from "./health-recap";
 import { RECAP_START, type RecapParams } from "./recap-address";
 import {
@@ -19,7 +20,6 @@ import {
   addTestScores,
   type TestActor,
 } from "./test-fitness";
-import { addTestNote } from "./test-health";
 
 const inTestDatabase = withTestDatabase();
 

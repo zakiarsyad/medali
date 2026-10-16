@@ -3,15 +3,18 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { fitnessCategoryLimits } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
-import type { Parsed } from "@/parsed";
 import {
   type FitnessLimits,
   LIMIT_KEYS,
   STARTING_LIMITS,
   STARTING_VERSION,
-} from "./fitness-ids";
+} from "@/health-notes/fitness-ids";
+import {
+  type LatestLimits,
+  readLatestLimits,
+} from "@/health-notes/fitness-limits";
+import type { Parsed } from "@/parsed";
 import { parseLimits, type SentLimits } from "./fitness-input";
-import { type LatestLimits, readLatestLimits } from "./fitness-limits";
 
 export const NOT_ALLOWED_TO_SET_LIMITS = {
   ok: false,

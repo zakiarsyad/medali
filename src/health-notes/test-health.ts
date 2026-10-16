@@ -1,9 +1,8 @@
 import type { Database } from "@/db/connect";
 import { healthNoteIllnesses, healthNotes } from "@/db/schema";
 import type { Illness, NoteCategory } from "./health-ids";
-import type { TestActor } from "./test-fitness";
 
-/** Made-up health notes for the checks of this area. */
+/** Made-up health notes for the checks of the areas that keep them. */
 
 export interface TestNote {
   studentId: string;
@@ -20,7 +19,7 @@ export interface TestNote {
 /** A health note kept as it is, without the rules that check a sent form. */
 export async function addTestNote(
   db: Database,
-  by: Pick<TestActor, "id">,
+  by: { id: string },
   note: TestNote,
 ): Promise<string> {
   const id = crypto.randomUUID();

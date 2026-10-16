@@ -5,7 +5,7 @@ import {
   ADVICE_MAX,
   NOTE_CATEGORIES,
   SHORT_TEXT_MAX,
-} from "@/features/fitness/health-ids";
+} from "@/health-notes/health-ids";
 import { SAMPLE_STUDENTS, samplePeriods } from "./sample-data";
 import { SAMPLE_FITNESS_TESTS } from "./sample-fitness-scores";
 import {

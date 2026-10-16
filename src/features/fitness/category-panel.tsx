@@ -1,10 +1,14 @@
 import type { ReactNode } from "react";
+import { CATEGORY_WORDS } from "@/health-notes/category-words";
+import { categoryRange } from "@/health-notes/fitness-category";
+import {
+  FITNESS_CATEGORIES,
+  type FitnessLimits,
+} from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./fitness.module.css";
-import { categoryRange } from "./fitness-category";
 import type { FitnessNumbers } from "./fitness-counts";
-import { FITNESS_CATEGORIES, type FitnessLimits } from "./fitness-ids";
-import { CATEGORY_WORDS, rangeWords, untestedLine } from "./fitness-words";
+import { rangeWords, untestedLine } from "./fitness-words";
 
 /**
  * One bar for each category, with its scores in brackets, as long as

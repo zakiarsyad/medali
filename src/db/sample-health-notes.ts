@@ -1,4 +1,4 @@
-import type { Illness, NoteCategory } from "@/features/fitness/health-ids";
+import type { Illness, NoteCategory } from "@/health-notes/health-ids";
 
 /*
  * Made-up health notes only, for made-up students: those who do not live

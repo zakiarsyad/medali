@@ -4,8 +4,8 @@
  */
 
 import { DORM_SHORT_NAMES, type DormId } from "@/dorms/dorms";
+import { CATEGORY_WORDS } from "./category-words";
 import type { ShownCategory } from "./fitness-category";
-import { CATEGORY_WORDS } from "./fitness-words";
 import type {
   HealthNote,
   Illness,
@@ -13,7 +13,7 @@ import type {
   NoteContent,
   Residence,
 } from "./health-ids";
-import type { RecapNumbers, RecapRoom } from "./health-recap";
+import type { RecapNumbers, RecapRoom } from "./sick-list";
 
 /** Each choice of "Riwayat penyakit", in the prototype's words. */
 export const ILLNESS_WORDS: Record<Illness, string> = {

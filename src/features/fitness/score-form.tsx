@@ -2,15 +2,19 @@
 
 import { useActionState, useRef, useState, useTransition } from "react";
 import { isDay } from "@/db/is-day";
+import { CategoryBadge } from "@/health-notes/category-badge";
+import { categoryOf } from "@/health-notes/fitness-category";
+import {
+  type FitnessLimits,
+  SCORE_MAX,
+  SCORE_MIN,
+} from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
-import { CategoryBadge } from "./category-badge";
 import styles from "./fitness.module.css";
 import { groupMembersAction, saveScoresAction } from "./fitness-actions";
-import { categoryOf } from "./fitness-category";
 import type { GroupChoice, GroupMember } from "./fitness-groups";
-import { type FitnessLimits, SCORE_MAX, SCORE_MIN } from "./fitness-ids";
 import {
   DAY_IN_FUTURE,
   SCORE_NOT_WHOLE,

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { STARTING_LIMITS, STARTING_VERSION } from "./fitness-ids";
+import { STARTING_LIMITS, STARTING_VERSION } from "@/health-notes/fitness-ids";
 import { LimitsForm } from "./limits-form";
 
 function shownForm(): string {

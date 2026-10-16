@@ -9,11 +9,11 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { latestFitnessScores } from "@/health-notes/latest-fitness-scores";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { NOT_ENDED } from "@/mentoring/group-in-force";
 import { MEMBERS } from "@/mentoring/member-count";
 import { groupCode } from "@/ui/group-code";
-import { latestFitnessScores } from "./latest-fitness-scores";
 
 /** A kelompok pengasuhan "Kelompok mahasiswa" offers, by its code. */
 export interface GroupChoice {
