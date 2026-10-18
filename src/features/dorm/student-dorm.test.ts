@@ -1,6 +1,6 @@
 // Sample Tahun akademik of this file: 2570 to 2570.
 import { describe, expect, it } from "vitest";
-import { academicPeriods } from "@/db/schema";
+import { academicPeriods, dormCompanions } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { readStudentDorm } from "./student-dorm";
@@ -68,6 +68,40 @@ describe("readStudentDorm", () => {
         cohortYear: 2570,
         deletedAt: new Date(),
       });
+
+      expect(await readStudentDorm(db, id, DAY)).toBeNull();
+    });
+  });
+
+  it("gives the dorm they serve to an Aktif kakak pendamping in semester 3", async () => {
+    await inTestDatabase(async (db) => {
+      await db.insert(academicPeriods).values(ODD_2570);
+      const program = await addTestProgram(db, "Prodi Uji Asrama A");
+      const id = await addTestStudent(db, program, {
+        nim: "9921250002",
+        name: "Kakak Uji",
+        cohortYear: 2569,
+      });
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: id, dorm: "dana_rakca" });
+
+      expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
+    });
+  });
+
+  it("gives no dorm to a kakak pendamping in semester 3 whose duty was stopped", async () => {
+    await inTestDatabase(async (db) => {
+      await db.insert(academicPeriods).values(ODD_2570);
+      const program = await addTestProgram(db, "Prodi Uji Asrama A");
+      const id = await addTestStudent(db, program, {
+        nim: "9921250003",
+        name: "Kakak Uji",
+        cohortYear: 2569,
+      });
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: id, dorm: "dana_rakca", isActive: false });
 
       expect(await readStudentDorm(db, id, DAY)).toBeNull();
     });

@@ -171,7 +171,7 @@ describe("the sample students of a first year", () => {
         isInternational: student.isInternational ?? false,
         isSeedling: student.isSeedling ?? false,
       };
-      return dormOf(facts, 1) === dorm;
+      return dormOf(facts, 1, null) === dorm;
     });
   }
 
@@ -242,7 +242,7 @@ describe("the sample kakak pendamping", () => {
     expect(SAMPLE_COMPANIONS).toHaveLength(3);
   });
 
-  it("are each a different active student who does not live in a dorm", () => {
+  it("are each a different active student who lives in no dorm by the usual rule", () => {
     if (!running) throw new Error("There are no sample periods.");
     const nims = SAMPLE_COMPANIONS.map((companion) => companion.nim);
     expect(new Set(nims).size).toBe(nims.length);
@@ -256,9 +256,8 @@ describe("the sample kakak pendamping", () => {
         isSeedling: student.isSeedling ?? false,
       };
       expect(facts.status).toBe("active");
-      expect(dormOf(facts, studentSemester(student.cohortYear, running))).toBe(
-        null,
-      );
+      const semester = studentSemester(student.cohortYear, running);
+      expect(dormOf(facts, semester, null)).toBe(null);
     }
   });
 

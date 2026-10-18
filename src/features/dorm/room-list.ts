@@ -19,14 +19,15 @@ import {
   students,
 } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
-import { livesIn } from "@/dorms/resident-condition";
+import { takesRoomIn } from "@/dorms/resident-condition";
 import { UNPLACED_SHOWN } from "./room-limits";
 
 /*
  * A place counts only while its student lives in the dorm of the room. A
  * place left behind by a student who stopped being a resident, or who now
  * lives in another dorm, is left out by every read here, so it shows as
- * free. No read deletes anything.
+ * free. No read deletes anything. A kakak pendamping is left out of the
+ * residents here: they are counted and placed as kakak pendamping only.
  */
 
 /** One room with the number of its places that are taken. */
@@ -63,7 +64,7 @@ export interface ResidentScope {
 const RESIDENT = { id: students.id, name: students.name, nim: students.nim };
 
 function inScope(scope: ResidentScope): SQL | undefined {
-  return and(scope.visible, livesIn(scope.dorm, scope.dormCohorts));
+  return and(scope.visible, takesRoomIn(scope.dorm, scope.dormCohorts));
 }
 
 /** The join that finds the room a student has in one dorm, if any. */
@@ -112,7 +113,7 @@ export async function readRooms(
       students,
       and(
         eq(students.id, dormRoomPlaces.studentId),
-        livesIn(dorm, dormCohorts),
+        takesRoomIn(dorm, dormCohorts),
       ),
     )
     .where(eq(dormRooms.dorm, dorm))

@@ -179,7 +179,7 @@ describe("placeResident", () => {
     });
   });
 
-  it("refuses a resident who is placed in a room as kakak pendamping", async () => {
+  it("refuses an Aktif kakak pendamping placed in a room, who lives in the dorm they serve only", async () => {
     await inTestDatabase(async (db) => {
       const { roomId, women } = await addTestRows(db);
       const [studentId = ""] = women;
@@ -189,18 +189,33 @@ describe("placeResident", () => {
 
       expect(placed).toEqual({
         ok: false,
-        error:
-          "Mahasiswa ini sudah diplot sebagai kakak pendamping di Asrama Dana Rakca, lantai 2, kamar P201. Keluarkan dari kamar itu dulu.",
+        error: "Mahasiswa ini bukan penghuni Asrama Wismantara Putri.",
       });
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
     });
   });
 
-  it("places a resident who is kakak pendamping without a room", async () => {
+  it("refuses an Aktif kakak pendamping without a room, who lives in the dorm they serve only", async () => {
     await inTestDatabase(async (db) => {
       const { roomId, women } = await addTestRows(db);
       const [studentId = ""] = women;
       await addTestCompanion(db, studentId);
+
+      const placed = await place(db, MANAGER, { roomId, studentId });
+
+      expect(placed).toEqual({
+        ok: false,
+        error: "Mahasiswa ini bukan penghuni Asrama Wismantara Putri.",
+      });
+      expect(await residentsOfRoom(db, roomId)).toEqual([]);
+    });
+  });
+
+  it("places a resident whose kakak pendamping duty was stopped", async () => {
+    await inTestDatabase(async (db) => {
+      const { roomId, women } = await addTestRows(db);
+      const [studentId = ""] = women;
+      await addTestCompanion(db, studentId, { isActive: false });
 
       const placed = await place(db, MANAGER, { roomId, studentId });
 
@@ -453,18 +468,17 @@ describe("autoFillRoom", () => {
     });
   });
 
-  it("leaves out a resident who is placed in a room as kakak pendamping", async () => {
+  it("leaves out an Aktif kakak pendamping, with a room or without", async () => {
     await inTestDatabase(async (db) => {
       const { roomId, women } = await addTestRows(db);
       const [first = "", second = "", third = ""] = women;
       await placeAsCompanion(db, first);
+      await addTestCompanion(db, second);
 
       const filled = await fill(db, MANAGER, roomId);
 
       expect(filled.ok).toBe(true);
-      expect((await residentsOfRoom(db, roomId)).sort()).toEqual(
-        [second, third].sort(),
-      );
+      expect(await residentsOfRoom(db, roomId)).toEqual([third]);
       expect(await waitingIn(db)).toEqual([]);
     });
   });

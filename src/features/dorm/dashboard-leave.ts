@@ -1,8 +1,8 @@
-import { and, asc, count, eq, gte, lt, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, eq, gte, lt, type SQL } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { Database } from "@/db/connect";
 import { dormLeaves, dormRoomPlaces, dormRooms, students } from "@/db/schema";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { monthOf } from "./dashboard-month";
 import { LEAVE_KINDS, type LeaveKind } from "./leave-ids";
 import { countWhere, roomWords } from "./leave-list";
@@ -122,10 +122,7 @@ export async function readOutList(
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,
-      and(
-        eq(dormRooms.id, dormRoomPlaces.roomId),
-        sql`${dormRooms.dorm} = ${dorm}`,
-      ),
+      and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm)),
     )
     .where(out)
     .orderBy(asc(dormLeaves.endsAt), asc(dormLeaves.id))
