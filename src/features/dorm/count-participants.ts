@@ -1,8 +1,8 @@
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { dormsOf } from "./activity-audience";
 import type { Audience } from "./activity-ids";
 import type { Participant } from "./count-view";
@@ -33,10 +33,7 @@ export async function readParticipants(
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,
-      and(
-        eq(dormRooms.id, dormRoomPlaces.roomId),
-        sql`${dormRooms.dorm} = ${dorm}`,
-      ),
+      and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm)),
     )
     .where(inArray(dorm, [...dormsOf(audience)]))
     .orderBy(asc(students.name), asc(students.nim));

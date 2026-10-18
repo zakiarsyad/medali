@@ -332,7 +332,7 @@ describe("readOwnProfile", () => {
     });
   });
 
-  it("gives a kakak pendamping in semester 3 the dorm they serve, Belum diplot without a room", async () => {
+  it("gives a kakak pendamping in semester 3 the dorm they serve, Belum diplot even with an old place there", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Profil Kakak");
       const senior = await addTestStudent(db, program, {
@@ -343,6 +343,10 @@ describe("readOwnProfile", () => {
       await db
         .insert(dormCompanions)
         .values({ studentId: senior, dorm: "dana_rakca" });
+      const oldRoom = await addTestRoom(db, { number: "U2209" });
+      await db
+        .insert(dormRoomPlaces)
+        .values({ roomId: oldRoom, studentId: senior });
 
       expect((await ownProfileOf(db, senior))?.residence).toStrictEqual({
         dorm: "dana_rakca",

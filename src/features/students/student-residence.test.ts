@@ -375,6 +375,20 @@ describe("the Asrama line of a kakak pendamping who lives in no dorm by the usua
     });
   });
 
+  it("gives Kepala Unit Belum diplot, not an old place left in the dorm they serve", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db);
+      await placeInRoom(db, id, "dana_rakca");
+
+      const residence = await residenceFor(db, account(["head_of_unit"]), id);
+
+      expect(residence).toEqual({
+        dorm: "dana_rakca",
+        room: { plotted: false },
+      });
+    });
+  });
+
   it("gives Kepala Unit their kakak pendamping room once they have one", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addSeniorCompanion(db, await addCompanionRoom(db));

@@ -1,6 +1,6 @@
 import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { dormCompanions, students } from "@/db/schema";
+import { dormCompanions, dormRooms, students } from "@/db/schema";
 import type { DormId } from "./dorms";
 
 /** A name of its own, so a read that joins the duties too is not confused. */
@@ -87,4 +87,14 @@ export function livesIn(dorm: DormId, dormCohorts: number[]): SQL {
  */
 export function takesRoomIn(dorm: DormId, dormCohorts: number[]): SQL {
   return sql`${roomDormInSql(dormCohorts)} = ${dorm}`;
+}
+
+/**
+ * Whether a room is the one a student row has a resident place in, in the
+ * dorm they live in: `dorm`, worked out by `dormInSql`. An Aktif kakak
+ * pendamping has no resident place: one left behind in the dorm they
+ * serve is not their room. For the join of a read.
+ */
+export function isPlaceRoomOf(dorm: SQL<DormId | null>): SQL {
+  return sql`(${dormRooms.dorm} = ${dorm} and ${ACTIVE_DUTY_DORM} is null)`;
 }

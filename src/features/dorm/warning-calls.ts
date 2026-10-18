@@ -19,7 +19,7 @@ import {
 import { hourAndMinute } from "@/db/stored-time";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { pageWithin } from "@/ui/list-pages";
 import { roomWords } from "./leave-list";
 import {
@@ -124,10 +124,7 @@ export function readStandingPage(
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,
-      and(
-        eq(dormRooms.id, dormRoomPlaces.roomId),
-        sql`${dormRooms.dorm} = ${dorm}`,
-      ),
+      and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm)),
     )
     .where(where)
     .orderBy(...order)

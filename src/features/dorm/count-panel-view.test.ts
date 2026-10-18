@@ -131,9 +131,11 @@ describe("loadCountPanel", () => {
     });
   });
 
-  it("gives an Aktif kakak pendamping among the residents of the dorm they serve", async () => {
+  it("gives an Aktif kakak pendamping among the residents of the dorm they serve, without an old place as their room", async () => {
     await inTestDatabase(async (db) => {
       const residents = await addResidents(db);
+      const oldRoom = await addTestRoom(db, { number: "UJI-HITUNG-2" });
+      await placeTestResident(db, oldRoom, residents.senior);
       await addTestCompanion(db, residents.senior);
       const actor = await addTestActor(db, "BAM Uji Panel", ["bam_bphk"]);
       await addTestActivity(db, actor.id, {
