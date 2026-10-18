@@ -39,7 +39,9 @@ async function residentsByDorm(
   const found = new Map<DormId, Residents>();
   for (const student of await db.select().from(students)) {
     const semester = studentSemester(student.cohortYear, period);
-    const dorm = dormOf(student, semester);
+    // The sample kakak pendamping live in no dorm by the usual rule, so
+    // they get no place as residents.
+    const dorm = dormOf(student, semester, null);
     if (dorm === null) continue;
     const residents = found.get(dorm) ?? new Map<string, string>();
     residents.set(student.nim, student.id);

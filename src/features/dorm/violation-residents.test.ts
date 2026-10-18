@@ -1,8 +1,11 @@
 // Sample Tahun akademik of this file: 3153 to 3153.
 // Sample NIMs of this file: 9982040000 to 9982040099.
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
+import { dormCompanions } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestCompanion } from "./test-records";
 import { addViolationSetting } from "./test-violations";
 import {
   readResidentDorms,
@@ -43,6 +46,25 @@ describe("searchViolationStudents", () => {
         ["Dodi Uji Pelanggaran", "cipta_bakti"],
       ]);
       expect(byNim).toHaveLength(4);
+    });
+  });
+
+  it("finds an Aktif kakak pendamping as a resident of the dorm they serve, and not once the duty is stopped", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      await addTestCompanion(db, setting.outsider);
+
+      const found = await searchViolationStudents(db, "Euis", null, TODAY);
+      await db
+        .update(dormCompanions)
+        .set({ isActive: false })
+        .where(eq(dormCompanions.studentId, setting.outsider));
+      const stopped = await searchViolationStudents(db, "Euis", null, TODAY);
+
+      expect(found.map((pick) => [pick.name, pick.dorm])).toEqual([
+        ["Euis Uji Pelanggaran", "dana_rakca"],
+      ]);
+      expect(stopped).toEqual([]);
     });
   });
 

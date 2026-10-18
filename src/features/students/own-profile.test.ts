@@ -305,7 +305,7 @@ describe("readOwnProfile", () => {
     });
   });
 
-  it("gives a resident of Asrama Wismantara their kakak pendamping room", async () => {
+  it("gives a resident of Asrama Wismantara who is kakak pendamping the dorm they serve, with their room", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Profil Wismantara");
       const woman = await addTestStudent(db, program, {
@@ -320,7 +320,7 @@ describe("readOwnProfile", () => {
         .values({ studentId: woman, dorm: "dana_rakca", roomId: room });
 
       expect((await ownProfileOf(db, woman))?.residence).toStrictEqual({
-        dorm: "wismantara_putri",
+        dorm: "dana_rakca",
         room: {
           plotted: true,
           dorm: "dana_rakca",

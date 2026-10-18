@@ -14,7 +14,7 @@ import { loadCountPanel } from "./count-panel-view";
 import { readDailyActivities } from "./daily-activities";
 import { saveCount } from "./save-count";
 import { addTestActivity } from "./test-activities";
-import { addTestActor } from "./test-records";
+import { addTestActor, addTestCompanion } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -41,10 +41,12 @@ async function addResidents(db: Database) {
   const bayu = await student("9937740003", "Bayu Penghuni Uji", {
     sex: "male",
   });
-  await student("9937740004", "Senior Uji", { cohortYear: 2719 });
+  const senior = await student("9937740004", "Senior Uji", {
+    cohortYear: 2719,
+  });
   const room = await addTestRoom(db, { number: "UJI-HITUNG-1" });
   await placeTestResident(db, room, ani);
-  return { zahra, ani, bayu };
+  return { zahra, ani, bayu, senior };
 }
 
 describe("loadCountPanel", () => {
@@ -125,6 +127,29 @@ describe("loadCountPanel", () => {
           [residents.ani]: { isAbsent: false, note: "" },
           [residents.zahra]: { isAbsent: true, note: "" },
         },
+      });
+    });
+  });
+
+  it("gives an Aktif kakak pendamping among the residents of the dorm they serve", async () => {
+    await inTestDatabase(async (db) => {
+      const residents = await addResidents(db);
+      await addTestCompanion(db, residents.senior);
+      const actor = await addTestActor(db, "BAM Uji Panel", ["bam_bphk"]);
+      await addTestActivity(db, actor.id, {
+        versions: [{ ...FROM, audience: "women" }],
+      });
+      const activities = await readDailyActivities(db, DAY);
+
+      const opened = await loadCountPanel(db, activities, DAY, null, AT_TEN);
+
+      if (opened?.kind !== "open") throw new Error("The count is not open.");
+      expect(opened.participants).toContainEqual({
+        id: residents.senior,
+        name: "Senior Uji",
+        nim: "9937740004",
+        dorm: "dana_rakca",
+        room: null,
       });
     });
   });

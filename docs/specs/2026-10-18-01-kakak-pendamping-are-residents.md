@@ -58,7 +58,7 @@ every screen that uses who is a resident.
 
 ## Steps
 
-- [ ] 1. An active kakak pendamping counts as a resident of the dorm they
+- [x] 1. An active kakak pendamping counts as a resident of the dorm they
   serve, in the one resident rule, with checks.
 - [ ] 2. The student lists, detail, Asrama page header and Profil saya
   show them as residents of that dorm.

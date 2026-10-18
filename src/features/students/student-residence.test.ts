@@ -253,12 +253,12 @@ async function addWismantaraCompanion(db: Database) {
 }
 
 describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => {
-  it("gives Kepala Unit the kakak pendamping room", async () => {
+  it("gives Kepala Unit the dorm they serve, with the kakak pendamping room", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addWismantaraCompanion(db);
 
       expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
-        dorm: "wismantara_putri",
+        dorm: "dana_rakca",
         room: {
           plotted: true,
           dorm: "dana_rakca",
@@ -286,7 +286,7 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
     });
   });
 
-  it("gives Direktur the dorm only, with no room in the answer", async () => {
+  it("gives Direktur the dorm they serve only, with no room in the answer", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addWismantaraCompanion(db);
 
@@ -299,7 +299,7 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
 
       expect(answer).toMatchObject({
         kind: "found",
-        student: { residence: { dorm: "wismantara_putri", room: null } },
+        student: { residence: { dorm: "dana_rakca", room: null } },
       });
       expect(JSON.stringify(answer)).not.toContain(COMPANION_ROOM_NUMBER);
     });

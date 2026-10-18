@@ -372,17 +372,15 @@ describe("listAddedStudents", () => {
         ]);
       };
 
+      const companionRoom = {
+        dorm: "dana_rakca",
+        floor: 1,
+        number: "U0241",
+        asCompanion: true,
+      };
       expect(await roomsOf(true)).toEqual([
-        [
-          "9900000241",
-          {
-            dorm: "dana_rakca",
-            floor: 1,
-            number: "U0241",
-            asCompanion: true,
-          },
-        ],
-        ["9900000242", null],
+        ["9900000241", companionRoom],
+        ["9900000242", companionRoom],
         ["9900000243", null],
       ]);
       expect(await roomsOf(false)).toEqual([
