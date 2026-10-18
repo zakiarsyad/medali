@@ -332,6 +332,25 @@ describe("readOwnProfile", () => {
     });
   });
 
+  it("gives a kakak pendamping in semester 3 the dorm they serve, Belum diplot without a room", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Profil Kakak");
+      const senior = await addTestStudent(db, program, {
+        nim: "9900002209",
+        name: "Profil Uji Kakak",
+        cohortYear: 2023,
+      });
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: senior, dorm: "dana_rakca" });
+
+      expect((await ownProfileOf(db, senior))?.residence).toStrictEqual({
+        dorm: "dana_rakca",
+        room: { plotted: false },
+      });
+    });
+  });
+
   it("gives no residence to a student who lives in no dorm", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Profil Lanjut");

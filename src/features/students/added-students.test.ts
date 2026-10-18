@@ -509,4 +509,33 @@ describe("countStudents", () => {
       expect(onLeave.addedResidents).toBe(asResident.addedResidents - 1);
     });
   });
+
+  it("counts an Aktif kakak pendamping among the residents, and not once the duty is stopped", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Hitung");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const senior = await addTestStudent(db, program, {
+        nim: "9900000227",
+        name: "Kakak Pendamping Hitung",
+        cohortYear: 2023,
+        inputBy: staff.id,
+        inputSource: "form",
+        inputAt: LATER,
+      });
+      const before = await countStudents(db, DORM_COHORTS);
+
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: senior, dorm: "dana_rakca" });
+      const named = await countStudents(db, DORM_COHORTS);
+      await db
+        .update(dormCompanions)
+        .set({ isActive: false })
+        .where(eq(dormCompanions.studentId, senior));
+      const stopped = await countStudents(db, DORM_COHORTS);
+
+      expect(named.addedResidents).toBe(before.addedResidents + 1);
+      expect(stopped.addedResidents).toBe(before.addedResidents);
+    });
+  });
 });
