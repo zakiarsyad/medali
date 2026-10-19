@@ -5,7 +5,9 @@ import { CounsellorConsentPanel } from "./counsellor-consent-panel";
 import { OwnConsentBox } from "./own-consent-box";
 import { OwnScheduleList } from "./own-schedule-list";
 import { RegisterForm } from "./register-form";
-import type { OwnScheduleView } from "./schedule-view";
+import type { ScheduleFilter } from "./schedule-address";
+import { SchedulePanel } from "./schedule-panel";
+import type { OwnScheduleView, ScheduleBoard } from "./schedule-view";
 import { WarnBox } from "./warn-box";
 
 /** What Konselor reads first on Konseling, as the prototype words it. */
@@ -16,11 +18,26 @@ export const EMERGENCY_TEXT =
 export const HELP_TEXT =
   "Jika Anda berpikir untuk menyakiti diri atau berada dalam bahaya, jangan menunggu jadwal: hubungi konselor kampus, orang yang Anda percaya, atau layanan darurat 119.";
 
-function CounsellorPart() {
+/** "Jadwal konseling" of Konselor, with the Status filter it shows. */
+export interface CounsellorSchedules {
+  board: ScheduleBoard;
+  filter: ScheduleFilter;
+}
+
+function CounsellorPart({
+  mayManageConsent,
+  schedules,
+}: {
+  mayManageConsent: boolean;
+  schedules: CounsellorSchedules | null;
+}) {
   return (
     <>
       <WarnBox title="Keadaan darurat.">{EMERGENCY_TEXT}</WarnBox>
-      <CounsellorConsentPanel />
+      {mayManageConsent && <CounsellorConsentPanel />}
+      {schedules && (
+        <SchedulePanel board={schedules.board} filter={schedules.filter} />
+      )}
     </>
   );
 }
@@ -54,18 +71,24 @@ function OwnPart({ own }: { own: OwnCounselling }) {
 export function CounsellingScreen({
   own,
   mayManage,
+  schedules = null,
 }: {
   /** Mahasiswa: their consent, the registration and their requests. */
   own: OwnCounselling | null;
   /** Konselor: the emergency notice and "Persetujuan konseling". */
   mayManage: boolean;
+  /** Konselor: "Jadwal konseling", or null for an account without the right. */
+  schedules?: CounsellorSchedules | null;
 }) {
+  const showsCounsellor = mayManage || schedules !== null;
   return (
     <>
       <PageHead title="Konseling" />
       <div className={styles.parts}>
         {own && <OwnPart own={own} />}
-        {mayManage && <CounsellorPart />}
+        {showsCounsellor && (
+          <CounsellorPart mayManageConsent={mayManage} schedules={schedules} />
+        )}
       </div>
     </>
   );

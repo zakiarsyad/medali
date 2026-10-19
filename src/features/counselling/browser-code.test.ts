@@ -11,6 +11,7 @@ describe("the screen parts of Konseling that run in the browser", () => {
     expect(browserFiles).toContain(`${FOLDER}/consent-student-picker.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/own-consent-box.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/register-form.tsx`);
+    expect(browserFiles).toContain(`${FOLDER}/schedule-filter.tsx`);
   });
 
   it.each(browserFiles)("%s takes no database code along", (path) => {

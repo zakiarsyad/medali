@@ -96,7 +96,7 @@ the schedule's log.
   schedules (Konselor) are added to the permission list, with their
   checks.
 - [x] 3. The student registers and sees "Jadwal konseling saya".
-- [ ] 4. Konselor's "Jadwal konseling" shows the numbers, the filter and
+- [x] 4. Konselor's "Jadwal konseling" shows the numbers, the filter and
   the cards.
 - [ ] 5. Konselor approves a time or proposes another; the student
   accepts or asks for another.

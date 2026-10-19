@@ -37,6 +37,8 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".card",
       ".cardHead",
       ".facts",
+      ".steps",
+      ".steps ol",
     ],
   ],
   [SHARED, [".actions", ".form"]],
@@ -139,6 +141,24 @@ describe("Daftar konseling sukarela and Jadwal konseling saya on a phone", () =>
     expect(ruleOf(".cardHead")).toContain("flex-wrap: wrap;");
     expect(CARD).toContain("className={styles.facts}");
     expect(ruleOf(".facts")).toContain("min(100%, var(--card-min-width))");
+  });
+});
+
+describe("Jadwal konseling of Konselor on a phone", () => {
+  const PANEL = read("schedule-panel.tsx");
+  const CARD = read("counsellor-schedule-card.tsx");
+
+  it("lays the numbers, the filter and the cards out one under the other", () => {
+    expect(PANEL).toMatch(
+      /className=\{`\$\{shared\.panel\} \$\{styles\.stack\}`\}/,
+    );
+    expect(PANEL).toContain("<ul className={styles.cards}>");
+  });
+
+  it("puts the status under the name, and folds the facts and the story", () => {
+    expect(CARD).toContain("className={styles.card}");
+    expect(CARD).toContain("className={styles.cardHead}");
+    expect(CARD).toContain("className={styles.facts}");
   });
 });
 

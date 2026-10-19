@@ -173,3 +173,14 @@
   font-weight: var(--weight-semibold);
   white-space: pre-line;
 }
+
+/* "Riwayat langkah" under a card, folded until opened. */
+.steps {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.steps ol {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-lg);
+}
