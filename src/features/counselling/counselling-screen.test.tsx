@@ -211,6 +211,22 @@ describe("Jadwal konseling saya", () => {
     expect(page).not.toContain("Belum ada jadwal konseling.");
   });
 
+  it("shows a proposal of Konselor with its message, Terima jadwal ini and Minta waktu lain", () => {
+    const page = studentPage(null, [
+      scheduleOf("proposed", { counsellorMessage: "Pesan konselor uji." }),
+    ]);
+
+    expect(page).toContain("Usulan jadwal lain");
+    expect(page).toContain("Usulan konselor");
+    expect(page).toContain("Pesan konselor");
+    expect(page).toContain("Pesan konselor uji.");
+    expect(buttonsOf(page)).toEqual([
+      "Daftar konseling",
+      "Terima jadwal ini",
+      "Minta waktu lain",
+    ]);
+  });
+
   it("names the Konselor of a Dijadwalkan request", () => {
     const page = studentPage(null, [
       scheduleOf("scheduled", { counsellorName: "Konselor Contoh" }),

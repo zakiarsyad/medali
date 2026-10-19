@@ -1,13 +1,16 @@
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
-import { OwnScheduleCard } from "./own-schedule-card";
+import { OwnScheduleItem } from "./own-schedule-item";
 import type { OwnScheduleView } from "./schedule-view";
 
 /** "Jadwal konseling saya": the student's active requests, the newest first. */
 export function OwnScheduleList({
   schedules,
+  tomorrow,
 }: {
   schedules: OwnScheduleView[];
+  /** The first day "Minta waktu lain" may pick. */
+  tomorrow: string;
 }) {
   return (
     <section className={`${shared.panel} ${styles.stack}`}>
@@ -20,7 +23,11 @@ export function OwnScheduleList({
       ) : (
         <ul className={styles.cards}>
           {schedules.map((schedule) => (
-            <OwnScheduleCard key={schedule.id} schedule={schedule} />
+            <OwnScheduleItem
+              key={schedule.id}
+              schedule={schedule}
+              tomorrow={tomorrow}
+            />
           ))}
         </ul>
       )}

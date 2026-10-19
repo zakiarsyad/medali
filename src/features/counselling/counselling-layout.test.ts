@@ -162,6 +162,18 @@ describe("Jadwal konseling of Konselor on a phone", () => {
   });
 });
 
+describe("the buttons and forms of a request card on a phone", () => {
+  it.each(["counsellor-schedule-item.tsx", "own-schedule-item.tsx"])(
+    "%s puts its buttons under each other when they do not fit, and its form fields in one column",
+    (name) => {
+      const item = read(name);
+      expect(item).toContain("<div className={shared.actions}>");
+      expect(item).toContain("className={shared.form}");
+      expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+    },
+  );
+});
+
 describe("the style files of Konseling", () => {
   it("force no width wider than a phone", () => {
     for (const [styles, selectors] of LAYOUT_RULES) {

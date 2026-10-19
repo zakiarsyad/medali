@@ -80,3 +80,22 @@ export const HOURS_NOTE = `Jadwal konseling: Senin–Jumat pukul ${COUNSELLING_H
 export function timeWords(day: string, hour: string): string {
   return `${shownDay(day)} pukul ${hour}`;
 }
+
+export const PICK_WEEKDAY = "Pilih hari Senin–Jumat.";
+
+export const TIME_PASSED =
+  "Waktu itu sudah lewat. Pilih waktu yang akan datang.";
+
+export const WISHED_TIME_PASSED =
+  "Waktu yang diminta sudah lewat. Usulkan waktu lain.";
+
+export const PROPOSAL_PASSED =
+  "Waktu usulan konselor sudah lewat. Minta waktu lain.";
+
+export const APPROVED = "Jadwal disetujui.";
+
+export const PROPOSED = "Jadwal dikirim ke mahasiswa.";
+
+export const ACCEPTED = "Jadwal konseling dikonfirmasi.";
+
+export const ASKED_ANOTHER = "Permintaan jadwal baru dikirim ke konselor.";

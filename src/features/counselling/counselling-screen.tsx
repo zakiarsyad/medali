@@ -58,7 +58,7 @@ function OwnPart({ own }: { own: OwnCounselling }) {
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
       <OwnConsentBox consent={own.consent} />
       <RegisterForm tomorrow={own.tomorrow} />
-      <OwnScheduleList schedules={own.schedules} />
+      <OwnScheduleList schedules={own.schedules} tomorrow={own.tomorrow} />
     </>
   );
 }

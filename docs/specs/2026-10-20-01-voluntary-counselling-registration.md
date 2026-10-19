@@ -98,5 +98,5 @@ the schedule's log.
 - [x] 3. The student registers and sees "Jadwal konseling saya".
 - [x] 4. Konselor's "Jadwal konseling" shows the numbers, the filter and
   the cards.
-- [ ] 5. Konselor approves a time or proposes another; the student
+- [x] 5. Konselor approves a time or proposes another; the student
   accepts or asks for another.

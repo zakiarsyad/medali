@@ -9,13 +9,19 @@ import {
   type CounsellingHour,
   type CounsellingTopic,
   type CounsellingWay,
+  NOTE_MAX,
+  type ScheduleStatus,
+  type ScheduleStep,
   STORY_MAX,
 } from "./schedule-ids";
 import {
+  NOTE_TOO_LONG,
   PICK_FROM_LIST,
   PICK_FROM_TOMORROW,
+  PICK_WEEKDAY,
   STORY_TOO_LONG,
   TICK_CONSENT,
+  TIME_PASSED,
   WEEKDAYS_ONLY,
 } from "./schedule-words";
 
@@ -96,4 +102,102 @@ export function checkRegistration(
   const story = optionalText(sent.story, STORY_MAX);
   if (story === false) return { ok: false, error: STORY_TOO_LONG };
   return { ok: true, value: { topic, day: day.value, hour, way, story } };
+}
+
+/** What Konselor or the student does to a request once it is sent. */
+export type ScheduleMove = Exclude<ScheduleStep, "register">;
+
+export type CounsellorScheduleMove = Extract<
+  ScheduleMove,
+  "approve" | "propose"
+>;
+
+export type StudentScheduleMove = Extract<
+  ScheduleMove,
+  "accept" | "ask_another"
+>;
+
+/** The status each move needs, and the status it gives. */
+const MOVES: Record<
+  ScheduleMove,
+  { from: ScheduleStatus; to: ScheduleStatus }
+> = {
+  approve: { from: "submitted", to: "scheduled" },
+  propose: { from: "submitted", to: "proposed" },
+  accept: { from: "proposed", to: "scheduled" },
+  ask_another: { from: "proposed", to: "submitted" },
+};
+
+/** What a request becomes after a move, or null when the move is not allowed. */
+export function scheduleAfter(
+  move: ScheduleMove,
+  current: ScheduleStatus,
+): ScheduleStatus | null {
+  const { from, to } = MOVES[move];
+  return current === from ? to : null;
+}
+
+/** Whether a time on campus has begun by `now`. */
+export function hasPassed(day: string, hour: string, now: Date): boolean {
+  return new Date(`${day}T${hour}:00+07:00`) <= now;
+}
+
+/** What Konselor sends with "Usulkan waktu lain"; none of it is trusted. */
+export interface SentProposal {
+  day: unknown;
+  hour: unknown;
+  way: unknown;
+  message: unknown;
+}
+
+export interface CheckedProposal {
+  day: string;
+  hour: CounsellingHour;
+  way: CounsellingWay;
+  message: string | null;
+}
+
+/** "Usulkan waktu lain": a coming time on Senin to Jumat, and an optional message. */
+export function checkProposal(
+  sent: SentProposal,
+  now: Date,
+): Parsed<CheckedProposal> {
+  const { day, hour, way } = sent;
+  if (!isHour(hour) || !isCounsellingWay(way)) {
+    return { ok: false, error: PICK_FROM_LIST };
+  }
+  if (typeof day !== "string" || !isDay(day) || !isWeekday(day)) {
+    return { ok: false, error: PICK_WEEKDAY };
+  }
+  if (hasPassed(day, hour, now)) return { ok: false, error: TIME_PASSED };
+  const message = optionalText(sent.message, NOTE_MAX);
+  if (message === false) return { ok: false, error: NOTE_TOO_LONG };
+  return { ok: true, value: { day, hour, way, message } };
+}
+
+/** What the student sends with "Minta waktu lain"; none of it is trusted. */
+export interface SentAnotherTime {
+  day: unknown;
+  hour: unknown;
+  reason: unknown;
+}
+
+export interface CheckedAnotherTime {
+  day: string;
+  hour: CounsellingHour;
+  reason: string | null;
+}
+
+/** "Minta waktu lain": a day the student may pick, an hour, and an optional Alasan. */
+export function checkAnotherTime(
+  sent: SentAnotherTime,
+  today: string,
+): Parsed<CheckedAnotherTime> {
+  const { hour } = sent;
+  if (!isHour(hour)) return { ok: false, error: PICK_FROM_LIST };
+  const day = checkStudentDay(sent.day, today);
+  if (!day.ok) return day;
+  const reason = optionalText(sent.reason, NOTE_MAX);
+  if (reason === false) return { ok: false, error: NOTE_TOO_LONG };
+  return { ok: true, value: { day: day.value, hour, reason } };
 }

@@ -2,7 +2,7 @@ import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import styles from "./counselling.module.css";
-import { CounsellorScheduleCardView } from "./counsellor-schedule-card";
+import { CounsellorScheduleItem } from "./counsellor-schedule-item";
 import {
   SCHEDULES_PAGE_SIZE,
   type ScheduleFilter,
@@ -49,7 +49,7 @@ export function SchedulePanel({
       ) : (
         <ul className={styles.cards}>
           {cards.map((card) => (
-            <CounsellorScheduleCardView key={card.id} card={card} />
+            <CounsellorScheduleItem key={card.id + card.version} card={card} />
           ))}
         </ul>
       )}

@@ -138,7 +138,8 @@ function cardOf(
     way: schedule.way,
     story: schedule.story,
     reason: schedule.reason,
-    counsellorName: row.counsellorName,
+    // A request sent back by the student waits for a Konselor again.
+    counsellorName: schedule.status === "submitted" ? null : row.counsellorName,
     steps,
     version: versionOf(schedule.changedAt),
   };
@@ -154,6 +155,19 @@ async function cardsOf(
     rows.map((row) => row.schedule.id),
   );
   return rows.map((row) => cardOf(row, steps.get(row.schedule.id) ?? []));
+}
+
+/** The card of one request Konselor may see, or null when there is none. */
+export async function readScheduleCard(
+  db: Database,
+  actor: AccountForAccess,
+  id: string,
+): Promise<CounsellorScheduleCard | null> {
+  const rows = await selectCardRows(db).where(
+    and(visible(actor), eq(counsellingSchedules.id, id)),
+  );
+  const [card] = await cardsOf(db, rows);
+  return card ?? null;
 }
 
 /**

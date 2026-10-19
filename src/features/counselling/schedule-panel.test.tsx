@@ -41,6 +41,12 @@ function boardOf(cards: CounsellorScheduleCard[], matching = cards.length) {
   return board;
 }
 
+function buttonsOf(page: string): string[] {
+  return [...page.matchAll(/<button[^>]*>([^<]*)<\/button>/g)].map(
+    (match) => match[1] ?? "",
+  );
+}
+
 function counsellorPage(board: ScheduleBoard): string {
   return renderToStaticMarkup(
     <CounsellingScreen
@@ -97,6 +103,23 @@ describe("Jadwal konseling of Konselor", () => {
       expect(page).toContain(words);
     }
   });
+
+  it("offers Setujui waktu ini and Usulkan waktu lain on a Diajukan request", () => {
+    const page = counsellorPage(boardOf([CARD]));
+
+    expect(buttonsOf(page)).toEqual([
+      "Setujui waktu ini",
+      "Usulkan waktu lain",
+    ]);
+  });
+
+  it.each(["proposed", "scheduled"] as const)(
+    "offers nothing on a request that is %s",
+    (status) => {
+      const card = { ...CARD, status, counsellorName: "Konselor Uji Layar" };
+      expect(buttonsOf(counsellorPage(boardOf([card])))).toEqual([]);
+    },
+  );
 
   it("names the Konselor of a Dijadwalkan request", () => {
     const scheduled = {
