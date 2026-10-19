@@ -7,6 +7,7 @@ import type { Database } from "@/db/connect";
 import {
   academicPeriods,
   dormResidentChoiceChanges,
+  dormResidentChoices,
   type students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -172,6 +173,12 @@ describe("makeNonResident", () => {
       expect(made).toEqual(RESIDENTS_NOT_ALLOWED);
       expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
       expect(await residentsOfRoom(db, roomId)).toEqual([id]);
+      expect(await logOf(db, id)).toEqual([]);
+      const choices = await db
+        .select()
+        .from(dormResidentChoices)
+        .where(eq(dormResidentChoices.studentId, id));
+      expect(choices).toEqual([]);
     });
   });
 

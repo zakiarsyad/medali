@@ -6,7 +6,7 @@ import { endSessionsOf } from "@/auth/sessions";
 import { endCompanionDuty, settleCompanionDuty } from "@/db/companion-duty";
 import type { Database } from "@/db/connect";
 import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
-import { endChosenDorm } from "@/dorms/chosen-dorm";
+import { settleChosenDorm } from "@/dorms/chosen-dorm";
 import type { Parsed } from "@/parsed";
 import { ADDED_HERE } from "./added-students";
 import type { ChangeSent } from "./change-sent";
@@ -124,7 +124,7 @@ export async function changeStudent(
         .set({ ...fields, version: stored.version + 1 })
         .where(eq(students.id, stored.id));
       await settleCompanionDuty(tx, stored.id);
-      if (fields.status !== "active") await endChosenDorm(tx, stored.id);
+      await settleChosenDorm(tx, stored.id, fields);
       await changeAccountOf(tx, stored.id, fields.name, email, actor.id);
       return { ok: true, value: null };
     }),

@@ -155,6 +155,11 @@ describe("addResident", () => {
       expect(added).toEqual(RESIDENTS_NOT_ALLOWED);
       expect(await readStudentDorm(db, id, DAY)).toBeNull();
       expect(await logOf(db, id)).toEqual([]);
+      const choices = await db
+        .select()
+        .from(dormResidentChoices)
+        .where(eq(dormResidentChoices.studentId, id));
+      expect(choices).toEqual([]);
     });
   });
 
