@@ -29,7 +29,8 @@ export type DutyBar =
  * Why a student cannot be, or go on being, kakak pendamping of a dorm in
  * a semester, or null when they can: the one rule that ends a duty and
  * that refuses to start one again. A resident of a dorm that has kakak
- * pendamping cannot be one. A resident of Wismantara can.
+ * pendamping cannot be one. A resident of Wismantara can. The dorm they
+ * live in is that of the usual rule, as if they were no kakak pendamping.
  */
 export function dutyBar(
   student: DutyFacts,
@@ -38,7 +39,7 @@ export function dutyBar(
 ): DutyBar | null {
   if (student.deletedAt !== null) return "removed";
   if (student.status !== "active") return "not_active";
-  const home = dormOf(student, semester);
+  const home = dormOf(student, semester, null);
   if (home !== null && hasCompanions(home)) return "lives_with_companions";
   if (dorm !== companionDormOf(student.sex)) return "wrong_dorm";
   return null;

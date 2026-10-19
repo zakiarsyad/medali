@@ -19,7 +19,7 @@ import {
 import { changeRoom } from "./change-room";
 import { removeCleaningPlace } from "./cleaning-places";
 import { readOwnCleaning } from "./cleaning-resident";
-import { addTestActor, type TestActor } from "./test-records";
+import { addTestActor, addTestCompanion, type TestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -310,6 +310,24 @@ describe("readOwnCleaning", () => {
         .where(eq(dormRoomPlaces.studentId, setting.resident));
 
       const own = await readOwnCleaning(db, studentOf(setting.resident), TODAY);
+
+      expect(own).toEqual({ kind: "no_room" });
+    });
+  });
+
+  it("gives an Aktif kakak pendamping no room by an old place left in the dorm they serve", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const program = await addTestProgram(db, "Prodi Uji Bersih Kakak");
+      const senior = await addTestStudent(db, program, {
+        nim: "9981030003",
+        name: "Kakak Uji Bersih",
+        cohortYear: 3129,
+      });
+      await placeTestResident(db, setting.ownRoom, senior);
+      await addTestCompanion(db, senior);
+
+      const own = await readOwnCleaning(db, studentOf(senior), TODAY);
 
       expect(own).toEqual({ kind: "no_room" });
     });

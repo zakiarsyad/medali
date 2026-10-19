@@ -1,11 +1,17 @@
 // Sample Tahun akademik of this file: 2460 to 2460.
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { studentSemester } from "@/academic-periods/student-semester";
-import { academicPeriods, students } from "@/db/schema";
+import type { Database } from "@/db/connect";
+import { academicPeriods, dormCompanions, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readDormCohorts } from "./dorm-cohorts";
-import { dormInSql, livesIn } from "./resident-condition";
+import {
+  dormInSql,
+  livesIn,
+  takesRoomIn,
+  usualDormInSql,
+} from "./resident-condition";
 import { dormOf } from "./resident-rule";
 import { addTestProgram, addTestStudent } from "./test-records";
 
@@ -25,6 +31,11 @@ const PATHS = ["regular", "transfer"] as const;
 const SEXES = ["female", "male"] as const;
 const COHORTS = [2460, 2459, 2457];
 const YES_NO = [false, true];
+
+/** The dorm a kakak pendamping of each jenis kelamin serves. */
+function servedBy(sex: "female" | "male"): "dana_rakca" | "cipta_bakti" {
+  return sex === "female" ? "dana_rakca" : "cipta_bakti";
+}
 
 type NewStudent = Omit<typeof students.$inferInsert, "studyProgramId">;
 
@@ -109,7 +120,44 @@ describe("dormInSql", () => {
       expect(rows).toHaveLength(kinds.length);
       for (const { student, dorm } of rows) {
         const semester = studentSemester(student.cohortYear, ODD_2460);
-        expect(dorm).toBe(dormOf(student, semester));
+        expect(dorm).toBe(dormOf(student, semester, null));
+      }
+    });
+  });
+
+  it("gives every kind of kakak pendamping the dorm the rule gives", async () => {
+    await inTestDatabase(async (db) => {
+      await db.insert(academicPeriods).values(ODD_2460);
+      const studyProgramId = await addTestProgram(db, "Prodi Uji Asrama B");
+      const kinds = everyKindOfStudent();
+      const added = await db
+        .insert(students)
+        .values(kinds.map((kind) => ({ ...kind, studyProgramId })))
+        .returning();
+      // Every other one Aktif: a duty stopped with Nonaktifkan counts not.
+      const duties = added.map((student, place) => ({
+        studentId: student.id,
+        dorm: servedBy(student.sex),
+        isActive: place % 2 === 0,
+      }));
+      await db.insert(dormCompanions).values(duties);
+      const cohorts = (await readDormCohorts(db, DAY)) ?? [];
+
+      const rows = await db
+        .select({
+          student: students,
+          isActive: dormCompanions.isActive,
+          dorm: dormInSql(cohorts),
+        })
+        .from(students)
+        .innerJoin(dormCompanions, eq(dormCompanions.studentId, students.id))
+        .where(eq(students.studyProgramId, studyProgramId));
+
+      expect(rows).toHaveLength(kinds.length);
+      for (const { student, isActive, dorm } of rows) {
+        const semester = studentSemester(student.cohortYear, ODD_2460);
+        const served = isActive ? servedBy(student.sex) : null;
+        expect(dorm).toBe(dormOf(student, semester, served));
       }
     });
   });
@@ -174,4 +222,94 @@ describe("livesIn", () => {
       expect(ids).not.toContain(man);
     });
   });
+});
+
+/** A Reguler woman of semester 3, who lives in no dorm by the usual rule. */
+async function addSenior(db: Database, program: number, nim: string) {
+  return addTestStudent(db, program, {
+    nim,
+    name: "Uji Kakak",
+    cohortYear: 2025,
+  });
+}
+
+async function dormsOf(db: Database, id: string) {
+  const [row] = await db
+    .select({
+      dorm: dormInSql([2026]),
+      usual: usualDormInSql([2026]),
+      livesThere: livesIn("dana_rakca", [2026]),
+      takesRoom: sql`coalesce(${takesRoomIn("dana_rakca", [2026])}, false)`,
+    })
+    .from(students)
+    .where(eq(students.id, id));
+  return row;
+}
+
+describe("a kakak pendamping", () => {
+  it("lives in the dorm they serve while the duty is Aktif, but takes no place in its rooms as a resident", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
+      const id = await addSenior(db, program, "9922260101");
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: id, dorm: "dana_rakca" });
+
+      expect(await dormsOf(db, id)).toEqual({
+        dorm: "dana_rakca",
+        usual: null,
+        livesThere: true,
+        takesRoom: false,
+      });
+    });
+  });
+
+  it("who lives in Wismantara lives in the dorm they serve only", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
+      const id = await addTestStudent(db, program, {
+        nim: "9922260102",
+        name: "Uji Kakak",
+        isInternational: true,
+      });
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: id, dorm: "dana_rakca" });
+
+      expect(await dormsOf(db, id)).toEqual({
+        dorm: "dana_rakca",
+        usual: "wismantara_putri",
+        livesThere: true,
+        takesRoom: false,
+      });
+    });
+  });
+
+  it("follows the usual rule again once the duty is stopped", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Asrama B");
+      const id = await addSenior(db, program, "9922260103");
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: id, dorm: "dana_rakca", isActive: false });
+
+      expect((await dormsOf(db, id))?.dorm).toBeNull();
+    });
+  });
+
+  it.each(["on_leave", "inactive"] as const)(
+    "follows the usual rule again once their status is %s",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const program = await addTestProgram(db, "Prodi Uji Asrama B");
+        const id = await addSenior(db, program, "9922260104");
+        await db
+          .insert(dormCompanions)
+          .values({ studentId: id, dorm: "dana_rakca" });
+        await db.update(students).set({ status }).where(eq(students.id, id));
+
+        expect((await dormsOf(db, id))?.dorm).toBeNull();
+      });
+    },
+  );
 });
