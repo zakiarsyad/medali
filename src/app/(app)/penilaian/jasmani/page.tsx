@@ -9,6 +9,7 @@ import {
 } from "@/features/fitness/fitness-board";
 import { readFitnessGroupChoices } from "@/features/fitness/fitness-groups";
 import { testYearOf } from "@/features/fitness/fitness-input";
+import { FitnessInputPanel } from "@/features/fitness/fitness-input-panel";
 import { readFitnessLimits } from "@/features/fitness/fitness-limits";
 import {
   fitnessVisibleTo,
@@ -69,11 +70,16 @@ export default async function FitnessPage(
       showsNotes={showsNotes}
       manage={
         mayEnter ? (
-          <ScoreForm
-            groups={groups}
+          <FitnessInputPanel
             today={today}
-            limits={limits}
-            newKey={crypto.randomUUID()}
+            form={
+              <ScoreForm
+                groups={groups}
+                today={today}
+                limits={limits}
+                newKey={crypto.randomUUID()}
+              />
+            }
           />
         ) : (
           <ReadOnlyNote />

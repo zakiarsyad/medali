@@ -1,5 +1,5 @@
 {
-  "id": "27ef1702-fa08-45ff-8493-85bfe2e81f0e",
+  "id": "6a6d075d-1a53-4b4d-b3f6-7f7f90077fd8",
   "prevId": "a2917902-ad01-41a9-b388-fc8cff07dfd8",
   "version": "7",
   "dialect": "postgresql",
@@ -2269,318 +2269,6 @@
         "counselling_consents_way_only_when_approved": {
           "name": "counselling_consents_way_only_when_approved",
           "value": "(\"counselling_consents\".\"status\" = 'approved') = (\"counselling_consents\".\"way\" is not null)"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.counselling_schedule_changes": {
-      "name": "counselling_schedule_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "schedule_id": {
-          "name": "schedule_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "step": {
-          "name": "step",
-          "type": "counselling_schedule_step",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status_before": {
-          "name": "status_before",
-          "type": "counselling_schedule_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status_after": {
-          "name": "status_after",
-          "type": "counselling_schedule_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_schedule_changes_schedule": {
-          "name": "counselling_schedule_changes_schedule",
-          "columns": [
-            {
-              "expression": "schedule_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "changed_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_schedule_changes_schedule_id_counselling_schedules_id_fk": {
-          "name": "counselling_schedule_changes_schedule_id_counselling_schedules_id_fk",
-          "tableFrom": "counselling_schedule_changes",
-          "tableTo": "counselling_schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_schedule_changes_changed_by_accounts_id_fk": {
-          "name": "counselling_schedule_changes_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_schedule_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.counselling_schedules": {
-      "name": "counselling_schedules",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "counselling_schedule_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "counselling_schedule_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "topic": {
-          "name": "topic",
-          "type": "counselling_topic",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hour": {
-          "name": "hour",
-          "type": "counselling_hour",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "way": {
-          "name": "way",
-          "type": "counselling_way",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "story": {
-          "name": "story",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "counsellor_message": {
-          "name": "counsellor_message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "counsellor_id": {
-          "name": "counsellor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_schedules_one_active_voluntary": {
-          "name": "counselling_schedules_one_active_voluntary",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"counselling_schedules\".\"kind\" = 'voluntary' and \"counselling_schedules\".\"status\" in ('submitted', 'proposed', 'scheduled')",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "counselling_schedules_status": {
-          "name": "counselling_schedules_status",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_schedules_student_id_students_id_fk": {
-          "name": "counselling_schedules_student_id_students_id_fk",
-          "tableFrom": "counselling_schedules",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_schedules_counsellor_id_accounts_id_fk": {
-          "name": "counselling_schedules_counsellor_id_accounts_id_fk",
-          "tableFrom": "counselling_schedules",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "counsellor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_schedules_changed_by_accounts_id_fk": {
-          "name": "counselling_schedules_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_schedules",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "counselling_schedules_story_length": {
-          "name": "counselling_schedules_story_length",
-          "value": "char_length(\"counselling_schedules\".\"story\") <= 1000"
-        },
-        "counselling_schedules_message_length": {
-          "name": "counselling_schedules_message_length",
-          "value": "char_length(\"counselling_schedules\".\"counsellor_message\") <= 500"
-        },
-        "counselling_schedules_reason_length": {
-          "name": "counselling_schedules_reason_length",
-          "value": "char_length(\"counselling_schedules\".\"reason\") <= 500"
-        },
-        "counselling_schedules_counsellor_once_proposed": {
-          "name": "counselling_schedules_counsellor_once_proposed",
-          "value": "\"counselling_schedules\".\"status\" = 'submitted' or \"counselling_schedules\".\"counsellor_id\" is not null"
         }
       },
       "isRLSEnabled": false
@@ -6222,7 +5910,19 @@
           "name": "group_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "file_name": {
+          "name": "file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fingerprint": {
+          "name": "fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "tested_on": {
           "name": "tested_on",
@@ -6291,7 +5991,20 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "fitness_tests_group_or_file": {
+          "name": "fitness_tests_group_or_file",
+          "value": "(\"fitness_tests\".\"group_id\" is null) = (\"fitness_tests\".\"file_name\" is not null)"
+        },
+        "fitness_tests_file_has_fingerprint": {
+          "name": "fitness_tests_file_has_fingerprint",
+          "value": "(\"fitness_tests\".\"file_name\" is null) = (\"fitness_tests\".\"fingerprint\" is null)"
+        },
+        "fitness_tests_fingerprint_is_sha256": {
+          "name": "fitness_tests_fingerprint_is_sha256",
+          "value": "\"fitness_tests\".\"fingerprint\" ~ '^[0-9a-f]{64}$'"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.health_note_illnesses": {
@@ -10823,66 +10536,7 @@
       "schema": "public",
       "values": [
         "online",
-        "paper",
-        "registration"
-      ]
-    },
-    "public.counselling_hour": {
-      "name": "counselling_hour",
-      "schema": "public",
-      "values": [
-        "08:30",
-        "10:00",
-        "13:00",
-        "14:30"
-      ]
-    },
-    "public.counselling_schedule_kind": {
-      "name": "counselling_schedule_kind",
-      "schema": "public",
-      "values": [
-        "voluntary"
-      ]
-    },
-    "public.counselling_schedule_status": {
-      "name": "counselling_schedule_status",
-      "schema": "public",
-      "values": [
-        "submitted",
-        "proposed",
-        "scheduled"
-      ]
-    },
-    "public.counselling_schedule_step": {
-      "name": "counselling_schedule_step",
-      "schema": "public",
-      "values": [
-        "register",
-        "approve",
-        "propose",
-        "accept",
-        "ask_another"
-      ]
-    },
-    "public.counselling_topic": {
-      "name": "counselling_topic",
-      "schema": "public",
-      "values": [
-        "academic",
-        "campus_adjustment",
-        "family",
-        "social_relations",
-        "finances",
-        "emotions_and_stress",
-        "other"
-      ]
-    },
-    "public.counselling_way": {
-      "name": "counselling_way",
-      "schema": "public",
-      "values": [
-        "in_person",
-        "online"
+        "paper"
       ]
     },
     "public.dorm": {
