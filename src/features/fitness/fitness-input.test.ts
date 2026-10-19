@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   DAY_IN_FUTURE,
+  FILE_DAY_IN_FUTURE,
+  keepsPicked,
   LIMITS_NOT_DOWN,
   LIMITS_NOT_WHOLE,
   NO_SCORE,
   NO_TEST_DAY,
   pairedRows,
+  parseFileTestDay,
   parseLimits,
   parseScores,
   parseTestDay,
@@ -116,6 +119,50 @@ describe("parseScores", () => {
   it("says why in the words of the tab", () => {
     expect(NO_SCORE).toBe("Isi minimal satu skor.");
     expect(SCORE_NOT_WHOLE).toBe("Skor harus bilangan bulat 0–100.");
+  });
+});
+
+describe("parseFileTestDay", () => {
+  const TODAY = "2026-10-16";
+
+  it("takes today and a day before it", () => {
+    expect(parseFileTestDay(TODAY, TODAY)).toEqual({ ok: true, value: TODAY });
+    expect(parseFileTestDay("2026-10-15", TODAY)).toEqual({
+      ok: true,
+      value: "2026-10-15",
+    });
+  });
+
+  it("refuses a day after today, saying what to do", () => {
+    expect(parseFileTestDay("2026-10-17", TODAY)).toEqual({
+      ok: false,
+      error: FILE_DAY_IN_FUTURE,
+    });
+    expect(FILE_DAY_IN_FUTURE).toBe(
+      "Tanggal tes tidak boleh setelah hari ini. Pilih hari ini atau tanggal sebelumnya.",
+    );
+  });
+
+  it("refuses what is no day as the form does", () => {
+    expect(parseFileTestDay("", TODAY)).toEqual({
+      ok: false,
+      error: NO_TEST_DAY,
+    });
+  });
+});
+
+describe("keepsPicked", () => {
+  it("keeps the picked file after a refusal of its Tanggal tes, which can be changed and saved again", () => {
+    expect(keepsPicked(FILE_DAY_IN_FUTURE)).toBe(true);
+    expect(keepsPicked(NO_TEST_DAY)).toBe(true);
+  });
+
+  it("drops it after any other refusal", () => {
+    expect(
+      keepsPicked(
+        "Tidak ada baris yang bisa disimpan. Periksa berkas, lalu unggah lagi.",
+      ),
+    ).toBe(false);
   });
 });
 

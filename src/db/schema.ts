@@ -3237,25 +3237,41 @@ export const fitnessCategoryLimits = pgTable(
 
 /**
  * One save of fitness test scores: the kelompok pengasuhan they were
- * entered for, the day of the test, who saved them and when. The key is
- * made by the form that sent it, so a form sent twice is kept once. The
- * year of the test is the year of its day. Rows here cannot be changed or
- * deleted; the database refuses it.
+ * entered for with the group form, or, for a file saved with "Unggah
+ * berkas", the file's name as shown and a fingerprint of its content,
+ * never the file itself; with the day of the test, who saved them and
+ * when. The key is made by the screen that sent it, so a form or a file
+ * sent twice is kept once. The year of the test is the year of its day.
+ * Rows here cannot be changed or deleted; the database refuses it.
  */
 export const fitnessTests = pgTable(
   "fitness_tests",
   {
     id: uuid().primaryKey(),
-    groupId: uuid()
-      .notNull()
-      .references(() => mentorGroups.id),
+    groupId: uuid().references(() => mentorGroups.id),
+    fileName: text(),
+    fingerprint: text(),
     testedOn: date().notNull(),
     enteredBy: uuid()
       .notNull()
       .references(() => accounts.id),
     enteredAt: timestamp({ withTimezone: true }).notNull(),
   },
-  (table) => [index("fitness_tests_entered_at").on(table.enteredAt)],
+  (table) => [
+    index("fitness_tests_entered_at").on(table.enteredAt),
+    check(
+      "fitness_tests_group_or_file",
+      sql`(${table.groupId} is null) = (${table.fileName} is not null)`,
+    ),
+    check(
+      "fitness_tests_file_has_fingerprint",
+      sql`(${table.fileName} is null) = (${table.fingerprint} is null)`,
+    ),
+    check(
+      "fitness_tests_fingerprint_is_sha256",
+      sql`${table.fingerprint} ~ '^[0-9a-f]{64}$'`,
+    ),
+  ],
 );
 
 /**
