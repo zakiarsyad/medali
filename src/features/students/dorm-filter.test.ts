@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { students } from "@/db/schema";
+import { dormCompanions, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { PAGE_SIZE } from "@/ui/list-pages";
 import type { ListCohorts } from "./list-cohorts";
@@ -235,6 +235,102 @@ describe("a student who stops being a resident", () => {
       expect(before.dorms.dana_rakca).toBe(1);
       expect(after.dorms.dana_rakca).toBe(0);
       expect(after.dorms[NO_DORM]).toBe(before.dorms[NO_DORM] + 1);
+    });
+  });
+});
+
+describe("a kakak pendamping", () => {
+  /** Names the senior of the rows kakak pendamping of Dana Rakca. */
+  async function nameSenior(db: Database): Promise<string> {
+    const [senior] = await db
+      .select({ id: students.id })
+      .from(students)
+      .where(eq(students.nim, "9900400005"));
+    if (!senior) throw new Error("The senior was not found.");
+    await db
+      .insert(dormCompanions)
+      .values({ studentId: senior.id, dorm: "dana_rakca" });
+    return senior.id;
+  }
+
+  async function tagOf(db: Database, limit: RowLimit, nim: string) {
+    const listed = await listStudents(db, limit, ALL_STATUSES, 1, COHORTS);
+    return listed.students.find((student) => student.nim === nim)?.dorm;
+  }
+
+  it("is a resident of the dorm they serve: the tag, the filter and its count, and not Non asrama", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
+      await nameSenior(db);
+
+      expect(await tagOf(db, limit, "9900400005")).toBe("dana_rakca");
+      expect(await nimsFound(db, limit, { dorm: "dana_rakca" })).toEqual([
+        "9900400001",
+        "9900400005",
+      ]);
+      expect(await nimsFound(db, limit, { dorm: NO_DORM })).not.toContain(
+        "9900400005",
+      );
+      const counts = await countChoices(db, limit, ALL_STATUSES, COHORTS);
+      expect(counts.dorms.dana_rakca).toBe(2);
+    });
+  });
+
+  it("who lives in Wismantara is a resident of the dorm they serve only", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
+      const [wisma] = await db
+        .select({ id: students.id })
+        .from(students)
+        .where(eq(students.nim, "9900400003"));
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: wisma?.id ?? "", dorm: "dana_rakca" });
+
+      expect(await tagOf(db, limit, "9900400003")).toBe("dana_rakca");
+      expect(await nimsFound(db, limit, { dorm: "wismantara_putri" })).toEqual(
+        [],
+      );
+    });
+  });
+
+  it("follows the usual rule again once the duty is stopped, or their status is Cuti", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
+      const senior = await nameSenior(db);
+
+      await db
+        .update(dormCompanions)
+        .set({ isActive: false })
+        .where(eq(dormCompanions.studentId, senior));
+      const stopped = await nimsFound(db, limit, { dorm: NO_DORM });
+      await db
+        .update(dormCompanions)
+        .set({ isActive: true })
+        .where(eq(dormCompanions.studentId, senior));
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, senior));
+      const onLeave = await nimsFound(db, limit, { dorm: NO_DORM });
+
+      expect(stopped).toContain("9900400005");
+      expect(onLeave).toContain("9900400005");
+      expect(await tagOf(db, limit, "9900400005")).toBeNull();
+    });
+  });
+
+  it("is not found by Ketua Program Studi of another program", async () => {
+    await inTestDatabase(async (db) => {
+      await addRows(db, "Prodi Uji Asrama Saring");
+      const other = await addTestProgram(db, "Prodi Uji Asrama Lain");
+      await nameSenior(db);
+
+      const found = await nimsFound(db, onlyProgram(other), {
+        dorm: "dana_rakca",
+      });
+
+      expect(found).toEqual([]);
     });
   });
 });

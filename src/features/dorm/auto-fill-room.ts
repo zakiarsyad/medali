@@ -20,7 +20,7 @@ import {
 } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
-import { livesIn } from "@/dorms/resident-condition";
+import { takesRoomIn } from "@/dorms/resident-condition";
 import type { Parsed } from "@/parsed";
 import { NOT_ALLOWED } from "./not-allowed";
 import { NO_PERIOD, ROOM_FULL } from "./place-resident";
@@ -63,7 +63,7 @@ async function firstWaiting(
     .leftJoin(dormRooms, roomIn(dorm))
     .where(
       and(
-        livesIn(dorm, dormCohorts),
+        takesRoomIn(dorm, dormCohorts),
         isNull(dormRooms.id),
         not(PLACED_AS_COMPANION),
       ),
@@ -116,7 +116,10 @@ async function freeWithStale(
     .from(dormRoomPlaces)
     .innerJoin(students, eq(students.id, dormRoomPlaces.studentId))
     .where(
-      and(eq(dormRoomPlaces.roomId, room.id), livesIn(room.dorm, dormCohorts)),
+      and(
+        eq(dormRoomPlaces.roomId, room.id),
+        takesRoomIn(room.dorm, dormCohorts),
+      ),
     );
   const companions = tx
     .select({ places: count() })

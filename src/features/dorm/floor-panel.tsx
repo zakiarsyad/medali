@@ -45,6 +45,7 @@ export function FloorPanel({
   residents,
   offered,
   companions,
+  maySetResidents,
 }: {
   dorm: DormId;
   floor: number;
@@ -56,6 +57,8 @@ export function FloorPanel({
   offered: Resident[] | null;
   /** The kakak pendamping of the dorm. Null for a dorm that has none. */
   companions: RoomCompanions | null;
+  /** Whether the account may make a resident Non asrama. */
+  maySetResidents: boolean;
 }) {
   const placed = companions?.placed ?? [];
   const mayManage = offered !== null;
@@ -79,11 +82,13 @@ export function FloorPanel({
           {onFloor.map((room) => (
             <RoomCard
               key={room.id}
+              dorm={dorm}
               room={room}
               residents={residents.filter((one) => one.roomId === room.id)}
               offered={offered}
               companions={placed.filter((one) => one.roomId === room.id)}
               offeredCompanions={companions?.waiting ?? []}
+              maySetResidents={maySetResidents}
             />
           ))}
         </ul>

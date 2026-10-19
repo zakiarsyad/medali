@@ -1,12 +1,13 @@
 import { and, asc, eq, inArray, or, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormRoomPlaces, dormRooms, students } from "@/db/schema";
-import { dormInSql } from "@/dorms/resident-condition";
+import { roomDormInSql } from "@/dorms/resident-condition";
 
 /*
  * A stale place belongs to a student who no longer lives in the dorm of
- * their room: one who stopped being a resident, was removed, or now lives
- * in another dorm. A read never deletes one: it leaves it out instead.
+ * their room: one who stopped being a resident, was removed, now lives
+ * in another dorm, or is an Aktif kakak pendamping, who has the room of
+ * their duty instead. A read never deletes one: it leaves it out instead.
  * Only a change that must count the places of a room deletes them, and
  * only those it needs gone. Every such change holds the places it deletes
  * in one go, in the order of the student, so two changes that need some
@@ -15,7 +16,7 @@ import { dormInSql } from "@/dorms/resident-condition";
  */
 
 function isStale(dormCohorts: number[]): SQL {
-  return sql`${dormInSql(dormCohorts)} is distinct from ${dormRooms.dorm}`;
+  return sql`${roomDormInSql(dormCohorts)} is distinct from ${dormRooms.dorm}`;
 }
 
 async function lockStale(

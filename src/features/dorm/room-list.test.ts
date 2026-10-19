@@ -148,10 +148,13 @@ describe("countResidents", () => {
     });
   });
 
-  it("counts apart a resident of Wismantara who is placed as kakak pendamping", async () => {
+  it("counts no Aktif kakak pendamping among the residents, of Wismantara or of the dorm they serve", async () => {
     await inTestDatabase(async (db) => {
       const { ownProgram, roomId } = await addTestRows(db);
-      const scope: ResidentScope = { ...DANA_RAKCA, dorm: "wismantara_putri" };
+      const wismantara: ResidentScope = {
+        ...DANA_RAKCA,
+        dorm: "wismantara_putri",
+      };
       const placed = await addTestStudent(db, ownProgram, {
         nim: "9924260005",
         name: "Wisma Diplot Uji",
@@ -160,20 +163,25 @@ describe("countResidents", () => {
       await addTestCompanion(db, placed, { roomId });
       const waiting = await addTestStudent(db, ownProgram, {
         nim: "9924260006",
-        name: "Wisma Menunggu Uji",
-        isInternational: true,
+        name: "Kakak Menunggu Uji",
+        cohortYear: 2025,
       });
       await addTestCompanion(db, waiting);
 
-      expect(await countResidents(db, scope)).toEqual({
-        residents: 2,
+      expect(await countResidents(db, wismantara)).toEqual({
+        residents: 0,
         placed: 0,
-        placedAsCompanion: 1,
+        placedAsCompanion: 0,
       });
-      expect(await listUnplaced(db, scope, "")).toEqual({
-        shown: [{ id: waiting, name: "Wisma Menunggu Uji", nim: "9924260006" }],
-        matching: 1,
+      expect(await countResidents(db, DANA_RAKCA)).toEqual({
+        residents: 3,
+        placed: 2,
+        placedAsCompanion: 0,
       });
+      const unplaced = await listUnplaced(db, DANA_RAKCA, "");
+      const ids = unplaced.shown.map((resident) => resident.id);
+      expect(ids).not.toContain(placed);
+      expect(ids).not.toContain(waiting);
     });
   });
 

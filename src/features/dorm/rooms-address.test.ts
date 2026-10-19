@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readRoomsParams, roomsAddress } from "./rooms-address";
+import { addingAddress, readRoomsParams, roomsAddress } from "./rooms-address";
 
 describe("readRoomsParams", () => {
   it("opens the first dorm on floor 1 with no search", () => {
@@ -7,6 +7,7 @@ describe("readRoomsParams", () => {
       dorm: "wismantara_putra",
       floor: 1,
       query: "",
+      adding: null,
     });
   });
 
@@ -16,6 +17,7 @@ describe("readRoomsParams", () => {
       dorm: "dana_rakca",
       floor: 8,
       query: "sari",
+      adding: null,
     });
   });
 
@@ -51,6 +53,21 @@ describe("roomsAddress", () => {
       dorm: "dana_rakca",
       floor: 3,
       query: "",
+      adding: null,
     });
+  });
+});
+
+describe("addingAddress", () => {
+  it("opens Tambah penghuni with no search, and reads the search given", () => {
+    const address = addingAddress("dana_rakca", 3);
+    const query = new URLSearchParams(address.split("?")[1]);
+    expect(readRoomsParams(Object.fromEntries(query)).adding).toBe("");
+    query.set("cari", "  sari ");
+    expect(readRoomsParams(Object.fromEntries(query)).adding).toBe("sari");
+  });
+
+  it("keeps Tambah penghuni closed for any other value", () => {
+    expect(readRoomsParams({ tambah: "ya", cari: "sari" }).adding).toBeNull();
   });
 });

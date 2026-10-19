@@ -305,7 +305,7 @@ describe("readOwnProfile", () => {
     });
   });
 
-  it("gives a resident of Asrama Wismantara their kakak pendamping room", async () => {
+  it("gives a resident of Asrama Wismantara who is kakak pendamping the dorm they serve, with their room", async () => {
     await inTestDatabase(async (db) => {
       const program = await addTestProgram(db, "Prodi Uji Profil Wismantara");
       const woman = await addTestStudent(db, program, {
@@ -320,7 +320,7 @@ describe("readOwnProfile", () => {
         .values({ studentId: woman, dorm: "dana_rakca", roomId: room });
 
       expect((await ownProfileOf(db, woman))?.residence).toStrictEqual({
-        dorm: "wismantara_putri",
+        dorm: "dana_rakca",
         room: {
           plotted: true,
           dorm: "dana_rakca",
@@ -328,6 +328,29 @@ describe("readOwnProfile", () => {
           number: COMPANION_ROOM_NUMBER,
           asCompanion: true,
         },
+      });
+    });
+  });
+
+  it("gives a kakak pendamping in semester 3 the dorm they serve, Belum diplot even with an old place there", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Profil Kakak");
+      const senior = await addTestStudent(db, program, {
+        nim: "9900002209",
+        name: "Profil Uji Kakak",
+        cohortYear: 2023,
+      });
+      await db
+        .insert(dormCompanions)
+        .values({ studentId: senior, dorm: "dana_rakca" });
+      const oldRoom = await addTestRoom(db, { number: "U2209" });
+      await db
+        .insert(dormRoomPlaces)
+        .values({ roomId: oldRoom, studentId: senior });
+
+      expect((await ownProfileOf(db, senior))?.residence).toStrictEqual({
+        dorm: "dana_rakca",
+        room: { plotted: false },
       });
     });
   });

@@ -7,6 +7,7 @@ import {
   SHORT_TEXT_MAX,
 } from "@/health-notes/health-ids";
 import { SAMPLE_STUDENTS, samplePeriods } from "./sample-data";
+import { sampleCompanionDorm } from "./sample-dorms";
 import { SAMPLE_FITNESS_TESTS } from "./sample-fitness-scores";
 import {
   SAMPLE_DORM_HEALTH_NOTES,
@@ -43,7 +44,7 @@ function livesInNoDorm(nim: string, day: string): boolean {
     isInternational: student.isInternational ?? false,
     isSeedling: student.isSeedling ?? false,
   } as const;
-  return dormOf(facts, semester) === null;
+  return dormOf(facts, semester, sampleCompanionDorm(nim), null) === null;
 }
 
 describe("the sample health notes", () => {

@@ -59,7 +59,7 @@ async function addPlacedResident(db: Database): Promise<Placed> {
 }
 
 function open(dorm: DormId): RoomsParams {
-  return { dorm, floor: 1, query: "" };
+  return { dorm, floor: 1, query: "", adding: null };
 }
 
 /** What the Ploting kamar screen of Dana Rakca shows on a day. */

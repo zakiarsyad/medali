@@ -30,3 +30,11 @@ export const DORM_RESIDENTS: Record<DormId, string> = {
   dana_rakca: "mahasiswa perempuan",
   cipta_bakti: "mahasiswa laki-laki",
 };
+
+/** The jenis kelamin of the residents of each dorm. */
+export const DORM_SEXES: Record<DormId, "male" | "female"> = {
+  wismantara_putra: "male",
+  wismantara_putri: "female",
+  dana_rakca: "female",
+  cipta_bakti: "male",
+};

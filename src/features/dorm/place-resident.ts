@@ -5,7 +5,7 @@ import type { Database } from "@/db/connect";
 import { dormRoomPlaces, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
-import { livesIn } from "@/dorms/resident-condition";
+import { takesRoomIn } from "@/dorms/resident-condition";
 import {
   type RoomInDorm,
   readCompanionRoom,
@@ -69,7 +69,7 @@ async function place(
   const [resident] = await tx
     .select({ name: students.name })
     .from(students)
-    .where(and(eq(students.id, studentId), livesIn(room.dorm, dormCohorts)))
+    .where(and(eq(students.id, studentId), takesRoomIn(room.dorm, dormCohorts)))
     // Enough to keep the other saves that give this student a room out,
     // without making a save that only points at the student wait.
     .for("no key update");

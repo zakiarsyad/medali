@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, dormRoomPlaces, students } from "@/db/schema";
+import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestProgram,
@@ -303,7 +303,7 @@ describe("placeCompanion", () => {
     });
   });
 
-  it("refuses one who has a room in Wismantara, until they are taken out of it", async () => {
+  it("places one who has a room in Wismantara, and frees their place there", async () => {
     await inTestDatabase(async (db) => {
       const { program, roomId } = await addTestRows(db);
       const resident = await addWismantaraCompanion(db, program);
@@ -314,16 +314,11 @@ describe("placeCompanion", () => {
       });
       await placeTestResident(db, ownRoom, resident);
 
-      const refused = await place(db, roomId, resident);
-      await db.delete(dormRoomPlaces);
       const placed = await place(db, roomId, resident);
 
-      expect(refused).toEqual({
-        ok: false,
-        error:
-          "Mahasiswa ini sudah diplot sebagai penghuni di Asrama Wismantara Putri, lantai 3, kamar KP301. Keluarkan dari kamar itu dulu.",
-      });
       expect(placed.ok).toBe(true);
+      expect((await companionOf(db, resident))?.roomId).toBe(roomId);
+      expect(await residentsOfRoom(db, ownRoom)).toEqual([]);
     });
   });
 
@@ -343,7 +338,7 @@ describe("placeCompanion", () => {
     });
   });
 
-  it("leaves one who lives in Wismantara again with the room as kakak pendamping only", async () => {
+  it("keeps one who would live in Wismantara again out of its residents while the duty is Aktif", async () => {
     await inTestDatabase(async (db) => {
       const { roomId, companion } = await addTestRows(db);
       const oldRoom = await addTestRoom(db, {
@@ -365,9 +360,9 @@ describe("placeCompanion", () => {
 
       expect((await companionOf(db, companion))?.roomId).toBe(roomId);
       expect(await countResidents(db, scope)).toEqual({
-        residents: 1,
+        residents: 0,
         placed: 0,
-        placedAsCompanion: 1,
+        placedAsCompanion: 0,
       });
     });
   });

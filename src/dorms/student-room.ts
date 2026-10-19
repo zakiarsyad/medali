@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { dormCompanions, dormRoomPlaces, dormRooms } from "@/db/schema";
+import { readCompanionDorm } from "./companion-dorm";
 import { DORM_NAMES, type DormId } from "./dorms";
 
 export interface StudentRoom {
@@ -61,19 +62,24 @@ export async function readCompanionRoom(
 }
 
 /**
- * The room of a resident of `dorm`: their own room there, else the room
- * they are placed in as kakak pendamping, else null.
+ * The room of a resident of `dorm`. An Aktif kakak pendamping has the room
+ * they are placed in as kakak pendamping only, or none: a place left
+ * behind as a resident is not theirs. Anyone else has their own room
+ * there, or none.
  */
 export async function readOwnRoom(
   db: Database,
   studentId: string,
   dorm: DormId,
 ): Promise<OwnRoom | null> {
+  if ((await readCompanionDorm(db, studentId)) !== null) {
+    const companionRoom = await readCompanionRoom(db, studentId);
+    if (!companionRoom) return null;
+    return { ...companionRoom, asCompanion: true };
+  }
   const room = await readStudentRoom(db, studentId, dorm);
-  if (room) return { dorm, ...room, asCompanion: false };
-  const companionRoom = await readCompanionRoom(db, studentId);
-  if (!companionRoom) return null;
-  return { ...companionRoom, asCompanion: true };
+  if (!room) return null;
+  return { dorm, ...room, asCompanion: false };
 }
 
 /** Where a resident lives, as the Asrama page header says it. */

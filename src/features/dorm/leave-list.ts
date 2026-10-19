@@ -10,7 +10,6 @@ import {
   lte,
   or,
   type SQL,
-  sql,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { campusDay } from "@/academic-periods/campus-day";
@@ -25,7 +24,7 @@ import {
 } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { shownMoment } from "@/ui/day";
 import { pageWithin } from "@/ui/list-pages";
 import type { ActivityRow } from "./activity-row";
@@ -188,10 +187,7 @@ function readPage(
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,
-      and(
-        eq(dormRooms.id, dormRoomPlaces.roomId),
-        sql`${dormRooms.dorm} = ${dorm}`,
-      ),
+      and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm)),
     )
     .leftJoin(accounts, eq(accounts.id, dormLeaves.decidedBy))
     .leftJoin(recorder, eq(recorder.id, dormLeaves.returnRecordedBy))

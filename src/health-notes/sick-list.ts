@@ -13,7 +13,7 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { pageWithin } from "@/ui/list-pages";
 import { finalRankSql } from "./final-category-sql";
 import { categoryOf } from "./fitness-category";
@@ -243,10 +243,7 @@ async function readPage(
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,
-      and(
-        eq(dormRooms.id, dormRoomPlaces.roomId),
-        sql`${dormRooms.dorm} = ${dorm}`,
-      ),
+      and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm)),
     )
     .where(where)
     .orderBy(
