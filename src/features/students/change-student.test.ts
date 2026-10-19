@@ -9,7 +9,13 @@ import {
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import { sessionAccount, startSession } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
-import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
+import {
+  accounts,
+  dormResidentChoices,
+  emailChanges,
+  roleChanges,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   countStudents,
@@ -435,6 +441,55 @@ describe("changeStudent", () => {
       expect((await recordOf(db, "9900000505")).name).toBe("Ubah Uji");
     });
   });
+});
+
+describe("a dorm resident choice made by hand", () => {
+  async function chosenFor(db: Database, nim: string) {
+    const { program, staff } = await addThroughTab(db, nim);
+    const { id } = await recordOf(db, nim);
+    await db.insert(dormResidentChoices).values({
+      studentId: id,
+      dorm: "dana_rakca",
+      setBy: staff.id,
+      setAt: NOW,
+    });
+    return { program, staff, id };
+  }
+
+  async function choicesOf(db: Database, studentId: string) {
+    return db
+      .select({ dorm: dormResidentChoices.dorm })
+      .from(dormResidentChoices)
+      .where(eq(dormResidentChoices.studentId, studentId));
+  }
+
+  it("stays when the student moves to an older angkatan", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff, id } = await chosenFor(db, "9900000590");
+      const changed = { ...student("9900000590", program), cohortYear: 2024 };
+
+      expect((await changeTestStudent(db, staff, changed)).ok).toBe(true);
+
+      expect(await choicesOf(db, id)).toEqual([{ dorm: "dana_rakca" }]);
+    });
+  });
+
+  it.each(["on_leave", "inactive"] as const)(
+    "ends when the status becomes %s, and stays ended once active again",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const nim = status === "on_leave" ? "9900000591" : "9900000592";
+        const { program, staff, id } = await chosenFor(db, nim);
+
+        const away = { ...student(nim, program), status };
+        expect((await changeTestStudent(db, staff, away)).ok).toBe(true);
+        const back = student(nim, program);
+        expect((await changeTestStudent(db, staff, back)).ok).toBe(true);
+
+        expect(await choicesOf(db, id)).toEqual([]);
+      });
+    },
+  );
 });
 
 describe("removeStudent", () => {

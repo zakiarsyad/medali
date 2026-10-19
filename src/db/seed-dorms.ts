@@ -41,7 +41,7 @@ async function residentsByDorm(
     const semester = studentSemester(student.cohortYear, period);
     // The sample kakak pendamping live in no dorm by the usual rule, so
     // they get no place as residents.
-    const dorm = dormOf(student, semester, null);
+    const dorm = dormOf(student, semester, null, null);
     if (dorm === null) continue;
     const residents = found.get(dorm) ?? new Map<string, string>();
     residents.set(student.nim, student.id);

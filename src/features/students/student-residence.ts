@@ -1,6 +1,7 @@
 import { studentSemester } from "@/academic-periods/student-semester";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { readChosenDorm } from "@/dorms/chosen-dorm";
 import { readCompanionDorm } from "@/dorms/companion-dorm";
 import type { DormId } from "@/dorms/dorms";
 import { dormOf, type ResidentFacts } from "@/dorms/resident-rule";
@@ -54,7 +55,8 @@ async function readResidence(
 ): Promise<StudentResidence | null> {
   const semester = period ? studentSemester(student.cohortYear, period) : null;
   const companionDorm = await readCompanionDorm(db, student.id);
-  const dorm = dormOf(student, semester, companionDorm);
+  const chosen = await readChosenDorm(db, student.id);
+  const dorm = dormOf(student, semester, companionDorm, chosen);
   if (dorm === null) return null;
   if (!mayBeShownRoom) return { dorm, room: null };
   return { dorm, room: await readShownRoom(db, student.id, dorm) };

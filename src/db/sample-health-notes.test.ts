@@ -36,7 +36,7 @@ function livesInNoDorm(nim: string, day: string): boolean {
     isInternational: student.isInternational ?? false,
     isSeedling: student.isSeedling ?? false,
   } as const;
-  return dormOf(facts, semester, sampleCompanionDorm(nim)) === null;
+  return dormOf(facts, semester, sampleCompanionDorm(nim), null) === null;
 }
 
 describe("the sample health notes", () => {

@@ -62,7 +62,7 @@ asrama".
 
 ## Steps
 
-- [ ] 1. A choice made by hand is stored and the one resident rule reads
+- [x] 1. A choice made by hand is stored and the one resident rule reads
   it, with checks and the log.
 - [ ] 2. "Tambah penghuni" on Ploting kamar.
 - [ ] 3. "Jadikan non asrama" on Ploting kamar.

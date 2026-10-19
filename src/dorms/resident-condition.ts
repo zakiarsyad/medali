@@ -1,6 +1,11 @@
 import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { dormCompanions, dormRooms, students } from "@/db/schema";
+import {
+  dormCompanions,
+  dormResidentChoices,
+  dormRooms,
+  students,
+} from "@/db/schema";
 import type { DormId } from "./dorms";
 
 /** A name of its own, so a read that joins the duties too is not confused. */
@@ -14,6 +19,19 @@ const duty = alias(dormCompanions, DUTY_NAME);
 const ACTIVE_DUTY_DORM = sql`(select ${duty.dorm}
   from ${dormCompanions} as ${sql.identifier(DUTY_NAME)}
   where ${duty.studentId} = ${students.id} and ${duty.isActive})`;
+
+const CHOICE_NAME = "hand_choice";
+const choice = alias(dormResidentChoices, CHOICE_NAME);
+const NON_RESIDENT = "non_resident";
+
+/**
+ * Where a choice made by hand puts a student row, as text: the dorm, or
+ * "non_resident" for "Non asrama". Null without a choice. Found by the key
+ * of the choice, which is the student.
+ */
+const CHOSEN_DORM = sql`(select coalesce(${choice.dorm}::text, ${NON_RESIDENT})
+  from ${dormResidentChoices} as ${sql.identifier(CHOICE_NAME)}
+  where ${choice.studentId} = ${students.id})`;
 
 function inFirstYear(dormCohorts: number[]): SQL | undefined {
   if (dormCohorts.length === 0) return sql`false`;
@@ -36,6 +54,17 @@ function usualDorm(dormCohorts: number[]): SQL {
   end)::dorm`;
 }
 
+/**
+ * The dorm an active student row lives in as if they were no kakak
+ * pendamping: where a choice made by hand puts them, else the usual rule.
+ */
+function homeDorm(dormCohorts: number[]): SQL {
+  return sql`(case ${CHOSEN_DORM}
+    when ${NON_RESIDENT} then null
+    else coalesce(${CHOSEN_DORM}::dorm, ${usualDorm(dormCohorts)})
+  end)`;
+}
+
 function ofActiveStudent(dorm: SQL): SQL<DormId | null> {
   return sql<DormId | null>`(case
     when ${students.deletedAt} is not null then null
@@ -47,19 +76,21 @@ function ofActiveStudent(dorm: SQL): SQL<DormId | null> {
 /**
  * The dorm a student row lives in, worked out by the database for a read
  * of many students: the same answer as `dormOf`, which a check confirms.
- * An Aktif kakak pendamping lives in the dorm they serve. Null for a
- * student who lives in no dorm or is removed. The angkatan years given
+ * An Aktif kakak pendamping lives in the dorm they serve, anyone else
+ * where a choice made by hand puts them, else by the usual rule. Null for
+ * a student who lives in no dorm or is removed. The angkatan years given
  * are those in a semester that lives in the dorm.
  */
 export function dormInSql(dormCohorts: number[]): SQL<DormId | null> {
   return ofActiveStudent(
-    sql`coalesce(${ACTIVE_DUTY_DORM}, ${usualDorm(dormCohorts)})`,
+    sql`coalesce(${ACTIVE_DUTY_DORM}, ${homeDorm(dormCohorts)})`,
   );
 }
 
 /**
  * The dorm a student row lives in by the usual rule, as if they were no
- * kakak pendamping: whether they may be named one is decided by it.
+ * kakak pendamping and nothing was chosen by hand: whether they may be
+ * named one is decided by it.
  */
 export function usualDormInSql(dormCohorts: number[]): SQL<DormId | null> {
   return ofActiveStudent(usualDorm(dormCohorts));
@@ -68,11 +99,13 @@ export function usualDormInSql(dormCohorts: number[]): SQL<DormId | null> {
 /**
  * The dorm whose rooms a student row takes a place in as a resident. An
  * Aktif kakak pendamping takes none: they have the room of their duty.
+ * Anyone else takes one in the dorm a choice made by hand puts them in,
+ * else in that of the usual rule.
  */
 export function roomDormInSql(dormCohorts: number[]): SQL<DormId | null> {
   return sql<DormId | null>`(case
     when ${ACTIVE_DUTY_DORM} is not null then null
-    else ${usualDormInSql(dormCohorts)}
+    else ${ofActiveStudent(homeDorm(dormCohorts))}
   end)`;
 }
 

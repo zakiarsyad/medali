@@ -31,7 +31,12 @@ export async function sampleResidents(
   const all = await db.select().from(students).orderBy(asc(students.name));
   for (const student of all) {
     const semester = studentSemester(student.cohortYear, period);
-    const dorm = dormOf(student, semester, sampleCompanionDorm(student.nim));
+    const dorm = dormOf(
+      student,
+      semester,
+      sampleCompanionDorm(student.nim),
+      null,
+    );
     if (dorm !== null) residents.push({ id: student.id, dorm });
   }
   return residents;
