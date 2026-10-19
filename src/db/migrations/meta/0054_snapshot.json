@@ -1,5 +1,5 @@
 {
-  "id": "f901619a-3796-402e-aa60-ea998ccd8216",
+  "id": "a2917902-ad01-41a9-b388-fc8cff07dfd8",
   "prevId": "c7a631f0-19d0-4402-bfb9-c6aaa29093ab",
   "version": "7",
   "dialect": "postgresql",
@@ -4241,6 +4241,177 @@
       },
       "isRLSEnabled": false
     },
+    "public.dorm_resident_choice_changes": {
+      "name": "dorm_resident_choice_changes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dorm_before": {
+          "name": "dorm_before",
+          "type": "dorm",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dorm_after": {
+          "name": "dorm_after",
+          "type": "dorm",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "dorm_resident_choice_changes_student": {
+          "name": "dorm_resident_choice_changes_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "dorm_resident_choice_changes_student_id_students_id_fk": {
+          "name": "dorm_resident_choice_changes_student_id_students_id_fk",
+          "tableFrom": "dorm_resident_choice_changes",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_resident_choice_changes_changed_by_accounts_id_fk": {
+          "name": "dorm_resident_choice_changes_changed_by_accounts_id_fk",
+          "tableFrom": "dorm_resident_choice_changes",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "dorm_resident_choice_changes_dorm_differs": {
+          "name": "dorm_resident_choice_changes_dorm_differs",
+          "value": "\"dorm_resident_choice_changes\".\"dorm_before\" is distinct from \"dorm_resident_choice_changes\".\"dorm_after\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.dorm_resident_choices": {
+      "name": "dorm_resident_choices",
+      "schema": "",
+      "columns": {
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "dorm": {
+          "name": "dorm",
+          "type": "dorm",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "set_by": {
+          "name": "set_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "set_at": {
+          "name": "set_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "dorm_resident_choices_student_id_students_id_fk": {
+          "name": "dorm_resident_choices_student_id_students_id_fk",
+          "tableFrom": "dorm_resident_choices",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dorm_resident_choices_set_by_accounts_id_fk": {
+          "name": "dorm_resident_choices_set_by_accounts_id_fk",
+          "tableFrom": "dorm_resident_choices",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "set_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.dorm_return_reports": {
       "name": "dorm_return_reports",
       "schema": "",
@@ -5739,19 +5910,7 @@
           "name": "group_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
-        },
-        "file_name": {
-          "name": "file_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "fingerprint": {
-          "name": "fingerprint",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "tested_on": {
           "name": "tested_on",
@@ -5820,20 +5979,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {
-        "fitness_tests_group_or_file": {
-          "name": "fitness_tests_group_or_file",
-          "value": "(\"fitness_tests\".\"group_id\" is null) = (\"fitness_tests\".\"file_name\" is not null)"
-        },
-        "fitness_tests_file_has_fingerprint": {
-          "name": "fitness_tests_file_has_fingerprint",
-          "value": "(\"fitness_tests\".\"file_name\" is null) = (\"fitness_tests\".\"fingerprint\" is null)"
-        },
-        "fitness_tests_fingerprint_is_sha256": {
-          "name": "fitness_tests_fingerprint_is_sha256",
-          "value": "\"fitness_tests\".\"fingerprint\" ~ '^[0-9a-f]{64}$'"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.health_note_illnesses": {

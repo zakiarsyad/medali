@@ -160,3 +160,10 @@ export const SAMPLE_COMPANIONS: SampleCompanion[] = [
     isActive: false,
   },
 ];
+
+/** The dorm a sample student serves as an Aktif kakak pendamping, or null. */
+export function sampleCompanionDorm(nim: string): CompanionDormId | null {
+  const companion = SAMPLE_COMPANIONS.find((one) => one.nim === nim);
+  if (!companion?.isActive) return null;
+  return companion.dorm;
+}

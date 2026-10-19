@@ -2,7 +2,8 @@ import Form from "next/form";
 import Link from "next/link";
 import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
-import type { UnplacedResidents } from "./room-list";
+import { NonResidentButton } from "./non-resident-button";
+import type { Resident, UnplacedResidents } from "./room-list";
 import styles from "./rooms.module.css";
 import { ROOMS_ADDRESS, type RoomsParams, roomsAddress } from "./rooms-address";
 
@@ -43,18 +44,67 @@ function Search({ params }: { params: RoomsParams }) {
   );
 }
 
+/** The residents without a room, as names, or with "Jadikan non asrama". */
+function Names({
+  params,
+  shown,
+  more,
+  maySetResidents,
+}: {
+  params: RoomsParams;
+  shown: Resident[];
+  /** How many more match the search than are shown. */
+  more: number;
+  maySetResidents: boolean;
+}) {
+  const rest = more > 0 && (
+    <li className={styles.quietLine}>
+      dan {more.toLocaleString("id-ID")} lainnya
+    </li>
+  );
+  if (!maySetResidents) {
+    return (
+      <ul className={styles.names}>
+        {shown.map((resident) => (
+          <li key={resident.id} className={styles.name} title={resident.nim}>
+            {resident.name}
+          </li>
+        ))}
+        {rest}
+      </ul>
+    );
+  }
+  return (
+    <ul className={styles.residents}>
+      {shown.map((resident) => (
+        <li key={resident.id} className={styles.resident}>
+          <span>
+            <b>{resident.name}</b>{" "}
+            <span className={styles.nim}>{resident.nim}</span>
+          </span>
+          <NonResidentButton resident={resident} dorm={params.dorm} />
+        </li>
+      ))}
+      {rest}
+    </ul>
+  );
+}
+
 /** The residents of the dorm who have no room yet, with a search. */
 export function UnplacedPanel({
   params,
   unplaced,
   residents,
   mayManage,
+  maySetResidents,
 }: {
   params: RoomsParams;
   unplaced: UnplacedResidents;
   /** How many residents the dorm has in all. */
   residents: number;
   mayManage: boolean;
+  /** Whether the account may make a resident Non asrama. */
+  maySetResidents: boolean;
 }) {
   const more = unplaced.matching - unplaced.shown.length;
   return (
@@ -75,18 +125,12 @@ export function UnplacedPanel({
       {unplaced.matching === 0 ? (
         <p className={shared.empty}>{emptyWords(params, residents)}</p>
       ) : (
-        <ul className={styles.names}>
-          {unplaced.shown.map((resident) => (
-            <li key={resident.id} className={styles.name} title={resident.nim}>
-              {resident.name}
-            </li>
-          ))}
-          {more > 0 && (
-            <li className={styles.quietLine}>
-              dan {more.toLocaleString("id-ID")} lainnya
-            </li>
-          )}
-        </ul>
+        <Names
+          params={params}
+          shown={unplaced.shown}
+          more={more}
+          maySetResidents={maySetResidents}
+        />
       )}
     </section>
   );

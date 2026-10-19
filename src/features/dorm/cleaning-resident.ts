@@ -8,6 +8,7 @@ import {
   dormRoomPlaces,
   dormRooms,
 } from "@/db/schema";
+import { readCompanionDorm } from "@/dorms/companion-dorm";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
 import { type ShownResult, shownResult } from "./cleaning-assessment";
@@ -61,11 +62,16 @@ interface KeptRoom {
   number: string;
 }
 
+/**
+ * The room a resident has a place in. An Aktif kakak pendamping has none:
+ * a place left behind as a resident is not theirs.
+ */
 async function readOwnRoom(
   db: Database,
   studentId: string,
   dorm: DormId,
 ): Promise<KeptRoom | null> {
+  if ((await readCompanionDorm(db, studentId)) !== null) return null;
   const [room] = await db
     .select({ id: dormRooms.id, number: dormRooms.number })
     .from(dormRoomPlaces)

@@ -16,7 +16,7 @@ import {
 import { hourAndMinute } from "@/db/stored-time";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { shownDay, shownMoment } from "@/ui/day";
 import { pageWithin } from "@/ui/list-pages";
 import { removedFileWords } from "@/ui/removed-file";
@@ -144,10 +144,7 @@ export function selectCardRows(db: Database, dorm: SQL<DormId | null>) {
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,
-      and(
-        eq(dormRooms.id, dormRoomPlaces.roomId),
-        sql`${dormRooms.dorm} = ${dorm}`,
-      ),
+      and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm)),
     )
     .leftJoin(verifier, eq(verifier.id, dormClarifications.verifiedBy))
     .leftJoin(decider, eq(decider.id, dormClarifications.decidedBy));

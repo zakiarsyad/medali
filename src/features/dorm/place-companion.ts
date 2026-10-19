@@ -5,9 +5,8 @@ import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { dormCompanions, students } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
-import { DORM_NAMES, type DormId } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
-import { readStudentRoom, roomHeader } from "@/dorms/student-room";
+import { DORM_NAMES } from "@/dorms/dorms";
+import { usualDormInSql } from "@/dorms/resident-condition";
 import type { Parsed } from "@/parsed";
 import { hasCompanions } from "./companion-dorms";
 import {
@@ -66,32 +65,13 @@ async function lockStudent(
 ) {
   if (!isUuid(studentId)) return null;
   const [student] = await tx
-    .select({ name: students.name, livesIn: dormInSql(dormCohorts) })
+    .select({ name: students.name, usualDorm: usualDormInSql(dormCohorts) })
     .from(students)
     .where(eq(students.id, studentId))
     // Enough to keep the other saves that give this student a room out,
     // without making a save that only points at the student wait.
     .for("no key update");
   return student ?? null;
-}
-
-/**
- * Why a student who lives in a dorm cannot move into a room as kakak
- * pendamping, or null when they can. A student has one room only, so a
- * resident of Wismantara first leaves the room they have there.
- */
-async function residentRefusal(
-  tx: Database,
-  studentId: string,
-  home: DormId,
-): Promise<Parsed<never> | null> {
-  if (hasCompanions(home)) return LIVES_WITH_COMPANIONS;
-  const ownRoom = await readStudentRoom(tx, studentId, home);
-  if (!ownRoom) return null;
-  return {
-    ok: false,
-    error: `Mahasiswa ini sudah diplot sebagai penghuni di ${roomHeader(home, ownRoom)}. Keluarkan dari kamar itu dulu.`,
-  };
 }
 
 async function place(
@@ -112,11 +92,13 @@ async function place(
   // student left behind may be in this very room, and deleting it first
   // would make two placings of the student wait for each other. A place
   // left behind in a dorm the student stopped living in would count
-  // again, as a second room, once they live there again.
+  // again, as a second room, once they live there again. That is also
+  // the place of a resident of Wismantara: as an Aktif kakak pendamping
+  // they live in the dorm they serve only.
   await freeStalePlaces(tx, dormCohorts, room.id, [studentId]);
-  if (student.livesIn !== null) {
-    const kept = await residentRefusal(tx, studentId, student.livesIn);
-    if (kept) return kept;
+  const usualDorm = student.usualDorm;
+  if (usualDorm !== null && hasCompanions(usualDorm)) {
+    return LIVES_WITH_COMPANIONS;
   }
   if ((await countTaken(tx, room.id)) >= room.capacity) return ROOM_FULL;
 
@@ -135,7 +117,6 @@ async function place(
  * gives back what to tell the staff. They take one place of the kapasitas.
  * The room and the kakak pendamping are both held, so the last place is
  * not given twice, and placing never wins together with "Nonaktifkan".
- * Refused for one who has a room as a resident of Wismantara.
  */
 export async function placeCompanion(
   db: Database,

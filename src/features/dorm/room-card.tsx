@@ -1,3 +1,4 @@
+import type { DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import {
   autoFillRoomAction,
@@ -8,12 +9,14 @@ import {
   takeOutResidentAction,
 } from "./actions";
 import { ChangeRoomForm } from "./change-room-form";
+import { NonResidentButton } from "./non-resident-button";
 import { PlaceForm } from "./place-form";
 import { RoomButton } from "./room-button";
 import type { PlacedResident, Resident, Room } from "./room-list";
 import styles from "./rooms.module.css";
 
 interface RoomCardProps {
+  dorm: DormId;
   room: Room;
   /** The residents of the room that the account may see. */
   residents: PlacedResident[];
@@ -23,6 +26,8 @@ interface RoomCardProps {
   companions: PlacedResident[];
   /** The kakak pendamping without a room to choose from. */
   offeredCompanions: Resident[];
+  /** Whether the account may make a resident Non asrama. */
+  maySetResidents: boolean;
 }
 
 function TakeOutButton({
@@ -45,7 +50,14 @@ function TakeOutButton({
   );
 }
 
-function Residents({ room, residents, offered, companions }: RoomCardProps) {
+function Residents({
+  dorm,
+  room,
+  residents,
+  offered,
+  companions,
+  maySetResidents,
+}: RoomCardProps) {
   const hidden = room.taken - residents.length - companions.length;
   if (room.taken === 0) {
     return <p className={styles.quietLine}>Belum ada penghuni.</p>;
@@ -59,7 +71,16 @@ function Residents({ room, residents, offered, companions }: RoomCardProps) {
               <b>{resident.name}</b>{" "}
               <span className={styles.nim}>{resident.nim}</span>
             </span>
-            {offered && <TakeOutButton room={room} resident={resident} />}
+            <span className={shared.actions}>
+              {offered && <TakeOutButton room={room} resident={resident} />}
+              {maySetResidents && (
+                <NonResidentButton
+                  resident={resident}
+                  dorm={dorm}
+                  roomNumber={room.number}
+                />
+              )}
+            </span>
           </li>
         ))}
         {companions.map((companion) => (

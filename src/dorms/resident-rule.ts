@@ -7,6 +7,14 @@ export type ResidentFacts = Pick<
   "status" | "entryPath" | "sex" | "isInternational" | "isSeedling"
 >;
 
+/**
+ * Where Pengelola Asrama decided by hand that a student lives: in `dorm`,
+ * or in none ("Non asrama") when it is null.
+ */
+export interface ChosenDorm {
+  dorm: DormId | null;
+}
+
 const LAST_DORM_SEMESTER = 2;
 
 /**
@@ -19,14 +27,22 @@ export function isDormSemester(semester: number | null): boolean {
 
 /**
  * The dorm a student lives in, or null for a student who does not live in
- * one. Only an active student is a resident: Internasional and Pembibitan
- * in any semester, in Wismantara, and Reguler in semester 1 or 2.
+ * one. Only an active student is a resident: an active kakak pendamping
+ * in the dorm they serve, and no other; else where a choice made by hand
+ * puts them; else Internasional and Pembibitan in any semester, in
+ * Wismantara, and Reguler in semester 1 or 2. `companionDorm` is the dorm
+ * of their kakak pendamping duty while it is Aktif, and null otherwise.
+ * `chosen` is the choice made by hand, null without one.
  */
 export function dormOf(
   student: ResidentFacts,
   semester: number | null,
+  companionDorm: DormId | null,
+  chosen: ChosenDorm | null,
 ): DormId | null {
   if (student.status !== "active") return null;
+  if (companionDorm !== null) return companionDorm;
+  if (chosen !== null) return chosen.dorm;
   const isMan = student.sex === "male";
   if (student.isInternational || student.isSeedling) {
     return isMan ? "wismantara_putra" : "wismantara_putri";

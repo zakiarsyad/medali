@@ -1,4 +1,4 @@
-import { and, asc, count, eq, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, eq, type SQL } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { Action } from "@/auth/roles";
@@ -13,7 +13,7 @@ import {
 } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
-import { dormInSql } from "@/dorms/resident-condition";
+import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { shownMoment } from "@/ui/day";
 import { countWaitingAppeals } from "./appeal-inbox";
 import { roomWords } from "./leave-list";
@@ -71,10 +71,7 @@ async function countReports(db: Database, visible: SQL) {
 
 /** The room of a student today, by the dorm the database works out. */
 function roomOn(dorm: SQL<DormId | null>) {
-  return and(
-    eq(dormRooms.id, dormRoomPlaces.roomId),
-    sql`${dormRooms.dorm} = ${dorm}`,
-  );
+  return and(eq(dormRooms.id, dormRoomPlaces.roomId), isPlaceRoomOf(dorm));
 }
 
 function readWaitingLeaves(

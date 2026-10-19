@@ -3,6 +3,7 @@ import { studentSemester } from "@/academic-periods/student-semester";
 import { dormOf } from "@/dorms/resident-rule";
 import { ADVICE_MAX, SHORT_TEXT_MAX } from "@/features/fitness/health-ids";
 import { SAMPLE_STUDENTS, samplePeriods } from "./sample-data";
+import { sampleCompanionDorm } from "./sample-dorms";
 import { SAMPLE_FITNESS_TESTS } from "./sample-fitness-scores";
 import { SAMPLE_HEALTH_NOTES } from "./sample-health-notes";
 
@@ -35,7 +36,7 @@ function livesInNoDorm(nim: string, day: string): boolean {
     isInternational: student.isInternational ?? false,
     isSeedling: student.isSeedling ?? false,
   } as const;
-  return dormOf(facts, semester) === null;
+  return dormOf(facts, semester, sampleCompanionDorm(nim), null) === null;
 }
 
 describe("the sample health notes", () => {

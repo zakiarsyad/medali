@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { DormId } from "@/dorms/dorms";
+import { residenceWords } from "./residence-words";
 import type { RunningPeriod } from "./semester-now";
 import { readStudentDetail } from "./student-detail";
 import type { StudentResidence } from "./student-residence";
@@ -253,12 +254,12 @@ async function addWismantaraCompanion(db: Database) {
 }
 
 describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => {
-  it("gives Kepala Unit the kakak pendamping room", async () => {
+  it("gives Kepala Unit the dorm they serve, with the kakak pendamping room", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addWismantaraCompanion(db);
 
       expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
-        dorm: "wismantara_putri",
+        dorm: "dana_rakca",
         room: {
           plotted: true,
           dorm: "dana_rakca",
@@ -286,7 +287,7 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
     });
   });
 
-  it("gives Direktur the dorm only, with no room in the answer", async () => {
+  it("gives Direktur the dorm they serve only, with no room in the answer", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addWismantaraCompanion(db);
 
@@ -299,7 +300,7 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
 
       expect(answer).toMatchObject({
         kind: "found",
-        student: { residence: { dorm: "wismantara_putri", room: null } },
+        student: { residence: { dorm: "dana_rakca", room: null } },
       });
       expect(JSON.stringify(answer)).not.toContain(COMPANION_ROOM_NUMBER);
     });
@@ -325,6 +326,139 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
 
       expect(refused).toEqual({ kind: "refused" });
       expect(outside).toEqual({ kind: "not_found" });
+    });
+  });
+});
+
+/** A Reguler woman of semester 3, kakak pendamping of Dana Rakca. */
+async function addSeniorCompanion(db: Database, roomId: string | null = null) {
+  const program = await addTestProgram(db, "Prodi Uji Asrama Pendamping");
+  const id = await addTestStudent(db, program, {
+    nim: "9900400308",
+    name: "Detail Uji Kakak",
+    cohortYear: 2025,
+  });
+  await db
+    .insert(dormCompanions)
+    .values({ studentId: id, dorm: "dana_rakca", roomId });
+  return { program, id };
+}
+
+async function addCompanionRoom(db: Database): Promise<string> {
+  const [room] = await db
+    .insert(dormRooms)
+    .values({
+      dorm: "dana_rakca",
+      floor: 1,
+      number: COMPANION_ROOM_NUMBER,
+      capacity: 4,
+    })
+    .returning({ id: dormRooms.id });
+  if (!room) throw new Error("The room was not added.");
+  return room.id;
+}
+
+describe("the Asrama line of a kakak pendamping who lives in no dorm by the usual rule", () => {
+  it("gives Kepala Unit the dorm they serve, Belum diplot, while they have no room", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db);
+
+      const residence = await residenceFor(db, account(["head_of_unit"]), id);
+
+      expect(residence).toEqual({
+        dorm: "dana_rakca",
+        room: { plotted: false },
+      });
+      expect(residenceWords(residence ?? null)).toBe(
+        "Asrama Dana Rakca · Belum diplot",
+      );
+    });
+  });
+
+  it("gives Kepala Unit Belum diplot, not an old place left in the dorm they serve", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db);
+      await placeInRoom(db, id, "dana_rakca");
+
+      const residence = await residenceFor(db, account(["head_of_unit"]), id);
+
+      expect(residence).toEqual({
+        dorm: "dana_rakca",
+        room: { plotted: false },
+      });
+    });
+  });
+
+  it("gives Kepala Unit their kakak pendamping room once they have one", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db, await addCompanionRoom(db));
+
+      const residence = await residenceFor(db, account(["head_of_unit"]), id);
+
+      expect(residenceWords(residence ?? null)).toBe(
+        `Asrama Dana Rakca, lantai 1, kamar ${COMPANION_ROOM_NUMBER} (kakak pendamping)`,
+      );
+    });
+  });
+
+  it("gives Direktur the dorm they serve only", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db, await addCompanionRoom(db));
+
+      const answer = await readStudentDetail(
+        db,
+        account(["director"]),
+        id,
+        ODD_2026,
+      );
+
+      expect(answer).toMatchObject({
+        kind: "found",
+        student: { residence: { dorm: "dana_rakca", room: null } },
+      });
+      expect(JSON.stringify(answer)).not.toContain(COMPANION_ROOM_NUMBER);
+    });
+  });
+
+  it("gives Non asrama again once the duty is stopped, or their status is Non Aktif", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db);
+      const asking = account(["head_of_unit"]);
+
+      await db
+        .update(dormCompanions)
+        .set({ isActive: false })
+        .where(eq(dormCompanions.studentId, id));
+      const stopped = await residenceFor(db, asking, id);
+      await db
+        .update(dormCompanions)
+        .set({ isActive: true })
+        .where(eq(dormCompanions.studentId, id));
+      await db
+        .update(students)
+        .set({ status: "inactive" })
+        .where(eq(students.id, id));
+      const inactive = await residenceFor(db, asking, id);
+
+      expect(stopped).toBeNull();
+      expect(inactive).toBeNull();
+    });
+  });
+
+  it("gives no dorm to a role that may not see the student", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addSeniorCompanion(db, await addCompanionRoom(db));
+      const otherProgram = await addTestProgram(db, "Prodi Uji Asrama Lain");
+
+      const outside = await readStudentDetail(
+        db,
+        account(["head_of_program"], otherProgram),
+        id,
+        ODD_2026,
+      );
+
+      expect(outside).toEqual({ kind: "not_found" });
+      expect(JSON.stringify(outside)).not.toContain("dana_rakca");
     });
   });
 });

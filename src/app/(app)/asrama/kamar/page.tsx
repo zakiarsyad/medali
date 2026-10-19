@@ -15,6 +15,7 @@ export default async function DormRoomsPage(props: PageProps<"/asrama/kamar">) {
       params={readRoomsParams(await props.searchParams)}
       visible={visibleTo(rowLimitForAction(account, "view_dorm_rooms"))}
       mayManage={may(account.roles, "manage_dorm_rooms")}
+      maySetResidents={may(account.roles, "set_dorm_residents")}
     />
   );
 }
