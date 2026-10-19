@@ -9,8 +9,17 @@ import {
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import { sessionAccount, startSession } from "@/auth/sessions";
 import type { Database } from "@/db/connect";
-import { accounts, emailChanges, roleChanges, students } from "@/db/schema";
+import {
+  accounts,
+  dormResidentChoices,
+  dormRoomPlaces,
+  dormRooms,
+  emailChanges,
+  roleChanges,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { dormInSql, roomDormInSql } from "@/dorms/resident-condition";
 import {
   countStudents,
   findAddedStudent,
@@ -436,6 +445,109 @@ describe("changeStudent", () => {
     });
   });
 });
+
+describe("a dorm resident choice made by hand", () => {
+  async function chosenFor(db: Database, nim: string) {
+    const { program, staff } = await addThroughTab(db, nim);
+    const { id } = await recordOf(db, nim);
+    await db.insert(dormResidentChoices).values({
+      studentId: id,
+      dorm: "dana_rakca",
+      setBy: staff.id,
+      setAt: NOW,
+    });
+    return { program, staff, id };
+  }
+
+  async function choicesOf(db: Database, studentId: string) {
+    return db
+      .select({ dorm: dormResidentChoices.dorm })
+      .from(dormResidentChoices)
+      .where(eq(dormResidentChoices.studentId, studentId));
+  }
+
+  it("stays when the student moves to an older angkatan", async () => {
+    await inTestDatabase(async (db) => {
+      const { program, staff, id } = await chosenFor(db, "9900000590");
+      const changed = { ...student("9900000590", program), cohortYear: 2024 };
+
+      expect((await changeTestStudent(db, staff, changed)).ok).toBe(true);
+
+      expect(await choicesOf(db, id)).toEqual([{ dorm: "dana_rakca" }]);
+    });
+  });
+
+  it.each(["on_leave", "inactive"] as const)(
+    "ends when the status becomes %s, and stays ended once active again",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const nim = status === "on_leave" ? "9900000591" : "9900000592";
+        const { program, staff, id } = await chosenFor(db, nim);
+
+        const away = { ...student(nim, program), status };
+        expect((await changeTestStudent(db, staff, away)).ok).toBe(true);
+        const back = student(nim, program);
+        expect((await changeTestStudent(db, staff, back)).ok).toBe(true);
+
+        expect(await choicesOf(db, id)).toEqual([]);
+      });
+    },
+  );
+
+  /** A man put in through the tab, given a choice made by hand. */
+  async function manWithChoice(db: Database, nim: string, dorm: DormChoice) {
+    const { program, staff } = await addThroughTab(db, nim);
+    const man = { ...student(nim, program), sex: "male" as const };
+    expect((await changeTestStudent(db, staff, man)).ok).toBe(true);
+    const { id } = await recordOf(db, nim);
+    await db
+      .insert(dormResidentChoices)
+      .values({ studentId: id, dorm, setBy: staff.id, setAt: NOW });
+    return { program, staff, id };
+  }
+
+  it("ends when the jenis kelamin no longer fits the dorm chosen, and the room there no longer counts", async () => {
+    await inTestDatabase(async (db) => {
+      const nim = "9900000593";
+      const { program, staff, id } = await manWithChoice(
+        db,
+        nim,
+        "cipta_bakti",
+      );
+      const [room] = await db
+        .insert(dormRooms)
+        .values({ dorm: "cipta_bakti", floor: 1, number: "TS593", capacity: 4 })
+        .returning({ id: dormRooms.id });
+      await db
+        .insert(dormRoomPlaces)
+        .values({ studentId: id, roomId: room?.id ?? "" });
+
+      const woman = student(nim, program);
+      expect((await changeTestStudent(db, staff, woman)).ok).toBe(true);
+
+      expect(await choicesOf(db, id)).toEqual([]);
+      const [dorms] = await db
+        .select({ lives: dormInSql([]), room: roomDormInSql([]) })
+        .from(students)
+        .where(eq(students.id, id));
+      expect(dorms).toEqual({ lives: null, room: null });
+    });
+  });
+
+  it("stays as Non asrama when the jenis kelamin changes", async () => {
+    await inTestDatabase(async (db) => {
+      const nim = "9900000594";
+      const { program, staff, id } = await manWithChoice(db, nim, null);
+
+      const woman = student(nim, program);
+      expect((await changeTestStudent(db, staff, woman)).ok).toBe(true);
+
+      expect(await choicesOf(db, id)).toEqual([{ dorm: null }]);
+    });
+  });
+});
+
+type DormChoice = (typeof dormResidentChoices.$inferInsert)["dorm"];
 
 describe("removeStudent", () => {
   it.each(ALLOWED)(

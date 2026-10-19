@@ -51,7 +51,7 @@ export function residentNote(
   const cohortYear = Number(fields.cohortYear);
   const semester = period ? studentSemester(cohortYear, period) : null;
   // A student being put in is no kakak pendamping yet.
-  const dorm = dormOf(facts, semester, null);
+  const dorm = dormOf(facts, semester, null, null);
   if (dorm === null) return "Bukan penghuni asrama.";
   return `Masuk penghuni ${DORM_NAMES[dorm]}.`;
 }

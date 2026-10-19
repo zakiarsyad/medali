@@ -2,6 +2,7 @@ import type { SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { hasCompanions } from "./companion-dorms";
+import { listNonResidents, type NonResidents } from "./non-residents";
 import { type RoomCompanions, readRoomCompanions } from "./room-companions";
 import {
   countResidents,
@@ -69,4 +70,20 @@ export async function loadRooms(
     unplaced,
     companions,
   };
+}
+
+/**
+ * The students the form "Tambah penghuni" offers on a day, today when none
+ * is given, found by the search text. Null while no academic period runs:
+ * who lives in no dorm cannot be told then.
+ */
+export async function loadNonResidents(
+  db: Database,
+  query: string,
+  visible: SQL,
+  day?: string,
+): Promise<NonResidents | null> {
+  const dormCohorts = await readDormCohorts(db, day);
+  if (dormCohorts === null) return null;
+  return listNonResidents(db, { dormCohorts, visible }, query);
 }

@@ -15,3 +15,8 @@ export const ROOM_NUMBER_MAX_LENGTH = 10;
 export const UNPLACED_SHOWN = 60;
 /** The longest text the search for a resident takes. */
 export const SEARCH_MAX_LENGTH = 100;
+
+/** The longest Keterangan of a resident added by hand. */
+export const ADDED_NOTE_MAX_LENGTH = 100;
+/** How many students the form "Tambah penghuni" offers at once. */
+export const NON_RESIDENTS_SHOWN = 60;

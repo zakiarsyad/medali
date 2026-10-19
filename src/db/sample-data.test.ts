@@ -171,7 +171,7 @@ describe("the sample students of a first year", () => {
         isInternational: student.isInternational ?? false,
         isSeedling: student.isSeedling ?? false,
       };
-      return dormOf(facts, 1, null) === dorm;
+      return dormOf(facts, 1, null, null) === dorm;
     });
   }
 
@@ -257,7 +257,7 @@ describe("the sample kakak pendamping", () => {
       };
       expect(facts.status).toBe("active");
       const semester = studentSemester(student.cohortYear, running);
-      expect(dormOf(facts, semester, null)).toBe(null);
+      expect(dormOf(facts, semester, null, null)).toBe(null);
     }
   });
 

@@ -154,7 +154,12 @@ describe("loadRooms", () => {
   it("gives the kakak pendamping of Dana Rakca", async () => {
     await inTestDatabase(async (db) => {
       await addTestRows(db);
-      const params = { dorm: "dana_rakca", floor: 1, query: "" } as const;
+      const params = {
+        dorm: "dana_rakca",
+        floor: 1,
+        query: "",
+        adding: null,
+      } as const;
 
       const view = await loadRooms(db, params, EVERYONE, DAY);
 
@@ -170,7 +175,7 @@ describe("loadRooms", () => {
 
         const view = await loadRooms(
           db,
-          { dorm, floor: 1, query: "" },
+          { dorm, floor: 1, query: "", adding: null },
           EVERYONE,
           DAY,
         );

@@ -39,7 +39,7 @@ export function dutyBar(
 ): DutyBar | null {
   if (student.deletedAt !== null) return "removed";
   if (student.status !== "active") return "not_active";
-  const home = dormOf(student, semester, null);
+  const home = dormOf(student, semester, null, null);
   if (home !== null && hasCompanions(home)) return "lives_with_companions";
   if (dorm !== companionDormOf(student.sex)) return "wrong_dorm";
   return null;

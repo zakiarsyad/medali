@@ -211,6 +211,25 @@ describe("may", () => {
     }
   });
 
+  it("lets dorm_manager add residents and make students Non asrama by hand", () => {
+    expect(may(["dorm_manager"], "set_dorm_residents")).toBe(true);
+  });
+
+  it("refuses every other role to set dorm residents by hand", () => {
+    const others = ROLE_IDS.filter((role) => role !== "dorm_manager");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "set_dorm_residents")).toBe(false);
+    }
+  });
+
+  it.each(["bam_household", "bam_bphk", "head_of_unit"] as const)(
+    "refuses %s to set dorm residents by hand",
+    (role) => {
+      expect(may([role], "set_dorm_residents")).toBe(false);
+    },
+  );
+
   const companionViewers: RoleId[] = [
     "head_of_unit",
     "director",

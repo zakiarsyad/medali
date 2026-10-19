@@ -27,7 +27,7 @@ function resident(more: Partial<ResidentFacts>): ResidentFacts {
 }
 
 function dormIn(facts: Partial<ResidentFacts>): DormId {
-  const dorm = dormOf(resident(facts), 1, null);
+  const dorm = dormOf(resident(facts), 1, null, null);
   if (dorm === null) throw new Error("The student lives in no dorm.");
   return dorm;
 }

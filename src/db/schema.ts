@@ -807,6 +807,52 @@ export const dormCompanions = pgTable(
 );
 
 /**
+ * Where Pengelola Asrama decided by hand that a student lives, in place of
+ * the usual rule: in the dorm given, or in none ("Non asrama") when no
+ * dorm is given. The student is the key, so a student has one choice at
+ * most. It ends when the student's status becomes Cuti or Non Aktif.
+ */
+export const dormResidentChoices = pgTable("dorm_resident_choices", {
+  studentId: uuid()
+    .primaryKey()
+    .references(() => students.id),
+  dorm: dorm(),
+  note: text(),
+  setBy: uuid()
+    .notNull()
+    .references(() => accounts.id),
+  setAt: timestamp({ withTimezone: true }).notNull(),
+});
+
+/**
+ * Every choice made by hand of where a student lives: who made it, when,
+ * and the dorm before and after, none for "Non asrama". Rows here cannot
+ * be changed or deleted; the database refuses it.
+ */
+export const dormResidentChoiceChanges = pgTable(
+  "dorm_resident_choice_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    dormBefore: dorm(),
+    dormAfter: dorm(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("dorm_resident_choice_changes_student").on(table.studentId),
+    check(
+      "dorm_resident_choice_changes_dorm_differs",
+      sql`${table.dormBefore} is distinct from ${table.dormAfter}`,
+    ),
+  ],
+);
+
+/**
  * One dorm activity, repeating (rutin) or one-off (non rutin). What it
  * holds is in its versions. A removed one keeps its row, marked with who
  * removed it, when, and the first day it no longer takes place: the days
