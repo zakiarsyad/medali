@@ -38,6 +38,20 @@ describe("consentAfter", () => {
     expect(consentAfter("record_paper", "approved")).toBeNull();
   });
 
+  it.each([null, "waiting", "declined", "withdrawn"] as const)(
+    "makes a consent that is %s Disetujui by registering for voluntary counselling",
+    (current) => {
+      expect(consentAfter("register", current)).toEqual({
+        status: "approved",
+        way: "registration",
+      });
+    },
+  );
+
+  it("leaves a consent that is Disetujui already as it is when registering", () => {
+    expect(consentAfter("register", "approved")).toBeNull();
+  });
+
   it("turns a waiting request into Disetujui online or Ditolak", () => {
     expect(consentAfter("approve", "waiting")).toEqual({
       status: "approved",

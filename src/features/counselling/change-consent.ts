@@ -183,6 +183,44 @@ function applyPress(db: Database, press: Press): Promise<ConsentOutcome> {
   });
 }
 
+/**
+ * Registering for voluntary counselling with the tick: a consent that is
+ * not Disetujui becomes Disetujui by registration, with its log line, in
+ * the transaction of the registration. A first consent that Konselor
+ * adds at the same moment is found once it is kept, and changed then.
+ */
+export async function consentByRegistration(
+  tx: Database,
+  actorId: string,
+  studentId: string,
+  now: Date,
+): Promise<void> {
+  const press: Press = {
+    actorId,
+    studentId,
+    move: "register",
+    version: null,
+    done: "",
+    now,
+  };
+  let current = await lockConsent(tx, studentId);
+  if (current === null) {
+    const first = consentAfter("register", null);
+    if (first === null) throw new Error("Registering gives no consent.");
+    const id = await addConsent(tx, press, first);
+    if (id !== null) return logChange(tx, press, id, null, first);
+    current = await lockConsent(tx, studentId);
+    if (current === null) throw new Error("A consent was not found.");
+  }
+  const after = consentAfter("register", current.status);
+  if (after === null) return;
+  await tx
+    .update(counsellingConsents)
+    .set({ ...after, changedBy: actorId, changedAt: now })
+    .where(eq(counsellingConsents.id, current.id));
+  await logChange(tx, press, current.id, current.status, after);
+}
+
 /** A version as sent, or null when what was sent is no text. */
 function sentVersion(version: unknown): string | null {
   return typeof version === "string" ? version : null;

@@ -3,6 +3,9 @@ import type { ConsentView } from "./consent-view";
 import styles from "./counselling.module.css";
 import { CounsellorConsentPanel } from "./counsellor-consent-panel";
 import { OwnConsentBox } from "./own-consent-box";
+import { OwnScheduleList } from "./own-schedule-list";
+import { RegisterForm } from "./register-form";
+import type { OwnScheduleView } from "./schedule-view";
 import { WarnBox } from "./warn-box";
 
 /** What Konselor reads first on Konseling, as the prototype words it. */
@@ -22,11 +25,23 @@ function CounsellorPart() {
   );
 }
 
-function OwnPart({ consent }: { consent: ConsentView | null }) {
+/** What Konseling shows the student of their own. */
+export interface OwnCounselling {
+  /** Their consent, or null when never asked. */
+  consent: ConsentView | null;
+  /** Their active requests, the newest first. */
+  schedules: OwnScheduleView[];
+  /** The first day a request may be for: tomorrow on campus. */
+  tomorrow: string;
+}
+
+function OwnPart({ own }: { own: OwnCounselling }) {
   return (
     <>
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
-      <OwnConsentBox consent={consent} />
+      <OwnConsentBox consent={own.consent} />
+      <RegisterForm tomorrow={own.tomorrow} />
+      <OwnScheduleList schedules={own.schedules} />
     </>
   );
 }
@@ -40,8 +55,8 @@ export function CounsellingScreen({
   own,
   mayManage,
 }: {
-  /** Mahasiswa: their own consent, or null when never asked. */
-  own: { consent: ConsentView | null } | null;
+  /** Mahasiswa: their consent, the registration and their requests. */
+  own: OwnCounselling | null;
   /** Konselor: the emergency notice and "Persetujuan konseling". */
   mayManage: boolean;
 }) {
@@ -49,7 +64,7 @@ export function CounsellingScreen({
     <>
       <PageHead title="Konseling" />
       <div className={styles.parts}>
-        {own && <OwnPart consent={own.consent} />}
+        {own && <OwnPart own={own} />}
         {mayManage && <CounsellorPart />}
       </div>
     </>

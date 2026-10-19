@@ -95,7 +95,7 @@ the schedule's log.
 - [x] 2. The rights to register for counselling (Mahasiswa) and to manage
   schedules (Konselor) are added to the permission list, with their
   checks.
-- [ ] 3. The student registers and sees "Jadwal konseling saya".
+- [x] 3. The student registers and sees "Jadwal konseling saya".
 - [ ] 4. Konselor's "Jadwal konseling" shows the numbers, the filter and
   the cards.
 - [ ] 5. Konselor approves a time or proposes another; the student
