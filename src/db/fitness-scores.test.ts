@@ -203,3 +203,58 @@ describe("a fitness score", () => {
     });
   });
 });
+
+describe("a save of fitness scores", () => {
+  type Test = typeof fitnessTests.$inferInsert;
+  const FINGERPRINT = "a".repeat(64);
+
+  async function addTest(db: Database, more: Partial<Test>) {
+    const kepala = await addTestActor(db, "Kepala Uji Simpan Jasmani", [
+      "head_of_unit",
+    ]);
+    await db.insert(fitnessTests).values({
+      id: crypto.randomUUID(),
+      testedOn: "2026-10-12",
+      enteredBy: kepala.id,
+      enteredAt: new Date(),
+      ...more,
+    });
+  }
+
+  it("keeps a file with its name and fingerprint and no group", async () => {
+    await inTestDatabase(async (db) => {
+      await expect(
+        addTest(db, { fileName: "kebugaran.csv", fingerprint: FINGERPRINT }),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  it.each<[string, Partial<Test>]>([
+    ["neither a group nor a file", {}],
+    ["a file without a fingerprint", { fileName: "kebugaran.csv" }],
+    [
+      "a fingerprint that is not one",
+      { fileName: "kebugaran.csv", fingerprint: "bukan" },
+    ],
+  ])("is refused with %s", async (_, more) => {
+    await inTestDatabase(async (db) => {
+      await expect(inOwnStep(db, (tx) => addTest(tx, more))).rejects.toThrow();
+    });
+  });
+
+  it("is refused with both a group and a file", async () => {
+    await inTestDatabase(async (db) => {
+      const { groupId } = await addSavedScore(db, 80);
+
+      await expect(
+        inOwnStep(db, (tx) =>
+          addTest(tx, {
+            groupId,
+            fileName: "kebugaran.csv",
+            fingerprint: FINGERPRINT,
+          }),
+        ),
+      ).rejects.toThrow();
+    });
+  });
+});

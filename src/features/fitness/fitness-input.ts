@@ -113,6 +113,27 @@ export function parseTestDay(sent: string, today: string): Parsed<string> {
   return { ok: true, value: sent };
 }
 
+/** What a file's "Tanggal tes" after today says: what is wrong, and what to do. */
+export const FILE_DAY_IN_FUTURE = `${DAY_IN_FUTURE} Pilih hari ini atau tanggal sebelumnya.`;
+
+/** Checks the "Tanggal tes" of a file as the form's, with its own words for a day after today. */
+export function parseFileTestDay(sent: string, today: string): Parsed<string> {
+  const day = parseTestDay(sent, today);
+  if (!day.ok && day.error === DAY_IN_FUTURE) {
+    return { ok: false, error: FILE_DAY_IN_FUTURE };
+  }
+  return day;
+}
+
+/**
+ * Whether a refused save of a file keeps the picked file and its
+ * preview: only when "Tanggal tes" was refused, since that can be
+ * changed and saved again without picking the file anew.
+ */
+export function keepsPicked(error: string): boolean {
+  return error === FILE_DAY_IN_FUTURE || error === NO_TEST_DAY;
+}
+
 /** "Tahun tes": the year of the day of the test. */
 export function testYearOf(day: string): number {
   return Number(day.slice(0, 4));

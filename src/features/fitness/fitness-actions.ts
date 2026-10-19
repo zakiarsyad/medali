@@ -6,12 +6,17 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import { sentCsvFile } from "@/files/sent-csv-file";
+import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { FITNESS_ADDRESS } from "./fitness-address";
+import { previewFitnessFile } from "./fitness-file-check";
+import type { FitnessFilePreview } from "./fitness-file-preview";
 import { type GroupMember, readGroupMembers } from "./fitness-groups";
 import { LIMITS_VERSION_FIELD, pairedRows } from "./fitness-input";
 import { savedScoresMessage } from "./fitness-words";
+import { savedFileMessage, saveFitnessFile } from "./save-fitness-file";
 import { LIMITS_SAVED_MESSAGE, saveFitnessLimits } from "./save-fitness-limits";
 import { NOT_GROUP_MEMBERS, saveFitnessScores } from "./save-fitness-scores";
 
@@ -75,6 +80,39 @@ export async function saveScoresAction(
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(FITNESS_ADDRESS);
   return { error: null, done: savedScoresMessage(saved.value) };
+}
+
+/** "Unggah berkas": what a picked file would do. Saves nothing. */
+export async function previewFitnessFileAction(
+  form: FormData,
+): Promise<Parsed<FitnessFilePreview>> {
+  const actor = await scoreEnterer();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  return previewFitnessFile(database(), actor, file.value);
+}
+
+/**
+ * "Simpan (n) baris": the file is read and checked again by the server.
+ * `id` is the key the screen made for the file; `testedOn` is the
+ * "Tanggal tes" picked for the whole file.
+ */
+export async function saveFitnessFileAction(
+  form: FormData,
+): Promise<Parsed<string>> {
+  const actor = await scoreEnterer();
+  const file = await sentCsvFile(form);
+  if (!file.ok) return file;
+  const saved = await saveFitnessFile(
+    database(),
+    actor,
+    text(form, "id"),
+    text(form, "testedOn"),
+    file.value,
+  );
+  if (!saved.ok) return saved;
+  revalidatePath(FITNESS_ADDRESS);
+  return { ok: true, value: savedFileMessage(saved.value) };
 }
 
 /** "Kelompok mahasiswa": the Aktif members of the group chosen, with Skor saat ini. */
