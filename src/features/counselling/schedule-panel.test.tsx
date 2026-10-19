@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
 const CARD: CounsellorScheduleCard = {
   id: "00000000-0000-4000-8000-0000000c0551",
   name: "Mahasiswa Uji Layar",
-  nim: "9937980951",
+  nim: "9937985051",
   program: "Prodi Uji Layar",
   status: "submitted",
   topic: "emotions_and_stress",
@@ -87,7 +87,7 @@ describe("Jadwal konseling of Konselor", () => {
 
     for (const words of [
       "Mahasiswa Uji Layar",
-      "9937980951 · Prodi Uji Layar",
+      "9937985051 · Prodi Uji Layar",
       "Diajukan",
       "Emosi dan stres",
       "Waktu yang diminta",
