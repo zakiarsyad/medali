@@ -10,6 +10,18 @@ export interface RoomsParams {
   floor: number;
   /** The text the list "Belum diplot" is searched for. */
   query: string;
+  /**
+   * The text the form "Tambah penghuni" searches students for, empty for
+   * none. Null while the form is closed.
+   */
+  adding: string | null;
+}
+
+/** The part of the address that opens the form "Tambah penghuni". */
+const ADDING = "1";
+
+function readSearch(value: string | string[] | undefined): string {
+  return firstParam(value).trim().slice(0, SEARCH_MAX_LENGTH);
 }
 
 const FIRST_DORM: DormId = "wismantara_putra";
@@ -27,7 +39,9 @@ export function readRoomsParams(params: SearchParams): RoomsParams {
   return {
     dorm: DORM_IDS.find((id) => id === dorm) ?? FIRST_DORM,
     floor: readFloor(firstParam(params.lantai)),
-    query: firstParam(params.q).trim().slice(0, SEARCH_MAX_LENGTH),
+    query: readSearch(params.q),
+    adding:
+      firstParam(params.tambah) === ADDING ? readSearch(params.cari) : null,
   };
 }
 
@@ -35,4 +49,9 @@ export function readRoomsParams(params: SearchParams): RoomsParams {
 export function roomsAddress(dorm: DormId, floor: number): string {
   const params = new URLSearchParams({ asrama: dorm, lantai: String(floor) });
   return `${ROOMS_ADDRESS}?${params}`;
+}
+
+/** The address of the screen for a dorm and a floor, with "Tambah penghuni" open. */
+export function addingAddress(dorm: DormId, floor: number): string {
+  return `${roomsAddress(dorm, floor)}&tambah=${ADDING}`;
 }
