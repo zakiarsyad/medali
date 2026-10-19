@@ -41,6 +41,16 @@ import {
   CONSENT_WAYS,
 } from "@/features/counselling/consent-ids";
 import {
+  COUNSELLING_HOURS,
+  NOTE_MAX as COUNSELLING_NOTE_MAX,
+  STORY_MAX as COUNSELLING_STORY_MAX,
+  COUNSELLING_TOPICS,
+  COUNSELLING_WAYS,
+  SCHEDULE_KINDS,
+  SCHEDULE_STATUSES,
+  SCHEDULE_STEPS,
+} from "@/features/counselling/schedule-ids";
+import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -310,6 +320,27 @@ export const counsellingConsentStatus = pgEnum(
 export const counsellingConsentWay = pgEnum(
   "counselling_consent_way",
   CONSENT_WAYS,
+);
+
+export const counsellingScheduleKind = pgEnum(
+  "counselling_schedule_kind",
+  SCHEDULE_KINDS,
+);
+
+export const counsellingScheduleStatus = pgEnum(
+  "counselling_schedule_status",
+  SCHEDULE_STATUSES,
+);
+
+export const counsellingTopic = pgEnum("counselling_topic", COUNSELLING_TOPICS);
+
+export const counsellingHour = pgEnum("counselling_hour", COUNSELLING_HOURS);
+
+export const counsellingWay = pgEnum("counselling_way", COUNSELLING_WAYS);
+
+export const counsellingScheduleStep = pgEnum(
+  "counselling_schedule_step",
+  SCHEDULE_STEPS,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -3187,6 +3218,95 @@ export const counsellingConsentChanges = pgTable(
     check(
       "counselling_consent_changes_way_only_when_approved",
       sql`(${table.statusAfter} = 'approved') = (${table.way} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * A request for counselling and where it stands: Diajukan, Usulan jadwal
+ * lain or Dijadwalkan. `day`, `hour` and `way` are the one time it is
+ * about now: the time the student wished while it is Diajukan, the time
+ * Konselor proposed while it is Usulan jadwal lain, and the agreed time
+ * once it is Dijadwalkan. `counsellorId` is the Konselor who proposed or
+ * approved a time. A student has at most one active voluntary request.
+ * Never deleted: its log lines hold it.
+ */
+export const counsellingSchedules = pgTable(
+  "counselling_schedules",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    kind: counsellingScheduleKind().notNull(),
+    status: counsellingScheduleStatus().notNull(),
+    topic: counsellingTopic().notNull(),
+    day: date({ mode: "string" }).notNull(),
+    hour: counsellingHour().notNull(),
+    way: counsellingWay().notNull(),
+    /** "Ceritakan singkat": read by Konselor only. */
+    story: text(),
+    /** "Pesan untuk mahasiswa" of the last time Konselor proposed. */
+    counsellorMessage: text(),
+    /** "Alasan" of the last time the student asked for another time. */
+    reason: text(),
+    counsellorId: uuid().references(() => accounts.id),
+    createdAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("counselling_schedules_one_active_voluntary")
+      .on(table.studentId)
+      .where(
+        sql`${table.kind} = 'voluntary' and ${table.status} in ('submitted', 'proposed', 'scheduled')`,
+      ),
+    index("counselling_schedules_status").on(table.status, table.day),
+    check(
+      "counselling_schedules_story_length",
+      sql`char_length(${table.story}) <= ${sql.raw(String(COUNSELLING_STORY_MAX))}`,
+    ),
+    check(
+      "counselling_schedules_message_length",
+      sql`char_length(${table.counsellorMessage}) <= ${sql.raw(String(COUNSELLING_NOTE_MAX))}`,
+    ),
+    check(
+      "counselling_schedules_reason_length",
+      sql`char_length(${table.reason}) <= ${sql.raw(String(COUNSELLING_NOTE_MAX))}`,
+    ),
+    check(
+      "counselling_schedules_counsellor_once_proposed",
+      sql`${table.status} = 'submitted' or ${table.counsellorId} is not null`,
+    ),
+  ],
+);
+
+/**
+ * Every step of a counselling schedule: who, when, which step, and the
+ * status before and after. Registering has no status before. Rows here
+ * cannot be changed or deleted; the database refuses it.
+ */
+export const counsellingScheduleChanges = pgTable(
+  "counselling_schedule_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    scheduleId: uuid()
+      .notNull()
+      .references(() => counsellingSchedules.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    step: counsellingScheduleStep().notNull(),
+    statusBefore: counsellingScheduleStatus(),
+    statusAfter: counsellingScheduleStatus().notNull(),
+  },
+  (table) => [
+    index("counselling_schedule_changes_schedule").on(
+      table.scheduleId,
+      table.changedAt,
     ),
   ],
 );

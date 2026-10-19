@@ -102,6 +102,19 @@ describe("a counselling consent", () => {
     });
   });
 
+  it("keeps a Disetujui given by registering for voluntary counselling", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const [kept] = await addConsent(db, records, {
+        status: "approved",
+        way: "registration",
+      });
+
+      expect(kept).toMatchObject({ status: "approved", way: "registration" });
+    });
+  });
+
   it("is refused a Disetujui without how it was given", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);

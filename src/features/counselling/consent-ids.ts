@@ -14,7 +14,10 @@ export const CONSENT_STATUSES = [
 
 export type ConsentStatus = (typeof CONSENT_STATUSES)[number];
 
-/** How a consent was given: on the student's own page, or on a signed paper form. */
-export const CONSENT_WAYS = ["online", "paper"] as const;
+/**
+ * How a consent was given: on the student's own page, on a signed paper
+ * form, or by ticking it when registering for voluntary counselling.
+ */
+export const CONSENT_WAYS = ["online", "paper", "registration"] as const;
 
 export type ConsentWay = (typeof CONSENT_WAYS)[number];
