@@ -11,6 +11,7 @@ import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addResident } from "./add-resident";
 import { CLEANING_ADDRESS } from "./cleaning-address";
+import { makeNonResident } from "./make-non-resident";
 import { ROOMS_ADDRESS } from "./rooms-address";
 
 async function residentSetter(): Promise<Account> {
@@ -42,4 +43,13 @@ export async function addResidentAction(
     note: text(form, "note"),
   });
   return answer(added);
+}
+
+export async function makeNonResidentAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const setter = await residentSetter();
+  const studentId = text(form, "studentId");
+  return answer(await makeNonResident(database(), setter, studentId));
 }

@@ -93,12 +93,14 @@ export async function RoomsScreen({
         residents={residents}
         offered={mayManage ? unplaced.shown : null}
         companions={companions}
+        maySetResidents={maySetResidents}
       />
       <UnplacedPanel
         params={params}
         unplaced={unplaced}
         residents={counts.residents}
         mayManage={mayManage}
+        maySetResidents={maySetResidents}
       />
     </>
   );

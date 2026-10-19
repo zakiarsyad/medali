@@ -65,4 +65,4 @@ asrama".
 - [x] 1. A choice made by hand is stored and the one resident rule reads
   it, with checks and the log.
 - [x] 2. "Tambah penghuni" on Ploting kamar.
-- [ ] 3. "Jadikan non asrama" on Ploting kamar.
+- [x] 3. "Jadikan non asrama" on Ploting kamar.

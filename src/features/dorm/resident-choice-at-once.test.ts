@@ -7,6 +7,7 @@ import { academicPeriods, dormResidentChoiceChanges } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { addResident } from "./add-resident";
+import { makeNonResident } from "./make-non-resident";
 import { readStudentDorm } from "./student-dorm";
 import { addTestActor } from "./test-records";
 
@@ -17,7 +18,7 @@ import { addTestActor } from "./test-records";
  */
 const own = withOwnTestDatabase("residentchoice");
 
-/** Angkatan 3501 is in semester 3 in it. */
+/** Angkatan 3502 is in semester 1 in it, angkatan 3501 in semester 3. */
 const ODD_3502 = {
   startYear: 3502,
   term: "odd",
@@ -78,6 +79,36 @@ describe("two people adding the same student at the same moment", () => {
         "Uji 9935000301 sudah penghuni Asrama Dana Rakca. Muat ulang halaman untuk melihat daftar terbaru.",
     });
     expect(await readStudentDorm(own.db, id, DAY)).toBe("dana_rakca");
+    expect(await logLinesOf(id)).toBe(1);
+  });
+});
+
+describe("two people making the same resident Non asrama at the same moment", () => {
+  it("saves one, and tells the other the student is Non asrama already", async () => {
+    const program = await addTestProgram(own.db, "Prodi Uji Serentak Non");
+    const id = await addTestStudent(own.db, program, {
+      nim: "9935000302",
+      name: "Uji 9935000302",
+      cohortYear: 3502,
+    });
+    const one = await addManager();
+    const other = await addManager();
+
+    const both = await own.atOnce(
+      (db) => makeNonResident(db, one, id, DAY),
+      (db) => makeNonResident(db, other, id, DAY),
+    );
+
+    expect(both.sooner).toEqual({
+      ok: true,
+      value: "Uji 9935000302 dijadikan non asrama.",
+    });
+    expect(both.later).toEqual({
+      ok: false,
+      error:
+        "Uji 9935000302 sudah non asrama. Muat ulang halaman untuk melihat daftar terbaru.",
+    });
+    expect(await readStudentDorm(own.db, id, DAY)).toBeNull();
     expect(await logLinesOf(id)).toBe(1);
   });
 });
