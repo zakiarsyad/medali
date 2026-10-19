@@ -14,6 +14,13 @@ async function ownPart(account: AccountForAccess) {
   if (!may(account.roles, "answer_own_counselling_consent")) return null;
   return {
     consent: await readOwnConsent(database(), account),
+    registration: await registrationPart(account),
+  };
+}
+
+async function registrationPart(account: AccountForAccess) {
+  if (!may(account.roles, "register_own_counselling")) return null;
+  return {
     schedules: await readOwnSchedules(database(), account),
     tomorrow: daysAfter(campusDay(), 1),
   };

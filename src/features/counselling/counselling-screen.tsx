@@ -46,6 +46,12 @@ function CounsellorPart({
 export interface OwnCounselling {
   /** Their consent, or null when never asked. */
   consent: ConsentView | null;
+  /** Their registration part, or null when they may not register. */
+  registration: OwnRegistration | null;
+}
+
+/** What a student who may register sees of their own requests. */
+export interface OwnRegistration {
   /** Their active requests, the newest first. */
   schedules: OwnScheduleView[];
   /** The first day a request may be for: tomorrow on campus. */
@@ -57,8 +63,15 @@ function OwnPart({ own }: { own: OwnCounselling }) {
     <>
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
       <OwnConsentBox consent={own.consent} />
-      <RegisterForm tomorrow={own.tomorrow} />
-      <OwnScheduleList schedules={own.schedules} tomorrow={own.tomorrow} />
+      {own.registration && (
+        <>
+          <RegisterForm tomorrow={own.registration.tomorrow} />
+          <OwnScheduleList
+            schedules={own.registration.schedules}
+            tomorrow={own.registration.tomorrow}
+          />
+        </>
+      )}
     </>
   );
 }

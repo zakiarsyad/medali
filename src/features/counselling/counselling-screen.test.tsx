@@ -56,7 +56,10 @@ function studentPage(
 ): string {
   return renderToStaticMarkup(
     <CounsellingScreen
-      own={{ consent, schedules, tomorrow: "2026-10-17" }}
+      own={{
+        consent,
+        registration: { schedules, tomorrow: "2026-10-17" },
+      }}
       mayManage={false}
     />,
   );
@@ -109,6 +112,19 @@ describe("Konseling of the student", () => {
     },
   );
 
+  it("shows no registration form and no Jadwal konseling saya without the right to register", () => {
+    const page = renderToStaticMarkup(
+      <CounsellingScreen
+        own={{ consent: null, registration: null }}
+        mayManage={false}
+      />,
+    );
+
+    expect(page).toContain("Belum diminta");
+    expect(page).not.toContain("Daftar konseling sukarela");
+    expect(page).not.toContain("Jadwal konseling saya");
+  });
+
   it("shows no part of Konselor to a student", () => {
     const page = studentPage(null);
 
@@ -121,8 +137,7 @@ describe("Konseling of the student", () => {
       <CounsellingScreen
         own={{
           consent: consentOf("waiting"),
-          schedules: [],
-          tomorrow: "2026-10-17",
+          registration: { schedules: [], tomorrow: "2026-10-17" },
         }}
         mayManage={true}
       />,
