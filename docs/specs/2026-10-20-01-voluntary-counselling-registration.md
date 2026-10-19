@@ -92,7 +92,7 @@ the schedule's log.
 
 - [x] 1. The tables for counselling schedules and their log are added,
   with made-up requests in every status.
-- [ ] 2. The rights to register for counselling (Mahasiswa) and to manage
+- [x] 2. The rights to register for counselling (Mahasiswa) and to manage
   schedules (Konselor) are added to the permission list, with their
   checks.
 - [ ] 3. The student registers and sees "Jadwal konseling saya".

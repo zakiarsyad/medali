@@ -942,6 +942,57 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa register for voluntary counselling and answer a proposed time, on Konseling", () => {
+    expect(ACTION_TITLES.register_own_counselling).toContain(
+      "konseling sukarela",
+    );
+    expect(may(["student"], "register_own_counselling")).toBe(true);
+    expect(mayOpenPage(["student"], "counselling")).toBe(true);
+  });
+
+  it("refuses every other role to register for counselling, Konselor and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["counsellor", "head_of_unit"]),
+    );
+    for (const role of others) {
+      expect(may([role], "register_own_counselling")).toBe(false);
+    }
+  });
+
+  it("lets Konselor see and schedule every counselling request, on Konseling", () => {
+    expect(ACTION_TITLES.manage_counselling_schedules).toContain(
+      "Jadwal konseling",
+    );
+    expect(may(["counsellor"], "manage_counselling_schedules")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "manage_counselling_schedules",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses every other role to see or schedule counselling requests, Kepala Unit, Pengasuh, Pembina Disiplin Mahasiswa and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "mentor",
+        "discipline_officer",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "manage_counselling_schedules")).toBe(false);
+    }
+  });
+
   it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
     const openers: RoleId[] = ["counsellor", "student"];
     for (const role of ROLE_IDS) {
@@ -2147,6 +2198,7 @@ describe("may", () => {
       "view_own_siku",
       "ask_siku_addition",
       "answer_own_counselling_consent",
+      "register_own_counselling",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });
