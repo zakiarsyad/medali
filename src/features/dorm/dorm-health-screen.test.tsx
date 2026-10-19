@@ -22,7 +22,7 @@ const TABS = { pagePath: "asrama", tabs: [], open: "sehat" };
 const ANI: RecapRow = {
   id: "00000000-0000-4000-8000-000000000961",
   name: "Ani Contoh",
-  nim: "9986300961",
+  nim: "9986300161",
   program: "D3 Pajak",
   dorm: "dana_rakca",
   room: { dorm: "dana_rakca", floor: 2, number: "12" },
