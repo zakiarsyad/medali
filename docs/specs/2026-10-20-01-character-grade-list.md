@@ -81,12 +81,26 @@ Ketua Program Studi (own program), Pengasuh (own mentees).
    semester's Pengasuhan score and counted activities.
 4. The letter and pass are taken from Nilai akhir as it is shown, to one
    decimal, so the number and the letter never disagree.
+5. The list holds the Aktif students only, by name, as "Daftar nilai
+   SIKU" and Data SKPM do.
+6. "Belum memenuhi batas lulus" holds only students whose grade is worked
+   out and below the pass letter; a "Belum lengkap" student is under its
+   own filter only.
+7. Keterangan reads "SIKU dasar 65" for a student with no SIKU entry in
+   force, otherwise Nilai dasar with the gains and losses, such as
+   "SIKU 65 +5 / −3", as the prototype does.
+8. Kehadiran shows the score with attended/counted under it; a student
+   with nothing counted yet shows "-". Huruf shows "-" while the grade is
+   "Belum lengkap".
+9. Every role that opens the tab sees all four parts of its own
+   students, as "Who it is for" says, also a role that does not open the
+   tab of a part, such as Penilai Mahasiswa for Pengasuhan.
 
 ## Steps
 
 - [x] 1. The rule for the final score, letter, pass and "Belum lengkap",
   with checks. Kehadiran is read from "Mentoring meetings in the
   attendance score".
-- [ ] 2. "Daftar nilai karakter" with search, filters and pages, limited
+- [x] 2. "Daftar nilai karakter" with search, filters and pages, limited
   to each role's own students.
 - [ ] 3. The four numbers at the top.
