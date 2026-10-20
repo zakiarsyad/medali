@@ -42,12 +42,13 @@
 }
 
 .statement > span {
-  flex: 1 1 var(--card-min-width);
+  flex: 1 1 var(--statement-text-basis);
   min-width: 0;
 }
 
 .scores {
   display: flex;
+  flex: 0 1 var(--scores-width);
   gap: var(--space-2xs);
   margin: 0;
   padding: 0;
@@ -57,6 +58,7 @@
 .score {
   position: relative;
   display: inline-flex;
+  flex: var(--score-button-grow) 1 0;
   min-width: var(--score-button-size);
   min-height: var(--score-button-size);
   align-items: center;

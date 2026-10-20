@@ -163,6 +163,11 @@ shown per person.
     answers of a cancelled period get no mark of their own: the cancel
     mark of their period, with who and when, marks them as not used,
     and every count of answers leaves them out.
+17. On a phone each statement takes the whole width with its five
+    buttons under it, sharing the width, each at least 44 pixels high
+    and wide. On a computer a statement stands beside its buttons
+    where they fit, as in the prototype. The buttons are radio buttons,
+    so a screen reader names each statement and its choice.
 
 ## Steps
 
@@ -175,4 +180,4 @@ shown per person.
   refused hand-made requests.
 - [x] 6. "Batalkan periode" names the number of answers and marks them
   as not used; Responden counts the answers.
-- [ ] 7. Phone layout for the statements and buttons.
+- [x] 7. Phone layout for the statements and buttons.
