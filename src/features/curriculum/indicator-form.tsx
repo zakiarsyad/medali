@@ -6,6 +6,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { saveMainIndicatorsAction } from "./actions";
 import styles from "./curriculum.module.css";
 import { ValueBox } from "./indicator-boxes";
+import { INDICATOR_MAX_LENGTH } from "./indicator-input";
 import type { ValueIndicators } from "./main-indicators";
 
 const START: FormState = { error: null, done: null };
@@ -49,6 +50,7 @@ export function IndicatorForm({
                   <input
                     name={code}
                     className={`${shared.input} ${styles.text}`}
+                    maxLength={INDICATOR_MAX_LENGTH}
                     value={texts[code] ?? ""}
                     onChange={(event) =>
                       setTexts({ ...texts, [code]: event.target.value })

@@ -83,7 +83,7 @@ that reads Kurikulum.
 
 ## Steps
 
-- [ ] 1. The server refuses an indicator text over 300 characters, and
+- [x] 1. The server refuses an indicator text over 300 characters, and
   the boxes take no more.
 - [ ] 2. A long word folds in Indikator utama MEDALI, "Indikator tahap",
   the Penjabaran text and "Kegiatan acuan".
