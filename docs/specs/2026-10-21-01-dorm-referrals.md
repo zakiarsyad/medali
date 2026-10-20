@@ -82,12 +82,21 @@ Konselor did with a referral.
 6. The line under "Potensi kesehatan mental" on Asrama > Kesehatan, which
    names who sees the mark, now names Konselor too, since the mark now
    reaches them. Nothing else on the Asrama side changes.
+7. The list holds only students who live in a dorm today and are
+   Aktif, the same residents Asrama > Kesehatan shows. A student who
+   left the dorm drops out of the list, as the dorm can no longer change
+   their mark.
+8. A Konselor who is also a student never sees their own referral, as
+   with the mark on Asrama.
+9. The list sits under the emergency notice, above "Persetujuan
+   konseling". Stepping to another page of it, or of "Jadwal
+   konseling", puts the other list back on its first page.
 
 ## Steps
 
 - [x] 1. The right to read dorm referrals is added for Konselor only,
   with its checks, and made-up marks for sample residents.
-- [ ] 2. "Rujukan potensi kesehatan mental dari asrama" shows the rows,
+- [x] 2. "Rujukan potensi kesehatan mental dari asrama" shows the rows,
   the number and the empty state.
 - [ ] 3. Each row shows consent and schedule, and "Tindak lanjuti" opens
   the consent panel.
