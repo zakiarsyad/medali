@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseIndicatorTexts } from "./indicator-input";
+import { INDICATOR_MAX_LENGTH, parseIndicatorTexts } from "./indicator-input";
 import { mainIndicators } from "./main-indicators";
 
 const CODES = mainIndicators(new Map()).flatMap((value) =>
@@ -61,5 +61,26 @@ describe("parseIndicatorTexts", () => {
       ok: false,
       error: "Isi keempat level indikator Mandiri.",
     });
+  });
+
+  it("refuses a text over the longest length", () => {
+    const long = "a".repeat(INDICATOR_MAX_LENGTH + 1);
+
+    expect(parseIndicatorTexts(sent({ E3: long }))).toEqual({
+      ok: false,
+      error: "Teks indikator paling banyak 300 karakter.",
+    });
+  });
+
+  it("takes a text of exactly the longest length", () => {
+    const longest = "a".repeat(INDICATOR_MAX_LENGTH);
+
+    expect(parseIndicatorTexts(sent({ E3: longest })).ok).toBe(true);
+  });
+
+  it("counts the length without the spaces around the text", () => {
+    const longest = `  ${"a".repeat(INDICATOR_MAX_LENGTH)}  `;
+
+    expect(parseIndicatorTexts(sent({ E3: longest })).ok).toBe(true);
   });
 });

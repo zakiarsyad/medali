@@ -65,6 +65,24 @@ describe("saveMainIndicators", () => {
     });
   });
 
+  it("saves nothing when one text is over 300 characters", async () => {
+    await inTestDatabase(async (db) => {
+      const actor = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
+
+      const saved = await saveMainIndicators(
+        db,
+        actor,
+        sent({ L4: "a".repeat(301) }),
+      );
+
+      expect(saved).toEqual({
+        ok: false,
+        error: "Teks indikator paling banyak 300 karakter.",
+      });
+      expect(await db.select().from(savedIndicators)).toEqual([]);
+    });
+  });
+
   it("replaces the texts saved before, with the one who changed them last", async () => {
     await inTestDatabase(async (db) => {
       const first = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
