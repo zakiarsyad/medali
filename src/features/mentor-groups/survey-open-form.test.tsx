@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { SURVEY_STATEMENTS } from "@/mentoring/survey-statements";
 import { SurveyComponents } from "./survey-components";
 import type { SurveyFormStart } from "./survey-form-start";
 import { SurveyOpenForm } from "./survey-open-form";
 import { SurveySaidAbove } from "./survey-said";
-import { SURVEY_STATEMENTS } from "./survey-statements";
 
 const START: SurveyFormStart = {
   choices: [

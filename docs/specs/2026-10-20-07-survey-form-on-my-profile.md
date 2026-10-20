@@ -93,9 +93,23 @@ shown per person.
 4. The cancel question and Responden sit in the Pengasuh area, but stay
    in this spec: they can only be tried once answers exist.
 
+## Decisions made while building
+
+5. An answer is stored as one record: the survey period, the student,
+   the group and the mentor named on the form at the latest send, the
+   eight scores in the order of the statements, the suggestion when
+   there is one, and when it was sent. The database itself refuses a
+   second answer of one student in one period, a score outside 1 to 5,
+   a score left empty, more or fewer than eight scores, and a suggestion
+   longer than 600 characters or of spaces only.
+6. The eight statements, the scale of 1 to 5 with its words, the 600
+   characters and the 3 answers are kept with the shared mentoring
+   rules, because Profil saya and the tab "Evaluasi oleh mahasiswa"
+   both read them.
+
 ## Steps
 
-- [ ] 1. Survey answers are stored, one per student and period.
+- [x] 1. Survey answers are stored, one per student and period.
 - [ ] 2. The right to answer the survey for oneself, with its checks.
 - [ ] 3. The card shows the form, keeps a half-filled form on the
   device, and saves a complete answer.

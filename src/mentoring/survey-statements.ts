@@ -13,3 +13,28 @@ export const SURVEY_STATEMENTS = [
   "Pengasuh memperlakukan seluruh anggota kelompok secara adil.",
   "Secara keseluruhan, saya puas dengan pendampingan pengasuh saya.",
 ] as const;
+
+/**
+ * What each score of a statement means, from 1 to 5. The prototype's
+ * scale, to be confirmed by the campus.
+ */
+export const SURVEY_SCALE = [
+  "Sangat tidak setuju",
+  "Tidak setuju",
+  "Netral",
+  "Setuju",
+  "Sangat setuju",
+] as const;
+
+/** The lowest and the highest score of a statement. */
+export const LOWEST_SCORE = 1;
+export const HIGHEST_SCORE = SURVEY_SCALE.length;
+
+/** How long "Saran untuk pengasuh" may be, in characters. */
+export const SUGGESTION_MAX = 600;
+
+/**
+ * How many of a group must answer before its suggestions are shown,
+ * without names, so no suggestion can be traced to one student.
+ */
+export const FEWEST_FOR_SUGGESTIONS = 3;
