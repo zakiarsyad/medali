@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { mainIndicators as savedIndicators } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { mainIndicators } from "./main-indicators";
-import { readMainIndicators } from "./stored-main-indicators";
+import {
+  readMainIndicators,
+  STARTING_INDICATORS_VERSION,
+} from "./stored-main-indicators";
 import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -13,6 +16,7 @@ describe("readMainIndicators", () => {
       expect(await readMainIndicators(db)).toEqual({
         values: mainIndicators(new Map()),
         changed: null,
+        version: STARTING_INDICATORS_VERSION,
       });
     });
   });
@@ -42,6 +46,7 @@ describe("readMainIndicators", () => {
         at: new Date("2026-03-02T03:00:00Z"),
         by: "Kepala Uji",
       });
+      expect(shown.version).toBe("2026-03-02T03:00:00.000Z");
       expect(shown.values).toEqual(
         mainIndicators(
           new Map([

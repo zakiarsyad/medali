@@ -16,6 +16,7 @@ import type { TahapScores } from "./tahap-scores";
  */
 export function TahapPanels({
   values,
+  indicatorsVersion,
   indicatorNote,
   mayChange,
   activities,
@@ -28,6 +29,8 @@ export function TahapPanels({
 }: {
   /** Every nilai with its main indicators as they are now. */
   values: ValueIndicators[];
+  /** The version of `values`, sent back by the form that changes them. */
+  indicatorsVersion: string;
   /** Who changed the indicators last, or that they are the starting ones. */
   indicatorNote: string;
   mayChange: boolean;
@@ -51,6 +54,7 @@ export function TahapPanels({
     <>
       <MainIndicatorsPanel
         values={values}
+        version={indicatorsVersion}
         level={tahapNo}
         note={indicatorNote}
         mayChange={mayChange}
