@@ -45,6 +45,7 @@ import {
   addSampleHealthNotes,
 } from "./seed-health-notes";
 import { addSampleMentalHealthMarks } from "./seed-mental-health-marks";
+import { addSampleMentalHealthScreenings } from "./seed-mental-health-screenings";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
 import { addSampleMentorReplacements } from "./seed-mentor-replacements";
@@ -286,5 +287,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleHealthNotes(tx, today);
     await addSampleDormHealthNotes(tx, running, today);
     await addSampleMentalHealthMarks(tx, running, today);
+    await addSampleMentalHealthScreenings(tx, today);
   });
 }

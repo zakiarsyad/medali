@@ -1,5 +1,5 @@
 {
-  "id": "8da68631-e7d7-48a0-adf9-add1c2fa5a61",
+  "id": "85b46826-b56d-4fb9-8a92-436a905623f4",
   "prevId": "5560f818-b039-4863-937c-ed77d09d310b",
   "version": "7",
   "dialect": "postgresql",
@@ -2581,392 +2581,6 @@
         "counselling_schedules_counsellor_once_proposed": {
           "name": "counselling_schedules_counsellor_once_proposed",
           "value": "\"counselling_schedules\".\"status\"::text in ('submitted', 'cancelled') or \"counselling_schedules\".\"counsellor_id\" is not null"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.counselling_session_changes": {
-      "name": "counselling_session_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "session_id": {
-          "name": "session_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "step": {
-          "name": "step",
-          "type": "counselling_session_step",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "before": {
-          "name": "before",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "after": {
-          "name": "after",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_session_changes_session": {
-          "name": "counselling_session_changes_session",
-          "columns": [
-            {
-              "expression": "session_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "changed_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_session_changes_session_id_counselling_sessions_id_fk": {
-          "name": "counselling_session_changes_session_id_counselling_sessions_id_fk",
-          "tableFrom": "counselling_session_changes",
-          "tableTo": "counselling_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_session_changes_changed_by_accounts_id_fk": {
-          "name": "counselling_session_changes_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_session_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.counselling_session_reads": {
-      "name": "counselling_session_reads",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "read_by": {
-          "name": "read_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "read_at": {
-          "name": "read_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_session_reads_student": {
-          "name": "counselling_session_reads_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "read_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_session_reads_student_id_students_id_fk": {
-          "name": "counselling_session_reads_student_id_students_id_fk",
-          "tableFrom": "counselling_session_reads",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_session_reads_read_by_accounts_id_fk": {
-          "name": "counselling_session_reads_read_by_accounts_id_fk",
-          "tableFrom": "counselling_session_reads",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "read_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.counselling_sessions": {
-      "name": "counselling_sessions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "schedule_id": {
-          "name": "schedule_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "counselling_session_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "topic": {
-          "name": "topic",
-          "type": "counselling_topic",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "follow_up": {
-          "name": "follow_up",
-          "type": "counselling_follow_up",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "next_day": {
-          "name": "next_day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "written_by": {
-          "name": "written_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "written_at": {
-          "name": "written_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_sessions_student": {
-          "name": "counselling_sessions_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "written_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_sessions_student_id_students_id_fk": {
-          "name": "counselling_sessions_student_id_students_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_sessions_schedule_id_counselling_schedules_id_fk": {
-          "name": "counselling_sessions_schedule_id_counselling_schedules_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "counselling_schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_sessions_written_by_accounts_id_fk": {
-          "name": "counselling_sessions_written_by_accounts_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "written_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_sessions_changed_by_accounts_id_fk": {
-          "name": "counselling_sessions_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "counselling_sessions_one_per_schedule": {
-          "name": "counselling_sessions_one_per_schedule",
-          "nullsNotDistinct": false,
-          "columns": [
-            "schedule_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "counselling_sessions_notes_length": {
-          "name": "counselling_sessions_notes_length",
-          "value": "char_length(trim(\"counselling_sessions\".\"notes\")) > 0 and char_length(\"counselling_sessions\".\"notes\") <= 5000"
-        },
-        "counselling_sessions_next_after_day": {
-          "name": "counselling_sessions_next_after_day",
-          "value": "\"counselling_sessions\".\"next_day\" is null or \"counselling_sessions\".\"next_day\" >= \"counselling_sessions\".\"day\""
         }
       },
       "isRLSEnabled": false
@@ -7213,6 +6827,250 @@
         "mental_health_marks_rules": {
           "name": "mental_health_marks_rules",
           "value": "char_length(\"mental_health_marks\".\"observation\") <= 500 and (\"mental_health_marks\".\"category\" is not null or \"mental_health_marks\".\"observation\" = '') and (\"mental_health_marks\".\"category\" is distinct from 'refer' or \"mental_health_marks\".\"observation\" <> '')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.mental_health_screening_log": {
+      "name": "mental_health_screening_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event": {
+          "name": "event",
+          "type": "mental_health_screening_event",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by": {
+          "name": "by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "at": {
+          "name": "at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "mental_health_screening_log_student": {
+          "name": "mental_health_screening_log_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mental_health_screening_log_student_id_students_id_fk": {
+          "name": "mental_health_screening_log_student_id_students_id_fk",
+          "tableFrom": "mental_health_screening_log",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mental_health_screening_log_by_accounts_id_fk": {
+          "name": "mental_health_screening_log_by_accounts_id_fk",
+          "tableFrom": "mental_health_screening_log",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mental_health_screenings": {
+      "name": "mental_health_screenings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "screened_on": {
+          "name": "screened_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instrument": {
+          "name": "instrument",
+          "type": "mental_health_instrument",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "depression": {
+          "name": "depression",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "anxiety": {
+          "name": "anxiety",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stress": {
+          "name": "stress",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "srq_yes": {
+          "name": "srq_yes",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "self_harm": {
+          "name": "self_harm",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "mental_health_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saved_by": {
+          "name": "saved_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "mental_health_screenings_student": {
+          "name": "mental_health_screenings_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "screened_on",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mental_health_screenings_student_id_students_id_fk": {
+          "name": "mental_health_screenings_student_id_students_id_fk",
+          "tableFrom": "mental_health_screenings",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mental_health_screenings_saved_by_accounts_id_fk": {
+          "name": "mental_health_screenings_saved_by_accounts_id_fk",
+          "tableFrom": "mental_health_screenings",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "saved_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "mental_health_screenings_scores": {
+          "name": "mental_health_screenings_scores",
+          "value": "case \"mental_health_screenings\".\"instrument\"\n        when 'dass21' then \"mental_health_screenings\".\"srq_yes\" is null\n          and (\"mental_health_screenings\".\"depression\" is not null and \"mental_health_screenings\".\"depression\" between 0 and 21)\n          and (\"mental_health_screenings\".\"anxiety\" is not null and \"mental_health_screenings\".\"anxiety\" between 0 and 21)\n          and (\"mental_health_screenings\".\"stress\" is not null and \"mental_health_screenings\".\"stress\" between 0 and 21)\n        else \"mental_health_screenings\".\"depression\" is null and \"mental_health_screenings\".\"anxiety\" is null\n          and \"mental_health_screenings\".\"stress\" is null\n          and (\"mental_health_screenings\".\"srq_yes\" is not null and \"mental_health_screenings\".\"srq_yes\" between 0 and 20)\n      end"
+        },
+        "mental_health_screenings_self_harm_most_severe": {
+          "name": "mental_health_screenings_self_harm_most_severe",
+          "value": "not \"mental_health_screenings\".\"self_harm\" or \"mental_health_screenings\".\"level\" = 'extremely_severe'"
+        },
+        "mental_health_screenings_note_length": {
+          "name": "mental_health_screenings_note_length",
+          "value": "char_length(\"mental_health_screenings\".\"note\") <= 1000"
         }
       },
       "isRLSEnabled": false
@@ -11586,17 +11444,6 @@
         "registration"
       ]
     },
-    "public.counselling_follow_up": {
-      "name": "counselling_follow_up",
-      "schema": "public",
-      "values": [
-        "next_session",
-        "monitoring",
-        "refer_psychologist",
-        "refer_psychiatrist",
-        "closed"
-      ]
-    },
     "public.counselling_hour": {
       "name": "counselling_hour",
       "schema": "public",
@@ -11639,23 +11486,6 @@
         "reschedule",
         "mark_done",
         "mark_missed"
-      ]
-    },
-    "public.counselling_session_kind": {
-      "name": "counselling_session_kind",
-      "schema": "public",
-      "values": [
-        "individual_in_person",
-        "individual_online",
-        "group"
-      ]
-    },
-    "public.counselling_session_step": {
-      "name": "counselling_session_step",
-      "schema": "public",
-      "values": [
-        "write",
-        "change"
       ]
     },
     "public.counselling_topic": {
@@ -11925,12 +11755,39 @@
         "medical"
       ]
     },
+    "public.mental_health_instrument": {
+      "name": "mental_health_instrument",
+      "schema": "public",
+      "values": [
+        "dass21",
+        "srq20"
+      ]
+    },
+    "public.mental_health_level": {
+      "name": "mental_health_level",
+      "schema": "public",
+      "values": [
+        "normal",
+        "mild",
+        "moderate",
+        "severe",
+        "extremely_severe"
+      ]
+    },
     "public.mental_health_mark_category": {
       "name": "mental_health_mark_category",
       "schema": "public",
       "values": [
         "monitor",
         "refer"
+      ]
+    },
+    "public.mental_health_screening_event": {
+      "name": "mental_health_screening_event",
+      "schema": "public",
+      "values": [
+        "saved",
+        "opened"
       ]
     },
     "public.mentor_replacement_reason": {

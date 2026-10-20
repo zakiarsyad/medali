@@ -94,6 +94,8 @@ export const ACTIONS = [
   "manage_counselling_schedules",
   "keep_counselling_sessions",
   "view_own_counselling_sessions",
+  "record_mental_health_screenings",
+  "view_mental_health_screening_count",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -220,6 +222,10 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Sesi konseling: mencatat, mengubah, dan membaca catatan sesi yang rahasia",
   view_own_counselling_sessions:
     "Melihat jumlah sesi konseling sendiri, tanggal terakhirnya, dan sesi berikutnya, tanpa catatan sesi",
+  record_mental_health_screenings:
+    "Kesehatan mental: mencatat dan membaca hasil asesmen kesehatan mental mahasiswa",
+  view_mental_health_screening_count:
+    "Melihat jumlah mahasiswa yang sudah diasesmen kesehatan mental di seluruh kampus, tanpa nama",
 };
 
 /**
@@ -377,6 +383,7 @@ export const ROLES: Record<RoleId, Role> = {
       "write_mental_health_marks",
       "view_mental_health_marks",
       "view_mental_health_mark_log",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "all",
@@ -406,6 +413,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_scores",
       "view_siku",
       "view_dorm_health_numbers",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "all",
@@ -435,6 +443,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_scores",
       "view_siku",
       "view_dorm_health_numbers",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "own_program",
@@ -470,6 +479,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_health_notes",
       "view_dorm_health_notes",
       "view_mental_health_marks",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "own_mentees",
@@ -661,6 +671,7 @@ export const ROLES: Record<RoleId, Role> = {
       "manage_counselling_consent",
       "manage_counselling_schedules",
       "keep_counselling_sessions",
+      "record_mental_health_screenings",
     ],
     rows: "all",
   },
