@@ -5,6 +5,7 @@ import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { checkFileShape, readFileText } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { Parsed } from "@/parsed";
 import {
@@ -18,7 +19,6 @@ import {
   type FitnessFilePreview,
   fitnessPreviewOf,
 } from "./fitness-file-preview";
-import { readFitnessLimits } from "./fitness-limits";
 import { NOT_ALLOWED_TO_ENTER } from "./save-fitness-scores";
 
 /** The students an account may enter fitness scores for. */

@@ -1,8 +1,8 @@
 import shared from "@/ui/data-screen.module.css";
-import styles from "./fitness.module.css";
+import { CATEGORY_WORDS } from "./category-words";
 import type { ShownCategory } from "./fitness-category";
-import { CATEGORY_WORDS } from "./fitness-words";
 import type { FinalCategory } from "./health-category";
+import styles from "./health-notes.module.css";
 import { FROM_NOTE_MARK } from "./health-words";
 
 /** A category, or Belum dites, in its colour. */

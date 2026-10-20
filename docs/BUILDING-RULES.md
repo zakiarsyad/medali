@@ -32,6 +32,11 @@ while building.
 - `src/character-scores/`: the scores of a character assessment, their
   Rerata and predikat, how a Rerata is shown, and each student's latest
   assessment, read by every area that shows character scores.
+- `src/health-notes/`: the categories of a fitness test and of a health
+  note, the limits in force and each student's latest score and note,
+  the final category, how a note is checked, written, kept and shown,
+  its form, and the list of sick students with its numbers, read by
+  every area that keeps health notes.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.

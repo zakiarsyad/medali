@@ -12,19 +12,29 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
-import styles from "./fitness.module.css";
-import {
-  healthSubjectAction,
-  saveHealthNoteAction,
-  searchHealthStudentsAction,
-} from "./health-actions";
 import { draftFrom, EMPTY_DRAFT, type NoteDraft } from "./health-draft";
 import { EarlierNotes, NoteFields, SubjectSummary } from "./health-note-fields";
-import type { HealthPick, HealthSubject } from "./health-subject";
+import styles from "./health-notes.module.css";
+import type { HealthPick, HealthSubject } from "./note-subject";
 
 const START: FormState = { error: null, done: null };
 
-export const NOBODY_FOUND = "Tidak ada mahasiswa aktif non asrama yang cocok.";
+/**
+ * The actions of the server behind the form, each of the place it is
+ * on: the students found for a text, the student picked, and the save.
+ * Each checks again who asks and for whom.
+ */
+export interface NoteActions {
+  search: (query: string) => Promise<HealthPick[]>;
+  subject: (studentId: string) => Promise<HealthSubject | null>;
+  save: (before: FormState, form: FormData) => Promise<FormState>;
+}
+
+/** What "Mahasiswa" says of the students the place offers. */
+export interface PickerWords {
+  placeholder: string;
+  nobodyFound: string;
+}
 
 /**
  * The search box sits inside the form, where Enter would send the whole
@@ -40,15 +50,19 @@ function pickWords(pick: HealthPick): string {
 
 function Found({
   query,
+  search,
+  nobodyFound,
   onPick,
 }: {
   query: string;
+  search: NoteActions["search"];
+  nobodyFound: string;
   onPick: (pick: HealthPick) => void;
 }) {
-  const found = useFound(query, searchHealthStudentsAction);
+  const found = useFound(query, search);
   if (query.trim() === "") return null;
   if (found.length === 0) {
-    return <p className={shared.detail}>{NOBODY_FOUND}</p>;
+    return <p className={shared.detail}>{nobodyFound}</p>;
   }
   return (
     <div className={styles.found}>
@@ -67,16 +81,20 @@ function Found({
 }
 
 /**
- * "Mahasiswa": a name or a NIM is typed, the server offers the Aktif
- * students who live in no dorm, and one is picked. The one picked stays
- * until "Ganti mahasiswa".
+ * "Mahasiswa": a name or a NIM is typed, the server offers the students
+ * the place lets the account write for, and one is picked. The one
+ * picked stays until "Ganti mahasiswa".
  */
 function HealthPicker({
   picked,
+  search,
+  words,
   onPick,
   onClear,
 }: {
   picked: HealthPick | null;
+  search: NoteActions["search"];
+  words: PickerWords;
   onPick: (pick: HealthPick) => void;
   onClear: () => void;
 }) {
@@ -97,7 +115,7 @@ function HealthPicker({
         type="search"
         className={shared.input}
         aria-label="Cari mahasiswa"
-        placeholder="Ketik nama atau NIM mahasiswa non asrama"
+        placeholder={words.placeholder}
         value={query}
         maxLength={SEARCH_TEXT_MAX}
         autoComplete="off"
@@ -106,6 +124,8 @@ function HealthPicker({
       />
       <Found
         query={query}
+        search={search}
+        nobodyFound={words.nobodyFound}
         onPick={(pick) => {
           setQuery("");
           onPick(pick);
@@ -124,11 +144,15 @@ function HealthPicker({
 export function HealthNoteForm({
   today,
   newKey,
+  actions,
+  words,
 }: {
   /** Today on campus, where Tanggal starts. */
   today: string;
   /** The key of the first save; two presses of "Simpan catatan" send the same one. */
   newKey: string;
+  actions: NoteActions;
+  words: PickerWords;
 }) {
   const [key, setKey] = useState(newKey);
   const [picked, setPicked] = useState<HealthPick | null>(null);
@@ -143,7 +167,7 @@ export function HealthNoteForm({
   function load(studentId: string) {
     asked.current = studentId;
     startLoading(async () => {
-      const found = await healthSubjectAction(studentId);
+      const found = await actions.subject(studentId);
       if (asked.current !== studentId) return;
       setSubject(found);
       setDraft(draftFrom(found?.notes[0]));
@@ -165,7 +189,7 @@ export function HealthNoteForm({
   }
 
   async function save(before: FormState, sent: FormData): Promise<FormState> {
-    const after = await saveHealthNoteAction(before, sent);
+    const after = await actions.save(before, sent);
     if (after.done && picked) {
       setKey(crypto.randomUUID());
       load(picked.id);
@@ -181,7 +205,13 @@ export function HealthNoteForm({
       <input type="hidden" name="id" value={key} />
       <input type="hidden" name="studentId" value={picked?.id ?? ""} />
       <span className={shared.label}>Mahasiswa</span>
-      <HealthPicker picked={picked} onPick={pick} onClear={clear} />
+      <HealthPicker
+        picked={picked}
+        search={actions.search}
+        words={words}
+        onPick={pick}
+        onClear={clear}
+      />
       {picked && loading && subject === null && (
         <p className={styles.note}>Memuat catatan kesehatan…</p>
       )}

@@ -5,11 +5,12 @@ import type { HealthNote } from "./health-ids";
 import { EarlierNotes, NoteFields, SubjectSummary } from "./health-note-fields";
 import { HealthNoteForm } from "./health-note-form";
 
-vi.mock("./health-actions", () => ({
-  healthSubjectAction: vi.fn(),
-  saveHealthNoteAction: vi.fn(),
-  searchHealthStudentsAction: vi.fn(),
-}));
+const ACTIONS = { search: vi.fn(), subject: vi.fn(), save: vi.fn() };
+
+const WORDS = {
+  placeholder: "Ketik nama atau NIM mahasiswa non asrama",
+  nobodyFound: "Tidak ada mahasiswa aktif non asrama yang cocok.",
+};
 
 const TODAY = "2026-10-16";
 
@@ -63,10 +64,12 @@ describe("Catatan kesehatan before a student is picked", () => {
     <HealthNoteForm
       today={TODAY}
       newKey="00000000-0000-4000-8000-000000000999"
+      actions={ACTIONS}
+      words={WORDS}
     />,
   );
 
-  it("asks for a non-dorm student, and cannot be saved yet", () => {
+  it("asks for a student in the place's words, and cannot be saved yet", () => {
     expect(html).toContain(
       'placeholder="Ketik nama atau NIM mahasiswa non asrama"',
     );

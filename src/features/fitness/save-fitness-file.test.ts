@@ -6,8 +6,8 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { fitnessScores, fitnessTests, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { latestFitnessScores } from "@/health-notes/latest-fitness-scores";
 import { FILE_DAY_IN_FUTURE, NO_TEST_DAY } from "./fitness-input";
-import { latestFitnessScores } from "./latest-fitness-scores";
 import {
   FILE_ALREADY_SENT,
   NOTHING_TO_SAVE,

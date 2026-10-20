@@ -1,39 +1,18 @@
-import { and, asc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
+import { and, type SQL, sql } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
-import { containsPattern } from "@/db/contains-pattern";
-import { isUuid } from "@/db/is-uuid";
-import { healthNotes, students, studyPrograms } from "@/db/schema";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { dormInSql } from "@/dorms/resident-condition";
+import type { FitnessLimits } from "@/health-notes/fitness-ids";
+import {
+  type HealthPick,
+  type HealthSubject,
+  readNoteSubject,
+  searchNoteStudents,
+} from "@/health-notes/note-subject";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
-import { searchText } from "@/ui/search-text";
-import { categoryOf } from "./fitness-category";
-import type { FitnessCategory, FitnessLimits } from "./fitness-ids";
-import type { HealthNote } from "./health-ids";
-import { readNotes } from "./health-notes-read";
-import { latestFitnessScores } from "./latest-fitness-scores";
-
-/** How many students one search offers. */
-export const SEARCH_LIMIT = 10;
-
-/** A student the form may pick. */
-export interface HealthPick {
-  id: string;
-  name: string;
-  nim: string;
-  program: string;
-}
-
-/** What the form shows of the student picked. */
-export interface HealthSubject {
-  /** The category of the latest fitness test, or null with none. */
-  test: FitnessCategory | null;
-  /** Every note of the student, newest first: the first is "Catatan terakhir". */
-  notes: HealthNote[];
-}
 
 /**
  * Whether roles write health notes on Penilaian jasmani: they enter
@@ -80,42 +59,8 @@ export async function searchHealthStudents(
   query: unknown,
   day: string,
 ): Promise<HealthPick[]> {
-  const text = typeof query === "string" ? searchText(query) : null;
-  if (text === null) return [];
-  const pattern = containsPattern(text);
   const writable = writableFor(actor, await dormCohortsOn(db, day));
-  return db
-    .select({
-      id: students.id,
-      name: students.name,
-      nim: students.nim,
-      program: studyPrograms.name,
-    })
-    .from(students)
-    .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(
-      and(
-        writable,
-        or(ilike(students.name, pattern), ilike(students.nim, pattern)),
-      ),
-    )
-    .orderBy(asc(students.name), asc(students.nim))
-    .limit(SEARCH_LIMIT);
-}
-
-/** The category of a student's latest fitness test, or null with none. */
-export async function readTestCategory(
-  db: Database,
-  studentId: string,
-  limits: FitnessLimits,
-): Promise<FitnessCategory | null> {
-  const latest = latestFitnessScores(db);
-  const [found] = await db
-    .select({ score: latest.score })
-    .from(latest)
-    .where(eq(latest.studentId, studentId));
-  if (!found) return null;
-  return categoryOf(found.score, limits);
+  return searchNoteStudents(db, writable, query);
 }
 
 /**
@@ -130,20 +75,7 @@ export async function readHealthSubject(
   day: string,
 ): Promise<HealthSubject | null> {
   if (!may(actor.roles, "view_health_notes")) return null;
-  if (!isUuid(studentId)) return null;
   const readable = visibleTo(rowLimitForAction(actor, "view_health_notes"));
   const writable = writableFor(actor, await dormCohortsOn(db, day));
-  const [found] = await db
-    .select({ id: students.id })
-    .from(students)
-    .where(and(eq(students.id, studentId), writable, readable));
-  if (!found) return null;
-  const [test, notes] = await Promise.all([
-    readTestCategory(db, studentId, limits),
-    readNotes(db, eq(healthNotes.studentId, studentId)),
-  ]);
-  return {
-    test,
-    notes: notes.map(({ studentId: _, ...note }) => note),
-  };
+  return readNoteSubject(db, and(writable, readable), studentId, limits);
 }

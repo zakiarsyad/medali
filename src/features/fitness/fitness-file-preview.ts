@@ -1,7 +1,10 @@
 import { PREVIEW_ROWS, PREVIEW_SKIPPED } from "@/files/csv-file";
-import { categoryOf } from "./fitness-category";
+import { categoryOf } from "@/health-notes/fitness-category";
+import type {
+  FitnessCategory,
+  FitnessLimits,
+} from "@/health-notes/fitness-ids";
 import type { FitnessFileRows, SkippedFitnessRow } from "./fitness-file";
-import type { FitnessCategory, FitnessLimits } from "./fitness-ids";
 
 /** A ready row as the preview shows it, with the category its score gives. */
 export interface FitnessPreviewRow {

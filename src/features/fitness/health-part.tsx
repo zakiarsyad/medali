@@ -1,6 +1,6 @@
+import type { SickList } from "@/health-notes/sick-list";
 import type { FitnessParams } from "./fitness-address";
 import { HealthNotePanel } from "./health-note-panel";
-import type { HealthRecap } from "./health-recap";
 import { RecapNumberCards, RecapPanel } from "./health-recap-view";
 import type { RecapParams } from "./recap-address";
 
@@ -17,7 +17,7 @@ export function HealthPart({
   today,
 }: {
   /** Null for an account without the right to the recap. */
-  recap: HealthRecap | null;
+  recap: SickList | null;
   list: FitnessParams;
   recapParams: RecapParams;
   writesNotes: boolean;

@@ -12,27 +12,27 @@ import {
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { students, studyPrograms } from "@/db/schema";
+import { finalRankSql } from "@/health-notes/final-category-sql";
+import { categoryOf } from "@/health-notes/fitness-category";
+import type { FitnessLimits } from "@/health-notes/fitness-ids";
+import {
+  type FinalCategory,
+  finalCategory,
+  SERIOUSNESS,
+} from "@/health-notes/health-category";
+import type { NoteCategory, NoteContent } from "@/health-notes/health-ids";
+import { readNotesById } from "@/health-notes/health-notes-read";
+import { latestFitnessScores } from "@/health-notes/latest-fitness-scores";
+import { latestHealthNotes } from "@/health-notes/latest-health-notes";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { pageWithin } from "@/ui/list-pages";
-import { finalRankSql } from "./final-category-sql";
 import {
   FITNESS_LIST_PAGE_SIZE,
   type FitnessFilter,
   type FitnessParams,
 } from "./fitness-address";
-import { categoryOf } from "./fitness-category";
 import { countFitness, type FitnessNumbers } from "./fitness-counts";
-import type { FitnessLimits } from "./fitness-ids";
 import { yearStartOf } from "./fitness-input";
-import {
-  type FinalCategory,
-  finalCategory,
-  SERIOUSNESS,
-} from "./health-category";
-import type { NoteCategory, NoteContent } from "./health-ids";
-import { readNotesById } from "./health-notes-read";
-import { latestFitnessScores } from "./latest-fitness-scores";
-import { latestHealthNotes } from "./latest-health-notes";
 
 /** What a row says of a student's health, for an account that reads their notes. */
 export interface RowHealth {

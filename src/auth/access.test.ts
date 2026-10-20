@@ -898,6 +898,103 @@ describe("may", () => {
     }
   });
 
+  const dormHealthWriters: RoleId[] = ["head_of_unit", "bam_health"];
+  const dormHealthReaders: RoleId[] = [
+    ...dormHealthWriters,
+    "dorm_manager",
+    "bam_bphk",
+    "mentor",
+  ];
+  const dormHealthCounters: RoleId[] = ["director", "head_of_program"];
+
+  it("lets Kepala Unit and BAM - Kesehatan alone write health notes of dorm residents, on Asrama > Kesehatan", () => {
+    expect(ACTION_TITLES.write_dorm_health_notes).toBe(
+      "Menulis catatan kesehatan penghuni asrama",
+    );
+    for (const role of dormHealthWriters) {
+      expect(may([role], "write_dorm_health_notes")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "health")).toBe(true);
+    }
+    const others = ROLE_IDS.filter((role) => !dormHealthWriters.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "dorm_manager",
+        "bam_bphk",
+        "mentor",
+        "director",
+        "head_of_program",
+        "assessor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "write_dorm_health_notes")).toBe(false);
+    }
+  });
+
+  it("lets the writers, Pengelola Asrama, BAM - BPHK and Pengasuh read the list of sick residents, on Asrama > Kesehatan", () => {
+    expect(ACTION_TITLES.view_dorm_health_notes).toContain(
+      "Melihat daftar mahasiswa asrama yang sakit",
+    );
+    for (const role of dormHealthReaders) {
+      expect(may([role], "view_dorm_health_notes")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "health")).toBe(true);
+    }
+  });
+
+  it("refuses the list of sick residents to every other role, Direktur and Ketua Program Studi among them", () => {
+    const others = ROLE_IDS.filter((role) => !dormHealthReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "bam_compliance",
+        "counsellor",
+        "assessor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_health_notes")).toBe(false);
+    }
+  });
+
+  it("gives Direktur and Ketua Program Studi alone the numbers of the residents' health, without names", () => {
+    expect(ACTION_TITLES.view_dorm_health_numbers).toContain("tanpa nama");
+    for (const role of dormHealthCounters) {
+      expect(may([role], "view_dorm_health_numbers")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "health")).toBe(true);
+    }
+    const others = ROLE_IDS.filter(
+      (role) => !dormHealthCounters.includes(role),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_health_numbers")).toBe(false);
+    }
+  });
+
+  it("opens Asrama > Kesehatan only to the roles that write, read or count the residents' health", () => {
+    const opening = [...dormHealthReaders, ...dormHealthCounters];
+    const others = ROLE_IDS.filter((role) => !opening.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "bam_compliance",
+        "bam_household",
+        "bam_spiritual",
+        "bam_catering",
+        "bam_arts_sports",
+        "counsellor",
+        "assessor",
+        "upk_staff",
+        "discipline_officer",
+      ]),
+    );
+    for (const role of others) {
+      expect(mayOpenTab([role], "dorm", "health")).toBe(false);
+    }
+  });
+
   it("opens Asesmen karakter to Direktur, Ketua Program Studi and Pengasuh to read, and not to Mahasiswa", () => {
     for (const role of ["director", "head_of_program", "mentor"] as const) {
       expect(mayOpenTab([role], "assessment", "character_test")).toBe(true);
@@ -2528,6 +2625,49 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       rowLimitForAction(
         account(["mentor", "head_of_program"], 7),
         "view_health_notes",
+      ),
+    ).toEqual(OWN_MENTEES);
+  });
+
+  it("lets each reader of the sick residents read only its own students, Pengasuh their own mentees", () => {
+    for (const role of [
+      "head_of_unit",
+      "bam_health",
+      "dorm_manager",
+      "bam_bphk",
+    ] as const) {
+      expect(
+        rowLimitForAction(account([role]), "view_dorm_health_notes"),
+      ).toEqual(EVERY_ROW);
+    }
+    expect(
+      rowLimitForAction(account(["mentor"]), "view_dorm_health_notes"),
+    ).toEqual(OWN_MENTEES);
+    expect(
+      rowLimitForAction(
+        account(["head_of_program"], 7),
+        "view_dorm_health_notes",
+      ),
+    ).toEqual(NO_ROW);
+  });
+
+  it("counts the residents' health for Ketua Program Studi in their own program only", () => {
+    expect(
+      rowLimitForAction(account(["director"]), "view_dorm_health_numbers"),
+    ).toEqual(EVERY_ROW);
+    expect(
+      rowLimitForAction(
+        account(["head_of_program"], 7),
+        "view_dorm_health_numbers",
+      ),
+    ).toEqual(onlyPrograms([7]));
+  });
+
+  it("keeps Pengasuh who is also Ketua Program Studi to their own mentees in the list of sick residents", () => {
+    expect(
+      rowLimitForAction(
+        account(["mentor", "head_of_program"], 7),
+        "view_dorm_health_notes",
       ),
     ).toEqual(OWN_MENTEES);
   });

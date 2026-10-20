@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import type { LimitsInForce } from "@/health-notes/fitness-limits";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import styles from "./fitness.module.css";
 import { saveLimitsAction } from "./fitness-actions";
 import { LIMITS_VERSION_FIELD, typedLimitsOf } from "./fitness-input";
-import type { LimitsInForce } from "./fitness-limits";
 import { limitsNote } from "./fitness-words";
 import { LimitsView } from "./limits-view";
 

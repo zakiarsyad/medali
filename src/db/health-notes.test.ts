@@ -1,9 +1,9 @@
 // Sample NIMs of this file: 9986300500 to 9986300599.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { ADVICE_MAX, SHORT_TEXT_MAX } from "@/features/fitness/health-ids";
 import { addTestActor, addTestStudents } from "@/features/fitness/test-fitness";
-import { addTestNote, type TestNote } from "@/features/fitness/test-health";
+import { ADVICE_MAX, SHORT_TEXT_MAX } from "@/health-notes/health-ids";
+import { addTestNote, type TestNote } from "@/health-notes/test-health";
 import type { Database } from "./connect";
 import {
   healthNoteIllnesses,

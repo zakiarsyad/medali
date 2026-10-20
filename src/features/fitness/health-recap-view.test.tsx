@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { RecapRow, SickList } from "@/health-notes/sick-list";
 import { START_PARAMS } from "./fitness-address";
-import type { HealthRecap, RecapRow } from "./health-recap";
 import { RecapNumberCards, RecapPanel } from "./health-recap-view";
 import { RECAP_START } from "./recap-address";
 
@@ -39,7 +39,7 @@ const EKA: RecapRow = {
   note: null,
 };
 
-const RECAP: HealthRecap = {
+const RECAP: SickList = {
   numbers: {
     students: 6,
     dorm: 1,
