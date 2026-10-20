@@ -7,6 +7,7 @@ import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
+import { ScheduleNotice } from "./schedule-notice";
 import { SchedulePanel } from "./schedule-panel";
 import type {
   OwnHistory,
@@ -71,14 +72,15 @@ function OwnPart({ own }: { own: OwnCounselling }) {
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
       <OwnConsentBox consent={own.consent} />
       {own.registration && (
-        <>
+        // A new step of Riwayat in the address starts with no message.
+        <ScheduleNotice key={own.registration.history.shown}>
           <RegisterForm tomorrow={own.registration.tomorrow} />
           <OwnScheduleList
             schedules={own.registration.schedules}
             tomorrow={own.registration.tomorrow}
           />
           <OwnHistoryList history={own.registration.history} />
-        </>
+        </ScheduleNotice>
       )}
     </>
   );

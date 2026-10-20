@@ -9,7 +9,7 @@ import {
   scheduleListAddress,
 } from "./schedule-address";
 import { ScheduleFilterRow } from "./schedule-filter";
-import { ScheduleNotice } from "./schedule-notice";
+import { ScheduleNotice, ScheduleNoticeMessage } from "./schedule-notice";
 import type { ScheduleBoard } from "./schedule-view";
 
 /**
@@ -45,7 +45,9 @@ export function SchedulePanel({
         />
       </NumberCards>
       <ScheduleFilterRow filter={filter} />
-      <ScheduleNotice>
+      {/* A new filter or page starts with no message. */}
+      <ScheduleNotice key={scheduleListAddress(filter, board.page)}>
+        <ScheduleNoticeMessage />
         {cards.length === 0 ? (
           <p className={shared.empty}>Tidak ada konseling pada filter ini.</p>
         ) : (
