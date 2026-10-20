@@ -54,3 +54,16 @@ export const SCHEDULE_HAS_SESSION =
 
 export const SCHEDULE_NOT_DONE =
   "Jadwal ini tidak ditemukan atau belum Selesai. Muat ulang halaman.";
+
+export const SESSION_CHANGED = "Perubahan sesi disimpan.";
+
+/**
+ * What a change made on a session that changed since the form opened is
+ * told: by another Konselor, or by the same press made twice.
+ */
+export const SESSION_CHANGED_SINCE =
+  "Sesi ini sudah diubah sebelumnya, jadi tidak ada yang diubah. Versi terbarunya ditampilkan.";
+
+export const SESSION_NOT_FOUND = "Sesi tidak ditemukan. Muat ulang halaman.";
+
+export const NO_SESSIONS = "Belum ada sesi.";

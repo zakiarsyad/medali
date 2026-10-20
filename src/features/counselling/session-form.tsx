@@ -1,21 +1,12 @@
 "use client";
 
 import { type FormEvent, useState, useTransition } from "react";
-import { campusDay } from "@/academic-periods/campus-day";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./counselling.module.css";
-import { COUNSELLING_TOPICS } from "./schedule-ids";
-import { ChoiceOptions } from "./schedule-options";
-import { TOPIC_WORDS } from "./schedule-words";
 import { writeSessionAction } from "./session-actions";
-import {
-  SESSION_FOLLOW_UPS,
-  SESSION_KINDS,
-  SESSION_NOTES_MAX,
-} from "./session-ids";
+import { SessionFields } from "./session-fields";
 import type { SessionStart } from "./session-view";
-import { FOLLOW_UP_WORDS, SESSION_KIND_WORDS } from "./session-words";
 import type { SessionOutcome } from "./write-session";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
@@ -42,7 +33,6 @@ export function SessionForm({
   const [id, setId] = useState(() => crypto.randomUUID());
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [pending, startSending] = useTransition();
-  const today = campusDay();
 
   // Sent from here, not by the browser: the browser empties a sent form,
   // and refused notes must stay to be corrected.
@@ -76,55 +66,9 @@ export function SessionForm({
           name="scheduleId"
           value={start?.scheduleId ?? ""}
         />
-        <label className={shared.field}>
-          Tanggal sesi
-          <input
-            name="day"
-            type="date"
-            className={shared.input}
-            max={today}
-            defaultValue={start?.day ?? today}
-          />
-        </label>
-        <label className={shared.field}>
-          Jenis
-          <select
-            name="kind"
-            className={shared.input}
-            defaultValue={start?.kind}
-          >
-            <ChoiceOptions choices={SESSION_KINDS} words={SESSION_KIND_WORDS} />
-          </select>
-        </label>
-        <label className={shared.field}>
-          Topik utama
-          <select name="topic" className={shared.input}>
-            <ChoiceOptions choices={COUNSELLING_TOPICS} words={TOPIC_WORDS} />
-          </select>
-        </label>
-        <label className={`${shared.field} ${styles.full}`}>
-          Catatan sesi (rahasia)
-          <textarea
-            name="notes"
-            rows={4}
-            maxLength={SESSION_NOTES_MAX}
-            placeholder="Hanya dapat dibaca konselor"
-            className={shared.input}
-          />
-        </label>
-        <label className={shared.field}>
-          Tindak lanjut
-          <select name="followUp" className={shared.input}>
-            <ChoiceOptions
-              choices={SESSION_FOLLOW_UPS}
-              words={FOLLOW_UP_WORDS}
-            />
-          </select>
-        </label>
-        <label className={shared.field}>
-          Sesi berikutnya (opsional)
-          <input name="nextDay" type="date" className={shared.input} />
-        </label>
+        <SessionFields
+          defaults={start ? { day: start.day, kind: start.kind } : {}}
+        />
         <div className={`${shared.actions} ${styles.full}`}>
           <button type="submit" className={shared.button} disabled={pending}>
             Simpan sesi

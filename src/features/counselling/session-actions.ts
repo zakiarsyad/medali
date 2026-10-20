@@ -5,10 +5,13 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
+import { type ChangeOutcome, changeSession } from "./change-session";
 import { readScheduleSession } from "./schedule-session";
+import { readSessionHistory } from "./session-history";
 import type { SentSession } from "./session-rules";
-import type { ScheduleSession } from "./session-view";
+import type { ScheduleSession, SessionHistory } from "./session-view";
 import { type SessionOutcome, writeSession } from "./write-session";
 
 /**
@@ -52,4 +55,26 @@ export async function scheduleSessionAction(
 ): Promise<ScheduleSession> {
   const actor = await keeper();
   return readScheduleSession(database(), actor, scheduleId);
+}
+
+/**
+ * "Riwayat sesi" of a student, 10 sessions for each step asked. Each
+ * reading is logged.
+ */
+export async function readSessionHistoryAction(
+  studentId: string,
+  steps: number,
+): Promise<Parsed<SessionHistory>> {
+  const actor = await keeper();
+  return readSessionHistory(database(), actor, studentId, steps);
+}
+
+/** "Simpan perubahan" of "Ubah". `version` is the session the form showed. */
+export async function changeSessionAction(
+  id: string,
+  version: string,
+  form: FormData,
+): Promise<ChangeOutcome> {
+  const actor = await keeper();
+  return changeSession(database(), actor, id, version, sentSessionOf(form));
 }

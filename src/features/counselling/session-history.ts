@@ -1,0 +1,110 @@
+import { desc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
+import { type AccountForAccess, may } from "@/auth/access";
+import type { Database } from "@/db/connect";
+import { versionOf } from "@/db/row-version";
+import {
+  accounts,
+  counsellingSessionReads,
+  counsellingSessions,
+} from "@/db/schema";
+import type { Parsed } from "@/parsed";
+import { STUDENT_NOT_FOUND } from "./consent-words";
+import { isSessionStudent } from "./session-checks";
+import type { SessionHistory, SessionView } from "./session-view";
+import { SESSION_NOT_ALLOWED } from "./session-words";
+
+/** How many sessions "Riwayat sesi" shows at first, and how many more each time. */
+export const SESSIONS_PAGE_SIZE = 10;
+
+/** The most steps of "Tampilkan lebih banyak" read at once. */
+const MOST_STEPS = 100;
+
+/** The steps asked, or 1 for what is not a whole number of steps. */
+function stepsOf(sent: unknown): number {
+  const isStep =
+    typeof sent === "number" &&
+    Number.isInteger(sent) &&
+    sent >= 1 &&
+    sent <= MOST_STEPS;
+  return isStep ? sent : 1;
+}
+
+const writer = alias(accounts, "writer");
+const changer = alias(accounts, "changer");
+
+async function readSessions(
+  tx: Database,
+  studentId: string,
+  limit: number,
+): Promise<SessionView[]> {
+  const rows = await tx
+    .select({
+      session: counsellingSessions,
+      writerName: writer.name,
+      changerName: changer.name,
+    })
+    .from(counsellingSessions)
+    .innerJoin(writer, eq(writer.id, counsellingSessions.writtenBy))
+    .innerJoin(changer, eq(changer.id, counsellingSessions.changedBy))
+    .where(eq(counsellingSessions.studentId, studentId))
+    .orderBy(
+      desc(counsellingSessions.day),
+      desc(counsellingSessions.writtenAt),
+      desc(counsellingSessions.id),
+    )
+    .limit(limit);
+  return rows.map(({ session, writerName, changerName }) => ({
+    id: session.id,
+    day: session.day,
+    kind: session.kind,
+    topic: session.topic,
+    notes: session.notes,
+    followUp: session.followUp,
+    nextDay: session.nextDay,
+    counsellorName: writerName,
+    changed:
+      session.changedAt.getTime() === session.writtenAt.getTime()
+        ? null
+        : { at: session.changedAt, by: changerName },
+    version: versionOf(session.changedAt),
+  }));
+}
+
+/**
+ * "Riwayat sesi" of a student: the latest 10 sessions for each step
+ * asked, the latest day first. Every Konselor reads every session, also
+ * once the consent is withdrawn. Each reading is logged in the same
+ * transaction: who, whose notes and when, never the notes. Refused, sending nothing and logging nothing,
+ * for any role without the right, and for a student not found.
+ * `studentId` and `steps` come from outside.
+ */
+export async function readSessionHistory(
+  db: Database,
+  actor: AccountForAccess,
+  studentId: unknown,
+  steps: unknown,
+  now: Date = new Date(),
+): Promise<Parsed<SessionHistory>> {
+  if (!may(actor.roles, "keep_counselling_sessions")) {
+    return { ok: false, error: SESSION_NOT_ALLOWED };
+  }
+  if (!(await isSessionStudent(db, actor, studentId))) {
+    return { ok: false, error: STUDENT_NOT_FOUND };
+  }
+  if (typeof studentId !== "string") {
+    return { ok: false, error: STUDENT_NOT_FOUND };
+  }
+  const limit = stepsOf(steps) * SESSIONS_PAGE_SIZE;
+  return db.transaction(async (tx): Promise<Parsed<SessionHistory>> => {
+    const read = await readSessions(tx, studentId, limit + 1);
+    await tx
+      .insert(counsellingSessionReads)
+      .values({ studentId, readBy: actor.id, readAt: now });
+    const value = {
+      items: read.slice(0, limit),
+      hasMore: read.length > limit,
+    };
+    return { ok: true, value };
+  });
+}
