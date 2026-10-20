@@ -21,12 +21,11 @@ export const MARK_BADGE_WORDS: Record<MarkCategory, string> = {
 };
 
 /**
- * The line under "Potensi kesehatan mental" in the form. Konselor is
- * left out while their referral list is not built, so the line names
- * only who sees the mark today.
+ * The line under "Potensi kesehatan mental" in the form, naming who sees
+ * the mark: Konselor sees a referral on their own list.
  */
 export const MARK_FORM_NOTE =
-  "Penanda awal berdasarkan pengamatan, bukan diagnosis. Hanya terlihat oleh BAM - Kesehatan, Kepala Unit Pembangunan Karakter, Pengelola Asrama, dan pengasuh mahasiswa ybs.";
+  "Penanda awal berdasarkan pengamatan, bukan diagnosis. Hanya terlihat oleh BAM - Kesehatan, Kepala Unit Pembangunan Karakter, Pengelola Asrama, pengasuh mahasiswa ybs., dan Konselor bila perlu dirujuk.";
 
 export const OBSERVATION_PLACEHOLDER =
   "Misalnya menarik diri, sulit tidur, sering menangis";

@@ -85,7 +85,7 @@ Konselor did with a referral.
 
 ## Steps
 
-- [ ] 1. The right to read dorm referrals is added for Konselor only,
+- [x] 1. The right to read dorm referrals is added for Konselor only,
   with its checks, and made-up marks for sample residents.
 - [ ] 2. "Rujukan potensi kesehatan mental dari asrama" shows the rows,
   the number and the empty state.
