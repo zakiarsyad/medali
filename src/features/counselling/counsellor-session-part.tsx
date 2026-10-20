@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { Parsed } from "@/parsed";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import type { ChangeOutcome } from "./change-session";
@@ -24,8 +24,8 @@ function messageOf(outcome: ChangeOutcome): FormState {
  * sesi" while the consent is Disetujui, or why no session can be written
  * while it is not, and "Riwayat sesi", with "Ubah" only while it is
  * Disetujui. A student who never gave consent has no "Riwayat sesi". `history` is "Riwayat sesi" as read when the student was
- * picked; it is read again after a session is kept or changed, so a
- * change someone made first shows.
+ * picked; it is read again when a consent is recorded, and after a session
+ * is kept or changed, so a change someone made first shows.
  */
 export function CounsellorSessionPart({
   studentId,
@@ -41,6 +41,15 @@ export function CounsellorSessionPart({
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [pending, startReading] = useTransition();
   const mayWrite = consent?.status === "approved";
+
+  // A consent recorded after the student was picked: read "Riwayat sesi",
+  // refused when they were picked, once more.
+  useEffect(() => {
+    if (!mayWrite || history.ok) return;
+    startReading(async () => {
+      setHistory(await readSessionHistoryAction(studentId, 1));
+    });
+  }, [mayWrite, history.ok, studentId]);
 
   function reload(wanted: number, said: FormState = NO_MESSAGE) {
     startReading(async () => {
