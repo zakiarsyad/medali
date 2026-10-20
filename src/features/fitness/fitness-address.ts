@@ -1,6 +1,7 @@
+import { CATEGORY_CHOICES } from "@/health-notes/filter-choices";
+import type { ShownCategory } from "@/health-notes/fitness-category";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
-import type { ShownCategory } from "./fitness-category";
 
 /*
  * The address of Penilaian jasmani and what it asks for. Read by the
@@ -29,10 +30,7 @@ export const FITNESS_FILTERS = [
 /** Each filter as the address names it. */
 export const FILTER_CHOICES: Record<FitnessFilter, string> = {
   all: "",
-  excellent: "prima",
-  good: "baik",
-  attention: "perhatian",
-  medical: "medis",
+  ...CATEGORY_CHOICES,
   untested: "belum",
 };
 

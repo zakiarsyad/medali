@@ -1,12 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { STARTING_LIMITS, STARTING_VERSION } from "@/health-notes/fitness-ids";
+import type { NoteContent } from "@/health-notes/health-ids";
 import { START_PARAMS } from "./fitness-address";
 import type { FitnessList, FitnessListRow } from "./fitness-board";
 import type { FitnessNumbers } from "./fitness-counts";
-import { STARTING_LIMITS, STARTING_VERSION } from "./fitness-ids";
 import { FitnessListTable } from "./fitness-list-table";
 import { FitnessScreen, ReadOnlyNote } from "./fitness-screen";
-import type { NoteContent } from "./health-ids";
 import { ReadOnlyLimits } from "./read-only-limits";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));

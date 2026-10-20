@@ -4,8 +4,8 @@
  */
 
 import { DORM_SHORT_NAMES, type DormId } from "@/dorms/dorms";
+import { CATEGORY_WORDS } from "./category-words";
 import type { ShownCategory } from "./fitness-category";
-import { CATEGORY_WORDS } from "./fitness-words";
 import type {
   HealthNote,
   Illness,
@@ -13,7 +13,7 @@ import type {
   NoteContent,
   Residence,
 } from "./health-ids";
-import type { RecapNumbers, RecapRoom } from "./health-recap";
+import type { RecapNumbers, RecapRoom } from "./sick-list";
 
 /** Each choice of "Riwayat penyakit", in the prototype's words. */
 export const ILLNESS_WORDS: Record<Illness, string> = {
@@ -112,11 +112,14 @@ export function residenceHint(numbers: RecapNumbers): string {
   return `${shown(numbers.dorm)} asrama · ${shown(nonDorm)} non asrama`;
 }
 
-/** The hint of "Sakit atau punya riwayat penyakit": their share of the students. */
-export function listedHint(numbers: RecapNumbers): string {
-  if (numbers.students === 0) return "0% mahasiswa";
+/**
+ * The hint of "Sakit atau punya riwayat penyakit": their share of the
+ * students, named as the list names them, such as "mahasiswa".
+ */
+export function listedHint(numbers: RecapNumbers, noun: string): string {
+  if (numbers.students === 0) return `0% ${noun}`;
   const share = Math.round((numbers.listed / numbers.students) * 100);
-  return `${share}% mahasiswa`;
+  return `${share}% ${noun}`;
 }
 
 /** The hint of "Perlu tindak lanjut medis" in the recap. */
@@ -143,7 +146,14 @@ export const RESIDENCE_WORDS: Record<Residence, string> = {
 /** What the recap says when nobody matches. */
 export const NOBODY_ILL = "Tidak ada mahasiswa yang sakit pada filter ini.";
 
-/** The line above the recap filtered by an illness. */
-export function illnessLine(matching: number, illness: Illness): string {
-  return `${shown(matching)} mahasiswa dengan riwayat ${ILLNESS_WORDS[illness].toLowerCase()}.`;
+/**
+ * The line above a list filtered by an illness, its students named as
+ * the list names them, such as "mahasiswa".
+ */
+export function illnessLine(
+  matching: number,
+  illness: Illness,
+  noun: string,
+): string {
+  return `${shown(matching)} ${noun} dengan riwayat ${ILLNESS_WORDS[illness].toLowerCase()}.`;
 }

@@ -1,6 +1,20 @@
+import {
+  HealthNoteForm,
+  type PickerWords,
+} from "@/health-notes/health-note-form";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./fitness.module.css";
-import { HealthNoteForm } from "./health-note-form";
+import {
+  healthSubjectAction,
+  saveHealthNoteAction,
+  searchHealthStudentsAction,
+} from "./health-actions";
+
+/** What "Mahasiswa" says on Penilaian jasmani, which offers non-dorm students. */
+export const PENILAIAN_PICKER: PickerWords = {
+  placeholder: "Ketik nama atau NIM mahasiswa non asrama",
+  nobodyFound: "Tidak ada mahasiswa aktif non asrama yang cocok.",
+};
 
 /**
  * "Catatan kesehatan", with its form. Shown only to the roles that write
@@ -22,7 +36,16 @@ export function HealthNotePanel({
         menjadi pertimbangan kategori: kategori akhir adalah yang lebih berat
         antara hasil tes kebugaran dan catatan kesehatan.
       </p>
-      <HealthNoteForm today={today} newKey={newKey} />
+      <HealthNoteForm
+        today={today}
+        newKey={newKey}
+        actions={{
+          search: searchHealthStudentsAction,
+          subject: healthSubjectAction,
+          save: saveHealthNoteAction,
+        }}
+        words={PENILAIAN_PICKER}
+      />
     </section>
   );
 }

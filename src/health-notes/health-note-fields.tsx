@@ -1,7 +1,6 @@
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FinalCategoryBadge } from "./category-badge";
-import styles from "./fitness.module.css";
 import type { FitnessCategory } from "./fitness-ids";
 import { finalCategory } from "./health-category";
 import {
@@ -20,7 +19,7 @@ import {
   SHORT_TEXT_MAX,
 } from "./health-ids";
 import { NOTE_DAY_IN_FUTURE } from "./health-input";
-import type { HealthSubject } from "./health-subject";
+import styles from "./health-notes.module.css";
 import {
   categoryHint,
   examinerOf,
@@ -30,6 +29,7 @@ import {
   NOTE_CATEGORY_WORDS,
   noteText,
 } from "./health-words";
+import type { HealthSubject } from "./note-subject";
 
 /** "Catatan terakhir", or that there is none, and "Kategori sekarang". */
 export function SubjectSummary({ subject }: { subject: HealthSubject }) {

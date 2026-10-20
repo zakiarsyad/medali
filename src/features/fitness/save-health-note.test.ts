@@ -6,8 +6,13 @@ import type { Database } from "@/db/connect";
 import { healthNoteIllnesses, healthNotes, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestStudent } from "@/dorms/test-records";
-import { STARTING_LIMITS } from "./fitness-ids";
-import { NO_NOTE, NOTE_DAY_IN_FUTURE, type SentNote } from "./health-input";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
+import {
+  NO_NOTE,
+  NOTE_DAY_IN_FUTURE,
+  type SentNote,
+} from "@/health-notes/health-input";
+import { NOTE_ALREADY_SENT } from "@/health-notes/save-note";
 import {
   mayWriteNotes,
   readHealthSubject,
@@ -16,7 +21,6 @@ import {
 import {
   NOT_ALLOWED_TO_WRITE,
   NOT_WRITABLE,
-  NOTE_ALREADY_SENT,
   saveHealthNote,
 } from "./save-health-note";
 import {

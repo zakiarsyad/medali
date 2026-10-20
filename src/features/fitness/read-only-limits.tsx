@@ -1,6 +1,6 @@
+import type { LimitsInForce } from "@/health-notes/fitness-limits";
 import styles from "./fitness.module.css";
 import { typedLimitsOf } from "./fitness-input";
-import type { LimitsInForce } from "./fitness-limits";
 import { LIMITS_READ_ONLY_NOTE, limitsNote } from "./fitness-words";
 import { LimitsView } from "./limits-view";
 

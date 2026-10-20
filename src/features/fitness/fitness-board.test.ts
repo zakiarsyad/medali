@@ -6,9 +6,10 @@ import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestStudent } from "@/dorms/test-records";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
+import { addTestNote, type TestNote } from "@/health-notes/test-health";
 import { type FitnessFilter, START_PARAMS } from "./fitness-address";
 import { readFitnessList, readFitnessNumbers } from "./fitness-board";
-import { STARTING_LIMITS } from "./fitness-ids";
 import { fitnessVisibleTo, healthReadableTo } from "./fitness-readers";
 import {
   addTestActor,
@@ -16,7 +17,6 @@ import {
   addTestScores,
   addTestStudents,
 } from "./test-fitness";
-import { addTestNote, type TestNote } from "./test-health";
 
 const inTestDatabase = withTestDatabase();
 

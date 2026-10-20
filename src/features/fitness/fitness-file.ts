@@ -4,9 +4,9 @@ import {
   readTitledRows,
   type TitledFile,
 } from "@/files/titled-rows";
+import { SCORE_MAX, SCORE_MIN } from "@/health-notes/fitness-ids";
 import type { Parsed } from "@/parsed";
 import { FITNESS_FILE_COLUMNS } from "./fitness-file-columns";
-import { SCORE_MAX, SCORE_MIN } from "./fitness-ids";
 import { scoreOf } from "./fitness-input";
 
 export const UNKNOWN_NIM = "NIM tidak ada dalam data mahasiswa.";

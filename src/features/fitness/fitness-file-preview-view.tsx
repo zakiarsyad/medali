@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
+import { CategoryBadge } from "@/health-notes/category-badge";
 import shared from "@/ui/data-screen.module.css";
 import { FileSummary, MoreRows, SkippedRows } from "@/ui/file-preview-parts";
-import { CategoryBadge } from "./category-badge";
 import type {
   FitnessFilePreview,
   FitnessPreviewRow,

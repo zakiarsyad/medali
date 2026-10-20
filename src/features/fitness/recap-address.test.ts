@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { FILTER_ILLNESSES } from "@/health-notes/filter-choices";
 import { START_PARAMS } from "./fitness-address";
-import {
-  RECAP_ILLNESSES,
-  RECAP_START,
-  readRecapParams,
-  recapAddress,
-} from "./recap-address";
+import { RECAP_START, readRecapParams, recapAddress } from "./recap-address";
 
 describe("readRecapParams", () => {
   it("reads the search, the filters and the page of the recap", () => {
@@ -54,6 +50,6 @@ describe("recapAddress", () => {
 });
 
 it("offers the nine named illnesses, not Lainnya", () => {
-  expect(RECAP_ILLNESSES).toHaveLength(9);
-  expect(RECAP_ILLNESSES).not.toContain("other");
+  expect(FILTER_ILLNESSES).toHaveLength(9);
+  expect(FILTER_ILLNESSES).not.toContain("other");
 });

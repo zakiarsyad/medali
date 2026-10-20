@@ -1,36 +1,36 @@
+import { CATEGORY_WORDS } from "@/health-notes/category-words";
+import {
+  FILTER_ILLNESSES,
+  ILLNESS_CHOICES,
+} from "@/health-notes/filter-choices";
+import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
+import { RESIDENCES } from "@/health-notes/health-ids";
+import {
+  ILLNESS_WORDS,
+  illnessLine,
+  listedHint,
+  medicalHint,
+  NOBODY_ILL,
+  RESIDENCE_WORDS,
+  residenceHint,
+} from "@/health-notes/health-words";
+import {
+  type RecapNumbers,
+  SICK_PAGE_SIZE,
+  type SickList,
+} from "@/health-notes/sick-list";
+import { SickTable } from "@/health-notes/sick-table";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
-import { shownDay } from "@/ui/day";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { FinalCategoryBadge } from "./category-badge";
 import styles from "./fitness.module.css";
 import {
   FILTER_CHOICES,
   FITNESS_ADDRESS,
   type FitnessParams,
 } from "./fitness-address";
-import { FITNESS_CATEGORIES } from "./fitness-ids";
-import { CATEGORY_WORDS } from "./fitness-words";
-import { RESIDENCES } from "./health-ids";
-import type { HealthRecap, RecapNumbers, RecapRow } from "./health-recap";
 import {
-  examinerOf,
-  ILLNESS_WORDS,
-  illnessLine,
-  listedHint,
-  medicalHint,
-  NOBODY_ILL,
-  NOTE_MISSING,
-  noteText,
-  RESIDENCE_WORDS,
-  residenceHint,
-  roomWords,
-} from "./health-words";
-import {
-  ILLNESS_CHOICES,
-  RECAP_ILLNESSES,
-  RECAP_PAGE_SIZE,
   RESIDENCE_CHOICES,
   type RecapParams,
   recapAddress,
@@ -48,7 +48,7 @@ export function RecapNumberCards({ numbers }: { numbers: RecapNumbers }) {
       <NumberCard
         label="Sakit atau punya riwayat penyakit"
         amount={numbers.listed}
-        note={listedHint(numbers)}
+        note={listedHint(numbers, "mahasiswa")}
       />
       <NumberCard
         label="Perlu perhatian"
@@ -130,7 +130,7 @@ function RecapFilterRow({
         aria-label="Riwayat penyakit"
       >
         <option value="">Semua riwayat penyakit</option>
-        {RECAP_ILLNESSES.map((illness) => (
+        {FILTER_ILLNESSES.map((illness) => (
           <option key={illness} value={ILLNESS_CHOICES[illness]}>
             {ILLNESS_WORDS[illness]}
           </option>
@@ -139,85 +139,6 @@ function RecapFilterRow({
       <button type="submit" className={shared.quiet}>
         Cari
       </button>
-    </div>
-  );
-}
-
-function HistoryCell({ row }: { row: RecapRow }) {
-  const { note } = row;
-  if (note === null) {
-    return (
-      <span
-        className={`${shared.badge} ${styles.category} ${styles.attention}`}
-      >
-        {NOTE_MISSING}
-      </span>
-    );
-  }
-  return (
-    <>
-      {note.illnesses.map(({ illness }) => (
-        <span key={illness} className={shared.badge}>
-          {ILLNESS_WORDS[illness]}
-        </span>
-      ))}
-      <small className={shared.detail}>{noteText(note)}</small>
-    </>
-  );
-}
-
-function RecapStudentRow({ row }: { row: RecapRow }) {
-  const { note } = row;
-  return (
-    <tr>
-      <td className={shared.rowHeading} data-title="Mahasiswa">
-        <b className={shared.typed}>{row.name}</b>
-        <small className={shared.detail}>
-          {row.nim} · {row.program}
-        </small>
-      </td>
-      <td data-title="Kamar">{roomWords(row.dorm, row.room)}</td>
-      <td data-title="Pengasuh">{row.mentorName ?? "-"}</td>
-      <td data-title="Kategori">
-        <FinalCategoryBadge final={row.final} showsMark />
-      </td>
-      <td data-title="Riwayat penyakit dan catatan">
-        <HistoryCell row={row} />
-      </td>
-      <td data-title="Dicatat">
-        {note === null ? (
-          "-"
-        ) : (
-          <>
-            {shownDay(note.examinedOn)}
-            <small className={shared.detail}>{examinerOf(note)}</small>
-          </>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-function RecapTable({ rows }: { rows: readonly RecapRow[] }) {
-  return (
-    <div className={shared.tableWrap}>
-      <table className={`${shared.table} ${shared.stacked}`}>
-        <thead>
-          <tr>
-            <th>Mahasiswa</th>
-            <th>Kamar</th>
-            <th>Pengasuh</th>
-            <th>Kategori</th>
-            <th>Riwayat penyakit dan catatan</th>
-            <th>Dicatat</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <RecapStudentRow key={row.id} row={row} />
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -232,7 +153,7 @@ export function RecapPanel({
   list,
   params,
 }: {
-  recap: HealthRecap;
+  recap: SickList;
   /** The choices of "Hasil tes kebugaran", kept by the recap's steps. */
   list: FitnessParams;
   params: RecapParams;
@@ -250,17 +171,19 @@ export function RecapPanel({
         <RecapFilterRow list={list} params={params} />
       </AutoSubmitForm>
       {illness !== "all" && recap.matching > 0 && (
-        <p className={styles.note}>{illnessLine(recap.matching, illness)}</p>
+        <p className={styles.note}>
+          {illnessLine(recap.matching, illness, "mahasiswa")}
+        </p>
       )}
       {recap.matching === 0 ? (
         <p className={shared.empty}>{NOBODY_ILL}</p>
       ) : (
         <>
-          <RecapTable rows={recap.rows} />
+          <SickTable rows={recap.rows} />
           <ListPager
             page={recap.page}
             matching={recap.matching}
-            pageSize={RECAP_PAGE_SIZE}
+            pageSize={SICK_PAGE_SIZE}
             noun="mahasiswa"
             keepsPlace
             addressOf={(page) => recapAddress(list, { ...params, page })}

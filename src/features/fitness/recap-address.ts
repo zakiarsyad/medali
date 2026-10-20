@@ -1,3 +1,12 @@
+import {
+  FILTER_ILLNESSES,
+  ILLNESS_CHOICES,
+} from "@/health-notes/filter-choices";
+import {
+  FITNESS_CATEGORIES,
+  type FitnessCategory,
+} from "@/health-notes/fitness-ids";
+import type { Illness, Residence } from "@/health-notes/health-ids";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 import {
@@ -6,8 +15,6 @@ import {
   type FitnessParams,
   fitnessAddress,
 } from "./fitness-address";
-import { FITNESS_CATEGORIES, type FitnessCategory } from "./fitness-ids";
-import { ILLNESSES, type Illness, type Residence } from "./health-ids";
 
 /*
  * What the address asks "Rekap data kesehatan seluruh mahasiswa" for.
@@ -15,14 +22,6 @@ import { ILLNESSES, type Illness, type Residence } from "./health-ids";
  * kebugaran" on the one address of the tab. Read by the screen parts in
  * the browser, so nothing here may take from the database code.
  */
-
-/** How many students one page of the recap shows. */
-export const RECAP_PAGE_SIZE = 25;
-
-/** The illnesses the filter "Riwayat penyakit" offers: every one but Lainnya. */
-export const RECAP_ILLNESSES = ILLNESSES.filter(
-  (illness) => illness !== "other",
-);
 
 export interface RecapParams {
   query: string;
@@ -47,20 +46,6 @@ export const RESIDENCE_CHOICES: Record<Residence, string> = {
   non_dorm: "non",
 };
 
-/** Each illness of the filter as the address names it. */
-export const ILLNESS_CHOICES: Record<Illness, string> = {
-  asthma: "asma",
-  hypertension: "hipertensi",
-  diabetes: "diabetes",
-  heart_disease: "jantung",
-  gastric_disorder: "lambung",
-  allergy: "alergi",
-  epilepsy: "epilepsi",
-  bone_joint_injury: "cedera",
-  infectious_disease: "menular",
-  other: "lainnya",
-};
-
 const PAGE = /^[1-9]\d{0,5}$/;
 
 function residenceNamed(sent: string): Residence {
@@ -78,7 +63,7 @@ function categoryNamed(sent: string): FitnessCategory | "all" {
 }
 
 function illnessNamed(sent: string): Illness | "all" {
-  const named = RECAP_ILLNESSES.find((each) => ILLNESS_CHOICES[each] === sent);
+  const named = FILTER_ILLNESSES.find((each) => ILLNESS_CHOICES[each] === sent);
   return named ?? "all";
 }
 

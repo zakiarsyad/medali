@@ -1,11 +1,11 @@
+import { FinalCategoryBadge } from "@/health-notes/category-badge";
+import type { ShownCategory } from "@/health-notes/fitness-category";
+import { SERIOUSNESS } from "@/health-notes/health-category";
+import { NO_NOTE, NOTE_MISSING, noteText } from "@/health-notes/health-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
-import { FinalCategoryBadge } from "./category-badge";
 import styles from "./fitness.module.css";
 import type { FitnessListRow, RowHealth } from "./fitness-board";
-import type { ShownCategory } from "./fitness-category";
-import { SERIOUSNESS } from "./health-category";
-import { NO_NOTE, NOTE_MISSING, noteText } from "./health-words";
 
 export const NO_FITNESS_MATCHES = "Tidak ada data pada filter ini.";
 

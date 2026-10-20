@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import { fitnessCategoryLimits } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { STARTING_LIMITS, STARTING_VERSION } from "./fitness-ids";
+import { STARTING_LIMITS, STARTING_VERSION } from "@/health-notes/fitness-ids";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { LIMITS_NOT_DOWN, LIMITS_NOT_WHOLE } from "./fitness-input";
-import { readFitnessLimits } from "./fitness-limits";
 import {
   LIMITS_CHANGED_SINCE,
   NOT_ALLOWED_TO_SET_LIMITS,
