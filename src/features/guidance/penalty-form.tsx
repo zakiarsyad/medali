@@ -1,6 +1,12 @@
 "use client";
 
-import { type KeyboardEvent, useActionState, useState } from "react";
+import {
+  type KeyboardEvent,
+  useActionState,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -9,9 +15,12 @@ import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
 import styles from "./discipline-penalties.module.css";
 import {
+  penaltyHistoryAction,
   saveDisciplinePenaltyAction,
   searchPenaltyStudentsAction,
 } from "./penalty-actions";
+import { PenaltyConsequence } from "./penalty-consequence";
+import type { PenaltyHistory } from "./penalty-consequences";
 import {
   DECISION_NUMBER_MAX_LENGTH,
   OTHER_SOCIAL_WORK_MAX_LENGTH,
@@ -27,6 +36,7 @@ import {
 } from "./penalty-ids";
 import { CONFIRMED } from "./penalty-input";
 import { type PenaltyRule, ruleOf, socialWorkEnd } from "./penalty-rules";
+import type { PeriodOfDay } from "./penalty-semester";
 import type { PenaltyPick } from "./penalty-student";
 import {
   CATEGORY_WORDS,
@@ -329,10 +339,13 @@ function freshSocialWork(today: string): SocialWorkChoice {
 export function PenaltyForm({
   newKey,
   today,
+  periods,
 }: {
   /** The key of the first save; two presses of "Simpan pelanggaran" send the same one. */
   newKey: string;
   today: string;
+  /** The academic periods, for the semester of a suspension. */
+  periods: PeriodOfDay[];
 }) {
   const [key, setKey] = useState(newKey);
   const [picked, setPicked] = useState<PenaltyPick | null>(null);
@@ -343,20 +356,32 @@ export function PenaltyForm({
   const [level, setLevel] = useState<PenaltyLevel>(1);
   const [work, setWork] = useState(freshSocialWork(today));
   const [confirmed, setConfirmed] = useState(false);
+  const [history, setHistory] = useState<PenaltyHistory | null>(null);
+  const [, startLoading] = useTransition();
+  // The student asked for last: the history of one picked before must
+  // not replace that of a later pick that answers sooner.
+  const asked = useRef("");
   const rule = ruleOf(category, level);
 
   function pick(student: PenaltyPick | null) {
     setPicked(student);
+    setHistory(null);
     if (work.place === "home_agency" && !student?.hasAgency) {
       setWork({ ...work, place: "campus" });
     }
+    asked.current = student?.id ?? "";
+    if (student === null) return;
+    startLoading(async () => {
+      const found = await penaltyHistoryAction(student.id);
+      if (asked.current === student.id) setHistory(found);
+    });
   }
 
   async function save(before: FormState, sent: FormData): Promise<FormState> {
     const after = await saveDisciplinePenaltyAction(before, sent);
     if (after.done) {
       setKey(crypto.randomUUID());
-      setPicked(null);
+      pick(null);
       setDecisionNumber("");
       setDescription("");
       setWork(freshSocialWork(today));
@@ -463,6 +488,18 @@ export function PenaltyForm({
           </div>
         </div>
       </form>
+      <PenaltyConsequence
+        choice={{
+          category,
+          level,
+          start: work.start,
+          day,
+          cohortYear: picked?.cohortYear ?? null,
+          periods,
+        }}
+        isPicked={picked !== null}
+        history={history}
+      />
     </div>
   );
 }

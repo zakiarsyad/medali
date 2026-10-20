@@ -3,14 +3,20 @@ import { describe, expect, it, vi } from "vitest";
 import { AGENCY_ONLY, PenaltyForm } from "./penalty-form";
 
 vi.mock("./penalty-actions", () => ({
+  penaltyHistoryAction: vi.fn(),
   saveDisciplinePenaltyAction: vi.fn(),
   searchPenaltyStudentsAction: vi.fn(),
 }));
 
 const KEY = "00000000-0000-4000-8000-000000000702";
+const PERIODS = [
+  { startYear: 2026, term: "odd", startsOn: "2026-08-01" } as const,
+];
 
 function form(): string {
-  return renderToStaticMarkup(<PenaltyForm newKey={KEY} today="2026-10-20" />);
+  return renderToStaticMarkup(
+    <PenaltyForm newKey={KEY} today="2026-10-20" periods={PERIODS} />,
+  );
 }
 
 describe("PenaltyForm", () => {
@@ -49,5 +55,16 @@ describe("PenaltyForm", () => {
     expect(shown).toContain('name="socialWorkStart"');
     expect(shown).toContain("Selesai pada 26 Okt 2026.");
     expect(shown).not.toContain('name="confirmed"');
+  });
+
+  it("shows Konsekuensi of the chosen Jenjang beside the form, asking for a student to show the history", () => {
+    const shown = form();
+    expect(shown).toContain("Konsekuensi");
+    expect(shown).toContain("Ringan · jenjang pertama");
+    expect(shown).toContain(
+      "Pilih mahasiswa untuk melihat riwayat pelanggarannya.",
+    );
+    expect(shown).toContain("7 hari, 20 Okt 2026 sampai 26 Okt 2026");
+    expect(shown).toContain("Dibatasi paling tinggi 70.");
   });
 });

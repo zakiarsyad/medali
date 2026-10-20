@@ -9,9 +9,14 @@ import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { PENALTIES_ADDRESS } from "./penalty-address";
+import type { PenaltyHistory } from "./penalty-consequences";
 import { CONFIRMED } from "./penalty-input";
 import { savedMessage } from "./penalty-messages";
-import { type PenaltyPick, searchPenaltyStudents } from "./penalty-student";
+import {
+  type PenaltyPick,
+  readPenaltyHistory,
+  searchPenaltyStudents,
+} from "./penalty-student";
 import { saveDisciplinePenalty } from "./save-discipline-penalty";
 
 /**
@@ -31,6 +36,17 @@ export async function searchPenaltyStudentsAction(
 ): Promise<PenaltyPick[]> {
   const actor = await recorder();
   return searchPenaltyStudents(database(), actor, query);
+}
+
+/**
+ * The history of the student picked, for "Konsekuensi"; null when not
+ * theirs to record.
+ */
+export async function penaltyHistoryAction(
+  studentId: string,
+): Promise<PenaltyHistory | null> {
+  const actor = await recorder();
+  return readPenaltyHistory(database(), actor, String(studentId));
 }
 
 /** "Simpan pelanggaran". Who recorded it is the signed-in account, never a field. */

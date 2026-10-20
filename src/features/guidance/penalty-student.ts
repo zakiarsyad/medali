@@ -1,13 +1,24 @@
-import { and, asc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  or,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { isUuid } from "@/db/is-uuid";
-import { students, studyPrograms } from "@/db/schema";
+import { disciplinePenalties, students, studyPrograms } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
 import { SEARCH_LIMIT } from "./note-student";
+import type { PenaltyHistory } from "./penalty-consequences";
 
 /** A student the form of a penalty may pick. */
 export interface PenaltyPick {
@@ -86,4 +97,48 @@ export async function readPenaltyPick(
     and(eq(students.id, studentId), recordableFor(actor)),
   );
   return found ?? null;
+}
+
+/**
+ * How many discipline penalties a student has had, and the highest of
+ * them, the latest when two are as high. Read for the student's box of
+ * "Catat pelanggaran"; who may read it is decided by the caller.
+ */
+export async function readHistoryOf(
+  db: Database,
+  studentId: string,
+): Promise<PenaltyHistory> {
+  const ofStudent = eq(disciplinePenalties.studentId, studentId);
+  const [counted] = await db
+    .select({ count: count() })
+    .from(disciplinePenalties)
+    .where(ofStudent);
+  const [top] = await db
+    .select({
+      category: disciplinePenalties.category,
+      level: disciplinePenalties.level,
+      day: disciplinePenalties.day,
+    })
+    .from(disciplinePenalties)
+    .where(ofStudent)
+    .orderBy(
+      desc(disciplinePenalties.category),
+      desc(disciplinePenalties.level),
+      desc(disciplinePenalties.day),
+    )
+    .limit(1);
+  return { count: counted?.count ?? 0, top: top ?? null };
+}
+
+/**
+ * The history of a student the account may record a penalty for, for
+ * "Konsekuensi"; null for any other student.
+ */
+export async function readPenaltyHistory(
+  db: Database,
+  actor: AccountForAccess,
+  studentId: string,
+): Promise<PenaltyHistory | null> {
+  if ((await readPenaltyPick(db, actor, studentId)) === null) return null;
+  return readHistoryOf(db, studentId);
 }

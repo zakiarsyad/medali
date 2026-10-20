@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { readPenaltyPick, searchPenaltyStudents } from "./penalty-student";
+import {
+  readPenaltyHistory,
+  readPenaltyPick,
+  searchPenaltyStudents,
+} from "./penalty-student";
+import { addTestPenalty, NO_SOCIAL_WORK } from "./test-discipline-penalties";
 import { addNoteActor, addNoteStudents } from "./test-violation-notes";
 
 const inTestDatabase = withTestDatabase();
@@ -90,6 +95,73 @@ describe("readPenaltyPick", () => {
       expect(await readPenaltyPick(db, officer, "bukan-kunci")).toBeNull();
       expect(
         await readPenaltyPick(db, director, studentIds[0] ?? ""),
+      ).toBeNull();
+    });
+  });
+});
+
+describe("readPenaltyHistory", () => {
+  it("gives how many penalties the student has and the highest, the latest of two as high", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentIds } = await setting(db);
+      const [one = "", two = ""] = studentIds;
+      await addTestPenalty(db, one, officer.id, "2026-09-01", {
+        category: "medium",
+        level: 1,
+      });
+      await addTestPenalty(db, one, officer.id, "2026-09-20", {
+        category: "medium",
+        level: 1,
+      });
+      await addTestPenalty(db, one, officer.id, "2026-10-01");
+
+      expect(await readPenaltyHistory(db, officer, one)).toEqual({
+        count: 3,
+        top: { category: "medium", level: 1, day: "2026-09-20" },
+      });
+      expect(await readPenaltyHistory(db, officer, two)).toEqual({
+        count: 0,
+        top: null,
+      });
+    });
+  });
+
+  it("ranks Berat above every Sedang", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentIds } = await setting(db);
+      const [one = ""] = studentIds;
+      await addTestPenalty(db, one, officer.id, "2026-09-01", {
+        category: "heavy",
+        level: 2,
+        status: "set",
+        ...NO_SOCIAL_WORK,
+      });
+      await addTestPenalty(db, one, officer.id, "2026-10-01", {
+        category: "medium",
+        level: 3,
+      });
+
+      const history = await readPenaltyHistory(db, officer, one);
+      expect(history?.top).toEqual({
+        category: "heavy",
+        level: 2,
+        day: "2026-09-01",
+      });
+    });
+  });
+
+  it("gives nothing for a student the account may not record for", async () => {
+    await inTestDatabase(async (db) => {
+      const { studentIds, programId } = await setting(db);
+      const kaprodi = await addNoteActor(
+        db,
+        "Kaprodi Uji Riwayat",
+        ["head_of_program"],
+        programId,
+      );
+
+      expect(
+        await readPenaltyHistory(db, kaprodi, studentIds[0] ?? ""),
       ).toBeNull();
     });
   });

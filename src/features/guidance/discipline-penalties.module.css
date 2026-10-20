@@ -104,3 +104,45 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* The heading of Konsekuensi with the badge of the chosen Jenjang beside it. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.line {
+  margin: 0;
+}
+
+/* The chosen Jenjang is lower than the highest the student had before. */
+.warning {
+  margin-top: var(--space-xs);
+  color: var(--warn);
+  font-weight: var(--weight-semibold);
+}
+
+/* What the chosen Jenjang means: each its name, then what it says. */
+.consequences {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+}
+
+.consequences > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.consequences dt {
+  font-weight: var(--weight-semibold);
+}
+
+.consequences dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}

@@ -1,5 +1,6 @@
 import { forbidden } from "next/navigation";
 import { campusDay } from "@/academic-periods/campus-day";
+import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
@@ -24,7 +25,11 @@ export default async function DisciplinePenaltiesPage(
   const board = await readPenaltyBoard(database(), account, params, today);
   if (board === null) forbidden();
   const form = may(account.roles, "record_discipline_penalties") ? (
-    <PenaltyForm newKey={crypto.randomUUID()} today={today} />
+    <PenaltyForm
+      newKey={crypto.randomUUID()}
+      today={today}
+      periods={await readAcademicPeriods(database())}
+    />
   ) : null;
   return (
     <PenaltiesScreen
