@@ -129,6 +129,17 @@ import {
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
 import {
+  DECISION_NUMBER_MAX_LENGTH,
+  OTHER_SOCIAL_WORK_MAX_LENGTH,
+  PENALTY_CATEGORIES,
+  PENALTY_CHANGE_ACTIONS,
+  PENALTY_DESCRIPTION_MAX_LENGTH,
+  PENALTY_DESCRIPTION_MIN_LENGTH,
+  PENALTY_STATUSES,
+  SOCIAL_WORK_FORMS,
+  SOCIAL_WORK_PLACES,
+} from "@/features/guidance/penalty-ids";
+import {
   NOTE_CHANGE_ACTIONS,
   DESCRIPTION_MAX_LENGTH as NOTE_DESCRIPTION_MAX_LENGTH,
   DESCRIPTION_MIN_LENGTH as NOTE_DESCRIPTION_MIN_LENGTH,
@@ -4000,4 +4011,131 @@ export const violationNoteChanges = pgTable(
     action: violationNoteChangeAction().notNull(),
   },
   (table) => [index("violation_note_changes_note").on(table.noteId)],
+);
+
+export const disciplinePenaltyCategory = pgEnum(
+  "discipline_penalty_category",
+  PENALTY_CATEGORIES,
+);
+
+export const disciplinePenaltyStatus = pgEnum(
+  "discipline_penalty_status",
+  PENALTY_STATUSES,
+);
+
+export const socialWorkForm = pgEnum("social_work_form", SOCIAL_WORK_FORMS);
+
+export const socialWorkPlace = pgEnum("social_work_place", SOCIAL_WORK_PLACES);
+
+export const disciplinePenaltyChangeAction = pgEnum(
+  "discipline_penalty_change_action",
+  PENALTY_CHANGE_ACTIONS,
+);
+
+/**
+ * One Pelanggaran disiplin of a student and the penalty set for it: its
+ * Tanggal pelanggaran, Uraian, Kategori and Jenjang, its status, the
+ * optional Nomor keputusan, and who saved it and when. What the Jenjang
+ * means, its Hukuman, kerja sosial length and Dasar, is a fixed rule in
+ * the code, never stored. A Jenjang with kerja sosial keeps its Bentuk,
+ * Lokasi and its first and last day; the last day follows from the
+ * first by the rule, and is kept so the list can count the kerja sosial
+ * not finished. The key is made by the form that sent it, so a form sent
+ * twice is kept once. It is held by its log lines, and cannot be
+ * deleted.
+ */
+export const disciplinePenalties = pgTable(
+  "discipline_penalties",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    /** Tanggal pelanggaran. */
+    day: date().notNull(),
+    /** Uraian pelanggaran. */
+    description: text().notNull(),
+    category: disciplinePenaltyCategory().notNull(),
+    /** Jenjang: 1 for pertama to 3 for ketiga. */
+    level: smallint().notNull(),
+    status: disciplinePenaltyStatus().notNull(),
+    /** Nomor keputusan; empty while none was written. */
+    decisionNumber: text().notNull().default(""),
+    /** Bentuk kerja sosial; none for a Jenjang without it. */
+    socialWorkForms: socialWorkForm().array().notNull().default([]),
+    /** What "Bentuk kerja sosial lainnya" is; empty unless it is chosen. */
+    socialWorkOther: text().notNull().default(""),
+    socialWorkPlace: socialWorkPlace(),
+    socialWorkStartsOn: date(),
+    socialWorkEndsOn: date(),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("discipline_penalties_student").on(table.studentId, table.day),
+    index("discipline_penalties_day").on(table.day),
+    check("discipline_penalties_level", sql`${table.level} between 1 and 3`),
+    check(
+      "discipline_penalties_description_length",
+      sql`char_length(${table.description}) between ${sql.raw(String(PENALTY_DESCRIPTION_MIN_LENGTH))} and ${sql.raw(String(PENALTY_DESCRIPTION_MAX_LENGTH))}`,
+    ),
+    check(
+      "discipline_penalties_decision_number_length",
+      sql`char_length(${table.decisionNumber}) <= ${sql.raw(String(DECISION_NUMBER_MAX_LENGTH))}`,
+    ),
+    check(
+      "discipline_penalties_set_only_when_dismissed",
+      sql`(${table.status} = 'set') = (${table.category} = 'heavy' and ${table.level} >= 2)`,
+    ),
+    check(
+      "discipline_penalties_social_work_unless_dismissed",
+      sql`(${table.socialWorkStartsOn} is null) = (${table.status} = 'set')`,
+    ),
+    check(
+      "discipline_penalties_social_work_is_whole",
+      sql`(${table.socialWorkEndsOn} is null) = (${table.socialWorkStartsOn} is null)
+        and (${table.socialWorkPlace} is null) = (${table.socialWorkStartsOn} is null)
+        and (cardinality(${table.socialWorkForms}) = 0) = (${table.socialWorkStartsOn} is null)`,
+    ),
+    check(
+      "discipline_penalties_social_work_from_its_day",
+      sql`${table.socialWorkStartsOn} is null or (${table.socialWorkStartsOn} >= ${table.day} and ${table.socialWorkEndsOn} >= ${table.socialWorkStartsOn})`,
+    ),
+    check(
+      "discipline_penalties_other_social_work_only_for_other",
+      sql`('other' = any(${table.socialWorkForms})) = (${table.socialWorkOther} <> '')`,
+    ),
+    check(
+      "discipline_penalties_other_social_work_length",
+      sql`char_length(${table.socialWorkOther}) <= ${sql.raw(String(OTHER_SOCIAL_WORK_MAX_LENGTH))}`,
+    ),
+    check(
+      "discipline_penalties_saved_from_its_day",
+      sql`(${table.savedAt} at time zone 'Asia/Jakarta')::date >= ${table.day}`,
+    ),
+  ],
+);
+
+/**
+ * Every save of a discipline penalty: who and when. A penalty is not
+ * changed in any other way yet, so what it was before and after is the
+ * action: no penalty before a save, the penalty after it. Rows here
+ * cannot be changed or deleted; the database refuses it.
+ */
+export const disciplinePenaltyChanges = pgTable(
+  "discipline_penalty_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    penaltyId: uuid()
+      .notNull()
+      .references(() => disciplinePenalties.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    action: disciplinePenaltyChangeAction().notNull(),
+  },
+  (table) => [index("discipline_penalty_changes_penalty").on(table.penaltyId)],
 );
