@@ -95,6 +95,12 @@ Ketua Program Studi (own program), Pengasuh (own mentees).
 9. Every role that opens the tab sees all four parts of its own
    students, as "Who it is for" says, also a role that does not open the
    tab of a part, such as Penilai Mahasiswa for Pengasuhan.
+10. Under the four numbers: Rerata nilai akhir says of how many Aktif
+    students it is the mean ("100 dari 120 mahasiswa aktif"); Memenuhi
+    minimal gives the share of worked-out grades that pass, as a whole
+    percent; Mendapat penyesuaian SIKU says "sisanya SIKU dasar 65";
+    Belum lengkap says "tidak dihitung dalam rerata". With no worked-out
+    grade the mean and the share show "-".
 
 ## Steps
 
@@ -103,4 +109,4 @@ Ketua Program Studi (own program), Pengasuh (own mentees).
   attendance score".
 - [x] 2. "Daftar nilai karakter" with search, filters and pages, limited
   to each role's own students.
-- [ ] 3. The four numbers at the top.
+- [x] 3. The four numbers at the top.

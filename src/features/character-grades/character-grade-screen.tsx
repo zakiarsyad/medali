@@ -13,16 +13,20 @@ import type { GradeList } from "./grade-list";
 import { GradeListTable } from "./grade-list-table";
 
 /**
- * Penilaian karakter: the head of the tab, "Skema bobot", then "Daftar
- * nilai karakter" of the students the account may see.
+ * Penilaian karakter: the head of the tab, the four numbers, "Skema
+ * bobot", then "Daftar nilai karakter", of the students the account may
+ * see.
  */
 export function CharacterGradeScreen({
   tabs,
+  numbers,
   scheme,
   params,
   list,
 }: {
   tabs: TabLinksProps;
+  /** The four numbers above "Skema bobot". */
+  numbers: ReactNode;
   /** "Skema bobot", to change or only to read. */
   scheme: ReactNode;
   params: GradeParams;
@@ -37,6 +41,7 @@ export function CharacterGradeScreen({
         masing-masing dengan bobotnya.
       </PageHead>
       <TabLinks {...tabs} />
+      {numbers}
       {scheme}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar nilai karakter</h2>

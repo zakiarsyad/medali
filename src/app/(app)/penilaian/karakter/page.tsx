@@ -9,14 +9,16 @@ import {
   gradeListOf,
   gradeRowOf,
 } from "@/features/character-grades/grade-list";
+import { GradeNumberCards } from "@/features/character-grades/grade-number-cards";
+import { gradeNumbersOf } from "@/features/character-grades/grade-numbers";
 import { readGradeScheme } from "@/features/character-grades/grade-scheme";
 import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { ReadOnlyScheme } from "@/features/character-grades/read-only-scheme";
 import { SchemeForm } from "@/features/character-grades/scheme-form";
 
 /**
- * The tab Penilaian karakter: "Skema bobot", the scheme of the semester
- * character grade, and "Daftar nilai karakter". Kepala Unit, with the
+ * The tab Penilaian karakter: the four numbers, "Skema bobot", the scheme
+ * of the semester character grade, and "Daftar nilai karakter". Kepala Unit, with the
  * right "Bobot penilaian", changes the scheme; every other role that
  * opens the tab only reads it. Each role sees the grades of the students
  * its roles that open the tab see: Ketua Program Studi those of their own
@@ -30,7 +32,7 @@ export default async function CharacterGradePage(
   const tabs = { pagePath: "penilaian", tabs: opened.tabs, open: "karakter" };
   const params = readGradeParams(await props.searchParams);
   const db = database();
-  const [inForce, { inputs }] = await Promise.all([
+  const [inForce, { inputs, sikuBase }] = await Promise.all([
     readGradeScheme(db),
     readGradeInputs(db, gradeVisibleTo(opened.account), campusDay()),
   ]);
@@ -39,6 +41,13 @@ export default async function CharacterGradePage(
   return (
     <CharacterGradeScreen
       tabs={tabs}
+      numbers={
+        <GradeNumberCards
+          numbers={gradeNumbersOf(rows)}
+          passLetter={inForce.scheme.passLetter}
+          sikuBase={sikuBase}
+        />
+      }
       scheme={
         mayChange ? (
           <SchemeForm inForce={inForce} />
