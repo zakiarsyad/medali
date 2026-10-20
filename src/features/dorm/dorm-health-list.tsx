@@ -24,17 +24,29 @@ import {
   DORM_HEALTH_ADDRESS,
   type DormHealthParams,
   dormHealthAddress,
+  MARK_CHOICE,
 } from "./dorm-health-address";
 import {
   LISTED_NOUN,
   NOBODY_SICK,
   RESIDENT_NOUN,
   reachHint,
+  SICK_LIST_SUB,
 } from "./dorm-health-words";
+import { markColumns } from "./mental-health-mark-badge";
+import {
+  MARKED_LIST_SUB,
+  markLine,
+  referredHint,
+} from "./mental-health-mark-words";
 
-/** The four numbers of the residents the list is drawn from. */
+/**
+ * The four numbers of the residents the list is drawn from, and for a
+ * reader of marks "Potensi kesehatan mental".
+ */
 export function DormHealthNumbers({ found }: { found: DormHealthList }) {
   const { numbers } = found.list;
+  const { marks } = found;
   return (
     <NumberCards>
       <NumberCard
@@ -57,12 +69,35 @@ export function DormHealthNumbers({ found }: { found: DormHealthList }) {
         amount={numbers.medical}
         note={medicalHint(numbers)}
       />
+      {marks && (
+        <NumberCard
+          label="Potensi kesehatan mental"
+          amount={marks.counts.marked}
+          note={referredHint(marks.counts.referred)}
+        />
+      )}
     </NumberCards>
   );
 }
 
-/** "Cari nama atau NIM" and the filters by dorm, category and illness. */
-function FilterRow({ params }: { params: DormHealthParams }) {
+/** What the illness filter shows as chosen. */
+function illnessChoice(params: DormHealthParams, offersMark: boolean): string {
+  if (offersMark && params.markOnly) return MARK_CHOICE;
+  if (params.illness === "all") return "";
+  return ILLNESS_CHOICES[params.illness];
+}
+
+/**
+ * "Cari nama atau NIM" and the filters by dorm, category and illness,
+ * the last with "Potensi kesehatan mental" for a reader of marks.
+ */
+function FilterRow({
+  params,
+  offersMark,
+}: {
+  params: DormHealthParams;
+  offersMark: boolean;
+}) {
   return (
     <div className={shared.filters}>
       <input
@@ -103,12 +138,13 @@ function FilterRow({ params }: { params: DormHealthParams }) {
       <select
         name="riwayat"
         className={shared.input}
-        defaultValue={
-          params.illness === "all" ? "" : ILLNESS_CHOICES[params.illness]
-        }
+        defaultValue={illnessChoice(params, offersMark)}
         aria-label="Riwayat penyakit"
       >
         <option value="">Semua riwayat penyakit</option>
+        {offersMark && (
+          <option value={MARK_CHOICE}>Potensi kesehatan mental</option>
+        )}
         {FILTER_ILLNESSES.map((illness) => (
           <option key={illness} value={ILLNESS_CHOICES[illness]}>
             {ILLNESS_WORDS[illness]}
@@ -133,18 +169,19 @@ export function DormHealthListPanel({
   found: DormHealthList;
   params: DormHealthParams;
 }) {
-  const { list } = found;
+  const { list, marks } = found;
   const { illness } = params;
+  const markOnly = marks !== null && params.markOnly;
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Mahasiswa asrama yang sakit</h2>
-      <p className={styles.sub}>
-        Penghuni yang memiliki riwayat penyakit, catatan kesehatan dengan
-        pertimbangan kategori, atau berkategori perlu tindak lanjut medis.
-      </p>
+      <p className={styles.sub}>{marks ? MARKED_LIST_SUB : SICK_LIST_SUB}</p>
       <AutoSubmitForm action={DORM_HEALTH_ADDRESS}>
-        <FilterRow params={params} />
+        <FilterRow params={params} offersMark={marks !== null} />
       </AutoSubmitForm>
+      {markOnly && list.matching > 0 && (
+        <p className={styles.note}>{markLine(list.matching, LISTED_NOUN)}</p>
+      )}
       {illness !== "all" && list.matching > 0 && (
         <p className={styles.note}>
           {illnessLine(list.matching, illness, LISTED_NOUN)}
@@ -154,7 +191,10 @@ export function DormHealthListPanel({
         <p className={shared.empty}>{NOBODY_SICK}</p>
       ) : (
         <>
-          <SickTable rows={list.rows} />
+          <SickTable
+            rows={list.rows}
+            {...(marks ? { more: markColumns(marks.byStudent) } : {})}
+          />
           <ListPager
             page={list.page}
             matching={list.matching}

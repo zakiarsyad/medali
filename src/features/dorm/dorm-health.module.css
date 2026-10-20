@@ -26,3 +26,11 @@
   padding-top: var(--space-md);
   border-top: var(--line-width) solid var(--line);
 }
+
+.markMonitor {
+  color: var(--warn);
+}
+
+.markRefer {
+  color: var(--bad);
+}

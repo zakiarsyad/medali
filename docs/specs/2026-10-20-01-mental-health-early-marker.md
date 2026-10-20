@@ -92,6 +92,6 @@ record on the Asrama page, so only five roles ever see it.
   permission list, with checks for every refused role.
 - [x] 3. Writers set, change and clear the mark in the health form;
   a referral without an observation is refused.
-- [ ] 4. The number, the filter choice, the badge and the observation
+- [x] 4. The number, the filter choice, the badge and the observation
   show to the four roles only.
 - [ ] 5. Pengasuh sees marks of their own mentees only.

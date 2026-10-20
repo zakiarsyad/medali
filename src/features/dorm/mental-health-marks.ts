@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import { visibleTo } from "@/auth/visible-students";
@@ -11,7 +11,7 @@ import {
   students,
 } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
-import type { MentalHealthMark } from "./mental-health-mark-ids";
+import type { MarkCategory, MentalHealthMark } from "./mental-health-mark-ids";
 import { type MarkInput, NO_MARK } from "./mental-health-mark-input";
 
 /**
@@ -100,11 +100,8 @@ export async function readMarkOf(
   actor: AccountForAccess,
   studentId: string,
 ): Promise<MentalHealthMark | null> {
-  if (!may(actor.roles, "view_mental_health_marks")) return null;
-  if (!isUuid(studentId)) return null;
-  const readable = visibleTo(
-    rowLimitForAction(actor, "view_mental_health_marks"),
-  );
+  const readable = markReachOf(actor);
+  if (readable === null || !isUuid(studentId)) return null;
   const [found] = await db
     .select({
       category: mentalHealthMarks.category,
@@ -160,4 +157,72 @@ export async function readMarkLog(
     },
     after: { category: row.categoryAfter, observation: row.observationAfter },
   }));
+}
+
+/**
+ * The students whose marks the account may read, as a condition on the
+ * students, Pengasuh their own mentees only; null for an account without
+ * the right, which is then given nothing about a mark.
+ */
+export function markReachOf(actor: AccountForAccess): SQL | null {
+  if (!may(actor.roles, "view_mental_health_marks")) return null;
+  return visibleTo(rowLimitForAction(actor, "view_mental_health_marks"));
+}
+
+/** A student with a mark, of the category given or of either. */
+export function markedSql(category?: MarkCategory): SQL {
+  const ofCategory =
+    category === undefined
+      ? sql`${mentalHealthMarks.category} is not null`
+      : sql`${mentalHealthMarks.category} = ${category}`;
+  return sql`exists (
+    select 1 from ${mentalHealthMarks}
+    where ${mentalHealthMarks.studentId} = ${students.id} and ${ofCategory}
+  )`;
+}
+
+/** The number "Potensi kesehatan mental" and how many of it should be referred. */
+export interface MarkCounts {
+  marked: number;
+  referred: number;
+}
+
+/** How many of the students `seen` lets through have a mark `reach` shows. */
+export async function readMarkCounts(
+  db: Database,
+  seen: SQL | undefined,
+  reach: SQL,
+): Promise<MarkCounts> {
+  const [counts] = await db
+    .select({
+      marked: sql<number>`(count(*) filter (where ${markedSql()}))::int`,
+      referred: sql<number>`(count(*) filter (where ${markedSql("refer")}))::int`,
+    })
+    .from(students)
+    .where(and(seen, reach));
+  if (!counts) throw new Error("The numbers of the marks were not read.");
+  return counts;
+}
+
+/** The marks of these students that `reach` shows, by student. */
+export async function readMarksOf(
+  db: Database,
+  studentIds: string[],
+  reach: SQL,
+): Promise<Record<string, MentalHealthMark>> {
+  const marks: Record<string, MentalHealthMark> = {};
+  if (studentIds.length === 0) return marks;
+  const rows = await db
+    .select({
+      studentId: mentalHealthMarks.studentId,
+      category: mentalHealthMarks.category,
+      observation: mentalHealthMarks.observation,
+    })
+    .from(mentalHealthMarks)
+    .innerJoin(students, eq(students.id, mentalHealthMarks.studentId))
+    .where(and(inArray(mentalHealthMarks.studentId, studentIds), reach));
+  for (const { studentId, category, observation } of rows) {
+    if (category !== null) marks[studentId] = { category, observation };
+  }
+  return marks;
 }

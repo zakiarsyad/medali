@@ -49,3 +49,17 @@ export function savedMarkMessage(name: string): string {
 
 /** What is added to the saved note's message when the mark was kept too. */
 export const MARK_SAVED_TOO = "Penanda potensi kesehatan mental juga disimpan.";
+
+/** The hint of the number "Potensi kesehatan mental". */
+export function referredHint(referred: number): string {
+  return `${referred.toLocaleString("id-ID")} perlu dirujuk ke konselor`;
+}
+
+/** The line above the list when it is filtered by "Potensi kesehatan mental". */
+export function markLine(matching: number, noun: string): string {
+  return `${matching.toLocaleString("id-ID")} ${noun} dengan penanda potensi kesehatan mental.`;
+}
+
+/** What the list holds, for an account that reads marks. */
+export const MARKED_LIST_SUB =
+  "Penghuni yang memiliki riwayat penyakit, catatan kesehatan dengan pertimbangan kategori, berkategori perlu tindak lanjut medis, atau penanda potensi kesehatan mental.";

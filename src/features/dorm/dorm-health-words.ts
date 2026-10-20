@@ -30,6 +30,10 @@ export const NUMBERS_ONLY_NOTE =
 export const TOO_FEW_LINE =
   "Rekap ditampilkan setelah minimal 5 penghuni, agar identitas tidak dapat ditebak.";
 
+/** What the list holds. */
+export const SICK_LIST_SUB =
+  "Penghuni yang memiliki riwayat penyakit, catatan kesehatan dengan pertimbangan kategori, atau berkategori perlu tindak lanjut medis.";
+
 /** What the list says when nobody matches. */
 export const NOBODY_SICK =
   "Tidak ada mahasiswa asrama yang sakit pada filter ini.";
