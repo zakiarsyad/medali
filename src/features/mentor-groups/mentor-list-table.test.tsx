@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { groupAddress } from "./group-list-address";
 import type { LastEvaluations } from "./last-evaluations";
+import type { Reratas } from "./medali-averages";
 import type { ListedMentor } from "./mentor-list";
 import { mentorAddress } from "./mentor-list-address";
 import { MentorListTable } from "./mentor-list-table";
@@ -46,9 +47,14 @@ const INACTIVE: ListedMentor = {
 function shown(
   mentor: ListedMentor,
   lastEvaluations: LastEvaluations | null = null,
+  reratas: Reratas = new Map(),
 ): string {
   return renderToStaticMarkup(
-    <MentorListTable mentors={[mentor]} lastEvaluations={lastEvaluations} />,
+    <MentorListTable
+      mentors={[mentor]}
+      lastEvaluations={lastEvaluations}
+      reratas={reratas}
+    />,
   );
 }
 
@@ -90,7 +96,13 @@ describe("MentorListTable", () => {
   it("carries the title of each column in its cells, for the cards of a phone", () => {
     const table = shown(HOLDING);
 
-    for (const title of ["Pengasuh", "Status", "Kelompok", "Binaan"]) {
+    for (const title of [
+      "Pengasuh",
+      "Status",
+      "Kelompok",
+      "Binaan",
+      "Rerata",
+    ]) {
       expect(table).toContain(`<th>${title}</th>`);
       expect(table).toContain(`data-title="${title}"`);
     }
@@ -111,5 +123,12 @@ describe("MentorListTable", () => {
 
     expect(table).not.toContain("Evaluasi terakhir");
     expect(table).not.toContain("Belum dievaluasi");
+  });
+
+  it("shows the Rerata over the mentees to one decimal, or a dash when none is assessed", () => {
+    const assessed = shown(HOLDING, null, new Map([[HOLDING.id, 80.3]]));
+
+    expect(assessed).toContain('<td data-title="Rerata">80,3</td>');
+    expect(shown(INACTIVE)).toContain('<td data-title="Rerata">-</td>');
   });
 });

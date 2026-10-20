@@ -5,6 +5,7 @@ import shared from "@/ui/data-screen.module.css";
 import { MentorsHead } from "@/ui/mentors-head";
 import type { TabLinksProps } from "@/ui/tab-links";
 import { readLastMentorEvaluations } from "./last-evaluations";
+import { readMentorReratas } from "./medali-averages";
 import { listMentors } from "./mentor-list";
 import {
   MENTOR_LIST_ADDRESS,
@@ -47,10 +48,12 @@ export async function MentorListScreen({
   ]);
   const mentorIds = list.mentors.map((mentor) => mentor.id);
   // One read for the whole page of mentors, not one for each row.
-  const lastEvaluations =
+  const [lastEvaluations, reratas] = await Promise.all([
     evaluationLimit === null
       ? null
-      : await readLastMentorEvaluations(db, evaluationLimit, mentorIds);
+      : readLastMentorEvaluations(db, evaluationLimit, mentorIds),
+    readMentorReratas(db, limit, mentorIds),
+  ]);
   return (
     <>
       <MentorsHead tabs={tabs} />
@@ -68,6 +71,7 @@ export async function MentorListScreen({
             <MentorListTable
               mentors={list.mentors}
               lastEvaluations={lastEvaluations}
+              reratas={reratas}
             />
             <MentorListFoot
               page={list.page}
