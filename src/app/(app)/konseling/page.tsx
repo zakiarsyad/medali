@@ -52,6 +52,7 @@ export default async function CounsellingPage(props: PageProps<"/konseling">) {
     <CounsellingScreen
       own={await ownPart(account, searchParams)}
       mayManage={may(account.roles, "manage_counselling_consent")}
+      mayKeepSessions={may(account.roles, "keep_counselling_sessions")}
       schedules={await schedulesPart(account, searchParams)}
     />
   );

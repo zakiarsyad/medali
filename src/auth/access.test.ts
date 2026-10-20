@@ -1169,6 +1169,38 @@ describe("may", () => {
     }
   });
 
+  it("lets Konselor write, change and read every counselling session, on Konseling", () => {
+    expect(ACTION_TITLES.keep_counselling_sessions).toContain("Sesi konseling");
+    expect(may(["counsellor"], "keep_counselling_sessions")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "keep_counselling_sessions",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses every other role to write or read a counselling session, Mahasiswa, Kepala Unit, Direktur, Ketua Program Studi and Pengasuh among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "keep_counselling_sessions")).toBe(false);
+    }
+  });
+
   it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
     const openers: RoleId[] = ["counsellor", "student"];
     for (const role of ROLE_IDS) {

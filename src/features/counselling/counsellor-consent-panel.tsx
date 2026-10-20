@@ -16,6 +16,7 @@ import { counsellorMoves } from "./consent-rules";
 import { ConsentStudentPicker } from "./consent-student-picker";
 import { type ConsentView, versionOfConsent } from "./consent-view";
 import styles from "./counselling.module.css";
+import { CounsellorSessionPart } from "./counsellor-session-part";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -72,8 +73,13 @@ function Buttons({
  * "Persetujuan konseling" of Konselor: a student is picked, their
  * consent shown, and a request sent or a signed paper form recorded. A
  * press refused because the consent changed shows the current status.
+ * An account that may keep sessions also writes them down here.
  */
-export function CounsellorConsentPanel() {
+export function CounsellorConsentPanel({
+  mayKeepSessions,
+}: {
+  mayKeepSessions: boolean;
+}) {
   const [picked, setPicked] = useState<ConsentPick | null>(null);
   const [looked, setLooked] = useState<Parsed<ConsentView | null> | null>(null);
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
@@ -137,9 +143,15 @@ export function CounsellorConsentPanel() {
               Menunggu jawaban mahasiswa di halaman Konseling miliknya.
             </p>
           )}
+          <FormMessage state={message} />
+          {mayKeepSessions && (
+            <CounsellorSessionPart
+              studentId={picked.id}
+              consent={looked.value}
+            />
+          )}
         </>
       )}
-      <FormMessage state={message} />
     </section>
   );
 }

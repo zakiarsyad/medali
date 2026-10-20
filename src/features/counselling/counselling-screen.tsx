@@ -32,15 +32,19 @@ export interface CounsellorSchedules {
 
 function CounsellorPart({
   mayManageConsent,
+  mayKeepSessions,
   schedules,
 }: {
   mayManageConsent: boolean;
+  mayKeepSessions: boolean;
   schedules: CounsellorSchedules | null;
 }) {
   return (
     <>
       <WarnBox title="Keadaan darurat.">{EMERGENCY_TEXT}</WarnBox>
-      {mayManageConsent && <CounsellorConsentPanel />}
+      {mayManageConsent && (
+        <CounsellorConsentPanel mayKeepSessions={mayKeepSessions} />
+      )}
       {schedules && (
         <SchedulePanel board={schedules.board} filter={schedules.filter} />
       )}
@@ -94,12 +98,15 @@ function OwnPart({ own }: { own: OwnCounselling }) {
 export function CounsellingScreen({
   own,
   mayManage,
+  mayKeepSessions = false,
   schedules = null,
 }: {
   /** Mahasiswa: their consent, the registration and their requests. */
   own: OwnCounselling | null;
   /** Konselor: the emergency notice and "Persetujuan konseling". */
   mayManage: boolean;
+  /** Konselor: "Catat sesi" in "Persetujuan konseling". */
+  mayKeepSessions?: boolean;
   /** Konselor: "Jadwal konseling", or null for an account without the right. */
   schedules?: CounsellorSchedules | null;
 }) {
@@ -110,7 +117,11 @@ export function CounsellingScreen({
       <div className={styles.parts}>
         {own && <OwnPart own={own} />}
         {showsCounsellor && (
-          <CounsellorPart mayManageConsent={mayManage} schedules={schedules} />
+          <CounsellorPart
+            mayManageConsent={mayManage}
+            mayKeepSessions={mayKeepSessions}
+            schedules={schedules}
+          />
         )}
       </div>
     </>
