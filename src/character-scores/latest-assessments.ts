@@ -1,6 +1,13 @@
-import { desc, sql } from "drizzle-orm";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { characterAssessments } from "@/db/schema";
+
+/** Each student's assessments, the one saved last first. */
+const NEWEST_FIRST = [
+  characterAssessments.studentId,
+  desc(characterAssessments.enteredAt),
+  desc(characterAssessments.id),
+];
 
 /**
  * Each student's latest assessment, as a table to join students to: the
@@ -11,6 +18,7 @@ import { characterAssessments } from "@/db/schema";
 export function latestAssessments(db: Database) {
   return db
     .selectDistinctOn([characterAssessments.studentId], {
+      id: characterAssessments.id,
       studentId: characterAssessments.studentId,
       scoreM: characterAssessments.scoreM,
       scoreE: characterAssessments.scoreE,
@@ -29,10 +37,32 @@ export function latestAssessments(db: Database) {
       uploadId: characterAssessments.uploadId,
     })
     .from(characterAssessments)
-    .orderBy(
-      characterAssessments.studentId,
-      desc(characterAssessments.enteredAt),
-      desc(characterAssessments.id),
-    )
+    .orderBy(...NEWEST_FIRST)
     .as("latest_assessments");
+}
+
+/**
+ * Each student's assessment before their latest one, as a table to join
+ * students to. A student with fewer than two has no row here.
+ */
+export function earlierAssessments(db: Database) {
+  const latest = latestAssessments(db);
+  const notLatest = and(
+    eq(latest.studentId, characterAssessments.studentId),
+    ne(latest.id, characterAssessments.id),
+  );
+  return db
+    .selectDistinctOn([characterAssessments.studentId], {
+      studentId: characterAssessments.studentId,
+      scoreM: characterAssessments.scoreM,
+      scoreE: characterAssessments.scoreE,
+      scoreD: characterAssessments.scoreD,
+      scoreA: characterAssessments.scoreA,
+      scoreL: characterAssessments.scoreL,
+      scoreI: characterAssessments.scoreI,
+    })
+    .from(characterAssessments)
+    .innerJoin(latest, notLatest)
+    .orderBy(...NEWEST_FIRST)
+    .as("earlier_assessments");
 }

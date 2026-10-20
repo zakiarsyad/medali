@@ -4,8 +4,12 @@ import { type ReactNode, useActionState, useState } from "react";
 import {
   levelOf,
   rerataOf,
+  SCORE_MAX,
+  SCORE_MIN,
   type Scores,
 } from "@/character-scores/assessment-score";
+import { Medal } from "@/character-scores/medal";
+import { PredicateBadge } from "@/character-scores/predicate-badge";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
@@ -17,14 +21,10 @@ import { saveAssessmentAction } from "./assessment-actions";
 import {
   ASSESSMENT_SOURCES,
   NOTE_MAX_LENGTH,
-  SCORE_MAX,
-  SCORE_MIN,
   STARTING_SCORE,
 } from "./assessment-ids";
 import type { AssessmentPick } from "./assessment-picks";
 import styles from "./character-assessment.module.css";
-import { Medal } from "./medal";
-import { PredicateBadge } from "./predicate-badge";
 import { SourceOptions } from "./source-options";
 import { StudentPicker } from "./student-picker";
 

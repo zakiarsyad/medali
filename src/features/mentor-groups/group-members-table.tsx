@@ -6,6 +6,8 @@ import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import type { GroupMember } from "./group-detail";
 import { isOnLeave, memberSemester } from "./member-rules";
+import { ScoreCells, ScoreHeads } from "./member-score-cells";
+import { lowestRerataFirst, type MemberScores } from "./score-averages";
 
 /** The name, as a link to the member's detail for an account that may open it. */
 function MemberName({
@@ -37,12 +39,15 @@ function MemberRow({
 export function GroupMembersTable<Member extends GroupMember>({
   members,
   period,
+  scores,
   detailAddressOf,
   groupOf,
 }: {
   members: Member[];
   /** The academic period that runs now, which says each member's semester. */
   period: AcademicPeriod | null;
+  /** The assessments of the members who have one, by the id of each. */
+  scores: Map<string, MemberScores>;
   /**
    * The address that opens the detail of a member, or null for an account
    * that may not open any: its rows are then no links. Neither is the row
@@ -56,6 +61,7 @@ export function GroupMembersTable<Member extends GroupMember>({
    */
   groupOf?: (member: Member) => string;
 }) {
+  const latestOf = (member: Member) => scores.get(member.id)?.latest ?? null;
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -65,10 +71,11 @@ export function GroupMembersTable<Member extends GroupMember>({
             {groupOf && <th>Kelompok</th>}
             <th>Kelas akademik</th>
             <th>Semester</th>
+            <ScoreHeads />
           </tr>
         </thead>
         <tbody>
-          {members.map((member) => {
+          {lowestRerataFirst(members, latestOf).map((member) => {
             const detailAddress = member.opensDetail
               ? (detailAddressOf?.(member.id) ?? null)
               : null;
@@ -86,6 +93,7 @@ export function GroupMembersTable<Member extends GroupMember>({
                 <td data-title="Semester">
                   {memberSemester(member, period) ?? "-"}
                 </td>
+                <ScoreCells scores={latestOf(member)} />
               </MemberRow>
             );
           })}

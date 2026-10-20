@@ -1,6 +1,6 @@
-import type { Scores } from "@/character-scores/assessment-score";
 import { MEDALI_VALUES } from "@/ui/medali-values";
-import styles from "./character-assessment.module.css";
+import type { Scores } from "./assessment-score";
+import styles from "./character-scores.module.css";
 import {
   axisEnd,
   CENTRE,
@@ -16,15 +16,23 @@ import {
 
 const VIEW_BOX = `${-LABEL_ROOM} 0 ${MEDAL_BOX + 2 * LABEL_ROOM} ${MEDAL_BOX}`;
 
+/** A score as its corner shows it: an average to the whole number. */
+function shownScore(score: number): number {
+  return Math.round(score);
+}
+
 function describedBy(scores: Scores): string {
-  const each = MEDALI_VALUES.map(({ key, name }) => `${name} ${scores[key]}`);
+  const each = MEDALI_VALUES.map(
+    ({ key, name }) => `${name} ${shownScore(scores[key])}`,
+  );
   return `Grafik nilai MEDALI: ${each.join(", ")}`;
 }
 
 /**
  * "Pratinjau medali": the six scores as a shape on the medal, over the
  * shape of the last assessment as a dashed line when there is one. Each
- * corner carries the name of its value and its score.
+ * corner carries the name of its value and its score. The scores may be
+ * the averages of many students.
  */
 export function Medal({
   scores,
@@ -89,7 +97,7 @@ export function Medal({
           >
             {name}
             <tspan className={styles.medalScore} dx={5}>
-              {scores[key]}
+              {shownScore(scores[key])}
             </tspan>
           </text>
         );

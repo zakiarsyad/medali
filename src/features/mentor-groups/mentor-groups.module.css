@@ -210,3 +210,63 @@
   border-color: var(--bad);
   color: var(--bad);
 }
+
+/*
+ * The medal of a group or of a mentor's mentees beside its Rerata. The
+ * medal gives way first, so both fit the width of a phone.
+ */
+.scores {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: center;
+  justify-content: center;
+}
+
+.scoresMedal {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: var(--medal-width);
+}
+
+.scoresFigure {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: var(--space-xs);
+  align-items: flex-start;
+}
+
+.figure {
+  font-size: var(--text-title);
+  font-weight: var(--weight-heavy);
+}
+
+/* How many members hold each predikat, as one bar split by share. */
+.predicateBar {
+  display: block;
+  width: 100%;
+  height: var(--bar-height);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--line2);
+}
+
+.barGold {
+  fill: var(--emas);
+}
+
+.barSilver {
+  fill: var(--perak);
+}
+
+.barBronze {
+  fill: var(--perunggu);
+}
+
+.barGuidance {
+  fill: var(--bina);
+}
+
+.strong {
+  font-weight: var(--weight-heavy);
+}

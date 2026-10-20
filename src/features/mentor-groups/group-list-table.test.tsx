@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ListedGroup } from "./group-list";
 import { GroupListTable } from "./group-list-table";
 import type { LastEvaluations } from "./last-evaluations";
+import type { Reratas } from "./medali-averages";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
@@ -21,9 +22,16 @@ const GROUP: ListedGroup = {
 
 const GOOD = { activity: 90, attendance: 85, achievement: 80, feedback: 88 };
 
-function shown(lastEvaluations: LastEvaluations | null): string {
+function shown(
+  lastEvaluations: LastEvaluations | null,
+  reratas: Reratas = new Map(),
+): string {
   return renderToStaticMarkup(
-    <GroupListTable groups={[GROUP]} lastEvaluations={lastEvaluations} />,
+    <GroupListTable
+      groups={[GROUP]}
+      lastEvaluations={lastEvaluations}
+      reratas={reratas}
+    />,
   );
 }
 
@@ -46,5 +54,16 @@ describe("GroupListTable", () => {
     expect(table).not.toContain("Evaluasi terakhir");
     expect(table).not.toContain("Belum dievaluasi");
     expect(table).toContain("KP 24-UJI-01");
+  });
+
+  it("shows Rerata MEDALI to one decimal", () => {
+    const table = shown(null, new Map([[GROUP.id, 75]]));
+
+    expect(table).toContain("<th>Rerata MEDALI</th>");
+    expect(table).toContain('<td data-title="Rerata MEDALI">75,0</td>');
+  });
+
+  it("shows a dash as Rerata MEDALI when nobody is assessed", () => {
+    expect(shown(null)).toContain('<td data-title="Rerata MEDALI">-</td>');
   });
 });

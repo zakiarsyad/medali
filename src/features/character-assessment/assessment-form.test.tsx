@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { Medal } from "@/character-scores/medal";
 import {
   AssessmentForm,
   type LevelTexts,
@@ -7,7 +8,6 @@ import {
   ScoreSliders,
 } from "./assessment-form";
 import type { AssessmentPick } from "./assessment-picks";
-import { Medal } from "./medal";
 
 const LEVEL_TEXTS: LevelTexts = {
   M: ["M satu", "M dua", "M tiga", "M empat"],

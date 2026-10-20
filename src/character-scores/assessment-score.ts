@@ -5,6 +5,10 @@ import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
  * browser, so nothing here may take from the database code.
  */
 
+/** The lowest and the highest score of one value, both whole. */
+export const SCORE_MIN = 40;
+export const SCORE_MAX = 100;
+
 /** A whole score from 40 to 100 for each MEDALI value. */
 export type Scores = Record<ValueKey, number>;
 

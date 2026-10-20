@@ -1,5 +1,6 @@
 import { periodTitle } from "@/academic-periods/period-labels";
 import { rerataOf } from "@/character-scores/assessment-score";
+import { PredicateBadge } from "@/character-scores/predicate-badge";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
@@ -9,7 +10,6 @@ import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentHistory, HistoryEntry } from "./assessment-history";
 import { shownSource } from "./assessment-words";
 import styles from "./character-assessment.module.css";
-import { PredicateBadge } from "./predicate-badge";
 
 function EntryRow({
   entry,

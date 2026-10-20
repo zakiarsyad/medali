@@ -12,7 +12,7 @@ export function isOnLeave(member: Pick<Student, "status">): boolean {
   return member.status === "on_leave";
 }
 
-function isCounted(member: Pick<Student, "status">): boolean {
+export function isCounted(member: Pick<Student, "status">): boolean {
   return member.status === "active";
 }
 

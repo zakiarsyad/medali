@@ -1,4 +1,8 @@
-import type { Scores } from "@/character-scores/assessment-score";
+import {
+  SCORE_MAX,
+  SCORE_MIN,
+  type Scores,
+} from "@/character-scores/assessment-score";
 import { isUuid } from "@/db/is-uuid";
 import type { Parsed } from "@/parsed";
 import type { ValueKey } from "@/ui/medali-values";
@@ -6,8 +10,6 @@ import {
   ASSESSMENT_SOURCES,
   type AssessmentSource,
   NOTE_MAX_LENGTH,
-  SCORE_MAX,
-  SCORE_MIN,
 } from "./assessment-ids";
 import {
   INVALID_SCORES,

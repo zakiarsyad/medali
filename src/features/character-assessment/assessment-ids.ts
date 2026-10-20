@@ -15,10 +15,6 @@ export const ASSESSMENT_SOURCES = [
 
 export type AssessmentSource = (typeof ASSESSMENT_SOURCES)[number];
 
-/** The lowest and the highest score of one value, both whole. */
-export const SCORE_MIN = 40;
-export const SCORE_MAX = 100;
-
 /** Where a slider starts for a student who has no assessment yet. */
 export const STARTING_SCORE = 75;
 

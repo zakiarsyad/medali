@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  NOTE_MAX_LENGTH,
-  SCORE_MAX,
-  SCORE_MIN,
-} from "@/features/character-assessment/assessment-ids";
+import { SCORE_MAX, SCORE_MIN } from "@/character-scores/assessment-score";
+import { NOTE_MAX_LENGTH } from "@/features/character-assessment/assessment-ids";
 import {
   EARLIER,
   RECENT,

@@ -17,6 +17,7 @@ import { GroupListTable } from "./group-list-table";
 import { readGroupNumbers } from "./group-numbers";
 import { GroupNumbersView } from "./group-numbers-view";
 import { countPoorGroups, readLastGroupEvaluations } from "./last-evaluations";
+import { readGroupReratas } from "./medali-averages";
 import { readReplacementNumbers } from "./replacement-numbers";
 
 export async function GroupListScreen({
@@ -53,10 +54,12 @@ export async function GroupListScreen({
   ]);
   const groupIds = list.groups.map((group) => group.id);
   // One read for the whole page of groups, not one for each row.
-  const lastEvaluations =
+  const [lastEvaluations, reratas] = await Promise.all([
     evaluationLimit === null
       ? null
-      : await readLastGroupEvaluations(db, evaluationLimit, groupIds);
+      : readLastGroupEvaluations(db, evaluationLimit, groupIds),
+    readGroupReratas(db, limit, groupIds),
+  ]);
   return (
     <>
       <MentorsHead tabs={tabs} />
@@ -78,6 +81,7 @@ export async function GroupListScreen({
             <GroupListTable
               groups={list.groups}
               lastEvaluations={lastEvaluations}
+              reratas={reratas}
             />
             <ListPager
               page={list.page}
