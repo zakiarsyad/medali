@@ -16,6 +16,9 @@ export const SCHEDULE_STATUS_WORDS: Record<ScheduleStatus, string> = {
   submitted: "Diajukan",
   proposed: "Usulan jadwal lain",
   scheduled: "Dijadwalkan",
+  done: "Selesai",
+  missed: "Tidak hadir",
+  cancelled: "Dibatalkan",
 };
 
 export const TOPIC_WORDS: Record<CounsellingTopic, string> = {
@@ -40,6 +43,10 @@ export const STEP_WORDS: Record<ScheduleStep, string> = {
   propose: "Mengusulkan jadwal lain",
   accept: "Menerima usulan jadwal",
   ask_another: "Meminta jadwal lain",
+  cancel: "Dibatalkan mahasiswa",
+  reschedule: "Mengubah jadwal",
+  mark_done: "Sesi selesai",
+  mark_missed: "Mahasiswa tidak hadir",
 };
 
 export const REGISTERED =
@@ -99,3 +106,8 @@ export const PROPOSED = "Jadwal dikirim ke mahasiswa.";
 export const ACCEPTED = "Jadwal konseling dikonfirmasi.";
 
 export const ASKED_ANOTHER = "Permintaan jadwal baru dikirim ke konselor.";
+
+/** What the student is asked before "Batalkan pendaftaran" or "Batalkan". */
+export const CANCEL_QUESTION = "Batalkan konseling ini?";
+
+export const CANCELLED = "Konseling dibatalkan.";

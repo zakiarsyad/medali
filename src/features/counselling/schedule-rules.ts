@@ -109,23 +109,27 @@ export type ScheduleMove = Exclude<ScheduleStep, "register">;
 
 export type CounsellorScheduleMove = Extract<
   ScheduleMove,
-  "approve" | "propose"
+  "approve" | "propose" | "reschedule" | "mark_done" | "mark_missed"
 >;
 
 export type StudentScheduleMove = Extract<
   ScheduleMove,
-  "accept" | "ask_another"
+  "accept" | "ask_another" | "cancel"
 >;
 
-/** The status each move needs, and the status it gives. */
+/** The statuses each move may start from, and the status it gives. */
 const MOVES: Record<
   ScheduleMove,
-  { from: ScheduleStatus; to: ScheduleStatus }
+  { from: readonly ScheduleStatus[]; to: ScheduleStatus }
 > = {
-  approve: { from: "submitted", to: "scheduled" },
-  propose: { from: "submitted", to: "proposed" },
-  accept: { from: "proposed", to: "scheduled" },
-  ask_another: { from: "proposed", to: "submitted" },
+  approve: { from: ["submitted"], to: "scheduled" },
+  propose: { from: ["submitted"], to: "proposed" },
+  accept: { from: ["proposed"], to: "scheduled" },
+  ask_another: { from: ["proposed", "scheduled"], to: "submitted" },
+  cancel: { from: ["submitted", "proposed", "scheduled"], to: "cancelled" },
+  reschedule: { from: ["scheduled"], to: "scheduled" },
+  mark_done: { from: ["scheduled"], to: "done" },
+  mark_missed: { from: ["scheduled"], to: "missed" },
 };
 
 /** What a request becomes after a move, or null when the move is not allowed. */
@@ -134,7 +138,7 @@ export function scheduleAfter(
   current: ScheduleStatus,
 ): ScheduleStatus | null {
   const { from, to } = MOVES[move];
-  return current === from ? to : null;
+  return from.includes(current) ? to : null;
 }
 
 /** Whether a time on campus has begun by `now`. */

@@ -140,6 +140,44 @@ describe("a counselling schedule", () => {
     });
   });
 
+  it.each(["done", "missed"] as const)(
+    "is refused %s without a Konselor",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const records = await addRecords(db);
+
+        await expect(addSchedule(db, records, { status })).rejects.toThrow();
+      });
+    },
+  );
+
+  it("keeps a request cancelled before any Konselor took it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const [kept] = await addSchedule(db, records, { status: "cancelled" });
+
+      expect(kept?.status).toBe("cancelled");
+    });
+  });
+
+  it.each(["done", "missed", "cancelled"] as const)(
+    "lets a student whose request is %s have a new active one",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const records = await addRecords(db);
+        await addSchedule(db, records, {
+          status,
+          counsellorId: records.accountId,
+        });
+
+        const [added] = await addSchedule(db, records);
+
+        expect(added?.status).toBe("submitted");
+      });
+    },
+  );
+
   it("is refused a story longer than 1000 characters", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);

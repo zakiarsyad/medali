@@ -7,14 +7,18 @@ import {
   counsellingSchedules,
 } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import { cancelSchedule } from "./change-schedule";
 import {
   acceptSchedule,
   approveSchedule,
   askAnotherTime,
+  type CounsellorMoveOutcome,
   proposeSchedule,
+  type StudentMoveOutcome,
 } from "./move-schedule";
 import { registerCounselling } from "./register-counselling";
 import {
+  CANCELLED,
   REGISTERED,
   SCHEDULE_CHANGED_SINCE,
   STILL_ACTIVE,
@@ -146,8 +150,10 @@ describe("Terima jadwal ini and Minta waktu lain at the same moment", () => {
     if (proposed.kind !== "kept") throw new Error(proposed.error);
     const shown = proposed.card.version;
 
+    // An hour after the proposal, so the first answer gives a new version.
+    const answeredAt = new Date("2026-10-20T04:00:00Z");
     const both = await own.atOnce(
-      (db) => acceptSchedule(db, student, id, shown, NOW),
+      (db) => acceptSchedule(db, student, id, shown, answeredAt),
       (db) =>
         askAnotherTime(
           db,
@@ -155,7 +161,7 @@ describe("Terima jadwal ini and Minta waktu lain at the same moment", () => {
           id,
           shown,
           { day: "2026-10-26", hour: "08:30", reason: null },
-          NOW,
+          answeredAt,
         ),
     );
 
@@ -170,5 +176,27 @@ describe("Terima jadwal ini and Minta waktu lain at the same moment", () => {
       .where(eq(counsellingSchedules.id, id));
     expect(kept?.status).toBe("scheduled");
     expect(await stepsOf(id)).toHaveLength(3);
+  });
+});
+
+describe("the student cancels while Konselor approves, at the same moment", () => {
+  it("keeps the first change; the other waits, then sees the current state with a message", async () => {
+    const { counsellor, student, id, version } = await submitted(
+      "Prodi Uji Jadwal Sekaligus 3",
+      "9986207004",
+    );
+
+    const both = await own.atOnce<StudentMoveOutcome | CounsellorMoveOutcome>(
+      (db) => cancelSchedule(db, student, id, version, NOW),
+      (db) => approveSchedule(db, counsellor, id, version, NOW),
+    );
+
+    expect(both.sooner).toEqual({ kind: "kept", done: CANCELLED });
+    expect(both.later).toMatchObject({
+      kind: "changed",
+      error: SCHEDULE_CHANGED_SINCE,
+      card: { status: "cancelled" },
+    });
+    expect(await stepsOf(id)).toHaveLength(2);
   });
 });

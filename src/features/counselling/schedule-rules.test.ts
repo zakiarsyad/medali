@@ -135,6 +135,41 @@ describe("scheduleAfter", () => {
     expect(scheduleAfter("ask_another", "proposed")).toBe("submitted");
   });
 
+  it("lets the student ask for another time for a Dijadwalkan session: back to Diajukan", () => {
+    expect(scheduleAfter("ask_another", "scheduled")).toBe("submitted");
+  });
+
+  it.each(["submitted", "proposed", "scheduled"] as const)(
+    "lets the student cancel a request that is %s",
+    (current) => {
+      expect(scheduleAfter("cancel", current)).toBe("cancelled");
+    },
+  );
+
+  it("lets Konselor move a Dijadwalkan session, or mark it Selesai or Tidak hadir", () => {
+    expect(scheduleAfter("reschedule", "scheduled")).toBe("scheduled");
+    expect(scheduleAfter("mark_done", "scheduled")).toBe("done");
+    expect(scheduleAfter("mark_missed", "scheduled")).toBe("missed");
+  });
+
+  it.each(["done", "missed", "cancelled"] as const)(
+    "refuses every move from %s",
+    (current) => {
+      for (const move of [
+        "approve",
+        "propose",
+        "accept",
+        "ask_another",
+        "cancel",
+        "reschedule",
+        "mark_done",
+        "mark_missed",
+      ] as const) {
+        expect(scheduleAfter(move, current)).toBeNull();
+      }
+    },
+  );
+
   it.each([
     ["approve", "proposed"],
     ["approve", "scheduled"],
@@ -143,7 +178,12 @@ describe("scheduleAfter", () => {
     ["accept", "submitted"],
     ["accept", "scheduled"],
     ["ask_another", "submitted"],
-    ["ask_another", "scheduled"],
+    ["reschedule", "submitted"],
+    ["reschedule", "proposed"],
+    ["mark_done", "submitted"],
+    ["mark_done", "proposed"],
+    ["mark_missed", "submitted"],
+    ["mark_missed", "proposed"],
   ] as const)("refuses %s from %s", (move, current) => {
     expect(scheduleAfter(move, current)).toBeNull();
   });

@@ -3236,12 +3236,13 @@ export const counsellingConsentChanges = pgTable(
 
 /**
  * A request for counselling and where it stands: Diajukan, Usulan jadwal
- * lain or Dijadwalkan. `day`, `hour` and `way` are the one time it is
- * about now: the time the student wished while it is Diajukan, the time
- * Konselor proposed while it is Usulan jadwal lain, and the agreed time
- * once it is Dijadwalkan. `counsellorId` is the Konselor who proposed or
- * approved a time. A student has at most one active voluntary request.
- * Never deleted: its log lines hold it.
+ * lain or Dijadwalkan while active, then Selesai, Tidak hadir or
+ * Dibatalkan. `day`, `hour` and `way` are the one time it is about now:
+ * the time the student wished while it is Diajukan, the time Konselor
+ * proposed while it is Usulan jadwal lain, and the agreed time once it
+ * is Dijadwalkan. `counsellorId` is the Konselor who proposed, approved
+ * or moved a time. A student has at most one active voluntary request.
+ * Never deleted, also once cancelled: its log lines hold it.
  */
 export const counsellingSchedules = pgTable(
   "counselling_schedules",
@@ -3288,9 +3289,11 @@ export const counsellingSchedules = pgTable(
       "counselling_schedules_reason_length",
       sql`char_length(${table.reason}) <= ${sql.raw(String(COUNSELLING_NOTE_MAX))}`,
     ),
+    // The status is read as text in this check: the value Dibatalkan is
+    // added to its type in the same change, which may not use it yet.
     check(
       "counselling_schedules_counsellor_once_proposed",
-      sql`${table.status} = 'submitted' or ${table.counsellorId} is not null`,
+      sql`${table.status}::text in ('submitted', 'cancelled') or ${table.counsellorId} is not null`,
     ),
   ],
 );

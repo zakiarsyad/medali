@@ -21,7 +21,7 @@ const inTestDatabase = withTestDatabase();
 // Loading the whole sample set takes seconds when every check runs at
 // once, so everything is checked on one load.
 describe("the sample requests for counselling", { timeout: 20_000 }, () => {
-  it("are added in their last status on a coming weekday, each with a log line per step, made before now", async () => {
+  it("are added in their last status on a weekday, coming while active, each with a log line per step, made before now", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
       const now = new Date();
@@ -54,10 +54,13 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
 
       expect(schedules).toHaveLength(SAMPLE_SCHEDULES.length);
       for (const sample of SAMPLE_SCHEDULES) {
-        const schedule = schedules.find((each) => each.nim === sample.nim);
-        expect(schedule?.status).toBe(sample.steps.at(-1)?.statusAfter);
+        const status = sample.steps.at(-1)?.statusAfter;
+        const schedule = schedules.find(
+          (each) => each.nim === sample.nim && each.status === status,
+        );
+        expect(schedule).toBeDefined();
         expect(isWeekday(schedule?.day ?? "")).toBe(true);
-        expect((schedule?.day ?? "") > today).toBe(true);
+        expect((schedule?.day ?? "") > today).toBe(sample.inDays > 0);
         expect(schedule?.changedAt.getTime()).toBeLessThanOrEqual(
           now.getTime(),
         );

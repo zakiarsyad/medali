@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { SCHEDULE_STATUSES } from "@/features/counselling/schedule-ids";
+import {
+  ACTIVE_STATUSES,
+  SCHEDULE_STATUSES,
+} from "@/features/counselling/schedule-ids";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import {
   isStudentScheduleStep,
@@ -11,17 +14,33 @@ const NIMS = new Set(SAMPLE_STUDENTS.map((student) => student.nim));
 
 describe("the sample requests for counselling", () => {
   it.each(SAMPLE_SCHEDULES)(
-    "name a sample student once, start by registering, with steps oldest first: $nim",
+    "name a sample student, start by registering, with steps oldest first: $nim",
     (sample) => {
       expect(NIMS.has(sample.nim)).toBe(true);
-      const times = SAMPLE_SCHEDULES.filter((each) => each.nim === sample.nim);
-      expect(times).toHaveLength(1);
       expect(sample.steps[0]?.step).toBe("register");
       const days = sample.steps.map((step) => step.daysAgo);
       expect(days).toEqual([...days].sort((one, other) => other - one));
-      expect(sample.inDays).toBeGreaterThan(0);
     },
   );
+
+  it("are about a coming day while active, and a day gone by once finished", () => {
+    for (const sample of SAMPLE_SCHEDULES) {
+      const status = sample.steps.at(-1)?.statusAfter ?? "submitted";
+      const isActive = ACTIVE_STATUSES.includes(status);
+      expect(sample.inDays > 0, sample.nim).toBe(isActive);
+    }
+  });
+
+  it("give each student at most one active request, and one of each status", () => {
+    const actives = SAMPLE_SCHEDULES.filter((sample) =>
+      ACTIVE_STATUSES.includes(sample.steps.at(-1)?.statusAfter ?? "done"),
+    ).map((sample) => sample.nim);
+    expect(new Set(actives).size).toBe(actives.length);
+    const kinds = SAMPLE_SCHEDULES.map(
+      (sample) => `${sample.nim} ${sample.steps.at(-1)?.statusAfter}`,
+    );
+    expect(new Set(kinds).size).toBe(kinds.length);
+  });
 
   it("end in every status", () => {
     const lasts = SAMPLE_SCHEDULES.map((sample) => sample.steps.at(-1));
@@ -37,11 +56,23 @@ describe("the sample requests for counselling", () => {
     }
   });
 
-  it("leave approving and proposing to Konselor, and the rest to the student", () => {
-    expect(isStudentScheduleStep("register")).toBe(true);
-    expect(isStudentScheduleStep("accept")).toBe(true);
-    expect(isStudentScheduleStep("ask_another")).toBe(true);
-    expect(isStudentScheduleStep("approve")).toBe(false);
-    expect(isStudentScheduleStep("propose")).toBe(false);
+  it("leave approving, proposing, moving and marking to Konselor, and the rest to the student", () => {
+    for (const step of [
+      "register",
+      "accept",
+      "ask_another",
+      "cancel",
+    ] as const) {
+      expect(isStudentScheduleStep(step)).toBe(true);
+    }
+    for (const step of [
+      "approve",
+      "propose",
+      "reschedule",
+      "mark_done",
+      "mark_missed",
+    ] as const) {
+      expect(isStudentScheduleStep(step)).toBe(false);
+    }
   });
 });

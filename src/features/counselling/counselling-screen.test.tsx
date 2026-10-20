@@ -239,6 +239,40 @@ describe("Jadwal konseling saya", () => {
       "Daftar konseling",
       "Terima jadwal ini",
       "Minta waktu lain",
+      "Batalkan pendaftaran",
+    ]);
+  });
+
+  it("offers Batalkan pendaftaran on a Diajukan request", () => {
+    const page = studentPage(null, [scheduleOf("submitted")]);
+
+    expect(buttonsOf(page)).toEqual([
+      "Daftar konseling",
+      "Batalkan pendaftaran",
+    ]);
+  });
+
+  it("shows a Dijadwalkan session with its date, Jam, Cara, konselor and Pesan konselor, Minta jadwal ulang and Batalkan", () => {
+    const page = studentPage(null, [
+      scheduleOf("scheduled", {
+        counsellorName: "Konselor Contoh",
+        counsellorMessage: "Pesan konselor uji.",
+      }),
+    ]);
+
+    for (const words of [
+      "21 Okt 2026 pukul 10:00",
+      "Daring (tautan dikirim konselor)",
+      "Konselor Contoh",
+      "Pesan konselor",
+      "Pesan konselor uji.",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(buttonsOf(page)).toEqual([
+      "Daftar konseling",
+      "Minta jadwal ulang",
+      "Batalkan",
     ]);
   });
 

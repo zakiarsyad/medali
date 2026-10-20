@@ -81,7 +81,7 @@ schedules move to the student's "Riwayat".
 
 ## Steps
 
-- [ ] 1. The statuses "Selesai", "Tidak hadir" and "Dibatalkan" are
+- [x] 1. The statuses "Selesai", "Tidak hadir" and "Dibatalkan" are
   added, with made-up schedules in each; the student asks for another
   time and cancels a request or a session.
 - [ ] 2. Konselor moves a session and marks it "Selesai" or "Tidak

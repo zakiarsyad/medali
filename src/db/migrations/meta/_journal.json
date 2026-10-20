@@ -407,6 +407,13 @@
       "when": 1792459817070,
       "tag": "0057_counselling-schedules",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792490828778,
+      "tag": "0058_counselling-schedule-changes",
+      "breakpoints": true
     }
   ]
 }

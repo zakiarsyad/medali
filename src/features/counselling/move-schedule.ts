@@ -59,10 +59,13 @@ export const MOVE_NOT_ALLOWED = {
   error: NOT_ALLOWED_WORDS,
 } as const;
 
-const NOT_FOUND = { kind: "refused", error: SCHEDULE_NOT_FOUND } as const;
+export const NOT_FOUND = {
+  kind: "refused",
+  error: SCHEDULE_NOT_FOUND,
+} as const;
 
 /** What a move does in the database, before it is known to be allowed. */
-interface Press {
+export interface Press {
   actorId: string;
   scheduleId: string;
   move: ScheduleMove;
@@ -160,7 +163,7 @@ function applyPress(
 }
 
 /** A version as sent, or null when what was sent is no text. */
-function sentVersion(version: unknown): string | null {
+export function sentVersion(version: unknown): string | null {
   return typeof version === "string" ? version : null;
 }
 
@@ -169,7 +172,7 @@ function counsellorSees(actor: AccountForAccess): SQL {
   return visibleTo(rowLimitForAction(actor, "manage_counselling_schedules"));
 }
 
-async function counsellorPress(
+export async function counsellorPress(
   db: Database,
   actor: AccountForAccess,
   press: Omit<Press, "actorId">,
@@ -255,7 +258,7 @@ function ownOf(studentId: string): SQL {
   return eq(counsellingSchedules.studentId, studentId);
 }
 
-async function studentPress(
+export async function studentPress(
   db: Database,
   actor: AccountForAccess,
   press: Omit<Press, "actorId">,
@@ -302,10 +305,11 @@ export async function acceptSchedule(
 }
 
 /**
- * "Minta waktu lain" of the student on their own Usulan jadwal lain: it
- * goes back to Diajukan at the time sent, with the Alasan for Konselor,
- * and the way of meeting kept. Another student's request is not found.
- * What was sent is not trusted.
+ * "Minta waktu lain" of the student on their own Usulan jadwal lain, and
+ * "Minta jadwal ulang" on their own Dijadwalkan session: it goes back to
+ * Diajukan at the time sent, with the Alasan for Konselor, and the way of
+ * meeting kept. Another student's request is not found. What was sent is
+ * not trusted.
  */
 export async function askAnotherTime(
   db: Database,
