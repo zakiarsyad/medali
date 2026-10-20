@@ -81,6 +81,10 @@ import {
   SPECIAL_REASONS,
 } from "@/features/dorm/leave-ids";
 import {
+  MARK_CATEGORIES,
+  OBSERVATION_MAX,
+} from "@/features/dorm/mental-health-mark-ids";
+import {
   OTHER_PUNISHMENT_MAX_LENGTH,
   PUNISHMENTS,
   REASON_MAX_LENGTH,
@@ -295,6 +299,12 @@ export const healthIllness = pgEnum("health_illness", ILLNESSES);
 export const healthNoteCategory = pgEnum(
   "health_note_category",
   HEALTH_NOTE_CATEGORIES,
+);
+
+/** "Kategori potensi" of a mental health early mark; none is "Tidak ada indikasi". */
+export const mentalHealthMarkCategory = pgEnum(
+  "mental_health_mark_category",
+  MARK_CATEGORIES,
 );
 
 export const characterAssessmentSource = pgEnum(
@@ -3388,4 +3398,81 @@ export const healthRecapReadings = pgTable(
     filters: jsonb().$type<RecapReadFilters>().notNull(),
   },
   (table) => [index("health_recap_readings_read_at").on(table.readAt)],
+);
+
+/** The checks a mark and both sides of its log line keep. */
+function markRules(category: AnyPgColumn, observation: AnyPgColumn): SQL {
+  return sql`${atMost(observation, OBSERVATION_MAX)} and (${category} is not null or ${observation} = '') and (${category} is distinct from 'refer' or ${observation} <> '')`;
+}
+
+/**
+ * A dorm resident's one current mark "Potensi kesehatan mental": "perlu
+ * pemantauan" or "perlu dirujuk ke konselor", with "Pengamatan
+ * (rahasia)", required for a referral, and who set it last and when. A
+ * mark set back to "Tidak ada indikasi" keeps its row with no category
+ * and no observation, so who cleared it stays known; a student without
+ * a row was never marked. Never deleted: every change is in its log.
+ */
+export const mentalHealthMarks = pgTable(
+  "mental_health_marks",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    category: mentalHealthMarkCategory(),
+    observation: text().notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check(
+      "mental_health_marks_rules",
+      markRules(table.category, table.observation),
+    ),
+  ],
+);
+
+/**
+ * Every change of a mental health early mark: who, when, and the
+ * category and observation before and after; no category is "Tidak ada
+ * indikasi". The key is made by the form that sent the change, so a form
+ * sent twice is logged once. Read by Kepala Unit only. Rows here cannot
+ * be changed or deleted; the database refuses it.
+ */
+export const mentalHealthMarkChanges = pgTable(
+  "mental_health_mark_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    categoryBefore: mentalHealthMarkCategory(),
+    observationBefore: text().notNull(),
+    categoryAfter: mentalHealthMarkCategory(),
+    observationAfter: text().notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("mental_health_mark_changes_student").on(
+      table.studentId,
+      table.changedAt,
+    ),
+    check(
+      "mental_health_mark_changes_before_rules",
+      markRules(table.categoryBefore, table.observationBefore),
+    ),
+    check(
+      "mental_health_mark_changes_after_rules",
+      markRules(table.categoryAfter, table.observationAfter),
+    ),
+    check(
+      "mental_health_mark_changes_differs",
+      sql`(${table.categoryBefore}, ${table.observationBefore}) is distinct from (${table.categoryAfter}, ${table.observationAfter})`,
+    ),
+  ],
 );
