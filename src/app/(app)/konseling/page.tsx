@@ -7,6 +7,7 @@ import { readOwnConsent } from "@/features/counselling/consent-reads";
 import { CounsellingScreen } from "@/features/counselling/counselling-screen";
 import { readOwnHistory } from "@/features/counselling/own-history";
 import { readOwnSchedules } from "@/features/counselling/own-schedules";
+import { readOwnSessionSummary } from "@/features/counselling/own-sessions";
 import {
   readHistoryShown,
   readScheduleListParams,
@@ -19,6 +20,7 @@ async function ownPart(account: AccountForAccess, params: SearchParams) {
   return {
     consent: await readOwnConsent(database(), account),
     registration: await registrationPart(account, params),
+    sessions: await readOwnSessionSummary(database(), account),
   };
 }
 
@@ -52,6 +54,7 @@ export default async function CounsellingPage(props: PageProps<"/konseling">) {
     <CounsellingScreen
       own={await ownPart(account, searchParams)}
       mayManage={may(account.roles, "manage_counselling_consent")}
+      mayKeepSessions={may(account.roles, "keep_counselling_sessions")}
       schedules={await schedulesPart(account, searchParams)}
     />
   );

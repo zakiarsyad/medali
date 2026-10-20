@@ -228,3 +228,10 @@
   align-items: baseline;
   overflow-wrap: anywhere;
 }
+
+/* The notes of a session in "Riwayat sesi", keeping their line breaks. */
+.notes {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

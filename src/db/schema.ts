@@ -61,6 +61,13 @@ import {
   SRQ_MAX,
 } from "@/features/counselling/screening-ids";
 import {
+  SESSION_FOLLOW_UPS,
+  SESSION_KINDS,
+  SESSION_NOTES_MAX,
+  SESSION_STEPS,
+  type SessionContent,
+} from "@/features/counselling/session-ids";
+import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -384,6 +391,21 @@ export const counsellingWay = pgEnum("counselling_way", COUNSELLING_WAYS);
 export const counsellingScheduleStep = pgEnum(
   "counselling_schedule_step",
   SCHEDULE_STEPS,
+);
+
+export const counsellingSessionKind = pgEnum(
+  "counselling_session_kind",
+  SESSION_KINDS,
+);
+
+export const counsellingFollowUp = pgEnum(
+  "counselling_follow_up",
+  SESSION_FOLLOW_UPS,
+);
+
+export const counsellingSessionStep = pgEnum(
+  "counselling_session_step",
+  SESSION_STEPS,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -3404,6 +3426,108 @@ export const counsellingScheduleChanges = pgTable(
     index("counselling_schedule_changes_schedule").on(
       table.scheduleId,
       table.changedAt,
+    ),
+  ],
+);
+
+/**
+ * A counselling session Konselor wrote down: its day, Jenis, Topik utama,
+ * the confidential notes, Tindak lanjut and Sesi berikutnya. Read by
+ * Konselor only. `scheduleId` is the schedule it was written for when it
+ * was marked Selesai; a schedule has at most one. `id` is the key its
+ * form made, so a form sent twice is kept once. Never deleted: its log
+ * lines hold it.
+ */
+export const counsellingSessions = pgTable(
+  "counselling_sessions",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    scheduleId: uuid().references(() => counsellingSchedules.id),
+    day: date({ mode: "string" }).notNull(),
+    kind: counsellingSessionKind().notNull(),
+    topic: counsellingTopic().notNull(),
+    notes: text().notNull(),
+    followUp: counsellingFollowUp().notNull(),
+    nextDay: date({ mode: "string" }),
+    writtenBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    writtenAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("counselling_sessions_one_per_schedule").on(table.scheduleId),
+    index("counselling_sessions_student").on(
+      table.studentId,
+      table.day,
+      table.writtenAt,
+    ),
+    check(
+      "counselling_sessions_notes_length",
+      sql`char_length(trim(${table.notes})) > 0 and char_length(${table.notes}) <= ${sql.raw(String(SESSION_NOTES_MAX))}`,
+    ),
+    check(
+      "counselling_sessions_next_after_day",
+      sql`${table.nextDay} is null or ${table.nextDay} >= ${table.day}`,
+    ),
+  ],
+);
+
+/**
+ * Every writing and change of a counselling session: who, when, and what
+ * it held before and after. Writing has nothing before. Rows here cannot
+ * be changed or deleted; the database refuses it.
+ */
+export const counsellingSessionChanges = pgTable(
+  "counselling_session_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sessionId: uuid()
+      .notNull()
+      .references(() => counsellingSessions.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    step: counsellingSessionStep().notNull(),
+    before: jsonb().$type<SessionContent>(),
+    after: jsonb().$type<SessionContent>().notNull(),
+  },
+  (table) => [
+    index("counselling_session_changes_session").on(
+      table.sessionId,
+      table.changedAt,
+    ),
+  ],
+);
+
+/**
+ * Every reading of a student's "Riwayat sesi": who read whose notes and
+ * when, never the notes themselves. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const counsellingSessionReads = pgTable(
+  "counselling_session_reads",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    readBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    readAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("counselling_session_reads_student").on(
+      table.studentId,
+      table.readAt,
     ),
   ],
 );

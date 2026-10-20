@@ -10,18 +10,22 @@ import {
 } from "./schedule-address";
 import { ScheduleFilterRow } from "./schedule-filter";
 import { ScheduleNotice, ScheduleNoticeMessage } from "./schedule-notice";
+import { ScheduleSessionPart } from "./schedule-session-part";
 import type { ScheduleBoard } from "./schedule-view";
 
 /**
  * "Jadwal konseling" of Konselor: the numbers, the Status filter, and
- * one page of the request cards.
+ * one page of the request cards, with the session "Tandai selesai"
+ * opened above them for an account that may keep sessions.
  */
 export function SchedulePanel({
   board,
   filter,
+  mayKeepSessions = false,
 }: {
   board: ScheduleBoard;
   filter: ScheduleFilter;
+  mayKeepSessions?: boolean;
 }) {
   const { counts, cards } = board;
   return (
@@ -48,6 +52,7 @@ export function SchedulePanel({
       {/* A new filter or page starts with no message. */}
       <ScheduleNotice clearOn={scheduleListAddress(filter, board.page)}>
         <ScheduleNoticeMessage />
+        <ScheduleSessionPart />
         {cards.length === 0 ? (
           <p className={shared.empty}>Tidak ada konseling pada filter ini.</p>
         ) : (
@@ -56,6 +61,7 @@ export function SchedulePanel({
               <CounsellorScheduleItem
                 key={card.id + card.version}
                 card={card}
+                mayKeepSessions={mayKeepSessions}
               />
             ))}
           </ul>

@@ -1244,6 +1244,55 @@ describe("may", () => {
     }
   });
 
+  it("lets Konselor write, change and read every counselling session, on Konseling", () => {
+    expect(ACTION_TITLES.keep_counselling_sessions).toContain("Sesi konseling");
+    expect(may(["counsellor"], "keep_counselling_sessions")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "keep_counselling_sessions",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses every other role to write or read a counselling session, Mahasiswa, Kepala Unit, Direktur, Ketua Program Studi and Pengasuh among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "keep_counselling_sessions")).toBe(false);
+    }
+  });
+
+  it("lets Mahasiswa see how many counselling sessions they had and the next one, on Konseling", () => {
+    expect(ACTION_TITLES.view_own_counselling_sessions).toContain(
+      "tanpa catatan sesi",
+    );
+    expect(may(["student"], "view_own_counselling_sessions")).toBe(true);
+  });
+
+  it("refuses every other role to see a student's own count of sessions, Konselor and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["counsellor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_own_counselling_sessions")).toBe(false);
+    }
+  });
+
   it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
     const openers: RoleId[] = ["counsellor", "student"];
     for (const role of ROLE_IDS) {
@@ -2477,6 +2526,7 @@ describe("may", () => {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "view_own_counselling_sessions",
       "answer_own_survey",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);

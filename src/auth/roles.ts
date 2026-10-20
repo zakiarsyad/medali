@@ -92,6 +92,8 @@ export const ACTIONS = [
   "answer_own_counselling_consent",
   "register_own_counselling",
   "manage_counselling_schedules",
+  "keep_counselling_sessions",
+  "view_own_counselling_sessions",
   "record_mental_health_screenings",
   "view_mental_health_screening_count",
 ] as const;
@@ -216,6 +218,10 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Mendaftar konseling sukarela dan menjawab usulan jadwal konseling sendiri",
   manage_counselling_schedules:
     "Jadwal konseling: melihat permintaan, menyetujui waktu, dan mengusulkan waktu lain",
+  keep_counselling_sessions:
+    "Sesi konseling: mencatat, mengubah, dan membaca catatan sesi yang rahasia",
+  view_own_counselling_sessions:
+    "Melihat jumlah sesi konseling sendiri, tanggal terakhirnya, dan sesi berikutnya, tanpa catatan sesi",
   record_mental_health_screenings:
     "Kesehatan mental: mencatat dan membaca hasil asesmen kesehatan mental mahasiswa",
   view_mental_health_screening_count:
@@ -502,6 +508,7 @@ export const ROLES: Record<RoleId, Role> = {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "view_own_counselling_sessions",
       "answer_own_survey",
     ],
     rows: "self",
@@ -663,6 +670,7 @@ export const ROLES: Record<RoleId, Role> = {
     actions: [
       "manage_counselling_consent",
       "manage_counselling_schedules",
+      "keep_counselling_sessions",
       "record_mental_health_screenings",
     ],
     rows: "all",
