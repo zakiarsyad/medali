@@ -147,6 +147,80 @@ describe("Jadwal konseling of Konselor", () => {
     },
   );
 
+  it("lists under Semua the active ones first by day, Diajukan leading, then the finished, missed and cancelled ones, the latest first", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, PROGRAM, nims(6));
+      const counsellorId = people.counsellor.id;
+      await addFor(db, people, 0, {
+        status: "done",
+        counsellorId,
+        day: "2026-10-05",
+      });
+      await addFor(db, people, 1, { day: "2026-10-23" });
+      await addFor(db, people, 2, {
+        status: "cancelled",
+        counsellorId,
+        day: "2026-10-14",
+      });
+      await addFor(db, people, 3, {
+        status: "scheduled",
+        counsellorId,
+        day: "2026-10-22",
+      });
+      await addFor(db, people, 4, {
+        status: "missed",
+        counsellorId,
+        day: "2026-10-09",
+      });
+      await addFor(db, people, 5, { day: "2026-10-21" });
+
+      const all = await readScheduleBoard(
+        db,
+        people.counsellor,
+        { filter: "all", page: 1 },
+        NOW,
+      );
+
+      expect(all?.cards.map((card) => `${card.status} ${card.day}`)).toEqual([
+        "submitted 2026-10-21",
+        "submitted 2026-10-23",
+        "scheduled 2026-10-22",
+        "cancelled 2026-10-14",
+        "missed 2026-10-09",
+        "done 2026-10-05",
+      ]);
+    });
+  });
+
+  it("lists under Selesai the latest first", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, PROGRAM, nims(2));
+      const counsellorId = people.counsellor.id;
+      await addFor(db, people, 0, {
+        status: "done",
+        counsellorId,
+        day: "2026-10-01",
+      });
+      await addFor(db, people, 1, {
+        status: "done",
+        counsellorId,
+        day: "2026-10-08",
+      });
+
+      const done = await readScheduleBoard(
+        db,
+        people.counsellor,
+        { filter: "done", page: 1 },
+        NOW,
+      );
+
+      expect(done?.cards.map((card) => card.day)).toEqual([
+        "2026-10-08",
+        "2026-10-01",
+      ]);
+    });
+  });
+
   it("gives a card the student, the story, the reason and every step with who took it", async () => {
     await inTestDatabase(async (db) => {
       const people = await addTestPeople(db, PROGRAM, nims(1));

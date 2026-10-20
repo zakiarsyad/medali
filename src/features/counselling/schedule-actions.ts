@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { forbidden } from "next/navigation";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
@@ -15,6 +16,7 @@ import {
   type CounsellorMoveOutcome,
   proposeSchedule,
 } from "./move-schedule";
+import { COUNSELLING_ADDRESS } from "./schedule-address";
 import type { SentProposal } from "./schedule-rules";
 
 /**
@@ -48,6 +50,16 @@ export async function proposeScheduleAction(
   return proposeSchedule(database(), actor, id, version, sent);
 }
 
+/**
+ * Konseling is drawn again after a move or a mark that reached a
+ * session, so a card leaves a filter it no longer matches and the
+ * numbers above the cards follow.
+ */
+function drawnAgain(outcome: CounsellorMoveOutcome): CounsellorMoveOutcome {
+  revalidatePath(COUNSELLING_ADDRESS);
+  return outcome;
+}
+
 /** "Simpan jadwal" of "Ubah jadwal". */
 export async function rescheduleScheduleAction(
   id: string,
@@ -55,7 +67,9 @@ export async function rescheduleScheduleAction(
   sent: SentProposal,
 ): Promise<CounsellorMoveOutcome> {
   const actor = await scheduler();
-  return rescheduleSchedule(database(), actor, id, version, sent);
+  return drawnAgain(
+    await rescheduleSchedule(database(), actor, id, version, sent),
+  );
 }
 
 /** "Tandai selesai", once Konselor confirmed. */
@@ -64,7 +78,7 @@ export async function markScheduleDoneAction(
   version: string,
 ): Promise<CounsellorMoveOutcome> {
   const actor = await scheduler();
-  return markScheduleDone(database(), actor, id, version);
+  return drawnAgain(await markScheduleDone(database(), actor, id, version));
 }
 
 /** "Tidak hadir", once Konselor confirmed. */
@@ -73,5 +87,5 @@ export async function markScheduleMissedAction(
   version: string,
 ): Promise<CounsellorMoveOutcome> {
   const actor = await scheduler();
-  return markScheduleMissed(database(), actor, id, version);
+  return drawnAgain(await markScheduleMissed(database(), actor, id, version));
 }

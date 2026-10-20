@@ -13,6 +13,7 @@ import {
 } from "./own-schedule-actions";
 import { OwnScheduleCard } from "./own-schedule-card";
 import { COUNSELLING_HOURS, NOTE_MAX } from "./schedule-ids";
+import { useScheduleNotice } from "./schedule-notice";
 import { ChoiceOptions } from "./schedule-options";
 import type { OwnScheduleView } from "./schedule-view";
 import { CANCEL_QUESTION } from "./schedule-words";
@@ -99,6 +100,7 @@ export function OwnScheduleItem({
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [isAsking, setAsking] = useState(false);
   const [pending, startSending] = useTransition();
+  const announce = useScheduleNotice();
 
   function answered(outcome: StudentMoveOutcome) {
     setMessage(messageOf(outcome));
@@ -111,10 +113,19 @@ export function OwnScheduleItem({
     });
   }
 
+  // A kept cancel takes the card out of the list, and a change made
+  // since may too, so what happened is said above the cards.
   function cancel() {
     if (!window.confirm(CANCEL_QUESTION)) return;
+    announce(null);
     startSending(async () => {
-      answered(await cancelScheduleAction(schedule.id, schedule.version));
+      const outcome = await cancelScheduleAction(schedule.id, schedule.version);
+      if (outcome.kind === "refused") {
+        answered(outcome);
+        return;
+      }
+      setMessage(NO_MESSAGE);
+      announce(messageOf(outcome));
     });
   }
 

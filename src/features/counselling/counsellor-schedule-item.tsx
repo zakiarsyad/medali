@@ -13,6 +13,7 @@ import {
   proposeScheduleAction,
   rescheduleScheduleAction,
 } from "./schedule-actions";
+import { useScheduleNotice } from "./schedule-notice";
 import type { SentProposal } from "./schedule-rules";
 import { ScheduleTimeForm } from "./schedule-time-form";
 import type { CounsellorScheduleCard } from "./schedule-view";
@@ -37,10 +38,21 @@ function proposalOf(form: FormData): SentProposal {
 /** Which time form a card shows: none, "Usulkan waktu lain" or "Ubah jadwal". */
 type OpenForm = "propose" | "reschedule" | null;
 
-/** What each time form sends with, and what its send button says. */
+/**
+ * What each time form sends with, what its send button says, and whether
+ * the page is drawn again after it.
+ */
 const TIME_FORMS = {
-  propose: { send: proposeScheduleAction, words: "Kirim usulan ke mahasiswa" },
-  reschedule: { send: rescheduleScheduleAction, words: "Simpan jadwal" },
+  propose: {
+    send: proposeScheduleAction,
+    words: "Kirim usulan ke mahasiswa",
+    redraws: false,
+  },
+  reschedule: {
+    send: rescheduleScheduleAction,
+    words: "Simpan jadwal",
+    redraws: true,
+  },
 };
 
 /**
@@ -49,7 +61,8 @@ const TIME_FORMS = {
  * "Tidak hadir" and "Ubah jadwal" once it is Dijadwalkan. Marking asks
  * first. After a press the card shows the request as the server gave it
  * back, also when the press was refused because someone changed it
- * first.
+ * first. A move or a mark draws the page again, which may take the card
+ * away, so what it did is said above the cards.
  */
 export function CounsellorScheduleItem({
   card: first,
@@ -60,9 +73,13 @@ export function CounsellorScheduleItem({
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [openForm, setOpenForm] = useState<OpenForm>(null);
   const [pending, startSending] = useTransition();
+  const announce = useScheduleNotice();
 
-  function answered(outcome: CounsellorMoveOutcome) {
-    setMessage(messageOf(outcome));
+  function answered(outcome: CounsellorMoveOutcome, redraws: boolean) {
+    const said = messageOf(outcome);
+    const isKeptAway = redraws && outcome.kind !== "refused";
+    setMessage(isKeptAway ? NO_MESSAGE : said);
+    if (isKeptAway) announce(said);
     if (outcome.kind === "refused") return;
     if (outcome.card) setCard(outcome.card);
     setOpenForm(null);
@@ -70,19 +87,22 @@ export function CounsellorScheduleItem({
 
   function press(
     action: (id: string, version: string) => Promise<CounsellorMoveOutcome>,
+    redraws: boolean,
     question?: string,
   ) {
     if (question && !window.confirm(question)) return;
+    announce(null);
     startSending(async () => {
-      answered(await action(card.id, card.version));
+      answered(await action(card.id, card.version), redraws);
     });
   }
 
   function sendTime(form: FormData) {
     if (openForm === null) return;
-    const { send } = TIME_FORMS[openForm];
+    const { send, redraws } = TIME_FORMS[openForm];
+    announce(null);
     startSending(async () => {
-      answered(await send(card.id, card.version, proposalOf(form)));
+      answered(await send(card.id, card.version, proposalOf(form)), redraws);
     });
   }
 
@@ -101,7 +121,7 @@ export function CounsellorScheduleItem({
             type="button"
             className={shared.button}
             disabled={pending}
-            onClick={() => press(approveScheduleAction)}
+            onClick={() => press(approveScheduleAction, false)}
           >
             Setujui waktu ini
           </button>
@@ -121,7 +141,7 @@ export function CounsellorScheduleItem({
             type="button"
             className={shared.button}
             disabled={pending}
-            onClick={() => press(markScheduleDoneAction, DONE_QUESTION)}
+            onClick={() => press(markScheduleDoneAction, true, DONE_QUESTION)}
           >
             Tandai selesai
           </button>
@@ -129,7 +149,9 @@ export function CounsellorScheduleItem({
             type="button"
             className={shared.quiet}
             disabled={pending}
-            onClick={() => press(markScheduleMissedAction, MISSED_QUESTION)}
+            onClick={() =>
+              press(markScheduleMissedAction, true, MISSED_QUESTION)
+            }
           >
             Tidak hadir
           </button>
