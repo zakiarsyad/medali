@@ -55,6 +55,7 @@ export async function CurriculumScreen({
       </PageHead>
       <TahapPanels
         values={indicators.values}
+        indicatorsVersion={indicators.version}
         indicatorNote={changeNote(
           indicators.changed,
           "Diperbarui",

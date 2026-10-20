@@ -65,5 +65,5 @@ Kepala Unit and Pegawai UPK.
 
 ## Steps
 
-- [ ] 1. A save of the main indicators made after another one since its
+- [x] 1. A save of the main indicators made after another one since its
   form was opened is refused with its message, also at the same moment.

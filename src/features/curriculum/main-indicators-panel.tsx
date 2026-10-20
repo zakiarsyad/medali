@@ -10,11 +10,14 @@ import type { ValueIndicators } from "./main-indicators";
 
 export function MainIndicatorsPanel({
   values,
+  version,
   level,
   note,
   mayChange,
 }: {
   values: ValueIndicators[];
+  /** The version of `values`, sent back by the form that changes them. */
+  version: string;
   /** The level of the chosen tahap, marked in each box. */
   level: number;
   /** Who changed the indicators last, or that they are the starting ones. */
@@ -58,6 +61,7 @@ export function MainIndicatorsPanel({
       {editing ? (
         <IndicatorForm
           values={values}
+          version={version}
           onSaved={showSaved}
           onCancel={() => setEditing(false)}
         />

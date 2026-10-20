@@ -1,35 +1,61 @@
-import { sql } from "drizzle-orm";
+import { max, sql } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { mainIndicators } from "@/db/schema";
 import type { Parsed } from "@/parsed";
-import { parseIndicatorTexts } from "./indicator-input";
+import { type IndicatorText, parseIndicatorTexts } from "./indicator-input";
 import { NOT_ALLOWED } from "./not-allowed";
+import { indicatorsVersion } from "./stored-main-indicators";
+
+/** What a save answers when the indicators were saved after its form opened. */
+export const MAIN_INDICATORS_CHANGED_BY_OTHER = {
+  ok: false,
+  error:
+    "Indikator utama baru saja diubah orang lain, jadi perubahan Anda tidak disimpan. Muat ulang untuk melihat versi terbaru.",
+} as const;
+
+const SAVED = { ok: true, value: null } as const;
+
+async function latestChangedAt(tx: Database): Promise<Date | null> {
+  const [row] = await tx
+    .select({ at: max(mainIndicators.changedAt) })
+    .from(mainIndicators);
+  return row?.at ?? null;
+}
 
 /**
- * Saves the texts of all main indicators over the ones kept before, with
- * who changed them and when. `sent` gives the text sent for a code.
+ * Now, or one millisecond after the last save when that one was made
+ * within the same millisecond or later. A version is told by this moment,
+ * so no two saves may share it. Made here, not by the database clock, so
+ * it keeps to the millisecond a version shows.
  */
-export async function saveMainIndicators(
-  db: Database,
-  actor: Pick<Account, "id" | "roles">,
-  sent: (code: string) => string,
-): Promise<Parsed<null>> {
-  if (!may(actor.roles, "change_curriculum")) return NOT_ALLOWED;
-  const parsed = parseIndicatorTexts(sent);
-  if (!parsed.ok) return parsed;
+function nextChangedAt(latest: Date | null): Date {
+  const now = new Date();
+  if (latest === null || now > latest) return now;
+  return new Date(latest.getTime() + 1);
+}
 
-  const changedAt = new Date();
-  await db
+async function saveOpened(
+  tx: Database,
+  actorId: string,
+  version: string,
+  texts: IndicatorText[],
+): Promise<Parsed<null>> {
+  // Two saves at once would both find the version they were opened on; the
+  // second waits here for the first, so it sees the first and is refused.
+  // A row lock cannot do it: while nothing is saved there is no row.
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext('main_indicators'))`,
+  );
+  const latest = await latestChangedAt(tx);
+  if (version !== indicatorsVersion(latest)) {
+    return MAIN_INDICATORS_CHANGED_BY_OTHER;
+  }
+  const changedAt = nextChangedAt(latest);
+  await tx
     .insert(mainIndicators)
-    .values(
-      parsed.value.map((indicator) => ({
-        ...indicator,
-        changedAt,
-        changedBy: actor.id,
-      })),
-    )
+    .values(texts.map((text) => ({ ...text, changedAt, changedBy: actorId })))
     .onConflictDoUpdate({
       target: mainIndicators.code,
       set: {
@@ -38,5 +64,25 @@ export async function saveMainIndicators(
         changedBy: sql`excluded.changed_by`,
       },
     });
-  return { ok: true, value: null };
+  return SAVED;
+}
+
+/**
+ * Saves the texts of all main indicators over the ones kept before, with
+ * who changed them and when. `version` is the one the form was opened on:
+ * when the indicators were saved since, by anyone, the save is refused
+ * and nothing is overwritten. `sent` gives the text sent for a code.
+ */
+export async function saveMainIndicators(
+  db: Database,
+  actor: Pick<Account, "id" | "roles">,
+  version: string,
+  sent: (code: string) => string,
+): Promise<Parsed<null>> {
+  if (!may(actor.roles, "change_curriculum")) return NOT_ALLOWED;
+  const parsed = parseIndicatorTexts(sent);
+  if (!parsed.ok) return parsed;
+  return db.transaction((tx) =>
+    saveOpened(tx, actor.id, version, parsed.value),
+  );
 }

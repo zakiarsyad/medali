@@ -30,8 +30,11 @@ export async function saveMainIndicatorsAction(
   form: FormData,
 ): Promise<FormState> {
   const changer = await curriculumChanger();
-  const saved = await saveMainIndicators(database(), changer, (code) =>
-    text(form, code),
+  const saved = await saveMainIndicators(
+    database(),
+    changer,
+    text(form, "version"),
+    (code) => text(form, code),
   );
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
