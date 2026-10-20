@@ -30,9 +30,18 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".found",
       ".found button",
       ".picked",
+      ".full",
+      ".tick",
+      ".panelHead",
+      ".cards",
+      ".card",
+      ".cardHead",
+      ".facts",
+      ".steps",
+      ".steps ol",
     ],
   ],
-  [SHARED, [".actions"]],
+  [SHARED, [".actions", ".form"]],
 ];
 
 describe("Konseling on a phone", () => {
@@ -100,6 +109,69 @@ describe("Persetujuan konseling of the student on a phone", () => {
     expect(BOX).toContain("<div className={shared.actions}>");
     expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
   });
+});
+
+describe("Daftar konseling sukarela and Jadwal konseling saya on a phone", () => {
+  const FORM = read("register-form.tsx");
+  const LIST = read("own-schedule-list.tsx");
+  const CARD = read("own-schedule-card.tsx");
+
+  it("put the fields in as many columns as fit, one on a phone", () => {
+    expect(FORM).toContain("className={shared.form}");
+    expect(ruleOf(".form", SHARED)).toContain(
+      "min(var(--card-min-width), 100%)",
+    );
+  });
+
+  it("fold the consent text beside its tick", () => {
+    expect(FORM).toContain("styles.tick");
+    expect(ruleOf(".tick")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("lay the cards out one under the other, folding long words", () => {
+    expect(LIST).toContain("<ul className={styles.cards}>");
+    expect(ruleOf(".cards")).toContain("display: grid;");
+    expect(ruleOf(".cards")).not.toContain("grid-template-columns");
+    expect(CARD).toContain("className={styles.card}");
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("put the status under the title, and the facts one under the other, when there is no room", () => {
+    expect(CARD).toContain("className={styles.cardHead}");
+    expect(ruleOf(".cardHead")).toContain("flex-wrap: wrap;");
+    expect(CARD).toContain("className={styles.facts}");
+    expect(ruleOf(".facts")).toContain("min(100%, var(--card-min-width))");
+  });
+});
+
+describe("Jadwal konseling of Konselor on a phone", () => {
+  const PANEL = read("schedule-panel.tsx");
+  const CARD = read("counsellor-schedule-card.tsx");
+
+  it("lays the numbers, the filter and the cards out one under the other", () => {
+    expect(PANEL).toMatch(
+      /className=\{`\$\{shared\.panel\} \$\{styles\.stack\}`\}/,
+    );
+    expect(PANEL).toContain("<ul className={styles.cards}>");
+  });
+
+  it("puts the status under the name, and folds the facts and the story", () => {
+    expect(CARD).toContain("className={styles.card}");
+    expect(CARD).toContain("className={styles.cardHead}");
+    expect(CARD).toContain("className={styles.facts}");
+  });
+});
+
+describe("the buttons and forms of a request card on a phone", () => {
+  it.each(["counsellor-schedule-item.tsx", "own-schedule-item.tsx"])(
+    "%s puts its buttons under each other when they do not fit, and its form fields in one column",
+    (name) => {
+      const item = read(name);
+      expect(item).toContain("<div className={shared.actions}>");
+      expect(item).toContain("className={shared.form}");
+      expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+    },
+  );
 });
 
 describe("the style files of Konseling", () => {

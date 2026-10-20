@@ -14,6 +14,7 @@ export const NOT_ASKED_WORDS = "Belum diminta";
 export const WAY_WORDS: Record<ConsentWay, string> = {
   online: "Persetujuan daring",
   paper: "Form tertulis",
+  registration: "Pendaftaran konseling sukarela",
 };
 
 /** What the student agrees to, as the prototype words it. */

@@ -1,16 +1,23 @@
 import type { ConsentStatus, ConsentWay } from "./consent-ids";
 
-/** What Konselor or the student does to a consent. */
+/**
+ * What Konselor or the student does to a consent. The student also gives
+ * it by ticking it when registering for voluntary counselling.
+ */
 export type ConsentMove =
   | "ask"
   | "record_paper"
   | "approve"
   | "decline"
-  | "withdraw";
+  | "withdraw"
+  | "register";
 
 export type CounsellorMove = Extract<ConsentMove, "ask" | "record_paper">;
 
-export type StudentMove = Exclude<ConsentMove, CounsellorMove>;
+export type StudentMove = Extract<
+  ConsentMove,
+  "approve" | "decline" | "withdraw"
+>;
 
 export const COUNSELLOR_MOVES: readonly CounsellorMove[] = [
   "ask",
@@ -51,6 +58,10 @@ export function consentAfter(
   }
   if (move === "record_paper") {
     return current === "approved" ? null : { status: "approved", way: "paper" };
+  }
+  if (move === "register") {
+    if (current === "approved") return null;
+    return { status: "approved", way: "registration" };
   }
   if (move === "withdraw") {
     return current === "approved" ? { status: "withdrawn", way: null } : null;

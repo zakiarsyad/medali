@@ -14,24 +14,29 @@ import {
 } from "./schema";
 import { momentOf } from "./seed-siku-adjustments";
 
-interface SampleStudentIds {
+export interface SampleStudentIds {
   id: string;
   accountId: string;
 }
 
-async function studentOf(db: Database, nim: string): Promise<SampleStudentIds> {
+/** The ids of a sample student and of their own account. */
+export async function studentOf(
+  db: Database,
+  nim: string,
+): Promise<SampleStudentIds> {
   const [found] = await db
     .select({ id: students.id, accountId: accounts.id })
     .from(students)
     .innerJoin(accounts, eq(accounts.studentId, students.id))
     .where(eq(students.nim, nim));
   if (!found) {
-    throw new Error(`A sample consent names the missing NIM ${nim}.`);
+    throw new Error(`A sample record names the missing NIM ${nim}.`);
   }
   return found;
 }
 
-async function counsellorId(db: Database): Promise<string> {
+/** The account of the sample Konselor. */
+export async function counsellorId(db: Database): Promise<string> {
   const [found] = await db
     .select({ id: accounts.id })
     .from(accounts)

@@ -34,7 +34,8 @@ const asked = (daysAgo: number): SampleConsentStep => ({
  * One student in every status: Ayu Lestiani has a request waiting, so
  * it can be answered after picking her on Ganti peran. Gita Purba
  * declined once and was asked again, so an earlier answer shows in the
- * log.
+ * log. Dimas Halim and Hadi Kurniawan gave theirs by registering for
+ * voluntary counselling.
  */
 export const SAMPLE_CONSENTS: SampleConsent[] = [
   { nim: "9900230001", steps: [asked(2)] },
@@ -45,6 +46,14 @@ export const SAMPLE_CONSENTS: SampleConsent[] = [
   {
     nim: "9900250003",
     steps: [{ status: "approved", way: "paper", daysAgo: 15 }],
+  },
+  {
+    nim: "9900240004",
+    steps: [{ status: "approved", way: "registration", daysAgo: 5 }],
+  },
+  {
+    nim: "9900240008",
+    steps: [{ status: "approved", way: "registration", daysAgo: 7 }],
   },
   {
     nim: "9900250005",
@@ -69,8 +78,9 @@ export const SAMPLE_CONSENTS: SampleConsent[] = [
 ];
 
 /**
- * Whether the student made a change on their own page. A request and a
- * paper form are the work of Konselor.
+ * Whether the student made a change on their own page, by answering or
+ * by registering for counselling. A request and a paper form are the
+ * work of Konselor.
  */
 export function isStudentStep(step: SampleConsentStep): boolean {
   if (step.status === "waiting") return false;

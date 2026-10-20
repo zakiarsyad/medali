@@ -8,6 +8,7 @@ import {
   EMERGENCY_TEXT,
   HELP_TEXT,
 } from "./counselling-screen";
+import type { OwnScheduleView } from "./schedule-view";
 
 // 10:00 on campus on 16 October 2026.
 const MOMENT = new Date("2026-10-16T03:00:00Z");
@@ -49,9 +50,18 @@ function consentOf(
   };
 }
 
-function studentPage(consent: ConsentView | null): string {
+function studentPage(
+  consent: ConsentView | null,
+  schedules: OwnScheduleView[] = [],
+): string {
   return renderToStaticMarkup(
-    <CounsellingScreen own={{ consent }} mayManage={false} />,
+    <CounsellingScreen
+      own={{
+        consent,
+        registration: { schedules, tomorrow: "2026-10-17" },
+      }}
+      mayManage={false}
+    />,
   );
 }
 
@@ -67,17 +77,17 @@ describe("Konseling of the student", () => {
 
     expect(page).toContain("Permintaan persetujuan konseling");
     expect(page).toContain(CONSENT_TEXT);
-    expect(buttonsOf(page)).toEqual(["Setujui", "Tolak"]);
+    expect(buttonsOf(page)).toEqual(["Setujui", "Tolak", "Daftar konseling"]);
   });
 
-  it("shows Belum diminta and Butuh bantuan segera? with 119 to a student never asked, with no button", () => {
+  it("shows Belum diminta and Butuh bantuan segera? with 119 to a student never asked, with no consent button", () => {
     const page = studentPage(null);
 
     expect(page).toContain("Belum diminta");
     expect(page).toContain("Butuh bantuan segera?");
     expect(HELP_TEXT).toContain("119");
     expect(page).toContain(HELP_TEXT);
-    expect(buttonsOf(page)).toEqual([]);
+    expect(buttonsOf(page)).toEqual(["Daftar konseling"]);
   });
 
   it("shows Disetujui online with its date, and Cabut persetujuan", () => {
@@ -85,7 +95,7 @@ describe("Konseling of the student", () => {
 
     expect(page).toContain("Disetujui");
     expect(page).toContain("Persetujuan daring · 16 Okt 2026");
-    expect(buttonsOf(page)).toEqual(["Cabut persetujuan"]);
+    expect(buttonsOf(page)).toEqual(["Cabut persetujuan", "Daftar konseling"]);
   });
 
   it.each([
@@ -98,9 +108,22 @@ describe("Konseling of the student", () => {
 
       expect(page).toContain(words);
       expect(page).toContain("16 Okt 2026");
-      expect(buttonsOf(page)).toEqual([]);
+      expect(buttonsOf(page)).toEqual(["Daftar konseling"]);
     },
   );
+
+  it("shows no registration form and no Jadwal konseling saya without the right to register", () => {
+    const page = renderToStaticMarkup(
+      <CounsellingScreen
+        own={{ consent: null, registration: null }}
+        mayManage={false}
+      />,
+    );
+
+    expect(page).toContain("Belum diminta");
+    expect(page).not.toContain("Daftar konseling sukarela");
+    expect(page).not.toContain("Jadwal konseling saya");
+  });
 
   it("shows no part of Konselor to a student", () => {
     const page = studentPage(null);
@@ -112,7 +135,10 @@ describe("Konseling of the student", () => {
   it("shows a student who is also Konselor their own part first, then that of Konselor", () => {
     const page = renderToStaticMarkup(
       <CounsellingScreen
-        own={{ consent: consentOf("waiting") }}
+        own={{
+          consent: consentOf("waiting"),
+          registration: { schedules: [], tomorrow: "2026-10-17" },
+        }}
         mayManage={true}
       />,
     );
@@ -121,6 +147,109 @@ describe("Konseling of the student", () => {
     const counsellor = page.indexOf("Keadaan darurat.");
     expect(own).toBeGreaterThan(-1);
     expect(counsellor).toBeGreaterThan(own);
+  });
+});
+
+function scheduleOf(
+  status: OwnScheduleView["status"],
+  more: Partial<OwnScheduleView> = {},
+): OwnScheduleView {
+  return {
+    id: "jadwal-1",
+    status,
+    topic: "family",
+    day: "2026-10-21",
+    hour: "10:00",
+    way: "online",
+    counsellorName: null,
+    counsellorMessage: null,
+    version: MOMENT.toISOString(),
+    ...more,
+  };
+}
+
+describe("Daftar konseling sukarela of the student", () => {
+  const page = studentPage(null);
+
+  it("comes below the consent box, then Jadwal konseling saya", () => {
+    const consent = page.indexOf("Persetujuan konseling");
+    const form = page.indexOf("Daftar konseling sukarela");
+    const list = page.indexOf("Jadwal konseling saya");
+    expect(consent).toBeGreaterThan(-1);
+    expect(form).toBeGreaterThan(consent);
+    expect(list).toBeGreaterThan(form);
+  });
+
+  it("asks Topik, Tanggal yang diinginkan from tomorrow, the four hours, Cara konseling and an optional story", () => {
+    for (const words of [
+      "Topik",
+      "Akademik",
+      "Emosi dan stres",
+      "Lainnya",
+      "Tanggal yang diinginkan",
+      "Cara konseling",
+      "Tatap muka di Ruang Konseling",
+      "Daring (tautan dikirim konselor)",
+      "Ceritakan singkat (opsional, hanya dibaca konselor)",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(page).toContain('min="2026-10-17"');
+    const hours = [...page.matchAll(/<option value="(\d\d:\d\d)">/g)].map(
+      (match) => match[1],
+    );
+    expect(hours).toEqual(["08:30", "10:00", "13:00", "14:30"]);
+  });
+
+  it("has the consent tick with the full consent text", () => {
+    expect(page).toContain('type="checkbox" name="consented"');
+    expect(page).toContain(CONSENT_TEXT);
+  });
+
+  it("says Belum ada jadwal konseling. when there is none", () => {
+    expect(page).toContain("Belum ada jadwal konseling.");
+    expect(page).toContain("0 aktif");
+  });
+});
+
+describe("Jadwal konseling saya", () => {
+  it("shows a Diajukan request with Topik, the time the student picked and Cara", () => {
+    const page = studentPage(null, [scheduleOf("submitted")]);
+
+    expect(page).toContain("Konseling sukarela");
+    expect(page).toContain("Diajukan");
+    expect(page).toContain("Keluarga");
+    expect(page).toContain("Waktu yang Anda pilih");
+    expect(page).toContain("21 Okt 2026 pukul 10:00");
+    expect(page).toContain("Daring (tautan dikirim konselor)");
+    expect(page).toContain("1 aktif");
+    expect(page).not.toContain("Belum ada jadwal konseling.");
+  });
+
+  it("shows a proposal of Konselor with its message, Terima jadwal ini and Minta waktu lain", () => {
+    const page = studentPage(null, [
+      scheduleOf("proposed", { counsellorMessage: "Pesan konselor uji." }),
+    ]);
+
+    expect(page).toContain("Usulan jadwal lain");
+    expect(page).toContain("Usulan konselor");
+    expect(page).toContain("Pesan konselor");
+    expect(page).toContain("Pesan konselor uji.");
+    expect(buttonsOf(page)).toEqual([
+      "Daftar konseling",
+      "Terima jadwal ini",
+      "Minta waktu lain",
+    ]);
+  });
+
+  it("names the Konselor of a Dijadwalkan request", () => {
+    const page = studentPage(null, [
+      scheduleOf("scheduled", { counsellorName: "Konselor Contoh" }),
+    ]);
+
+    expect(page).toContain("Dijadwalkan");
+    expect(page).toContain("Jadwal");
+    expect(page).toContain("Konselor Contoh");
   });
 });
 
