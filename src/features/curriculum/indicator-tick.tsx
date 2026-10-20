@@ -30,7 +30,7 @@ export function IndicatorTick({
         {stage}
         {levelNote}:
       </span>
-      {text}
+      <span className={styles.indicatorText}>{text}</span>
     </label>
   );
 }

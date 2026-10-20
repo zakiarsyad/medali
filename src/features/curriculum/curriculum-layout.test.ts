@@ -11,6 +11,11 @@ const INDICATOR_BOXES = readFileSync(
   "utf8",
 );
 
+const INDICATOR_TICK = readFileSync(
+  "src/features/curriculum/indicator-tick.tsx",
+  "utf8",
+);
+
 /** What a rule of the style file holds, without the breaks between its lines. */
 function ruleOf(selector: string): string {
   const start = STYLES.indexOf(`${selector} {`);
@@ -29,5 +34,11 @@ describe("a long word on Kurikulum", () => {
   it("lets the indicator text shrink beside its code, so it folds instead of widening the box", () => {
     expect(ruleOf(".indicatorText")).toContain("min-width: 0;");
     expect(INDICATOR_BOXES).toContain("className={styles.indicatorText}");
+  });
+
+  it("folds the indicator text of a tick in the Penjabaran and PPKS forms", () => {
+    expect(INDICATOR_TICK).toContain(
+      "<span className={styles.indicatorText}>{text}</span>",
+    );
   });
 });
