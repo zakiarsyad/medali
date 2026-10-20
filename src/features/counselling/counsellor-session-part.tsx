@@ -20,6 +20,14 @@ function messageOf(outcome: ChangeOutcome): FormState {
 }
 
 /**
+ * Whether "Riwayat sesi" is read once more: a consent recorded after the
+ * student was picked, when the first reading was refused.
+ */
+export function rereadsHistory(mayWrite: boolean, readable: boolean): boolean {
+  return mayWrite && !readable;
+}
+
+/**
  * The sessions of the student picked in "Persetujuan konseling": "Catat
  * sesi" while the consent is Disetujui, or why no session can be written
  * while it is not, and "Riwayat sesi", with "Ubah" only while it is
@@ -42,10 +50,8 @@ export function CounsellorSessionPart({
   const [pending, startReading] = useTransition();
   const mayWrite = consent?.status === "approved";
 
-  // A consent recorded after the student was picked: read "Riwayat sesi",
-  // refused when they were picked, once more.
   useEffect(() => {
-    if (!mayWrite || history.ok) return;
+    if (!rereadsHistory(mayWrite, history.ok)) return;
     startReading(async () => {
       setHistory(await readSessionHistoryAction(studentId, 1));
     });

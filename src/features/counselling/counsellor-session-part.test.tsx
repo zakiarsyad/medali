@@ -2,7 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ConsentStatus } from "./consent-ids";
 import type { ConsentView } from "./consent-view";
-import { CounsellorSessionPart } from "./counsellor-session-part";
+import {
+  CounsellorSessionPart,
+  rereadsHistory,
+} from "./counsellor-session-part";
 import { SessionForm } from "./session-form";
 import type { SessionHistory, SessionView } from "./session-view";
 import { NEEDS_CONSENT, NO_SESSIONS } from "./session-words";
@@ -212,4 +215,21 @@ describe("Riwayat sesi of a student who never gave consent", () => {
     expect(page).not.toContain("Riwayat sesi");
     expect(page.split(NEEDS_CONSENT)).toHaveLength(2);
   });
+});
+
+describe("reading Riwayat sesi again", () => {
+  it("happens once consent is Disetujui while the first reading was refused", () => {
+    expect(rereadsHistory(true, false)).toBe(true);
+  });
+
+  it.each([
+    [false, false],
+    [true, true],
+    [false, true],
+  ])(
+    "does not happen for may write %s and a readable history %s",
+    (mayWrite, readable) => {
+      expect(rereadsHistory(mayWrite, readable)).toBe(false);
+    },
+  );
 });
