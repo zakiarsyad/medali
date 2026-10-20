@@ -99,7 +99,7 @@ discipline penalty may be next.
   this semester and a past one.
 - [x] 2. The right to write violation notes is added to the permission
   list, with its checks.
-- [ ] 3. The numbers and the list, with search, filter and past notes,
+- [x] 3. The numbers and the list, with search, filter and past notes,
   read only.
 - [ ] 4. The form "Catat pelanggaran" with the student's box and
   "Ketentuan".
