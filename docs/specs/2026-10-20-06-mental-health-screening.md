@@ -113,5 +113,5 @@ see counts with no names. It is the most sensitive data in the app.
   mahasiswa" with "Rincian" for Konselor.
 - [x] 4. The screening form saves a result, only with consent
   "Disetujui".
-- [ ] 5. Other staff see the campus count only, with the refusal checks.
+- [x] 5. Other staff see the campus count only, with the refusal checks.
 

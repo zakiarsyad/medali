@@ -11,7 +11,7 @@ import type { ScreeningDetailItem, ScreeningRow } from "./screening-view";
 import { INSTRUMENT_WORDS } from "./screening-words";
 
 /** How many columns "Daftar mahasiswa" has, for the row of "Rincian". */
-export const SCREENING_COLUMNS = 6;
+const SCREENING_COLUMNS = 6;
 
 export const DETAIL_GONE =
   "Rincian tidak dapat dibuka. Muat ulang halaman, lalu coba lagi.";
@@ -20,7 +20,7 @@ export const DETAIL_GONE =
  * One screened student of "Daftar mahasiswa". "Rincian" asks the server
  * for every screening each time it is opened, so each opening is logged.
  */
-export function ScreeningListRow({ row }: { row: ScreeningRow }) {
+function ScreeningListRow({ row }: { row: ScreeningRow }) {
   const [opened, setOpened] = useState<ScreeningDetailItem[] | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [pending, startOpening] = useTransition();
@@ -80,5 +80,32 @@ export function ScreeningListRow({ row }: { row: ScreeningRow }) {
         </tr>
       )}
     </>
+  );
+}
+
+/** The rows of "Daftar mahasiswa"; on a phone each student is a card. */
+export function ScreeningTable({ rows }: { rows: ScreeningRow[] }) {
+  return (
+    <div className={shared.tableWrap}>
+      <table className={`${shared.table} ${shared.stacked}`}>
+        <thead>
+          <tr>
+            <th>Mahasiswa</th>
+            <th>Pengasuh</th>
+            <th>Asesmen terakhir</th>
+            <th>Tingkat</th>
+            <th>Persetujuan</th>
+            <th>
+              <span className={shared.hidden}>Rincian</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <ScreeningListRow key={row.studentId} row={row} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

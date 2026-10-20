@@ -1,6 +1,8 @@
+// Sample NIMs of this file: 9988600600 to 9988600699.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { EMERGENCY_TEXT } from "./counselling-screen";
+import { CampusScreenedCount, PERSONAL_DATA_NOTE } from "./screening-campus";
 import { ScreeningHistory } from "./screening-history";
 import { NOBODY_MATCHING, NOBODY_SCREENED } from "./screening-list";
 import { ScreeningScreen } from "./screening-screen";
@@ -15,7 +17,7 @@ const TABS = {
 const ROW: ScreeningRow = {
   studentId: "00000000-0000-4000-8000-000000000001",
   name: "Mahasiswa Contoh",
-  nim: "9900000001",
+  nim: "9988600601",
   program: "Prodi Contoh",
   mentorName: "Pengasuh Contoh",
   instrument: "dass21",
@@ -132,5 +134,27 @@ describe("Rincian", () => {
     expect(page).toContain(
       "Depresi 22 (berat) · Kecemasan 10 (sedang) · Stres 20 (sedang)",
     );
+  });
+});
+
+describe("Kesehatan mental of Kepala Unit, Direktur, Ketua Program Studi and Pengasuh", () => {
+  it("shows the campus count as sent, with the note on personal data, and no list or form", () => {
+    const page = renderToStaticMarkup(
+      <ScreeningScreen
+        tabs={TABS}
+        counsellor={null}
+        others={<CampusScreenedCount shown="<5" />}
+      />,
+    );
+    expect(page).toContain("Keadaan darurat.");
+    expect(page).toContain("Sudah diasesmen");
+    expect(page).toContain("&lt;5");
+    expect(page).toContain(PERSONAL_DATA_NOTE);
+    expect(PERSONAL_DATA_NOTE).toContain(
+      "hanya tampil bila konselor mempublikasikannya dengan persetujuan mahasiswa",
+    );
+    expect(page).not.toContain("Daftar mahasiswa");
+    expect(page).not.toContain("Simpan asesmen");
+    expect(page).not.toContain("Perlu konseling");
   });
 });

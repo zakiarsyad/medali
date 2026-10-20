@@ -7,6 +7,8 @@ import {
   readScreeningList,
   readScreeningNumbers,
 } from "@/features/counselling/screening-board";
+import { CampusScreenedCount } from "@/features/counselling/screening-campus";
+import { readCampusScreenedCount } from "@/features/counselling/screening-count";
 import { ScreeningForm } from "@/features/counselling/screening-form";
 import {
   type CounsellorScreenings,
@@ -30,7 +32,9 @@ async function counsellorPart(
 
 /**
  * The tab Kesehatan mental. Konselor alone records and reads the
- * screenings, each student's by name; every read checks the right again.
+ * screenings, each student's by name. Kepala Unit, Direktur, Ketua
+ * Program Studi and Pengasuh see only the campus count, with no names.
+ * Every read checks the right again.
  */
 export default async function MentalHealthPage(
   props: PageProps<"/penilaian/mental">,
@@ -39,6 +43,7 @@ export default async function MentalHealthPage(
   const { account } = opened;
   const tabs = { pagePath: "penilaian", tabs: opened.tabs, open: "mental" };
   const counsellor = await counsellorPart(account, await props.searchParams);
+  const campusCount = await readCampusScreenedCount(database(), account);
   return (
     <ScreeningScreen
       tabs={tabs}
@@ -47,6 +52,9 @@ export default async function MentalHealthPage(
         counsellor && (
           <ScreeningForm today={campusDay()} newKey={crypto.randomUUID()} />
         )
+      }
+      others={
+        campusCount !== null && <CampusScreenedCount shown={campusCount} />
       }
     />
   );

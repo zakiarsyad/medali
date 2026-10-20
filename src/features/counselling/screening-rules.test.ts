@@ -7,6 +7,7 @@ import {
   type ScreeningScores,
   scoresOf,
   screeningResult,
+  shownCount,
 } from "./screening-rules";
 import { ADVICE_WORDS, CRISIS_ADVICE, LEVEL_WORDS } from "./screening-words";
 
@@ -138,6 +139,18 @@ describe("Perlu konseling", () => {
       "severe",
       "extremely_severe",
     ]);
+  });
+});
+
+describe("the campus count shown to other staff", () => {
+  it.each([
+    [0, "0"],
+    [1, "<5"],
+    [4, "<5"],
+    [5, "5"],
+    [1234, "1.234"],
+  ] as const)("shows %i as %s", (count, shown) => {
+    expect(shownCount(count)).toBe(shown);
   });
 });
 

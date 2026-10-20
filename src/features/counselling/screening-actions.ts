@@ -24,9 +24,8 @@ import type { ScreeningDetailItem } from "./screening-view";
  */
 async function screeningCounsellor(): Promise<Account> {
   const account = await currentAccount();
-  if (!account || !may(account.roles, "record_mental_health_screenings")) {
+  if (!account || !may(account.roles, "record_mental_health_screenings"))
     forbidden();
-  }
   return account;
 }
 

@@ -11,7 +11,7 @@ import {
   type ScreeningParams,
   screeningAddress,
 } from "./screening-address";
-import { ScreeningListRow } from "./screening-row";
+import { ScreeningTable } from "./screening-table";
 import type { ScreeningList } from "./screening-view";
 
 export const NOBODY_SCREENED = "Belum ada mahasiswa yang diasesmen.";
@@ -76,27 +76,7 @@ export function ScreeningListPanel({
         <p className={shared.empty}>{emptyWords(params)}</p>
       ) : (
         <>
-          <div className={shared.tableWrap}>
-            <table className={`${shared.table} ${shared.stacked}`}>
-              <thead>
-                <tr>
-                  <th>Mahasiswa</th>
-                  <th>Pengasuh</th>
-                  <th>Asesmen terakhir</th>
-                  <th>Tingkat</th>
-                  <th>Persetujuan</th>
-                  <th>
-                    <span className={shared.hidden}>Rincian</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.rows.map((row) => (
-                  <ScreeningListRow key={row.studentId} row={row} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ScreeningTable rows={list.rows} />
           <ListPager
             page={list.page}
             matching={list.matching}

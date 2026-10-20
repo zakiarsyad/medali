@@ -130,3 +130,17 @@ export function scoresOf(kept: KeptScores): ScreeningScores | null {
   if (depression === null || anxiety === null || stress === null) return null;
   return { instrument: "dass21", depression, anxiety, stress, selfHarm };
 }
+
+/** The fewest screened students the campus count shows as a number. */
+export const SMALLEST_SHOWN_COUNT = 5;
+
+/**
+ * The campus count as other staff see it: a count of 1 to 4 shows as
+ * "<5", so it cannot point to a person.
+ */
+export function shownCount(count: number): string {
+  if (count > 0 && count < SMALLEST_SHOWN_COUNT) {
+    return `<${SMALLEST_SHOWN_COUNT}`;
+  }
+  return count.toLocaleString("id-ID");
+}
