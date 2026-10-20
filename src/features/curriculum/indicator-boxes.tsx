@@ -46,7 +46,7 @@ export function IndicatorBoxes({
                 aria-current={indicator.level === level || undefined}
               >
                 <span className={shared.badge}>{indicator.code}</span>
-                <span>
+                <span className={styles.indicatorText}>
                   <span className={styles.level}>
                     Level {indicator.level} · {indicator.stage}
                   </span>

@@ -50,6 +50,11 @@
   background: var(--goldsoft);
 }
 
+.indicatorText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .level {
   display: block;
   color: var(--muted);
@@ -300,6 +305,7 @@
   margin: var(--space-xs) 0;
   color: var(--muted);
   font-size: var(--text-md);
+  overflow-wrap: anywhere;
 }
 
 .listLabel {
@@ -311,6 +317,7 @@
   margin: 0;
   padding-left: var(--space-lg);
   font-size: var(--text-md);
+  overflow-wrap: anywhere;
 }
 
 .stageIndicators {
