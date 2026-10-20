@@ -39,6 +39,8 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".facts",
       ".steps",
       ".steps ol",
+      ".history",
+      ".history li",
     ],
   ],
   [SHARED, [".actions", ".form"]],

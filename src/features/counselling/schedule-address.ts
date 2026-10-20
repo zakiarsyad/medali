@@ -13,12 +13,22 @@ export const COUNSELLING_ADDRESS = "/konseling";
 export const SCHEDULES_PAGE_SIZE = 20;
 
 /** The choices of the Status filter. */
-export type ScheduleFilter = "needs_action" | "active" | "scheduled" | "all";
+export type ScheduleFilter =
+  | "needs_action"
+  | "active"
+  | "scheduled"
+  | "done"
+  | "missed"
+  | "cancelled"
+  | "all";
 
 export const FILTER_ORDER: ScheduleFilter[] = [
   "needs_action",
   "active",
   "scheduled",
+  "done",
+  "missed",
+  "cancelled",
   "all",
 ];
 
@@ -27,6 +37,9 @@ const FILTER_NAMES: Record<ScheduleFilter, string> = {
   needs_action: "perlu",
   active: "aktif",
   scheduled: "dijadwalkan",
+  done: "selesai",
+  missed: "tidak-hadir",
+  cancelled: "dibatalkan",
   all: "semua",
 };
 
@@ -34,15 +47,18 @@ export const FILTER_WORDS: Record<ScheduleFilter, string> = {
   needs_action: "Perlu ditindaklanjuti",
   active: "Semua yang aktif",
   scheduled: "Dijadwalkan",
+  done: "Selesai",
+  missed: "Tidak hadir",
+  cancelled: "Dibatalkan",
   all: "Semua",
 };
 
 /** The statuses a choice shows, or null for every status. */
 export function statusesOf(filter: ScheduleFilter): ScheduleStatus[] | null {
+  if (filter === "all") return null;
   if (filter === "needs_action") return ["submitted"];
-  if (filter === "scheduled") return ["scheduled"];
   if (filter === "active") return [...ACTIVE_STATUSES];
-  return null;
+  return [filter];
 }
 
 export interface ScheduleListParams {
@@ -86,4 +102,22 @@ export function scheduleListAddress(filter: ScheduleFilter, page = 1): string {
   const search = params.toString();
   if (search === "") return COUNSELLING_ADDRESS;
   return `${COUNSELLING_ADDRESS}?${search}`;
+}
+
+/** How many lines of the student's "Riwayat" one step shows. */
+export const HISTORY_PAGE_SIZE = 10;
+
+/**
+ * How many lines of "Riwayat" the address asks for: 10 for each step,
+ * the first step when it asks nothing it understands.
+ */
+export function readHistoryShown(params: SearchParams): number {
+  const steps = firstParam(params.riwayat);
+  return (PAGE.test(steps) ? Number(steps) : 1) * HISTORY_PAGE_SIZE;
+}
+
+/** The address that shows 10 lines of "Riwayat" more than `shown`. */
+export function moreHistoryAddress(shown: number): string {
+  const steps = Math.floor(shown / HISTORY_PAGE_SIZE) + 1;
+  return `${COUNSELLING_ADDRESS}?riwayat=${steps}`;
 }

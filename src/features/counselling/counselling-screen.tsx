@@ -3,11 +3,16 @@ import type { ConsentView } from "./consent-view";
 import styles from "./counselling.module.css";
 import { CounsellorConsentPanel } from "./counsellor-consent-panel";
 import { OwnConsentBox } from "./own-consent-box";
+import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
 import { SchedulePanel } from "./schedule-panel";
-import type { OwnScheduleView, ScheduleBoard } from "./schedule-view";
+import type {
+  OwnHistory,
+  OwnScheduleView,
+  ScheduleBoard,
+} from "./schedule-view";
 import { WarnBox } from "./warn-box";
 
 /** What Konselor reads first on Konseling, as the prototype words it. */
@@ -54,6 +59,8 @@ export interface OwnCounselling {
 export interface OwnRegistration {
   /** Their active requests, the newest first. */
   schedules: OwnScheduleView[];
+  /** "Riwayat": their requests that are over, the latest first. */
+  history: OwnHistory;
   /** The first day a request may be for: tomorrow on campus. */
   tomorrow: string;
 }
@@ -70,6 +77,7 @@ function OwnPart({ own }: { own: OwnCounselling }) {
             schedules={own.registration.schedules}
             tomorrow={own.registration.tomorrow}
           />
+          <OwnHistoryList history={own.registration.history} />
         </>
       )}
     </>

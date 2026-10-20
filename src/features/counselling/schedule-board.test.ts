@@ -115,6 +115,38 @@ describe("Jadwal konseling of Konselor", () => {
     });
   });
 
+  it.each(["done", "missed", "cancelled"] as const)(
+    "shows only the requests that are %s under that choice, and none under Semua yang aktif",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const people = await addTestPeople(db, PROGRAM, nims(3));
+        const counsellorId = people.counsellor.id;
+        await addFor(db, people, 0, { status, counsellorId });
+        await addFor(db, people, 1, { status: "scheduled", counsellorId });
+        await addFor(db, people, 2);
+
+        const chosen = await readScheduleBoard(
+          db,
+          people.counsellor,
+          { filter: status, page: 1 },
+          NOW,
+        );
+        const active = await readScheduleBoard(
+          db,
+          people.counsellor,
+          { filter: "active", page: 1 },
+          NOW,
+        );
+
+        expect(chosen?.cards.map((card) => card.status)).toEqual([status]);
+        expect(active?.cards.map((card) => card.status)).toEqual([
+          "submitted",
+          "scheduled",
+        ]);
+      });
+    },
+  );
+
   it("gives a card the student, the story, the reason and every step with who took it", async () => {
     await inTestDatabase(async (db) => {
       const people = await addTestPeople(db, PROGRAM, nims(1));

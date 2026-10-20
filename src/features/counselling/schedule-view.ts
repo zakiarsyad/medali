@@ -28,6 +28,28 @@ export interface OwnScheduleView {
   version: string;
 }
 
+/** One request that is over, as the student's "Riwayat" shows it. */
+export interface OwnHistoryView {
+  id: string;
+  status: ScheduleStatus;
+  /** The day it was about. */
+  day: string;
+  topic: CounsellingTopic;
+}
+
+/** The lines of "Riwayat" read, the latest first. */
+export interface OwnHistoryPage {
+  items: OwnHistoryView[];
+  /** Whether there are more than those read. */
+  hasMore: boolean;
+}
+
+/** "Riwayat" as the student's page shows it. */
+export interface OwnHistory extends OwnHistoryPage {
+  /** How many lines the page asked for. */
+  shown: number;
+}
+
 /** One line of "Riwayat langkah": when, who and which step. */
 export interface ScheduleStepView {
   id: string;

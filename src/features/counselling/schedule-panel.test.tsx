@@ -75,6 +75,9 @@ describe("Jadwal konseling of Konselor", () => {
       "Perlu ditindaklanjuti",
       "Semua yang aktif",
       "Dijadwalkan",
+      "Selesai",
+      "Tidak hadir",
+      "Dibatalkan",
       "Semua",
     ]) {
       expect(page).toContain(`>${words}</option>`);

@@ -31,6 +31,13 @@ export const ACTIVE_STATUSES: readonly ScheduleStatus[] = [
   "scheduled",
 ];
 
+/** The statuses of a request that is over: the student's "Riwayat". */
+export const FINISHED_STATUSES: readonly ScheduleStatus[] = [
+  "done",
+  "missed",
+  "cancelled",
+];
+
 export const COUNSELLING_TOPICS = [
   "academic",
   "campus_adjustment",
