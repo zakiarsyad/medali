@@ -95,7 +95,7 @@ discipline penalty may be next.
 
 ## Steps
 
-- [ ] 1. The table for violation notes is added, with sample notes in
+- [x] 1. The table for violation notes is added, with sample notes in
   this semester and a past one.
 - [ ] 2. The right to write violation notes is added to the permission
   list, with its checks.

@@ -113,6 +113,14 @@ import {
   RESULT_MIN_LENGTH,
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
+import {
+  NOTE_CHANGE_ACTIONS,
+  DESCRIPTION_MAX_LENGTH as NOTE_DESCRIPTION_MAX_LENGTH,
+  DESCRIPTION_MIN_LENGTH as NOTE_DESCRIPTION_MIN_LENGTH,
+  OTHER_PUNISHMENT_MAX_LENGTH as NOTE_OTHER_PUNISHMENT_MAX_LENGTH,
+  NOTE_PUNISHMENTS,
+  REMARK_MAX_LENGTH as NOTE_REMARK_MAX_LENGTH,
+} from "@/features/guidance/violation-note-ids";
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
@@ -3600,4 +3608,104 @@ export const mentalHealthMarkChanges = pgTable(
       sql`(${table.categoryBefore}, ${table.observationBefore}) is distinct from (${table.categoryAfter}, ${table.observationAfter})`,
     ),
   ],
+);
+
+export const violationNotePunishment = pgEnum(
+  "violation_note_punishment",
+  NOTE_PUNISHMENTS,
+);
+
+export const violationNoteChangeAction = pgEnum(
+  "violation_note_change_action",
+  NOTE_CHANGE_ACTIONS,
+);
+
+/**
+ * One Catatan pelanggaran of a student: a small violation that has not
+ * led to a discipline penalty, on its Tanggal, with its Uraian, its
+ * Jenis hukuman and Keterangan, and who saved it and when. Its semester
+ * and its Kategori are worked out from Tanggal and the student's other
+ * notes, never stored. The key is made by the form that sent it, so a
+ * form sent twice is kept once. A note is never changed: a wrong one is
+ * removed, a mark with who and when, and written again. It is held by
+ * its log lines, so it cannot be deleted.
+ */
+export const violationNotes = pgTable(
+  "violation_notes",
+  {
+    id: uuid().primaryKey(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    /** Tanggal. */
+    day: date().notNull(),
+    /** Uraian pelanggaran. */
+    description: text().notNull(),
+    punishment: violationNotePunishment().notNull(),
+    /** What Hukuman lainnya is; empty for every other punishment. */
+    otherPunishment: text().notNull().default(""),
+    /** Keterangan; empty when none was written. */
+    remark: text().notNull().default(""),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+    removedBy: uuid().references(() => accounts.id),
+    removedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("violation_notes_student").on(table.studentId, table.day),
+    index("violation_notes_day").on(table.day),
+    check(
+      "violation_notes_description_length",
+      sql`char_length(${table.description}) between ${sql.raw(String(NOTE_DESCRIPTION_MIN_LENGTH))} and ${sql.raw(String(NOTE_DESCRIPTION_MAX_LENGTH))}`,
+    ),
+    check(
+      "violation_notes_other_punishment_only_for_other",
+      sql`(${table.punishment} = 'other') = (${table.otherPunishment} <> '')`,
+    ),
+    check(
+      "violation_notes_other_punishment_length",
+      sql`char_length(${table.otherPunishment}) <= ${sql.raw(String(NOTE_OTHER_PUNISHMENT_MAX_LENGTH))}`,
+    ),
+    check(
+      "violation_notes_remark_length",
+      sql`char_length(${table.remark}) <= ${sql.raw(String(NOTE_REMARK_MAX_LENGTH))}`,
+    ),
+    check(
+      "violation_notes_saved_from_its_day",
+      sql`(${table.savedAt} at time zone 'Asia/Jakarta')::date >= ${table.day}`,
+    ),
+    check(
+      "violation_notes_removal_is_whole",
+      sql`(${table.removedBy} is null) = (${table.removedAt} is null)`,
+    ),
+    check(
+      "violation_notes_removed_after_saved",
+      sql`${table.removedAt} is null or ${table.removedAt} >= ${table.savedAt}`,
+    ),
+  ],
+);
+
+/**
+ * Every save and removal of a violation note: who and when. A note
+ * cannot be changed otherwise, so what it was before and after is the
+ * action: no note before a save, a note in force after it, and a removed
+ * one after a removal. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const violationNoteChanges = pgTable(
+  "violation_note_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    noteId: uuid()
+      .notNull()
+      .references(() => violationNotes.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    action: violationNoteChangeAction().notNull(),
+  },
+  (table) => [index("violation_note_changes_note").on(table.noteId)],
 );
