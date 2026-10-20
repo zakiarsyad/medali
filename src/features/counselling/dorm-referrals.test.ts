@@ -17,6 +17,8 @@ import { readDormReferrals } from "./dorm-referrals";
 import { readScheduleBoard } from "./schedule-board";
 import { readSessionHistory } from "./session-history";
 import { addTestActor } from "./test-consents";
+import { addTestSchedule } from "./test-schedules";
+import { setTestConsent } from "./test-screenings";
 
 const inTestDatabase = withTestDatabase();
 
@@ -94,6 +96,8 @@ describe("Rujukan potensi kesehatan mental dari asrama", () => {
           observation: `Pengamatan ${ids.budi}.`,
           markedAt: new Date("2026-10-14T03:00:00Z"),
           markedBy: "BAM Kesehatan Sari",
+          consent: null,
+          activeSchedule: null,
         },
         expect.objectContaining({
           studentId: ids.ani,
@@ -193,6 +197,70 @@ describe("Rujukan potensi kesehatan mental dari asrama", () => {
       );
       const list = await readDormReferrals(db, own, 1, TODAY);
       expect(list?.rows.map((row) => row.studentId)).toEqual([ids.budi]);
+    });
+  });
+});
+
+describe("what is already under way for a referral", () => {
+  it("shows the consent and the active request of each row, and no request that is over", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, ids } = await addReferrals(db);
+      const ani = await addTestActor(db, "Ani Sendiri", ["student"], ids.ani);
+      const budi = await addTestActor(
+        db,
+        "Budi Sendiri",
+        ["student"],
+        ids.budi,
+      );
+      await setTestConsent(db, ids.ani, counsellor.id, "approved");
+      await addTestSchedule(db, {
+        studentId: ids.ani,
+        studentAccountId: ani.id,
+        status: "scheduled",
+        counsellorId: counsellor.id,
+      });
+      await setTestConsent(db, ids.budi, counsellor.id, "waiting");
+      await addTestSchedule(db, {
+        studentId: ids.budi,
+        studentAccountId: budi.id,
+        status: "done",
+        counsellorId: counsellor.id,
+      });
+
+      const list = await readDormReferrals(db, counsellor, 1, TODAY);
+
+      expect(list?.rows).toEqual([
+        expect.objectContaining({
+          studentId: ids.budi,
+          consent: "waiting",
+          activeSchedule: null,
+        }),
+        expect.objectContaining({
+          studentId: ids.ani,
+          consent: "approved",
+          activeSchedule: "scheduled",
+        }),
+      ]);
+    });
+  });
+
+  it("still opens the consent of a student whose mark was removed while Tindak lanjuti was pressed, and drops the row on the next read", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, ids } = await addReferrals(db);
+      const before = await readDormReferrals(db, counsellor, 1, TODAY);
+      expect(before?.rows.map((row) => row.studentId)).toContain(ids.ani);
+
+      await db
+        .update(mentalHealthMarks)
+        .set({ category: null, observation: "" })
+        .where(eq(mentalHealthMarks.studentId, ids.ani));
+
+      expect(await lookUpConsent(db, counsellor, ids.ani)).toEqual({
+        ok: true,
+        value: null,
+      });
+      const after = await readDormReferrals(db, counsellor, 1, TODAY);
+      expect(after?.rows.map((row) => row.studentId)).toEqual([ids.budi]);
     });
   });
 });

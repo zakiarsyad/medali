@@ -1,9 +1,21 @@
-import { and, asc, count, desc, eq, ne, type SQL, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  ne,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import {
   accounts,
+  counsellingConsents,
+  counsellingSchedules,
   dormRoomPlaces,
   dormRooms,
   mentalHealthMarks,
@@ -16,6 +28,7 @@ import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
 import { pageWithin } from "@/ui/list-pages";
 import { REFERRALS_PAGE_SIZE } from "./referral-address";
 import type { ReferralList, ReferralRow } from "./referral-view";
+import { ACTIVE_STATUSES, type ScheduleStatus } from "./schedule-ids";
 
 /**
  * The students whose referrals the account may read, never the
@@ -27,6 +40,14 @@ function referralReachOf(actor: AccountForAccess): SQL | null {
   if (actor.studentId === null) return visible;
   return and(visible, ne(students.id, actor.studentId)) ?? visible;
 }
+
+/** The status of the student row's active request; a student has one at most. */
+const ACTIVE_SCHEDULE = sql<ScheduleStatus | null>`(
+  select ${counsellingSchedules.status} from ${counsellingSchedules}
+  where ${counsellingSchedules.studentId} = ${students.id}
+    and ${inArray(counsellingSchedules.status, [...ACTIVE_STATUSES])}
+  limit 1
+)`;
 
 interface ReadRow extends Omit<ReferralRow, "dorm" | "room"> {
   dorm: DormId | null;
@@ -50,7 +71,8 @@ function referralRow(row: ReadRow): ReferralRow {
  * One page of "Rujukan potensi kesehatan mental dari asrama": each
  * resident who lives in a dorm today and whose current mark is "perlu
  * dirujuk ke konselor", the newest mark first, with only what the list
- * shows. Null, with nothing read, for an account without the right to
+ * shows: with the student's consent and active request, so Konselor
+ * knows what is already under way. Null, with nothing read, for an account without the right to
  * read dorm referrals. `today` is today on campus.
  */
 export async function readDormReferrals(
@@ -86,11 +108,17 @@ export async function readDormReferrals(
       observation: mentalHealthMarks.observation,
       markedAt: mentalHealthMarks.changedAt,
       markedBy: accounts.name,
+      consent: counsellingConsents.status,
+      activeSchedule: ACTIVE_SCHEDULE,
     })
     .from(mentalHealthMarks)
     .innerJoin(students, eq(students.id, mentalHealthMarks.studentId))
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .innerJoin(accounts, eq(accounts.id, mentalHealthMarks.changedBy))
+    .leftJoin(
+      counsellingConsents,
+      eq(counsellingConsents.studentId, students.id),
+    )
     .leftJoin(dormRoomPlaces, eq(dormRoomPlaces.studentId, students.id))
     .leftJoin(
       dormRooms,

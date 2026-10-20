@@ -1,5 +1,7 @@
 import type { DormId } from "@/dorms/dorms";
 import type { RecapRoom } from "@/health-notes/sick-list";
+import type { ConsentStatus } from "./consent-ids";
+import type { ScheduleStatus } from "./schedule-ids";
 
 /*
  * Read by the screen parts in the browser, so nothing here may take from
@@ -21,6 +23,10 @@ export interface ReferralRow {
   markedAt: Date;
   /** The name of the account that set it last. */
   markedBy: string;
+  /** "Persetujuan": the student's consent, or null when never asked. */
+  consent: ConsentStatus | null;
+  /** The status of the student's active request, or null without one. */
+  activeSchedule: ScheduleStatus | null;
 }
 
 /** One page of the referrals, with how many there are in all. */

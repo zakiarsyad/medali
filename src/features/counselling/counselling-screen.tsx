@@ -1,12 +1,11 @@
 import { PageHead } from "@/ui/page-head";
 import type { ConsentView } from "./consent-view";
 import styles from "./counselling.module.css";
-import { CounsellorConsentPanel } from "./counsellor-consent-panel";
+import { CounsellorFollowUp } from "./counsellor-follow-up";
 import { OwnConsentBox } from "./own-consent-box";
 import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
 import { OwnSessionSummaryBox } from "./own-session-summary";
-import { ReferralPanel } from "./referral-panel";
 import type { ReferralList } from "./referral-view";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
@@ -48,10 +47,11 @@ function CounsellorPart({
   return (
     <>
       <WarnBox title="Keadaan darurat.">{EMERGENCY_TEXT}</WarnBox>
-      {referrals && <ReferralPanel list={referrals} />}
-      {mayManageConsent && (
-        <CounsellorConsentPanel mayKeepSessions={mayKeepSessions} />
-      )}
+      <CounsellorFollowUp
+        referrals={referrals}
+        mayManageConsent={mayManageConsent}
+        mayKeepSessions={mayKeepSessions}
+      />
       {schedules && (
         <SchedulePanel
           board={schedules.board}

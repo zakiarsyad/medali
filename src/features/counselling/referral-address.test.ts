@@ -9,7 +9,7 @@ describe("the page of the referrals in the address", () => {
     [{ rujukan: "0" }, 1],
     [{ rujukan: "-2" }, 1],
     [{ rujukan: "abc" }, 1],
-    [{ rujukan: "99999999" }, 1],
+    [{ rujukan: "1234567" }, 1],
   ])("reads %j as page %i", (params, page) => {
     expect(readReferralPage(params)).toBe(page);
   });

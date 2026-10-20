@@ -91,6 +91,15 @@ Konselor did with a referral.
 9. The list sits under the emergency notice, above "Persetujuan
    konseling". Stepping to another page of it, or of "Jadwal
    konseling", puts the other list back on its first page.
+10. "Persetujuan" shows the consent badge as on "Daftar mahasiswa",
+    "Belum diminta" for a student never asked. The column "Jadwal aktif"
+    shows the status of the student's active request (Diajukan, Usulan
+    jadwal lain or Dijadwalkan), or "Tidak ada"; a request that is over
+    does not count.
+11. "Tindak lanjuti" picks the student on "Persetujuan konseling" and
+    scrolls to it; it does not check the mark again, so a mark removed
+    meanwhile does not stop it. It shows only to an account that may ask
+    for consent.
 
 ## Steps
 
@@ -98,5 +107,5 @@ Konselor did with a referral.
   with its checks, and made-up marks for sample residents.
 - [x] 2. "Rujukan potensi kesehatan mental dari asrama" shows the rows,
   the number and the empty state.
-- [ ] 3. Each row shows consent and schedule, and "Tindak lanjuti" opens
+- [x] 3. Each row shows consent and schedule, and "Tindak lanjuti" opens
   the consent panel.
