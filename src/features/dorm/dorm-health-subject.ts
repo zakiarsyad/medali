@@ -13,6 +13,13 @@ import {
   searchNoteStudents,
 } from "@/health-notes/note-subject";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
+import type { MentalHealthMark } from "./mental-health-mark-ids";
+
+/** What the form on Asrama > Kesehatan shows of the resident picked. */
+export interface DormHealthSubject extends HealthSubject {
+  /** Their current mark "Potensi kesehatan mental", or null for none. */
+  mark: MentalHealthMark | null;
+}
 
 /**
  * Whether roles write health notes on Asrama > Kesehatan: they write

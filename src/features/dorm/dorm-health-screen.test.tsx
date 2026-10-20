@@ -219,6 +219,7 @@ describe("Asrama > Kesehatan for a writer", () => {
         <DormHealthNoteForm
           today="2026-10-16"
           newKey="00000000-0000-4000-8000-000000000969"
+          marks
         />
       }
       readOnlyNote={LIST_READER_NOTE}

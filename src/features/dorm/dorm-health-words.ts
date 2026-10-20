@@ -4,6 +4,9 @@
  */
 
 import type { RowLimit } from "@/auth/access";
+import { savedNoteMessage } from "@/health-notes/health-words";
+import { MARK_SAVED_TOO, savedMarkMessage } from "./mental-health-mark-words";
+import type { DormHealthSaved } from "./save-dorm-health-note";
 
 /** The line under the tab's title, as in the prototype. */
 export const DORM_HEALTH_LEDE =
@@ -51,4 +54,12 @@ export function reachHint(limit: RowLimit): string {
   if (ownMentees && ownProgram) return "anak asuh dan prodi Anda";
   if (ownMentees) return "anak asuh Anda";
   return "prodi Anda";
+}
+
+/** What the form says of a save that was kept: the note, the mark, or both. */
+export function savedDormHealthMessage(saved: DormHealthSaved): string {
+  if (saved.category === null) return savedMarkMessage(saved.name);
+  const note = savedNoteMessage(saved.name, saved.category);
+  if (!saved.markSaved) return note;
+  return `${note} ${MARK_SAVED_TOO}`;
 }

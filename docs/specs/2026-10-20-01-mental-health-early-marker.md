@@ -90,7 +90,7 @@ record on the Asrama page, so only five roles ever see it.
   kinds.
 - [x] 2. The rights to write and to read the mark are added to the
   permission list, with checks for every refused role.
-- [ ] 3. Writers set, change and clear the mark in the health form;
+- [x] 3. Writers set, change and clear the mark in the health form;
   a referral without an observation is refused.
 - [ ] 4. The number, the filter choice, the badge and the observation
   show to the four roles only.

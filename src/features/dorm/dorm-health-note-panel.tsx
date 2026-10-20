@@ -1,3 +1,5 @@
+"use client";
+
 import {
   HealthNoteForm,
   type PickerWords,
@@ -8,6 +10,9 @@ import {
   saveDormHealthNoteAction,
   searchDormHealthStudentsAction,
 } from "./dorm-health-actions";
+import type { DormHealthSubject } from "./dorm-health-subject";
+import { MarkFields } from "./mental-health-mark-fields";
+import type { MentalHealthMark } from "./mental-health-mark-ids";
 
 /** What "Mahasiswa" says on Asrama > Kesehatan, which offers residents only. */
 export const ASRAMA_PICKER: PickerWords = {
@@ -16,15 +21,32 @@ export const ASRAMA_PICKER: PickerWords = {
 };
 
 /**
+ * A new key for each mark the server gives, so the fields start again
+ * from a mark saved, and keep what is typed while it stays the same.
+ */
+function markKey(mark: MentalHealthMark | null): string {
+  if (mark === null) return "none";
+  return `${mark.category}:${mark.observation}`;
+}
+
+function markFieldsOf(subject: DormHealthSubject) {
+  return <MarkFields key={markKey(subject.mark)} mark={subject.mark} />;
+}
+
+/**
  * The form of "Catatan kesehatan" for the writers, with the line on whom
- * it is for, as in the prototype.
+ * it is for, as in the prototype, and "Potensi kesehatan mental" for an
+ * account that may set the mark.
  */
 export function DormHealthNoteForm({
   today,
   newKey,
+  marks,
 }: {
   today: string;
   newKey: string;
+  /** Whether the account sets marks "Potensi kesehatan mental". */
+  marks: boolean;
 }) {
   return (
     <>
@@ -43,6 +65,7 @@ export function DormHealthNoteForm({
           save: saveDormHealthNoteAction,
         }}
         words={ASRAMA_PICKER}
+        {...(marks ? { more: markFieldsOf } : {})}
       />
     </>
   );
