@@ -18,11 +18,23 @@ const NoticeContext = createContext<Notice>({
 /**
  * Holds what a press did when the page drawn again after it took its
  * card away, or gave the card anew, until the next press. Being a part
- * of the browser, it stays while the page is drawn again; give it a
- * `key` of the address to clear it when the address changes.
+ * of the browser, it stays while the page is drawn again. It is cleared
+ * when `clearOn` changes, such as the address it is shown at, while the
+ * forms inside keep what was typed.
  */
-export function ScheduleNotice({ children }: { children: ReactNode }) {
+export function ScheduleNotice({
+  clearOn,
+  children,
+}: {
+  clearOn: string;
+  children: ReactNode;
+}) {
   const [announced, announce] = useState<FormState | null>(null);
+  const [clearedOn, setClearedOn] = useState(clearOn);
+  if (clearedOn !== clearOn) {
+    setClearedOn(clearOn);
+    announce(null);
+  }
   return (
     <NoticeContext value={{ announced, announce }}>{children}</NoticeContext>
   );

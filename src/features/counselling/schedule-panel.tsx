@@ -46,7 +46,7 @@ export function SchedulePanel({
       </NumberCards>
       <ScheduleFilterRow filter={filter} />
       {/* A new filter or page starts with no message. */}
-      <ScheduleNotice key={scheduleListAddress(filter, board.page)}>
+      <ScheduleNotice clearOn={scheduleListAddress(filter, board.page)}>
         <ScheduleNoticeMessage />
         {cards.length === 0 ? (
           <p className={shared.empty}>Tidak ada konseling pada filter ini.</p>

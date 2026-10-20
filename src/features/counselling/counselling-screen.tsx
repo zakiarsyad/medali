@@ -73,7 +73,7 @@ function OwnPart({ own }: { own: OwnCounselling }) {
       <OwnConsentBox consent={own.consent} />
       {own.registration && (
         // A new step of Riwayat in the address starts with no message.
-        <ScheduleNotice key={own.registration.history.shown}>
+        <ScheduleNotice clearOn={String(own.registration.history.shown)}>
           <RegisterForm tomorrow={own.registration.tomorrow} />
           <OwnScheduleList
             schedules={own.registration.schedules}
