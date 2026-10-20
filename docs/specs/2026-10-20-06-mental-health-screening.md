@@ -106,7 +106,7 @@ see counts with no names. It is the most sensitive data in the app.
 
 ## Steps
 
-- [ ] 1. Screenings are stored, never erased, with made-up samples; the
+- [x] 1. Screenings are stored, never erased, with made-up samples; the
   right "Kesehatan mental" is added for Konselor, with checks.
 - [ ] 2. The level and advice rules, with checks.
 - [ ] 3. The tab shows "Keadaan darurat", the numbers and "Daftar
