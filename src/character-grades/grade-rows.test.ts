@@ -1,14 +1,11 @@
 // Sample Tahun akademik of this file: 3902 to 3902.
-import { eq, type SQL, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { type AccountForAccess, mayOpenTab } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { activityAttendances } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { scorePercent } from "@/features/activities/attendance-score";
-import { readStudentScores } from "@/features/activities/read-student-scores";
 import {
   addTestActivity,
   addTestAttendance,
@@ -19,29 +16,22 @@ import {
   addTestStudentAccount,
   TEST_DECIDED_AT,
 } from "@/features/activities/test-records";
-import { readBaseScore } from "@/features/curriculum/stored-base-score";
-import { readPeriodScores } from "@/features/mentoring/period-scores";
-import { addTestScore } from "@/features/mentoring/test-scores";
-import { sikuOf } from "@/features/siku/siku-score";
-import { readTotalsOf } from "@/features/siku/siku-totals";
-import { sikuNote } from "@/features/siku/siku-words";
-import { addTestEntry } from "@/features/siku/test-siku";
-import { readConversion } from "@/features/skpm/skpm-conversion";
-import { readSkpmScores } from "@/features/skpm/skpm-scores";
-import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
-import { START_PARAMS } from "./grade-address";
-import { type GradeParts, gradeInputsOf } from "./grade-inputs";
+import { START_PARAMS } from "@/features/character-grades/grade-address";
 import {
-  type AttendancePart,
   type GradeRow,
   gradeListOf,
-  gradeRowOf,
-  type SikuPart,
-} from "./grade-list";
-import { readGradeScheme } from "./grade-scheme";
-import { gradeVisibleTo, readGradeStudents } from "./grade-students";
-import { saveGradeScheme } from "./save-grade-scheme";
-import { FORTY_TWENTY, sentWithWeights } from "./test-scheme";
+} from "@/features/character-grades/grade-list";
+import { readGradeScheme } from "@/features/character-grades/grade-scheme";
+import { gradeVisibleTo } from "@/features/character-grades/grade-students";
+import { saveGradeScheme } from "@/features/character-grades/save-grade-scheme";
+import {
+  FORTY_TWENTY,
+  sentWithWeights,
+} from "@/features/character-grades/test-scheme";
+import { addTestScore } from "@/features/mentoring/test-scores";
+import { addTestEntry } from "@/features/siku/test-siku";
+import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
+import { readGradeRows } from "./grade-rows";
 
 /*
  * This file's own sample values: the Tahun akademik 3902, the programs
@@ -108,56 +98,18 @@ async function addRecords(db: Database) {
 type Records = Awaited<ReturnType<typeof addRecords>>;
 
 /**
- * The parts as the page of the tab reads them, each from its own area.
- * The page cannot be called from a check, so its reads are made here
- * the same way.
+ * The rows of the file's own students that an account sees on the tab,
+ * read as the page reads them.
  */
-async function readParts(
-  db: Database,
-  visible: SQL,
-  ids: readonly string[],
-): Promise<GradeParts> {
-  const base = (await readBaseScore(db)).score;
-  const { pointsForHundred } = await readConversion(db);
-  const running = await readRunningPeriod(db, TODAY);
-  const scores = await readStudentScores(db, visible, TODAY);
-  const attendance = new Map<string, AttendancePart>();
-  for (const [id, score] of scores) {
-    attendance.set(id, { ...score, percent: scorePercent(score) });
-  }
-  const siku = new Map<string, SikuPart>();
-  for (const [id, totals] of await readTotalsOf(db, ids)) {
-    siku.set(id, {
-      score: sikuOf(base, totals),
-      adjusted: totals.gains > 0 || totals.losses > 0,
-      note: sikuNote(base, totals),
-    });
-  }
-  const skpm = await readSkpmScores(db, ids, pointsForHundred);
-  return {
-    attendance,
-    mentoring: running
-      ? await readPeriodScores(db, ids, running.id)
-      : new Map(),
-    siku,
-    skpm: { uploadsInForce: skpm.uploads, scores: skpm.scores },
-  };
-}
-
-/** The rows of the file's own students that an account sees on the tab. */
 async function rowsFor(
   db: Database,
   records: Records,
   account: AccountForAccess,
 ): Promise<GradeRow[]> {
-  const visible = gradeVisibleTo(account);
-  const students = await readGradeStudents(db, visible);
-  const ids = students.map((student) => student.id);
-  const parts = await readParts(db, visible, ids);
   const { scheme } = await readGradeScheme(db);
-  return gradeInputsOf(students, parts)
-    .filter((input) => records.ids.includes(input.student.id))
-    .map((input) => gradeRowOf(input, scheme));
+  const visible = gradeVisibleTo(account);
+  const { rows } = await readGradeRows(db, visible, scheme, TODAY);
+  return rows.filter((row) => records.ids.includes(row.student.id));
 }
 
 async function aniRow(db: Database, records: Records): Promise<GradeRow> {
@@ -315,6 +267,11 @@ describe("the parts of the character grade", () => {
       // No upload; then 50, 80, 65, 72; the attendance verified, 100;
       // 5 SIKU points lost, 60; then weighted 40, 20, 20, 20.
       expect(finals).toEqual([null, 66.8, 79.3, 78, 82.4]);
+      expect((await aniRow(db, records)).siku).toEqual({
+        score: 60,
+        adjusted: true,
+        note: "SIKU 65 −5",
+      });
     });
   });
 });

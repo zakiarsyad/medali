@@ -32,6 +32,9 @@ while building.
 - `src/character-scores/`: the scores of a character assessment, their
   Rerata and predikat, how a Rerata is shown, and each student's latest
   assessment, read by every area that shows character scores.
+- `src/character-grades/`: each student's semester character grade with
+  its four parts, read from the areas each part belongs to, for every
+  screen that shows the grade.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.
