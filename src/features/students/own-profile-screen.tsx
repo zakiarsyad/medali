@@ -1,5 +1,6 @@
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
+import { surveyDraftKey } from "@/ui/survey-drafts";
 import { CATEGORIES, STATUS_LABELS } from "./labels";
 import type { OwnProfile } from "./own-profile";
 import { ownProfileLine } from "./own-profile-words";
@@ -15,7 +16,6 @@ import {
 } from "./student-fact-parts";
 import styles from "./student-list.module.css";
 import { StudentMentorFact } from "./student-mentor-fact";
-import { surveyDraftKey } from "./survey-draft";
 
 /**
  * Profil saya: a student's own record, to read only. It holds nothing

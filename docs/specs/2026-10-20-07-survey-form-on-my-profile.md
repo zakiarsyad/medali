@@ -122,9 +122,15 @@ shown per person.
    dan saran ditampilkan tanpa nama bila responden kelompok minimal 3
    orang."
 10. A half-filled form is kept in the browser of the device, one per
-    student and period, only until the first answer is sent, and is
-    forgotten then. A browser that keeps nothing, as a private window
-    may, simply loses it on a refresh; the page still works.
+    student and period, only until the first answer is sent, so a
+    refresh or a later visit on the same device before sending still
+    finds it. Because a device may be shared, it is forgotten: after a
+    send; at "Keluar", which forgets every half-filled survey on the
+    device; and whenever the card opens, which forgets every one but
+    that of this student and this open period, and that one too once
+    an answer is sent, also when it was sent from another device. A
+    browser that keeps nothing, as a private window may, simply loses
+    it on a refresh; the page still works.
 11. A statement left unanswered is told on the device before anything
     is sent, and the server checks it again. A suggestion loses the
     spaces around it; one of spaces only is no suggestion; one longer

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./account-box.module.css";
 import type { SignedInAs } from "./menu-types";
+import { SignOutForm } from "./sign-out-form";
 
 function Who({ signedInAs }: { signedInAs: SignedInAs }) {
   return (
@@ -34,15 +35,7 @@ export function AccountBox({ signedInAs }: { signedInAs: SignedInAs }) {
           <Who signedInAs={signedInAs} />
         </div>
       )}
-      {signedInAs.maySignOut && (
-        // A plain form, sent by the browser itself: the answer is a new
-        // page load, which leaves no page of the app behind to go back to.
-        <form method="post" action="/keluar">
-          <button type="submit" className={styles.out}>
-            Keluar
-          </button>
-        </form>
-      )}
+      {signedInAs.maySignOut && <SignOutForm />}
     </div>
   );
 }

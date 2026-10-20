@@ -8,6 +8,7 @@ import {
 } from "@/mentoring/survey-statements";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { deviceStorage } from "@/ui/survey-drafts";
 import type { OwnSurvey } from "./own-survey";
 import styles from "./own-survey.module.css";
 import {
@@ -18,7 +19,6 @@ import {
 import { answeredWords, SCALE_KEY } from "./own-survey-words";
 import { sendOwnSurveyAction } from "./survey-actions";
 import {
-  deviceStorage,
   dropDraft,
   emptyScores,
   keepDraft,

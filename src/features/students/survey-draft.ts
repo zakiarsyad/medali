@@ -16,20 +16,6 @@ export function emptyScores(): number[] {
   return SURVEY_STATEMENTS.map(() => 0);
 }
 
-/** Where a draft is kept: one per student and survey period. */
-export function surveyDraftKey(studentId: string, surveyPeriodId: string) {
-  return `medali:survei:${studentId}:${surveyPeriodId}`;
-}
-
-/** The storage of the device, or null where the browser refuses it. */
-export function deviceStorage(): Storage | null {
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-}
-
 function draftOf(kept: unknown): SurveyDraft | null {
   if (typeof kept !== "object" || kept === null) return null;
   if (!("scores" in kept) || !Array.isArray(kept.scores)) return null;

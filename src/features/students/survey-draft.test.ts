@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  dropDraft,
-  keepDraft,
-  readDraft,
-  surveyDraftKey,
-} from "./survey-draft";
+import { surveyDraftKey } from "@/ui/survey-drafts";
+import { dropDraft, keepDraft, readDraft } from "./survey-draft";
 
 /** A storage of the device that holds what it is given. */
 function memory(): Storage {
@@ -45,15 +41,6 @@ const KEY = surveyDraftKey("student-1", "period-1");
 const DRAFT = { scores: [5, 0, 3, 0, 0, 0, 0, 0], suggestion: "Lanjut" };
 
 describe("the half-filled survey kept on the device", () => {
-  it("is kept per student and period", () => {
-    expect(surveyDraftKey("student-1", "period-1")).not.toBe(
-      surveyDraftKey("student-1", "period-2"),
-    );
-    expect(surveyDraftKey("student-1", "period-1")).not.toBe(
-      surveyDraftKey("student-2", "period-1"),
-    );
-  });
-
   it("comes back as it was kept", () => {
     const storage = memory();
     keepDraft(storage, KEY, DRAFT);

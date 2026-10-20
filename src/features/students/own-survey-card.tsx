@@ -1,8 +1,9 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { deviceStorage, forgetSurveyDrafts } from "@/ui/survey-drafts";
 import type { OwnSurvey, SentSurvey } from "./own-survey";
 import styles from "./own-survey.module.css";
 import { OwnSurveyForm } from "./own-survey-form";
@@ -80,6 +81,13 @@ export function OwnSurveyCard({
   const [said, setSaid] = useState(START);
   const [changing, setChanging] = useState(false);
   const { sent } = survey;
+  const draftKept = sent === null ? draftKey : null;
+
+  // A device may be shared: only the draft still being filled in stays,
+  // and none once an answer is sent.
+  useEffect(() => {
+    forgetSurveyDrafts(deviceStorage(), draftKept);
+  }, [draftKept]);
 
   function sentNow() {
     setChanging(false);
