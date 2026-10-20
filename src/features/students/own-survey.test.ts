@@ -106,4 +106,28 @@ describe("sendOwnSurvey", () => {
       expect(card?.sent).toBe(null);
     });
   });
+
+  it("changes the answer sent before when the student sends again", async () => {
+    await inTestDatabase(async (db) => {
+      const survey = await addTestSurvey(db, {
+        startYear: 4101,
+        nim: "9900920005",
+      });
+      const send = (scores: number[], suggestion: string) =>
+        sendOwnSurvey(db, survey.student, {
+          surveyPeriodId: survey.surveyPeriodId,
+          mentorId: survey.mentorId,
+          scores,
+          suggestion,
+        });
+      await send(SCORES, "Lanjutkan.");
+
+      const changed = await send([1, 1, 1, 1, 1, 1, 1, 1], "");
+      const card = await readOwnSurvey(db, survey.student, TODAY);
+
+      expect(changed.ok).toBe(true);
+      expect(card?.sent?.scores).toEqual([1, 1, 1, 1, 1, 1, 1, 1]);
+      expect(card?.sent?.suggestion).toBe(null);
+    });
+  });
 });

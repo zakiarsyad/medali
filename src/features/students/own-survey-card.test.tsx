@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { SURVEY_STATEMENTS } from "@/mentoring/survey-statements";
 import type { OwnSurvey } from "./own-survey";
 import { OwnSurveyCard } from "./own-survey-card";
+import { OwnSurveyForm } from "./own-survey-form";
 
 const SURVEY: OwnSurvey = {
   surveyPeriodId: "00000000-0000-4000-8000-000000000101",
@@ -51,5 +52,54 @@ describe("OwnSurveyCard before anything is sent", () => {
 
   it("says that answers are not shown per person", () => {
     expect(card).toContain("tidak ditampilkan per orang");
+  });
+});
+
+describe("OwnSurveyCard once an answer is sent", () => {
+  const card = cardOf({
+    ...SURVEY,
+    sent: {
+      scores: [5, 4, 3, 2, 1, 2, 3, 4],
+      suggestion: "Lanjutkan.",
+      sentAt: new Date("2026-10-21T03:05:00Z"),
+      mentorName: "Pengasuh Uji Lama, M.Si.",
+    },
+  });
+
+  it("shows Terkirim, the time, the mentor the answer is for and Ubah jawaban", () => {
+    expect(card).toContain("Terkirim");
+    expect(card).toContain(
+      "Terima kasih, jawaban Anda untuk Pengasuh Uji Lama, M.Si. terkirim 21 Okt 2026, 10.05. Anda masih dapat mengubahnya sampai periode ditutup.",
+    );
+    expect(card).toContain("Ubah jawaban");
+  });
+
+  it("shows no form until Ubah jawaban is pressed", () => {
+    expect(card).not.toContain('type="radio"');
+    expect(card).not.toContain("Kirim survei");
+    expect(card).not.toContain("Belum diisi");
+  });
+});
+
+describe("OwnSurveyForm while a sent answer is changed", () => {
+  const form = renderToStaticMarkup(
+    <OwnSurveyForm
+      survey={SURVEY}
+      draftKey="medali:survei:uji"
+      start={{ scores: [5, 4, 3, 2, 1, 2, 3, 4], suggestion: "Lanjutkan." }}
+      onSent={() => {}}
+      onCancel={() => {}}
+    />,
+  );
+
+  it("brings the sent answers back, each score chosen, with the suggestion", () => {
+    expect(form.match(/checked=""/g)).toHaveLength(8);
+    expect(form).toContain("Lanjutkan.");
+    expect(form).toContain("8 dari 8 pernyataan dijawab");
+  });
+
+  it("offers Batal beside Kirim survei", () => {
+    expect(form).toContain("Kirim survei");
+    expect(form).toContain("Batal");
   });
 });

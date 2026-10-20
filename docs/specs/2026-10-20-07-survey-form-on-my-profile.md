@@ -131,6 +131,12 @@ shown per person.
     than 600 characters is refused with "Saran untuk pengasuh paling
     banyak 600 karakter." A kept answer is told with "Terima kasih.
     Survei kepuasan pengasuhan terkirim.", as in the prototype.
+12. Once sent, the card reads "Terima kasih, jawaban Anda untuk (name)
+    terkirim (date and time). Anda masih dapat mengubahnya sampai
+    periode ditutup.", as in the prototype, naming the mentor the answer
+    counts for. While an answer is changed the badge reads "Ubah
+    jawaban", as in the prototype, and "Batal" shows only then. A change
+    that is not sent yet is not kept on the device.
 
 ## Steps
 
@@ -138,7 +144,7 @@ shown per person.
 - [x] 2. The right to answer the survey for oneself, with its checks.
 - [x] 3. The card shows the form, keeps a half-filled form on the
   device, and saves a complete answer.
-- [ ] 4. "Terkirim", "Ubah jawaban" and "Batal".
+- [x] 4. "Terkirim", "Ubah jawaban" and "Batal".
 - [ ] 5. The closed-period, no-mentor and double-send cases, and the
   refused hand-made requests.
 - [ ] 6. "Batalkan periode" names the number of answers and marks them

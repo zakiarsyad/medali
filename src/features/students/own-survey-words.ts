@@ -3,8 +3,8 @@ import {
   SURVEY_SCALE,
   SURVEY_STATEMENTS,
 } from "@/mentoring/survey-statements";
-import { shownDay } from "@/ui/day";
-import type { OwnSurvey } from "./own-survey";
+import { shownDay, shownMoment } from "@/ui/day";
+import type { OwnSurvey, SentSurvey } from "./own-survey";
 
 export const SURVEY_TITLE = "Survei kepuasan pengasuhan";
 
@@ -28,3 +28,8 @@ export function answeredWords(answered: number): string {
 }
 
 export const SENT_THANKS = "Terima kasih. Survei kepuasan pengasuhan terkirim.";
+
+/** What the card says of an answer that was sent. */
+export function sentWords(sent: Pick<SentSurvey, "mentorName" | "sentAt">) {
+  return `Terima kasih, jawaban Anda untuk ${sent.mentorName} terkirim ${shownMoment(sent.sentAt)}. Anda masih dapat mengubahnya sampai periode ditutup.`;
+}
