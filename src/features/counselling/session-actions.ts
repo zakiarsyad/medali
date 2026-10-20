@@ -6,7 +6,9 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
+import { readScheduleSession } from "./schedule-session";
 import type { SentSession } from "./session-rules";
+import type { ScheduleSession } from "./session-view";
 import { type SessionOutcome, writeSession } from "./write-session";
 
 /**
@@ -36,6 +38,18 @@ export async function writeSessionAction(
   form: FormData,
 ): Promise<SessionOutcome> {
   const actor = await keeper();
-  const press = { id: text(form, "id"), studentId: text(form, "studentId") };
+  const press = {
+    id: text(form, "id"),
+    studentId: text(form, "studentId"),
+    scheduleId: text(form, "scheduleId"),
+  };
   return writeSession(database(), actor, press, sentSessionOf(form));
+}
+
+/** What "Tandai selesai" opens once the schedule is Selesai. */
+export async function scheduleSessionAction(
+  scheduleId: string,
+): Promise<ScheduleSession> {
+  const actor = await keeper();
+  return readScheduleSession(database(), actor, scheduleId);
 }

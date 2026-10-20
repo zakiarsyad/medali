@@ -46,7 +46,11 @@ function CounsellorPart({
         <CounsellorConsentPanel mayKeepSessions={mayKeepSessions} />
       )}
       {schedules && (
-        <SchedulePanel board={schedules.board} filter={schedules.filter} />
+        <SchedulePanel
+          board={schedules.board}
+          filter={schedules.filter}
+          mayKeepSessions={mayKeepSessions}
+        />
       )}
     </>
   );

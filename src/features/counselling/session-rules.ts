@@ -1,12 +1,13 @@
 import { isDay } from "@/db/is-day";
 import type { Parsed } from "@/parsed";
-import { COUNSELLING_TOPICS } from "./schedule-ids";
+import { COUNSELLING_TOPICS, type CounsellingWay } from "./schedule-ids";
 import { isOneOf } from "./schedule-rules";
 import {
   SESSION_FOLLOW_UPS,
   SESSION_KINDS,
   SESSION_NOTES_MAX,
   type SessionContent,
+  type SessionKind,
 } from "./session-ids";
 import {
   DAY_IN_FUTURE,
@@ -90,4 +91,14 @@ export function checkSession(
       nextDay: nextDay.value,
     },
   };
+}
+
+const KIND_OF_WAY: Record<CounsellingWay, SessionKind> = {
+  in_person: "individual_in_person",
+  online: "individual_online",
+};
+
+/** The Jenis a session written for a schedule starts with: that of its Cara. */
+export function kindOfWay(way: CounsellingWay): SessionKind {
+  return KIND_OF_WAY[way];
 }

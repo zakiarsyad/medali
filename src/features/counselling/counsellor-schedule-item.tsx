@@ -13,11 +13,16 @@ import {
   proposeScheduleAction,
   rescheduleScheduleAction,
 } from "./schedule-actions";
-import { useScheduleNotice } from "./schedule-notice";
+import {
+  NO_SESSION,
+  useScheduleNotice,
+  useScheduleSession,
+} from "./schedule-notice";
 import type { SentProposal } from "./schedule-rules";
 import { ScheduleTimeForm } from "./schedule-time-form";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import { DONE_QUESTION, MISSED_QUESTION } from "./schedule-words";
+import { scheduleSessionAction } from "./session-actions";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -62,18 +67,22 @@ const TIME_FORMS = {
  * first. After a press the card shows the request as the server gave it
  * back, also when the press was refused because someone changed it
  * first. A move or a mark draws the page again, which may take the card
- * away, so what it did is said above the cards.
+ * away, so what it did is said above the cards. For an account that may
+ * keep sessions, "Tandai selesai" also opens "Catat sesi" there.
  */
 export function CounsellorScheduleItem({
   card: first,
+  mayKeepSessions = false,
 }: {
   card: CounsellorScheduleCard;
+  mayKeepSessions?: boolean;
 }) {
   const [card, setCard] = useState(first);
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [openForm, setOpenForm] = useState<OpenForm>(null);
   const [pending, startSending] = useTransition();
   const announce = useScheduleNotice();
+  const [, showSession] = useScheduleSession();
 
   function answered(outcome: CounsellorMoveOutcome, redraws: boolean) {
     const said = messageOf(outcome);
@@ -92,8 +101,21 @@ export function CounsellorScheduleItem({
   ) {
     if (question && !window.confirm(question)) return;
     announce(null);
+    showSession(NO_SESSION);
     startSending(async () => {
       answered(await action(card.id, card.version), redraws);
+    });
+  }
+
+  function markDone() {
+    if (!window.confirm(DONE_QUESTION)) return;
+    announce(null);
+    showSession(NO_SESSION);
+    startSending(async () => {
+      const outcome = await markScheduleDoneAction(card.id, card.version);
+      answered(outcome, true);
+      if (outcome.kind !== "kept" || !mayKeepSessions) return;
+      showSession(await scheduleSessionAction(card.id));
     });
   }
 
@@ -101,6 +123,7 @@ export function CounsellorScheduleItem({
     if (openForm === null) return;
     const { send, redraws } = TIME_FORMS[openForm];
     announce(null);
+    showSession(NO_SESSION);
     startSending(async () => {
       answered(await send(card.id, card.version, proposalOf(form)), redraws);
     });
@@ -141,7 +164,7 @@ export function CounsellorScheduleItem({
             type="button"
             className={shared.button}
             disabled={pending}
-            onClick={() => press(markScheduleDoneAction, true, DONE_QUESTION)}
+            onClick={markDone}
           >
             Tandai selesai
           </button>

@@ -12,11 +12,14 @@ import { STUDENT_NOT_FOUND } from "./consent-words";
 import {
   DAY_IN_FUTURE,
   NEEDS_CONSENT,
+  SCHEDULE_HAS_SESSION,
+  SCHEDULE_NOT_DONE,
   SESSION_ALREADY_SENT,
   SESSION_NOT_ALLOWED,
   SESSION_SAVED,
 } from "./session-words";
 import { addTestActor, addTestPeople } from "./test-consents";
+import { addTestSchedule } from "./test-schedules";
 import { addConsentedPeople, TEST_SESSION } from "./test-sessions";
 import { writeSession } from "./write-session";
 
@@ -257,4 +260,111 @@ describe("Simpan sesi of Konselor", () => {
       });
     },
   );
+});
+
+describe("Simpan sesi for a schedule marked Selesai", () => {
+  async function withSchedule(
+    db: Database,
+    nims: string[],
+    status: "done" | "scheduled" = "done",
+  ) {
+    const people = await addConsentedPeople(
+      db,
+      `Prodi Uji Sesi Jadwal ${nims[0]}`,
+      nims,
+    );
+    const [student] = people.students;
+    if (!student?.studentId) throw new Error("Student missing.");
+    const scheduleId = await addTestSchedule(db, {
+      studentId: student.studentId,
+      studentAccountId: student.id,
+      status,
+      day: "2026-10-19",
+      counsellorId: people.counsellor.id,
+    });
+    return { ...people, studentId: student.studentId, scheduleId };
+  }
+
+  it("keeps the session with its schedule", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, studentId, scheduleId } = await withSchedule(db, [
+        "9986211020",
+      ]);
+
+      const outcome = await writeSession(
+        db,
+        counsellor,
+        { id: randomUUID(), studentId, scheduleId },
+        TEST_SESSION,
+        NOW,
+      );
+
+      expect(outcome).toMatchObject({ kind: "kept", done: SESSION_SAVED });
+      const [kept] = await sessionsOf(db, studentId);
+      expect(kept?.scheduleId).toBe(scheduleId);
+    });
+  });
+
+  it("keeps one session at most for a schedule, refusing a second form", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, studentId, scheduleId } = await withSchedule(db, [
+        "9986211021",
+      ]);
+      const first = { id: randomUUID(), studentId, scheduleId };
+      await writeSession(db, counsellor, first, TEST_SESSION, NOW);
+
+      const second = await writeSession(
+        db,
+        counsellor,
+        { id: randomUUID(), studentId, scheduleId },
+        TEST_SESSION,
+        NOW,
+      );
+
+      expect(second).toEqual({ kind: "refused", error: SCHEDULE_HAS_SESSION });
+      expect(await sessionsOf(db, studentId)).toHaveLength(1);
+    });
+  });
+
+  it("is refused for a schedule not Selesai, or of another student", async () => {
+    await inTestDatabase(async (db) => {
+      const scheduled = await withSchedule(db, ["9986211022"], "scheduled");
+      const other = await withSchedule(db, ["9986211023"]);
+
+      for (const [studentId, scheduleId] of [
+        [scheduled.studentId, scheduled.scheduleId],
+        [scheduled.studentId, other.scheduleId],
+        [scheduled.studentId, randomUUID()],
+        [scheduled.studentId, "bukan-id"],
+      ]) {
+        const outcome = await writeSession(
+          db,
+          scheduled.counsellor,
+          { id: randomUUID(), studentId, scheduleId },
+          TEST_SESSION,
+          NOW,
+        );
+        expect(outcome).toEqual({ kind: "refused", error: SCHEDULE_NOT_DONE });
+      }
+      expect(await sessionsOf(db, scheduled.studentId)).toHaveLength(0);
+    });
+  });
+
+  it("keeps a session with no schedule when none is sent", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, studentId } = await withSchedule(db, ["9986211024"]);
+
+      const outcome = await writeSession(
+        db,
+        counsellor,
+        { id: randomUUID(), studentId, scheduleId: "" },
+        TEST_SESSION,
+        NOW,
+      );
+
+      expect(outcome.kind).toBe("kept");
+      const [kept] = await sessionsOf(db, studentId);
+      expect(kept?.scheduleId).toBeNull();
+    });
+  });
 });

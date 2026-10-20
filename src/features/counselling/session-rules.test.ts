@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkSession, type SentSession } from "./session-rules";
+import { checkSession, kindOfWay, type SentSession } from "./session-rules";
 import {
   DAY_IN_FUTURE,
   NEXT_BEFORE_DAY,
@@ -107,5 +107,12 @@ describe("a session Konselor sends", () => {
       ok: false,
       error: PICK_SESSION_CHOICES,
     });
+  });
+});
+
+describe("the Jenis a session for a schedule starts with", () => {
+  it("follows its Cara", () => {
+    expect(kindOfWay("in_person")).toBe("individual_in_person");
+    expect(kindOfWay("online")).toBe("individual_online");
   });
 });

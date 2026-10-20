@@ -1,15 +1,22 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
-import { counsellingSessionChanges, counsellingSessions } from "@/db/schema";
+import {
+  counsellingSchedules,
+  counsellingSessionChanges,
+  counsellingSessions,
+} from "@/db/schema";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { holdsConsent, isSessionStudent } from "./session-checks";
+import { contentOf, isSameContent } from "./session-content";
 import type { SessionContent } from "./session-ids";
 import { checkSession, type SentSession } from "./session-rules";
 import {
   NEEDS_CONSENT,
+  SCHEDULE_HAS_SESSION,
+  SCHEDULE_NOT_DONE,
   SESSION_ALREADY_SENT,
   SESSION_NOT_ALLOWED,
   SESSION_SAVED,
@@ -22,76 +29,81 @@ export type SessionOutcome =
 
 const refused = (error: string): SessionOutcome => ({ kind: "refused", error });
 
+const KEPT: SessionOutcome = { kind: "kept", done: SESSION_SAVED };
+
 /** Which session a form writes, and for whom. None of it is trusted. */
 export interface SessionPress {
   /** The key the form made when it opened. */
   id: unknown;
   studentId: unknown;
+  /** The schedule marked Selesai it is written for; empty for none. */
+  scheduleId?: unknown;
 }
 
 interface Writing {
   actorId: string;
   id: string;
   studentId: string;
+  scheduleId: string | null;
   content: SessionContent;
   now: Date;
 }
 
-type StoredSession = typeof counsellingSessions.$inferSelect;
-
-/** What a stored session holds, as its log keeps it. */
-export function contentOf(session: StoredSession): SessionContent {
-  return {
-    day: session.day,
-    kind: session.kind,
-    topic: session.topic,
-    notes: session.notes,
-    followUp: session.followUp,
-    nextDay: session.nextDay,
-  };
+/** The schedule sent: null for none, false for what is no key. */
+function sentSchedule(sent: unknown): string | null | false {
+  if (sent === undefined || sent === null || sent === "") return null;
+  return typeof sent === "string" && isUuid(sent) ? sent : false;
 }
 
-const CONTENT_KEYS: readonly (keyof SessionContent)[] = [
-  "day",
-  "kind",
-  "topic",
-  "notes",
-  "followUp",
-  "nextDay",
-];
-
-/** Whether two contents of a session are the same in every part. */
-export function isSameContent(
-  one: SessionContent,
-  other: SessionContent,
-): boolean {
-  return CONTENT_KEYS.every((key) => one[key] === other[key]);
+/** Whether the schedule is Selesai, and the student's own. */
+async function isDoneScheduleOf(
+  tx: Database,
+  scheduleId: string,
+  studentId: string,
+): Promise<boolean> {
+  const [found] = await tx
+    .select({ id: counsellingSchedules.id })
+    .from(counsellingSchedules)
+    .where(
+      and(
+        eq(counsellingSchedules.id, scheduleId),
+        eq(counsellingSchedules.studentId, studentId),
+        eq(counsellingSchedules.status, "done"),
+      ),
+    );
+  return found !== undefined;
 }
 
 /**
- * Whether the session kept under the key is the one this form wrote
- * before: by the same account, for the same student, with the same
- * content. A form changed after it was sent is not the same form.
+ * Why nothing was added: the same form sent before is answered as the
+ * first time; another form for a schedule that has its session, or the
+ * same form changed after it was sent, is refused.
  */
-async function isWrittenBefore(
+async function answerNotAdded(
   tx: Database,
   writing: Writing,
-): Promise<boolean> {
+): Promise<SessionOutcome> {
   const [kept] = await tx
     .select()
     .from(counsellingSessions)
     .where(eq(counsellingSessions.id, writing.id));
-  if (!kept) return false;
-  return (
+  if (!kept) return refused(SCHEDULE_HAS_SESSION);
+  const isSame =
     kept.writtenBy === writing.actorId &&
     kept.studentId === writing.studentId &&
-    isSameContent(contentOf(kept), writing.content)
-  );
+    kept.scheduleId === writing.scheduleId &&
+    isSameContent(contentOf(kept), writing.content);
+  return isSame ? KEPT : refused(SESSION_ALREADY_SENT);
 }
 
 async function write(tx: Database, writing: Writing): Promise<SessionOutcome> {
   if (!(await holdsConsent(tx, writing.studentId))) {
     return refused(NEEDS_CONSENT);
+  }
+  const { scheduleId } = writing;
+  if (scheduleId !== null) {
+    const isDone = await isDoneScheduleOf(tx, scheduleId, writing.studentId);
+    if (!isDone) return refused(SCHEDULE_NOT_DONE);
   }
   // A second press waits here for the first to end, then adds nothing.
   const added = await tx
@@ -99,6 +111,7 @@ async function write(tx: Database, writing: Writing): Promise<SessionOutcome> {
     .values({
       id: writing.id,
       studentId: writing.studentId,
+      scheduleId,
       ...writing.content,
       writtenBy: writing.actorId,
       writtenAt: writing.now,
@@ -107,12 +120,7 @@ async function write(tx: Database, writing: Writing): Promise<SessionOutcome> {
     })
     .onConflictDoNothing()
     .returning({ id: counsellingSessions.id });
-  if (added.length === 0) {
-    const isSame = await isWrittenBefore(tx, writing);
-    return isSame
-      ? { kind: "kept", done: SESSION_SAVED }
-      : refused(SESSION_ALREADY_SENT);
-  }
+  if (added.length === 0) return answerNotAdded(tx, writing);
   await tx.insert(counsellingSessionChanges).values({
     sessionId: writing.id,
     changedBy: writing.actorId,
@@ -121,16 +129,18 @@ async function write(tx: Database, writing: Writing): Promise<SessionOutcome> {
     before: null,
     after: writing.content,
   });
-  return { kind: "kept", done: SESSION_SAVED };
+  return KEPT;
 }
 
 /**
  * "Simpan sesi": keeps a counselling session of a student whose consent
  * is Disetujui, as the work of Konselor, with its log line in the same
- * transaction. Refused, keeping nothing, for any role without the right,
- * for what the rules refuse, for a student not found, and while the
- * consent is not Disetujui. A form sent twice is kept once, and the
- * second press is answered as the first.
+ * transaction, and for the schedule marked Selesai it was opened from,
+ * when it was. Refused, keeping nothing, for any role without the right,
+ * for what the rules refuse, for a student not found, while the consent
+ * is not Disetujui, and for a schedule that is not the student's,
+ * not Selesai, or has its session. A form sent twice is kept once, and
+ * the second press is answered as the first.
  */
 export async function writeSession(
   db: Database,
@@ -152,10 +162,13 @@ export async function writeSession(
   if (typeof id !== "string" || !isUuid(id)) {
     return refused(SESSION_ALREADY_SENT);
   }
+  const scheduleId = sentSchedule(press.scheduleId);
+  if (scheduleId === false) return refused(SCHEDULE_NOT_DONE);
   const writing = {
     actorId: actor.id,
     id,
     studentId,
+    scheduleId,
     content: checked.value,
     now,
   };

@@ -48,3 +48,9 @@ export const SESSION_NOT_ALLOWED =
 
 export const SESSION_ALREADY_SENT =
   "Sesi ini sudah dicatat. Muat ulang halaman untuk mencatat sesi baru.";
+
+export const SCHEDULE_HAS_SESSION =
+  "Sesi untuk jadwal ini sudah dicatat. Muat ulang halaman.";
+
+export const SCHEDULE_NOT_DONE =
+  "Jadwal ini tidak ditemukan atau belum Selesai. Muat ulang halaman.";

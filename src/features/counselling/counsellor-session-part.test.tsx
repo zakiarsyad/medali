@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { ConsentStatus } from "./consent-ids";
 import type { ConsentView } from "./consent-view";
 import { CounsellorSessionPart } from "./counsellor-session-part";
+import { SessionForm } from "./session-form";
 import { NEEDS_CONSENT } from "./session-words";
 
 // 10:00 on campus on 16 October 2026.
@@ -79,5 +80,38 @@ describe("the sessions of a student picked by Konselor", () => {
     expect(page).toContain("Sesi berikutnya (opsional)");
     expect(page).toContain(`name="studentId" value="${STUDENT_ID}"`);
     expect(page).toContain("Simpan sesi");
+  });
+});
+
+describe("Catat sesi opened by Tandai selesai", () => {
+  it("is for that schedule, under the student's name, starting with its day and the Jenis of its Cara", () => {
+    const page = renderToStaticMarkup(
+      <SessionForm
+        studentId={STUDENT_ID}
+        start={{
+          scheduleId: "00000000-0000-4000-8000-0000005c0ed1",
+          studentId: STUDENT_ID,
+          name: "Mahasiswa Uji Layar Sesi",
+          day: "2026-10-19",
+          kind: "individual_online",
+        }}
+      />,
+    );
+
+    expect(page).toContain("Catat sesi");
+    expect(page).toContain("Mahasiswa Uji Layar Sesi");
+    expect(page).toContain(
+      'name="scheduleId" value="00000000-0000-4000-8000-0000005c0ed1"',
+    );
+    expect(page).toMatch(/name="day" value="2026-10-19"/);
+    expect(page).toContain(
+      '<option value="individual_online" selected="">Individu daring</option>',
+    );
+  });
+
+  it("is for no schedule when written from Persetujuan konseling", () => {
+    const page = renderToStaticMarkup(<SessionForm studentId={STUDENT_ID} />);
+
+    expect(page).toContain('name="scheduleId" value=""');
   });
 });

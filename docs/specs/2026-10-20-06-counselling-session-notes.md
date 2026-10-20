@@ -90,6 +90,6 @@ The notes are read by Konselor only and are never shared.
   sessions for the sample students.
 - [x] 2. "Catat sesi" shows in the consent panel only with consent, and
   the server lets only Konselor write.
-- [ ] 3. "Tandai selesai" opens the form for that schedule.
+- [x] 3. "Tandai selesai" opens the form for that schedule.
 - [ ] 4. "Riwayat sesi" with "Ubah", and each reading is logged.
 - [ ] 5. The student sees their number of sessions and the next session.
