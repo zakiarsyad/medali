@@ -212,3 +212,32 @@ describe("OwnProfileScreen", () => {
     ]);
   });
 });
+
+describe("OwnProfileScreen with the survey", () => {
+  const SURVEY = {
+    surveyPeriodId: "00000000-0000-4000-8000-000000000093",
+    periodTitle: "Ganjil 2026/2027",
+    endsOn: "2026-11-03",
+    mentorId: "00000000-0000-4000-8000-000000000094",
+    mentorName: "Pengasuh Uji Layar, M.Si.",
+    sent: null,
+  };
+
+  it("puts Survei kepuasan pengasuhan above the student's record while a period is Dibuka", () => {
+    const screen = renderToStaticMarkup(
+      <OwnProfileScreen
+        student={{ ...STUDENT, mentorGroup: GROUP }}
+        period={PERIOD}
+        survey={SURVEY}
+      />,
+    );
+
+    const card = screen.indexOf("Survei kepuasan pengasuhan");
+    expect(card).toBeGreaterThan(-1);
+    expect(card).toBeLessThan(screen.indexOf("<dl"));
+  });
+
+  it("shows no survey when there is none to fill in", () => {
+    expect(screenOf(STUDENT)).not.toContain("Survei kepuasan pengasuhan");
+  });
+});

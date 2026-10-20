@@ -12,6 +12,7 @@ function shown(): string {
         periodId={PERIOD_ID}
         startsOn="2026-10-13"
         endsOn="2026-10-27"
+        answers={3}
       />
     </SurveySaidAbove>,
   );

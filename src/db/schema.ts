@@ -175,6 +175,12 @@ import {
   REPLACEMENT_REASONS,
 } from "@/mentoring/replacement-ids";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
+import {
+  HIGHEST_SCORE,
+  LOWEST_SCORE,
+  SUGGESTION_MAX,
+  SURVEY_STATEMENTS,
+} from "@/mentoring/survey-statements";
 import type { ValueKey } from "@/ui/medali-values";
 
 export const role = pgEnum("role", ROLE_IDS);
@@ -2260,6 +2266,57 @@ export const studentSurveyPeriods = pgTable(
     check(
       "student_survey_periods_not_closed_and_cancelled",
       sql`${table.closedAt} is null or ${table.cancelledAt} is null`,
+    ),
+  ],
+);
+
+/**
+ * One student's answer to the satisfaction survey of a survey period: a
+ * score of 1 to 5 for each of the eight statements and an optional
+ * suggestion. A student has one answer per period: sending again changes
+ * it. It counts for the group and the mentor named on the form at the
+ * latest send. It holds who answered, so they can change it, but no
+ * screen shows it per person. The answers of a cancelled period are kept
+ * and used in no recap.
+ */
+export const studentSurveyAnswers = pgTable(
+  "student_survey_answers",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    surveyPeriodId: uuid()
+      .notNull()
+      .references(() => studentSurveyPeriods.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    mentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** The score of each statement, in the order of the statements. */
+    scores: smallint().array().notNull(),
+    /** "Saran untuk pengasuh". Empty when none was given. */
+    suggestion: text(),
+    sentAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("student_survey_answers_one_per_student").on(
+      table.surveyPeriodId,
+      table.studentId,
+    ),
+    check(
+      "student_survey_answers_a_score_for_each_statement",
+      sql`cardinality(${table.scores}) = ${sql.raw(String(SURVEY_STATEMENTS.length))}
+        and array_position(${table.scores}, null) is null
+        and ${sql.raw(String(LOWEST_SCORE))} <= all(${table.scores})
+        and ${sql.raw(String(HIGHEST_SCORE))} >= all(${table.scores})`,
+    ),
+    check(
+      "student_survey_answers_suggestion_length",
+      sql`${table.suggestion} is null or (btrim(${table.suggestion}) <> ''
+        and char_length(${table.suggestion}) <= ${sql.raw(String(SUGGESTION_MAX))})`,
     ),
   ],
 );

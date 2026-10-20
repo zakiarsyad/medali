@@ -1,7 +1,7 @@
+import { SURVEY_STATEMENTS } from "@/mentoring/survey-statements";
 import shared from "@/ui/data-screen.module.css";
 import { FAIR_FROM, GOOD_FROM } from "./evaluation-result";
 import styles from "./mentor-groups.module.css";
-import { SURVEY_STATEMENTS } from "./survey-statements";
 
 /**
  * "Komponen evaluasi pengasuhan": the two parts of the result, how they

@@ -25,9 +25,14 @@ export function surveyDaysWords(
   return `${shownDay(card.startsOn)} sampai ${shownDay(card.endsOn)} · dibuka oleh ${card.openerName}`;
 }
 
-/** "Responden": how many of the students who can answer did. */
+/**
+ * "Responden": how many of the students who can answer did, with the
+ * share of them, which is left out when no student can answer.
+ */
 export function respondentWords(answered: number, pool: number): string {
-  return `${answered.toLocaleString("id-ID")} dari ${pool.toLocaleString("id-ID")}`;
+  const counted = `${answered.toLocaleString("id-ID")} dari ${pool.toLocaleString("id-ID")}`;
+  if (pool === 0) return counted;
+  return `${counted} (${Math.round((answered / pool) * 100)}%)`;
 }
 
 /** "Bobot": both weights of a period. */
@@ -46,6 +51,13 @@ export const CLOSE_QUESTION =
 export const CLOSED_WORDS =
   "Periode evaluasi ditutup. Mahasiswa tidak dapat mengisi survei lagi.";
 
-export const CANCEL_QUESTION = "Batalkan periode ini?";
+/**
+ * What "Batalkan periode" asks, naming the answers that came in: they
+ * are kept and not used.
+ */
+export function cancelQuestion(answers: number): string {
+  if (answers === 0) return "Batalkan periode ini?";
+  return `Batalkan periode ini? ${answers.toLocaleString("id-ID")} jawaban survei yang sudah masuk tidak akan dipakai.`;
+}
 
 export const CANCELLED_SURVEY_WORDS = "Periode evaluasi dibatalkan.";

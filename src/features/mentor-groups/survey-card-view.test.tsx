@@ -13,6 +13,8 @@ const CARD: RunningSurveyCard = {
   openerName: "Kepala Uji",
   status: "open",
   respondentPool: 28,
+  answered: 7,
+  answers: 7,
 };
 
 function shown(more: Partial<RunningSurveyCard> = {}): string {
@@ -29,10 +31,10 @@ describe("the card of the running survey period", () => {
     );
   });
 
-  it("shows Responden as none of the students who can answer, and both weights", () => {
+  it("shows Responden as the answers out of the students who can answer, with the share, and both weights", () => {
     const page = shown();
 
-    expect(page).toContain("<dt>Responden</dt><dd>0 dari 28</dd>");
+    expect(page).toContain("<dt>Responden</dt><dd>7 dari 28 (25%)</dd>");
     expect(page).toContain(
       "<dt>Bobot</dt><dd>Capaian 60% · umpan balik 40%</dd>",
     );

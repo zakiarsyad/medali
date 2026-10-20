@@ -1,5 +1,5 @@
 {
-  "id": "c1fc169a-c4b8-4af0-af6a-6df668e271ed",
+  "id": "5560f818-b039-4863-937c-ed77d09d310b",
   "prevId": "139990b0-5824-423d-aaea-39497e8125d6",
   "version": "7",
   "dialect": "postgresql",
@@ -2581,392 +2581,6 @@
         "counselling_schedules_counsellor_once_proposed": {
           "name": "counselling_schedules_counsellor_once_proposed",
           "value": "\"counselling_schedules\".\"status\"::text in ('submitted', 'cancelled') or \"counselling_schedules\".\"counsellor_id\" is not null"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.counselling_session_changes": {
-      "name": "counselling_session_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "session_id": {
-          "name": "session_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "step": {
-          "name": "step",
-          "type": "counselling_session_step",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "before": {
-          "name": "before",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "after": {
-          "name": "after",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_session_changes_session": {
-          "name": "counselling_session_changes_session",
-          "columns": [
-            {
-              "expression": "session_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "changed_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_session_changes_session_id_counselling_sessions_id_fk": {
-          "name": "counselling_session_changes_session_id_counselling_sessions_id_fk",
-          "tableFrom": "counselling_session_changes",
-          "tableTo": "counselling_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_session_changes_changed_by_accounts_id_fk": {
-          "name": "counselling_session_changes_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_session_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.counselling_session_reads": {
-      "name": "counselling_session_reads",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "read_by": {
-          "name": "read_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "read_at": {
-          "name": "read_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_session_reads_student": {
-          "name": "counselling_session_reads_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "read_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_session_reads_student_id_students_id_fk": {
-          "name": "counselling_session_reads_student_id_students_id_fk",
-          "tableFrom": "counselling_session_reads",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_session_reads_read_by_accounts_id_fk": {
-          "name": "counselling_session_reads_read_by_accounts_id_fk",
-          "tableFrom": "counselling_session_reads",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "read_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.counselling_sessions": {
-      "name": "counselling_sessions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "schedule_id": {
-          "name": "schedule_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "counselling_session_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "topic": {
-          "name": "topic",
-          "type": "counselling_topic",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "follow_up": {
-          "name": "follow_up",
-          "type": "counselling_follow_up",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "next_day": {
-          "name": "next_day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "written_by": {
-          "name": "written_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "written_at": {
-          "name": "written_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "counselling_sessions_student": {
-          "name": "counselling_sessions_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "written_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "counselling_sessions_student_id_students_id_fk": {
-          "name": "counselling_sessions_student_id_students_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_sessions_schedule_id_counselling_schedules_id_fk": {
-          "name": "counselling_sessions_schedule_id_counselling_schedules_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "counselling_schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_sessions_written_by_accounts_id_fk": {
-          "name": "counselling_sessions_written_by_accounts_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "written_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "counselling_sessions_changed_by_accounts_id_fk": {
-          "name": "counselling_sessions_changed_by_accounts_id_fk",
-          "tableFrom": "counselling_sessions",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "counselling_sessions_one_per_schedule": {
-          "name": "counselling_sessions_one_per_schedule",
-          "nullsNotDistinct": false,
-          "columns": [
-            "schedule_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "counselling_sessions_notes_length": {
-          "name": "counselling_sessions_notes_length",
-          "value": "char_length(trim(\"counselling_sessions\".\"notes\")) > 0 and char_length(\"counselling_sessions\".\"notes\") <= 5000"
-        },
-        "counselling_sessions_next_after_day": {
-          "name": "counselling_sessions_next_after_day",
-          "value": "\"counselling_sessions\".\"next_day\" is null or \"counselling_sessions\".\"next_day\" >= \"counselling_sessions\".\"day\""
         }
       },
       "isRLSEnabled": false
@@ -10879,6 +10493,152 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.student_survey_answers": {
+      "name": "student_survey_answers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "survey_period_id": {
+          "name": "survey_period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mentor_id": {
+          "name": "mentor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scores": {
+          "name": "scores",
+          "type": "smallint[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggestion": {
+          "name": "suggestion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "student_survey_answers_one_per_student": {
+          "name": "student_survey_answers_one_per_student",
+          "columns": [
+            {
+              "expression": "survey_period_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "student_survey_answers_survey_period_id_student_survey_periods_id_fk": {
+          "name": "student_survey_answers_survey_period_id_student_survey_periods_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "student_survey_periods",
+          "columnsFrom": [
+            "survey_period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_student_id_students_id_fk": {
+          "name": "student_survey_answers_student_id_students_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_group_id_mentor_groups_id_fk": {
+          "name": "student_survey_answers_group_id_mentor_groups_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "mentor_groups",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_mentor_id_accounts_id_fk": {
+          "name": "student_survey_answers_mentor_id_accounts_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "mentor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "student_survey_answers_a_score_for_each_statement": {
+          "name": "student_survey_answers_a_score_for_each_statement",
+          "value": "cardinality(\"student_survey_answers\".\"scores\") = 8\n        and array_position(\"student_survey_answers\".\"scores\", null) is null\n        and 1 <= all(\"student_survey_answers\".\"scores\")\n        and 5 >= all(\"student_survey_answers\".\"scores\")"
+        },
+        "student_survey_answers_suggestion_length": {
+          "name": "student_survey_answers_suggestion_length",
+          "value": "\"student_survey_answers\".\"suggestion\" is null or (btrim(\"student_survey_answers\".\"suggestion\") <> ''\n        and char_length(\"student_survey_answers\".\"suggestion\") <= 600)"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.student_survey_periods": {
       "name": "student_survey_periods",
       "schema": "",
@@ -11440,17 +11200,6 @@
         "registration"
       ]
     },
-    "public.counselling_follow_up": {
-      "name": "counselling_follow_up",
-      "schema": "public",
-      "values": [
-        "next_session",
-        "monitoring",
-        "refer_psychologist",
-        "refer_psychiatrist",
-        "closed"
-      ]
-    },
     "public.counselling_hour": {
       "name": "counselling_hour",
       "schema": "public",
@@ -11493,23 +11242,6 @@
         "reschedule",
         "mark_done",
         "mark_missed"
-      ]
-    },
-    "public.counselling_session_kind": {
-      "name": "counselling_session_kind",
-      "schema": "public",
-      "values": [
-        "individual_in_person",
-        "individual_online",
-        "group"
-      ]
-    },
-    "public.counselling_session_step": {
-      "name": "counselling_session_step",
-      "schema": "public",
-      "values": [
-        "write",
-        "change"
       ]
     },
     "public.counselling_topic": {

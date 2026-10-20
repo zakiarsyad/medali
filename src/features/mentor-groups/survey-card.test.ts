@@ -92,6 +92,8 @@ describe("readRunningSurveyCard", () => {
         openerName: "Kepala Uji Kartu",
         status: "open",
         respondentPool: 0,
+        answered: 0,
+        answers: 0,
       });
     });
   });

@@ -38,6 +38,7 @@ function ManagedPart({
           periodId={card.id}
           startsOn={card.startsOn}
           endsOn={card.endsOn}
+          answers={card.answers}
         />
       </>
     );
