@@ -3,6 +3,7 @@
 import {
   type KeyboardEvent,
   useActionState,
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -146,16 +147,20 @@ function StudentBox({ notes }: { notes: ActiveNote[] }) {
  * "Catatan pelanggaran": Mahasiswa with the box of their active notes,
  * Tanggal, Uraian pelanggaran with ready examples, Jenis hukuman, what
  * Hukuman lainnya is, and Keterangan. After a save the student stays
- * picked, their box is read again, and the form gets a new key for the
- * next save; the Kategori is worked out by the server.
+ * picked and the form gets a new key for the next save; the Kategori is
+ * worked out by the server. The box is read again whenever the notes in
+ * force change, by a save here or by "Hapus" in the list.
  */
 export function NoteForm({
   newKey,
   today,
+  inForce,
 }: {
   /** The key of the first save; two presses of "Simpan catatan" send the same one. */
   newKey: string;
   today: string;
+  /** Changes whenever the numbers of the running semester change. */
+  inForce: string;
 }) {
   const [key, setKey] = useState(newKey);
   const [picked, setPicked] = useState<NotePick | null>(null);
@@ -178,6 +183,20 @@ export function NoteForm({
     });
   }
 
+  // The page is drawn again after a save or a removal; only then is the
+  // box of the student still picked read again.
+  const shownInForce = useRef(inForce);
+  useEffect(() => {
+    if (shownInForce.current === inForce) return;
+    shownInForce.current = inForce;
+    const studentId = asked.current;
+    if (studentId === "") return;
+    startLoading(async () => {
+      const found = await noteStudentBoxAction(studentId);
+      if (asked.current === studentId) setNotes(found);
+    });
+  }, [inForce]);
+
   function pick(student: NotePick | null) {
     setPicked(student);
     setNotes(null);
@@ -195,7 +214,6 @@ export function NoteForm({
       setDescription("");
       setOtherPunishment("");
       setRemark("");
-      if (picked) load(picked.id);
     }
     return after;
   }

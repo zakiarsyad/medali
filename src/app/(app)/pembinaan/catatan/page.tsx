@@ -31,6 +31,7 @@ export default async function ViolationNotesPage(
       newKey={crypto.randomUUID()}
       today={today}
       semester={semesterWords(board.period)}
+      inForce={`${board.numbers.active}-${board.numbers.first}-${board.numbers.further}-${board.numbers.repeated}`}
     />
   ) : null;
   return (

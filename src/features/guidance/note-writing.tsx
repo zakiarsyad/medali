@@ -7,14 +7,16 @@ export function NoteWriting({
   newKey,
   today,
   semester,
+  inForce,
 }: {
   newKey: string;
   today: string;
   semester: string;
+  inForce: string;
 }) {
   return (
     <div className={styles.parts}>
-      <NoteForm newKey={newKey} today={today} />
+      <NoteForm newKey={newKey} today={today} inForce={inForce} />
       <NoteTerms semester={semester} />
     </div>
   );

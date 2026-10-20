@@ -13,7 +13,9 @@ vi.mock("./note-actions", () => ({
 const KEY = "00000000-0000-4000-8000-000000000701";
 
 function form(): string {
-  return renderToStaticMarkup(<NoteForm newKey={KEY} today="2026-10-20" />);
+  return renderToStaticMarkup(
+    <NoteForm newKey={KEY} today="2026-10-20" inForce="0-0-0-0" />,
+  );
 }
 
 describe("NoteForm", () => {
