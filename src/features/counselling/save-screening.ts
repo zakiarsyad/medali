@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
@@ -61,6 +62,26 @@ async function keepScreening(
   return added !== undefined;
 }
 
+/** Whether the screening kept under the key is this account's, for this student. */
+async function keptForSameForm(
+  tx: Database,
+  actorId: string,
+  key: string,
+  studentId: string,
+): Promise<boolean> {
+  const [kept] = await tx
+    .select({ id: mentalHealthScreenings.id })
+    .from(mentalHealthScreenings)
+    .where(
+      and(
+        eq(mentalHealthScreenings.id, key),
+        eq(mentalHealthScreenings.studentId, studentId),
+        eq(mentalHealthScreenings.savedBy, actorId),
+      ),
+    );
+  return kept !== undefined;
+}
+
 /**
  * "Simpan asesmen": a screening of a student whose consent to counselling
  * is Disetujui, with the level worked out here, and a line in the log
@@ -90,6 +111,8 @@ export async function saveScreening(
       await tx
         .insert(mentalHealthScreeningLog)
         .values({ studentId, event: "saved", by: actor.id, at: now });
+    } else if (!(await keptForSameForm(tx, actor.id, key, studentId))) {
+      return refused(FORM_STALE);
     }
     return { kind: "kept", done: savedMessage(name) };
   });

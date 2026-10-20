@@ -152,6 +152,30 @@ describe("Simpan asesmen", () => {
     });
   });
 
+  it("refuses a key already kept for another student, saving nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const first = await addStudent(db, "9988600308");
+      const second = await addStudent(db, "9988600309");
+      const key = crypto.randomUUID();
+      await saveScreening(
+        db,
+        first.counsellor,
+        key,
+        sent(first.studentId),
+        NOW,
+      );
+      const outcome = await saveScreening(
+        db,
+        first.counsellor,
+        key,
+        sent(second.studentId),
+        NOW,
+      );
+      expect(outcome).toEqual({ kind: "refused", error: FORM_STALE });
+      expect(await keptOf(db, second.studentId)).toEqual(NOTHING);
+    });
+  });
+
   it("adds a new screening for a new form, keeping the one before", async () => {
     await inTestDatabase(async (db) => {
       const { counsellor, studentId } = await addStudent(db, "9988600304");

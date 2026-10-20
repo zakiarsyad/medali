@@ -202,6 +202,10 @@ export function ScreeningForm({
       setMessage(outcome);
       if (outcome.done !== null) {
         form.reset();
+        setPicked(null);
+        setLooked(null);
+        setInstrument("dass21");
+        setSums(ZERO_SUMS);
         setSelfHarm(false);
       }
     });
