@@ -8,6 +8,7 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { cancelSchedule } from "./change-schedule";
 import {
   acceptSchedule,
   askAnotherTime,
@@ -77,4 +78,13 @@ export async function askAnotherTimeAction(
 ): Promise<StudentMoveOutcome> {
   const actor = await registeringStudent();
   return drawnAgain(await askAnotherTime(database(), actor, id, version, sent));
+}
+
+/** "Batalkan pendaftaran" and "Batalkan", once the student confirmed. */
+export async function cancelScheduleAction(
+  id: string,
+  version: string,
+): Promise<StudentMoveOutcome> {
+  const actor = await registeringStudent();
+  return drawnAgain(await cancelSchedule(database(), actor, id, version));
 }

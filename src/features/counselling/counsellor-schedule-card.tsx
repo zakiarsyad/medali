@@ -15,6 +15,9 @@ const TIME_TITLES: Record<ScheduleStatus, string> = {
   submitted: "Waktu yang diminta",
   proposed: "Usulan konselor",
   scheduled: "Jadwal",
+  done: "Jadwal",
+  missed: "Jadwal",
+  cancelled: "Jadwal",
 };
 
 function Steps({ card }: { card: CounsellorScheduleCard }) {

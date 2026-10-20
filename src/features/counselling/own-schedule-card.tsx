@@ -14,6 +14,9 @@ const TIME_TITLES: Record<ScheduleStatus, string> = {
   submitted: "Waktu yang Anda pilih",
   proposed: "Usulan konselor",
   scheduled: "Jadwal",
+  done: "Jadwal",
+  missed: "Jadwal",
+  cancelled: "Jadwal",
 };
 
 /**

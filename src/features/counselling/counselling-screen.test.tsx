@@ -8,7 +8,7 @@ import {
   EMERGENCY_TEXT,
   HELP_TEXT,
 } from "./counselling-screen";
-import type { OwnScheduleView } from "./schedule-view";
+import type { OwnHistory, OwnScheduleView } from "./schedule-view";
 
 // 10:00 on campus on 16 October 2026.
 const MOMENT = new Date("2026-10-16T03:00:00Z");
@@ -50,15 +50,18 @@ function consentOf(
   };
 }
 
+const NO_HISTORY: OwnHistory = { items: [], hasMore: false, shown: 10 };
+
 function studentPage(
   consent: ConsentView | null,
   schedules: OwnScheduleView[] = [],
+  history: OwnHistory = NO_HISTORY,
 ): string {
   return renderToStaticMarkup(
     <CounsellingScreen
       own={{
         consent,
-        registration: { schedules, tomorrow: "2026-10-17" },
+        registration: { schedules, history, tomorrow: "2026-10-17" },
       }}
       mayManage={false}
     />,
@@ -137,7 +140,11 @@ describe("Konseling of the student", () => {
       <CounsellingScreen
         own={{
           consent: consentOf("waiting"),
-          registration: { schedules: [], tomorrow: "2026-10-17" },
+          registration: {
+            schedules: [],
+            history: NO_HISTORY,
+            tomorrow: "2026-10-17",
+          },
         }}
         mayManage={true}
       />,
@@ -239,6 +246,40 @@ describe("Jadwal konseling saya", () => {
       "Daftar konseling",
       "Terima jadwal ini",
       "Minta waktu lain",
+      "Batalkan pendaftaran",
+    ]);
+  });
+
+  it("offers Batalkan pendaftaran on a Diajukan request", () => {
+    const page = studentPage(null, [scheduleOf("submitted")]);
+
+    expect(buttonsOf(page)).toEqual([
+      "Daftar konseling",
+      "Batalkan pendaftaran",
+    ]);
+  });
+
+  it("shows a Dijadwalkan session with its date, Jam, Cara, konselor and Pesan konselor, Minta jadwal ulang and Batalkan", () => {
+    const page = studentPage(null, [
+      scheduleOf("scheduled", {
+        counsellorName: "Konselor Contoh",
+        counsellorMessage: "Pesan konselor uji.",
+      }),
+    ]);
+
+    for (const words of [
+      "21 Okt 2026 pukul 10:00",
+      "Daring (tautan dikirim konselor)",
+      "Konselor Contoh",
+      "Pesan konselor",
+      "Pesan konselor uji.",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(buttonsOf(page)).toEqual([
+      "Daftar konseling",
+      "Minta jadwal ulang",
+      "Batalkan",
     ]);
   });
 
@@ -250,6 +291,61 @@ describe("Jadwal konseling saya", () => {
     expect(page).toContain("Dijadwalkan");
     expect(page).toContain("Jadwal");
     expect(page).toContain("Konselor Contoh");
+  });
+});
+
+describe("Riwayat of the student", () => {
+  const HISTORY: OwnHistory = {
+    items: [
+      {
+        id: "riwayat-1",
+        status: "cancelled",
+        day: "2026-10-14",
+        topic: "family",
+      },
+      { id: "riwayat-2", status: "done", day: "2026-10-05", topic: "academic" },
+      {
+        id: "riwayat-3",
+        status: "missed",
+        day: "2026-09-28",
+        topic: "finances",
+      },
+    ],
+    hasMore: false,
+    shown: 10,
+  };
+
+  it("lists each finished, missed and cancelled schedule with its date, status and Topik, after Jadwal konseling saya", () => {
+    const page = studentPage(null, [], HISTORY);
+
+    expect(page.indexOf("Riwayat")).toBeGreaterThan(
+      page.indexOf("Jadwal konseling saya"),
+    );
+    for (const words of [
+      "14 Okt 2026",
+      "Dibatalkan",
+      "Keluarga",
+      "5 Okt 2026",
+      "Selesai",
+      "Akademik",
+      "28 Sep 2026",
+      "Tidak hadir",
+      "Keuangan",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(page).not.toContain("Tampilkan lebih banyak");
+  });
+
+  it("loads 10 more on request when there are more", () => {
+    const page = studentPage(null, [], { ...HISTORY, hasMore: true });
+
+    expect(page).toContain('href="/konseling?riwayat=2"');
+    expect(page).toContain("Tampilkan lebih banyak");
+  });
+
+  it("is not shown while there is nothing in it", () => {
+    expect(studentPage(null)).not.toContain(">Riwayat<");
   });
 });
 

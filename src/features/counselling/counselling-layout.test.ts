@@ -43,6 +43,8 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".card > p",
       ".note",
       ".evaluation",
+      ".history",
+      ".history li",
     ],
   ],
   [SHARED, [".actions", ".form"]],
@@ -168,12 +170,17 @@ describe("Jadwal konseling of Konselor on a phone", () => {
 
 describe("the buttons and forms of a request card on a phone", () => {
   it.each(["counsellor-schedule-item.tsx", "own-schedule-item.tsx"])(
-    "%s puts its buttons under each other when they do not fit, and its form fields in one column",
+    "%s puts its buttons under each other when they do not fit",
     (name) => {
-      const item = read(name);
-      expect(item).toContain("<div className={shared.actions}>");
-      expect(item).toContain("className={shared.form}");
+      expect(read(name)).toContain("<div className={shared.actions}>");
       expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+    },
+  );
+
+  it.each(["schedule-time-form.tsx", "own-schedule-item.tsx"])(
+    "%s puts its form fields in one column",
+    (name) => {
+      expect(read(name)).toContain("className={shared.form}");
     },
   );
 });

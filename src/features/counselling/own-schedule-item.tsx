@@ -9,11 +9,14 @@ import type { StudentMoveOutcome } from "./move-schedule";
 import {
   acceptScheduleAction,
   askAnotherTimeAction,
+  cancelScheduleAction,
 } from "./own-schedule-actions";
 import { OwnScheduleCard } from "./own-schedule-card";
 import { COUNSELLING_HOURS, NOTE_MAX } from "./schedule-ids";
+import { useScheduleNotice } from "./schedule-notice";
 import { ChoiceOptions } from "./schedule-options";
 import type { OwnScheduleView } from "./schedule-view";
+import { CANCEL_QUESTION } from "./schedule-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -74,10 +77,18 @@ function AnotherTimeForm({
   );
 }
 
+/** Whether the student may ask for another time: on a proposal or a session. */
+function canAskAnother(schedule: OwnScheduleView): boolean {
+  return schedule.status === "proposed" || schedule.status === "scheduled";
+}
+
 /**
- * One request of the student, with "Terima jadwal ini" and "Minta waktu
- * lain" while Konselor's proposal waits for them. The page is drawn again
- * after an answer, so `schedule` is always the request as it is now.
+ * One request of the student. While Konselor's proposal waits for them:
+ * "Terima jadwal ini", "Minta waktu lain" and "Batalkan pendaftaran".
+ * While it is Diajukan: "Batalkan pendaftaran". Once it is Dijadwalkan:
+ * "Minta jadwal ulang" and "Batalkan". Cancelling asks first. The page is
+ * drawn again after an answer, so `schedule` is always the request as it
+ * is now.
  */
 export function OwnScheduleItem({
   schedule,
@@ -89,6 +100,7 @@ export function OwnScheduleItem({
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [isAsking, setAsking] = useState(false);
   const [pending, startSending] = useTransition();
+  const announce = useScheduleNotice();
 
   function answered(outcome: StudentMoveOutcome) {
     setMessage(messageOf(outcome));
@@ -98,6 +110,22 @@ export function OwnScheduleItem({
   function accept() {
     startSending(async () => {
       answered(await acceptScheduleAction(schedule.id, schedule.version));
+    });
+  }
+
+  // A kept cancel takes the card out of the list, and a change made
+  // since may too, so what happened is said above the cards.
+  function cancel() {
+    if (!window.confirm(CANCEL_QUESTION)) return;
+    announce(null);
+    startSending(async () => {
+      const outcome = await cancelScheduleAction(schedule.id, schedule.version);
+      if (outcome.kind === "refused") {
+        answered(outcome);
+        return;
+      }
+      setMessage(NO_MESSAGE);
+      announce(messageOf(outcome));
     });
   }
 
@@ -116,33 +144,56 @@ export function OwnScheduleItem({
     });
   }
 
-  const waits = schedule.status === "proposed";
+  function openAsking() {
+    setMessage(NO_MESSAGE);
+    setAsking(true);
+  }
+
+  const { status } = schedule;
+  const isScheduled = status === "scheduled";
   return (
     <OwnScheduleCard schedule={schedule}>
-      {waits && (
-        <div className={shared.actions}>
-          <button
-            type="button"
-            className={shared.button}
-            disabled={pending}
-            onClick={accept}
-          >
-            Terima jadwal ini
-          </button>
+      <div className={shared.actions}>
+        {status === "proposed" && (
+          <>
+            <button
+              type="button"
+              className={shared.button}
+              disabled={pending}
+              onClick={accept}
+            >
+              Terima jadwal ini
+            </button>
+            <button
+              type="button"
+              className={shared.quiet}
+              disabled={pending}
+              onClick={openAsking}
+            >
+              Minta waktu lain
+            </button>
+          </>
+        )}
+        {isScheduled && (
           <button
             type="button"
             className={shared.quiet}
             disabled={pending}
-            onClick={() => {
-              setMessage(NO_MESSAGE);
-              setAsking(true);
-            }}
+            onClick={openAsking}
           >
-            Minta waktu lain
+            Minta jadwal ulang
           </button>
-        </div>
-      )}
-      {waits && isAsking && (
+        )}
+        <button
+          type="button"
+          className={shared.link}
+          disabled={pending}
+          onClick={cancel}
+        >
+          {isScheduled ? "Batalkan" : "Batalkan pendaftaran"}
+        </button>
+      </div>
+      {canAskAnother(schedule) && isAsking && (
         <AnotherTimeForm
           tomorrow={tomorrow}
           pending={pending}

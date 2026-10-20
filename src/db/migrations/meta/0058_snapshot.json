@@ -1,5 +1,5 @@
 {
-  "id": "bfa373f4-8c24-4fdc-be4d-0925db23542f",
+  "id": "139990b0-5824-423d-aaea-39497e8125d6",
   "prevId": "b2d1e476-6fa3-4b4c-ab09-852268bb70ec",
   "version": "7",
   "dialect": "postgresql",
@@ -2580,7 +2580,7 @@
         },
         "counselling_schedules_counsellor_once_proposed": {
           "name": "counselling_schedules_counsellor_once_proposed",
-          "value": "\"counselling_schedules\".\"status\" = 'submitted' or \"counselling_schedules\".\"counsellor_id\" is not null"
+          "value": "\"counselling_schedules\".\"status\"::text in ('submitted', 'cancelled') or \"counselling_schedules\".\"counsellor_id\" is not null"
         }
       },
       "isRLSEnabled": false
@@ -6831,250 +6831,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.mental_health_screening_log": {
-      "name": "mental_health_screening_log",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event": {
-          "name": "event",
-          "type": "mental_health_screening_event",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "by": {
-          "name": "by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "at": {
-          "name": "at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "mental_health_screening_log_student": {
-          "name": "mental_health_screening_log_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "mental_health_screening_log_student_id_students_id_fk": {
-          "name": "mental_health_screening_log_student_id_students_id_fk",
-          "tableFrom": "mental_health_screening_log",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mental_health_screening_log_by_accounts_id_fk": {
-          "name": "mental_health_screening_log_by_accounts_id_fk",
-          "tableFrom": "mental_health_screening_log",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.mental_health_screenings": {
-      "name": "mental_health_screenings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "screened_on": {
-          "name": "screened_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "instrument": {
-          "name": "instrument",
-          "type": "mental_health_instrument",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "depression": {
-          "name": "depression",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "anxiety": {
-          "name": "anxiety",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stress": {
-          "name": "stress",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "srq_yes": {
-          "name": "srq_yes",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "self_harm": {
-          "name": "self_harm",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "level": {
-          "name": "level",
-          "type": "mental_health_level",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_by": {
-          "name": "saved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_at": {
-          "name": "saved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "mental_health_screenings_student": {
-          "name": "mental_health_screenings_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "screened_on",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "mental_health_screenings_student_id_students_id_fk": {
-          "name": "mental_health_screenings_student_id_students_id_fk",
-          "tableFrom": "mental_health_screenings",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mental_health_screenings_saved_by_accounts_id_fk": {
-          "name": "mental_health_screenings_saved_by_accounts_id_fk",
-          "tableFrom": "mental_health_screenings",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "saved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "mental_health_screenings_scores": {
-          "name": "mental_health_screenings_scores",
-          "value": "case \"mental_health_screenings\".\"instrument\"\n        when 'dass21' then \"mental_health_screenings\".\"srq_yes\" is null\n          and (\"mental_health_screenings\".\"depression\" is not null and \"mental_health_screenings\".\"depression\" between 0 and 21)\n          and (\"mental_health_screenings\".\"anxiety\" is not null and \"mental_health_screenings\".\"anxiety\" between 0 and 21)\n          and (\"mental_health_screenings\".\"stress\" is not null and \"mental_health_screenings\".\"stress\" between 0 and 21)\n        else \"mental_health_screenings\".\"depression\" is null and \"mental_health_screenings\".\"anxiety\" is null\n          and \"mental_health_screenings\".\"stress\" is null\n          and (\"mental_health_screenings\".\"srq_yes\" is not null and \"mental_health_screenings\".\"srq_yes\" between 0 and 20)\n      end"
-        },
-        "mental_health_screenings_self_harm_most_severe": {
-          "name": "mental_health_screenings_self_harm_most_severe",
-          "value": "not \"mental_health_screenings\".\"self_harm\" or \"mental_health_screenings\".\"level\" = 'extremely_severe'"
-        },
-        "mental_health_screenings_note_length": {
-          "name": "mental_health_screenings_note_length",
-          "value": "char_length(\"mental_health_screenings\".\"note\") <= 1000"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.mentor_evaluation_changes": {
       "name": "mentor_evaluation_changes",
       "schema": "",
@@ -11321,7 +11077,10 @@
       "values": [
         "submitted",
         "proposed",
-        "scheduled"
+        "scheduled",
+        "done",
+        "missed",
+        "cancelled"
       ]
     },
     "public.counselling_schedule_step": {
@@ -11332,7 +11091,11 @@
         "approve",
         "propose",
         "accept",
-        "ask_another"
+        "ask_another",
+        "cancel",
+        "reschedule",
+        "mark_done",
+        "mark_missed"
       ]
     },
     "public.counselling_topic": {
@@ -11602,39 +11365,12 @@
         "medical"
       ]
     },
-    "public.mental_health_instrument": {
-      "name": "mental_health_instrument",
-      "schema": "public",
-      "values": [
-        "dass21",
-        "srq20"
-      ]
-    },
-    "public.mental_health_level": {
-      "name": "mental_health_level",
-      "schema": "public",
-      "values": [
-        "normal",
-        "mild",
-        "moderate",
-        "severe",
-        "extremely_severe"
-      ]
-    },
     "public.mental_health_mark_category": {
       "name": "mental_health_mark_category",
       "schema": "public",
       "values": [
         "monitor",
         "refer"
-      ]
-    },
-    "public.mental_health_screening_event": {
-      "name": "mental_health_screening_event",
-      "schema": "public",
-      "values": [
-        "saved",
-        "opened"
       ]
     },
     "public.mentor_replacement_reason": {

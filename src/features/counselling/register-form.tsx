@@ -12,6 +12,7 @@ import {
   COUNSELLING_WAYS,
   STORY_MAX,
 } from "./schedule-ids";
+import { useScheduleNotice } from "./schedule-notice";
 import { ChoiceOptions } from "./schedule-options";
 import {
   COUNSELLING_WAY_WORDS,
@@ -31,12 +32,15 @@ export function RegisterForm({ tomorrow }: { tomorrow: string }) {
     registerCounsellingAction,
     START,
   );
+  const announce = useScheduleNotice();
 
   // Sent from here, not by the browser: the browser empties a sent form,
   // and a refused day must stay to be corrected.
   function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    // A new registration starts with no message of an earlier cancel.
+    announce(null);
     startTransition(() => save(form));
   }
 

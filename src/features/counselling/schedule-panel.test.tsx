@@ -75,6 +75,9 @@ describe("Jadwal konseling of Konselor", () => {
       "Perlu ditindaklanjuti",
       "Semua yang aktif",
       "Dijadwalkan",
+      "Selesai",
+      "Tidak hadir",
+      "Dibatalkan",
       "Semua",
     ]) {
       expect(page).toContain(`>${words}</option>`);
@@ -113,7 +116,21 @@ describe("Jadwal konseling of Konselor", () => {
     ]);
   });
 
-  it.each(["proposed", "scheduled"] as const)(
+  it("offers Tandai selesai, Tidak hadir and Ubah jadwal on a Dijadwalkan session", () => {
+    const card = {
+      ...CARD,
+      status: "scheduled" as const,
+      counsellorName: "Konselor Uji Layar",
+    };
+
+    expect(buttonsOf(counsellorPage(boardOf([card])))).toEqual([
+      "Tandai selesai",
+      "Tidak hadir",
+      "Ubah jadwal",
+    ]);
+  });
+
+  it.each(["proposed", "done", "missed", "cancelled"] as const)(
     "offers nothing on a request that is %s",
     (status) => {
       const card = { ...CARD, status, counsellorName: "Konselor Uji Layar" };
