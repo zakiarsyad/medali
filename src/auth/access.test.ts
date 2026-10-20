@@ -1200,6 +1200,69 @@ describe("may", () => {
     }
   });
 
+  const violationNoteWriters: RoleId[] = ["discipline_officer", "head_of_unit"];
+  const violationNoteReaders: RoleId[] = [
+    ...violationNoteWriters,
+    "director",
+    "head_of_program",
+  ];
+
+  it("lets Pembina Disiplin Mahasiswa and Kepala Unit alone write and remove violation notes, on Pembinaan > Catatan pelanggaran", () => {
+    expect(ACTION_TITLES.write_violation_notes).toBe(
+      "Mencatat dan menghapus catatan pelanggaran",
+    );
+    for (const role of violationNoteWriters) {
+      expect(may([role], "write_violation_notes")).toBe(true);
+      expect(mayOpenTab([role], "guidance", "violation_notes")).toBe(true);
+    }
+    const others = ROLE_IDS.filter(
+      (role) => !violationNoteWriters.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining(["director", "head_of_program", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "write_violation_notes")).toBe(false);
+    }
+  });
+
+  it("lets the writers, Direktur and Ketua Program Studi read violation notes, Ketua Program Studi their own program only", () => {
+    expect(ACTION_TITLES.view_violation_notes).toBe(
+      "Melihat catatan pelanggaran",
+    );
+    for (const role of violationNoteReaders) {
+      expect(may([role], "view_violation_notes")).toBe(true);
+    }
+    expect(ROLES.head_of_program.rows).toBe("own_program");
+    const others = ROLE_IDS.filter(
+      (role) => !violationNoteReaders.includes(role),
+    );
+    for (const role of others) {
+      expect(may([role], "view_violation_notes")).toBe(false);
+    }
+  });
+
+  it("opens Catatan pelanggaran to exactly the roles that read violation notes, not to Pengasuh, Mahasiswa, Konselor, Pengelola Asrama or BAM", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !violationNoteReaders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "mentor",
+        "student",
+        "counsellor",
+        "dorm_manager",
+        ...BAM_ROLES,
+      ]),
+    );
+    for (const role of violationNoteReaders) {
+      expect(mayOpenTab([role], "guidance", "violation_notes")).toBe(true);
+    }
+    for (const role of others) {
+      expect(mayOpenTab([role], "guidance", "violation_notes")).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa ask for and cancel their own dorm leave, on a page that asks them to live in the dorm", () => {
     expect(may(["student"], "ask_dorm_leave")).toBe(true);
     expect(may(["student"], "view_dorm_leave")).toBe(false);

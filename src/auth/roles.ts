@@ -87,6 +87,8 @@ export const ACTIONS = [
   "view_mental_health_marks",
   "view_mental_health_mark_log",
   "view_discipline_records",
+  "view_violation_notes",
+  "write_violation_notes",
   "manage_counselling_consent",
   "answer_own_counselling_consent",
   "register_own_counselling",
@@ -204,6 +206,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_mental_health_mark_log:
     "Melihat riwayat perubahan penanda potensi kesehatan mental",
   view_discipline_records: "Melihat catatan disiplin mahasiswa",
+  view_violation_notes: "Melihat catatan pelanggaran",
+  write_violation_notes: "Mencatat dan menghapus catatan pelanggaran",
   manage_counselling_consent:
     "Persetujuan konseling: melihat status, mengirim permintaan, dan mencatat form tertulis",
   answer_own_counselling_consent:
@@ -370,6 +374,8 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mental_health_marks",
       "view_mental_health_mark_log",
       "view_discipline_records",
+      "view_violation_notes",
+      "write_violation_notes",
     ],
     rows: "all",
   },
@@ -399,6 +405,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_siku",
       "view_dorm_health_numbers",
       "view_discipline_records",
+      "view_violation_notes",
     ],
     rows: "all",
   },
@@ -428,6 +435,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_siku",
       "view_dorm_health_numbers",
       "view_discipline_records",
+      "view_violation_notes",
     ],
     rows: "own_program",
   },
@@ -655,7 +663,7 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PD",
     pages: ["guidance"],
     tabs: { guidance: ["discipline", "violation_notes"] },
-    actions: [],
+    actions: ["view_violation_notes", "write_violation_notes"],
     rows: "all",
   },
   assessor: {
