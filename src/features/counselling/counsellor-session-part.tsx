@@ -23,7 +23,7 @@ function messageOf(outcome: ChangeOutcome): FormState {
  * The sessions of the student picked in "Persetujuan konseling": "Catat
  * sesi" while the consent is Disetujui, or why no session can be written
  * while it is not, and "Riwayat sesi", with "Ubah" only while it is
- * Disetujui. `history` is "Riwayat sesi" as read when the student was
+ * Disetujui. A student who never gave consent has no "Riwayat sesi". `history` is "Riwayat sesi" as read when the student was
  * picked; it is read again after a session is kept or changed, so a
  * change someone made first shows.
  */
@@ -58,7 +58,7 @@ export function CounsellorSessionPart({
         <p className={styles.sub}>{NEEDS_CONSENT}</p>
       )}
       <FormMessage state={message} />
-      {history.ok ? (
+      {history.ok && (
         <SessionHistoryList
           history={history.value}
           mayChange={mayWrite}
@@ -66,7 +66,9 @@ export function CounsellorSessionPart({
           onMore={() => reload(steps + 1)}
           onChanged={(outcome) => reload(steps, messageOf(outcome))}
         />
-      ) : (
+      )}
+      {/* Refused for want of consent, which is said above already. */}
+      {!history.ok && history.error !== NEEDS_CONSENT && (
         <FormMessage state={{ error: history.error, done: null }} />
       )}
     </>

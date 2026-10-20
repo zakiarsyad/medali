@@ -6,11 +6,12 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSessionReads } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { changeOwnConsent } from "./change-consent";
+import { changeConsentAsCounsellor, changeOwnConsent } from "./change-consent";
+import { NO_CONSENT_VERSION } from "./consent-view";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { readSessionHistory } from "./session-history";
-import { SESSION_NOT_ALLOWED } from "./session-words";
-import { addTestActor } from "./test-consents";
+import { NEEDS_CONSENT, SESSION_NOT_ALLOWED } from "./session-words";
+import { addTestActor, addTestPeople } from "./test-consents";
 import {
   addConsentedPeople,
   CONSENTED_AT,
@@ -211,6 +212,55 @@ describe("Riwayat sesi of Konselor", () => {
       );
 
       expect(read.ok && read.value.items.length).toBe(1);
+    });
+  });
+
+  it("is refused, logging no reading, for a student who never gave consent", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, "Prodi Uji Riwayat Tanpa", [
+        "9986214020",
+        "9986214021",
+      ]);
+      const [never, waiting] = people.studentIds;
+      await changeConsentAsCounsellor(
+        db,
+        people.counsellor,
+        waiting,
+        "ask",
+        NO_CONSENT_VERSION,
+        NOW,
+      );
+
+      for (const studentId of [never, waiting]) {
+        expect(
+          await readSessionHistory(db, people.counsellor, studentId, 1, NOW),
+        ).toEqual({ ok: false, error: NEEDS_CONSENT });
+        expect(await readsOf(db, studentId ?? "")).toHaveLength(0);
+      }
+    });
+  });
+
+  it("is refused once the consent is withdrawn when no session was written", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await consented(db, "9986214022");
+      await changeOwnConsent(
+        db,
+        people.student,
+        "withdraw",
+        CONSENTED_AT.toISOString(),
+        NOW,
+      );
+
+      expect(
+        await readSessionHistory(
+          db,
+          people.counsellor,
+          people.studentId,
+          1,
+          NOW,
+        ),
+      ).toEqual({ ok: false, error: NEEDS_CONSENT });
+      expect(await readsOf(db, people.studentId)).toHaveLength(0);
     });
   });
 

@@ -47,6 +47,6 @@ export interface OwnSessionSummary {
   count: number;
   /** The day of the latest session. */
   lastDay: string;
-  /** "Sesi berikutnya" of the latest session, when one is set. */
+  /** "Sesi berikutnya" of the latest session, when one is set and has not passed. */
   nextDay: string | null;
 }

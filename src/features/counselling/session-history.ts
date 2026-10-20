@@ -10,9 +10,9 @@ import {
 } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { STUDENT_NOT_FOUND } from "./consent-words";
-import { isSessionStudent } from "./session-checks";
+import { holdsConsent, isSessionStudent } from "./session-checks";
 import type { SessionHistory, SessionView } from "./session-view";
-import { SESSION_NOT_ALLOWED } from "./session-words";
+import { NEEDS_CONSENT, SESSION_NOT_ALLOWED } from "./session-words";
 
 /** How many sessions "Riwayat sesi" shows at first, and how many more each time. */
 export const SESSIONS_PAGE_SIZE = 10;
@@ -75,8 +75,10 @@ async function readSessions(
  * "Riwayat sesi" of a student: the latest 10 sessions for each step
  * asked, the latest day first. Every Konselor reads every session, also
  * once the consent is withdrawn. Each reading is logged in the same
- * transaction: who, whose notes and when, never the notes. Refused, sending nothing and logging nothing,
- * for any role without the right, and for a student not found.
+ * transaction: who, whose notes and when, never the notes. Refused,
+ * sending nothing and logging nothing, for any role without the right,
+ * for a student not found, and for a student with no session whose
+ * consent is not Disetujui: one who never gave it.
  * `studentId` and `steps` come from outside.
  */
 export async function readSessionHistory(
@@ -98,6 +100,10 @@ export async function readSessionHistory(
   const limit = stepsOf(steps) * SESSIONS_PAGE_SIZE;
   return db.transaction(async (tx): Promise<Parsed<SessionHistory>> => {
     const read = await readSessions(tx, studentId, limit + 1);
+    const hasNoSession = read.length === 0;
+    if (hasNoSession && !(await holdsConsent(tx, studentId))) {
+      return { ok: false, error: NEEDS_CONSENT };
+    }
     await tx
       .insert(counsellingSessionReads)
       .values({ studentId, readBy: actor.id, readAt: now });

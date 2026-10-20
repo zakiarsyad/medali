@@ -49,7 +49,7 @@ describe("the student's own counselling sessions", () => {
       const [student] = found.students;
       if (!student) throw new Error("Student missing.");
 
-      expect(await readOwnSessionSummary(db, student)).toEqual({
+      expect(await readOwnSessionSummary(db, student, NOW)).toEqual({
         count: 3,
         lastDay: "2026-10-19",
         nextDay: "2026-10-26",
@@ -66,10 +66,32 @@ describe("the student's own counselling sessions", () => {
       const [student] = found.students;
       if (!student) throw new Error("Student missing.");
 
-      expect(await readOwnSessionSummary(db, student)).toEqual({
+      expect(await readOwnSessionSummary(db, student, NOW)).toEqual({
         count: 2,
         lastDay: "2026-10-19",
         nextDay: null,
+      });
+    });
+  });
+
+  it("leave out a next session that has passed, and keep one of today", async () => {
+    await inTestDatabase(async (db) => {
+      const found = await people(db);
+      const [own, other] = found.studentIds;
+      await addSession(db, found, own, "2026-10-12", "2026-10-19");
+      await addSession(db, found, other, "2026-10-12", "2026-10-20");
+      const [student, otherStudent] = found.students;
+      if (!student || !otherStudent) throw new Error("Student missing.");
+
+      expect(await readOwnSessionSummary(db, student, NOW)).toEqual({
+        count: 1,
+        lastDay: "2026-10-12",
+        nextDay: null,
+      });
+      expect(await readOwnSessionSummary(db, otherStudent, NOW)).toEqual({
+        count: 1,
+        lastDay: "2026-10-12",
+        nextDay: "2026-10-20",
       });
     });
   });
@@ -80,7 +102,7 @@ describe("the student's own counselling sessions", () => {
       const [student] = found.students;
       if (!student) throw new Error("Student missing.");
 
-      expect(await readOwnSessionSummary(db, student)).toBeNull();
+      expect(await readOwnSessionSummary(db, student, NOW)).toBeNull();
     });
   });
 
@@ -94,7 +116,7 @@ describe("the student's own counselling sessions", () => {
       const counsellor = { ...found.counsellor, studentId };
 
       for (const actor of [{ ...head, studentId }, counsellor]) {
-        expect(await readOwnSessionSummary(db, actor)).toBeNull();
+        expect(await readOwnSessionSummary(db, actor, NOW)).toBeNull();
       }
     });
   });

@@ -198,3 +198,18 @@ describe("Riwayat sesi of a student picked by Konselor", () => {
     expect(page).toContain("Tampilkan lebih banyak");
   });
 });
+
+describe("Riwayat sesi of a student who never gave consent", () => {
+  it("is not shown, and the consent message is said once", () => {
+    const page = renderToStaticMarkup(
+      <CounsellorSessionPart
+        studentId={STUDENT_ID}
+        consent={null}
+        history={{ ok: false, error: NEEDS_CONSENT }}
+      />,
+    );
+
+    expect(page).not.toContain("Riwayat sesi");
+    expect(page.split(NEEDS_CONSENT)).toHaveLength(2);
+  });
+});
