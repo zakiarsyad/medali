@@ -106,11 +106,15 @@ shown per person.
    characters and the 3 answers are kept with the shared mentoring
    rules, because Profil saya and the tab "Evaluasi oleh mahasiswa"
    both read them.
+7. Filling in and changing one's own answer is one new right, held by
+   Mahasiswa only. The list of rights that Kepala Unit sees names it
+   "Mengisi dan mengubah survei kepuasan pengasuhan sendiri". No role
+   gets a right that reads one student's answer.
 
 ## Steps
 
 - [x] 1. Survey answers are stored, one per student and period.
-- [ ] 2. The right to answer the survey for oneself, with its checks.
+- [x] 2. The right to answer the survey for oneself, with its checks.
 - [ ] 3. The card shows the form, keeps a half-filled form on the
   device, and saves a complete answer.
 - [ ] 4. "Terkirim", "Ubah jawaban" and "Batal".
