@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { SAMPLE_SCREENINGS } from "@/db/sample-mental-health-screenings";
 import { SCREENING_LEVELS } from "./screening-ids";
 import {
+  COUNSELLING_LEVELS,
   levelOfScore,
   type ScreeningScores,
   scoresOf,
@@ -127,6 +128,16 @@ describe("the advice of a level", () => {
   it("is given with the result", () => {
     expect(screeningResult(srq(6)).advice).toBe("Konseling");
     expect(screeningResult(dass(11, 5, 10)).advice).toBe(ADVICE_WORDS.severe);
+  });
+});
+
+describe("Perlu konseling", () => {
+  it("is Sedang and above", () => {
+    expect(COUNSELLING_LEVELS).toEqual([
+      "moderate",
+      "severe",
+      "extremely_severe",
+    ]);
   });
 });
 

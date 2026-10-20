@@ -27,6 +27,10 @@ export const DASS_LIMITS: Record<DassScale, readonly number[]> = {
 /** The number of "ya" of SRQ-20 from which a student needs counselling. */
 export const SRQ_LIMIT = 6;
 
+/** The levels of "Perlu konseling": Sedang and above. */
+export const COUNSELLING_LEVELS: readonly ScreeningLevel[] =
+  SCREENING_LEVELS.slice(SCREENING_LEVELS.indexOf("moderate"));
+
 /** The scores of one screening, as checked. */
 export type ScreeningScores =
   | {

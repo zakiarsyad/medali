@@ -1,4 +1,5 @@
 import type { Instrument, ScreeningLevel } from "./screening-ids";
+import type { DassScale } from "./screening-rules";
 
 /*
  * The words of a mental health screening on screen. Read by the screen
@@ -8,6 +9,12 @@ import type { Instrument, ScreeningLevel } from "./screening-ids";
 export const INSTRUMENT_WORDS: Record<Instrument, string> = {
   dass21: "DASS-21",
   srq20: "SRQ-20",
+};
+
+export const SCALE_WORDS: Record<DassScale, string> = {
+  depression: "Depresi",
+  anxiety: "Kecemasan",
+  stress: "Stres",
 };
 
 /** "Tingkat" of each level. */

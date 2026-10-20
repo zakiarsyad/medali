@@ -109,7 +109,7 @@ see counts with no names. It is the most sensitive data in the app.
 - [x] 1. Screenings are stored, never erased, with made-up samples; the
   right "Kesehatan mental" is added for Konselor, with checks.
 - [x] 2. The level and advice rules, with checks.
-- [ ] 3. The tab shows "Keadaan darurat", the numbers and "Daftar
+- [x] 3. The tab shows "Keadaan darurat", the numbers and "Daftar
   mahasiswa" with "Rincian" for Konselor.
 - [ ] 4. The screening form saves a result, only with consent
   "Disetujui".

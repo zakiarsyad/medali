@@ -2,18 +2,15 @@ import { and, asc, count, eq, ilike, or, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import {
-  accounts,
   dormRoomPlaces,
   dormRooms,
   healthNoteIllnesses,
-  mentorGroupMembers,
-  mentorGroupMentors,
-  mentorGroups,
   students,
   studyPrograms,
 } from "@/db/schema";
 import type { DormId } from "@/dorms/dorms";
 import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
+import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { pageWithin } from "@/ui/list-pages";
 import { finalRankSql } from "./final-category-sql";
 import { categoryOf } from "./fitness-category";
@@ -166,20 +163,6 @@ function filtersOf(parts: SickParts, filters: SickFilters): SQL | undefined {
   }
   return and(...conditions);
 }
-
-/** The mentor of today of the group in force a student is in. */
-const MENTOR_NAME = sql<string | null>`(
-  select ${accounts.name} from ${mentorGroupMembers}
-  inner join ${mentorGroups}
-    on ${mentorGroups.id} = ${mentorGroupMembers.groupId}
-    and ${mentorGroups.endedAt} is null
-  inner join ${mentorGroupMentors}
-    on ${mentorGroupMentors.groupId} = ${mentorGroups.id}
-    and ${mentorGroupMentors.endsOn} is null
-  inner join ${accounts} on ${accounts.id} = ${mentorGroupMentors.mentorId}
-  where ${mentorGroupMembers.studentId} = ${students.id}
-  limit 1
-)`;
 
 interface ReadRow {
   id: string;
