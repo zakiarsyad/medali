@@ -1,4 +1,5 @@
 import {
+  type AttendanceScore,
   attendanceScore,
   type MarkTally,
   meetingScore,
@@ -78,6 +79,24 @@ function scoredFor(
 }
 
 /**
+ * Nilai kehadiran kegiatan of each student of a group, on a day on
+ * campus: the schedules of the period meant for them and their marks at
+ * the meetings of the period, together.
+ */
+export function groupScore(
+  group: StudentGroup,
+  schedules: readonly CountedSchedule[],
+  period: PeriodParts,
+  today: string,
+): AttendanceScore {
+  const scored = scoredFor(group, schedules, period);
+  return totalScore({
+    activities: attendanceScore(scored, today),
+    meetings: meetingScore(group.marks),
+  });
+}
+
+/**
  * The mean of Nilai kehadiran kegiatan over the students who have one,
  * on a day on campus. Each student's score is counted by the same rule
  * as on their own page, over the schedules of the period meant for
@@ -94,13 +113,7 @@ export function meanScore(
   let total = 0;
   let students = 0;
   for (const group of groups) {
-    const scored = scoredFor(group, schedules, period);
-    const percent = scorePercent(
-      totalScore({
-        activities: attendanceScore(scored, today),
-        meetings: meetingScore(group.marks),
-      }),
-    );
+    const percent = scorePercent(groupScore(group, schedules, period, today));
     if (percent === null) continue;
     total += percent * group.students;
     students += group.students;
