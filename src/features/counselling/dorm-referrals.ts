@@ -70,10 +70,10 @@ function referralRow(row: ReadRow): ReferralRow {
 /**
  * One page of "Rujukan potensi kesehatan mental dari asrama": each
  * resident who lives in a dorm today and whose current mark is "perlu
- * dirujuk ke konselor", the newest mark first, with only what the list
- * shows: with the student's consent and active request, so Konselor
- * knows what is already under way. Null, with nothing read, for an account without the right to
- * read dorm referrals. `today` is today on campus.
+ * dirujuk ke konselor", the newest mark first. Each row holds only what
+ * the list shows, including the student's consent and active request.
+ * Null, with nothing read, for an account without the right to read
+ * dorm referrals. `today` is today on campus.
  */
 export async function readDormReferrals(
   db: Database,
