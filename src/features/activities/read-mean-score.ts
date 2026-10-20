@@ -26,7 +26,7 @@ const NO_SCORE: MeanScore = { percent: null, students: 0 };
  * that are not removed, of PPKS activities and of special and additional
  * ones. One that is not required never counts, so it is not read.
  */
-function readCounted(
+export function readCounted(
   db: Database,
   periodId: string,
 ): Promise<CountedSchedule[]> {
@@ -68,21 +68,26 @@ function markCount(column: SQL.Aliased<number>) {
   return sql<number>`coalesce(${column}, 0)`;
 }
 
+/** A group of students who have the same score, with the key of each. */
+export interface KeyedGroup extends StudentGroup {
+  studentIds: string[];
+}
+
 /**
  * The Aktif students an account sees, put together in the database into
  * groups that stand the same at every one of the schedules and are marked
  * alike at the meetings of the period: only what changes a score is kept
  * of each, a valid attendance or a dispensation, with the schedules of
  * special or additional activities they take part in and how often each
- * mark was given them. So one row comes back for many students, and
- * nobody is named.
+ * mark was given them. So one row comes back for many students, with
+ * only their keys, and nobody is named.
  */
-async function readGroups(
+export async function readGroups(
   db: Database,
   visible: SQL,
   schedules: readonly CountedSchedule[],
   periodId: string,
-): Promise<StudentGroup[]> {
+): Promise<KeyedGroup[]> {
   const scheduleIds = schedules.map((schedule) => schedule.id);
   const extraIds = schedules
     .filter((schedule) => schedule.semester === null)
@@ -92,6 +97,7 @@ async function readGroups(
   const changesScore = sql`${newest.status} in ('valid', 'dispensation')`;
   const perStudent = db
     .select({
+      id: students.id,
       cohortYear: students.cohortYear,
       kept: sql<
         StudentGroup["kept"]
@@ -126,6 +132,7 @@ async function readGroups(
       sick: perStudent.sick,
       absent: perStudent.absent,
       students: count(),
+      studentIds: sql<string[]>`array_agg(${perStudent.id})`,
     })
     .from(perStudent)
     .groupBy(

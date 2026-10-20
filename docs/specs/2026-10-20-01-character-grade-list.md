@@ -79,10 +79,12 @@ Ketua Program Studi (own program), Pengasuh (own mentees).
    fixes it in this spec.
 3. The running semester is read from "Academic period", to pick this
    semester's Pengasuhan score and counted activities.
+4. The letter and pass are taken from Nilai akhir as it is shown, to one
+   decimal, so the number and the letter never disagree.
 
 ## Steps
 
-- [ ] 1. The rule for the final score, letter, pass and "Belum lengkap",
+- [x] 1. The rule for the final score, letter, pass and "Belum lengkap",
   with checks. Kehadiran is read from "Mentoring meetings in the
   attendance score".
 - [ ] 2. "Daftar nilai karakter" with search, filters and pages, limited
