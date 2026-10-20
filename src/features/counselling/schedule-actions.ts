@@ -6,6 +6,11 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import {
+  markScheduleDone,
+  markScheduleMissed,
+  rescheduleSchedule,
+} from "./change-schedule";
+import {
   approveSchedule,
   type CounsellorMoveOutcome,
   proposeSchedule,
@@ -41,4 +46,32 @@ export async function proposeScheduleAction(
 ): Promise<CounsellorMoveOutcome> {
   const actor = await scheduler();
   return proposeSchedule(database(), actor, id, version, sent);
+}
+
+/** "Simpan jadwal" of "Ubah jadwal". */
+export async function rescheduleScheduleAction(
+  id: string,
+  version: string,
+  sent: SentProposal,
+): Promise<CounsellorMoveOutcome> {
+  const actor = await scheduler();
+  return rescheduleSchedule(database(), actor, id, version, sent);
+}
+
+/** "Tandai selesai", once Konselor confirmed. */
+export async function markScheduleDoneAction(
+  id: string,
+  version: string,
+): Promise<CounsellorMoveOutcome> {
+  const actor = await scheduler();
+  return markScheduleDone(database(), actor, id, version);
+}
+
+/** "Tidak hadir", once Konselor confirmed. */
+export async function markScheduleMissedAction(
+  id: string,
+  version: string,
+): Promise<CounsellorMoveOutcome> {
+  const actor = await scheduler();
+  return markScheduleMissed(database(), actor, id, version);
 }

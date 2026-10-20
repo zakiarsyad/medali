@@ -47,7 +47,9 @@ const registered = (daysAgo: number): SampleScheduleStep => ({
  * her on Ganti peran; Dimas Halim is scheduled in the coming days; Hadi
  * Kurniawan asked for another time with a reason. Bayu also had a
  * session Selesai and cancelled another, and Citra did not come to one,
- * so both have a Riwayat. Every one of them has a consent that is
+ * so both have a Riwayat. Fikri Wibowo's session has had its day, for
+ * Konselor to mark Selesai or Tidak hadir; he withdrew his consent after
+ * it was scheduled, and it stays. Every other one has a consent that is
  * Disetujui. A finished one is about a day gone by, marked a few days
  * after it.
  */
@@ -148,6 +150,20 @@ export const SAMPLE_SCHEDULES: SampleSchedule[] = [
       registered(12),
       { step: "approve", statusAfter: "scheduled", daysAgo: 10 },
       { step: "mark_missed", statusAfter: "missed", daysAgo: 4 },
+    ],
+  },
+  {
+    nim: "9900230006",
+    topic: "emotions_and_stress",
+    inDays: -2,
+    hour: "10:00",
+    way: "in_person",
+    story: "Saya ingin membicarakan cara mengatur waktu belajar.",
+    counsellorMessage: null,
+    reason: null,
+    steps: [
+      registered(12),
+      { step: "approve", statusAfter: "scheduled", daysAgo: 11 },
     ],
   },
 ];

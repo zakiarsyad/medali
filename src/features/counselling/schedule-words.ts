@@ -111,3 +111,16 @@ export const ASKED_ANOTHER = "Permintaan jadwal baru dikirim ke konselor.";
 export const CANCEL_QUESTION = "Batalkan konseling ini?";
 
 export const CANCELLED = "Konseling dibatalkan.";
+
+/** What Konselor is asked before "Tandai selesai". */
+export const DONE_QUESTION = "Tandai sesi konseling ini selesai?";
+
+/** What Konselor is asked before "Tidak hadir". */
+export const MISSED_QUESTION = "Tandai mahasiswa tidak hadir pada sesi ini?";
+
+export const MARKED_DONE = "Ditandai selesai.";
+
+export const MARKED_MISSED = "Ditandai tidak hadir.";
+
+export const NOT_HELD_YET =
+  "Sesi ini belum berlangsung. Tandai pada tanggal sesi atau sesudahnya.";

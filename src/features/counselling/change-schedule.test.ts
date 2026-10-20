@@ -5,7 +5,12 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { counsellingScheduleChanges, counsellingSchedules } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { cancelSchedule } from "./change-schedule";
+import {
+  cancelSchedule,
+  markScheduleDone,
+  markScheduleMissed,
+  rescheduleSchedule,
+} from "./change-schedule";
 import { askAnotherTime, MOVE_NOT_ALLOWED } from "./move-schedule";
 import { readOwnSchedules } from "./own-schedules";
 import { registerCounselling } from "./register-counselling";
@@ -14,10 +19,16 @@ import type { ScheduleStatus } from "./schedule-ids";
 import {
   ASKED_ANOTHER,
   CANCELLED,
+  MARKED_DONE,
+  MARKED_MISSED,
+  NOT_HELD_YET,
   PICK_FROM_TOMORROW,
+  PICK_WEEKDAY,
+  PROPOSED,
   REGISTERED,
   SCHEDULE_CHANGED_SINCE,
   SCHEDULE_NOT_FOUND,
+  TIME_PASSED,
   WEEKDAYS_ONLY,
 } from "./schedule-words";
 import { addTestPeople, type TestPeople } from "./test-consents";
@@ -47,6 +58,7 @@ interface Setting {
 async function setUp(
   db: Database,
   status: ScheduleStatus = "scheduled",
+  day = "2026-10-22",
 ): Promise<Setting> {
   const people = await addTestPeople(db, "Prodi Uji Ubah Jadwal", [
     "9986209001",
@@ -58,7 +70,7 @@ async function setUp(
     studentId: student.studentId,
     studentAccountId: student.id,
     status,
-    day: "2026-10-22",
+    day,
     counsellorId: status === "submitted" ? null : people.counsellor.id,
     at: REGISTERED_AT,
   });
@@ -275,6 +287,203 @@ describe("Batalkan pendaftaran and Batalkan", () => {
           await cancelSchedule(db, other, setting.id, VERSION, NOW),
         ).toEqual(MOVE_NOT_ALLOWED);
         expect(await statusOf(db, setting.id)).toBe("scheduled");
+      });
+    },
+  );
+});
+
+const MOVED = {
+  day: "2026-10-27",
+  hour: "13:00",
+  way: "online",
+  message: "Saya ada rapat pada jam itu.",
+};
+
+describe("Ubah jadwal of Konselor on a Dijadwalkan session", () => {
+  it("keeps it Dijadwalkan at the new time with the message, logged, and the student sees both", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const { counsellor } = setting.people;
+
+      const answer = await rescheduleSchedule(
+        db,
+        counsellor,
+        setting.id,
+        VERSION,
+        MOVED,
+        NOW,
+      );
+
+      expect(answer).toMatchObject({
+        kind: "kept",
+        done: PROPOSED,
+        card: { status: "scheduled", day: "2026-10-27", hour: "13:00" },
+      });
+      expect((await logOf(db, setting.id)).at(-1)).toEqual({
+        changedBy: counsellor.id,
+        changedAt: NOW,
+        step: "reschedule",
+        statusBefore: "scheduled",
+        statusAfter: "scheduled",
+      });
+      expect(await readOwnSchedules(db, setting.student)).toMatchObject([
+        {
+          status: "scheduled",
+          day: "2026-10-27",
+          hour: "13:00",
+          way: "online",
+          counsellorName: "Konselor Uji",
+          counsellorMessage: "Saya ada rapat pada jam itu.",
+        },
+      ]);
+    });
+  });
+
+  it.each([
+    [{ day: "2026-10-24" }, PICK_WEEKDAY],
+    [{ day: "2026-10-20", hour: "08:30" }, TIME_PASSED],
+  ])("is refused for %o, changing nothing", async (wrong, error) => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+
+      const answer = await rescheduleSchedule(
+        db,
+        setting.people.counsellor,
+        setting.id,
+        VERSION,
+        { ...MOVED, ...wrong },
+        NOW,
+      );
+
+      expect(answer).toEqual({ kind: "refused", error });
+      expect(await logOf(db, setting.id)).toHaveLength(1);
+    });
+  });
+
+  it.each(["submitted", "proposed", "done", "missed", "cancelled"] as const)(
+    "changes nothing on a request that is %s, giving the current card",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const setting = await setUp(db, status);
+
+        const answer = await rescheduleSchedule(
+          db,
+          setting.people.counsellor,
+          setting.id,
+          VERSION,
+          MOVED,
+          NOW,
+        );
+
+        expect(answer).toMatchObject({
+          kind: "changed",
+          error: SCHEDULE_CHANGED_SINCE,
+          card: { status },
+        });
+        expect(await logOf(db, setting.id)).toHaveLength(1);
+      });
+    },
+  );
+});
+
+describe("Tandai selesai and Tidak hadir of Konselor", () => {
+  it.each([
+    [markScheduleDone, "done", "mark_done", MARKED_DONE],
+    [markScheduleMissed, "missed", "mark_missed", MARKED_MISSED],
+  ] as const)(
+    "mark a Dijadwalkan session on its day, logged, and it leaves Semua yang aktif: %#",
+    async (mark, status, step, done) => {
+      await inTestDatabase(async (db) => {
+        const setting = await setUp(db, "scheduled", "2026-10-20");
+        const { counsellor } = setting.people;
+
+        const answer = await mark(db, counsellor, setting.id, VERSION, NOW);
+
+        expect(answer).toMatchObject({ kind: "kept", done, card: { status } });
+        expect((await logOf(db, setting.id)).at(-1)).toEqual({
+          changedBy: counsellor.id,
+          changedAt: NOW,
+          step,
+          statusBefore: "scheduled",
+          statusAfter: status,
+        });
+        const active = await readScheduleBoard(
+          db,
+          counsellor,
+          { filter: "active", page: 1 },
+          NOW,
+        );
+        expect(active?.cards).toEqual([]);
+        expect(await readOwnSchedules(db, setting.student)).toEqual([]);
+      });
+    },
+  );
+
+  it.each([markScheduleDone, markScheduleMissed])(
+    "are refused before the day of the session, changing nothing: %#",
+    async (mark) => {
+      await inTestDatabase(async (db) => {
+        const setting = await setUp(db, "scheduled", "2026-10-21");
+
+        const answer = await mark(
+          db,
+          setting.people.counsellor,
+          setting.id,
+          VERSION,
+          NOW,
+        );
+
+        expect(answer).toEqual({ kind: "refused", error: NOT_HELD_YET });
+        expect(await statusOf(db, setting.id)).toBe("scheduled");
+        expect(await logOf(db, setting.id)).toHaveLength(1);
+      });
+    },
+  );
+
+  it.each(["submitted", "proposed", "done", "missed", "cancelled"] as const)(
+    "change nothing on a request that is %s",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const setting = await setUp(db, status, "2026-10-19");
+
+        const answer = await markScheduleDone(
+          db,
+          setting.people.counsellor,
+          setting.id,
+          VERSION,
+          NOW,
+        );
+
+        expect(answer).toMatchObject({ kind: "changed", card: { status } });
+        expect(await logOf(db, setting.id)).toHaveLength(1);
+      });
+    },
+  );
+});
+
+describe("a hand-made move or mark of a role without the right", () => {
+  it.each(["student", "mentor", "head_of_unit", "discipline_officer"] as const)(
+    "is refused for %s, giving nothing back",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const setting = await setUp(db, "scheduled", "2026-10-20");
+        const actor =
+          role === "student"
+            ? setting.student
+            : { ...setting.people.counsellor, roles: [role] };
+        const { id } = setting;
+
+        expect(
+          await rescheduleSchedule(db, actor, id, VERSION, MOVED, NOW),
+        ).toEqual(MOVE_NOT_ALLOWED);
+        expect(await markScheduleDone(db, actor, id, VERSION, NOW)).toEqual(
+          MOVE_NOT_ALLOWED,
+        );
+        expect(await markScheduleMissed(db, actor, id, VERSION, NOW)).toEqual(
+          MOVE_NOT_ALLOWED,
+        );
+        expect(await statusOf(db, id)).toBe("scheduled");
+        expect(await logOf(db, id)).toHaveLength(1);
       });
     },
   );

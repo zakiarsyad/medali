@@ -4,6 +4,7 @@ import {
   checkProposal,
   checkRegistration,
   checkStudentDay,
+  hasDayCome,
   hasPassed,
   scheduleAfter,
 } from "./schedule-rules";
@@ -186,6 +187,17 @@ describe("scheduleAfter", () => {
     ["mark_missed", "proposed"],
   ] as const)("refuses %s from %s", (move, current) => {
     expect(scheduleAfter(move, current)).toBeNull();
+  });
+});
+
+describe("hasDayCome", () => {
+  it("is true on the day of a session and after it", () => {
+    expect(hasDayCome("2026-10-20", TODAY)).toBe(true);
+    expect(hasDayCome("2026-10-19", TODAY)).toBe(true);
+  });
+
+  it("is false before the day of a session", () => {
+    expect(hasDayCome("2026-10-21", TODAY)).toBe(false);
   });
 });
 

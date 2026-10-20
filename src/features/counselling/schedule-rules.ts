@@ -141,6 +141,11 @@ export function scheduleAfter(
   return from.includes(current) ? to : null;
 }
 
+/** Whether the day of a session has come: it is that day on campus, or later. */
+export function hasDayCome(day: string, today: string): boolean {
+  return day <= today;
+}
+
 /** Whether a time on campus has begun by `now`. */
 export function hasPassed(day: string, hour: string, now: Date): boolean {
   return new Date(`${day}T${hour}:00+07:00`) <= now;

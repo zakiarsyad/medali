@@ -23,12 +23,21 @@ describe("the sample requests for counselling", () => {
     },
   );
 
-  it("are about a coming day while active, and a day gone by once finished", () => {
+  it("are about a coming day while waiting, and a day gone by once finished", () => {
     for (const sample of SAMPLE_SCHEDULES) {
       const status = sample.steps.at(-1)?.statusAfter ?? "submitted";
+      if (status === "scheduled") continue;
       const isActive = ACTIVE_STATUSES.includes(status);
       expect(sample.inDays > 0, sample.nim).toBe(isActive);
     }
+  });
+
+  it("hold a Dijadwalkan session whose day has come, for Konselor to mark", () => {
+    const due = SAMPLE_SCHEDULES.filter(
+      (sample) =>
+        sample.steps.at(-1)?.statusAfter === "scheduled" && sample.inDays < 0,
+    );
+    expect(due).toHaveLength(1);
   });
 
   it("give each student at most one active request, and one of each status", () => {
@@ -49,10 +58,11 @@ describe("the sample requests for counselling", () => {
     }
   });
 
-  it("are each of a student whose consent is Disetujui", () => {
+  it("are each of a student who gave their consent", () => {
     for (const sample of SAMPLE_SCHEDULES) {
       const consent = SAMPLE_CONSENTS.find((each) => each.nim === sample.nim);
-      expect(consent?.steps.at(-1)?.status, sample.nim).toBe("approved");
+      const gave = consent?.steps.some((step) => step.status === "approved");
+      expect(gave, sample.nim).toBe(true);
     }
   });
 

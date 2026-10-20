@@ -7,7 +7,11 @@ import {
   counsellingSchedules,
 } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { cancelSchedule } from "./change-schedule";
+import {
+  cancelSchedule,
+  markScheduleDone,
+  rescheduleSchedule,
+} from "./change-schedule";
 import {
   acceptSchedule,
   approveSchedule,
@@ -196,6 +200,76 @@ describe("the student cancels while Konselor approves, at the same moment", () =
       kind: "changed",
       error: SCHEDULE_CHANGED_SINCE,
       card: { status: "cancelled" },
+    });
+    expect(await stepsOf(id)).toHaveLength(2);
+  });
+});
+
+/** A student with a Dijadwalkan session today, as both screens show it. */
+async function scheduledToday(program: string, nim: string) {
+  const people = await addTestPeople(own.db, program, [nim]);
+  const [student] = people.students;
+  if (!student?.studentId) throw new Error("Student missing.");
+  const id = await addTestSchedule(own.db, {
+    studentId: student.studentId,
+    studentAccountId: student.id,
+    status: "scheduled",
+    day: "2026-10-20",
+    counsellorId: people.counsellor.id,
+    at: REGISTERED_AT,
+  });
+  return { ...people, student, id, version: REGISTERED_AT.toISOString() };
+}
+
+describe("the student cancels while Konselor marks the session, at the same moment", () => {
+  it("keeps the first change; the other waits, then sees the current state with a message", async () => {
+    const { counsellor, student, id, version } = await scheduledToday(
+      "Prodi Uji Jadwal Sekaligus 4",
+      "9986207005",
+    );
+
+    const both = await own.atOnce<StudentMoveOutcome | CounsellorMoveOutcome>(
+      (db) => markScheduleDone(db, counsellor, id, version, NOW),
+      (db) => cancelSchedule(db, student, id, version, NOW),
+    );
+
+    expect(both.sooner).toMatchObject({
+      kind: "kept",
+      card: { status: "done" },
+    });
+    expect(both.later).toEqual({
+      kind: "changed",
+      error: SCHEDULE_CHANGED_SINCE,
+    });
+    expect(await stepsOf(id)).toHaveLength(2);
+  });
+});
+
+describe("the student asks for a new time while Konselor moves the session, at the same moment", () => {
+  it("keeps the first change; the other waits, then sees the current card with a message", async () => {
+    const { counsellor, student, id, version } = await scheduledToday(
+      "Prodi Uji Jadwal Sekaligus 5",
+      "9986207006",
+    );
+
+    const both = await own.atOnce<StudentMoveOutcome | CounsellorMoveOutcome>(
+      (db) =>
+        askAnotherTime(
+          db,
+          student,
+          id,
+          version,
+          { day: "2026-10-26", hour: "08:30", reason: "Bentrok uji." },
+          NOW,
+        ),
+      (db) => rescheduleSchedule(db, counsellor, id, version, PROPOSAL, NOW),
+    );
+
+    expect(both.sooner).toMatchObject({ kind: "kept" });
+    expect(both.later).toMatchObject({
+      kind: "changed",
+      error: SCHEDULE_CHANGED_SINCE,
+      card: { status: "submitted", day: "2026-10-26" },
     });
     expect(await stepsOf(id)).toHaveLength(2);
   });
