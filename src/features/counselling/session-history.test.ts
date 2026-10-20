@@ -164,6 +164,27 @@ describe("Riwayat sesi of Konselor", () => {
     },
   );
 
+  it("reads up to the most steps for a step past them, not the first 10", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await consented(db, "9986214006");
+      const days = Array.from(
+        { length: 11 },
+        (_, place) => `2026-10-${String(place + 1).padStart(2, "0")}`,
+      );
+      await addSessions(db, people, days);
+
+      const read = await readSessionHistory(
+        db,
+        people.counsellor,
+        people.studentId,
+        101,
+        NOW,
+      );
+
+      expect(read.ok && read.value.items.length).toBe(11);
+    });
+  });
+
   it("logs each reading: who, whose notes and when, never the notes", async () => {
     await inTestDatabase(async (db) => {
       const people = await consented(db, "9986214005");

@@ -20,14 +20,14 @@ export const SESSIONS_PAGE_SIZE = 10;
 /** The most steps of "Tampilkan lebih banyak" read at once. */
 const MOST_STEPS = 100;
 
-/** The steps asked, or 1 for what is not a whole number of steps. */
+/**
+ * The steps asked, at most MOST_STEPS, or 1 for what is not a whole number
+ * of steps.
+ */
 function stepsOf(sent: unknown): number {
   const isStep =
-    typeof sent === "number" &&
-    Number.isInteger(sent) &&
-    sent >= 1 &&
-    sent <= MOST_STEPS;
-  return isStep ? sent : 1;
+    typeof sent === "number" && Number.isInteger(sent) && sent >= 1;
+  return isStep ? Math.min(sent, MOST_STEPS) : 1;
 }
 
 const writer = alias(accounts, "writer");
