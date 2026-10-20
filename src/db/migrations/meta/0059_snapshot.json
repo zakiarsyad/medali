@@ -1,5 +1,5 @@
 {
-  "id": "fe9558da-9078-46dd-a35e-19595884848a",
+  "id": "5560f818-b039-4863-937c-ed77d09d310b",
   "prevId": "139990b0-5824-423d-aaea-39497e8125d6",
   "version": "7",
   "dialect": "postgresql",
@@ -10493,6 +10493,152 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.student_survey_answers": {
+      "name": "student_survey_answers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "survey_period_id": {
+          "name": "survey_period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mentor_id": {
+          "name": "mentor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scores": {
+          "name": "scores",
+          "type": "smallint[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggestion": {
+          "name": "suggestion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "student_survey_answers_one_per_student": {
+          "name": "student_survey_answers_one_per_student",
+          "columns": [
+            {
+              "expression": "survey_period_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "student_survey_answers_survey_period_id_student_survey_periods_id_fk": {
+          "name": "student_survey_answers_survey_period_id_student_survey_periods_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "student_survey_periods",
+          "columnsFrom": [
+            "survey_period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_student_id_students_id_fk": {
+          "name": "student_survey_answers_student_id_students_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_group_id_mentor_groups_id_fk": {
+          "name": "student_survey_answers_group_id_mentor_groups_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "mentor_groups",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_mentor_id_accounts_id_fk": {
+          "name": "student_survey_answers_mentor_id_accounts_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "mentor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "student_survey_answers_a_score_for_each_statement": {
+          "name": "student_survey_answers_a_score_for_each_statement",
+          "value": "cardinality(\"student_survey_answers\".\"scores\") = 8\n        and array_position(\"student_survey_answers\".\"scores\", null) is null\n        and 1 <= all(\"student_survey_answers\".\"scores\")\n        and 5 >= all(\"student_survey_answers\".\"scores\")"
+        },
+        "student_survey_answers_suggestion_length": {
+          "name": "student_survey_answers_suggestion_length",
+          "value": "\"student_survey_answers\".\"suggestion\" is null or (btrim(\"student_survey_answers\".\"suggestion\") <> ''\n        and char_length(\"student_survey_answers\".\"suggestion\") <= 600)"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.student_survey_periods": {
       "name": "student_survey_periods",
       "schema": "",
@@ -10931,282 +11077,6 @@
       },
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.violation_note_changes": {
-      "name": "violation_note_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "note_id": {
-          "name": "note_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "action": {
-          "name": "action",
-          "type": "violation_note_change_action",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "violation_note_changes_note": {
-          "name": "violation_note_changes_note",
-          "columns": [
-            {
-              "expression": "note_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "violation_note_changes_note_id_violation_notes_id_fk": {
-          "name": "violation_note_changes_note_id_violation_notes_id_fk",
-          "tableFrom": "violation_note_changes",
-          "tableTo": "violation_notes",
-          "columnsFrom": [
-            "note_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "violation_note_changes_changed_by_accounts_id_fk": {
-          "name": "violation_note_changes_changed_by_accounts_id_fk",
-          "tableFrom": "violation_note_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.violation_notes": {
-      "name": "violation_notes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "punishment": {
-          "name": "punishment",
-          "type": "violation_note_punishment",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "other_punishment": {
-          "name": "other_punishment",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "remark": {
-          "name": "remark",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "saved_by": {
-          "name": "saved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_at": {
-          "name": "saved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "removed_by": {
-          "name": "removed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "removed_at": {
-          "name": "removed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "violation_notes_student": {
-          "name": "violation_notes_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "violation_notes_day": {
-          "name": "violation_notes_day",
-          "columns": [
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "violation_notes_student_id_students_id_fk": {
-          "name": "violation_notes_student_id_students_id_fk",
-          "tableFrom": "violation_notes",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "violation_notes_saved_by_accounts_id_fk": {
-          "name": "violation_notes_saved_by_accounts_id_fk",
-          "tableFrom": "violation_notes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "saved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "violation_notes_removed_by_accounts_id_fk": {
-          "name": "violation_notes_removed_by_accounts_id_fk",
-          "tableFrom": "violation_notes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "removed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "violation_notes_description_length": {
-          "name": "violation_notes_description_length",
-          "value": "char_length(\"violation_notes\".\"description\") between 5 and 300"
-        },
-        "violation_notes_other_punishment_only_for_other": {
-          "name": "violation_notes_other_punishment_only_for_other",
-          "value": "(\"violation_notes\".\"punishment\" = 'other') = (\"violation_notes\".\"other_punishment\" <> '')"
-        },
-        "violation_notes_other_punishment_length": {
-          "name": "violation_notes_other_punishment_length",
-          "value": "char_length(\"violation_notes\".\"other_punishment\") <= 100"
-        },
-        "violation_notes_remark_length": {
-          "name": "violation_notes_remark_length",
-          "value": "char_length(\"violation_notes\".\"remark\") <= 500"
-        },
-        "violation_notes_saved_from_its_day": {
-          "name": "violation_notes_saved_from_its_day",
-          "value": "(\"violation_notes\".\"saved_at\" at time zone 'Asia/Jakarta')::date >= \"violation_notes\".\"day\""
-        },
-        "violation_notes_removal_is_whole": {
-          "name": "violation_notes_removal_is_whole",
-          "value": "(\"violation_notes\".\"removed_by\" is null) = (\"violation_notes\".\"removed_at\" is null)"
-        },
-        "violation_notes_removed_after_saved": {
-          "name": "violation_notes_removed_after_saved",
-          "value": "\"violation_notes\".\"removed_at\" is null or \"violation_notes\".\"removed_at\" >= \"violation_notes\".\"saved_at\""
-        }
-      },
       "isRLSEnabled": false
     }
   },
@@ -11814,23 +11684,6 @@
       "values": [
         "day",
         "week"
-      ]
-    },
-    "public.violation_note_change_action": {
-      "name": "violation_note_change_action",
-      "schema": "public",
-      "values": [
-        "added",
-        "removed"
-      ]
-    },
-    "public.violation_note_punishment": {
-      "name": "violation_note_punishment",
-      "schema": "public",
-      "values": [
-        "direct_guidance",
-        "warning",
-        "other"
       ]
     }
   },

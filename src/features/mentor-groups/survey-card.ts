@@ -7,12 +7,14 @@ import {
   accounts,
   mentorGroupMembers,
   mentorGroups,
+  studentSurveyAnswers,
   studentSurveyPeriods,
   students,
 } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { surveyRunsOn } from "@/mentoring/running-survey-period";
 import { type SurveyStatus, surveyStatus } from "@/mentoring/survey-status";
+import { USED_SURVEY_ANSWER } from "@/mentoring/used-survey-answer";
 import { groupsVisibleTo } from "./visible-groups";
 
 /** What the card of the running survey period shows. */
@@ -30,6 +32,10 @@ export interface RunningSurveyCard {
   status: SurveyStatus;
   /** How many students can answer, among those the account counts. */
   respondentPool: number;
+  /** "Responden": how many of those students sent an answer. */
+  answered: number;
+  /** Every answer of the period, which a cancel leaves unused. */
+  answers: number;
 }
 
 function readRunningPeriod(db: Database, today: string) {
@@ -74,19 +80,67 @@ async function countRespondentPool(
   return pool?.students ?? 0;
 }
 
+/** The answers of the period that runs on a day. */
+function answersOfRunning(today: string) {
+  return and(
+    eq(studentSurveyPeriods.id, studentSurveyAnswers.surveyPeriodId),
+    surveyRunsOn(today),
+    USED_SURVEY_ANSWER,
+  );
+}
+
+/** How many answers the period that runs on a day has. */
+async function countAnswers(db: Database, today: string): Promise<number> {
+  const [answers] = await db
+    .select({ answers: count() })
+    .from(studentSurveyAnswers)
+    .innerJoin(studentSurveyPeriods, answersOfRunning(today));
+  return answers?.answers ?? 0;
+}
+
+/**
+ * How many of the students who can answer, among those the limit holds,
+ * sent an answer in the period that runs on a day. A student who
+ * answered and is on Cuti now is not counted, as they are not among the
+ * students who can answer.
+ */
+async function countAnswered(
+  db: Database,
+  limit: RowLimit,
+  today: string,
+): Promise<number> {
+  const [answered] = await db
+    .select({ students: count() })
+    .from(studentSurveyAnswers)
+    .innerJoin(studentSurveyPeriods, answersOfRunning(today))
+    .innerJoin(
+      mentorGroupMembers,
+      eq(mentorGroupMembers.studentId, studentSurveyAnswers.studentId),
+    )
+    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorGroupMembers.groupId))
+    .innerJoin(
+      students,
+      and(eq(students.id, mentorGroupMembers.studentId), ACTIVE_MEMBER),
+    )
+    .where(groupsVisibleTo(limit));
+  return answered?.students ?? 0;
+}
+
 /**
  * The survey period that runs on a day, as its card shows it, or null
  * when none runs. `respondents` holds the students the account counts as
- * able to answer. The period and that number are read at the same time.
+ * able to answer. The period and its numbers are read at the same time.
  */
 export async function readRunningSurveyCard(
   db: Database,
   respondents: RowLimit,
   today: string,
 ): Promise<RunningSurveyCard | null> {
-  const [[running], respondentPool] = await Promise.all([
+  const [[running], respondentPool, answered, answers] = await Promise.all([
     readRunningPeriod(db, today),
     countRespondentPool(db, respondents),
+    countAnswered(db, respondents, today),
+    countAnswers(db, today),
   ]);
   if (!running) return null;
   const { startYear, term, closedAt, ...shown } = running;
@@ -95,5 +149,7 @@ export async function readRunningSurveyCard(
     period: { startYear, term },
     status: surveyStatus({ ...shown, closedAt }, today),
     respondentPool,
+    answered,
+    answers,
   };
 }

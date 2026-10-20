@@ -2229,6 +2229,33 @@ describe("may", () => {
     );
   });
 
+  it("lets Mahasiswa answer the satisfaction survey for themselves, on Profil saya", () => {
+    expect(may(["student"], "answer_own_survey")).toBe(true);
+    expect(mayOpenPage(["student"], "profile")).toBe(true);
+  });
+
+  it("refuses every other role to answer the survey, Kepala Unit, Pengasuh and the roles that read the tab among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "upk_staff",
+        "mentor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "answer_own_survey")).toBe(false);
+    }
+  });
+
+  it("names the right to answer the survey in words for the list of rights", () => {
+    expect(ACTION_TITLES.answer_own_survey).toBe(
+      "Mengisi dan mengubah survei kepuasan pengasuhan sendiri",
+    );
+  });
+
   it("lets every role that sees the evaluations of mentors see the groups and the mentors they are shown with", () => {
     for (const role of ROLE_IDS) {
       if (!may([role], "view_mentor_evaluations")) continue;
@@ -2438,6 +2465,7 @@ describe("may", () => {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "answer_own_survey",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });
