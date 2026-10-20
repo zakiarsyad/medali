@@ -91,6 +91,15 @@
   --column-min-width: 360px;
   --box-min-width: 200px;
   --score-box-width: 90px;
+  /*
+   * A survey statement stands beside its buttons of a score of 1 to 5
+   * here. On a phone it stands above them, and the buttons share the
+   * whole width, each high enough for a thumb.
+   */
+  --score-button-size: 38px;
+  --score-button-grow: 0;
+  --scores-width: auto;
+  --statement-text-basis: var(--card-min-width);
   --medal-width: 370px;
   --bare-box-width: 380px;
   --photo-preview-height: 260px;
@@ -255,6 +264,10 @@
     --save-bar-direction: column-reverse;
     --save-bar-wrap: wrap-reverse;
     --above-save-bar: calc(4 * var(--space-3xl));
+    --score-button-size: 44px;
+    --score-button-grow: 1;
+    --scores-width: 100%;
+    --statement-text-basis: 100%;
   }
 }
 
