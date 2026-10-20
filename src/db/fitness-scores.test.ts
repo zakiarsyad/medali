@@ -1,13 +1,13 @@
 // Sample NIMs of this file: 9986200000 to 9986200099.
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { STARTING_LIMITS } from "@/features/fitness/fitness-ids";
 import {
   addTestActor,
   addTestGroup,
   addTestScores,
   addTestStudents,
 } from "@/features/fitness/test-fitness";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import type { Database } from "./connect";
 import { fitnessCategoryLimits, fitnessScores, fitnessTests } from "./schema";
 import { withTestDatabase } from "./test-database";

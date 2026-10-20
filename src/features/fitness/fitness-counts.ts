@@ -1,7 +1,10 @@
-import { categoryOf } from "./fitness-category";
-import type { FitnessCategory, FitnessLimits } from "./fitness-ids";
-import { finalCategory } from "./health-category";
-import type { NoteCategory } from "./health-ids";
+import { categoryOf } from "@/health-notes/fitness-category";
+import type {
+  FitnessCategory,
+  FitnessLimits,
+} from "@/health-notes/fitness-ids";
+import { finalCategory } from "@/health-notes/health-category";
+import type { NoteCategory } from "@/health-notes/health-ids";
 
 /**
  * Students who stand alike for the numbers of the tab: how many, their

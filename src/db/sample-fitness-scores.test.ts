@@ -3,7 +3,7 @@ import {
   SCORE_MAX,
   SCORE_MIN,
   STARTING_LIMITS,
-} from "@/features/fitness/fitness-ids";
+} from "@/health-notes/fitness-ids";
 import { SAMPLE_ACCOUNTS, SAMPLE_STUDENTS } from "./sample-data";
 import { SAMPLE_FITNESS_TESTS, sampleTestDay } from "./sample-fitness-scores";
 

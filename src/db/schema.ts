@@ -91,6 +91,10 @@ import {
   SPECIAL_REASONS,
 } from "@/features/dorm/leave-ids";
 import {
+  MARK_CATEGORIES,
+  OBSERVATION_MAX,
+} from "@/features/dorm/mental-health-mark-ids";
+import {
   OTHER_PUNISHMENT_MAX_LENGTH,
   PUNISHMENTS,
   REASON_MAX_LENGTH,
@@ -107,20 +111,6 @@ import {
   RESULT_MIN_LENGTH,
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
-import {
-  LIMIT_MAX as FITNESS_LIMIT_MAX,
-  LIMIT_MIN as FITNESS_LIMIT_MIN,
-  SCORE_MAX as FITNESS_SCORE_MAX,
-  SCORE_MIN as FITNESS_SCORE_MIN,
-  type FitnessLimits,
-} from "@/features/fitness/fitness-ids";
-import {
-  ADVICE_MAX as HEALTH_ADVICE_MAX,
-  NOTE_CATEGORIES as HEALTH_NOTE_CATEGORIES,
-  SHORT_TEXT_MAX as HEALTH_SHORT_TEXT_MAX,
-  ILLNESSES,
-  type RecapReadFilters,
-} from "@/features/fitness/health-ids";
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "@/features/proof-files/keep-days";
 import {
   PHOTOS_MAX,
@@ -151,6 +141,20 @@ import {
   SKPM_UPLOAD_ACTIONS,
   SKPM_UPLOAD_MODES,
 } from "@/features/skpm/skpm-ids";
+import {
+  LIMIT_MAX as FITNESS_LIMIT_MAX,
+  LIMIT_MIN as FITNESS_LIMIT_MIN,
+  SCORE_MAX as FITNESS_SCORE_MAX,
+  SCORE_MIN as FITNESS_SCORE_MIN,
+  type FitnessLimits,
+} from "@/health-notes/fitness-ids";
+import {
+  ADVICE_MAX as HEALTH_ADVICE_MAX,
+  NOTE_CATEGORIES as HEALTH_NOTE_CATEGORIES,
+  SHORT_TEXT_MAX as HEALTH_SHORT_TEXT_MAX,
+  ILLNESSES,
+  type RecapReadFilters,
+} from "@/health-notes/health-ids";
 import {
   ATTENDANCE_MARKS,
   type MarksByStudent,
@@ -305,6 +309,12 @@ export const healthIllness = pgEnum("health_illness", ILLNESSES);
 export const healthNoteCategory = pgEnum(
   "health_note_category",
   HEALTH_NOTE_CATEGORIES,
+);
+
+/** "Kategori potensi" of a mental health early mark; none is "Tidak ada indikasi". */
+export const mentalHealthMarkCategory = pgEnum(
+  "mental_health_mark_category",
+  MARK_CATEGORIES,
 );
 
 export const characterAssessmentSource = pgEnum(
@@ -3508,4 +3518,81 @@ export const healthRecapReadings = pgTable(
     filters: jsonb().$type<RecapReadFilters>().notNull(),
   },
   (table) => [index("health_recap_readings_read_at").on(table.readAt)],
+);
+
+/** The checks a mark and both sides of its log line keep. */
+function markRules(category: AnyPgColumn, observation: AnyPgColumn): SQL {
+  return sql`${atMost(observation, OBSERVATION_MAX)} and (${category} is not null or ${observation} = '') and (${category} is distinct from 'refer' or ${observation} <> '')`;
+}
+
+/**
+ * A dorm resident's one current mark "Potensi kesehatan mental": "perlu
+ * pemantauan" or "perlu dirujuk ke konselor", with "Pengamatan
+ * (rahasia)", required for a referral, and who set it last and when. A
+ * mark set back to "Tidak ada indikasi" keeps its row with no category
+ * and no observation, so who cleared it stays known; a student without
+ * a row was never marked. Never deleted: every change is in its log.
+ */
+export const mentalHealthMarks = pgTable(
+  "mental_health_marks",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    category: mentalHealthMarkCategory(),
+    observation: text().notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check(
+      "mental_health_marks_rules",
+      markRules(table.category, table.observation),
+    ),
+  ],
+);
+
+/**
+ * Every change of a mental health early mark: who, when, and the
+ * category and observation before and after; no category is "Tidak ada
+ * indikasi". The key is made by the form that sent the change, so a form
+ * sent twice is logged once. Read by Kepala Unit only. Rows here cannot
+ * be changed or deleted; the database refuses it.
+ */
+export const mentalHealthMarkChanges = pgTable(
+  "mental_health_mark_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    categoryBefore: mentalHealthMarkCategory(),
+    observationBefore: text().notNull(),
+    categoryAfter: mentalHealthMarkCategory(),
+    observationAfter: text().notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("mental_health_mark_changes_student").on(
+      table.studentId,
+      table.changedAt,
+    ),
+    check(
+      "mental_health_mark_changes_before_rules",
+      markRules(table.categoryBefore, table.observationBefore),
+    ),
+    check(
+      "mental_health_mark_changes_after_rules",
+      markRules(table.categoryAfter, table.observationAfter),
+    ),
+    check(
+      "mental_health_mark_changes_differs",
+      sql`(${table.categoryBefore}, ${table.observationBefore}) is distinct from (${table.categoryAfter}, ${table.observationAfter})`,
+    ),
+  ],
 );

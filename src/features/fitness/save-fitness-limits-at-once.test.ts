@@ -2,8 +2,8 @@ import { eq, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { fitnessCategoryLimits } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { STARTING_VERSION } from "./fitness-ids";
-import { readFitnessLimits } from "./fitness-limits";
+import { STARTING_VERSION } from "@/health-notes/fitness-ids";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { saveFitnessLimits } from "./save-fitness-limits";
 import { addTestActor } from "./test-fitness";
 

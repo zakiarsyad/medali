@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
+import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "./connect";
 import {
   SAMPLE_SIKU_ENTRIES,
@@ -18,7 +19,7 @@ import { studentIdsByNim } from "./seed-mentor-groups";
 /** The first sample account that holds a role. */
 export async function sampleAccountOf(
   db: Database,
-  role: SampleSikuEntry["enteredAs"],
+  role: RoleId,
 ): Promise<string> {
   const [holder] = await db
     .select({ id: accountRoles.accountId })

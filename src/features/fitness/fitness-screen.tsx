@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
@@ -14,7 +15,6 @@ import {
 import type { FitnessList } from "./fitness-board";
 import type { FitnessNumbers } from "./fitness-counts";
 import { FitnessFilterRow } from "./fitness-filters";
-import type { FitnessLimits } from "./fitness-ids";
 import { FitnessListTable } from "./fitness-list-table";
 import { READ_ONLY_NOTE, shownMean } from "./fitness-words";
 

@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { dormOf } from "@/dorms/resident-rule";
-import { ADVICE_MAX, SHORT_TEXT_MAX } from "@/features/fitness/health-ids";
+import {
+  ADVICE_MAX,
+  NOTE_CATEGORIES,
+  SHORT_TEXT_MAX,
+} from "@/health-notes/health-ids";
 import { SAMPLE_STUDENTS, samplePeriods } from "./sample-data";
 import { sampleCompanionDorm } from "./sample-dorms";
 import { SAMPLE_FITNESS_TESTS } from "./sample-fitness-scores";
-import { SAMPLE_HEALTH_NOTES } from "./sample-health-notes";
+import {
+  SAMPLE_DORM_HEALTH_NOTES,
+  SAMPLE_HEALTH_NOTES,
+  type SampleDormHealthNote,
+} from "./sample-health-notes";
 
 const ACTIVE = SAMPLE_STUDENTS.filter(
   (student) => (student.status ?? "active") === "active",
@@ -77,6 +85,11 @@ describe("the sample health notes", () => {
     expect(new Set(nims).size).toBeLessThan(nims.length);
   });
 
+  it("are saved by Penilai Mahasiswa or Kepala Unit, who write notes of students out of the dorm", () => {
+    const writers = new Set(SAMPLE_HEALTH_NOTES.map((note) => note.savedAs));
+    expect([...writers].sort()).toEqual(["assessor", "head_of_unit"]);
+  });
+
   it("give the spec's three examples with the sample fitness scores", () => {
     const pairs = SAMPLE_HEALTH_NOTES.map((note) => ({
       score: latestScore(note.nim),
@@ -88,5 +101,63 @@ describe("the sample health notes", () => {
       category: "good",
     });
     expect(pairs).toContainEqual({ score: null, category: "attention" });
+  });
+});
+
+/** Each resident's latest sample note. */
+function latestDormNotes(): Map<number, SampleDormHealthNote> {
+  const latest = new Map<number, SampleDormHealthNote>();
+  for (const note of SAMPLE_DORM_HEALTH_NOTES) latest.set(note.resident, note);
+  return latest;
+}
+
+describe("the sample health notes of dorm residents", () => {
+  it.each(SAMPLE_DORM_HEALTH_NOTES)(
+    "hold an illness or a text, each within its length: resident $resident",
+    (note) => {
+      const texts = [note.otherHistory, note.medicine, note.advice];
+      expect(
+        note.illnesses.length > 0 || texts.some((text) => text !== ""),
+      ).toBe(true);
+      const short = [
+        note.examiner ?? "",
+        note.otherHistory,
+        note.medicine,
+        ...note.illnesses.map((each) => each.note),
+      ];
+      for (const text of short) {
+        expect(text.length).toBeLessThanOrEqual(SHORT_TEXT_MAX);
+      }
+      expect(note.advice.length).toBeLessThanOrEqual(ADVICE_MAX);
+    },
+  );
+
+  it("are oldest first, with the first resident's note saved again", () => {
+    const days = SAMPLE_DORM_HEALTH_NOTES.map((note) => note.daysAgo);
+    expect(days).toEqual([...days].sort((a, b) => b - a));
+    const first = SAMPLE_DORM_HEALTH_NOTES.filter(
+      (note) => note.resident === 0,
+    );
+    expect(first.length).toBeGreaterThan(1);
+  });
+
+  it("leave a latest note in every choice of Pertimbangan kategori, and one that follows the test", () => {
+    const categories = [...latestDormNotes().values()].map(
+      (note) => note.category,
+    );
+    expect(new Set(categories)).toEqual(new Set([...NOTE_CATEGORIES, null]));
+  });
+
+  it("are of the first two residents, the sample Pengasuh's mentees, and of others", () => {
+    const residents = [...latestDormNotes().keys()].sort();
+    expect(residents).toEqual(expect.arrayContaining([0, 1]));
+    expect(residents.some((resident) => resident > 1)).toBe(true);
+  });
+
+  it("are saved by BAM - Kesehatan or Kepala Unit, who write the notes of residents", () => {
+    const writers = new Set(
+      SAMPLE_DORM_HEALTH_NOTES.map((note) => note.savedAs),
+    );
+    expect([...writers].sort()).toEqual(["bam_health", "head_of_unit"]);
   });
 });

@@ -4,7 +4,7 @@
  * database code.
  */
 
-import { SCORE_MAX, SCORE_MIN } from "./fitness-ids";
+import { SCORE_MAX, SCORE_MIN } from "@/health-notes/fitness-ids";
 
 /** The columns of a fitness file, in the order of the template. */
 export const FITNESS_FILE_COLUMNS = [

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import type { ReadyFitnessRow } from "./fitness-file";
 import { fitnessPreviewOf } from "./fitness-file-preview";
-import { STARTING_LIMITS } from "./fitness-ids";
 
 function readyRow(row: number, score: number): ReadyFitnessRow {
   return {

@@ -3,19 +3,11 @@
  * browser, so nothing here may take from the database code.
  */
 
+import { CATEGORY_WORDS } from "@/health-notes/category-words";
+import type { ScoreRange } from "@/health-notes/fitness-category";
+import type { LimitKey } from "@/health-notes/fitness-ids";
 import { DAY } from "@/ui/day";
 import type { FitnessFilter } from "./fitness-address";
-import type { ScoreRange, ShownCategory } from "./fitness-category";
-import type { LimitKey } from "./fitness-ids";
-
-/** Each category, and Belum dites, in the prototype's words. */
-export const CATEGORY_WORDS: Record<ShownCategory, string> = {
-  excellent: "Prima",
-  good: "Baik",
-  attention: "Perlu perhatian",
-  medical: "Perlu tindak lanjut medis",
-  untested: "Belum dites",
-};
 
 /** Each choice of the filter above "Hasil tes kebugaran". */
 export const FILTER_WORDS: Record<FitnessFilter, string> = {

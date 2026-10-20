@@ -1,9 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { LIMIT_KEYS } from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./fitness.module.css";
-import { LIMIT_KEYS } from "./fitness-ids";
 import type { SentLimits } from "./fitness-input";
 import { LIMIT_LABELS } from "./fitness-words";
 

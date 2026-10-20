@@ -22,7 +22,7 @@ import {
   type SkpmParams,
 } from "./skpm-address";
 import { oneDecimal, skpmScoreOf } from "./skpm-score";
-import { IN_FORCE, totalsByStudent } from "./skpm-totals";
+import { countUploadsInForce, IN_FORCE, totalsByStudent } from "./skpm-totals";
 
 /** The four numbers at the top of the tab, of the students the account sees. */
 export interface SkpmNumbers {
@@ -97,14 +97,6 @@ function totalsOf(
     total: row.total,
     score: skpmScoreOf(row.total, pointsForHundred),
   };
-}
-
-async function countUploadsInForce(db: Database): Promise<number> {
-  const [counted] = await db
-    .select({ uploads: count() })
-    .from(skpmUploads)
-    .where(IN_FORCE);
-  return counted?.uploads ?? 0;
 }
 
 /**

@@ -10,7 +10,6 @@ import {
 import { readFitnessGroupChoices } from "@/features/fitness/fitness-groups";
 import { testYearOf } from "@/features/fitness/fitness-input";
 import { FitnessInputPanel } from "@/features/fitness/fitness-input-panel";
-import { readFitnessLimits } from "@/features/fitness/fitness-limits";
 import {
   fitnessVisibleTo,
   healthReadableTo,
@@ -23,6 +22,7 @@ import { LimitsForm } from "@/features/fitness/limits-form";
 import { ReadOnlyLimits } from "@/features/fitness/read-only-limits";
 import { readRecapParams } from "@/features/fitness/recap-address";
 import { ScoreForm } from "@/features/fitness/score-form";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
 
 /**
  * The tab Penilaian jasmani. Each role sees the Aktif students its roles
