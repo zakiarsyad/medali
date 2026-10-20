@@ -44,7 +44,7 @@ export interface CheckedRegistration {
   story: string | null;
 }
 
-function isOneOf<T extends string>(
+export function isOneOf<T extends string>(
   list: readonly T[],
   sent: unknown,
 ): sent is T {

@@ -1,5 +1,5 @@
 {
-  "id": "3ff49aea-3bb5-43b7-a58b-9bde6f61df12",
+  "id": "85b46826-b56d-4fb9-8a92-436a905623f4",
   "prevId": "5560f818-b039-4863-937c-ed77d09d310b",
   "version": "7",
   "dialect": "postgresql",
@@ -6831,6 +6831,250 @@
       },
       "isRLSEnabled": false
     },
+    "public.mental_health_screening_log": {
+      "name": "mental_health_screening_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event": {
+          "name": "event",
+          "type": "mental_health_screening_event",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by": {
+          "name": "by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "at": {
+          "name": "at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "mental_health_screening_log_student": {
+          "name": "mental_health_screening_log_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mental_health_screening_log_student_id_students_id_fk": {
+          "name": "mental_health_screening_log_student_id_students_id_fk",
+          "tableFrom": "mental_health_screening_log",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mental_health_screening_log_by_accounts_id_fk": {
+          "name": "mental_health_screening_log_by_accounts_id_fk",
+          "tableFrom": "mental_health_screening_log",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mental_health_screenings": {
+      "name": "mental_health_screenings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "screened_on": {
+          "name": "screened_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instrument": {
+          "name": "instrument",
+          "type": "mental_health_instrument",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "depression": {
+          "name": "depression",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "anxiety": {
+          "name": "anxiety",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stress": {
+          "name": "stress",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "srq_yes": {
+          "name": "srq_yes",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "self_harm": {
+          "name": "self_harm",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "mental_health_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saved_by": {
+          "name": "saved_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saved_at": {
+          "name": "saved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "mental_health_screenings_student": {
+          "name": "mental_health_screenings_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "screened_on",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "mental_health_screenings_student_id_students_id_fk": {
+          "name": "mental_health_screenings_student_id_students_id_fk",
+          "tableFrom": "mental_health_screenings",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "mental_health_screenings_saved_by_accounts_id_fk": {
+          "name": "mental_health_screenings_saved_by_accounts_id_fk",
+          "tableFrom": "mental_health_screenings",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "saved_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "mental_health_screenings_scores": {
+          "name": "mental_health_screenings_scores",
+          "value": "case \"mental_health_screenings\".\"instrument\"\n        when 'dass21' then \"mental_health_screenings\".\"srq_yes\" is null\n          and (\"mental_health_screenings\".\"depression\" is not null and \"mental_health_screenings\".\"depression\" between 0 and 21)\n          and (\"mental_health_screenings\".\"anxiety\" is not null and \"mental_health_screenings\".\"anxiety\" between 0 and 21)\n          and (\"mental_health_screenings\".\"stress\" is not null and \"mental_health_screenings\".\"stress\" between 0 and 21)\n        else \"mental_health_screenings\".\"depression\" is null and \"mental_health_screenings\".\"anxiety\" is null\n          and \"mental_health_screenings\".\"stress\" is null\n          and (\"mental_health_screenings\".\"srq_yes\" is not null and \"mental_health_screenings\".\"srq_yes\" between 0 and 20)\n      end"
+        },
+        "mental_health_screenings_self_harm_most_severe": {
+          "name": "mental_health_screenings_self_harm_most_severe",
+          "value": "not \"mental_health_screenings\".\"self_harm\" or \"mental_health_screenings\".\"level\" = 'extremely_severe'"
+        },
+        "mental_health_screenings_note_length": {
+          "name": "mental_health_screenings_note_length",
+          "value": "char_length(\"mental_health_screenings\".\"note\") <= 1000"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.mentor_evaluation_changes": {
       "name": "mentor_evaluation_changes",
       "schema": "",
@@ -11078,282 +11322,6 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
-    },
-    "public.violation_note_changes": {
-      "name": "violation_note_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "note_id": {
-          "name": "note_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "action": {
-          "name": "action",
-          "type": "violation_note_change_action",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "violation_note_changes_note": {
-          "name": "violation_note_changes_note",
-          "columns": [
-            {
-              "expression": "note_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "violation_note_changes_note_id_violation_notes_id_fk": {
-          "name": "violation_note_changes_note_id_violation_notes_id_fk",
-          "tableFrom": "violation_note_changes",
-          "tableTo": "violation_notes",
-          "columnsFrom": [
-            "note_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "violation_note_changes_changed_by_accounts_id_fk": {
-          "name": "violation_note_changes_changed_by_accounts_id_fk",
-          "tableFrom": "violation_note_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.violation_notes": {
-      "name": "violation_notes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "punishment": {
-          "name": "punishment",
-          "type": "violation_note_punishment",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "other_punishment": {
-          "name": "other_punishment",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "remark": {
-          "name": "remark",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "saved_by": {
-          "name": "saved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_at": {
-          "name": "saved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "removed_by": {
-          "name": "removed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "removed_at": {
-          "name": "removed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "violation_notes_student": {
-          "name": "violation_notes_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "violation_notes_day": {
-          "name": "violation_notes_day",
-          "columns": [
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "violation_notes_student_id_students_id_fk": {
-          "name": "violation_notes_student_id_students_id_fk",
-          "tableFrom": "violation_notes",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "violation_notes_saved_by_accounts_id_fk": {
-          "name": "violation_notes_saved_by_accounts_id_fk",
-          "tableFrom": "violation_notes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "saved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "violation_notes_removed_by_accounts_id_fk": {
-          "name": "violation_notes_removed_by_accounts_id_fk",
-          "tableFrom": "violation_notes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "removed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "violation_notes_description_length": {
-          "name": "violation_notes_description_length",
-          "value": "char_length(\"violation_notes\".\"description\") between 5 and 300"
-        },
-        "violation_notes_other_punishment_only_for_other": {
-          "name": "violation_notes_other_punishment_only_for_other",
-          "value": "(\"violation_notes\".\"punishment\" = 'other') = (\"violation_notes\".\"other_punishment\" <> '')"
-        },
-        "violation_notes_other_punishment_length": {
-          "name": "violation_notes_other_punishment_length",
-          "value": "char_length(\"violation_notes\".\"other_punishment\") <= 100"
-        },
-        "violation_notes_remark_length": {
-          "name": "violation_notes_remark_length",
-          "value": "char_length(\"violation_notes\".\"remark\") <= 500"
-        },
-        "violation_notes_saved_from_its_day": {
-          "name": "violation_notes_saved_from_its_day",
-          "value": "(\"violation_notes\".\"saved_at\" at time zone 'Asia/Jakarta')::date >= \"violation_notes\".\"day\""
-        },
-        "violation_notes_removal_is_whole": {
-          "name": "violation_notes_removal_is_whole",
-          "value": "(\"violation_notes\".\"removed_by\" is null) = (\"violation_notes\".\"removed_at\" is null)"
-        },
-        "violation_notes_removed_after_saved": {
-          "name": "violation_notes_removed_after_saved",
-          "value": "\"violation_notes\".\"removed_at\" is null or \"violation_notes\".\"removed_at\" >= \"violation_notes\".\"saved_at\""
-        }
-      },
-      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -11787,12 +11755,39 @@
         "medical"
       ]
     },
+    "public.mental_health_instrument": {
+      "name": "mental_health_instrument",
+      "schema": "public",
+      "values": [
+        "dass21",
+        "srq20"
+      ]
+    },
+    "public.mental_health_level": {
+      "name": "mental_health_level",
+      "schema": "public",
+      "values": [
+        "normal",
+        "mild",
+        "moderate",
+        "severe",
+        "extremely_severe"
+      ]
+    },
     "public.mental_health_mark_category": {
       "name": "mental_health_mark_category",
       "schema": "public",
       "values": [
         "monitor",
         "refer"
+      ]
+    },
+    "public.mental_health_screening_event": {
+      "name": "mental_health_screening_event",
+      "schema": "public",
+      "values": [
+        "saved",
+        "opened"
       ]
     },
     "public.mentor_replacement_reason": {
@@ -11960,23 +11955,6 @@
       "values": [
         "day",
         "week"
-      ]
-    },
-    "public.violation_note_change_action": {
-      "name": "violation_note_change_action",
-      "schema": "public",
-      "values": [
-        "added",
-        "removed"
-      ]
-    },
-    "public.violation_note_punishment": {
-      "name": "violation_note_punishment",
-      "schema": "public",
-      "values": [
-        "direct_guidance",
-        "warning",
-        "other"
       ]
     }
   },

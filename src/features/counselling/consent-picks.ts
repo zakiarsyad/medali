@@ -1,5 +1,6 @@
 import { and, asc, eq, ilike, or, type SQL } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
+import type { Action } from "@/auth/roles";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
@@ -26,8 +27,11 @@ export interface ConsentPick {
  * The students Konselor may pick: every student that is not removed,
  * whatever their status, as Konselor helps any student.
  */
-function pickable(actor: AccountForAccess): SQL {
-  return visibleTo(rowLimitForAction(actor, "manage_counselling_consent"));
+function pickable(
+  actor: AccountForAccess,
+  action: Action = "manage_counselling_consent",
+): SQL {
+  return visibleTo(rowLimitForAction(actor, action));
 }
 
 /**
@@ -40,7 +44,21 @@ export async function searchConsentStudents(
   actor: AccountForAccess,
   query: unknown,
 ): Promise<ConsentPick[]> {
-  if (!may(actor.roles, "manage_counselling_consent")) return [];
+  return searchStudentsFor(db, actor, "manage_counselling_consent", query);
+}
+
+/**
+ * The students an account with the right `action` may pick, whose name
+ * or NIM holds the text, 20 at most, by name. Nothing for an account
+ * without the right, and for an empty, too long or missing text.
+ */
+export async function searchStudentsFor(
+  db: Database,
+  actor: AccountForAccess,
+  action: Action,
+  query: unknown,
+): Promise<ConsentPick[]> {
+  if (!may(actor.roles, action)) return [];
   const text = typeof query === "string" ? searchText(query) : null;
   if (text === null) return [];
   const pattern = containsPattern(text);
@@ -55,7 +73,7 @@ export async function searchConsentStudents(
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
     .where(
       and(
-        pickable(actor),
+        pickable(actor, action),
         or(ilike(students.name, pattern), ilike(students.nim, pattern)),
       ),
     )

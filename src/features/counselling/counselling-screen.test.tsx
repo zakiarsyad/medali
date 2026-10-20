@@ -9,6 +9,7 @@ import {
   HELP_TEXT,
 } from "./counselling-screen";
 import type { OwnHistory, OwnScheduleView } from "./schedule-view";
+import type { OwnSessionSummary } from "./session-view";
 
 // 10:00 on campus on 16 October 2026.
 const MOMENT = new Date("2026-10-16T03:00:00Z");
@@ -387,5 +388,45 @@ describe("the status of a consent", () => {
     );
 
     expect(line).toContain("Persetujuan daring · 16 Okt 2026</span>");
+  });
+});
+
+describe("the counselling sessions of the student", () => {
+  function pageWith(sessions: OwnSessionSummary | null): string {
+    return renderToStaticMarkup(
+      <CounsellingScreen
+        own={{
+          consent: consentOf("approved", "online"),
+          registration: null,
+          sessions,
+        }}
+        mayManage={false}
+      />,
+    );
+  }
+
+  it("say how many there were, the last date and the next session, never any notes", () => {
+    const page = pageWith({
+      count: 3,
+      lastDay: "2026-10-19",
+      nextDay: "2026-10-26",
+    });
+
+    expect(page).toContain(
+      "<b>Sesi konseling:</b> 3 sesi, terakhir 19 Okt 2026",
+    );
+    expect(page).toContain("<b>Sesi berikutnya:</b> 26 Okt 2026");
+    expect(page).not.toContain("Catatan sesi");
+  });
+
+  it("leave out Sesi berikutnya when none is set", () => {
+    const page = pageWith({ count: 1, lastDay: "2026-10-19", nextDay: null });
+
+    expect(page).toContain("1 sesi, terakhir 19 Okt 2026");
+    expect(page).not.toContain("Sesi berikutnya");
+  });
+
+  it("are not shown while there is none", () => {
+    expect(pageWith(null)).not.toContain("Sesi konseling:");
   });
 });

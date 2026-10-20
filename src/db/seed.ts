@@ -30,6 +30,7 @@ import {
 import { addSampleCharacterAssessments } from "./seed-character-assessments";
 import { addSampleCounsellingConsents } from "./seed-counselling-consents";
 import { addSampleCounsellingSchedules } from "./seed-counselling-schedules";
+import { addSampleCounsellingSessions } from "./seed-counselling-sessions";
 import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCleaning } from "./seed-dorm-cleaning";
@@ -44,6 +45,7 @@ import {
   addSampleHealthNotes,
 } from "./seed-health-notes";
 import { addSampleMentalHealthMarks } from "./seed-mental-health-marks";
+import { addSampleMentalHealthScreenings } from "./seed-mental-health-screenings";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
 import { addSampleMentorReplacements } from "./seed-mentor-replacements";
@@ -183,7 +185,8 @@ async function addSampleFirstYears(
  * and additional activities for chosen angkatan and classes, SIKU
  * gains and losses of the sample students, and their requests for a SIKU
  * gain in every status, consents to counselling in every status, and
- * voluntary requests for counselling in every status, health notes of
+ * voluntary requests for counselling in every status, counselling
+ * sessions Konselor wrote down, health notes of
  * students in and out of the dorm in every category, and mental health
  * marks of dorm residents of both kinds, and violation notes of this
  * semester and the one before.
@@ -281,10 +284,12 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleCharacterAssessments(tx, today);
     await addSampleCounsellingConsents(tx, today);
     await addSampleCounsellingSchedules(tx, today);
+    await addSampleCounsellingSessions(tx, today);
     await addSampleFitnessScores(tx, groups, today);
     await addSampleHealthNotes(tx, today);
     await addSampleDormHealthNotes(tx, running, today);
     await addSampleMentalHealthMarks(tx, running, today);
+    await addSampleMentalHealthScreenings(tx, today);
     await addSampleViolationNotes(tx, periods, today);
   });
 }

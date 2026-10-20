@@ -1169,6 +1169,130 @@ describe("may", () => {
     }
   });
 
+  it("lets Konselor record and read mental health screenings, on Penilaian > Kesehatan mental", () => {
+    expect(ACTION_TITLES.record_mental_health_screenings).toContain(
+      "Kesehatan mental",
+    );
+    expect(may(["counsellor"], "record_mental_health_screenings")).toBe(true);
+    expect(mayOpenTab(["counsellor"], "assessment", "mental_health")).toBe(
+      true,
+    );
+  });
+
+  it("refuses every other role to record or read a mental health screening, Kepala Unit, Direktur, Pengasuh and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "record_mental_health_screenings")).toBe(false);
+    }
+  });
+
+  const screeningCounters: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it("lets Kepala Unit, Direktur, Ketua Program Studi and Pengasuh see the campus count of screened students, without names", () => {
+    expect(ACTION_TITLES.view_mental_health_screening_count).toContain(
+      "tanpa nama",
+    );
+    for (const role of screeningCounters) {
+      expect(may([role], "view_mental_health_screening_count")).toBe(true);
+      expect(mayOpenTab([role], "assessment", "mental_health")).toBe(true);
+    }
+  });
+
+  it("refuses the campus count of screened students to every other role, Penilai Mahasiswa, Pegawai UPK and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !screeningCounters.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "assessor",
+        "upk_staff",
+        "discipline_officer",
+        "dorm_manager",
+        "bam_health",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_mental_health_screening_count")).toBe(false);
+    }
+  });
+
+  it("opens Kesehatan mental to Konselor, Kepala Unit, Direktur, Ketua Program Studi and Pengasuh only", () => {
+    const openers: RoleId[] = [
+      "counsellor",
+      "head_of_unit",
+      "director",
+      "head_of_program",
+      "mentor",
+    ];
+    for (const role of ROLE_IDS) {
+      expect(mayOpenTab([role], "assessment", "mental_health")).toBe(
+        openers.includes(role),
+      );
+    }
+  });
+
+  it("lets Konselor write, change and read every counselling session, on Konseling", () => {
+    expect(ACTION_TITLES.keep_counselling_sessions).toContain("Sesi konseling");
+    expect(may(["counsellor"], "keep_counselling_sessions")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "keep_counselling_sessions",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses every other role to write or read a counselling session, Mahasiswa, Kepala Unit, Direktur, Ketua Program Studi and Pengasuh among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "keep_counselling_sessions")).toBe(false);
+    }
+  });
+
+  it("lets Mahasiswa see how many counselling sessions they had and the next one, on Konseling", () => {
+    expect(ACTION_TITLES.view_own_counselling_sessions).toContain(
+      "tanpa catatan sesi",
+    );
+    expect(may(["student"], "view_own_counselling_sessions")).toBe(true);
+  });
+
+  it("refuses every other role to see a student's own count of sessions, Konselor and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["counsellor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_own_counselling_sessions")).toBe(false);
+    }
+  });
+
   it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
     const openers: RoleId[] = ["counsellor", "student"];
     for (const role of ROLE_IDS) {
@@ -2465,6 +2589,7 @@ describe("may", () => {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "view_own_counselling_sessions",
       "answer_own_survey",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);

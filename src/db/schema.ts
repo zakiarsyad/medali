@@ -53,6 +53,21 @@ import {
   SCHEDULE_STEPS,
 } from "@/features/counselling/schedule-ids";
 import {
+  DASS_SUM_MAX,
+  INSTRUMENTS,
+  SCREENING_EVENTS,
+  SCREENING_LEVELS,
+  SCREENING_NOTE_MAX,
+  SRQ_MAX,
+} from "@/features/counselling/screening-ids";
+import {
+  SESSION_FOLLOW_UPS,
+  SESSION_KINDS,
+  SESSION_NOTES_MAX,
+  SESSION_STEPS,
+  type SessionContent,
+} from "@/features/counselling/session-ids";
+import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -348,6 +363,23 @@ export const counsellingConsentWay = pgEnum(
   CONSENT_WAYS,
 );
 
+/** The instrument of a mental health screening: DASS-21 or SRQ-20. */
+export const mentalHealthInstrument = pgEnum(
+  "mental_health_instrument",
+  INSTRUMENTS,
+);
+
+/** "Tingkat" of a mental health screening, mildest first. */
+export const mentalHealthLevel = pgEnum(
+  "mental_health_level",
+  SCREENING_LEVELS,
+);
+
+export const mentalHealthScreeningEvent = pgEnum(
+  "mental_health_screening_event",
+  SCREENING_EVENTS,
+);
+
 export const counsellingScheduleKind = pgEnum(
   "counselling_schedule_kind",
   SCHEDULE_KINDS,
@@ -367,6 +399,21 @@ export const counsellingWay = pgEnum("counselling_way", COUNSELLING_WAYS);
 export const counsellingScheduleStep = pgEnum(
   "counselling_schedule_step",
   SCHEDULE_STEPS,
+);
+
+export const counsellingSessionKind = pgEnum(
+  "counselling_session_kind",
+  SESSION_KINDS,
+);
+
+export const counsellingFollowUp = pgEnum(
+  "counselling_follow_up",
+  SESSION_FOLLOW_UPS,
+);
+
+export const counsellingSessionStep = pgEnum(
+  "counselling_session_step",
+  SESSION_STEPS,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -3391,6 +3438,108 @@ export const counsellingScheduleChanges = pgTable(
   ],
 );
 
+/**
+ * A counselling session Konselor wrote down: its day, Jenis, Topik utama,
+ * the confidential notes, Tindak lanjut and Sesi berikutnya. Read by
+ * Konselor only. `scheduleId` is the schedule it was written for when it
+ * was marked Selesai; a schedule has at most one. `id` is the key its
+ * form made, so a form sent twice is kept once. Never deleted: its log
+ * lines hold it.
+ */
+export const counsellingSessions = pgTable(
+  "counselling_sessions",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    scheduleId: uuid().references(() => counsellingSchedules.id),
+    day: date({ mode: "string" }).notNull(),
+    kind: counsellingSessionKind().notNull(),
+    topic: counsellingTopic().notNull(),
+    notes: text().notNull(),
+    followUp: counsellingFollowUp().notNull(),
+    nextDay: date({ mode: "string" }),
+    writtenBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    writtenAt: timestamp({ withTimezone: true }).notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("counselling_sessions_one_per_schedule").on(table.scheduleId),
+    index("counselling_sessions_student").on(
+      table.studentId,
+      table.day,
+      table.writtenAt,
+    ),
+    check(
+      "counselling_sessions_notes_length",
+      sql`char_length(trim(${table.notes})) > 0 and char_length(${table.notes}) <= ${sql.raw(String(SESSION_NOTES_MAX))}`,
+    ),
+    check(
+      "counselling_sessions_next_after_day",
+      sql`${table.nextDay} is null or ${table.nextDay} >= ${table.day}`,
+    ),
+  ],
+);
+
+/**
+ * Every writing and change of a counselling session: who, when, and what
+ * it held before and after. Writing has nothing before. Rows here cannot
+ * be changed or deleted; the database refuses it.
+ */
+export const counsellingSessionChanges = pgTable(
+  "counselling_session_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sessionId: uuid()
+      .notNull()
+      .references(() => counsellingSessions.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    step: counsellingSessionStep().notNull(),
+    before: jsonb().$type<SessionContent>(),
+    after: jsonb().$type<SessionContent>().notNull(),
+  },
+  (table) => [
+    index("counselling_session_changes_session").on(
+      table.sessionId,
+      table.changedAt,
+    ),
+  ],
+);
+
+/**
+ * Every reading of a student's "Riwayat sesi": who read whose notes and
+ * when, never the notes themselves. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const counsellingSessionReads = pgTable(
+  "counselling_session_reads",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    readBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    readAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("counselling_session_reads_student").on(
+      table.studentId,
+      table.readAt,
+    ),
+  ],
+);
+
 /** A limit of "Ambang skor" of the fitness test is in its range. */
 function inFitnessLimitRange(limit: AnyPgColumn): SQL {
   return sql`${limit} between ${sql.raw(String(FITNESS_LIMIT_MIN))} and ${sql.raw(String(FITNESS_LIMIT_MAX))}`;
@@ -3665,6 +3814,92 @@ export const mentalHealthMarkChanges = pgTable(
       sql`(${table.categoryBefore}, ${table.observationBefore}) is distinct from (${table.categoryAfter}, ${table.observationAfter})`,
     ),
   ],
+);
+
+/** A sum of a screening's scale is there, from 0 to the most it can be. */
+function scoreWithin(column: AnyPgColumn, most: number): SQL {
+  return sql`(${column} is not null and ${column} between 0 and ${sql.raw(String(most))})`;
+}
+
+/**
+ * A mental health screening Konselor recorded for a student: the date,
+ * DASS-21 with its three sums or SRQ-20 with its number of "ya", the
+ * self-harm tick, the level worked out when it was saved, and "Catatan
+ * konselor (rahasia)". Read by Konselor only. The key is made by the
+ * form that sent it, so a form sent twice is kept once. A wrong one is
+ * not corrected: a new one is added, and the latest counts. Rows here
+ * cannot be changed or deleted; the database refuses it.
+ */
+export const mentalHealthScreenings = pgTable(
+  "mental_health_screenings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    screenedOn: date({ mode: "string" }).notNull(),
+    instrument: mentalHealthInstrument().notNull(),
+    /** The DASS-21 sums of Depresi, Kecemasan and Stres; none for SRQ-20. */
+    depression: smallint(),
+    anxiety: smallint(),
+    stress: smallint(),
+    /** The SRQ-20 number of "ya"; none for DASS-21. */
+    srqYes: smallint(),
+    selfHarm: boolean().notNull(),
+    level: mentalHealthLevel().notNull(),
+    note: text().notNull(),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("mental_health_screenings_student").on(
+      table.studentId,
+      table.screenedOn,
+    ),
+    check(
+      "mental_health_screenings_scores",
+      sql`case ${table.instrument}
+        when 'dass21' then ${table.srqYes} is null
+          and ${scoreWithin(table.depression, DASS_SUM_MAX)}
+          and ${scoreWithin(table.anxiety, DASS_SUM_MAX)}
+          and ${scoreWithin(table.stress, DASS_SUM_MAX)}
+        else ${table.depression} is null and ${table.anxiety} is null
+          and ${table.stress} is null
+          and ${scoreWithin(table.srqYes, SRQ_MAX)}
+      end`,
+    ),
+    check(
+      "mental_health_screenings_self_harm_most_severe",
+      sql`not ${table.selfHarm} or ${table.level} = 'extremely_severe'`,
+    ),
+    check(
+      "mental_health_screenings_note_length",
+      atMost(table.note, SCREENING_NOTE_MAX),
+    ),
+  ],
+);
+
+/**
+ * Who saved a screening of a student, or opened "Rincian" of one, and
+ * when. It holds no score, level or note. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const mentalHealthScreeningLog = pgTable(
+  "mental_health_screening_log",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    event: mentalHealthScreeningEvent().notNull(),
+    by: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    at: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [index("mental_health_screening_log_student").on(table.studentId)],
 );
 
 export const violationNotePunishment = pgEnum(

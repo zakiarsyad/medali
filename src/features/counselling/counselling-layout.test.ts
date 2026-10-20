@@ -39,8 +39,13 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".facts",
       ".steps",
       ".steps ol",
+      ".subHeading",
+      ".card > p",
+      ".note",
+      ".evaluation",
       ".history",
       ".history li",
+      ".notes",
     ],
   ],
   [SHARED, [".actions", ".form"]],
@@ -179,6 +184,37 @@ describe("the buttons and forms of a request card on a phone", () => {
       expect(read(name)).toContain("className={shared.form}");
     },
   );
+});
+
+describe("Catat sesi and Riwayat sesi on a phone", () => {
+  const FORM = read("session-form.tsx");
+  const CHANGE = read("session-history-list.tsx");
+  const FIELDS = read("session-fields.tsx");
+
+  it.each([
+    ["session-form.tsx", FORM],
+    ["session-history-list.tsx", CHANGE],
+  ])(
+    "%s puts its fields in one column, and its buttons under each other",
+    (_, source) => {
+      expect(source).toContain("className={shared.form}");
+      expect(source).toContain("shared.actions");
+      expect(ruleOf(".form", SHARED)).toContain(
+        "min(var(--card-min-width), 100%)",
+      );
+    },
+  );
+
+  it("puts the notes across the whole width of the form", () => {
+    expect(FIELDS).toMatch(/shared\.field\} \$\{styles\.full\}/);
+  });
+
+  it("lays the sessions out one under the other, folding long notes", () => {
+    expect(CHANGE).toContain("<ul className={styles.cards}>");
+    expect(CHANGE).toContain("className={styles.card}");
+    expect(CHANGE).toContain("className={styles.notes}");
+    expect(ruleOf(".notes")).toContain("overflow-wrap: anywhere;");
+  });
 });
 
 describe("the style files of Konseling", () => {
