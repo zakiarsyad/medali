@@ -92,4 +92,4 @@ The notes are read by Konselor only and are never shared.
   the server lets only Konselor write.
 - [x] 3. "Tandai selesai" opens the form for that schedule.
 - [x] 4. "Riwayat sesi" with "Ubah", and each reading is logged.
-- [ ] 5. The student sees their number of sessions and the next session.
+- [x] 5. The student sees their number of sessions and the next session.

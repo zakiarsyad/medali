@@ -1201,6 +1201,23 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa see how many counselling sessions they had and the next one, on Konseling", () => {
+    expect(ACTION_TITLES.view_own_counselling_sessions).toContain(
+      "tanpa catatan sesi",
+    );
+    expect(may(["student"], "view_own_counselling_sessions")).toBe(true);
+  });
+
+  it("refuses every other role to see a student's own count of sessions, Konselor and Kepala Unit among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["counsellor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_own_counselling_sessions")).toBe(false);
+    }
+  });
+
   it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
     const openers: RoleId[] = ["counsellor", "student"];
     for (const role of ROLE_IDS) {
@@ -2407,6 +2424,7 @@ describe("may", () => {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "view_own_counselling_sessions",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);
   });

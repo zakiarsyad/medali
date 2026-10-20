@@ -5,6 +5,7 @@ import { CounsellorConsentPanel } from "./counsellor-consent-panel";
 import { OwnConsentBox } from "./own-consent-box";
 import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
+import { OwnSessionSummaryBox } from "./own-session-summary";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
 import { ScheduleNotice } from "./schedule-notice";
@@ -14,6 +15,7 @@ import type {
   OwnScheduleView,
   ScheduleBoard,
 } from "./schedule-view";
+import type { OwnSessionSummary } from "./session-view";
 import { WarnBox } from "./warn-box";
 
 /** What Konselor reads first on Konseling, as the prototype words it. */
@@ -62,6 +64,8 @@ export interface OwnCounselling {
   consent: ConsentView | null;
   /** Their registration part, or null when they may not register. */
   registration: OwnRegistration | null;
+  /** How many sessions they had and the next one; null for none. */
+  sessions?: OwnSessionSummary | null;
 }
 
 /** What a student who may register sees of their own requests. */
@@ -79,6 +83,7 @@ function OwnPart({ own }: { own: OwnCounselling }) {
     <>
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
       <OwnConsentBox consent={own.consent} />
+      <OwnSessionSummaryBox summary={own.sessions ?? null} />
       {own.registration && (
         // A new step of Riwayat in the address starts with no message.
         <ScheduleNotice clearOn={String(own.registration.history.shown)}>

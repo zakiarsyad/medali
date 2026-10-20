@@ -41,3 +41,12 @@ export interface SessionHistory {
   /** Whether there are more than those read. */
   hasMore: boolean;
 }
+
+/** What the student sees of their own sessions: never the notes. */
+export interface OwnSessionSummary {
+  count: number;
+  /** The day of the latest session. */
+  lastDay: string;
+  /** "Sesi berikutnya" of the latest session, when one is set. */
+  nextDay: string | null;
+}

@@ -92,6 +92,7 @@ export const ACTIONS = [
   "register_own_counselling",
   "manage_counselling_schedules",
   "keep_counselling_sessions",
+  "view_own_counselling_sessions",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -215,6 +216,8 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Jadwal konseling: melihat permintaan, menyetujui waktu, dan mengusulkan waktu lain",
   keep_counselling_sessions:
     "Sesi konseling: mencatat, mengubah, dan membaca catatan sesi yang rahasia",
+  view_own_counselling_sessions:
+    "Melihat jumlah sesi konseling sendiri, tanggal terakhirnya, dan sesi berikutnya, tanpa catatan sesi",
 };
 
 /**
@@ -493,6 +496,7 @@ export const ROLES: Record<RoleId, Role> = {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "view_own_counselling_sessions",
     ],
     rows: "self",
   },
