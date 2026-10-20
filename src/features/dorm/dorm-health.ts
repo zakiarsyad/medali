@@ -19,12 +19,29 @@ import {
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { DormHealthParams } from "./dorm-health-address";
 import { type HealthCounts, healthCounts } from "./dorm-health-counts";
+import type { MentalHealthMark } from "./mental-health-mark-ids";
+import {
+  type MarkCounts,
+  markedSql,
+  markReachOf,
+  readMarkCounts,
+  readMarksOf,
+} from "./mental-health-marks";
+
+/** What the list holds of the marks "Potensi kesehatan mental". */
+export interface DormHealthMarks {
+  counts: MarkCounts;
+  /** The marks of the residents on the page, by student. */
+  byStudent: Record<string, MentalHealthMark>;
+}
 
 /** The list "Mahasiswa asrama yang sakit", with whose residents it holds. */
 export interface DormHealthList {
   list: SickList;
   /** The row limit the list was read with, which its numbers' hint names. */
   reach: RowLimit;
+  /** Null for an account that may not read marks: it is told nothing of them. */
+  marks: DormHealthMarks | null;
 }
 
 /** The parts of a read of residents on a day: none live in the dorm while no period runs. */
@@ -77,13 +94,66 @@ export async function readDormHealthNumbers(
   return { counts: healthCounts(numbers), reach };
 }
 
+/** The list's parts with the residents a shown mark lists too. */
+function withMarked(parts: SickParts, shown: SQL): SickParts {
+  return { ...parts, listed: sql`(${parts.listed} or ${shown})` };
+}
+
+/**
+ * The list for an account without the right to read marks: nothing of a
+ * mark is read, counted, filtered or listed.
+ */
+async function readUnmarkedList(
+  db: Database,
+  parts: SickParts,
+  reach: RowLimit,
+  params: DormHealthParams,
+  limits: FitnessLimits,
+): Promise<DormHealthList> {
+  const seen = residentsIn(parts, reach);
+  const narrowed = dormOf(parts, params);
+  const list = await readSickList(db, parts, seen, narrowed, params, limits);
+  return { list, reach, marks: null };
+}
+
+/**
+ * The list for an account that reads marks: a resident with a mark the
+ * account may read is listed and counted even with nothing else, and
+ * may be filtered by it.
+ */
+async function readMarkedList(
+  db: Database,
+  unmarked: SickParts,
+  reach: RowLimit,
+  markReach: SQL,
+  params: DormHealthParams,
+  limits: FitnessLimits,
+): Promise<DormHealthList> {
+  const shown = sql`(${markedSql()} and ${markReach})`;
+  const parts = withMarked(unmarked, shown);
+  const seen = residentsIn(parts, reach);
+  const narrowed = and(
+    dormOf(parts, params),
+    params.markOnly ? shown : undefined,
+  );
+  const [list, counts] = await Promise.all([
+    readSickList(db, parts, seen, narrowed, params, limits),
+    readMarkCounts(db, seen, markReach),
+  ]);
+  const ids = list.rows.map((row) => row.id);
+  const byStudent = await readMarksOf(db, ids, markReach);
+  return { list, reach, marks: { counts, byStudent } };
+}
+
 /**
  * "Mahasiswa asrama yang sakit", for an account with the right to read
  * it: the four numbers of the Aktif residents it may see by that right,
  * Pengasuh their own mentees only, and one page of those with an illness
  * history, a note with a category of its own, or Perlu tindak lanjut
- * medis, that match the search and the filters. Null, with nothing read,
- * for any other account.
+ * medis, that match the search and the filters. For an account that may
+ * read marks, also those with a mark it may read, Pengasuh their own
+ * mentees' only, with the number of marks and each mark. Null, with
+ * nothing read, for any other account.
  */
 export async function readDormHealthList(
   db: Database,
@@ -95,13 +165,9 @@ export async function readDormHealthList(
   if (!may(actor.roles, "view_dorm_health_notes")) return null;
   const reach = rowLimitForAction(actor, "view_dorm_health_notes");
   const parts = await residentParts(db, limits, today);
-  const list = await readSickList(
-    db,
-    parts,
-    residentsIn(parts, reach),
-    dormOf(parts, params),
-    params,
-    limits,
-  );
-  return { list, reach };
+  const markReach = markReachOf(actor);
+  if (markReach === null) {
+    return readUnmarkedList(db, parts, reach, params, limits);
+  }
+  return readMarkedList(db, parts, reach, markReach, params, limits);
 }

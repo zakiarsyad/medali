@@ -56,6 +56,28 @@ const FOUND: DormHealthList = {
     page: 1,
   },
   reach: { kind: "all" },
+  marks: null,
+};
+
+/** Budi, listed by his mark alone, with no note. */
+const BUDI: RecapRow = {
+  ...ANI,
+  id: "00000000-0000-4000-8000-000000000963",
+  name: "Budi Contoh",
+  final: { category: "untested", fromNote: false },
+  note: null,
+};
+
+const MARKED: DormHealthList = {
+  ...FOUND,
+  list: { ...FOUND.list, rows: [ANI, BUDI], matching: 2 },
+  marks: {
+    counts: { marked: 2, referred: 1 },
+    byStudent: {
+      [ANI.id]: { category: "monitor", observation: "" },
+      [BUDI.id]: { category: "refer", observation: "Menarik diri." },
+    },
+  },
 };
 
 function screen(
@@ -139,6 +161,47 @@ describe("Asrama > Kesehatan for a reader of the list", () => {
   });
 });
 
+describe("Asrama > Kesehatan for a reader of the marks", () => {
+  const html = screen(MARKED);
+
+  it("shows the number Potensi kesehatan mental with how many should be referred", () => {
+    expect(html).toContain("Potensi kesehatan mental</");
+    expect(html).toContain("1 perlu dirujuk ke konselor");
+  });
+
+  it("offers Potensi kesehatan mental in the illness filter", () => {
+    expect(html).toContain(
+      '<option value="potensi-mental">Potensi kesehatan mental</option>',
+    );
+  });
+
+  it("shows each mark as a badge, with its observation", () => {
+    expect(html).toContain("Potensi kesehatan mental · pantau");
+    expect(html).toContain("Potensi kesehatan mental · rujuk konselor");
+    expect(html).toContain("<b>Pengamatan:</b> Menarik diri.");
+    expect(html.match(/Pengamatan:/g)).toHaveLength(1);
+  });
+
+  it("names how many residents have a mark when filtered by it", () => {
+    const filtered = screen(MARKED, { ...DORM_HEALTH_START, markOnly: true });
+    expect(filtered).toContain(
+      "2 mahasiswa asrama dengan penanda potensi kesehatan mental.",
+    );
+    expect(filtered).toMatch(/<option value="potensi-mental" selected=""/);
+  });
+});
+
+describe("Asrama > Kesehatan for a reader of the list who may not read marks", () => {
+  const html = screen(FOUND, { ...DORM_HEALTH_START, markOnly: true });
+
+  it("shows nothing about a mark: no number, filter choice, badge or line", () => {
+    expect(html).not.toContain("Potensi kesehatan mental");
+    expect(html).not.toContain("potensi-mental");
+    expect(html).not.toContain("Pengamatan");
+    expect(html).not.toContain("penanda");
+  });
+});
+
 describe("Asrama > Kesehatan for an account that may not read the list", () => {
   const html = screen(null);
 
@@ -219,6 +282,7 @@ describe("Asrama > Kesehatan for a writer", () => {
         <DormHealthNoteForm
           today="2026-10-16"
           newKey="00000000-0000-4000-8000-000000000969"
+          marks
         />
       }
       readOnlyNote={LIST_READER_NOTE}

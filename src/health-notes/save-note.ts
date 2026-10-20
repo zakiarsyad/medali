@@ -90,7 +90,7 @@ async function isSameNote(
 }
 
 /** The name of the student when `writable` lets them through, or null. */
-async function writableName(
+export async function writableName(
   tx: Database,
   writable: SQL | undefined,
   studentId: string,
@@ -130,7 +130,21 @@ async function keep(
   return true;
 }
 
-async function save(
+/**
+ * Makes every save of a health note wait here, until the transaction
+ * ends, for the one before it to end. A second press then finds the key
+ * it used, and of two saves at once the later is stamped by the database
+ * clock after the sooner, so it counts.
+ */
+export async function holdHealthNotes(tx: Database): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext('health_notes'))`);
+}
+
+/**
+ * saveNote within a transaction the caller holds, for a note already
+ * checked.
+ */
+export async function saveNoteIn(
   tx: Database,
   actor: AccountForAccess,
   id: string,
@@ -139,10 +153,7 @@ async function save(
   place: NotePlace,
   day: string,
 ): Promise<Parsed<SavedNote>> {
-  // Every save waits here for the one before it to end. A second press
-  // then finds the key it used, and of two saves at once the later is
-  // stamped by the database clock after the sooner, so it counts.
-  await tx.execute(sql`select pg_advisory_xact_lock(hashtext('health_notes'))`);
+  await holdHealthNotes(tx);
   const writable = await place.writable(tx, actor, day);
   const name = await writableName(tx, writable, input.studentId);
   if (name === null) return place.notWritable;
@@ -178,5 +189,7 @@ export async function saveNote(
   if (!isUuid(id)) return NOTE_ALREADY_SENT;
   if (!isUuid(sent.studentId)) return place.notWritable;
   const input = parsed.value;
-  return db.transaction((tx) => save(tx, actor, id, input, limits, place, day));
+  return db.transaction((tx) =>
+    saveNoteIn(tx, actor, id, input, limits, place, day),
+  );
 }
