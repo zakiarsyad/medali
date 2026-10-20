@@ -117,7 +117,7 @@ Everyone allowed sees the list of penalties and the rules table.
   with its checks.
 - [x] 3. The numbers, the list with search and filters, and the rules
   table, read only and limited to each role's rows.
-- [ ] 4. "Rincian" for one penalty.
+- [x] 4. "Rincian" for one penalty.
 - [ ] 5. The form "Catat pelanggaran" with the kerja sosial part.
 - [ ] 6. The panel "Konsekuensi" with the history and the warning.
 - [ ] 7. The link "Hukuman ringan" from Catatan pelanggaran, and the

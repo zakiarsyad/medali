@@ -110,6 +110,7 @@ describe("PenaltiesScreen", () => {
     expect(shown).toContain("Dijatuhkan");
     expect(shown).toContain("Berat · jenjang kedua");
     expect(shown).toContain("Ditetapkan");
+    expect(shown).toContain("Rincian");
   });
 
   it("says so when no penalty matches", () => {

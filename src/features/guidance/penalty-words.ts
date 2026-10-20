@@ -107,3 +107,15 @@ export function inSentence(text: string): string {
 export function capitalized(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/**
+ * The suspension of Berat jenjang pertama as "Rincian" says it: the two
+ * semesters from the one of the Tanggal pelanggaran, and the one to
+ * repeat. Without that semester, only that there are two.
+ */
+export function suspensionWords(semester: number | null): string {
+  if (semester === null) {
+    return "Dua semester, terhitung mulai semester saat pelanggaran dilakukan; mengulang seluruh mata kuliah semester tersebut";
+  }
+  return `Semester ${semester}–${semester + 1}; mengulang seluruh mata kuliah semester ${semester}`;
+}

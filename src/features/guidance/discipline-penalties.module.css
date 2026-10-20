@@ -55,3 +55,34 @@
   font-size: var(--text-md);
   overflow-wrap: anywhere;
 }
+
+/* The facts of "Rincian": side by side where they fit, one under the other on a phone. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--box-min-width)), 1fr)
+    );
+  gap: var(--space-md);
+  margin: 0;
+}
+
+.facts > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+/* A fact that takes the whole width of "Rincian". */
+.wide {
+  grid-column: 1 / -1;
+}

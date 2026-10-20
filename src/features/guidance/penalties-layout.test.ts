@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { browserFilesIn, databaseCodeReachedFrom } from "@/ui/browser-code";
 
 const FOLDER = "src/features/guidance";
 // Starts with a break, so the first rule is found like every other.
@@ -40,5 +41,21 @@ describe("Pelanggaran disiplin on a phone", () => {
     expect(ruleOf(".rules")).toContain(
       "min-width: var(--wide-table-min-width);",
     );
+  });
+});
+
+describe("the screen parts of Pelanggaran disiplin that run in the browser", () => {
+  const browserFiles = browserFilesIn(FOLDER).filter((path) =>
+    path.replaceAll("\\", "/").includes("/penalty-"),
+  );
+
+  it("are found: the list with Rincian at least", () => {
+    // Folders are split by another sign on some computers.
+    const names = browserFiles.map((path) => path.replaceAll("\\", "/"));
+    expect(names).toContain(`${FOLDER}/penalty-table.tsx`);
+  });
+
+  it.each(browserFiles)("%s takes no database code along", (path) => {
+    expect(databaseCodeReachedFrom(path)).toEqual([]);
   });
 });
