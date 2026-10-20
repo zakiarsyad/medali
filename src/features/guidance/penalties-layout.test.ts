@@ -19,6 +19,14 @@ function ruleOf(selector: string): string {
 }
 
 describe("Pelanggaran disiplin on a phone", () => {
+  it("lays the form out on the shared form grid, one column on a phone, beside Konsekuensi only where both fit", () => {
+    const FORM = read("penalty-form.tsx");
+    expect(FORM).toContain("<div className={notes.parts}>");
+    expect(FORM).toContain("<div className={shared.form}>");
+    expect(ruleOf(".choices")).toContain("min-width: 0;");
+    expect(ruleOf(".choice")).toContain("overflow-wrap: anywhere;");
+  });
+
   it("shows each penalty as a card that names every value", () => {
     const TABLE = read("penalty-table.tsx");
     expect(TABLE).toMatch(/<table className=.*shared\.stacked/);
@@ -53,6 +61,7 @@ describe("the screen parts of Pelanggaran disiplin that run in the browser", () 
     // Folders are split by another sign on some computers.
     const names = browserFiles.map((path) => path.replaceAll("\\", "/"));
     expect(names).toContain(`${FOLDER}/penalty-table.tsx`);
+    expect(names).toContain(`${FOLDER}/penalty-form.tsx`);
   });
 
   it.each(browserFiles)("%s takes no database code along", (path) => {

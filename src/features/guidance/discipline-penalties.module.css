@@ -86,3 +86,21 @@
 .wide {
   grid-column: 1 / -1;
 }
+
+/* A group of choices of the form: one under the other, each with its words beside it. */
+.choices {
+  display: grid;
+  gap: var(--space-xs);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-start;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
