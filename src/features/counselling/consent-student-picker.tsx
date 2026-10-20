@@ -46,13 +46,16 @@ export function ConsentStudentPicker({
   picked,
   onPick,
   onClear,
+  search = searchConsentStudentsAction,
 }: {
   picked: ConsentPick | null;
   onPick: (pick: ConsentPick) => void;
   onClear: () => void;
+  /** The action that finds the students, by the right of the panel. */
+  search?: (query: string) => Promise<ConsentPick[]>;
 }) {
   const [query, setQuery] = useState("");
-  const found = useFound(query, searchConsentStudentsAction);
+  const found = useFound(query, search);
 
   if (picked) {
     return (

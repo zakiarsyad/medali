@@ -92,6 +92,8 @@ export const ACTIONS = [
   "answer_own_counselling_consent",
   "register_own_counselling",
   "manage_counselling_schedules",
+  "record_mental_health_screenings",
+  "view_mental_health_screening_count",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -214,6 +216,10 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Mendaftar konseling sukarela dan menjawab usulan jadwal konseling sendiri",
   manage_counselling_schedules:
     "Jadwal konseling: melihat permintaan, menyetujui waktu, dan mengusulkan waktu lain",
+  record_mental_health_screenings:
+    "Kesehatan mental: mencatat dan membaca hasil asesmen kesehatan mental mahasiswa",
+  view_mental_health_screening_count:
+    "Melihat jumlah mahasiswa yang sudah diasesmen kesehatan mental di seluruh kampus, tanpa nama",
 };
 
 /**
@@ -371,6 +377,7 @@ export const ROLES: Record<RoleId, Role> = {
       "write_mental_health_marks",
       "view_mental_health_marks",
       "view_mental_health_mark_log",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "all",
@@ -400,6 +407,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_scores",
       "view_siku",
       "view_dorm_health_numbers",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "all",
@@ -429,6 +437,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_scores",
       "view_siku",
       "view_dorm_health_numbers",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "own_program",
@@ -464,6 +473,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_health_notes",
       "view_dorm_health_notes",
       "view_mental_health_marks",
+      "view_mental_health_screening_count",
       "view_discipline_records",
     ],
     rows: "own_mentees",
@@ -650,7 +660,11 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "KS",
     pages: ["assessment", "counselling"],
     tabs: { assessment: ["mental_health"] },
-    actions: ["manage_counselling_consent", "manage_counselling_schedules"],
+    actions: [
+      "manage_counselling_consent",
+      "manage_counselling_schedules",
+      "record_mental_health_screenings",
+    ],
     rows: "all",
   },
   discipline_officer: {

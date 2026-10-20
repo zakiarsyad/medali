@@ -53,6 +53,14 @@ import {
   SCHEDULE_STEPS,
 } from "@/features/counselling/schedule-ids";
 import {
+  DASS_SUM_MAX,
+  INSTRUMENTS,
+  SCREENING_EVENTS,
+  SCREENING_LEVELS,
+  SCREENING_NOTE_MAX,
+  SRQ_MAX,
+} from "@/features/counselling/screening-ids";
+import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -338,6 +346,23 @@ export const counsellingConsentStatus = pgEnum(
 export const counsellingConsentWay = pgEnum(
   "counselling_consent_way",
   CONSENT_WAYS,
+);
+
+/** The instrument of a mental health screening: DASS-21 or SRQ-20. */
+export const mentalHealthInstrument = pgEnum(
+  "mental_health_instrument",
+  INSTRUMENTS,
+);
+
+/** "Tingkat" of a mental health screening, mildest first. */
+export const mentalHealthLevel = pgEnum(
+  "mental_health_level",
+  SCREENING_LEVELS,
+);
+
+export const mentalHealthScreeningEvent = pgEnum(
+  "mental_health_screening_event",
+  SCREENING_EVENTS,
 );
 
 export const counsellingScheduleKind = pgEnum(
@@ -3657,4 +3682,90 @@ export const mentalHealthMarkChanges = pgTable(
       sql`(${table.categoryBefore}, ${table.observationBefore}) is distinct from (${table.categoryAfter}, ${table.observationAfter})`,
     ),
   ],
+);
+
+/** A sum of a screening's scale is there, from 0 to the most it can be. */
+function scoreWithin(column: AnyPgColumn, most: number): SQL {
+  return sql`(${column} is not null and ${column} between 0 and ${sql.raw(String(most))})`;
+}
+
+/**
+ * A mental health screening Konselor recorded for a student: the date,
+ * DASS-21 with its three sums or SRQ-20 with its number of "ya", the
+ * self-harm tick, the level worked out when it was saved, and "Catatan
+ * konselor (rahasia)". Read by Konselor only. The key is made by the
+ * form that sent it, so a form sent twice is kept once. A wrong one is
+ * not corrected: a new one is added, and the latest counts. Rows here
+ * cannot be changed or deleted; the database refuses it.
+ */
+export const mentalHealthScreenings = pgTable(
+  "mental_health_screenings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    screenedOn: date({ mode: "string" }).notNull(),
+    instrument: mentalHealthInstrument().notNull(),
+    /** The DASS-21 sums of Depresi, Kecemasan and Stres; none for SRQ-20. */
+    depression: smallint(),
+    anxiety: smallint(),
+    stress: smallint(),
+    /** The SRQ-20 number of "ya"; none for DASS-21. */
+    srqYes: smallint(),
+    selfHarm: boolean().notNull(),
+    level: mentalHealthLevel().notNull(),
+    note: text().notNull(),
+    savedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    savedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("mental_health_screenings_student").on(
+      table.studentId,
+      table.screenedOn,
+    ),
+    check(
+      "mental_health_screenings_scores",
+      sql`case ${table.instrument}
+        when 'dass21' then ${table.srqYes} is null
+          and ${scoreWithin(table.depression, DASS_SUM_MAX)}
+          and ${scoreWithin(table.anxiety, DASS_SUM_MAX)}
+          and ${scoreWithin(table.stress, DASS_SUM_MAX)}
+        else ${table.depression} is null and ${table.anxiety} is null
+          and ${table.stress} is null
+          and ${scoreWithin(table.srqYes, SRQ_MAX)}
+      end`,
+    ),
+    check(
+      "mental_health_screenings_self_harm_most_severe",
+      sql`not ${table.selfHarm} or ${table.level} = 'extremely_severe'`,
+    ),
+    check(
+      "mental_health_screenings_note_length",
+      atMost(table.note, SCREENING_NOTE_MAX),
+    ),
+  ],
+);
+
+/**
+ * Who saved a screening of a student, or opened "Rincian" of one, and
+ * when. It holds no score, level or note. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const mentalHealthScreeningLog = pgTable(
+  "mental_health_screening_log",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    event: mentalHealthScreeningEvent().notNull(),
+    by: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    at: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [index("mental_health_screening_log_student").on(table.studentId)],
 );

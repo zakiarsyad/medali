@@ -185,6 +185,33 @@
   padding-left: var(--space-lg);
 }
 
+/* "Riwayat asesmen" in "Rincian" of a screened student. */
+.subHeading {
+  margin: 0;
+  color: var(--navy);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heavy);
+}
+
+.card > p {
+  margin: 0;
+}
+
+/* "Catatan konselor (rahasia)" as it was written, breaks kept. */
+.note {
+  white-space: pre-line;
+}
+
+/* The level and advice of the screening form, as they are typed. */
+.evaluation {
+  margin: 0;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
 /* The lines of the student's "Riwayat", folding on a phone. */
 .history {
   display: grid;
