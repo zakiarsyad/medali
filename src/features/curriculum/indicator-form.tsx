@@ -19,16 +19,22 @@ function textsByCode(values: ValueIndicators[]): Record<string, string> {
 /** The 24 texts of the main indicators as fields, to change and save. */
 export function IndicatorForm({
   values,
+  version,
   onSaved,
   onCancel,
 }: {
   values: ValueIndicators[];
+  /** The version of the texts the form opens on. */
+  version: string;
   onSaved: (message: string) => void;
   onCancel: () => void;
 }) {
   // Kept here, not in the fields alone: the browser empties a sent form,
   // and what was typed must stay when the save is refused.
   const [texts, setTexts] = useState(() => textsByCode(values));
+  // Fixed when the form opens: the page may load newer texts while it is
+  // open, and the save must still be checked against the texts it shows.
+  const [openedOn] = useState(version);
 
   async function send(before: FormState, form: FormData): Promise<FormState> {
     const after = await saveMainIndicatorsAction(before, form);
@@ -39,6 +45,7 @@ export function IndicatorForm({
   const [state, action, pending] = useActionState(send, START);
   return (
     <form action={action}>
+      <input type="hidden" name="version" value={openedOn} />
       <div className={styles.boxes}>
         {values.map((value) => (
           <ValueBox key={value.key} value={value}>
