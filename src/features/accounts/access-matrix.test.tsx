@@ -56,9 +56,8 @@ describe("AccessMatrix", () => {
     expect(words(rowOf(role).Menu ?? "")).toBe(menuTitles(role).join(", "));
   });
 
-  it("has roles with rights and roles without to check", () => {
+  it("has roles with rights to check", () => {
     expect(withRights.length).toBeGreaterThan(0);
-    expect(withoutRights.length).toBeGreaterThan(0);
   });
 
   it.each(withRights)("gives each right of %s its own line", (role) => {

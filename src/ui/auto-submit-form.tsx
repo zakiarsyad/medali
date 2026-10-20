@@ -3,15 +3,19 @@
 import Form from "next/form";
 import type { ChangeEvent, ReactNode } from "react";
 
+function isChoice(target: EventTarget): boolean {
+  if (target instanceof HTMLSelectElement) return true;
+  return target instanceof HTMLInputElement && target.type === "checkbox";
+}
+
 function sendWhenChosen(event: ChangeEvent<HTMLFormElement>) {
-  if (event.target instanceof HTMLSelectElement) {
-    event.currentTarget.requestSubmit();
-  }
+  if (isChoice(event.target)) event.currentTarget.requestSubmit();
 }
 
 /**
  * A form that puts its fields in the address, and sends itself as soon as
- * a choice is made from a list. A typed text is sent with its button.
+ * a choice is made from a list or a box is ticked. A typed text is sent
+ * with its button.
  */
 export function AutoSubmitForm({
   action,

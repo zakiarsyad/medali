@@ -1,0 +1,124 @@
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* What an account that only reads is told instead of the form. */
+.readOnly {
+  margin: var(--space-lg) 0 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* Pelanggaran lanjutan: a light discipline penalty may be next. */
+.warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+/* A note of the running semester, still in force. */
+.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+/* A tick with its words beside it, in the row of filters. */
+.tick {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+
+/* The form and Ketentuan side by side, one under the other on a phone. */
+.parts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--column-min-width)), 1fr)
+    );
+  gap: var(--space-lg);
+  align-items: start;
+  margin-top: var(--space-lg);
+}
+
+.parts > * {
+  min-width: 0;
+  margin-top: 0;
+}
+
+/* A field that takes the whole width of the form grid. */
+.full {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* A field never asks for more room than its column has. */
+.field {
+  min-width: 0;
+}
+
+.field > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  min-width: 0;
+  margin-top: var(--space-xs);
+}
+
+/* A found student is a long line: it folds instead of widening the page. */
+.found button,
+.picked {
+  max-width: 100%;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+/* The active notes of the student picked. */
+.box {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--ink);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+/* A student who has a note already: the next one is Pelanggaran lanjutan. */
+.warnBox {
+  border-color: var(--warn);
+}
+
+/* Ketentuan: each rule its name, then what it says. */
+.terms {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.terms li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  overflow-wrap: anywhere;
+}
+
+.terms span {
+  color: var(--muted);
+  font-size: var(--text-md);
+}

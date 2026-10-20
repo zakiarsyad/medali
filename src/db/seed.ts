@@ -56,6 +56,7 @@ import { addSampleSikuAdjustments } from "./seed-siku-adjustments";
 import { addSampleSikuRequests } from "./seed-siku-requests";
 import { addSampleSkpm } from "./seed-skpm";
 import { addSampleSurveyPeriods } from "./seed-survey-periods";
+import { addSampleViolationNotes } from "./seed-violation-notes";
 
 const SAMPLE_EMAIL_DOMAIN = "contoh.pknstan.ac.id";
 
@@ -187,7 +188,8 @@ async function addSampleFirstYears(
  * voluntary requests for counselling in every status, counselling
  * sessions Konselor wrote down, health notes of
  * students in and out of the dorm in every category, and mental health
- * marks of dorm residents of both kinds.
+ * marks of dorm residents of both kinds, and violation notes of this
+ * semester and the one before.
  * Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -288,5 +290,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleDormHealthNotes(tx, running, today);
     await addSampleMentalHealthMarks(tx, running, today);
     await addSampleMentalHealthScreenings(tx, today);
+    await addSampleViolationNotes(tx, periods, today);
   });
 }
