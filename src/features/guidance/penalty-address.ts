@@ -84,3 +84,16 @@ export function penaltiesAddress(params: PenaltiesParams): string {
   if (text === "") return PENALTIES_ADDRESS;
   return `${PENALTIES_ADDRESS}?${text}`;
 }
+
+/**
+ * The address of the tab with the form opened on a student, as
+ * "Hukuman ringan" on Catatan pelanggaran sends it.
+ */
+export function penaltyFormAddress(studentId: string): string {
+  return `${PENALTIES_ADDRESS}?mahasiswa=${encodeURIComponent(studentId)}`;
+}
+
+/** The student the address asks the form to open on; empty for none. */
+export function pickedStudentOf(params: SearchParams): string {
+  return firstParam(params.mahasiswa);
+}

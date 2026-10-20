@@ -37,7 +37,7 @@ import {
 import { CONFIRMED } from "./penalty-input";
 import { type PenaltyRule, ruleOf, socialWorkEnd } from "./penalty-rules";
 import type { PeriodOfDay } from "./penalty-semester";
-import type { PenaltyPick } from "./penalty-student";
+import type { PenaltyPick, PenaltyStart } from "./penalty-student";
 import {
   CATEGORY_WORDS,
   LEVEL_WORDS,
@@ -340,15 +340,18 @@ export function PenaltyForm({
   newKey,
   today,
   periods,
+  start,
 }: {
   /** The key of the first save; two presses of "Simpan pelanggaran" send the same one. */
   newKey: string;
   today: string;
   /** The academic periods, for the semester of a suspension. */
   periods: PeriodOfDay[];
+  /** The student the form opens on, from "Hukuman ringan"; null for none. */
+  start: PenaltyStart | null;
 }) {
   const [key, setKey] = useState(newKey);
-  const [picked, setPicked] = useState<PenaltyPick | null>(null);
+  const [picked, setPicked] = useState<PenaltyPick | null>(start?.pick ?? null);
   const [day, setDay] = useState(today);
   const [decisionNumber, setDecisionNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -356,11 +359,13 @@ export function PenaltyForm({
   const [level, setLevel] = useState<PenaltyLevel>(1);
   const [work, setWork] = useState(freshSocialWork(today));
   const [confirmed, setConfirmed] = useState(false);
-  const [history, setHistory] = useState<PenaltyHistory | null>(null);
+  const [history, setHistory] = useState<PenaltyHistory | null>(
+    start?.history ?? null,
+  );
   const [, startLoading] = useTransition();
   // The student asked for last: the history of one picked before must
   // not replace that of a later pick that answers sooner.
-  const asked = useRef("");
+  const asked = useRef(start?.pick.id ?? "");
   const rule = ruleOf(category, level);
 
   function pick(student: PenaltyPick | null) {

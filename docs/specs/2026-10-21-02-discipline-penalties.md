@@ -120,5 +120,5 @@ Everyone allowed sees the list of penalties and the rules table.
 - [x] 4. "Rincian" for one penalty.
 - [x] 5. The form "Catat pelanggaran" with the kerja sosial part.
 - [x] 6. The panel "Konsekuensi" with the history and the warning.
-- [ ] 7. The link "Hukuman ringan" from Catatan pelanggaran, and the
+- [x] 7. The link "Hukuman ringan" from Catatan pelanggaran, and the
   number of penalties in the student's box there.

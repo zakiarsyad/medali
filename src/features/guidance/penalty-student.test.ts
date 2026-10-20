@@ -7,6 +7,7 @@ import { withTestDatabase } from "@/db/test-database";
 import {
   readPenaltyHistory,
   readPenaltyPick,
+  readPenaltyStart,
   searchPenaltyStudents,
 } from "./penalty-student";
 import { addTestPenalty, NO_SOCIAL_WORK } from "./test-discipline-penalties";
@@ -163,6 +164,23 @@ describe("readPenaltyHistory", () => {
       expect(
         await readPenaltyHistory(db, kaprodi, studentIds[0] ?? ""),
       ).toBeNull();
+    });
+  });
+});
+
+describe("readPenaltyStart", () => {
+  it("opens the form on a student the account may record for, with their history, and on nobody otherwise", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentIds } = await setting(db);
+      const [one = "", , onLeave = ""] = studentIds;
+      await addTestPenalty(db, one, officer.id, "2026-09-01");
+
+      const start = await readPenaltyStart(db, officer, one);
+
+      expect(start?.pick.nim).toBe("9944220001");
+      expect(start?.history.count).toBe(1);
+      expect(await readPenaltyStart(db, officer, onLeave)).toBeNull();
+      expect(await readPenaltyStart(db, officer, "")).toBeNull();
     });
   });
 });

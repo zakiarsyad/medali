@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { AGENCY_ONLY, PenaltyForm } from "./penalty-form";
+import type { PenaltyStart } from "./penalty-student";
 
 vi.mock("./penalty-actions", () => ({
   penaltyHistoryAction: vi.fn(),
@@ -13,9 +14,14 @@ const PERIODS = [
   { startYear: 2026, term: "odd", startsOn: "2026-08-01" } as const,
 ];
 
-function form(): string {
+function form(start: PenaltyStart | null = null): string {
   return renderToStaticMarkup(
-    <PenaltyForm newKey={KEY} today="2026-10-20" periods={PERIODS} />,
+    <PenaltyForm
+      newKey={KEY}
+      today="2026-10-20"
+      periods={PERIODS}
+      start={start}
+    />,
   );
 }
 
@@ -66,5 +72,25 @@ describe("PenaltyForm", () => {
     );
     expect(shown).toContain("7 hari, 20 Okt 2026 sampai 26 Okt 2026");
     expect(shown).toContain("Dibatasi paling tinggi 70.");
+  });
+
+  it("opens on the student Hukuman ringan sent, with their history, and offers their Instansi asal", () => {
+    const shown = form({
+      pick: {
+        id: "00000000-0000-4000-8000-000000000705",
+        name: "Oki Rahayu",
+        nim: "9900240015",
+        program: "Manajemen Aset Publik STR",
+        hasAgency: true,
+        cohortYear: 2024,
+      },
+      history: { count: 0, top: null },
+    });
+    expect(shown).toContain(
+      'name="studentId" value="00000000-0000-4000-8000-000000000705"',
+    );
+    expect(shown).toContain("Oki Rahayu · NIM 9900240015");
+    expect(shown).toContain("Belum ada riwayat pelanggaran");
+    expect(shown).not.toContain(AGENCY_ONLY);
   });
 });

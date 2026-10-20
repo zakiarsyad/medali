@@ -19,9 +19,8 @@ import {
   saveViolationNoteAction,
   searchNoteStudentsAction,
 } from "./note-actions";
-import type { NotePick } from "./note-student";
+import type { StudentBox as Box, NotePick } from "./note-student";
 import { PUNISHMENT_WORDS } from "./note-words";
-import type { ActiveNote } from "./placed-notes";
 import {
   DESCRIPTION_EXAMPLES,
   DESCRIPTION_MAX_LENGTH,
@@ -127,10 +126,25 @@ function StudentPicker({
   );
 }
 
-/** The active notes of the student picked this semester, or that there are none. */
-function StudentBox({ notes }: { notes: ActiveNote[] }) {
+/** How many discipline penalties the student picked has, when any. */
+export function penaltiesWords(penalties: number): string {
+  if (penalties === 0) return "";
+  return ` Mahasiswa ini juga punya ${penalties} hukuman disiplin tercatat.`;
+}
+
+/**
+ * The active notes of the student picked this semester, or that there
+ * are none, and how many discipline penalties they have.
+ */
+function StudentBox({ box }: { box: Box }) {
+  const { notes, penalties } = box;
   if (notes.length === 0) {
-    return <p className={styles.box}>{NO_ACTIVE_NOTE}</p>;
+    return (
+      <p className={styles.box}>
+        {NO_ACTIVE_NOTE}
+        {penaltiesWords(penalties)}
+      </p>
+    );
   }
   const listed = notes
     .map((note) => `${shownDay(note.day)} ${note.description}`)
@@ -138,7 +152,7 @@ function StudentBox({ notes }: { notes: ActiveNote[] }) {
   return (
     <p className={`${styles.box} ${styles.warnBox}`}>
       <b>{notes.length} catatan aktif semester ini</b>: {listed}. Catatan baru
-      semester ini menjadi Pelanggaran lanjutan.
+      semester ini menjadi Pelanggaran lanjutan.{penaltiesWords(penalties)}
     </p>
   );
 }
@@ -164,7 +178,7 @@ export function NoteForm({
 }) {
   const [key, setKey] = useState(newKey);
   const [picked, setPicked] = useState<NotePick | null>(null);
-  const [notes, setNotes] = useState<ActiveNote[] | null>(null);
+  const [box, setBox] = useState<Box | null>(null);
   const [day, setDay] = useState(today);
   const [description, setDescription] = useState("");
   const [punishment, setPunishment] = useState<string>(NOTE_PUNISHMENTS[0]);
@@ -179,7 +193,7 @@ export function NoteForm({
     asked.current = studentId;
     startLoading(async () => {
       const found = await noteStudentBoxAction(studentId);
-      if (asked.current === studentId) setNotes(found);
+      if (asked.current === studentId) setBox(found);
     });
   }
 
@@ -193,13 +207,13 @@ export function NoteForm({
     if (studentId === "") return;
     startLoading(async () => {
       const found = await noteStudentBoxAction(studentId);
-      if (asked.current === studentId) setNotes(found);
+      if (asked.current === studentId) setBox(found);
     });
   }, [inForce]);
 
   function pick(student: NotePick | null) {
     setPicked(student);
-    setNotes(null);
+    setBox(null);
     if (student === null) {
       asked.current = "";
       return;
@@ -235,9 +249,9 @@ export function NoteForm({
           <span className={shared.label}>Mahasiswa</span>
           <StudentPicker picked={picked} onPick={pick} />
         </div>
-        {notes !== null && (
+        {box !== null && (
           <div className={styles.full}>
-            <StudentBox notes={notes} />
+            <StudentBox box={box} />
           </div>
         )}
         <label className={`${shared.field} ${styles.field}`}>

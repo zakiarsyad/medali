@@ -3,6 +3,8 @@ import {
   PENALTIES_ADDRESS,
   PENALTIES_START,
   penaltiesAddress,
+  penaltyFormAddress,
+  pickedStudentOf,
   readPenaltiesParams,
 } from "./penalty-address";
 
@@ -57,5 +59,16 @@ describe("penaltiesAddress", () => {
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readPenaltiesParams(Object.fromEntries(search))).toEqual(params);
+  });
+});
+
+describe("penaltyFormAddress", () => {
+  it("names the student the form opens on, the way the address reads it back", () => {
+    const id = "00000000-0000-4000-8000-000000000703";
+    const address = penaltyFormAddress(id);
+    expect(address).toBe(`/pembinaan/disiplin?mahasiswa=${id}`);
+    const search = new URLSearchParams(address.split("?")[1]);
+    expect(pickedStudentOf(Object.fromEntries(search))).toBe(id);
+    expect(pickedStudentOf({})).toBe("");
   });
 });

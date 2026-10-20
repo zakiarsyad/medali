@@ -8,6 +8,7 @@ import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
+import { readHistoryOf } from "./penalty-history";
 import { type ActiveNote, readActiveNotesOf } from "./placed-notes";
 
 /** How many students one search offers. */
@@ -79,18 +80,38 @@ export async function writableName(
   return found?.name ?? null;
 }
 
+/** What the box of the student picked shows. */
+export interface StudentBox {
+  /** Their notes of the running semester that are not removed, the earliest first. */
+  notes: ActiveNote[];
+  /** How many discipline penalties they have; 0 for an account that may not read them. */
+  penalties: number;
+}
+
+async function penaltiesOf(
+  db: Database,
+  actor: AccountForAccess,
+  studentId: string,
+): Promise<number> {
+  if (!may(actor.roles, "view_discipline_records")) return 0;
+  return (await readHistoryOf(db, studentId)).count;
+}
+
 /**
  * The box of the student picked: their notes of the running semester on
- * `today` that are not removed, the earliest first. Null for a student
- * the account may not write a note for.
+ * `today` that are not removed, and how many discipline penalties they
+ * have. Null for a student the account may not write a note for.
  */
 export async function readStudentBox(
   db: Database,
   actor: AccountForAccess,
   studentId: string,
   today: string,
-): Promise<ActiveNote[] | null> {
+): Promise<StudentBox | null> {
   if ((await writableName(db, actor, studentId)) === null) return null;
   const period = await readRunningPeriod(db, today);
-  return readActiveNotesOf(db, studentId, period);
+  return {
+    notes: await readActiveNotesOf(db, studentId, period),
+    penalties: await penaltiesOf(db, actor, studentId),
+  };
 }
