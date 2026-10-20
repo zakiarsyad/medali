@@ -137,6 +137,21 @@ shown per person.
     counts for. While an answer is changed the badge reads "Ubah
     jawaban", as in the prototype, and "Batal" shows only then. A change
     that is not sent yet is not kept on the device.
+13. The server checks a send in this order: the right, the answers,
+    the period, then the pengasuh. A period that is not Dibuka, or an
+    id that names none, gets "Periode evaluasi sudah ditutup." A mentor
+    who is not the student's pengasuh today, as after a change of
+    pengasuh while the form was open, gets "Pengasuh Anda sudah
+    berganti. Muat ulang halaman, lalu kirim lagi." A student who is no
+    longer Aktif or has no pengasuh gets "Anda tidak dapat mengisi
+    survei kepuasan pengasuhan." A score that is not a whole number of
+    1 to 5 counts as not answered. Which student answers is never read
+    from what was sent.
+14. Of two sends at the same moment the later waits for the earlier
+    and then replaces it. A close or a cancel at the same moment as a
+    send waits for the send, so an answer is never kept after the
+    period stopped running. "Kirim survei" is off while a send is on
+    its way.
 
 ## Steps
 
@@ -145,7 +160,7 @@ shown per person.
 - [x] 3. The card shows the form, keeps a half-filled form on the
   device, and saves a complete answer.
 - [x] 4. "Terkirim", "Ubah jawaban" and "Batal".
-- [ ] 5. The closed-period, no-mentor and double-send cases, and the
+- [x] 5. The closed-period, no-mentor and double-send cases, and the
   refused hand-made requests.
 - [ ] 6. "Batalkan periode" names the number of answers and marks them
   as not used; Responden counts the answers.
