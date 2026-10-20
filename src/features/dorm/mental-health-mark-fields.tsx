@@ -17,7 +17,8 @@ import {
 
 /**
  * "Potensi kesehatan mental" in the health form, filled with the
- * student's current mark. "Pengamatan (rahasia)" is closed while
+ * student's current mark, which it sends back, so a save changes the
+ * mark only when it was changed here. "Pengamatan (rahasia)" is closed while
  * "Tidak ada indikasi" is chosen, as that choice clears it.
  */
 export function MarkFields({ mark }: { mark: MentalHealthMark | null }) {
@@ -25,6 +26,16 @@ export function MarkFields({ mark }: { mark: MentalHealthMark | null }) {
   const [observation, setObservation] = useState(mark?.observation ?? "");
   return (
     <div className={styles.markPart}>
+      <input
+        type="hidden"
+        name="markFilledCategory"
+        value={mark?.category ?? ""}
+      />
+      <input
+        type="hidden"
+        name="markFilledObservation"
+        value={mark?.observation ?? ""}
+      />
       <span className={shared.label}>Potensi kesehatan mental</span>
       <p className={styles.note}>{MARK_FORM_NOTE}</p>
       <div className={shared.form}>

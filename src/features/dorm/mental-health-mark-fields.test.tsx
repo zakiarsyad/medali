@@ -39,6 +39,10 @@ describe("MarkFields", () => {
     );
     const observation = fieldNamed(html, "markObservation");
     expect(observation).toContain('value="Menarik diri."');
+    expect(fieldNamed(html, "markFilledCategory")).toContain('value="refer"');
+    expect(fieldNamed(html, "markFilledObservation")).toContain(
+      'value="Menarik diri."',
+    );
     expect(observation).not.toContain("disabled");
   });
 

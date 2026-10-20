@@ -16,10 +16,16 @@ import {
   UNKNOWN_MARK,
 } from "./mental-health-mark-words";
 
-/** A mark as the form sends it: "Kategori potensi" empty for "Tidak ada indikasi". */
+/**
+ * A mark as the form sends it: "Kategori potensi" empty for "Tidak ada
+ * indikasi", and the mark the form was filled with, so a save changes the
+ * mark only when the person changed it.
+ */
 export interface SentMark {
   category: string;
   observation: string;
+  filledCategory: string;
+  filledObservation: string;
 }
 
 /** A mark the server keeps; no category is "Tidak ada indikasi". */
@@ -58,4 +64,18 @@ export function sameMark(one: MarkInput, other: MarkInput): boolean {
   return (
     one.category === other.category && one.observation === other.observation
   );
+}
+
+/**
+ * The mark the form was filled with, as it was sent back, or null when
+ * its category is not a choice of the form. Only what the person may
+ * have changed is compared with it, so its observation is not checked.
+ */
+export function filledMark(sent: SentMark): MarkInput | null {
+  if (sent.filledCategory === "") return NO_MARK;
+  if (!isMarkCategory(sent.filledCategory)) return null;
+  return {
+    category: sent.filledCategory,
+    observation: sent.filledObservation.trim(),
+  };
 }

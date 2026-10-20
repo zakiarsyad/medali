@@ -19,6 +19,8 @@ import type { MentalHealthMark } from "./mental-health-mark-ids";
 export interface DormHealthSubject extends HealthSubject {
   /** Their current mark "Potensi kesehatan mental", or null for none. */
   mark: MentalHealthMark | null;
+  /** False for the account's own student, whose mark it never sees or sets. */
+  markable: boolean;
 }
 
 /**

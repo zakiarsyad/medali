@@ -30,6 +30,7 @@ function markKey(mark: MentalHealthMark | null): string {
 }
 
 function markFieldsOf(subject: DormHealthSubject) {
+  if (!subject.markable) return null;
   return <MarkFields key={markKey(subject.mark)} mark={subject.mark} />;
 }
 

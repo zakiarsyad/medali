@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, type SQL, sql } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import { visibleTo } from "@/auth/visible-students";
@@ -40,16 +40,28 @@ export async function readStoredMark(
   return stored ?? NO_MARK;
 }
 
-/** Whether the form with this key had its change of a mark kept already. */
-export async function isMarkLogged(
+/** The change of a mark a form's key was logged under. */
+export interface LoggedChange {
+  studentId: string;
+  after: MarkInput;
+}
+
+/** The change kept under a form's key, or null when the key logged none. */
+export async function readLoggedChange(
   tx: Database,
   key: string,
-): Promise<boolean> {
+): Promise<LoggedChange | null> {
   const [line] = await tx
-    .select({ id: mentalHealthMarkChanges.id })
+    .select({
+      studentId: mentalHealthMarkChanges.studentId,
+      category: mentalHealthMarkChanges.categoryAfter,
+      observation: mentalHealthMarkChanges.observationAfter,
+    })
     .from(mentalHealthMarkChanges)
     .where(eq(mentalHealthMarkChanges.id, key));
-  return line !== undefined;
+  if (!line) return null;
+  const { studentId, ...after } = line;
+  return { studentId, after };
 }
 
 /** A change of a student's mark, as the form with `key` sent it. */
@@ -134,7 +146,7 @@ export async function readMarkLog(
   studentId: string,
 ): Promise<MarkLogLine[] | null> {
   if (!may(actor.roles, "view_mental_health_mark_log")) return null;
-  if (!isUuid(studentId)) return [];
+  if (!isUuid(studentId) || isOwnStudent(actor, studentId)) return [];
   const rows = await db
     .select({
       changedAt: mentalHealthMarkChanges.changedAt,
@@ -161,12 +173,25 @@ export async function readMarkLog(
 
 /**
  * The students whose marks the account may read, as a condition on the
- * students, Pengasuh their own mentees only; null for an account without
+ * students, Pengasuh their own mentees only, and never the account's own
+ * student, who never sees their own mark; null for an account without
  * the right, which is then given nothing about a mark.
  */
 export function markReachOf(actor: AccountForAccess): SQL | null {
   if (!may(actor.roles, "view_mental_health_marks")) return null;
-  return visibleTo(rowLimitForAction(actor, "view_mental_health_marks"));
+  const visible = visibleTo(
+    rowLimitForAction(actor, "view_mental_health_marks"),
+  );
+  if (actor.studentId === null) return visible;
+  return and(visible, ne(students.id, actor.studentId)) ?? visible;
+}
+
+/** Whether the student is the account's own, whose mark it never sees or sets. */
+export function isOwnStudent(
+  actor: AccountForAccess,
+  studentId: string,
+): boolean {
+  return studentId.toLowerCase() === actor.studentId;
 }
 
 /** A student with a mark, of the category given or of either. */

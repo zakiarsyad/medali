@@ -26,13 +26,19 @@ import type { Parsed } from "@/parsed";
 import { repeatsLatestNote, savesNote } from "./dorm-health-save-rules";
 import { dormWritableFor } from "./dorm-health-subject";
 import {
+  filledMark,
   type MarkInput,
   parseMark,
   type SentMark,
   sameMark,
 } from "./mental-health-mark-input";
-import { NOT_ALLOWED_TO_MARK } from "./mental-health-mark-words";
-import { isMarkLogged, keepMark, readStoredMark } from "./mental-health-marks";
+import { NOT_ALLOWED_TO_MARK, UNKNOWN_MARK } from "./mental-health-mark-words";
+import {
+  isOwnStudent,
+  keepMark,
+  readLoggedChange,
+  readStoredMark,
+} from "./mental-health-marks";
 
 export const NOT_ALLOWED_TO_WRITE_DORM = {
   ok: false,
@@ -49,6 +55,16 @@ export const NOT_A_RESIDENT = {
   ok: false,
   error:
     "Catatan tidak disimpan: mahasiswa ini bukan penghuni asrama aktif. Catatan kesehatan mahasiswa non asrama diisi di menu Penilaian > Penilaian jasmani.",
+} as const;
+
+/**
+ * What a save answers for a mark of the account's own student: a
+ * resident never sees nor sets their own mark.
+ */
+export const OWN_MARK = {
+  ok: false,
+  error:
+    "Penanda potensi kesehatan mental tidak dapat diisi untuk diri Anda sendiri. Penanda Anda diisi oleh BAM - Kesehatan atau Kepala Unit Pembangunan Karakter yang lain.",
 } as const;
 
 /** Asrama > Kesehatan: Aktif dorm residents. */
@@ -73,6 +89,41 @@ interface CheckedSave {
   /** Null for a note part with no illness and no text. */
   note: NoteInput | null;
   mark: MarkInput;
+  /** Whether the person changed the mark the form was filled with. */
+  markTouched: boolean;
+}
+
+/** What a save does with the mark. */
+interface MarkStep {
+  before: MarkInput;
+  /** The mark is written, with a line in the log. */
+  changes: boolean;
+  /** The save is of the mark: it changes now, or this form changed it before. */
+  decides: boolean;
+}
+
+/**
+ * What a save does with the mark. A mark the person left as the form
+ * was filled is left alone, whatever another writer stored meanwhile; a
+ * mark they changed is written, unless it equals the stored one or this
+ * form's key logged it already. A key that logged another change, of
+ * another student or to another mark, is a form sent before and changed
+ * since: refused, as a note is.
+ */
+async function markStepOf(
+  tx: Database,
+  save: CheckedSave,
+): Promise<Parsed<MarkStep>> {
+  const before = await readStoredMark(tx, save.studentId);
+  const logged = await readLoggedChange(tx, save.key);
+  if (logged !== null) {
+    const isThisChange =
+      logged.studentId === save.studentId && sameMark(logged.after, save.mark);
+    if (!isThisChange) return NOTE_ALREADY_SENT;
+    return { ok: true, value: { before, changes: false, decides: true } };
+  }
+  const changes = save.markTouched && !sameMark(before, save.mark);
+  return { ok: true, value: { before, changes, decides: changes } };
 }
 
 async function latestNoteOf(
@@ -103,9 +154,9 @@ async function saveWithMarkIn(
   const writable = await dormWritableFor(tx, actor, day);
   const name = await writableName(tx, writable, save.studentId);
   if (name === null) return NOT_A_RESIDENT;
-  const before = await readStoredMark(tx, save.studentId);
-  const markChanges = !sameMark(before, save.mark);
-  const markDecides = markChanges || (await isMarkLogged(tx, save.key));
+  const step = await markStepOf(tx, save);
+  if (!step.ok) return step;
+  const { before, changes: markChanges, decides: markDecides } = step.value;
   const keepsNote = savesNote({
     noteEmpty: save.note === null,
     repeatsLatest: markDecides && (await repeatsLatest(tx, save)),
@@ -138,8 +189,11 @@ async function saveWithMark(
   if (!may(actor.roles, "write_mental_health_marks")) {
     return { ok: false, error: NOT_ALLOWED_TO_MARK };
   }
+  if (isOwnStudent(actor, sent.studentId)) return OWN_MARK;
   const mark = parseMark(sentMark);
   if (!mark.ok) return mark;
+  const filled = filledMark(sentMark);
+  if (filled === null) return { ok: false, error: UNKNOWN_MARK };
   const day = campusDay(moment);
   const note = parseNote(sent, day);
   const noteEmpty = !note.ok && note.error === NO_NOTE;
@@ -151,6 +205,7 @@ async function saveWithMark(
     studentId: sent.studentId,
     note: note.ok ? note.value : null,
     mark: mark.value,
+    markTouched: !sameMark(mark.value, filled),
   };
   return db.transaction((tx) => saveWithMarkIn(tx, actor, save, limits, day));
 }
@@ -158,7 +213,8 @@ async function saveWithMark(
 /**
  * "Simpan catatan" on Asrama > Kesehatan: keeps a health note of an
  * Aktif dorm resident, as the work of the actor, and with `mark` sets
- * their mark "Potensi kesehatan mental" too. A mark is saved with no
+ * their mark "Potensi kesehatan mental" too, when the person changed it
+ * and it is not their own. A mark is saved with no
  * illness or note, and then no note is kept; so is a mark set on a form
  * still filled with the latest note. A mark that does not change is not
  * written again. Refused, with nothing kept, for a role without the

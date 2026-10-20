@@ -19,7 +19,7 @@ import {
 } from "./dorm-health-subject";
 import { savedDormHealthMessage } from "./dorm-health-words";
 import type { SentMark } from "./mental-health-mark-input";
-import { readMarkOf } from "./mental-health-marks";
+import { isOwnStudent, readMarkOf } from "./mental-health-marks";
 import { saveDormHealthNote } from "./save-dorm-health-note";
 
 /**
@@ -43,7 +43,8 @@ export async function searchDormHealthStudentsAction(
 
 /**
  * The resident picked: their test category, every note and their
- * current mark, or null when not theirs to write.
+ * current mark, none for the account's own student, or null when not
+ * theirs to write.
  */
 export async function dormHealthSubjectAction(
   studentId: string,
@@ -60,7 +61,9 @@ export async function dormHealthSubjectAction(
     day,
   );
   if (subject === null) return null;
-  return { ...subject, mark: await readMarkOf(db, actor, studentId) };
+  const markable = !isOwnStudent(actor, studentId);
+  const mark = markable ? await readMarkOf(db, actor, studentId) : null;
+  return { ...subject, mark, markable };
 }
 
 /** "Potensi kesehatan mental" as sent, or null when the form had none. */
@@ -69,6 +72,8 @@ function sentMark(form: FormData): SentMark | null {
   return {
     category: text(form, "markCategory"),
     observation: text(form, "markObservation"),
+    filledCategory: text(form, "markFilledCategory"),
+    filledObservation: text(form, "markFilledObservation"),
   };
 }
 

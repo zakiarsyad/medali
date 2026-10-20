@@ -11,6 +11,7 @@ import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { NO_NOTE, type SentNote } from "@/health-notes/health-input";
+import { NOTE_ALREADY_SENT } from "@/health-notes/save-note";
 import { addTestNote } from "@/health-notes/test-health";
 import type { SentMark } from "./mental-health-mark-input";
 import { REFERRAL_NEEDS_OBSERVATION } from "./mental-health-mark-words";
@@ -18,6 +19,7 @@ import { readMarkLog, readMarkOf } from "./mental-health-marks";
 import {
   NOT_A_RESIDENT,
   NOT_ALLOWED_TO_WRITE_DORM,
+  OWN_MARK,
   saveDormHealthNote,
 } from "./save-dorm-health-note";
 import { addHealthActor, type HealthActor } from "./test-health";
@@ -83,18 +85,44 @@ function budiFilled(studentId: string): SentNote {
   };
 }
 
-const WATCH: SentMark = { category: "monitor", observation: "Sulit tidur." };
-const REFER: SentMark = { category: "refer", observation: "Menarik diri." };
-const NONE: SentMark = { category: "", observation: "" };
+/** A choice of "Kategori potensi" with its observation, as typed. */
+interface Choice {
+  category: string;
+  observation: string;
+}
+
+const WATCH: Choice = { category: "monitor", observation: "Sulit tidur." };
+const REFER: Choice = { category: "refer", observation: "Menarik diri." };
+const NONE: Choice = { category: "", observation: "" };
+
+/** The mark part sent: the choice made, on a form filled with `from`. */
+function sentMark(to: Choice, from: Choice = NONE): SentMark {
+  return {
+    ...to,
+    filledCategory: from.category,
+    filledObservation: from.observation,
+  };
+}
 
 function save(
   db: Database,
   actor: HealthActor,
   sent: SentNote,
-  mark: SentMark,
-  id: string = crypto.randomUUID(),
+  to: Choice,
+  {
+    id = crypto.randomUUID(),
+    from = NONE,
+  }: { id?: string; from?: Choice } = {},
 ) {
-  return saveDormHealthNote(db, actor, id, sent, STARTING_LIMITS, MOMENT, mark);
+  return saveDormHealthNote(
+    db,
+    actor,
+    id,
+    sent,
+    STARTING_LIMITS,
+    MOMENT,
+    sentMark(to, from),
+  );
 }
 
 async function storedMarks(db: Database) {
@@ -156,10 +184,13 @@ describe("saveDormHealthNote with a mental health mark", () => {
         observation: "Menarik diri.",
       });
 
-      const cleared = await save(db, bam, emptyNote(ids.ani), {
-        category: "",
-        observation: "Masih tertulis.",
-      });
+      const cleared = await save(
+        db,
+        bam,
+        emptyNote(ids.ani),
+        { category: "", observation: "Masih tertulis." },
+        { from: REFER },
+      );
 
       expect(cleared).toMatchObject({ ok: true, value: { markSaved: true } });
       expect(await storedMarks(db)).toEqual([
@@ -230,8 +261,12 @@ describe("saveDormHealthNote with a mental health mark", () => {
       const { bam, ids } = await addStudents(db);
       const key = crypto.randomUUID();
 
-      const first = await save(db, bam, budiFilled(ids.budi), WATCH, key);
-      const second = await save(db, bam, budiFilled(ids.budi), WATCH, key);
+      const first = await save(db, bam, budiFilled(ids.budi), WATCH, {
+        id: key,
+      });
+      const second = await save(db, bam, budiFilled(ids.budi), WATCH, {
+        id: key,
+      });
 
       expect(second).toEqual(first);
       expect(await db.select().from(mentalHealthMarkChanges)).toHaveLength(1);
@@ -269,6 +304,89 @@ describe("saveDormHealthNote with a mental health mark", () => {
   });
 });
 
+describe("a mark of one's own", () => {
+  it("is refused to BAM - Kesehatan who is that resident, keeping nothing, while their own note is kept as before", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, ids } = await addStudents(db);
+      const own: HealthActor = { ...bam, studentId: ids.ani };
+
+      const saved = await save(db, own, emptyNote(ids.ani), WATCH);
+      const noteOnly = await saveDormHealthNote(
+        db,
+        own,
+        crypto.randomUUID(),
+        { ...emptyNote(ids.ani), advice: "Istirahat." },
+        STARTING_LIMITS,
+        MOMENT,
+      );
+
+      expect(saved).toEqual(OWN_MARK);
+      expect(await storedMarks(db)).toEqual([]);
+      expect(noteOnly).toMatchObject({ ok: true, value: { markSaved: false } });
+    });
+  });
+});
+
+describe("a mark changed by another writer while the form was open", () => {
+  it("is left alone by a save of the note only, and replaced by a later change of the mark", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, kepala, ids } = await addStudents(db);
+      await save(db, kepala, emptyNote(ids.ani), REFER);
+
+      const noteOnly = await save(
+        db,
+        bam,
+        { ...emptyNote(ids.ani), advice: "Istirahat." },
+        NONE,
+      );
+
+      expect(noteOnly).toMatchObject({ ok: true, value: { markSaved: false } });
+      expect(await storedMarks(db)).toMatchObject([
+        { category: "refer", changedBy: kepala.id },
+      ]);
+
+      await save(db, bam, emptyNote(ids.ani), WATCH);
+
+      expect(await storedMarks(db)).toMatchObject([
+        { category: "monitor", changedBy: bam.id },
+      ]);
+    });
+  });
+});
+
+describe("a form key used for the mark of another student", () => {
+  it("refuses a change of another student's mark as sent already, keeping nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, ids } = await addStudents(db);
+      const key = crypto.randomUUID();
+      await save(db, bam, emptyNote(ids.ani), WATCH, { id: key });
+
+      const again = await save(db, bam, emptyNote(ids.budi), REFER, {
+        id: key,
+      });
+
+      expect(again).toEqual(NOTE_ALREADY_SENT);
+      expect(await readMarkOf(db, bam, ids.budi)).toBeNull();
+      expect(await db.select().from(mentalHealthMarkChanges)).toHaveLength(1);
+    });
+  });
+
+  it("never answers saved for another student whose mark is left alone", async () => {
+    await inTestDatabase(async (db) => {
+      const { bam, ids } = await addStudents(db);
+      const key = crypto.randomUUID();
+      await save(db, bam, emptyNote(ids.ani), WATCH, { id: key });
+
+      const again = await save(db, bam, budiFilled(ids.budi), NONE, {
+        id: key,
+      });
+
+      expect(again).toEqual(NOTE_ALREADY_SENT);
+      expect(await db.select().from(healthNotes)).toHaveLength(1);
+    });
+  });
+});
+
 describe("the log of a mark", () => {
   it("has a line for every change with who, when, before and after, for Kepala Unit alone", async () => {
     await inTestDatabase(async (db) => {
@@ -276,7 +394,7 @@ describe("the log of a mark", () => {
       await save(db, bam, emptyNote(ids.ani), WATCH);
       await save(db, kepala, emptyNote(ids.ani), REFER);
       await save(db, kepala, emptyNote(ids.ani), REFER);
-      await save(db, bam, emptyNote(ids.ani), NONE);
+      await save(db, bam, emptyNote(ids.ani), NONE, { from: REFER });
 
       const log = await readMarkLog(db, kepala, ids.ani);
 

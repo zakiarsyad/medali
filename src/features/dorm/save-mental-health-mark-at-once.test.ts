@@ -52,8 +52,17 @@ describe("a mark saved by two writers for one resident at the same moment", () =
     const kepala = await addHealthActor(own.db, "Kepala Penanda Berdua", [
       "head_of_unit",
     ]);
-    const watch = { category: "monitor", observation: "Sulit tidur." };
-    const refer = { category: "refer", observation: "Menarik diri." };
+    const filled = { filledCategory: "", filledObservation: "" };
+    const watch = {
+      category: "monitor",
+      observation: "Sulit tidur.",
+      ...filled,
+    };
+    const refer = {
+      category: "refer",
+      observation: "Menarik diri.",
+      ...filled,
+    };
 
     const both = await own.atOnce(
       (db) =>
