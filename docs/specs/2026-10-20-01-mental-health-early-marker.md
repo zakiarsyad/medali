@@ -88,7 +88,7 @@ record on the Asrama page, so only five roles ever see it.
 
 - [x] 1. The table for the mark is added, with sample marks of both
   kinds.
-- [ ] 2. The rights to write and to read the mark are added to the
+- [x] 2. The rights to write and to read the mark are added to the
   permission list, with checks for every refused role.
 - [ ] 3. Writers set, change and clear the mark in the health form;
   a referral without an observation is refused.
