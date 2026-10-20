@@ -91,6 +91,8 @@
   --column-min-width: 360px;
   --box-min-width: 200px;
   --score-box-width: 90px;
+  /* A button of a score of 1 to 5, wide and high enough for a thumb. */
+  --score-button-size: 38px;
   --medal-width: 370px;
   --bare-box-width: 380px;
   --photo-preview-height: 260px;

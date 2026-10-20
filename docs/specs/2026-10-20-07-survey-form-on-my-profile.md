@@ -110,12 +110,33 @@ shown per person.
    Mahasiswa only. The list of rights that Kepala Unit sees names it
    "Mengisi dan mengubah survei kepuasan pengasuhan sendiri". No role
    gets a right that reads one student's answer.
+8. The card stands at the top of Profil saya, above the student's
+   record, as in the prototype. Under its title it reads "Periode
+   evaluasi (periode) · dibuka sampai (date) · pengasuh Anda: (name)",
+   with the badge "Belum diisi". The mentor is named with the gelar, as
+   the record names them.
+9. The words on who sees what name the four roles of the spec, where
+   the prototype names Kepala Unit only: "Jawaban Anda tidak
+   ditampilkan per orang: Kepala Unit, Direktur / Wakil Direktur,
+   Pegawai UPK, dan Ketua Program Studi hanya melihat rekap kelompok,
+   dan saran ditampilkan tanpa nama bila responden kelompok minimal 3
+   orang."
+10. A half-filled form is kept in the browser of the device, one per
+    student and period, only until the first answer is sent, and is
+    forgotten then. A browser that keeps nothing, as a private window
+    may, simply loses it on a refresh; the page still works.
+11. A statement left unanswered is told on the device before anything
+    is sent, and the server checks it again. A suggestion loses the
+    spaces around it; one of spaces only is no suggestion; one longer
+    than 600 characters is refused with "Saran untuk pengasuh paling
+    banyak 600 karakter." A kept answer is told with "Terima kasih.
+    Survei kepuasan pengasuhan terkirim.", as in the prototype.
 
 ## Steps
 
 - [x] 1. Survey answers are stored, one per student and period.
 - [x] 2. The right to answer the survey for oneself, with its checks.
-- [ ] 3. The card shows the form, keeps a half-filled form on the
+- [x] 3. The card shows the form, keeps a half-filled form on the
   device, and saves a complete answer.
 - [ ] 4. "Terkirim", "Ubah jawaban" and "Batal".
 - [ ] 5. The closed-period, no-mentor and double-send cases, and the

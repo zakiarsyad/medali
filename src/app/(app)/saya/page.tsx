@@ -1,14 +1,25 @@
 import { forbidden } from "next/navigation";
+import { campusDay } from "@/academic-periods/campus-day";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import { readOwnProfile } from "@/features/students/own-profile";
 import { OwnProfileScreen } from "@/features/students/own-profile-screen";
+import { readOwnSurvey } from "@/features/students/own-survey";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 
 export default async function OwnProfilePage() {
   const { account } = await openPage("saya");
   const period = await runningPeriodNow();
-  const answer = await readOwnProfile(database(), account, period);
+  const [answer, survey] = await Promise.all([
+    readOwnProfile(database(), account, period),
+    readOwnSurvey(database(), account, campusDay()),
+  ]);
   if (answer.kind === "refused") forbidden();
-  return <OwnProfileScreen student={answer.student} period={period} />;
+  return (
+    <OwnProfileScreen
+      student={answer.student}
+      period={period}
+      survey={survey}
+    />
+  );
 }
