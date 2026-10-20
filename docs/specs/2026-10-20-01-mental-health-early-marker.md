@@ -94,4 +94,4 @@ record on the Asrama page, so only five roles ever see it.
   a referral without an observation is refused.
 - [x] 4. The number, the filter choice, the badge and the observation
   show to the four roles only.
-- [ ] 5. Pengasuh sees marks of their own mentees only.
+- [x] 5. Pengasuh sees marks of their own mentees only.

@@ -13,6 +13,7 @@ import {
   type DormHealthParams,
 } from "./dorm-health-address";
 import type { MarkCategory } from "./mental-health-mark-ids";
+import { readMarkOf } from "./mental-health-marks";
 import {
   addHealthActor,
   addHealthGroup,
@@ -222,4 +223,77 @@ describe("the marks for the roles that may not read them", () => {
       });
     },
   );
+});
+
+describe("the marks for Pengasuh", () => {
+  it("are those of their own mentees only, in the number too", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, hana, ids } = await addResidents(db);
+      await addMarks(db, kepala, ids);
+
+      const found = await read(db, hana);
+      const filtered = await read(db, hana, { markOnly: true });
+
+      expect(names(found)).toEqual(["Ani Daftar"]);
+      expect(found?.marks).toEqual({
+        counts: { marked: 1, referred: 0 },
+        byStudent: {
+          [ids.ani]: { category: "monitor", observation: "Sulit tidur." },
+        },
+      });
+      expect(names(filtered)).toEqual(["Ani Daftar"]);
+      expect(JSON.stringify(found)).not.toContain("Menarik diri");
+    });
+  });
+
+  it("cannot be asked by hand for a resident who is not their mentee", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, hana, ids } = await addResidents(db);
+      await addMarks(db, kepala, ids);
+
+      expect(await readMarkOf(db, hana, ids.ani)).toEqual({
+        category: "monitor",
+        observation: "Sulit tidur.",
+      });
+      expect(await readMarkOf(db, hana, ids.budi)).toBeNull();
+    });
+  });
+
+  it("stay their own mentees' for Pengasuh who is also BAM - BPHK, who sees every resident's list", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, hana, ids } = await addResidents(db);
+      await addMarks(db, kepala, ids);
+      const both: HealthActor = { ...hana, roles: ["mentor", "bam_bphk"] };
+
+      const found = await read(db, both);
+
+      expect(found?.list.numbers).toMatchObject({ students: 6, listed: 2 });
+      expect(names(found)).toEqual(["Ani Daftar", "Citra Daftar"]);
+      expect(found?.marks).toEqual({
+        counts: { marked: 1, referred: 0 },
+        byStudent: {
+          [ids.ani]: { category: "monitor", observation: "Sulit tidur." },
+        },
+      });
+      expect(await readMarkOf(db, both, ids.budi)).toBeNull();
+    });
+  });
+
+  it.each<RoleId>([
+    "student",
+    "bam_bphk",
+    "director",
+    "head_of_program",
+    "counsellor",
+  ])("give %s no mark asked by hand", async (role) => {
+    await inTestDatabase(async (db) => {
+      const { kepala, ids } = await addResidents(db);
+      await addMarks(db, kepala, ids);
+      const actor = await addHealthActor(db, "Uji Tanpa Penanda", [role]);
+
+      expect(
+        await readMarkOf(db, { ...actor, studentId: ids.ani }, ids.ani),
+      ).toBeNull();
+    });
+  });
 });
