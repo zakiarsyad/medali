@@ -8,6 +8,7 @@ import { readNoteBoard } from "@/features/guidance/note-board";
 import { semesterWords } from "@/features/guidance/note-words";
 import { NoteWriting } from "@/features/guidance/note-writing";
 import { NotesScreen } from "@/features/guidance/notes-screen";
+import { RemoveNoteButton } from "@/features/guidance/remove-note-button";
 
 /**
  * The tab Catatan pelanggaran. Pembina Disiplin Mahasiswa and Kepala
@@ -38,7 +39,7 @@ export default async function ViolationNotesPage(
       board={board}
       params={params}
       form={form}
-      actionsOf={null}
+      actionsOf={writes ? (row) => <RemoveNoteButton id={row.id} /> : null}
     />
   );
 }

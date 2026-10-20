@@ -103,5 +103,5 @@ discipline penalty may be next.
   read only.
 - [x] 4. The form "Catat pelanggaran" with the student's box and
   "Ketentuan".
-- [ ] 5. Removing a note.
+- [x] 5. Removing a note.
 

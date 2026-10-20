@@ -65,10 +65,11 @@ describe("Catatan pelanggaran on a phone", () => {
 describe("the screen parts of Catatan pelanggaran that run in the browser", () => {
   const browserFiles = browserFilesIn(FOLDER);
 
-  it("are found: the form at least", () => {
+  it("are found: the form and Hapus at least", () => {
     // Folders are split by another sign on some computers.
     const names = browserFiles.map((path) => path.replaceAll("\\", "/"));
     expect(names).toContain(`${FOLDER}/note-form.tsx`);
+    expect(names).toContain(`${FOLDER}/remove-note-button.tsx`);
   });
 
   it.each(browserFiles)("%s takes no database code along", (path) => {

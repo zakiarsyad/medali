@@ -70,7 +70,8 @@ export async function addNotePeriods(db: Database, year: number) {
 
 /**
  * A note of a student on a day, added straight to the table with its
- * log line, saved at 10:00 on campus that day. Gives back its key.
+ * log line, saved at 10:00 on campus that day and logged now. Gives
+ * back its key.
  */
 export async function addTestNote(
   db: Database,
@@ -94,7 +95,8 @@ export async function addTestNote(
   await db.insert(violationNoteChanges).values({
     noteId: id,
     changedBy: byId,
-    changedAt: savedAt,
+    // Written now, as the log is: a later line of the note comes after it.
+    changedAt: new Date(),
     action: "added",
   });
   return id;

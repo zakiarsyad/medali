@@ -10,13 +10,14 @@ import { database } from "@/db/database";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { NOTES_ADDRESS } from "./note-address";
-import { savedMessage } from "./note-messages";
+import { REMOVED, savedMessage } from "./note-messages";
 import {
   type NotePick,
   readStudentBox,
   searchNoteStudents,
 } from "./note-student";
 import type { ActiveNote } from "./placed-notes";
+import { removeViolationNote } from "./remove-violation-note";
 import { saveViolationNote } from "./save-violation-note";
 
 /**
@@ -66,4 +67,15 @@ export async function saveViolationNoteAction(
   revalidatePath(NOTES_ADDRESS);
   const { name, category } = saved.value;
   return { error: null, done: savedMessage(name, category) };
+}
+
+/** "Hapus" on a note. Who removed it is the signed-in account. */
+export async function removeViolationNoteAction(
+  id: string,
+): Promise<FormState> {
+  const actor = await writer();
+  const removed = await removeViolationNote(database(), actor, String(id));
+  if (!removed.ok) return { error: removed.error, done: null };
+  revalidatePath(NOTES_ADDRESS);
+  return { error: null, done: REMOVED };
 }
