@@ -86,7 +86,7 @@ The notes are read by Konselor only and are never shared.
 
 ## Steps
 
-- [ ] 1. The tables for sessions and their log are added, with made-up
+- [x] 1. The tables for sessions and their log are added, with made-up
   sessions for the sample students.
 - [ ] 2. "Catat sesi" shows in the consent panel only with consent, and
   the server lets only Konselor write.
