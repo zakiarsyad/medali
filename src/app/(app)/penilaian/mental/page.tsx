@@ -1,3 +1,4 @@
+import { campusDay } from "@/academic-periods/campus-day";
 import type { AccountForAccess } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
@@ -6,6 +7,7 @@ import {
   readScreeningList,
   readScreeningNumbers,
 } from "@/features/counselling/screening-board";
+import { ScreeningForm } from "@/features/counselling/screening-form";
 import {
   type CounsellorScreenings,
   ScreeningScreen,
@@ -37,5 +39,15 @@ export default async function MentalHealthPage(
   const { account } = opened;
   const tabs = { pagePath: "penilaian", tabs: opened.tabs, open: "mental" };
   const counsellor = await counsellorPart(account, await props.searchParams);
-  return <ScreeningScreen tabs={tabs} counsellor={counsellor} />;
+  return (
+    <ScreeningScreen
+      tabs={tabs}
+      counsellor={counsellor}
+      form={
+        counsellor && (
+          <ScreeningForm today={campusDay()} newKey={crypto.randomUUID()} />
+        )
+      }
+    />
+  );
 }

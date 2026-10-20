@@ -111,7 +111,7 @@ see counts with no names. It is the most sensitive data in the app.
 - [x] 2. The level and advice rules, with checks.
 - [x] 3. The tab shows "Keadaan darurat", the numbers and "Daftar
   mahasiswa" with "Rincian" for Konselor.
-- [ ] 4. The screening form saves a result, only with consent
+- [x] 4. The screening form saves a result, only with consent
   "Disetujui".
 - [ ] 5. Other staff see the campus count only, with the refusal checks.
 

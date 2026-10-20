@@ -45,3 +45,39 @@ export const RISK_WORDS = "Risiko";
 
 export const SELF_HARM_WORDS =
   "Ada indikasi pikiran atau tindakan menyakiti diri";
+
+export const PICK_STUDENT = "Pilih mahasiswa terlebih dahulu.";
+
+export const DATE_MISSING = "Isi tanggal asesmen dengan tanggal yang benar.";
+
+export const FUTURE_DATE = "Tanggal asesmen tidak boleh setelah hari ini.";
+
+export const UNKNOWN_INSTRUMENT = "Pilih instrumen DASS-21 atau SRQ-20.";
+
+export const NOTE_TOO_LONG =
+  "Catatan konselor paling banyak 1.000 karakter. Persingkat catatan, lalu simpan lagi.";
+
+/** What a sum outside its range is told. */
+export function scoreOutOfRange(field: string, most: number): string {
+  return `${field} harus bilangan bulat 0–${most}.`;
+}
+
+/** The name of the sum of SRQ-20 in its messages. */
+export const SRQ_FIELD = 'Jumlah jawaban "ya" SRQ-20';
+
+export const CONSENT_NEEDED =
+  "Persetujuan konseling mahasiswa ini belum berstatus Disetujui, jadi asesmen tidak disimpan. Minta persetujuannya di menu Konseling terlebih dahulu.";
+
+export const SCREENING_NOT_ALLOWED =
+  "Anda tidak berhak mencatat asesmen kesehatan mental.";
+
+export function savedMessage(name: string): string {
+  return `Asesmen ${name} disimpan.`;
+}
+
+export const FORM_STALE =
+  "Formulir ini sudah lama dibuka. Muat ulang halaman, lalu simpan lagi.";
+
+/** What the form says while the picked student's consent is not Disetujui. */
+export const CONSENT_FIRST =
+  "Persetujuan konseling diperlukan terlebih dahulu. Asesmen dapat disimpan setelah persetujuan mahasiswa berstatus Disetujui; minta persetujuannya di menu Konseling.";

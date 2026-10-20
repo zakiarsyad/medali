@@ -42,6 +42,7 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".subHeading",
       ".card > p",
       ".note",
+      ".evaluation",
     ],
   ],
   [SHARED, [".actions", ".form"]],
