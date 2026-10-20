@@ -1,0 +1,44 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const FOLDER = "src/features/guidance";
+// Starts with a break, so the first rule is found like every other.
+const STYLES = `\n${readFileSync(`${FOLDER}/discipline-penalties.module.css`, "utf8")}`;
+
+function read(name: string): string {
+  return readFileSync(`${FOLDER}/${name}`, "utf8");
+}
+
+/** What a rule of the style file holds, without the breaks between its lines. */
+function ruleOf(selector: string): string {
+  const start = STYLES.indexOf(`\n${selector} {`);
+  if (start === -1) return "";
+  const body = STYLES.slice(start, STYLES.indexOf("}", start));
+  return body.replace(/\s+/g, " ");
+}
+
+describe("Pelanggaran disiplin on a phone", () => {
+  it("shows each penalty as a card that names every value", () => {
+    const TABLE = read("penalty-table.tsx");
+    expect(TABLE).toMatch(/<table className=.*shared\.stacked/);
+    for (const title of [
+      "Mahasiswa",
+      "Tanggal",
+      "Hukuman",
+      "Kerja sosial",
+      "Status",
+    ]) {
+      expect(TABLE).toContain(`data-title="${title}"`);
+    }
+  });
+
+  it("keeps the rules table whole, scrolling inside its own box", () => {
+    const TABLE = read("penalty-rules-table.tsx");
+    expect(TABLE).toContain("<div className={shared.tableWrap}>");
+    expect(TABLE).toContain("styles.rules");
+    expect(TABLE).not.toContain("shared.stacked");
+    expect(ruleOf(".rules")).toContain(
+      "min-width: var(--wide-table-min-width);",
+    );
+  });
+});

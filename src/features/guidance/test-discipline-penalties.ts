@@ -1,6 +1,12 @@
 import { asc, eq } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { disciplinePenalties, disciplinePenaltyChanges } from "@/db/schema";
+import {
+  disciplinePenalties,
+  disciplinePenaltyChanges,
+  mentorGroupMembers,
+  mentorGroupMentors,
+  mentorGroups,
+} from "@/db/schema";
 
 /** Made-up penalties for the checks of discipline penalties. */
 
@@ -71,4 +77,34 @@ export async function penaltyAt(db: Database, penaltyId: string) {
     .from(disciplinePenalties)
     .where(eq(disciplinePenalties.id, penaltyId));
   return penalty;
+}
+
+/**
+ * A kelompok pengasuhan in force of some students of a program, held
+ * today by a mentor.
+ */
+export async function addPenaltyGroup(
+  db: Database,
+  programId: number,
+  studentIds: string[],
+  mentorId: string,
+): Promise<void> {
+  const startsOn = "2026-08-01";
+  const [group] = await db
+    .insert(mentorGroups)
+    .values({
+      studyProgramId: programId,
+      cohortYear: 2026,
+      entryPath: "regular",
+      number: 1,
+      startsOn,
+    })
+    .returning();
+  if (!group) throw new Error("The group was not added.");
+  await db
+    .insert(mentorGroupMembers)
+    .values(studentIds.map((studentId) => ({ studentId, groupId: group.id })));
+  await db
+    .insert(mentorGroupMentors)
+    .values({ groupId: group.id, mentorId, startsOn });
 }

@@ -1,0 +1,109 @@
+import type {
+  PenaltyCategory,
+  PenaltyLevel,
+  PenaltyStatus,
+  SocialWorkForm,
+  SocialWorkPlace,
+} from "./penalty-ids";
+import {
+  CHARACTER_SCORE_CAP,
+  type PenaltyRule,
+  type SocialWorkLength,
+} from "./penalty-rules";
+
+/*
+ * The words of Pelanggaran disiplin. Read by the screen parts in the
+ * browser, so nothing here may take from the database code.
+ */
+
+/** The lede of the tab for an account that records penalties. */
+export const RECORDER_LEDE = `Catat pelanggaran disiplin dan tetapkan hukuman sesuai jenjangnya. Hukuman ringan dan sedang otomatis membatasi nilai karakter paling tinggi ${CHARACTER_SCORE_CAP}.`;
+
+/** The lede of the tab for an account that only reads. */
+export const READER_LEDE = `Data pelanggaran disiplin dan hukumannya. Hukuman ringan dan sedang otomatis membatasi nilai karakter paling tinggi ${CHARACTER_SCORE_CAP}.`;
+
+/** What an account that only reads is told instead of the form. */
+export const WHO_RECORDS =
+  "Anda hanya dapat melihat data pelanggaran disiplin. Pencatatan pelanggaran dilakukan oleh Kepala Unit Pembangunan Karakter dan Pembina Disiplin Mahasiswa.";
+
+/** What Pengasuh is told: the list holds their own mentees only. */
+export const MENTEES_ONLY = "Menampilkan mahasiswa binaan Anda.";
+
+export const NO_PENALTIES_FOUND = "Belum ada pelanggaran pada filter ini.";
+
+/** What one row of the list is, as the pager says it. */
+export const PENALTY_NOUN = "pelanggaran";
+
+export const CATEGORY_WORDS: Record<PenaltyCategory, string> = {
+  light: "Ringan",
+  medium: "Sedang",
+  heavy: "Berat",
+};
+
+export const LEVEL_WORDS: Record<PenaltyLevel, string> = {
+  1: "pertama",
+  2: "kedua",
+  3: "ketiga",
+};
+
+export const STATUS_WORDS: Record<PenaltyStatus, string> = {
+  imposed: "Dijatuhkan",
+  set: "Ditetapkan",
+};
+
+export const SOCIAL_WORK_FORM_WORDS: Record<SocialWorkForm, string> = {
+  staff_help:
+    "Membantu tugas atau kegiatan dosen, tenaga kependidikan, dan/atau pegawai",
+  traffic: "Membantu pengaturan lalu lintas di lingkungan PKN STAN",
+  grounds: "Merapikan dan membersihkan taman atau lingkungan PKN STAN",
+  community: "Melakukan kegiatan sosial kemasyarakatan",
+  other: "Bentuk kerja sosial lainnya",
+};
+
+export const SOCIAL_WORK_PLACE_WORDS: Record<SocialWorkPlace, string> = {
+  campus: "Unit kerja di lingkungan PKN STAN",
+  home_agency: "Unit kerja di instansi asal",
+  outside: "Lembaga sosial atau lembaga lain di luar PKN STAN",
+};
+
+/** A Kategori and Jenjang as a badge names it: "Ringan · jenjang pertama". */
+export function jenjangWords(
+  category: PenaltyCategory,
+  level: PenaltyLevel,
+): string {
+  return `${CATEGORY_WORDS[category]} · jenjang ${LEVEL_WORDS[level]}`;
+}
+
+/** How long a kerja sosial lasts: "7 hari" or "8 bulan". */
+export function lengthWords(length: SocialWorkLength): string {
+  const unit = length.unit === "day" ? "hari" : "bulan";
+  return `${length.amount} ${unit}`;
+}
+
+/** What a Jenjang does to nilai karakter, as the rules table says it. */
+export function scoreEffectWords(rule: PenaltyRule): string {
+  if (rule.outcome === "capped") {
+    return `Paling tinggi ${CHARACTER_SCORE_CAP}`;
+  }
+  if (rule.outcome === "suspended") return "Mengulang semester berkenaan";
+  return "-";
+}
+
+/** Bentuk kerja sosial as the list names them, with what "lainnya" is. */
+export function formsWords(forms: SocialWorkForm[], other: string): string {
+  return forms
+    .map((form) =>
+      form === "other" ? `Lainnya: ${other}` : SOCIAL_WORK_FORM_WORDS[form],
+    )
+    .join("; ");
+}
+
+/** A text of the rules as part of a sentence: its first letter small. */
+export function inSentence(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+/** A word as the start of a sentence: its first letter capital. */
+export function capitalized(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

@@ -115,7 +115,7 @@ Everyone allowed sees the list of penalties and the rules table.
   rules for the nine Jenjang and sample penalties.
 - [x] 2. The right to record a penalty is added to the permission list,
   with its checks.
-- [ ] 3. The numbers, the list with search and filters, and the rules
+- [x] 3. The numbers, the list with search and filters, and the rules
   table, read only and limited to each role's rows.
 - [ ] 4. "Rincian" for one penalty.
 - [ ] 5. The form "Catat pelanggaran" with the kerja sosial part.

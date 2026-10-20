@@ -1,0 +1,57 @@
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* What an account that only reads is told instead of the form. */
+.readOnly {
+  margin: var(--space-lg) 0 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* Pengasuh sees only their own mentees. */
+.scope {
+  margin: 0 0 var(--space-lg);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The Kategori of a penalty: Ringan, Sedang and Berat. */
+.light {
+  border: var(--line-width) solid var(--warn);
+  color: var(--warn);
+}
+
+.medium {
+  border: var(--line-width) solid var(--bad);
+  color: var(--bad);
+}
+
+.heavy {
+  background: var(--bina);
+  color: var(--surface);
+}
+
+/* Ditetapkan: the student's status ends for good. */
+.set {
+  border: var(--line-width) solid var(--bina);
+  color: var(--bina);
+}
+
+/* The rules table keeps its columns and scrolls inside its own box on a phone. */
+.rules {
+  min-width: var(--wide-table-min-width);
+}
+
+.note {
+  margin: var(--space-md) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}

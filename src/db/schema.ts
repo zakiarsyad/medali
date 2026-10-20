@@ -136,6 +136,7 @@ import {
   PENALTY_DESCRIPTION_MAX_LENGTH,
   PENALTY_DESCRIPTION_MIN_LENGTH,
   PENALTY_STATUSES,
+  type PenaltyLevel,
   SOCIAL_WORK_FORMS,
   SOCIAL_WORK_PLACES,
 } from "@/features/guidance/penalty-ids";
@@ -4057,7 +4058,7 @@ export const disciplinePenalties = pgTable(
     description: text().notNull(),
     category: disciplinePenaltyCategory().notNull(),
     /** Jenjang: 1 for pertama to 3 for ketiga. */
-    level: smallint().notNull(),
+    level: smallint().$type<PenaltyLevel>().notNull(),
     status: disciplinePenaltyStatus().notNull(),
     /** Nomor keputusan; empty while none was written. */
     decisionNumber: text().notNull().default(""),
