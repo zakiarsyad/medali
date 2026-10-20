@@ -1,90 +1,55 @@
-import type { SQL } from "drizzle-orm";
-import { runningPeriodOn } from "@/academic-periods/running-period";
-import { readAcademicPeriods } from "@/academic-periods/stored-periods";
-import type { Database } from "@/db/connect";
-import {
-  type AttendanceScore,
-  scorePercent,
-} from "@/features/activities/attendance-score";
-import { readStudentScores } from "@/features/activities/read-student-scores";
-import { readBaseScore } from "@/features/curriculum/stored-base-score";
-import { readPeriodScores } from "@/features/mentoring/period-scores";
-import { type SikuTotals, sikuOf } from "@/features/siku/siku-score";
-import { readTotalsOf } from "@/features/siku/siku-totals";
-import { sikuNote } from "@/features/siku/siku-words";
-import { readConversion } from "@/features/skpm/skpm-conversion";
-import { readSkpmScores } from "@/features/skpm/skpm-scores";
 import { skpmPartOf } from "./character-grade";
-import type { AttendancePart, GradeInput } from "./grade-list";
-import { readGradeStudents } from "./grade-students";
+import type {
+  AttendancePart,
+  GradeInput,
+  GradeStudent,
+  SikuPart,
+} from "./grade-list";
 
-/*
- * The character grade is made of parts that each belong to their own
- * area, so this is the one file where it reads from them: each part is
- * read and worked out there by its own rule, and only put together here.
+/**
+ * Each part of the grades of some students, by the key of the student,
+ * as the area each part belongs to reads and works it out.
  */
-
-const NOTHING_COUNTED: AttendanceScore = { attended: 0, counted: 0 };
-
-const NO_ENTRY: SikuTotals = { gains: 0, losses: 0 };
-
-/** The students of "Daftar nilai karakter" and what Nilai dasar SIKU is. */
-export interface GradeInputs {
-  inputs: GradeInput[];
-  sikuBase: number;
-}
-
-function attendancePartOf(score: AttendanceScore): AttendancePart {
-  return { ...score, percent: scorePercent(score) };
-}
-
-function sikuPartOf(base: number, totals: SikuTotals): GradeInput["siku"] {
-  return {
-    score: sikuOf(base, totals),
-    adjusted: totals.gains > 0 || totals.losses > 0,
-    note: sikuNote(base, totals),
+export interface GradeParts {
+  /** A student with nothing counted yet may have no entry. */
+  attendance: ReadonlyMap<string, AttendancePart>;
+  /** The scores the Pengasuh gave this semester; none for a student without. */
+  mentoring: ReadonlyMap<string, number>;
+  /** Every student has an entry: SIKU is never missing. */
+  siku: ReadonlyMap<string, SikuPart>;
+  skpm: {
+    /** How many SKPM uploads count now. */
+    uploadsInForce: number;
+    /** Nilai SKPM; none for a student with no row in force. */
+    scores: ReadonlyMap<string, number>;
   };
 }
 
-function readMentoringScores(
-  db: Database,
-  studentIds: readonly string[],
-  periodId: string | null,
-): Promise<Map<string, number>> {
-  if (periodId === null) return Promise.resolve(new Map());
-  return readPeriodScores(db, studentIds, periodId);
+const NOTHING_COUNTED: AttendancePart = {
+  percent: null,
+  attended: 0,
+  counted: 0,
+};
+
+function sikuOf(parts: GradeParts, studentId: string): SikuPart {
+  const siku = parts.siku.get(studentId);
+  if (!siku) throw new Error("A student of the list has no SIKU.");
+  return siku;
 }
 
-/**
- * Every Aktif student `visible` lets through, by name, with the four parts
- * of their grade as they stand now, in the period that runs on `today`.
- * Each part is read once for all of them, never student by student.
- */
-export async function readGradeInputs(
-  db: Database,
-  visible: SQL,
-  today: string,
-): Promise<GradeInputs> {
-  const [people, periods, base, conversion] = await Promise.all([
-    readGradeStudents(db, visible),
-    readAcademicPeriods(db),
-    readBaseScore(db),
-    readConversion(db),
-  ]);
-  const running = runningPeriodOn(periods, today);
-  const ids = people.map((student) => student.id);
-  const [attendance, mentoring, siku, skpm] = await Promise.all([
-    readStudentScores(db, visible, today),
-    readMentoringScores(db, ids, running?.id ?? null),
-    readTotalsOf(db, ids),
-    readSkpmScores(db, ids, conversion.pointsForHundred),
-  ]);
-  const inputs = people.map((student) => ({
+/** The students, each with the four parts of their grade. */
+export function gradeInputsOf(
+  students: readonly GradeStudent[],
+  parts: GradeParts,
+): GradeInput[] {
+  return students.map((student) => ({
     student,
-    attendance: attendancePartOf(attendance.get(student.id) ?? NOTHING_COUNTED),
-    mentoring: mentoring.get(student.id) ?? null,
-    siku: sikuPartOf(base.score, siku.get(student.id) ?? NO_ENTRY),
-    skpm: skpmPartOf(skpm.scores.get(student.id), skpm.uploads),
+    attendance: parts.attendance.get(student.id) ?? NOTHING_COUNTED,
+    mentoring: parts.mentoring.get(student.id) ?? null,
+    siku: sikuOf(parts, student.id),
+    skpm: skpmPartOf(
+      parts.skpm.scores.get(student.id),
+      parts.skpm.uploadsInForce,
+    ),
   }));
-  return { inputs, sikuBase: base.score };
 }

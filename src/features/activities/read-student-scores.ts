@@ -4,7 +4,7 @@ import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
 import type { AttendanceScore } from "./attendance-score";
 import { groupScore } from "./mean-score";
-import { readCounted, readGroups } from "./read-mean-score";
+import { readCounted, readStudentStandings } from "./read-mean-score";
 
 /**
  * Nilai kehadiran kegiatan of each Aktif student `visible` lets through,
@@ -21,10 +21,15 @@ export async function readStudentScores(
   const running = runningPeriodOn(await readAcademicPeriods(db), today);
   if (running === null) return scores;
   const schedules = await readCounted(db, running.id);
-  const groups = await readGroups(db, visible, schedules, running.id);
-  for (const group of groups) {
-    const score = groupScore(group, schedules, running, today);
-    for (const id of group.studentIds) scores.set(id, score);
+  const standings = await readStudentStandings(
+    db,
+    visible,
+    schedules,
+    running.id,
+  );
+  for (const standing of standings) {
+    const score = groupScore(standing, schedules, running, today);
+    scores.set(standing.studentId, score);
   }
   return scores;
 }

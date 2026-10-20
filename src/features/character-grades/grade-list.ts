@@ -27,20 +27,23 @@ export interface AttendancePart {
   counted: number;
 }
 
+/** SIKU of a student as the grade list shows it. */
+export interface SikuPart {
+  /** SIKU akhir. */
+  score: number;
+  /** Whether an entry in force gained or lost the student points. */
+  adjusted: boolean;
+  /** Keterangan: Nilai dasar, or it with the gains and the losses. */
+  note: string;
+}
+
 /** A student with each part as it is recorded where it belongs. */
 export interface GradeInput {
   student: GradeStudent;
   attendance: AttendancePart;
   /** The score the Pengasuh gave this semester, or null for none. */
   mentoring: number | null;
-  siku: {
-    /** SIKU akhir. */
-    score: number;
-    /** Whether an entry in force gained or lost the student points. */
-    adjusted: boolean;
-    /** Keterangan: Nilai dasar, or it with the gains and the losses. */
-    note: string;
-  };
+  siku: SikuPart;
   /** Nilai SKPM, or null while no SKPM upload counts. */
   skpm: number | null;
 }
