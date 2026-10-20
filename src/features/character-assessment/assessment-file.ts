@@ -1,4 +1,8 @@
-import type { Scores } from "@/character-scores/assessment-score";
+import {
+  SCORE_MAX,
+  SCORE_MIN,
+  type Scores,
+} from "@/character-scores/assessment-score";
 import { shortLine } from "@/files/csv-file";
 import {
   type NumberedRow,
@@ -11,7 +15,6 @@ import {
   ASSESSMENT_FILE_COLUMNS,
   valueColumnPlace,
 } from "./assessment-file-columns";
-import { SCORE_MAX, SCORE_MIN } from "./assessment-ids";
 
 export const UNKNOWN_NIM = "NIM tidak ada dalam data mahasiswa.";
 export const NOT_ACTIVE = "Mahasiswa tidak aktif.";

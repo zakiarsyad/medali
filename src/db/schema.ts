@@ -21,11 +21,13 @@ import {
 } from "drizzle-orm/pg-core";
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
+import {
+  SCORE_MAX as ASSESSMENT_SCORE_MAX,
+  SCORE_MIN as ASSESSMENT_SCORE_MIN,
+} from "@/character-scores/assessment-score";
 import { DORM_IDS } from "@/dorms/dorms";
 import {
   NOTE_MAX_LENGTH as ASSESSMENT_NOTE_MAX_LENGTH,
-  SCORE_MAX as ASSESSMENT_SCORE_MAX,
-  SCORE_MIN as ASSESSMENT_SCORE_MIN,
   ASSESSMENT_SOURCES,
 } from "@/features/character-assessment/assessment-ids";
 import {

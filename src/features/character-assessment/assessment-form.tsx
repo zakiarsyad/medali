@@ -4,6 +4,8 @@ import { type ReactNode, useActionState, useState } from "react";
 import {
   levelOf,
   rerataOf,
+  SCORE_MAX,
+  SCORE_MIN,
   type Scores,
 } from "@/character-scores/assessment-score";
 import { Medal } from "@/character-scores/medal";
@@ -19,8 +21,6 @@ import { saveAssessmentAction } from "./assessment-actions";
 import {
   ASSESSMENT_SOURCES,
   NOTE_MAX_LENGTH,
-  SCORE_MAX,
-  SCORE_MIN,
   STARTING_SCORE,
 } from "./assessment-ids";
 import type { AssessmentPick } from "./assessment-picks";

@@ -3,6 +3,7 @@ import {
   activeSummary,
   averageRerata,
   lowestRerataFirst,
+  type MemberScores,
   scoreSummary,
 } from "./score-averages";
 
@@ -44,6 +45,10 @@ describe("averageRerata", () => {
   });
 });
 
+function allOf(score: number) {
+  return { M: score, E: score, D: score, A: score, L: score, I: score };
+}
+
 const LOW = { M: 60, E: 62, D: 64, A: 60, L: 62, I: 64 };
 const GOLD = { M: 90, E: 88, D: 86, A: 90, L: 88, I: 86 };
 const SILVER = { M: 80, E: 80, D: 80, A: 80, L: 80, I: 80 };
@@ -82,7 +87,7 @@ describe("scoreSummary", () => {
     });
   });
 
-  it("averages the assessment before of the members who have one", () => {
+  it("draws the assessment before as the average less the average change of the members who have one", () => {
     const summary = scoreSummary([
       { latest: GOLD, earlier: SILVER },
       { latest: SILVER, earlier: LOW },
@@ -90,13 +95,24 @@ describe("scoreSummary", () => {
     ]);
 
     expect(summary?.earlier).toEqual({
-      M: 70,
-      E: 71,
-      D: 72,
-      A: 70,
-      L: 71,
-      I: 72,
+      M: 61.7,
+      E: 63.7,
+      D: 65.7,
+      A: 61.7,
+      L: 63.7,
+      I: 65.7,
     });
+  });
+
+  it("shows no false gain when most members were assessed only once", () => {
+    const once: MemberScores = { latest: allOf(85), earlier: null };
+    const members = Array.from({ length: 10 }, () => once);
+    members.push({ latest: allOf(60), earlier: allOf(50) });
+
+    const summary = scoreSummary(members);
+
+    expect(summary?.values.M).toBe(82.7);
+    expect(summary?.earlier?.M).toBe(72.7);
   });
 
   it("gives no assessment before when no member has one", () => {

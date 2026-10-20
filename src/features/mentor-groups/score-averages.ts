@@ -48,7 +48,11 @@ export interface MemberScores {
 export interface ScoreSummary {
   /** The average of each value of the latest assessments, to one decimal. */
   values: Scores;
-  /** The same of the assessments before, of the members who have one. */
+  /**
+   * Where the members stood before, to one decimal: each average less the
+   * average change of the members who have an assessment before. Null
+   * when none has one.
+   */
   earlier: Scores | null;
   rerata: number;
   /** How many members hold each predikat. */
@@ -65,6 +69,35 @@ function averageValues(all: readonly Scores[]): Scores | null {
     values[key] = Math.round((sum * 10) / all.length) / 10;
   }
   return values;
+}
+
+function toOneDecimal(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+/**
+ * The shape before, taken from the same members as the shape of today:
+ * the change of those assessed before stands for the change of all, so a
+ * member assessed only once adds no false gain.
+ */
+function earlierShape(members: readonly MemberScores[]): Scores | null {
+  const changed: { latest: Scores; earlier: Scores }[] = [];
+  for (const { latest, earlier } of members) {
+    if (earlier !== null) changed.push({ latest, earlier });
+  }
+  if (changed.length === 0) return null;
+  const shape = { M: 0, E: 0, D: 0, A: 0, L: 0, I: 0 };
+  for (const { key } of MEDALI_VALUES) {
+    let latestSum = 0;
+    for (const { latest } of members) latestSum += latest[key];
+    let changeSum = 0;
+    for (const { latest, earlier } of changed) {
+      changeSum += latest[key] - earlier[key];
+    }
+    const average = latestSum / members.length;
+    shape[key] = toOneDecimal(average - changeSum / changed.length);
+  }
+  return shape;
 }
 
 function countPredicates(
@@ -91,13 +124,9 @@ export function scoreSummary(
   }));
   const rerata = averageRerata(totals);
   if (values === null || rerata === null) return null;
-  const earlier: Scores[] = [];
-  for (const member of members) {
-    if (member.earlier !== null) earlier.push(member.earlier);
-  }
   return {
     values,
-    earlier: averageValues(earlier),
+    earlier: earlierShape(members),
     rerata,
     predicates: countPredicates(members),
   };
