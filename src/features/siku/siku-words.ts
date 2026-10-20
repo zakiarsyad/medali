@@ -1,4 +1,5 @@
 import type { SikuKind, SikuReason } from "./siku-ids";
+import type { SikuTotals } from "./siku-score";
 
 /** Each kind of entry as the screens name it. */
 export const KIND_WORDS: Record<SikuKind, string> = {
@@ -55,4 +56,18 @@ export function shownMean(mean: number | null): string {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
+}
+
+/**
+ * Keterangan of a student's SIKU in a list of grades: "SIKU dasar 65" for
+ * one with no entry in force, otherwise Nilai dasar with the gains and the
+ * losses, such as "SIKU 65 +5 / −3".
+ */
+export function sikuNote(base: number, totals: SikuTotals): string {
+  const shownBase = base.toLocaleString("id-ID");
+  const changes: string[] = [];
+  if (totals.gains > 0) changes.push(signedPoints(totals.gains, "gain"));
+  if (totals.losses > 0) changes.push(signedPoints(totals.losses, "loss"));
+  if (changes.length === 0) return `SIKU dasar ${shownBase}`;
+  return `SIKU ${shownBase} ${changes.join(" / ")}`;
 }

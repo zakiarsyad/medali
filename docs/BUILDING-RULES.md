@@ -32,6 +32,9 @@ while building.
 - `src/character-scores/`: the scores of a character assessment, their
   Rerata and predikat, how a Rerata is shown, and each student's latest
   assessment, read by every area that shows character scores.
+- `src/character-grades/`: each student's semester character grade with
+  its four parts, read from the areas each part belongs to, for every
+  screen that shows the grade.
 - `src/health-notes/`: the categories of a fitness test and of a health
   note, the limits in force and each student's latest score and note,
   the final category, how a note is checked, written, kept and shown,

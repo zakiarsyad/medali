@@ -43,3 +43,12 @@ export function totalsByStudent(db: Database) {
     .groupBy(skpmRows.studentId)
     .as("skpm_totals");
 }
+
+/** How many uploads count now. */
+export async function countUploadsInForce(db: Database): Promise<number> {
+  const [counted] = await db
+    .select({ uploads: count() })
+    .from(skpmUploads)
+    .where(IN_FORCE);
+  return counted?.uploads ?? 0;
+}
