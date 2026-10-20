@@ -152,6 +152,17 @@ shown per person.
     send waits for the send, so an answer is never kept after the
     period stopped running. "Kirim survei" is off while a send is on
     its way.
+15. Responden counts the answers of the students who can answer now:
+    the Aktif members of the groups in force that the account counts,
+    so Ketua Program Studi sees their program's only. It reads "(answers)
+    dari (n) (share%)", the share rounded to a whole number, as in the
+    prototype. With no student to answer it reads "0 dari 0", without a
+    share. A student who answered and went on Cuti later is not counted.
+16. The cancel question counts every answer of the period. Without
+    answers it stays "Batalkan periode ini?", as in the prototype. The
+    answers of a cancelled period get no mark of their own: the cancel
+    mark of their period, with who and when, marks them as not used,
+    and every count of answers leaves them out.
 
 ## Steps
 
@@ -162,6 +173,6 @@ shown per person.
 - [x] 4. "Terkirim", "Ubah jawaban" and "Batal".
 - [x] 5. The closed-period, no-mentor and double-send cases, and the
   refused hand-made requests.
-- [ ] 6. "Batalkan periode" names the number of answers and marks them
+- [x] 6. "Batalkan periode" names the number of answers and marks them
   as not used; Responden counts the answers.
 - [ ] 7. Phone layout for the statements and buttons.

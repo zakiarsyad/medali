@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  CANCEL_QUESTION,
   CLOSE_QUESTION,
+  cancelQuestion,
   endChangedWords,
   openedSurveyWords,
   respondentWords,
@@ -19,8 +19,17 @@ describe("the questions before a period is closed or cancelled", () => {
     );
   });
 
-  it("asks about a cancel without a number of answers", () => {
-    expect(CANCEL_QUESTION).toBe("Batalkan periode ini?");
+  it("asks about a cancel without a number while no answer came in", () => {
+    expect(cancelQuestion(0)).toBe("Batalkan periode ini?");
+  });
+
+  it("names the answers that came in, which will not be used", () => {
+    expect(cancelQuestion(3)).toBe(
+      "Batalkan periode ini? 3 jawaban survei yang sudah masuk tidak akan dipakai.",
+    );
+    expect(cancelQuestion(1250)).toBe(
+      "Batalkan periode ini? 1.250 jawaban survei yang sudah masuk tidak akan dipakai.",
+    );
   });
 });
 
@@ -47,12 +56,18 @@ describe("surveyDaysWords", () => {
 });
 
 describe("respondentWords", () => {
-  it("shows how many of the students who can answer did", () => {
-    expect(respondentWords(0, 28)).toBe("0 dari 28");
+  it("shows how many of the students who can answer did, with the share rounded", () => {
+    expect(respondentWords(7, 28)).toBe("7 dari 28 (25%)");
+    expect(respondentWords(1, 3)).toBe("1 dari 3 (33%)");
+    expect(respondentWords(0, 28)).toBe("0 dari 28 (0%)");
+  });
+
+  it("shows no share when no student can answer", () => {
+    expect(respondentWords(0, 0)).toBe("0 dari 0");
   });
 
   it("writes a large number the Indonesian way", () => {
-    expect(respondentWords(0, 1250)).toBe("0 dari 1.250");
+    expect(respondentWords(1000, 1250)).toBe("1.000 dari 1.250 (80%)");
   });
 });
 

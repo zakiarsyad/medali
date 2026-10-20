@@ -10,7 +10,7 @@ import {
   closeSurveyPeriodAction,
 } from "./survey-actions";
 import { useSurveySaid } from "./survey-said";
-import { CANCEL_QUESTION, CLOSE_QUESTION } from "./survey-words";
+import { CLOSE_QUESTION, cancelQuestion } from "./survey-words";
 
 const START: FormState = { error: null, done: null };
 
@@ -26,11 +26,14 @@ export function SurveyControls({
   periodId,
   startsOn,
   endsOn,
+  answers,
 }: {
   periodId: string;
   /** The first day of the period, which its last day cannot come before. */
   startsOn: string;
   endsOn: string;
+  /** The answers that came in, which a cancel leaves unused. */
+  answers: number;
 }) {
   const { isSending, send, announce } = useSurveySaid();
   const [said, setSaid] = useState(START);
@@ -91,7 +94,9 @@ export function SurveyControls({
             type="button"
             className={shared.quiet}
             disabled={isSending}
-            onClick={() => end(cancelSurveyPeriodAction, CANCEL_QUESTION)}
+            onClick={() =>
+              end(cancelSurveyPeriodAction, cancelQuestion(answers))
+            }
           >
             Batalkan periode
           </button>

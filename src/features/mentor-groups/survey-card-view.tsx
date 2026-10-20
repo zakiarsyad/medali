@@ -16,9 +16,6 @@ const STATUS_STYLES: Record<SurveyStatus, string | undefined> = {
   closed: undefined,
 };
 
-/** No answer exists until students have the survey form on Profil saya. */
-const ANSWERED = 0;
-
 /**
  * "Periode evaluasi (periode)": the running survey period with its dates,
  * who opened it, its status, Responden, Bobot, and its note when it has
@@ -41,7 +38,7 @@ export function SurveyCard({ card }: { card: RunningSurveyCard }) {
       <dl className={styles.surveyFacts}>
         <div>
           <dt>Responden</dt>
-          <dd>{respondentWords(ANSWERED, card.respondentPool)}</dd>
+          <dd>{respondentWords(card.answered, card.respondentPool)}</dd>
         </div>
         <div>
           <dt>Bobot</dt>
