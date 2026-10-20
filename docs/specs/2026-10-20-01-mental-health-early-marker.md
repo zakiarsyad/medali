@@ -83,6 +83,39 @@ record on the Asrama page, so only five roles ever see it.
    consent rules of Counselling consent.
 3. The resident never sees their own mark.
 4. A mark is cleared only by a writer, by hand; it does not expire.
+5. "The four roles" are Kepala Unit, BAM - Kesehatan, Pengelola Asrama
+   and Pengasuh. Konselor gets no right yet; Dorm referrals for
+   Konselor adds it.
+6. A student has one mark row. "Tidak ada indikasi" keeps the row with
+   no category and no observation, so who cleared it and when stays
+   known. The marks and their log cannot be deleted; the log cannot be
+   changed.
+7. The log has a line per real change, with who, when, and the category
+   and observation before and after. A save that changes nothing, or a
+   second press, adds no line. Kepala Unit reads it through the server
+   only: the app has no change-log screen.
+8. "Pengamatan (rahasia)" holds at most 500 characters. It is closed
+   while "Tidak ada indikasi" is chosen, and any text sent with it is
+   dropped.
+9. A save with a changed mark and an empty note part saves only the
+   mark, with the message "Penanda potensi kesehatan mental (nama)
+   disimpan." A note is kept when the note part holds something and
+   differs from the latest note, or when the mark did not change. With
+   both, the note message is followed by "Penanda potensi kesehatan
+   mental juga disimpan."
+10. The mark changes only when the writer changed it in the form. A
+    form opened before another writer's change does not put the old
+    mark back when only a note is saved.
+11. A writer, or a reader, who is a student never sees their own mark:
+    not in the list, the numbers, the filter or the form, and may not
+    save a mark for themselves.
+12. The line under "Potensi kesehatan mental" names only who sees the
+    mark today, not Konselor, as the referral list is not built yet.
+13. For the four roles, a resident who has only a mark is listed and
+    counted in "Sakit atau punya riwayat penyakit" and in the category
+    numbers, as in the prototype. The filter choice "Potensi kesehatan
+    mental" sits in the "Riwayat penyakit" filter; the server ignores
+    it for every other role.
 
 ## Steps
 
