@@ -1,6 +1,7 @@
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
 import { OwnScheduleItem } from "./own-schedule-item";
+import { ScheduleNoticeMessage } from "./schedule-notice";
 import type { OwnScheduleView } from "./schedule-view";
 
 /** "Jadwal konseling saya": the student's active requests, the newest first. */
@@ -18,6 +19,7 @@ export function OwnScheduleList({
         <h2 className={shared.heading}>Jadwal konseling saya</h2>
         <span className={styles.sub}>{schedules.length} aktif</span>
       </div>
+      <ScheduleNoticeMessage />
       {schedules.length === 0 ? (
         <p className={shared.empty}>Belum ada jadwal konseling.</p>
       ) : (

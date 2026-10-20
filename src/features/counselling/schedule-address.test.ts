@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   FILTER_ORDER,
   FILTER_WORDS,
+  HISTORY_PAGE_SIZE,
+  moreHistoryAddress,
+  readHistoryShown,
   readScheduleListParams,
   scheduleListAddress,
   statusesOf,
@@ -47,23 +50,44 @@ describe("scheduleListAddress", () => {
 });
 
 describe("the Status filter", () => {
-  it("offers Perlu ditindaklanjuti first, then Semua yang aktif, Dijadwalkan and Semua", () => {
+  it("offers Perlu ditindaklanjuti first, then Semua yang aktif, Dijadwalkan, Selesai, Tidak hadir, Dibatalkan and Semua", () => {
     expect(FILTER_ORDER.map((filter) => FILTER_WORDS[filter])).toEqual([
       "Perlu ditindaklanjuti",
       "Semua yang aktif",
       "Dijadwalkan",
+      "Selesai",
+      "Tidak hadir",
+      "Dibatalkan",
       "Semua",
     ]);
   });
 
-  it("narrows Perlu ditindaklanjuti to Diajukan, Dijadwalkan to itself, and the others to the active statuses", () => {
+  it("narrows Perlu ditindaklanjuti to Diajukan, each status choice to itself, and Semua yang aktif to the active statuses", () => {
     expect(statusesOf("needs_action")).toEqual(["submitted"]);
     expect(statusesOf("scheduled")).toEqual(["scheduled"]);
+    expect(statusesOf("done")).toEqual(["done"]);
+    expect(statusesOf("missed")).toEqual(["missed"]);
+    expect(statusesOf("cancelled")).toEqual(["cancelled"]);
     expect(statusesOf("active")).toEqual([
       "submitted",
       "proposed",
       "scheduled",
     ]);
     expect(statusesOf("all")).toBeNull();
+  });
+});
+
+describe("Riwayat in the address", () => {
+  it("shows the first 10 when the address asks nothing, or something it does not understand", () => {
+    expect(readHistoryShown({})).toBe(HISTORY_PAGE_SIZE);
+    expect(readHistoryShown({ riwayat: "0" })).toBe(HISTORY_PAGE_SIZE);
+    expect(readHistoryShown({ riwayat: "x" })).toBe(HISTORY_PAGE_SIZE);
+  });
+
+  it("shows 10 more for each step asked, and names the next step", () => {
+    expect(HISTORY_PAGE_SIZE).toBe(10);
+    expect(readHistoryShown({ riwayat: "3" })).toBe(30);
+    expect(moreHistoryAddress(10)).toBe("/konseling?riwayat=2");
+    expect(moreHistoryAddress(20)).toBe("/konseling?riwayat=3");
   });
 });

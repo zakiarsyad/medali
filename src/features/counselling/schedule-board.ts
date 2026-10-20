@@ -1,5 +1,5 @@
-import { and, asc, count, eq, inArray, type SQL, sql } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { and, asc, count, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { type AnyPgColumn, alias } from "drizzle-orm/pg-core";
 import { campusDay } from "@/academic-periods/campus-day";
 import { daysAfter } from "@/academic-periods/days-after";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
@@ -20,6 +20,7 @@ import {
   type ScheduleListParams,
   statusesOf,
 } from "./schedule-address";
+import { ACTIVE_STATUSES } from "./schedule-ids";
 import type {
   CounsellorScheduleCard,
   ScheduleBoard,
@@ -34,9 +35,20 @@ const OF_STUDENT = eq(students.id, counsellingSchedules.studentId);
 
 const NONE: ScheduleCounts = { submitted: 0, scheduledSoon: 0, proposed: 0 };
 
-/** Diajukan first, then Usulan jadwal lain, then Dijadwalkan. */
+/**
+ * Diajukan first, then Usulan jadwal lain, then Dijadwalkan, then the
+ * ones that are over: Selesai, Tidak hadir and Dibatalkan together.
+ */
 const STATUS_ORDER = sql`case ${counsellingSchedules.status}
-  when 'submitted' then 0 when 'proposed' then 1 else 2 end`;
+  when 'submitted' then 0 when 'proposed' then 1 when 'scheduled' then 2
+  else 3 end`;
+
+const IS_ACTIVE = inArray(counsellingSchedules.status, [...ACTIVE_STATUSES]);
+
+/** A column of an active request, and nothing for one that is over. */
+function whileActive(column: SQL | AnyPgColumn): SQL {
+  return sql`case when ${IS_ACTIVE} then ${column} end`;
+}
 
 /** The students whose requests Konselor sees: every one that is not removed. */
 function visible(actor: AccountForAccess): SQL {
@@ -173,8 +185,9 @@ export async function readScheduleCard(
 /**
  * "Jadwal konseling" of Konselor: the numbers above the cards, and one
  * page of the cards that match the Status filter, Diajukan first and
- * then by the time each is about. Every request of a student who is not
- * removed. A fixed number of reads, however many requests there are.
+ * then by the time each is about, and those over after them, the latest
+ * first. Every request of a student who is not removed. A fixed number
+ * of reads, however many requests there are.
  * Nothing for an account without the right.
  */
 export async function readScheduleBoard(
@@ -199,8 +212,11 @@ export async function readScheduleBoard(
     .where(condition)
     .orderBy(
       STATUS_ORDER,
-      asc(counsellingSchedules.day),
-      asc(counsellingSchedules.hour),
+      asc(whileActive(counsellingSchedules.day)),
+      asc(whileActive(counsellingSchedules.hour)),
+      // Those over have no time above, so the latest of them comes first.
+      desc(counsellingSchedules.day),
+      desc(counsellingSchedules.hour),
       asc(counsellingSchedules.id),
     )
     .limit(SCHEDULES_PAGE_SIZE)

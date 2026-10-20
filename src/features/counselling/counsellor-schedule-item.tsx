@@ -1,20 +1,23 @@
 "use client";
 
-import { type FormEvent, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import styles from "./counselling.module.css";
 import { CounsellorScheduleCardView } from "./counsellor-schedule-card";
 import type { CounsellorMoveOutcome } from "./move-schedule";
 import {
   approveScheduleAction,
+  markScheduleDoneAction,
+  markScheduleMissedAction,
   proposeScheduleAction,
+  rescheduleScheduleAction,
 } from "./schedule-actions";
-import { COUNSELLING_HOURS, COUNSELLING_WAYS, NOTE_MAX } from "./schedule-ids";
-import { ChoiceOptions } from "./schedule-options";
+import { useScheduleNotice } from "./schedule-notice";
+import type { SentProposal } from "./schedule-rules";
+import { ScheduleTimeForm } from "./schedule-time-form";
 import type { CounsellorScheduleCard } from "./schedule-view";
-import { COUNSELLING_WAY_WORDS } from "./schedule-words";
+import { DONE_QUESTION, MISSED_QUESTION } from "./schedule-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -23,81 +26,43 @@ function messageOf(outcome: CounsellorMoveOutcome): FormState {
   return { error: outcome.error, done: null };
 }
 
-/** "Usulkan waktu lain": Tanggal, Jam, Cara and "Pesan untuk mahasiswa". */
-function ProposeForm({
-  card,
-  pending,
-  onSend,
-  onCancel,
-}: {
-  card: CounsellorScheduleCard;
-  pending: boolean;
-  onSend: (form: FormData) => void;
-  onCancel: () => void;
-}) {
-  function send(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    onSend(new FormData(event.currentTarget));
-  }
-
-  // noValidate: a wrong day gets the app's own message.
-  return (
-    <form onSubmit={send} className={shared.form} noValidate>
-      <label className={shared.field}>
-        Tanggal
-        <input
-          name="day"
-          type="date"
-          className={shared.input}
-          defaultValue={card.day}
-        />
-      </label>
-      <label className={shared.field}>
-        Jam
-        <select name="hour" className={shared.input} defaultValue={card.hour}>
-          <ChoiceOptions choices={COUNSELLING_HOURS} />
-        </select>
-      </label>
-      <label className={`${shared.field} ${styles.full}`}>
-        Cara
-        <select name="way" className={shared.input} defaultValue={card.way}>
-          <ChoiceOptions
-            choices={COUNSELLING_WAYS}
-            words={COUNSELLING_WAY_WORDS}
-          />
-        </select>
-      </label>
-      <label className={`${shared.field} ${styles.full}`}>
-        Pesan untuk mahasiswa
-        <input
-          name="message"
-          className={shared.input}
-          placeholder="Opsional"
-          maxLength={NOTE_MAX}
-        />
-      </label>
-      <div className={`${shared.actions} ${styles.full}`}>
-        <button type="submit" className={shared.button} disabled={pending}>
-          Kirim usulan ke mahasiswa
-        </button>
-        <button
-          type="button"
-          className={shared.quiet}
-          disabled={pending}
-          onClick={onCancel}
-        >
-          Batal
-        </button>
-      </div>
-    </form>
-  );
+function proposalOf(form: FormData): SentProposal {
+  return {
+    day: text(form, "day"),
+    hour: text(form, "hour"),
+    way: text(form, "way"),
+    message: text(form, "message"),
+  };
 }
+
+/** Which time form a card shows: none, "Usulkan waktu lain" or "Ubah jadwal". */
+type OpenForm = "propose" | "reschedule" | null;
+
+/**
+ * What each time form sends with, what its send button says, and whether
+ * the page is drawn again after it.
+ */
+const TIME_FORMS = {
+  propose: {
+    send: proposeScheduleAction,
+    words: "Kirim usulan ke mahasiswa",
+    redraws: false,
+  },
+  reschedule: {
+    send: rescheduleScheduleAction,
+    words: "Simpan jadwal",
+    redraws: true,
+  },
+};
 
 /**
  * One request on Konselor's "Jadwal konseling", with "Setujui waktu ini"
- * and "Usulkan waktu lain" while it is Diajukan. After a press the card
- * shows the request as the server gave it back, also when the press was
- * refused because someone changed it first.
+ * and "Usulkan waktu lain" while it is Diajukan, and "Tandai selesai",
+ * "Tidak hadir" and "Ubah jadwal" once it is Dijadwalkan. Marking asks
+ * first. After a press the card shows the request as the server gave it
+ * back, also when the press was refused because someone changed it
+ * first. A move or a mark draws the page again, which may take the card
+ * away, so what it did is said above the cards.
  */
 export function CounsellorScheduleItem({
   card: first,
@@ -106,44 +71,57 @@ export function CounsellorScheduleItem({
 }) {
   const [card, setCard] = useState(first);
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
-  const [isProposing, setProposing] = useState(false);
+  const [openForm, setOpenForm] = useState<OpenForm>(null);
   const [pending, startSending] = useTransition();
+  const announce = useScheduleNotice();
 
-  function answered(outcome: CounsellorMoveOutcome) {
-    setMessage(messageOf(outcome));
+  function answered(outcome: CounsellorMoveOutcome, redraws: boolean) {
+    const said = messageOf(outcome);
+    const isKeptAway = redraws && outcome.kind !== "refused";
+    setMessage(isKeptAway ? NO_MESSAGE : said);
+    if (isKeptAway) announce(said);
     if (outcome.kind === "refused") return;
     if (outcome.card) setCard(outcome.card);
-    setProposing(false);
+    setOpenForm(null);
   }
 
-  function approve() {
+  function press(
+    action: (id: string, version: string) => Promise<CounsellorMoveOutcome>,
+    redraws: boolean,
+    question?: string,
+  ) {
+    if (question && !window.confirm(question)) return;
+    announce(null);
     startSending(async () => {
-      answered(await approveScheduleAction(card.id, card.version));
+      answered(await action(card.id, card.version), redraws);
     });
   }
 
-  function propose(form: FormData) {
+  function sendTime(form: FormData) {
+    if (openForm === null) return;
+    const { send, redraws } = TIME_FORMS[openForm];
+    announce(null);
     startSending(async () => {
-      const outcome = await proposeScheduleAction(card.id, card.version, {
-        day: text(form, "day"),
-        hour: text(form, "hour"),
-        way: text(form, "way"),
-        message: text(form, "message"),
-      });
-      answered(outcome);
+      answered(await send(card.id, card.version, proposalOf(form)), redraws);
     });
+  }
+
+  function open(form: OpenForm) {
+    setMessage(NO_MESSAGE);
+    setOpenForm(form);
   }
 
   const waits = card.status === "submitted";
+  const isScheduled = card.status === "scheduled";
   return (
     <CounsellorScheduleCardView card={card}>
-      {waits && !isProposing && (
+      {waits && openForm === null && (
         <div className={shared.actions}>
           <button
             type="button"
             className={shared.button}
             disabled={pending}
-            onClick={approve}
+            onClick={() => press(approveScheduleAction, false)}
           >
             Setujui waktu ini
           </button>
@@ -151,21 +129,49 @@ export function CounsellorScheduleItem({
             type="button"
             className={shared.quiet}
             disabled={pending}
-            onClick={() => {
-              setMessage(NO_MESSAGE);
-              setProposing(true);
-            }}
+            onClick={() => open("propose")}
           >
             Usulkan waktu lain
           </button>
         </div>
       )}
-      {waits && isProposing && (
-        <ProposeForm
+      {isScheduled && openForm === null && (
+        <div className={shared.actions}>
+          <button
+            type="button"
+            className={shared.button}
+            disabled={pending}
+            onClick={() => press(markScheduleDoneAction, true, DONE_QUESTION)}
+          >
+            Tandai selesai
+          </button>
+          <button
+            type="button"
+            className={shared.quiet}
+            disabled={pending}
+            onClick={() =>
+              press(markScheduleMissedAction, true, MISSED_QUESTION)
+            }
+          >
+            Tidak hadir
+          </button>
+          <button
+            type="button"
+            className={shared.link}
+            disabled={pending}
+            onClick={() => open("reschedule")}
+          >
+            Ubah jadwal
+          </button>
+        </div>
+      )}
+      {openForm !== null && (waits || isScheduled) && (
+        <ScheduleTimeForm
           card={card}
+          sendWords={TIME_FORMS[openForm].words}
           pending={pending}
-          onSend={propose}
-          onCancel={() => setProposing(false)}
+          onSend={sendTime}
+          onCancel={() => setOpenForm(null)}
         />
       )}
       <FormMessage state={message} />

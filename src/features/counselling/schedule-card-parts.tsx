@@ -4,11 +4,17 @@ import styles from "./counselling.module.css";
 import type { ScheduleStatus } from "./schedule-ids";
 import { SCHEDULE_STATUS_WORDS } from "./schedule-words";
 
-/** The colours of the prototype: waits for Konselor, waits for the student, agreed. */
+/**
+ * The colours of the prototype: waits for Konselor, waits for the
+ * student, agreed, and finished, missed or cancelled.
+ */
 const STATUS_STYLES: Record<ScheduleStatus, string | undefined> = {
   submitted: styles.warn,
   proposed: styles.plain,
   scheduled: styles.ok,
+  done: styles.plain,
+  missed: styles.bad,
+  cancelled: styles.plain,
 };
 
 export function ScheduleBadge({ status }: { status: ScheduleStatus }) {

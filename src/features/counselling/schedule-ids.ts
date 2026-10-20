@@ -9,17 +9,34 @@ export const SCHEDULE_KINDS = ["voluntary"] as const;
 
 export type ScheduleKind = (typeof SCHEDULE_KINDS)[number];
 
-/** Diajukan, Usulan jadwal lain and Dijadwalkan. */
+/**
+ * Diajukan, Usulan jadwal lain, Dijadwalkan, Selesai, Tidak hadir and
+ * Dibatalkan.
+ */
 export const SCHEDULE_STATUSES = [
   "submitted",
   "proposed",
   "scheduled",
+  "done",
+  "missed",
+  "cancelled",
 ] as const;
 
 export type ScheduleStatus = (typeof SCHEDULE_STATUSES)[number];
 
 /** The statuses of a request that is still active. */
-export const ACTIVE_STATUSES: readonly ScheduleStatus[] = SCHEDULE_STATUSES;
+export const ACTIVE_STATUSES: readonly ScheduleStatus[] = [
+  "submitted",
+  "proposed",
+  "scheduled",
+];
+
+/** The statuses of a request that is over: the student's "Riwayat". */
+export const FINISHED_STATUSES: readonly ScheduleStatus[] = [
+  "done",
+  "missed",
+  "cancelled",
+];
 
 export const COUNSELLING_TOPICS = [
   "academic",
@@ -50,6 +67,10 @@ export const SCHEDULE_STEPS = [
   "propose",
   "accept",
   "ask_another",
+  "cancel",
+  "reschedule",
+  "mark_done",
+  "mark_missed",
 ] as const;
 
 export type ScheduleStep = (typeof SCHEDULE_STEPS)[number];

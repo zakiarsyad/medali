@@ -9,6 +9,7 @@ import {
   scheduleListAddress,
 } from "./schedule-address";
 import { ScheduleFilterRow } from "./schedule-filter";
+import { ScheduleNotice, ScheduleNoticeMessage } from "./schedule-notice";
 import type { ScheduleBoard } from "./schedule-view";
 
 /**
@@ -44,26 +45,33 @@ export function SchedulePanel({
         />
       </NumberCards>
       <ScheduleFilterRow filter={filter} />
-      {cards.length === 0 ? (
-        <p className={shared.empty}>Tidak ada konseling pada filter ini.</p>
-      ) : (
-        <ul className={styles.cards}>
-          {cards.map((card) => (
-            <CounsellorScheduleItem key={card.id + card.version} card={card} />
-          ))}
-        </ul>
-      )}
-      {board.matching > 0 && (
-        <ListPager
-          page={board.page}
-          matching={board.matching}
-          pageSize={SCHEDULES_PAGE_SIZE}
-          noun="permintaan"
-          keepsPlace
-          stepsOnOnePage={false}
-          addressOf={(page) => scheduleListAddress(filter, page)}
-        />
-      )}
+      {/* A new filter or page starts with no message. */}
+      <ScheduleNotice clearOn={scheduleListAddress(filter, board.page)}>
+        <ScheduleNoticeMessage />
+        {cards.length === 0 ? (
+          <p className={shared.empty}>Tidak ada konseling pada filter ini.</p>
+        ) : (
+          <ul className={styles.cards}>
+            {cards.map((card) => (
+              <CounsellorScheduleItem
+                key={card.id + card.version}
+                card={card}
+              />
+            ))}
+          </ul>
+        )}
+        {board.matching > 0 && (
+          <ListPager
+            page={board.page}
+            matching={board.matching}
+            pageSize={SCHEDULES_PAGE_SIZE}
+            noun="permintaan"
+            keepsPlace
+            stepsOnOnePage={false}
+            addressOf={(page) => scheduleListAddress(filter, page)}
+          />
+        )}
+      </ScheduleNotice>
     </section>
   );
 }
