@@ -113,7 +113,7 @@ Everyone allowed sees the list of penalties and the rules table.
 
 - [x] 1. The table for discipline penalties is added, with the fixed
   rules for the nine Jenjang and sample penalties.
-- [ ] 2. The right to record a penalty is added to the permission list,
+- [x] 2. The right to record a penalty is added to the permission list,
   with its checks.
 - [ ] 3. The numbers, the list with search and filters, and the rules
   table, read only and limited to each role's rows.
