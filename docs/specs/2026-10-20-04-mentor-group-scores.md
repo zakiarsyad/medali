@@ -78,4 +78,4 @@ each member. Staff then see at a glance how a group is doing.
 - [x] 2. "Rerata MEDALI" on the group list and "Rerata" on the mentor
   list.
 - [x] 3. The medal chart and the member columns on the group page.
-- [ ] 4. The medal chart and the member columns on the mentor page.
+- [x] 4. The medal chart and the member columns on the mentor page.

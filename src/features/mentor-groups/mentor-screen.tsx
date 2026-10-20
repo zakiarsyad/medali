@@ -11,11 +11,14 @@ import { PageHead } from "@/ui/page-head";
 import { listMentorEvaluations } from "./evaluation-rows";
 import { EvaluationTable } from "./evaluation-table";
 import { GroupMembersTable } from "./group-members-table";
+import { readMemberScores } from "./member-scores";
 import { MentorAssignmentsPanel } from "./mentor-assignments-panel";
 import { readMentor } from "./mentor-detail";
 import styles from "./mentor-groups.module.css";
 import { MENTOR_LIST_ADDRESS } from "./mentor-list-address";
 import { mentorLede } from "./mentor-words";
+import { activeSummary } from "./score-averages";
+import { ScoresPanel } from "./scores-panel";
 
 /**
  * The page of one mentor. An address that names no mentor gets the app's
@@ -53,10 +56,16 @@ export async function MentorScreen({
   if (answer.kind === "refused") forbidden();
   const { mentor } = answer;
   // Read once the mentor is found: their id is then known to be one.
-  const evaluations =
+  const [evaluations, scores] = await Promise.all([
     evaluationLimit === null
       ? null
-      : await listMentorEvaluations(db, evaluationLimit, mentor.id);
+      : listMentorEvaluations(db, evaluationLimit, mentor.id),
+    readMemberScores(
+      db,
+      mentor.members.map((member) => member.id),
+    ),
+  ]);
+  const hasMentees = mentor.members.length > 0;
   return (
     <>
       <p className={styles.back}>
@@ -70,7 +79,16 @@ export async function MentorScreen({
           {MENTOR_STATUS_TITLES[mentor.status]}
         </span>
       </PageHead>
-      <MentorAssignmentsPanel assignments={mentor.assignments} />
+      <div className={styles.sideBySide}>
+        <MentorAssignmentsPanel assignments={mentor.assignments} />
+        {hasMentees && (
+          <ScoresPanel
+            title="Rerata binaan"
+            summary={activeSummary(mentor.members, scores)}
+            withBar={false}
+          />
+        )}
+      </div>
       {evaluations && (
         <section className={shared.panel}>
           <h2 className={shared.heading}>Evaluasi</h2>
@@ -79,15 +97,16 @@ export async function MentorScreen({
       )}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Mahasiswa binaan</h2>
-        {mentor.members.length === 0 ? (
-          <p className={shared.empty}>Tidak ada mahasiswa binaan saat ini.</p>
-        ) : (
+        {hasMentees ? (
           <GroupMembersTable
             members={mentor.members}
             period={period}
+            scores={scores}
             detailAddressOf={studentAddressOf}
             groupOf={(member) => groupCode(member.group)}
           />
+        ) : (
+          <p className={shared.empty}>Tidak ada mahasiswa binaan saat ini.</p>
         )}
       </section>
     </>

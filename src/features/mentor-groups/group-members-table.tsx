@@ -46,11 +46,8 @@ export function GroupMembersTable<Member extends GroupMember>({
   members: Member[];
   /** The academic period that runs now, which says each member's semester. */
   period: AcademicPeriod | null;
-  /**
-   * The assessments of the members who have one, by the id of each.
-   * Without it the list has no columns of scores.
-   */
-  scores?: Map<string, MemberScores>;
+  /** The assessments of the members who have one, by the id of each. */
+  scores: Map<string, MemberScores>;
   /**
    * The address that opens the detail of a member, or null for an account
    * that may not open any: its rows are then no links. Neither is the row
@@ -64,7 +61,7 @@ export function GroupMembersTable<Member extends GroupMember>({
    */
   groupOf?: (member: Member) => string;
 }) {
-  const latestOf = (member: Member) => scores?.get(member.id)?.latest ?? null;
+  const latestOf = (member: Member) => scores.get(member.id)?.latest ?? null;
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -74,7 +71,7 @@ export function GroupMembersTable<Member extends GroupMember>({
             {groupOf && <th>Kelompok</th>}
             <th>Kelas akademik</th>
             <th>Semester</th>
-            {scores && <ScoreHeads />}
+            <ScoreHeads />
           </tr>
         </thead>
         <tbody>
@@ -96,7 +93,7 @@ export function GroupMembersTable<Member extends GroupMember>({
                 <td data-title="Semester">
                   {memberSemester(member, period) ?? "-"}
                 </td>
-                {scores && <ScoreCells scores={latestOf(member)} />}
+                <ScoreCells scores={latestOf(member)} />
               </MemberRow>
             );
           })}
