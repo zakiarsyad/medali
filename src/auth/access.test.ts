@@ -995,6 +995,85 @@ describe("may", () => {
     }
   });
 
+  const markReaders: RoleId[] = [
+    ...dormHealthWriters,
+    "dorm_manager",
+    "mentor",
+  ];
+
+  it("lets Kepala Unit and BAM - Kesehatan alone set a mental health mark, on Asrama > Kesehatan", () => {
+    expect(ACTION_TITLES.write_mental_health_marks).toBe(
+      "Mengisi penanda potensi kesehatan mental penghuni asrama",
+    );
+    for (const role of dormHealthWriters) {
+      expect(may([role], "write_mental_health_marks")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "health")).toBe(true);
+    }
+    const others = ROLE_IDS.filter((role) => !dormHealthWriters.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "dorm_manager",
+        "mentor",
+        "bam_bphk",
+        "director",
+        "head_of_program",
+        "counsellor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "write_mental_health_marks")).toBe(false);
+    }
+  });
+
+  it("lets the writers, Pengelola Asrama and Pengasuh read mental health marks, on Asrama > Kesehatan", () => {
+    expect(ACTION_TITLES.view_mental_health_marks).toBe(
+      "Melihat penanda potensi kesehatan mental penghuni asrama",
+    );
+    for (const role of markReaders) {
+      expect(may([role], "view_mental_health_marks")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "health")).toBe(true);
+    }
+  });
+
+  it("refuses mental health marks to every other role, BAM - BPHK, Direktur, Ketua Program Studi and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !markReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_bphk",
+        "director",
+        "head_of_program",
+        "student",
+        "bam_compliance",
+        "bam_household",
+        "bam_spiritual",
+        "bam_catering",
+        "bam_arts_sports",
+        "counsellor",
+        "assessor",
+        "upk_staff",
+        "discipline_officer",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_mental_health_marks")).toBe(false);
+    }
+  });
+
+  it("lets Kepala Unit alone read the log of mental health marks", () => {
+    expect(ACTION_TITLES.view_mental_health_mark_log).toBe(
+      "Melihat riwayat perubahan penanda potensi kesehatan mental",
+    );
+    expect(may(["head_of_unit"], "view_mental_health_mark_log")).toBe(true);
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining(["bam_health", "dorm_manager", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_mental_health_mark_log")).toBe(false);
+    }
+  });
+
   it("opens Asesmen karakter to Direktur, Ketua Program Studi and Pengasuh to read, and not to Mahasiswa", () => {
     for (const role of ["director", "head_of_program", "mentor"] as const) {
       expect(mayOpenTab([role], "assessment", "character_test")).toBe(true);
@@ -2668,6 +2747,30 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       rowLimitForAction(
         account(["mentor", "head_of_program"], 7),
         "view_dorm_health_notes",
+      ),
+    ).toEqual(OWN_MENTEES);
+  });
+
+  it("lets each reader of mental health marks read only its own students, Pengasuh their own mentees", () => {
+    for (const role of [
+      "head_of_unit",
+      "bam_health",
+      "dorm_manager",
+    ] as const) {
+      expect(
+        rowLimitForAction(account([role]), "view_mental_health_marks"),
+      ).toEqual(EVERY_ROW);
+    }
+    expect(
+      rowLimitForAction(account(["mentor"]), "view_mental_health_marks"),
+    ).toEqual(OWN_MENTEES);
+  });
+
+  it("keeps Pengasuh who is also BAM - BPHK to their own mentees' mental health marks", () => {
+    expect(
+      rowLimitForAction(
+        account(["mentor", "bam_bphk"]),
+        "view_mental_health_marks",
       ),
     ).toEqual(OWN_MENTEES);
   });

@@ -83,6 +83,9 @@ export const ACTIONS = [
   "write_dorm_health_notes",
   "view_dorm_health_notes",
   "view_dorm_health_numbers",
+  "write_mental_health_marks",
+  "view_mental_health_marks",
+  "view_mental_health_mark_log",
   "view_discipline_records",
   "manage_counselling_consent",
   "answer_own_counselling_consent",
@@ -192,6 +195,12 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Melihat daftar mahasiswa asrama yang sakit, dengan riwayat penyakit dan catatannya",
   view_dorm_health_numbers:
     "Melihat angka kesehatan penghuni asrama, tanpa nama, riwayat penyakit, dan catatan",
+  write_mental_health_marks:
+    "Mengisi penanda potensi kesehatan mental penghuni asrama",
+  view_mental_health_marks:
+    "Melihat penanda potensi kesehatan mental penghuni asrama",
+  view_mental_health_mark_log:
+    "Melihat riwayat perubahan penanda potensi kesehatan mental",
   view_discipline_records: "Melihat catatan disiplin mahasiswa",
   manage_counselling_consent:
     "Persetujuan konseling: melihat status, mengirim permintaan, dan mencatat form tertulis",
@@ -351,6 +360,9 @@ export const ROLES: Record<RoleId, Role> = {
       "view_health_recap",
       "write_dorm_health_notes",
       "view_dorm_health_notes",
+      "write_mental_health_marks",
+      "view_mental_health_marks",
+      "view_mental_health_mark_log",
       "view_discipline_records",
     ],
     rows: "all",
@@ -443,6 +455,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_siku",
       "view_health_notes",
       "view_dorm_health_notes",
+      "view_mental_health_marks",
       "view_discipline_records",
     ],
     rows: "own_mentees",
@@ -506,6 +519,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_dashboard",
       "view_dorm_dashboard_names",
       "view_dorm_health_notes",
+      "view_mental_health_marks",
     ],
     rows: "all",
   },
@@ -594,6 +608,8 @@ export const ROLES: Record<RoleId, Role> = {
       ...BAM_VIOLATION_ACTIONS,
       "write_dorm_health_notes",
       "view_dorm_health_notes",
+      "write_mental_health_marks",
+      "view_mental_health_marks",
     ],
     rows: "all",
   },

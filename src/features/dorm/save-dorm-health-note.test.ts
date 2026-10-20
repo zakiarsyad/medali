@@ -103,7 +103,11 @@ describe("saveDormHealthNote", () => {
 
       expect(saved).toEqual({
         ok: true,
-        value: { name: "Ani Catatan Asrama", category: "attention" },
+        value: {
+          name: "Ani Catatan Asrama",
+          category: "attention",
+          markSaved: false,
+        },
       });
       const [kept] = await keptNotes(db);
       expect(kept).toMatchObject({

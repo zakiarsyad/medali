@@ -8,15 +8,18 @@ import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
-import { savedNoteMessage } from "@/health-notes/health-words";
-import type { HealthPick, HealthSubject } from "@/health-notes/note-subject";
+import type { HealthPick } from "@/health-notes/note-subject";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { DORM_HEALTH_ADDRESS } from "./dorm-health-address";
 import {
+  type DormHealthSubject,
   readDormHealthSubject,
   searchDormHealthStudents,
 } from "./dorm-health-subject";
+import { savedDormHealthMessage } from "./dorm-health-words";
+import type { SentMark } from "./mental-health-mark-input";
+import { isOwnStudent, readMarkOf } from "./mental-health-marks";
 import { saveDormHealthNote } from "./save-dorm-health-note";
 
 /**
@@ -38,17 +41,46 @@ export async function searchDormHealthStudentsAction(
   return searchDormHealthStudents(database(), actor, query, campusDay());
 }
 
-/** The resident picked: their test category and every note, or null when not theirs to write. */
+/**
+ * The resident picked: their test category, every note and their
+ * current mark, none for the account's own student, or null when not
+ * theirs to write.
+ */
 export async function dormHealthSubjectAction(
   studentId: string,
-): Promise<HealthSubject | null> {
+): Promise<DormHealthSubject | null> {
   const actor = await dormNoteWriter();
   const db = database();
   const { limits } = await readFitnessLimits(db);
-  return readDormHealthSubject(db, actor, studentId, limits, campusDay());
+  const day = campusDay();
+  const subject = await readDormHealthSubject(
+    db,
+    actor,
+    studentId,
+    limits,
+    day,
+  );
+  if (subject === null) return null;
+  const markable = !isOwnStudent(actor, studentId);
+  const mark = markable ? await readMarkOf(db, actor, studentId) : null;
+  return { ...subject, mark, markable };
 }
 
-/** "Simpan catatan". Who saved the note is the signed-in account, never a field. */
+/** "Potensi kesehatan mental" as sent, or null when the form had none. */
+function sentMark(form: FormData): SentMark | null {
+  if (!form.has("markCategory")) return null;
+  return {
+    category: text(form, "markCategory"),
+    observation: text(form, "markObservation"),
+    filledCategory: text(form, "markFilledCategory"),
+    filledObservation: text(form, "markFilledObservation"),
+  };
+}
+
+/**
+ * "Simpan catatan", with "Potensi kesehatan mental" when the form has
+ * it. Who saved is the signed-in account, never a field.
+ */
 export async function saveDormHealthNoteAction(
   _before: FormState,
   form: FormData,
@@ -72,11 +104,10 @@ export async function saveDormHealthNoteAction(
       category: text(form, "category"),
     },
     limits,
+    new Date(),
+    sentMark(form),
   );
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(DORM_HEALTH_ADDRESS);
-  return {
-    error: null,
-    done: savedNoteMessage(saved.value.name, saved.value.category),
-  };
+  return { error: null, done: savedDormHealthMessage(saved.value) };
 }

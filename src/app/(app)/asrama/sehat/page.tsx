@@ -15,6 +15,7 @@ import {
   LIST_READER_NOTE,
   NUMBERS_ONLY_NOTE,
 } from "@/features/dorm/dorm-health-words";
+import { maySetMarks } from "@/features/dorm/mental-health-marks";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
 
 /**
@@ -54,7 +55,11 @@ export default async function DormHealthPage(
   }
   const found = await readDormHealthList(db, account, params, limits, today);
   const form = mayWriteDormNotes(account.roles) ? (
-    <DormHealthNoteForm today={today} newKey={crypto.randomUUID()} />
+    <DormHealthNoteForm
+      today={today}
+      newKey={crypto.randomUUID()}
+      marks={maySetMarks(account.roles)}
+    />
   ) : null;
   return (
     <DormHealthScreen

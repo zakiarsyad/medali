@@ -20,7 +20,15 @@ describe("readDormHealthParams", () => {
       dorm: "dana_rakca",
       category: "medical",
       illness: "asthma",
+      markOnly: false,
       page: 3,
+    });
+  });
+
+  it("reads the choice Potensi kesehatan mental of the illness filter as a filter of its own", () => {
+    expect(readDormHealthParams({ riwayat: "potensi-mental" })).toEqual({
+      ...DORM_HEALTH_START,
+      markOnly: true,
     });
   });
 
@@ -45,10 +53,17 @@ describe("dormHealthAddress", () => {
         dorm: "cipta_bakti",
         category: "attention",
         illness: "allergy",
+        markOnly: false,
         page: 2,
       }),
     ).toBe(
       "/asrama/sehat?cari=Ani&asrama=cipta_bakti&kategori=perhatian&riwayat=alergi&hal=2",
+    );
+  });
+
+  it("names Potensi kesehatan mental under the illness filter", () => {
+    expect(dormHealthAddress({ ...DORM_HEALTH_START, markOnly: true })).toBe(
+      "/asrama/sehat?riwayat=potensi-mental",
     );
   });
 

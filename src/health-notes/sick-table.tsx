@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FinalCategoryBadge } from "./category-badge";
@@ -34,7 +35,19 @@ function HistoryCell({ row }: { row: RecapRow }) {
   );
 }
 
-function SickStudentRow({ row }: { row: RecapRow }) {
+/** What a place adds of its own to a row: under its category, and before its history. */
+export interface SickRowMore {
+  category: (row: RecapRow) => ReactNode;
+  history: (row: RecapRow) => ReactNode;
+}
+
+function SickStudentRow({
+  row,
+  more,
+}: {
+  row: RecapRow;
+  more: SickRowMore | undefined;
+}) {
   const { note } = row;
   return (
     <tr>
@@ -48,8 +61,10 @@ function SickStudentRow({ row }: { row: RecapRow }) {
       <td data-title="Pengasuh">{row.mentorName ?? "-"}</td>
       <td data-title="Kategori">
         <FinalCategoryBadge final={row.final} showsMark />
+        {more?.category(row)}
       </td>
       <td data-title="Riwayat penyakit dan catatan">
+        {more?.history(row)}
         <HistoryCell row={row} />
       </td>
       <td data-title="Dicatat">
@@ -69,9 +84,15 @@ function SickStudentRow({ row }: { row: RecapRow }) {
 /**
  * The rows of a list of sick students: Mahasiswa, Kamar, Pengasuh,
  * Kategori, "Riwayat penyakit dan catatan" and Dicatat. On a phone each
- * student is a block of its own.
+ * student is a block of its own. A place may add to each row.
  */
-export function SickTable({ rows }: { rows: readonly RecapRow[] }) {
+export function SickTable({
+  rows,
+  more,
+}: {
+  rows: readonly RecapRow[];
+  more?: SickRowMore;
+}) {
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -87,7 +108,7 @@ export function SickTable({ rows }: { rows: readonly RecapRow[] }) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <SickStudentRow key={row.id} row={row} />
+            <SickStudentRow key={row.id} row={row} more={more} />
           ))}
         </tbody>
       </table>

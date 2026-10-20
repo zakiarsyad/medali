@@ -19,13 +19,22 @@ export const DORM_HEALTH_ADDRESS = "/asrama/sehat";
 
 export interface DormHealthParams extends SickFilters {
   dorm: DormId | "all";
+  /**
+   * Only the residents with a mark "Potensi kesehatan mental": a choice
+   * of the illness filter, offered and heeded only for who reads marks.
+   */
+  markOnly: boolean;
 }
+
+/** How the address names the choice "Potensi kesehatan mental" of the illness filter. */
+export const MARK_CHOICE = "potensi-mental";
 
 export const DORM_HEALTH_START: DormHealthParams = {
   query: "",
   dorm: "all",
   category: "all",
   illness: "all",
+  markOnly: false,
   page: 1,
 };
 
@@ -59,6 +68,7 @@ export function readDormHealthParams(params: SearchParams): DormHealthParams {
     dorm: dormNamed(firstParam(params.asrama)),
     category: categoryNamed(firstParam(params.kategori)),
     illness: illnessNamed(firstParam(params.riwayat)),
+    markOnly: firstParam(params.riwayat) === MARK_CHOICE,
     page: PAGE.test(page) ? Number(page) : 1,
   };
 }
@@ -77,6 +87,7 @@ export function dormHealthAddress(params: DormHealthParams): string {
   if (params.illness !== "all") {
     search.set("riwayat", ILLNESS_CHOICES[params.illness]);
   }
+  if (params.markOnly) search.set("riwayat", MARK_CHOICE);
   if (params.page > 1) search.set("hal", String(params.page));
   const text = search.toString();
   if (text === "") return DORM_HEALTH_ADDRESS;

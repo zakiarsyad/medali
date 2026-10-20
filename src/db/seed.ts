@@ -42,6 +42,7 @@ import {
   addSampleDormHealthNotes,
   addSampleHealthNotes,
 } from "./seed-health-notes";
+import { addSampleMentalHealthMarks } from "./seed-mental-health-marks";
 import { addSampleMentorEvaluations } from "./seed-mentor-evaluations";
 import { addSampleMentorGroups } from "./seed-mentor-groups";
 import { addSampleMentorReplacements } from "./seed-mentor-replacements";
@@ -180,7 +181,8 @@ async function addSampleFirstYears(
  * and additional activities for chosen angkatan and classes, SIKU
  * gains and losses of the sample students, and their requests for a SIKU
  * gain in every status, consents to counselling in every status, and
- * health notes of students in and out of the dorm in every category.
+ * health notes of students in and out of the dorm in every category, and
+ * mental health marks of dorm residents of both kinds.
  * Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -277,5 +279,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleFitnessScores(tx, groups, today);
     await addSampleHealthNotes(tx, today);
     await addSampleDormHealthNotes(tx, running, today);
+    await addSampleMentalHealthMarks(tx, running, today);
   });
 }

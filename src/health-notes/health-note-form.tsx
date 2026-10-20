@@ -2,6 +2,7 @@
 
 import {
   type KeyboardEvent,
+  type ReactNode,
   useActionState,
   useRef,
   useState,
@@ -24,9 +25,9 @@ const START: FormState = { error: null, done: null };
  * on: the students found for a text, the student picked, and the save.
  * Each checks again who asks and for whom.
  */
-export interface NoteActions {
+export interface NoteActions<Subject extends HealthSubject = HealthSubject> {
   search: (query: string) => Promise<HealthPick[]>;
-  subject: (studentId: string) => Promise<HealthSubject | null>;
+  subject: (studentId: string) => Promise<Subject | null>;
   save: (before: FormState, form: FormData) => Promise<FormState>;
 }
 
@@ -140,23 +141,28 @@ function HealthPicker({
  * note and category, and fills the form with that note, so a new note
  * starts from the last one. After a save the student stays picked, their
  * notes are read again, and the form gets a new key for the next save.
+ * A place may add fields of its own below the note, from what its
+ * action read of the student.
  */
-export function HealthNoteForm({
+export function HealthNoteForm<Subject extends HealthSubject>({
   today,
   newKey,
   actions,
   words,
+  more,
 }: {
   /** Today on campus, where Tanggal starts. */
   today: string;
   /** The key of the first save; two presses of "Simpan catatan" send the same one. */
   newKey: string;
-  actions: NoteActions;
+  actions: NoteActions<Subject>;
   words: PickerWords;
+  /** The place's own fields for the student picked, sent with the note. */
+  more?: (subject: Subject) => ReactNode;
 }) {
   const [key, setKey] = useState(newKey);
   const [picked, setPicked] = useState<HealthPick | null>(null);
-  const [subject, setSubject] = useState<HealthSubject | null>(null);
+  const [subject, setSubject] = useState<Subject | null>(null);
   const [draft, setDraft] = useState<NoteDraft>(EMPTY_DRAFT);
   const [examinedOn, setExaminedOn] = useState(today);
   const [loading, startLoading] = useTransition();
@@ -227,6 +233,7 @@ export function HealthNoteForm({
             onDraft={setDraft}
             onExaminedOn={setExaminedOn}
           />
+          {more?.(subject)}
           <div className={styles.saveRow}>
             <button type="submit" className={shared.button} disabled={pending}>
               Simpan catatan
