@@ -14,6 +14,8 @@ const CARD: RunningSurveyCard = {
   openerName: "Kepala Uji",
   status: "open",
   respondentPool: 28,
+  answered: 0,
+  answers: 0,
 };
 
 const START: SurveyFormStart = {

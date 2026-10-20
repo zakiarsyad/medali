@@ -1,5 +1,5 @@
 {
-  "id": "78254e08-5e06-4ac5-8708-edbf5147c85e",
+  "id": "5560f818-b039-4863-937c-ed77d09d310b",
   "prevId": "139990b0-5824-423d-aaea-39497e8125d6",
   "version": "7",
   "dialect": "postgresql",
@@ -6831,250 +6831,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.mental_health_screening_log": {
-      "name": "mental_health_screening_log",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event": {
-          "name": "event",
-          "type": "mental_health_screening_event",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "by": {
-          "name": "by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "at": {
-          "name": "at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "mental_health_screening_log_student": {
-          "name": "mental_health_screening_log_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "mental_health_screening_log_student_id_students_id_fk": {
-          "name": "mental_health_screening_log_student_id_students_id_fk",
-          "tableFrom": "mental_health_screening_log",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mental_health_screening_log_by_accounts_id_fk": {
-          "name": "mental_health_screening_log_by_accounts_id_fk",
-          "tableFrom": "mental_health_screening_log",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.mental_health_screenings": {
-      "name": "mental_health_screenings",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "screened_on": {
-          "name": "screened_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "instrument": {
-          "name": "instrument",
-          "type": "mental_health_instrument",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "depression": {
-          "name": "depression",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "anxiety": {
-          "name": "anxiety",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stress": {
-          "name": "stress",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "srq_yes": {
-          "name": "srq_yes",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "self_harm": {
-          "name": "self_harm",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "level": {
-          "name": "level",
-          "type": "mental_health_level",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_by": {
-          "name": "saved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_at": {
-          "name": "saved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "mental_health_screenings_student": {
-          "name": "mental_health_screenings_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "screened_on",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "mental_health_screenings_student_id_students_id_fk": {
-          "name": "mental_health_screenings_student_id_students_id_fk",
-          "tableFrom": "mental_health_screenings",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "mental_health_screenings_saved_by_accounts_id_fk": {
-          "name": "mental_health_screenings_saved_by_accounts_id_fk",
-          "tableFrom": "mental_health_screenings",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "saved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "mental_health_screenings_scores": {
-          "name": "mental_health_screenings_scores",
-          "value": "case \"mental_health_screenings\".\"instrument\"\n        when 'dass21' then \"mental_health_screenings\".\"srq_yes\" is null\n          and (\"mental_health_screenings\".\"depression\" is not null and \"mental_health_screenings\".\"depression\" between 0 and 21)\n          and (\"mental_health_screenings\".\"anxiety\" is not null and \"mental_health_screenings\".\"anxiety\" between 0 and 21)\n          and (\"mental_health_screenings\".\"stress\" is not null and \"mental_health_screenings\".\"stress\" between 0 and 21)\n        else \"mental_health_screenings\".\"depression\" is null and \"mental_health_screenings\".\"anxiety\" is null\n          and \"mental_health_screenings\".\"stress\" is null\n          and (\"mental_health_screenings\".\"srq_yes\" is not null and \"mental_health_screenings\".\"srq_yes\" between 0 and 20)\n      end"
-        },
-        "mental_health_screenings_self_harm_most_severe": {
-          "name": "mental_health_screenings_self_harm_most_severe",
-          "value": "not \"mental_health_screenings\".\"self_harm\" or \"mental_health_screenings\".\"level\" = 'extremely_severe'"
-        },
-        "mental_health_screenings_note_length": {
-          "name": "mental_health_screenings_note_length",
-          "value": "char_length(\"mental_health_screenings\".\"note\") <= 1000"
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.mentor_evaluation_changes": {
       "name": "mentor_evaluation_changes",
       "schema": "",
@@ -10737,6 +10493,152 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.student_survey_answers": {
+      "name": "student_survey_answers",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "survey_period_id": {
+          "name": "survey_period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mentor_id": {
+          "name": "mentor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scores": {
+          "name": "scores",
+          "type": "smallint[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggestion": {
+          "name": "suggestion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "student_survey_answers_one_per_student": {
+          "name": "student_survey_answers_one_per_student",
+          "columns": [
+            {
+              "expression": "survey_period_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "student_survey_answers_survey_period_id_student_survey_periods_id_fk": {
+          "name": "student_survey_answers_survey_period_id_student_survey_periods_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "student_survey_periods",
+          "columnsFrom": [
+            "survey_period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_student_id_students_id_fk": {
+          "name": "student_survey_answers_student_id_students_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_group_id_mentor_groups_id_fk": {
+          "name": "student_survey_answers_group_id_mentor_groups_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "mentor_groups",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "student_survey_answers_mentor_id_accounts_id_fk": {
+          "name": "student_survey_answers_mentor_id_accounts_id_fk",
+          "tableFrom": "student_survey_answers",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "mentor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "student_survey_answers_a_score_for_each_statement": {
+          "name": "student_survey_answers_a_score_for_each_statement",
+          "value": "cardinality(\"student_survey_answers\".\"scores\") = 8\n        and array_position(\"student_survey_answers\".\"scores\", null) is null\n        and 1 <= all(\"student_survey_answers\".\"scores\")\n        and 5 >= all(\"student_survey_answers\".\"scores\")"
+        },
+        "student_survey_answers_suggestion_length": {
+          "name": "student_survey_answers_suggestion_length",
+          "value": "\"student_survey_answers\".\"suggestion\" is null or (btrim(\"student_survey_answers\".\"suggestion\") <> ''\n        and char_length(\"student_survey_answers\".\"suggestion\") <= 600)"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.student_survey_periods": {
       "name": "student_survey_periods",
       "schema": "",
@@ -11609,39 +11511,12 @@
         "medical"
       ]
     },
-    "public.mental_health_instrument": {
-      "name": "mental_health_instrument",
-      "schema": "public",
-      "values": [
-        "dass21",
-        "srq20"
-      ]
-    },
-    "public.mental_health_level": {
-      "name": "mental_health_level",
-      "schema": "public",
-      "values": [
-        "normal",
-        "mild",
-        "moderate",
-        "severe",
-        "extremely_severe"
-      ]
-    },
     "public.mental_health_mark_category": {
       "name": "mental_health_mark_category",
       "schema": "public",
       "values": [
         "monitor",
         "refer"
-      ]
-    },
-    "public.mental_health_screening_event": {
-      "name": "mental_health_screening_event",
-      "schema": "public",
-      "values": [
-        "saved",
-        "opened"
       ]
     },
     "public.mentor_replacement_reason": {

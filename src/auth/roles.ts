@@ -56,6 +56,7 @@ export const ACTIONS = [
   "evaluate_mentors",
   "replace_mentors",
   "manage_survey_periods",
+  "answer_own_survey",
   "view_cohort_assignments",
   "prepare_cohort_assignments",
   "fix_cohort_assignments",
@@ -167,6 +168,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   replace_mentors: "Menetapkan dan membatalkan penggantian pengasuh",
   manage_survey_periods:
     "Membuka, mengubah, menutup, dan membatalkan periode evaluasi oleh mahasiswa",
+  answer_own_survey: "Mengisi dan mengubah survei kepuasan pengasuhan sendiri",
   view_cohort_assignments: "Melihat penetapan angkatan baru",
   prepare_cohort_assignments:
     "Menyiapkan dan mengajukan penetapan angkatan baru",
@@ -500,6 +502,7 @@ export const ROLES: Record<RoleId, Role> = {
       "ask_siku_addition",
       "answer_own_counselling_consent",
       "register_own_counselling",
+      "answer_own_survey",
     ],
     rows: "self",
   },

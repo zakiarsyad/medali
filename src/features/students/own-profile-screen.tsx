@@ -1,8 +1,11 @@
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
+import { surveyDraftKey } from "@/ui/survey-drafts";
 import { CATEGORIES, STATUS_LABELS } from "./labels";
 import type { OwnProfile } from "./own-profile";
 import { ownProfileLine } from "./own-profile-words";
+import type { OwnSurvey } from "./own-survey";
+import { OwnSurveyCard } from "./own-survey-card";
 import { residenceWords } from "./residence-words";
 import { type RunningPeriod, semesterNow } from "./semester-now";
 import {
@@ -18,15 +21,19 @@ import { StudentMentorFact } from "./student-mentor-fact";
  * Profil saya: a student's own record, to read only. It holds nothing
  * that changes the record, which only the campus corrects. The pengasuh
  * and the group are named without a link: the Pengasuh menu is not a
- * student's to open.
+ * student's to open. While a survey period is Dibuka, the survey to rate
+ * the pengasuh stands at the top.
  */
 export function OwnProfileScreen({
   student,
   period,
+  survey = null,
 }: {
   student: OwnProfile;
   /** The academic period that runs now, which says the semester. */
   period: RunningPeriod;
+  /** Null while the student has no survey to fill in. */
+  survey?: OwnSurvey | null;
 }) {
   const semester = semesterNow(student, period);
   const hasTags = CATEGORIES.some(({ field }) => student[field]);
@@ -36,6 +43,12 @@ export function OwnProfileScreen({
         {ownProfileLine(student, semester)}{" "}
         <span className={shared.badge}>{STATUS_LABELS[student.status]}</span>
       </PageHead>
+      {survey !== null && (
+        <OwnSurveyCard
+          survey={survey}
+          draftKey={surveyDraftKey(student.id, survey.surveyPeriodId)}
+        />
+      )}
       <section className={`${shared.panel} ${styles.profile}`}>
         {hasTags && (
           <p className={styles.tags}>

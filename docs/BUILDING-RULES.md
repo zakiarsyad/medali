@@ -27,8 +27,9 @@ while building.
   that waits for its date, whether an account holds a group today, how a
   replacement gives its group the new mentor, today or once its date has
   come, the wait that keeps two changes of who holds which group apart,
-  the status a survey period has by its dates, and which survey period
-  runs on a day, read by every area that needs them.
+  the status a survey period has by its dates, which survey period runs
+  on a day, and the statements, scale and limits of the survey, read by
+  every area that needs them.
 - `src/character-scores/`: the scores of a character assessment, their
   Rerata and predikat, how a Rerata and a predikat are shown, the medal
   chart, and each student's latest assessment and the one before it,
