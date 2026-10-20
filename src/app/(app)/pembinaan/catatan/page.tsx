@@ -1,9 +1,12 @@
 import { forbidden } from "next/navigation";
 import { campusDay } from "@/academic-periods/campus-day";
+import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import { readNotesParams } from "@/features/guidance/note-address";
 import { readNoteBoard } from "@/features/guidance/note-board";
+import { semesterWords } from "@/features/guidance/note-words";
+import { NoteWriting } from "@/features/guidance/note-writing";
 import { NotesScreen } from "@/features/guidance/notes-screen";
 
 /**
@@ -18,14 +21,23 @@ export default async function ViolationNotesPage(
   const opened = await openPage("pembinaan", "catatan");
   const { account } = opened;
   const params = readNotesParams(await props.searchParams);
-  const board = await readNoteBoard(database(), account, params, campusDay());
+  const today = campusDay();
+  const board = await readNoteBoard(database(), account, params, today);
   if (board === null) forbidden();
+  const writes = may(account.roles, "write_violation_notes");
+  const form = writes ? (
+    <NoteWriting
+      newKey={crypto.randomUUID()}
+      today={today}
+      semester={semesterWords(board.period)}
+    />
+  ) : null;
   return (
     <NotesScreen
       tabs={{ pagePath: "pembinaan", tabs: opened.tabs, open: "catatan" }}
       board={board}
       params={params}
-      form={null}
+      form={form}
       actionsOf={null}
     />
   );

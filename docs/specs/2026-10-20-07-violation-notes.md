@@ -101,7 +101,7 @@ discipline penalty may be next.
   list, with its checks.
 - [x] 3. The numbers and the list, with search, filter and past notes,
   read only.
-- [ ] 4. The form "Catat pelanggaran" with the student's box and
+- [x] 4. The form "Catat pelanggaran" with the student's box and
   "Ketentuan".
 - [ ] 5. Removing a note.
 

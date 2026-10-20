@@ -5,7 +5,6 @@ import {
   eq,
   gt,
   ilike,
-  isNull,
   or,
   type SQL,
   sql,
@@ -16,15 +15,11 @@ import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
-import {
-  academicPeriods,
-  accounts,
-  students,
-  violationNotes,
-} from "@/db/schema";
+import { accounts, students } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
 import type { NotesParams } from "./note-address";
 import { categoryAt } from "./note-category";
+import { activeIn, type Placed, placedNotes } from "./placed-notes";
 import {
   NOTES_PAGE_SIZE,
   type NoteCategory,
@@ -84,54 +79,6 @@ const NO_NUMBERS: NoteNumbers = {
   further: 0,
   repeated: 0,
 };
-
-/**
- * The first day of the semester a note's Tanggal falls in, as "Academic
- * period" gives it: the one that started last by that day.
- */
-const PERIOD_START = sql<string>`(select max(${academicPeriods.startsOn}) from ${academicPeriods} where ${academicPeriods.startsOn} <= ${violationNotes.day})`;
-
-const SAME_STUDENT_AND_SEMESTER = sql`partition by ${violationNotes.studentId}, ${PERIOD_START}`;
-
-/**
- * Every note not removed, with the first day of its semester, its place
- * among its student's notes of that semester, the earliest first, and
- * how many those are. A removed note is left out, so the Kategori of the
- * others is worked out from the notes that remain.
- */
-function placedNotes(db: Database) {
-  return db
-    .select({
-      id: violationNotes.id,
-      studentId: violationNotes.studentId,
-      day: violationNotes.day,
-      description: violationNotes.description,
-      punishment: violationNotes.punishment,
-      otherPunishment: violationNotes.otherPunishment,
-      remark: violationNotes.remark,
-      savedBy: violationNotes.savedBy,
-      savedAt: violationNotes.savedAt,
-      periodStart: PERIOD_START.as("period_start"),
-      place:
-        sql<number>`row_number() over (${SAME_STUDENT_AND_SEMESTER} order by ${violationNotes.day}, ${violationNotes.savedAt}, ${violationNotes.id})`.as(
-          "place",
-        ),
-      inSemester: sql<number>`count(*) over (${SAME_STUDENT_AND_SEMESTER})`.as(
-        "in_semester",
-      ),
-    })
-    .from(violationNotes)
-    .where(isNull(violationNotes.removedAt))
-    .as("placed");
-}
-
-type Placed = ReturnType<typeof placedNotes>;
-
-/** The notes of the running semester; none while no period has begun. */
-function activeIn(placed: Placed, period: AcademicPeriod | null): SQL {
-  if (period === null) return sql`false`;
-  return sql`${placed.periodStart} = ${period.startsOn}`;
-}
 
 function categoryIs(
   placed: Placed,
