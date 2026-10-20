@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { rerataOf } from "@/character-scores/assessment-score";
+import { PredicateBadge } from "@/character-scores/predicate-badge";
+import { NOT_ASSESSED } from "@/character-scores/predicate-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
@@ -8,10 +10,9 @@ import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import { type AssessmentParams, assessmentAddress } from "./assessment-address";
 import type { AssessmentListRow } from "./assessment-board";
-import { NOT_ASSESSED, shownSource } from "./assessment-words";
+import { shownSource } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import type { LatestAssessment } from "./latest-assessments";
-import { PredicateBadge } from "./predicate-badge";
 
 export const NO_ASSESSMENT_MATCHES = "Tidak ada data pada filter ini.";
 

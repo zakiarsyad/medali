@@ -77,5 +77,5 @@ each member. Staff then see at a glance how a group is doing.
 - [x] 1. The rule for a group's and a mentor's average, with checks.
 - [x] 2. "Rerata MEDALI" on the group list and "Rerata" on the mentor
   list.
-- [ ] 3. The medal chart and the member columns on the group page.
+- [x] 3. The medal chart and the member columns on the group page.
 - [ ] 4. The medal chart and the member columns on the mentor page.

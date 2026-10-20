@@ -30,8 +30,9 @@ while building.
   the status a survey period has by its dates, and which survey period
   runs on a day, read by every area that needs them.
 - `src/character-scores/`: the scores of a character assessment, their
-  Rerata and predikat, how a Rerata is shown, and each student's latest
-  assessment, read by every area that shows character scores.
+  Rerata and predikat, how a Rerata and a predikat are shown, the medal
+  chart, and each student's latest assessment and the one before it,
+  read by every area that shows character scores.
 - `src/character-grades/`: each student's semester character grade with
   its four parts, read from the areas each part belongs to, for every
   screen that shows the grade.

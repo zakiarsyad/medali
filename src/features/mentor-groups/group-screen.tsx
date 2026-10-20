@@ -18,10 +18,13 @@ import { GroupMembersTable } from "./group-members-table";
 import { GroupMentorPanel } from "./group-mentor-panel";
 import { readGroupPage } from "./group-page";
 import { academicClasses, countedMembers } from "./member-rules";
+import { readMemberScores } from "./member-scores";
 import styles from "./mentor-groups.module.css";
 import { currentMentor } from "./mentor-history";
 import type { MentorAddressOf } from "./open-mentor-address";
 import { scheduledWords } from "./replacement-words";
+import { activeSummary } from "./score-averages";
+import { ScoresPanel } from "./scores-panel";
 import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
 /** The line under the code: whose group it is, since when, and how large. */
@@ -84,11 +87,15 @@ export async function GroupScreen({
   if (answer.kind === "refused") forbidden();
   const { group, recentNotes } = answer;
   // Read once the group is found: its id is then known to be one.
-  const [evaluations, waiting] = await Promise.all([
+  const [evaluations, waiting, scores] = await Promise.all([
     evaluationLimit === null
       ? null
       : listGroupEvaluations(db, evaluationLimit, group.id),
     readWaitingReplacementOf(db, group.id),
+    readMemberScores(
+      db,
+      group.members.map((member) => member.id),
+    ),
   ]);
   const mentor = currentMentor(group.mentors);
   const hasMentor = mentor !== null;
@@ -118,11 +125,18 @@ export async function GroupScreen({
           {scheduledWords(waiting)}
         </p>
       )}
-      <GroupMentorPanel
-        mentors={group.mentors}
-        mentorAddress={mentor && mentorAddressOf(mentor.mentorId, group)}
-        recentNotes={recentNotes}
-      />
+      <div className={styles.sideBySide}>
+        <GroupMentorPanel
+          mentors={group.mentors}
+          mentorAddress={mentor && mentorAddressOf(mentor.mentorId, group)}
+          recentNotes={recentNotes}
+        />
+        <ScoresPanel
+          title="Rerata kelompok"
+          summary={activeSummary(group.members, scores)}
+          withBar
+        />
+      </div>
       {evaluations && (
         <section className={shared.panel}>
           <h2 className={shared.heading}>Evaluasi pengasuh</h2>
@@ -142,6 +156,7 @@ export async function GroupScreen({
           <GroupMembersTable
             members={group.members}
             period={period}
+            scores={scores}
             detailAddressOf={memberAddressOf}
           />
         )}

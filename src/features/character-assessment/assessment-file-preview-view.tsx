@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { rerataOf } from "@/character-scores/assessment-score";
+import { PredicateBadge } from "@/character-scores/predicate-badge";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { FileSummary, MoreRows, SkippedRows } from "@/ui/file-preview-parts";
@@ -8,7 +9,6 @@ import type {
   AssessmentFilePreview,
   AssessmentPreviewRow,
 } from "./assessment-file-preview";
-import { PredicateBadge } from "./predicate-badge";
 
 function ReadyRow({ row }: { row: AssessmentPreviewRow }) {
   const rerata = rerataOf(row.scores);

@@ -1,6 +1,9 @@
-import type { Scores } from "@/character-scores/assessment-score";
+import {
+  SCORE_MAX,
+  SCORE_MIN,
+} from "@/features/character-assessment/assessment-ids";
 import { MEDALI_VALUES } from "@/ui/medali-values";
-import { SCORE_MAX, SCORE_MIN } from "./assessment-ids";
+import type { Scores } from "./assessment-score";
 
 /*
  * Where the parts of the medal are drawn: a six-sided shape with one

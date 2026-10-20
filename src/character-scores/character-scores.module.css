@@ -1,0 +1,111 @@
+/* The predikat badge and the medal chart, for every screen that shows character scores. */
+
+.predicate {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.dot {
+  width: var(--swatch-size);
+  height: var(--swatch-size);
+  border-radius: var(--radius-round);
+}
+
+.gold {
+  background: var(--emas);
+}
+
+.silver {
+  background: var(--perak);
+}
+
+.bronze {
+  background: var(--perunggu);
+}
+
+.guidance {
+  background: var(--bina);
+}
+
+.medal {
+  width: 100%;
+  max-width: var(--medal-width);
+  height: auto;
+  overflow: visible;
+}
+
+.medalRim {
+  fill: var(--goldsoft);
+  stroke: var(--gold);
+  stroke-width: var(--line-width-strong);
+}
+
+.medalFace {
+  fill: var(--surface);
+  stroke: var(--gold);
+  stroke-opacity: 0.55;
+  stroke-width: var(--line-width);
+}
+
+.medalRing {
+  fill: none;
+  stroke: var(--gold);
+  stroke-opacity: 0.28;
+  stroke-width: var(--line-width);
+}
+
+.medalLast {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: var(--line-width-strong);
+  stroke-dasharray: 4 3;
+}
+
+.medalShape {
+  fill: var(--navy3);
+  fill-opacity: 0.22;
+  stroke: var(--navy3);
+  stroke-width: var(--line-width-strong);
+  stroke-linejoin: round;
+}
+
+.medalDot {
+  stroke: var(--surface);
+  stroke-width: var(--line-width-strong);
+}
+
+.dotM {
+  fill: var(--vM);
+}
+
+.dotE {
+  fill: var(--vE);
+}
+
+.dotD {
+  fill: var(--vD);
+}
+
+.dotA {
+  fill: var(--vA);
+}
+
+.dotL {
+  fill: var(--vL);
+}
+
+.dotI {
+  fill: var(--vI);
+}
+
+.medalLabel {
+  fill: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-heavy);
+}
+
+.medalScore {
+  fill: var(--muted);
+  font-weight: var(--weight-semibold);
+}
