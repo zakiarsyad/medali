@@ -15,7 +15,7 @@ const SAME_STUDENT_AND_SEMESTER = sql`partition by ${violationNotes.studentId}, 
 
 /**
  * Every note not removed, with the first day of its semester, its place
- * among its student's notes of that semester, the earliest first, and
+ * among its student's notes of that semester, the first saved first, and
  * how many those are. A removed note is left out, so the Kategori of the
  * others is worked out from the notes that remain.
  */
@@ -33,7 +33,7 @@ export function placedNotes(db: Database) {
       savedAt: violationNotes.savedAt,
       periodStart: PERIOD_START.as("period_start"),
       place:
-        sql<number>`row_number() over (${SAME_STUDENT_AND_SEMESTER} order by ${violationNotes.day}, ${violationNotes.savedAt}, ${violationNotes.id})`.as(
+        sql<number>`row_number() over (${SAME_STUDENT_AND_SEMESTER} order by ${violationNotes.savedAt}, ${violationNotes.id})`.as(
           "place",
         ),
       inSemester: sql<number>`count(*) over (${SAME_STUDENT_AND_SEMESTER})`.as(
@@ -89,5 +89,5 @@ export async function readActiveNotesOf(
     .select({ day: placed.day, description: placed.description })
     .from(placed)
     .where(and(eq(placed.studentId, studentId), activeIn(placed, period)))
-    .orderBy(placed.place);
+    .orderBy(placed.day, placed.place);
 }

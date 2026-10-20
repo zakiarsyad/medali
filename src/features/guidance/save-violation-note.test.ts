@@ -11,6 +11,7 @@ import {
   NOT_WRITABLE,
   NOTE_ALREADY_SENT,
 } from "./note-messages";
+import { readNoteCategory } from "./placed-notes";
 import { saveViolationNote } from "./save-violation-note";
 import {
   addNoteActor,
@@ -112,6 +113,25 @@ describe("saveViolationNote", () => {
 
       expect(again.ok && again.value.category).toBe("further");
       expect(fresh.ok && fresh.value.category).toBe("first");
+    });
+  });
+
+  it("makes a note Pelanggaran lanjutan when its Tanggal is before the student's earlier note, leaving that note Pelanggaran pertama", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentIds } = await setting(db);
+      const [one = ""] = studentIds;
+      const earlier = await addTestNote(db, one, officer.id, "4411-10-15");
+
+      const saved = await saveViolationNote(
+        db,
+        officer,
+        crypto.randomUUID(),
+        sent(one, { day: "4411-10-10" }),
+        MOMENT,
+      );
+
+      expect(saved.ok && saved.value.category).toBe("further");
+      expect(await readNoteCategory(db, earlier)).toBe("first");
     });
   });
 
