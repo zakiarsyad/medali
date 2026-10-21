@@ -2,7 +2,12 @@ import shared from "@/ui/data-screen.module.css";
 import type { CharacterGrade } from "./character-grade";
 import styles from "./character-grades.module.css";
 import type { AttendancePart, GradeRow } from "./grade-list";
-import { passWords, shownFinal, shownPart } from "./grade-words";
+import {
+  passWords,
+  shownFinal,
+  shownOneDecimal,
+  shownPart,
+} from "./grade-words";
 
 export const NO_GRADE_MATCHES = "Tidak ada data pada filter ini.";
 
@@ -10,7 +15,7 @@ function Attendance({ part }: { part: AttendancePart }) {
   if (part.percent === null) return "-";
   return (
     <>
-      {shownPart(part.percent)}
+      {shownOneDecimal(part.percent)}
       <small className={shared.detail}>
         {part.attended}/{part.counted}
       </small>
@@ -33,7 +38,8 @@ function Letter({ grade }: { grade: CharacterGrade }) {
 
 /**
  * "Daftar nilai karakter": each student with the four parts, Nilai akhir,
- * Huruf and Keterangan. A missing part shows "-", and the grade "Belum
+ * Huruf and Keterangan. Kehadiran and SKPM have one decimal, as on the
+ * screens they come from. A missing part shows "-", and the grade "Belum
  * lengkap". On a phone each student is a block of its own.
  */
 export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
@@ -69,7 +75,7 @@ export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
               </td>
               <td data-title="Pengasuhan">{shownPart(row.mentoring)}</td>
               <td data-title="SIKU">{shownPart(row.siku.score)}</td>
-              <td data-title="SKPM">{shownPart(row.skpm)}</td>
+              <td data-title="SKPM">{shownOneDecimal(row.skpm)}</td>
               <td className={styles.final} data-title="Nilai akhir">
                 {shownFinal(row.grade)}
               </td>

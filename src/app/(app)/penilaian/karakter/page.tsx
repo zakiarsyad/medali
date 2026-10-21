@@ -1,13 +1,13 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
-import { readGradeRows } from "@/character-grades/grade-rows";
+import { readGradeBasis } from "@/character-grades/grade-facts";
+import { readGradePage } from "@/character-grades/grade-page";
+import { readGradeNumbers } from "@/character-grades/read-grade-numbers";
 import { database } from "@/db/database";
 import { CharacterGradeScreen } from "@/features/character-grades/character-grade-screen";
 import { readGradeParams } from "@/features/character-grades/grade-address";
-import { gradeListOf } from "@/features/character-grades/grade-list";
 import { GradeNumberCards } from "@/features/character-grades/grade-number-cards";
-import { gradeNumbersOf } from "@/features/character-grades/grade-numbers";
 import { readGradeScheme } from "@/features/character-grades/grade-scheme";
 import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { ReadOnlyScheme } from "@/features/character-grades/read-only-scheme";
@@ -31,21 +31,21 @@ export default async function CharacterGradePage(
   const db = database();
   const inForce = await readGradeScheme(db);
   const visible = gradeVisibleTo(opened.account);
-  const { rows, sikuBase } = await readGradeRows(
-    db,
-    visible,
-    inForce.scheme,
-    campusDay(),
-  );
+  const today = campusDay();
+  const basis = await readGradeBasis(db, inForce.scheme, today);
+  const [list, numbers] = await Promise.all([
+    readGradePage(db, visible, basis, today, params),
+    readGradeNumbers(db, visible, basis),
+  ]);
   const mayChange = may(opened.account.roles, "set_grade_weights");
   return (
     <CharacterGradeScreen
       tabs={tabs}
       numbers={
         <GradeNumberCards
-          numbers={gradeNumbersOf(rows)}
+          numbers={numbers}
           passLetter={inForce.scheme.passLetter}
-          sikuBase={sikuBase}
+          sikuBase={basis.sikuBase}
         />
       }
       scheme={
@@ -56,7 +56,7 @@ export default async function CharacterGradePage(
         )
       }
       params={params}
-      list={gradeListOf(rows, params)}
+      list={list}
     />
   );
 }

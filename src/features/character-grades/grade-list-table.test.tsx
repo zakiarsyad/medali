@@ -37,9 +37,9 @@ describe("Daftar nilai karakter", () => {
     for (const words of [
       "87,5",
       "7/8",
-      ">80<",
-      ">68<",
-      ">72<",
+      'data-title="Pengasuhan">80<',
+      'data-title="SIKU">68<',
+      'data-title="SKPM">72,0<',
       // 87.5, 80, 68 and 72 with 25% each is 76.875.
       "76,9",
       ">B<",
@@ -48,6 +48,50 @@ describe("Daftar nilai karakter", () => {
     ]) {
       expect(page).toContain(words);
     }
+  });
+
+  it("writes Kehadiran and SKPM with one decimal, also when they are whole", () => {
+    const page = pageOf([
+      {
+        ...ANI,
+        attendance: { percent: 80, attended: 8, counted: 10 },
+        skpm: 0,
+      },
+      {
+        ...ANI,
+        student: { ...ANI.student, id: "id-cici" },
+        attendance: { percent: 100, attended: 4, counted: 4 },
+        skpm: 100,
+      },
+      {
+        ...ANI,
+        student: { ...ANI.student, id: "id-dodi" },
+        attendance: { percent: 0, attended: 0, counted: 3 },
+        skpm: 66.7,
+      },
+    ]);
+
+    for (const words of [
+      'data-title="Kehadiran">80,0<',
+      "8/10",
+      'data-title="Kehadiran">100,0<',
+      'data-title="Kehadiran">0,0<',
+      "0/3",
+      'data-title="SKPM">0,0<',
+      'data-title="SKPM">100,0<',
+      'data-title="SKPM">66,7<',
+    ]) {
+      expect(page).toContain(words);
+    }
+  });
+
+  it("keeps Pengasuhan and SIKU whole", () => {
+    const page = pageOf([
+      { ...ANI, mentoring: 72, siku: { ...ANI.siku, score: 65 } },
+    ]);
+
+    expect(page).toContain('data-title="Pengasuhan">72<');
+    expect(page).toContain('data-title="SIKU">65<');
   });
 
   it("shows a dash for each missing part and Belum lengkap for the grade", () => {

@@ -42,19 +42,35 @@ export interface StudentGroup {
 }
 
 /**
- * Whether a schedule of the period is meant for the students of a group.
- * One of a special or additional activity is meant for those it names
- * only when they were students in the period, as they see it only then.
+ * Whether a schedule of the period can be meant for the students of an
+ * angkatan: one of a PPKS activity is meant for every student in its
+ * semester, one of a special or additional activity only for students in
+ * the period, as they see it only then, and only for those it names.
  */
+export function isOpenToCohort(
+  cohortYear: number,
+  schedule: CountedSchedule,
+  period: PeriodParts,
+): boolean {
+  if (schedule.semester !== null) {
+    return isInSemester(cohortYear, schedule.semester, period);
+  }
+  return wasStudentIn(cohortYear, period);
+}
+
+/** Whether a schedule counts only for the students it names. */
+export function isForNamedOnly(schedule: CountedSchedule): boolean {
+  return schedule.semester === null;
+}
+
+/** Whether a schedule of the period is meant for the students of a group. */
 function isMeantFor(
   group: StudentGroup,
   schedule: CountedSchedule,
   period: PeriodParts,
 ): boolean {
-  if (schedule.semester !== null) {
-    return isInSemester(group.cohortYear, schedule.semester, period);
-  }
-  if (!wasStudentIn(group.cohortYear, period)) return false;
+  if (!isOpenToCohort(group.cohortYear, schedule, period)) return false;
+  if (!isForNamedOnly(schedule)) return true;
   return group.chosenIn.includes(schedule.id);
 }
 
