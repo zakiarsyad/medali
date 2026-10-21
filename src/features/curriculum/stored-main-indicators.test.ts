@@ -2,10 +2,8 @@ import { describe, expect, it } from "vitest";
 import { mainIndicators as savedIndicators } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { mainIndicators } from "./main-indicators";
-import {
-  readMainIndicators,
-  STARTING_INDICATORS_VERSION,
-} from "./stored-main-indicators";
+import { STARTING_VERSION } from "./saved-version";
+import { readMainIndicators } from "./stored-main-indicators";
 import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -16,7 +14,7 @@ describe("readMainIndicators", () => {
       expect(await readMainIndicators(db)).toEqual({
         values: mainIndicators(new Map()),
         changed: null,
-        version: STARTING_INDICATORS_VERSION,
+        version: STARTING_VERSION,
       });
     });
   });

@@ -57,13 +57,18 @@ export async function saveStageBreakdownAction(
   form: FormData,
 ): Promise<FormState> {
   const changer = await curriculumChanger();
-  const saved = await saveStageBreakdown(database(), changer, {
-    tahap: text(form, "tahap"),
-    valueKey: text(form, "value"),
-    text: text(form, "text"),
-    activities: texts(form, "activity"),
-    indicatorCodes: texts(form, "indicator"),
-  });
+  const saved = await saveStageBreakdown(
+    database(),
+    changer,
+    text(form, "version"),
+    {
+      tahap: text(form, "tahap"),
+      valueKey: text(form, "value"),
+      text: text(form, "text"),
+      activities: texts(form, "activity"),
+      indicatorCodes: texts(form, "indicator"),
+    },
+  );
   if (!saved.ok) return { error: saved.error, done: null };
   revalidatePath(CURRICULUM_ADDRESS);
   return { error: null, done: `Penjabaran ${saved.value} disimpan.` };

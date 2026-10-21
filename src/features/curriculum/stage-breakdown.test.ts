@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { STARTING_VERSION } from "./saved-version";
 import { codesOf, stageBreakdown } from "./stage-breakdown";
 
 describe("stageBreakdown", () => {
@@ -22,6 +23,7 @@ describe("stageBreakdown", () => {
       text: "Lokakarya mengatur waktu, keuangan pribadi, dan target belajar semester.",
       activities: ["Manajemen diri mahasiswa baru"],
       indicatorCodes: ["M1"],
+      version: STARTING_VERSION,
     });
     expect(stageBreakdown(4, new Map())[5]).toEqual({
       key: "I",
@@ -29,6 +31,7 @@ describe("stageBreakdown", () => {
       text: "Peran calon pegawai dalam membangun WBK/WBBM.",
       activities: ["Zona integritas"],
       indicatorCodes: ["I4"],
+      version: STARTING_VERSION,
     });
   });
 
@@ -56,6 +59,7 @@ describe("stageBreakdown", () => {
       text: "Teks uji",
       activities: ["Kegiatan uji", "Kegiatan uji kedua"],
       indicatorCodes: ["D1", "D3"],
+      version: "2026-10-21T03:00:00.000Z",
     };
 
     const shown = stageBreakdown(2, new Map([["D", saved]]));
