@@ -72,7 +72,7 @@ describe("Publikasi data kesehatan mental", () => {
         picked={{
           id: "00000000-0000-4000-8000-000000005ab2",
           name: "Mahasiswa Uji",
-          nim: "9900000000",
+          nim: "9986315001",
           program: "Prodi Uji",
         }}
         consentVersion={null}
