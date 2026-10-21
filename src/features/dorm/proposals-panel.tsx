@@ -13,6 +13,7 @@ import {
 } from "./violation-address";
 import styles from "./violations.module.css";
 import { WARNINGS_PAGE_SIZE } from "./warning-ids";
+import { PROPOSAL_STATUS_WORDS } from "./warning-words";
 
 export const NO_PROPOSALS = "Belum ada pengajuan hukuman disiplin.";
 
@@ -62,7 +63,9 @@ function Status({
   if (handling !== null) {
     return (
       <>
-        <span className={`${shared.badge} ${styles.ok}`}>Diproses</span>
+        <span className={`${shared.badge} ${styles.ok}`}>
+          {PROPOSAL_STATUS_WORDS.handled}
+        </span>
         <p className={styles.note}>{handling.note}</p>
         <small className={shared.detail}>
           {handling.by} · {shownMoment(handling.at)}
@@ -73,7 +76,9 @@ function Status({
   const handles = tools.handles && proposal.studentId !== tools.ownStudentId;
   return (
     <>
-      <span className={`${shared.badge} ${styles.warn}`}>Diajukan</span>
+      <span className={`${shared.badge} ${styles.warn}`}>
+        {PROPOSAL_STATUS_WORDS.proposed}
+      </span>
       {handles && (
         <HandleProposalForm letterId={proposal.letterId} name={proposal.name} />
       )}

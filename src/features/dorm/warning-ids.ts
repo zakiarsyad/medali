@@ -55,6 +55,12 @@ export const RESULT_MAX_LENGTH = 1000;
 /** The most letters "Catatan pengajuan hukuman disiplin ke Kepala UPK" holds. */
 export const PROPOSAL_NOTE_MAX_LENGTH = 1000;
 
+/**
+ * Where the proposal of an SP 2 stands: Diajukan to Kepala Unit, or
+ * Diproses once Kepala Unit handled it.
+ */
+export type ProposalStatus = "proposed" | "handled";
+
 /** How long "Catatan tindak lanjut" of Kepala Unit is, without spaces around it. */
 export const HANDLING_NOTE_MIN_LENGTH = 5;
 export const HANDLING_NOTE_MAX_LENGTH = 1000;

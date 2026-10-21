@@ -1,5 +1,5 @@
 import { DAY, shownDay } from "@/ui/day";
-import type { CallSchedule, WarningLevel } from "./warning-ids";
+import type { CallSchedule, ProposalStatus, WarningLevel } from "./warning-ids";
 
 /*
  * How the calls and warning letters of the dorm are said on screen. Read
@@ -35,19 +35,28 @@ const PROPOSED =
 /** The end of a sentence or spaces, which the sentence of the result puts back once. */
 const TRAILING_STOPS = /[.\s]+$/;
 
+/** How a status of a discipline proposal is said on screen. */
+export const PROPOSAL_STATUS_WORDS: Record<ProposalStatus, string> = {
+  proposed: "Diajukan",
+  handled: "Diproses",
+};
+
 /**
  * What follows "Anda menerima Surat Peringatan N": the day it was issued
- * on campus and Hasil klarifikasi, and for SP 2 the proposal.
+ * on campus and Hasil klarifikasi, and for SP 2 the proposal with its
+ * status.
  */
 export function receivedWords(letter: {
   level: WarningLevel;
   issuedAt: Date;
   result: string;
+  /** Of SP 2 only; null for SP 1. */
+  proposal: ProposalStatus | null;
 }): string {
   const result = letter.result.replace(TRAILING_STOPS, "");
   const said = `pada ${DAY.format(letter.issuedAt)}. Hasil klarifikasi: ${result}.`;
-  if (letter.level === 1) return said;
-  return `${said} ${PROPOSED}`;
+  if (letter.level === 1 || letter.proposal === null) return said;
+  return `${said} ${PROPOSED} Status pengajuan: ${PROPOSAL_STATUS_WORDS[letter.proposal]}.`;
 }
 
 /** A sentence that ends once, however the text was written. */

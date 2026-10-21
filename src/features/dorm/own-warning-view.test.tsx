@@ -121,6 +121,7 @@ describe("the resident's warning on Pelanggaran", () => {
           level: 1,
           issuedAt: new Date("2026-10-10T09:30:00Z"),
           result: "Mahasiswa hadir dan mengakui pelanggarannya.",
+          proposal: null,
         },
       ],
     });
@@ -133,5 +134,38 @@ describe("the resident's warning on Pelanggaran", () => {
     );
     expect(shown).toContain("Menuju SP 2");
     expect(shown).toContain("12/12");
+  });
+
+  it("tells the resident after SP 2 that a discipline punishment was proposed to Kepala Unit, and whether it is Diajukan or Diproses", () => {
+    const secondLetter = (proposal: "proposed" | "handled") =>
+      boxes({
+        ...NONE,
+        standing: {
+          counted: 12,
+          rejected: 0,
+          hasFirst: true,
+          hasSecond: true,
+          level: null,
+        },
+        letters: [
+          {
+            level: 2,
+            issuedAt: new Date("2026-10-17T09:30:00Z"),
+            result: "Mahasiswa hadir dan mengakui pelanggarannya.",
+            proposal,
+          },
+        ],
+      });
+
+    for (const [proposal, said] of [
+      ["proposed", "Diajukan"],
+      ["handled", "Diproses"],
+    ] as const) {
+      const shown = secondLetter(proposal);
+      expect(shown).toContain(
+        "Pengelola Asrama mengajukan proses hukuman disiplin ke Kepala Unit Pembangunan Karakter.",
+      );
+      expect(shown).toContain(`Status pengajuan: ${said}.`);
+    }
   });
 });

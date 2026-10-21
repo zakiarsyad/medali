@@ -119,4 +119,4 @@ Decided while building, because the issue did not say:
 - [x] 3. Kepala Unit sees the proposals and marks one Diproses.
 - [x] 4. The button "Catat hukuman disiplin" opens Pembinaan on that
   student.
-- [ ] 5. Pengelola Asrama and the resident see the status.
+- [x] 5. Pengelola Asrama and the resident see the status.

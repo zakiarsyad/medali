@@ -3,7 +3,7 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { dormWarningLetters, students } from "@/db/schema";
 import { readSchedules } from "./warning-calls";
-import type { CallSchedule, WarningLevel } from "./warning-ids";
+import type { CallSchedule, ProposalStatus, WarningLevel } from "./warning-ids";
 import { type RejectedClarification, readRejected } from "./warning-process";
 import { causesOf } from "./warning-rule";
 import {
@@ -18,6 +18,20 @@ export interface OwnLetter {
   issuedAt: Date;
   /** Hasil klarifikasi. */
   result: string;
+  /**
+   * Where the proposal of an SP 2 stands, without its notes, which the
+   * resident does not read; null for SP 1.
+   */
+  proposal: ProposalStatus | null;
+}
+
+function proposalOf(
+  level: WarningLevel,
+  handledAt: Date | null,
+): ProposalStatus | null {
+  if (level === 1) return null;
+  if (handledAt === null) return "proposed";
+  return "handled";
 }
 
 /** Where a resident stands toward an SP in the running semester. */
@@ -44,6 +58,7 @@ async function readLetters(
       level: dormWarningLetters.level,
       issuedAt: dormWarningLetters.issuedAt,
       result: dormWarningLetters.result,
+      handledAt: dormWarningLetters.handledAt,
     })
     .from(dormWarningLetters)
     .where(
@@ -58,7 +73,12 @@ async function readLetters(
   for (const row of rows) {
     if (row.issuedAt === null) continue;
     const level = row.level === 2 ? 2 : 1;
-    letters.push({ level, issuedAt: row.issuedAt, result: row.result });
+    letters.push({
+      level,
+      issuedAt: row.issuedAt,
+      result: row.result,
+      proposal: proposalOf(level, row.handledAt),
+    });
   }
   return letters;
 }
