@@ -12,7 +12,11 @@ import {
 } from "@/discipline-penalties/test-penalties";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import type { Scores } from "./assessment-score";
-import { earlierAssessments, latestAssessments } from "./latest-assessments";
+import {
+  earlierAssessments,
+  latestAssessments,
+  readStoredLatestOf,
+} from "./latest-assessments";
 
 const inTestDatabase = withTestDatabase();
 
@@ -146,6 +150,22 @@ describe("earlierAssessments", () => {
         scoreI: 70,
       });
       expect(of(ids[2])).toMatchObject({ scoreM: 90, scoreD: 71, scoreI: 100 });
+    });
+  });
+});
+
+describe("readStoredLatestOf", () => {
+  it("gives the scores of the latest assessment as stored, also for a limited student, and null for one never assessed", async () => {
+    await inTestDatabase(async (db) => {
+      const [limited = ""] = await addRecords(db);
+      const programId = await addTestProgram(db, "Prodi Uji Skor Tersimpan");
+      const fresh = await addTestStudent(db, programId, {
+        nim: "9986710011",
+        name: "Mahasiswa Uji Skor Tersimpan",
+      });
+
+      expect(await readStoredLatestOf(db, limited)).toEqual(SILVER);
+      expect(await readStoredLatestOf(db, fresh)).toBeNull();
     });
   });
 });

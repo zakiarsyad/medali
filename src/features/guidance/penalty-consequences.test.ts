@@ -30,6 +30,24 @@ describe("consequencesOf", () => {
     ]);
   });
 
+  it("says what the cap does to the Rerata of the student's latest assessment, with the predikat after it", () => {
+    const lines = consequencesOf(
+      {
+        category: "medium",
+        level: 2,
+        start: "2026-10-14",
+        day: "2026-10-12",
+        cohortYear: 2025,
+        periods: PERIODS,
+      },
+      { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+    );
+    expect(lines.at(-1)).toEqual({
+      title: "Nilai karakter",
+      text: "Dibatasi paling tinggi 70. Rerata 80,3 menjadi 70,0 (Perunggu).",
+    });
+  });
+
   it("gives Berat jenjang pertama the two semesters of suspension and the semester to repeat, from the semester of the Tanggal", () => {
     const lines = consequencesOf({
       category: "heavy",
@@ -96,6 +114,7 @@ describe("consequencesOf", () => {
 
 describe("the history of the student", () => {
   const top = { category: "medium", level: 1, day: "2026-09-02" } as const;
+  const latest = null;
 
   it("warns for a Jenjang lower than the highest before, and not for the same or higher", () => {
     expect(isLowerThanBefore("light", 3, top)).toBe(true);
@@ -105,10 +124,10 @@ describe("the history of the student", () => {
   });
 
   it("says how many penalties the student has and the highest one, or that there are none", () => {
-    expect(historyWords({ count: 0, top: null })).toBe(
+    expect(historyWords({ count: 0, top: null, latest })).toBe(
       "Belum ada riwayat pelanggaran. Ini pelanggaran pertama mahasiswa.",
     );
-    expect(historyWords({ count: 2, top })).toBe(
+    expect(historyWords({ count: 2, top, latest })).toBe(
       "Riwayat: 2 pelanggaran. Hukuman tertinggi sebelumnya sedang jenjang pertama (2 Sep 2026). Sesuai ayat (6), bila mahasiswa mengulangi perbuatan yang ancamannya lebih tinggi, dikenakan hukuman yang lebih tinggi tersebut.",
     );
   });

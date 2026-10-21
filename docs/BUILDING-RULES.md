@@ -34,7 +34,8 @@ while building.
   Rerata and predikat, the predikat as the database asks it, how a
   Rerata and a predikat are shown, the medal
   chart, the bar of the predikat spread, each student's latest
-  assessment and the one before it, and who needs coaching by it, with
+  assessment and the one before it, their scores held at 70 under a
+  Ringan or Sedang penalty, and who needs coaching by it, with
   the level and the weakest value, read by every area that shows
   character scores.
 - `src/character-grades/`: the grade scheme in force with its weights

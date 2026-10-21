@@ -84,6 +84,42 @@ nothing is typed again in Penilaian.
 4. The entry form and the file refuse scores above 70 for a limited
    student; a score saved before the penalty is kept as entered and
    limited when shown.
+5. The limit is put on every screen that shows a MEDALI score, not only
+   the ones named here: Hasil asesmen karakter, Riwayat asesmen, the
+   Mahasiswa list, the Dashboard, Perlu pembinaan and Profil saya show
+   the limited scores too, and count and filter by them, so no score of
+   a limited student shows above 70 anywhere.
+6. The assessment before the latest one, the dashed line of the medal,
+   is limited too.
+7. The note in Asesmen karakter and the line in the student detail name
+   the highest Ringan or Sedang penalty the student has, as in the
+   prototype.
+8. The sliders of a limited student start at their latest scores held
+   at 70, or at 70 for a student never assessed.
+9. A score above 70 sent by hand is refused with a message that asks to
+   load the page again and lower the score. A score in a file is checked
+   once it is rounded to a whole number, so 70.4 counts as 70.
+10. The format note of "Unggah berkas" says: "Skor 40–100; paling tinggi
+    70 untuk mahasiswa yang menjalani hukuman disiplin ringan atau
+    sedang."
+11. "Dibatasi 70" counts, and marks, every limited student, also one
+    whose grade is "Belum lengkap" or 70 or less. The line "Dibatasi 70
+    dari (score) karena hukuman disiplin." shows only when the limit
+    lowered Nilai akhir, since otherwise there is no higher score to
+    name. It sits in "Nilai karakter (KEP-220)", wherever the detail
+    opens.
+12. The limit note in "Capaian karakter" shows for every limited student
+    who was assessed, as in the prototype, also when no score was above
+    70.
+13. "Konsekuensi" names the predikat after the cap in brackets, as in the
+    prototype, and shows the medal held at 70 with the scores as stored
+    as a dashed line. For a student never assessed it only says
+    "Dibatasi paling tinggi 70."
+14. Roles that may not read discipline records, such as Penilai
+    Mahasiswa, see the Kategori and Jenjang in the note and the line, as
+    their wording asks, and never the Uraian.
+15. "Konsekuensi" shows the latest Rerata and medal only for a student
+    the account may record a penalty for.
 
 ## Steps
 
@@ -95,4 +131,4 @@ nothing is typed again in Penilaian.
   the line.
 - [x] 4. The limit line in the student detail, and the limited numbers
   on the mentor group and mentor pages.
-- [ ] 5. The before and after picture in "Konsekuensi".
+- [x] 5. The before and after picture in "Konsekuensi".

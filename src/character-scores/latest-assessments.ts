@@ -6,6 +6,7 @@ import {
   limitedScoreSql,
   limitedStudents,
 } from "@/discipline-penalties/limit-sql";
+import type { Scores } from "./assessment-score";
 
 /** Each student's assessments, the one saved last first. */
 const NEWEST_FIRST = [
@@ -102,4 +103,29 @@ export function earlierAssessments(db: Database) {
     .innerJoin(latest, notLatest)
     .orderBy(...NEWEST_FIRST)
     .as("earlier_assessments");
+}
+
+/**
+ * The scores of a student's latest assessment as stored, before any
+ * limit, or null for a student never assessed: for a screen that shows
+ * what a limit would change. Who may read them is decided by the caller.
+ */
+export async function readStoredLatestOf(
+  db: Database,
+  studentId: string,
+): Promise<Scores | null> {
+  const [found] = await db
+    .select({
+      M: scoreM,
+      E: scoreE,
+      D: scoreD,
+      A: scoreA,
+      L: scoreL,
+      I: scoreI,
+    })
+    .from(characterAssessments)
+    .where(eq(characterAssessments.studentId, studentId))
+    .orderBy(...NEWEST_FIRST)
+    .limit(1);
+  return found ?? null;
 }
