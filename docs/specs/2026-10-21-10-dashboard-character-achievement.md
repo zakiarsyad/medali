@@ -167,6 +167,12 @@ program only). Pengasuh gets "Dashboard anak asuh" in a later spec.
     smallest cohort shown is left out too, until those left out hold
     none or at least 5. Of cohorts the same size, the one lower in the
     table goes first.
+20. The rule of 5 holds within one page. Two pages with different
+    filters, such as "Afirmasi dan non afirmasi" and "Non afirmasi", can
+    still be compared to work out a smaller group. This is left as it
+    is: the three roles already see each student's scores by name on
+    Asesmen karakter, within the same limit of program, so the comparison
+    shows them nothing new.
 
 ## Steps
 
