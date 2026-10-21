@@ -3,10 +3,12 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
-import { JenjangBadge, StatusBadge } from "./penalty-badges";
+import { JenjangBadge } from "./penalty-badges";
 import type { PenaltyRow } from "./penalty-board";
 import { PenaltyDetail } from "./penalty-detail";
+import type { PenaltyFollowUp } from "./penalty-follow-up";
 import { ruleOf } from "./penalty-rules";
+import { PenaltyStatusCell } from "./penalty-status-cell";
 import { lengthWords } from "./penalty-words";
 
 /** How many columns "Daftar pelanggaran" has, for the row of "Rincian". */
@@ -26,12 +28,32 @@ function SocialWorkCell({ row }: { row: PenaltyRow }) {
   );
 }
 
+function followUpOf(row: PenaltyRow): PenaltyFollowUp {
+  const { status, conditionsMet, decision, version } = row;
+  return { status, conditionsMet, decision, version };
+}
+
 /**
  * One penalty of "Daftar pelanggaran", with "Rincian" under it while it
  * is open. The row holds all "Rincian" shows, so nothing more is asked.
+ * A follow-up puts the penalty the server gave back in the row; a row
+ * the page reads again takes its place.
  */
-function PenaltyLine({ row }: { row: PenaltyRow }) {
+function PenaltyLine({
+  row: read,
+  mayFollowUp,
+}: {
+  row: PenaltyRow;
+  mayFollowUp: boolean;
+}) {
   const [isOpen, setIsOpen] = useState(false);
+  const [readRow, setReadRow] = useState(read);
+  const [followUp, setFollowUp] = useState(() => followUpOf(read));
+  if (readRow !== read) {
+    setReadRow(read);
+    setFollowUp(followUpOf(read));
+  }
+  const row = { ...read, ...followUp };
   return (
     <>
       <tr>
@@ -52,7 +74,13 @@ function PenaltyLine({ row }: { row: PenaltyRow }) {
           <SocialWorkCell row={row} />
         </td>
         <td data-title="Status">
-          <StatusBadge status={row.status} />
+          <PenaltyStatusCell
+            id={row.id}
+            name={row.name}
+            followUp={followUp}
+            mayFollowUp={mayFollowUp}
+            onFollowUp={setFollowUp}
+          />
         </td>
         <td className={shared.rowActions}>
           <button
@@ -77,7 +105,13 @@ function PenaltyLine({ row }: { row: PenaltyRow }) {
 }
 
 /** The penalties of one page. On a phone each is a card. */
-export function PenaltyTable({ rows }: { rows: PenaltyRow[] }) {
+export function PenaltyTable({
+  rows,
+  mayFollowUp,
+}: {
+  rows: PenaltyRow[];
+  mayFollowUp: boolean;
+}) {
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -95,7 +129,7 @@ export function PenaltyTable({ rows }: { rows: PenaltyRow[] }) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <PenaltyLine key={row.id} row={row} />
+            <PenaltyLine key={row.id} row={row} mayFollowUp={mayFollowUp} />
           ))}
         </tbody>
       </table>

@@ -36,6 +36,35 @@ export const PENALTY_ALREADY_SENT = {
     "Formulir ini sudah pernah terkirim, jadi isian yang sekarang tidak disimpan. Muat ulang halaman, lalu simpan lagi bila masih perlu.",
 } as const;
 
+export const NOT_ALLOWED_TO_FOLLOW_UP = {
+  ok: false,
+  error:
+    "Anda tidak berhak menindaklanjuti hukuman disiplin. Tindak lanjut dilakukan oleh Pembina Disiplin Mahasiswa dan Kepala Unit.",
+} as const;
+
+export const PENALTY_NOT_FOUND = {
+  ok: false,
+  error: "Hukuman ini tidak ditemukan. Muat ulang halaman.",
+} as const;
+
+export const NOT_A_FOLLOW_UP_STATUS = {
+  ok: false,
+  error: "Pilih status Dijatuhkan, Sedang dijalani, atau Selesai dijalani.",
+} as const;
+
+export const STATUS_IS_SET = {
+  ok: false,
+  error:
+    "Hukuman ini Ditetapkan karena mengakhiri status mahasiswa, jadi tidak dapat diubah.",
+} as const;
+
+export const STATUS_UPDATED = "Status hukuman diperbarui.";
+
+/** What a status choice asks before it is sent. */
+export function statusQuestion(name: string, status: PenaltyStatus): string {
+  return `Ubah status hukuman ${name} menjadi "${STATUS_WORDS[status]}"?`;
+}
+
 /** What a kept penalty answers: whose it is and its status. */
 export function savedMessage(name: string, status: PenaltyStatus): string {
   return `Pelanggaran ${name} disimpan dengan status ${STATUS_WORDS[status]}.`;

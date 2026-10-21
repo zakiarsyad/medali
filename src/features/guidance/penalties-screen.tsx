@@ -5,7 +5,7 @@ import styles from "./discipline-penalties.module.css";
 import type { PenaltiesParams } from "./penalty-address";
 import type { PenaltyBoard } from "./penalty-board";
 import { PenaltyListPanel } from "./penalty-list";
-import { PenaltyNumbersRow } from "./penalty-numbers";
+import { PenaltyNumbersAbove } from "./penalty-numbers";
 import { PenaltyRulesTable } from "./penalty-rules-table";
 import {
   MENTEES_ONLY,
@@ -24,12 +24,15 @@ export function PenaltiesScreen({
   board,
   params,
   form,
+  mayFollowUp,
 }: {
   tabs: TabLinksProps;
   board: PenaltyBoard;
   params: PenaltiesParams;
   /** The form and Konsekuensi for an account that records; null for a reader. */
   form: ReactNode;
+  /** Whether the account changes the status, the conditions and the Keputusan. */
+  mayFollowUp: boolean;
 }) {
   return (
     <>
@@ -38,9 +41,14 @@ export function PenaltiesScreen({
       </PageHead>
       <TabLinks {...tabs} />
       {board.menteesOnly && <p className={styles.scope}>{MENTEES_ONLY}</p>}
-      <PenaltyNumbersRow numbers={board.numbers} />
-      {form ?? <p className={styles.readOnly}>{WHO_RECORDS}</p>}
-      <PenaltyListPanel board={board} params={params} />
+      <PenaltyNumbersAbove numbers={board.numbers}>
+        {form ?? <p className={styles.readOnly}>{WHO_RECORDS}</p>}
+        <PenaltyListPanel
+          board={board}
+          params={params}
+          mayFollowUp={mayFollowUp}
+        />
+      </PenaltyNumbersAbove>
       <PenaltyRulesTable />
     </>
   );

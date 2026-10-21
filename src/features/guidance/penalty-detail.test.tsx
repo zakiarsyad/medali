@@ -24,6 +24,9 @@ const ROW: PenaltyRow = {
   socialWorkEndsOn: "2026-10-21",
   savedByName: "Agus Hermawan",
   semester: 3,
+  conditionsMet: [],
+  decision: "pending",
+  version: 1,
 };
 
 function detail(row: PenaltyRow): string {

@@ -10,6 +10,10 @@ vi.mock("next/form", () => ({
   default: ({ children }: { children: unknown }) => children,
 }));
 
+vi.mock("./penalty-actions", () => ({
+  changePenaltyStatusAction: vi.fn(),
+}));
+
 const ROW: PenaltyRow = {
   id: "p1",
   studentId: "s1",
@@ -29,6 +33,9 @@ const ROW: PenaltyRow = {
   socialWorkEndsOn: "2026-10-21",
   savedByName: "Agus Hermawan",
   semester: 3,
+  conditionsMet: [],
+  decision: "pending",
+  version: 1,
 };
 
 const DISMISSED: PenaltyRow = {
@@ -57,6 +64,7 @@ function screen(
   rows: PenaltyRow[],
   form: string | null,
   menteesOnly = false,
+  mayFollowUp = false,
 ): string {
   return renderToStaticMarkup(
     <PenaltiesScreen
@@ -64,6 +72,7 @@ function screen(
       board={board(rows, menteesOnly)}
       params={PENALTIES_START}
       form={form}
+      mayFollowUp={mayFollowUp}
     />,
   );
 }
@@ -113,6 +122,34 @@ describe("PenaltiesScreen", () => {
     expect(shown).toContain("Berat · jenjang kedua");
     expect(shown).toContain("Ditetapkan");
     expect(shown).toContain("Rincian");
+  });
+
+  it("counts the kerja sosial that is Dijatuhkan or Sedang dijalani, not by its last day", () => {
+    const shown = screen([ROW], null);
+    expect(shown).toContain("dijatuhkan atau sedang dijalani");
+    expect(shown).not.toContain("berakhir hari ini");
+  });
+
+  it("gives an account that follows up a status choice of the three, and Ditetapkan as a label that cannot change", () => {
+    const shown = screen([ROW, DISMISSED], "FORMULIR", false, true);
+    const choices = [
+      ...shown.matchAll(
+        /<select[^>]*aria-label="Status hukuman"[^>]*>(.*?)<\/select>/g,
+      ),
+    ];
+    expect(choices).toHaveLength(1);
+    const options = choices[0]?.[1] ?? "";
+    for (const word of ["Dijatuhkan", "Sedang dijalani", "Selesai dijalani"]) {
+      expect(options).toContain(`>${word}</option>`);
+    }
+    expect(options).not.toContain("Ditetapkan");
+    expect(shown).toContain(">Ditetapkan</span>");
+  });
+
+  it("shows a reader the status as a label, with nothing to choose", () => {
+    const shown = screen([{ ...ROW, status: "serving" }], null);
+    expect(shown).not.toContain('aria-label="Status hukuman"');
+    expect(shown).toContain(">Sedang dijalani</span>");
   });
 
   it("says so when no penalty matches", () => {

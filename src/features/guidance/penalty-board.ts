@@ -3,8 +3,9 @@ import {
   count,
   desc,
   eq,
-  gte,
   ilike,
+  isNotNull,
+  ne,
   or,
   type SQL,
   sql,
@@ -28,6 +29,8 @@ import {
 import { pageWithin } from "@/ui/list-pages";
 import type { PenaltiesParams } from "./penalty-address";
 import {
+  type ContinuationCondition,
+  type ContinuationDecision,
   PENALTIES_PAGE_SIZE,
   type PenaltyCategory,
   type PenaltyLevel,
@@ -45,7 +48,7 @@ export interface PenaltyNumbers {
   medium: number;
   /** Pelanggaran berat. */
   heavy: number;
-  /** Kerja sosial belum selesai: penalties whose kerja sosial ends today or later. */
+  /** Kerja sosial belum selesai: penalties with kerja sosial not yet Selesai dijalani. */
   unfinishedWork: number;
 }
 
@@ -70,6 +73,9 @@ export interface PenaltyRow {
   savedByName: string;
   /** The student's semester on the Tanggal pelanggaran; null when it falls in no academic period. */
   semester: number | null;
+  conditionsMet: ContinuationCondition[];
+  decision: ContinuationDecision;
+  version: number;
 }
 
 export interface PenaltyList {
@@ -111,21 +117,23 @@ function statusIs(status: PenaltiesParams["status"]): SQL | undefined {
   return eq(disciplinePenalties.status, status);
 }
 
-function countOf(condition: SQL) {
+function countOf(condition: SQL | undefined) {
   return sql<number>`count(*) filter (where ${condition})`.mapWith(Number);
 }
 
-async function readNumbers(
-  db: Database,
-  seen: SQL,
-  today: string,
-): Promise<PenaltyNumbers> {
+/** A penalty with kerja sosial not yet Selesai dijalani, whatever its last day. */
+const UNFINISHED_WORK = and(
+  isNotNull(disciplinePenalties.socialWorkStartsOn),
+  ne(disciplinePenalties.status, "served"),
+);
+
+async function readNumbers(db: Database, seen: SQL): Promise<PenaltyNumbers> {
   const [found] = await db
     .select({
       light: countOf(eq(disciplinePenalties.category, "light")),
       medium: countOf(eq(disciplinePenalties.category, "medium")),
       heavy: countOf(eq(disciplinePenalties.category, "heavy")),
-      unfinishedWork: countOf(gte(disciplinePenalties.socialWorkEndsOn, today)),
+      unfinishedWork: countOf(UNFINISHED_WORK),
     })
     .from(disciplinePenalties)
     .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
@@ -171,6 +179,9 @@ async function readList(
       socialWorkStartsOn: disciplinePenalties.socialWorkStartsOn,
       socialWorkEndsOn: disciplinePenalties.socialWorkEndsOn,
       savedByName: accounts.name,
+      conditionsMet: disciplinePenalties.conditionsMet,
+      decision: disciplinePenalties.decision,
+      version: disciplinePenalties.version,
     })
     .from(disciplinePenalties)
     .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
@@ -203,21 +214,38 @@ function isMenteesOnly(limit: RowLimit): boolean {
  * the numbers and one page of the penalties that match the search and
  * the filters, of the students the account may see by that right,
  * Ketua Program Studi their own program only and Pengasuh their own
- * mentees only. `today` is today on campus, for the kerja sosial not
- * finished. Null, with nothing read, for any other account.
+ * mentees only. Null, with nothing read, for any other account.
  */
 export async function readPenaltyBoard(
   db: Database,
   actor: AccountForAccess,
   params: PenaltiesParams,
-  today: string,
 ): Promise<PenaltyBoard | null> {
   if (!may(actor.roles, "view_discipline_records")) return null;
   const limit = rowLimitForAction(actor, "view_discipline_records");
   const seen = visibleTo(limit);
   const [numbers, list] = await Promise.all([
-    readNumbers(db, seen, today),
+    readNumbers(db, seen),
     readList(db, seen, params),
   ]);
   return { numbers, list, menteesOnly: isMenteesOnly(limit) };
+}
+
+/**
+ * "Kerja sosial belum selesai" as the tab shows it to the account, read
+ * alone after a status changed so the list is not read again. Zero for
+ * an account that may not read discipline records.
+ */
+export async function readUnfinishedWork(
+  db: Database,
+  actor: AccountForAccess,
+): Promise<number> {
+  if (!may(actor.roles, "view_discipline_records")) return 0;
+  const seen = visibleTo(rowLimitForAction(actor, "view_discipline_records"));
+  const [found] = await db
+    .select({ unfinishedWork: count() })
+    .from(disciplinePenalties)
+    .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
+    .where(and(seen, UNFINISHED_WORK));
+  return found?.unfinishedWork ?? 0;
 }

@@ -44,6 +44,18 @@
   color: var(--bina);
 }
 
+/*
+ * The status choice and the Keputusan: never wider than the card, and
+ * tall enough for a thumb on a phone. Named with its element, so it
+ * counts for more than the shared look of a field.
+ */
+select.control {
+  min-width: 0;
+  max-width: 100%;
+  padding-top: var(--decide-control-padding);
+  padding-bottom: var(--decide-control-padding);
+}
+
 /* The rules table keeps its columns and scrolls inside its own box on a phone. */
 .rules {
   min-width: var(--wide-table-min-width);

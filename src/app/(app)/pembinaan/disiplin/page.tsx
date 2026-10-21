@@ -15,9 +15,9 @@ import { readPenaltyStart } from "@/features/guidance/penalty-student";
 
 /**
  * The tab Pelanggaran disiplin. Pembina Disiplin Mahasiswa and Kepala
- * Unit record penalties; Direktur, Ketua Program Studi and Pengasuh read
- * them, Ketua Program Studi their own program only and Pengasuh their
- * own mentees only. No other role opens the tab.
+ * Unit record penalties and follow them up; Direktur, Ketua Program
+ * Studi and Pengasuh read them, Ketua Program Studi their own program
+ * only and Pengasuh their own mentees only. No other role opens the tab.
  */
 export default async function DisciplinePenaltiesPage(
   props: PageProps<"/pembinaan/disiplin">,
@@ -27,7 +27,7 @@ export default async function DisciplinePenaltiesPage(
   const search = await props.searchParams;
   const params = readPenaltiesParams(search);
   const today = campusDay();
-  const board = await readPenaltyBoard(database(), account, params, today);
+  const board = await readPenaltyBoard(database(), account, params);
   if (board === null) forbidden();
   const form = may(account.roles, "record_discipline_penalties") ? (
     <PenaltyForm
@@ -45,6 +45,7 @@ export default async function DisciplinePenaltiesPage(
       board={board}
       params={params}
       form={form}
+      mayFollowUp={may(account.roles, "follow_up_discipline_penalties")}
     />
   );
 }

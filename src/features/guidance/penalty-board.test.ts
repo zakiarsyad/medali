@@ -8,7 +8,7 @@ import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { PENALTIES_START, type PenaltiesParams } from "./penalty-address";
-import { readPenaltyBoard } from "./penalty-board";
+import { readPenaltyBoard, readUnfinishedWork } from "./penalty-board";
 import {
   addPenaltyGroup,
   addTestPenalty,
@@ -21,9 +21,6 @@ import {
 } from "./test-violation-notes";
 
 const inTestDatabase = withTestDatabase();
-
-/** A day of Ganjil 4420/4421, which runs then. */
-const TODAY = "4420-10-20";
 
 interface Setting {
   officer: AccountForAccess;
@@ -66,7 +63,7 @@ function read(
   actor: AccountForAccess,
   more: Partial<PenaltiesParams> = {},
 ) {
-  return readPenaltyBoard(db, actor, { ...PENALTIES_START, ...more }, TODAY);
+  return readPenaltyBoard(db, actor, { ...PENALTIES_START, ...more });
 }
 
 async function reader(db: Database, roles: RoleId[], programId?: number) {
@@ -86,17 +83,20 @@ const DISMISSED = {
 } as const;
 
 describe("readPenaltyBoard", () => {
-  it("counts the penalties of each Kategori, and those whose kerja sosial ends today or later", async () => {
+  it("counts the penalties of each Kategori, and those with kerja sosial not yet Selesai dijalani, whatever its last day", async () => {
     await inTestDatabase(async (db) => {
       const { officer, inA, inB } = await setting(db);
       const [one = "", two = ""] = inA;
-      // Ends 4420-10-07: finished.
+      // Its last day, 4420-10-07, is gone, but it is still Dijatuhkan.
       await addTestPenalty(db, one, officer.id, "4420-10-01");
-      // Ends 4420-10-20: today, not finished.
-      await addTestPenalty(db, two, officer.id, "4420-10-14");
+      // Its last day, 4420-10-20, is still to come, but it is Selesai dijalani.
+      await addTestPenalty(db, two, officer.id, "4420-10-14", {
+        status: "served",
+      });
       await addTestPenalty(db, inB, officer.id, "4420-10-15", {
         category: "medium",
         level: 2,
+        status: "serving",
         socialWorkEndsOn: "4420-11-13",
       });
       await addTestPenalty(db, inB, officer.id, "4420-10-16", DISMISSED);
@@ -110,6 +110,7 @@ describe("readPenaltyBoard", () => {
         unfinishedWork: 2,
       });
       expect(board?.menteesOnly).toBe(false);
+      expect(await readUnfinishedWork(db, officer)).toBe(2);
     });
   });
 
@@ -155,6 +156,9 @@ describe("readPenaltyBoard", () => {
         socialWorkEndsOn: "4421-06-01",
         savedByName: "Pembina Uji Daftar Hukuman",
         semester: 3,
+        conditionsMet: [],
+        decision: "pending",
+        version: 1,
       });
     });
   });
@@ -203,7 +207,7 @@ describe("readPenaltyBoard", () => {
         light: 1,
         medium: 0,
         heavy: 0,
-        unfinishedWork: 0,
+        unfinishedWork: 1,
       });
       expect(own?.list.matching).toBe(1);
       expect(own?.menteesOnly).toBe(false);

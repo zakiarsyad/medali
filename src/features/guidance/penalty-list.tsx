@@ -77,9 +77,11 @@ function FilterRow({ params }: { params: PenaltiesParams }) {
 export function PenaltyListPanel({
   board,
   params,
+  mayFollowUp,
 }: {
   board: PenaltyBoard;
   params: PenaltiesParams;
+  mayFollowUp: boolean;
 }) {
   const { list } = board;
   return (
@@ -92,7 +94,7 @@ export function PenaltyListPanel({
         <p className={shared.empty}>{NO_PENALTIES_FOUND}</p>
       ) : (
         <>
-          <PenaltyTable rows={list.rows} />
+          <PenaltyTable rows={list.rows} mayFollowUp={mayFollowUp} />
           <ListPager
             page={list.page}
             matching={list.matching}

@@ -8,10 +8,13 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { changePenaltyStatus } from "./follow-up-discipline-penalty";
 import { PENALTIES_ADDRESS } from "./penalty-address";
+import { readUnfinishedWork } from "./penalty-board";
 import type { PenaltyHistory } from "./penalty-consequences";
+import type { FollowUpState } from "./penalty-follow-up";
 import { CONFIRMED } from "./penalty-input";
-import { savedMessage } from "./penalty-messages";
+import { STATUS_UPDATED, savedMessage } from "./penalty-messages";
 import {
   type PenaltyPick,
   readPenaltyHistory,
@@ -26,6 +29,17 @@ import { saveDisciplinePenalty } from "./save-discipline-penalty";
 async function recorder(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "record_discipline_penalties"))
+    forbidden();
+  return account;
+}
+
+/**
+ * The signed-in account when it may follow up discipline penalties. Any
+ * other is refused before anything of what it sent is read.
+ */
+async function follower(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "follow_up_discipline_penalties"))
     forbidden();
   return account;
 }
@@ -77,4 +91,37 @@ export async function saveDisciplinePenaltyAction(
   revalidatePath(PENALTIES_ADDRESS);
   const { name, status } = saved.value;
   return { error: null, done: savedMessage(name, status) };
+}
+
+/**
+ * The status choice of a row of "Daftar pelanggaran". The page is not
+ * drawn again: the row takes the penalty given back, and the numbers
+ * take "Kerja sosial belum selesai" read again.
+ */
+export async function changePenaltyStatusAction(
+  id: string,
+  status: string,
+): Promise<FollowUpState> {
+  const actor = await follower();
+  const db = database();
+  const changed = await changePenaltyStatus(
+    db,
+    actor,
+    String(id),
+    String(status),
+  );
+  if (!changed.ok) {
+    return {
+      error: changed.error,
+      done: null,
+      followUp: null,
+      unfinishedWork: null,
+    };
+  }
+  return {
+    error: null,
+    done: STATUS_UPDATED,
+    followUp: changed.value,
+    unfinishedWork: await readUnfinishedWork(db, actor),
+  };
 }

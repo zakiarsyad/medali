@@ -117,7 +117,7 @@ continue study and record the decision.
   sample suspended student who has an Instansi asal.
 - [x] 2. The right to follow up a penalty is added to the permission
   list, with its checks.
-- [ ] 3. Changing the status of a penalty, with confirmation.
+- [x] 3. Changing the status of a penalty, with confirmation.
 - [ ] 4. The conditions and the Keputusan in "Rincian", with the read
   only view.
 - [ ] 5. Refusing a change made on an outdated record.
