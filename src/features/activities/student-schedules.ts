@@ -56,6 +56,25 @@ const ROW = {
 const OF_SCHEDULE = eq(ppksActivities.id, activitySchedules.activityId);
 
 /**
+ * The schedules of a PPKS activity of the semester a student is in during
+ * the period the schedule keeps, removed or not. `semesters` holds the
+ * periods in which the student takes part, with their semester in each:
+ * undefined with none.
+ */
+export function ofSemesterIn(
+  semesters: readonly PeriodSemester[],
+): SQL | undefined {
+  return or(
+    ...semesters.map(({ periodId, semester }) =>
+      and(
+        eq(activitySchedules.academicPeriodId, periodId),
+        eq(ppksActivities.semester, semester),
+      ),
+    ),
+  );
+}
+
+/**
  * The schedules that are meant for a student, among those not removed
  * of the periods given: of a PPKS activity of the semester the student
  * is in during the period the schedule keeps, or of a special or
@@ -68,14 +87,7 @@ export function meantFor(
   semesters: readonly PeriodSemester[],
   student: Omit<CandidateStudent, "isActive">,
 ): SQL {
-  const ofSemester = or(
-    ...semesters.map(({ periodId, semester }) =>
-      and(
-        eq(activitySchedules.academicPeriodId, periodId),
-        eq(ppksActivities.semester, semester),
-      ),
-    ),
-  );
+  const ofSemester = ofSemesterIn(semesters);
   if (ofSemester === undefined) return sql`false`;
   const periodIds = semesters.map(({ periodId }) => periodId);
   const chosen = and(

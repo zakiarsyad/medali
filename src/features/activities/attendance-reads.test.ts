@@ -1,8 +1,8 @@
-// Sample Tahun akademik of this file: 2270 to 2270.
+// Sample Tahun akademik of this file: 2269 to 2270.
 import { eq, inArray, type SQL, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { students } from "@/db/schema";
+import { activitySchedules, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readAbsent } from "./absent-students";
 import { readAttendanceCounts } from "./attendance-counts";
@@ -23,7 +23,7 @@ import {
 } from "./test-records";
 
 /*
- * This file's own sample values: the Tahun akademik 2270, the programs
+ * This file's own sample values: the Tahun akademik 2269 and 2270, the programs
  * UJIHADIRJADWAL and UJIHADIRJADWALLAIN and the NIMs 9973300000 to
  * 9973300099.
  */
@@ -450,4 +450,77 @@ describe("readAttendanceNumbers", () => {
       expect(mean).toEqual({ percent: 50, students: 4 });
     });
   });
+
+  it("counts neither the waiting photo nor the mean of a schedule moved to dates that have not started, and counts them again once moved back", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { everyone, ownProgram } = records;
+
+      await moveHeld(db, records, { startsOn: "2270-09-25" });
+      const moved = await readAttendanceNumbers(
+        db,
+        everyone,
+        EVERY_PPKS,
+        TODAY,
+      );
+      const movedOwn = await readAttendanceNumbers(
+        db,
+        ownProgram,
+        EVERY_PPKS,
+        TODAY,
+      );
+      await moveHeld(db, records, { startsOn: "2270-09-10" });
+      const back = await readAttendanceNumbers(db, everyone, EVERY_PPKS, TODAY);
+
+      expect(moved.waiting).toBe(0);
+      expect(moved.mean).toEqual({ percent: null, students: 0 });
+      expect(movedOwn.waiting).toBe(0);
+      expect(back.waiting).toBe(1);
+      expect(back.mean).toEqual({ percent: 40, students: 5 });
+    });
+  });
+
+  it("counts no waiting photo of a student the schedule is no longer meant for, and counts it again once moved back", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      // Angkatan 2269 is in semester 1 during Ganjil 2269, not in 3.
+      const earlier = await addTestPeriods(db, 2269);
+
+      await moveHeld(db, records, {
+        startsOn: "2269-09-10",
+        academicPeriodId: earlier.oddId,
+      });
+      const moved = await readAttendanceNumbers(
+        db,
+        records.everyone,
+        EVERY_PPKS,
+        TODAY,
+      );
+      await moveHeld(db, records, {
+        startsOn: "2270-09-10",
+        academicPeriodId: records.periodId,
+      });
+      const back = await readAttendanceNumbers(
+        db,
+        records.everyone,
+        EVERY_PPKS,
+        TODAY,
+      );
+
+      expect(moved.waiting).toBe(0);
+      expect(back.waiting).toBe(1);
+    });
+  });
 });
+
+/** Gives the schedule of 10 September other dates of one day, or another period. */
+async function moveHeld(
+  db: Database,
+  records: Records,
+  moved: { startsOn: string; academicPeriodId?: string },
+): Promise<void> {
+  await db
+    .update(activitySchedules)
+    .set({ ...moved, endsOn: moved.startsOn })
+    .where(eq(activitySchedules.id, records.held));
+}

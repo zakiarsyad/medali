@@ -92,6 +92,34 @@ describe("readStudentScores", () => {
     });
   });
 
+  it("counts nothing of a schedule that has not started, not even a valid photo, as on the student's own page", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staff, ani, periodId } = records;
+      const scheduleId = await addTestSchedule(db, {
+        activityId: await addTestActivity(db, staff.id),
+        academicPeriodId: periodId,
+        changedBy: staff.id,
+        startsOn: "3900-10-21",
+      });
+      await addTestAttendance(db, staff.id, {
+        scheduleId,
+        studentId: ani,
+        status: "valid",
+      });
+
+      const before = await readStudentScores(db, records.everyone, TODAY);
+      const onTheDay = await readStudentScores(
+        db,
+        records.everyone,
+        "3900-10-21",
+      );
+
+      expect(before.get(ani)).toEqual({ attended: 0, counted: 0 });
+      expect(onTheDay.get(ani)).toEqual({ attended: 1, counted: 1 });
+    });
+  });
+
   it("gives nobody a score on a day before the first period", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
