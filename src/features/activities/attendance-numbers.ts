@@ -1,4 +1,6 @@
-import { and, count, eq, type SQL, sql } from "drizzle-orm";
+import { and, count, eq, lte, or, type SQL, sql } from "drizzle-orm";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
+import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
 import {
   activityAttendances,
@@ -6,11 +8,15 @@ import {
   ppksActivities,
   students,
 } from "@/db/schema";
+import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { takingPartIn } from "./chosen-students";
+import { readCohortCounts } from "./cohort-counts";
 import { listedSchedules, OF_SCHEDULE, ofKind } from "./list-schedules";
 import type { MeanScore } from "./mean-score";
+import { type CohortCount, semestersByPeriod } from "./participants";
 import { readMeanScore } from "./read-mean-score";
 import type { ScheduleKind, ScheduleScope } from "./schedule-list-address";
+import { ofSemesterIn } from "./student-schedules";
 import { IS_CARD, OF_ATTENDANCE } from "./verification-cards";
 
 /** The four numbers above the list of schedules. */
@@ -44,22 +50,53 @@ async function countSchedules(
 }
 
 /**
- * The students whose photos count at the schedules of a kind. At an extra
- * activity only those who take part in it now count, as for Hadir: the
- * photo of one taken out stays to be decided, but counts nowhere.
+ * The Aktif students a PPKS schedule is meant for: those of an angkatan
+ * in the semester of its activity during the period it keeps, by the rule
+ * the student's own page chooses their schedules with.
  */
-function countedAt(kind: ScheduleKind): SQL | undefined {
-  if (kind === "ppks") return undefined;
-  return takingPartIn(activitySchedules.id);
+function meantByCohort(
+  cohorts: readonly CohortCount[],
+  periods: readonly AcademicPeriod[],
+): SQL {
+  const meant: SQL[] = [];
+  for (const { cohortYear } of cohorts) {
+    const ofSemester = ofSemesterIn(semestersByPeriod(cohortYear, periods));
+    if (ofSemester === undefined) continue;
+    meant.push(sql`${eq(students.cohortYear, cohortYear)} and (${ofSemester})`);
+  }
+  const ofAny = or(...meant) ?? sql`false`;
+  return sql`(${ACTIVE_MEMBER}) and (${ofAny})`;
 }
 
-/** The photos that wait, at the schedules of the activities of a kind. */
+/**
+ * The students whose photos count at the schedules of a kind: only those
+ * a schedule is meant for now, as for Hadir. The photo of a student taken
+ * out of an extra activity, or of one whose PPKS schedule moved to a
+ * period in which their angkatan is in another semester, stays to be
+ * decided but counts nowhere.
+ */
+async function countedAt(db: Database, kind: ScheduleKind): Promise<SQL> {
+  if (kind === "extra") return takingPartIn(activitySchedules.id);
+  const [cohorts, periods] = await Promise.all([
+    readCohortCounts(db),
+    readAcademicPeriods(db),
+  ]);
+  return meantByCohort(cohorts, periods);
+}
+
+/**
+ * The photos that wait, at the schedules of the activities of a kind that
+ * have started by `today`: one moved to later dates counts from its first
+ * day on.
+ */
 async function countWaiting(
   db: Database,
   visible: SQL,
   kind: ScheduleKind,
+  today: string,
 ): Promise<number> {
-  const [counted] = await db
+  const counted = await countedAt(db, kind);
+  const [waiting] = await db
     .select({ waiting: count() })
     .from(activityAttendances)
     .innerJoin(activitySchedules, OF_ATTENDANCE)
@@ -71,10 +108,11 @@ async function countWaiting(
         ofKind(kind),
         eq(activityAttendances.status, "waiting"),
         visible,
-        countedAt(kind),
+        counted,
+        lte(activitySchedules.startsOn, today),
       ),
     );
-  return counted?.waiting ?? 0;
+  return waiting?.waiting ?? 0;
 }
 
 /**
@@ -94,7 +132,7 @@ export async function readAttendanceNumbers(
   const [mean, schedules, waiting] = await Promise.all([
     readMeanScore(db, visible, today),
     countSchedules(db, scope, today),
-    countWaiting(db, visible, scope.kind),
+    countWaiting(db, visible, scope.kind, today),
   ]);
   return { mean, ...schedules, waiting };
 }

@@ -37,6 +37,7 @@ export const SENT_SCHEDULE: SentSchedule = {
   location: "Aula uji",
   isRequired: true,
   participants: { mode: "", values: [] },
+  agreedAttendances: "",
 };
 
 /** The key a form made for the schedule it adds. */

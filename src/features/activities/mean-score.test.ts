@@ -19,6 +19,7 @@ function schedule(
     id,
     semester: 3,
     isRequired: true,
+    startsOn: endsOn,
     endsOn,
     uploadCount: 1,
     uploadUnit: "day",
@@ -134,6 +135,17 @@ describe("meanScore", () => {
       percent: 100,
       students: 2,
     });
+  });
+
+  it("counts nothing of a schedule that has not started, not even a valid attendance, as on the student's own page", () => {
+    const later = schedule("later", "2026-10-21");
+
+    expect(
+      meanScore([group(2, { later: "valid" })], [later], PERIOD, TODAY),
+    ).toEqual({ percent: null, students: 0 });
+    expect(
+      meanScore([group(2, { later: "valid" })], [later], PERIOD, "2026-10-21"),
+    ).toEqual({ percent: 100, students: 2 });
   });
 
   it("counts only the schedules meant for the angkatan of each group, and only the required ones", () => {

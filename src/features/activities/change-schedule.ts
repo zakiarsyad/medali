@@ -1,15 +1,24 @@
-import { and, eq, isNull, type SQL, sql } from "drizzle-orm";
+import { and, count, eq, isNull, type SQL, sql } from "drizzle-orm";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { momentOf } from "@/db/row-version";
-import { activitySchedules, ppksActivities } from "@/db/schema";
+import {
+  activityAttendances,
+  activitySchedules,
+  ppksActivities,
+} from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { OF_SCHEDULE } from "./list-schedules";
 import { SCHEDULES_NOT_ALLOWED } from "./not-allowed";
 import { replaceParticipants } from "./save-participants";
 import type { SentSchedule } from "./schedule-input";
+import {
+  type MoveToConfirm,
+  moveConfirmWords,
+  mustConfirmMove,
+} from "./schedule-move";
 import {
   planSchedule,
   type ScheduleHome,
@@ -62,34 +71,73 @@ interface Opened {
   id: string;
   /** The moment of the version the form was opened with. */
   at: Date;
+  /** Whether a move of its dates asks first when it has attendances. */
+  asksBeforeMove: boolean;
+  /** The number of attendances the person agreed to, as the form sends it. */
+  agreed: string;
+}
+
+type ChangeEnd =
+  | { kind: "changed" }
+  | { kind: "not-changed" }
+  | { kind: "confirm"; attendances: number };
+
+/**
+ * The days of the schedule when it is still as the form was opened with,
+ * held so that nobody else changes it until this change is saved.
+ */
+async function holdOpened(db: Database, opened: Opened) {
+  const [held] = await db
+    .select({
+      startsOn: activitySchedules.startsOn,
+      endsOn: activitySchedules.endsOn,
+    })
+    .from(activitySchedules)
+    .where(
+      and(keptSchedule(opened.id), eq(activitySchedules.changedAt, opened.at)),
+    )
+    .for("update");
+  return held;
+}
+
+/** Every attendance kept for the schedule: photos and records made by hand, in any status. */
+async function countAttendances(db: Database, id: string): Promise<number> {
+  const [counted] = await db
+    .select({ attendances: count() })
+    .from(activityAttendances)
+    .where(eq(activityAttendances.scheduleId, id));
+  return counted?.attendances ?? 0;
 }
 
 /**
  * Changes the schedule, and whom it is for, when it is still as the form
  * was opened with. Two changes of one version never both go in: the
- * second waits for the first, then finds the version gone.
+ * second waits for the first, then finds the version gone. A move of the
+ * dates of a schedule with attendances is not saved until the person
+ * agreed to the number of them there is now.
  */
 async function changeOpened(
   db: Database,
   actorId: string,
   opened: Opened,
   plan: SchedulePlan,
-): Promise<boolean> {
+): Promise<ChangeEnd> {
   const parts = { ...plan.input, academicPeriodId: plan.academicPeriodId };
   return db.transaction(async (tx) => {
-    const changed = await tx
+    const held = await holdOpened(tx, opened);
+    if (held === undefined) return { kind: "not-changed" };
+    if (opened.asksBeforeMove) {
+      const attendances = await countAttendances(tx, opened.id);
+      if (mustConfirmMove(held, plan.input, attendances, opened.agreed)) {
+        return { kind: "confirm", attendances };
+      }
+    }
+    await tx
       .update(activitySchedules)
       .set({ ...parts, changedAt: nextChangedAt(), changedBy: actorId })
-      .where(
-        and(
-          keptSchedule(opened.id),
-          eq(activitySchedules.changedAt, opened.at),
-        ),
-      )
-      .returning({ id: activitySchedules.id });
-    if (changed.length === 0) return false;
+      .where(eq(activitySchedules.id, opened.id));
     await replaceParticipants(tx, opened.id, plan.choice);
-    return true;
+    return { kind: "changed" };
   });
 }
 
@@ -135,7 +183,10 @@ async function whyNotChanged(
  * was changed since, by someone else or by the same form sent before, the
  * change is refused and nothing is overwritten. That is said before any
  * fault in the form itself: the person must first see the newest version.
- * The activity the schedule already holds may stay after it was removed
+ * A PPKS schedule with attendances whose dates move is saved only once
+ * the person agreed to the number of attendances it has now, as
+ * `sent.agreedAttendances` says; until then nothing is saved and they
+ * are asked. The activity the schedule already holds may stay after it was removed
  * from Kurikulum; any other must be in the list. Whom a schedule of an
  * extra activity is for is replaced with what the form sends. Gives back
  * the activity that is scheduled and whom it is for.
@@ -146,7 +197,7 @@ export async function changeSchedule(
   id: string,
   version: string,
   sent: SentSchedule,
-): Promise<Parsed<SavedSchedule>> {
+): Promise<Parsed<SavedSchedule> | MoveToConfirm> {
   if (!may(actor.roles, "manage_activities")) return SCHEDULES_NOT_ALLOWED;
   if (!isUuid(id)) return SCHEDULE_NOT_FOUND;
 
@@ -156,11 +207,20 @@ export async function changeSchedule(
   const isAsOpened = openedAt?.getTime() === kept.changedAt.getTime();
   if (openedAt === null || !isAsOpened) return SCHEDULE_CHANGED_BY_OTHER;
 
-  const plan = await planSchedule(db, sent, homeOf(id, kept));
+  const home = homeOf(id, kept);
+  const plan = await planSchedule(db, sent, home);
   if (!plan.ok) return plan;
-  const opened = { id, at: openedAt };
-  if (await changeOpened(db, actor.id, opened, plan.value)) {
-    return { ok: true, value: plan.value.saved };
+  const opened = {
+    id,
+    at: openedAt,
+    asksBeforeMove: home.kind === "ppks",
+    agreed: sent.agreedAttendances,
+  };
+  const end = await changeOpened(db, actor.id, opened, plan.value);
+  if (end.kind === "changed") return { ok: true, value: plan.value.saved };
+  if (end.kind === "confirm") {
+    const { attendances } = end;
+    return { ok: false, error: moveConfirmWords(attendances), attendances };
   }
   return whyNotChanged(db, id);
 }

@@ -30,6 +30,11 @@ export interface SentSchedule {
   isRequired: boolean;
   /** Read only for a special or additional activity. */
   participants: SentParticipants;
+  /**
+   * Read only when a schedule is changed: the number of attendances the
+   * person was asked about and agreed to, or empty when none.
+   */
+  agreedAttendances: string;
 }
 
 /** A checked schedule, ready to keep once its activity is found. */
