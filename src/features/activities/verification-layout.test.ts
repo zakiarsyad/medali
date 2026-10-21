@@ -27,6 +27,25 @@ describe("the tab Verifikasi presensi on a phone", () => {
     expect(ruleOf(".photo,\n.noPhoto")).toContain("width: 100%;");
     expect(ruleOf(".decision")).toContain("flex-wrap: wrap;");
   });
+});
+
+describe("the photo on a card of Verifikasi presensi", () => {
+  it("takes an upright box 3 wide by 4 high, the same with or without a picture", () => {
+    const box = ruleOf(".photo,\n.noPhoto");
+    const tokens = readFileSync("src/ui/tokens.css", "utf8");
+
+    expect(box).toContain("aspect-ratio: var(--photo-card-ratio);");
+    expect(box).not.toContain("height");
+    expect(tokens).toContain("--photo-card-ratio: 3 / 4;");
+  });
+
+  it("shows the whole picture, with the plain background around one that is wider than high", () => {
+    expect(ruleOf(".photo")).toContain("object-fit: contain;");
+    expect(ruleOf(".photo")).not.toContain("cover");
+    expect(ruleOf(".photo,\n.noPhoto")).toContain(
+      "background: var(--surface2);",
+    );
+  });
 
   it("gives each thing a card offers to decide the whole width of the card and more height, through the names for phone width", () => {
     const control = ruleOf(".decide .decideControl");

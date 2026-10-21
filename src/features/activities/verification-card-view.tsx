@@ -18,14 +18,22 @@ function Photo({ card }: { card: VerificationCard }) {
     return <p className={styles.noPhoto}>{card.removed}</p>;
   }
   if (!card.hasPhoto) return <p className={styles.noPhoto}>{NO_PHOTO_HERE}</p>;
+  const address = photoAddressOf(card.id);
   return (
-    // biome-ignore lint/performance/noImgElement: the picture is private and is given only after the server has checked who asks, which the image optimiser of the server cannot pass.
-    <img
-      src={photoAddressOf(card.id)}
-      alt={`Foto kehadiran ${card.name}`}
-      className={styles.photo}
-      loading="lazy"
-    />
+    <a
+      href={address}
+      target="_blank"
+      rel="noopener"
+      className={styles.photoLink}
+    >
+      {/* biome-ignore lint/performance/noImgElement: the picture is private and is given only after the server has checked who asks, which the image optimiser of the server cannot pass. */}
+      <img
+        src={address}
+        alt={`Foto kehadiran ${card.name}`}
+        className={styles.photo}
+        loading="lazy"
+      />
+    </a>
   );
 }
 

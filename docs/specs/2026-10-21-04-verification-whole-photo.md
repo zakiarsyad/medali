@@ -59,4 +59,4 @@ Pegawai UPK, who judges each photo, on a phone and on a computer.
 
 ## Steps
 
-- [ ] 1. The card shows the whole photo upright and opens it in a new tab.
+- [x] 1. The card shows the whole photo upright and opens it in a new tab.

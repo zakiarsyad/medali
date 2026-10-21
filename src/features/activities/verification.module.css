@@ -23,19 +23,24 @@
 }
 
 /*
- * Every picture takes the same room, loaded or not: a card keeps its
- * height while its picture is still on its way.
+ * Every picture takes the same upright room, loaded or not: a card keeps
+ * its height while its picture is still on its way. The whole picture
+ * shows, as a cut face could not be judged; a wide one gets plain bands.
  */
 .photo,
 .noPhoto {
   width: 100%;
-  height: var(--photo-card-height);
+  aspect-ratio: var(--photo-card-ratio);
   background: var(--surface2);
+}
+
+.photoLink {
+  display: block;
 }
 
 .photo {
   display: block;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .noPhoto {
