@@ -52,6 +52,9 @@ export function readCounted(
     );
 }
 
+/** A choice of a schedule's participants that names the student, their class or their angkatan. */
+export const NAMES_STUDENT = sql`(${chosen.studentId} = ${students.id} or ${chosen.className} = ${students.className} or ${chosen.cohortYear} = ${students.cohortYear})`;
+
 /**
  * The keys of the schedules among `extraIds` that name a student, their
  * class or their angkatan, in one order, so two students chosen alike
@@ -59,10 +62,9 @@ export function readCounted(
  */
 function chosenIn(extraIds: readonly string[]): SQL<string[]> {
   if (extraIds.length === 0) return sql<string[]>`'{}'::text[]`;
-  const names = sql`(${chosen.studentId} = ${students.id} or ${chosen.className} = ${students.className} or ${chosen.cohortYear} = ${students.cohortYear})`;
   return sql<
     string[]
-  >`array(select distinct ${chosen.scheduleId}::text from ${chosen} where ${inArray(chosen.scheduleId, [...extraIds])} and ${names} order by 1)`;
+  >`array(select distinct ${chosen.scheduleId}::text from ${chosen} where ${inArray(chosen.scheduleId, [...extraIds])} and ${NAMES_STUDENT} order by 1)`;
 }
 
 /** A count of marks of a student, or 0 for one on no meeting list. */

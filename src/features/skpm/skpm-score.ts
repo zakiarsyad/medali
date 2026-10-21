@@ -1,4 +1,5 @@
-const HIGHEST_SCORE = 100;
+/** The highest Nilai SKPM. */
+export const SKPM_MAX = 100;
 
 /** A number rounded to one decimal. */
 export function oneDecimal(amount: number): number {
@@ -10,6 +11,6 @@ export function oneDecimal(amount: number): number {
  * at most 100, to one decimal.
  */
 export function skpmScoreOf(total: number, pointsForHundred: number): number {
-  const score = (total / pointsForHundred) * HIGHEST_SCORE;
-  return oneDecimal(Math.min(HIGHEST_SCORE, score));
+  const score = (total / pointsForHundred) * SKPM_MAX;
+  return oneDecimal(Math.min(SKPM_MAX, score));
 }

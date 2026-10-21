@@ -1,11 +1,12 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { readGradeBasis } from "@/character-grades/grade-facts";
+import { readGradePage } from "@/character-grades/grade-page";
 import { readGradeRows } from "@/character-grades/grade-rows";
 import { database } from "@/db/database";
 import { CharacterGradeScreen } from "@/features/character-grades/character-grade-screen";
 import { readGradeParams } from "@/features/character-grades/grade-address";
-import { gradeListOf } from "@/features/character-grades/grade-list";
 import { GradeNumberCards } from "@/features/character-grades/grade-number-cards";
 import { gradeNumbersOf } from "@/features/character-grades/grade-numbers";
 import { readGradeScheme } from "@/features/character-grades/grade-scheme";
@@ -31,11 +32,14 @@ export default async function CharacterGradePage(
   const db = database();
   const inForce = await readGradeScheme(db);
   const visible = gradeVisibleTo(opened.account);
+  const today = campusDay();
+  const basis = await readGradeBasis(db, inForce.scheme, today);
+  const list = await readGradePage(db, visible, basis, today, params);
   const { rows, sikuBase } = await readGradeRows(
     db,
     visible,
     inForce.scheme,
-    campusDay(),
+    today,
   );
   const mayChange = may(opened.account.roles, "set_grade_weights");
   return (
@@ -56,7 +60,7 @@ export default async function CharacterGradePage(
         )
       }
       params={params}
-      list={gradeListOf(rows, params)}
+      list={list}
     />
   );
 }
