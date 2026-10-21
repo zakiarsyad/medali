@@ -91,10 +91,18 @@ numbers on "Kegiatan PPKS".
    same attendance score: "Rerata nilai kehadiran" on "Kegiatan PPKS" and
    the attendance part of the character grade. They are the same score,
    so they must agree with the student's own.
+7. Only a PPKS schedule asks before its dates move. A "Kegiatan tambahan"
+   saves as today. The "not started" rule sits in the one attendance
+   score, so it holds for a "Kegiatan tambahan" as well.
+8. On the student's page, a schedule not started also counts nothing in
+   "Dispensasi", as it counts in no number.
+9. "Menunggu verifikasi" on "Kegiatan PPKS" now counts only Aktif
+   students of the schedule's semester, as the rows already do. A waiting
+   photo of a student on Cuti or Non aktif is no longer counted there.
 
 ## Steps
 
 - [x] 1. The change form asks before moving the dates or period of a
   schedule with attendances.
-- [ ] 2. A schedule not started yet, and a photo of a student the schedule
+- [x] 2. A schedule not started yet, and a photo of a student the schedule
   is no longer meant for, count in no number and no score.

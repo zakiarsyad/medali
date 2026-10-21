@@ -1,7 +1,9 @@
 // Sample Tahun akademik of this file: 2360 to 2361.
+import { inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { daysAfter } from "@/academic-periods/days-after";
 import type { Database } from "@/db/connect";
+import { activitySchedules } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestMeeting } from "@/mentoring/test-meetings";
 import {
@@ -437,6 +439,85 @@ describe("readStudentActivities", () => {
       expect(shown.score.activities).toEqual({ attended: 1, counted: 3 });
       expect(shown.waiting).toBe(1);
       expect(shown.dispensations).toBe(1);
+    });
+  });
+
+  it("counts nothing of a schedule moved to dates that have not started, and counts it again once moved back", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staffId, student } = records;
+      const statuses = ["valid", "waiting", "dispensation"] as const;
+      const ids: string[] = [];
+      for (const status of statuses) {
+        const id = await addTestSchedule(db, scheduleIn(records, -10));
+        await addTestAttendance(db, staffId, {
+          scheduleId: id,
+          studentId: student.studentId,
+          status,
+        });
+        ids.push(id);
+      }
+      const moveTo = (days: number) =>
+        db
+          .update(activitySchedules)
+          .set({
+            startsOn: daysAfter(TODAY, days),
+            endsOn: daysAfter(TODAY, days),
+          })
+          .where(inArray(activitySchedules.id, ids));
+
+      await moveTo(3);
+      const moved = await shownTo(db, student);
+      await moveTo(-10);
+      const back = await shownTo(db, student);
+
+      expect(moved.score.activities).toEqual({ attended: 0, counted: 0 });
+      expect(moved.waiting).toBe(0);
+      expect(moved.dispensations).toBe(0);
+      expect(idsOf(moved.coming).sort()).toEqual([...ids].sort());
+      expect(back.score.activities).toEqual({ attended: 1, counted: 2 });
+      expect(back.waiting).toBe(1);
+      expect(back.dispensations).toBe(1);
+    });
+  });
+
+  it("counts nothing of a schedule moved to a period in which the student is in another semester, and counts it again once moved back", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { staffId, student } = records;
+      const earlier = await addTestPeriods(db, 2360);
+      const valid = await addTestSchedule(db, scheduleIn(records, -10));
+      const waiting = await addTestSchedule(db, scheduleIn(records, -9));
+      for (const [scheduleId, status] of [
+        [valid, "valid"],
+        [waiting, "waiting"],
+      ] as const) {
+        await addTestAttendance(db, staffId, {
+          scheduleId,
+          studentId: student.studentId,
+          status,
+        });
+      }
+      const moveTo = (academicPeriodId: string, days: number) =>
+        db
+          .update(activitySchedules)
+          .set({
+            academicPeriodId,
+            startsOn: daysAfter(TODAY, days),
+            endsOn: daysAfter(TODAY, days),
+          })
+          .where(inArray(activitySchedules.id, [valid, waiting]));
+
+      await moveTo(earlier.oddId, -380);
+      const moved = await shownTo(db, student);
+      await moveTo(records.periodId, -10);
+      const back = await shownTo(db, student);
+
+      expect(moved.score.activities).toEqual({ attended: 0, counted: 0 });
+      expect(moved.waiting).toBe(0);
+      expect(moved.history.schedules).toEqual([]);
+      expect(back.score.activities).toEqual({ attended: 1, counted: 2 });
+      expect(back.waiting).toBe(1);
     });
   });
 

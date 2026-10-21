@@ -16,6 +16,7 @@ const TODAY = "2026-10-13";
 
 /** A required schedule of one day whose upload time closed a week ago. */
 const CLOSED: ScoredSchedule = {
+  startsOn: "2026-10-05",
   endsOn: "2026-10-05",
   uploadCount: 1,
   uploadUnit: "day",
@@ -101,6 +102,31 @@ describe("attendanceScore", () => {
       attended: 0,
       counted: 0,
     });
+  });
+
+  it("counts nothing of a schedule that has not started, not even a valid attendance", () => {
+    const tomorrow = {
+      ...CLOSED,
+      startsOn: "2026-10-14",
+      endsOn: "2026-10-14",
+    };
+    const schedules = [
+      { ...tomorrow, attendance: "valid" as const },
+      { ...tomorrow, attendance: null },
+    ];
+
+    expect(attendanceScore(schedules, TODAY)).toEqual({
+      attended: 0,
+      counted: 0,
+    });
+  });
+
+  it("counts a valid attendance from the first day of its schedule on", () => {
+    const today = { ...CLOSED, startsOn: TODAY, endsOn: TODAY };
+
+    expect(attendanceScore([{ ...today, attendance: "valid" }], TODAY)).toEqual(
+      { attended: 1, counted: 1 },
+    );
   });
 
   it("counts nothing when there is no schedule", () => {

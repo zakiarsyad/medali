@@ -1,9 +1,11 @@
 import type { AttendanceMark } from "@/mentoring/meeting-ids";
 import type { AttendanceStatus } from "./attendance-status";
+import { hasStarted } from "./schedule-attendance";
 import { type UploadRange, uploadDeadline } from "./upload-range";
 
 /** What the score reads of one schedule that is meant for a student. */
 export interface ScoredSchedule extends UploadRange {
+  startsOn: string;
   isRequired: boolean;
   /** Where the student's attendance stands, or null with nothing sent. */
   attendance: AttendanceStatus | null;
@@ -18,8 +20,10 @@ export interface AttendanceScore {
 
 /**
  * Nilai kehadiran kegiatan of a student over the schedules meant for
- * them, on a day on campus. Only a required schedule counts. A valid
- * attendance counts at once. Anything else counts as not attended, but
+ * them, on a day on campus. Only a required schedule that has started
+ * counts: one moved to later dates counts nothing until its first day,
+ * not even a photo validated before. A valid attendance then counts at
+ * once. Anything else counts as not attended, but
  * only when the upload time has closed: until then the student may still
  * send a photo. A dispensation is left out on both sides.
  */
@@ -31,6 +35,7 @@ export function attendanceScore(
   let counted = 0;
   for (const schedule of schedules) {
     if (!schedule.isRequired) continue;
+    if (!hasStarted(schedule, today)) continue;
     if (schedule.attendance === "dispensation") continue;
     const isValid = schedule.attendance === "valid";
     const isClosed = today > uploadDeadline(schedule);
