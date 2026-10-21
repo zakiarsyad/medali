@@ -1,24 +1,131 @@
 import { daysAfter } from "@/academic-periods/days-after";
 import { weekdayFrom } from "@/academic-periods/weekdays";
+import type { AssignmentKind } from "@/features/counselling/schedule-ids";
 import type { Database } from "./connect";
 import {
+  isSenderScheduleStep,
   isStudentScheduleStep,
+  SAMPLE_ASSIGNMENTS,
   SAMPLE_SCHEDULES,
+  type SampleAssignment,
   type SampleSchedule,
+  type SampleScheduleStep,
 } from "./sample-counselling-schedules";
 import { counsellingScheduleChanges, counsellingSchedules } from "./schema";
 import { counsellorId, studentOf } from "./seed-counselling-consents";
-import { momentOf } from "./seed-siku-adjustments";
+import { momentOf, sampleAccountOf } from "./seed-siku-adjustments";
 
-function hasCounsellor(sample: SampleSchedule): boolean {
-  return sample.steps.some((step) => !isStudentScheduleStep(step.step));
+/** Who took the steps of one sample: the student, the sender and Konselor. */
+interface Takers {
+  student: string;
+  sender: string | null;
+  counsellor: string;
+}
+
+function takerOf(step: SampleScheduleStep, takers: Takers): string {
+  if (isStudentScheduleStep(step.step)) return takers.student;
+  if (isSenderScheduleStep(step.step) && takers.sender) return takers.sender;
+  return takers.counsellor;
+}
+
+function hasCounsellor(steps: SampleScheduleStep[]): boolean {
+  return steps.some(
+    (step) =>
+      !isStudentScheduleStep(step.step) && !isSenderScheduleStep(step.step),
+  );
+}
+
+type ScheduleValues = Omit<
+  typeof counsellingSchedules.$inferInsert,
+  "status" | "counsellorId" | "createdAt" | "changedBy" | "changedAt"
+>;
+
+/**
+ * Adds one sample request or assignment in its last status, with a log
+ * line for every step of it.
+ */
+async function addSample(
+  db: Database,
+  values: ScheduleValues,
+  steps: SampleScheduleStep[],
+  takers: Takers,
+  moment: { today: string; now: Date },
+): Promise<void> {
+  const changes = steps.map((step) => ({
+    step,
+    by: takerOf(step, takers),
+    at: momentOf(daysAfter(moment.today, -step.daysAgo), moment.now),
+  }));
+  const [first] = changes;
+  const last = changes.at(-1);
+  if (!first || !last) throw new Error("A sample request has no step.");
+  const [schedule] = await db
+    .insert(counsellingSchedules)
+    .values({
+      ...values,
+      status: last.step.statusAfter,
+      counsellorId: hasCounsellor(steps) ? takers.counsellor : null,
+      createdAt: first.at,
+      changedBy: last.by,
+      changedAt: last.at,
+    })
+    .returning({ id: counsellingSchedules.id });
+  if (!schedule) throw new Error("A sample request was not added.");
+  await db.insert(counsellingScheduleChanges).values(
+    changes.map((change, place) => ({
+      scheduleId: schedule.id,
+      changedBy: change.by,
+      changedAt: change.at,
+      step: change.step.step,
+      statusBefore: changes[place - 1]?.step.statusAfter ?? null,
+      statusAfter: change.step.statusAfter,
+    })),
+  );
+}
+
+function voluntaryValues(
+  sample: SampleSchedule,
+  studentId: string,
+  today: string,
+): ScheduleValues {
+  return {
+    studentId,
+    kind: "voluntary",
+    topic: sample.topic,
+    day: weekdayFrom(daysAfter(today, sample.inDays)),
+    hour: sample.hour,
+    way: sample.way,
+    story: sample.story,
+    counsellorMessage: sample.counsellorMessage,
+    reason: sample.reason,
+  };
+}
+
+function assignmentValues(
+  sample: SampleAssignment,
+  studentId: string,
+  today: string,
+): ScheduleValues {
+  const { time } = sample;
+  return {
+    studentId,
+    kind: sample.kind,
+    day: time ? weekdayFrom(daysAfter(today, time.inDays)) : null,
+    hour: time?.hour ?? null,
+    way: time?.way ?? null,
+    basis: sample.basis,
+    senderMessage: sample.senderMessage,
+    counsellorMessage: sample.counsellorMessage,
+    reason: sample.reason,
+  };
 }
 
 /**
- * Adds the sample requests for counselling, each with a log line for
- * every step of it, as the work of the student or of the sample
- * Konselor. The sample students, accounts and consents must be there
- * already. `today` is today on campus.
+ * Adds the sample requests for counselling and the sample assignments,
+ * each with a log line for every step of it, as the work of the student,
+ * of the sample Konselor, or of the sample Pembina Disiplin Mahasiswa or
+ * Penilai Mahasiswa who sent it. The sample students, accounts and
+ * consents must be there already. `today` is today on campus.
  */
 export async function addSampleCounsellingSchedules(
   db: Database,
@@ -26,45 +133,22 @@ export async function addSampleCounsellingSchedules(
   now: Date = new Date(),
 ): Promise<void> {
   const counsellor = await counsellorId(db);
+  const moment = { today, now };
   for (const sample of SAMPLE_SCHEDULES) {
     const student = await studentOf(db, sample.nim);
-    const changes = sample.steps.map((step) => ({
-      step,
-      by: isStudentScheduleStep(step.step) ? student.accountId : counsellor,
-      at: momentOf(daysAfter(today, -step.daysAgo), now),
-    }));
-    const [first] = changes;
-    const last = changes.at(-1);
-    if (!first || !last) throw new Error("A sample request has no step.");
-    const [schedule] = await db
-      .insert(counsellingSchedules)
-      .values({
-        studentId: student.id,
-        kind: "voluntary",
-        status: last.step.statusAfter,
-        topic: sample.topic,
-        day: weekdayFrom(daysAfter(today, sample.inDays)),
-        hour: sample.hour,
-        way: sample.way,
-        story: sample.story,
-        counsellorMessage: sample.counsellorMessage,
-        reason: sample.reason,
-        counsellorId: hasCounsellor(sample) ? counsellor : null,
-        createdAt: first.at,
-        changedBy: last.by,
-        changedAt: last.at,
-      })
-      .returning({ id: counsellingSchedules.id });
-    if (!schedule) throw new Error("A sample request was not added.");
-    await db.insert(counsellingScheduleChanges).values(
-      changes.map((change, place) => ({
-        scheduleId: schedule.id,
-        changedBy: change.by,
-        changedAt: change.at,
-        step: change.step.step,
-        statusBefore: changes[place - 1]?.step.statusAfter ?? null,
-        statusAfter: change.step.statusAfter,
-      })),
-    );
+    const takers = { student: student.accountId, sender: null, counsellor };
+    const values = voluntaryValues(sample, student.id, today);
+    await addSample(db, values, sample.steps, takers, moment);
+  }
+  const senders: Record<AssignmentKind, string> = {
+    assigned: await sampleAccountOf(db, "discipline_officer"),
+    called: await sampleAccountOf(db, "assessor"),
+  };
+  for (const sample of SAMPLE_ASSIGNMENTS) {
+    const student = await studentOf(db, sample.nim);
+    const sender = senders[sample.kind];
+    const takers = { student: student.accountId, sender, counsellor };
+    const values = assignmentValues(sample, student.id, today);
+    await addSample(db, values, sample.steps, takers, moment);
   }
 }

@@ -3,7 +3,8 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { counsellingSchedules } from "@/db/schema";
 import { FINISHED_STATUSES } from "./schedule-ids";
-import type { OwnHistoryPage } from "./schedule-view";
+import { topicOf } from "./schedule-rules";
+import type { OwnHistoryPage, OwnHistoryView } from "./schedule-view";
 
 const NOTHING: OwnHistoryPage = { items: [], hasMore: false };
 
@@ -24,6 +25,7 @@ export async function readOwnHistory(
   const rows = await db
     .select({
       id: counsellingSchedules.id,
+      kind: counsellingSchedules.kind,
       status: counsellingSchedules.status,
       day: counsellingSchedules.day,
       topic: counsellingSchedules.topic,
@@ -41,5 +43,11 @@ export async function readOwnHistory(
       desc(counsellingSchedules.id),
     )
     .limit(limit + 1);
-  return { items: rows.slice(0, limit), hasMore: rows.length > limit };
+  const items: OwnHistoryView[] = [];
+  for (const row of rows.slice(0, limit)) {
+    // A finished one always has its time; only a waiting assignment has none.
+    if (row.day === null) throw new Error("A finished schedule has no day.");
+    items.push({ ...row, day: row.day, topic: topicOf(row.kind, row.topic) });
+  }
+  return { items, hasMore: rows.length > limit };
 }

@@ -164,6 +164,7 @@ function scheduleOf(
 ): OwnScheduleView {
   return {
     id: "jadwal-1",
+    kind: "voluntary",
     status,
     topic: "family",
     day: "2026-10-21",
@@ -295,18 +296,119 @@ describe("Jadwal konseling saya", () => {
   });
 });
 
+describe("an assignment in Jadwal konseling saya", () => {
+  const WAITING = scheduleOf("awaiting", {
+    kind: "assigned",
+    topic: "discipline_violation",
+    day: null,
+    hour: null,
+    way: null,
+  });
+
+  it("is marked wajib with where it comes from, and waits for its time, with nothing to press", () => {
+    const page = studentPage(null, [WAITING]);
+
+    for (const words of [
+      "Konseling penugasan",
+      ">wajib<",
+      "Konseling wajib dari Pembina Disiplin Mahasiswa",
+      "Menunggu jadwal",
+      "Pelanggaran disiplin",
+      "Menunggu jadwal dari konselor",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(page).not.toContain(">Cara<");
+    expect(buttonsOf(page)).toEqual(["Daftar konseling"]);
+  });
+
+  it("says a Pemanggilan comes from Penilai Mahasiswa", () => {
+    const page = studentPage(null, [
+      { ...WAITING, kind: "called", topic: "character_assessment" },
+    ]);
+
+    expect(page).toContain("Konseling pemanggilan");
+    expect(page).toContain(
+      "Dipanggil Penilai Mahasiswa berdasarkan hasil asesmen karakter",
+    );
+    expect(page).toContain("Hasil asesmen karakter");
+  });
+
+  it("shows its time, Cara, konselor and message once set, with Minta jadwal ulang and no Batalkan", () => {
+    const page = studentPage(null, [
+      scheduleOf("scheduled", {
+        kind: "assigned",
+        topic: "discipline_violation",
+        counsellorName: "Konselor Contoh",
+        counsellorMessage: "Pesan konselor uji.",
+      }),
+    ]);
+
+    for (const words of [
+      "21 Okt 2026 pukul 10:00",
+      "Daring (tautan dikirim konselor)",
+      "Konselor Contoh",
+      "Pesan konselor uji.",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(buttonsOf(page)).toEqual(["Daftar konseling", "Minta jadwal ulang"]);
+  });
+
+  it("shows Minta jadwal ulang with the time asked, and nothing to press", () => {
+    const page = studentPage(null, [
+      scheduleOf("reschedule_asked", {
+        kind: "called",
+        topic: "character_assessment",
+      }),
+    ]);
+
+    expect(page).toContain("Minta jadwal ulang");
+    expect(page).toContain("Waktu yang Anda pilih");
+    expect(buttonsOf(page)).toEqual(["Daftar konseling"]);
+  });
+
+  it("is listed in Riwayat with its Jenis", () => {
+    const page = studentPage(null, [], {
+      items: [
+        {
+          id: "riwayat-wajib",
+          kind: "assigned",
+          status: "missed",
+          day: "2026-10-14",
+          topic: "discipline_violation",
+        },
+      ],
+      hasMore: false,
+      shown: 10,
+    });
+
+    expect(page).toContain("Konseling penugasan");
+    expect(page).toContain("Tidak hadir");
+    expect(page).toContain("Pelanggaran disiplin");
+  });
+});
+
 describe("Riwayat of the student", () => {
   const HISTORY: OwnHistory = {
     items: [
       {
         id: "riwayat-1",
+        kind: "voluntary",
         status: "cancelled",
         day: "2026-10-14",
         topic: "family",
       },
-      { id: "riwayat-2", status: "done", day: "2026-10-05", topic: "academic" },
+      {
+        id: "riwayat-2",
+        kind: "voluntary",
+        status: "done",
+        day: "2026-10-05",
+        topic: "academic",
+      },
       {
         id: "riwayat-3",
+        kind: "voluntary",
         status: "missed",
         day: "2026-09-28",
         topic: "finances",

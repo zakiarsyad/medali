@@ -17,7 +17,7 @@ import { readDormReferrals } from "./dorm-referrals";
 import { readScheduleBoard } from "./schedule-board";
 import { readSessionHistory } from "./session-history";
 import { addTestActor } from "./test-consents";
-import { addTestSchedule } from "./test-schedules";
+import { addTestAssignment, addTestSchedule } from "./test-schedules";
 import { setTestConsent } from "./test-screenings";
 
 const inTestDatabase = withTestDatabase();
@@ -239,6 +239,37 @@ describe("what is already under way for a referral", () => {
           studentId: ids.ani,
           consent: "approved",
           activeSchedule: "scheduled",
+        }),
+      ]);
+    });
+  });
+
+  it("shows the student's own request, never an assignment beside it or alone", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, ids } = await addReferrals(db);
+      const ani = await addTestActor(db, "Ani Sendiri", ["student"], ids.ani);
+      const sender = await addTestActor(db, "Pembina Uji", [
+        "discipline_officer",
+      ]);
+      await addTestAssignment(db, { studentId: ids.ani, senderId: sender.id });
+      await addTestSchedule(db, {
+        studentId: ids.ani,
+        studentAccountId: ani.id,
+        status: "submitted",
+      });
+      await addTestAssignment(db, {
+        studentId: ids.budi,
+        senderId: sender.id,
+        kind: "called",
+      });
+
+      const list = await readDormReferrals(db, counsellor, 1, TODAY);
+
+      expect(list?.rows).toEqual([
+        expect.objectContaining({ studentId: ids.budi, activeSchedule: null }),
+        expect.objectContaining({
+          studentId: ids.ani,
+          activeSchedule: "submitted",
         }),
       ]);
     });
