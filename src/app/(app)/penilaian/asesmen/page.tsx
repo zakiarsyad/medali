@@ -18,6 +18,8 @@ import {
   AssessmentScreen,
   ReadOnlyNote,
 } from "@/features/character-assessment/assessment-screen";
+import { readCoachingList } from "@/features/character-assessment/coaching-list";
+import { CoachingPanel } from "@/features/character-assessment/coaching-panel";
 import { readMainIndicators } from "@/features/curriculum/stored-main-indicators";
 
 /**
@@ -25,7 +27,8 @@ import { readMainIndicators } from "@/features/curriculum/stored-main-indicators
  * open the tab see: Ketua Program Studi those of their own program only,
  * Pengasuh their own mentees only. Kepala Unit and Penilai Mahasiswa may
  * also enter an assessment, and alone read "Catatan penilai"; the others
- * are told who enters. A student's earlier assessments open over the tab
+ * are told who enters. "Teridentifikasi perlu pembinaan" lists, of the
+ * same students, those whose latest assessment is low. A student's earlier assessments open over the tab
  * only for a student the account sees.
  */
 export default async function AssessmentPage(
@@ -39,8 +42,9 @@ export default async function AssessmentPage(
   const visible = assessmentVisibleTo(account);
   const mayAssess = may(account.roles, "assess_character");
   const running = await readRunningPeriod(db);
-  const [numbers, list, history] = await Promise.all([
+  const [numbers, coaching, list, history] = await Promise.all([
     readAssessmentNumbers(db, visible, running?.id ?? null),
+    readCoachingList(db, visible, params),
     readAssessmentList(db, visible, params),
     params.historyId === null
       ? null
@@ -54,6 +58,7 @@ export default async function AssessmentPage(
         numbers={numbers}
         periodName={running ? periodTitle(running) : null}
         list={list}
+        coaching={<CoachingPanel list={coaching} params={params} />}
         manage={
           mayAssess ? (
             <AssessmentInputPanel

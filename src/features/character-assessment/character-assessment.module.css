@@ -16,6 +16,31 @@
   font-weight: var(--weight-heavy);
 }
 
+/* Tingkat of "Teridentifikasi perlu pembinaan": Intensif, Sedang and Ringan. */
+.intensive {
+  background: var(--bina);
+  color: var(--surface);
+}
+
+.moderate {
+  border: var(--line-width) solid var(--warn);
+  color: var(--warn);
+}
+
+.light {
+  background: var(--surface2);
+  color: var(--muted);
+}
+
+.weakScore {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.more {
+  margin-top: var(--space-sm);
+}
+
 .note {
   margin: 0;
   padding: var(--space-sm) var(--space-md);
