@@ -1,3 +1,5 @@
+// Sample NIMs of this file: 9944270000 to 9944270099. None is added to
+// the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { PenaltyRow } from "./penalty-board";
@@ -7,7 +9,7 @@ const ROW: PenaltyRow = {
   id: "p1",
   studentId: "s1",
   name: "Mega Saragih",
-  nim: "9900250013",
+  nim: "9944270013",
   program: "D3 Pajak",
   day: "2026-10-14",
   description: "Terlambat mengikuti apel pagi tiga kali dalam satu bulan.",

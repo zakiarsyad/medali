@@ -1,3 +1,5 @@
+// Sample NIMs of this file: 9944260000 to 9944260099. None is added to
+// the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { PenaltiesScreen } from "./penalties-screen";
@@ -12,7 +14,7 @@ const ROW: PenaltyRow = {
   id: "p1",
   studentId: "s1",
   name: "Mega Saragih",
-  nim: "9900250013",
+  nim: "9944260013",
   program: "D3 Pajak",
   day: "2026-10-14",
   description: "Terlambat mengikuti apel pagi tiga kali dalam satu bulan.",
@@ -102,7 +104,7 @@ describe("PenaltiesScreen", () => {
   it("shows a penalty with its student, Jenjang, penalty, kerja sosial and status", () => {
     const shown = screen([ROW, DISMISSED], null);
     expect(shown).toContain("Daftar pelanggaran");
-    expect(shown).toContain("9900250013 · D3 Pajak");
+    expect(shown).toContain("9944260013 · D3 Pajak");
     expect(shown).toContain("Ringan · jenjang pertama");
     expect(shown).toContain("Teguran lisan tertulis");
     expect(shown).toContain("7 hari");
