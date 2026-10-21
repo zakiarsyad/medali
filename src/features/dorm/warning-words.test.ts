@@ -53,6 +53,7 @@ describe("receivedWords", () => {
         level: 1,
         issuedAt: new Date("2026-10-10T18:00:00Z"),
         result: "Mahasiswa hadir dan mengakui pelanggarannya. ",
+        proposal: null,
       }),
     ).toBe(
       "pada 11 Okt 2026. Hasil klarifikasi: Mahasiswa hadir dan mengakui pelanggarannya.",
@@ -62,10 +63,22 @@ describe("receivedWords", () => {
         level: 2,
         issuedAt: new Date("2026-10-10T03:00:00Z"),
         result: "Tidak hadir pada panggilan.",
+        proposal: "proposed",
       }),
     ).toBe(
-      "pada 10 Okt 2026. Hasil klarifikasi: Tidak hadir pada panggilan. Pengelola Asrama mengajukan proses hukuman disiplin ke Kepala Unit Pembangunan Karakter.",
+      "pada 10 Okt 2026. Hasil klarifikasi: Tidak hadir pada panggilan. Pengelola Asrama mengajukan proses hukuman disiplin ke Kepala Unit Pembangunan Karakter. Status pengajuan: Diajukan.",
     );
+  });
+
+  it("says Diproses once Kepala Unit processed the proposal", () => {
+    expect(
+      receivedWords({
+        level: 2,
+        issuedAt: new Date("2026-10-10T03:00:00Z"),
+        result: "Tidak hadir pada panggilan.",
+        proposal: "handled",
+      }),
+    ).toMatch(/Status pengajuan: Diproses\.$/);
   });
 });
 

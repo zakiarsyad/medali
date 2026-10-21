@@ -7,6 +7,7 @@ import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readAppealInbox } from "@/features/dorm/appeal-inbox";
 import { AppealInboxPanel } from "@/features/dorm/appeal-inbox-panel";
+import { readDisciplineProposals } from "@/features/dorm/discipline-proposals";
 import {
   readOwnRecord,
   readOwnViolations,
@@ -15,6 +16,7 @@ import {
   OwnRecord,
   OwnViolationsView,
 } from "@/features/dorm/own-violations-view";
+import { ProposalsPanel } from "@/features/dorm/proposals-panel";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { readStaffViolations } from "@/features/dorm/staff-violations";
 import { StaffViolationsScreen } from "@/features/dorm/staff-violations-screen";
@@ -30,6 +32,7 @@ import { violationScreensOf } from "@/features/dorm/violation-screens";
 import { readWarningCalls } from "@/features/dorm/warning-calls";
 import { readWarningProcess } from "@/features/dorm/warning-process";
 import { WarningProcessDialog } from "@/features/dorm/warning-process-dialog";
+import { penaltyFormAddress } from "@/features/guidance/penalty-address";
 import type { SearchParams } from "@/ui/search-params";
 import type { TabLinksProps } from "@/ui/tab-links";
 
@@ -100,6 +103,39 @@ async function callProcessOf(
       params={params}
       now={now}
       reduces={may(account.roles, "reduce_dorm_violations")}
+    />
+  );
+}
+
+/**
+ * "Pengajuan hukuman disiplin dari Pengelola Asrama" for Pengelola Asrama
+ * and Kepala Unit, with "Proses" for Kepala Unit and "Catat hukuman
+ * disiplin" for an account that records discipline penalties, which
+ * opens Pembinaan on the student; null for any other account.
+ */
+async function proposalsOf(
+  account: Account,
+  params: StaffViolationParams,
+  now: Date,
+) {
+  const proposals = await readDisciplineProposals(
+    database(),
+    account,
+    params.proposalPage,
+    now,
+  );
+  if (proposals === null) return null;
+  return (
+    <ProposalsPanel
+      proposals={proposals}
+      params={params}
+      tools={{
+        handles: may(account.roles, "handle_dorm_discipline_proposals"),
+        ownStudentId: account.studentId,
+        penaltyAddressOf: may(account.roles, "record_discipline_penalties")
+          ? penaltyFormAddress
+          : null,
+      }}
     />
   );
 }
@@ -177,6 +213,7 @@ async function StaffScreen({
       schedule={schedule}
       appeals={appeals}
       waitingAppeals={inbox?.waiting ?? null}
+      proposals={await proposalsOf(account, params, now)}
       warnings={warnings}
       processes={may(account.roles, "issue_dorm_warning_letters")}
       ownStudentId={account.studentId}

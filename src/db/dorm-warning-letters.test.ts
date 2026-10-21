@@ -271,6 +271,118 @@ describe("a call and its warning letter", () => {
   });
 });
 
+// 10:00 on campus on 16 October 3290.
+const HANDLED = new Date("3290-10-16T03:00:00Z");
+
+function handling(of: Records) {
+  return {
+    handlingNote: "Diteruskan ke Pembina Disiplin Mahasiswa.",
+    handledBy: of.accountId,
+    handledAt: HANDLED,
+  };
+}
+
+function handle(
+  db: Database,
+  letterId: string,
+  set: Partial<typeof dormWarningLetters.$inferInsert>,
+) {
+  return db
+    .update(dormWarningLetters)
+    .set(set)
+    .where(eq(dormWarningLetters.id, letterId));
+}
+
+describe("the handling of the proposal of an SP 2", () => {
+  it("is set once on an issued SP 2, and then cannot change", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const [letter] = await addLetter(db, records, issued(records, 2));
+      if (!letter) throw new Error("The letter was not added.");
+
+      await handle(db, letter.id, handling(records));
+      await expect(
+        inOwnStep(db, (tx) =>
+          handle(tx, letter.id, { handlingNote: "Catatan yang lain." }),
+        ),
+      ).rejects.toThrow();
+
+      const [kept] = await db
+        .select()
+        .from(dormWarningLetters)
+        .where(eq(dormWarningLetters.id, letter.id));
+      expect(kept).toMatchObject(handling(records));
+    });
+  });
+
+  it("cannot be set by the same change that issues the SP 2", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const [letter] = await addLetter(db, records, { level: 2 });
+      if (!letter) throw new Error("The letter was not added.");
+
+      await expect(
+        handle(db, letter.id, { ...issued(records, 2), ...handling(records) }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("cannot come with any other change of the SP", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const [letter] = await addLetter(db, records, issued(records, 2));
+      if (!letter) throw new Error("The letter was not added.");
+
+      await expect(
+        handle(db, letter.id, {
+          ...handling(records),
+          result: "Hasil klarifikasi yang diubah.",
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("is only on an issued SP 2", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(
+        inOwnStep(db, (tx) =>
+          addLetter(tx, records, {
+            ...issued(records, 1),
+            ...handling(records),
+          }),
+        ),
+      ).rejects.toThrow();
+      await expect(
+        inOwnStep(db, (tx) =>
+          addLetter(tx, records, { level: 2, ...handling(records) }),
+        ),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("has a note of 5 to 1,000 letters, who and when together", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const whole = { ...issued(records, 2), ...handling(records) };
+
+      for (const part of [
+        { ...whole, handledBy: null },
+        { ...whole, handledAt: null },
+        { ...whole, handlingNote: null },
+        { ...whole, handlingNote: "Oke." },
+        { ...whole, handlingNote: "a".repeat(1001) },
+      ]) {
+        await expect(
+          inOwnStep(db, (tx) => addLetter(tx, records, part)),
+        ).rejects.toThrow();
+      }
+      await expect(addLetter(db, records, whole)).resolves.toHaveLength(1);
+    });
+  });
+});
+
 describe("the log of calls and warning letters", () => {
   it("refuses to change a line", async () => {
     await inTestDatabase(async (db) => {

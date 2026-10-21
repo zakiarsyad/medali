@@ -2036,8 +2036,33 @@ describe("may", () => {
       "Menjadwalkan panggilan klarifikasi dan menerbitkan surat peringatan asrama",
     );
     expect(ACTION_TITLES.view_dorm_warning_results).toBe(
-      "Membaca hasil klarifikasi surat peringatan asrama dan catatan pengajuan hukuman disiplin",
+      "Membaca hasil klarifikasi surat peringatan asrama, catatan pengajuan hukuman disiplin, dan tindak lanjutnya",
     );
+    expect(ACTION_TITLES.handle_dorm_discipline_proposals).toBe(
+      "Menindaklanjuti pengajuan hukuman disiplin dari Pengelola Asrama",
+    );
+  });
+
+  it("lets only Kepala Unit handle the discipline proposals of Pengelola Asrama, which they also read", () => {
+    expect(may(["head_of_unit"], "handle_dorm_discipline_proposals")).toBe(
+      true,
+    );
+    expect(may(["head_of_unit"], "view_dorm_warning_results")).toBe(true);
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "dorm_manager",
+        "discipline_officer",
+        "bam_bphk",
+        "bam_compliance",
+        "director",
+        "head_of_program",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "handle_dorm_discipline_proposals")).toBe(false);
+    }
   });
 
   it("lets only Pengelola Asrama reduce violations and undo a reduction", () => {
