@@ -1,9 +1,15 @@
 // Sample NIMs of this file: 9986321000 to 9986321099.
+
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { BAM_ROLES } from "@/auth/bam-roles";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { counsellingSessions } from "@/db/schema";
+import {
+  counsellingSessions,
+  counsellingSharings,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readCampusSessionCount, readSharedList } from "./shared-board";
 import { SHARED_PAGE_SIZE } from "./shared-view";
@@ -14,6 +20,7 @@ import {
   PUBLISHED_AT,
   publishTestSharing,
   TEST_SUMMARY,
+  type TestShare,
 } from "./test-shared";
 import { addSharingStudent } from "./test-sharings";
 
@@ -85,7 +92,39 @@ describe("Data yang dipublikasikan untuk Anda", () => {
     });
   });
 
-  it("loads 20 at a time, the newest published first", async () => {
+  it("lists the newest published first, and leaves out a removed student", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
+      const share: TestShare = {
+        data: ["counselling"],
+        recipients: ["head_of_unit"],
+      };
+      const older = await addSharingStudent(db, `${PROGRAM} 6`, "9986321040");
+      const newer = await addSharingStudent(db, `${PROGRAM} 7`, "9986321041");
+      const removed = await addSharingStudent(db, `${PROGRAM} 8`, "9986321042");
+      for (const people of [older, newer, removed]) {
+        await publishTestSharing(db, people, share);
+      }
+      await db
+        .update(counsellingSharings)
+        .set({ publishedAt: new Date(PUBLISHED_AT.getTime() + 60_000) })
+        .where(eq(counsellingSharings.studentId, newer.studentId));
+      await db
+        .update(students)
+        .set({ deletedAt: NOW, deletedBy: head.id })
+        .where(eq(students.id, removed.studentId));
+
+      const list = await readSharedList(db, head, 1);
+
+      expect(list?.rows.map((row) => row.studentId)).toEqual([
+        newer.studentId,
+        older.studentId,
+      ]);
+      expect(list?.matching).toBe(2);
+    });
+  });
+
+  it("loads 20 at a time", async () => {
     await inTestDatabase(async (db) => {
       const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
       const ids: string[] = [];
@@ -140,7 +179,7 @@ describe("Data yang dipublikasikan untuk Anda", () => {
   });
 });
 
-async function addSessions(db: Database, days: string[]) {
+async function addSessions(db: Database, days: string[]): Promise<string> {
   const people = await addSharingStudent(db, `${PROGRAM} 5`, "9986321005");
   for (const day of days) {
     await db.insert(counsellingSessions).values({
@@ -156,6 +195,7 @@ async function addSessions(db: Database, days: string[]) {
       changedAt: NOW,
     });
   }
+  return people.studentId;
 }
 
 async function countsOf(db: Database): Promise<(string | null)[]> {
@@ -198,6 +238,24 @@ describe("Sesi konseling 30 hari", () => {
         "2026-10-22",
       ]);
       expect(await countsOf(db)).toEqual(["5", "5", "5", "5"]);
+    });
+  });
+
+  it("leaves out the sessions of a removed student", async () => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addSessions(db, [
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-04",
+        "2026-10-05",
+      ]);
+      expect(await countsOf(db)).toEqual(["5", "5", "5", "5"]);
+      const by = await addTestActor(db, "Penghapus Uji", ["head_of_unit"]);
+      await db
+        .update(students)
+        .set({ deletedAt: NOW, deletedBy: by.id })
+        .where(eq(students.id, studentId));
+      expect(await countsOf(db)).toEqual(["0", "0", "0", "0"]);
     });
   });
 });

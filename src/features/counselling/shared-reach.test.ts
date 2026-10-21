@@ -148,6 +148,38 @@ describe("who reaches a published sharing", () => {
     });
   });
 
+  it("reaches the student through any one named role whose rows hold the student, though another named role does not", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(
+        db,
+        "Prodi Uji Jangkauan 9",
+        "9986320009",
+      );
+      const elsewhere = await addSharingStudent(
+        db,
+        "Prodi Uji Jangkauan 10",
+        "9986320010",
+      );
+      const { mentor } = await addTestMentorOf(db, people.studentId);
+      await publishTestSharing(db, people, {
+        data: ["counselling"],
+        recipients: ["head_of_program", "mentor"],
+      });
+      const otherHead = await addTestRecipient(
+        db,
+        ["head_of_program"],
+        elsewhere.studentId,
+      );
+      const both = {
+        ...otherHead,
+        id: mentor.id,
+        roles: ["head_of_program", "mentor"] as RoleId[],
+      };
+      expect(await reachedBy(db, otherHead)).toEqual([]);
+      expect(await reachedBy(db, both)).toEqual([people.studentId]);
+    });
+  });
+
   it("does not reach a sharing that is only approved, or one the student withdrew", async () => {
     await inTestDatabase(async (db) => {
       const people = await addSharingStudent(
