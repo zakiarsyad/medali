@@ -69,6 +69,25 @@ describe("the student's own sharing on Konseling", () => {
     expect(page).toContain("Cabut persetujuan berbagi");
   });
 
+  it("names the level and advice first, in the words of Konselor's form", () => {
+    const waiting = pageOf({
+      ...sharingOf("waiting"),
+      data: ["counselling", "level"],
+      summary: null,
+    });
+    expect(waiting).toContain(
+      "<li>Tingkat hasil asesmen dan rekomendasi tindak lanjut</li><li>Status, jadwal",
+    );
+    const published = pageOf({
+      ...sharingOf("published"),
+      data: ["level"],
+      summary: null,
+    });
+    expect(published).toContain(
+      "Pengasuh: tingkat hasil asesmen dan rekomendasi tindak lanjut.",
+    );
+  });
+
   it("shows nothing of a sharing when none is current", () => {
     const page = pageOf(null);
     expect(page).not.toContain("berbagi data");

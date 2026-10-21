@@ -3,7 +3,11 @@
 import type { FormEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
-import { SHARED_DATA, SHARING_RECIPIENTS, SUMMARY_MAX } from "./sharing-ids";
+import {
+  SHARING_RECIPIENTS,
+  type SharedData,
+  SUMMARY_MAX,
+} from "./sharing-ids";
 import {
   ASK_NOTE,
   RECIPIENT_LIMITS,
@@ -24,14 +28,17 @@ function textsOf(form: FormData, name: string): string[] {
 }
 
 /**
- * "Data yang dibagikan", "Penerima", "Ringkasan untuk penerima" and
- * "Minta persetujuan mahasiswa". Nothing is ticked at the start, so
- * Konselor ticks each data and each recipient on purpose.
+ * "Data yang dibagikan" offered for the student, "Penerima", "Ringkasan
+ * untuk penerima" while the summary is offered, and "Minta persetujuan
+ * mahasiswa". Nothing is ticked at the start, so Konselor ticks each
+ * data and each recipient on purpose.
  */
 export function SharingForm({
+  offered,
   pending,
   onAsk,
 }: {
+  offered: readonly SharedData[];
   pending: boolean;
   onAsk: (ask: SharingAsk) => void;
 }) {
@@ -50,7 +57,7 @@ export function SharingForm({
     <form onSubmit={send} className={shared.form} noValidate>
       <fieldset className={`${shared.roles} ${styles.ticks} ${styles.full}`}>
         <legend className={shared.label}>Data yang dibagikan</legend>
-        {SHARED_DATA.map((data) => (
+        {offered.map((data) => (
           <label key={data} className={styles.tick}>
             <input type="checkbox" name="data" value={data} />
             <span>{SHARED_DATA_WORDS[data]}</span>
@@ -69,16 +76,18 @@ export function SharingForm({
           </label>
         ))}
       </fieldset>
-      <label className={`${shared.field} ${styles.full}`}>
-        Ringkasan untuk penerima
-        <textarea
-          name="summary"
-          rows={3}
-          maxLength={SUMMARY_MAX}
-          placeholder={SUMMARY_PLACEHOLDER}
-          className={shared.input}
-        />
-      </label>
+      {offered.includes("summary") && (
+        <label className={`${shared.field} ${styles.full}`}>
+          Ringkasan untuk penerima
+          <textarea
+            name="summary"
+            rows={3}
+            maxLength={SUMMARY_MAX}
+            placeholder={SUMMARY_PLACEHOLDER}
+            className={shared.input}
+          />
+        </label>
+      )}
       <div className={`${shared.actions} ${styles.full}`}>
         <button type="submit" className={shared.button} disabled={pending}>
           Minta persetujuan mahasiswa

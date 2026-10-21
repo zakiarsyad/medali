@@ -130,7 +130,7 @@ Kesehatan mental, and never the scores or the konselor's note.
 
 - [x] 1. The level is added to what can be shared, with the rule that an
   old agreement does not cover it, with checks.
-- [ ] 2. Konselor's panel and the student's request show the new choice.
+- [x] 2. Konselor's panel and the student's request show the new choice.
 - [ ] 3. Recipients see Tingkat and "Rekomendasi", and "Perlu konseling".
 - [ ] 4. Konselor's list gets Konseling, Publikasi and "Disetujui".
 - [ ] 5. The refusal checks for scores, note and "Risiko".
