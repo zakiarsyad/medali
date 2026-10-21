@@ -54,6 +54,38 @@ async function readSharedScreening(
 }
 
 /**
+ * The level of the student's latest screening, for the recipient's panel
+ * in the student's detail, read on each load and logged as the
+ * sharing's own list logs it. Null, with nothing read or logged, for an
+ * account without the right, for a student whose published sharing it
+ * does not reach, also one withdrawn since, and for a sharing without
+ * the level: the same answer whether or not the student was screened.
+ * The inner `screening` is null for a shared level with no screening.
+ */
+export async function openSharedLevel(
+  db: Database,
+  actor: AccountForAccess,
+  studentId: string,
+  now: Date = new Date(),
+): Promise<{ screening: SharedScreening | null } | null> {
+  if (!may(actor.roles, "view_shared_counselling_data")) return null;
+  if (!isUuid(studentId)) return null;
+  return db.transaction(async (tx) => {
+    const sharing = await reachedSharing(tx, actor, studentId);
+    if (sharing === null || sharing.publishedAt === null) return null;
+    if (!sharing.data.includes("level")) return null;
+    const screening = await readSharedScreening(tx, studentId);
+    await logSharedReads(
+      tx,
+      actor.id,
+      [{ sharingId: sharing.id, studentId }],
+      now,
+    );
+    return { screening };
+  });
+}
+
+/**
  * "Rincian" of a student whose data is published for the account: only
  * the parts the student agreed to share, read when it is opened, and who
  * published it when. The level is of the latest screening, without its

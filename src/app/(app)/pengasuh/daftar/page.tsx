@@ -6,6 +6,7 @@ import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import { USERS_ADDRESS } from "@/features/accounts/list-address";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
+import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import {
@@ -79,6 +80,7 @@ async function MentorPage({
                 base={baseScoreNow()}
               />
               <StudentFitnessPanel account={account} studentId={studentId} />
+              <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel
                 account={account}
                 visible={notesVisible}
