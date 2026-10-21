@@ -89,9 +89,15 @@ what was said in the session.
    prototype.
 3. Nobody takes a request back or cancels it.
 
+## Decisions
+
+1. Sending and reading how these requests stand is one right of its
+   own, "Tugaskan konseling wajib", held by Pembina Disiplin Mahasiswa
+   alone, with the rows of that role.
+
 ## Steps
 
-- [ ] 1. The right to send a student to mandatory counselling, and to
+- [x] 1. The right to send a student to mandatory counselling, and to
   read the status, date and Jam of these requests, is added for Pembina
   Disiplin Mahasiswa, with its checks.
 - [ ] 2. An assignment of the kind "Penugasan" (from Mandatory
