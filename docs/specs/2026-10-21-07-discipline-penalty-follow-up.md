@@ -110,6 +110,31 @@ continue study and record the decision.
 10. A refused change made on an outdated record says "Hukuman ini baru
     saja diubah orang lain. Yang tampil sekarang adalah datanya yang
     terbaru." and the row shows the current state.
+11. A tick says "Syarat dicatat." once it is saved.
+12. The status asks "Ubah status hukuman (nama) menjadi "(status)"?" and
+    the Keputusan asks "Catat keputusan "(keputusan)" untuk (nama)?"
+    before either is sent.
+13. While a tick is missing, "Melanjutkan studi" is greyed out and the
+    line under Keputusan says ""Melanjutkan studi" tersedia setelah
+    semua syarat dicentang.", as in the prototype; the server refuses it
+    with the same words.
+14. A "Ditetapkan" penalty shows its conditions read only, also to the
+    two roles that follow up. Any change to it is refused with "Hukuman
+    ini Ditetapkan karena mengakhiri status mahasiswa, jadi tidak dapat
+    diubah."
+15. A change that changes nothing, such as choosing the status the
+    penalty already has, saves nothing and adds no line to the log.
+16. When a change is refused because someone else changed the penalty
+    first, "Kerja sosial belum selesai" is counted again, since the other
+    change may have moved the status.
+17. After a change only the row and that number update, without loading
+    the list again. A list filtered by status keeps a row whose status
+    just changed until the page is loaded again.
+18. The server checks first whether the person may follow up a penalty,
+    before it looks at anything else they sent.
+19. Two changes made at the same moment are kept apart because the save
+    itself only goes through while the penalty is still as the screen
+    showed it; the second is then refused as in decision 10.
 
 ## Steps
 
