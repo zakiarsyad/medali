@@ -21,19 +21,29 @@ export interface CardsState {
 export type CardsEvent =
   | { kind: "opened"; cardId: string }
   | { kind: "cancelled" }
+  | { kind: "restarted"; cardId: string }
   | { kind: "answered"; cardId: string; state: FormState };
 
 export const NO_CARD_OPEN: CardsState = { openId: null, answer: null };
 
+/** The cards once the upload of one card sends again or picks again. */
+function restarted(state: CardsState, cardId: string): CardsState {
+  if (state.answer?.cardId !== cardId) return state;
+  return { ...state, answer: null };
+}
+
 /**
  * The cards after a press or an answer. Opening an upload clears the
- * last answer. A photo that was kept closes its own upload; a refused
+ * last answer. An upload that sends again or picks another photo clears
+ * the last answer of its own card, which no longer holds, and leaves
+ * another card's. A photo that was kept closes its own upload; a refused
  * one leaves it open, to be sent again. An answer for a card never
  * closes the upload of another card that was opened in the meantime.
  */
 export function cardsAfter(state: CardsState, event: CardsEvent): CardsState {
   if (event.kind === "opened") return { openId: event.cardId, answer: null };
   if (event.kind === "cancelled") return { ...state, openId: null };
+  if (event.kind === "restarted") return restarted(state, event.cardId);
   const answer = { cardId: event.cardId, state: event.state };
   const wasKept = event.state.done !== null;
   const isOpenCard = state.openId === event.cardId;

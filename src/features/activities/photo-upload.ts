@@ -58,6 +58,11 @@ export interface PhotoUploadParts {
   edges: UploadEdges;
   /** Told what the server answered, or that the photo did not arrive. */
   onAnswer: (answer: FormState) => void;
+  /**
+   * Told as a send starts or another file is picked: the last answer
+   * stops being true then, and must not stay beside "Mengirim…".
+   */
+  onRestart: () => void;
   onCancel: () => void;
 }
 
@@ -105,7 +110,7 @@ function formOf(scheduleId: string, photo: Blob): FormData {
  * nothing more.
  */
 export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
-  const { scheduleId, edges, onAnswer, onCancel } = parts;
+  const { scheduleId, edges, onAnswer, onRestart, onCancel } = parts;
   const listeners = new Set<() => void>();
   let state = START;
   let hasLeft = false;
@@ -127,6 +132,7 @@ export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
 
   async function pick(file: File): Promise<void> {
     if (isBusy()) return;
+    onRestart();
     const wrong = pickedPhotoFault(file.type, file.size);
     if (wrong !== null) return change({ fault: wrong });
     change({ reading: true, fault: null });
@@ -169,6 +175,7 @@ export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
   async function send(): Promise<void> {
     const { photo } = state;
     if (photo === null || isBusy()) return;
+    onRestart();
     change({ sending: true });
     try {
       const sent = await edges.send(formOf(scheduleId, photo.blob));

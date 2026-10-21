@@ -53,5 +53,5 @@ Mahasiswa, sending a photo from a phone.
 
 ## Steps
 
-- [ ] 1. A new send, or another chosen photo, clears the old failure
+- [x] 1. A new send, or another chosen photo, clears the old failure
   message.

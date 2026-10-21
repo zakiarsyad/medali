@@ -61,6 +61,8 @@ function openUpload(more: Partial<UploadEdges> = {}) {
   const dropped: string[] = [];
   const answers: FormState[] = [];
   const cancels: string[] = [];
+  /** Every restart and every answer, in the order they were told. */
+  const told: string[] = [];
   const edges: UploadEdges = {
     async shrink(file) {
       shrunk.push(file);
@@ -81,7 +83,11 @@ function openUpload(more: Partial<UploadEdges> = {}) {
   const upload = createPhotoUpload({
     scheduleId: SCHEDULE_ID,
     edges,
-    onAnswer: (answer) => answers.push(answer),
+    onAnswer(answer) {
+      answers.push(answer);
+      told.push("answered");
+    },
+    onRestart: () => told.push("restarted"),
     onCancel: () => cancels.push("cancelled"),
   });
   function drawn(): Drawn {
@@ -113,6 +119,7 @@ function openUpload(more: Partial<UploadEdges> = {}) {
     dropped,
     answers,
     cancels,
+    told,
   };
 }
 
@@ -437,5 +444,104 @@ describe('"Kirim presensi"', () => {
 
     expect(sent).toHaveLength(1);
     expect(answers).toEqual([{ error: null, done: KEPT.value }]);
+  });
+});
+
+describe("trying again after a failed send", () => {
+  /** An upload whose first send failed, and whose next send waits. */
+  async function failedOnce() {
+    const sending = held<Parsed<string>>();
+    let sendCount = 0;
+    const upload = openUpload({
+      send() {
+        sendCount += 1;
+        if (sendCount === 1) return Promise.reject(new Error("Lost."));
+        return sending.promise;
+      },
+    });
+    await upload.pick(picture());
+    await press(upload.drawn(), "Kirim presensi");
+    upload.told.length = 0;
+    return { ...upload, sending };
+  }
+
+  it('tells the cards to drop the old answer as soon as "Kirim presensi" is pressed again, before any new answer', async () => {
+    const { drawn, told, sending } = await failedOnce();
+
+    press(drawn(), "Kirim presensi");
+
+    expect(told).toEqual(["restarted"]);
+    expect(offered(drawn())).toEqual(["Mengirim…", "Ulangi", "Batal"]);
+    sending.end(KEPT);
+    await settled();
+    expect(told).toEqual(["restarted", "answered"]);
+  });
+
+  it("says the send failed again when the new send fails too", async () => {
+    const { drawn, answers, told, sending } = await failedOnce();
+
+    press(drawn(), "Kirim presensi");
+    sending.fail(new Error("Lost again."));
+    await settled();
+
+    expect(told).toEqual(["restarted", "answered"]);
+    expect(answers).toEqual([
+      { error: SEND_FAILED, done: null },
+      { error: SEND_FAILED, done: null },
+    ]);
+  });
+
+  it("tells the cards to drop the old answer when another photo is picked", async () => {
+    const { drawn, pick, told } = await failedOnce();
+    press(drawn(), "Ulangi");
+
+    await pick(picture());
+
+    expect(told).toEqual(["restarted"]);
+  });
+
+  it("tells the cards to drop the old answer when a wrong file is picked, and still says what is wrong with the file", async () => {
+    const { drawn, pick, told } = await failedOnce();
+    press(drawn(), "Ulangi");
+
+    await pick(new File(["%PDF"], "surat.pdf", { type: "application/pdf" }));
+
+    expect(told).toEqual(["restarted"]);
+    expect(alertOf(drawn())).toBe("Berkas harus berupa gambar.");
+  });
+
+  it('does not tell the cards to drop the old answer on "Ulangi"', async () => {
+    const { drawn, told } = await failedOnce();
+
+    press(drawn(), "Ulangi");
+
+    expect(told).toEqual([]);
+  });
+
+  it("tells nothing for a press left alone while the photo is on its way", async () => {
+    const { drawn, told, sending } = await failedOnce();
+    // Twice on the button as it was drawn before the first press.
+    const before = drawn();
+
+    press(before, "Kirim presensi");
+    press(before, "Kirim presensi");
+
+    expect(told).toEqual(["restarted"]);
+    sending.end(KEPT);
+    await settled();
+  });
+
+  it("tells nothing for a pick left alone while a picture is made smaller", async () => {
+    const shrinking = held<Blob | null>();
+    const { drawn, told } = openUpload({ shrink: () => shrinking.promise });
+    // Twice on the ways to pick as they were drawn before the first pick.
+    const before = drawn();
+
+    pickFile(before, "Pilih gambar", picture());
+    pickFile(before, "Ambil foto", picture());
+
+    expect(told).toEqual(["restarted"]);
+    shrinking.end(new Blob(["foto kecil"]));
+    await settled();
   });
 });
