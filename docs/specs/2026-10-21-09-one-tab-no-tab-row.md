@@ -57,4 +57,4 @@ Every role that may open only one tab of a page.
 
 ## Steps
 
-- [ ] 1. The row of tabs shows only when the role has two tabs or more.
+- [x] 1. The row of tabs shows only when the role has two tabs or more.

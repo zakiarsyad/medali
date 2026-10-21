@@ -9,6 +9,9 @@ export interface TabLinksProps {
 }
 
 export function TabLinks({ pagePath, tabs, open }: TabLinksProps) {
+  const hasChoice = tabs.length > 1;
+  if (!hasChoice) return null;
+
   return (
     <nav className={styles.tabs} aria-label="Bagian halaman">
       {tabs.map((tab) => (
