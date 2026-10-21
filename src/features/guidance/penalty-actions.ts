@@ -103,9 +103,22 @@ export async function saveDisciplinePenaltyAction(
   return { error: null, done: savedMessage(name, status) };
 }
 
-/** The version of the penalty the screen showed; one never kept when what was sent is no whole number. */
+/**
+ * The highest version a change may be sent from: the version is a
+ * database integer, and a kept change writes the one after it, which a
+ * larger number would make the database refuse with an error.
+ */
+const HIGHEST_SENT_VERSION = 2 ** 31 - 2;
+
+/**
+ * The version of the penalty the screen showed. Anything else, such as
+ * no whole number or one the database cannot hold, becomes 0, which no
+ * penalty has, so the change is refused as outdated.
+ */
 function sentVersion(version: unknown): number {
-  return typeof version === "number" && Number.isInteger(version) ? version : 0;
+  if (typeof version !== "number" || !Number.isSafeInteger(version)) return 0;
+  if (version < 1 || version > HIGHEST_SENT_VERSION) return 0;
+  return version;
 }
 
 function isOutdated(changed: FollowUpOutcome): boolean {
