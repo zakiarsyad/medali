@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
+import { readGradeScheme } from "@/character-grades/grade-scheme";
+import {
+  STARTING_SCHEME,
+  STARTING_VERSION,
+} from "@/character-grades/scheme-ids";
 import { characterGradeSchemes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { readGradeScheme } from "./grade-scheme";
 import {
   CHANGED_SINCE,
   NOT_ALLOWED_TO_SET,
   saveGradeScheme,
 } from "./save-grade-scheme";
-import { STARTING_SCHEME, STARTING_VERSION } from "./scheme-ids";
 import {
   LIMITS_NOT_DOWN,
   NOT_WHOLE,

@@ -1,10 +1,7 @@
 import { count, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import {
-  type GradeNumbers,
-  gradeNumbersFrom,
-} from "@/features/character-grades/grade-numbers";
 import { type GradeBasis, gradeFacts } from "./grade-facts";
+import { type GradeNumbers, gradeNumbersFrom } from "./grade-numbers";
 
 /**
  * The four numbers above "Skema bobot", of the Aktif students `visible`

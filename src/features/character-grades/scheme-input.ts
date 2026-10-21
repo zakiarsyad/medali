@@ -4,8 +4,7 @@
  * again what is sent, so nothing here may take from the database code.
  */
 
-import type { Parsed } from "@/parsed";
-import { weightTotal } from "./grade-letter";
+import { weightTotal } from "@/character-grades/grade-letter";
 import {
   GRADE_LETTERS,
   type GradeLetter,
@@ -14,7 +13,8 @@ import {
   type LimitedLetter,
   SCHEME_NUMBER_MAX,
   WEIGHT_TOTAL,
-} from "./scheme-ids";
+} from "@/character-grades/scheme-ids";
+import type { Parsed } from "@/parsed";
 
 /** A grade scheme as typed or sent: every field still a text. */
 export interface SentScheme {

@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { fillWithSampleData } from "@/db/seed";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import type { GradeRow } from "@/features/character-grades/grade-list";
-import type { GradeNumbers } from "@/features/character-grades/grade-numbers";
-import { readGradeScheme } from "@/features/character-grades/grade-scheme";
-import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { readGradeBasis } from "./grade-facts";
+import type { GradeRow } from "./grade-list";
+import type { GradeNumbers } from "./grade-numbers";
 import { readGradeRows } from "./grade-rows";
+import { readGradeScheme } from "./grade-scheme";
+import { gradeVisibleTo } from "./grade-students";
 import { readGradeNumbers } from "./read-grade-numbers";
 import { NO_PERIOD_DAY, sampleReaders } from "./test-sample-readers";
 

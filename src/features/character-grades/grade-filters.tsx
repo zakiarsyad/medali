@@ -2,9 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import shared from "@/ui/data-screen.module.css";
-import { SEARCH_TEXT_MAX, searchText } from "@/ui/search-text";
-import { SEARCH_DELAY_MS } from "@/ui/use-found";
 import {
   FILTER_CHOICES,
   FILTER_WORDS,
@@ -13,7 +10,10 @@ import {
   type GradeParams,
   gradeAddress,
   START_PARAMS,
-} from "./grade-address";
+} from "@/character-grades/grade-address";
+import shared from "@/ui/data-screen.module.css";
+import { SEARCH_TEXT_MAX, searchText } from "@/ui/search-text";
+import { SEARCH_DELAY_MS } from "@/ui/use-found";
 
 /**
  * "Cari nama atau NIM" and the filter above "Daftar nilai karakter".

@@ -1,10 +1,10 @@
-import { letterOf, passes } from "@/features/character-grades/grade-letter";
+import { letterOf, passes } from "./grade-letter";
 import {
   GRADE_PARTS,
   type GradeLetter,
   type GradePart,
   type GradeScheme,
-} from "@/features/character-grades/scheme-ids";
+} from "./scheme-ids";
 
 /** The score of each part, or null for a part that is missing. */
 export type PartScores = Record<GradePart, number | null>;

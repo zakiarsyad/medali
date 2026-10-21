@@ -3,7 +3,11 @@
  * and the server that reads what it sends.
  */
 
-import type { GradePart, GradeScheme, LimitedLetter } from "./scheme-ids";
+import type {
+  GradePart,
+  GradeScheme,
+  LimitedLetter,
+} from "@/character-grades/scheme-ids";
 import type { SentScheme } from "./scheme-input";
 
 export const PASS_LETTER_FIELD = "passLetter";

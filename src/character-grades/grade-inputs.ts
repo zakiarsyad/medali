@@ -1,4 +1,4 @@
-import { skpmPartOf } from "@/character-grades/character-grade";
+import { skpmPartOf } from "./character-grade";
 import type {
   AttendancePart,
   GradeInput,

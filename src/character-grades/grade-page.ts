@@ -12,14 +12,14 @@ import {
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { students } from "@/db/schema";
+import { pageWithin } from "@/ui/list-pages";
 import {
   GRADE_LIST_PAGE_SIZE,
   type GradeFilter,
   type GradeParams,
-} from "@/features/character-grades/grade-address";
-import type { GradeList } from "@/features/character-grades/grade-list";
-import { pageWithin } from "@/ui/list-pages";
+} from "./grade-address";
 import { type GradeBasis, gradeFacts } from "./grade-facts";
+import type { GradeList } from "./grade-list";
 import { readGradeRows } from "./grade-rows";
 
 type Facts = ReturnType<typeof gradeFacts>;

@@ -37,8 +37,10 @@ while building.
   assessment and the one before it, and who needs coaching by it, with
   the level and the weakest value, read by every area that shows
   character scores.
-- `src/character-grades/`: each student's semester character grade with
-  its four parts, read from the areas each part belongs to, how the
+- `src/character-grades/`: the grade scheme in force with its weights
+  and letters, each student's semester character grade with its four
+  parts, read from the areas each part belongs to, who sees which
+  grades, the grade list with its search, filters and numbers, how the
   grade and its letter are shown, and the choice of those who reach the
   pass letter or not, for every screen that shows the grade.
 - `src/health-notes/`: the categories of a fitness test and of a health

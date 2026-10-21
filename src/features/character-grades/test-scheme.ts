@@ -1,9 +1,12 @@
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
+import {
+  type GradeScheme,
+  STARTING_SCHEME,
+} from "@/character-grades/scheme-ids";
 import type { Database } from "@/db/connect";
 import { accounts } from "@/db/schema";
 import { typedOf } from "./scheme-fields";
-import { type GradeScheme, STARTING_SCHEME } from "./scheme-ids";
 import type { SentScheme } from "./scheme-input";
 
 /** Made-up records for the checks of this area. */

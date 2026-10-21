@@ -2,7 +2,7 @@ import {
   type CharacterGrade,
   gradeOf,
   type PartScores,
-} from "@/character-grades/character-grade";
+} from "./character-grade";
 import type { GradeScheme } from "./scheme-ids";
 
 /** A student of "Daftar nilai karakter". */

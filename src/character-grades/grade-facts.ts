@@ -6,7 +6,6 @@ import {
   attendanceSums,
   readAttendanceBasis,
 } from "@/features/activities/attendance-sums";
-import type { GradeScheme } from "@/features/character-grades/scheme-ids";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
 import { totalsByStudent as sikuTotalsByStudent } from "@/features/siku/siku-totals";
 import { readConversion } from "@/features/skpm/skpm-conversion";
@@ -16,6 +15,7 @@ import {
 } from "@/features/skpm/skpm-totals";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { finalSql, passesSql, percentSql, sikuSql, skpmSql } from "./grade-sql";
+import type { GradeScheme } from "./scheme-ids";
 
 /** What the grades of many students are worked out with, read first. */
 export interface GradeBasis {

@@ -1,10 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import shared from "@/ui/data-screen.module.css";
-import styles from "./character-grades.module.css";
-import { weightTotal } from "./grade-letter";
-import { limitField, PASS_LETTER_FIELD, weightField } from "./scheme-fields";
+import { weightTotal } from "@/character-grades/grade-letter";
 import {
   GRADE_LETTERS,
   GRADE_PARTS,
@@ -13,7 +10,10 @@ import {
   LIMITED_LETTERS,
   type LimitedLetter,
   WEIGHT_TOTAL,
-} from "./scheme-ids";
+} from "@/character-grades/scheme-ids";
+import shared from "@/ui/data-screen.module.css";
+import styles from "./character-grades.module.css";
+import { limitField, PASS_LETTER_FIELD, weightField } from "./scheme-fields";
 import type { SchemeFaults, SentScheme } from "./scheme-input";
 import {
   barCells,

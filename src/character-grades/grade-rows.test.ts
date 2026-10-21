@@ -20,11 +20,7 @@ import {
   addTestStudentAccount,
   TEST_DECIDED_AT,
 } from "@/features/activities/test-records";
-import { START_PARAMS } from "@/features/character-grades/grade-address";
-import type { GradeRow } from "@/features/character-grades/grade-list";
 import { GradeListTable } from "@/features/character-grades/grade-list-table";
-import { readGradeScheme } from "@/features/character-grades/grade-scheme";
-import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { saveGradeScheme } from "@/features/character-grades/save-grade-scheme";
 import {
   FORTY_TWENTY,
@@ -37,9 +33,13 @@ import { readConversion } from "@/features/skpm/skpm-conversion";
 import { skpmVisibleTo } from "@/features/skpm/skpm-readers";
 import { shownOneDecimal } from "@/features/skpm/skpm-words";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
+import { START_PARAMS } from "./grade-address";
 import { readGradeBasis } from "./grade-facts";
+import type { GradeRow } from "./grade-list";
 import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
+import { readGradeScheme } from "./grade-scheme";
+import { gradeVisibleTo } from "./grade-students";
 
 /*
  * This file's own sample values: the Tahun akademik 3902, the programs

@@ -1,10 +1,10 @@
 import { eq, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { readGradeScheme } from "@/character-grades/grade-scheme";
+import { STARTING_VERSION } from "@/character-grades/scheme-ids";
 import { characterGradeSchemes } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { readGradeScheme } from "./grade-scheme";
 import { saveGradeScheme } from "./save-grade-scheme";
-import { STARTING_VERSION } from "./scheme-ids";
 import { addTestActor, FORTY_TWENTY, sentWithWeights } from "./test-scheme";
 
 /*

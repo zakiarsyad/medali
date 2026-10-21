@@ -4,10 +4,10 @@ import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students } from "@/db/schema";
-import type { GradeRow } from "@/features/character-grades/grade-list";
-import { readGradeScheme } from "@/features/character-grades/grade-scheme";
-import type { GradeScheme } from "@/features/character-grades/scheme-ids";
+import type { GradeRow } from "./grade-list";
 import { readGradeRows } from "./grade-rows";
+import { readGradeScheme } from "./grade-scheme";
+import type { GradeScheme } from "./scheme-ids";
 
 /** "Nilai karakter (KEP-220)" of one student, for their detail. */
 export interface StudentGrade {

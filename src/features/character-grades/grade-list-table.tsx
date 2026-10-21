@@ -1,4 +1,9 @@
+import {
+  type GradeParams,
+  gradeAddress,
+} from "@/character-grades/grade-address";
 import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
+import type { AttendancePart, GradeRow } from "@/character-grades/grade-list";
 import {
   shownFinal,
   shownOneDecimal,
@@ -7,8 +12,6 @@ import {
 import shared from "@/ui/data-screen.module.css";
 import { ProfileNameLink } from "@/ui/profile-name-link";
 import styles from "./character-grades.module.css";
-import { type GradeParams, gradeAddress } from "./grade-address";
-import type { AttendancePart, GradeRow } from "./grade-list";
 
 export const NO_GRADE_MATCHES = "Tidak ada data pada filter ini.";
 

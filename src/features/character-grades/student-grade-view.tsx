@@ -1,15 +1,19 @@
 import type { CharacterGrade } from "@/character-grades/character-grade";
 import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
+import { partScoresOf } from "@/character-grades/grade-list";
 import {
   shownFinal,
   shownOneDecimal,
   shownPart,
 } from "@/character-grades/grade-words";
+import {
+  GRADE_PARTS,
+  type GradePart,
+  type GradeScheme,
+} from "@/character-grades/scheme-ids";
 import type { StudentGrade } from "@/character-grades/student-grade";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./character-grades.module.css";
-import { partScoresOf } from "./grade-list";
-import { GRADE_PARTS, type GradePart, type GradeScheme } from "./scheme-ids";
 import { PART_LABELS } from "./scheme-words";
 
 /** The highest score of a part, the end of its bar. */

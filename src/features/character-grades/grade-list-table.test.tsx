@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { START_PARAMS } from "./grade-address";
-import { type GradeInput, gradeRowOf } from "./grade-list";
+import { START_PARAMS } from "@/character-grades/grade-address";
+import { type GradeInput, gradeRowOf } from "@/character-grades/grade-list";
+import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { GradeListTable, NO_GRADE_MATCHES } from "./grade-list-table";
-import { STARTING_SCHEME } from "./scheme-ids";
 
 const ANI: GradeInput = {
   student: {

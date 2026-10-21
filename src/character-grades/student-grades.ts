@@ -1,11 +1,11 @@
 import { and, inArray, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
-import { readGradeScheme } from "@/features/character-grades/grade-scheme";
 import type { CharacterGrade } from "./character-grade";
 import type { GradeChoice } from "./grade-choice";
 import { gradeFacts, readGradeBasis } from "./grade-facts";
 import { readGradeRows } from "./grade-rows";
+import { readGradeScheme } from "./grade-scheme";
 
 /**
  * The grade now, by the scheme in force, of those of `ids` that `visible`

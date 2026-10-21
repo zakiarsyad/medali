@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { sentSchemeOf, typedOf, weightField } from "./scheme-fields";
-import { STARTING_SCHEME } from "./scheme-ids";
 
 describe("typedOf", () => {
   it("shows each number of the scheme as text", () => {

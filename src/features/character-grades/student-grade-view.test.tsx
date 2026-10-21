@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import type { StudentGrade } from "@/character-grades/student-grade";
-import { STARTING_SCHEME } from "./scheme-ids";
 import { StudentGradeView } from "./student-grade-view";
 
 const PASSING: StudentGrade = {
