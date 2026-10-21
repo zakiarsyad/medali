@@ -32,6 +32,7 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".picked",
       ".full",
       ".tick",
+      ".ticks",
       ".panelHead",
       ".cards",
       ".card",
@@ -214,6 +215,33 @@ describe("Catat sesi and Riwayat sesi on a phone", () => {
     expect(CHANGE).toContain("className={styles.card}");
     expect(CHANGE).toContain("className={styles.notes}");
     expect(ruleOf(".notes")).toContain("overflow-wrap: anywhere;");
+  });
+});
+
+describe("Publikasi data kesehatan mental on a phone", () => {
+  const PANEL = read("counsellor-sharing-panel.tsx");
+  const FORM = read("sharing-form.tsx");
+  const FACTS = read("sharing-facts.tsx");
+
+  it("lays its lines out one under the other", () => {
+    expect(PANEL).toMatch(
+      /className=\{`\$\{shared\.panel\} \$\{styles\.stack\}`\}/,
+    );
+  });
+
+  it("puts its fields in one column and its ticks one under the other, each folding its text", () => {
+    expect(FORM).toContain("className={shared.form}");
+    expect(FORM).toMatch(
+      /shared\.roles\} \$\{styles\.ticks\} \$\{styles\.full\}/,
+    );
+    expect(FORM).toContain("className={styles.tick}");
+    expect(ruleOf(".ticks")).toContain("flex-direction: column;");
+    expect(ruleOf(".tick")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("folds who it is for, what it gives and the summary inside its box", () => {
+    expect(FACTS).toContain("className={styles.card}");
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
   });
 });
 

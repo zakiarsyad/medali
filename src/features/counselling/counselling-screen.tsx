@@ -36,11 +36,13 @@ export interface CounsellorSchedules {
 function CounsellorPart({
   mayManageConsent,
   mayKeepSessions,
+  mayShare,
   schedules,
   referrals,
 }: {
   mayManageConsent: boolean;
   mayKeepSessions: boolean;
+  mayShare: boolean;
   schedules: CounsellorSchedules | null;
   referrals: ReferralList | null;
 }) {
@@ -51,6 +53,7 @@ function CounsellorPart({
         referrals={referrals}
         mayManageConsent={mayManageConsent}
         mayKeepSessions={mayKeepSessions}
+        mayShare={mayShare}
       />
       {schedules && (
         <SchedulePanel
@@ -113,6 +116,7 @@ export function CounsellingScreen({
   own,
   mayManage,
   mayKeepSessions = false,
+  mayShare = false,
   schedules = null,
   referrals = null,
 }: {
@@ -122,12 +126,15 @@ export function CounsellingScreen({
   mayManage: boolean;
   /** Konselor: "Catat sesi" in "Persetujuan konseling". */
   mayKeepSessions?: boolean;
+  /** Konselor: "Publikasi data kesehatan mental". */
+  mayShare?: boolean;
   /** Konselor: "Jadwal konseling", or null for an account without the right. */
   schedules?: CounsellorSchedules | null;
   /** Konselor: the dorm referrals, or null for an account without the right. */
   referrals?: ReferralList | null;
 }) {
-  const showsCounsellor = mayManage || schedules !== null || referrals !== null;
+  const showsCounsellor =
+    mayManage || mayShare || schedules !== null || referrals !== null;
   return (
     <>
       <PageHead title="Konseling" />
@@ -137,6 +144,7 @@ export function CounsellingScreen({
           <CounsellorPart
             mayManageConsent={mayManage}
             mayKeepSessions={mayKeepSessions}
+            mayShare={mayShare}
             schedules={schedules}
             referrals={referrals}
           />
