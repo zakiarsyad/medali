@@ -110,6 +110,12 @@
   overflow-wrap: anywhere;
 }
 
+/* Ticks one under the other, each folding its own text. */
+.ticks {
+  flex-direction: column;
+  min-width: 0;
+}
+
 /* The title of a panel with a number beside it, under it on a phone. */
 .panelHead {
   display: flex;

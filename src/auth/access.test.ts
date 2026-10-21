@@ -1341,6 +1341,59 @@ describe("may", () => {
     }
   });
 
+  it("lets Konselor ask to share, publish and withdraw counselling data of every student, on Konseling", () => {
+    expect(ACTION_TITLES.share_counselling_data).toContain(
+      "Publikasi data kesehatan mental",
+    );
+    expect(may(["counsellor"], "share_counselling_data")).toBe(true);
+    expect(mayOpenPage(["counsellor"], "counselling")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "share_counselling_data",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses every other role to ask to share or publish counselling data, the recipients and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "share_counselling_data")).toBe(false);
+    }
+  });
+
+  it("lets Mahasiswa approve, decline and withdraw the sharing of their own counselling data, on Konseling", () => {
+    expect(ACTION_TITLES.answer_own_counselling_sharing).toContain(
+      "berbagi data",
+    );
+    expect(may(["student"], "answer_own_counselling_sharing")).toBe(true);
+    expect(mayOpenPage(["student"], "counselling")).toBe(true);
+  });
+
+  it("refuses every other role to answer a sharing of counselling data, Konselor, Kepala Unit and Pengasuh among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["counsellor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "answer_own_counselling_sharing")).toBe(false);
+    }
+  });
+
   it("opens Konseling to Konselor and Mahasiswa only, not to Kepala Unit, Direktur, Ketua Program Studi or Pengasuh", () => {
     const openers: RoleId[] = ["counsellor", "student"];
     for (const role of ROLE_IDS) {
@@ -2638,6 +2691,7 @@ describe("may", () => {
       "answer_own_counselling_consent",
       "register_own_counselling",
       "view_own_counselling_sessions",
+      "answer_own_counselling_sharing",
       "answer_own_survey",
     ]);
     expect(may(["student"], "input_new_students")).toBe(false);

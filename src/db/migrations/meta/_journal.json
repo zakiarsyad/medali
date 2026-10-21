@@ -442,6 +442,20 @@
       "when": 1792512584002,
       "tag": "0062_violation-notes",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792543475954,
+      "tag": "0063_counselling-sharings",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1792543476992,
+      "tag": "0064_counselling-sharing-log-cannot-change",
+      "breakpoints": true
     }
   ]
 }

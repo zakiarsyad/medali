@@ -32,6 +32,7 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".picked",
       ".full",
       ".tick",
+      ".ticks",
       ".panelHead",
       ".cards",
       ".card",
@@ -214,6 +215,56 @@ describe("Catat sesi and Riwayat sesi on a phone", () => {
     expect(CHANGE).toContain("className={styles.card}");
     expect(CHANGE).toContain("className={styles.notes}");
     expect(ruleOf(".notes")).toContain("overflow-wrap: anywhere;");
+  });
+});
+
+describe("Publikasi data kesehatan mental on a phone", () => {
+  const PANEL = read("counsellor-sharing-panel.tsx");
+  const FORM = read("sharing-form.tsx");
+  const FACTS = read("sharing-facts.tsx");
+
+  it("lays its lines out one under the other", () => {
+    expect(PANEL).toMatch(
+      /className=\{`\$\{shared\.panel\} \$\{styles\.stack\}`\}/,
+    );
+  });
+
+  it("puts its fields in one column and its ticks one under the other, each folding its text", () => {
+    expect(FORM).toContain("className={shared.form}");
+    expect(FORM).toMatch(
+      /shared\.roles\} \$\{styles\.ticks\} \$\{styles\.full\}/,
+    );
+    expect(FORM).toContain("className={styles.tick}");
+    expect(ruleOf(".ticks")).toContain("flex-direction: column;");
+    expect(ruleOf(".tick")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("puts a second button under the first when both do not fit", () => {
+    expect(read("sharing-moves.tsx")).toContain("className={shared.actions}");
+    expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+  });
+
+  it("folds who it is for, what it gives and the summary inside its box", () => {
+    expect(FACTS).toContain("className={styles.card}");
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+  });
+});
+
+describe("the student's sharing box on a phone", () => {
+  const BOX = read("own-sharing-box.tsx");
+
+  it("folds a waiting request and puts Tolak under Setujui berbagi data when both do not fit", () => {
+    expect(BOX).toContain("className={styles.warnBox}");
+    expect(BOX).toContain("className={shared.actions}");
+    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+  });
+
+  it("folds what is shared with whom inside its box", () => {
+    expect(BOX).toMatch(
+      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
+    );
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
   });
 });
 
