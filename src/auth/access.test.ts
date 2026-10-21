@@ -1429,6 +1429,43 @@ describe("may", () => {
     }
   });
 
+  it("lets Konselor read Daftar mahasiswa of counselling with the session notes of every student, on Konseling", () => {
+    expect(ACTION_TITLES.view_counselling_students).toContain(
+      "Daftar mahasiswa konseling",
+    );
+    expect(may(["counsellor"], "view_counselling_students")).toBe(true);
+    expect(mayOpenPage(["counsellor"], "counselling")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "view_counselling_students",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses every other role Daftar mahasiswa of counselling, its numbers and its Rincian", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+        "discipline_officer",
+        "assessor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_counselling_students")).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa approve, decline and withdraw the sharing of their own counselling data, on Konseling", () => {
     expect(ACTION_TITLES.answer_own_counselling_sharing).toContain(
       "berbagi data",

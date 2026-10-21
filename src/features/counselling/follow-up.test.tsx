@@ -2,6 +2,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ConsentPick } from "./consent-picks";
+import type { CounsellingStudentRow } from "./counselling-list-view";
 import { CounsellorConsentPanel } from "./counsellor-consent-panel";
 import { followUpOf } from "./follow-up";
 import type { ReferralRow } from "./referral-view";
@@ -65,5 +66,49 @@ describe("Tindak lanjuti of a referral", () => {
     expect(html).toContain("Budi Tindak Lanjut");
     expect(html).toContain("NIM 9988720201 · D3 Pajak");
     expect(html).toContain(">Kirim permintaan persetujuan</button>");
+  });
+});
+
+const LISTED: CounsellingStudentRow = {
+  studentId: "00000000-0000-4000-8000-000000000202",
+  name: "Citra Daftar",
+  nim: "9988720202",
+  program: "D3 Akuntansi",
+  consent: "approved",
+  sessions: 1,
+  nextDay: null,
+  schedule: null,
+  sharing: null,
+};
+
+describe("Buka of a student of Daftar mahasiswa", () => {
+  it("puts the student in Persetujuan konseling, and so in Publikasi data kesehatan mental, and brings them into view", () => {
+    const picks: ConsentPick[] = [];
+    let broughtIntoView = 0;
+    const open = followUpOf(
+      (student) => picks.push(student),
+      () => {
+        broughtIntoView += 1;
+      },
+    );
+
+    open(LISTED);
+
+    expect(picks).toEqual([
+      {
+        id: LISTED.studentId,
+        name: "Citra Daftar",
+        nim: "9988720202",
+        program: "D3 Akuntansi",
+      },
+    ]);
+    expect(broughtIntoView).toBe(1);
+    const [picked] = picks;
+    if (!picked) throw new Error("No student was picked.");
+    const html = renderToStaticMarkup(
+      <CounsellorConsentPanel picking={pickingOf(picked)} />,
+    );
+    expect(html).toContain("Citra Daftar");
+    expect(html).toContain("NIM 9988720202 · D3 Akuntansi");
   });
 });
