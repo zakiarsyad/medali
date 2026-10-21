@@ -314,3 +314,38 @@ describe("two Konselor setting the time of one assignment at the same moment", (
     expect(await stepsOf(id)).toHaveLength(2);
   });
 });
+
+describe("Minta jadwal ulang and Ubah jadwal on one assignment at the same moment", () => {
+  it("keep the first change; the other waits, then sees the current state", async () => {
+    const people = await addTestPeople(own.db, "Prodi Uji Wajib Sekaligus", [
+      "9986207011",
+    ]);
+    const [student] = people.students;
+    if (!student?.studentId) throw new Error("Student missing.");
+    const sender = await addTestActor(own.db, "Penilai Uji", ["assessor"]);
+    const id = await addTestAssignment(own.db, {
+      studentId: student.studentId,
+      senderId: sender.id,
+      kind: "called",
+      status: "scheduled",
+      counsellorId: people.counsellor.id,
+      at: REGISTERED_AT,
+    });
+    const version = REGISTERED_AT.toISOString();
+    const another = { day: "2026-10-26", hour: "08:30", reason: null };
+
+    const both = await own.atOnce(
+      (db) => askAnotherTime(db, student, id, version, another, NOW),
+      (db) =>
+        rescheduleSchedule(db, people.counsellor, id, version, PROPOSAL, NOW),
+    );
+
+    expect(both.sooner).toMatchObject({ kind: "kept" });
+    expect(both.later).toMatchObject({
+      kind: "changed",
+      error: SCHEDULE_CHANGED_SINCE,
+      card: { status: "reschedule_asked", day: "2026-10-26" },
+    });
+    expect(await stepsOf(id)).toHaveLength(2);
+  });
+});

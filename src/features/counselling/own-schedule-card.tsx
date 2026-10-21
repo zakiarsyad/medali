@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import styles from "./counselling.module.css";
-import { Fact, ScheduleBadge } from "./schedule-card-parts";
+import { Fact, MandatoryBadge, ScheduleBadge } from "./schedule-card-parts";
 import type { ScheduleStatus } from "./schedule-ids";
 import type { OwnScheduleView } from "./schedule-view";
 import {
   COUNSELLING_WAY_WORDS,
+  KIND_SOURCE_WORDS,
+  kindTitle,
   SCHEDULE_TOPIC_WORDS,
   timeWords,
   WAITING_FOR_TIME,
@@ -23,9 +25,11 @@ const TIME_TITLES: Record<ScheduleStatus, string> = {
 };
 
 /**
- * One request of the student: where it stands, Topik, the time it is
- * about now and Cara, the Konselor of an agreed time and the message of
- * Konselor. `children` is what the card offers to do, when anything.
+ * One request or assignment of the student: its Jenis, marked "wajib"
+ * for an assignment, where it comes from and where it stands, Topik, the
+ * time it is about now and Cara, the Konselor of an agreed time and the
+ * message of Konselor. `children` is what the card offers to do, when
+ * anything.
  */
 export function OwnScheduleCard({
   schedule,
@@ -38,8 +42,11 @@ export function OwnScheduleCard({
     <li className={styles.card}>
       <div className={styles.cardHead}>
         <div>
-          <b>Konseling sukarela</b>
-          <p className={styles.sub}>Didaftarkan sendiri oleh mahasiswa</p>
+          <div className={styles.badges}>
+            <b>{kindTitle(schedule.kind)}</b>
+            {schedule.kind !== "voluntary" && <MandatoryBadge />}
+          </div>
+          <p className={styles.sub}>{KIND_SOURCE_WORDS[schedule.kind]}</p>
         </div>
         <ScheduleBadge status={schedule.status} />
       </div>

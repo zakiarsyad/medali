@@ -8,10 +8,12 @@ import { topicOf } from "./schedule-rules";
 import type { OwnScheduleView } from "./schedule-view";
 
 /**
- * The active requests of the signed-in student, the newest first: always
- * their own, never those of a student that was sent. The story is not
- * read, and the Konselor is named once a time is agreed. Nothing for an
- * account without the right.
+ * The active requests and assignments of the signed-in student, the
+ * newest first: always their own, never those of a student that was
+ * sent. The story, "Dasar" and "Pesan pengirim" are not read, the
+ * Konselor is named once a time is agreed, and their message shows only
+ * with a time Konselor proposed or agreed. Nothing for an account
+ * without the right.
  */
 export async function readOwnSchedules(
   db: Database,
@@ -42,12 +44,13 @@ export async function readOwnSchedules(
     )
     .orderBy(desc(counsellingSchedules.createdAt));
   return rows.map(({ changedAt, ...row }) => {
-    const isSubmitted = row.status === "submitted";
+    const hasKonselorTime =
+      row.status === "proposed" || row.status === "scheduled";
     return {
       ...row,
       topic: topicOf(row.kind, row.topic),
       counsellorName: row.status === "scheduled" ? row.counsellorName : null,
-      counsellorMessage: isSubmitted ? null : row.counsellorMessage,
+      counsellorMessage: hasKonselorTime ? row.counsellorMessage : null,
       version: versionOf(changedAt),
     };
   });

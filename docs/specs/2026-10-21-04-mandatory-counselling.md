@@ -85,7 +85,7 @@ sending specs.
   sender's message, with made-up assignments in every status.
 - [x] 2. Konselor sees assignments, the Jenis numbers and filter, and
   sets the time.
-- [ ] 3. The student sees assignments as "wajib" and asks for another
+- [x] 3. The student sees assignments as "wajib" and asks for another
   time.
 - [ ] 4. Konselor marks the outcome, with the consent rule before a
   session is written.

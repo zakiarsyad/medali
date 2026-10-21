@@ -312,3 +312,12 @@ describe("an assignment card of Konselor on a phone", () => {
     expect(CARD).toMatch(/<Fact title="Pesan pengirim" isWide>/);
   });
 });
+
+describe("an assignment card of the student on a phone", () => {
+  it("puts the wajib mark under the title when there is no room", () => {
+    expect(read("own-schedule-card.tsx")).toContain(
+      "<div className={styles.badges}>",
+    );
+    expect(ruleOf(".badges")).toContain("flex-wrap: wrap;");
+  });
+});

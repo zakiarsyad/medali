@@ -42,6 +42,11 @@ export function KindBadge({ kind }: { kind: ScheduleKind }) {
   );
 }
 
+/** The mark of a counselling the student did not ask for. */
+export function MandatoryBadge() {
+  return <span className={`${shared.badge} ${styles.bad}`}>wajib</span>;
+}
+
 /** One fact of a card: its title over it, across the card when wide. */
 export function Fact({
   title,

@@ -32,6 +32,11 @@ export const KIND_WORDS: Record<ScheduleKind, string> = {
   called: "Pemanggilan",
 };
 
+/** The title of a schedule on the student's page, such as Konseling penugasan. */
+export function kindTitle(kind: ScheduleKind): string {
+  return `Konseling ${KIND_WORDS[kind].toLowerCase()}`;
+}
+
 /** Where a schedule comes from, as the student's card says it. */
 export const KIND_SOURCE_WORDS: Record<ScheduleKind, string> = {
   voluntary: "Didaftarkan sendiri oleh mahasiswa",
