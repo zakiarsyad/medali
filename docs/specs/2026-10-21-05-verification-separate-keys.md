@@ -44,4 +44,4 @@ Pegawai UPK.
 
 ## Steps
 
-- [ ] 1. The filter form and the cards get keys of their own.
+- [x] 1. The filter form and the cards get keys of their own.
