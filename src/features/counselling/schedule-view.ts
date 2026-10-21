@@ -90,6 +90,8 @@ export interface CounsellorScheduleCard {
   counsellorName: string | null;
   /** Every step, oldest first. */
   steps: ScheduleStepView[];
+  /** Whether the student's consent is Disetujui, so a session may be written. */
+  hasConsent: boolean;
   version: string;
 }
 

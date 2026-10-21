@@ -269,6 +269,7 @@ describe("Jadwal konseling of Konselor", () => {
               step: "register",
             },
           ],
+          hasConsent: false,
           version: "2026-10-19T03:00:00.000Z",
         },
       ]);

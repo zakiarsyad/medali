@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import styles from "./counselling.module.css";
 import { CounsellorScheduleCardView } from "./counsellor-schedule-card";
 import type { CounsellorMoveOutcome } from "./move-schedule";
 import {
@@ -24,6 +25,7 @@ import { ScheduleTimeForm } from "./schedule-time-form";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import { DONE_QUESTION, MISSED_QUESTION } from "./schedule-words";
 import { scheduleSessionAction } from "./session-actions";
+import { NEEDS_CONSENT } from "./session-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -79,7 +81,9 @@ const TIME_FORMS = {
  * back, also when the press was refused because someone changed it
  * first. A move or a mark draws the page again, which may take the card
  * away, so what it did is said above the cards. For an account that may
- * keep sessions, "Tandai selesai" also opens "Catat sesi" there.
+ * keep sessions, "Tandai selesai" also opens "Catat sesi" there, and a
+ * Dijadwalkan card of a student whose consent is not Disetujui says
+ * that consent is needed first.
  */
 export function CounsellorScheduleItem({
   card: first,
@@ -224,6 +228,9 @@ export function CounsellorScheduleItem({
             Ubah jadwal
           </button>
         </div>
+      )}
+      {isScheduled && mayKeepSessions && !card.hasConsent && (
+        <p className={styles.sub}>{NEEDS_CONSENT}</p>
       )}
       {openForm !== null && (waits || isScheduled || toSet) && (
         <ScheduleTimeForm

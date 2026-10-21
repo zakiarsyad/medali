@@ -8,6 +8,7 @@ import type { Database } from "@/db/connect";
 import { versionOf } from "@/db/row-version";
 import {
   accounts,
+  counsellingConsents,
   counsellingScheduleChanges,
   counsellingSchedules,
   students,
@@ -117,11 +118,16 @@ function selectCardRows(db: Database) {
       nim: students.nim,
       program: studyPrograms.name,
       counsellorName: counsellor.name,
+      consent: counsellingConsents.status,
     })
     .from(counsellingSchedules)
     .innerJoin(students, OF_STUDENT)
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .leftJoin(counsellor, eq(counsellor.id, counsellingSchedules.counsellorId));
+    .leftJoin(counsellor, eq(counsellor.id, counsellingSchedules.counsellorId))
+    .leftJoin(
+      counsellingConsents,
+      eq(counsellingConsents.studentId, counsellingSchedules.studentId),
+    );
 }
 
 type CardRow = Awaited<ReturnType<typeof selectCardRows>>[number];
@@ -179,6 +185,7 @@ function cardOf(
     // A request sent back by the student waits for a Konselor again.
     counsellorName: schedule.status === "submitted" ? null : row.counsellorName,
     steps,
+    hasConsent: row.consent === "approved",
     version: versionOf(schedule.changedAt),
   };
 }

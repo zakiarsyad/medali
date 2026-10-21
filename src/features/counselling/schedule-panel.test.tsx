@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { CounsellingScreen } from "./counselling-screen";
 import type { CounsellorScheduleCard, ScheduleBoard } from "./schedule-view";
+import { NEEDS_CONSENT } from "./session-words";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
@@ -31,6 +32,7 @@ const CARD: CounsellorScheduleCard = {
       step: "register",
     },
   ],
+  hasConsent: true,
   version: "2026-10-19T03:00:00.000Z",
 };
 
@@ -55,11 +57,12 @@ function buttonsOf(page: string): string[] {
   );
 }
 
-function counsellorPage(board: ScheduleBoard): string {
+function counsellorPage(board: ScheduleBoard, mayKeepSessions = false): string {
   return renderToStaticMarkup(
     <CounsellingScreen
       own={null}
       mayManage={true}
+      mayKeepSessions={mayKeepSessions}
       schedules={{ board, filter: "needs_action", kind: null }}
     />,
   );
@@ -242,5 +245,22 @@ describe("Jadwal konseling of Konselor", () => {
     );
 
     expect(page).not.toContain("Jadwal konseling");
+  });
+
+  it("says on a Dijadwalkan card that consent is needed first while it is not Disetujui", () => {
+    const card: CounsellorScheduleCard = {
+      ...CARD,
+      kind: "assigned",
+      status: "scheduled",
+      topic: "discipline_violation",
+      basis: "Pelanggaran disiplin ringan jenjang pertama",
+      counsellorName: "Konselor Uji Layar",
+      hasConsent: false,
+    };
+
+    expect(counsellorPage(boardOf([card]), true)).toContain(NEEDS_CONSENT);
+    expect(
+      counsellorPage(boardOf([{ ...card, hasConsent: true }]), true),
+    ).not.toContain(NEEDS_CONSENT);
   });
 });

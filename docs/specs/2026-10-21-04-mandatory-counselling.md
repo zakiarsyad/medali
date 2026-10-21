@@ -87,5 +87,5 @@ sending specs.
   sets the time.
 - [x] 3. The student sees assignments as "wajib" and asks for another
   time.
-- [ ] 4. Konselor marks the outcome, with the consent rule before a
+- [x] 4. Konselor marks the outcome, with the consent rule before a
   session is written.
