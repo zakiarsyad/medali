@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { saveScheduleAction } from "./actions";
 import styles from "./activities.module.css";
@@ -21,10 +21,11 @@ import { formTargetWords } from "./form-words";
 import { ParticipantField } from "./participant-field";
 import { RemoveScheduleButton } from "./remove-schedule-button";
 import { LOCATION_MAX_LENGTH } from "./schedule-input";
+import type { ScheduleAnswer } from "./schedule-move";
 import type { ScheduleRow } from "./schedule-row";
 import { UploadRangeField } from "./upload-range-field";
 
-const START: FormState = { error: null, done: null };
+const START: ScheduleAnswer = { error: null, done: null, attendances: null };
 
 /** The heading of the form and the button that opens it for a new schedule. */
 export function addWords(parts: Pick<FormParts, "extra">): string {
@@ -69,7 +70,10 @@ export function ScheduleForm({
     if (chosen) setIsRequired(chosen.isRequired);
   }
 
-  async function save(before: FormState, form: FormData): Promise<FormState> {
+  async function save(
+    before: ScheduleAnswer,
+    form: FormData,
+  ): Promise<ScheduleAnswer> {
     const after = await saveScheduleAction(before, form);
     if (after.done) onSaved(after.done);
     return after;
@@ -88,6 +92,11 @@ export function ScheduleForm({
       {schedule && (
         <input type="hidden" name="version" value={schedule.version} />
       )}
+      <input
+        type="hidden"
+        name="agreedAttendances"
+        value={state.attendances ?? ""}
+      />
       <div className={shared.form}>
         <label
           htmlFor={ACTIVITY_FIELD_ID}

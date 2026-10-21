@@ -230,6 +230,10 @@ describe("the form that changes a schedule", () => {
     expect(form).toContain("Sasaran: 96 mahasiswa (target 110).");
   });
 
+  it("sends no number of attendances agreed to before it was asked", () => {
+    expect(fieldOf(form, "agreedAttendances")).toContain('value=""');
+  });
+
   it("sends the key and the version of the schedule it was opened for", () => {
     expect(fieldOf(form, "id")).toContain(`value="${TEST_SCHEDULE.id}"`);
     expect(fieldOf(form, "version")).toContain(

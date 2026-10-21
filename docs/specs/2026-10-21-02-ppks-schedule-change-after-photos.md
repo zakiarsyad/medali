@@ -94,7 +94,7 @@ numbers on "Kegiatan PPKS".
 
 ## Steps
 
-- [ ] 1. The change form asks before moving the dates or period of a
+- [x] 1. The change form asks before moving the dates or period of a
   schedule with attendances.
 - [ ] 2. A schedule not started yet, and a photo of a student the schedule
   is no longer meant for, count in no number and no score.
