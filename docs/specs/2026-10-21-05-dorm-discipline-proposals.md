@@ -114,7 +114,7 @@ Decided while building, because the issue did not say:
 
 - [x] 1. The handling fields (status, note, who, when) are added to the
   SP 2 proposal, with a sample proposal Diajukan and one Diproses.
-- [ ] 2. The right to handle a proposal is added to the permission list,
+- [x] 2. The right to handle a proposal is added to the permission list,
   with its checks.
 - [ ] 3. Kepala Unit sees the proposals and marks one Diproses.
 - [ ] 4. The button "Catat hukuman disiplin" opens Pembinaan on that
