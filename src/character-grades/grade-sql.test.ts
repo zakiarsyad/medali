@@ -3,10 +3,6 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { scorePercent } from "@/features/activities/attendance-score";
-import {
-  finalScoreOf,
-  gradeOf,
-} from "@/features/character-grades/character-grade";
 import { letterOf } from "@/features/character-grades/grade-letter";
 import {
   GRADE_LETTERS,
@@ -15,6 +11,7 @@ import {
 } from "@/features/character-grades/scheme-ids";
 import { sikuOf } from "@/features/siku/siku-score";
 import { skpmScoreOf } from "@/features/skpm/skpm-score";
+import { finalScoreOf, gradeOf } from "./character-grade";
 import {
   finalSql,
   letterSql,

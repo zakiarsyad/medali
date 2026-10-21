@@ -1,3 +1,11 @@
+import {
+  GRADE_CHOICES,
+  type GradeChoice,
+} from "@/character-grades/grade-choice";
+import {
+  PREDICATES,
+  type Predicate,
+} from "@/character-scores/assessment-score";
 import { entryPath } from "@/db/schema";
 import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { firstParam, type SearchParams } from "@/ui/search-params";
@@ -21,6 +29,18 @@ export const NO_DORM = "non";
 
 export type DormChoice = DormId | typeof NO_DORM;
 
+/** The predikat choice that finds the students with no assessment. */
+export const NOT_ASSESSED_CHOICE = "belum";
+
+/** A predikat of the latest assessment, or `NOT_ASSESSED_CHOICE`. */
+export type PredicateChoice = Predicate | typeof NOT_ASSESSED_CHOICE;
+
+/** Each grade choice as the address writes it, as Daftar nilai karakter does. */
+export const GRADE_IN_ADDRESS: Record<GradeChoice, string> = {
+  passing: "lulus",
+  failing: "belum-lulus",
+};
+
 /** The filters of the top bar. Null means every choice. */
 export interface TopFilters {
   studyProgramId: number | null;
@@ -39,6 +59,10 @@ export interface StudentListFilters extends TopFilters {
   query: string;
   cohortYear: number | null;
   status: StatusChoice;
+  /** The predikat of the latest assessment, or none. Null means every one. */
+  predicate: PredicateChoice | null;
+  /** Whether the grade now reaches the pass letter. Null means every grade. */
+  grade: GradeChoice | null;
 }
 
 export interface StudentListParams {
@@ -68,6 +92,8 @@ export const NO_FILTERS: StudentListFilters = {
   query: "",
   cohortYear: null,
   status: "current",
+  predicate: null,
+  grade: null,
   ...NO_TOP_FILTERS,
 };
 
@@ -102,6 +128,15 @@ function readDorm(text: string): DormChoice | null {
   return DORM_IDS.find((one) => one === text) ?? null;
 }
 
+function readPredicate(text: string): PredicateChoice | null {
+  if (text === NOT_ASSESSED_CHOICE) return NOT_ASSESSED_CHOICE;
+  return PREDICATES.find((one) => one === text) ?? null;
+}
+
+function readGrade(text: string): GradeChoice | null {
+  return GRADE_CHOICES.find((one) => GRADE_IN_ADDRESS[one] === text) ?? null;
+}
+
 function readTopFilters(params: SearchParams): TopFilters {
   const program = firstParam(params.prodi);
   const path = firstParam(params.jalur);
@@ -134,6 +169,8 @@ export function readStudentListParams(params: SearchParams): StudentListParams {
       query: firstParam(params.q).trim().slice(0, NAME_MAX_LENGTH),
       cohortYear: YEAR.test(year) ? Number(year) : null,
       status: readStatus(firstParam(params.status)),
+      predicate: readPredicate(firstParam(params.predikat)),
+      grade: readGrade(firstParam(params.nilai)),
       ...readTopFilters(params),
     },
   };
@@ -181,6 +218,8 @@ function listParams(filters: StudentListFilters, page: number) {
   if (filters.status !== NO_FILTERS.status) {
     params.set("status", STATUS_IN_ADDRESS[filters.status]);
   }
+  if (filters.predicate) params.set("predikat", filters.predicate);
+  if (filters.grade) params.set("nilai", GRADE_IN_ADDRESS[filters.grade]);
   setTopFilters(params, filters);
   if (page > 1) params.set("hal", String(page));
   return params;

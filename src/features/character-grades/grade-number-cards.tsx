@@ -1,6 +1,6 @@
+import { shownOneDecimal } from "@/character-grades/grade-words";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import { type GradeNumbers, passingPercent } from "./grade-numbers";
-import { shownOneDecimal } from "./grade-words";
 import type { GradeLetter } from "./scheme-ids";
 
 function shown(count: number): string {

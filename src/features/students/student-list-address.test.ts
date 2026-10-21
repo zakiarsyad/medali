@@ -4,6 +4,7 @@ import {
   NO_AGENCY,
   NO_DORM,
   NO_FILTERS,
+  NOT_ASSESSED_CHOICE,
   readStudentListParams,
   type StudentListFilters,
   studentDetailAddress,
@@ -23,6 +24,8 @@ describe("readStudentListParams", () => {
       query: "",
       cohortYear: null,
       status: "current",
+      predicate: null,
+      grade: null,
       studyProgramId: null,
       entryPath: null,
       category: null,
@@ -145,6 +148,34 @@ describe("readStudentListParams", () => {
     },
   );
 
+  it("reads the predikat, Belum diasesmen, and the grade choice", () => {
+    const read = readStudentListParams({ predikat: "silver", nilai: "lulus" });
+
+    expect(read.filters).toEqual({
+      ...NO_FILTERS,
+      predicate: "silver",
+      grade: "passing",
+    });
+    expect(
+      readStudentListParams({ predikat: "belum", nilai: "belum-lulus" })
+        .filters,
+    ).toEqual({
+      ...NO_FILTERS,
+      predicate: NOT_ASSESSED_CHOICE,
+      grade: "failing",
+    });
+  });
+
+  it.each(["", "Perak", "emas", "belum ", "1 or 1=1"])(
+    "falls back to every predikat and every grade for %j",
+    (sent) => {
+      const read = readStudentListParams({ predikat: sent, nilai: sent });
+
+      expect(read.filters.predicate).toBeNull();
+      expect(read.filters.grade).toBeNull();
+    },
+  );
+
   it("takes the first of a part that is repeated", () => {
     const read = readStudentListParams({ q: ["satu", "dua"] });
 
@@ -164,10 +195,12 @@ describe("studentListAddress", () => {
   });
 
   it("holds what is chosen, and reads back the same", () => {
-    const filters = {
+    const filters: StudentListFilters = {
       query: "ayu & budi",
       cohortYear: 2023,
       status: "all" as const,
+      predicate: NOT_ASSESSED_CHOICE,
+      grade: "failing" as const,
       studyProgramId: 4,
       entryPath: "regular" as const,
       category: "isBlended" as const,
@@ -180,7 +213,7 @@ describe("studentListAddress", () => {
     const address = studentListAddress(filters);
 
     expect(address).toBe(
-      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&prodi=4&jalur=regular&kategori=isBlended&tahap=2&provinsi=DKI+Jakarta&instansi=tanpa&asrama=dana_rakca",
+      "/mahasiswa?q=ayu+%26+budi&angkatan=2023&status=semua&predikat=belum&nilai=belum-lulus&prodi=4&jalur=regular&kategori=isBlended&tahap=2&provinsi=DKI+Jakarta&instansi=tanpa&asrama=dana_rakca",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readStudentListParams(Object.fromEntries(search)).filters).toEqual(
@@ -230,6 +263,20 @@ describe("the filters of the top bar", () => {
       ...NO_FILTERS,
       query: "ayu",
       status: "all",
+    });
+  });
+
+  it("leave out the predikat and the grade, which sit beside the search, and keep them when cleared", () => {
+    const scored: StudentListFilters = {
+      ...chosen,
+      predicate: "gold",
+      grade: "passing",
+    };
+
+    expect(topFiltersInUse(scored)).toBe(2);
+    expect(withoutTopFilters(scored)).toMatchObject({
+      predicate: "gold",
+      grade: "passing",
     });
   });
 });

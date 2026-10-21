@@ -1,3 +1,4 @@
+import { GRADE_CHOICE_WORDS } from "@/character-grades/grade-choice";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
@@ -26,7 +27,7 @@ export const FILTER_CHOICES: Record<GradeFilter, string> = {
 
 export const FILTER_WORDS: Record<GradeFilter, string> = {
   all: "Semua",
-  failing: "Belum memenuhi batas lulus",
+  failing: GRADE_CHOICE_WORDS.failing,
   incomplete: "Belum lengkap",
 };
 

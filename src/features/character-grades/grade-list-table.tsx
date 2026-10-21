@@ -1,13 +1,12 @@
-import shared from "@/ui/data-screen.module.css";
-import type { CharacterGrade } from "./character-grade";
-import styles from "./character-grades.module.css";
-import type { AttendancePart, GradeRow } from "./grade-list";
+import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
 import {
-  passWords,
   shownFinal,
   shownOneDecimal,
   shownPart,
-} from "./grade-words";
+} from "@/character-grades/grade-words";
+import shared from "@/ui/data-screen.module.css";
+import styles from "./character-grades.module.css";
+import type { AttendancePart, GradeRow } from "./grade-list";
 
 export const NO_GRADE_MATCHES = "Tidak ada data pada filter ini.";
 
@@ -20,19 +19,6 @@ function Attendance({ part }: { part: AttendancePart }) {
         {part.attended}/{part.counted}
       </small>
     </>
-  );
-}
-
-function Letter({ grade }: { grade: CharacterGrade }) {
-  if (!grade.complete) {
-    return "-";
-  }
-  const look = grade.passes ? styles.passes : styles.fails;
-  return (
-    <span className={`${shared.badge} ${look}`}>
-      {grade.letter}
-      <span className={shared.hidden}> ({passWords(grade.passes)})</span>
-    </span>
   );
 }
 
@@ -80,7 +66,7 @@ export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
                 {shownFinal(row.grade)}
               </td>
               <td data-title="Huruf">
-                <Letter grade={row.grade} />
+                <GradeLetterBadge grade={row.grade} />
               </td>
               <td data-title="Keterangan">
                 <span className={styles.muted}>{row.siku.note}</span>

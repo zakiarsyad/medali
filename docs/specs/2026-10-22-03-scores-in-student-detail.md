@@ -134,7 +134,7 @@ name from a Penilaian list shows the same detail.
 
 - [x] 1. Which role sees which panel is added to the permission list,
   with a check for each role that may and may not.
-- [ ] 2. The list gets the two columns and filters.
+- [x] 2. The list gets the two columns and filters.
 - [ ] 3. "Capaian karakter" and "Nilai karakter (KEP-220)" in the
   detail.
 - [ ] 4. "Kesehatan jasmani" in the detail, with the note rule.
