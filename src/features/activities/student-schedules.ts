@@ -12,6 +12,7 @@ import {
   lte,
   or,
   type SQL,
+  type SQLWrapper,
   sql,
 } from "drizzle-orm";
 import { daysBefore } from "@/academic-periods/days-before";
@@ -201,12 +202,18 @@ export async function readAllSchedules(
 }
 
 /**
- * The order that puts the newest attendance first: by when its photo was
- * sent, or for a record made by hand, which has no photo, when it was made.
+ * When an attendance came in: when its photo was sent, or for a record
+ * made by hand, which has no photo, when it was made.
  */
-export const NEWEST_FIRST = desc(
-  sql`coalesce(${activityAttendances.sentAt}, ${activityAttendances.decidedAt})`,
-);
+export function cameInAt(attendance: {
+  sentAt: SQLWrapper;
+  decidedAt: SQLWrapper;
+}): SQL {
+  return sql`coalesce(${attendance.sentAt}, ${attendance.decidedAt})`;
+}
+
+/** The order that puts the newest attendance first. */
+export const NEWEST_FIRST = desc(cameInAt(activityAttendances));
 
 /**
  * The newest attendance of one student at each of some schedules. The

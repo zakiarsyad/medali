@@ -4,7 +4,11 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { activitySchedules } from "@/db/schema";
+import {
+  activityScheduleParticipants,
+  activitySchedules,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestActivity,
@@ -35,6 +39,8 @@ interface Records {
   firstScheduleId: string;
   /** Held on 1 September: over by `NOW`. */
   earlierScheduleId: string;
+  /** Ganjil 2210, the period both schedules keep. */
+  periodId: string;
   students: TestStudentAccount[];
 }
 
@@ -73,8 +79,37 @@ async function addRecords(db: Database, studentCount = 3): Promise<Records> {
       ...schedule,
       startsOn: "2210-09-01",
     }),
+    periodId: periods.oddId,
     students,
   };
+}
+
+/** A schedule of a Kegiatan tambahan on the day of `NOW`, naming nobody yet. */
+async function addExtraSchedule(
+  db: Database,
+  records: Records,
+): Promise<string> {
+  const activityId = await addTestActivity(db, records.staff.id, {
+    name: "Kegiatan tambahan uji verifikasi",
+    semester: null,
+  });
+  return addTestSchedule(db, {
+    activityId,
+    academicPeriodId: records.periodId,
+    changedBy: records.staff.id,
+    startsOn: "2210-09-10",
+  });
+}
+
+async function setStatus(
+  db: Database,
+  student: TestStudentAccount,
+  status: "on_leave" | "inactive",
+): Promise<void> {
+  await db
+    .update(students)
+    .set({ status })
+    .where(eq(students.id, student.studentId));
 }
 
 function studentAt(records: Records, place: number): TestStudentAccount {
@@ -337,6 +372,98 @@ describe("readVerification", () => {
         heldToday: 1,
         openNow: 1,
       });
+    });
+  });
+
+  it("counts no waiting or rejected card of a student a Kegiatan tambahan no longer names, and keeps those cards in the list, marked", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const extraId = await addExtraSchedule(db, records);
+      await db.insert(activityScheduleParticipants).values({
+        scheduleId: extraId,
+        studentId: studentAt(records, 0).studentId,
+      });
+      const ofExtra = { scheduleId: extraId };
+      const namedId = await addSent(db, records, 0, ofExtra);
+      const takenOutId = await addSent(db, records, 1, ofExtra);
+      await addSent(db, records, 2, { ...ofExtra, status: "rejected" });
+
+      const { numbers, list } = await found(db, records);
+      const rejected = await found(db, records, "rejected");
+
+      expect(numbers.waiting).toBe(1);
+      expect(numbers.rejected).toBe(0);
+      expect(list.cards.map((card) => [card.id, card.isMeant])).toEqual([
+        [namedId, true],
+        [takenOutId, false],
+      ]);
+      expect(rejected.list.cards.map((card) => card.isMeant)).toEqual([false]);
+    });
+  });
+
+  it("counts no waiting card of a student on Cuti or Non aktif at a PPKS schedule, and marks those cards", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addSent(db, records, 0);
+      await addSent(db, records, 1);
+      await addSent(db, records, 2);
+      await setStatus(db, studentAt(records, 1), "on_leave");
+      await setStatus(db, studentAt(records, 2), "inactive");
+
+      const { numbers, list } = await found(db, records);
+
+      expect(numbers.waiting).toBe(1);
+      expect(list.cards.map((card) => card.isMeant)).toEqual([
+        true,
+        false,
+        false,
+      ]);
+    });
+  });
+
+  it("counts no waiting card of a student whose angkatan is not in the semester of the PPKS schedule, and marks it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addSent(db, records, 0);
+      await addSent(db, records, 1);
+      // Angkatan 2210 is in semester 1 during Ganjil 2210, not in 3.
+      await db
+        .update(students)
+        .set({ cohortYear: 2210 })
+        .where(eq(students.id, studentAt(records, 1).studentId));
+
+      const { numbers, list } = await found(db, records);
+
+      expect(numbers.waiting).toBe(1);
+      expect(list.cards.map((card) => card.isMeant)).toEqual([true, false]);
+    });
+  });
+
+  it("counts a rejected card only while it is the student's newest attendance for the schedule", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const later = (minutes: number) =>
+        new Date(NOW.getTime() + minutes * 60_000);
+      await addSent(db, records, 0, { status: "rejected" });
+      await addSent(db, records, 0, {
+        sentAt: later(10),
+        photoKey: "attendance-photos/uji-verifikasi-0-ulang",
+      });
+      await addSent(db, records, 1, { status: "rejected" });
+      await addSent(db, records, 1, {
+        status: "valid",
+        sentAt: null,
+        photoKey: null,
+        decidedAt: later(20),
+      });
+      await addSent(db, records, 2, { status: "rejected" });
+
+      const { numbers } = await found(db, records);
+      const rejected = await found(db, records, "rejected");
+
+      expect(numbers.rejected).toBe(1);
+      expect(numbers.waiting).toBe(1);
+      expect(rejected.list.matching).toBe(3);
     });
   });
 

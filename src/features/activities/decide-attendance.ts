@@ -7,6 +7,7 @@ import {
   activityAttendances,
   activitySchedules,
 } from "@/db/schema";
+import { countedAtEither } from "./counted-students";
 import { mayVerify } from "./may-verify";
 import { rejectedWords } from "./student-activity-words";
 import type { DecisionAnswer } from "./verification-card";
@@ -98,6 +99,7 @@ async function readCard(db: Database, id: string, keepsPhotos: boolean) {
   const [stored] = await storedCards(
     db,
     and(IS_CARD, eq(activityAttendances.id, id)),
+    await countedAtEither(db),
   );
   return stored === undefined ? null : cardOf(stored, keepsPhotos);
 }
