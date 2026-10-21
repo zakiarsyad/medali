@@ -1,6 +1,8 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
+import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
@@ -57,6 +59,11 @@ export default async function MentoringScoresPage(
           }
           morePanelsOf={(studentId) => (
             <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
               <StudentSikuPanel
                 account={account}
                 studentId={studentId}

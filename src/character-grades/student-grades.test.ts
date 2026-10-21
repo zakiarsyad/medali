@@ -7,6 +7,7 @@ import { withTestDatabase } from "@/db/test-database";
 import {
   addTestActivity,
   addTestAttendance,
+  addTestMentorGroup,
   addTestPeriods,
   addTestProgram,
   addTestSchedule,
@@ -14,6 +15,7 @@ import {
 } from "@/features/activities/test-records";
 import { addTestScore } from "@/features/mentoring/test-scores";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
+import { readStudentGrade } from "./student-grade";
 import { gradeChoiceSql, readGradesOf } from "./student-grades";
 
 /*
@@ -76,6 +78,8 @@ async function addRecords(db: Database) {
     })),
   });
   return {
+    programId,
+    kepala,
     ani: ani.studentId,
     budi: budi.studentId,
     citra: citra.studentId,
@@ -173,6 +177,96 @@ describe("gradeChoiceSql", () => {
       expect(
         await idsWhere(db, eq(students.id, records.dodi), passing),
       ).toEqual([]);
+    });
+  });
+});
+
+describe("readStudentGrade", () => {
+  it("gives the student's four parts, the grade and the scheme it is worked out by", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const shown = await readStudentGrade(
+        db,
+        records.kepala,
+        records.ani,
+        TODAY,
+      );
+
+      expect(shown?.row).toMatchObject({
+        student: { id: records.ani },
+        attendance: { percent: 100 },
+        mentoring: 80,
+        siku: { score: 65 },
+        skpm: 72,
+        grade: { complete: true, final: 79.3, letter: "B", passes: true },
+      });
+      expect(shown?.scheme.passLetter).toBe("B");
+      expect(shown?.scheme.weights.attendance).toBe(25);
+    });
+  });
+
+  it("refuses a role without the character panels, the same whether or not the grade is complete", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const konselor = await addTestActor(db, "Konselor Uji Nilai", [
+        "counsellor",
+      ]);
+
+      for (const student of [records.ani, records.citra]) {
+        expect(await readStudentGrade(db, konselor, student, TODAY)).toBeNull();
+      }
+    });
+  });
+
+  it("refuses a student outside the program of Ketua Program Studi or the mentees of Pengasuh", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const kaprodi = await addTestActor(
+        db,
+        "Kaprodi Uji Nilai Daftar",
+        ["head_of_program"],
+        { studyProgramId: records.programId },
+      );
+      const mentor = await addTestActor(db, "Pengasuh Uji Nilai Daftar", [
+        "mentor",
+      ]);
+      await addTestMentorGroup(db, {
+        studyProgramId: records.programId,
+        cohortYear: 4499,
+        number: 1,
+        mentorId: mentor.id,
+        memberIds: [records.ani],
+      });
+
+      expect(
+        await readStudentGrade(db, kaprodi, records.ani, TODAY),
+      ).not.toBeNull();
+      expect(
+        await readStudentGrade(db, kaprodi, records.dodi, TODAY),
+      ).toBeNull();
+      expect(
+        await readStudentGrade(db, mentor, records.ani, TODAY),
+      ).not.toBeNull();
+      expect(
+        await readStudentGrade(db, mentor, records.budi, TODAY),
+      ).toBeNull();
+    });
+  });
+
+  it("gives nothing for a student who is not Aktif, an id of nobody, or a text that is no id", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, records.budi));
+
+      for (const asked of [records.budi, crypto.randomUUID(), "9989300001"]) {
+        expect(
+          await readStudentGrade(db, records.kepala, asked, TODAY),
+        ).toBeNull();
+      }
     });
   });
 });

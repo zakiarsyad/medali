@@ -142,16 +142,21 @@ export function AssessmentForm({
   newAssessmentId,
   levelTexts,
   head,
+  startPick = null,
 }: {
   newAssessmentId: string;
   levelTexts: LevelTexts;
   head: ReactNode;
+  /** The student the form opens with, picked, as "Input asesmen" asks. */
+  startPick?: AssessmentPick | null;
 }) {
   // Kept as it was when the form opened: two presses of "Simpan asesmen"
   // must send the same key.
   const [id, setId] = useState(newAssessmentId);
-  const [picked, setPicked] = useState<AssessmentPick | null>(null);
-  const [scores, setScores] = useState<Scores>(STARTING_SCORES);
+  const [picked, setPicked] = useState<AssessmentPick | null>(startPick);
+  const [scores, setScores] = useState<Scores>(
+    startPick?.latest ?? STARTING_SCORES,
+  );
   const [note, setNote] = useState("");
 
   function pick(student: AssessmentPick) {

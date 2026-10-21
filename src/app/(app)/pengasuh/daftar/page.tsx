@@ -4,6 +4,8 @@ import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import { USERS_ADDRESS } from "@/features/accounts/list-address";
+import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
+import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import {
   mentorAddress,
@@ -65,6 +67,11 @@ async function MentorPage({
           }
           morePanelsOf={(studentId) => (
             <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
               <StudentSikuPanel
                 account={account}
                 studentId={studentId}

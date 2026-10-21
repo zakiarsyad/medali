@@ -3,6 +3,8 @@ import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
+import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import {
   groupAddress,
@@ -74,6 +76,11 @@ async function GroupPage({
           }
           morePanelsOf={(studentId) => (
             <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
               <StudentSikuPanel
                 account={account}
                 studentId={studentId}

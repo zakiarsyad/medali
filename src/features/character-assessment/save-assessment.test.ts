@@ -17,7 +17,10 @@ import {
   STUDENT_NOT_FOUND,
   UNKNOWN_SOURCE,
 } from "./assessment-messages";
-import { searchAssessmentStudents } from "./assessment-picks";
+import {
+  readAssessmentPick,
+  searchAssessmentStudents,
+} from "./assessment-picks";
 import { saveAssessment } from "./save-assessment";
 import {
   addTestActor,
@@ -324,6 +327,53 @@ describe("searchAssessmentStudents", () => {
       expect(await searchAssessmentStudents(db, pengasuh, "99860200")).toEqual(
         [],
       );
+    });
+  });
+});
+
+describe("readAssessmentPick", () => {
+  it("gives the student the address asks the form to pick, with their latest scores", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai } = await addRecords(db);
+      await saveAssessment(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        sentFor(ani),
+        MOMENT,
+      );
+
+      expect(await readAssessmentPick(db, penilai, ani)).toEqual({
+        id: ani,
+        name: "Mahasiswa Uji Asesmen 1",
+        nim: "9986020001",
+        program: "Prodi Uji Simpan Asesmen",
+        latest: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+      });
+    });
+  });
+
+  it("picks nobody for an account without the right, a student who is not Aktif, one removed, or an id of nobody", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, ani, penilai } = await addRecords(db);
+      const pengasuh = await addTestActor(db, "Pengasuh Uji Pilih", ["mentor"]);
+      const onLeave = await addTestStudent(db, programId, {
+        nim: "9986020009",
+        name: "Mahasiswa Uji Pilih Cuti",
+        status: "on_leave",
+      });
+      const removed = await addTestStudent(db, programId, {
+        nim: "9986020010",
+        name: "Mahasiswa Uji Pilih Dihapus",
+        deletedAt: MOMENT,
+      });
+
+      expect(await readAssessmentPick(db, pengasuh, ani)).toBeNull();
+      expect(await readAssessmentPick(db, penilai, onLeave)).toBeNull();
+      expect(await readAssessmentPick(db, penilai, removed)).toBeNull();
+      expect(
+        await readAssessmentPick(db, penilai, crypto.randomUUID()),
+      ).toBeNull();
     });
   });
 });

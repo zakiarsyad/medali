@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Scores } from "./assessment-score";
-import { coachingNeedOf, weakestValueOf } from "./coaching-need";
+import {
+  coachingNeedOf,
+  strongestValueOf,
+  weakestValueOf,
+} from "./coaching-need";
 import { COACHING_LEVEL_WORDS } from "./coaching-words";
 
 function scoresOf(
@@ -67,6 +71,17 @@ describe("the weakest value", () => {
 
   it("is the first in the order of MEDALI when two are equal", () => {
     expect(weakestValueOf(scoresOf(70, 56, 80, 56, 80, 80))).toBe("E");
+  });
+});
+
+describe("the strongest value", () => {
+  it("is the value with the highest score", () => {
+    expect(strongestValueOf(scoresOf(80, 78, 84, 72, 82, 86))).toBe("I");
+    expect(strongestValueOf(scoresOf(99, 80, 80, 80, 80, 41))).toBe("M");
+  });
+
+  it("is the first in the order of MEDALI when two are equal", () => {
+    expect(strongestValueOf(scoresOf(70, 90, 80, 90, 80, 80))).toBe("E");
   });
 });
 

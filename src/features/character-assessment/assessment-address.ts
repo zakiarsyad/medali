@@ -44,6 +44,11 @@ export interface AssessmentParams {
   coachingAll: boolean;
   /** The page of that full list, counted from 1. */
   coachingPage: number;
+  /**
+   * The student the form opens with, picked, or null. Not checked here:
+   * the server picks only a student the account may assess.
+   */
+  pickId: string | null;
 }
 
 export const START_PARAMS: AssessmentParams = {
@@ -53,6 +58,7 @@ export const START_PARAMS: AssessmentParams = {
   historyId: null,
   coachingAll: false,
   coachingPage: 1,
+  pickId: null,
 };
 
 /** How many students "Teridentifikasi perlu pembinaan" shows before "Tampilkan semua". */
@@ -93,6 +99,7 @@ export function readAssessmentParams(params: SearchParams): AssessmentParams {
     historyId: idNamed(firstParam(params.riwayat)),
     coachingAll: firstParam(params.pembinaan) === ALL,
     coachingPage: pageNamed(firstParam(params.pembinaanhal)),
+    pickId: idNamed(firstParam(params.mahasiswa)),
   };
 }
 
@@ -112,7 +119,13 @@ export function assessmentAddress(params: AssessmentParams): string {
   if (params.coachingAll && params.coachingPage > 1) {
     search.set("pembinaanhal", String(params.coachingPage));
   }
+  if (params.pickId !== null) search.set("mahasiswa", params.pickId);
   const text = search.toString();
   if (text === "") return ASSESSMENT_ADDRESS;
   return `${ASSESSMENT_ADDRESS}?${text}`;
+}
+
+/** The tab with a student picked in the form, as "Input asesmen" opens it. */
+export function pickAddress(studentId: string): string {
+  return assessmentAddress({ ...START_PARAMS, pickId: studentId });
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ModeSwitch } from "@/ui/mode-switch";
 import { AssessmentForm, type LevelTexts } from "./assessment-form";
+import type { AssessmentPick } from "./assessment-picks";
 import { AssessmentUpload } from "./assessment-upload";
 import styles from "./character-assessment.module.css";
 
@@ -37,9 +38,12 @@ function InputHead({
 export function AssessmentInputPanel({
   newAssessmentId,
   levelTexts,
+  startPick = null,
 }: {
   newAssessmentId: string;
   levelTexts: LevelTexts;
+  /** The student the form opens with, picked, or null for nobody. */
+  startPick?: AssessmentPick | null;
 }) {
   const [mode, setMode] = useState<Mode>("one");
   const head = <InputHead mode={mode} onChoose={setMode} />;
@@ -56,6 +60,7 @@ export function AssessmentInputPanel({
       newAssessmentId={newAssessmentId}
       levelTexts={levelTexts}
       head={head}
+      startPick={startPick}
     />
   );
 }

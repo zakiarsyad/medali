@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assessmentAddress,
+  pickAddress,
   readAssessmentParams,
   START_PARAMS,
 } from "./assessment-address";
@@ -35,6 +36,13 @@ describe("readAssessmentParams", () => {
     ).toEqual({ ...START_PARAMS, coachingAll: true, coachingPage: 2 });
   });
 
+  it("reads the student to pick in the form", () => {
+    expect(readAssessmentParams({ mahasiswa: STUDENT })).toEqual({
+      ...START_PARAMS,
+      pickId: STUDENT,
+    });
+  });
+
   it("trusts nothing it does not understand", () => {
     expect(
       readAssessmentParams({
@@ -44,6 +52,7 @@ describe("readAssessmentParams", () => {
         riwayat: "Ayu",
         pembinaan: "ya",
         pembinaanhal: "-1",
+        mahasiswa: "bukan-id",
       }),
     ).toEqual(START_PARAMS);
   });
@@ -62,15 +71,22 @@ describe("assessmentAddress", () => {
       historyId: STUDENT,
       coachingAll: true,
       coachingPage: 3,
+      pickId: STUDENT,
     } as const;
 
     const address = assessmentAddress(params);
 
     expect(address).toBe(
-      `/penilaian/asesmen?cari=ayu&saring=belum&hal=2&riwayat=${STUDENT}&pembinaan=semua&pembinaanhal=3`,
+      `/penilaian/asesmen?cari=ayu&saring=belum&hal=2&riwayat=${STUDENT}&pembinaan=semua&pembinaanhal=3&mahasiswa=${STUDENT}`,
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readAssessmentParams(Object.fromEntries(search))).toEqual(params);
+  });
+
+  it("opens the tab with one student to pick in the form", () => {
+    expect(pickAddress(STUDENT)).toBe(
+      `/penilaian/asesmen?mahasiswa=${STUDENT}`,
+    );
   });
 
   it("leaves out the page of the full list while only the first rows show", () => {

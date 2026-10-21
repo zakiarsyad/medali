@@ -13,6 +13,7 @@ import type { LevelTexts } from "@/features/character-assessment/assessment-form
 import { readAssessmentHistory } from "@/features/character-assessment/assessment-history";
 import { AssessmentHistoryDialog } from "@/features/character-assessment/assessment-history-dialog";
 import { AssessmentInputPanel } from "@/features/character-assessment/assessment-input-panel";
+import { readAssessmentPick } from "@/features/character-assessment/assessment-picks";
 import { assessmentVisibleTo } from "@/features/character-assessment/assessment-readers";
 import {
   AssessmentScreen,
@@ -39,7 +40,8 @@ import { readMainIndicators } from "@/features/curriculum/stored-main-indicators
  * same students, those whose latest assessment is low; only Penilai
  * Mahasiswa sees its column Konseling, with the calls read for it alone.
  * A student's earlier assessments open over the tab only for a student
- * the account sees.
+ * the account sees. "Input asesmen" in a student's detail opens the form
+ * with that student picked, only when the account may assess them.
  */
 export default async function AssessmentPage(
   props: PageProps<"/penilaian/asesmen">,
@@ -85,6 +87,11 @@ export default async function AssessmentPage(
             <AssessmentInputPanel
               newAssessmentId={crypto.randomUUID()}
               levelTexts={await readLevelTexts(db)}
+              startPick={
+                params.pickId === null
+                  ? null
+                  : await readAssessmentPick(db, account, params.pickId)
+              }
             />
           ) : (
             <ReadOnlyNote />
