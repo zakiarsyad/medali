@@ -17,6 +17,17 @@ describe("the address of Kesehatan mental", () => {
     expect(readScreeningParams({ filter: "menunggu-persetujuan" }).filter).toBe(
       "waiting",
     );
+    expect(readScreeningParams({ filter: "disetujui" }).filter).toBe(
+      "approved",
+    );
+    expect(
+      screeningAddress({
+        query: "",
+        filter: "approved",
+        page: 1,
+        sharedPage: 1,
+      }),
+    ).toBe("/penilaian/mental?filter=disetujui");
   });
 
   it("takes what it does not understand as not chosen", () => {

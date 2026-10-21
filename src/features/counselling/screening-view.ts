@@ -1,6 +1,7 @@
 import type { ConsentStatus } from "./consent-ids";
 import type { Instrument, ScreeningLevel } from "./screening-ids";
 import type { ScalePart } from "./screening-rules";
+import type { SharingStatus } from "./sharing-ids";
 
 /*
  * What the server sends Konselor of the screenings. Read by the screen
@@ -31,6 +32,12 @@ export interface ScreeningRow {
   risk: boolean;
   /** The consent to counselling, or null when never asked. */
   consent: ConsentStatus | null;
+  /** "Konseling": how many sessions were written down. */
+  sessions: number;
+  /** "Sesi berikutnya" of the latest session while it has not passed. */
+  nextDay: string | null;
+  /** "Publikasi": the status of the latest sharing, or null for none. */
+  sharing: SharingStatus | null;
 }
 
 export interface ScreeningList {

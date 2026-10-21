@@ -56,6 +56,9 @@ const SCREENED: ScreeningRow = {
   level: "normal",
   risk: false,
   consent: null,
+  sessions: 0,
+  nextDay: null,
+  sharing: null,
 };
 
 const TABS = {

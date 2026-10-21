@@ -25,6 +25,9 @@ const ROW: ScreeningRow = {
   level: "extremely_severe",
   risk: true,
   consent: "waiting",
+  sessions: 2,
+  nextDay: "2026-10-27",
+  sharing: "published",
 };
 
 function counsellorPage(list: ScreeningList, query = ""): string {
@@ -85,6 +88,22 @@ describe("Kesehatan mental", () => {
     expect(page).toMatch(/<table class="[^"]*stacked/);
     expect(page).toContain('data-title="Tingkat"');
     expect(page).toContain('data-title="Persetujuan"');
+    expect(page).toContain('data-title="Konseling"');
+    expect(page).toContain('data-title="Publikasi"');
+  });
+
+  it("shows Konseling and Publikasi as the list on Konseling does, and the filter Disetujui", () => {
+    const page = counsellorPage({ rows: [ROW], matching: 1, page: 1 });
+    expect(page).toContain("2 sesi, berikutnya 27 Okt 2026");
+    expect(page).toContain("Dipublikasikan");
+    expect(page).toContain('<option value="disetujui">Disetujui</option>');
+    const none = counsellorPage({
+      rows: [{ ...ROW, sessions: 0, nextDay: null, sharing: null }],
+      matching: 1,
+      page: 1,
+    });
+    expect(none).not.toContain(" sesi");
+    expect(none).not.toContain("Dipublikasikan");
   });
 
   it("says when nobody is screened, or nobody matches", () => {
