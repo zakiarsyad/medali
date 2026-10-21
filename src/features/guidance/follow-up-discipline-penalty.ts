@@ -85,20 +85,33 @@ function sameValues(one: FollowUpValues, other: FollowUpValues): boolean {
   );
 }
 
-/** Keeps the follow-up with a version up, and logs it with what it was before. */
+/**
+ * Keeps the follow-up with a version up, and logs it with what it was
+ * before. Written only while the penalty still has the version the
+ * screen showed, so a change made on an older one keeps nothing even
+ * if the read before it missed that: undefined then.
+ */
 async function keepFollowUp(
   tx: Database,
   actorId: string,
   id: string,
-  before: PenaltyFollowUp,
+  shown: number,
+  before: FollowUpValues,
   after: FollowUpValues,
   action: FollowUpAction,
-): Promise<PenaltyFollowUp> {
-  const version = before.version + 1;
-  await tx
+): Promise<PenaltyFollowUp | undefined> {
+  const version = shown + 1;
+  const written = await tx
     .update(disciplinePenalties)
     .set({ ...after, version })
-    .where(eq(disciplinePenalties.id, id));
+    .where(
+      and(
+        eq(disciplinePenalties.id, id),
+        eq(disciplinePenalties.version, shown),
+      ),
+    )
+    .returning({ id: disciplinePenalties.id });
+  if (written.length === 0) return undefined;
   await tx.insert(disciplinePenaltyChanges).values({
     penaltyId: id,
     changedBy: actorId,
@@ -117,7 +130,9 @@ async function keepFollowUp(
 /**
  * Applies a change to a held penalty: refused, with nothing kept, when
  * someone changed it since the screen showed `version`, or when the
- * rule refuses it; kept and logged when it changes something.
+ * rule refuses it; kept and logged when it changes something. The
+ * penalty is held so a second change waits for the first, and the write
+ * itself checks the version, so the second is refused either way.
  */
 async function followUp(
   db: Database,
@@ -132,20 +147,23 @@ async function followUp(
     const held = await holdPenalty(tx, actor, id);
     if (held === undefined) return PENALTY_NOT_FOUND;
     const before = followUpOf(held);
-    if (held.version !== version) {
-      return { ...PENALTY_OUTDATED, current: before };
-    }
+    const outdated = { ...PENALTY_OUTDATED, current: before };
+    const isAsShown = held.version === version;
     const changed = change(held);
-    if (!changed.ok) return changed;
-    if (sameValues(before, changed.value)) return { ok: true, value: before };
+    if (!changed.ok) return isAsShown ? changed : outdated;
+    if (isAsShown && sameValues(before, changed.value)) {
+      return { ok: true, value: before };
+    }
     const kept = await keepFollowUp(
       tx,
       actor.id,
       id,
+      version,
       before,
       changed.value,
       action,
     );
+    if (kept === undefined) return outdated;
     return { ok: true, value: kept };
   });
 }

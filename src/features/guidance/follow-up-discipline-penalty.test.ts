@@ -500,4 +500,25 @@ describe("a change made on an outdated record", () => {
       expect(await penaltyLinesOf(db, id)).toHaveLength(2);
     });
   });
+
+  it("keeps nothing from a version the penalty never had, whatever the rule allows", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentId } = await setting(db, "9944290034");
+      const id = await addTestPenalty(db, studentId, officer.id, DAY);
+
+      const answer = await changePenaltyStatus(db, officer, id, 5, "served");
+
+      expect(answer).toEqual(
+        expect.objectContaining({
+          ok: false,
+          error: PENALTY_OUTDATED.error,
+          current: expect.objectContaining({ status: "imposed", version: 1 }),
+        }),
+      );
+      expect(await penaltyAt(db, id)).toEqual(
+        expect.objectContaining({ status: "imposed", version: 1 }),
+      );
+      expect(await penaltyLinesOf(db, id)).toHaveLength(1);
+    });
+  });
 });
