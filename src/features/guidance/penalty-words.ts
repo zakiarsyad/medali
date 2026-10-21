@@ -1,4 +1,6 @@
 import type {
+  ContinuationCondition,
+  ContinuationDecision,
   PenaltyCategory,
   PenaltyLevel,
   PenaltyStatus,
@@ -51,6 +53,23 @@ export const STATUS_WORDS: Record<PenaltyStatus, string> = {
   serving: "Sedang dijalani",
   served: "Selesai dijalani",
   set: "Ditetapkan",
+};
+
+/** Syarat melanjutkan studi (ayat 7), in the prototype's wording. */
+export const CONDITION_WORDS: Record<ContinuationCondition, string> = {
+  served: "Telah selesai menjalani hukuman disiplin berat jenjang pertama",
+  academic: "Memenuhi kurikulum akademik PKN STAN",
+  character: "Memenuhi kurikulum pembangunan karakter",
+  recommendation:
+    "Memperoleh rekomendasi tertulis dari Pejabat Pimpinan Tinggi Pratama bidang SDM dan/atau kepatuhan internal di kantor pusat instansi asal",
+  study_leave:
+    "Memenuhi ketentuan tugas belajar PNS sesuai peraturan perundang-undangan",
+};
+
+export const DECISION_WORDS: Record<ContinuationDecision, string> = {
+  pending: "Menunggu pemenuhan syarat",
+  continue: "Melanjutkan studi",
+  dismissed: "Diberhentikan dengan hormat (ayat 8)",
 };
 
 export const SOCIAL_WORK_FORM_WORDS: Record<SocialWorkForm, string> = {

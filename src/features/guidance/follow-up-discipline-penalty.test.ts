@@ -1,11 +1,23 @@
 // Sample NIMs of this file: 9944290000 to 9944290099.
+
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { changePenaltyStatus } from "./follow-up-discipline-penalty";
 import {
+  changePenaltyCondition,
+  changePenaltyDecision,
+  changePenaltyStatus,
+} from "./follow-up-discipline-penalty";
+import { CONTINUATION_CONDITIONS } from "./penalty-ids";
+import {
+  CONDITIONS_NOT_MET,
+  NO_CONDITIONS,
+  NOT_A_CONDITION,
+  NOT_A_DECISION,
   NOT_A_FOLLOW_UP_STATUS,
   NOT_ALLOWED_TO_FOLLOW_UP,
   PENALTY_NOT_FOUND,
@@ -171,4 +183,226 @@ describe("changePenaltyStatus", () => {
       });
     },
   );
+});
+
+const SUSPENDED = {
+  category: "heavy",
+  level: 1,
+  socialWorkEndsOn: "2027-06-11",
+} as const;
+
+/** A Berat jenjang pertama of a student, who has an Instansi asal unless told otherwise. */
+async function suspension(
+  db: Database,
+  nim: string,
+  hasAgency = true,
+): Promise<Setting & { id: string }> {
+  const found = await setting(db, nim);
+  if (hasAgency) {
+    await db
+      .update(students)
+      .set({ originAgency: "Instansi Uji" })
+      .where(eq(students.id, found.studentId));
+  }
+  const id = await addTestPenalty(
+    db,
+    found.studentId,
+    found.officer.id,
+    DAY,
+    SUSPENDED,
+  );
+  return { ...found, id };
+}
+
+describe("changePenaltyCondition", () => {
+  it("ticks a condition and logs who, when, before and after", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290011");
+
+      const answer = await changePenaltyCondition(
+        db,
+        officer,
+        id,
+        "academic",
+        true,
+      );
+
+      expect(answer).toEqual({
+        ok: true,
+        value: {
+          status: "imposed",
+          conditionsMet: ["academic"],
+          decision: "pending",
+          version: 2,
+        },
+      });
+      const lines = await penaltyLinesOf(db, id);
+      expect(lines[1]).toEqual(
+        expect.objectContaining({
+          changedBy: officer.id,
+          action: "conditions_changed",
+          conditionsBefore: [],
+          conditionsAfter: ["academic"],
+          decisionBefore: "pending",
+          decisionAfter: "pending",
+        }),
+      );
+    });
+  });
+
+  it("puts Keputusan back to Menunggu pemenuhan syarat when a tick goes after Melanjutkan studi, and logs both", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentId } = await setting(db, "9944290012");
+      await db
+        .update(students)
+        .set({ originAgency: "Instansi Uji" })
+        .where(eq(students.id, studentId));
+      const id = await addTestPenalty(db, studentId, officer.id, DAY, {
+        ...SUSPENDED,
+        conditionsMet: [...CONTINUATION_CONDITIONS],
+        decision: "continue",
+      });
+
+      const answer = await changePenaltyCondition(
+        db,
+        officer,
+        id,
+        "character",
+        false,
+      );
+
+      expect(answer.ok && answer.value.decision).toBe("pending");
+      expect((await penaltyAt(db, id))?.decision).toBe("pending");
+      const lines = await penaltyLinesOf(db, id);
+      expect(lines[1]).toEqual(
+        expect.objectContaining({
+          action: "conditions_changed",
+          decisionBefore: "continue",
+          decisionAfter: "pending",
+        }),
+      );
+    });
+  });
+
+  it("refuses a student without an Instansi asal", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290013", false);
+
+      const answer = await changePenaltyCondition(
+        db,
+        officer,
+        id,
+        "academic",
+        true,
+      );
+
+      expect(answer).toEqual(NO_CONDITIONS);
+      expect(await penaltyLinesOf(db, id)).toHaveLength(1);
+    });
+  });
+
+  it("refuses a condition that is not one of the five", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290014");
+
+      expect(
+        await changePenaltyCondition(db, officer, id, "lainnya", true),
+      ).toEqual(NOT_A_CONDITION);
+    });
+  });
+
+  it.each(["director", "head_of_program", "mentor"] as RoleId[])(
+    "refuses a hand-made tick from %s",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { id } = await suspension(db, "9944290015");
+        const reader = await addNoteActor(db, "Pembaca Uji", [role]);
+
+        const answer = await changePenaltyCondition(
+          db,
+          reader,
+          id,
+          "academic",
+          true,
+        );
+
+        expect(answer).toEqual(NOT_ALLOWED_TO_FOLLOW_UP);
+        expect((await penaltyAt(db, id))?.conditionsMet).toEqual([]);
+      });
+    },
+  );
+});
+
+describe("changePenaltyDecision", () => {
+  it("records Melanjutkan studi once all five are ticked, and logs it", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentId } = await setting(db, "9944290021");
+      await db
+        .update(students)
+        .set({ originAgency: "Instansi Uji" })
+        .where(eq(students.id, studentId));
+      const id = await addTestPenalty(db, studentId, officer.id, DAY, {
+        ...SUSPENDED,
+        conditionsMet: [...CONTINUATION_CONDITIONS],
+      });
+
+      const answer = await changePenaltyDecision(db, officer, id, "continue");
+
+      expect(answer.ok && answer.value.decision).toBe("continue");
+      const lines = await penaltyLinesOf(db, id);
+      expect(lines[1]).toEqual(
+        expect.objectContaining({
+          changedBy: officer.id,
+          action: "decision_changed",
+          decisionBefore: "pending",
+          decisionAfter: "continue",
+        }),
+      );
+    });
+  });
+
+  it("refuses Melanjutkan studi with a tick missing, and keeps nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290022");
+
+      const answer = await changePenaltyDecision(db, officer, id, "continue");
+
+      expect(answer).toEqual(CONDITIONS_NOT_MET);
+      expect((await penaltyAt(db, id))?.decision).toBe("pending");
+      expect(await penaltyLinesOf(db, id)).toHaveLength(1);
+    });
+  });
+
+  it("refuses a penalty that is not Berat jenjang pertama", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentId } = await setting(db, "9944290023");
+      const id = await addTestPenalty(db, studentId, officer.id, DAY);
+
+      expect(await changePenaltyDecision(db, officer, id, "dismissed")).toEqual(
+        NO_CONDITIONS,
+      );
+    });
+  });
+
+  it("refuses a Keputusan that is not one of the three", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290024");
+
+      expect(await changePenaltyDecision(db, officer, id, "lulus")).toEqual(
+        NOT_A_DECISION,
+      );
+    });
+  });
+
+  it("refuses a hand-made Keputusan from a reader", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await suspension(db, "9944290025");
+      const reader = await addNoteActor(db, "Pembaca Uji", ["director"]);
+
+      expect(await changePenaltyDecision(db, reader, id, "dismissed")).toEqual(
+        NOT_ALLOWED_TO_FOLLOW_UP,
+      );
+      expect((await penaltyAt(db, id))?.decision).toBe("pending");
+    });
+  });
 });

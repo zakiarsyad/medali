@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
@@ -11,53 +11,68 @@ import {
 import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import {
+  type FollowedPenalty,
   type FollowUpValues,
+  isContinuationCondition,
+  isContinuationDecision,
   isFollowUpStatus,
   type PenaltyFollowUp,
+  withCondition,
+  withDecision,
   withStatus,
 } from "./penalty-follow-up";
 import type { PENALTY_CHANGE_ACTIONS } from "./penalty-ids";
 import {
+  NOT_A_CONDITION,
+  NOT_A_DECISION,
   NOT_A_FOLLOW_UP_STATUS,
   NOT_ALLOWED_TO_FOLLOW_UP,
   PENALTY_NOT_FOUND,
 } from "./penalty-messages";
+import { HAS_AGENCY } from "./penalty-student";
 
 type FollowUpAction = Exclude<(typeof PENALTY_CHANGE_ACTIONS)[number], "added">;
 
-/**
- * A penalty of a student the actor's roles with the right to follow up
- * see, whatever the student's status now: a suspended student is
- * followed up while away.
- */
-function ofFollowedStudent(actor: AccountForAccess) {
-  const seen = visibleTo(
-    rowLimitForAction(actor, "follow_up_discipline_penalties"),
-  );
-  return sql`exists (select 1 from ${students} where ${students.id} = ${disciplinePenalties.studentId} and ${seen})`;
-}
+type HeldPenalty = FollowedPenalty & { version: number };
 
 /**
- * The follow-up of a penalty the actor may follow up, held until the
- * change ends: a second change of the same penalty waits here, then
- * reads what the first one left.
+ * A penalty the actor may follow up, of a student its roles with that
+ * right see, whatever the student's status now: a suspended student is
+ * followed up while away. Held until the change ends: a second change
+ * of the same penalty waits here, then reads what the first one left.
  */
 async function holdPenalty(
   tx: Database,
   actor: AccountForAccess,
   id: string,
-): Promise<PenaltyFollowUp | undefined> {
+): Promise<HeldPenalty | undefined> {
+  const seen = visibleTo(
+    rowLimitForAction(actor, "follow_up_discipline_penalties"),
+  );
   const [held] = await tx
     .select({
       status: disciplinePenalties.status,
       conditionsMet: disciplinePenalties.conditionsMet,
       decision: disciplinePenalties.decision,
       version: disciplinePenalties.version,
+      category: disciplinePenalties.category,
+      level: disciplinePenalties.level,
+      hasAgency: HAS_AGENCY,
     })
     .from(disciplinePenalties)
-    .where(and(eq(disciplinePenalties.id, id), ofFollowedStudent(actor)))
-    .for("update");
+    .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
+    .where(and(eq(disciplinePenalties.id, id), seen))
+    .for("update", { of: disciplinePenalties });
   return held;
+}
+
+function mayFollowUp(actor: AccountForAccess): boolean {
+  return may(actor.roles, "follow_up_discipline_penalties");
+}
+
+function followUpOf(held: HeldPenalty): PenaltyFollowUp {
+  const { status, conditionsMet, decision, version } = held;
+  return { status, conditionsMet, decision, version };
 }
 
 function sameValues(one: FollowUpValues, other: FollowUpValues): boolean {
@@ -106,13 +121,14 @@ async function followUp(
   actor: AccountForAccess,
   id: string,
   action: FollowUpAction,
-  change: (before: FollowUpValues) => Parsed<FollowUpValues>,
+  change: (before: FollowedPenalty) => Parsed<FollowUpValues>,
 ): Promise<Parsed<PenaltyFollowUp>> {
   if (!isUuid(id)) return PENALTY_NOT_FOUND;
   return db.transaction(async (tx) => {
-    const before = await holdPenalty(tx, actor, id);
-    if (before === undefined) return PENALTY_NOT_FOUND;
-    const changed = change(before);
+    const held = await holdPenalty(tx, actor, id);
+    if (held === undefined) return PENALTY_NOT_FOUND;
+    const before = followUpOf(held);
+    const changed = change(held);
     if (!changed.ok) return changed;
     if (sameValues(before, changed.value)) return { ok: true, value: before };
     const kept = await keepFollowUp(
@@ -139,11 +155,45 @@ export async function changePenaltyStatus(
   id: string,
   status: string,
 ): Promise<Parsed<PenaltyFollowUp>> {
-  if (!may(actor.roles, "follow_up_discipline_penalties")) {
-    return NOT_ALLOWED_TO_FOLLOW_UP;
-  }
+  if (!mayFollowUp(actor)) return NOT_ALLOWED_TO_FOLLOW_UP;
   if (!isFollowUpStatus(status)) return NOT_A_FOLLOW_UP_STATUS;
   return followUp(db, actor, id, "status_changed", (before) =>
     withStatus(before, status),
+  );
+}
+
+/**
+ * A tick of Syarat melanjutkan studi in "Rincian", put or taken away.
+ * Refused, with nothing kept, as a status change is, and for a penalty
+ * without the conditions.
+ */
+export async function changePenaltyCondition(
+  db: Database,
+  actor: AccountForAccess,
+  id: string,
+  condition: string,
+  met: boolean,
+): Promise<Parsed<PenaltyFollowUp>> {
+  if (!mayFollowUp(actor)) return NOT_ALLOWED_TO_FOLLOW_UP;
+  if (!isContinuationCondition(condition)) return NOT_A_CONDITION;
+  return followUp(db, actor, id, "conditions_changed", (before) =>
+    withCondition(before, condition, met),
+  );
+}
+
+/**
+ * Keputusan in "Rincian". Refused, with nothing kept, as a tick is, and
+ * for Melanjutkan studi while a condition is not ticked.
+ */
+export async function changePenaltyDecision(
+  db: Database,
+  actor: AccountForAccess,
+  id: string,
+  decision: string,
+): Promise<Parsed<PenaltyFollowUp>> {
+  if (!mayFollowUp(actor)) return NOT_ALLOWED_TO_FOLLOW_UP;
+  if (!isContinuationDecision(decision)) return NOT_A_DECISION;
+  return followUp(db, actor, id, "decision_changed", (before) =>
+    withDecision(before, decision),
   );
 }

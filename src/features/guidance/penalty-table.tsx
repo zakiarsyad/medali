@@ -96,7 +96,11 @@ function PenaltyLine({
       {isOpen && (
         <tr>
           <td colSpan={PENALTY_COLUMNS}>
-            <PenaltyDetail row={row} />
+            <PenaltyDetail
+              row={row}
+              mayFollowUp={mayFollowUp}
+              onFollowUp={setFollowUp}
+            />
           </td>
         </tr>
       )}

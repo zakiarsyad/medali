@@ -1,6 +1,8 @@
 import { shownDay } from "@/ui/day";
 import styles from "./discipline-penalties.module.css";
 import type { PenaltyRow } from "./penalty-board";
+import { PenaltyConditions } from "./penalty-conditions";
+import type { PenaltyFollowUp } from "./penalty-follow-up";
 import { CHARACTER_SCORE_CAP, ruleOf } from "./penalty-rules";
 import {
   formsWords,
@@ -77,21 +79,37 @@ function OutcomeItem({ row }: { row: PenaltyRow }) {
 
 /**
  * "Rincian" of a penalty: Uraian, the kerja sosial, Nomor keputusan, who
- * recorded it, Dasar, and the effect on nilai karakter or the suspension.
+ * recorded it, Dasar, and the effect on nilai karakter or the suspension,
+ * then Syarat melanjutkan studi with Keputusan where they apply.
  */
-export function PenaltyDetail({ row }: { row: PenaltyRow }) {
+export function PenaltyDetail({
+  row,
+  mayFollowUp,
+  onFollowUp,
+}: {
+  row: PenaltyRow;
+  mayFollowUp: boolean;
+  onFollowUp: (next: PenaltyFollowUp) => void;
+}) {
   return (
-    <dl className={styles.facts}>
-      <Item title="Uraian" wide>
-        {row.description}
-      </Item>
-      <SocialWorkItems row={row} />
-      <Item title="Nomor keputusan">
-        {row.decisionNumber === "" ? NO_DECISION_NUMBER : row.decisionNumber}
-      </Item>
-      <Item title="Dicatat oleh">{row.savedByName}</Item>
-      <Item title="Dasar">{ruleOf(row.category, row.level).basis}</Item>
-      <OutcomeItem row={row} />
-    </dl>
+    <>
+      <dl className={styles.facts}>
+        <Item title="Uraian" wide>
+          {row.description}
+        </Item>
+        <SocialWorkItems row={row} />
+        <Item title="Nomor keputusan">
+          {row.decisionNumber === "" ? NO_DECISION_NUMBER : row.decisionNumber}
+        </Item>
+        <Item title="Dicatat oleh">{row.savedByName}</Item>
+        <Item title="Dasar">{ruleOf(row.category, row.level).basis}</Item>
+        <OutcomeItem row={row} />
+      </dl>
+      <PenaltyConditions
+        row={row}
+        mayFollowUp={mayFollowUp}
+        onFollowUp={onFollowUp}
+      />
+    </>
   );
 }

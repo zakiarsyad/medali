@@ -39,6 +39,7 @@ import {
   type SocialWorkPlace,
 } from "./penalty-ids";
 import { semesterOnDay } from "./penalty-semester";
+import { HAS_AGENCY } from "./penalty-student";
 
 /** The four numbers of the tab, of the students the account sees. */
 export interface PenaltyNumbers {
@@ -76,6 +77,8 @@ export interface PenaltyRow {
   conditionsMet: ContinuationCondition[];
   decision: ContinuationDecision;
   version: number;
+  /** Whether the student has an Instansi asal now, for Syarat melanjutkan studi. */
+  hasAgency: boolean;
 }
 
 export interface PenaltyList {
@@ -182,6 +185,7 @@ async function readList(
       conditionsMet: disciplinePenalties.conditionsMet,
       decision: disciplinePenalties.decision,
       version: disciplinePenalties.version,
+      hasAgency: HAS_AGENCY,
     })
     .from(disciplinePenalties)
     .innerJoin(students, eq(students.id, disciplinePenalties.studentId))

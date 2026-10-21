@@ -6,15 +6,25 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import type { Parsed } from "@/parsed";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
-import { changePenaltyStatus } from "./follow-up-discipline-penalty";
+import {
+  changePenaltyCondition,
+  changePenaltyDecision,
+  changePenaltyStatus,
+} from "./follow-up-discipline-penalty";
 import { PENALTIES_ADDRESS } from "./penalty-address";
 import { readUnfinishedWork } from "./penalty-board";
 import type { PenaltyHistory } from "./penalty-consequences";
-import type { FollowUpState } from "./penalty-follow-up";
+import type { FollowUpState, PenaltyFollowUp } from "./penalty-follow-up";
 import { CONFIRMED } from "./penalty-input";
-import { STATUS_UPDATED, savedMessage } from "./penalty-messages";
+import {
+  CONDITION_SAVED,
+  DECISION_RECORDED,
+  STATUS_UPDATED,
+  savedMessage,
+} from "./penalty-messages";
 import {
   type PenaltyPick,
   readPenaltyHistory,
@@ -93,6 +103,22 @@ export async function saveDisciplinePenaltyAction(
   return { error: null, done: savedMessage(name, status) };
 }
 
+/** What a follow-up kept or refused tells what was pressed. */
+function answerOf(
+  changed: Parsed<PenaltyFollowUp>,
+  done: string,
+): FollowUpState {
+  if (!changed.ok) {
+    return {
+      error: changed.error,
+      done: null,
+      followUp: null,
+      unfinishedWork: null,
+    };
+  }
+  return { error: null, done, followUp: changed.value, unfinishedWork: null };
+}
+
 /**
  * The status choice of a row of "Daftar pelanggaran". The page is not
  * drawn again: the row takes the penalty given back, and the numbers
@@ -110,18 +136,39 @@ export async function changePenaltyStatusAction(
     String(id),
     String(status),
   );
-  if (!changed.ok) {
-    return {
-      error: changed.error,
-      done: null,
-      followUp: null,
-      unfinishedWork: null,
-    };
-  }
-  return {
-    error: null,
-    done: STATUS_UPDATED,
-    followUp: changed.value,
-    unfinishedWork: await readUnfinishedWork(db, actor),
-  };
+  const answer = answerOf(changed, STATUS_UPDATED);
+  if (!changed.ok) return answer;
+  return { ...answer, unfinishedWork: await readUnfinishedWork(db, actor) };
+}
+
+/** A tick of Syarat melanjutkan studi in "Rincian", kept at once. */
+export async function changePenaltyConditionAction(
+  id: string,
+  condition: string,
+  met: boolean,
+): Promise<FollowUpState> {
+  const actor = await follower();
+  const changed = await changePenaltyCondition(
+    database(),
+    actor,
+    String(id),
+    String(condition),
+    met === true,
+  );
+  return answerOf(changed, CONDITION_SAVED);
+}
+
+/** Keputusan in "Rincian". */
+export async function changePenaltyDecisionAction(
+  id: string,
+  decision: string,
+): Promise<FollowUpState> {
+  const actor = await follower();
+  const changed = await changePenaltyDecision(
+    database(),
+    actor,
+    String(id),
+    String(decision),
+  );
+  return answerOf(changed, DECISION_RECORDED);
 }

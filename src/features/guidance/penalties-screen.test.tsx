@@ -12,6 +12,8 @@ vi.mock("next/form", () => ({
 
 vi.mock("./penalty-actions", () => ({
   changePenaltyStatusAction: vi.fn(),
+  changePenaltyConditionAction: vi.fn(),
+  changePenaltyDecisionAction: vi.fn(),
 }));
 
 const ROW: PenaltyRow = {
@@ -36,6 +38,7 @@ const ROW: PenaltyRow = {
   conditionsMet: [],
   decision: "pending",
   version: 1,
+  hasAgency: false,
 };
 
 const DISMISSED: PenaltyRow = {

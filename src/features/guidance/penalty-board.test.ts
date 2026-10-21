@@ -120,7 +120,7 @@ describe("readPenaltyBoard", () => {
       const [one = ""] = inA;
       await db
         .update(students)
-        .set({ cohortYear: 4419 })
+        .set({ cohortYear: 4419, originAgency: "Instansi Uji" })
         .where(eq(students.id, one));
       const early = await addTestPenalty(db, one, officer.id, "4420-09-01");
       const later = await addTestPenalty(db, one, officer.id, "4420-10-01", {
@@ -159,6 +159,7 @@ describe("readPenaltyBoard", () => {
         conditionsMet: [],
         decision: "pending",
         version: 1,
+        hasAgency: true,
       });
     });
   });
