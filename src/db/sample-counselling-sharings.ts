@@ -46,7 +46,10 @@ export function isStudentSharingStep(step: SampleSharingStep): boolean {
  * waits, so it can be answered after picking her on Ganti peran. Dimas
  * Halim approved on paper, so Konselor can publish it. Fikri Wibowo
  * withdrew one himself, and another stopped when he withdrew his
- * consent to counselling 6 days ago.
+ * consent to counselling 6 days ago. Nanda Gunawan's is published to
+ * all four recipients, so Kepala Unit, Direktur, his Ketua Program Studi
+ * and his Pengasuh of today each read it, and his Pengasuh before does
+ * not.
  */
 export const SAMPLE_SHARINGS: SampleSharing[] = [
   {
@@ -103,5 +106,13 @@ export const SAMPLE_SHARINGS: SampleSharing[] = [
       at("publish", 8),
       at("consent_withdrawn", 6),
     ],
+  },
+  {
+    nim: "9900240014",
+    data: ["counselling", "summary"],
+    recipients: ["head_of_unit", "director", "head_of_program", "mentor"],
+    summary:
+      "Mahasiswa sedang menata jadwal belajar. Mohon beri ruang saat ujian dan pantau kehadirannya.",
+    steps: [at("ask", 6), at("approve", 5), at("publish", 4)],
   },
 ];

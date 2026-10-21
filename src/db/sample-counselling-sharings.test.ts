@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  SHARING_RECIPIENTS,
   SHARING_STATUSES,
   type SharingStatus,
   SUMMARY_MAX,
@@ -85,6 +86,18 @@ describe("the sample sharings of counselling data", () => {
       return last !== null && isCurrentSharing(last);
     }).map((sample) => sample.nim);
     expect(new Set(current).size).toBe(current.length);
+  });
+
+  it("publish to each of the four recipients, so each can read Data yang dipublikasikan untuk Anda", () => {
+    const published = SAMPLE_SHARINGS.filter(
+      (sample) => lastStatus(sample) === "published",
+    );
+    for (const recipient of SHARING_RECIPIENTS) {
+      const named = published.filter((sample) =>
+        sample.recipients.includes(recipient),
+      );
+      expect(named.length, recipient).toBeGreaterThan(0);
+    }
   });
 
   it("hold a summary only when it is shared, within its length, and some data and recipient", () => {

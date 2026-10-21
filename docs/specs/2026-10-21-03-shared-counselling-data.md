@@ -131,7 +131,7 @@ role, within their own rows, and only while the sharing is still on.
 - [x] 1. The right to read shared counselling data is added for the four
   roles, limited by recipient, rows and current sharing, with its
   checks.
-- [ ] 2. "Data yang dipublikasikan untuk Anda" shows the note, the
+- [x] 2. "Data yang dipublikasikan untuk Anda" shows the note, the
   numbers and the list, with its empty state.
 - [ ] 3. "Rincian" shows only the shared parts, and each opening is
   logged.
