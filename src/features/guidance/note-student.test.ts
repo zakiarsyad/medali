@@ -6,6 +6,7 @@ import type { Database } from "@/db/connect";
 import { students, violationNotes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readStudentBox, searchNoteStudents } from "./note-student";
+import { addTestPenalty } from "./test-discipline-penalties";
 import {
   addNoteActor,
   addNotePeriods,
@@ -87,14 +88,33 @@ describe("readStudentBox", () => {
         })
         .where(eq(violationNotes.id, removed));
 
-      expect(await readStudentBox(db, officer, one, TODAY)).toEqual([
-        { day: "4412-09-01", description: "Terlambat mengikuti apel pagi" },
-        {
-          day: "4412-10-02",
-          description: "Membuat kegaduhan di ruang belajar",
-        },
-      ]);
-      expect(await readStudentBox(db, officer, two, TODAY)).toEqual([]);
+      expect(await readStudentBox(db, officer, one, TODAY)).toEqual({
+        notes: [
+          { day: "4412-09-01", description: "Terlambat mengikuti apel pagi" },
+          {
+            day: "4412-10-02",
+            description: "Membuat kegaduhan di ruang belajar",
+          },
+        ],
+        penalties: 0,
+      });
+      expect(await readStudentBox(db, officer, two, TODAY)).toEqual({
+        notes: [],
+        penalties: 0,
+      });
+    });
+  });
+
+  it("says how many discipline penalties the student has", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentIds } = await setting(db);
+      const [one = ""] = studentIds;
+      await addTestPenalty(db, one, officer.id, "4412-09-01");
+      await addTestPenalty(db, one, officer.id, "4412-10-01");
+
+      const box = await readStudentBox(db, officer, one, TODAY);
+
+      expect(box?.penalties).toBe(2);
     });
   });
 

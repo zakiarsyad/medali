@@ -32,6 +32,7 @@ import { addSampleCounsellingConsents } from "./seed-counselling-consents";
 import { addSampleCounsellingSchedules } from "./seed-counselling-schedules";
 import { addSampleCounsellingSessions } from "./seed-counselling-sessions";
 import { addSampleCounsellingSharings } from "./seed-counselling-sharings";
+import { addSampleDisciplinePenalties } from "./seed-discipline-penalties";
 import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCleaning } from "./seed-dorm-cleaning";
@@ -190,8 +191,8 @@ async function addSampleFirstYears(
  * sessions Konselor wrote down, sharings of counselling data in every
  * status, health notes of
  * students in and out of the dorm in every category, and mental health
- * marks of dorm residents of both kinds, and violation notes of this
- * semester and the one before.
+ * marks of dorm residents of both kinds, and violation notes and
+ * discipline penalties of this semester and the one before.
  * Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -294,5 +295,6 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleMentalHealthMarks(tx, running, today);
     await addSampleMentalHealthScreenings(tx, today);
     await addSampleViolationNotes(tx, periods, today);
+    await addSampleDisciplinePenalties(tx, periods, today);
   });
 }

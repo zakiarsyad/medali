@@ -14,9 +14,9 @@ import { REMOVED, savedMessage } from "./note-messages";
 import {
   type NotePick,
   readStudentBox,
+  type StudentBox,
   searchNoteStudents,
 } from "./note-student";
-import type { ActiveNote } from "./placed-notes";
 import { removeViolationNote } from "./remove-violation-note";
 import { saveViolationNote } from "./save-violation-note";
 
@@ -39,12 +39,13 @@ export async function searchNoteStudentsAction(
 }
 
 /**
- * The box of the student picked: their active notes this semester, or
- * null when not theirs to write.
+ * The box of the student picked: their active notes this semester and
+ * how many discipline penalties they have, or null when not theirs to
+ * write.
  */
 export async function noteStudentBoxAction(
   studentId: string,
-): Promise<ActiveNote[] | null> {
+): Promise<StudentBox | null> {
   const actor = await writer();
   return readStudentBox(database(), actor, String(studentId), campusDay());
 }

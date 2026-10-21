@@ -1,0 +1,148 @@
+.sub {
+  margin: 0 0 var(--space-md);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* What an account that only reads is told instead of the form. */
+.readOnly {
+  margin: var(--space-lg) 0 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* Pengasuh sees only their own mentees. */
+.scope {
+  margin: 0 0 var(--space-lg);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The Kategori of a penalty: Ringan, Sedang and Berat. */
+.light {
+  border: var(--line-width) solid var(--warn);
+  color: var(--warn);
+}
+
+.medium {
+  border: var(--line-width) solid var(--bad);
+  color: var(--bad);
+}
+
+.heavy {
+  background: var(--bina);
+  color: var(--surface);
+}
+
+/* Ditetapkan: the student's status ends for good. */
+.set {
+  border: var(--line-width) solid var(--bina);
+  color: var(--bina);
+}
+
+/* The rules table keeps its columns and scrolls inside its own box on a phone. */
+.rules {
+  min-width: var(--wide-table-min-width);
+}
+
+.note {
+  margin: var(--space-md) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+/* The facts of "Rincian": side by side where they fit, one under the other on a phone. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(100%, var(--box-min-width)), 1fr)
+    );
+  gap: var(--space-md);
+  margin: 0;
+}
+
+.facts > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+/* A fact that takes the whole width of "Rincian". */
+.wide {
+  grid-column: 1 / -1;
+}
+
+/* A group of choices of the form: one under the other, each with its words beside it. */
+.choices {
+  display: grid;
+  gap: var(--space-xs);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-start;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The heading of Konsekuensi with the badge of the chosen Jenjang beside it. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.line {
+  margin: 0;
+}
+
+/* The chosen Jenjang is lower than the highest the student had before. */
+.warning {
+  margin-top: var(--space-xs);
+  color: var(--warn);
+  font-weight: var(--weight-semibold);
+}
+
+/* What the chosen Jenjang means: each its name, then what it says. */
+.consequences {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+}
+
+.consequences > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.consequences dt {
+  font-weight: var(--weight-semibold);
+}
+
+.consequences dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}

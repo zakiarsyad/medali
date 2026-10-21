@@ -470,6 +470,13 @@
       "when": 1792548764772,
       "tag": "0066_counselling-sharing-reads-cannot-change",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1792564024534,
+      "tag": "0067_discipline-penalties",
+      "breakpoints": true
     }
   ]
 }

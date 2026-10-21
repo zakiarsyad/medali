@@ -76,7 +76,7 @@ function otherPunishmentOf(
  * after today, and falls in an academic period, the one "Academic
  * period" gives for it.
  */
-function dayRefusal(
+export function dayRefusal(
   day: string,
   today: string,
   periods: readonly Pick<AcademicPeriod, "startsOn">[],
