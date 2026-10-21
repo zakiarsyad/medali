@@ -4,13 +4,12 @@
  * parts, so nothing here may take from the database code.
  */
 
+import {
+  type CountShown,
+  FEWEST_COUNTED,
+  shownCount,
+} from "@/health-notes/shown-count";
 import type { RecapNumbers } from "@/health-notes/sick-list";
-
-/** The fewest residents in reach for any number to show. */
-export const FEWEST_COUNTED = 5;
-
-/** A number, or "<5" for one that covers 1 to 4 residents. */
-export type CountShown = number | "<5";
 
 export type HealthCounts =
   | { kind: "too_few" }
@@ -24,12 +23,6 @@ export type HealthCounts =
       /** The share of the listed among the residents, or null while it is "<5". */
       listedShare: number | null;
     };
-
-/** A count as it may show: "<5" for 1 to 4, so a few residents are not singled out. */
-export function shownCount(count: number): CountShown {
-  if (count >= 1 && count < FEWEST_COUNTED) return "<5";
-  return count;
-}
 
 /**
  * The numbers as a numbers-only role sees them: none at all below 5

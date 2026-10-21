@@ -7,6 +7,7 @@ import { readDashboardFilters } from "@/features/dashboard/dashboard-address";
 import { dashboardScopeOf } from "@/features/dashboard/dashboard-scope";
 import { DashboardScreen } from "@/features/dashboard/dashboard-screen";
 import { loadDashboard } from "@/features/dashboard/dashboard-view";
+import { FITNESS_ADDRESS } from "@/features/fitness/fitness-address";
 import { EmptyPage } from "@/ui/empty-page";
 
 /**
@@ -29,10 +30,14 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   );
   const { roles } = account;
   const opensAssessments = mayOpenTab(roles, "assessment", "character_test");
+  const opensFitness = mayOpenTab(roles, "assessment", "fitness");
   return (
     <DashboardScreen
       view={view}
-      detailAddress={opensAssessments ? ASSESSMENT_ADDRESS : null}
+      links={{
+        assessment: opensAssessments ? ASSESSMENT_ADDRESS : null,
+        fitness: opensFitness ? FITNESS_ADDRESS : null,
+      }}
     />
   );
 }

@@ -4,7 +4,6 @@
  */
 
 import { CATEGORY_WORDS } from "@/health-notes/category-words";
-import type { ScoreRange } from "@/health-notes/fitness-category";
 import type { LimitKey } from "@/health-notes/fitness-ids";
 import { DAY } from "@/ui/day";
 import type { FitnessFilter } from "./fitness-address";
@@ -39,11 +38,6 @@ export function limitsNote(set: { at: Date; by: string } | null): string {
     return `${BELOW_LIMITS} Ambang awal, sesuaikan dengan pedoman tes kebugaran.`;
   }
   return `${BELOW_LIMITS} Ditetapkan ${DAY.format(set.at)} oleh ${set.by}.`;
-}
-
-/** The scores of a category, such as 85–100. */
-export function rangeWords(range: ScoreRange): string {
-  return `${range.lowest}–${range.highest}`;
 }
 
 function shown(amount: number): string {

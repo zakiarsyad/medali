@@ -11,6 +11,16 @@ export interface DashboardScope {
    * student. Ketua Program Studi sees their own program only.
    */
   picksProgram: boolean;
+  /**
+   * The students whose illnesses the account may count, or null for one
+   * that may not: only who reads the recap of every student's health.
+   */
+  illnesses: SQL | null;
+}
+
+function illnessesOf(account: AccountForAccess): SQL | null {
+  if (!may(account.roles, "view_health_recap")) return null;
+  return visibleTo(rowLimitForAction(account, "view_health_recap"));
 }
 
 /**
@@ -22,5 +32,9 @@ export function dashboardScopeOf(
 ): DashboardScope | null {
   if (!may(account.roles, "view_character_dashboard")) return null;
   const limit = rowLimitForAction(account, "view_character_dashboard");
-  return { visible: visibleTo(limit), picksProgram: limit.kind === "all" };
+  return {
+    visible: visibleTo(limit),
+    picksProgram: limit.kind === "all",
+    illnesses: illnessesOf(account),
+  };
 }

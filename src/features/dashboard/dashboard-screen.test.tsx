@@ -1,10 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import type { Recap } from "./achievement-recap";
 import { TOO_FEW } from "./achievement-words";
 import { NO_FILTERS } from "./dashboard-address";
-import { DashboardScreen } from "./dashboard-screen";
+import { DashboardScreen, type DetailLinks } from "./dashboard-screen";
 import type { DashboardView } from "./dashboard-view";
+import { PHYSICAL_TOO_FEW } from "./physical-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
@@ -41,19 +43,33 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       recap: RECAP,
       cohorts: [{ cohortYear: 2025, entryPath: "regular", recap: RECAP }],
     },
+    physical: {
+      kind: "shown",
+      students: 40,
+      tested: 30,
+      untested: 10,
+      byCategory: { excellent: 12, good: 9, attention: 6, medical: "<5" },
+      fitShare: 70,
+      illnesses: null,
+    },
+    fitnessLimits: STARTING_LIMITS,
     ...more,
   };
 }
 
-function shown(view: DashboardView, detailAddress: string | null = null) {
-  return renderToStaticMarkup(
-    <DashboardScreen view={view} detailAddress={detailAddress} />,
-  );
+const NO_LINKS = { assessment: null, fitness: null };
+const LINKS = {
+  assessment: "/penilaian/asesmen",
+  fitness: "/penilaian/jasmani",
+};
+
+function shown(view: DashboardView, links: DetailLinks = NO_LINKS) {
+  return renderToStaticMarkup(<DashboardScreen view={view} links={links} />);
 }
 
 describe("DashboardScreen", () => {
   it("shows the filter, the card, section 1 and the cohorts", () => {
-    const html = shown(viewOf(), "/penilaian/asesmen");
+    const html = shown(viewOf(), LINKS);
 
     expect(html).toContain("Dashboard pembangunan karakter");
     for (const label of [
@@ -79,6 +95,90 @@ describe("DashboardScreen", () => {
     expect(html).toContain('href="/penilaian/asesmen"');
     expect(html).toContain("Angkatan 2025");
     expect(html).toContain("Reguler · Smt 3");
+  });
+
+  it("shows the card Kesehatan jasmani, leading to section 3", () => {
+    const html = shown(viewOf());
+
+    expect(html).toContain('href="#kesehatan-jasmani"');
+    expect(html).toContain("70% <small>prima dan baik</small>");
+    expect(html).toContain(
+      "30 dari 40 sudah dites. &lt;5 perlu tindak lanjut medis.",
+    );
+    expect(html).toContain("Perlu perhatian 6");
+  });
+
+  it("shows - and no bar on the card while nobody is tested", () => {
+    const html = shown(
+      viewOf({ physical: { kind: "untested", students: 40 } }),
+    );
+
+    expect(html).toContain("- <small>prima dan baik</small>");
+    expect(html).toContain("Belum ada hasil tes kebugaran dari 40 mahasiswa.");
+    expect(html).toContain("Belum ada hasil tes kebugaran.<");
+    expect(html).not.toContain("<meter");
+    expect(html).not.toContain('aria-label="Prima ');
+  });
+
+  it("shows section 3 with the count and scores of each category, those not tested, and Lihat rincian to Penilaian jasmani", () => {
+    const html = shown(viewOf(), LINKS);
+
+    expect(html).toContain("Kategori tes kebugaran");
+    expect(html).toContain("30 dari 40 sudah dites<");
+    expect(html).toContain("Prima <span");
+    expect(html).toContain("(85–100)");
+    expect(html).toContain("(0–54)");
+    expect(html).toMatch(
+      /aria-label="Perlu tindak lanjut medis"><\/meter><span[^>]*>&lt;5</,
+    );
+    expect(html).toContain("10 mahasiswa belum mengikuti tes kebugaran.");
+    expect(html).toContain('href="/penilaian/jasmani"');
+    expect(html).not.toContain("Riwayat penyakit terbanyak");
+  });
+
+  it("shows Arti kategori with the range and meaning of each category, also while nobody is tested", () => {
+    for (const physical of [
+      viewOf().physical,
+      { kind: "untested", students: 40 } as const,
+    ]) {
+      const html = shown(viewOf({ physical }));
+
+      expect(html).toContain("Arti kategori");
+      expect(html).toMatch(/>Prima<\/span> <span[^>]*>85–100<\/span>/);
+      expect(html).toMatch(/>Baik<\/span> <span[^>]*>70–84<\/span>/);
+      for (const meaning of [
+        "Kebugaran sangat baik, tidak perlu catatan.",
+        "Kebugaran baik, tidak perlu catatan.",
+        "Perlu pemantauan; lengkapi catatan kesehatan.",
+        "Perlu pemeriksaan atau penanganan medis; lengkapi catatan kesehatan.",
+      ]) {
+        expect(html).toContain(meaning);
+      }
+    }
+  });
+
+  it("names the most common illnesses only when the server sent them", () => {
+    const view = viewOf();
+    if (view.physical.kind !== "shown") throw new Error("No counts.");
+    const html = shown({
+      ...view,
+      physical: {
+        ...view.physical,
+        illnesses: [{ illness: "asthma", students: 6 }],
+      },
+    });
+
+    expect(html).toContain(
+      "Riwayat penyakit terbanyak pada kategori perlu perhatian dan perlu tindak lanjut medis: Asma (6).",
+    );
+  });
+
+  it("shows only why there are no counts in section 3 for a group with fewer than 5 tested", () => {
+    const html = shown(viewOf({ physical: { kind: "too_few", students: 40 } }));
+
+    expect(html.split(PHYSICAL_TOO_FEW)).toHaveLength(3);
+    expect(html).not.toContain("sudah dites");
+    expect(html).not.toContain("<meter");
   });
 
   it("leaves out Program studi for Ketua Program Studi, Tahapan while no period runs, and Lihat rincian without the tab", () => {
