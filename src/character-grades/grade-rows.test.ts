@@ -1,11 +1,15 @@
 // Sample Tahun akademik of this file: 3902 to 3902.
 import { eq, sql } from "drizzle-orm";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { type AccountForAccess, mayOpenTab } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { activityAttendances } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { shownScore } from "@/features/activities/attendance-score";
+import { readStudentActivities } from "@/features/activities/student-activities";
 import {
   addTestActivity,
   addTestAttendance,
@@ -18,6 +22,7 @@ import {
 } from "@/features/activities/test-records";
 import { START_PARAMS } from "@/features/character-grades/grade-address";
 import type { GradeRow } from "@/features/character-grades/grade-list";
+import { GradeListTable } from "@/features/character-grades/grade-list-table";
 import { readGradeScheme } from "@/features/character-grades/grade-scheme";
 import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { saveGradeScheme } from "@/features/character-grades/save-grade-scheme";
@@ -27,6 +32,10 @@ import {
 } from "@/features/character-grades/test-scheme";
 import { addTestScore } from "@/features/mentoring/test-scores";
 import { addTestEntry } from "@/features/siku/test-siku";
+import { readSkpmDetail } from "@/features/skpm/skpm-board";
+import { readConversion } from "@/features/skpm/skpm-conversion";
+import { skpmVisibleTo } from "@/features/skpm/skpm-readers";
+import { shownOneDecimal } from "@/features/skpm/skpm-words";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
 import { readGradeBasis } from "./grade-facts";
 import { readGradePage } from "./grade-page";
@@ -219,6 +228,53 @@ describe("the parts of the character grade", () => {
 
       expect(row.skpm).toBeNull();
       expect(row.grade).toEqual({ complete: false });
+    });
+  });
+
+  it("writes the same Kehadiran as Kegiatan karakter and the same SKPM as Data SKPM", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAttendances(db, records);
+      const thirdId = await addTestSchedule(db, {
+        activityId: await addTestActivity(db, records.kepala.id),
+        academicPeriodId: records.periodId,
+        changedBy: records.kepala.id,
+        startsOn: "3902-10-03",
+      });
+      await addTestAttendance(db, records.kepala.id, {
+        scheduleId: thirdId,
+        studentId: records.ani.studentId,
+        status: "valid",
+      });
+      await addSkpm(db, records);
+
+      const ownPage = await readStudentActivities(
+        db,
+        records.ani,
+        new Date(`${TODAY}T03:00:00Z`),
+        1,
+        false,
+      );
+      const { pointsForHundred } = await readConversion(db);
+      const skpmDetail = await readSkpmDetail(
+        db,
+        skpmVisibleTo(records.kepala),
+        pointsForHundred,
+        records.ani.studentId,
+      );
+      const list = renderToStaticMarkup(
+        createElement(GradeListTable, { rows: [await aniRow(db, records)] }),
+      );
+
+      if (ownPage.kind !== "found") throw new Error("Ani has no page.");
+      const kegiatan = shownScore(ownPage.activities.score);
+      const dataSkpm = shownOneDecimal(skpmDetail?.totals?.score ?? null);
+      // 2 of 3 schedules and 36 of 50 points.
+      expect([kegiatan, dataSkpm]).toEqual(["66,7%", "72,0"]);
+      expect(list).toContain(
+        `data-title="Kehadiran">${kegiatan.replace("%", "")}<`,
+      );
+      expect(list).toContain(`data-title="SKPM">${dataSkpm}<`);
     });
   });
 
