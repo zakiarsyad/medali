@@ -163,11 +163,11 @@ program only). Pengasuh gets "Dashboard anak asuh" in a later spec.
 
 ## Steps
 
-- [ ] 1. The Dashboard frame, title and intro, open to the three roles,
+- [x] 1. The Dashboard frame, title and intro, open to the three roles,
   with Ketua Program Studi limited to their program.
-- [ ] 2. The filter with counts, "Atur ulang filter", the empty message,
+- [x] 2. The filter with counts, "Atur ulang filter", the empty message,
   and the filter kept in the address.
-- [ ] 3. The "Capaian karakter" card.
-- [ ] 4. Section 1: averages per nilai, change from last semester and the
+- [x] 3. The "Capaian karakter" card.
+- [x] 4. Section 1: averages per nilai, change from last semester and the
   medal chart.
-- [ ] 5. "Capaian MEDALI per angkatan".
+- [x] 5. "Capaian MEDALI per angkatan".

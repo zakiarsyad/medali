@@ -1466,6 +1466,63 @@ describe("may", () => {
     }
   });
 
+  const dashboardRoles: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+  ];
+
+  it("lets Kepala Unit, Direktur and Ketua Program Studi read Dashboard pembangunan karakter, Ketua Program Studi for their own program only", () => {
+    expect(ACTION_TITLES.view_character_dashboard).toContain(
+      "dashboard pembangunan karakter",
+    );
+    for (const role of dashboardRoles) {
+      expect(may([role], "view_character_dashboard")).toBe(true);
+      expect(mayOpenPage([role], "dashboard")).toBe(true);
+    }
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["head_of_program", "mentor"],
+          studyProgramId: 7,
+          studentId: null,
+        },
+        "view_character_dashboard",
+      ),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: [],
+      studentIds: [],
+    });
+  });
+
+  it("refuses every other role the numbers of Dashboard pembangunan karakter, Pengasuh, Konselor, Mahasiswa, Pegawai UPK and the BAM roles among them", () => {
+    const others = ROLE_IDS.filter((role) => !dashboardRoles.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "mentor",
+        "counsellor",
+        "student",
+        "upk_staff",
+        ...BAM_ROLES,
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_character_dashboard")).toBe(false);
+    }
+    const withoutPage: RoleId[] = [
+      "counsellor",
+      "student",
+      "upk_staff",
+      ...BAM_ROLES,
+    ];
+    for (const role of withoutPage) {
+      expect(mayOpenPage([role], "dashboard")).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa approve, decline and withdraw the sharing of their own counselling data, on Konseling", () => {
     expect(ACTION_TITLES.answer_own_counselling_sharing).toContain(
       "berbagi data",
