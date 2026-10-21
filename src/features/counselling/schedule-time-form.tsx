@@ -40,18 +40,26 @@ export function ScheduleTimeForm({
           name="day"
           type="date"
           className={shared.input}
-          defaultValue={card.day}
+          defaultValue={card.day ?? undefined}
         />
       </label>
       <label className={shared.field}>
         Jam
-        <select name="hour" className={shared.input} defaultValue={card.hour}>
+        <select
+          name="hour"
+          className={shared.input}
+          defaultValue={card.hour ?? undefined}
+        >
           <ChoiceOptions choices={COUNSELLING_HOURS} />
         </select>
       </label>
       <label className={`${shared.field} ${styles.full}`}>
         Cara
-        <select name="way" className={shared.input} defaultValue={card.way}>
+        <select
+          name="way"
+          className={shared.input}
+          defaultValue={card.way ?? undefined}
+        >
           <ChoiceOptions
             choices={COUNSELLING_WAYS}
             words={COUNSELLING_WAY_WORDS}

@@ -158,6 +158,12 @@
   margin: 0;
 }
 
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
 .facts {
   display: grid;
   grid-template-columns: repeat(

@@ -41,10 +41,14 @@ function referralReachOf(actor: AccountForAccess): SQL | null {
   return and(visible, ne(students.id, actor.studentId)) ?? visible;
 }
 
-/** The status of the student row's active request; a student has one at most. */
+/**
+ * The status of the student row's own active request; a student has one
+ * at most. An assignment beside it is not the student's request.
+ */
 const ACTIVE_SCHEDULE = sql<ScheduleStatus | null>`(
   select ${counsellingSchedules.status} from ${counsellingSchedules}
   where ${counsellingSchedules.studentId} = ${students.id}
+    and ${counsellingSchedules.kind} = 'voluntary'
     and ${inArray(counsellingSchedules.status, [...ACTIVE_STATUSES])}
   limit 1
 )`;

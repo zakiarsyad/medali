@@ -6,7 +6,9 @@ import {
   checkStudentDay,
   hasDayCome,
   hasPassed,
+  isMoveOfKind,
   scheduleAfter,
+  topicOf,
 } from "./schedule-rules";
 import {
   NOTE_TOO_LONG,
@@ -127,30 +129,40 @@ describe("checkStudentDay", () => {
 
 describe("scheduleAfter", () => {
   it("lets Konselor approve or propose another time for a Diajukan request", () => {
-    expect(scheduleAfter("approve", "submitted")).toBe("scheduled");
-    expect(scheduleAfter("propose", "submitted")).toBe("proposed");
+    expect(scheduleAfter("approve", "submitted", "voluntary")).toBe(
+      "scheduled",
+    );
+    expect(scheduleAfter("propose", "submitted", "voluntary")).toBe("proposed");
   });
 
   it("lets the student accept a proposal or ask for another time", () => {
-    expect(scheduleAfter("accept", "proposed")).toBe("scheduled");
-    expect(scheduleAfter("ask_another", "proposed")).toBe("submitted");
+    expect(scheduleAfter("accept", "proposed", "voluntary")).toBe("scheduled");
+    expect(scheduleAfter("ask_another", "proposed", "voluntary")).toBe(
+      "submitted",
+    );
   });
 
   it("lets the student ask for another time for a Dijadwalkan session: back to Diajukan", () => {
-    expect(scheduleAfter("ask_another", "scheduled")).toBe("submitted");
+    expect(scheduleAfter("ask_another", "scheduled", "voluntary")).toBe(
+      "submitted",
+    );
   });
 
   it.each(["submitted", "proposed", "scheduled"] as const)(
     "lets the student cancel a request that is %s",
     (current) => {
-      expect(scheduleAfter("cancel", current)).toBe("cancelled");
+      expect(scheduleAfter("cancel", current, "voluntary")).toBe("cancelled");
     },
   );
 
   it("lets Konselor move a Dijadwalkan session, or mark it Selesai or Tidak hadir", () => {
-    expect(scheduleAfter("reschedule", "scheduled")).toBe("scheduled");
-    expect(scheduleAfter("mark_done", "scheduled")).toBe("done");
-    expect(scheduleAfter("mark_missed", "scheduled")).toBe("missed");
+    expect(scheduleAfter("reschedule", "scheduled", "voluntary")).toBe(
+      "scheduled",
+    );
+    expect(scheduleAfter("mark_done", "scheduled", "voluntary")).toBe("done");
+    expect(scheduleAfter("mark_missed", "scheduled", "voluntary")).toBe(
+      "missed",
+    );
   });
 
   it.each(["done", "missed", "cancelled"] as const)(
@@ -166,7 +178,7 @@ describe("scheduleAfter", () => {
         "mark_done",
         "mark_missed",
       ] as const) {
-        expect(scheduleAfter(move, current)).toBeNull();
+        expect(scheduleAfter(move, current, "voluntary")).toBeNull();
       }
     },
   );
@@ -186,7 +198,81 @@ describe("scheduleAfter", () => {
     ["mark_missed", "submitted"],
     ["mark_missed", "proposed"],
   ] as const)("refuses %s from %s", (move, current) => {
-    expect(scheduleAfter(move, current)).toBeNull();
+    expect(scheduleAfter(move, current, "voluntary")).toBeNull();
+  });
+});
+
+describe("scheduleAfter for an assignment", () => {
+  it.each(["assigned", "called"] as const)(
+    "lets Konselor set the time of a %s one Menunggu jadwal or Minta jadwal ulang",
+    (kind) => {
+      expect(scheduleAfter("set_time", "awaiting", kind)).toBe("scheduled");
+      expect(scheduleAfter("set_time", "reschedule_asked", kind)).toBe(
+        "scheduled",
+      );
+    },
+  );
+
+  it("lets Konselor approve the time the student asked for", () => {
+    expect(scheduleAfter("approve", "reschedule_asked", "assigned")).toBe(
+      "scheduled",
+    );
+  });
+
+  it("lets the student ask for another time of a Dijadwalkan one: Minta jadwal ulang", () => {
+    expect(scheduleAfter("ask_another", "scheduled", "called")).toBe(
+      "reschedule_asked",
+    );
+  });
+
+  it("lets Konselor move it, or mark it Selesai or Tidak hadir", () => {
+    expect(scheduleAfter("reschedule", "scheduled", "assigned")).toBe(
+      "scheduled",
+    );
+    expect(scheduleAfter("mark_done", "scheduled", "assigned")).toBe("done");
+    expect(scheduleAfter("mark_missed", "scheduled", "assigned")).toBe(
+      "missed",
+    );
+  });
+
+  it.each(["awaiting", "scheduled", "reschedule_asked"] as const)(
+    "refuses cancelling, proposing and accepting one %s",
+    (current) => {
+      for (const move of ["cancel", "propose", "accept"] as const) {
+        expect(scheduleAfter(move, current, "assigned")).toBeNull();
+      }
+    },
+  );
+
+  it.each([
+    ["approve", "awaiting"],
+    ["ask_another", "awaiting"],
+    ["ask_another", "reschedule_asked"],
+    ["mark_done", "awaiting"],
+    ["set_time", "scheduled"],
+    ["set_time", "done"],
+    ["set_time", "missed"],
+  ] as const)("refuses %s from %s", (move, current) => {
+    expect(scheduleAfter(move, current, "assigned")).toBeNull();
+  });
+
+  it("refuses setting the time of a voluntary request", () => {
+    expect(scheduleAfter("set_time", "submitted", "voluntary")).toBeNull();
+  });
+});
+
+describe("isMoveOfKind", () => {
+  it("knows cancelling, proposing and accepting only for a voluntary request", () => {
+    for (const move of ["cancel", "propose", "accept"] as const) {
+      expect(isMoveOfKind(move, "voluntary")).toBe(true);
+      expect(isMoveOfKind(move, "assigned")).toBe(false);
+      expect(isMoveOfKind(move, "called")).toBe(false);
+    }
+  });
+
+  it("knows setting the time only for an assignment", () => {
+    expect(isMoveOfKind("set_time", "voluntary")).toBe(false);
+    expect(isMoveOfKind("set_time", "called")).toBe(true);
   });
 });
 
@@ -287,5 +373,20 @@ describe("checkAnotherTime", () => {
     expect(
       checkAnotherTime({ ...sent, day: "2026-10-22", hour: "07:00" }, TODAY),
     ).toMatchObject({ error: PICK_FROM_LIST });
+  });
+});
+
+describe("topicOf", () => {
+  it("gives a voluntary request the topic the student picked", () => {
+    expect(topicOf("voluntary", "family")).toBe("family");
+  });
+
+  it("gives an assignment the topic of its Jenis", () => {
+    expect(topicOf("assigned", null)).toBe("discipline_violation");
+    expect(topicOf("called", null)).toBe("character_assessment");
+  });
+
+  it("refuses a voluntary request with no topic", () => {
+    expect(() => topicOf("voluntary", null)).toThrow();
   });
 });
