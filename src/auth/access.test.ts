@@ -1074,6 +1074,54 @@ describe("may", () => {
     }
   });
 
+  it("lets Konselor alone read the dorm referrals, on Konseling", () => {
+    expect(ACTION_TITLES.view_dorm_referrals).toContain(
+      "Rujukan potensi kesehatan mental dari asrama",
+    );
+    expect(may(["counsellor"], "view_dorm_referrals")).toBe(true);
+    expect(mayOpenPage(["counsellor"], "counselling")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["counsellor"],
+          studyProgramId: null,
+          studentId: null,
+        },
+        "view_dorm_referrals",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it("refuses the dorm referrals to every other role, the writers and readers of the mark and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "counsellor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_health",
+        "dorm_manager",
+        "mentor",
+        "head_of_unit",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_referrals")).toBe(false);
+    }
+  });
+
+  it("gives Konselor no right to the marks themselves, their numbers or their log", () => {
+    for (const action of [
+      "write_mental_health_marks",
+      "view_mental_health_marks",
+      "view_mental_health_mark_log",
+      "view_dorm_health_notes",
+      "view_dorm_health_numbers",
+    ] as const) {
+      expect(may(["counsellor"], action)).toBe(false);
+    }
+    expect(mayOpenPage(["counsellor"], "dorm")).toBe(false);
+  });
+
   it("opens Asesmen karakter to Direktur, Ketua Program Studi and Pengasuh to read, and not to Mahasiswa", () => {
     for (const role of ["director", "head_of_program", "mentor"] as const) {
       expect(mayOpenTab([role], "assessment", "character_test")).toBe(true);

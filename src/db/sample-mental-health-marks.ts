@@ -21,10 +21,11 @@ export interface SampleMentalHealthMark {
 }
 
 /**
- * One mark of each kind: "perlu pemantauan" for a mentee of the sample
- * Pengasuh who has a health note, and "perlu dirujuk ke konselor" for a
- * resident with no health note, so no illness, who is listed only by
- * the mark.
+ * Both kinds: "perlu pemantauan" for a mentee of the sample Pengasuh who
+ * has a health note, and "perlu dirujuk ke konselor" for a resident with
+ * no health note, so no illness, who is listed only by the mark. Two
+ * more residents with a health note are referred on other days, so
+ * Konselor's referral list has rows to order.
  */
 export const SAMPLE_MENTAL_HEALTH_MARKS: SampleMentalHealthMark[] = [
   {
@@ -41,5 +42,21 @@ export const SAMPLE_MENTAL_HEALTH_MARKS: SampleMentalHealthMark[] = [
     observation:
       "Menarik diri dari kegiatan asrama dan sering menangis, menurut teman sekamar.",
     savedAs: "head_of_unit",
+  },
+  {
+    resident: 3,
+    daysAgo: 2,
+    category: "refer",
+    observation:
+      "Tampak murung dan beberapa kali tidak ikut makan bersama di asrama.",
+    savedAs: "bam_health",
+  },
+  {
+    resident: 4,
+    daysAgo: 12,
+    category: "refer",
+    observation:
+      "Mengaku sulit berkonsentrasi dan cemas berlebihan menjelang ujian.",
+    savedAs: "bam_health",
   },
 ];
