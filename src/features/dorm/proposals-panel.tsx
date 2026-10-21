@@ -1,3 +1,4 @@
+import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { DAY, shownDay, shownMoment } from "@/ui/day";
 import { ListPager } from "@/ui/list-pager";
@@ -21,6 +22,33 @@ export interface ProposalTools {
   handles: boolean;
   /** The student the account belongs to, whose row has no "Proses", or null. */
   ownStudentId: string | null;
+  /**
+   * The address of Pelanggaran disiplin on Pembinaan opened on a student,
+   * for an account that records discipline penalties, or else null.
+   */
+  penaltyAddressOf: ((studentId: string) => string) | null;
+}
+
+/** "Catat hukuman disiplin", for an account that records discipline penalties. */
+function PenaltyLink({
+  proposal,
+  addressOf,
+}: {
+  proposal: DisciplineProposal;
+  addressOf: ProposalTools["penaltyAddressOf"];
+}) {
+  if (addressOf === null) return null;
+  return (
+    <p className={styles.sub}>
+      <Link
+        href={addressOf(proposal.studentId)}
+        className={shared.quiet}
+        aria-label={`Catat hukuman disiplin ${proposal.name}`}
+      >
+        Catat hukuman disiplin
+      </Link>
+    </p>
+  );
 }
 
 function Status({
@@ -83,6 +111,7 @@ function ProposalRow({
       </td>
       <td data-title="Status">
         <Status proposal={proposal} tools={tools} />
+        <PenaltyLink proposal={proposal} addressOf={tools.penaltyAddressOf} />
       </td>
     </tr>
   );
@@ -129,7 +158,7 @@ function ProposalTable({
  * Asrama and Kepala Unit: each SP 2 with its proposal, 20 a page, and
  * whether it is Diajukan or Diproses. Kepala Unit also gets "Catatan
  * tindak lanjut" and "Proses" on a row still Diajukan, but not on the
- * row of their own student.
+ * row of their own student, and "Catat hukuman disiplin" on every row.
  */
 export function ProposalsPanel({
   proposals,

@@ -44,8 +44,16 @@ const HANDLED = proposal({
   },
 });
 
-const HEAD: ProposalTools = { handles: true, ownStudentId: null };
-const MANAGER: ProposalTools = { handles: false, ownStudentId: null };
+const HEAD: ProposalTools = {
+  handles: true,
+  ownStudentId: null,
+  penaltyAddressOf: (studentId) => `/pembinaan/disiplin?mahasiswa=${studentId}`,
+};
+const MANAGER: ProposalTools = {
+  handles: false,
+  ownStudentId: null,
+  penaltyAddressOf: null,
+};
 
 function panel(rows: DisciplineProposal[], tools: ProposalTools): string {
   return renderToStaticMarkup(
@@ -94,9 +102,17 @@ describe("Pengajuan hukuman disiplin dari Pengelola Asrama", () => {
   });
 
   it("gives Kepala Unit no Proses on the row of their own student", () => {
-    const shown = panel([proposal()], { handles: true, ownStudentId: ANI });
+    const shown = panel([proposal()], { ...HEAD, ownStudentId: ANI });
 
     expect(shown).not.toContain(">Proses</button>");
+  });
+
+  it("gives Kepala Unit Catat hukuman disiplin on every row, opening Pembinaan on that student", () => {
+    const shown = panel([proposal(), HANDLED], HEAD);
+
+    expect(shown.match(/>Catat hukuman disiplin<\/a>/g)).toHaveLength(2);
+    expect(shown).toContain(`href="/pembinaan/disiplin?mahasiswa=${ANI}"`);
+    expect(shown).toContain(`href="/pembinaan/disiplin?mahasiswa=${BEA}"`);
   });
 
   it("says when there is none", () => {
@@ -126,5 +142,6 @@ describe("Pengajuan hukuman disiplin dari Pengelola Asrama", () => {
     expect(shown).toContain("Diteruskan ke Pembina Disiplin Mahasiswa.");
     expect(shown).not.toContain("Catatan tindak lanjut");
     expect(shown).not.toContain(">Proses</button>");
+    expect(shown).not.toContain("Catat hukuman disiplin");
   });
 });

@@ -32,6 +32,7 @@ import { violationScreensOf } from "@/features/dorm/violation-screens";
 import { readWarningCalls } from "@/features/dorm/warning-calls";
 import { readWarningProcess } from "@/features/dorm/warning-process";
 import { WarningProcessDialog } from "@/features/dorm/warning-process-dialog";
+import { penaltyFormAddress } from "@/features/guidance/penalty-address";
 import type { SearchParams } from "@/ui/search-params";
 import type { TabLinksProps } from "@/ui/tab-links";
 
@@ -108,8 +109,9 @@ async function callProcessOf(
 
 /**
  * "Pengajuan hukuman disiplin dari Pengelola Asrama" for Pengelola Asrama
- * and Kepala Unit, with "Proses" for Kepala Unit; null for any other
- * account.
+ * and Kepala Unit, with "Proses" for Kepala Unit and "Catat hukuman
+ * disiplin" for an account that records discipline penalties, which
+ * opens Pembinaan on the student; null for any other account.
  */
 async function proposalsOf(
   account: Account,
@@ -130,6 +132,9 @@ async function proposalsOf(
       tools={{
         handles: may(account.roles, "handle_dorm_discipline_proposals"),
         ownStudentId: account.studentId,
+        penaltyAddressOf: may(account.roles, "record_discipline_penalties")
+          ? penaltyFormAddress
+          : null,
       }}
     />
   );

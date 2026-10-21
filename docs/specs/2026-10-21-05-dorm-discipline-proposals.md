@@ -117,6 +117,6 @@ Decided while building, because the issue did not say:
 - [x] 2. The right to handle a proposal is added to the permission list,
   with its checks.
 - [x] 3. Kepala Unit sees the proposals and marks one Diproses.
-- [ ] 4. The button "Catat hukuman disiplin" opens Pembinaan on that
+- [x] 4. The button "Catat hukuman disiplin" opens Pembinaan on that
   student.
 - [ ] 5. Pengelola Asrama and the resident see the status.
