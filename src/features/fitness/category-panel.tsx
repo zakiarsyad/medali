@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CATEGORY_WORDS } from "@/health-notes/category-words";
+import { CATEGORY_WORDS, rangeWords } from "@/health-notes/category-words";
 import { categoryRange } from "@/health-notes/fitness-category";
 import {
   FITNESS_CATEGORIES,
@@ -8,7 +8,7 @@ import {
 import shared from "@/ui/data-screen.module.css";
 import styles from "./fitness.module.css";
 import type { FitnessNumbers } from "./fitness-counts";
-import { rangeWords, untestedLine } from "./fitness-words";
+import { untestedLine } from "./fitness-words";
 
 /**
  * One bar for each category, with its scores in brackets, as long as

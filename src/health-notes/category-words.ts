@@ -3,7 +3,7 @@
  * browser, so nothing here may take from the database code.
  */
 
-import type { ShownCategory } from "./fitness-category";
+import type { ScoreRange, ShownCategory } from "./fitness-category";
 
 /** Each category, and Belum dites, in the prototype's words. */
 export const CATEGORY_WORDS: Record<ShownCategory, string> = {
@@ -13,3 +13,8 @@ export const CATEGORY_WORDS: Record<ShownCategory, string> = {
   medical: "Perlu tindak lanjut medis",
   untested: "Belum dites",
 };
+
+/** The scores of a category, such as 85–100. */
+export function rangeWords(range: ScoreRange): string {
+  return `${range.lowest}–${range.highest}`;
+}
