@@ -31,6 +31,7 @@ import { addSampleCharacterAssessments } from "./seed-character-assessments";
 import { addSampleCounsellingConsents } from "./seed-counselling-consents";
 import { addSampleCounsellingSchedules } from "./seed-counselling-schedules";
 import { addSampleCounsellingSessions } from "./seed-counselling-sessions";
+import { addSampleCounsellingSharings } from "./seed-counselling-sharings";
 import { addSampleDormActivities } from "./seed-dorm-activities";
 import { addSampleDormClarifications } from "./seed-dorm-clarifications";
 import { addSampleDormCleaning } from "./seed-dorm-cleaning";
@@ -186,7 +187,8 @@ async function addSampleFirstYears(
  * gains and losses of the sample students, and their requests for a SIKU
  * gain in every status, consents to counselling in every status, and
  * voluntary requests for counselling in every status, counselling
- * sessions Konselor wrote down, health notes of
+ * sessions Konselor wrote down, sharings of counselling data in every
+ * status, health notes of
  * students in and out of the dorm in every category, and mental health
  * marks of dorm residents of both kinds, and violation notes of this
  * semester and the one before.
@@ -285,6 +287,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleCounsellingConsents(tx, today);
     await addSampleCounsellingSchedules(tx, today);
     await addSampleCounsellingSessions(tx, today);
+    await addSampleCounsellingSharings(tx, today);
     await addSampleFitnessScores(tx, groups, today);
     await addSampleHealthNotes(tx, today);
     await addSampleDormHealthNotes(tx, running, today);
