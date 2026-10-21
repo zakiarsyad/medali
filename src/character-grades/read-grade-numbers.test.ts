@@ -1,8 +1,6 @@
 // Sample Tahun akademik of this file: those of the app's sample data.
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
-import { mayOpenTab } from "@/auth/access";
-import { activeAccounts } from "@/auth/accounts";
 import { fillWithSampleData } from "@/db/seed";
 import { withTestDatabase } from "@/db/test-database";
 import type { GradeRow } from "@/features/character-grades/grade-list";
@@ -12,11 +10,9 @@ import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { readGradeBasis } from "./grade-facts";
 import { readGradeRows } from "./grade-rows";
 import { readGradeNumbers } from "./read-grade-numbers";
+import { NO_PERIOD_DAY, sampleReaders } from "./test-sample-readers";
 
 const inTestDatabase = withTestDatabase();
-
-/** A day long before every sample period. */
-const NO_PERIOD_DAY = "2000-01-03";
 
 /**
  * The way the numbers were worked out before the database did it, from
@@ -47,53 +43,35 @@ function numbersInMemory(rows: readonly GradeRow[]): GradeNumbers {
   };
 }
 
-describe("readGradeNumbers", { timeout: 120_000 }, () => {
-  it("gives every role the four numbers the server worked out before", async () => {
+describe("readGradeNumbers", { timeout: 60_000 }, () => {
+  it("gives each role the four numbers the server worked out before", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
+      const { scheme } = await readGradeScheme(db);
+      const readers = await sampleReaders(db);
+      const found: GradeNumbers[] = [];
 
       for (const today of [campusDay(), NO_PERIOD_DAY]) {
-        const { scheme } = await readGradeScheme(db);
         const basis = await readGradeBasis(db, scheme, today);
-        const accounts = await activeAccounts(db);
-        const readers = accounts.filter((account) =>
-          mayOpenTab(account.roles, "assessment", "character"),
-        );
-        expect(readers.length).toBeGreaterThan(4);
-
         for (const account of readers) {
           const visible = gradeVisibleTo(account);
           const { rows } = await readGradeRows(db, visible, scheme, today);
 
-          const found = await readGradeNumbers(db, visible, basis);
+          const numbers = await readGradeNumbers(db, visible, basis);
 
-          expect(found, `${account.name} on ${today}`).toEqual(
+          expect(numbers, `${account.name} on ${today}`).toEqual(
             numbersInMemory(rows),
           );
+          found.push(numbers);
         }
       }
-    });
-  });
-
-  it("works out a mean, a pass and an adjustment from the sample data", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-      const today = campusDay();
-      const { scheme } = await readGradeScheme(db);
-      const basis = await readGradeBasis(db, scheme, today);
-      const [reader] = (await activeAccounts(db)).filter((account) =>
-        account.roles.includes("head_of_unit"),
-      );
-      if (!reader) throw new Error("No sample Kepala Unit.");
-
-      const found = await readGradeNumbers(db, gradeVisibleTo(reader), basis);
-
-      // So the comparison above never passes on numbers that are all empty.
-      expect(found.meanFinal).not.toBeNull();
-      expect(found.passing).toBeGreaterThan(0);
-      expect(found.complete).toBeGreaterThan(found.passing);
-      expect(found.adjusted).toBeGreaterThan(0);
-      expect(found.incomplete).toBeGreaterThan(0);
+      // So the comparison never passes on numbers that are all empty.
+      const kepala = found[0];
+      expect(kepala?.meanFinal).not.toBeNull();
+      expect(kepala?.passing).toBeGreaterThan(0);
+      expect(kepala?.complete).toBeGreaterThan(kepala?.passing ?? 0);
+      expect(kepala?.adjusted).toBeGreaterThan(0);
+      expect(kepala?.incomplete).toBeGreaterThan(0);
     });
   });
 });

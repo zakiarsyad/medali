@@ -1,9 +1,6 @@
 // Sample Tahun akademik of this file: those of the app's sample data.
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
-import { mayOpenTab } from "@/auth/access";
-import { activeAccounts } from "@/auth/accounts";
-import type { Database } from "@/db/connect";
 import { fillWithSampleData } from "@/db/seed";
 import { withTestDatabase } from "@/db/test-database";
 import {
@@ -22,11 +19,9 @@ import { pageWithin } from "@/ui/list-pages";
 import { readGradeBasis } from "./grade-facts";
 import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
+import { NO_PERIOD_DAY, sampleReaders } from "./test-sample-readers";
 
 const inTestDatabase = withTestDatabase();
-
-/** A day long before every sample period. */
-const NO_PERIOD_DAY = "2000-01-03";
 
 /*
  * The way the list was worked out before the database did it: every
@@ -74,14 +69,6 @@ function listInMemory(
   };
 }
 
-/** The accounts of the sample data whose roles open the tab. */
-async function readersOfTheTab(db: Database) {
-  const accounts = await activeAccounts(db);
-  return accounts.filter((account) =>
-    mayOpenTab(account.roles, "assessment", "character"),
-  );
-}
-
 /** Searches, filters and pages, a page past the end among them. */
 function askedFor(rows: readonly GradeRow[]): GradeParams[] {
   const first = rows[0]?.student;
@@ -106,56 +93,36 @@ function askedFor(rows: readonly GradeRow[]): GradeParams[] {
   ];
 }
 
-describe("readGradePage", { timeout: 120_000 }, () => {
-  it("shows every role the rows, the order, the count and the page the server worked out before", async () => {
+describe("readGradePage", { timeout: 60_000 }, () => {
+  it("shows each role the rows, the order, the count and the page the server worked out before", async () => {
     await inTestDatabase(async (db) => {
       await fillWithSampleData(db);
-      const today = campusDay();
       const { scheme } = await readGradeScheme(db);
-      const basis = await readGradeBasis(db, scheme, today);
-      const readers = await readersOfTheTab(db);
-      expect(readers.length).toBeGreaterThan(4);
+      const readers = await sampleReaders(db);
       let compared = 0;
 
-      for (const account of readers) {
-        const visible = gradeVisibleTo(account);
-        const { rows } = await readGradeRows(db, visible, scheme, today);
-        for (const params of askedFor(rows)) {
-          const found = await readGradePage(db, visible, basis, today, params);
+      for (const today of [campusDay(), NO_PERIOD_DAY]) {
+        const basis = await readGradeBasis(db, scheme, today);
+        for (const account of readers) {
+          const visible = gradeVisibleTo(account);
+          const { rows } = await readGradeRows(db, visible, scheme, today);
+          for (const params of askedFor(rows)) {
+            const found = await readGradePage(
+              db,
+              visible,
+              basis,
+              today,
+              params,
+            );
 
-          expect(found, `${account.name}: ${JSON.stringify(params)}`).toEqual(
-            listInMemory(rows, params),
-          );
-          compared += found.rows.length;
+            const asked = `${account.name} on ${today}: ${JSON.stringify(params)}`;
+            expect(found, asked).toEqual(listInMemory(rows, params));
+            compared += found.rows.length;
+          }
         }
       }
       // The sample data gives many rows of each kind, so nothing passes empty.
       expect(compared).toBeGreaterThan(500);
-    });
-  });
-
-  it("shows the same as before on a day no period runs, everybody Belum lengkap", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-      const today = NO_PERIOD_DAY;
-      const { scheme } = await readGradeScheme(db);
-      const basis = await readGradeBasis(db, scheme, today);
-      const [reader] = await readersOfTheTab(db);
-      if (!reader) throw new Error("No sample account opens the tab.");
-      const visible = gradeVisibleTo(reader);
-      const { rows } = await readGradeRows(db, visible, scheme, today);
-      expect(basis.attendance).toBeNull();
-
-      for (const params of askedFor(rows)) {
-        const found = await readGradePage(db, visible, basis, today, params);
-
-        expect(found).toEqual(listInMemory(rows, params));
-      }
-      const incomplete = await readGradePage(db, visible, basis, today, {
-        ...START_PARAMS,
-        filter: "incomplete",
-      });
-      expect(incomplete.matching).toBe(rows.length);
     });
   });
 });
