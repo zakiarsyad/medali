@@ -25,21 +25,30 @@ const EDGES: UploadEdges = {
  * Takes or picks the attendance photo of one schedule, shows it, and
  * sends it. What it decides is in the upload it holds and what it draws
  * in its view; this only ties the two to the browser. What the server
- * answers goes to `onAnswer`.
+ * answers goes to `onAnswer`; a new send or pick is told to `onRestart`.
  */
 export function PhotoSender({
   scheduleId,
   startSend,
   onAnswer,
+  onRestart,
   onCancel,
 }: {
   scheduleId: string;
   startSend: StartSend;
   onAnswer: (answer: FormState) => void;
+  onRestart: () => void;
   onCancel: () => void;
 }) {
   const [upload] = useState(() =>
-    createPhotoUpload({ scheduleId, edges: EDGES, onAnswer, onCancel }),
+    createPhotoUpload({
+      scheduleId,
+      edges: EDGES,
+      startSend,
+      onAnswer,
+      onRestart,
+      onCancel,
+    }),
   );
   const state = useSyncExternalStore(
     upload.subscribe,
@@ -56,7 +65,7 @@ export function PhotoSender({
     <PhotoSenderView
       state={state}
       onPick={upload.pick}
-      onSend={() => startSend(upload.send)}
+      onSend={upload.send}
       onRedo={upload.redo}
       onCancel={upload.cancel}
     />

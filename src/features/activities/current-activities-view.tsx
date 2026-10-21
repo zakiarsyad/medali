@@ -21,6 +21,7 @@ export function CurrentActivitiesView({
   onOpen,
   onCancel,
   onAnswer,
+  onRestart,
 }: {
   cards: ActivityCard[];
   state: CardsState;
@@ -28,6 +29,7 @@ export function CurrentActivitiesView({
   onOpen: (cardId: string) => void;
   onCancel: () => void;
   onAnswer: (cardId: string, answer: FormState) => void;
+  onRestart: (cardId: string) => void;
 }) {
   const { openId, answer } = state;
   const answeredCardIsGone =
@@ -53,6 +55,7 @@ export function CurrentActivitiesView({
                   scheduleId={card.id}
                   startSend={startSend}
                   onAnswer={(sent) => onAnswer(card.id, sent)}
+                  onRestart={() => onRestart(card.id)}
                   onCancel={onCancel}
                 />
               )}
