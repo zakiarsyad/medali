@@ -1,14 +1,8 @@
-import { pageWithin } from "@/ui/list-pages";
 import {
   type CharacterGrade,
   gradeOf,
   type PartScores,
 } from "./character-grade";
-import {
-  GRADE_LIST_PAGE_SIZE,
-  type GradeFilter,
-  type GradeParams,
-} from "./grade-address";
 import type { GradeScheme } from "./scheme-ids";
 
 /** A student of "Daftar nilai karakter". */
@@ -74,49 +68,4 @@ export function partScoresOf(input: GradeInput): PartScores {
 /** A student with the grade the scheme gives their parts. */
 export function gradeRowOf(input: GradeInput, scheme: GradeScheme): GradeRow {
   return { ...input, grade: gradeOf(partScoresOf(input), scheme) };
-}
-
-/** Whether a row's grade is worked out and does not reach the pass letter. */
-export function isFailing(row: GradeRow): boolean {
-  return row.grade.complete && !row.grade.passes;
-}
-
-function isKept(row: GradeRow, filter: GradeFilter): boolean {
-  switch (filter) {
-    case "all":
-      return true;
-    case "failing":
-      return isFailing(row);
-    case "incomplete":
-      return !row.grade.complete;
-  }
-}
-
-function isFound(row: GradeRow, query: string): boolean {
-  if (query === "") return true;
-  const sought = query.toLocaleLowerCase("id-ID");
-  const { name, nim } = row.student;
-  return (
-    name.toLocaleLowerCase("id-ID").includes(sought) || nim.includes(sought)
-  );
-}
-
-/**
- * One page of "Daftar nilai karakter": the rows that match the search, by
- * name or NIM, and the filter, in the order they are given.
- */
-export function gradeListOf(
-  rows: readonly GradeRow[],
-  params: GradeParams,
-): GradeList {
-  const kept = rows.filter(
-    (row) => isKept(row, params.filter) && isFound(row, params.query),
-  );
-  const page = pageWithin(params.page, kept.length, GRADE_LIST_PAGE_SIZE);
-  const start = (page - 1) * GRADE_LIST_PAGE_SIZE;
-  return {
-    rows: kept.slice(start, start + GRADE_LIST_PAGE_SIZE),
-    matching: kept.length,
-    page,
-  };
 }

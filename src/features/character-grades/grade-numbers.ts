@@ -1,5 +1,3 @@
-import type { GradeRow } from "./grade-list";
-
 /** The four numbers above "Skema bobot", of the students the account sees. */
 export interface GradeNumbers {
   /** How many Aktif students they are. */
@@ -15,31 +13,33 @@ export interface GradeNumbers {
   incomplete: number;
 }
 
+/** What the four numbers are worked out from, as the database counts them. */
+export interface GradeTotals {
+  students: number;
+  complete: number;
+  passing: number;
+  adjusted: number;
+  /** The sum of the worked-out Nilai akhir, or null with none. */
+  finalSum: number | null;
+}
+
 /**
  * The four numbers. A "Belum lengkap" student is left out of Rerata nilai
  * akhir and of who meets the pass letter: nothing is guessed for them.
  */
-export function gradeNumbersOf(rows: readonly GradeRow[]): GradeNumbers {
-  let sum = 0;
-  let complete = 0;
-  let passing = 0;
-  let adjusted = 0;
-  for (const row of rows) {
-    if (row.siku.adjusted) adjusted += 1;
-    if (!row.grade.complete) continue;
-    complete += 1;
-    sum += row.grade.final;
-    if (row.grade.passes) passing += 1;
-  }
+export function gradeNumbersFrom(totals: GradeTotals): GradeNumbers {
+  const { students, complete, passing, adjusted, finalSum } = totals;
   const meanFinal =
-    complete === 0 ? null : Math.round((sum / complete) * 10) / 10;
+    complete === 0 || finalSum === null
+      ? null
+      : Math.round((finalSum / complete) * 10) / 10;
   return {
-    students: rows.length,
+    students,
     meanFinal,
     complete,
     passing,
     adjusted,
-    incomplete: rows.length - complete,
+    incomplete: students - complete,
   };
 }
 

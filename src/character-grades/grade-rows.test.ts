@@ -17,10 +17,7 @@ import {
   TEST_DECIDED_AT,
 } from "@/features/activities/test-records";
 import { START_PARAMS } from "@/features/character-grades/grade-address";
-import {
-  type GradeRow,
-  gradeListOf,
-} from "@/features/character-grades/grade-list";
+import type { GradeRow } from "@/features/character-grades/grade-list";
 import { readGradeScheme } from "@/features/character-grades/grade-scheme";
 import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { saveGradeScheme } from "@/features/character-grades/save-grade-scheme";
@@ -31,6 +28,8 @@ import {
 import { addTestScore } from "@/features/mentoring/test-scores";
 import { addTestEntry } from "@/features/siku/test-siku";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
+import { readGradeBasis } from "./grade-facts";
+import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
 
 /*
@@ -301,10 +300,16 @@ describe("who sees which grades", () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
 
-      const rows = await rowsFor(db, records, records.mentor);
-      const list = gradeListOf(rows, { ...START_PARAMS, query: "9987100203" });
+      const { scheme } = await readGradeScheme(db);
+      const basis = await readGradeBasis(db, scheme, TODAY);
+      const search = (query: string) =>
+        readGradePage(db, gradeVisibleTo(records.mentor), basis, TODAY, {
+          ...START_PARAMS,
+          query,
+        });
 
-      expect(list.matching).toBe(0);
+      expect((await search("9987100203")).matching).toBe(0);
+      expect((await search("9987100201")).matching).toBe(1);
     });
   });
 
