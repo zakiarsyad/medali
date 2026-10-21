@@ -72,9 +72,31 @@ program only).
 
 ## Decided while building
 
+1. The four categories count each student's final category, the more
+   serious of the latest test and the latest note, as the bars of
+   "Kategori" on Penilaian jasmani do. "Sudah dites" and "belum dites"
+   are about the test itself, as there too, so a student with no test
+   but a note that sets a category counts in that category and as not
+   tested.
+2. "(n) dari (total) sudah dites": n is the Aktif students of the
+   filtered group with a fitness test, of any year; total is all its
+   Aktif students. The card and section 3 show counts only from 5 tested
+   students. With none tested they say so; with 1 to 4 they show only
+   "Rekap ditampilkan setelah minimal 5 mahasiswa dites, agar identitas
+   tidak dapat ditebak.", and the server reads out no count for them.
+3. The percent "prima dan baik" is of the students with a category, a
+   student with only a note among them, so it never passes 100. It shows
+   "-" while Prima and Baik together hold 1 to 4, as it would give that
+   number back, the same as the share on Asrama > Kesehatan.
+4. From 5 tested students, every count of 1 to 4, of a category or of
+   those not tested, is sent as "<5", the same rule as the dorm health
+   numbers. A "<5" category takes no part of the card's bar, which lays
+   the categories along the whole group, as in the prototype, so those
+   not tested leave its end empty.
+
 ## Steps
 
-- [ ] 1. The "Kesehatan jasmani" card.
+- [x] 1. The "Kesehatan jasmani" card.
 - [ ] 2. "Kategori tes kebugaran" with the illness line and the
   small-group rule.
 - [ ] 3. "Arti kategori".

@@ -41,6 +41,14 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       recap: RECAP,
       cohorts: [{ cohortYear: 2025, entryPath: "regular", recap: RECAP }],
     },
+    physical: {
+      kind: "shown",
+      students: 40,
+      tested: 30,
+      untested: 10,
+      byCategory: { excellent: 12, good: 9, attention: 6, medical: "<5" },
+      fitShare: 70,
+    },
     ...more,
   };
 }
@@ -79,6 +87,27 @@ describe("DashboardScreen", () => {
     expect(html).toContain('href="/penilaian/asesmen"');
     expect(html).toContain("Angkatan 2025");
     expect(html).toContain("Reguler · Smt 3");
+  });
+
+  it("shows the card Kesehatan jasmani, leading to section 3", () => {
+    const html = shown(viewOf());
+
+    expect(html).toContain('href="#kesehatan-jasmani"');
+    expect(html).toContain("70% <small>prima dan baik</small>");
+    expect(html).toContain(
+      "30 dari 40 sudah dites. &lt;5 perlu tindak lanjut medis.",
+    );
+    expect(html).toContain("Perlu perhatian 6");
+  });
+
+  it("shows - and no bar on the card while nobody is tested", () => {
+    const html = shown(
+      viewOf({ physical: { kind: "untested", students: 40 } }),
+    );
+
+    expect(html).toContain("- <small>prima dan baik</small>");
+    expect(html).toContain("Belum ada hasil tes kebugaran dari 40 mahasiswa.");
+    expect(html).not.toContain("Perlu perhatian");
   });
 
   it("leaves out Program studi for Ketua Program Studi, Tahapan while no period runs, and Lihat rincian without the tab", () => {

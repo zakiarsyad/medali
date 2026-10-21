@@ -90,6 +90,30 @@
   font-size: var(--text-md);
 }
 
+.stack {
+  display: block;
+  width: 100%;
+  height: var(--bar-height);
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.excellentPart {
+  fill: var(--ok);
+}
+
+.goodPart {
+  fill: var(--fit-good);
+}
+
+.attentionPart {
+  fill: var(--warn);
+}
+
+.medicalPart {
+  fill: var(--bad);
+}
+
 .section {
   margin-top: var(--space-2xl);
 }

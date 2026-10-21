@@ -3,9 +3,11 @@ import { PageHead } from "@/ui/page-head";
 import { AchievementCard } from "./achievement-card";
 import { AchievementSection } from "./achievement-section";
 import { CohortTable } from "./cohort-table";
+import styles from "./dashboard.module.css";
 import { filtersInUse } from "./dashboard-address";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import type { DashboardView } from "./dashboard-view";
+import { PhysicalCard } from "./physical-card";
 
 function DashboardContent({
   view,
@@ -17,7 +19,10 @@ function DashboardContent({
   const { recap, cohorts } = view.achievement;
   return (
     <>
-      <AchievementCard recap={recap} />
+      <div className={styles.cards}>
+        <AchievementCard recap={recap} />
+        <PhysicalCard recap={view.physical} />
+      </div>
       <AchievementSection recap={recap} detailAddress={detailAddress}>
         {recap !== null && (
           <CohortTable

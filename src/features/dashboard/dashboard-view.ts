@@ -17,6 +17,8 @@ import {
 } from "./dashboard-choices";
 import type { DashboardScope } from "./dashboard-scope";
 import { dashboardStudents } from "./dashboard-students";
+import { readPhysical } from "./physical-read";
+import type { PhysicalRecap } from "./physical-recap";
 
 /** The running period as the semester rule reads it, or null when none runs. */
 export type RunningPeriod = Pick<AcademicPeriod, "startYear" | "term"> | null;
@@ -34,6 +36,7 @@ export interface DashboardView {
   held: HeldChoices;
   counts: ChoiceCounts;
   achievement: Achievement;
+  physical: PhysicalRecap;
 }
 
 /**
@@ -57,13 +60,11 @@ export async function loadDashboard(
     agencies: new Set([NO_AGENCY, ...held.agencies]),
   });
   const stages = stageCohorts(held.cohortYears, period);
-  const [counts, achievement] = await Promise.all([
+  const counted = dashboardStudents(scope.visible, filters, stages);
+  const [counts, achievement, physical] = await Promise.all([
     countChoices(db, scope.visible, filters, stages),
-    readAchievement(
-      db,
-      dashboardStudents(scope.visible, filters, stages),
-      filtersInUse(filters) > 0,
-    ),
+    readAchievement(db, counted, filtersInUse(filters) > 0),
+    readPhysical(db, counted),
   ]);
   return {
     filters,
@@ -73,5 +74,6 @@ export async function loadDashboard(
     held,
     counts,
     achievement,
+    physical,
   };
 }
