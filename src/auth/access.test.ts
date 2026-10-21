@@ -768,6 +768,55 @@ describe("may", () => {
     }
   });
 
+  it("lets Penilai Mahasiswa alone call a student for counselling from Asesmen karakter and read how those calls stand", () => {
+    expect(ACTION_TITLES.call_counselling_from_assessment).toBe(
+      "Panggil konseling dari asesmen: memanggil mahasiswa yang teridentifikasi perlu pembinaan untuk konseling, dan melihat status, tanggal, dan jam pemanggilan itu",
+    );
+    expect(may(["assessor"], "call_counselling_from_assessment")).toBe(true);
+    expect(mayOpenTab(["assessor"], "assessment", "character_test")).toBe(true);
+    expect(ROLES.assessor.rows).toBe("all");
+  });
+
+  it("refuses every other role to call a student for counselling from Asesmen karakter, Kepala Unit, Pengasuh, Konselor and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "assessor");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+        "counsellor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "call_counselling_from_assessment")).toBe(false);
+    }
+  });
+
+  it("limits calling from Asesmen karakter to the rows of Penilai Mahasiswa, not those of another role of the account", () => {
+    const account = {
+      id: "a1",
+      roles: ["head_of_unit", "mentor"] as RoleId[],
+      studyProgramId: null,
+      studentId: null,
+    };
+    expect(
+      rowLimitForAction(account, "call_counselling_from_assessment"),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: [],
+      studentIds: [],
+    });
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["mentor", "assessor"] },
+        "call_counselling_from_assessment",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
   it("lets Kepala Unit set the character grade scheme, on Penilaian karakter", () => {
     expect(ACTION_TITLES.set_grade_weights).toBe("Bobot penilaian");
     expect(may(["head_of_unit"], "set_grade_weights")).toBe(true);

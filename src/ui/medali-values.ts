@@ -9,3 +9,11 @@ export const MEDALI_VALUES = [
 ] as const;
 
 export type ValueKey = (typeof MEDALI_VALUES)[number]["key"];
+
+/** The name of a value, such as Mandiri for M. */
+export function valueNameOf(key: ValueKey): string {
+  for (const value of MEDALI_VALUES) {
+    if (value.key === key) return value.name;
+  }
+  throw new Error("Every value key has a name.");
+}

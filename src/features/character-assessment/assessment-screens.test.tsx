@@ -84,6 +84,7 @@ describe("the tab", () => {
         periodName={periodName}
         list={{ rows: ROWS, matching: 2, page: 1 }}
         manage={<ReadOnlyNote />}
+        coaching={<p>Panel pembinaan</p>}
       />,
     );
   }
@@ -97,6 +98,14 @@ describe("the tab", () => {
     expect(html).toContain("Diasesmen semester ini");
     expect(html).toContain("asesmen terakhir pada Ganjil 2026/2027");
     expect(html).toContain("Belum diasesmen");
+  });
+
+  it("shows Teridentifikasi perlu pembinaan after the note, before Hasil asesmen karakter", () => {
+    const html = screen(null);
+    const coaching = html.indexOf("Panel pembinaan");
+
+    expect(coaching).toBeGreaterThan(html.indexOf("diinput oleh Penilai"));
+    expect(coaching).toBeLessThan(html.indexOf("Hasil asesmen karakter"));
   });
 
   it("says when no academic period runs", () => {

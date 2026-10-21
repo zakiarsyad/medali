@@ -37,6 +37,13 @@ export interface AssessmentParams {
   page: number;
   /** The student whose earlier assessments are open over the tab, or null. */
   historyId: string | null;
+  /**
+   * Whether "Teridentifikasi perlu pembinaan" shows every student, a page
+   * at a time, or only the first few.
+   */
+  coachingAll: boolean;
+  /** The page of that full list, counted from 1. */
+  coachingPage: number;
 }
 
 export const START_PARAMS: AssessmentParams = {
@@ -44,9 +51,18 @@ export const START_PARAMS: AssessmentParams = {
   filter: "all",
   page: 1,
   historyId: null,
+  coachingAll: false,
+  coachingPage: 1,
 };
 
+/** How many students "Teridentifikasi perlu pembinaan" shows before "Tampilkan semua". */
+export const COACHING_FIRST_ROWS = 10;
+
+/** How many students one page of the full list shows. */
+export const COACHING_PAGE_SIZE = 25;
+
 const PAGE = /^[1-9]\d{0,5}$/;
+const ALL = "semua";
 
 function pageNamed(sent: string): number {
   return PAGE.test(sent) ? Number(sent) : 1;
@@ -75,6 +91,8 @@ export function readAssessmentParams(params: SearchParams): AssessmentParams {
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
     historyId: idNamed(firstParam(params.riwayat)),
+    coachingAll: firstParam(params.pembinaan) === ALL,
+    coachingPage: pageNamed(firstParam(params.pembinaanhal)),
   };
 }
 
@@ -90,6 +108,10 @@ export function assessmentAddress(params: AssessmentParams): string {
   }
   if (params.page > 1) search.set("hal", String(params.page));
   if (params.historyId !== null) search.set("riwayat", params.historyId);
+  if (params.coachingAll) search.set("pembinaan", ALL);
+  if (params.coachingAll && params.coachingPage > 1) {
+    search.set("pembinaanhal", String(params.coachingPage));
+  }
   const text = search.toString();
   if (text === "") return ASSESSMENT_ADDRESS;
   return `${ASSESSMENT_ADDRESS}?${text}`;
