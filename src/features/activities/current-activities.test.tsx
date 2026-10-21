@@ -1,10 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { FormState } from "@/ui/form-message";
 import { type ActivityCard, cardOf } from "./activity-card";
 import { type CardsEvent, cardsAfter, NO_CARD_OPEN } from "./cards-state";
 import { CurrentActivities } from "./current-activities";
 import { CurrentActivitiesView } from "./current-activities-view";
 import { PhotoSender } from "./photo-sender";
+import { SEND_FAILED } from "./photo-upload";
 import type { StudentSchedule } from "./student-schedule";
 import { type Drawn, draw, offered, press } from "./test-press";
 import {
@@ -23,6 +25,7 @@ const KEPT = {
   done: "Foto kehadiran terunggah. Menunggu verifikasi Pegawai UPK.",
 };
 const CLOSED = { error: "Masa unggah foto sudah ditutup.", done: null };
+const FAILED = { error: SEND_FAILED, done: null };
 
 function shown(schedule: StudentSchedule, now = TEST_NOW): string {
   return renderToStaticMarkup(
@@ -56,6 +59,7 @@ function board(cards: ActivityCard[]) {
         onAnswer={(cardId, answer) =>
           tell({ kind: "answered", cardId, state: answer })
         }
+        onRestart={(cardId) => tell({ kind: "restarted", cardId })}
       />
     );
   }
@@ -73,7 +77,14 @@ function uploadsOf(drawn: Drawn) {
 function answerOf(drawn: Drawn) {
   const [upload] = uploadsOf(drawn);
   if (!upload) throw new Error("No upload is open.");
-  return upload.props.onAnswer as (answer: typeof KEPT | typeof CLOSED) => void;
+  return upload.props.onAnswer as (answer: FormState) => void;
+}
+
+/** What the open upload of the cards is told to do when it starts again. */
+function restartOf(drawn: Drawn) {
+  const [upload] = uploadsOf(drawn);
+  if (!upload) throw new Error("No upload is open.");
+  return upload.props.onRestart as () => void;
 }
 
 describe("CurrentActivities", () => {
@@ -230,6 +241,52 @@ describe("the answer to a sent photo", () => {
     press(drawn(), BUTTON);
 
     expect(markup()).not.toContain("Foto kehadiran terunggah.");
+  });
+
+  it("is cleared at once when its card's upload starts again, and shows again when that send fails too", () => {
+    const { drawn, markup } = board([OPEN_CARD]);
+    press(drawn(), BUTTON);
+    answerOf(drawn())(FAILED);
+
+    restartOf(drawn())();
+
+    expect(uploadsOf(drawn())).toHaveLength(1);
+    expect(markup()).not.toContain("Foto tidak terkirim.");
+
+    answerOf(drawn())(FAILED);
+
+    expect(markup()).toContain(`role="alert">${FAILED.error}</p></article>`);
+  });
+
+  it("leaves another card's answer when one card's upload starts again", () => {
+    const failedOther = cardsAfter(
+      { openId: OPEN_CARD.id, answer: null },
+      { kind: "answered", cardId: OTHER_CARD.id, state: FAILED },
+    );
+
+    const after = cardsAfter(failedOther, {
+      kind: "restarted",
+      cardId: OPEN_CARD.id,
+    });
+
+    expect(after).toEqual({
+      openId: OPEN_CARD.id,
+      answer: { cardId: OTHER_CARD.id, state: FAILED },
+    });
+  });
+
+  it("drops only its own card's answer when that card's upload starts again, and keeps the upload open", () => {
+    const failed = cardsAfter(
+      { openId: OPEN_CARD.id, answer: null },
+      { kind: "answered", cardId: OPEN_CARD.id, state: FAILED },
+    );
+
+    const after = cardsAfter(failed, {
+      kind: "restarted",
+      cardId: OPEN_CARD.id,
+    });
+
+    expect(after).toEqual({ openId: OPEN_CARD.id, answer: null });
   });
 
   it("leaves another card's upload open when it arrives after that one was opened", () => {

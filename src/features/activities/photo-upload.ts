@@ -56,8 +56,14 @@ export type StartSend = (send: () => Promise<void>) => void;
 export interface PhotoUploadParts {
   scheduleId: string;
   edges: UploadEdges;
+  startSend: StartSend;
   /** Told what the server answered, or that the photo did not arrive. */
   onAnswer: (answer: FormState) => void;
+  /**
+   * Told as a send starts or another file is picked: the last answer
+   * stops being true then, and must not stay beside "Mengirim…".
+   */
+  onRestart: () => void;
   onCancel: () => void;
 }
 
@@ -68,7 +74,7 @@ export interface PhotoUpload {
   subscribe: (listener: () => void) => () => void;
   pick: (file: File) => Promise<void>;
   redo: () => void;
-  send: () => Promise<void>;
+  send: () => void;
   cancel: () => void;
   /**
    * Lets go of the preview when the upload leaves the screen, and makes
@@ -105,7 +111,7 @@ function formOf(scheduleId: string, photo: Blob): FormData {
  * nothing more.
  */
 export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
-  const { scheduleId, edges, onAnswer, onCancel } = parts;
+  const { scheduleId, edges, startSend, onAnswer, onRestart, onCancel } = parts;
   const listeners = new Set<() => void>();
   let state = START;
   let hasLeft = false;
@@ -127,6 +133,7 @@ export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
 
   async function pick(file: File): Promise<void> {
     if (isBusy()) return;
+    onRestart();
     const wrong = pickedPhotoFault(file.type, file.size);
     if (wrong !== null) return change({ fault: wrong });
     change({ reading: true, fault: null });
@@ -166,12 +173,19 @@ export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
     change({ fault: null });
   }
 
-  async function send(): Promise<void> {
+  function send(): void {
     const { photo } = state;
     if (photo === null || isBusy()) return;
+    // Told before the send starts: what is told inside it is held back
+    // until the whole send has ended.
+    onRestart();
     change({ sending: true });
+    startSend(() => deliver(photo.blob));
+  }
+
+  async function deliver(photo: Blob): Promise<void> {
     try {
-      const sent = await edges.send(formOf(scheduleId, photo.blob));
+      const sent = await edges.send(formOf(scheduleId, photo));
       onAnswer(
         sent.ok
           ? { error: null, done: sent.value }

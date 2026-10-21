@@ -29,6 +29,7 @@ export function CurrentActivities({ cards }: { cards: ActivityCard[] }) {
       onAnswer={(cardId, answer) =>
         tell({ kind: "answered", cardId, state: answer })
       }
+      onRestart={(cardId) => tell({ kind: "restarted", cardId })}
     />
   );
 }
