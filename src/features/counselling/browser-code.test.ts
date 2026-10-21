@@ -8,6 +8,7 @@ describe("the screen parts of Konseling that run in the browser", () => {
 
   it("are found: the panel of Konselor, its student search and the student's box at least", () => {
     expect(browserFiles).toContain(`${FOLDER}/counsellor-consent-panel.tsx`);
+    expect(browserFiles).toContain(`${FOLDER}/counsellor-follow-up.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/consent-student-picker.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/own-consent-box.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/register-form.tsx`);

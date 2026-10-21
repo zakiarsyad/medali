@@ -5,9 +5,11 @@ import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import { readOwnConsent } from "@/features/counselling/consent-reads";
 import { CounsellingScreen } from "@/features/counselling/counselling-screen";
+import { readDormReferrals } from "@/features/counselling/dorm-referrals";
 import { readOwnHistory } from "@/features/counselling/own-history";
 import { readOwnSchedules } from "@/features/counselling/own-schedules";
 import { readOwnSessionSummary } from "@/features/counselling/own-sessions";
+import { readReferralPage } from "@/features/counselling/referral-address";
 import {
   readHistoryShown,
   readScheduleListParams,
@@ -47,6 +49,11 @@ async function schedulesPart(account: AccountForAccess, params: SearchParams) {
   return board === null ? null : { board, filter };
 }
 
+function referralsPart(account: AccountForAccess, params: SearchParams) {
+  const page = readReferralPage(params);
+  return readDormReferrals(database(), account, page, campusDay());
+}
+
 export default async function CounsellingPage(props: PageProps<"/konseling">) {
   const { account } = await openPage("konseling");
   const searchParams = await props.searchParams;
@@ -56,6 +63,7 @@ export default async function CounsellingPage(props: PageProps<"/konseling">) {
       mayManage={may(account.roles, "manage_counselling_consent")}
       mayKeepSessions={may(account.roles, "keep_counselling_sessions")}
       schedules={await schedulesPart(account, searchParams)}
+      referrals={await referralsPart(account, searchParams)}
     />
   );
 }

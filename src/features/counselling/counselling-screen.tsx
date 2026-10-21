@@ -1,11 +1,12 @@
 import { PageHead } from "@/ui/page-head";
 import type { ConsentView } from "./consent-view";
 import styles from "./counselling.module.css";
-import { CounsellorConsentPanel } from "./counsellor-consent-panel";
+import { CounsellorFollowUp } from "./counsellor-follow-up";
 import { OwnConsentBox } from "./own-consent-box";
 import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
 import { OwnSessionSummaryBox } from "./own-session-summary";
+import type { ReferralList } from "./referral-view";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
 import { ScheduleNotice } from "./schedule-notice";
@@ -36,17 +37,21 @@ function CounsellorPart({
   mayManageConsent,
   mayKeepSessions,
   schedules,
+  referrals,
 }: {
   mayManageConsent: boolean;
   mayKeepSessions: boolean;
   schedules: CounsellorSchedules | null;
+  referrals: ReferralList | null;
 }) {
   return (
     <>
       <WarnBox title="Keadaan darurat.">{EMERGENCY_TEXT}</WarnBox>
-      {mayManageConsent && (
-        <CounsellorConsentPanel mayKeepSessions={mayKeepSessions} />
-      )}
+      <CounsellorFollowUp
+        referrals={referrals}
+        mayManageConsent={mayManageConsent}
+        mayKeepSessions={mayKeepSessions}
+      />
       {schedules && (
         <SchedulePanel
           board={schedules.board}
@@ -109,6 +114,7 @@ export function CounsellingScreen({
   mayManage,
   mayKeepSessions = false,
   schedules = null,
+  referrals = null,
 }: {
   /** Mahasiswa: their consent, the registration and their requests. */
   own: OwnCounselling | null;
@@ -118,8 +124,10 @@ export function CounsellingScreen({
   mayKeepSessions?: boolean;
   /** Konselor: "Jadwal konseling", or null for an account without the right. */
   schedules?: CounsellorSchedules | null;
+  /** Konselor: the dorm referrals, or null for an account without the right. */
+  referrals?: ReferralList | null;
 }) {
-  const showsCounsellor = mayManage || schedules !== null;
+  const showsCounsellor = mayManage || schedules !== null || referrals !== null;
   return (
     <>
       <PageHead title="Konseling" />
@@ -130,6 +138,7 @@ export function CounsellingScreen({
             mayManageConsent={mayManage}
             mayKeepSessions={mayKeepSessions}
             schedules={schedules}
+            referrals={referrals}
           />
         )}
       </div>

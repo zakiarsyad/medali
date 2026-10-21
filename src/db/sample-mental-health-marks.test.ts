@@ -30,6 +30,15 @@ describe("the sample mental health marks", () => {
     expect(residents.some((resident) => !NOTED.has(resident))).toBe(true);
   });
 
+  it("refer three residents on different days, so Konselor's referral list has rows to order", () => {
+    const referrals = SAMPLE_MENTAL_HEALTH_MARKS.filter(
+      (mark) => mark.category === "refer",
+    );
+    expect(referrals).toHaveLength(3);
+    const days = new Set(referrals.map((mark) => mark.daysAgo));
+    expect(days.size).toBe(referrals.length);
+  });
+
   it("are set by BAM - Kesehatan and Kepala Unit, who write the marks", () => {
     const writers = new Set(SAMPLE_MENTAL_HEALTH_MARKS.map((m) => m.savedAs));
     expect([...writers].sort()).toEqual(["bam_health", "head_of_unit"]);
