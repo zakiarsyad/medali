@@ -94,7 +94,13 @@ describe("a discipline penalty", () => {
       const { studentId, by } = await addNamed(db, "9944200002");
 
       const kept = inOwnStep(db, (tx) =>
-        addTestPenalty(tx, studentId, by, DAY, more),
+        addTestPenalty(
+          tx,
+          studentId,
+          by,
+          DAY,
+          more as Parameters<typeof addTestPenalty>[4],
+        ),
       );
 
       await expect(kept).rejects.toThrow();
