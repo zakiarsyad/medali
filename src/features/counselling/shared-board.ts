@@ -1,6 +1,5 @@
-import { and, asc, count, desc, eq, gte, lte } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
-import { daysBefore } from "@/academic-periods/days-before";
 import { type AccountForAccess, may } from "@/auth/access";
 import { NOT_REMOVED } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
@@ -12,12 +11,10 @@ import {
 } from "@/db/schema";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { pageWithin } from "@/ui/list-pages";
+import { heldInLast30Days } from "./recent-sessions";
 import { shownCount } from "./screening-rules";
 import { recipientRolesOf, sharedReachOf } from "./shared-reach";
 import { SHARED_PAGE_SIZE, type SharedList } from "./shared-view";
-
-/** The days "Sesi konseling 30 hari" looks back over, today not counted. */
-const SESSION_DAYS = 30;
 
 function isMenteesOnly(actor: AccountForAccess): boolean {
   const roles = recipientRolesOf(actor);
@@ -101,12 +98,6 @@ export async function readCampusSessionCount(
     .select({ sessions: count() })
     .from(counsellingSessions)
     .innerJoin(students, eq(students.id, counsellingSessions.studentId))
-    .where(
-      and(
-        gte(counsellingSessions.day, daysBefore(today, SESSION_DAYS)),
-        lte(counsellingSessions.day, today),
-        NOT_REMOVED,
-      ),
-    );
+    .where(and(heldInLast30Days(today), NOT_REMOVED));
   return shownCount(found?.sessions ?? 0);
 }

@@ -86,12 +86,29 @@ panels. It replaces looking students up one by one.
 4. One right, "Daftar mahasiswa konseling", covers the numbers, the
    list and "Rincian" with the session notes. Konselor alone has it, in
    the list of what each role may do.
+5. "Menunggu persetujuan" counts every consent that waits for the
+   student's answer.
+6. "Sesi 30 hari terakhir" counts the sessions of every Konselor held
+   from 30 days before today up to today, as "Sesi konseling 30 hari"
+   of the recipients counts them and as the prototype does. Konselor
+   sees the exact number, as they see each student anyway.
+7. Any schedule puts a student in the list, also one that is over.
+8. "berikutnya" is "Sesi berikutnya" of the student's latest session,
+   while it is today or later, as the student's own page shows it.
+9. "Jadwal" shows the active schedule (Diajukan, Usulan jadwal lain,
+   Dijadwalkan, Menunggu jadwal or Minta jadwal ulang) that comes
+   soonest, one with no time yet after those with one, with its time
+   such as "Dijadwalkan, 26 Okt 2026 pukul 10:00".
+10. "Publikasi" shows the latest sharing, current or ended, as
+    "Publikasi data kesehatan mental" shows it.
+11. The list is in name order. A removed student is not in it, nor the
+    student of the account itself, as on the other lists of Konselor.
 
 ## Steps
 
 - [x] 1. The right to read the counselling list is added for Konselor
   only, with its checks.
-- [ ] 2. The numbers and "Daftar mahasiswa" with its columns and empty
+- [x] 2. The numbers and "Daftar mahasiswa" with its columns and empty
   states.
 - [ ] 3. Search, filter and paging.
 - [ ] 4. "Rincian" with the sessions, and "Buka" into the panels.

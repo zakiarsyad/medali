@@ -1,6 +1,7 @@
 import { PageHead } from "@/ui/page-head";
 import type { ConsentView } from "./consent-view";
 import styles from "./counselling.module.css";
+import type { CounsellorStudents } from "./counselling-list-panel";
 import { CounsellorFollowUp } from "./counsellor-follow-up";
 import { OwnConsentBox } from "./own-consent-box";
 import { OwnHistoryList } from "./own-history-list";
@@ -44,12 +45,14 @@ function CounsellorPart({
   mayShare,
   schedules,
   referrals,
+  students,
 }: {
   mayManageConsent: boolean;
   mayKeepSessions: boolean;
   mayShare: boolean;
   schedules: CounsellorSchedules | null;
   referrals: ReferralList | null;
+  students: CounsellorStudents | null;
 }) {
   return (
     <>
@@ -59,6 +62,7 @@ function CounsellorPart({
         mayManageConsent={mayManageConsent}
         mayKeepSessions={mayKeepSessions}
         mayShare={mayShare}
+        students={students}
       />
       {schedules && (
         <SchedulePanel
@@ -128,6 +132,7 @@ export function CounsellingScreen({
   mayShare = false,
   schedules = null,
   referrals = null,
+  students = null,
 }: {
   /** Mahasiswa: their consent, the registration and their requests. */
   own: OwnCounselling | null;
@@ -141,9 +146,15 @@ export function CounsellingScreen({
   schedules?: CounsellorSchedules | null;
   /** Konselor: the dorm referrals, or null for an account without the right. */
   referrals?: ReferralList | null;
+  /** Konselor: the numbers and "Daftar mahasiswa", or null without the right. */
+  students?: CounsellorStudents | null;
 }) {
   const showsCounsellor =
-    mayManage || mayShare || schedules !== null || referrals !== null;
+    mayManage ||
+    mayShare ||
+    schedules !== null ||
+    referrals !== null ||
+    students !== null;
   return (
     <>
       <PageHead title="Konseling" />
@@ -156,6 +167,7 @@ export function CounsellingScreen({
             mayShare={mayShare}
             schedules={schedules}
             referrals={referrals}
+            students={students}
           />
         )}
       </div>
