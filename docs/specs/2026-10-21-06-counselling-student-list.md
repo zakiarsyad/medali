@@ -1,0 +1,94 @@
+# Counselling student list
+
+Depends on: Counselling consent, Counselling schedule changes and outcome, Counselling session notes, Sharing a counselling summary
+Group: Konseling
+
+## What we want
+
+Konselor gets one list of every student they are working with ("Daftar
+mahasiswa") on Konseling: consent, sessions, next session, active
+schedule and sharing, side by side. From a row they open that student's
+panels. It replaces looking students up one by one.
+
+## Who it is for
+
+- Konselor only. No other role has this list, in any form.
+
+## What should happen
+
+- When Konselor opens Konseling, then under the panels they see the
+  numbers "Menunggu persetujuan" (form consent) and "Sesi 30 hari
+  terakhir", and "Daftar mahasiswa" with every student who has a consent
+  record, a schedule or a session.
+- When they look at a row, then it shows name, NIM and program studi,
+  "Persetujuan" (status or "Belum diminta"), "Konseling" ("(n) sesi,
+  berikutnya (date)" or "-"), "Jadwal" (the active schedule's status and
+  time or "-"), "Publikasi" (status or "-") and "Rincian".
+- When they press "Rincian", then the row opens with that student's
+  sessions: date, Jenis, Topik, konselor, Tindak lanjut, Sesi berikutnya
+  and the notes, or "Belum ada sesi." "Tutup" closes it. Each opening is
+  logged as a reading of that student's notes, as Counselling session
+  notes does.
+- When they press "Buka" on a row, then "Persetujuan konseling" and
+  "Publikasi data kesehatan mental" above show that student, ready to
+  work on.
+- When they type in "Cari nama atau NIM" or pick the filter ("Semua",
+  "Menunggu persetujuan", "Disetujui", "Ada sesi berikutnya"), then the
+  list narrows; with no match it says "Tidak ada mahasiswa pada filter
+  ini."
+- When nothing exists yet, then the list says "Belum ada data
+  konseling."
+- When a consent, session, schedule or sharing changes, then the row and
+  the numbers show it on the next load.
+- When a student, Kepala Unit, Direktur / Wakil Direktur, Ketua Program
+  Studi, Pengasuh, Pembina Disiplin Mahasiswa or Penilai Mahasiswa sends
+  a hand-made request for the list, the numbers or a "Rincian", then the
+  server refuses it and gives nothing back. Confirmed by a check.
+- When Konselor opens "Rincian" while a colleague changes a session,
+  then they see the saved version on the next load, never a half-saved
+  one. Confirmed by a check.
+- When opened on a phone, then each row becomes a card with the same
+  facts and no sideways scroll.
+- When the list is long, then it loads 20 rows at a time, the notes of a
+  student load only when "Rincian" is opened, and the page shows within
+  about 1 second.
+
+## Not included
+
+- The screening columns of the prototype's list ("Asesmen terakhir",
+  "Tingkat", the filter "Perlu konseling"): they are in Mental health
+  screening, which keeps its own "Daftar mahasiswa" on Penilaian.
+- The Pengasuh column, until mentor groups exist.
+- Numbers of counselling for other roles; the anonymous campus number is
+  in Shared counselling data for recipients.
+- Downloading the list.
+- A name that opens the student detail: Konselor reaches their own
+  small detail from Penilaian > Kesehatan mental (Scores in the student
+  detail).
+- Closing a counselling case, a "Selesai" mark in the Konseling column,
+  and a link to the other "Daftar mahasiswa": the prototype has none.
+
+## Better than the prototype
+
+- The list is on Konseling with the panels it leads to, and a row opens
+  the student in those panels.
+- It can be searched, is paged, and shows the active schedule.
+- Notes are fetched only when a row is opened, not for the whole list.
+
+## Decided
+
+1. A counselling case is not closed: no closing and no extra mark, as in
+   the prototype.
+2. No recap per Konselor.
+3. Konselor keeps two lists named "Daftar mahasiswa": this one on
+   Konseling, and the screening one on Penilaian > Kesehatan mental, each
+   with its own columns.
+
+## Steps
+
+- [ ] 1. The right to read the counselling list is added for Konselor
+  only, with its checks.
+- [ ] 2. The numbers and "Daftar mahasiswa" with its columns and empty
+  states.
+- [ ] 3. Search, filter and paging.
+- [ ] 4. "Rincian" with the sessions, and "Buka" into the panels.
