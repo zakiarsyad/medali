@@ -1,3 +1,4 @@
+import { shownMoment } from "@/ui/day";
 import { ASSIGNMENT_TEXT_MAX } from "./schedule-ids";
 
 /*
@@ -21,6 +22,17 @@ export const MESSAGE_TOO_LONG = `Pesan untuk konselor paling panjang ${ASSIGNMEN
 
 export function assignedTo(name: string): string {
   return `Konseling wajib ditugaskan kepada ${name}.`;
+}
+
+/** The title of the box that shows how a Penugasan stands. */
+export const BOX_TITLE = "Konseling wajib";
+
+/** Why the box shows nothing of the session itself. */
+export const SESSION_PRIVATE = "Isi sesi konseling hanya diketahui konselor.";
+
+/** When and by whom it was sent, as the prototype says it. */
+export function sentWords(at: Date, by: string): string {
+  return `Ditugaskan ${shownMoment(at)} oleh ${by}.`;
 }
 
 /** Asked before it is sent, as the student is bound to a session. */

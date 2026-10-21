@@ -115,6 +115,16 @@ what was said in the session.
    wajib mengikuti sesi ini, dan penugasan tidak dapat dibatalkan."
 8. The message field sits above the button at every width, as in the
    other forms of the app; on a phone both fit with no sideways scroll.
+9. The box reads "Konseling wajib:" with the status, then "Ditugaskan
+   (date and time) oleh (name). Isi sesi konseling hanya diketahui
+   konselor.", as in the prototype. The status words are those Konseling
+   already shows. The message sent is not shown again.
+10. The box shows the date and Jam only while the request is
+    Dijadwalkan, Selesai or Tidak hadir, as a call from Asesmen karakter
+    does; while the student asks for another time it shows the status
+    alone, as the time held then is the student's wish.
+11. "Konseling wajib ditugaskan kepada (name)." stays under the box
+    once it has replaced the button.
 
 ## Steps
 
@@ -124,5 +134,5 @@ what was said in the session.
 - [x] 2. An assignment of the kind "Penugasan" (from Mandatory
   counselling) can point to one discipline penalty, with samples.
 - [x] 3. "Tugaskan konseling wajib" in "Rincian", with confirmation.
-- [ ] 4. The status box for Pembina Disiplin Mahasiswa only.
+- [x] 4. The status box for Pembina Disiplin Mahasiswa only.
 - [ ] 5. One request per penalty, also when sent twice at once.

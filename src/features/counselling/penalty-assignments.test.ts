@@ -16,7 +16,10 @@ import {
   MESSAGE_TOO_LONG,
   PENALTY_NOT_FOUND,
 } from "./penalty-assignment-words";
-import { assignFromPenalty } from "./penalty-assignments";
+import {
+  assignFromPenalty,
+  readPenaltyAssignments,
+} from "./penalty-assignments";
 import { addTestActor, addTestPeople } from "./test-consents";
 
 const inTestDatabase = withTestDatabase();
@@ -180,6 +183,109 @@ describe("Tugaskan konseling from a discipline penalty", () => {
 
       expect(outcome).toEqual({ kind: "refused", error: MESSAGE_TOO_LONG });
       expect(await schedulesOf(db)).toEqual([]);
+    });
+  });
+});
+
+/** Konselor's moves, made straight on the table. */
+function moveTo(
+  db: Database,
+  penaltyId: string,
+  values: Partial<typeof counsellingSchedules.$inferInsert>,
+) {
+  return db
+    .update(counsellingSchedules)
+    .set(values)
+    .where(eq(counsellingSchedules.penaltyId, penaltyId));
+}
+
+describe("how a Penugasan sent from a penalty stands", () => {
+  it("shows Pembina Disiplin Mahasiswa its status, when and by whom it was sent, and the date and Jam once Konselor set them", async () => {
+    await inTestDatabase(async (db) => {
+      const { punished, pembina, penaltyId } = await addRecords(db);
+      const without = await addTestPenalty(
+        db,
+        punished,
+        pembina.id,
+        "2026-10-16",
+      );
+      await assignFromPenalty(db, pembina, penaltyId, "Pesan rahasia.", NOW);
+      const ids = [penaltyId, without];
+      const sent = { sentAt: NOW, sentBy: "Pembina Uji Tugaskan" };
+      const time = {
+        day: "2026-10-21",
+        hour: "10:00",
+        way: "in_person",
+        counsellorId: pembina.id,
+      } as const;
+
+      const waiting = await readPenaltyAssignments(db, pembina, ids);
+      await moveTo(db, penaltyId, { status: "scheduled", ...time });
+      const scheduled = await readPenaltyAssignments(db, pembina, ids);
+      await moveTo(db, penaltyId, { status: "reschedule_asked" });
+      const asked = await readPenaltyAssignments(db, pembina, ids);
+      await moveTo(db, penaltyId, { status: "missed" });
+      const missed = await readPenaltyAssignments(db, pembina, ids);
+
+      expect(waiting).toEqual(
+        new Map([
+          [penaltyId, { status: "awaiting", day: null, hour: null, ...sent }],
+        ]),
+      );
+      expect(scheduled?.get(penaltyId)).toEqual({
+        status: "scheduled",
+        day: "2026-10-21",
+        hour: "10:00",
+        ...sent,
+      });
+      expect(asked?.get(penaltyId)).toEqual({
+        status: "reschedule_asked",
+        day: null,
+        hour: null,
+        ...sent,
+      });
+      expect(missed?.get(penaltyId)).toMatchObject({
+        status: "missed",
+        day: "2026-10-21",
+      });
+      expect(JSON.stringify([...(waiting?.values() ?? [])])).not.toContain(
+        "Pesan rahasia",
+      );
+    });
+  });
+
+  it.each<RoleId>([
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+    "counsellor",
+    "assessor",
+    "student",
+  ])("refuses %s, telling nothing", async (role) => {
+    await inTestDatabase(async (db) => {
+      const { pembina, penaltyId } = await addRecords(db);
+      await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+      const other = await addTestActor(db, "Bukan Pembina Uji", [role]);
+
+      expect(
+        await readPenaltyAssignments(db, other, [penaltyId]),
+      ).toBeNull();
+    });
+  });
+
+  it("tells nothing of a student outside the sender's rows", async () => {
+    await inTestDatabase(async (db) => {
+      const { punished, pembina, penaltyId } = await addRecords(db);
+      await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+      await db
+        .update(students)
+        .set({ deletedAt: NOW, deletedBy: pembina.id })
+        .where(eq(students.id, punished));
+
+      expect(await readPenaltyAssignments(db, pembina, [penaltyId])).toEqual(
+        new Map(),
+      );
     });
   });
 });

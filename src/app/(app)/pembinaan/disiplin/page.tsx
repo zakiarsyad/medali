@@ -5,6 +5,7 @@ import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
+import { PenaltyAssignmentBox } from "@/features/counselling/penalty-assignment-box";
 import { PenaltyAssignmentPart } from "@/features/counselling/penalty-assignment-part";
 import {
   type PenaltyAssignment,
@@ -69,8 +70,9 @@ export default async function DisciplinePenaltiesPage(
 }
 
 /**
- * Mandatory counselling in "Rincian" of each penalty, or nothing for an
- * account not given the Penugasan sent from penalties.
+ * Mandatory counselling in "Rincian" of each penalty: the form, or how
+ * its Penugasan stands. Nothing for an account not given the Penugasan
+ * sent from penalties.
  */
 function counsellingOf(
   rows: readonly PenaltyRow[],
@@ -79,9 +81,12 @@ function counsellingOf(
   if (assignments === null) return {};
   const parts: Record<string, ReactNode> = {};
   for (const row of rows) {
-    if (assignments.has(row.id)) continue;
+    const assignment = assignments.get(row.id);
+    const box = assignment ? (
+      <PenaltyAssignmentBox assignment={assignment} />
+    ) : null;
     parts[row.id] = (
-      <PenaltyAssignmentPart penaltyId={row.id} name={row.name} box={null} />
+      <PenaltyAssignmentPart penaltyId={row.id} name={row.name} box={box} />
     );
   }
   return parts;
