@@ -1,5 +1,5 @@
 {
-  "id": "ad303705-39e4-4258-bed7-ee79a225847c",
+  "id": "0c9c7851-525b-4333-af6d-bf10732655fa",
   "prevId": "231f06d2-33cc-40c0-b873-275d068f0f19",
   "version": "7",
   "dialect": "postgresql",
@@ -2417,27 +2417,27 @@
           "type": "counselling_topic",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "day": {
           "name": "day",
           "type": "date",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "hour": {
           "name": "hour",
           "type": "counselling_hour",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "way": {
           "name": "way",
           "type": "counselling_way",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "story": {
           "name": "story",
@@ -2453,6 +2453,18 @@
         },
         "reason": {
           "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "basis": {
+          "name": "basis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sender_message": {
+          "name": "sender_message",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2580,7 +2592,35 @@
         },
         "counselling_schedules_counsellor_once_proposed": {
           "name": "counselling_schedules_counsellor_once_proposed",
-          "value": "\"counselling_schedules\".\"status\"::text in ('submitted', 'cancelled') or \"counselling_schedules\".\"counsellor_id\" is not null"
+          "value": "\"counselling_schedules\".\"status\"::text in ('submitted', 'cancelled', 'awaiting') or \"counselling_schedules\".\"counsellor_id\" is not null"
+        },
+        "counselling_schedules_statuses_of_kind": {
+          "name": "counselling_schedules_statuses_of_kind",
+          "value": "case when \"counselling_schedules\".\"kind\"::text = 'voluntary'\n        then \"counselling_schedules\".\"status\"::text not in ('awaiting', 'reschedule_asked')\n        else \"counselling_schedules\".\"status\"::text not in ('submitted', 'proposed', 'cancelled') end"
+        },
+        "counselling_schedules_time_once_set": {
+          "name": "counselling_schedules_time_once_set",
+          "value": "\"counselling_schedules\".\"status\"::text = 'awaiting' or (\"counselling_schedules\".\"day\" is not null and \"counselling_schedules\".\"hour\" is not null and \"counselling_schedules\".\"way\" is not null)"
+        },
+        "counselling_schedules_topic_of_voluntary": {
+          "name": "counselling_schedules_topic_of_voluntary",
+          "value": "(\"counselling_schedules\".\"kind\"::text = 'voluntary') = (\"counselling_schedules\".\"topic\" is not null)"
+        },
+        "counselling_schedules_basis_of_assignment": {
+          "name": "counselling_schedules_basis_of_assignment",
+          "value": "(\"counselling_schedules\".\"kind\"::text = 'voluntary') = (\"counselling_schedules\".\"basis\" is null)"
+        },
+        "counselling_schedules_sender_message_of_assignment": {
+          "name": "counselling_schedules_sender_message_of_assignment",
+          "value": "\"counselling_schedules\".\"kind\"::text <> 'voluntary' or \"counselling_schedules\".\"sender_message\" is null"
+        },
+        "counselling_schedules_basis_length": {
+          "name": "counselling_schedules_basis_length",
+          "value": "char_length(\"counselling_schedules\".\"basis\") <= 500"
+        },
+        "counselling_schedules_sender_message_length": {
+          "name": "counselling_schedules_sender_message_length",
+          "value": "char_length(\"counselling_schedules\".\"sender_message\") <= 500"
         }
       },
       "isRLSEnabled": false
@@ -6936,24 +6976,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "handling_note": {
-          "name": "handling_note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "handled_by": {
-          "name": "handled_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "handled_at": {
-          "name": "handled_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -7012,19 +7034,6 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-        },
-        "dorm_warning_letters_handled_by_accounts_id_fk": {
-          "name": "dorm_warning_letters_handled_by_accounts_id_fk",
-          "tableFrom": "dorm_warning_letters",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "handled_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -7068,18 +7077,6 @@
         "dorm_warning_letters_proposal_note_length": {
           "name": "dorm_warning_letters_proposal_note_length",
           "value": "char_length(\"dorm_warning_letters\".\"proposal_note\") <= 1000"
-        },
-        "dorm_warning_letters_handling_is_whole": {
-          "name": "dorm_warning_letters_handling_is_whole",
-          "value": "(\"dorm_warning_letters\".\"handled_at\" is null) = (\"dorm_warning_letters\".\"handled_by\" is null) and (\"dorm_warning_letters\".\"handled_at\" is null) = (\"dorm_warning_letters\".\"handling_note\" is null)"
-        },
-        "dorm_warning_letters_handling_only_on_issued_sp2": {
-          "name": "dorm_warning_letters_handling_only_on_issued_sp2",
-          "value": "\"dorm_warning_letters\".\"handled_at\" is null or (\"dorm_warning_letters\".\"level\" = 2 and \"dorm_warning_letters\".\"issued_at\" is not null)"
-        },
-        "dorm_warning_letters_handling_note_length": {
-          "name": "dorm_warning_letters_handling_note_length",
-          "value": "char_length(\"dorm_warning_letters\".\"handling_note\") between 5 and 1000"
         }
       },
       "isRLSEnabled": false
@@ -12915,7 +12912,9 @@
       "name": "counselling_schedule_kind",
       "schema": "public",
       "values": [
-        "voluntary"
+        "voluntary",
+        "assigned",
+        "called"
       ]
     },
     "public.counselling_schedule_status": {
@@ -12927,7 +12926,9 @@
         "scheduled",
         "done",
         "missed",
-        "cancelled"
+        "cancelled",
+        "awaiting",
+        "reschedule_asked"
       ]
     },
     "public.counselling_schedule_step": {
@@ -12942,7 +12943,10 @@
         "cancel",
         "reschedule",
         "mark_done",
-        "mark_missed"
+        "mark_missed",
+        "assign",
+        "call",
+        "set_time"
       ]
     },
     "public.counselling_session_kind": {
@@ -13249,8 +13253,7 @@
       "schema": "public",
       "values": [
         "scheduled",
-        "issued",
-        "handled"
+        "issued"
       ]
     },
     "public.email_change_action": {

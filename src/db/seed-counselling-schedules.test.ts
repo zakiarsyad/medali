@@ -5,6 +5,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { isWeekday } from "@/academic-periods/weekdays";
 import {
   isStudentScheduleStep,
+  SAMPLE_ASSIGNMENTS,
   SAMPLE_SCHEDULES,
 } from "./sample-counselling-schedules";
 import {
@@ -14,6 +15,7 @@ import {
   students,
 } from "./schema";
 import { fillWithSampleData } from "./seed";
+import { sampleAccountOf } from "./seed-siku-adjustments";
 import { withTestDatabase } from "./test-database";
 
 const inTestDatabase = withTestDatabase();
@@ -31,9 +33,11 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
         .select({
           id: counsellingSchedules.id,
           nim: students.nim,
+          kind: counsellingSchedules.kind,
           status: counsellingSchedules.status,
           day: counsellingSchedules.day,
           counsellorId: counsellingSchedules.counsellorId,
+          basis: counsellingSchedules.basis,
           changedAt: counsellingSchedules.changedAt,
         })
         .from(counsellingSchedules)
@@ -44,6 +48,7 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
           step: counsellingScheduleChanges.step,
           statusBefore: counsellingScheduleChanges.statusBefore,
           by: accounts.studentId,
+          byAccount: accounts.id,
         })
         .from(counsellingScheduleChanges)
         .innerJoin(
@@ -52,11 +57,16 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
         )
         .orderBy(asc(counsellingScheduleChanges.changedAt));
 
-      expect(schedules).toHaveLength(SAMPLE_SCHEDULES.length);
+      expect(schedules).toHaveLength(
+        SAMPLE_SCHEDULES.length + SAMPLE_ASSIGNMENTS.length,
+      );
       for (const sample of SAMPLE_SCHEDULES) {
         const status = sample.steps.at(-1)?.statusAfter;
         const schedule = schedules.find(
-          (each) => each.nim === sample.nim && each.status === status,
+          (each) =>
+            each.nim === sample.nim &&
+            each.status === status &&
+            each.kind === "voluntary",
         );
         expect(schedule).toBeDefined();
         expect(isWeekday(schedule?.day ?? "")).toBe(true);
@@ -74,6 +84,29 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
         );
         const proposedOrApproved = own.some((line) => line.by === null);
         expect(schedule?.counsellorId !== null).toBe(proposedOrApproved);
+      }
+
+      const senders = {
+        assigned: await sampleAccountOf(db, "discipline_officer"),
+        called: await sampleAccountOf(db, "assessor"),
+      };
+      for (const sample of SAMPLE_ASSIGNMENTS) {
+        const status = sample.steps.at(-1)?.statusAfter;
+        const schedule = schedules.find(
+          (each) => each.nim === sample.nim && each.kind === sample.kind,
+        );
+        expect(schedule).toMatchObject({ status, basis: sample.basis });
+        if (sample.time === null) expect(schedule?.day).toBeNull();
+        else expect(isWeekday(schedule?.day ?? "")).toBe(true);
+        const own = lines.filter((line) => line.scheduleId === schedule?.id);
+        expect(own.map((line) => line.step)).toEqual(
+          sample.steps.map((step) => step.step),
+        );
+        expect(own[0]?.byAccount).toBe(senders[sample.kind]);
+        expect(own.map((line) => line.by !== null)).toEqual(
+          sample.steps.map((step) => isStudentScheduleStep(step.step)),
+        );
+        expect(schedule?.counsellorId !== null).toBe(status !== "awaiting");
       }
     });
   });

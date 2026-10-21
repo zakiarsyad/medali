@@ -187,7 +187,8 @@ async function addSampleFirstYears(
  * and additional activities for chosen angkatan and classes, SIKU
  * gains and losses of the sample students, and their requests for a SIKU
  * gain in every status, consents to counselling in every status, and
- * voluntary requests for counselling in every status, counselling
+ * voluntary requests and assignments of counselling in every status,
+ * counselling
  * sessions Konselor wrote down, sharings of counselling data in every
  * status, health notes of
  * students in and out of the dorm in every category, and mental health

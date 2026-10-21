@@ -30,7 +30,8 @@ async function doneScheduleOf(db: Database, studentId: string): Promise<Held> {
         eq(counsellingSchedules.status, "done"),
       ),
     );
-  if (!found) throw new Error("A sample session names no Selesai session.");
+  if (!found?.day)
+    throw new Error("A sample session names no Selesai session.");
   return { scheduleId: found.id, day: found.day };
 }
 

@@ -86,7 +86,9 @@ function canAskAnother(schedule: OwnScheduleView): boolean {
  * One request of the student. While Konselor's proposal waits for them:
  * "Terima jadwal ini", "Minta waktu lain" and "Batalkan pendaftaran".
  * While it is Diajukan: "Batalkan pendaftaran". Once it is Dijadwalkan:
- * "Minta jadwal ulang" and "Batalkan". Cancelling asks first. The page is
+ * "Minta jadwal ulang" and "Batalkan". An assignment offers only "Minta
+ * jadwal ulang" once it is Dijadwalkan, and is never cancelled.
+ * Cancelling asks first. The page is
  * drawn again after an answer, so `schedule` is always the request as it
  * is now.
  */
@@ -184,14 +186,16 @@ export function OwnScheduleItem({
             Minta jadwal ulang
           </button>
         )}
-        <button
-          type="button"
-          className={shared.link}
-          disabled={pending}
-          onClick={cancel}
-        >
-          {isScheduled ? "Batalkan" : "Batalkan pendaftaran"}
-        </button>
+        {schedule.kind === "voluntary" && (
+          <button
+            type="button"
+            className={shared.link}
+            disabled={pending}
+            onClick={cancel}
+          >
+            {isScheduled ? "Batalkan" : "Batalkan pendaftaran"}
+          </button>
+        )}
       </div>
       {canAskAnother(schedule) && isAsking && (
         <AnotherTimeForm

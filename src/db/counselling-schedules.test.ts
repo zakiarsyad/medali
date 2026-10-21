@@ -208,6 +208,152 @@ describe("a counselling schedule", () => {
   });
 });
 
+/** An assignment waiting for its time: no topic, no time, with its Dasar. */
+const WAITING_ASSIGNMENT = {
+  kind: "assigned",
+  status: "awaiting",
+  topic: null,
+  day: null,
+  hour: null,
+  way: null,
+  basis: "Pelanggaran disiplin sedang jenjang pertama",
+  senderMessage: "Pesan uji pengirim.",
+} as const;
+
+describe("a counselling assignment", () => {
+  it.each(["assigned", "called"] as const)(
+    "keeps a %s one waiting with no time, its Dasar and the sender's message",
+    async (kind) => {
+      await inTestDatabase(async (db) => {
+        const records = await addRecords(db);
+
+        const [kept] = await addSchedule(db, records, {
+          ...WAITING_ASSIGNMENT,
+          kind,
+        });
+
+        expect(kept).toMatchObject({
+          kind,
+          status: "awaiting",
+          topic: null,
+          day: null,
+          basis: WAITING_ASSIGNMENT.basis,
+          senderMessage: WAITING_ASSIGNMENT.senderMessage,
+        });
+      });
+    },
+  );
+
+  it("can stand beside an active voluntary request of the same student", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addSchedule(db, records);
+
+      const [added] = await addSchedule(db, records, WAITING_ASSIGNMENT);
+
+      expect(added?.status).toBe("awaiting");
+    });
+  });
+
+  it("is refused without a Dasar", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(
+        addSchedule(db, records, { ...WAITING_ASSIGNMENT, basis: null }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("is refused with a topic picked by a student", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(
+        addSchedule(db, records, { ...WAITING_ASSIGNMENT, topic: "family" }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it.each(["submitted", "proposed", "cancelled"] as const)(
+    "is refused the status %s, which belongs to a voluntary request",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const records = await addRecords(db);
+
+        await expect(
+          addSchedule(db, records, {
+            ...WAITING_ASSIGNMENT,
+            status,
+            day: "2026-10-21",
+            hour: "08:30",
+            way: "in_person",
+            counsellorId: records.accountId,
+          }),
+        ).rejects.toThrow();
+      });
+    },
+  );
+
+  it("is refused Dijadwalkan without a time", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(
+        addSchedule(db, records, {
+          ...WAITING_ASSIGNMENT,
+          status: "scheduled",
+          counsellorId: records.accountId,
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("is refused a Dasar longer than 500 characters", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(
+        addSchedule(db, records, {
+          ...WAITING_ASSIGNMENT,
+          basis: "a".repeat(501),
+        }),
+      ).rejects.toThrow();
+    });
+  });
+});
+
+describe("a voluntary counselling request", () => {
+  it.each(["awaiting", "reschedule_asked"] as const)(
+    "is refused the status %s, which belongs to an assignment",
+    async (status) => {
+      await inTestDatabase(async (db) => {
+        const records = await addRecords(db);
+
+        await expect(
+          addSchedule(db, records, {
+            status,
+            counsellorId: records.accountId,
+          }),
+        ).rejects.toThrow();
+      });
+    },
+  );
+
+  it.each([
+    ["no topic", { topic: null }],
+    ["no time", { day: null }],
+    ["a Dasar", { basis: "Dasar uji" }],
+    ["a sender's message", { senderMessage: "Pesan uji" }],
+  ] as const)("is refused with %s", async (_, values) => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(addSchedule(db, records, values)).rejects.toThrow();
+    });
+  });
+});
+
 describe("the log of counselling schedules", () => {
   it("keeps who, when, the step, and the status before and after", async () => {
     await inTestDatabase(async (db) => {

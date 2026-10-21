@@ -1,5 +1,11 @@
 import { firstParam, type SearchParams } from "@/ui/search-params";
-import { ACTIVE_STATUSES, type ScheduleStatus } from "./schedule-ids";
+import {
+  ACTIVE_STATUSES,
+  SCHEDULE_KINDS,
+  type ScheduleKind,
+  type ScheduleStatus,
+  TO_SCHEDULE_STATUSES,
+} from "./schedule-ids";
 
 /*
  * The address of "Jadwal konseling" and what it asks for. Read by the
@@ -56,7 +62,7 @@ export const FILTER_WORDS: Record<ScheduleFilter, string> = {
 /** The statuses a choice shows, or null for every status. */
 export function statusesOf(filter: ScheduleFilter): ScheduleStatus[] | null {
   if (filter === "all") return null;
-  if (filter === "needs_action") return ["submitted"];
+  if (filter === "needs_action") return [...TO_SCHEDULE_STATUSES];
   if (filter === "active") return [...ACTIVE_STATUSES];
   return [filter];
 }
@@ -65,6 +71,25 @@ export interface ScheduleListParams {
   filter: ScheduleFilter;
   /** The page of the cards, counted from 1. */
   page: number;
+  /** The Jenis filter; none for "Semua jenis". */
+  kind?: ScheduleKind | null;
+}
+
+/** Each Jenis as the address names it. */
+const KIND_NAMES: Record<ScheduleKind, string> = {
+  voluntary: "sukarela",
+  assigned: "penugasan",
+  called: "pemanggilan",
+};
+
+/** The Jenis a name of the address stands for, or none for any other. */
+export function kindNamed(sent: string): ScheduleKind | null {
+  return SCHEDULE_KINDS.find((kind) => KIND_NAMES[kind] === sent) ?? null;
+}
+
+/** The name of a Jenis in the address, and "" for "Semua jenis". */
+export function kindName(kind: ScheduleKind | null): string {
+  return kind === null ? "" : KIND_NAMES[kind];
 }
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -78,11 +103,12 @@ export function filterNamed(sent: string): ScheduleFilter {
 /** What the address asks the cards for. Nothing in an address is trusted. */
 export function readScheduleListParams(
   params: SearchParams,
-): ScheduleListParams {
+): Required<ScheduleListParams> {
   const page = firstParam(params.hal);
   return {
     filter: filterNamed(firstParam(params.status)),
     page: PAGE.test(page) ? Number(page) : 1,
+    kind: kindNamed(firstParam(params.jenis)),
   };
 }
 
@@ -92,12 +118,17 @@ export function filterName(filter: ScheduleFilter): string {
 }
 
 /**
- * The address of a page of the cards with this choice. The first choice
- * and the first page are left out.
+ * The address of a page of the cards with this choice and Jenis. The
+ * first choice, the first page and "Semua jenis" are left out.
  */
-export function scheduleListAddress(filter: ScheduleFilter, page = 1): string {
+export function scheduleListAddress(
+  filter: ScheduleFilter,
+  page = 1,
+  kind: ScheduleKind | null = null,
+): string {
   const params = new URLSearchParams();
   if (filter !== "needs_action") params.set("status", FILTER_NAMES[filter]);
+  if (kind !== null) params.set("jenis", KIND_NAMES[kind]);
   if (page > 1) params.set("hal", String(page));
   const search = params.toString();
   if (search === "") return COUNSELLING_ADDRESS;
