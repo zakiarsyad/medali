@@ -86,6 +86,18 @@ Character coaching list reads it.
 3. After a call is finished, the student is not called again in the same
    academic period; in a new period they may be, if they are still
    listed.
+4. A call belongs to the period it was made in, by its day on campus.
+   Before the first academic period starts, "Panggil konseling" is
+   refused with a message, since a call is counted per period.
+5. One call per period is kept by locking the student while the call is
+   made, as "Daftar konseling" does; no table or column is added.
+6. The row shows the date and Jam only while the call is Dijadwalkan,
+   Selesai or Tidak hadir. While the student asks for another time it
+   shows the status alone, as the time held then is the student's wish.
+7. The call has no "Pesan pengirim": the panel has no field for one, as
+   in the prototype.
+8. A refusal such as "Sudah ditugaskan." shows beside the button; the
+   row shows the status once the page is read again.
 
 ## Steps
 
@@ -95,5 +107,5 @@ Character coaching list reads it.
 - [x] 3. The right "Panggil konseling dari asesmen" is added for Penilai
   Mahasiswa, with the reading of status, date and Jam of these calls,
   and its checks.
-- [ ] 4. "Panggil konseling" makes the call, one per student per
+- [x] 4. "Panggil konseling" makes the call, one per student per
   academic period, and the row shows its status to Penilai Mahasiswa.

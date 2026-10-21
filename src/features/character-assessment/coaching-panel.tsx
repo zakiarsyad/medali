@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { rerataOf } from "@/character-scores/assessment-score";
 import {
   type CoachingLevel,
@@ -9,7 +10,7 @@ import { COACHING_LEVEL_WORDS } from "@/character-scores/coaching-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
+import { valueNameOf } from "@/ui/medali-values";
 import {
   type AssessmentParams,
   assessmentAddress,
@@ -27,12 +28,16 @@ const LEVEL_LOOKS: Record<CoachingLevel, string | undefined> = {
   light: styles.light,
 };
 
-function valueName(key: ValueKey): string {
-  const found = MEDALI_VALUES.find((value) => value.key === key);
-  return found?.name ?? key;
-}
+/** What the column Konseling shows for a student, for the one role that has it. */
+export type CounsellingCell = (row: CoachingRow) => ReactNode;
 
-function CoachingRowCells({ row }: { row: CoachingRow }) {
+function CoachingRowCells({
+  row,
+  counsellingCell,
+}: {
+  row: CoachingRow;
+  counsellingCell: CounsellingCell | null;
+}) {
   const { level, weakest } = row.need;
   return (
     <tr>
@@ -51,14 +56,23 @@ function CoachingRowCells({ row }: { row: CoachingRow }) {
         {shownRerata(rerataOf(row.scores))}
       </td>
       <td data-title="Aspek terlemah">
-        {valueName(weakest)}{" "}
+        {valueNameOf(weakest)}{" "}
         <span className={styles.weakScore}>{row.scores[weakest]}</span>
       </td>
+      {counsellingCell && (
+        <td data-title="Konseling">{counsellingCell(row)}</td>
+      )}
     </tr>
   );
 }
 
-function CoachingTable({ rows }: { rows: readonly CoachingRow[] }) {
+function CoachingTable({
+  rows,
+  counsellingCell,
+}: {
+  rows: readonly CoachingRow[];
+  counsellingCell: CounsellingCell | null;
+}) {
   if (rows.length === 0) return <p className={shared.empty}>{NO_COACHING}</p>;
   return (
     <div className={shared.tableWrap}>
@@ -69,11 +83,16 @@ function CoachingTable({ rows }: { rows: readonly CoachingRow[] }) {
             <th>Tingkat</th>
             <th>Rerata MEDALI</th>
             <th>Aspek terlemah</th>
+            {counsellingCell && <th>Konseling</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <CoachingRowCells key={row.id} row={row} />
+            <CoachingRowCells
+              key={row.id}
+              row={row}
+              counsellingCell={counsellingCell}
+            />
           ))}
         </tbody>
       </table>
@@ -123,14 +142,17 @@ function CoachingMore({
 /**
  * "Teridentifikasi perlu pembinaan": the students the account sees whose
  * latest assessment is low, with how serious it is and their weakest
- * value. On a phone each student is a block of its own.
+ * value. The column Konseling shows only with `counsellingCell`. On a
+ * phone each student is a block of its own.
  */
 export function CoachingPanel({
   list,
   params,
+  counsellingCell = null,
 }: {
   list: CoachingList;
   params: AssessmentParams;
+  counsellingCell?: CounsellingCell | null;
 }) {
   return (
     <section className={shared.panel}>
@@ -140,7 +162,7 @@ export function CoachingPanel({
         satu nilai di bawah {LISTED_BELOW_SCORE}). Penilai Mahasiswa dapat
         memanggil mahasiswa untuk konseling bila diperlukan.
       </p>
-      <CoachingTable rows={list.rows} />
+      <CoachingTable rows={list.rows} counsellingCell={counsellingCell} />
       <CoachingMore list={list} params={params} />
     </section>
   );

@@ -53,6 +53,21 @@ describe("Teridentifikasi perlu pembinaan", () => {
     expect(html).not.toContain("Konseling");
   });
 
+  it("shows the column Konseling only when given what each row holds there", () => {
+    const withCalls = renderToStaticMarkup(
+      <CoachingPanel
+        list={listOf({})}
+        params={START_PARAMS}
+        counsellingCell={(row) => <i>sel {row.nim}</i>}
+      />,
+    );
+
+    expect(withCalls).toContain("<th>Konseling</th>");
+    expect(withCalls).toContain(
+      '<td data-title="Konseling"><i>sel 9986090002</i></td>',
+    );
+  });
+
   it("becomes cards on a phone", () => {
     expect(html).toMatch(/<table class="[^"]*stacked/);
     expect(html).toContain('data-title="Aspek terlemah"');
