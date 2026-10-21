@@ -23,6 +23,11 @@ export interface VerificationCard {
   /** The time the photo was sent, as the card says it. */
   sent: string;
   isOutsideDates: boolean;
+  /**
+   * Whether the schedule is still meant for the student. A photo of one
+   * taken out stays to be decided, but counts nowhere.
+   */
+  isMeant: boolean;
   /** Whether a file is kept for it here, so the picture can be shown. */
   hasPhoto: boolean;
   /** What the card says once the photo was removed as old proof, or null. */
@@ -45,6 +50,7 @@ export interface DecisionAnswer {
 
 export const NO_PHOTO_HERE = "Foto tidak tersimpan di sini.";
 export const OUTSIDE_DATES = "Di luar tanggal kegiatan";
+export const NO_LONGER_MEANT = "Tidak lagi menjadi peserta";
 
 export function sentTimeWords(sentAt: Date): string {
   return `Dikirim ${shownMoment(sentAt)}`;

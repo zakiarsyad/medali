@@ -12,6 +12,7 @@ import {
   sentIds,
   TOO_MANY_TICKED,
 } from "./bulk-validation";
+import { countedAtEither } from "./counted-students";
 import {
   CARD_NOT_FOUND,
   decideOne,
@@ -52,6 +53,7 @@ async function readCards(
   const stored = await storedCards(
     db,
     and(IS_CARD, inArray(activityAttendances.id, [...ids])),
+    await countedAtEither(db),
   );
   return stored.map((card) => cardOf(card, keepsPhotos));
 }

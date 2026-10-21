@@ -83,5 +83,5 @@ Pegawai UPK, who reads the numbers to know what is left to do.
 
 ## Steps
 
-- [ ] 1. The numbers count only photos that still count, and a card of a
+- [x] 1. The numbers count only photos that still count, and a card of a
   student taken out says so.

@@ -109,6 +109,15 @@ describe("VerificationScreen", () => {
     expect(screen).toContain("Latihan dasar kepemimpinan uji");
     expect(screen).toContain("Dikirim 13 Okt 2026, 12.00");
     expect(screen).not.toContain("Di luar tanggal kegiatan");
+    expect(screen).not.toContain("Tidak lagi menjadi peserta");
+  });
+
+  it("marks, under the activity, a photo of a student the schedule is no longer meant for", () => {
+    const screen = shown(listOf([{ ...TEST_CARD, isMeant: false }]));
+
+    expect(screen).toMatch(
+      /Latihan dasar kepemimpinan uji<\/p><div><span[^>]*>Tidak lagi menjadi peserta<\/span><\/div><p[^>]*>Dikirim/,
+    );
   });
 
   it("asks for the photo from the server only as the card scrolls into view", () => {

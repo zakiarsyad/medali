@@ -13,6 +13,7 @@ export const TEST_CARD: VerificationCard = {
   activity: "Latihan dasar kepemimpinan uji",
   sent: "Dikirim 13 Okt 2026, 12.00",
   isOutsideDates: false,
+  isMeant: true,
   hasPhoto: true,
   removed: null,
   status: "waiting",

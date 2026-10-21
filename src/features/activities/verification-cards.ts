@@ -1,4 +1,13 @@
-import { and, asc, count, eq, isNotNull, isNull, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  isNotNull,
+  isNull,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import {
   accounts,
@@ -10,6 +19,7 @@ import {
 } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
 import { removedFileWords } from "@/ui/removed-file";
+import { countedAtEither } from "./counted-students";
 import { isOutsideDates } from "./outside-dates";
 import {
   CARDS_PAGE_SIZE,
@@ -66,10 +76,17 @@ const CARD = {
   decidedBy: accounts.name,
 };
 
-/** The stored cards that match, with everything a card shows. */
-export function storedCards(db: Database, condition: SQL | undefined) {
+/**
+ * The stored cards that match, with everything a card shows. `counted` is
+ * who the photos count for, as `countedAtEither` gives it.
+ */
+export function storedCards(
+  db: Database,
+  condition: SQL | undefined,
+  counted: SQL,
+) {
   return db
-    .select(CARD)
+    .select({ ...CARD, isMeant: sql<boolean>`(${counted})` })
     .from(activityAttendances)
     .innerJoin(activitySchedules, OF_ATTENDANCE)
     .innerJoin(
@@ -130,9 +147,12 @@ export async function readCards(
   keepsPhotos: boolean,
 ): Promise<CardList> {
   const condition = matching(filters);
-  const total = await countCards(db, condition);
+  const [total, counted] = await Promise.all([
+    countCards(db, condition),
+    countedAtEither(db),
+  ]);
   const shownPage = pageWithin(page, total, CARDS_PAGE_SIZE);
-  const rows = await storedCards(db, condition)
+  const rows = await storedCards(db, condition, counted)
     .orderBy(asc(activityAttendances.sentAt), asc(activityAttendances.id))
     .limit(CARDS_PAGE_SIZE)
     .offset((shownPage - 1) * CARDS_PAGE_SIZE);

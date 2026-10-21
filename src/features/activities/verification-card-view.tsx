@@ -6,6 +6,7 @@ import { LookBadge } from "./look-badge";
 import styles from "./verification.module.css";
 import {
   decisionWords,
+  NO_LONGER_MEANT,
   NO_PHOTO_HERE,
   OUTSIDE_DATES,
   photoAddressOf,
@@ -63,6 +64,11 @@ export function VerificationCardView({
           {card.nim} · {card.program}
         </p>
         <p className={base.cardText}>{card.activity}</p>
+        {!card.isMeant && (
+          <div>
+            <LookBadge words={NO_LONGER_MEANT} look="plain" />
+          </div>
+        )}
         <p className={base.cardText}>{card.sent}</p>
         {card.isOutsideDates && (
           <div>
