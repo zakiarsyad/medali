@@ -1,6 +1,7 @@
 import { and, eq, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { mentoringScores, students } from "@/db/schema";
+import { limitedScoreSql, limitedSql } from "@/discipline-penalties/limit-sql";
 import {
   type AttendanceBasis,
   attendanceSums,
@@ -73,9 +74,10 @@ function mentoringOfPeriod(basis: AttendanceBasis | null): SQL {
 /**
  * Each Aktif student `visible` lets through with what the list filters
  * and counts by, as a table to read from: Nilai akhir, or null while a
- * part is missing, whether it passes, and whether an entry in force gave
- * or took SIKU points. Every part is worked out in the database from
- * where it is recorded, as the server would.
+ * part is missing, held at 70 under a Ringan or Sedang penalty, whether
+ * such a penalty limits it, whether it passes, and whether an entry in
+ * force gave or took SIKU points. Every part is worked out in the
+ * database from where it is recorded, as the server would.
  */
 export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
   const attendance = attendancePart(db, visible, basis.attendance);
@@ -88,7 +90,7 @@ export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
     basis.skpmUploads === 0
       ? NONE
       : skpmSql(sql`coalesce(${skpm.total}, 0)`, basis.pointsForHundred);
-  const final = finalSql(
+  const unlimited = finalSql(
     {
       attendance: attendance.percent,
       mentoring: sql`${mentoringScores.score}`,
@@ -97,12 +99,15 @@ export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
     },
     basis.scheme.weights,
   );
+  const limited = limitedSql(students.id);
+  const final = limitedScoreSql(unlimited, limited);
   const query = db
     .select({
       studentId: students.id,
       name: students.name,
       nim: students.nim,
       final: sql<number | null>`${final}`.as("final"),
+      limited: sql<boolean>`${limited}`.as("limited"),
       passes: sql<boolean | null>`${passesSql(final, basis.scheme)}`.as(
         "passes",
       ),

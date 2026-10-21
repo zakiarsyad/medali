@@ -45,6 +45,8 @@ export interface GradeInput {
 /** One row of "Daftar nilai karakter". */
 export interface GradeRow extends GradeInput {
   grade: CharacterGrade;
+  /** Whether a Ringan or Sedang penalty holds the student's grade at 70. */
+  limited: boolean;
 }
 
 export interface GradeList {
@@ -65,7 +67,15 @@ export function partScoresOf(input: GradeInput): PartScores {
   };
 }
 
-/** A student with the grade the scheme gives their parts. */
-export function gradeRowOf(input: GradeInput, scheme: GradeScheme): GradeRow {
-  return { ...input, grade: gradeOf(partScoresOf(input), scheme) };
+/**
+ * A student with the grade the scheme gives their parts, held at 70 for
+ * a `limited` student.
+ */
+export function gradeRowOf(
+  input: GradeInput,
+  scheme: GradeScheme,
+  limited = false,
+): GradeRow {
+  const grade = gradeOf(partScoresOf(input), scheme, limited);
+  return { ...input, grade, limited };
 }

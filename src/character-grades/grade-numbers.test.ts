@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { gradeNumbersFrom, passingPercent } from "./grade-numbers";
 
 describe("gradeNumbersFrom", () => {
-  it("counts the mean and who passes over the worked-out grades only", () => {
+  it("counts the mean and who passes over the worked-out grades only, and how many are held at 70", () => {
     const numbers = gradeNumbersFrom({
       students: 3,
       complete: 2,
       passing: 1,
       adjusted: 2,
+      limited: 1,
       // 77.0 and 58.5; the third is Belum lengkap.
       finalSum: 135.5,
     });
@@ -20,6 +21,7 @@ describe("gradeNumbersFrom", () => {
       passing: 1,
       adjusted: 2,
       incomplete: 1,
+      limited: 1,
     });
     expect(passingPercent(numbers)).toBe(50);
   });
@@ -30,6 +32,7 @@ describe("gradeNumbersFrom", () => {
       complete: 0,
       passing: 0,
       adjusted: 0,
+      limited: 0,
       finalSum: null,
     });
 

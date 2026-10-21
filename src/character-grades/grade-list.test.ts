@@ -35,5 +35,23 @@ describe("gradeRowOf", () => {
       passes: true,
     });
     expect(ROWS[2]?.grade).toEqual({ complete: false });
+    expect(ROWS[0]?.limited).toBe(false);
+  });
+
+  it("holds the grade of a student under a Ringan or Sedang penalty at 70, marking the row", () => {
+    const row = gradeRowOf(
+      input("9987100105", "Eko Dibatasi", { skpm: 100 }),
+      STARTING_SCHEME,
+      true,
+    );
+
+    expect(row.limited).toBe(true);
+    expect(row.grade).toEqual({
+      complete: true,
+      final: 70,
+      letter: "B",
+      passes: true,
+      limitedFrom: 84,
+    });
   });
 });

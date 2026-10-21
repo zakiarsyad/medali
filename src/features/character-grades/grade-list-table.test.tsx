@@ -127,6 +127,29 @@ describe("Daftar nilai karakter", () => {
   });
 });
 
+describe("a student under a Ringan or Sedang penalty in Daftar nilai karakter", () => {
+  it("carries the badge Dibatasi 70, with Nilai akhir and the letter of the limited grade", () => {
+    const high = { ...ANI, mentoring: 100, skpm: 100 };
+    const rows = [
+      gradeRowOf(high, STARTING_SCHEME, true),
+      gradeRowOf(
+        { ...high, student: { ...ANI.student, id: "id-free" } },
+        STARTING_SCHEME,
+      ),
+    ];
+    const page = renderToStaticMarkup(
+      <GradeListTable rows={rows} params={START_PARAMS} />,
+    );
+
+    expect(page.match(/Dibatasi 70/g)).toHaveLength(1);
+    expect(page).toContain(">70,0<");
+    // 87.5, 100, 68 and 100 with 25% each is 88.875: A without the limit.
+    expect(page).toContain(">88,9<");
+    expect(page).toContain(">A<");
+    expect(page).toContain(">B<");
+  });
+});
+
 describe("names in Daftar nilai karakter", () => {
   it("open the student's profile over the tab, keeping the page", () => {
     const rows = [gradeRowOf(ANI, STARTING_SCHEME)];

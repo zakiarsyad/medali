@@ -18,6 +18,7 @@ const PASSING: StudentGrade = {
     siku: { score: 70, adjusted: true, note: "SIKU 65 +5" },
     skpm: 72,
     grade: { complete: true, final: 77.4, letter: "B", passes: true },
+    limited: false,
   },
 };
 
@@ -72,5 +73,31 @@ describe("Nilai karakter (KEP-220) in a student's detail", () => {
     expect(html).toContain(">-<");
     expect(html).not.toContain("batas lulus");
     expect(html.match(/<meter /g)).toHaveLength(3);
+  });
+
+  it("says the grade is held at 70 for a student under a Ringan or Sedang penalty, and from what", () => {
+    const html = viewOf({
+      ...PASSING,
+      row: {
+        ...PASSING.row,
+        limited: true,
+        grade: {
+          complete: true,
+          final: 70,
+          letter: "B",
+          passes: true,
+          limitedFrom: 82.4,
+        },
+      },
+    });
+
+    expect(html).toContain("70,0");
+    expect(html).toContain("Dibatasi 70 dari 82,4 karena hukuman disiplin.");
+  });
+
+  it("has no line for a student the limit did not lower", () => {
+    const html = viewOf({ ...PASSING, row: { ...PASSING.row, limited: true } });
+
+    expect(html).not.toContain("Dibatasi");
   });
 });

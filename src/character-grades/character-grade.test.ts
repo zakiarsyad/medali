@@ -45,6 +45,37 @@ describe("gradeOf", () => {
     }
   });
 
+  it("holds Nilai akhir 82.4 at 70.0 for a student under a Ringan or Sedang penalty, and takes the letter from it", () => {
+    const high = { attendance: 90, mentoring: 80, siku: 80, skpm: 79.6 };
+    const scheme = {
+      ...STARTING_SCHEME,
+      lowerLimits: { A: 80, B: 70, C: 60, D: 50 },
+    };
+
+    expect(gradeOf(high, scheme)).toEqual({
+      complete: true,
+      final: 82.4,
+      letter: "A",
+      passes: true,
+    });
+    expect(gradeOf(high, scheme, true)).toEqual({
+      complete: true,
+      final: 70,
+      letter: "B",
+      passes: true,
+      limitedFrom: 82.4,
+    });
+  });
+
+  it("keeps a limited student's grade of 70 or below as it is, and Belum lengkap as it is", () => {
+    expect(gradeOf(LOW, STARTING_SCHEME, true)).toEqual(
+      gradeOf(LOW, STARTING_SCHEME),
+    );
+    expect(gradeOf({ ...GOOD, skpm: null }, STARTING_SCHEME, true)).toEqual({
+      complete: false,
+    });
+  });
+
   it("counts a part of 0 that is there, as it is not missing", () => {
     expect(gradeOf({ ...GOOD, skpm: 0 }, STARTING_SCHEME)).toMatchObject({
       complete: true,

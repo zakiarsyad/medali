@@ -91,7 +91,7 @@ nothing is typed again in Penilaian.
   limited scores, with checks.
 - [x] 2. The note and the refusal of a score above 70 in Asesmen
   karakter and in "Unggah berkas".
-- [ ] 3. "Dibatasi 70" on Penilaian karakter: the number, the badge and
+- [x] 3. "Dibatasi 70" on Penilaian karakter: the number, the badge and
   the line.
 - [ ] 4. The limit line in the student detail, and the limited numbers
   on the mentor group and mentor pages.

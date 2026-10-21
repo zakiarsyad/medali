@@ -2,6 +2,7 @@ import type { SQL } from "drizzle-orm";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
+import { readLimitsOf } from "@/discipline-penalties/read-limits";
 import {
   type AttendanceScore,
   scorePercent,
@@ -98,7 +99,8 @@ export interface GradeRows {
 
 /**
  * Every Aktif student `visible` lets through, by name, with the semester
- * character grade the scheme gives the parts as they stand now.
+ * character grade the scheme gives the parts as they stand now, held at
+ * 70 for a student under a Ringan or Sedang penalty.
  */
 export async function readGradeRows(
   db: Database,
@@ -108,9 +110,12 @@ export async function readGradeRows(
 ): Promise<GradeRows> {
   const students = await readGradeStudents(db, visible);
   const ids = students.map((student) => student.id);
-  const { parts, sikuBase } = await readGradeParts(db, visible, ids, today);
+  const [{ parts, sikuBase }, limits] = await Promise.all([
+    readGradeParts(db, visible, ids, today),
+    readLimitsOf(db, ids),
+  ]);
   const rows = gradeInputsOf(students, parts).map((input) =>
-    gradeRowOf(input, scheme),
+    gradeRowOf(input, scheme, limits.has(input.student.id)),
   );
   return { rows, sikuBase };
 }
