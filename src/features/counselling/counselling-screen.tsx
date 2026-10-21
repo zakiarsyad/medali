@@ -6,6 +6,7 @@ import { OwnConsentBox } from "./own-consent-box";
 import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
 import { OwnSessionSummaryBox } from "./own-session-summary";
+import { OwnSharingBox } from "./own-sharing-box";
 import type { ReferralList } from "./referral-view";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
@@ -17,6 +18,7 @@ import type {
   ScheduleBoard,
 } from "./schedule-view";
 import type { OwnSessionSummary } from "./session-view";
+import type { SharingView } from "./sharing-view";
 import { WarnBox } from "./warn-box";
 
 /** What Konselor reads first on Konseling, as the prototype words it. */
@@ -74,6 +76,8 @@ export interface OwnCounselling {
   registration: OwnRegistration | null;
   /** How many sessions they had and the next one; null for none. */
   sessions?: OwnSessionSummary | null;
+  /** Their current sharing of counselling data; null for none. */
+  sharing?: SharingView | null;
 }
 
 /** What a student who may register sees of their own requests. */
@@ -91,6 +95,7 @@ function OwnPart({ own }: { own: OwnCounselling }) {
     <>
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
       <OwnConsentBox consent={own.consent} />
+      <OwnSharingBox sharing={own.sharing ?? null} />
       <OwnSessionSummaryBox summary={own.sessions ?? null} />
       {own.registration && (
         // A new step of Riwayat in the address starts with no message.

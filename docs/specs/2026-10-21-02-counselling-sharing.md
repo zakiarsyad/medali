@@ -139,7 +139,7 @@ time. Session notes are never shared.
 - [x] 2. The rights to ask and publish (Konselor) and to answer
   (Mahasiswa) are added to the permission list, with their checks.
 - [x] 3. Konselor asks for approval in "Publikasi data kesehatan mental".
-- [ ] 4. The student approves, declines or withdraws on Konseling;
+- [x] 4. The student approves, declines or withdraws on Konseling;
   withdrawing the consent to counselling stops the sharing too.
 - [ ] 5. Konselor publishes, records a paper approval, cancels or
   withdraws.

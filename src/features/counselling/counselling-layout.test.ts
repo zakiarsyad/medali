@@ -245,6 +245,24 @@ describe("Publikasi data kesehatan mental on a phone", () => {
   });
 });
 
+describe("the student's sharing box on a phone", () => {
+  const BOX = read("own-sharing-box.tsx");
+
+  it("folds a waiting request and puts Tolak under Setujui berbagi data when both do not fit", () => {
+    expect(BOX).toContain("className={styles.warnBox}");
+    expect(BOX).toContain("className={shared.actions}");
+    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+  });
+
+  it("folds what is shared with whom inside its box", () => {
+    expect(BOX).toMatch(
+      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
+    );
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+  });
+});
+
 describe("the style files of Konseling", () => {
   it("force no width wider than a phone", () => {
     for (const [styles, selectors] of LAYOUT_RULES) {

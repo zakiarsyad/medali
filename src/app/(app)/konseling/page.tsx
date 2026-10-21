@@ -15,6 +15,7 @@ import {
   readScheduleListParams,
 } from "@/features/counselling/schedule-address";
 import { readScheduleBoard } from "@/features/counselling/schedule-board";
+import { readOwnSharing } from "@/features/counselling/sharing-reads";
 import type { SearchParams } from "@/ui/search-params";
 
 async function ownPart(account: AccountForAccess, params: SearchParams) {
@@ -23,6 +24,7 @@ async function ownPart(account: AccountForAccess, params: SearchParams) {
     consent: await readOwnConsent(database(), account),
     registration: await registrationPart(account, params),
     sessions: await readOwnSessionSummary(database(), account),
+    sharing: await readOwnSharing(database(), account),
   };
 }
 

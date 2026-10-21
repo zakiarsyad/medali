@@ -27,6 +27,7 @@ import {
   sentToMessage,
   WITHDRAWN_MESSAGE,
 } from "./consent-words";
+import { stopSharingWithConsent } from "./press-sharing";
 
 /**
  * What a press on a consent gives back. A kept change, and a press
@@ -165,6 +166,9 @@ async function applyTo(
     .set({ ...after, changedBy: press.actorId, changedAt: press.now })
     .where(eq(counsellingConsents.id, current.id));
   await logChange(tx, press, current.id, current.status, after);
+  if (after.status === "withdrawn") {
+    await stopSharingWithConsent(tx, press.actorId, press.studentId, press.now);
+  }
   return keptAnswer(tx, press);
 }
 
