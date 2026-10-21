@@ -136,6 +136,27 @@ describe("DashboardScreen", () => {
     expect(html).not.toContain("Riwayat penyakit terbanyak");
   });
 
+  it("shows Arti kategori with the range and meaning of each category, also while nobody is tested", () => {
+    for (const physical of [
+      viewOf().physical,
+      { kind: "untested", students: 40 } as const,
+    ]) {
+      const html = shown(viewOf({ physical }));
+
+      expect(html).toContain("Arti kategori");
+      expect(html).toMatch(/>Prima<\/span> <span[^>]*>85–100<\/span>/);
+      expect(html).toMatch(/>Baik<\/span> <span[^>]*>70–84<\/span>/);
+      for (const meaning of [
+        "Kebugaran sangat baik, tidak perlu catatan.",
+        "Kebugaran baik, tidak perlu catatan.",
+        "Perlu pemantauan; lengkapi catatan kesehatan.",
+        "Perlu pemeriksaan atau penanganan medis; lengkapi catatan kesehatan.",
+      ]) {
+        expect(html).toContain(meaning);
+      }
+    }
+  });
+
   it("names the most common illnesses only when the server sent them", () => {
     const view = viewOf();
     if (view.physical.kind !== "shown") throw new Error("No counts.");

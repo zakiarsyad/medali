@@ -1,6 +1,7 @@
 import { CategoryBars } from "@/health-notes/category-bars";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
+import { CategoryMeanings } from "./category-meanings";
 import styles from "./dashboard.module.css";
 import { PHYSICAL_SECTION } from "./physical-card";
 import type { PhysicalRecap, ShownPhysical } from "./physical-recap";
@@ -91,6 +92,7 @@ export function PhysicalSection({
       </SectionHead>
       <div className={styles.panels}>
         <CategoryPanel recap={recap} limits={limits} />
+        <CategoryMeanings limits={limits} />
       </div>
     </section>
   );

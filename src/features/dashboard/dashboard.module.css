@@ -231,6 +231,25 @@
   min-width: 0;
 }
 
+.meanings {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meaning {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  font-size: var(--text-md);
+}
+
+.range {
+  color: var(--muted);
+}
+
 .panelHead {
   display: flex;
   flex-wrap: wrap;

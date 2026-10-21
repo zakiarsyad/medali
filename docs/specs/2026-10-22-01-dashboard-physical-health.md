@@ -128,9 +128,18 @@ program only).
 9. "Lihat rincian" goes to Penilaian > Penilaian jasmani, and shows only
    to an account that may open that tab.
 
+10. Penilaian jasmani shows no meaning of a category, so "Arti
+    kategori" takes the prototype's words: "Kebugaran sangat baik,
+    tidak perlu catatan.", "Kebugaran baik, tidak perlu catatan.",
+    "Perlu pemantauan; lengkapi catatan kesehatan." and "Perlu
+    pemeriksaan atau penanganan medis; lengkapi catatan kesehatan.",
+    each after its category in its colour and its scores with the limits
+    in force. It holds no count, so it shows also while the group has no
+    counts.
+
 ## Steps
 
 - [x] 1. The "Kesehatan jasmani" card.
 - [x] 2. "Kategori tes kebugaran" with the illness line and the
   small-group rule.
-- [ ] 3. "Arti kategori".
+- [x] 3. "Arti kategori".
