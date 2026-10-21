@@ -4,7 +4,11 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { activityScheduleParticipants, activitySchedules } from "@/db/schema";
+import {
+  activityScheduleParticipants,
+  activitySchedules,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestActivity,
@@ -95,6 +99,17 @@ async function addExtraSchedule(
     changedBy: records.staff.id,
     startsOn: "2210-09-10",
   });
+}
+
+async function setStatus(
+  db: Database,
+  student: TestStudentAccount,
+  status: "on_leave" | "inactive",
+): Promise<void> {
+  await db
+    .update(students)
+    .set({ status })
+    .where(eq(students.id, student.studentId));
 }
 
 function studentAt(records: Records, place: number): TestStudentAccount {
@@ -383,6 +398,44 @@ describe("readVerification", () => {
         [takenOutId, false],
       ]);
       expect(rejected.list.cards.map((card) => card.isMeant)).toEqual([false]);
+    });
+  });
+
+  it("counts no waiting card of a student on Cuti or Non aktif at a PPKS schedule, and marks those cards", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addSent(db, records, 0);
+      await addSent(db, records, 1);
+      await addSent(db, records, 2);
+      await setStatus(db, studentAt(records, 1), "on_leave");
+      await setStatus(db, studentAt(records, 2), "inactive");
+
+      const { numbers, list } = await found(db, records);
+
+      expect(numbers.waiting).toBe(1);
+      expect(list.cards.map((card) => card.isMeant)).toEqual([
+        true,
+        false,
+        false,
+      ]);
+    });
+  });
+
+  it("counts no waiting card of a student whose angkatan is not in the semester of the PPKS schedule, and marks it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addSent(db, records, 0);
+      await addSent(db, records, 1);
+      // Angkatan 2210 is in semester 1 during Ganjil 2210, not in 3.
+      await db
+        .update(students)
+        .set({ cohortYear: 2210 })
+        .where(eq(students.id, studentAt(records, 1).studentId));
+
+      const { numbers, list } = await found(db, records);
+
+      expect(numbers.waiting).toBe(1);
+      expect(list.cards.map((card) => card.isMeant)).toEqual([true, false]);
     });
   });
 
