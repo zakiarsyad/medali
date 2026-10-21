@@ -1,13 +1,21 @@
 import type { ConsentPick } from "./consent-picks";
-import type { ReferralRow } from "./referral-view";
 
 /*
- * What "Tindak lanjuti" of a referral does. Read by the screen parts in
- * the browser, so nothing here may take from the database code.
+ * What "Tindak lanjuti" of a referral and "Buka" of "Daftar mahasiswa"
+ * do. Read by the screen parts in the browser, so nothing here may take
+ * from the database code.
  */
 
-/** The referred student, as "Persetujuan konseling" picks one. */
-export function pickOf(row: ReferralRow): ConsentPick {
+/** A row of a list that names a student. */
+export interface StudentRow {
+  studentId: string;
+  name: string;
+  nim: string;
+  program: string;
+}
+
+/** The student of a row, as "Persetujuan konseling" picks one. */
+export function pickOf(row: StudentRow): ConsentPick {
   return {
     id: row.studentId,
     name: row.name,
@@ -17,13 +25,14 @@ export function pickOf(row: ReferralRow): ConsentPick {
 }
 
 /**
- * "Tindak lanjuti" of a row: the referred student is picked on
- * "Persetujuan konseling", which is then brought into view.
+ * "Tindak lanjuti" of a referral, or "Buka" of a student of "Daftar
+ * mahasiswa": the student is picked on "Persetujuan konseling", and so
+ * on "Publikasi data kesehatan mental", which is then brought into view.
  */
 export function followUpOf(
   pick: (student: ConsentPick) => void,
   bringIntoView: () => void,
-): (row: ReferralRow) => void {
+): (row: StudentRow) => void {
   return (row) => {
     pick(pickOf(row));
     bringIntoView();

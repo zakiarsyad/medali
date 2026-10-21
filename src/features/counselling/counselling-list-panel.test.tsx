@@ -1,17 +1,21 @@
 // Sample NIMs of this file: 9986330100 to 9986330199.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { STUDENT_NOT_FOUND } from "./consent-words";
 import type { CounsellingListParams } from "./counselling-list-address";
 import {
   CounsellingListPart,
   type CounsellorStudents,
 } from "./counselling-list-panel";
+import { StudentSessions } from "./counselling-list-table";
 import type { CounsellingStudentRow } from "./counselling-list-view";
 import {
   NO_COUNSELLING_DATA,
   NOBODY_ON_FILTER,
 } from "./counselling-list-words";
 import { CounsellingScreen } from "./counselling-screen";
+import type { SessionHistory, SessionView } from "./session-view";
+import { FOLLOW_UP_WORDS, SESSION_KIND_WORDS } from "./session-words";
 
 const ROW: CounsellingStudentRow = {
   studentId: "00000000-0000-4000-8000-000000000001",
@@ -174,5 +178,91 @@ describe("Konseling with Daftar mahasiswa", () => {
     );
     expect(page).not.toContain("Daftar mahasiswa");
     expect(page).not.toContain("Sesi 30 hari terakhir");
+  });
+});
+
+describe("Rincian and Buka of a row", () => {
+  it("offers Rincian, closed, with no session or note loaded with the list", () => {
+    const html = render([BUSY]);
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain(">Rincian</button>");
+    expect(html).not.toContain("Riwayat sesi");
+    expect(html).not.toContain("Tutup");
+  });
+
+  it("offers Buka only where the panels above may show the student", () => {
+    const without = render([BUSY]);
+    const offered = renderToStaticMarkup(
+      <CounsellingListPart
+        students={studentsOf([BUSY])}
+        onOpen={() => undefined}
+      />,
+    );
+    expect(without).not.toContain(">Buka</button>");
+    expect(offered).toContain(">Buka</button>");
+  });
+
+  it("shows Buka to Konselor on Konseling", () => {
+    const page = renderToStaticMarkup(
+      <CounsellingScreen
+        own={null}
+        mayManage={true}
+        mayShare={true}
+        students={studentsOf([BUSY])}
+      />,
+    );
+    expect(page).toContain(">Buka</button>");
+  });
+});
+
+describe("an opened Rincian", () => {
+  const SESSION: SessionView = {
+    id: "00000000-0000-4000-8000-000000000101",
+    day: "2026-10-19",
+    kind: "individual_in_person",
+    topic: "academic",
+    notes: "Catatan rahasia uji.",
+    followUp: "next_session",
+    nextDay: "2026-10-28",
+    counsellorName: "Konselor Uji",
+    changed: null,
+    version: "2026-10-19T03:00:00.000Z",
+  };
+
+  function opened(history: SessionHistory): string {
+    return renderToStaticMarkup(
+      <StudentSessions
+        opened={{ ok: true, value: history }}
+        pending={false}
+        onMore={() => undefined}
+      />,
+    );
+  }
+
+  it("shows each session's date, Jenis, Topik, konselor, Tindak lanjut, Sesi berikutnya and notes, with no Ubah", () => {
+    const html = opened({ items: [SESSION], hasMore: false });
+    expect(html).toContain("19 Okt 2026");
+    expect(html).toContain(SESSION_KIND_WORDS.individual_in_person);
+    expect(html).toContain("Akademik");
+    expect(html).toContain("Konselor Konselor Uji");
+    expect(html).toContain(FOLLOW_UP_WORDS.next_session);
+    expect(html).toContain("sesi berikutnya 28 Okt 2026");
+    expect(html).toContain("Catatan rahasia uji.");
+    expect(html).not.toContain(">Ubah</button>");
+  });
+
+  it("says Belum ada sesi. without a session", () => {
+    expect(opened({ items: [], hasMore: false })).toContain("Belum ada sesi.");
+  });
+
+  it("says why it was refused", () => {
+    const html = renderToStaticMarkup(
+      <StudentSessions
+        opened={{ ok: false, error: STUDENT_NOT_FOUND }}
+        pending={false}
+        onMore={() => undefined}
+      />,
+    );
+    expect(html).toContain(STUDENT_NOT_FOUND);
   });
 });

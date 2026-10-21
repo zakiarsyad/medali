@@ -24,7 +24,7 @@ const MOST_STEPS = 100;
  * The steps asked, at most MOST_STEPS, or 1 for what is not a whole number
  * of steps.
  */
-function stepsOf(sent: unknown): number {
+export function stepsOf(sent: unknown): number {
   const isStep =
     typeof sent === "number" && Number.isInteger(sent) && sent >= 1;
   return isStep ? Math.min(sent, MOST_STEPS) : 1;
@@ -33,7 +33,8 @@ function stepsOf(sent: unknown): number {
 const writer = alias(accounts, "writer");
 const changer = alias(accounts, "changer");
 
-async function readSessions(
+/** The student's latest sessions, the latest day first, with their notes. */
+export async function readSessions(
   tx: Database,
   studentId: string,
   limit: number,

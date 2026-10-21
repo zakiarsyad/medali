@@ -25,9 +25,9 @@ function consentVersionOf(
 /**
  * The dorm referrals, "Persetujuan konseling", "Publikasi data
  * kesehatan mental" and "Daftar mahasiswa" of Konselor, which share
- * the student picked: "Tindak lanjuti" of a referral picks the student
- * in the panel and brings it into view. Each shows only to an account
- * with its own right.
+ * the student picked: "Tindak lanjuti" of a referral and "Buka" of
+ * the list pick the student in the panels and bring them into view.
+ * Each shows only to an account with its own right.
  */
 export function CounsellorFollowUp({
   referrals,
@@ -68,7 +68,12 @@ export function CounsellorFollowUp({
           consentVersion={consentVersionOf(picking.looked)}
         />
       )}
-      {students && <CounsellingListPart students={students} />}
+      {students && (
+        <CounsellingListPart
+          students={students}
+          onOpen={mayManageConsent ? followUp : null}
+        />
+      )}
     </>
   );
 }

@@ -12,7 +12,10 @@ import {
   counsellingListAddress,
   listFilterName,
 } from "./counselling-list-address";
-import { CounsellingListTable } from "./counselling-list-table";
+import {
+  CounsellingListTable,
+  type OpenStudent,
+} from "./counselling-list-table";
 import type {
   CounsellingNumbers,
   CounsellingStudentList,
@@ -89,12 +92,14 @@ function emptyWords(params: CounsellingListParams): string {
  * The numbers and "Daftar mahasiswa" of Konselor on Konseling: the
  * search, the filter and one page of every student with a consent
  * record, a schedule or a session, by name. On a phone each student is
- * a card.
+ * a card. "Buka" picks the student in the panels above.
  */
 export function CounsellingListPart({
   students,
+  onOpen = null,
 }: {
   students: CounsellorStudents;
+  onOpen?: OpenStudent;
 }) {
   const { numbers, list, params } = students;
   return (
@@ -107,7 +112,7 @@ export function CounsellingListPart({
           <p className={shared.empty}>{emptyWords(params)}</p>
         ) : (
           <>
-            <CounsellingListTable rows={list.rows} />
+            <CounsellingListTable rows={list.rows} onOpen={onOpen} />
             <ListPager
               page={list.page}
               matching={list.matching}

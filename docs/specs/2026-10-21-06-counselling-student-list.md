@@ -109,6 +109,18 @@ panels. It replaces looking students up one by one.
 13. The search, the filter and the page are kept in the address. Using
     them shows the other lists of Konseling as they first open, as
     those lists already do with their own filters and pages.
+14. "Rincian" shows the sessions as "Riwayat sesi" does, the latest 10
+    first with "Tampilkan lebih banyak", read only: a session is changed
+    in "Persetujuan konseling".
+15. "Rincian" of a student with no session says "Belum ada sesi." and
+    is logged as a reading as well. It does not wait for a consent, as
+    the student may be listed by a schedule alone.
+16. "Buka" shows to an account that may work on "Persetujuan
+    konseling". It picks the student there and so in "Publikasi data
+    kesehatan mental", and brings "Persetujuan konseling" into view, as
+    "Tindak lanjuti" of a referral does.
+17. A "Rincian" opened while a colleague's change is under way shows the
+    version saved before it, without waiting for it.
 
 ## Steps
 
@@ -117,4 +129,4 @@ panels. It replaces looking students up one by one.
 - [x] 2. The numbers and "Daftar mahasiswa" with its columns and empty
   states.
 - [x] 3. Search, filter and paging.
-- [ ] 4. "Rincian" with the sessions, and "Buka" into the panels.
+- [x] 4. "Rincian" with the sessions, and "Buka" into the panels.
