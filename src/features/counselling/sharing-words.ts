@@ -20,6 +20,7 @@ export const SHARING_STATUS_WORDS: Record<SharingStatus, string> = {
 
 /** "Data yang dibagikan", as in the prototype. */
 export const SHARED_DATA_WORDS: Record<SharedData, string> = {
+  level: "Tingkat hasil asesmen dan rekomendasi tindak lanjut",
   counselling:
     "Status, jadwal, dan rencana tindak lanjut konseling, tanpa isi sesi",
   summary: "Ringkasan pendampingan yang ditulis konselor",
@@ -72,6 +73,12 @@ export const PICK_FIRST =
   "Pilih mahasiswa di Persetujuan konseling untuk mengatur publikasi datanya.";
 
 export const NO_SESSION = "Belum ada sesi konseling untuk mahasiswa ini.";
+
+export const NO_SCREENING = "Belum ada asesmen untuk mahasiswa ini.";
+
+/** What the panel says of a student with neither a screening nor a session, as in the prototype. */
+export const NO_SCREENING_OR_SESSION =
+  "Belum ada asesmen atau sesi konseling untuk mahasiswa ini.";
 
 export const NEEDS_COUNSELLING_CONSENT =
   "Data hanya dapat dibagikan selama persetujuan konseling mahasiswa Disetujui.";

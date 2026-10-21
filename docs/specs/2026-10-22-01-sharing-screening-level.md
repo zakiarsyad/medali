@@ -128,7 +128,7 @@ Kesehatan mental, and never the scores or the konselor's note.
 
 ## Steps
 
-- [ ] 1. The level is added to what can be shared, with the rule that an
+- [x] 1. The level is added to what can be shared, with the rule that an
   old agreement does not cover it, with checks.
 - [ ] 2. Konselor's panel and the student's request show the new choice.
 - [ ] 3. Recipients see Tingkat and "Rekomendasi", and "Perlu konseling".

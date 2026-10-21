@@ -1,0 +1,1 @@
+ALTER TYPE "public"."counselling_shared_data" ADD VALUE 'level' BEFORE 'counselling';

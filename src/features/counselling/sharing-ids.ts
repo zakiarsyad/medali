@@ -27,10 +27,11 @@ export const CURRENT_SHARING_STATUSES = [
 ] as const satisfies readonly SharingStatus[];
 
 /**
- * "Data yang dibagikan": the state, schedule and follow-up of the
+ * "Data yang dibagikan", in the order of the form: the level and advice
+ * of the latest screening, the state, schedule and follow-up of the
  * counselling without what was said, and the summary Konselor writes.
  */
-export const SHARED_DATA = ["counselling", "summary"] as const;
+export const SHARED_DATA = ["level", "counselling", "summary"] as const;
 
 export type SharedData = (typeof SHARED_DATA)[number];
 

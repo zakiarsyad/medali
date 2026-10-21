@@ -10,11 +10,13 @@ import {
   counsellingConsents,
   counsellingSessions,
   counsellingSharings,
+  mentalHealthScreenings,
   students,
 } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { CURRENT_SHARING_STATUSES } from "./sharing-ids";
+import type { SharingBasis } from "./sharing-rules";
 import {
   type SharingPanel,
   type SharingView,
@@ -104,6 +106,31 @@ export async function hasSessions(
   return found !== undefined;
 }
 
+/** Whether Konselor recorded at least one screening of the student. */
+export async function hasScreening(
+  db: Database,
+  studentId: string,
+): Promise<boolean> {
+  const [found] = await db
+    .select({ id: mentalHealthScreenings.id })
+    .from(mentalHealthScreenings)
+    .where(eq(mentalHealthScreenings.studentId, studentId))
+    .limit(1);
+  return found !== undefined;
+}
+
+/** What a sharing of the student can be built on. */
+export async function readSharingBasis(
+  db: Database,
+  studentId: string,
+): Promise<SharingBasis> {
+  const [sessions, screening] = await Promise.all([
+    hasSessions(db, studentId),
+    hasScreening(db, studentId),
+  ]);
+  return { hasSessions: sessions, hasScreening: screening };
+}
+
 async function hasConsent(db: Database, studentId: string): Promise<boolean> {
   const [found] = await db
     .select({ status: counsellingConsents.status })
@@ -133,7 +160,7 @@ export async function sharingStudentName(
 
 /**
  * "Publikasi data kesehatan mental" of a picked student: whether they
- * have a session and consent, and their latest sharing. Refused for a
+ * have a session, a screening and consent, and their latest sharing. Refused for a
  * student Konselor may not pick; an account without the right finds no
  * student.
  */
@@ -146,15 +173,12 @@ export async function readSharingPanel(
   if (!may(actor.roles, "share_counselling_data")) return refused;
   const name = await sharingStudentName(db, actor, studentId);
   if (name === null || typeof studentId !== "string") return refused;
-  const [sessions, consent, sharing] = await Promise.all([
-    hasSessions(db, studentId),
+  const [basis, consent, sharing] = await Promise.all([
+    readSharingBasis(db, studentId),
     hasConsent(db, studentId),
     readLatestSharing(db, studentId),
   ]);
-  return {
-    ok: true,
-    value: { hasSessions: sessions, hasConsent: consent, sharing },
-  };
+  return { ok: true, value: { ...basis, hasConsent: consent, sharing } };
 }
 
 /**

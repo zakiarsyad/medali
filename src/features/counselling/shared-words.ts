@@ -11,6 +11,7 @@ export const SHARED_HEADING = "Data yang dipublikasikan untuk Anda";
 
 /** Each part of "Data yang dibagikan", as a recipient reads it. */
 export const SHARED_PART_WORDS: Record<SharedData, string> = {
+  level: "Tingkat asesmen",
   counselling: "Status konseling",
   summary: "Ringkasan konselor",
 };

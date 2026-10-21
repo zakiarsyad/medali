@@ -38,6 +38,7 @@ function sharingOf(
 function panelOf(panel: Partial<SharingPanel>): string {
   const full: SharingPanel = {
     hasSessions: true,
+    hasScreening: false,
     hasConsent: true,
     sharing: null,
     ...panel,

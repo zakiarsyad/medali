@@ -1,10 +1,13 @@
 import {
   CURRENT_SHARING_STATUSES,
+  SHARED_DATA,
+  type SharedData,
   type SharingRecipient,
   type SharingStatus,
   type SharingStep,
   type SharingWay,
 } from "./sharing-ids";
+import { NO_SCREENING, NO_SESSION } from "./sharing-words";
 
 /** What Konselor, the student, or a withdrawn consent does to a sharing. */
 export type SharingMove = SharingStep;
@@ -97,6 +100,34 @@ export function counsellorSharingMoves(
 /** The buttons the student sees for their own sharing in this status. */
 export function studentSharingMoves(current: Current): StudentSharingMove[] {
   return STUDENT_MOVES.filter((move) => sharingAfter(move, current) !== null);
+}
+
+/** What Konselor wrote down of a student that data can be shared from. */
+export interface SharingBasis {
+  hasSessions: boolean;
+  hasScreening: boolean;
+}
+
+/**
+ * "Data yang dibagikan" offered for a student, in the order of the form:
+ * the level once screened, the counselling and the summary once a
+ * session was written down.
+ */
+export function offeredData(basis: SharingBasis): SharedData[] {
+  return SHARED_DATA.filter((data) =>
+    data === "level" ? basis.hasScreening : basis.hasSessions,
+  );
+}
+
+/** Why the data cannot be asked for, or null when each part is offered. */
+export function missingBasis(
+  data: readonly SharedData[],
+  basis: SharingBasis,
+): string | null {
+  if (data.includes("level") && !basis.hasScreening) return NO_SCREENING;
+  const offered = offeredData(basis);
+  const isOffered = data.every((each) => offered.includes(each));
+  return isOffered ? null : NO_SESSION;
 }
 
 /**

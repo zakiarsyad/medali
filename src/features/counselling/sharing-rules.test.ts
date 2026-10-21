@@ -4,11 +4,14 @@ import {
   counsellorSharingMoves,
   isCurrentSharing,
   isStop,
+  missingBasis,
+  offeredData,
   recipientSees,
   sharingAfter,
   studentSharingMoves,
   wayOf,
 } from "./sharing-rules";
+import { NO_SCREENING, NO_SESSION } from "./sharing-words";
 
 const ENDED: SharingStatus[] = ["declined", "cancelled", "withdrawn"];
 
@@ -115,6 +118,35 @@ describe("the buttons", () => {
     expect(studentSharingMoves("approved")).toEqual(["withdraw"]);
     expect(studentSharingMoves("published")).toEqual(["withdraw"]);
     expect(studentSharingMoves("withdrawn")).toEqual([]);
+  });
+});
+
+describe("the data offered for a student", () => {
+  it("is the level after a screening, and the counselling and the summary after a session, the level first", () => {
+    const both = { hasSessions: true, hasScreening: true };
+    expect(offeredData(both)).toEqual(["level", "counselling", "summary"]);
+    expect(offeredData({ hasSessions: true, hasScreening: false })).toEqual([
+      "counselling",
+      "summary",
+    ]);
+    expect(offeredData({ hasSessions: false, hasScreening: true })).toEqual([
+      "level",
+    ]);
+    expect(offeredData({ hasSessions: false, hasScreening: false })).toEqual(
+      [],
+    );
+  });
+
+  it("refuses the level without a screening, and the rest without a session", () => {
+    const sessionOnly = { hasSessions: true, hasScreening: false };
+    const screeningOnly = { hasSessions: false, hasScreening: true };
+    expect(missingBasis(["counselling", "summary"], sessionOnly)).toBeNull();
+    expect(missingBasis(["level"], screeningOnly)).toBeNull();
+    expect(missingBasis(["level", "counselling"], sessionOnly)).toBe(
+      NO_SCREENING,
+    );
+    expect(missingBasis(["level", "summary"], screeningOnly)).toBe(NO_SESSION);
+    expect(missingBasis(["counselling"], screeningOnly)).toBe(NO_SESSION);
   });
 });
 

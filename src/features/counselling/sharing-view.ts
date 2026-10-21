@@ -29,11 +29,13 @@ export interface SharingView {
 
 /**
  * What "Publikasi data kesehatan mental" shows Konselor of a student:
- * whether they may be asked, and their latest sharing.
+ * whether they may be asked, for what, and their latest sharing.
  */
 export interface SharingPanel {
   /** At least one counselling session was written down. */
   hasSessions: boolean;
+  /** At least one mental health screening was recorded. */
+  hasScreening: boolean;
   /** Their consent to counselling is Disetujui. */
   hasConsent: boolean;
   /** Their latest sharing, current or ended; null for none. */
