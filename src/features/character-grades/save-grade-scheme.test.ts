@@ -5,6 +5,7 @@ import {
   STARTING_SCHEME,
   STARTING_VERSION,
 } from "@/character-grades/scheme-ids";
+import { FORTY_TWENTY } from "@/character-grades/test-weights";
 import { characterGradeSchemes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
@@ -18,7 +19,7 @@ import {
   type SentScheme,
   TOTAL_NOT_100,
 } from "./scheme-input";
-import { addTestActor, FORTY_TWENTY, sentWithWeights } from "./test-scheme";
+import { addTestActor, sentWithWeights } from "./test-scheme";
 
 const inTestDatabase = withTestDatabase();
 

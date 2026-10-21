@@ -1,7 +1,7 @@
+import { GRADE_CHOICE_WORDS } from "@/character-grades/grade-choice";
 import { isUuid } from "@/db/is-uuid";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
-import { GRADE_CHOICE_WORDS } from "./grade-choice";
 
 /*
  * The address of Penilaian karakter and what it asks for. Read by the

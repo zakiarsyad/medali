@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
-import {
-  GRADE_LIST_PAGE_SIZE,
-  type GradeParams,
-  gradeAddress,
-} from "@/character-grades/grade-address";
 import type { GradeList } from "@/character-grades/grade-list";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import {
+  GRADE_LIST_PAGE_SIZE,
+  type GradeParams,
+  gradeAddress,
+} from "./grade-address";
 import { GradeFilterRow } from "./grade-filters";
 import { GradeListTable } from "./grade-list-table";
 

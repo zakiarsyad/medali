@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { finalScoreOf, gradeOf, skpmPartOf } from "./character-grade";
 import { STARTING_SCHEME } from "./scheme-ids";
-
-const FORTY_TWENTY = { attendance: 40, mentoring: 20, siku: 20, skpm: 20 };
+import { FORTY_TWENTY } from "./test-weights";
 
 const GOOD = { attendance: 90, mentoring: 80, siku: 66, skpm: 72 };
 const LOW = { attendance: 60, mentoring: 70, siku: 64, skpm: 40 };

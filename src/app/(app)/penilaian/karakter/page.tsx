@@ -2,10 +2,6 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
-import {
-  gradeAddress,
-  readGradeParams,
-} from "@/character-grades/grade-address";
 import { readGradeBasis } from "@/character-grades/grade-facts";
 import { readGradePage } from "@/character-grades/grade-page";
 import { readGradeScheme } from "@/character-grades/grade-scheme";
@@ -14,6 +10,10 @@ import { readGradeNumbers } from "@/character-grades/read-grade-numbers";
 import { database } from "@/db/database";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { CharacterGradeScreen } from "@/features/character-grades/character-grade-screen";
+import {
+  gradeAddress,
+  readGradeParams,
+} from "@/features/character-grades/grade-address";
 import { GradeNumberCards } from "@/features/character-grades/grade-number-cards";
 import { ReadOnlyScheme } from "@/features/character-grades/read-only-scheme";
 import { SchemeForm } from "@/features/character-grades/scheme-form";

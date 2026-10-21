@@ -2,10 +2,11 @@ import { eq, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { readGradeScheme } from "@/character-grades/grade-scheme";
 import { STARTING_VERSION } from "@/character-grades/scheme-ids";
+import { FORTY_TWENTY } from "@/character-grades/test-weights";
 import { characterGradeSchemes } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import { saveGradeScheme } from "./save-grade-scheme";
-import { addTestActor, FORTY_TWENTY, sentWithWeights } from "./test-scheme";
+import { addTestActor, sentWithWeights } from "./test-scheme";
 
 /*
  * A setting of the scheme is never erased, so no rows are removed after

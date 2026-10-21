@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { fillWithSampleData } from "@/db/seed";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { pageWithin } from "@/ui/list-pages";
 import {
   GRADE_LIST_PAGE_SIZE,
   type GradeFilter,
   type GradeParams,
   START_PARAMS,
-} from "./grade-address";
+} from "@/features/character-grades/grade-address";
+import { pageWithin } from "@/ui/list-pages";
 import { readGradeBasis } from "./grade-facts";
 import type { GradeList, GradeRow } from "./grade-list";
 import { readGradePage } from "./grade-page";
