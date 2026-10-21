@@ -44,6 +44,7 @@ export function PhotoSender({
     createPhotoUpload({
       scheduleId,
       edges: EDGES,
+      startSend,
       onAnswer,
       onRestart,
       onCancel,
@@ -64,7 +65,7 @@ export function PhotoSender({
     <PhotoSenderView
       state={state}
       onPick={upload.pick}
-      onSend={() => startSend(upload.send)}
+      onSend={upload.send}
       onRedo={upload.redo}
       onCancel={upload.cancel}
     />
