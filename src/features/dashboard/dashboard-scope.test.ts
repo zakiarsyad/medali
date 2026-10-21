@@ -22,6 +22,15 @@ describe("dashboardScopeOf", () => {
     expect(scope?.picksProgram).toBe(false);
   });
 
+  it("lets only Kepala Unit count the illnesses of the students", () => {
+    expect(
+      dashboardScopeOf(accountOf(["head_of_unit"]))?.illnesses,
+    ).toBeTruthy();
+    for (const role of ["director", "head_of_program"] as const) {
+      expect(dashboardScopeOf(accountOf([role]))?.illnesses).toBeNull();
+    }
+  });
+
   it("gives a person who is also Pengasuh the scope of their staff role", () => {
     const scope = dashboardScopeOf(accountOf(["mentor", "director"]));
 

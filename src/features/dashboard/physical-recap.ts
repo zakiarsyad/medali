@@ -2,6 +2,7 @@ import {
   FITNESS_CATEGORIES,
   type FitnessCategory,
 } from "@/health-notes/fitness-ids";
+import { ILLNESSES, type Illness } from "@/health-notes/health-ids";
 import {
   type CountShown,
   FEWEST_COUNTED,
@@ -18,6 +19,21 @@ export interface FitnessTally {
   byCategory: Record<FitnessCategory, number>;
 }
 
+/** How many students of the two lower categories have an illness in their latest note. */
+export interface IllnessTally {
+  illness: Illness;
+  students: number;
+}
+
+/** An illness of the line under "Kategori tes kebugaran", as it may be shown. */
+export interface IllnessCount {
+  illness: Illness;
+  students: CountShown;
+}
+
+/** How many illnesses the line names at most, as in the prototype. */
+export const ILLNESSES_NAMED = 4;
+
 /** Kesehatan jasmani of a group, as it may leave the server. */
 export type PhysicalRecap =
   | { kind: "untested"; students: number }
@@ -30,7 +46,12 @@ export type PhysicalRecap =
       byCategory: Record<FitnessCategory, CountShown>;
       /** The percent "prima dan baik", or null while it would give a count of 1 to 4 back. */
       fitShare: number | null;
+      /** The most common illnesses, or null for an account that may not count them. */
+      illnesses: IllnessCount[] | null;
     };
+
+/** Kesehatan jasmani of a group with enough tested students for counts. */
+export type ShownPhysical = Extract<PhysicalRecap, { kind: "shown" }>;
 
 function shownByCategory(
   byCategory: Record<FitnessCategory, number>,
@@ -59,12 +80,47 @@ function fitShareOf(
   return Math.round((fit / categorised) * 100);
 }
 
+function byMostThenListOrder(a: IllnessTally, b: IllnessTally): number {
+  if (a.students !== b.students) return b.students - a.students;
+  return ILLNESSES.indexOf(a.illness) - ILLNESSES.indexOf(b.illness);
+}
+
+function byListOrder(a: IllnessTally, b: IllnessTally): number {
+  return ILLNESSES.indexOf(a.illness) - ILLNESSES.indexOf(b.illness);
+}
+
+/**
+ * The most common named illnesses, most first. "Lainnya" names no
+ * illness, so it is left out. Those of 1 to 4 students come after the
+ * others in the order of Riwayat penyakit, so their order does not tell
+ * which of them is larger.
+ */
+function commonIllnesses(tallies: readonly IllnessTally[]): IllnessCount[] {
+  const named = tallies.filter(
+    (tally) => tally.illness !== "other" && tally.students > 0,
+  );
+  const most = named.sort(byMostThenListOrder).slice(0, ILLNESSES_NAMED);
+  const large = most.filter((tally) => shownCount(tally.students) !== "<5");
+  const small = most.filter((tally) => shownCount(tally.students) === "<5");
+  return [
+    ...large,
+    ...small.sort(byListOrder).map(({ illness }) => ({
+      illness,
+      students: "<5" as const,
+    })),
+  ];
+}
+
 /**
  * Kesehatan jasmani as it may be shown: no count at all while fewer than
  * `FEWEST_COUNTED` students are tested, and "<5" for any count of 1 to 4,
- * so that nobody's health can be told from it.
+ * so that nobody's health can be told from it. `illnesses` is null for an
+ * account that may not count them, and then no illness is given out.
  */
-export function physicalRecapOf(tally: FitnessTally): PhysicalRecap {
+export function physicalRecapOf(
+  tally: FitnessTally,
+  illnesses: readonly IllnessTally[] | null,
+): PhysicalRecap {
   const { students, tested, byCategory } = tally;
   if (tested === 0) return { kind: "untested", students };
   if (tested < FEWEST_COUNTED) return { kind: "too_few", students };
@@ -75,5 +131,6 @@ export function physicalRecapOf(tally: FitnessTally): PhysicalRecap {
     untested: shownCount(students - tested),
     byCategory: shownByCategory(byCategory),
     fitShare: fitShareOf(byCategory),
+    illnesses: illnesses === null ? null : commonIllnesses(illnesses),
   };
 }

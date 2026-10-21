@@ -2,7 +2,7 @@ import { CATEGORY_WORDS } from "@/health-notes/category-words";
 import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
 import { countWords } from "@/health-notes/shown-count";
 import styles from "./dashboard.module.css";
-import type { PhysicalRecap } from "./physical-recap";
+import type { PhysicalRecap, ShownPhysical } from "./physical-recap";
 import {
   physicalCardLine,
   physicalCardValue,
@@ -12,14 +12,12 @@ import {
 /** Where section 3 starts, for the card that leads to it. */
 export const PHYSICAL_SECTION = "kesehatan-jasmani";
 
-type ShownRecap = Extract<PhysicalRecap, { kind: "shown" }>;
-
 /**
  * A bar of the four categories along the whole group. Drawn as a
  * picture, so no width is written into the screen code; the counts in
  * words are its title.
  */
-function CategoryStack({ recap }: { recap: ShownRecap }) {
+function CategoryStack({ recap }: { recap: ShownPhysical }) {
   const words = FITNESS_CATEGORIES.map(
     (category) =>
       `${CATEGORY_WORDS[category]} ${countWords(recap.byCategory[category])}`,

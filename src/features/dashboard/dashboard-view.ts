@@ -2,6 +2,8 @@ import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { stageCohorts } from "@/academic-periods/stage-cohorts";
 import type { Database } from "@/db/connect";
 import { listStudyPrograms, type StudyProgram } from "@/db/study-programs";
+import type { FitnessLimits } from "@/health-notes/fitness-ids";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { type Achievement, readAchievement } from "./achievement-read";
 import {
   type DashboardFilters,
@@ -37,6 +39,8 @@ export interface DashboardView {
   counts: ChoiceCounts;
   achievement: Achievement;
   physical: PhysicalRecap;
+  /** The limits in force, which give each fitness category its scores. */
+  fitnessLimits: FitnessLimits;
 }
 
 /**
@@ -49,9 +53,10 @@ export async function loadDashboard(
   asked: DashboardFilters,
   period: RunningPeriod,
 ): Promise<DashboardView> {
-  const [held, programs] = await Promise.all([
+  const [held, programs, { limits }] = await Promise.all([
     readHeldChoices(db, scope.visible),
     scope.picksProgram ? listStudyPrograms(db) : null,
+    readFitnessLimits(db),
   ]);
   const filters = knownFilters(asked, {
     stages: period !== null,
@@ -64,7 +69,7 @@ export async function loadDashboard(
   const [counts, achievement, physical] = await Promise.all([
     countChoices(db, scope.visible, filters, stages),
     readAchievement(db, counted, filtersInUse(filters) > 0),
-    readPhysical(db, counted),
+    readPhysical(db, limits, counted, scope.illnesses),
   ]);
   return {
     filters,
@@ -75,5 +80,6 @@ export async function loadDashboard(
     counts,
     achievement,
     physical,
+    fitnessLimits: limits,
   };
 }

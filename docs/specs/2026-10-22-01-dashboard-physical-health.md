@@ -93,10 +93,44 @@ program only).
    numbers. A "<5" category takes no part of the card's bar, which lays
    the categories along the whole group, as in the prototype, so those
    not tested leave its end empty.
+5. The illness line is read only by an account with the right to "Rekap
+   data kesehatan seluruh mahasiswa", which only Kepala Unit holds, and
+   only within the students that right lets it see. For every other
+   account the server reads no illness at all. The numbers are read by
+   the page itself, as for section 1, so there is no other address to
+   ask.
+6. The illness line counts, among the filtered group's students in Perlu
+   perhatian or Perlu tindak lanjut medis, each illness picked in their
+   latest note. "Lainnya" is left out, as it names no illness. It names
+   at most four, as the prototype does, the most common first, with
+   ties in the order of "Riwayat penyakit". Illnesses of 1 to 4 students
+   show as "<5" and come after the others in the order of "Riwayat
+   penyakit", so their order does not tell which is larger. With no such
+   illness there is no line. It reads "Riwayat penyakit terbanyak pada
+   kategori perlu perhatian dan perlu tindak lanjut medis: Asma (12),
+   Hipertensi (<5)."
+7. A "<5" can still be worked out by taking the other categories from
+   those tested, and two filters can be compared. This is left as it is,
+   as on section 1: the three roles already see each student's final
+   category by name on Penilaian jasmani, within the same limit of
+   program, so it shows them nothing new. The illness line, the one part
+   they cannot see there, goes to Kepala Unit only, and has no total
+   that it could be taken from.
+8. Section 3 follows section 1, and its card follows the card "Capaian
+   karakter", keeping the prototype's number 3 while section 2 is not
+   built. Its title is "Kesehatan jasmani" with the prototype's line.
+   "Kategori tes kebugaran" shows "(n) dari (total) sudah dites" beside
+   its title, the bars with each range from the limits in force, then
+   "(n) mahasiswa belum mengikuti tes kebugaran." as on Penilaian
+   jasmani, then the illness line. Without counts the panel shows only
+   "Belum ada hasil tes kebugaran." or the "Rekap ditampilkan…" line.
+   A count sent as "<5" draws no bar.
+9. "Lihat rincian" goes to Penilaian > Penilaian jasmani, and shows only
+   to an account that may open that tab.
 
 ## Steps
 
 - [x] 1. The "Kesehatan jasmani" card.
-- [ ] 2. "Kategori tes kebugaran" with the illness line and the
+- [x] 2. "Kategori tes kebugaran" with the illness line and the
   small-group rule.
 - [ ] 3. "Arti kategori".
