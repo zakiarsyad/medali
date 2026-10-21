@@ -27,4 +27,16 @@ BEGIN
   END IF;
   RAISE EXCEPTION 'An issued dorm warning letter cannot be changed.';
 END;
-$$;
+$$;--> statement-breakpoint
+-- The trigger above sees only letters already issued. A proposal is
+-- handled after its SP 2 is issued, never by the same change.
+CREATE FUNCTION refuse_dorm_warning_letter_handled_at_issue() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'A dorm warning letter is handled only after it is issued.';
+END;
+$$;--> statement-breakpoint
+CREATE TRIGGER dorm_warning_letters_handled_after_issue
+BEFORE UPDATE ON dorm_warning_letters
+FOR EACH ROW WHEN (OLD.issued_at IS NULL AND NEW.handled_at IS NOT NULL)
+EXECUTE FUNCTION refuse_dorm_warning_letter_handled_at_issue();

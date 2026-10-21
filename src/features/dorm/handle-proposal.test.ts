@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { readDisciplineProposals } from "./discipline-proposals";
 import { handleDisciplineProposal } from "./handle-proposal";
 import { HANDLING_NOTE_NEEDED } from "./proposal-input";
@@ -72,7 +73,16 @@ async function setUp(db: Database) {
     level: 1,
     ...issuedBy(manager.id),
   });
-  return { ani, bea, bam, manager, head, proposalId, firstLetterId };
+  return {
+    ani,
+    bea,
+    bam,
+    manager,
+    head,
+    periodId,
+    proposalId,
+    firstLetterId,
+  };
 }
 
 function handle(
@@ -161,12 +171,18 @@ describe("handleDisciplineProposal", () => {
     });
   });
 
-  it("refuses an SP 1, a key that is no proposal and what is no key", async () => {
+  it("refuses an SP 1, an SP 2 not issued yet, a key that is no proposal and what is no key", async () => {
     await inTestDatabase(async (db) => {
-      const { head, firstLetterId } = await setUp(db);
+      const { bea, head, firstLetterId, periodId } = await setUp(db);
+      const calledId = await addTestLetter(db, {
+        studentId: bea,
+        periodId,
+        level: 2,
+      });
 
       for (const letterId of [
         firstLetterId,
+        calledId,
         crypto.randomUUID(),
         "bukan-kunci",
         42,
@@ -222,6 +238,39 @@ describe("readDisciplineProposals", () => {
         by: "Kepala Uji Pengajuan",
         at: NOW,
       });
+    });
+  });
+
+  it("is paged 20 at a time, the latest first, and a page past the end shows the last", async () => {
+    await inTestDatabase(async (db) => {
+      const { head, manager, periodId } = await setUp(db);
+      const programId = await addTestProgram(db, "Prodi Uji Halaman Pengajuan");
+      for (let place = 10; place < 30; place++) {
+        const studentId = await addTestStudent(db, programId, {
+          nim: `99861150${place}`,
+          name: `Mahasiswa Uji Halaman ${place}`,
+          cohortYear: 3203,
+        });
+        const day = String(place - 9).padStart(2, "0");
+        await addTestLetter(db, {
+          studentId,
+          periodId,
+          level: 2,
+          ...issuedBy(manager.id, new Date(`3203-10-${day}T09:30:00Z`)),
+        });
+      }
+
+      const first = await readDisciplineProposals(db, head, 1, NOW);
+      const second = await readDisciplineProposals(db, head, 2, NOW);
+      const past = await readDisciplineProposals(db, head, 99, NOW);
+
+      expect(first?.matching).toBe(21);
+      expect(first?.rows).toHaveLength(20);
+      expect(first?.rows[0]?.name).toBe("Mahasiswa Uji Halaman 29");
+      expect(second?.rows.map((row) => row.name)).toEqual([
+        "Mahasiswa Uji Halaman 10",
+      ]);
+      expect(past?.page).toBe(2);
     });
   });
 

@@ -315,6 +315,18 @@ describe("the handling of the proposal of an SP 2", () => {
     });
   });
 
+  it("cannot be set by the same change that issues the SP 2", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const [letter] = await addLetter(db, records, { level: 2 });
+      if (!letter) throw new Error("The letter was not added.");
+
+      await expect(
+        handle(db, letter.id, { ...issued(records, 2), ...handling(records) }),
+      ).rejects.toThrow();
+    });
+  });
+
   it("cannot come with any other change of the SP", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
