@@ -113,7 +113,7 @@ continue study and record the decision.
 
 ## Steps
 
-- [ ] 1. The penalty record gets its conditions and Keputusan, with a
+- [x] 1. The penalty record gets its conditions and Keputusan, with a
   sample suspended student who has an Instansi asal.
 - [ ] 2. The right to follow up a penalty is added to the permission
   list, with its checks.

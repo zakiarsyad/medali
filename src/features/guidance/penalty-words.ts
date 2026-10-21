@@ -48,6 +48,8 @@ export const LEVEL_WORDS: Record<PenaltyLevel, string> = {
 
 export const STATUS_WORDS: Record<PenaltyStatus, string> = {
   imposed: "Dijatuhkan",
+  serving: "Sedang dijalani",
+  served: "Selesai dijalani",
   set: "Ditetapkan",
 };
 
