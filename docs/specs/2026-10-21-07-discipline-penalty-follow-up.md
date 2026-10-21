@@ -120,4 +120,4 @@ continue study and record the decision.
 - [x] 3. Changing the status of a penalty, with confirmation.
 - [x] 4. The conditions and the Keputusan in "Rincian", with the read
   only view.
-- [ ] 5. Refusing a change made on an outdated record.
+- [x] 5. Refusing a change made on an outdated record.

@@ -41,7 +41,7 @@ export function PenaltyStatusCell({
   function choose(chosen: string) {
     if (!isFollowUpStatus(chosen) || chosen === status) return;
     if (!window.confirm(statusQuestion(name, chosen))) return;
-    send(() => changePenaltyStatusAction(id, chosen));
+    send(() => changePenaltyStatusAction(id, followUp.version, chosen));
   }
 
   return (

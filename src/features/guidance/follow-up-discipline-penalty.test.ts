@@ -21,6 +21,7 @@ import {
   NOT_A_FOLLOW_UP_STATUS,
   NOT_ALLOWED_TO_FOLLOW_UP,
   PENALTY_NOT_FOUND,
+  PENALTY_OUTDATED,
   STATUS_IS_SET,
 } from "./penalty-messages";
 import {
@@ -62,7 +63,7 @@ describe("changePenaltyStatus", () => {
         const id = await addTestPenalty(db, studentId, officer.id, DAY);
         const actor = await addNoteActor(db, "Penindak Uji", [role]);
 
-        const answer = await changePenaltyStatus(db, actor, id, "serving");
+        const answer = await changePenaltyStatus(db, actor, id, 1, "serving");
 
         const after = {
           status: "serving",
@@ -98,7 +99,7 @@ describe("changePenaltyStatus", () => {
         status: "served",
       });
 
-      const answer = await changePenaltyStatus(db, officer, id, "serving");
+      const answer = await changePenaltyStatus(db, officer, id, 1, "serving");
 
       expect(answer.ok).toBe(true);
       expect((await penaltyAt(db, id))?.status).toBe("serving");
@@ -110,7 +111,7 @@ describe("changePenaltyStatus", () => {
       const { officer, studentId } = await setting(db, "9944290003");
       const id = await addTestPenalty(db, studentId, officer.id, DAY);
 
-      const answer = await changePenaltyStatus(db, officer, id, "imposed");
+      const answer = await changePenaltyStatus(db, officer, id, 1, "imposed");
 
       expect(answer).toEqual(
         expect.objectContaining({
@@ -130,7 +131,7 @@ describe("changePenaltyStatus", () => {
         const id = await addTestPenalty(db, studentId, officer.id, DAY);
         const reader = await addNoteActor(db, "Pembaca Uji", [role]);
 
-        const answer = await changePenaltyStatus(db, reader, id, "served");
+        const answer = await changePenaltyStatus(db, reader, id, 1, "served");
 
         expect(answer).toEqual(NOT_ALLOWED_TO_FOLLOW_UP);
         expect((await penaltyAt(db, id))?.status).toBe("imposed");
@@ -149,7 +150,7 @@ describe("changePenaltyStatus", () => {
         ...NO_SOCIAL_WORK,
       });
 
-      const answer = await changePenaltyStatus(db, officer, id, "served");
+      const answer = await changePenaltyStatus(db, officer, id, 1, "served");
 
       expect(answer).toEqual(STATUS_IS_SET);
       expect((await penaltyAt(db, id))?.status).toBe("set");
@@ -164,7 +165,7 @@ describe("changePenaltyStatus", () => {
         const { officer, studentId } = await setting(db, "9944290006");
         const id = await addTestPenalty(db, studentId, officer.id, DAY);
 
-        const answer = await changePenaltyStatus(db, officer, id, sent);
+        const answer = await changePenaltyStatus(db, officer, id, 1, sent);
 
         expect(answer).toEqual(NOT_A_FOLLOW_UP_STATUS);
       });
@@ -177,7 +178,7 @@ describe("changePenaltyStatus", () => {
       await inTestDatabase(async (db) => {
         const { officer } = await setting(db, "9944290007");
 
-        const answer = await changePenaltyStatus(db, officer, id, "served");
+        const answer = await changePenaltyStatus(db, officer, id, 1, "served");
 
         expect(answer).toEqual(PENALTY_NOT_FOUND);
       });
@@ -223,6 +224,7 @@ describe("changePenaltyCondition", () => {
         db,
         officer,
         id,
+        1,
         "academic",
         true,
       );
@@ -267,6 +269,7 @@ describe("changePenaltyCondition", () => {
         db,
         officer,
         id,
+        1,
         "character",
         false,
       );
@@ -292,6 +295,7 @@ describe("changePenaltyCondition", () => {
         db,
         officer,
         id,
+        1,
         "academic",
         true,
       );
@@ -306,7 +310,7 @@ describe("changePenaltyCondition", () => {
       const { officer, id } = await suspension(db, "9944290014");
 
       expect(
-        await changePenaltyCondition(db, officer, id, "lainnya", true),
+        await changePenaltyCondition(db, officer, id, 1, "lainnya", true),
       ).toEqual(NOT_A_CONDITION);
     });
   });
@@ -322,6 +326,7 @@ describe("changePenaltyCondition", () => {
           db,
           reader,
           id,
+          1,
           "academic",
           true,
         );
@@ -346,7 +351,13 @@ describe("changePenaltyDecision", () => {
         conditionsMet: [...CONTINUATION_CONDITIONS],
       });
 
-      const answer = await changePenaltyDecision(db, officer, id, "continue");
+      const answer = await changePenaltyDecision(
+        db,
+        officer,
+        id,
+        1,
+        "continue",
+      );
 
       expect(answer.ok && answer.value.decision).toBe("continue");
       const lines = await penaltyLinesOf(db, id);
@@ -365,7 +376,13 @@ describe("changePenaltyDecision", () => {
     await inTestDatabase(async (db) => {
       const { officer, id } = await suspension(db, "9944290022");
 
-      const answer = await changePenaltyDecision(db, officer, id, "continue");
+      const answer = await changePenaltyDecision(
+        db,
+        officer,
+        id,
+        1,
+        "continue",
+      );
 
       expect(answer).toEqual(CONDITIONS_NOT_MET);
       expect((await penaltyAt(db, id))?.decision).toBe("pending");
@@ -378,9 +395,9 @@ describe("changePenaltyDecision", () => {
       const { officer, studentId } = await setting(db, "9944290023");
       const id = await addTestPenalty(db, studentId, officer.id, DAY);
 
-      expect(await changePenaltyDecision(db, officer, id, "dismissed")).toEqual(
-        NO_CONDITIONS,
-      );
+      expect(
+        await changePenaltyDecision(db, officer, id, 1, "dismissed"),
+      ).toEqual(NO_CONDITIONS);
     });
   });
 
@@ -388,7 +405,7 @@ describe("changePenaltyDecision", () => {
     await inTestDatabase(async (db) => {
       const { officer, id } = await suspension(db, "9944290024");
 
-      expect(await changePenaltyDecision(db, officer, id, "lulus")).toEqual(
+      expect(await changePenaltyDecision(db, officer, id, 1, "lulus")).toEqual(
         NOT_A_DECISION,
       );
     });
@@ -399,10 +416,88 @@ describe("changePenaltyDecision", () => {
       const { id } = await suspension(db, "9944290025");
       const reader = await addNoteActor(db, "Pembaca Uji", ["director"]);
 
-      expect(await changePenaltyDecision(db, reader, id, "dismissed")).toEqual(
-        NOT_ALLOWED_TO_FOLLOW_UP,
+      expect(
+        await changePenaltyDecision(db, reader, id, 1, "dismissed"),
+      ).toEqual(NOT_ALLOWED_TO_FOLLOW_UP);
+      expect((await penaltyAt(db, id))?.decision).toBe("pending");
+    });
+  });
+});
+
+describe("a change made on an outdated record", () => {
+  it("refuses the second of two status changes made from the same version, and gives back the current state", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, studentId } = await setting(db, "9944290031");
+      const id = await addTestPenalty(db, studentId, officer.id, DAY);
+      const other = await addNoteActor(db, "Kepala Uji", ["head_of_unit"]);
+
+      const first = await changePenaltyStatus(db, other, id, 1, "serving");
+      const second = await changePenaltyStatus(db, officer, id, 1, "served");
+
+      expect(first.ok).toBe(true);
+      expect(second).toEqual({
+        ...PENALTY_OUTDATED,
+        current: {
+          status: "serving",
+          conditionsMet: [],
+          decision: "pending",
+          version: 2,
+        },
+      });
+      expect(PENALTY_OUTDATED.error).toBe(
+        "Hukuman ini baru saja diubah orang lain. Yang tampil sekarang adalah datanya yang terbaru.",
+      );
+      expect((await penaltyAt(db, id))?.status).toBe("serving");
+      expect(await penaltyLinesOf(db, id)).toHaveLength(2);
+    });
+  });
+
+  it("refuses a tick made from an older version", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290032");
+      await changePenaltyCondition(db, officer, id, 1, "served", true);
+
+      const answer = await changePenaltyCondition(
+        db,
+        officer,
+        id,
+        1,
+        "academic",
+        true,
+      );
+
+      expect(answer).toEqual(
+        expect.objectContaining({
+          ok: false,
+          error: PENALTY_OUTDATED.error,
+          current: expect.objectContaining({
+            conditionsMet: ["served"],
+            version: 2,
+          }),
+        }),
+      );
+      expect((await penaltyAt(db, id))?.conditionsMet).toEqual(["served"]);
+    });
+  });
+
+  it("refuses a Keputusan made from an older version", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await suspension(db, "9944290033");
+      await changePenaltyStatus(db, officer, id, 1, "serving");
+
+      const answer = await changePenaltyDecision(
+        db,
+        officer,
+        id,
+        1,
+        "dismissed",
+      );
+
+      expect(answer).toEqual(
+        expect.objectContaining({ ok: false, error: PENALTY_OUTDATED.error }),
       );
       expect((await penaltyAt(db, id))?.decision).toBe("pending");
+      expect(await penaltyLinesOf(db, id)).toHaveLength(2);
     });
   });
 });

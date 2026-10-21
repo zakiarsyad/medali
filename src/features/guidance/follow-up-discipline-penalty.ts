@@ -12,6 +12,7 @@ import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
 import {
   type FollowedPenalty,
+  type FollowUpOutcome,
   type FollowUpValues,
   isContinuationCondition,
   isContinuationDecision,
@@ -28,6 +29,7 @@ import {
   NOT_A_FOLLOW_UP_STATUS,
   NOT_ALLOWED_TO_FOLLOW_UP,
   PENALTY_NOT_FOUND,
+  PENALTY_OUTDATED,
 } from "./penalty-messages";
 import { HAS_AGENCY } from "./penalty-student";
 
@@ -114,20 +116,25 @@ async function keepFollowUp(
 
 /**
  * Applies a change to a held penalty: refused, with nothing kept, when
- * the rule refuses it; kept and logged when it changes something.
+ * someone changed it since the screen showed `version`, or when the
+ * rule refuses it; kept and logged when it changes something.
  */
 async function followUp(
   db: Database,
   actor: AccountForAccess,
   id: string,
+  version: number,
   action: FollowUpAction,
   change: (before: FollowedPenalty) => Parsed<FollowUpValues>,
-): Promise<Parsed<PenaltyFollowUp>> {
+): Promise<FollowUpOutcome> {
   if (!isUuid(id)) return PENALTY_NOT_FOUND;
-  return db.transaction(async (tx) => {
+  return db.transaction(async (tx): Promise<FollowUpOutcome> => {
     const held = await holdPenalty(tx, actor, id);
     if (held === undefined) return PENALTY_NOT_FOUND;
     const before = followUpOf(held);
+    if (held.version !== version) {
+      return { ...PENALTY_OUTDATED, current: before };
+    }
     const changed = change(held);
     if (!changed.ok) return changed;
     if (sameValues(before, changed.value)) return { ok: true, value: before };
@@ -146,18 +153,20 @@ async function followUp(
 /**
  * The status choice of a penalty in "Daftar pelanggaran": Dijatuhkan,
  * Sedang dijalani or Selesai dijalani. Refused, with nothing kept, for a
- * role without the right to follow up, for a penalty it may not see,
+ * role without the right to follow up, for a penalty it may not see or
+ * that changed since the screen showed `version`,
  * for any other status, and for a Ditetapkan penalty.
  */
 export async function changePenaltyStatus(
   db: Database,
   actor: AccountForAccess,
   id: string,
+  version: number,
   status: string,
-): Promise<Parsed<PenaltyFollowUp>> {
+): Promise<FollowUpOutcome> {
   if (!mayFollowUp(actor)) return NOT_ALLOWED_TO_FOLLOW_UP;
   if (!isFollowUpStatus(status)) return NOT_A_FOLLOW_UP_STATUS;
-  return followUp(db, actor, id, "status_changed", (before) =>
+  return followUp(db, actor, id, version, "status_changed", (before) =>
     withStatus(before, status),
   );
 }
@@ -171,12 +180,13 @@ export async function changePenaltyCondition(
   db: Database,
   actor: AccountForAccess,
   id: string,
+  version: number,
   condition: string,
   met: boolean,
-): Promise<Parsed<PenaltyFollowUp>> {
+): Promise<FollowUpOutcome> {
   if (!mayFollowUp(actor)) return NOT_ALLOWED_TO_FOLLOW_UP;
   if (!isContinuationCondition(condition)) return NOT_A_CONDITION;
-  return followUp(db, actor, id, "conditions_changed", (before) =>
+  return followUp(db, actor, id, version, "conditions_changed", (before) =>
     withCondition(before, condition, met),
   );
 }
@@ -189,11 +199,12 @@ export async function changePenaltyDecision(
   db: Database,
   actor: AccountForAccess,
   id: string,
+  version: number,
   decision: string,
-): Promise<Parsed<PenaltyFollowUp>> {
+): Promise<FollowUpOutcome> {
   if (!mayFollowUp(actor)) return NOT_ALLOWED_TO_FOLLOW_UP;
   if (!isContinuationDecision(decision)) return NOT_A_DECISION;
-  return followUp(db, actor, id, "decision_changed", (before) =>
+  return followUp(db, actor, id, version, "decision_changed", (before) =>
     withDecision(before, decision),
   );
 }

@@ -62,13 +62,15 @@ function ConditionsForm({
   const isAllMet = allConditionsMet(row.conditionsMet);
 
   function tick(condition: ContinuationCondition, met: boolean) {
-    send(() => changePenaltyConditionAction(row.id, condition, met));
+    send(() =>
+      changePenaltyConditionAction(row.id, row.version, condition, met),
+    );
   }
 
   function decide(chosen: string) {
     if (!isContinuationDecision(chosen) || chosen === row.decision) return;
     if (!window.confirm(decisionQuestion(row.name, chosen))) return;
-    send(() => changePenaltyDecisionAction(row.id, chosen));
+    send(() => changePenaltyDecisionAction(row.id, row.version, chosen));
   }
 
   return (

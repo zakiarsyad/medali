@@ -58,6 +58,13 @@ export const STATUS_IS_SET = {
     "Hukuman ini Ditetapkan karena mengakhiri status mahasiswa, jadi tidak dapat diubah.",
 } as const;
 
+/** What a change made on a record someone else changed since it was shown answers. */
+export const PENALTY_OUTDATED = {
+  ok: false,
+  error:
+    "Hukuman ini baru saja diubah orang lain. Yang tampil sekarang adalah datanya yang terbaru.",
+} as const;
+
 export const NO_CONDITIONS = {
   ok: false,
   error:

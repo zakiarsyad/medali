@@ -37,6 +37,15 @@ export interface PenaltyFollowUp extends FollowUpValues {
   version: number;
 }
 
+/**
+ * What a follow-up answers: the penalty kept, or why it was refused.
+ * Refused because someone changed the penalty since it was shown, it
+ * also gives the penalty as it is now.
+ */
+export type FollowUpOutcome =
+  | Parsed<PenaltyFollowUp>
+  | { ok: false; error: string; current: PenaltyFollowUp };
+
 /** What decides whether a penalty has Syarat melanjutkan studi. */
 export interface ConditionsHolder {
   category: PenaltyCategory;
