@@ -34,7 +34,7 @@ function counsellorPage(list: ScreeningList, query = ""): string {
       counsellor={{
         numbers: { screened: 5, needCounselling: 4, waitingConsent: 1 },
         list,
-        params: { query, filter: "all", page: 1 },
+        params: { query, filter: "all", page: 1, sharedPage: 1 },
       }}
     />,
   );

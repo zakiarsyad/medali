@@ -108,7 +108,9 @@ role, within their own rows, and only while the sharing is still on.
 7. The list shows the newest published first, then by name, 20 at a
    time. "Data yang dibagikan" names the parts as "Status konseling" and
    "Ringkasan konselor", as in the prototype. There is no search or
-   filter, as in the prototype.
+   filter, as in the prototype. The list keeps its own page in the
+   address, apart from Konselor's "Daftar mahasiswa", so a Konselor who
+   is also a recipient pages each list on its own.
 8. "Status konseling" in "Rincian" is read when it is opened, so it shows
    sessions written after publishing too: what the student agreed to
    share is the state of their counselling. "Sesi berikutnya" shows only

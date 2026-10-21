@@ -51,7 +51,7 @@ async function recipientPart(
 ): Promise<RecipientPart | null> {
   const db = database();
   const [list, sessions] = await Promise.all([
-    readSharedList(db, account, params.page),
+    readSharedList(db, account, params.sharedPage),
     readCampusSessionCount(db, account),
   ]);
   if (list === null || sessions === null) return null;
@@ -99,7 +99,9 @@ export default async function MentalHealthPage(
               shared={recipient?.numbers ?? null}
             />
           )}
-          {recipient && <SharedListPanel list={recipient.list} />}
+          {recipient && (
+            <SharedListPanel list={recipient.list} params={params} />
+          )}
         </>
       }
     />

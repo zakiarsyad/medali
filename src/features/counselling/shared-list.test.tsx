@@ -1,6 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { type ScreeningParams, screeningAddress } from "./screening-address";
 import { CampusScreenedCount, PERSONAL_DATA_NOTE } from "./screening-campus";
+import { ScreeningListPanel } from "./screening-list";
+import { ScreeningScreen } from "./screening-screen";
+import type { ScreeningRow } from "./screening-view";
 import { SharedDetailBox } from "./shared-detail-box";
 import { SharedListPanel } from "./shared-list";
 import type { SharedList, SharedRow } from "./shared-view";
@@ -16,13 +20,107 @@ const ROW: SharedRow = {
   publishedAt: new Date("2026-10-19T03:00:00Z"),
 };
 
+const START: ScreeningParams = {
+  query: "",
+  filter: "all",
+  page: 1,
+  sharedPage: 1,
+};
+
 function panel(list: Partial<SharedList>): string {
   return renderToStaticMarkup(
     <SharedListPanel
       list={{ rows: [], matching: 0, page: 1, menteesOnly: false, ...list }}
+      params={START}
     />,
   );
 }
+
+const SCREENED: ScreeningRow = {
+  studentId: "00000000-0000-4000-8000-000000000002",
+  name: "Mahasiswa Diasesmen",
+  nim: "9986321902",
+  program: "Prodi Contoh",
+  mentorName: null,
+  instrument: "dass21",
+  screenedOn: "2026-10-10",
+  level: "normal",
+  risk: false,
+  consent: null,
+};
+
+const TABS = {
+  pagePath: "penilaian",
+  tabs: [{ id: "mental_health", path: "mental", title: "Kesehatan mental" }],
+  open: "mental",
+};
+
+describe("Kesehatan mental of a Konselor who is also Pengasuh", () => {
+  // Konselor searched, filtered and went to page 2 of Daftar mahasiswa.
+  const params: ScreeningParams = {
+    query: "Bayu",
+    filter: "waiting",
+    page: 2,
+    sharedPage: 1,
+  };
+  const page = renderToStaticMarkup(
+    <ScreeningScreen
+      tabs={TABS}
+      counsellor={{
+        numbers: { screened: 60, needCounselling: 0, waitingConsent: 60 },
+        list: { rows: [SCREENED], matching: 60, page: 2 },
+        params,
+      }}
+      others={
+        <SharedListPanel
+          list={{ rows: [ROW], matching: 21, page: 1, menteesOnly: true }}
+          params={params}
+        />
+      }
+    />,
+  );
+
+  it("pages Data yang dipublikasikan untuk Anda on its own, keeping the search, the filter and the page of Daftar mahasiswa", () => {
+    expect(page).toContain(
+      'href="/penilaian/mental?cari=Bayu&amp;filter=menunggu-persetujuan&amp;hal=2&amp;hal-data=2"',
+    );
+  });
+
+  it("pages Daftar mahasiswa keeping the page of Data yang dipublikasikan untuk Anda", () => {
+    expect(screeningAddress({ ...params, page: 3 })).toBe(
+      "/penilaian/mental?cari=Bayu&filter=menunggu-persetujuan&hal=3",
+    );
+    expect(page).toContain(
+      'href="/penilaian/mental?cari=Bayu&amp;filter=menunggu-persetujuan&amp;hal=3"',
+    );
+    const onSharedPage2 = renderToStaticMarkup(
+      <ScreeningListPanel
+        list={{ rows: [SCREENED], matching: 60, page: 2 }}
+        params={{ ...params, sharedPage: 2 }}
+      />,
+    );
+    expect(onSharedPage2).toContain(
+      'href="/penilaian/mental?cari=Bayu&amp;filter=menunggu-persetujuan&amp;hal=3&amp;hal-data=2"',
+    );
+  });
+
+  it("keeps the page of Data yang dipublikasikan untuk Anda when searching or filtering Daftar mahasiswa", () => {
+    const onSharedPage2 = renderToStaticMarkup(
+      <ScreeningListPanel
+        list={{ rows: [SCREENED], matching: 60, page: 2 }}
+        params={{ ...params, sharedPage: 2 }}
+      />,
+    );
+    expect(onSharedPage2).toContain('name="hal-data" value="2"');
+    const onSharedPage1 = renderToStaticMarkup(
+      <ScreeningListPanel
+        list={{ rows: [SCREENED], matching: 60, page: 2 }}
+        params={params}
+      />,
+    );
+    expect(onSharedPage1).not.toContain('name="hal-data"');
+  });
+});
 
 describe("the numbers of a recipient on Kesehatan mental", () => {
   it("shows Dipublikasikan untuk Anda, Sudah diasesmen and Sesi konseling 30 hari as sent, with the note on personal data", () => {
