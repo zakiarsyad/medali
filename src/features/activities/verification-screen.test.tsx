@@ -206,17 +206,31 @@ describe("the photo cards of the screen", () => {
     VerificationNumbersView,
   ];
 
-  /** The key that tells React whether the cards part is kept or made anew. */
-  function cardsKey(more: Partial<Verification>): string | null {
+  /** The key that tells React whether a part is kept or made anew. */
+  function keyOf(
+    part: typeof AutoSubmitForm | typeof PhotoCards,
+    more: Partial<Verification>,
+  ): string | null {
     const verification = { ...TEST_EMPTY_VERIFICATION, ...more };
     const drawn = draw(
       <VerificationScreen tabs={TABS} verification={verification} />,
       KEPT,
     );
-    const cards = drawn.find(({ type }) => type === PhotoCards);
-    if (!cards) throw new Error("The screen shows no photo cards.");
-    return cards.key;
+    const found = drawn.find(({ type }) => type === part);
+    if (!found) throw new Error(`The screen shows no ${part.name}.`);
+    return found.key;
   }
+
+  function cardsKey(more: Partial<Verification>): string | null {
+    return keyOf(PhotoCards, more);
+  }
+
+  it("have a key of their own, apart from the filter form's, on the first page", () => {
+    const list = { cards: [TEST_CARD], matching: 30, page: 1 };
+    const more = { askedPage: 1, list };
+
+    expect(cardsKey(more)).not.toBe(keyOf(AutoSubmitForm, more));
+  });
 
   it("are kept, with their message and their decided cards, when the last page is emptied and the list falls back to the page before", () => {
     const onLastPage = cardsKey({
