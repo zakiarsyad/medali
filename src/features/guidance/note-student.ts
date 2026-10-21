@@ -8,7 +8,7 @@ import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
-import { readHistoryOf } from "./penalty-history";
+import { countPenaltiesOf } from "./penalty-history";
 import { type ActiveNote, readActiveNotesOf } from "./placed-notes";
 
 /** How many students one search offers. */
@@ -94,7 +94,7 @@ async function penaltiesOf(
   studentId: string,
 ): Promise<number> {
   if (!may(actor.roles, "view_discipline_records")) return 0;
-  return (await readHistoryOf(db, studentId)).count;
+  return countPenaltiesOf(db, studentId);
 }
 
 /**

@@ -4,22 +4,31 @@ import type { Database } from "@/db/connect";
 import { disciplinePenalties } from "@/db/schema";
 import type { PenaltyHistory } from "./penalty-consequences";
 
+/** How many discipline penalties a student has had; who may read it is decided by the caller. */
+export async function countPenaltiesOf(
+  db: Database,
+  studentId: string,
+): Promise<number> {
+  const [counted] = await db
+    .select({ count: count() })
+    .from(disciplinePenalties)
+    .where(eq(disciplinePenalties.studentId, studentId));
+  return counted?.count ?? 0;
+}
+
 /**
  * How many discipline penalties a student has had, and the highest of
  * them, the latest when two are as high, with the scores of their latest
- * assessment as stored. Read for the student's box of "Catat
- * pelanggaran" and for what a cap would do to the scores; who may read
- * it is decided by the caller.
+ * assessment as stored. Read for "Konsekuensi" in "Catat hukuman
+ * disiplin", to show what a cap would do to the scores; who may read it
+ * is decided by the caller.
  */
 export async function readHistoryOf(
   db: Database,
   studentId: string,
 ): Promise<PenaltyHistory> {
   const ofStudent = eq(disciplinePenalties.studentId, studentId);
-  const [counted] = await db
-    .select({ count: count() })
-    .from(disciplinePenalties)
-    .where(ofStudent);
+  const penalties = await countPenaltiesOf(db, studentId);
   const [top] = await db
     .select({
       category: disciplinePenalties.category,
@@ -35,5 +44,5 @@ export async function readHistoryOf(
     )
     .limit(1);
   const latest = await readStoredLatestOf(db, studentId);
-  return { count: counted?.count ?? 0, top: top ?? null, latest };
+  return { count: penalties, top: top ?? null, latest };
 }
