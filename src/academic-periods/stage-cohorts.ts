@@ -1,6 +1,9 @@
-import { levelOf } from "@/academic-periods/stages";
-import { studentSemester } from "@/academic-periods/student-semester";
-import type { RunningPeriod } from "./semester-now";
+import type { AcademicPeriod } from "./academic-period";
+import { levelOf } from "./stages";
+import { studentSemester } from "./student-semester";
+
+/** The running period as the semester rule reads it, or null when none runs. */
+type RunningPeriod = Pick<AcademicPeriod, "startYear" | "term"> | null;
 
 /**
  * The angkatan years whose students are in each tahap now, by the number

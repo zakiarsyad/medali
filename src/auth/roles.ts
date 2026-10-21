@@ -106,6 +106,7 @@ export const ACTIONS = [
   "answer_own_counselling_sharing",
   "view_shared_counselling_data",
   "view_counselling_students",
+  "view_character_dashboard",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -253,6 +254,8 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Data yang dipublikasikan untuk Anda: membaca data konseling mahasiswa yang dipublikasikan konselor untuk peran ini dengan persetujuan mahasiswa, dan jumlah Sesi konseling 30 hari di seluruh kampus, tanpa nama",
   view_counselling_students:
     "Daftar mahasiswa konseling: melihat persetujuan, sesi, jadwal aktif, dan publikasi setiap mahasiswa yang ditangani konselor, dan membuka catatan sesinya yang rahasia",
+  view_character_dashboard:
+    "Melihat dashboard pembangunan karakter: rekap capaian karakter mahasiswa aktif, tanpa nama",
 };
 
 /**
@@ -418,6 +421,7 @@ export const ROLES: Record<RoleId, Role> = {
       "follow_up_discipline_penalties",
       "view_violation_notes",
       "write_violation_notes",
+      "view_character_dashboard",
     ],
     rows: "all",
   },
@@ -450,6 +454,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_shared_counselling_data",
       "view_discipline_records",
       "view_violation_notes",
+      "view_character_dashboard",
     ],
     rows: "all",
   },
@@ -482,6 +487,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_shared_counselling_data",
       "view_discipline_records",
       "view_violation_notes",
+      "view_character_dashboard",
     ],
     rows: "own_program",
   },

@@ -1,0 +1,7 @@
+.foldButton {
+  display: var(--filter-fold-button-display);
+}
+
+.folded {
+  display: var(--filter-folded-display);
+}

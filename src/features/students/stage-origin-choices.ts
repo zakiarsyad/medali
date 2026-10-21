@@ -1,5 +1,5 @@
 import { STAGES } from "@/academic-periods/stages";
-import type { CountedChoice } from "./counted-select";
+import type { CountedChoice } from "@/ui/counted-select";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import type { ChoiceCounts } from "./student-choice-counts";
 import { NO_AGENCY } from "./student-list-address";
