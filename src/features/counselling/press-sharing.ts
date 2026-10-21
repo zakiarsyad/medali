@@ -13,6 +13,7 @@ import {
   NOT_ALLOWED,
   type SharingOutcome,
 } from "./change-sharing";
+import type { SharingStatus } from "./sharing-ids";
 import { readCurrentSharing, readLatestSharing } from "./sharing-reads";
 import {
   isStop,
@@ -37,8 +38,8 @@ export interface SharingPress {
   sharingId: unknown;
   /** Its version as the screen showed it; it comes from outside. */
   version: unknown;
-  /** What the message says once the change is kept. */
-  done: string;
+  /** What the message says once the change is kept, by the status before. */
+  doneAfter: (before: SharingStatus) => string;
   now: Date;
 }
 
@@ -105,7 +106,8 @@ export function applySharingPress(
       shared: current.content,
     });
     const sharing = await readLatestSharing(tx, press.studentId);
-    return { kind: "kept", done: press.done, sharing };
+    const done = press.doneAfter(current.status);
+    return { kind: "kept", done, sharing };
   });
 }
 
@@ -154,7 +156,7 @@ export async function changeOwnSharing(
     move,
     sharingId,
     version,
-    done: STUDENT_MESSAGES[move],
+    doneAfter: () => STUDENT_MESSAGES[move],
     now,
   });
   return asStudentSees(db, actor.studentId, outcome);

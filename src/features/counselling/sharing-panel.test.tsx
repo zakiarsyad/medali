@@ -43,7 +43,13 @@ function panelOf(panel: Partial<SharingPanel>): string {
     ...panel,
   };
   return renderToStaticMarkup(
-    <StudentSharing panel={full} pending={false} onAsk={() => {}} />,
+    <StudentSharing
+      panel={full}
+      name="Mahasiswa Uji"
+      pending={false}
+      onAsk={() => {}}
+      onStep={() => {}}
+    />,
   );
 }
 
@@ -124,10 +130,47 @@ describe("Publikasi data kesehatan mental", () => {
     expect(page).not.toContain("<form");
   });
 
-  it("offers a new request after Ditolak, Ditarik or Dicabut", () => {
+  it("offers a new request after Ditolak, Ditarik or Dicabut, with no step on the old one", () => {
     for (const status of ["declined", "cancelled", "withdrawn"] as const) {
       const page = panelOf({ sharing: sharingOf(status) });
       expect(page).toContain("Minta persetujuan mahasiswa");
+      expect(page).not.toContain("Publikasikan");
+      expect(page).not.toContain("Batalkan");
+      expect(page).not.toContain("Tarik publikasi");
     }
+  });
+
+  it("offers Catat persetujuan tertulis and Batalkan permintaan on a waiting request, never Publikasikan", () => {
+    const page = panelOf({ sharing: sharingOf("waiting") });
+    expect(page).toContain("Catat persetujuan tertulis");
+    expect(page).toContain("Batalkan permintaan");
+    expect(page).not.toContain("Publikasikan");
+  });
+
+  it("offers Publikasikan and Batalkan once approved, saying recipients see nothing yet", () => {
+    const page = panelOf({
+      sharing: sharingOf("approved", { way: "paper", answeredAt: MOMENT }),
+    });
+    expect(page).toContain("Form tertulis");
+    expect(page).toContain("Publikasikan");
+    expect(page).toContain("Batalkan");
+    expect(page).toContain("Data belum tampil bagi penerima");
+    expect(page).not.toContain("Minta persetujuan mahasiswa");
+  });
+
+  it("shows a published one with its date and the Konselor's name, and offers Tarik publikasi only", () => {
+    const page = panelOf({
+      sharing: sharingOf("published", {
+        way: "online",
+        answeredAt: MOMENT,
+        publishedAt: MOMENT,
+        publishedByName: "Konselor Uji Layar",
+      }),
+    });
+    expect(page).toContain("Dipublikasikan");
+    expect(page).toContain("oleh Konselor Uji Layar");
+    expect(page).toContain("Tarik publikasi");
+    expect(page).not.toContain(">Publikasikan<");
+    expect(page).not.toContain("Minta persetujuan mahasiswa");
   });
 });

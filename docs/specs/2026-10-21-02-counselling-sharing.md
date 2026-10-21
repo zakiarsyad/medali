@@ -141,5 +141,5 @@ time. Session notes are never shared.
 - [x] 3. Konselor asks for approval in "Publikasi data kesehatan mental".
 - [x] 4. The student approves, declines or withdraws on Konseling;
   withdrawing the consent to counselling stops the sharing too.
-- [ ] 5. Konselor publishes, records a paper approval, cancels or
+- [x] 5. Konselor publishes, records a paper approval, cancels or
   withdraws.

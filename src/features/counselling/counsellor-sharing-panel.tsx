@@ -10,8 +10,9 @@ import styles from "./counselling.module.css";
 import { askSharingAction, lookUpSharingAction } from "./sharing-actions";
 import { SharingFacts } from "./sharing-facts";
 import { type SharingAsk, SharingForm } from "./sharing-form";
+import { SharingMoves, type SharingStepAction } from "./sharing-moves";
 import { isCurrentSharing } from "./sharing-rules";
-import type { SharingPanel } from "./sharing-view";
+import type { SharingPanel, SharingView } from "./sharing-view";
 import {
   NEEDS_COUNSELLING_CONSENT,
   NO_SESSION,
@@ -29,12 +30,17 @@ function messageOf(outcome: SharingOutcome): FormState {
 /** What the panel offers for a student once read. */
 export function StudentSharing({
   panel,
+  name,
   pending,
   onAsk,
+  onStep,
 }: {
   panel: SharingPanel;
+  /** The name of the student, for the questions asked first. */
+  name: string;
   pending: boolean;
   onAsk: (ask: SharingAsk) => void;
+  onStep: (action: SharingStepAction, sharing: SharingView) => void;
 }) {
   if (!panel.hasSessions) {
     return <div className={styles.warnBox}>{NO_SESSION}</div>;
@@ -44,10 +50,13 @@ export function StudentSharing({
   return (
     <>
       {sharing && <SharingFacts sharing={sharing} />}
-      {sharing?.status === "waiting" && (
-        <p className={styles.sub}>
-          Menunggu persetujuan mahasiswa di halaman Konseling miliknya.
-        </p>
+      {sharing && isCurrent && (
+        <SharingMoves
+          sharing={sharing}
+          name={name}
+          pending={pending}
+          onPress={(action) => onStep(action, sharing)}
+        />
       )}
       {!isCurrent && !panel.hasConsent && (
         <p className={styles.sub}>{NEEDS_COUNSELLING_CONSENT}</p>
@@ -97,6 +106,12 @@ function PickedSharing({ student }: { student: ConsentPick }) {
     });
   }
 
+  function step(action: SharingStepAction, sharing: SharingView) {
+    startSending(async () => {
+      shown(await action(student.id, sharing.id, sharing.version));
+    });
+  }
+
   if (looked === null) return null;
   if (!looked.ok) {
     return <FormMessage state={{ error: looked.error, done: null }} />;
@@ -107,7 +122,13 @@ function PickedSharing({ student }: { student: ConsentPick }) {
         <b>{student.name}</b>
         <span className={styles.sub}>{student.nim}</span>
       </p>
-      <StudentSharing panel={looked.value} pending={pending} onAsk={ask} />
+      <StudentSharing
+        panel={looked.value}
+        name={student.name}
+        pending={pending}
+        onAsk={ask}
+        onStep={step}
+      />
       <FormMessage state={message} />
     </>
   );

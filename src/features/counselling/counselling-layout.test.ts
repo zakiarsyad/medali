@@ -239,6 +239,11 @@ describe("Publikasi data kesehatan mental on a phone", () => {
     expect(ruleOf(".tick")).toContain("overflow-wrap: anywhere;");
   });
 
+  it("puts a second button under the first when both do not fit", () => {
+    expect(read("sharing-moves.tsx")).toContain("className={shared.actions}");
+    expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+  });
+
   it("folds who it is for, what it gives and the summary inside its box", () => {
     expect(FACTS).toContain("className={styles.card}");
     expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
