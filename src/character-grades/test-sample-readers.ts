@@ -20,8 +20,7 @@ const PER_ROLE = 2;
 /**
  * Accounts of the sample data that open the tab: up to the first two of
  * each role, so a role with more than one account is compared with two
- * different sets of students, and the check stays short enough not to
- * hold back other checks that load the sample data.
+ * different sets of students, and the check stays short.
  */
 export async function sampleReaders(db: Database): Promise<Account[]> {
   const accounts = await activeAccounts(db);

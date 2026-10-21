@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { fillWithSampleData } from "@/db/seed";
-import { withTestDatabase } from "@/db/test-database";
+import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import type { GradeRow } from "@/features/character-grades/grade-list";
 import type { GradeNumbers } from "@/features/character-grades/grade-numbers";
 import { readGradeScheme } from "@/features/character-grades/grade-scheme";
@@ -12,7 +12,11 @@ import { readGradeRows } from "./grade-rows";
 import { readGradeNumbers } from "./read-grade-numbers";
 import { NO_PERIOD_DAY, sampleReaders } from "./test-sample-readers";
 
-const inTestDatabase = withTestDatabase();
+// Loading the sample data in the shared database keeps every other check
+// that loads it waiting until this one ends, and this one reads every
+// student's grade for many accounts: in a database of its own it holds
+// back none of them.
+const own = withOwnTestDatabase("angkanilaikarakter");
 
 /**
  * The way the numbers were worked out before the database did it, from
@@ -45,33 +49,32 @@ function numbersInMemory(rows: readonly GradeRow[]): GradeNumbers {
 
 describe("readGradeNumbers", { timeout: 60_000 }, () => {
   it("gives each role the four numbers the server worked out before", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-      const { scheme } = await readGradeScheme(db);
-      const readers = await sampleReaders(db);
-      const found: GradeNumbers[] = [];
+    const { db } = own;
+    await fillWithSampleData(db);
+    const { scheme } = await readGradeScheme(db);
+    const readers = await sampleReaders(db);
+    const found: GradeNumbers[] = [];
 
-      for (const today of [campusDay(), NO_PERIOD_DAY]) {
-        const basis = await readGradeBasis(db, scheme, today);
-        for (const account of readers) {
-          const visible = gradeVisibleTo(account);
-          const { rows } = await readGradeRows(db, visible, scheme, today);
+    for (const today of [campusDay(), NO_PERIOD_DAY]) {
+      const basis = await readGradeBasis(db, scheme, today);
+      for (const account of readers) {
+        const visible = gradeVisibleTo(account);
+        const { rows } = await readGradeRows(db, visible, scheme, today);
 
-          const numbers = await readGradeNumbers(db, visible, basis);
+        const numbers = await readGradeNumbers(db, visible, basis);
 
-          expect(numbers, `${account.name} on ${today}`).toEqual(
-            numbersInMemory(rows),
-          );
-          found.push(numbers);
-        }
+        expect(numbers, `${account.name} on ${today}`).toEqual(
+          numbersInMemory(rows),
+        );
+        found.push(numbers);
       }
-      // So the comparison never passes on numbers that are all empty.
-      const kepala = found[0];
-      expect(kepala?.meanFinal).not.toBeNull();
-      expect(kepala?.passing).toBeGreaterThan(0);
-      expect(kepala?.complete).toBeGreaterThan(kepala?.passing ?? 0);
-      expect(kepala?.adjusted).toBeGreaterThan(0);
-      expect(kepala?.incomplete).toBeGreaterThan(0);
-    });
+    }
+    // So the comparison never passes on numbers that are all empty.
+    const kepala = found[0];
+    expect(kepala?.meanFinal).not.toBeNull();
+    expect(kepala?.passing).toBeGreaterThan(0);
+    expect(kepala?.complete).toBeGreaterThan(kepala?.passing ?? 0);
+    expect(kepala?.adjusted).toBeGreaterThan(0);
+    expect(kepala?.incomplete).toBeGreaterThan(0);
   });
 });

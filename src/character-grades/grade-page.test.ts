@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { fillWithSampleData } from "@/db/seed";
-import { withTestDatabase } from "@/db/test-database";
+import { withOwnTestDatabase } from "@/db/test-database-at-once";
 import {
   GRADE_LIST_PAGE_SIZE,
   type GradeFilter,
@@ -21,7 +21,10 @@ import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
 import { NO_PERIOD_DAY, sampleReaders } from "./test-sample-readers";
 
-const inTestDatabase = withTestDatabase();
+// Loading the sample data in the shared database keeps every other check
+// that loads it waiting until this one ends, and this one asks many pages
+// for many accounts: in a database of its own it holds back none of them.
+const own = withOwnTestDatabase("daftarnilaikarakter");
 
 /*
  * The way the list was worked out before the database did it: every
@@ -95,34 +98,27 @@ function askedFor(rows: readonly GradeRow[]): GradeParams[] {
 
 describe("readGradePage", { timeout: 60_000 }, () => {
   it("shows each role the rows, the order, the count and the page the server worked out before", async () => {
-    await inTestDatabase(async (db) => {
-      await fillWithSampleData(db);
-      const { scheme } = await readGradeScheme(db);
-      const readers = await sampleReaders(db);
-      let compared = 0;
+    const { db } = own;
+    await fillWithSampleData(db);
+    const { scheme } = await readGradeScheme(db);
+    const readers = await sampleReaders(db);
+    let compared = 0;
 
-      for (const today of [campusDay(), NO_PERIOD_DAY]) {
-        const basis = await readGradeBasis(db, scheme, today);
-        for (const account of readers) {
-          const visible = gradeVisibleTo(account);
-          const { rows } = await readGradeRows(db, visible, scheme, today);
-          for (const params of askedFor(rows)) {
-            const found = await readGradePage(
-              db,
-              visible,
-              basis,
-              today,
-              params,
-            );
+    for (const today of [campusDay(), NO_PERIOD_DAY]) {
+      const basis = await readGradeBasis(db, scheme, today);
+      for (const account of readers) {
+        const visible = gradeVisibleTo(account);
+        const { rows } = await readGradeRows(db, visible, scheme, today);
+        for (const params of askedFor(rows)) {
+          const found = await readGradePage(db, visible, basis, today, params);
 
-            const asked = `${account.name} on ${today}: ${JSON.stringify(params)}`;
-            expect(found, asked).toEqual(listInMemory(rows, params));
-            compared += found.rows.length;
-          }
+          const asked = `${account.name} on ${today}: ${JSON.stringify(params)}`;
+          expect(found, asked).toEqual(listInMemory(rows, params));
+          compared += found.rows.length;
         }
       }
-      // The sample data gives many rows of each kind, so nothing passes empty.
-      expect(compared).toBeGreaterThan(500);
-    });
+    }
+    // The sample data gives many rows of each kind, so nothing passes empty.
+    expect(compared).toBeGreaterThan(500);
   });
 });
