@@ -1,5 +1,6 @@
 import {
   FEWEST_IN_COHORT_UNFILTERED,
+  FEWEST_SHOWN,
   type Recap,
   recapOf,
   type ScoreGroup,
@@ -40,27 +41,66 @@ function shownWith(recap: Recap, filtered: boolean): boolean {
   return recap.assessed >= FEWEST_IN_COHORT_UNFILTERED;
 }
 
+function assessedIn(cohort: readonly ScoreGroup[]): number {
+  let assessed = 0;
+  for (const group of cohort) {
+    if (group.total !== null) assessed += group.students;
+  }
+  return assessed;
+}
+
+/**
+ * Whether the rows left out hold so few assessed students that their
+ * scores would follow from the whole group less the rows shown.
+ */
+function leftOutTooFew(leftOut: number): boolean {
+  return leftOut > 0 && leftOut < FEWEST_SHOWN;
+}
+
+/** The place of the smallest row; of rows alike, the last one shown. */
+function smallestPlace(rows: readonly CohortRecap[]): number {
+  let smallest = 0;
+  let fewest = Number.POSITIVE_INFINITY;
+  for (const [place, row] of rows.entries()) {
+    if (row.recap.assessed > fewest) continue;
+    smallest = place;
+    fewest = row.recap.assessed;
+  }
+  return smallest;
+}
+
 /**
  * The rows of "Capaian MEDALI per angkatan": one per angkatan and jalur,
  * the newest angkatan first and Reguler before Alih program. A row with
  * too few assessed students for a recap is left out, and so, without a
- * filter, is one with fewer than `FEWEST_IN_COHORT_UNFILTERED`.
+ * filter, is one with fewer than `FEWEST_IN_COHORT_UNFILTERED`. While the
+ * rows left out hold 1 to 4 assessed students, the smallest row shown is
+ * left out too, so that nobody's scores follow by subtraction from the
+ * numbers of the whole group.
  */
 export function cohortRecaps(
   groups: readonly ScoreGroup[],
   filtered: boolean,
 ): CohortRecap[] {
   const rows: CohortRecap[] = [];
+  let leftOut = 0;
   for (const cohort of cohortsOf(groups).values()) {
     const [first] = cohort;
     const recap = recapOf(cohort);
-    if (first === undefined || recap === null) continue;
-    if (!shownWith(recap, filtered)) continue;
+    if (first === undefined || recap === null || !shownWith(recap, filtered)) {
+      leftOut += assessedIn(cohort);
+      continue;
+    }
     rows.push({
       cohortYear: first.cohortYear,
       entryPath: first.entryPath,
       recap,
     });
   }
-  return rows.sort(newestFirst);
+  rows.sort(newestFirst);
+  while (rows.length > 0 && leftOutTooFew(leftOut)) {
+    const [hidden] = rows.splice(smallestPlace(rows), 1);
+    leftOut += hidden?.recap.assessed ?? 0;
+  }
+  return rows;
 }

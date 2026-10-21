@@ -22,7 +22,9 @@ describe("cohortDetail", () => {
 
 describe("noCohortWords", () => {
   it("says how many assessed students a cohort needs, with a filter and without", () => {
-    expect(noCohortWords(false)).toContain("minimal 20 mahasiswa");
+    expect(noCohortWords(false)).toBe(
+      "Tidak ada angkatan yang dapat ditampilkan. Angkatan tampil bila minimal 20 mahasiswa sudah diasesmen dan nilai perorangan tidak dapat ditebak dari angkatan lain.",
+    );
     expect(noCohortWords(true)).toContain("minimal 5 mahasiswa");
   });
 });

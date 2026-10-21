@@ -17,5 +17,5 @@ export function cohortDetail(
 /** What the table says when no cohort may be shown. */
 export function noCohortWords(filtered: boolean): string {
   const fewest = filtered ? FEWEST_SHOWN : FEWEST_IN_COHORT_UNFILTERED;
-  return `Tidak ada angkatan dengan minimal ${fewest} mahasiswa yang sudah diasesmen.`;
+  return `Tidak ada angkatan yang dapat ditampilkan. Angkatan tampil bila minimal ${fewest} mahasiswa sudah diasesmen dan nilai perorangan tidak dapat ditebak dari angkatan lain.`;
 }

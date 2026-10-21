@@ -156,10 +156,17 @@ program only). Pengasuh gets "Dashboard anak asuh" in a later spec.
 16. The line under the medal adds "Garis putus-putus menunjukkan
     semester lalu." only when the dashed line is shown.
 17. When no cohort may be shown, the table says "Tidak ada angkatan
-    dengan minimal 20 mahasiswa yang sudah diasesmen.", or 5 with a
-    filter.
+    yang dapat ditampilkan. Angkatan tampil bila minimal 20 mahasiswa
+    sudah diasesmen dan nilai perorangan tidak dapat ditebak dari
+    angkatan lain.", with 5 instead of 20 under a filter.
 18. The filter of a phone, its count of choices and the line of
     "Atur ulang filter" are the same shared parts the student list uses.
+19. The card and section 1 count every assessed student, so the cohorts
+    left out of the table could be worked out by subtraction. While the
+    cohorts left out hold 1 to 4 assessed students together, the
+    smallest cohort shown is left out too, until those left out hold
+    none or at least 5. Of cohorts the same size, the one lower in the
+    table goes first.
 
 ## Steps
 
