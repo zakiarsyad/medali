@@ -1,9 +1,11 @@
 import { ROLES } from "@/auth/roles";
-import type {
-  SharedData,
-  SharingRecipient,
-  SharingStatus,
-  SharingWay,
+import {
+  SHARED_DATA,
+  SHARING_RECIPIENTS,
+  type SharedData,
+  type SharingRecipient,
+  type SharingStatus,
+  type SharingWay,
 } from "./sharing-ids";
 
 /** The words of each status on screen, as in the prototype. */
@@ -39,16 +41,28 @@ export const SHARING_WAY_WORDS: Record<SharingWay, string> = {
   paper: "Form tertulis",
 };
 
+/** The values a sharing holds, in the order the form offers them. */
+export function inFormOrder<T extends string>(
+  offered: readonly T[],
+  held: readonly T[],
+): T[] {
+  return offered.filter((value) => held.includes(value));
+}
+
 /** The recipients of a sharing in one line, in the order of the form. */
 export function recipientsLine(
   recipients: readonly SharingRecipient[],
 ): string {
-  return recipients.map(recipientWords).join(", ");
+  return inFormOrder(SHARING_RECIPIENTS, recipients)
+    .map(recipientWords)
+    .join(", ");
 }
 
-/** The data of a sharing in one line, as the prototype words it. */
+/** The data of a sharing in one line, in the order of the form, as the prototype words it. */
 export function dataLine(data: readonly SharedData[]): string {
-  return data.map((each) => SHARED_DATA_WORDS[each].toLowerCase()).join("; ");
+  return inFormOrder(SHARED_DATA, data)
+    .map((each) => SHARED_DATA_WORDS[each].toLowerCase())
+    .join("; ");
 }
 
 export const PANEL_LEDE =

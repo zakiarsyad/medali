@@ -10,9 +10,15 @@ import {
   declineSharingAction,
   withdrawSharingAction,
 } from "./own-sharing-actions";
+import { SHARED_DATA } from "./sharing-ids";
 import { studentSharingMoves } from "./sharing-rules";
 import type { SharingView } from "./sharing-view";
-import { dataLine, recipientsLine, SHARED_DATA_WORDS } from "./sharing-words";
+import {
+  dataLine,
+  inFormOrder,
+  recipientsLine,
+  SHARED_DATA_WORDS,
+} from "./sharing-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -45,7 +51,7 @@ function WaitingRequest({
         pendampingan. Data yang dibagikan:
       </p>
       <ul>
-        {sharing.data.map((data) => (
+        {inFormOrder(SHARED_DATA, sharing.data).map((data) => (
           <li key={data}>{SHARED_DATA_WORDS[data]}</li>
         ))}
       </ul>
