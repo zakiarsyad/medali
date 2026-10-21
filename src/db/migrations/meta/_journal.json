@@ -505,6 +505,13 @@
       "when": 1792610520410,
       "tag": "0071_counselling-shared-level",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1792616153202,
+      "tag": "0072_penalty-counselling-assignments",
+      "breakpoints": true
     }
   ]
 }

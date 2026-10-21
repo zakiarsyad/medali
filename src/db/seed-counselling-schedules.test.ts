@@ -12,6 +12,7 @@ import {
   accounts,
   counsellingScheduleChanges,
   counsellingSchedules,
+  disciplinePenalties,
   students,
 } from "./schema";
 import { fillWithSampleData } from "./seed";
@@ -39,9 +40,16 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
           counsellorId: counsellingSchedules.counsellorId,
           basis: counsellingSchedules.basis,
           changedAt: counsellingSchedules.changedAt,
+          penaltyId: counsellingSchedules.penaltyId,
+          penaltyOf: disciplinePenalties.studentId,
+          studentId: counsellingSchedules.studentId,
         })
         .from(counsellingSchedules)
-        .innerJoin(students, eq(students.id, counsellingSchedules.studentId));
+        .innerJoin(students, eq(students.id, counsellingSchedules.studentId))
+        .leftJoin(
+          disciplinePenalties,
+          eq(disciplinePenalties.id, counsellingSchedules.penaltyId),
+        );
       const lines = await db
         .select({
           scheduleId: counsellingScheduleChanges.scheduleId,
@@ -96,6 +104,12 @@ describe("the sample requests for counselling", { timeout: 20_000 }, () => {
           (each) => each.nim === sample.nim && each.kind === sample.kind,
         );
         expect(schedule).toMatchObject({ status, basis: sample.basis });
+        expect(schedule?.penaltyId !== null, sample.nim).toBe(
+          sample.fromPenalty,
+        );
+        if (sample.fromPenalty) {
+          expect(schedule?.penaltyOf).toBe(schedule?.studentId);
+        }
         if (sample.time === null) expect(schedule?.day).toBeNull();
         else expect(isWeekday(schedule?.day ?? "")).toBe(true);
         const own = lines.filter((line) => line.scheduleId === schedule?.id);

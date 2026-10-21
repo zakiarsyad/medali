@@ -6,6 +6,7 @@ import {
   accounts,
   counsellingScheduleChanges,
   counsellingSchedules,
+  disciplinePenalties,
   students,
   studyPrograms,
 } from "./schema";
@@ -318,6 +319,84 @@ describe("a counselling assignment", () => {
           ...WAITING_ASSIGNMENT,
           basis: "a".repeat(501),
         }),
+      ).rejects.toThrow();
+    });
+  });
+});
+
+/** A Berat jenjang kedua penalty of the student, which has no kerja sosial. */
+async function addPenalty(db: Database, of: Records): Promise<string> {
+  const id = crypto.randomUUID();
+  await db.insert(disciplinePenalties).values({
+    id,
+    studentId: of.studentId,
+    day: "2026-10-20",
+    description: "Uraian pelanggaran uji yang cukup panjang.",
+    category: "heavy",
+    level: 2,
+    status: "set",
+    savedBy: of.accountId,
+    savedAt: new Date("2026-10-20T03:00:00Z"),
+  });
+  return id;
+}
+
+describe("a Penugasan sent from a discipline penalty", () => {
+  it("keeps the penalty it was sent from", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const penaltyId = await addPenalty(db, records);
+
+      const [kept] = await addSchedule(db, records, {
+        ...WAITING_ASSIGNMENT,
+        penaltyId,
+      });
+
+      expect(kept?.penaltyId).toBe(penaltyId);
+    });
+  });
+
+  it("is refused a second for the same penalty, whatever the first's status", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const penaltyId = await addPenalty(db, records);
+      await addSchedule(db, records, {
+        ...WAITING_ASSIGNMENT,
+        penaltyId,
+        status: "done",
+        day: "2026-10-21",
+        hour: "08:30",
+        way: "in_person",
+        counsellorId: records.accountId,
+      });
+
+      await expect(
+        addSchedule(db, records, { ...WAITING_ASSIGNMENT, penaltyId }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("lets Penugasan without a penalty stand side by side", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addSchedule(db, records, WAITING_ASSIGNMENT);
+
+      const [added] = await addSchedule(db, records, WAITING_ASSIGNMENT);
+
+      expect(added?.penaltyId).toBeNull();
+    });
+  });
+
+  it.each([
+    ["a Pemanggilan", { ...WAITING_ASSIGNMENT, kind: "called" }],
+    ["a voluntary request", {}],
+  ] as const)("is refused for %s", async (_, values) => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const penaltyId = await addPenalty(db, records);
+
+      await expect(
+        addSchedule(db, records, { ...values, penaltyId }),
       ).rejects.toThrow();
     });
   });

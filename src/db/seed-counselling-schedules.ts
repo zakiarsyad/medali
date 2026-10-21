@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { daysAfter } from "@/academic-periods/days-after";
 import { weekdayFrom } from "@/academic-periods/weekdays";
 import type { AssignmentKind } from "@/features/counselling/schedule-ids";
@@ -11,7 +12,11 @@ import {
   type SampleSchedule,
   type SampleScheduleStep,
 } from "./sample-counselling-schedules";
-import { counsellingScheduleChanges, counsellingSchedules } from "./schema";
+import {
+  counsellingScheduleChanges,
+  counsellingSchedules,
+  disciplinePenalties,
+} from "./schema";
 import { counsellorId, studentOf } from "./seed-counselling-consents";
 import { momentOf, sampleAccountOf } from "./seed-siku-adjustments";
 
@@ -101,14 +106,29 @@ function voluntaryValues(
   };
 }
 
+/** The key of the student's one sample discipline penalty. */
+async function penaltyOf(db: Database, studentId: string): Promise<string> {
+  const found = await db
+    .select({ id: disciplinePenalties.id })
+    .from(disciplinePenalties)
+    .where(eq(disciplinePenalties.studentId, studentId));
+  const [penalty, ...more] = found;
+  if (!penalty || more.length > 0) {
+    throw new Error("A sample Penugasan has no one penalty to be sent from.");
+  }
+  return penalty.id;
+}
+
 function assignmentValues(
   sample: SampleAssignment,
   studentId: string,
+  penaltyId: string | null,
   today: string,
 ): ScheduleValues {
   const { time } = sample;
   return {
     studentId,
+    penaltyId,
     kind: sample.kind,
     day: time ? weekdayFrom(daysAfter(today, time.inDays)) : null,
     hour: time?.hour ?? null,
@@ -124,8 +144,9 @@ function assignmentValues(
  * Adds the sample requests for counselling and the sample assignments,
  * each with a log line for every step of it, as the work of the student,
  * of the sample Konselor, or of the sample Pembina Disiplin Mahasiswa or
- * Penilai Mahasiswa who sent it. The sample students, accounts and
- * consents must be there already. `today` is today on campus.
+ * Penilai Mahasiswa who sent it. The sample students, accounts, consents
+ * and discipline penalties must be there already. `today` is today on
+ * campus.
  */
 export async function addSampleCounsellingSchedules(
   db: Database,
@@ -148,7 +169,10 @@ export async function addSampleCounsellingSchedules(
     const student = await studentOf(db, sample.nim);
     const sender = senders[sample.kind];
     const takers = { student: student.accountId, sender, counsellor };
-    const values = assignmentValues(sample, student.id, today);
+    const penaltyId = sample.fromPenalty
+      ? await penaltyOf(db, student.id)
+      : null;
+    const values = assignmentValues(sample, student.id, penaltyId, today);
     await addSample(db, values, sample.steps, takers, moment);
   }
 }

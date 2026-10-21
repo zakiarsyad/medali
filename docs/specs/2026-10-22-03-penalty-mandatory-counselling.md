@@ -94,13 +94,23 @@ what was said in the session.
 1. Sending and reading how these requests stand is one right of its
    own, "Tugaskan konseling wajib", held by Pembina Disiplin Mahasiswa
    alone, with the rows of that role.
+2. A Penugasan keeps the penalty it was sent from, and the database holds
+   at most one Penugasan per penalty. A Penugasan sent before this, with
+   no penalty, stays as it is and does not hide the button of any
+   penalty.
+3. "Dasar" reads "Pelanggaran disiplin (kategori) jenjang (jenjang)",
+   such as "Pelanggaran disiplin sedang jenjang pertama", as the sample
+   assignments of Mandatory counselling already do.
+4. In the sample data, each sample Penugasan is linked to its student's
+   penalty, except Mega Saragih's: it was sent before her penalty of this
+   semester, so that penalty, and Teguh Lubis's, have none yet.
 
 ## Steps
 
 - [x] 1. The right to send a student to mandatory counselling, and to
   read the status, date and Jam of these requests, is added for Pembina
   Disiplin Mahasiswa, with its checks.
-- [ ] 2. An assignment of the kind "Penugasan" (from Mandatory
+- [x] 2. An assignment of the kind "Penugasan" (from Mandatory
   counselling) can point to one discipline penalty, with samples.
 - [ ] 3. "Tugaskan konseling wajib" in "Rincian", with confirmation.
 - [ ] 4. The status box for Pembina Disiplin Mahasiswa only.
