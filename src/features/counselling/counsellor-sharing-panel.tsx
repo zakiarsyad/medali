@@ -11,11 +11,11 @@ import { askSharingAction, lookUpSharingAction } from "./sharing-actions";
 import { SharingFacts } from "./sharing-facts";
 import { type SharingAsk, SharingForm } from "./sharing-form";
 import { SharingMoves, type SharingStepAction } from "./sharing-moves";
-import { isCurrentSharing } from "./sharing-rules";
+import { isCurrentSharing, offeredData } from "./sharing-rules";
 import type { SharingPanel, SharingView } from "./sharing-view";
 import {
   NEEDS_COUNSELLING_CONSENT,
-  NO_SESSION,
+  NO_SCREENING_OR_SESSION,
   PANEL_LEDE,
   PICK_FIRST,
 } from "./sharing-words";
@@ -42,8 +42,9 @@ export function StudentSharing({
   onAsk: (ask: SharingAsk) => void;
   onStep: (action: SharingStepAction, sharing: SharingView) => void;
 }) {
-  if (!panel.hasSessions) {
-    return <div className={styles.warnBox}>{NO_SESSION}</div>;
+  const offered = offeredData(panel);
+  if (offered.length === 0) {
+    return <div className={styles.warnBox}>{NO_SCREENING_OR_SESSION}</div>;
   }
   const { sharing } = panel;
   const isCurrent = sharing !== null && isCurrentSharing(sharing.status);
@@ -62,7 +63,7 @@ export function StudentSharing({
         <p className={styles.sub}>{NEEDS_COUNSELLING_CONSENT}</p>
       )}
       {!isCurrent && panel.hasConsent && (
-        <SharingForm pending={pending} onAsk={onAsk} />
+        <SharingForm offered={offered} pending={pending} onAsk={onAsk} />
       )}
     </>
   );

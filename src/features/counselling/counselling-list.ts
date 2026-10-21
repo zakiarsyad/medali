@@ -73,13 +73,14 @@ const IN_LIST = or(
   HAS_SESSION,
 );
 
-const SESSION_COUNT = sql<number>`(
+/** How many sessions of the student row were written down. */
+export const SESSION_COUNT = sql<number>`(
   select count(*)::int from ${counsellingSessions}
   where ${counsellingSessions.studentId} = ${students.id}
 )`;
 
 /** "Sesi berikutnya" of the student row's latest session, passed or not. */
-const LATEST_NEXT_DAY = sql<string | null>`(
+export const LATEST_NEXT_DAY = sql<string | null>`(
   select ${counsellingSessions.nextDay} from ${counsellingSessions}
   where ${counsellingSessions.studentId} = ${students.id}
   order by ${counsellingSessions.day} desc, ${counsellingSessions.writtenAt} desc,
@@ -127,10 +128,10 @@ const SOONEST_ACTIVE_SCHEDULE = sql`(
   limit 1
 )`;
 
-const latestSharing = alias(counsellingSharings, "latest_sharing");
+export const latestSharing = alias(counsellingSharings, "latest_sharing");
 
 /** The student row's latest sharing, current or ended, as its panel shows. */
-const LATEST_SHARING = sql`(
+export const LATEST_SHARING = sql`(
   select ${counsellingSharings.id} from ${counsellingSharings}
   where ${counsellingSharings.studentId} = ${students.id}
   order by ${counsellingSharings.askedAt} desc, ${counsellingSharings.id} desc

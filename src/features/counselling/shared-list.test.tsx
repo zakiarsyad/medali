@@ -5,6 +5,7 @@ import { CampusScreenedCount, PERSONAL_DATA_NOTE } from "./screening-campus";
 import { ScreeningListPanel } from "./screening-list";
 import { ScreeningScreen } from "./screening-screen";
 import type { ScreeningRow } from "./screening-view";
+import { ADVICE_WORDS, CRISIS_ADVICE, RISK_WORDS } from "./screening-words";
 import { SharedDetailBox } from "./shared-detail-box";
 import { SharedListPanel } from "./shared-list";
 import type { SharedList, SharedRow } from "./shared-view";
@@ -17,6 +18,7 @@ const ROW: SharedRow = {
   program: "Prodi Contoh",
   mentorName: "Pengasuh Contoh",
   data: ["summary", "counselling"],
+  level: null,
   publishedAt: new Date("2026-10-19T03:00:00Z"),
 };
 
@@ -30,7 +32,14 @@ const START: ScreeningParams = {
 function panel(list: Partial<SharedList>): string {
   return renderToStaticMarkup(
     <SharedListPanel
-      list={{ rows: [], matching: 0, page: 1, menteesOnly: false, ...list }}
+      list={{
+        rows: [],
+        matching: 0,
+        needCounselling: 0,
+        page: 1,
+        menteesOnly: false,
+        ...list,
+      }}
       params={START}
     />,
   );
@@ -47,6 +56,9 @@ const SCREENED: ScreeningRow = {
   level: "normal",
   risk: false,
   consent: null,
+  sessions: 0,
+  nextDay: null,
+  sharing: null,
 };
 
 const TABS = {
@@ -73,7 +85,13 @@ describe("Kesehatan mental of a Konselor who is also Pengasuh", () => {
       }}
       others={
         <SharedListPanel
-          list={{ rows: [ROW], matching: 21, page: 1, menteesOnly: true }}
+          list={{
+            rows: [ROW],
+            matching: 21,
+            needCounselling: 0,
+            page: 1,
+            menteesOnly: true,
+          }}
           params={params}
         />
       }
@@ -123,15 +141,26 @@ describe("Kesehatan mental of a Konselor who is also Pengasuh", () => {
 });
 
 describe("the numbers of a recipient on Kesehatan mental", () => {
-  it("shows Dipublikasikan untuk Anda, Sudah diasesmen and Sesi konseling 30 hari as sent, with the note on personal data", () => {
+  it("shows Dipublikasikan untuk Anda, Perlu konseling, Sudah diasesmen and Sesi konseling 30 hari as sent, with the note on personal data", () => {
     const page = renderToStaticMarkup(
       <CampusScreenedCount
         shown="12"
-        shared={{ forYou: 3, menteesOnly: false, sessions: "<5" }}
+        shared={{
+          forYou: 3,
+          needCounselling: 2,
+          menteesOnly: false,
+          sessions: "<5",
+        }}
       />,
     );
     expect(page).toContain("Dipublikasikan untuk Anda");
     expect(page).toContain(">3<");
+    expect(page).toContain("Perlu konseling");
+    expect(page).toContain(">2<");
+    expect(page).toContain("dari data yang dipublikasikan");
+    expect(page.indexOf("Perlu konseling")).toBeLessThan(
+      page.indexOf("Sudah diasesmen"),
+    );
     expect(page).toContain("Sudah diasesmen");
     expect(page).toContain("Sesi konseling 30 hari");
     expect(page).toContain("&lt;5");
@@ -145,7 +174,12 @@ describe("the numbers of a recipient on Kesehatan mental", () => {
     const page = renderToStaticMarkup(
       <CampusScreenedCount
         shown="0"
-        shared={{ forYou: 1, menteesOnly: true, sessions: "0" }}
+        shared={{
+          forYou: 1,
+          needCounselling: 0,
+          menteesOnly: true,
+          sessions: "0",
+        }}
       />,
     );
     expect(page).toContain("anak asuh");
@@ -154,6 +188,7 @@ describe("the numbers of a recipient on Kesehatan mental", () => {
   it("shows only Sudah diasesmen without the right to shared data", () => {
     const page = renderToStaticMarkup(<CampusScreenedCount shown="0" />);
     expect(page).not.toContain("Dipublikasikan untuk Anda");
+    expect(page).not.toContain("Perlu konseling");
     expect(page).not.toContain("Sesi konseling 30 hari");
   });
 });
@@ -166,6 +201,7 @@ describe("Rincian of shared counselling data", () => {
       <SharedDetailBox
         detail={{
           data: ["counselling", "summary"],
+          screening: null,
           counselling: {
             count: 2,
             lastDay: "2026-10-16",
@@ -194,6 +230,7 @@ describe("Rincian of shared counselling data", () => {
       <SharedDetailBox
         detail={{
           data: ["summary"],
+          screening: null,
           counselling: null,
           summary: "Mohon beri ruang saat ujian.",
           publishedByName: "Konselor Contoh",
@@ -206,6 +243,7 @@ describe("Rincian of shared counselling data", () => {
       <SharedDetailBox
         detail={{
           data: ["counselling"],
+          screening: null,
           counselling: {
             count: 1,
             lastDay: "2026-10-16",
@@ -220,6 +258,77 @@ describe("Rincian of shared counselling data", () => {
     );
     expect(counsellingOnly).not.toContain("Ringkasan konselor");
     expect(counsellingOnly).not.toContain("Sesi berikutnya");
+    expect(counsellingOnly).not.toContain("Tingkat asesmen");
+  });
+
+  it("shows Tingkat asesmen terakhir with the instrument and the date, and the advice of the level, never the crisis advice or Risiko", () => {
+    const page = renderToStaticMarkup(
+      <SharedDetailBox
+        detail={{
+          data: ["level"],
+          screening: {
+            level: "extremely_severe",
+            instrument: "dass21",
+            screenedOn: "2026-10-12",
+          },
+          counselling: null,
+          summary: null,
+          publishedByName: "Konselor Contoh",
+          publishedAt: PUBLISHED,
+        }}
+      />,
+    );
+    expect(page).toContain("Tingkat asesmen terakhir");
+    expect(page).toContain("Sangat berat");
+    expect(page).toContain("DASS-21, 12 Okt 2026");
+    expect(page).toContain("Rekomendasi");
+    expect(page).toContain(ADVICE_WORDS.extremely_severe);
+    expect(page).not.toContain(CRISIS_ADVICE);
+    expect(page).not.toContain(RISK_WORDS);
+    expect(page).not.toContain("Status konseling");
+  });
+
+  it("says Belum ada asesmen when the level is shared and there is no screening", () => {
+    const page = renderToStaticMarkup(
+      <SharedDetailBox
+        detail={{
+          data: ["level"],
+          screening: null,
+          counselling: null,
+          summary: null,
+          publishedByName: "Konselor Contoh",
+          publishedAt: PUBLISHED,
+        }}
+      />,
+    );
+    expect(page).toContain("Belum ada asesmen.");
+  });
+});
+
+describe("Tingkat in Data yang dipublikasikan untuk Anda", () => {
+  it("shows the level when shared, Tidak dibagikan when left out, and Belum ada asesmen with no screening", () => {
+    const page = panel({
+      rows: [
+        { ...ROW, data: ["level", "counselling"], level: "moderate" },
+        {
+          ...ROW,
+          studentId: "00000000-0000-4000-8000-000000000003",
+          data: ["counselling"],
+        },
+        {
+          ...ROW,
+          studentId: "00000000-0000-4000-8000-000000000004",
+          data: ["level"],
+        },
+      ],
+      matching: 3,
+    });
+    expect(page).toContain('data-title="Tingkat"');
+    expect(page).toContain("Sedang");
+    expect(page).toContain("Tidak dibagikan");
+    expect(page).toContain("Belum ada asesmen");
+    expect(page).toContain("Tingkat asesmen, Status konseling");
+    expect(page).not.toContain(RISK_WORDS);
   });
 });
 

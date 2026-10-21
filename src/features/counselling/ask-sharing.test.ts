@@ -9,19 +9,23 @@ import { changeOwnConsent } from "./change-consent";
 import { askSharing } from "./change-sharing";
 import { readConsentOf } from "./consent-reads";
 import { STUDENT_NOT_FOUND } from "./consent-words";
+import { changeSharingAsCounsellor } from "./publish-sharing";
 import { readSharingPanel } from "./sharing-reads";
 import {
   askedMessage,
   NEEDS_COUNSELLING_CONSENT,
   NO_DATA,
   NO_RECIPIENT,
+  NO_SCREENING,
   NO_SESSION,
   NO_SUMMARY,
   SHARING_CHANGED,
   SHARING_NOT_ALLOWED,
 } from "./sharing-words";
 import { addTestActor, addTestPeople } from "./test-consents";
+import { addTestScreening } from "./test-screenings";
 import { addConsentedPeople } from "./test-sessions";
+import { publishTestSharing } from "./test-shared";
 import {
   ASKED_AT,
   addSharingStudent,
@@ -124,8 +128,105 @@ describe("Minta persetujuan mahasiswa", () => {
       ).toEqual({ kind: "refused", error: NO_SESSION });
       expect(await readSharingPanel(db, people.counsellor, studentId)).toEqual({
         ok: true,
-        value: { hasSessions: false, hasConsent: true, sharing: null },
+        value: {
+          hasSessions: false,
+          hasScreening: false,
+          hasConsent: true,
+          sharing: null,
+        },
       });
+    });
+  });
+
+  it("keeps the level alone for a student with a screening and no session, and refuses the rest without a session", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addConsentedPeople(db, PROGRAM, ["9986311009"]);
+      const [studentId] = people.studentIds;
+      if (!studentId) throw new Error("Student missing.");
+      await addTestScreening(db, studentId, people.counsellor.id);
+
+      expect(
+        await askSharing(db, people.counsellor, studentId, {
+          ...TEST_ASK,
+          data: ["level", "counselling"],
+        }),
+      ).toEqual({ kind: "refused", error: NO_SESSION });
+      expect(
+        await askSharing(db, people.counsellor, studentId, {
+          ...TEST_ASK,
+          data: ["level"],
+        }),
+      ).toMatchObject({
+        kind: "kept",
+        sharing: { status: "waiting", data: ["level"], summary: null },
+      });
+    });
+  });
+
+  it("refuses the level for a student with no screening", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(db, PROGRAM, "9986311010");
+      expect(
+        await askSharing(db, people.counsellor, people.studentId, {
+          ...TEST_ASK,
+          data: ["level", "counselling"],
+        }),
+      ).toEqual({ kind: "refused", error: NO_SCREENING });
+      expect(await sharingsOf(db, people.studentId)).toEqual([]);
+    });
+  });
+
+  it("does not let an agreement without the level cover it: the level needs a new request the student answers again", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(db, PROGRAM, "9986311011");
+      await addTestScreening(db, people.studentId, people.counsellor.id);
+      const published = await publishTestSharing(db, people, {
+        data: ["counselling"],
+        recipients: ["head_of_unit"],
+      });
+
+      await expect(
+        db.transaction((tx) =>
+          tx
+            .update(counsellingSharings)
+            .set({ data: ["level", "counselling"] })
+            .where(eq(counsellingSharings.id, published.id)),
+        ),
+      ).rejects.toThrow();
+      const withLevel = { ...TEST_ASK, data: ["level", "counselling"] };
+      expect(
+        await askSharing(db, people.counsellor, people.studentId, withLevel),
+      ).toMatchObject({
+        kind: "changed",
+        sharing: { id: published.id, data: ["counselling"] },
+      });
+
+      await changeSharingAsCounsellor(
+        db,
+        people.counsellor,
+        people.studentId,
+        "cancel",
+        published.id,
+        published.version,
+      );
+      const asked = await askSharing(
+        db,
+        people.counsellor,
+        people.studentId,
+        withLevel,
+      );
+
+      expect(asked).toMatchObject({
+        kind: "kept",
+        sharing: { status: "waiting", data: ["level", "counselling"] },
+      });
+      const kept = await sharingsOf(db, people.studentId);
+      expect(kept.map((each) => [each.status, each.data])).toEqual(
+        expect.arrayContaining([
+          ["cancelled", ["counselling"]],
+          ["waiting", ["level", "counselling"]],
+        ]),
+      );
     });
   });
 
@@ -207,7 +308,27 @@ describe("Publikasi data kesehatan mental of a picked student", () => {
         await readSharingPanel(db, people.counsellor, people.studentId),
       ).toEqual({
         ok: true,
-        value: { hasSessions: true, hasConsent: true, sharing: asked },
+        value: {
+          hasSessions: true,
+          hasScreening: false,
+          hasConsent: true,
+          sharing: asked,
+        },
+      });
+    });
+  });
+
+  it("says whether the student has a screening", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addConsentedPeople(db, PROGRAM, ["9986311012"]);
+      const [studentId] = people.studentIds;
+      if (!studentId) throw new Error("Student missing.");
+      await addTestScreening(db, studentId, people.counsellor.id);
+      expect(
+        await readSharingPanel(db, people.counsellor, studentId),
+      ).toMatchObject({
+        ok: true,
+        value: { hasSessions: false, hasScreening: true },
       });
     });
   });
@@ -219,7 +340,12 @@ describe("Publikasi data kesehatan mental of a picked student", () => {
         await readSharingPanel(db, people.counsellor, people.studentIds[0]),
       ).toEqual({
         ok: true,
-        value: { hasSessions: false, hasConsent: false, sharing: null },
+        value: {
+          hasSessions: false,
+          hasScreening: false,
+          hasConsent: false,
+          sharing: null,
+        },
       });
     });
   });

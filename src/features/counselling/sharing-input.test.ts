@@ -59,8 +59,19 @@ describe("what Konselor asks to share", () => {
     ).toEqual({ ok: false, error: SUMMARY_TOO_LONG });
   });
 
+  it("takes the level, first in the order of the form", () => {
+    expect(readSharingInput(["counselling", "level"], ["mentor"], "")).toEqual({
+      ok: true,
+      value: {
+        data: ["level", "counselling"],
+        recipients: ["mentor"],
+        summary: null,
+      },
+    });
+  });
+
   it("takes no data or recipient it does not know, Pengelola Asrama and BAM among them", () => {
-    expect(readSharingInput(["level"], ["mentor"], "")).toEqual({
+    expect(readSharingInput(["scores", "note"], ["mentor"], "")).toEqual({
       ok: false,
       error: NO_DATA,
     });

@@ -16,16 +16,15 @@ import {
 } from "./sharing-ids";
 import { readSharingInput } from "./sharing-input";
 import {
-  hasSessions,
   readLatestSharing,
+  readSharingBasis,
   sharingStudentName,
 } from "./sharing-reads";
-import { sharingAfter } from "./sharing-rules";
+import { missingBasis, sharingAfter } from "./sharing-rules";
 import type { SharingView } from "./sharing-view";
 import {
   askedMessage,
   NEEDS_COUNSELLING_CONSENT,
-  NO_SESSION,
   SHARING_CHANGED,
   SHARING_NOT_ALLOWED,
 } from "./sharing-words";
@@ -187,9 +186,9 @@ function addRequest(db: Database, ask: Ask): Promise<SharingOutcome> {
     if (consent !== "approved") {
       return { kind: "refused", error: NEEDS_COUNSELLING_CONSENT };
     }
-    if (!(await hasSessions(tx, ask.studentId))) {
-      return { kind: "refused", error: NO_SESSION };
-    }
+    const basis = await readSharingBasis(tx, ask.studentId);
+    const missing = missingBasis(ask.content.data, basis);
+    if (missing !== null) return { kind: "refused", error: missing };
     const after = sharingAfter("ask", null);
     const current = await lockCurrentSharing(tx, ask.studentId);
     if (current !== null || after === null) {
@@ -225,9 +224,10 @@ function addRequest(db: Database, ask: Ask): Promise<SharingOutcome> {
 /**
  * "Minta persetujuan mahasiswa" for any student who is not removed, by
  * Konselor: only while the student's consent to counselling is
- * Disetujui, after at least one session, and while no sharing of theirs
- * is current. What was sent comes from outside. Refused for any role
- * without the right, giving nothing back.
+ * Disetujui, the level only after a screening and the other data only
+ * after a session, and while no sharing of theirs is current. What was
+ * sent comes from outside. Refused for any role without the right,
+ * giving nothing back.
  */
 export async function askSharing(
   db: Database,

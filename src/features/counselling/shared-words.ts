@@ -11,6 +11,7 @@ export const SHARED_HEADING = "Data yang dipublikasikan untuk Anda";
 
 /** Each part of "Data yang dibagikan", as a recipient reads it. */
 export const SHARED_PART_WORDS: Record<SharedData, string> = {
+  level: "Tingkat asesmen",
   counselling: "Status konseling",
   summary: "Ringkasan konselor",
 };
@@ -21,6 +22,12 @@ export function sharedPartsLine(data: readonly SharedData[]): string {
     .map((part) => SHARED_PART_WORDS[part])
     .join(", ");
 }
+
+/** "Tingkat" of a student whose sharing leaves the level out. */
+export const LEVEL_NOT_SHARED = "Tidak dibagikan";
+
+/** "Tingkat" of a student whose level is shared and who has no screening. */
+export const NOT_SCREENED = "Belum ada asesmen";
 
 /** "Rincian" asked for a student whose data is no longer published for the person. */
 export const SHARED_GONE =

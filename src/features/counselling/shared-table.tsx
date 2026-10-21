@@ -4,13 +4,30 @@ import { useState, useTransition } from "react";
 import type { Parsed } from "@/parsed";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
+import styles from "./counselling.module.css";
+import { LevelBadges } from "./screening-badges";
 import { openSharedDetailAction } from "./shared-actions";
 import { SharedDetailBox } from "./shared-detail-box";
 import type { SharedDetail, SharedRow } from "./shared-view";
-import { sharedPartsLine } from "./shared-words";
+import {
+  LEVEL_NOT_SHARED,
+  NOT_SCREENED,
+  sharedPartsLine,
+} from "./shared-words";
 
 /** How many columns the list has, for the row of "Rincian". */
-const SHARED_COLUMNS = 5;
+const SHARED_COLUMNS = 6;
+
+/** "Tingkat": the level when shared, else why there is none. */
+function SharedLevel({ row }: { row: SharedRow }) {
+  if (!row.data.includes("level")) {
+    return <span className={styles.sub}>{LEVEL_NOT_SHARED}</span>;
+  }
+  if (row.level === null) {
+    return <span className={styles.sub}>{NOT_SCREENED}</span>;
+  }
+  return <LevelBadges level={row.level} risk={false} />;
+}
 
 /**
  * One student of "Data yang dipublikasikan untuk Anda". "Rincian" asks
@@ -42,6 +59,9 @@ function SharedListRow({ row }: { row: SharedRow }) {
           </small>
         </td>
         <td data-title="Pengasuh">{row.mentorName ?? "-"}</td>
+        <td data-title="Tingkat">
+          <SharedLevel row={row} />
+        </td>
         <td data-title="Data yang dibagikan">{sharedPartsLine(row.data)}</td>
         <td data-title="Dipublikasikan">{DAY.format(row.publishedAt)}</td>
         <td className={shared.rowActions}>
@@ -80,6 +100,7 @@ export function SharedTable({ rows }: { rows: SharedRow[] }) {
           <tr>
             <th>Mahasiswa</th>
             <th>Pengasuh</th>
+            <th>Tingkat</th>
             <th>Data yang dibagikan</th>
             <th>Dipublikasikan</th>
             <th>

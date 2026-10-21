@@ -9,6 +9,7 @@ import type { SharingStatus } from "./sharing-ids";
 import type { SharingPanel, SharingView } from "./sharing-view";
 import {
   NEEDS_COUNSELLING_CONSENT,
+  NO_SCREENING_OR_SESSION,
   NO_SESSION,
   PICK_FIRST,
 } from "./sharing-words";
@@ -38,6 +39,7 @@ function sharingOf(
 function panelOf(panel: Partial<SharingPanel>): string {
   const full: SharingPanel = {
     hasSessions: true,
+    hasScreening: false,
     hasConsent: true,
     sharing: null,
     ...panel,
@@ -104,9 +106,40 @@ describe("Publikasi data kesehatan mental", () => {
     expect(page).not.toContain("checked");
   });
 
-  it("says a student with no session has none, and offers nothing", () => {
-    const page = panelOf({ hasSessions: false });
-    expect(page).toContain(NO_SESSION);
+  it("offers the level first, not ticked, for a student with a screening", () => {
+    const page = panelOf({ hasScreening: true });
+    const level = page.indexOf(
+      "Tingkat hasil asesmen dan rekomendasi tindak lanjut",
+    );
+    expect(level).toBeGreaterThan(-1);
+    expect(level).toBeLessThan(page.indexOf("Status, jadwal"));
+    expect(page.match(/type="checkbox"/g)).toHaveLength(7);
+    expect(page).not.toContain("checked");
+  });
+
+  it("does not offer the level for a student with a session and no screening", () => {
+    const page = panelOf({ hasScreening: false });
+    expect(page).not.toContain("Tingkat hasil asesmen");
+  });
+
+  it("offers the level alone for a student with a screening and no session", () => {
+    const page = panelOf({ hasSessions: false, hasScreening: true });
+    expect(page).toContain(
+      "Tingkat hasil asesmen dan rekomendasi tindak lanjut",
+    );
+    expect(page).not.toContain("Status, jadwal");
+    expect(page).not.toContain("Ringkasan pendampingan");
+    expect(page).not.toContain("Ringkasan untuk penerima");
+    expect(page).toContain("Minta persetujuan mahasiswa");
+    expect(page).not.toContain(NO_SESSION);
+  });
+
+  it("says a student with neither a screening nor a session has none, and offers nothing", () => {
+    const page = panelOf({ hasSessions: false, hasScreening: false });
+    expect(page).toContain(NO_SCREENING_OR_SESSION);
+    expect(NO_SCREENING_OR_SESSION).toBe(
+      "Belum ada asesmen atau sesi konseling untuk mahasiswa ini.",
+    );
     expect(page).not.toContain("<form");
     expect(page).not.toContain("<button");
   });

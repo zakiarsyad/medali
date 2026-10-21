@@ -9,8 +9,16 @@ import { searchText } from "@/ui/search-text";
 
 export const SCREENING_ADDRESS = "/penilaian/mental";
 
-/** The choices of the filter: every student, "Perlu konseling" or "Menunggu persetujuan". */
-export const SCREENING_FILTERS = ["all", "counselling", "waiting"] as const;
+/**
+ * The choices of the filter: every student, "Perlu konseling", or the
+ * consent to counselling "Menunggu persetujuan" or "Disetujui".
+ */
+export const SCREENING_FILTERS = [
+  "all",
+  "counselling",
+  "waiting",
+  "approved",
+] as const;
 
 export type ScreeningFilter = (typeof SCREENING_FILTERS)[number];
 
@@ -19,12 +27,14 @@ const FILTER_NAMES: Record<ScreeningFilter, string> = {
   all: "",
   counselling: "perlu-konseling",
   waiting: "menunggu-persetujuan",
+  approved: "disetujui",
 };
 
 export const SCREENING_FILTER_WORDS: Record<ScreeningFilter, string> = {
   all: "Semua",
   counselling: "Perlu konseling",
   waiting: "Menunggu persetujuan",
+  approved: "Disetujui",
 };
 
 export interface ScreeningParams {

@@ -4,14 +4,16 @@ import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { ConsentBadge } from "./consent-badge";
+import { NOTHING, sessionsWords } from "./counselling-list-words";
 import { openScreeningDetailAction } from "./screening-actions";
 import { LevelBadges } from "./screening-badges";
 import { ScreeningHistory } from "./screening-history";
 import type { ScreeningDetailItem, ScreeningRow } from "./screening-view";
 import { INSTRUMENT_WORDS } from "./screening-words";
+import { SharingBadge } from "./sharing-badge";
 
 /** How many columns "Daftar mahasiswa" has, for the row of "Rincian". */
-const SCREENING_COLUMNS = 6;
+const SCREENING_COLUMNS = 8;
 
 export const DETAIL_GONE =
   "Rincian tidak dapat dibuka. Muat ulang halaman, lalu coba lagi.";
@@ -56,6 +58,16 @@ function ScreeningListRow({ row }: { row: ScreeningRow }) {
         <td data-title="Persetujuan">
           <ConsentBadge status={row.consent} />
         </td>
+        <td data-title="Konseling">
+          {sessionsWords(row.sessions, row.nextDay)}
+        </td>
+        <td data-title="Publikasi">
+          {row.sharing === null ? (
+            NOTHING
+          ) : (
+            <SharingBadge status={row.sharing} />
+          )}
+        </td>
         <td className={shared.rowActions}>
           <button
             type="button"
@@ -95,6 +107,8 @@ export function ScreeningTable({ rows }: { rows: ScreeningRow[] }) {
             <th>Asesmen terakhir</th>
             <th>Tingkat</th>
             <th>Persetujuan</th>
+            <th>Konseling</th>
+            <th>Publikasi</th>
             <th>
               <span className={shared.hidden}>Rincian</span>
             </th>

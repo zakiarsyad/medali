@@ -41,7 +41,8 @@ export function isStudentSharingStep(step: SampleSharingStep): boolean {
 /**
  * One current sharing in each current status, and ended ones of every
  * kind. Bayu Santoso declined a first request, then approved one that
- * is published, so his page shows "Data dibagikan". Citra Nasution's
+ * is published with his screening level, so his page shows "Data
+ * dibagikan" and his Pengasuh sees his level. Citra Nasution's
  * first was published and then taken back by Konselor; a new request
  * waits, so it can be answered after picking her on Ganti peran. Dimas
  * Halim approved on paper, so Konselor can publish it. Fikri Wibowo
@@ -61,7 +62,7 @@ export const SAMPLE_SHARINGS: SampleSharing[] = [
   },
   {
     nim: "9900240002",
-    data: ["counselling", "summary"],
+    data: ["level", "counselling", "summary"],
     recipients: ["mentor", "head_of_program"],
     summary:
       "Mahasiswa sedang dalam pendampingan rutin. Mohon pengasuh memberi ruang dan memantau kehadiran.",

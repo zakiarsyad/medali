@@ -2,13 +2,18 @@
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
+import { counsellingSessions } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { ScreeningParams } from "./screening-address";
 import { readScreeningList, readScreeningNumbers } from "./screening-board";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { addTestScreening, setTestConsent } from "./test-screenings";
+import { addSharingStudent, askedSharing } from "./test-sharings";
 
 const inTestDatabase = withTestDatabase();
+
+// 10:00 on campus on Rabu 21 October 2026.
+const NOW = new Date("2026-10-21T03:00:00Z");
 
 const EVERYONE: ScreeningParams = {
   query: "",
@@ -106,6 +111,7 @@ describe("Daftar mahasiswa of Konselor", () => {
   it.each([
     ["Perlu konseling", { filter: "counselling" }, [0, 1, 2]],
     ["Menunggu persetujuan", { filter: "waiting" }, [1]],
+    ["Disetujui", { filter: "approved" }, [0]],
     ["a search by NIM", { query: "9988600101" }, [0]],
     ["a search by name", { query: "konseling 3" }, [2]],
   ] as const)("narrows to %s", async (_, chosen, places) => {
@@ -117,6 +123,69 @@ describe("Daftar mahasiswa of Konselor", () => {
       });
       const shown = list?.rows.map((row) => row.studentId).sort();
       expect(shown).toEqual(places.map((place) => studentIds[place]).sort());
+    });
+  });
+
+  it("shows Konseling with the sessions and the coming one, and Publikasi with the latest sharing", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(
+        db,
+        "Prodi Uji Daftar Konseling",
+        "9988600120",
+      );
+      await addTestScreening(db, people.studentId, people.counsellor.id);
+      await db.insert(counsellingSessions).values({
+        studentId: people.studentId,
+        day: "2026-10-20",
+        kind: "individual_in_person",
+        topic: "academic",
+        notes: "Catatan uji sesi.",
+        followUp: "next_session",
+        nextDay: "2026-10-27",
+        writtenBy: people.counsellor.id,
+        writtenAt: NOW,
+        changedBy: people.counsellor.id,
+        changedAt: NOW,
+      });
+      await askedSharing(db, people);
+      const plain = await addTestPeople(db, "Prodi Uji Daftar Kosong", [
+        "9988600121",
+      ]);
+      const [plainId = ""] = plain.studentIds;
+      await addTestScreening(db, plainId, plain.counsellor.id);
+
+      const list = await readScreeningList(
+        db,
+        people.counsellor,
+        EVERYONE,
+        NOW,
+      );
+
+      expect(list?.rows).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            studentId: people.studentId,
+            sessions: 2,
+            nextDay: "2026-10-27",
+            sharing: "waiting",
+          }),
+          expect.objectContaining({
+            studentId: plainId,
+            sessions: 0,
+            nextDay: null,
+            sharing: null,
+          }),
+        ]),
+      );
+      const later = await readScreeningList(
+        db,
+        people.counsellor,
+        EVERYONE,
+        new Date("2026-10-28T03:00:00Z"),
+      );
+      expect(
+        later?.rows.find((row) => row.studentId === people.studentId),
+      ).toMatchObject({ nextDay: null });
     });
   });
 
