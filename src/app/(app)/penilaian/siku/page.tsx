@@ -7,6 +7,7 @@ import { database } from "@/db/database";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -169,6 +170,7 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
                 studentId={studentId}
                 base={Promise.resolve(base)}
               />
+              <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentNotesPanel
                 account={account}
                 visible={notesVisible}

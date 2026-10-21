@@ -112,3 +112,56 @@
 .muted {
   color: var(--muted);
 }
+
+/* "Kesehatan jasmani" in a student's detail. */
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--box-min-width)), 1fr)
+    );
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--weight-semibold);
+}
+
+.bigScore {
+  font-size: var(--text-title);
+}
+
+.noteBox,
+.noteBoxWarn {
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.noteBoxWarn {
+  border-color: var(--warn);
+}
+
+.noteBox p,
+.noteBoxWarn p {
+  margin: var(--space-xs) 0 0;
+}

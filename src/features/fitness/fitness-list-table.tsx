@@ -9,7 +9,8 @@ import type { FitnessListRow, RowHealth } from "./fitness-board";
 
 export const NO_FITNESS_MATCHES = "Tidak ada data pada filter ini.";
 
-function needsNote(category: ShownCategory): boolean {
+/** Whether a student of this category should have a health note. */
+export function needsNote(category: ShownCategory): boolean {
   if (category === "untested") return false;
   return SERIOUSNESS[category] >= SERIOUSNESS.attention;
 }

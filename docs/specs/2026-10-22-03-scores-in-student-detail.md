@@ -137,7 +137,7 @@ name from a Penilaian list shows the same detail.
 - [x] 2. The list gets the two columns and filters.
 - [x] 3. "Capaian karakter" and "Nilai karakter (KEP-220)" in the
   detail.
-- [ ] 4. "Kesehatan jasmani" in the detail, with the note rule.
+- [x] 4. "Kesehatan jasmani" in the detail, with the note rule.
 - [ ] 5. "Kesehatan mental" for Konselor and for recipients of a
   sharing.
 - [ ] 6. Names in the Penilaian lists that do not open it yet,

@@ -4,6 +4,7 @@ import { visibleTo } from "@/auth/visible-students";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
+import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -36,6 +37,7 @@ export default async function StudentsPage(props: PageProps<"/mahasiswa">) {
             studentId={studentId}
             base={baseScoreNow()}
           />
+          <StudentFitnessPanel account={account} studentId={studentId} />
           <StudentNotesPanel
             account={account}
             visible={notesVisible}
