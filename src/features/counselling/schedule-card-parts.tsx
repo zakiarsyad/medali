@@ -15,6 +15,8 @@ const STATUS_STYLES: Record<ScheduleStatus, string | undefined> = {
   done: styles.plain,
   missed: styles.bad,
   cancelled: styles.plain,
+  awaiting: styles.warn,
+  reschedule_asked: styles.warn,
 };
 
 export function ScheduleBadge({ status }: { status: ScheduleStatus }) {

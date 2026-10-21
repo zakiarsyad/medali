@@ -5,8 +5,9 @@ import type { ScheduleStatus } from "./schedule-ids";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import {
   COUNSELLING_WAY_WORDS,
+  NO_TIME_YET,
+  SCHEDULE_TOPIC_WORDS,
   STEP_WORDS,
-  TOPIC_WORDS,
   timeWords,
 } from "./schedule-words";
 
@@ -18,6 +19,8 @@ const TIME_TITLES: Record<ScheduleStatus, string> = {
   done: "Jadwal",
   missed: "Jadwal",
   cancelled: "Jadwal",
+  awaiting: "Jadwal",
+  reschedule_asked: "Waktu yang diminta",
 };
 
 function Steps({ card }: { card: CounsellorScheduleCard }) {
@@ -61,11 +64,13 @@ export function CounsellorScheduleCardView({
         <ScheduleBadge status={card.status} />
       </div>
       <dl className={styles.facts}>
-        <Fact title="Topik">{TOPIC_WORDS[card.topic]}</Fact>
+        <Fact title="Topik">{SCHEDULE_TOPIC_WORDS[card.topic]}</Fact>
         <Fact title={TIME_TITLES[card.status]}>
-          {timeWords(card.day, card.hour)}
+          {card.day && card.hour ? timeWords(card.day, card.hour) : NO_TIME_YET}
         </Fact>
-        <Fact title="Cara">{COUNSELLING_WAY_WORDS[card.way]}</Fact>
+        {card.way && (
+          <Fact title="Cara">{COUNSELLING_WAY_WORDS[card.way]}</Fact>
+        )}
         {card.counsellorName && (
           <Fact title="Konselor">{card.counsellorName}</Fact>
         )}

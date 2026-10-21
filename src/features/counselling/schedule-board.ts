@@ -21,6 +21,7 @@ import {
   statusesOf,
 } from "./schedule-address";
 import { ACTIVE_STATUSES } from "./schedule-ids";
+import { topicOf } from "./schedule-rules";
 import type {
   CounsellorScheduleCard,
   ScheduleBoard,
@@ -143,8 +144,9 @@ function cardOf(
     name: row.name,
     nim: row.nim,
     program: row.program,
+    kind: schedule.kind,
     status: schedule.status,
-    topic: schedule.topic,
+    topic: topicOf(schedule.kind, schedule.topic),
     day: schedule.day,
     hour: schedule.hour,
     way: schedule.way,

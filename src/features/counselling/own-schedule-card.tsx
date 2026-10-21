@@ -5,8 +5,9 @@ import type { ScheduleStatus } from "./schedule-ids";
 import type { OwnScheduleView } from "./schedule-view";
 import {
   COUNSELLING_WAY_WORDS,
-  TOPIC_WORDS,
+  SCHEDULE_TOPIC_WORDS,
   timeWords,
+  WAITING_FOR_TIME,
 } from "./schedule-words";
 
 /** What the time of a request is, as the student reads it. */
@@ -17,6 +18,8 @@ const TIME_TITLES: Record<ScheduleStatus, string> = {
   done: "Jadwal",
   missed: "Jadwal",
   cancelled: "Jadwal",
+  awaiting: "Jadwal",
+  reschedule_asked: "Waktu yang Anda pilih",
 };
 
 /**
@@ -41,11 +44,15 @@ export function OwnScheduleCard({
         <ScheduleBadge status={schedule.status} />
       </div>
       <dl className={styles.facts}>
-        <Fact title="Topik">{TOPIC_WORDS[schedule.topic]}</Fact>
+        <Fact title="Topik">{SCHEDULE_TOPIC_WORDS[schedule.topic]}</Fact>
         <Fact title={TIME_TITLES[schedule.status]}>
-          {timeWords(schedule.day, schedule.hour)}
+          {schedule.day && schedule.hour
+            ? timeWords(schedule.day, schedule.hour)
+            : WAITING_FOR_TIME}
         </Fact>
-        <Fact title="Cara">{COUNSELLING_WAY_WORDS[schedule.way]}</Fact>
+        {schedule.way && (
+          <Fact title="Cara">{COUNSELLING_WAY_WORDS[schedule.way]}</Fact>
+        )}
         {schedule.counsellorName && (
           <Fact title="Konselor">{schedule.counsellorName}</Fact>
         )}

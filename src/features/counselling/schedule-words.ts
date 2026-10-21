@@ -3,8 +3,10 @@ import {
   COUNSELLING_HOURS,
   type CounsellingTopic,
   type CounsellingWay,
+  type ScheduleKind,
   type ScheduleStatus,
   type ScheduleStep,
+  type ScheduleTopic,
 } from "./schedule-ids";
 
 /*
@@ -19,6 +21,22 @@ export const SCHEDULE_STATUS_WORDS: Record<ScheduleStatus, string> = {
   done: "Selesai",
   missed: "Tidak hadir",
   cancelled: "Dibatalkan",
+  awaiting: "Menunggu jadwal",
+  reschedule_asked: "Minta jadwal ulang",
+};
+
+/** The Jenis of a schedule. */
+export const KIND_WORDS: Record<ScheduleKind, string> = {
+  voluntary: "Sukarela",
+  assigned: "Penugasan",
+  called: "Pemanggilan",
+};
+
+/** Where a schedule comes from, as the student's card says it. */
+export const KIND_SOURCE_WORDS: Record<ScheduleKind, string> = {
+  voluntary: "Didaftarkan sendiri oleh mahasiswa",
+  assigned: "Konseling wajib dari Pembina Disiplin Mahasiswa",
+  called: "Dipanggil Penilai Mahasiswa berdasarkan hasil asesmen karakter",
 };
 
 export const TOPIC_WORDS: Record<CounsellingTopic, string> = {
@@ -29,6 +47,13 @@ export const TOPIC_WORDS: Record<CounsellingTopic, string> = {
   finances: "Keuangan",
   emotions_and_stress: "Emosi dan stres",
   other: "Lainnya",
+};
+
+/** The Topik of any schedule, also of an assignment. */
+export const SCHEDULE_TOPIC_WORDS: Record<ScheduleTopic, string> = {
+  ...TOPIC_WORDS,
+  discipline_violation: "Pelanggaran disiplin",
+  character_assessment: "Hasil asesmen karakter",
 };
 
 export const COUNSELLING_WAY_WORDS: Record<CounsellingWay, string> = {
@@ -47,6 +72,9 @@ export const STEP_WORDS: Record<ScheduleStep, string> = {
   reschedule: "Mengubah jadwal",
   mark_done: "Sesi selesai",
   mark_missed: "Mahasiswa tidak hadir",
+  assign: "Menugaskan konseling wajib",
+  call: "Memanggil untuk konseling",
+  set_time: "Menetapkan jadwal",
 };
 
 export const REGISTERED =
@@ -82,6 +110,12 @@ export const SCHEDULE_CHANGED_SINCE =
 
 /** The hours, as the note under the form says them. */
 export const HOURS_NOTE = `Jadwal konseling: Senin–Jumat pukul ${COUNSELLING_HOURS.join(", ")}. Konselor akan menyetujui atau mengusulkan waktu lain.`;
+
+/** What Konselor's card says while an assignment has no time yet. */
+export const NO_TIME_YET = "Belum ada";
+
+/** What the student's card says while an assignment has no time yet. */
+export const WAITING_FOR_TIME = "Menunggu jadwal dari konselor";
 
 /** A time of a schedule as a card shows it, such as 26 Okt 2026 pukul 10:00. */
 export function timeWords(day: string, hour: string): string {

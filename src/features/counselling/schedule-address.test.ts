@@ -72,6 +72,8 @@ describe("the Status filter", () => {
       "submitted",
       "proposed",
       "scheduled",
+      "awaiting",
+      "reschedule_asked",
     ]);
     expect(statusesOf("all")).toBeNull();
   });

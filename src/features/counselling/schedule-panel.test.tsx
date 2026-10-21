@@ -13,6 +13,7 @@ const CARD: CounsellorScheduleCard = {
   nim: "9937985051",
   program: "Prodi Uji Layar",
   status: "submitted",
+  kind: "voluntary",
   topic: "emotions_and_stress",
   day: "2026-10-21",
   hour: "13:00",

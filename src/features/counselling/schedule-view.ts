@@ -1,9 +1,10 @@
 import type {
   CounsellingHour,
-  CounsellingTopic,
   CounsellingWay,
+  ScheduleKind,
   ScheduleStatus,
   ScheduleStep,
+  ScheduleTopic,
 } from "./schedule-ids";
 
 /*
@@ -14,12 +15,16 @@ import type {
 /** One active request of the student, as "Jadwal konseling saya" shows it. */
 export interface OwnScheduleView {
   id: string;
+  kind: ScheduleKind;
   status: ScheduleStatus;
-  topic: CounsellingTopic;
-  /** The time it is about now: wished, proposed or agreed. */
-  day: string;
-  hour: CounsellingHour;
-  way: CounsellingWay;
+  topic: ScheduleTopic;
+  /**
+   * The time it is about now: wished, proposed or agreed. None while an
+   * assignment waits for Konselor to set one.
+   */
+  day: string | null;
+  hour: CounsellingHour | null;
+  way: CounsellingWay | null;
   /** The Konselor of an agreed time; null before. */
   counsellorName: string | null;
   /** "Pesan konselor" of a proposed or agreed time; null otherwise. */
@@ -31,10 +36,11 @@ export interface OwnScheduleView {
 /** One request that is over, as the student's "Riwayat" shows it. */
 export interface OwnHistoryView {
   id: string;
+  kind: ScheduleKind;
   status: ScheduleStatus;
   /** The day it was about. */
   day: string;
-  topic: CounsellingTopic;
+  topic: ScheduleTopic;
 }
 
 /** The lines of "Riwayat" read, the latest first. */
@@ -65,11 +71,13 @@ export interface CounsellorScheduleCard {
   name: string;
   nim: string;
   program: string;
+  kind: ScheduleKind;
   status: ScheduleStatus;
-  topic: CounsellingTopic;
-  day: string;
-  hour: CounsellingHour;
-  way: CounsellingWay;
+  topic: ScheduleTopic;
+  /** None while an assignment waits for Konselor to set a time. */
+  day: string | null;
+  hour: CounsellingHour | null;
+  way: CounsellingWay | null;
   /** "Cerita mahasiswa (rahasia)". */
   story: string | null;
   /** Why the student asked for another time, when they did. */

@@ -242,6 +242,7 @@ describe("Jadwal konseling of Konselor", () => {
           name: "Mahasiswa Uji Konseling 1",
           nim: "9986208001",
           program: PROGRAM,
+          kind: "voluntary",
           status: "submitted",
           topic: "academic",
           day: "2026-10-21",

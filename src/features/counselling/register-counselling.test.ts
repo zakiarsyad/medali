@@ -266,6 +266,7 @@ describe("Jadwal konseling saya", () => {
       expect(own).toEqual([
         {
           id: expect.any(String),
+          kind: "voluntary",
           status: "submitted",
           topic: "academic",
           day: "2026-10-21",

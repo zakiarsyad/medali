@@ -5,7 +5,7 @@ import styles from "./counselling.module.css";
 import { moreHistoryAddress } from "./schedule-address";
 import { ScheduleBadge } from "./schedule-card-parts";
 import type { OwnHistory } from "./schedule-view";
-import { TOPIC_WORDS } from "./schedule-words";
+import { SCHEDULE_TOPIC_WORDS } from "./schedule-words";
 
 /**
  * "Riwayat": the student's requests that are over, the latest first, each
@@ -23,7 +23,7 @@ export function OwnHistoryList({ history }: { history: OwnHistory }) {
             <span className={styles.sub}>{shownDay(item.day)}</span>
             <b>Konseling sukarela</b>
             <ScheduleBadge status={item.status} />
-            <span>{TOPIC_WORDS[item.topic]}</span>
+            <span>{SCHEDULE_TOPIC_WORDS[item.topic]}</span>
           </li>
         ))}
       </ul>

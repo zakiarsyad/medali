@@ -3,6 +3,7 @@ import { isWeekday } from "@/academic-periods/weekdays";
 import { isDay } from "@/db/is-day";
 import type { Parsed } from "@/parsed";
 import {
+  ASSIGNMENT_TOPICS,
   COUNSELLING_HOURS,
   COUNSELLING_TOPICS,
   COUNSELLING_WAYS,
@@ -10,8 +11,10 @@ import {
   type CounsellingTopic,
   type CounsellingWay,
   NOTE_MAX,
+  type ScheduleKind,
   type ScheduleStatus,
   type ScheduleStep,
+  type ScheduleTopic,
   STORY_MAX,
 } from "./schedule-ids";
 import {
@@ -104,8 +107,24 @@ export function checkRegistration(
   return { ok: true, value: { topic, day: day.value, hour, way, story } };
 }
 
+/**
+ * The Topik of a schedule: the one the student picked for a voluntary
+ * request, and the one of its Jenis for an assignment.
+ */
+export function topicOf(
+  kind: ScheduleKind,
+  picked: CounsellingTopic | null,
+): ScheduleTopic {
+  if (kind !== "voluntary") return ASSIGNMENT_TOPICS[kind];
+  if (picked === null) throw new Error("A voluntary request has no topic.");
+  return picked;
+}
+
 /** What Konselor or the student does to a request once it is sent. */
-export type ScheduleMove = Exclude<ScheduleStep, "register">;
+export type ScheduleMove = Exclude<
+  ScheduleStep,
+  "register" | "assign" | "call" | "set_time"
+>;
 
 export type CounsellorScheduleMove = Extract<
   ScheduleMove,

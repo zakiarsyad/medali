@@ -43,6 +43,7 @@ import {
   CONSENT_WAYS,
 } from "@/features/counselling/consent-ids";
 import {
+  ASSIGNMENT_TEXT_MAX,
   COUNSELLING_HOURS,
   NOTE_MAX as COUNSELLING_NOTE_MAX,
   STORY_MAX as COUNSELLING_STORY_MAX,
@@ -3401,7 +3402,10 @@ export const counsellingConsentChanges = pgTable(
  * proposed while it is Usulan jadwal lain, and the agreed time once it
  * is Dijadwalkan. `counsellorId` is the Konselor who proposed, approved
  * or moved a time. A student has at most one active voluntary request.
- * Never deleted, also once cancelled: its log lines hold it.
+ * An assignment (Penugasan or Pemanggilan) arrives Menunggu jadwal with
+ * no time, its Topik follows from its Jenis, and it is never cancelled;
+ * it may stand beside a voluntary request. Never deleted, also once
+ * cancelled: its log lines hold it.
  */
 export const counsellingSchedules = pgTable(
   "counselling_schedules",
@@ -3412,16 +3416,25 @@ export const counsellingSchedules = pgTable(
       .references(() => students.id),
     kind: counsellingScheduleKind().notNull(),
     status: counsellingScheduleStatus().notNull(),
-    topic: counsellingTopic().notNull(),
-    day: date({ mode: "string" }).notNull(),
-    hour: counsellingHour().notNull(),
-    way: counsellingWay().notNull(),
+    /** The Topik the student picked; none for an assignment. */
+    topic: counsellingTopic(),
+    /** None only while an assignment is Menunggu jadwal. */
+    day: date({ mode: "string" }),
+    hour: counsellingHour(),
+    way: counsellingWay(),
     /** "Ceritakan singkat": read by Konselor only. */
     story: text(),
     /** "Pesan untuk mahasiswa" of the last time Konselor proposed. */
     counsellorMessage: text(),
     /** "Alasan" of the last time the student asked for another time. */
     reason: text(),
+    /**
+     * "Dasar" of an assignment: the Kategori and Jenjang, never the full
+     * violation text. Read by Konselor only.
+     */
+    basis: text(),
+    /** "Pesan pengirim" of an assignment. Read by Konselor only. */
+    senderMessage: text(),
     counsellorId: uuid().references(() => accounts.id),
     createdAt: timestamp({ withTimezone: true }).notNull(),
     changedBy: uuid()
@@ -3452,7 +3465,39 @@ export const counsellingSchedules = pgTable(
     // added to its type in the same change, which may not use it yet.
     check(
       "counselling_schedules_counsellor_once_proposed",
-      sql`${table.status}::text in ('submitted', 'cancelled') or ${table.counsellorId} is not null`,
+      sql`${table.status}::text in ('submitted', 'cancelled', 'awaiting') or ${table.counsellorId} is not null`,
+    ),
+    // The kind and the status are read as text in the checks below: their
+    // new values are added to their types in the same change.
+    check(
+      "counselling_schedules_statuses_of_kind",
+      sql`case when ${table.kind}::text = 'voluntary'
+        then ${table.status}::text not in ('awaiting', 'reschedule_asked')
+        else ${table.status}::text not in ('submitted', 'proposed', 'cancelled') end`,
+    ),
+    check(
+      "counselling_schedules_time_once_set",
+      sql`${table.status}::text = 'awaiting' or (${table.day} is not null and ${table.hour} is not null and ${table.way} is not null)`,
+    ),
+    check(
+      "counselling_schedules_topic_of_voluntary",
+      sql`(${table.kind}::text = 'voluntary') = (${table.topic} is not null)`,
+    ),
+    check(
+      "counselling_schedules_basis_of_assignment",
+      sql`(${table.kind}::text = 'voluntary') = (${table.basis} is null)`,
+    ),
+    check(
+      "counselling_schedules_sender_message_of_assignment",
+      sql`${table.kind}::text <> 'voluntary' or ${table.senderMessage} is null`,
+    ),
+    check(
+      "counselling_schedules_basis_length",
+      sql`char_length(${table.basis}) <= ${sql.raw(String(ASSIGNMENT_TEXT_MAX))}`,
+    ),
+    check(
+      "counselling_schedules_sender_message_length",
+      sql`char_length(${table.senderMessage}) <= ${sql.raw(String(ASSIGNMENT_TEXT_MAX))}`,
     ),
   ],
 );

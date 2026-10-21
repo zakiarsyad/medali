@@ -7,6 +7,7 @@ import {
   hasDayCome,
   hasPassed,
   scheduleAfter,
+  topicOf,
 } from "./schedule-rules";
 import {
   NOTE_TOO_LONG,
@@ -287,5 +288,20 @@ describe("checkAnotherTime", () => {
     expect(
       checkAnotherTime({ ...sent, day: "2026-10-22", hour: "07:00" }, TODAY),
     ).toMatchObject({ error: PICK_FROM_LIST });
+  });
+});
+
+describe("topicOf", () => {
+  it("gives a voluntary request the topic the student picked", () => {
+    expect(topicOf("voluntary", "family")).toBe("family");
+  });
+
+  it("gives an assignment the topic of its Jenis", () => {
+    expect(topicOf("assigned", null)).toBe("discipline_violation");
+    expect(topicOf("called", null)).toBe("character_assessment");
+  });
+
+  it("refuses a voluntary request with no topic", () => {
+    expect(() => topicOf("voluntary", null)).toThrow();
   });
 });

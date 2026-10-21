@@ -1,4 +1,5 @@
 import type {
+  AssignmentKind,
   CounsellingHour,
   CounsellingTopic,
   CounsellingWay,
@@ -168,7 +169,138 @@ export const SAMPLE_SCHEDULES: SampleSchedule[] = [
   },
 ];
 
-/** The steps the student takes; every other is Konselor's. */
+/** The time Konselor set for a sample assignment. */
+export interface SampleAssignmentTime {
+  /** As `inDays` of a voluntary request. */
+  inDays: number;
+  hour: CounsellingHour;
+  way: CounsellingWay;
+}
+
+/**
+ * A sample assignment of one sample student: Penugasan from Pembina
+ * Disiplin Mahasiswa or Pemanggilan from Penilai Mahasiswa, with every
+ * step of it, oldest first, the first being the sender's.
+ */
+export interface SampleAssignment {
+  nim: string;
+  kind: AssignmentKind;
+  /** Null while it waits for Konselor to set a time. */
+  time: SampleAssignmentTime | null;
+  /** "Dasar": the Kategori and Jenjang, or the result of the assessment. */
+  basis: string;
+  senderMessage: string | null;
+  counsellorMessage: string | null;
+  reason: string | null;
+  steps: SampleScheduleStep[];
+}
+
+const sent = (kind: AssignmentKind, daysAgo: number): SampleScheduleStep => ({
+  step: kind === "assigned" ? "assign" : "call",
+  statusAfter: "awaiting",
+  daysAgo,
+});
+
+const timeSet = (daysAgo: number): SampleScheduleStep => ({
+  step: "set_time",
+  statusAfter: "scheduled",
+  daysAgo,
+});
+
+/**
+ * One assignment in every status. Kirana Utomo's Penugasan waits for its
+ * time, and so does Bayu Santoso's Pemanggilan, beside his voluntary
+ * request. Gita Purba, who declined consent, and Ayu Lestiani, whose
+ * consent is still asked, have a time set. Nanda Gunawan asked for
+ * another time. Mega Saragih came to hers and Oki Rahayu did not. Each
+ * Penugasan is of a student with a sample discipline penalty.
+ */
+export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
+  {
+    nim: "9900240011",
+    kind: "assigned",
+    time: null,
+    basis: "Pelanggaran disiplin sedang jenjang pertama",
+    senderMessage: "Mohon pendampingan terkait keterlambatan yang berulang.",
+    counsellorMessage: null,
+    reason: null,
+    steps: [sent("assigned", 3)],
+  },
+  {
+    nim: "9900240002",
+    kind: "called",
+    time: null,
+    basis: "Asesmen karakter: pembinaan intensif",
+    senderMessage: "Mohon dibantu menggali kendala belajarnya.",
+    counsellorMessage: null,
+    reason: null,
+    steps: [sent("called", 2)],
+  },
+  {
+    nim: "9900250007",
+    kind: "assigned",
+    time: { inDays: 2, hour: "10:00", way: "in_person" },
+    basis: "Pelanggaran disiplin ringan jenjang pertama",
+    senderMessage: null,
+    counsellorMessage: "Silakan datang ke Ruang Konseling.",
+    reason: null,
+    steps: [sent("assigned", 6), timeSet(5)],
+  },
+  {
+    nim: "9900230001",
+    kind: "called",
+    time: { inDays: 4, hour: "08:30", way: "online" },
+    basis: "Asesmen karakter: pembinaan ringan",
+    senderMessage: null,
+    counsellorMessage: null,
+    reason: null,
+    steps: [sent("called", 7), timeSet(6)],
+  },
+  {
+    nim: "9900240014",
+    kind: "assigned",
+    time: { inDays: 5, hour: "13:00", way: "in_person" },
+    basis: "Pelanggaran disiplin sedang jenjang kedua",
+    senderMessage: null,
+    counsellorMessage: null,
+    reason: "Bentrok dengan praktikum.",
+    steps: [
+      sent("assigned", 9),
+      timeSet(8),
+      { step: "ask_another", statusAfter: "reschedule_asked", daysAgo: 2 },
+    ],
+  },
+  {
+    nim: "9900250013",
+    kind: "assigned",
+    time: { inDays: -6, hour: "08:30", way: "in_person" },
+    basis: "Pelanggaran disiplin ringan jenjang pertama",
+    senderMessage: null,
+    counsellorMessage: null,
+    reason: null,
+    steps: [
+      sent("assigned", 15),
+      timeSet(14),
+      { step: "mark_done", statusAfter: "done", daysAgo: 5 },
+    ],
+  },
+  {
+    nim: "9900240015",
+    kind: "assigned",
+    time: { inDays: -4, hour: "14:30", way: "in_person" },
+    basis: "Pelanggaran disiplin berat jenjang pertama",
+    senderMessage: null,
+    counsellorMessage: null,
+    reason: null,
+    steps: [
+      sent("assigned", 12),
+      timeSet(11),
+      { step: "mark_missed", statusAfter: "missed", daysAgo: 3 },
+    ],
+  },
+];
+
+/** The steps the student takes; every other is Konselor's or the sender's. */
 const STUDENT_STEPS: readonly ScheduleStep[] = [
   "register",
   "accept",
@@ -176,7 +308,15 @@ const STUDENT_STEPS: readonly ScheduleStep[] = [
   "cancel",
 ];
 
+/** The steps that send an assignment. */
+const SENDER_STEPS: readonly ScheduleStep[] = ["assign", "call"];
+
 /** Whether the student took the step. */
 export function isStudentScheduleStep(step: ScheduleStep): boolean {
   return STUDENT_STEPS.includes(step);
+}
+
+/** Whether the sender of an assignment took the step. */
+export function isSenderScheduleStep(step: ScheduleStep): boolean {
+  return SENDER_STEPS.includes(step);
 }

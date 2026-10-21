@@ -85,9 +85,17 @@ type MoveResult =
 
 interface Kept {
   status: ScheduleStatus;
-  day: string;
-  hour: string;
+  /** None while an assignment waits for its time. */
+  day: string | null;
+  hour: string | null;
   changedAt: Date;
+}
+
+/** Why the press is refused for the time the request holds, if it is. */
+function refusalFor(press: Press, current: Kept): string | null {
+  const { day, hour } = current;
+  if (!press.refusedFor || day === null || hour === null) return null;
+  return press.refusedFor(day, hour);
 }
 
 /**
@@ -121,7 +129,7 @@ async function applyTo(
   const after = scheduleAfter(press.move, current.status);
   const isAsShown = versionOf(current.changedAt) === press.version;
   if (!isAsShown || after === null) return { kind: "changed" };
-  const refusal = press.refusedFor?.(current.day, current.hour) ?? null;
+  const refusal = refusalFor(press, current);
   if (refusal !== null) return { kind: "refused", error: refusal };
   await tx
     .update(counsellingSchedules)

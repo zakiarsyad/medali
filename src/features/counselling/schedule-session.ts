@@ -58,7 +58,8 @@ export async function readScheduleSession(
         scope,
       ),
     );
-  if (!found) return NONE;
+  // A Selesai schedule always has its time.
+  if (!found || found.day === null || found.way === null) return NONE;
   if (found.consent !== "approved") return { kind: "needs_consent" };
   return {
     kind: "open",

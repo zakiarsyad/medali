@@ -164,6 +164,7 @@ function scheduleOf(
 ): OwnScheduleView {
   return {
     id: "jadwal-1",
+    kind: "voluntary",
     status,
     topic: "family",
     day: "2026-10-21",
@@ -300,13 +301,21 @@ describe("Riwayat of the student", () => {
     items: [
       {
         id: "riwayat-1",
+        kind: "voluntary",
         status: "cancelled",
         day: "2026-10-14",
         topic: "family",
       },
-      { id: "riwayat-2", status: "done", day: "2026-10-05", topic: "academic" },
+      {
+        id: "riwayat-2",
+        kind: "voluntary",
+        status: "done",
+        day: "2026-10-05",
+        topic: "academic",
+      },
       {
         id: "riwayat-3",
+        kind: "voluntary",
         status: "missed",
         day: "2026-09-28",
         topic: "finances",

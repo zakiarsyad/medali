@@ -81,7 +81,7 @@ sending specs.
 
 ## Steps
 
-- [ ] 1. Schedules gain the Jenis, where they come from, "Dasar" and the
+- [x] 1. Schedules gain the Jenis, where they come from, "Dasar" and the
   sender's message, with made-up assignments in every status.
 - [ ] 2. Konselor sees assignments, the Jenis numbers and filter, and
   sets the time.

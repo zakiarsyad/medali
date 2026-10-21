@@ -4,6 +4,7 @@ import type { Database } from "@/db/connect";
 import { versionOf } from "@/db/row-version";
 import { accounts, counsellingSchedules } from "@/db/schema";
 import { ACTIVE_STATUSES } from "./schedule-ids";
+import { topicOf } from "./schedule-rules";
 import type { OwnScheduleView } from "./schedule-view";
 
 /**
@@ -21,6 +22,7 @@ export async function readOwnSchedules(
   const rows = await db
     .select({
       id: counsellingSchedules.id,
+      kind: counsellingSchedules.kind,
       status: counsellingSchedules.status,
       topic: counsellingSchedules.topic,
       day: counsellingSchedules.day,
@@ -43,6 +45,7 @@ export async function readOwnSchedules(
     const isSubmitted = row.status === "submitted";
     return {
       ...row,
+      topic: topicOf(row.kind, row.topic),
       counsellorName: row.status === "scheduled" ? row.counsellorName : null,
       counsellorMessage: isSubmitted ? null : row.counsellorMessage,
       version: versionOf(changedAt),
