@@ -104,6 +104,17 @@ what was said in the session.
 4. In the sample data, each sample Penugasan is linked to its student's
    penalty, except Mega Saragih's: it was sent before her penalty of this
    semester, so that penalty, and Teguh Lubis's, have none yet.
+5. The request sends only the penalty and the message; the student is
+   always read from the penalty. A penalty of a student outside the
+   sender's rows, such as a removed student, is refused with "Hukuman
+   disiplin ini tidak ditemukan. Muat ulang halaman." Penalties are
+   never removed, so there is no removed penalty to refuse.
+6. The message is kept without the spaces around it, none when empty,
+   and refused above 500 characters, the length "Pesan pengirim" holds.
+7. Before sending it asks "Tugaskan (name) ke konseling wajib? Mahasiswa
+   wajib mengikuti sesi ini, dan penugasan tidak dapat dibatalkan."
+8. The message field sits above the button at every width, as in the
+   other forms of the app; on a phone both fit with no sideways scroll.
 
 ## Steps
 
@@ -112,6 +123,6 @@ what was said in the session.
   Disiplin Mahasiswa, with its checks.
 - [x] 2. An assignment of the kind "Penugasan" (from Mandatory
   counselling) can point to one discipline penalty, with samples.
-- [ ] 3. "Tugaskan konseling wajib" in "Rincian", with confirmation.
+- [x] 3. "Tugaskan konseling wajib" in "Rincian", with confirmation.
 - [ ] 4. The status box for Pembina Disiplin Mahasiswa only.
 - [ ] 5. One request per penalty, also when sent twice at once.

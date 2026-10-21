@@ -1,0 +1,29 @@
+import { ASSIGNMENT_TEXT_MAX } from "./schedule-ids";
+
+/*
+ * The words of mandatory counselling sent from a discipline penalty.
+ * Read by the screen parts in the browser.
+ */
+
+export const ASSIGN_HEADING = "Tugaskan konseling wajib";
+
+export const MESSAGE_LABEL = "Pesan untuk konselor (opsional)";
+
+export const ASSIGN_BUTTON = "Tugaskan konseling";
+
+export const ASSIGN_NOT_ALLOWED_WORDS =
+  "Anda tidak memiliki hak untuk menugaskan konseling wajib.";
+
+export const PENALTY_NOT_FOUND =
+  "Hukuman disiplin ini tidak ditemukan. Muat ulang halaman.";
+
+export const MESSAGE_TOO_LONG = `Pesan untuk konselor paling panjang ${ASSIGNMENT_TEXT_MAX} karakter.`;
+
+export function assignedTo(name: string): string {
+  return `Konseling wajib ditugaskan kepada ${name}.`;
+}
+
+/** Asked before it is sent, as the student is bound to a session. */
+export function assignQuestion(name: string): string {
+  return `Tugaskan ${name} ke konseling wajib? Mahasiswa wajib mengikuti sesi ini, dan penugasan tidak dapat dibatalkan.`;
+}

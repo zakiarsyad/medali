@@ -1,0 +1,185 @@
+// Sample NIMs of this file: 9986684000 to 9986684099.
+import { eq } from "drizzle-orm";
+import { describe, expect, it } from "vitest";
+import type { RoleId } from "@/auth/role-ids";
+import type { Database } from "@/db/connect";
+import {
+  counsellingScheduleChanges,
+  counsellingSchedules,
+  students,
+} from "@/db/schema";
+import { withTestDatabase } from "@/db/test-database";
+import { addTestPenalty } from "@/features/guidance/test-discipline-penalties";
+import {
+  ASSIGN_NOT_ALLOWED_WORDS,
+  assignedTo,
+  MESSAGE_TOO_LONG,
+  PENALTY_NOT_FOUND,
+} from "./penalty-assignment-words";
+import { assignFromPenalty } from "./penalty-assignments";
+import { addTestActor, addTestPeople } from "./test-consents";
+
+const inTestDatabase = withTestDatabase();
+
+/** Senin 19 Oktober 2026, 10:00 on campus. */
+const NOW = new Date("2026-10-19T03:00:00Z");
+
+/**
+ * A Pembina Disiplin Mahasiswa and a student with a Sedang jenjang kedua
+ * penalty recorded by them.
+ */
+async function addRecords(db: Database) {
+  const people = await addTestPeople(db, "Prodi Uji Tugaskan Konseling", [
+    "9986684001",
+  ]);
+  const [punished] = people.studentIds;
+  if (!punished) throw new Error("Student missing.");
+  const pembina = await addTestActor(db, "Pembina Uji Tugaskan", [
+    "discipline_officer",
+  ]);
+  const penaltyId = await addTestPenalty(db, punished, pembina.id, "2026-10-15", {
+    category: "medium",
+    level: 2,
+    description: "Uraian rahasia pelanggaran uji.",
+  });
+  return { punished, pembina, penaltyId };
+}
+
+function schedulesOf(db: Database) {
+  return db.select().from(counsellingSchedules);
+}
+
+function linesOf(db: Database, scheduleId: string) {
+  return db
+    .select()
+    .from(counsellingScheduleChanges)
+    .where(eq(counsellingScheduleChanges.scheduleId, scheduleId));
+}
+
+describe("Tugaskan konseling from a discipline penalty", () => {
+  it("makes a Penugasan of the penalty's student, Menunggu jadwal, with its Kategori and Jenjang as Dasar and the message, never the Uraian", async () => {
+    await inTestDatabase(async (db) => {
+      const { punished, pembina, penaltyId } = await addRecords(db);
+
+      const outcome = await assignFromPenalty(
+        db,
+        pembina,
+        penaltyId,
+        "  Mohon pendampingan.  ",
+        NOW,
+      );
+
+      expect(outcome).toEqual({
+        kind: "kept",
+        done: assignedTo("Mahasiswa Uji Konseling 1"),
+      });
+      const [assignment, ...more] = await schedulesOf(db);
+      expect(more).toEqual([]);
+      expect(assignment).toMatchObject({
+        studentId: punished,
+        penaltyId,
+        kind: "assigned",
+        status: "awaiting",
+        topic: null,
+        day: null,
+        hour: null,
+        basis: "Pelanggaran disiplin sedang jenjang kedua",
+        senderMessage: "Mohon pendampingan.",
+        changedBy: pembina.id,
+        createdAt: NOW,
+      });
+      expect(JSON.stringify(assignment)).not.toContain("Uraian rahasia");
+    });
+  });
+
+  it("puts a line in the schedule's log: who, when, Menugaskan konseling wajib", async () => {
+    await inTestDatabase(async (db) => {
+      const { pembina, penaltyId } = await addRecords(db);
+
+      await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+
+      const [assignment] = await schedulesOf(db);
+      expect(await linesOf(db, assignment?.id ?? "")).toEqual([
+        expect.objectContaining({
+          changedBy: pembina.id,
+          changedAt: NOW,
+          step: "assign",
+          statusBefore: null,
+          statusAfter: "awaiting",
+        }),
+      ]);
+    });
+  });
+
+  it("keeps no message when none was typed", async () => {
+    await inTestDatabase(async (db) => {
+      const { pembina, penaltyId } = await addRecords(db);
+
+      await assignFromPenalty(db, pembina, penaltyId, "   ", NOW);
+
+      const [assignment] = await schedulesOf(db);
+      expect(assignment?.senderMessage).toBeNull();
+    });
+  });
+
+  it.each<RoleId>([
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+    "counsellor",
+    "assessor",
+    "student",
+  ])("refuses %s, keeping nothing", async (role) => {
+    await inTestDatabase(async (db) => {
+      const { penaltyId } = await addRecords(db);
+      const other = await addTestActor(db, "Bukan Pembina Uji", [role]);
+
+      const outcome = await assignFromPenalty(db, other, penaltyId, "", NOW);
+
+      expect(outcome).toEqual({
+        kind: "refused",
+        error: ASSIGN_NOT_ALLOWED_WORDS,
+      });
+      expect(await schedulesOf(db)).toEqual([]);
+    });
+  });
+
+  it("refuses a penalty that is none, or of a student removed, outside every row, keeping nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { punished, pembina, penaltyId } = await addRecords(db);
+      const none = crypto.randomUUID();
+
+      const unknown = await assignFromPenalty(db, pembina, none, "", NOW);
+      const notAKey = await assignFromPenalty(db, pembina, "bukan-id", "", NOW);
+      await db
+        .update(students)
+        .set({ deletedAt: NOW, deletedBy: pembina.id })
+        .where(eq(students.id, punished));
+      const removed = await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+
+      const refused = { kind: "refused", error: PENALTY_NOT_FOUND };
+      expect(unknown).toEqual(refused);
+      expect(notAKey).toEqual(refused);
+      expect(removed).toEqual(refused);
+      expect(await schedulesOf(db)).toEqual([]);
+    });
+  });
+
+  it("refuses a message longer than 500 characters, keeping nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const { pembina, penaltyId } = await addRecords(db);
+
+      const outcome = await assignFromPenalty(
+        db,
+        pembina,
+        penaltyId,
+        "a".repeat(501),
+        NOW,
+      );
+
+      expect(outcome).toEqual({ kind: "refused", error: MESSAGE_TOO_LONG });
+      expect(await schedulesOf(db)).toEqual([]);
+    });
+  });
+});

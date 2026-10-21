@@ -48,6 +48,7 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".history",
       ".history li",
       ".notes",
+      ".assignment",
     ],
   ],
   [SHARED, [".actions", ".form"]],
@@ -330,6 +331,19 @@ describe("an assignment card of Konselor on a phone", () => {
     expect(ruleOf(".badges")).toContain("flex-wrap: wrap;");
     expect(CARD).toMatch(/<Fact title="Dasar" isWide>/);
     expect(CARD).toMatch(/<Fact title="Pesan pengirim" isWide>/);
+  });
+});
+
+describe("Tugaskan konseling wajib in Rincian of a penalty on a phone", () => {
+  const PART = read("penalty-assignment-part.tsx");
+
+  it("puts the button under the message field, folding long words inside its box", () => {
+    expect(PART).toContain("<div className={shared.form}>");
+    expect(PART).toContain("<div className={shared.actions}>");
+    expect(ruleOf(".form > .done", SHARED)).toContain("grid-column: 1 / -1;");
+    expect(SHARED).toContain(".form > .actions,");
+    expect(PART).toContain("className={`${styles.card} ${styles.assignment}`}");
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
   });
 });
 
