@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { STARTING_SCHEME } from "@/features/character-grades/scheme-ids";
+import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import type { Database } from "./connect";
 import { accounts, characterGradeSchemes } from "./schema";
 import { withTestDatabase } from "./test-database";

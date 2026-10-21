@@ -28,6 +28,11 @@ const PLACES_OUTSIDE_THE_STUDENT_LIST: [DetailOpenedFrom, string][] = [
   ["notes_list", "kembali ke daftar catatan."],
   ["scores_list", "kembali ke daftar nilai."],
   ["siku_lists", "kembali ke Penilaian SIKU."],
+  ["coaching_list", "kembali ke Asesmen karakter."],
+  ["grade_list", "kembali ke Penilaian karakter."],
+  ["fitness_list", "kembali ke Penilaian jasmani."],
+  ["skpm_list", "kembali ke Data SKPM."],
+  ["screening_list", "kembali ke Kesehatan mental."],
 ];
 
 describe("the brief of a student", () => {

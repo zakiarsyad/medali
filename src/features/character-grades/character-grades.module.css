@@ -161,18 +161,53 @@
   color: var(--muted);
 }
 
-.passes,
-.fails {
-  border: var(--line-width) solid var(--line);
-  background: var(--surface);
+/* "Nilai karakter (KEP-220)" in a student's detail: one bar per part. */
+.partBars {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.passes {
-  border-color: var(--ok);
-  color: var(--ok);
+/* Each column may shrink to nothing, so a bar always fits the width of a phone. */
+.partBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+  font-size: var(--text-md);
 }
 
-.fails {
-  border-color: var(--bad);
-  color: var(--bad);
+.partMeter {
+  width: 100%;
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+  appearance: none;
+}
+
+.partMeter::-webkit-meter-bar {
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.partMeter::-webkit-meter-optimum-value,
+.partMeter::-webkit-meter-suboptimum-value,
+.partMeter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-md);
+  background: var(--navy3);
+}
+
+.partMeter::-moz-meter-bar {
+  border-radius: var(--radius-md);
+  background: var(--navy3);
+}
+
+.partValue {
+  font-weight: var(--weight-heavy);
+  text-align: right;
 }

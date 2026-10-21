@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { weightTotal } from "./grade-letter";
-import { STARTING_SCHEME } from "./scheme-ids";
+import { weightTotal } from "@/character-grades/grade-letter";
+import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import {
   barCells,
   formulaSentence,

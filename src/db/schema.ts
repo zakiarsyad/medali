@@ -22,6 +22,13 @@ import {
 import { ROLE_IDS } from "@/auth/role-ids";
 import { SIGN_IN_RESULTS } from "@/auth/sign-in-results";
 import {
+  GRADE_LETTERS,
+  type GradeScheme,
+  SCHEME_NUMBER_MAX,
+  SCHEME_NUMBER_MIN,
+  WEIGHT_TOTAL,
+} from "@/character-grades/scheme-ids";
+import {
   SCORE_MAX as ASSESSMENT_SCORE_MAX,
   SCORE_MIN as ASSESSMENT_SCORE_MIN,
 } from "@/character-scores/assessment-score";
@@ -30,13 +37,6 @@ import {
   NOTE_MAX_LENGTH as ASSESSMENT_NOTE_MAX_LENGTH,
   ASSESSMENT_SOURCES,
 } from "@/features/character-assessment/assessment-ids";
-import {
-  GRADE_LETTERS,
-  type GradeScheme,
-  SCHEME_NUMBER_MAX,
-  SCHEME_NUMBER_MIN,
-  WEIGHT_TOTAL,
-} from "@/features/character-grades/scheme-ids";
 import { ASSIGNMENT_METHODS } from "@/features/cohort-assignments/methods";
 import {
   CONSENT_STATUSES,

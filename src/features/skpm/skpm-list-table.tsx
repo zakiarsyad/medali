@@ -1,5 +1,6 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
+import { ProfileNameLink } from "@/ui/profile-name-link";
 import styles from "./skpm.module.css";
 import { type SkpmParams, skpmAddress } from "./skpm-address";
 import type { SkpmListRow } from "./skpm-board";
@@ -42,7 +43,10 @@ export function SkpmListTable({
           {rows.map(({ id, name, nim, program, totals }) => (
             <tr key={id}>
               <td className={shared.rowHeading} data-title="Mahasiswa">
-                <b className={shared.typed}>{name}</b>
+                <ProfileNameLink
+                  name={name}
+                  href={skpmAddress({ ...params, profileId: id })}
+                />
                 <small className={shared.detail}>
                   {nim} · {program}
                 </small>

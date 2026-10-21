@@ -9,16 +9,13 @@ import {
   type GradeParams,
   START_PARAMS,
 } from "@/features/character-grades/grade-address";
-import type {
-  GradeList,
-  GradeRow,
-} from "@/features/character-grades/grade-list";
-import { readGradeScheme } from "@/features/character-grades/grade-scheme";
-import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { pageWithin } from "@/ui/list-pages";
 import { readGradeBasis } from "./grade-facts";
+import type { GradeList, GradeRow } from "./grade-list";
 import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
+import { readGradeScheme } from "./grade-scheme";
+import { gradeVisibleTo } from "./grade-students";
 import { NO_PERIOD_DAY, sampleReaders } from "./test-sample-readers";
 
 // Loading the sample data in the shared database keeps every other check

@@ -37,7 +37,13 @@ function counsellorPage(list: ScreeningList, query = ""): string {
       counsellor={{
         numbers: { screened: 5, needCounselling: 4, waitingConsent: 1 },
         list,
-        params: { query, filter: "all", page: 1, sharedPage: 1 },
+        params: {
+          query,
+          filter: "all",
+          page: 1,
+          sharedPage: 1,
+          profileId: null,
+        },
       }}
     />,
   );
@@ -175,5 +181,15 @@ describe("Kesehatan mental of Kepala Unit, Direktur, Ketua Program Studi and Pen
     expect(page).not.toContain("Daftar mahasiswa");
     expect(page).not.toContain("Simpan asesmen");
     expect(page).not.toContain("Perlu konseling");
+  });
+});
+
+describe("names in Konselor's Daftar mahasiswa", () => {
+  it("open the student's profile over the tab", () => {
+    const page = counsellorPage({ rows: [ROW], matching: 1, page: 1 });
+
+    expect(page).toContain(
+      'href="/penilaian/mental?profil=00000000-0000-4000-8000-000000000001"',
+    );
   });
 });

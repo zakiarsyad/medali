@@ -1,7 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import {
+  STARTING_SCHEME,
+  STARTING_VERSION,
+} from "@/character-grades/scheme-ids";
 import { ReadOnlyScheme } from "./read-only-scheme";
-import { STARTING_SCHEME, STARTING_VERSION } from "./scheme-ids";
 
 const STARTING = {
   scheme: STARTING_SCHEME,

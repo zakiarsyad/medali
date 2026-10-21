@@ -27,6 +27,7 @@ const START: ScreeningParams = {
   filter: "all",
   page: 1,
   sharedPage: 1,
+  profileId: null,
 };
 
 function panel(list: Partial<SharedList>): string {
@@ -74,6 +75,7 @@ describe("Kesehatan mental of a Konselor who is also Pengasuh", () => {
     filter: "waiting",
     page: 2,
     sharedPage: 1,
+    profileId: null,
   };
   const page = renderToStaticMarkup(
     <ScreeningScreen

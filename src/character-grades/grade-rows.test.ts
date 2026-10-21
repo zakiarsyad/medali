@@ -21,15 +21,9 @@ import {
   TEST_DECIDED_AT,
 } from "@/features/activities/test-records";
 import { START_PARAMS } from "@/features/character-grades/grade-address";
-import type { GradeRow } from "@/features/character-grades/grade-list";
 import { GradeListTable } from "@/features/character-grades/grade-list-table";
-import { readGradeScheme } from "@/features/character-grades/grade-scheme";
-import { gradeVisibleTo } from "@/features/character-grades/grade-students";
 import { saveGradeScheme } from "@/features/character-grades/save-grade-scheme";
-import {
-  FORTY_TWENTY,
-  sentWithWeights,
-} from "@/features/character-grades/test-scheme";
+import { sentWithWeights } from "@/features/character-grades/test-scheme";
 import { addTestScore } from "@/features/mentoring/test-scores";
 import { addTestEntry } from "@/features/siku/test-siku";
 import { readSkpmDetail } from "@/features/skpm/skpm-board";
@@ -38,8 +32,12 @@ import { skpmVisibleTo } from "@/features/skpm/skpm-readers";
 import { shownOneDecimal } from "@/features/skpm/skpm-words";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
 import { readGradeBasis } from "./grade-facts";
+import type { GradeRow } from "./grade-list";
 import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
+import { readGradeScheme } from "./grade-scheme";
+import { gradeVisibleTo } from "./grade-students";
+import { FORTY_TWENTY } from "./test-weights";
 
 /*
  * This file's own sample values: the Tahun akademik 3902, the programs
@@ -263,7 +261,10 @@ describe("the parts of the character grade", () => {
         records.ani.studentId,
       );
       const list = renderToStaticMarkup(
-        createElement(GradeListTable, { rows: [await aniRow(db, records)] }),
+        createElement(GradeListTable, {
+          rows: [await aniRow(db, records)],
+          params: START_PARAMS,
+        }),
       );
 
       if (ownPage.kind !== "found") throw new Error("Ani has no page.");

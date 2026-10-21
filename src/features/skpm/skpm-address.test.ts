@@ -23,6 +23,7 @@ describe("readSkpmParams", () => {
       page: 3,
       detailId: STUDENT,
       historyPage: 2,
+      profileId: null,
     });
   });
 
@@ -51,6 +52,7 @@ describe("skpmAddress", () => {
       page: 2,
       detailId: STUDENT,
       historyPage: 3,
+      profileId: null,
     } as const;
 
     const address = skpmAddress(params);
@@ -60,5 +62,23 @@ describe("skpmAddress", () => {
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readSkpmParams(Object.fromEntries(search))).toEqual(params);
+  });
+});
+
+describe("the student whose profile is open over the tab", () => {
+  const PROFILE = "3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b";
+
+  it("is read from the address, and only as an id", () => {
+    expect(readSkpmParams({ profil: PROFILE }).profileId).toBe(PROFILE);
+    expect(readSkpmParams({ profil: "bukan-id" }).profileId).toBeNull();
+    expect(readSkpmParams({}).profileId).toBeNull();
+  });
+
+  it("is named in the address, and read back", () => {
+    const address = skpmAddress({ ...START_PARAMS, profileId: PROFILE });
+
+    expect(address).toBe(`/penilaian/skpm?profil=${PROFILE}`);
+    const search = new URLSearchParams(address.split("?")[1]);
+    expect(readSkpmParams(Object.fromEntries(search)).profileId).toBe(PROFILE);
   });
 });

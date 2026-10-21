@@ -79,7 +79,7 @@ export function ScreeningListPanel({
         <p className={shared.empty}>{emptyWords(params)}</p>
       ) : (
         <>
-          <ScreeningTable rows={list.rows} />
+          <ScreeningTable rows={list.rows} params={params} />
           <ListPager
             page={list.page}
             matching={list.matching}

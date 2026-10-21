@@ -36,6 +36,15 @@ export function weakestValueOf(scores: Scores): ValueKey {
   return weakest;
 }
 
+/** "Paling menonjol": the value with the highest score, the first in MEDALI order on a tie. */
+export function strongestValueOf(scores: Scores): ValueKey {
+  let strongest: ValueKey = MEDALI_VALUES[0].key;
+  for (const { key } of MEDALI_VALUES) {
+    if (scores[key] > scores[strongest]) strongest = key;
+  }
+  return strongest;
+}
+
 function levelOf(rerata: number): CoachingLevel {
   if (rerata < INTENSIVE_BELOW_RERATA) return "intensive";
   if (rerata < LISTED_BELOW_RERATA) return "moderate";

@@ -142,6 +142,7 @@ export function found(
     fromProvince(filters.province),
     fromAgency(filters.originAgency),
     inDorm(filters.dorm, cohorts.dorms),
+    cohorts.scored,
   );
 }
 

@@ -1,3 +1,4 @@
+import { isUuid } from "@/db/is-uuid";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
@@ -48,6 +49,8 @@ export interface ScreeningParams {
    * each keeps its own page.
    */
   sharedPage: number;
+  /** The student whose profile is open over the tab, or null for none. */
+  profileId: string | null;
 }
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -72,11 +75,16 @@ export function readScreeningParams(params: SearchParams): ScreeningParams {
     filter: filterNamed(firstParam(params.filter)),
     page: pageOf(firstParam(params.hal)),
     sharedPage: pageOf(firstParam(params["hal-data"])),
+    profileId: idNamed(firstParam(params.profil)),
   };
 }
 
 function pageOf(sent: string): number {
   return PAGE.test(sent) ? Number(sent) : 1;
+}
+
+function idNamed(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
 }
 
 /** The address of the tab with these choices; what is not chosen is left out. */
@@ -86,6 +94,7 @@ export function screeningAddress(params: ScreeningParams): string {
   if (params.filter !== "all") search.set("filter", filterName(params.filter));
   if (params.page > 1) search.set("hal", String(params.page));
   if (params.sharedPage > 1) search.set("hal-data", String(params.sharedPage));
+  if (params.profileId !== null) search.set("profil", params.profileId);
   const text = search.toString();
   if (text === "") return SCREENING_ADDRESS;
   return `${SCREENING_ADDRESS}?${text}`;

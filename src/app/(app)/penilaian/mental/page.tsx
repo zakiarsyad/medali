@@ -1,10 +1,15 @@
+import { sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { AccountForAccess } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
+import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
+import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import {
   readScreeningParams,
   type ScreeningParams,
+  screeningAddress,
 } from "@/features/counselling/screening-address";
 import {
   readScreeningList,
@@ -13,6 +18,7 @@ import {
 import { CampusScreenedCount } from "@/features/counselling/screening-campus";
 import { readCampusScreenedCount } from "@/features/counselling/screening-count";
 import { ScreeningForm } from "@/features/counselling/screening-form";
+import { screenedReachOf } from "@/features/counselling/screening-reach";
 import {
   type CounsellorScreenings,
   ScreeningScreen,
@@ -26,6 +32,17 @@ import type {
   SharedList,
   SharedNumbers,
 } from "@/features/counselling/shared-view";
+import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
+import { baseScoreNow } from "@/features/curriculum/base-score-now";
+import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
+import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
+import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
+import { noteRowsFor } from "@/features/mentoring/visible-notes";
+import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
+import { askedDetailOrBrief } from "@/features/students/asked-detail";
+import { runningPeriodNow } from "@/features/students/running-period-now";
+import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 
 async function counsellorPart(
   account: AccountForAccess,
@@ -69,7 +86,10 @@ async function recipientPart(
  * screenings, each student's by name. Kepala Unit, Direktur, Ketua
  * Program Studi and Pengasuh see the campus counts, with no names, and
  * the students whose data Konselor published for their role. Every read
- * checks the right again.
+ * checks the right again. A name in Konselor's "Daftar mahasiswa"
+ * opens the student over the tab: name, NIM, program studi, status and
+ * "Kesehatan mental", only for a student that list holds; the whole
+ * detail for an account that may open it.
  */
 export default async function MentalHealthPage(
   props: PageProps<"/penilaian/mental">,
@@ -78,33 +98,83 @@ export default async function MentalHealthPage(
   const { account } = opened;
   const tabs = { pagePath: "penilaian", tabs: opened.tabs, open: "mental" };
   const params = readScreeningParams(await props.searchParams);
-  const [counsellor, campusCount, recipient] = await Promise.all([
+  // An account that keeps no screenings is listed nobody here to open.
+  const listed = screenedReachOf(account) ?? sql`false`;
+  const [counsellor, campusCount, recipient, profile] = await Promise.all([
     counsellorPart(account, params),
     readCampusScreenedCount(database(), account),
     recipientPart(account, params),
+    askedDetailOrBrief(account, params.profileId, listed),
   ]);
+  const noteLimit = noteRowsFor(account);
+  const notesVisible = noteLimit === null ? null : visibleTo(noteLimit);
   return (
-    <ScreeningScreen
-      tabs={tabs}
-      counsellor={counsellor}
-      form={
-        counsellor && (
-          <ScreeningForm today={campusDay()} newKey={crypto.randomUUID()} />
-        )
-      }
-      others={
-        <>
-          {campusCount !== null && (
-            <CampusScreenedCount
-              shown={campusCount}
-              shared={recipient?.numbers ?? null}
-            />
+    <>
+      <ScreeningScreen
+        tabs={tabs}
+        counsellor={counsellor}
+        form={
+          counsellor && (
+            <ScreeningForm today={campusDay()} newKey={crypto.randomUUID()} />
+          )
+        }
+        others={
+          <>
+            {campusCount !== null && (
+              <CampusScreenedCount
+                shown={campusCount}
+                shared={recipient?.numbers ?? null}
+              />
+            )}
+            {recipient && (
+              <SharedListPanel list={recipient.list} params={params} />
+            )}
+          </>
+        }
+      />
+      {profile && (
+        <StudentDetailDialog
+          detail={profile}
+          period={await runningPeriodNow()}
+          openedFrom="screening_list"
+          closeAddress={screeningAddress({ ...params, profileId: null })}
+          groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
+          morePanelsOf={(studentId) => (
+            <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={baseScoreNow()}
+              />
+              <StudentFitnessPanel account={account} studentId={studentId} />
+              <StudentMentalPanel account={account} studentId={studentId} />
+              <StudentNotesPanel
+                account={account}
+                visible={notesVisible}
+                studentId={studentId}
+              />
+            </>
           )}
-          {recipient && (
-            <SharedListPanel list={recipient.list} params={params} />
+          briefPanelsOf={(studentId) => (
+            <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
+              <StudentMentalPanel account={account} studentId={studentId} />
+            </>
           )}
-        </>
-      }
-    />
+        />
+      )}
+    </>
   );
 }

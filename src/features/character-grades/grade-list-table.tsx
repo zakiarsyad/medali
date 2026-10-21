@@ -1,13 +1,14 @@
-import shared from "@/ui/data-screen.module.css";
-import type { CharacterGrade } from "./character-grade";
-import styles from "./character-grades.module.css";
-import type { AttendancePart, GradeRow } from "./grade-list";
+import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
+import type { AttendancePart, GradeRow } from "@/character-grades/grade-list";
 import {
-  passWords,
   shownFinal,
   shownOneDecimal,
   shownPart,
-} from "./grade-words";
+} from "@/character-grades/grade-words";
+import shared from "@/ui/data-screen.module.css";
+import { ProfileNameLink } from "@/ui/profile-name-link";
+import styles from "./character-grades.module.css";
+import { type GradeParams, gradeAddress } from "./grade-address";
 
 export const NO_GRADE_MATCHES = "Tidak ada data pada filter ini.";
 
@@ -23,26 +24,20 @@ function Attendance({ part }: { part: AttendancePart }) {
   );
 }
 
-function Letter({ grade }: { grade: CharacterGrade }) {
-  if (!grade.complete) {
-    return "-";
-  }
-  const look = grade.passes ? styles.passes : styles.fails;
-  return (
-    <span className={`${shared.badge} ${look}`}>
-      {grade.letter}
-      <span className={shared.hidden}> ({passWords(grade.passes)})</span>
-    </span>
-  );
-}
-
 /**
  * "Daftar nilai karakter": each student with the four parts, Nilai akhir,
  * Huruf and Keterangan. Kehadiran and SKPM have one decimal, as on the
  * screens they come from. A missing part shows "-", and the grade "Belum
  * lengkap". On a phone each student is a block of its own.
  */
-export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
+export function GradeListTable({
+  rows,
+  params,
+}: {
+  rows: readonly GradeRow[];
+  /** The tab's choices, kept when a name opens the student's profile. */
+  params: GradeParams;
+}) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_GRADE_MATCHES}</p>;
   }
@@ -65,7 +60,10 @@ export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
           {rows.map((row) => (
             <tr key={row.student.id}>
               <td className={shared.rowHeading} data-title="Mahasiswa">
-                <b className={shared.typed}>{row.student.name}</b>
+                <ProfileNameLink
+                  name={row.student.name}
+                  href={gradeAddress({ ...params, profileId: row.student.id })}
+                />
                 <small className={shared.detail}>
                   {row.student.nim} · {row.student.program}
                 </small>
@@ -80,7 +78,7 @@ export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
                 {shownFinal(row.grade)}
               </td>
               <td data-title="Huruf">
-                <Letter grade={row.grade} />
+                <GradeLetterBadge grade={row.grade} />
               </td>
               <td data-title="Keterangan">
                 <span className={styles.muted}>{row.siku.note}</span>

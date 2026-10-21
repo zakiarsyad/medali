@@ -1,5 +1,16 @@
+import {
+  GRADE_CHOICE_WORDS,
+  GRADE_CHOICES,
+} from "@/character-grades/grade-choice";
+import { PREDICATES } from "@/character-scores/assessment-score";
+import {
+  NOT_ASSESSED,
+  PREDICATE_WORDS,
+} from "@/character-scores/predicate-words";
 import shared from "@/ui/data-screen.module.css";
 import {
+  GRADE_IN_ADDRESS,
+  NOT_ASSESSED_CHOICE,
   STATUS_IN_ADDRESS,
   type StatusChoice,
   type StudentListFilters,
@@ -11,7 +22,10 @@ const STATUS_CHOICES: readonly (readonly [StatusChoice, string])[] = [
   ["inactive", "Non aktif"],
 ];
 
-/** The search and the Angkatan and Status choices above the table. */
+/**
+ * The search and the Angkatan, Status, predikat and Nilai karakter
+ * choices above the table.
+ */
 export function StudentListFilterRow({
   filters,
   cohortYears,
@@ -51,6 +65,33 @@ export function StudentListFilterRow({
         {STATUS_CHOICES.map(([status, shown]) => (
           <option key={status} value={STATUS_IN_ADDRESS[status]}>
             {shown}
+          </option>
+        ))}
+      </select>
+      <select
+        name="predikat"
+        className={shared.input}
+        defaultValue={filters.predicate ?? ""}
+        aria-label="Predikat capaian karakter"
+      >
+        <option value="">Semua predikat MEDALI</option>
+        {PREDICATES.map((predicate) => (
+          <option key={predicate} value={predicate}>
+            {PREDICATE_WORDS[predicate]}
+          </option>
+        ))}
+        <option value={NOT_ASSESSED_CHOICE}>{NOT_ASSESSED}</option>
+      </select>
+      <select
+        name="nilai"
+        className={shared.input}
+        defaultValue={filters.grade ? GRADE_IN_ADDRESS[filters.grade] : ""}
+        aria-label="Nilai karakter"
+      >
+        <option value="">Semua nilai karakter</option>
+        {GRADE_CHOICES.map((grade) => (
+          <option key={grade} value={GRADE_IN_ADDRESS[grade]}>
+            {GRADE_CHOICE_WORDS[grade]}
           </option>
         ))}
       </select>

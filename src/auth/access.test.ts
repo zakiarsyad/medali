@@ -2461,6 +2461,105 @@ describe("may", () => {
     }
   });
 
+  const characterPanelReaders: RoleId[] = [...detailReaders, "assessor"];
+
+  it.each(characterPanelReaders)(
+    "lets %s see Capaian karakter and Nilai karakter in a student's detail",
+    (role) => {
+      expect(may([role], "view_student_character_panels")).toBe(true);
+    },
+  );
+
+  it("refuses the character panels of a student's detail to every other role, Konselor, Pegawai UPK and Mahasiswa among them", () => {
+    expect(ACTION_TITLES.view_student_character_panels).toContain(
+      "detail mahasiswa",
+    );
+    const others = ROLE_IDS.filter(
+      (role) => !characterPanelReaders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining(["counsellor", "upk_staff", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_student_character_panels")).toBe(false);
+    }
+  });
+
+  it("keeps the character panels of Ketua Program Studi and Pengasuh to their own rows, and gives Penilai Mahasiswa every student", () => {
+    const account = {
+      id: "m",
+      roles: ["head_of_program", "mentor"] as RoleId[],
+      studyProgramId: 7,
+      studentId: null,
+    };
+    expect(rowLimitForAction(account, "view_student_character_panels")).toEqual(
+      { kind: "some", studyProgramIds: [7], menteesOf: ["m"], studentIds: [] },
+    );
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["assessor"] },
+        "view_student_character_panels",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
+  it.each(detailReaders)(
+    "lets %s see Kesehatan jasmani in a student's detail",
+    (role) => {
+      expect(may([role], "view_student_fitness_panel")).toBe(true);
+    },
+  );
+
+  it("refuses Kesehatan jasmani in a student's detail to every other role, Penilai Mahasiswa and Konselor among them", () => {
+    expect(ACTION_TITLES.view_student_fitness_panel).toContain(
+      "detail mahasiswa",
+    );
+    const others = ROLE_IDS.filter((role) => !detailReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["assessor", "counsellor", "student"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_student_fitness_panel")).toBe(false);
+    }
+  });
+
+  const fitnessNoteReaders: RoleId[] = ["head_of_unit", "mentor"];
+
+  it.each(fitnessNoteReaders)(
+    "lets %s read the note text of Kesehatan jasmani in a student's detail",
+    (role) => {
+      expect(may([role], "view_student_fitness_notes")).toBe(true);
+    },
+  );
+
+  it("refuses the note text of Kesehatan jasmani in a student's detail to every other role, Direktur, Ketua Program Studi and Penilai Mahasiswa among them", () => {
+    expect(ACTION_TITLES.view_student_fitness_notes).toContain(
+      "detail mahasiswa",
+    );
+    const others = ROLE_IDS.filter(
+      (role) => !fitnessNoteReaders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "assessor",
+        "counsellor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_student_fitness_notes")).toBe(false);
+    }
+  });
+
+  it("gives the note text of Kesehatan jasmani only to roles that see its panel", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "view_student_fitness_notes")) continue;
+      expect(may([role], "view_student_fitness_panel")).toBe(true);
+    }
+  });
+
   it("lets Kepala Unit see the floor and the room of a student", () => {
     expect(may(["head_of_unit"], "view_student_room")).toBe(true);
   });

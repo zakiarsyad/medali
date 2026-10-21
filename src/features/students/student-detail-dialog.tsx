@@ -20,7 +20,12 @@ export type DetailOpenedFrom =
   | "mentor_page"
   | "notes_list"
   | "scores_list"
-  | "siku_lists";
+  | "siku_lists"
+  | "coaching_list"
+  | "grade_list"
+  | "fitness_list"
+  | "skpm_list"
+  | "screening_list";
 
 const RETURN_PLACE: Record<DetailOpenedFrom, string> = {
   student_list: "daftar mahasiswa",
@@ -29,6 +34,11 @@ const RETURN_PLACE: Record<DetailOpenedFrom, string> = {
   notes_list: "daftar catatan",
   scores_list: "daftar nilai",
   siku_lists: "Penilaian SIKU",
+  coaching_list: "Asesmen karakter",
+  grade_list: "Penilaian karakter",
+  fitness_list: "Penilaian jasmani",
+  skpm_list: "Data SKPM",
+  screening_list: "Kesehatan mental",
 };
 
 /** The detail of one student, over the list it was opened from. */

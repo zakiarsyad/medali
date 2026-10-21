@@ -31,14 +31,18 @@ while building.
   on a day, and the statements, scale and limits of the survey, read by
   every area that needs them.
 - `src/character-scores/`: the scores of a character assessment, their
-  Rerata and predikat, how a Rerata and a predikat are shown, the medal
+  Rerata and predikat, the predikat as the database asks it, how a
+  Rerata and a predikat are shown, the medal
   chart, the bar of the predikat spread, each student's latest
   assessment and the one before it, and who needs coaching by it, with
   the level and the weakest value, read by every area that shows
   character scores.
-- `src/character-grades/`: each student's semester character grade with
-  its four parts, read from the areas each part belongs to, for every
-  screen that shows the grade.
+- `src/character-grades/`: the grade scheme in force with its weights
+  and letters, each student's semester character grade with its four
+  parts, read from the areas each part belongs to, who sees which
+  grades, the rows and numbers of the grade list, how the
+  grade and its letter are shown, and the choice of those who reach the
+  pass letter or not, for every screen that shows the grade.
 - `src/health-notes/`: the categories of a fitness test and of a health
   note, the limits in force and each student's latest score and note,
   the final category, how a note is checked, written, kept and shown,

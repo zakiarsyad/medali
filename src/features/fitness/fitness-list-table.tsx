@@ -4,12 +4,15 @@ import { SERIOUSNESS } from "@/health-notes/health-category";
 import { NO_NOTE, NOTE_MISSING, noteText } from "@/health-notes/health-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { ProfileNameLink } from "@/ui/profile-name-link";
 import styles from "./fitness.module.css";
+import { type FitnessParams, fitnessAddress } from "./fitness-address";
 import type { FitnessListRow, RowHealth } from "./fitness-board";
 
 export const NO_FITNESS_MATCHES = "Tidak ada data pada filter ini.";
 
-function needsNote(category: ShownCategory): boolean {
+/** Whether a student of this category should have a health note. */
+export function needsNote(category: ShownCategory): boolean {
   if (category === "untested") return false;
   return SERIOUSNESS[category] >= SERIOUSNESS.attention;
 }
@@ -38,15 +41,20 @@ function NoteCell({
 function StudentRow({
   row,
   showsNotes,
+  params,
 }: {
   row: FitnessListRow;
   showsNotes: boolean;
+  params: FitnessParams;
 }) {
   const { latest, health, final } = row;
   return (
     <tr>
       <td className={shared.rowHeading} data-title="Mahasiswa">
-        <b className={shared.typed}>{row.name}</b>
+        <ProfileNameLink
+          name={row.name}
+          href={fitnessAddress({ ...params, profileId: row.id })}
+        />
         <small className={shared.detail}>
           {row.nim} · {row.program}
         </small>
@@ -76,10 +84,13 @@ function StudentRow({
 export function FitnessListTable({
   rows,
   showsNotes,
+  params,
 }: {
   rows: readonly FitnessListRow[];
   /** Whether the account reads the notes of any student here. */
   showsNotes: boolean;
+  /** The tab's choices, kept when a name opens the student's profile. */
+  params: FitnessParams;
 }) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_FITNESS_MATCHES}</p>;
@@ -98,7 +109,12 @@ export function FitnessListTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <StudentRow key={row.id} row={row} showsNotes={showsNotes} />
+            <StudentRow
+              key={row.id}
+              row={row}
+              showsNotes={showsNotes}
+              params={params}
+            />
           ))}
         </tbody>
       </table>

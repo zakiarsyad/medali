@@ -6,10 +6,10 @@ import {
   useActionState,
   useState,
 } from "react";
+import type { SchemeInForce } from "@/character-grades/grade-scheme";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./character-grades.module.css";
-import type { SchemeInForce } from "./grade-scheme";
 import { saveSchemeAction } from "./scheme-actions";
 import { typedOf, VERSION_FIELD } from "./scheme-fields";
 import { maySave, schemeFaults } from "./scheme-input";
