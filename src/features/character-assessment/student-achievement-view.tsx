@@ -8,8 +8,14 @@ import { Medal } from "@/character-scores/medal";
 import { PredicateBadge } from "@/character-scores/predicate-badge";
 import { NOT_ASSESSED } from "@/character-scores/predicate-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
+import {
+  kindWords,
+  type PenaltyKind,
+} from "@/discipline-penalties/penalty-kinds";
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
+import { LimitNote } from "@/ui/limit-note";
 import { type ValueKey, valueNameOf } from "@/ui/medali-values";
 import { pickAddress } from "./assessment-address";
 import { SOURCE_WORDS } from "./assessment-words";
@@ -70,12 +76,19 @@ function Standouts({
   );
 }
 
+/** Why the scores of a student under a Ringan or Sedang penalty are held at 70. */
+function limitNoteOf(limit: PenaltyKind, storedRerata: number): string {
+  return `Nilai semester ini dibatasi paling tinggi ${CHARACTER_SCORE_CAP} karena hukuman disiplin ${kindWords(limit)}. Rerata sebelum pembatasan ${shownRerata(storedRerata)}.`;
+}
+
 /**
  * "Capaian karakter" in a student's detail: the medal of the latest
  * assessment over the one before it, its Rerata, predikat, source and
  * date, and the strongest and the weakest value. A student never
  * assessed gets a line saying so, and "Input asesmen" where the account
- * may assess them.
+ * may assess them. Under a Ringan or Sedang penalty the scores are held
+ * at 70, with a note saying why and the Rerata as stored; the single
+ * scores as stored are not shown.
  */
 export function StudentAchievementView({
   achievement,
@@ -97,6 +110,9 @@ export function StudentAchievementView({
         Hasil asesmen {SOURCE_WORDS[latest.source]}{" "}
         {DAY.format(latest.enteredAt)}.
       </p>
+      {achievement.limit && (
+        <LimitNote text={limitNoteOf(achievement.limit, latest.storedRerata)} />
+      )}
       <Medal scores={latest.scores} last={earlier} />
       <Standouts scores={latest.scores} withEarlier={earlier !== null} />
     </section>

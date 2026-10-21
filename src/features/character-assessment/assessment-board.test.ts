@@ -77,6 +77,7 @@ describe("Hasil asesmen karakter for a role that sees every student", () => {
         fileName: null,
         enteredBy: "Penilai Uji Asesmen",
         scores: GOLD,
+        storedRerata: 85,
       });
       expect(list.rows[2]?.latest).toBeNull();
     });

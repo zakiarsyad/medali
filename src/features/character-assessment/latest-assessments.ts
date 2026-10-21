@@ -1,5 +1,8 @@
 import { eq, inArray } from "drizzle-orm";
-import type { Scores } from "@/character-scores/assessment-score";
+import {
+  rerataFromTotal,
+  type Scores,
+} from "@/character-scores/assessment-score";
 import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import {
@@ -34,7 +37,10 @@ export interface LatestAssessment {
   fileName: string | null;
   /** The name of the account that entered it. */
   enteredBy: string;
+  /** The scores as every screen shows them: at most 70 under a Ringan or Sedang penalty. */
   scores: Scores;
+  /** Rerata of the scores as stored, before any limit. */
+  storedRerata: number;
 }
 
 /** The latest assessment of each of some students that has one. */
@@ -58,6 +64,7 @@ export async function readLatestOf(
       scoreA: latest.scoreA,
       scoreL: latest.scoreL,
       scoreI: latest.scoreI,
+      storedTotal: latest.storedTotal,
     })
     .from(latest)
     .innerJoin(accounts, eq(accounts.id, latest.enteredBy))
@@ -67,13 +74,15 @@ export async function readLatestOf(
     )
     .where(inArray(latest.studentId, studentIds));
   for (const row of rows) {
-    const { studentId, enteredAt, source, fileName, enteredBy } = row;
+    const { studentId, enteredAt, source, fileName, enteredBy, storedTotal } =
+      row;
     found.set(studentId, {
       enteredAt,
       source,
       fileName,
       enteredBy,
       scores: scoresOf(row),
+      storedRerata: rerataFromTotal(storedTotal),
     });
   }
   return found;

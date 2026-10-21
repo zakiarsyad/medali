@@ -1,7 +1,11 @@
 import { and, eq, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { mentoringScores, students } from "@/db/schema";
-import { limitedScoreSql, limitedSql } from "@/discipline-penalties/limit-sql";
+import {
+  isLimitedSql,
+  limitedScoreSql,
+  limitedStudents,
+} from "@/discipline-penalties/limit-sql";
 import {
   type AttendanceBasis,
   attendanceSums,
@@ -99,7 +103,8 @@ export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
     },
     basis.scheme.weights,
   );
-  const limited = limitedSql(students.id);
+  const limitedOnes = limitedStudents(db);
+  const limited = isLimitedSql(limitedOnes);
   const final = limitedScoreSql(unlimited, limited);
   const query = db
     .select({
@@ -117,6 +122,7 @@ export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
     .leftJoin(siku, eq(siku.studentId, students.id))
     .leftJoin(skpm, eq(skpm.studentId, students.id))
     .leftJoin(mentoringScores, mentoringOfPeriod(basis.attendance))
+    .leftJoin(limitedOnes, eq(limitedOnes.studentId, students.id))
     .$dynamic();
   const table = attendance.table;
   const joined = table

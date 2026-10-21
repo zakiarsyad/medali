@@ -1,10 +1,10 @@
 // Sample NIMs of this file: 9986700000 to 9986700099.
-import { inArray, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
-import { limitedScoreSql, limitedSql } from "./limit-sql";
+import { isLimitedSql, limitedScoreSql, limitedStudents } from "./limit-sql";
 import type { PenaltyKind } from "./penalty-kinds";
 import { readLimitsOf } from "./read-limits";
 import { limitedScore, limitOf } from "./score-limit";
@@ -58,7 +58,8 @@ describe("the limit as the database asks it", () => {
         FINALS.map((final) => sql`(${final}::float8)`),
         sql`, `,
       );
-      const limited = limitedSql(students.id);
+      const limitedOnes = limitedStudents(db);
+      const limited = isLimitedSql(limitedOnes);
       const rows = await db
         .select({
           id: students.id,
@@ -71,6 +72,7 @@ describe("the limit as the database asks it", () => {
           >`(select array_agg(${limitedScoreSql(sql`f.v`, limited)} order by f.v) from (values ${finals}) as f(v))`,
         })
         .from(students)
+        .leftJoin(limitedOnes, eq(limitedOnes.studentId, students.id))
         .where(inArray(students.id, ids));
 
       for (const [place, penalties] of PENALTIES.entries()) {

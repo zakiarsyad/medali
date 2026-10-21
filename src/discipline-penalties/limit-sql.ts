@@ -1,5 +1,5 @@
-import { getTableName, type SQL, type SQLWrapper, sql } from "drizzle-orm";
-import { type AnyPgColumn, alias } from "drizzle-orm/pg-core";
+import { inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
+import type { Database } from "@/db/connect";
 import { disciplinePenalties } from "@/db/schema";
 import { CHARACTER_SCORE_CAP, LIMITING_CATEGORIES } from "./score-limit";
 
@@ -10,27 +10,23 @@ import { CHARACTER_SCORE_CAP, LIMITING_CATEGORIES } from "./score-limit";
  * a check works both out and holds them equal.
  */
 
-/** A name of its own, so the read it is put in is not confused. */
-const PENALTY_NAME = "limiting_penalty";
-const penalty = alias(disciplinePenalties, PENALTY_NAME);
-
-const LIMITING = sql.join(
-  LIMITING_CATEGORIES.map((category) => sql`${category}`),
-  sql`, `,
-);
-
 /**
- * A column with its table always named. A read of one table names its
- * columns bare, and a bare "id" inside the inner read below would be the
- * penalty's own.
+ * Each student with a Ringan or Sedang penalty, whatever its status or
+ * date, once, as a table to left join a read of students to.
  */
-function named(column: AnyPgColumn): SQL {
-  return sql`${sql.identifier(getTableName(column.table))}.${sql.identifier(column.name)}`;
+export function limitedStudents(db: Database) {
+  return db
+    .selectDistinct({ studentId: disciplinePenalties.studentId })
+    .from(disciplinePenalties)
+    .where(inArray(disciplinePenalties.category, [...LIMITING_CATEGORIES]))
+    .as("limited_students");
 }
 
-/** Whether the student of `studentId` has a Ringan or Sedang penalty, whatever its status or date. */
-export function limitedSql(studentId: AnyPgColumn): SQL<boolean> {
-  return sql<boolean>`exists (select 1 from ${disciplinePenalties} as ${sql.identifier(PENALTY_NAME)} where ${penalty.studentId} = ${named(studentId)} and ${penalty.category} in (${LIMITING}))`;
+/** Whether the student of a row the table was left joined to is limited. */
+export function isLimitedSql(
+  limited: ReturnType<typeof limitedStudents>,
+): SQL<boolean> {
+  return sql<boolean>`(${limited.studentId} is not null)`;
 }
 
 /**

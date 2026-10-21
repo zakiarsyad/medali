@@ -93,6 +93,6 @@ nothing is typed again in Penilaian.
   karakter and in "Unggah berkas".
 - [x] 3. "Dibatasi 70" on Penilaian karakter: the number, the badge and
   the line.
-- [ ] 4. The limit line in the student detail, and the limited numbers
+- [x] 4. The limit line in the student detail, and the limited numbers
   on the mentor group and mentor pages.
 - [ ] 5. The before and after picture in "Konsekuensi".

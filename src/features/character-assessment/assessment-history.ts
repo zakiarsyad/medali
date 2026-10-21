@@ -10,6 +10,8 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { readLimitsOf } from "@/discipline-penalties/read-limits";
+import { limitedScores } from "@/discipline-penalties/score-limit";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { AssessmentSource } from "./assessment-ids";
 import { scoresOf } from "./latest-assessments";
@@ -24,6 +26,7 @@ export interface HistoryEntry {
   fileName: string | null;
   /** The name of the account that entered it. */
   enteredBy: string;
+  /** The scores as every screen shows them: at most 70 under a Ringan or Sedang penalty. */
   scores: Scores;
   /** Catatan penilai, or null for a role that may not read it. */
   note: string | null;
@@ -38,11 +41,16 @@ export interface AssessmentHistory {
   entries: HistoryEntry[];
 }
 
-/** Every assessment of a student, the newest first, without its note. */
+/**
+ * Every assessment of a student, the newest first, without its note,
+ * each score held at 70 under a Ringan or Sedang penalty.
+ */
 async function readEntries(
   db: Database,
   studentId: string,
 ): Promise<HistoryEntry[]> {
+  const limits = await readLimitsOf(db, [studentId]);
+  const limited = limits.has(studentId);
   const rows = await db
     .select({
       id: characterAssessments.id,
@@ -81,7 +89,7 @@ async function readEntries(
     source: row.source,
     fileName: row.fileName,
     enteredBy: row.enteredBy,
-    scores: scoresOf(row),
+    scores: limitedScores(scoresOf(row), limited),
     note: null,
   }));
 }

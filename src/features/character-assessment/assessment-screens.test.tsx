@@ -24,6 +24,7 @@ const ROWS: AssessmentListRow[] = [
       fileName: "asesmen-oktober.csv",
       enteredBy: "Penilai Contoh",
       scores: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+      storedRerata: 80.3,
     },
   },
   {

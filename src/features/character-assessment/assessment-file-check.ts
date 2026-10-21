@@ -1,9 +1,12 @@
-import { and, inArray, type SQL, sql } from "drizzle-orm";
+import { and, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { NOT_REMOVED, visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
-import { limitedSql } from "@/discipline-penalties/limit-sql";
+import {
+  isLimitedSql,
+  limitedStudents,
+} from "@/discipline-penalties/limit-sql";
 import { checkFileShape, readFileText } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
@@ -39,15 +42,17 @@ async function readFileStudents(
 ): Promise<Map<string, FileStudent>> {
   const known = new Map<string, FileStudent>();
   if (nims.length === 0) return known;
+  const limitedOnes = limitedStudents(db);
   const rows = await db
     .select({
       id: students.id,
       nim: students.nim,
       name: students.name,
       active: sql<boolean>`(${ACTIVE_MEMBER})`,
-      limited: limitedSql(students.id),
+      limited: isLimitedSql(limitedOnes),
     })
     .from(students)
+    .leftJoin(limitedOnes, eq(limitedOnes.studentId, students.id))
     .where(and(inArray(students.nim, nims), NOT_REMOVED, assessable));
   for (const { nim, ...student } of rows) known.set(nim, student);
   return known;
