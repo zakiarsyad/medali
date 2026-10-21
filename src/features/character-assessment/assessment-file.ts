@@ -3,6 +3,10 @@ import {
   SCORE_MIN,
   type Scores,
 } from "@/character-scores/assessment-score";
+import {
+  CHARACTER_SCORE_CAP,
+  isAboveLimit,
+} from "@/discipline-penalties/score-limit";
 import { shortLine } from "@/files/csv-file";
 import {
   type NumberedRow,
@@ -19,6 +23,7 @@ import {
 export const UNKNOWN_NIM = "NIM tidak ada dalam data mahasiswa.";
 export const NOT_ACTIVE = "Mahasiswa tidak aktif.";
 export const SCORE_NOT_IN_RANGE = `Skor harus angka ${SCORE_MIN}–${SCORE_MAX}.`;
+export const SCORE_ABOVE_LIMIT = `Skor di atas ${CHARACTER_SCORE_CAP} untuk mahasiswa dalam hukuman disiplin`;
 
 /** A filled row of an assessment file: its number in the file, from 1. */
 export interface AssessmentLine {
@@ -34,6 +39,8 @@ export interface FileStudent {
   name: string;
   /** Whether the student is Aktif. */
   active: boolean;
+  /** Whether a Ringan or Sedang penalty holds their scores at 70. */
+  limited: boolean;
 }
 
 /** A row that may be saved: the newest assessment of one student. */
@@ -143,6 +150,9 @@ function checkLine(
   if (!student.ok) return student;
   const scores = scoresOf(line);
   if (scores === null) return refused(SCORE_NOT_IN_RANGE);
+  if (student.value.limited && isAboveLimit(scores)) {
+    return refused(SCORE_ABOVE_LIMIT);
+  }
   return {
     ok: true,
     value: {

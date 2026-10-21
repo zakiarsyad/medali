@@ -11,9 +11,19 @@ import {
 import { Medal } from "@/character-scores/medal";
 import { PredicateBadge } from "@/character-scores/predicate-badge";
 import { shownRerata } from "@/character-scores/shown-rerata";
+import {
+  kindWords,
+  type PenaltyKind,
+} from "@/discipline-penalties/penalty-kinds";
+import {
+  CHARACTER_SCORE_CAP,
+  limitedScore,
+  limitedScores,
+} from "@/discipline-penalties/score-limit";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { LimitNote } from "@/ui/limit-note";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
 import { sendForm } from "@/ui/send-form";
 import { ValueSwatch } from "@/ui/value-swatch";
@@ -42,6 +52,14 @@ const STARTING_SCORES: Scores = {
   I: STARTING_SCORE,
 };
 
+/**
+ * The scores the sliders start at for a student: their latest, or 75
+ * for one never assessed, held at 70 under a Ringan or Sedang penalty.
+ */
+function startingScoresOf(pick: AssessmentPick): Scores {
+  return limitedScores(pick.latest ?? STARTING_SCORES, pick.limit !== null);
+}
+
 /** The scores a sent form held, which the server has just kept. */
 function sentScores(form: FormData): Scores {
   return {
@@ -54,14 +72,22 @@ function sentScores(form: FormData): Scores {
   };
 }
 
+/** Why the sliders of a student under a Ringan or Sedang penalty stop at 70. */
+function limitNoteOf(limit: PenaltyKind): string {
+  return `Mahasiswa ini menjalani hukuman disiplin ${kindWords(limit)}. Skor dibatasi paling tinggi ${CHARACTER_SCORE_CAP}.`;
+}
+
 export function ScoreSliders({
   scores,
   levelTexts,
   onChange,
+  highest = SCORE_MAX,
 }: {
   scores: Scores;
   levelTexts: LevelTexts;
   onChange: (key: ValueKey, score: number) => void;
+  /** The highest score a slider offers: 70 for a limited student. */
+  highest?: number;
 }) {
   return (
     <div className={styles.sliders}>
@@ -78,7 +104,7 @@ export function ScoreSliders({
               name={`score_${key}`}
               className={styles.range}
               min={SCORE_MIN}
-              max={SCORE_MAX}
+              max={highest}
               step={1}
               value={scores[key]}
               aria-label={`Skor ${name}`}
@@ -112,6 +138,7 @@ export function MedalPreview({
   }
   const rerata = rerataOf(scores);
   const { latest } = picked;
+  const start = limitedScore(STARTING_SCORE, picked.limit !== null);
   return (
     <>
       <div className={styles.previewHead}>
@@ -125,7 +152,7 @@ export function MedalPreview({
         Rerata baru <b>{shownRerata(rerata)}</b>
         {latest
           ? `, asesmen sebelumnya ${shownRerata(rerataOf(latest))}. Garis putus-putus menunjukkan skor asesmen terakhir.`
-          : `. Mahasiswa ini belum pernah diasesmen; slider dimulai dari ${STARTING_SCORE}.`}
+          : `. Mahasiswa ini belum pernah diasesmen; slider dimulai dari ${start}.`}
       </p>
     </>
   );
@@ -155,13 +182,13 @@ export function AssessmentForm({
   const [id, setId] = useState(newAssessmentId);
   const [picked, setPicked] = useState<AssessmentPick | null>(startPick);
   const [scores, setScores] = useState<Scores>(
-    startPick?.latest ?? STARTING_SCORES,
+    startPick ? startingScoresOf(startPick) : STARTING_SCORES,
   );
   const [note, setNote] = useState("");
 
   function pick(student: AssessmentPick) {
     setPicked(student);
-    setScores(student.latest ?? STARTING_SCORES);
+    setScores(startingScoresOf(student));
   }
 
   function change(key: ValueKey, score: number) {
@@ -195,11 +222,13 @@ export function AssessmentForm({
             onPick={pick}
             onClear={() => setPicked(null)}
           />
+          {picked?.limit && <LimitNote text={limitNoteOf(picked.limit)} />}
           {picked && (
             <ScoreSliders
               scores={scores}
               levelTexts={levelTexts}
               onChange={change}
+              highest={picked.limit ? CHARACTER_SCORE_CAP : SCORE_MAX}
             />
           )}
           <div className={shared.form}>

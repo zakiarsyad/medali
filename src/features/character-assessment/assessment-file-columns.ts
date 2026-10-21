@@ -4,6 +4,7 @@
  * database code.
  */
 
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
 
 /** The column of each MEDALI value: its name in small letters. */
@@ -20,8 +21,8 @@ export const ASSESSMENT_FILE_COLUMNS = [
 
 export const ASSESSMENT_TEMPLATE_FILE_NAME = "templat-asesmen-medali.csv";
 
-/** What the score columns take, in the prototype's words. */
-export const ASSESSMENT_FILE_NOTE = "Skor 40–100.";
+/** What the score columns take, in the prototype's words, with the limit of a penalty. */
+export const ASSESSMENT_FILE_NOTE = `Skor 40–100; paling tinggi ${CHARACTER_SCORE_CAP} untuk mahasiswa yang menjalani hukuman disiplin ringan atau sedang.`;
 
 /** A made-up student and the scores 80, 78, 84, 72, 82 and 86. */
 const TEMPLATE_EXAMPLE: readonly string[] = [

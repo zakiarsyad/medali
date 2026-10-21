@@ -6,6 +6,7 @@ import {
 } from "@/character-scores/assessment-score";
 import {
   CHARACTER_SCORE_CAP,
+  isAboveLimit,
   limitedScore,
   limitedScores,
   limitOf,
@@ -61,6 +62,16 @@ describe("the limited scores", () => {
       I: 69,
     });
     expect(limitedScores(SILVER, false)).toEqual(SILVER);
+  });
+
+  it("find a score above 70, which a limited student may not be given", () => {
+    expect(isAboveLimit(SILVER)).toBe(true);
+    expect(isAboveLimit({ M: 70, E: 70, D: 70, A: 70, L: 70, I: 71 })).toBe(
+      true,
+    );
+    expect(isAboveLimit({ M: 70, E: 40, D: 70, A: 70, L: 70, I: 70 })).toBe(
+      false,
+    );
   });
 
   it("hold a final nilai karakter of 82.4 at 70.0, and keep one below it", () => {

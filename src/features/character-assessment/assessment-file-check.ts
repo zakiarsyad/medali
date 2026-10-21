@@ -3,6 +3,7 @@ import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { NOT_REMOVED, visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
+import { limitedSql } from "@/discipline-penalties/limit-sql";
 import { checkFileShape, readFileText } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
@@ -26,9 +27,10 @@ export function assessableBy(actor: AccountForAccess): SQL {
 }
 
 /**
- * The students a file names, by NIM, with whether each is Aktif, in one
- * read for the whole file. A removed student and one the account may
- * not assess are left out: the file names nobody it knows.
+ * The students a file names, by NIM, with whether each is Aktif and
+ * whether a penalty holds their scores at 70, in one read for the whole
+ * file. A removed student and one the account may not assess are left
+ * out: the file names nobody it knows.
  */
 async function readFileStudents(
   db: Database,
@@ -43,6 +45,7 @@ async function readFileStudents(
       nim: students.nim,
       name: students.name,
       active: sql<boolean>`(${ACTIVE_MEMBER})`,
+      limited: limitedSql(students.id),
     })
     .from(students)
     .where(and(inArray(students.nim, nims), NOT_REMOVED, assessable));

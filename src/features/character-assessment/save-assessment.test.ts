@@ -2,10 +2,16 @@
 // Sample NIMs of this file: 9986020000 to 9986020099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { characterAssessments, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+  TEST_DESCRIPTION,
+} from "@/discipline-penalties/test-penalties";
 import { addTestStudent } from "@/dorms/test-records";
 import type { SentAssessment } from "./assessment-input";
 import {
@@ -14,6 +20,7 @@ import {
   NO_PERIOD,
   NOT_ALLOWED_TO_ASSESS,
   NOTE_TOO_LONG,
+  OVER_LIMIT,
   STUDENT_NOT_FOUND,
   UNKNOWN_SOURCE,
 } from "./assessment-messages";
@@ -228,6 +235,62 @@ describe("saveAssessment", () => {
     });
   });
 
+  it("refuses a score above 70 sent by hand for a student under a Ringan or Sedang penalty, and keeps one of 70 at most", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "light",
+        level: 2,
+      });
+      const atMost: SentAssessment = {
+        ...sentFor(ani),
+        scores: { M: "70", E: "70", D: "65", A: "70", L: "40", I: "70" },
+      };
+
+      const refused = await saveAssessment(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        { ...atMost, scores: { ...atMost.scores, I: "71" } },
+        MOMENT,
+      );
+      expect(refused).toEqual(OVER_LIMIT);
+      expect(await keptOf(db, ani)).toEqual([]);
+
+      const kept = await saveAssessment(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        atMost,
+        MOMENT,
+      );
+      expect(kept).toEqual({ ok: true, value: "Mahasiswa Uji Asesmen 1" });
+      expect(await keptOf(db, ani)).toHaveLength(1);
+    });
+  });
+
+  it("does not limit a student under a Berat penalty", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "heavy",
+        level: 1,
+      });
+
+      const saved = await saveAssessment(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        sentFor(ani),
+        MOMENT,
+      );
+
+      expect(saved).toEqual({ ok: true, value: "Mahasiswa Uji Asesmen 1" });
+    });
+  });
+
   it("refuses while no academic period runs", async () => {
     await inTestDatabase(async (db) => {
       const { ani, penilai } = await addRecords(db);
@@ -313,6 +376,7 @@ describe("searchAssessmentStudents", () => {
           nim: "9986020001",
           program: "Prodi Uji Simpan Asesmen",
           latest: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+          limit: null,
         },
       ]);
     });
@@ -349,7 +413,27 @@ describe("readAssessmentPick", () => {
         nim: "9986020001",
         program: "Prodi Uji Simpan Asesmen",
         latest: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+        limit: null,
       });
+    });
+  });
+
+  it("gives the limit of a student under a Ringan or Sedang penalty to Penilai Mahasiswa, who may not read discipline records, without its Uraian", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "medium",
+        level: 1,
+      });
+      expect(may(penilai.roles, "view_discipline_records")).toBe(false);
+
+      const pick = await readAssessmentPick(db, penilai, ani);
+      const found = await searchAssessmentStudents(db, penilai, "99860200");
+
+      expect(pick?.limit).toEqual({ category: "medium", level: 1 });
+      expect(found[0]?.limit).toEqual({ category: "medium", level: 1 });
+      expect(JSON.stringify([pick, found])).not.toContain(TEST_DESCRIPTION);
     });
   });
 

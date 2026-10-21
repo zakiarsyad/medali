@@ -6,6 +6,8 @@ import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
+import type { PenaltyKind } from "@/discipline-penalties/penalty-kinds";
+import { readLimitsOf } from "@/discipline-penalties/read-limits";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
 import { readLatestOf } from "./latest-assessments";
@@ -21,11 +23,14 @@ export interface AssessmentPick {
   program: string;
   /** Null for a student never assessed. */
   latest: Scores | null;
+  /** The penalty that holds their scores at 70, or null for none. */
+  limit: PenaltyKind | null;
 }
 
 /**
  * The Aktif students the account may assess that `condition` lets
- * through, 10 at most, by name, with their latest scores. An account
+ * through, 10 at most, by name, with their latest scores and the penalty
+ * that limits them, if any, read once for all of them. An account
  * without the right sees no student at all.
  */
 async function readPicks(
@@ -47,13 +52,15 @@ async function readPicks(
     .where(and(ACTIVE_MEMBER, scope, condition))
     .orderBy(asc(students.name), asc(students.nim))
     .limit(SEARCH_LIMIT);
-  const latest = await readLatestOf(
-    db,
-    found.map((student) => student.id),
-  );
+  const ids = found.map((student) => student.id);
+  const [latest, limits] = await Promise.all([
+    readLatestOf(db, ids),
+    readLimitsOf(db, ids),
+  ]);
   return found.map((student) => ({
     ...student,
     latest: latest.get(student.id)?.scores ?? null,
+    limit: limits.get(student.id) ?? null,
   }));
 }
 

@@ -54,6 +54,11 @@ export function limitedScore(score: number, limited: boolean): number {
   return Math.min(score, CHARACTER_SCORE_CAP);
 }
 
+/** Whether any of six MEDALI scores is above 70, which a limited student may not be given. */
+export function isAboveLimit(scores: Scores): boolean {
+  return MEDALI_VALUES.some(({ key }) => scores[key] > CHARACTER_SCORE_CAP);
+}
+
 /**
  * The six MEDALI scores as they count: each at most 70 for a limited
  * student, so the Rerata, the predikat and the medal follow from them.

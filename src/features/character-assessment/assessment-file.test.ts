@@ -7,6 +7,7 @@ import {
   fileNims,
   NOT_ACTIVE,
   readAssessmentFile,
+  SCORE_ABOVE_LIMIT,
   SCORE_NOT_IN_RANGE,
   scoreOf,
   UNKNOWN_NIM,
@@ -16,10 +17,11 @@ import { assessmentTemplateCsv } from "./assessment-file-columns";
 const TITLES = "nim,mandiri,empati,disiplin,adaptif,loyal,integritas";
 
 const STUDENTS = new Map<string, FileStudent>([
-  ["4121230001", { id: "a", name: "Ani", active: true }],
-  ["4121230002", { id: "b", name: "Budi", active: true }],
-  ["4121230003", { id: "c", name: "Cuti", active: false }],
-  ["4121239999", { id: "t", name: "Templat", active: true }],
+  ["4121230001", { id: "a", name: "Ani", active: true, limited: false }],
+  ["4121230002", { id: "b", name: "Budi", active: true, limited: false }],
+  ["4121230003", { id: "c", name: "Cuti", active: false, limited: false }],
+  ["4121239999", { id: "t", name: "Templat", active: true, limited: false }],
+  ["4121230004", { id: "d", name: "Dina", active: true, limited: true }],
 ]);
 
 const SILVER = { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 };
@@ -120,6 +122,20 @@ describe("readAssessmentFile and assessmentFileRows", () => {
     ["negative", "4121230001,80,78,84,-72,82,86"],
   ])("skips a row with a score %s", (_, line) => {
     expect(reasonFor(line)).toBe(SCORE_NOT_IN_RANGE);
+  });
+
+  it("skips a row with a score above 70 for a student under a Ringan or Sedang penalty, and takes one of 70 at most", () => {
+    expect(SCORE_ABOVE_LIMIT).toBe(
+      "Skor di atas 70 untuk mahasiswa dalam hukuman disiplin",
+    );
+    expect(reasonFor("4121230004,70,70,70,70,70,71")).toBe(SCORE_ABOVE_LIMIT);
+    expect(reasonFor("4121230004,70,70,70,70,70,70.6")).toBe(SCORE_ABOVE_LIMIT);
+    expect(reasonFor("4121230004,70,70,70,70,70,101")).toBe(SCORE_NOT_IN_RANGE);
+    const rows = read(TITLES, "4121230004,70,55,70,40,62,70.4");
+    expect(rows.ready.map((row) => row.scores)).toEqual([
+      { M: 70, E: 55, D: 70, A: 40, L: 62, I: 70 },
+    ]);
+    expect(read(TITLES, "4121230001,80,78,84,72,82,86").ready).toHaveLength(1);
   });
 
   it("says the prototype's reasons, numbering each skipped row as in the file", () => {
