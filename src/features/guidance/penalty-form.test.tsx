@@ -1,3 +1,5 @@
+// Sample NIMs of this file: 9944280000 to 9944280099. None is added to
+// the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { AGENCY_ONLY, PenaltyForm } from "./penalty-form";
@@ -79,7 +81,7 @@ describe("PenaltyForm", () => {
       pick: {
         id: "00000000-0000-4000-8000-000000000705",
         name: "Oki Rahayu",
-        nim: "9900240015",
+        nim: "9944280015",
         program: "Manajemen Aset Publik STR",
         hasAgency: true,
         cohortYear: 2024,
@@ -89,7 +91,7 @@ describe("PenaltyForm", () => {
     expect(shown).toContain(
       'name="studentId" value="00000000-0000-4000-8000-000000000705"',
     );
-    expect(shown).toContain("Oki Rahayu · NIM 9900240015");
+    expect(shown).toContain("Oki Rahayu · NIM 9944280015");
     expect(shown).toContain("Belum ada riwayat pelanggaran");
     expect(shown).not.toContain(AGENCY_ONLY);
   });
