@@ -57,6 +57,7 @@ async function recipientPart(
   if (list === null || sessions === null) return null;
   const numbers = {
     forYou: list.matching,
+    needCounselling: list.needCounselling,
     menteesOnly: list.menteesOnly,
     sessions,
   };

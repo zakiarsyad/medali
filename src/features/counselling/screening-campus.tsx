@@ -10,8 +10,8 @@ export const PERSONAL_DATA_NOTE =
 /**
  * "Sudah diasesmen" for the whole campus, as the server sent it, "<5"
  * for 1 to 4, with the note on personal data. A recipient of shared
- * data also sees "Dipublikasikan untuk Anda" and "Sesi konseling 30
- * hari" beside it.
+ * data also sees "Dipublikasikan untuk Anda", "Perlu konseling" and
+ * "Sesi konseling 30 hari" beside it.
  */
 export function CampusScreenedCount({
   shown,
@@ -28,6 +28,13 @@ export function CampusScreenedCount({
             label="Dipublikasikan untuk Anda"
             amount={numbers.forYou}
             note={numbers.menteesOnly ? "anak asuh" : "mahasiswa"}
+          />
+        )}
+        {numbers && (
+          <NumberCard
+            label="Perlu konseling"
+            amount={numbers.needCounselling}
+            note="dari data yang dipublikasikan"
           />
         )}
         <NumberCard

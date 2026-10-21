@@ -21,6 +21,7 @@ import {
 } from "@/db/schema";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
+import { latestScreenings } from "./latest-screenings";
 import type { ScreeningParams } from "./screening-address";
 import { screeningReachOf } from "./screening-reach";
 import { COUNSELLING_LEVELS } from "./screening-rules";
@@ -30,23 +31,12 @@ import type {
   ScreeningRow,
 } from "./screening-view";
 
-/** Each screened student's latest screening: the newest date, then the newest save. */
-function latestScreenings(db: Database) {
-  const kept = mentalHealthScreenings;
-  return db
-    .selectDistinctOn([kept.studentId], {
-      studentId: kept.studentId,
-      instrument: kept.instrument,
-      screenedOn: kept.screenedOn,
-      level: kept.level,
-      selfHarm: kept.selfHarm,
-    })
-    .from(kept)
-    .orderBy(kept.studentId, desc(kept.screenedOn), desc(kept.savedAt))
-    .as("latest");
+/** Each screened student's latest screening, with its "Risiko" mark. */
+function latestWithRisk(db: Database) {
+  return latestScreenings(db, { selfHarm: mentalHealthScreenings.selfHarm });
 }
 
-type Latest = ReturnType<typeof latestScreenings>;
+type Latest = ReturnType<typeof latestWithRisk>;
 
 function needsCounselling(latest: Latest): SQL {
   return inArray(latest.level, [...COUNSELLING_LEVELS]);
@@ -82,7 +72,7 @@ export async function readScreeningNumbers(
 ): Promise<ScreeningNumbers | null> {
   const reach = screeningReachOf(actor);
   if (reach === null) return null;
-  const latest = latestScreenings(db);
+  const latest = latestWithRisk(db);
   const [numbers] = await db
     .select({
       screened: count(),
@@ -113,7 +103,7 @@ export async function readScreeningList(
 ): Promise<ScreeningList | null> {
   const reach = screeningReachOf(actor);
   if (reach === null) return null;
-  const latest = latestScreenings(db);
+  const latest = latestWithRisk(db);
   const where = and(reach, chosen(latest, params));
   const [found] = await db
     .select({ matching: count() })

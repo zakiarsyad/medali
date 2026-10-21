@@ -23,6 +23,12 @@ export function sharedPartsLine(data: readonly SharedData[]): string {
     .join(", ");
 }
 
+/** "Tingkat" of a student whose sharing leaves the level out. */
+export const LEVEL_NOT_SHARED = "Tidak dibagikan";
+
+/** "Tingkat" of a student whose level is shared and who has no screening. */
+export const NOT_SCREENED = "Belum ada asesmen";
+
 /** "Rincian" asked for a student whose data is no longer published for the person. */
 export const SHARED_GONE =
   "Data ini tidak lagi dibagikan untuk Anda. Muat ulang halaman untuk melihat daftar terbaru.";

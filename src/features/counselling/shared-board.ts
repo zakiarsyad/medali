@@ -1,4 +1,13 @@
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import {
+  and,
+  arrayContains,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  sql,
+} from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { type AccountForAccess, may } from "@/auth/access";
 import { NOT_REMOVED } from "@/auth/visible-students";
@@ -11,8 +20,11 @@ import {
 } from "@/db/schema";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { pageWithin } from "@/ui/list-pages";
+import { latestScreenings } from "./latest-screenings";
+import { logSharedReads, type SharedShowing } from "./log-shared-reads";
 import { heldInLast30Days } from "./recent-sessions";
-import { shownCount } from "./screening-rules";
+import type { ScreeningLevel } from "./screening-ids";
+import { COUNSELLING_LEVELS, shownCount } from "./screening-rules";
 import { recipientRolesOf, sharedReachOf } from "./shared-reach";
 import { SHARED_PAGE_SIZE, type SharedList } from "./shared-view";
 
@@ -28,56 +40,98 @@ function publishedDate(publishedAt: Date | null): Date {
 }
 
 /**
+ * The latest screening of a sharing's student, joined only when the
+ * sharing holds the level, so a level left out is never read.
+ */
+function sharedLevels(db: Database) {
+  const latest = latestScreenings(db, {});
+  const joined = and(
+    eq(latest.studentId, students.id),
+    arrayContains(counsellingSharings.data, ["level"]),
+  );
+  return { latest, joined };
+}
+
+/** The rows that show a level, each a showing for the log of readings. */
+function shownLevels(
+  rows: {
+    sharingId: string;
+    studentId: string;
+    level: ScreeningLevel | null;
+  }[],
+): SharedShowing[] {
+  return rows
+    .filter((row) => row.level !== null)
+    .map(({ sharingId, studentId }) => ({ sharingId, studentId }));
+}
+
+/**
  * One page of "Data yang dipublikasikan untuk Anda": each student whose
  * published sharing names one of the account's roles, within that role's
- * rows, the newest published first, then by name. Only what the list
- * shows is read: never the summary, the sessions or the consent. Null,
- * with nothing read, for an account without the right.
+ * rows, the newest published first, then by name, with "Perlu konseling"
+ * of them all. Only what the list shows is read: never the summary, the
+ * sessions, the consent, or the scores, "Risiko" mark and note of a
+ * screening; the level only where it is shared. Each row that shows a
+ * level is logged in the same transaction. Null, with nothing read, for
+ * an account without the right.
  */
 export async function readSharedList(
   db: Database,
   actor: AccountForAccess,
   asked: number,
+  now: Date = new Date(),
 ): Promise<SharedList | null> {
   const reach = sharedReachOf(actor);
   if (reach === null) return null;
-  const [found] = await db
-    .select({ matching: count() })
-    .from(counsellingSharings)
-    .innerJoin(students, eq(students.id, counsellingSharings.studentId))
-    .where(reach);
-  const matching = found?.matching ?? 0;
-  const page = pageWithin(asked, matching, SHARED_PAGE_SIZE);
-  const rows = await db
-    .select({
-      studentId: students.id,
-      name: students.name,
-      nim: students.nim,
-      program: studyPrograms.name,
-      mentorName: MENTOR_NAME,
-      data: counsellingSharings.data,
-      publishedAt: counsellingSharings.publishedAt,
-    })
-    .from(counsellingSharings)
-    .innerJoin(students, eq(students.id, counsellingSharings.studentId))
-    .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(reach)
-    .orderBy(
-      desc(counsellingSharings.publishedAt),
-      asc(students.name),
-      asc(students.nim),
-    )
-    .limit(SHARED_PAGE_SIZE)
-    .offset((page - 1) * SHARED_PAGE_SIZE);
-  return {
-    rows: rows.map((row) => ({
-      ...row,
-      publishedAt: publishedDate(row.publishedAt),
-    })),
-    matching,
-    page,
-    menteesOnly: isMenteesOnly(actor),
-  };
+  return db.transaction(async (tx) => {
+    const { latest, joined } = sharedLevels(tx);
+    const [found] = await tx
+      .select({
+        matching: count(),
+        needCounselling: sql<number>`(count(*) filter (where ${inArray(latest.level, [...COUNSELLING_LEVELS])}))::int`,
+      })
+      .from(counsellingSharings)
+      .innerJoin(students, eq(students.id, counsellingSharings.studentId))
+      .leftJoin(latest, joined)
+      .where(reach);
+    const matching = found?.matching ?? 0;
+    const page = pageWithin(asked, matching, SHARED_PAGE_SIZE);
+    const rows = await tx
+      .select({
+        sharingId: counsellingSharings.id,
+        studentId: students.id,
+        name: students.name,
+        nim: students.nim,
+        program: studyPrograms.name,
+        mentorName: MENTOR_NAME,
+        data: counsellingSharings.data,
+        level: latest.level,
+        publishedAt: counsellingSharings.publishedAt,
+      })
+      .from(counsellingSharings)
+      .innerJoin(students, eq(students.id, counsellingSharings.studentId))
+      .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
+      .leftJoin(latest, joined)
+      .where(reach)
+      .orderBy(
+        desc(counsellingSharings.publishedAt),
+        asc(students.name),
+        asc(students.nim),
+      )
+      .limit(SHARED_PAGE_SIZE)
+      .offset((page - 1) * SHARED_PAGE_SIZE);
+    await logSharedReads(tx, actor.id, shownLevels(rows), now);
+    return {
+      rows: rows.map(({ sharingId, ...row }) => ({
+        ...row,
+        publishedAt: publishedDate(row.publishedAt),
+      })),
+      matching,
+      needCounselling: found?.needCounselling ?? 0,
+      page,
+      menteesOnly: isMenteesOnly(actor),
+    };
+  });
 }
 
 /**

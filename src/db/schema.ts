@@ -3758,8 +3758,9 @@ export const counsellingSharingChanges = pgTable(
 );
 
 /**
- * Every opening of "Rincian" of a published sharing by a recipient: who
- * read whose data, which sharing and when, never what it showed. Rows
+ * Every opening of "Rincian" of a published sharing by a recipient, and
+ * every row of their list that showed a shared level: who read whose
+ * data, which sharing and when, never what it showed. Rows
  * here cannot be changed or deleted; the database refuses it.
  */
 export const counsellingSharingReads = pgTable(

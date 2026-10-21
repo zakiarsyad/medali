@@ -1,9 +1,11 @@
 import { DAY, shownDay } from "@/ui/day";
 import styles from "./counselling.module.css";
+import { LevelBadges } from "./screening-badges";
+import { ADVICE_WORDS, INSTRUMENT_WORDS } from "./screening-words";
 import type { SessionSummary } from "./session-view";
 import { FOLLOW_UP_WORDS } from "./session-words";
-import type { SharedDetail } from "./shared-view";
-import { publishedLine, SHARED_PART_WORDS } from "./shared-words";
+import type { SharedDetail, SharedScreening } from "./shared-view";
+import { NOT_SCREENED, publishedLine, SHARED_PART_WORDS } from "./shared-words";
 
 function CounsellingPart({ sessions }: { sessions: SessionSummary | null }) {
   if (sessions === null) {
@@ -28,12 +30,41 @@ function CounsellingPart({ sessions }: { sessions: SessionSummary | null }) {
 }
 
 /**
+ * "Tingkat asesmen terakhir" and "Rekomendasi". The advice is always the
+ * level's own: the crisis advice would give away the "Risiko" mark.
+ */
+function LevelPart({ screening }: { screening: SharedScreening | null }) {
+  if (screening === null) {
+    return <p className={styles.sub}>{NOT_SCREENED}.</p>;
+  }
+  return (
+    <>
+      <p>
+        <b>Tingkat asesmen terakhir:</b>{" "}
+        <LevelBadges level={screening.level} risk={false} />{" "}
+        {INSTRUMENT_WORDS[screening.instrument]},{" "}
+        {shownDay(screening.screenedOn)}
+      </p>
+      <p>
+        <b>Rekomendasi:</b> {ADVICE_WORDS[screening.level]}
+      </p>
+    </>
+  );
+}
+
+/**
  * "Rincian" of a student, as the server sent it: only the parts the
  * student agreed to share, and who published it when.
  */
 export function SharedDetailBox({ detail }: { detail: SharedDetail }) {
   return (
     <div className={`${styles.card} ${styles.stack}`}>
+      {detail.data.includes("level") && (
+        <section className={styles.stack}>
+          <h3 className={styles.subHeading}>{SHARED_PART_WORDS.level}</h3>
+          <LevelPart screening={detail.screening} />
+        </section>
+      )}
       {detail.data.includes("counselling") && (
         <section className={styles.stack}>
           <h3 className={styles.subHeading}>{SHARED_PART_WORDS.counselling}</h3>

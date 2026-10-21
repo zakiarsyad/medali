@@ -16,6 +16,7 @@ import { openSharedDetail } from "./shared-detail";
 import { SHARED_GONE, SHARED_NOT_ALLOWED } from "./shared-words";
 import type { SharingView } from "./sharing-view";
 import { addTestActor } from "./test-consents";
+import { addTestScreening } from "./test-screenings";
 import {
   addTestMentorOf,
   addTestRecipient,
@@ -92,6 +93,7 @@ describe("Rincian of shared counselling data", () => {
         ok: true,
         value: {
           data: ["counselling", "summary"],
+          screening: null,
           counselling: {
             count: 1,
             lastDay: "2026-10-19",
@@ -180,6 +182,53 @@ describe("Rincian of shared counselling data", () => {
         ok: true,
         value: { data: ["counselling"], summary: null },
       });
+    });
+  });
+
+  it("sends the level, the instrument and the date of the latest screening when the level is shared, and logs the showing", async () => {
+    await inTestDatabase(async (db) => {
+      place += 1;
+      const people = await addSharingStudent(
+        db,
+        `Prodi Uji Rincian ${place}`,
+        `99863220${String(place).padStart(2, "0")}`,
+      );
+      await addTestScreening(db, people.studentId, people.counsellor.id);
+      await addTestScreening(db, people.studentId, people.counsellor.id, {
+        screenedOn: "2026-10-20",
+        instrument: "srq20",
+        depression: null,
+        anxiety: null,
+        stress: null,
+        srqYes: 7,
+        level: "moderate",
+      });
+      await publishTestSharing(db, people, {
+        data: ["level"],
+        recipients: ["director"],
+      });
+      const director = await addTestRecipient(
+        db,
+        ["director"],
+        people.studentId,
+      );
+
+      expect(
+        await openSharedDetail(db, director, people.studentId, NOW),
+      ).toMatchObject({
+        ok: true,
+        value: {
+          data: ["level"],
+          screening: {
+            level: "moderate",
+            instrument: "srq20",
+            screenedOn: "2026-10-20",
+          },
+          counselling: null,
+          summary: null,
+        },
+      });
+      expect(await readingsOf(db, people.studentId)).toHaveLength(1);
     });
   });
 

@@ -7,13 +7,16 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import {
   counsellingSessions,
+  counsellingSharingReads,
   counsellingSharings,
   students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { changeOwnSharing } from "./press-sharing";
 import { readCampusSessionCount, readSharedList } from "./shared-board";
 import { SHARED_PAGE_SIZE } from "./shared-view";
 import { addTestActor } from "./test-consents";
+import { addTestScreening } from "./test-screenings";
 import {
   addTestMentorOf,
   addTestRecipient,
@@ -52,10 +55,12 @@ describe("Data yang dipublikasikan untuk Anda", () => {
             program: `${PROGRAM} 1`,
             mentorName: "Pengasuh Uji",
             data: ["counselling", "summary"],
+            level: null,
             publishedAt: PUBLISHED_AT,
           },
         ],
         matching: 1,
+        needCounselling: 0,
         page: 1,
         menteesOnly: true,
       });
@@ -82,6 +87,7 @@ describe("Data yang dipublikasikan untuk Anda", () => {
       expect(await readSharedList(db, mentor, 1)).toEqual({
         rows: [],
         matching: 0,
+        needCounselling: 0,
         page: 1,
         menteesOnly: true,
       });
@@ -175,6 +181,117 @@ describe("Data yang dipublikasikan untuk Anda", () => {
       const other = await addTestRecipient(db, [role], people.studentId);
       expect(await readSharedList(db, other, 1)).toBeNull();
       expect(await readCampusSessionCount(db, other, NOW)).toBeNull();
+    });
+  });
+});
+
+function readingsOf(db: Database, studentId: string) {
+  return db
+    .select()
+    .from(counsellingSharingReads)
+    .where(eq(counsellingSharingReads.studentId, studentId));
+}
+
+describe("Tingkat in Data yang dipublikasikan untuk Anda", () => {
+  it("shows the level of the latest screening only when the level is shared, and logs each showing", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
+      const withLevel = await addSharingStudent(
+        db,
+        `${PROGRAM} 9`,
+        "9986321050",
+      );
+      const without = await addSharingStudent(
+        db,
+        `${PROGRAM} 10`,
+        "9986321051",
+      );
+      for (const people of [withLevel, without]) {
+        await addTestScreening(db, people.studentId, people.counsellor.id, {
+          level: "severe",
+        });
+      }
+      await publishTestSharing(db, withLevel, {
+        data: ["level", "counselling"],
+        recipients: ["head_of_unit"],
+      });
+      await publishTestSharing(db, without, {
+        data: ["counselling"],
+        recipients: ["head_of_unit"],
+      });
+
+      const list = await readSharedList(db, head, 1, NOW);
+
+      const levels = new Map(
+        list?.rows.map((row) => [row.studentId, row.level]),
+      );
+      expect(levels.get(withLevel.studentId)).toBe("severe");
+      expect(levels.get(without.studentId)).toBeNull();
+      expect(list?.needCounselling).toBe(1);
+      expect(await readingsOf(db, withLevel.studentId)).toEqual([
+        expect.objectContaining({ readBy: head.id, readAt: NOW }),
+      ]);
+      expect(await readingsOf(db, without.studentId)).toEqual([]);
+    });
+  });
+
+  it("shows a newer screening on the next load, and counts Perlu konseling from Sedang up", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(db, `${PROGRAM} 12`, "9986321053");
+      const { mentor } = await addTestMentorOf(db, people.studentId);
+      await addTestScreening(db, people.studentId, people.counsellor.id);
+      await publishTestSharing(db, people, {
+        data: ["level"],
+        recipients: ["mentor"],
+      });
+      const first = await readSharedList(db, mentor, 1, NOW);
+      expect(first?.rows[0]?.level).toBe("mild");
+      expect(first?.needCounselling).toBe(0);
+
+      await addTestScreening(db, people.studentId, people.counsellor.id, {
+        screenedOn: "2026-10-20",
+        level: "moderate",
+      });
+      const next = await readSharedList(db, mentor, 1, NOW);
+      expect(next?.rows[0]?.level).toBe("moderate");
+      expect(next?.needCounselling).toBe(1);
+      expect(await readingsOf(db, people.studentId)).toHaveLength(2);
+    });
+  });
+
+  it("is gone for every recipient once the sharing is withdrawn", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(db, `${PROGRAM} 13`, "9986321054");
+      await addTestScreening(db, people.studentId, people.counsellor.id, {
+        level: "extremely_severe",
+      });
+      const sharing = await publishTestSharing(db, people, {
+        data: ["level"],
+        recipients: ["head_of_unit", "director"],
+      });
+      const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
+      const director = await addTestActor(db, "Direktur Uji", ["director"]);
+      expect((await readSharedList(db, head, 1, NOW))?.needCounselling).toBe(1);
+
+      const [student] = people.students;
+      if (!student) throw new Error("Student missing.");
+      await changeOwnSharing(
+        db,
+        student,
+        "withdraw",
+        sharing.id,
+        sharing.version,
+        NOW,
+      );
+
+      for (const recipient of [head, director]) {
+        expect(await readSharedList(db, recipient, 1, NOW)).toMatchObject({
+          rows: [],
+          matching: 0,
+          needCounselling: 0,
+        });
+      }
+      expect(await readingsOf(db, people.studentId)).toHaveLength(1);
     });
   });
 });
