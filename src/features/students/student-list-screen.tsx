@@ -1,3 +1,4 @@
+import { stageCohorts } from "@/academic-periods/stage-cohorts";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
@@ -7,7 +8,6 @@ import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import type { AskedDetail } from "./asked-detail";
 import { runningPeriodNow } from "./running-period-now";
-import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import {
   type MorePanelsOf,

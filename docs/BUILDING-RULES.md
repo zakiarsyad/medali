@@ -12,8 +12,8 @@ while building.
   area's rules, its database reads and writes, and its screen parts.
 - `src/db/`: the table definitions and the changes to them.
 - `src/academic-periods/`: the running academic period, how a period is
-  named on screen, a student's semester and the tahap a semester belongs
-  to, read by every area that needs them.
+  named on screen, a student's semester, the tahap a semester belongs
+  to and the angkatan in each tahap, read by every area that needs them.
 - `src/dorms/`: the four dorms, the rule for who lives in which, and a
   resident's room, read by every area that needs them.
 - `src/mentoring/`: who is a mentee of a mentor today, which groups are
@@ -32,7 +32,8 @@ while building.
   every area that needs them.
 - `src/character-scores/`: the scores of a character assessment, their
   Rerata and predikat, how a Rerata and a predikat are shown, the medal
-  chart, and each student's latest assessment and the one before it,
+  chart, the bar of the predikat spread, and each student's latest
+  assessment and the one before it,
   read by every area that shows character scores.
 - `src/character-grades/`: each student's semester character grade with
   its four parts, read from the areas each part belongs to, for every

@@ -1,24 +1,3 @@
-.chosen {
-  border-color: var(--navy2);
-  background: var(--surface2);
-}
-
-/*
- * A list is as wide as its longest choice unless told otherwise, and the
- * name of an instansi is longer than a phone is wide.
- */
-.counted {
-  min-width: 0;
-}
-
-.foldButton {
-  display: var(--filter-fold-button-display);
-}
-
-.folded {
-  display: var(--filter-folded-display);
-}
-
 .found {
   display: flex;
   flex-wrap: wrap;

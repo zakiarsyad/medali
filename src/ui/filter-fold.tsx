@@ -1,10 +1,10 @@
 "use client";
 
 import { type ReactNode, useId, useState } from "react";
-import shared from "@/ui/data-screen.module.css";
+import shared from "./data-screen.module.css";
+import styles from "./filter-fold.module.css";
 import { filterFoldStartsOpen } from "./filter-fold-start";
 import { filterFoldWords } from "./filter-fold-words";
-import styles from "./student-list.module.css";
 
 /**
  * The filters of the top bar. On a phone they are folded away under one

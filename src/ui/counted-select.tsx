@@ -1,5 +1,5 @@
-import shared from "@/ui/data-screen.module.css";
-import styles from "./student-list.module.css";
+import styles from "./counted-select.module.css";
+import shared from "./data-screen.module.css";
 
 export interface CountedChoice {
   value: string;

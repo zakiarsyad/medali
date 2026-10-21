@@ -2,9 +2,9 @@ import Link from "next/link";
 import { entryPath } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import { DORM_IDS, DORM_NAMES } from "@/dorms/dorms";
+import { type CountedChoice, CountedSelect } from "@/ui/counted-select";
 import shared from "@/ui/data-screen.module.css";
-import { type CountedChoice, CountedSelect } from "./counted-select";
-import { FilterFold } from "./filter-fold";
+import { FilterFold } from "@/ui/filter-fold";
 import { foundWords } from "./found-words";
 import { CATEGORIES, ENTRY_PATH_LABELS } from "./labels";
 import {
