@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import type { ConsentPick } from "./consent-picks";
 import { CounsellorConsentPanel } from "./counsellor-consent-panel";
+import { followUpOf } from "./follow-up";
 import { ReferralPanel } from "./referral-panel";
 import type { ReferralList } from "./referral-view";
 import { useConsentPick } from "./use-consent-pick";
@@ -25,10 +25,9 @@ export function CounsellorFollowUp({
   const picking = useConsentPick(mayKeepSessions);
   const consentPanel = useRef<HTMLElement>(null);
 
-  function followUp(student: ConsentPick) {
-    picking.pick(student);
-    consentPanel.current?.scrollIntoView({ behavior: "smooth" });
-  }
+  const followUp = followUpOf(picking.pick, () =>
+    consentPanel.current?.scrollIntoView({ behavior: "smooth" }),
+  );
 
   return (
     <>

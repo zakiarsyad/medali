@@ -3,7 +3,6 @@ import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { ListPager } from "@/ui/list-pager";
 import { ConsentBadge } from "./consent-badge";
-import type { ConsentPick } from "./consent-picks";
 import styles from "./counselling.module.css";
 import { REFERRALS_PAGE_SIZE, referralAddress } from "./referral-address";
 import type { ReferralList, ReferralRow } from "./referral-view";
@@ -18,16 +17,7 @@ export const NO_REFERRALS = "Tidak ada rujukan dari asrama.";
 export const NO_ACTIVE_SCHEDULE = "Tidak ada";
 
 /** What "Tindak lanjuti" does, or null for an account that may not. */
-type FollowUp = ((student: ConsentPick) => void) | null;
-
-function pickOf(row: ReferralRow): ConsentPick {
-  return {
-    id: row.studentId,
-    name: row.name,
-    nim: row.nim,
-    program: row.program,
-  };
-}
+type FollowUp = ((row: ReferralRow) => void) | null;
 
 function ReferralTableRow({
   row,
@@ -65,7 +55,7 @@ function ReferralTableRow({
           <button
             type="button"
             className={shared.quiet}
-            onClick={() => onFollowUp(pickOf(row))}
+            onClick={() => onFollowUp(row)}
           >
             Tindak lanjuti
           </button>
