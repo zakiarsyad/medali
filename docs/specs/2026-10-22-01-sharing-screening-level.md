@@ -93,7 +93,9 @@ Kesehatan mental, and never the scores or the konselor's note.
    in the prototype.
 6. The recipient's list gets the column "Tingkat": the level, "Tidak
    dibagikan" when the level was left out, or "Belum ada asesmen" when
-   it was shared and the student has no screening. The order of the
+   it was shared and the student has no screening, as in the prototype;
+   today that cannot happen, as the level needs a screening and a
+   screening is never removed. The order of the
    rows stays the newest published first; it is not sorted by level.
 7. "Rincian" shows "Tingkat asesmen terakhir" with the level, the
    instrument and the date, then "Rekomendasi", which is always the
@@ -133,4 +135,4 @@ Kesehatan mental, and never the scores or the konselor's note.
 - [x] 2. Konselor's panel and the student's request show the new choice.
 - [x] 3. Recipients see Tingkat and "Rekomendasi", and "Perlu konseling".
 - [x] 4. Konselor's list gets Konseling, Publikasi and "Disetujui".
-- [ ] 5. The refusal checks for scores, note and "Risiko".
+- [x] 5. The refusal checks for scores, note and "Risiko".
