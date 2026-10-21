@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CampusScreenedCount, PERSONAL_DATA_NOTE } from "./screening-campus";
+import { SharedDetailBox } from "./shared-detail-box";
 import { SharedListPanel } from "./shared-list";
 import type { SharedList, SharedRow } from "./shared-view";
 import { nothingSharedWords, SHARED_HEADING } from "./shared-words";
@@ -59,6 +60,71 @@ describe("the numbers of a recipient on Kesehatan mental", () => {
   });
 });
 
+describe("Rincian of shared counselling data", () => {
+  const PUBLISHED = new Date("2026-10-19T03:00:00Z");
+
+  it("shows Status konseling with the sessions, the last date, the follow-up and the next session, Ringkasan konselor, and who published it when", () => {
+    const page = renderToStaticMarkup(
+      <SharedDetailBox
+        detail={{
+          data: ["counselling", "summary"],
+          counselling: {
+            count: 2,
+            lastDay: "2026-10-16",
+            followUp: "next_session",
+            nextDay: "2026-10-28",
+          },
+          summary: "Mohon beri ruang saat ujian.",
+          publishedByName: "Konselor Contoh",
+          publishedAt: PUBLISHED,
+        }}
+      />,
+    );
+    expect(page).toContain("Status konseling");
+    expect(page).toContain("2 sesi, terakhir 16 Okt 2026");
+    expect(page).toContain("Sesi lanjutan");
+    expect(page).toContain("28 Okt 2026");
+    expect(page).toContain("Ringkasan konselor");
+    expect(page).toContain("Mohon beri ruang saat ujian.");
+    expect(page).toContain(
+      "Dipublikasikan Konselor Contoh pada 19 Okt 2026 dengan persetujuan mahasiswa. Gunakan hanya untuk keperluan pendampingan dan jangan disebarluaskan.",
+    );
+  });
+
+  it("shows no Status konseling when only the summary is shared, and no next session when none is set", () => {
+    const summaryOnly = renderToStaticMarkup(
+      <SharedDetailBox
+        detail={{
+          data: ["summary"],
+          counselling: null,
+          summary: "Mohon beri ruang saat ujian.",
+          publishedByName: "Konselor Contoh",
+          publishedAt: PUBLISHED,
+        }}
+      />,
+    );
+    expect(summaryOnly).not.toContain("Status konseling");
+    const counsellingOnly = renderToStaticMarkup(
+      <SharedDetailBox
+        detail={{
+          data: ["counselling"],
+          counselling: {
+            count: 1,
+            lastDay: "2026-10-16",
+            followUp: "monitoring",
+            nextDay: null,
+          },
+          summary: null,
+          publishedByName: "Konselor Contoh",
+          publishedAt: PUBLISHED,
+        }}
+      />,
+    );
+    expect(counsellingOnly).not.toContain("Ringkasan konselor");
+    expect(counsellingOnly).not.toContain("Sesi berikutnya");
+  });
+});
+
 describe("Data yang dipublikasikan untuk Anda", () => {
   it("lists name, NIM, program studi, Pengasuh, Data yang dibagikan and the date published, as cards on a phone", () => {
     const page = panel({ rows: [ROW], matching: 1 });
@@ -77,6 +143,7 @@ describe("Data yang dipublikasikan untuk Anda", () => {
       expect(page).toContain(`data-title="${title}"`);
     }
     expect(page).toMatch(/<table class="[^"]*stacked/);
+    expect(page).toContain("Rincian");
   });
 
   it("says so when nothing is published, for anak asuh Anda to a Pengasuh", () => {

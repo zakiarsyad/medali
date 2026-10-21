@@ -125,6 +125,12 @@ role, within their own rows, and only while the sharing is still on.
     program (so it shows to Pengasuh only), and a new one of Nanda
     Gunawan of D3 Pajak to all four, which his Pengasuh of today sees and
     his Pengasuh before does not.
+13. Dates show as the rest of the app shows a day, such as 19 Okt 2026,
+    also in the line under "Rincian".
+14. A role without the right that asks for "Rincian" gets nothing of it;
+    a recipient asking for a student it does not reach gets the same
+    message as for a withdrawn sharing, so a request cannot tell whether
+    a student's data is shared with someone else.
 
 ## Steps
 
@@ -133,5 +139,5 @@ role, within their own rows, and only while the sharing is still on.
   checks.
 - [x] 2. "Data yang dipublikasikan untuk Anda" shows the note, the
   numbers and the list, with its empty state.
-- [ ] 3. "Rincian" shows only the shared parts, and each opening is
+- [x] 3. "Rincian" shows only the shared parts, and each opening is
   logged.

@@ -5,6 +5,7 @@ import type { Database } from "./connect";
 import {
   accounts,
   counsellingSharingChanges,
+  counsellingSharingReads,
   counsellingSharings,
   students,
   studyPrograms,
@@ -223,6 +224,51 @@ describe("the log of sharing counselling data", () => {
       await addLogLine(db);
       await expect(
         db.execute(sql`truncate counselling_sharings cascade`),
+      ).rejects.toThrow();
+    });
+  });
+});
+
+describe("the log of who read shared counselling data", () => {
+  async function addReading(db: Database): Promise<string> {
+    const records = await addRecords(db);
+    const sharingId = await addedSharing(db, records);
+    const [line] = await db
+      .insert(counsellingSharingReads)
+      .values({
+        sharingId,
+        studentId: records.studentId,
+        readBy: records.accountId,
+        readAt: new Date(),
+      })
+      .returning();
+    if (!line) throw new Error("The reading was not added.");
+    return line.id;
+  }
+
+  it("refuses a change or the deletion of a line", async () => {
+    await inTestDatabase(async (db) => {
+      const id = await addReading(db);
+      const change = db
+        .update(counsellingSharingReads)
+        .set({ readAt: new Date(0) })
+        .where(eq(counsellingSharingReads.id, id));
+      await expect(change).rejects.toThrow();
+    });
+    await inTestDatabase(async (db) => {
+      const id = await addReading(db);
+      const removal = db
+        .delete(counsellingSharingReads)
+        .where(eq(counsellingSharingReads.id, id));
+      await expect(removal).rejects.toThrow();
+    });
+  });
+
+  it("refuses to be emptied", async () => {
+    await inTestDatabase(async (db) => {
+      await addReading(db);
+      await expect(
+        db.execute(sql`truncate counselling_sharing_reads`),
       ).rejects.toThrow();
     });
   });

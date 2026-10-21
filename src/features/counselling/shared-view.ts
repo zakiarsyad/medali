@@ -1,3 +1,4 @@
+import type { SessionSummary } from "./session-view";
 import type { SharedData } from "./sharing-ids";
 
 /*
@@ -37,4 +38,15 @@ export interface SharedList {
   page: number;
   /** Pengasuh is the recipient's only role named: the list is of mentees. */
   menteesOnly: boolean;
+}
+
+/** "Rincian" of a student: only the parts the student agreed to share. */
+export interface SharedDetail {
+  data: SharedData[];
+  /** "Status konseling", when shared; null when not shared or with no session. */
+  counselling: SessionSummary | null;
+  /** "Ringkasan konselor", when shared. */
+  summary: string | null;
+  publishedByName: string;
+  publishedAt: Date;
 }

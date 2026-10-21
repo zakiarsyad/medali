@@ -22,6 +22,18 @@ export function sharedPartsLine(data: readonly SharedData[]): string {
     .join(", ");
 }
 
+/** "Rincian" asked for a student whose data is no longer published for the person. */
+export const SHARED_GONE =
+  "Data ini tidak lagi dibagikan untuk Anda. Muat ulang halaman untuk melihat daftar terbaru.";
+
+export const SHARED_NOT_ALLOWED =
+  "Anda tidak memiliki hak untuk membaca data kesehatan mental yang dibagikan.";
+
+/** The line under "Rincian", as in the prototype. */
+export function publishedLine(name: string, day: string): string {
+  return `Dipublikasikan ${name} pada ${day} dengan persetujuan mahasiswa. Gunakan hanya untuk keperluan pendampingan dan jangan disebarluaskan.`;
+}
+
 /** What the list says when nothing is published for the recipient. */
 export function nothingSharedWords(menteesOnly: boolean): string {
   const whom = menteesOnly ? "anak asuh Anda" : "Anda";

@@ -17,6 +17,7 @@ describe("the screen parts of Konseling that run in the browser", () => {
     expect(browserFiles).toContain(`${FOLDER}/own-schedule-item.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/screening-table.tsx`);
     expect(browserFiles).toContain(`${FOLDER}/screening-form.tsx`);
+    expect(browserFiles).toContain(`${FOLDER}/shared-table.tsx`);
   });
 
   it.each(browserFiles)("%s takes no database code along", (path) => {
