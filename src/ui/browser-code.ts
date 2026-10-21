@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+// Places are written with "/" on every computer, as the checks write them.
+import { dirname, join } from "node:path/posix";
 
 /*
  * A screen part that runs in the browser is sent there with every file it

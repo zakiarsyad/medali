@@ -34,5 +34,5 @@ None.
 
 ## Steps
 
-1. [ ] The helper that finds the screen parts always writes file places
+1. [x] The helper that finds the screen parts always writes file places
    with `/`, so the same checks pass on Windows and Linux.
