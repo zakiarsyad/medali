@@ -12,11 +12,12 @@ import {
   students,
 } from "@/db/schema";
 import { readScheduleCard } from "./schedule-board";
-import type { ScheduleStatus } from "./schedule-ids";
+import type { ScheduleKind, ScheduleStatus } from "./schedule-ids";
 import {
   checkAnotherTime,
   checkProposal,
   hasPassed,
+  isMoveOfKind,
   type ScheduleMove,
   type SentAnotherTime,
   type SentProposal,
@@ -28,6 +29,7 @@ import {
   APPROVED,
   ASKED_ANOTHER,
   NOT_ALLOWED_WORDS,
+  NOT_FOR_THIS_KIND,
   PROPOSAL_PASSED,
   PROPOSED,
   SCHEDULE_CHANGED_SINCE,
@@ -84,6 +86,7 @@ type MoveResult =
   | { kind: "refused"; error: string };
 
 interface Kept {
+  kind: ScheduleKind;
   status: ScheduleStatus;
   /** None while an assignment waits for its time. */
   day: string | null;
@@ -109,6 +112,7 @@ async function lockSchedule(
 ): Promise<Kept | null> {
   const [kept] = await tx
     .select({
+      kind: counsellingSchedules.kind,
       status: counsellingSchedules.status,
       day: counsellingSchedules.day,
       hour: counsellingSchedules.hour,
@@ -126,7 +130,10 @@ async function applyTo(
   press: Press,
   current: Kept,
 ): Promise<MoveResult> {
-  const after = scheduleAfter(press.move, current.status);
+  if (!isMoveOfKind(press.move, current.kind)) {
+    return { kind: "refused", error: NOT_FOR_THIS_KIND };
+  }
+  const after = scheduleAfter(press.move, current.status, current.kind);
   const isAsShown = versionOf(current.changedAt) === press.version;
   if (!isAsShown || after === null) return { kind: "changed" };
   const refusal = refusalFor(press, current);
@@ -155,8 +162,9 @@ async function applyTo(
  * Applies a move to a request, with its log line in the same
  * transaction. The request is locked first, so of two presses at the
  * same moment the second sees what the first did. A press is refused,
- * changing nothing, when the request changed since its screen showed it
- * or the move is not allowed from the status it finds.
+ * changing nothing, when the move is not one of its Jenis, such as
+ * cancelling an assignment, when the request changed since its screen
+ * showed it, or when the move is not allowed from the status it finds.
  */
 function applyPress(
   db: Database,

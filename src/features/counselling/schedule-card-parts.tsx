@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
-import type { ScheduleStatus } from "./schedule-ids";
-import { SCHEDULE_STATUS_WORDS } from "./schedule-words";
+import type { ScheduleKind, ScheduleStatus } from "./schedule-ids";
+import { KIND_WORDS, SCHEDULE_STATUS_WORDS } from "./schedule-words";
 
 /**
  * The colours of the prototype: waits for Konselor, waits for the
@@ -23,6 +23,21 @@ export function ScheduleBadge({ status }: { status: ScheduleStatus }) {
   return (
     <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
       {SCHEDULE_STATUS_WORDS[status]}
+    </span>
+  );
+}
+
+/** The colours of the Jenis in the prototype. */
+const KIND_STYLES: Record<ScheduleKind, string | undefined> = {
+  voluntary: styles.ok,
+  assigned: styles.bad,
+  called: styles.warn,
+};
+
+export function KindBadge({ kind }: { kind: ScheduleKind }) {
+  return (
+    <span className={`${shared.badge} ${KIND_STYLES[kind]}`}>
+      {KIND_WORDS[kind]}
     </span>
   );
 }

@@ -123,12 +123,17 @@ export function topicOf(
 /** What Konselor or the student does to a request once it is sent. */
 export type ScheduleMove = Exclude<
   ScheduleStep,
-  "register" | "assign" | "call" | "set_time"
+  "register" | "assign" | "call"
 >;
 
 export type CounsellorScheduleMove = Extract<
   ScheduleMove,
-  "approve" | "propose" | "reschedule" | "mark_done" | "mark_missed"
+  | "approve"
+  | "propose"
+  | "reschedule"
+  | "mark_done"
+  | "mark_missed"
+  | "set_time"
 >;
 
 export type StudentScheduleMove = Extract<
@@ -136,11 +141,14 @@ export type StudentScheduleMove = Extract<
   "accept" | "ask_another" | "cancel"
 >;
 
-/** The statuses each move may start from, and the status it gives. */
-const MOVES: Record<
-  ScheduleMove,
-  { from: readonly ScheduleStatus[]; to: ScheduleStatus }
-> = {
+/** The statuses a move may start from, and the status it gives. */
+interface Move {
+  from: readonly ScheduleStatus[];
+  to: ScheduleStatus;
+}
+
+/** The moves of a voluntary request. */
+const VOLUNTARY_MOVES: Partial<Record<ScheduleMove, Move>> = {
   approve: { from: ["submitted"], to: "scheduled" },
   propose: { from: ["submitted"], to: "proposed" },
   accept: { from: ["proposed"], to: "scheduled" },
@@ -151,13 +159,40 @@ const MOVES: Record<
   mark_missed: { from: ["scheduled"], to: "missed" },
 };
 
-/** What a request becomes after a move, or null when the move is not allowed. */
+/**
+ * The moves of an assignment: Konselor sets the time, and the student
+ * may only ask for another one. Nobody cancels it.
+ */
+const ASSIGNMENT_MOVES: Partial<Record<ScheduleMove, Move>> = {
+  set_time: { from: ["awaiting", "reschedule_asked"], to: "scheduled" },
+  approve: { from: ["reschedule_asked"], to: "scheduled" },
+  ask_another: { from: ["scheduled"], to: "reschedule_asked" },
+  reschedule: { from: ["scheduled"], to: "scheduled" },
+  mark_done: { from: ["scheduled"], to: "done" },
+  mark_missed: { from: ["scheduled"], to: "missed" },
+};
+
+function movesOf(kind: ScheduleKind): Partial<Record<ScheduleMove, Move>> {
+  return kind === "voluntary" ? VOLUNTARY_MOVES : ASSIGNMENT_MOVES;
+}
+
+/** Whether a schedule of this kind knows the move at all, from any status. */
+export function isMoveOfKind(move: ScheduleMove, kind: ScheduleKind): boolean {
+  return movesOf(kind)[move] !== undefined;
+}
+
+/**
+ * What a schedule of this kind becomes after a move, or null when the
+ * move is not allowed from its status.
+ */
 export function scheduleAfter(
   move: ScheduleMove,
   current: ScheduleStatus,
+  kind: ScheduleKind,
 ): ScheduleStatus | null {
-  const { from, to } = MOVES[move];
-  return from.includes(current) ? to : null;
+  const found = movesOf(kind)[move];
+  if (!found) return null;
+  return found.from.includes(current) ? found.to : null;
 }
 
 /** Whether the day of a session has come: it is that day on campus, or later. */

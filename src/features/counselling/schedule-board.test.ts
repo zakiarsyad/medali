@@ -3,8 +3,15 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { readScheduleBoard } from "./schedule-board";
-import { addTestPeople, type TestPeople } from "./test-consents";
-import { addTestSchedule, type TestSchedule } from "./test-schedules";
+import { addTestActor, addTestPeople, type TestPeople } from "./test-consents";
+import {
+  addTestAssignment,
+  addTestSchedule,
+  TEST_BASIS,
+  TEST_SENDER_MESSAGE,
+  type TestAssignment,
+  type TestSchedule,
+} from "./test-schedules";
 
 const inTestDatabase = withTestDatabase();
 
@@ -62,9 +69,10 @@ describe("Jadwal konseling of Konselor", () => {
       );
 
       expect(board?.counts).toEqual({
-        submitted: 2,
+        toSchedule: 2,
         scheduledSoon: 1,
         proposed: 1,
+        activeByKind: { voluntary: 5, assigned: 0, called: 0 },
       });
     });
   });
@@ -250,6 +258,8 @@ describe("Jadwal konseling of Konselor", () => {
           way: "in_person",
           story: "Cerita uji.",
           reason: "Bentrok uji.",
+          basis: null,
+          senderMessage: null,
           counsellorName: null,
           steps: [
             {
@@ -312,4 +322,179 @@ describe("Jadwal konseling of Konselor", () => {
       });
     },
   );
+});
+
+/** Sends an assignment to the student at `place`. */
+function assignTo(
+  db: Database,
+  people: TestPeople,
+  place: number,
+  more: Omit<Partial<TestAssignment>, "studentId"> & { senderId: string },
+) {
+  const studentId = people.studentIds[place];
+  if (!studentId) throw new Error("Student missing.");
+  return addTestAssignment(db, { studentId, ...more });
+}
+
+/** NIMs of the assignment checks, apart from those above. */
+function assignmentNims(count: number): string[] {
+  return Array.from({ length: count }, (_, place) =>
+    String(9986208051 + place),
+  );
+}
+
+describe("assignments on Jadwal konseling of Konselor", () => {
+  it("count in Perlu dijadwalkan, and the active ones per Jenis", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, PROGRAM, assignmentNims(4));
+      const sender = await addTestActor(db, "Pembina Uji", [
+        "discipline_officer",
+      ]);
+      const counsellorId = people.counsellor.id;
+      await addFor(db, people, 0);
+      await assignTo(db, people, 0, { senderId: sender.id });
+      await assignTo(db, people, 1, {
+        senderId: sender.id,
+        kind: "called",
+        status: "reschedule_asked",
+        counsellorId,
+      });
+      await assignTo(db, people, 2, {
+        senderId: sender.id,
+        status: "scheduled",
+        counsellorId,
+      });
+      await assignTo(db, people, 3, {
+        senderId: sender.id,
+        status: "done",
+        counsellorId,
+      });
+
+      const board = await readScheduleBoard(
+        db,
+        people.counsellor,
+        { filter: "needs_action", page: 1 },
+        NOW,
+      );
+
+      expect(board?.counts).toEqual({
+        toSchedule: 3,
+        scheduledSoon: 1,
+        proposed: 0,
+        activeByKind: { voluntary: 1, assigned: 2, called: 1 },
+      });
+    });
+  });
+
+  it("give a card the Jenis, Menunggu jadwal, the Topik of the Jenis, Dasar, Pesan pengirim and the sender's step", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, PROGRAM, assignmentNims(1));
+      const sender = await addTestActor(db, "Pembina Uji", [
+        "discipline_officer",
+      ]);
+      const id = await assignTo(db, people, 0, { senderId: sender.id });
+
+      const board = await readScheduleBoard(
+        db,
+        people.counsellor,
+        { filter: "needs_action", page: 1 },
+        NOW,
+      );
+
+      expect(board?.cards).toEqual([
+        expect.objectContaining({
+          id,
+          kind: "assigned",
+          status: "awaiting",
+          topic: "discipline_violation",
+          day: null,
+          hour: null,
+          way: null,
+          basis: TEST_BASIS,
+          senderMessage: TEST_SENDER_MESSAGE,
+          counsellorName: null,
+          steps: [
+            {
+              id: expect.any(String),
+              at: "19 Okt 2026, 10.00",
+              by: "Pembina Uji",
+              step: "assign",
+            },
+          ],
+        }),
+      ]);
+    });
+  });
+
+  it("list under Perlu ditindaklanjuti Minta jadwal ulang first, then Menunggu jadwal, then Diajukan", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, PROGRAM, assignmentNims(3));
+      const sender = await addTestActor(db, "Penilai Uji", ["assessor"]);
+      await addFor(db, people, 0, { day: "2026-10-21" });
+      await assignTo(db, people, 1, { senderId: sender.id, kind: "called" });
+      await assignTo(db, people, 2, {
+        senderId: sender.id,
+        kind: "called",
+        status: "reschedule_asked",
+        counsellorId: people.counsellor.id,
+        day: "2026-10-27",
+      });
+
+      const board = await readScheduleBoard(
+        db,
+        people.counsellor,
+        { filter: "needs_action", page: 1 },
+        NOW,
+      );
+
+      expect(board?.cards.map((card) => card.status)).toEqual([
+        "reschedule_asked",
+        "awaiting",
+        "submitted",
+      ]);
+    });
+  });
+
+  it.each(["voluntary", "assigned", "called"] as const)(
+    "show under the Jenis filter %s only that Jenis",
+    async (kind) => {
+      await inTestDatabase(async (db) => {
+        const people = await addTestPeople(db, PROGRAM, assignmentNims(3));
+        const sender = await addTestActor(db, "Pengirim Uji", ["assessor"]);
+        await addFor(db, people, 0);
+        await assignTo(db, people, 1, { senderId: sender.id });
+        await assignTo(db, people, 2, { senderId: sender.id, kind: "called" });
+
+        const board = await readScheduleBoard(
+          db,
+          people.counsellor,
+          { filter: "all", page: 1, kind },
+          NOW,
+        );
+
+        expect(board?.cards.map((card) => card.kind)).toEqual([kind]);
+        expect(board?.matching).toBe(1);
+      });
+    },
+  );
+
+  it.each([
+    "head_of_unit",
+    "discipline_officer",
+    "assessor",
+    "student",
+  ] as const)("are read by no %s", async (role) => {
+    await inTestDatabase(async (db) => {
+      const people = await addTestPeople(db, PROGRAM, assignmentNims(1));
+      const sender = await addTestActor(db, "Pembina Uji", [
+        "discipline_officer",
+      ]);
+      await assignTo(db, people, 0, { senderId: sender.id });
+      const other = { ...people.counsellor, roles: [role] };
+
+      expect(
+        await readScheduleBoard(db, other, { filter: "all", page: 1 }, NOW),
+      ).toBeNull();
+    });
+  });
 });

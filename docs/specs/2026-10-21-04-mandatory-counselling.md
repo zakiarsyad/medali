@@ -83,7 +83,7 @@ sending specs.
 
 - [x] 1. Schedules gain the Jenis, where they come from, "Dasar" and the
   sender's message, with made-up assignments in every status.
-- [ ] 2. Konselor sees assignments, the Jenis numbers and filter, and
+- [x] 2. Konselor sees assignments, the Jenis numbers and filter, and
   sets the time.
 - [ ] 3. The student sees assignments as "wajib" and asks for another
   time.

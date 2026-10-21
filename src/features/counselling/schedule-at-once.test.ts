@@ -27,8 +27,9 @@ import {
   SCHEDULE_CHANGED_SINCE,
   STILL_ACTIVE,
 } from "./schedule-words";
-import { addTestPeople } from "./test-consents";
-import { addTestSchedule } from "./test-schedules";
+import { setScheduleTime } from "./set-schedule-time";
+import { addTestActor, addTestPeople } from "./test-consents";
+import { addTestAssignment, addTestSchedule } from "./test-schedules";
 
 /*
  * Two presses at the same moment need two connections that both see the
@@ -270,6 +271,45 @@ describe("the student asks for a new time while Konselor moves the session, at t
       kind: "changed",
       error: SCHEDULE_CHANGED_SINCE,
       card: { status: "submitted", day: "2026-10-26" },
+    });
+    expect(await stepsOf(id)).toHaveLength(2);
+  });
+});
+
+describe("two Konselor setting the time of one assignment at the same moment", () => {
+  it("keep the first time; the other waits, then is refused with the current card", async () => {
+    const people = await addTestPeople(
+      own.db,
+      "Prodi Uji Penugasan Sekaligus",
+      ["9986207010"],
+    );
+    const [studentId] = people.studentIds;
+    if (!studentId) throw new Error("Student missing.");
+    const sender = await addTestActor(own.db, "Pembina Uji", [
+      "discipline_officer",
+    ]);
+    const id = await addTestAssignment(own.db, {
+      studentId,
+      senderId: sender.id,
+      at: REGISTERED_AT,
+    });
+    const version = REGISTERED_AT.toISOString();
+    const other = { ...PROPOSAL, day: "2026-10-26", hour: "08:30" };
+
+    const both = await own.atOnce(
+      (db) =>
+        setScheduleTime(db, people.counsellor, id, version, PROPOSAL, NOW),
+      (db) => setScheduleTime(db, people.counsellor, id, version, other, NOW),
+    );
+
+    expect(both.sooner).toMatchObject({
+      kind: "kept",
+      card: { status: "scheduled", day: "2026-10-23" },
+    });
+    expect(both.later).toMatchObject({
+      kind: "changed",
+      error: SCHEDULE_CHANGED_SINCE,
+      card: { status: "scheduled", day: "2026-10-23" },
     });
     expect(await stepsOf(id)).toHaveLength(2);
   });

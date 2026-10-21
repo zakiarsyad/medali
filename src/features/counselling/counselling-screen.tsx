@@ -10,6 +10,7 @@ import { OwnSharingBox } from "./own-sharing-box";
 import type { ReferralList } from "./referral-view";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
+import type { ScheduleKind } from "./schedule-ids";
 import { ScheduleNotice } from "./schedule-notice";
 import { SchedulePanel } from "./schedule-panel";
 import type {
@@ -29,10 +30,12 @@ export const EMERGENCY_TEXT =
 export const HELP_TEXT =
   "Jika Anda berpikir untuk menyakiti diri atau berada dalam bahaya, jangan menunggu jadwal: hubungi konselor kampus, orang yang Anda percaya, atau layanan darurat 119.";
 
-/** "Jadwal konseling" of Konselor, with the Status filter it shows. */
+/** "Jadwal konseling" of Konselor, with the Status and Jenis filters it shows. */
 export interface CounsellorSchedules {
   board: ScheduleBoard;
   filter: ScheduleFilter;
+  /** The Jenis chosen; none for "Semua jenis". */
+  kind: ScheduleKind | null;
 }
 
 function CounsellorPart({
@@ -61,6 +64,7 @@ function CounsellorPart({
         <SchedulePanel
           board={schedules.board}
           filter={schedules.filter}
+          kind={schedules.kind}
           mayKeepSessions={mayKeepSessions}
         />
       )}

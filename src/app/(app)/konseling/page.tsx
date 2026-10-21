@@ -46,9 +46,10 @@ async function registrationPart(
 }
 
 async function schedulesPart(account: AccountForAccess, params: SearchParams) {
-  const { filter, page } = readScheduleListParams(params);
-  const board = await readScheduleBoard(database(), account, { filter, page });
-  return board === null ? null : { board, filter };
+  const { filter, page, kind } = readScheduleListParams(params);
+  const asked = { filter, page, kind };
+  const board = await readScheduleBoard(database(), account, asked);
+  return board === null ? null : { board, filter, kind };
 }
 
 function referralsPart(account: AccountForAccess, params: SearchParams) {

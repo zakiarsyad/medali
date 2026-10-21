@@ -82,6 +82,10 @@ export interface CounsellorScheduleCard {
   story: string | null;
   /** Why the student asked for another time, when they did. */
   reason: string | null;
+  /** "Dasar" of an assignment; null for a voluntary request. */
+  basis: string | null;
+  /** "Pesan pengirim" of an assignment, when its sender wrote one. */
+  senderMessage: string | null;
   /** The Konselor of a proposed or agreed time; null before. */
   counsellorName: string | null;
   /** Every step, oldest first. */
@@ -91,12 +95,14 @@ export interface CounsellorScheduleCard {
 
 /** The numbers above the cards. */
 export interface ScheduleCounts {
-  /** Diajukan: "Perlu dijadwalkan". */
-  submitted: number;
+  /** Diajukan, Menunggu jadwal and Minta jadwal ulang: "Perlu dijadwalkan". */
+  toSchedule: number;
   /** Dijadwalkan from today to 7 days ahead. */
   scheduledSoon: number;
   /** Usulan jadwal lain: "Menunggu konfirmasi mahasiswa". */
   proposed: number;
+  /** The active ones of each Jenis. */
+  activeByKind: Record<ScheduleKind, number>;
 }
 
 /** The numbers, and one page of the cards that match the filter. */

@@ -20,6 +20,8 @@ const CARD: CounsellorScheduleCard = {
   way: "in_person",
   story: "Cerita uji layar.",
   reason: "Bentrok uji layar.",
+  basis: null,
+  senderMessage: null,
   counsellorName: null,
   steps: [
     {
@@ -34,7 +36,12 @@ const CARD: CounsellorScheduleCard = {
 
 function boardOf(cards: CounsellorScheduleCard[], matching = cards.length) {
   const board: ScheduleBoard = {
-    counts: { submitted: 3, scheduledSoon: 2, proposed: 1 },
+    counts: {
+      toSchedule: 3,
+      scheduledSoon: 2,
+      proposed: 1,
+      activeByKind: { voluntary: 4, assigned: 2, called: 1 },
+    },
     cards,
     matching,
     page: 1,
@@ -53,16 +60,20 @@ function counsellorPage(board: ScheduleBoard): string {
     <CounsellingScreen
       own={null}
       mayManage={true}
-      schedules={{ board, filter: "needs_action" }}
+      schedules={{ board, filter: "needs_action", kind: null }}
     />,
   );
 }
 
 describe("Jadwal konseling of Konselor", () => {
-  it("shows the three numbers with what each counts", () => {
+  it("shows the numbers with what each counts, and the active ones per Jenis", () => {
     const page = counsellorPage(boardOf([CARD]));
 
     expect(page).toContain("Jadwal konseling");
+    expect(page).toContain("permintaan dan penugasan");
+    expect(page).toMatch(
+      /Jenis<\/dt><dd[^>]*>Sukarela 4 · Penugasan 2 · Pemanggilan 1</,
+    );
     expect(page).toMatch(/Perlu dijadwalkan<\/dt><dd[^>]*>3</);
     expect(page).toMatch(/Dijadwalkan 7 hari ke depan<\/dt><dd[^>]*>2</);
     expect(page).toMatch(/Menunggu konfirmasi mahasiswa<\/dt><dd[^>]*>1</);
@@ -84,6 +95,67 @@ describe("Jadwal konseling of Konselor", () => {
       expect(page).toContain(`>${words}</option>`);
     }
     expect(page).toMatch(/<option value="perlu" selected="">/);
+  });
+
+  it("offers the Jenis filter with Semua jenis chosen", () => {
+    const page = counsellorPage(boardOf([CARD]));
+
+    expect(page).toContain('aria-label="Jenis"');
+    for (const words of ["Sukarela", "Penugasan", "Pemanggilan"]) {
+      expect(page).toContain(`>${words}</option>`);
+    }
+    expect(page).toMatch(/<option value="" selected="">Semua jenis<\/option>/);
+  });
+
+  it("shows on an assignment its Jenis, Menunggu jadwal, the Topik, Dasar and Pesan pengirim, and offers Tetapkan jadwal", () => {
+    const card: CounsellorScheduleCard = {
+      ...CARD,
+      kind: "assigned",
+      status: "awaiting",
+      topic: "discipline_violation",
+      day: null,
+      hour: null,
+      way: null,
+      story: null,
+      reason: null,
+      basis: "Pelanggaran disiplin sedang jenjang pertama",
+      senderMessage: "Pesan uji pengirim.",
+    };
+    const page = counsellorPage(boardOf([card]));
+
+    for (const words of [
+      ">Penugasan</span>",
+      "Menunggu jadwal",
+      "Pelanggaran disiplin",
+      "Belum ada",
+      ">Dasar<",
+      "Pelanggaran disiplin sedang jenjang pertama",
+      ">Pesan pengirim<",
+      "Pesan uji pengirim.",
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(page).not.toContain(">Cara<");
+    expect(buttonsOf(page)).toEqual(["Tetapkan jadwal"]);
+  });
+
+  it("offers Setujui waktu ini and Tetapkan jadwal on Minta jadwal ulang, with the reason", () => {
+    const card: CounsellorScheduleCard = {
+      ...CARD,
+      kind: "called",
+      status: "reschedule_asked",
+      topic: "character_assessment",
+      story: null,
+      basis: "Asesmen karakter: pembinaan intensif",
+      counsellorName: "Konselor Uji Layar",
+    };
+    const page = counsellorPage(boardOf([card]));
+
+    expect(page).toContain(">Pemanggilan</span>");
+    expect(page).toContain("Minta jadwal ulang");
+    expect(page).toContain("Hasil asesmen karakter");
+    expect(page).toContain("Alasan minta jadwal ulang");
+    expect(buttonsOf(page)).toEqual(["Setujui waktu ini", "Tetapkan jadwal"]);
   });
 
   it("shows a card with the student, the status, Topik, the time asked, Cara, the story, the reason and Riwayat langkah", () => {

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import styles from "./counselling.module.css";
-import { Fact, ScheduleBadge } from "./schedule-card-parts";
+import { Fact, KindBadge, ScheduleBadge } from "./schedule-card-parts";
 import type { ScheduleStatus } from "./schedule-ids";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import {
@@ -40,9 +40,10 @@ function Steps({ card }: { card: CounsellorScheduleCard }) {
 
 /**
  * One request on Konselor's "Jadwal konseling": the student with NIM and
- * program studi, where it stands, Topik, the time it is about now and
- * Cara, the Konselor of a proposed or agreed time, the student's story,
- * why they asked for another time, and "Riwayat langkah". `children` is
+ * program studi, its Jenis and where it stands, Topik, the time it is about now and
+ * Cara, the Konselor of a proposed or agreed time, "Dasar" and "Pesan
+ * pengirim" of an assignment, the student's story, why they asked for
+ * another time, and "Riwayat langkah". `children` is
  * what the card offers to do, when anything.
  */
 export function CounsellorScheduleCardView({
@@ -61,7 +62,10 @@ export function CounsellorScheduleCardView({
             {card.nim} · {card.program}
           </p>
         </div>
-        <ScheduleBadge status={card.status} />
+        <div className={styles.badges}>
+          <KindBadge kind={card.kind} />
+          <ScheduleBadge status={card.status} />
+        </div>
       </div>
       <dl className={styles.facts}>
         <Fact title="Topik">{SCHEDULE_TOPIC_WORDS[card.topic]}</Fact>
@@ -73,6 +77,16 @@ export function CounsellorScheduleCardView({
         )}
         {card.counsellorName && (
           <Fact title="Konselor">{card.counsellorName}</Fact>
+        )}
+        {card.basis && (
+          <Fact title="Dasar" isWide>
+            {card.basis}
+          </Fact>
+        )}
+        {card.senderMessage && (
+          <Fact title="Pesan pengirim" isWide>
+            {card.senderMessage}
+          </Fact>
         )}
         {card.story && (
           <Fact title="Cerita mahasiswa (rahasia)" isWide>

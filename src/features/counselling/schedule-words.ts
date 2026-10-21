@@ -135,6 +135,16 @@ export const PROPOSAL_PASSED =
 
 export const APPROVED = "Jadwal disetujui.";
 
+/** What "Simpan jadwal" of "Tetapkan jadwal" says once kept. */
+export const TIME_SET = "Jadwal dikirim ke mahasiswa.";
+
+/**
+ * Why a step that does not belong to the Jenis is refused, such as
+ * cancelling a konseling wajib.
+ */
+export const NOT_FOR_THIS_KIND =
+  "Langkah ini tidak berlaku untuk jenis konseling ini.";
+
 export const PROPOSED = "Jadwal dikirim ke mahasiswa.";
 
 export const ACCEPTED = "Jadwal konseling dikonfirmasi.";

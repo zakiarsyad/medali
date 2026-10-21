@@ -12,6 +12,7 @@ import {
   markScheduleMissedAction,
   proposeScheduleAction,
   rescheduleScheduleAction,
+  setScheduleTimeAction,
 } from "./schedule-actions";
 import {
   NO_SESSION,
@@ -40,8 +41,11 @@ function proposalOf(form: FormData): SentProposal {
   };
 }
 
-/** Which time form a card shows: none, "Usulkan waktu lain" or "Ubah jadwal". */
-type OpenForm = "propose" | "reschedule" | null;
+/**
+ * Which time form a card shows: none, "Usulkan waktu lain", "Ubah
+ * jadwal" or "Tetapkan jadwal".
+ */
+type OpenForm = "propose" | "reschedule" | "set_time" | null;
 
 /**
  * What each time form sends with, what its send button says, and whether
@@ -58,11 +62,18 @@ const TIME_FORMS = {
     words: "Simpan jadwal",
     redraws: true,
   },
+  set_time: {
+    send: setScheduleTimeAction,
+    words: "Simpan jadwal",
+    redraws: true,
+  },
 };
 
 /**
  * One request on Konselor's "Jadwal konseling", with "Setujui waktu ini"
- * and "Usulkan waktu lain" while it is Diajukan, and "Tandai selesai",
+ * and "Usulkan waktu lain" while it is Diajukan, "Tetapkan jadwal" while
+ * an assignment is Menunggu jadwal, "Setujui waktu ini" and "Tetapkan
+ * jadwal" while it is Minta jadwal ulang, and "Tandai selesai",
  * "Tidak hadir" and "Ubah jadwal" once it is Dijadwalkan. Marking asks
  * first. After a press the card shows the request as the server gave it
  * back, also when the press was refused because someone changed it
@@ -136,8 +147,34 @@ export function CounsellorScheduleItem({
 
   const waits = card.status === "submitted";
   const isScheduled = card.status === "scheduled";
+  const toSet =
+    card.status === "awaiting" || card.status === "reschedule_asked";
   return (
     <CounsellorScheduleCardView card={card}>
+      {toSet && openForm === null && (
+        <div className={shared.actions}>
+          {card.status === "reschedule_asked" && (
+            <button
+              type="button"
+              className={shared.button}
+              disabled={pending}
+              onClick={() => press(approveScheduleAction, false)}
+            >
+              Setujui waktu ini
+            </button>
+          )}
+          <button
+            type="button"
+            className={
+              card.status === "awaiting" ? shared.button : shared.quiet
+            }
+            disabled={pending}
+            onClick={() => open("set_time")}
+          >
+            Tetapkan jadwal
+          </button>
+        </div>
+      )}
       {waits && openForm === null && (
         <div className={shared.actions}>
           <button
@@ -188,7 +225,7 @@ export function CounsellorScheduleItem({
           </button>
         </div>
       )}
-      {openForm !== null && (waits || isScheduled) && (
+      {openForm !== null && (waits || isScheduled || toSet) && (
         <ScheduleTimeForm
           card={card}
           sendWords={TIME_FORMS[openForm].words}

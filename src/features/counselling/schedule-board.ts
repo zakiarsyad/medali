@@ -20,7 +20,11 @@ import {
   type ScheduleListParams,
   statusesOf,
 } from "./schedule-address";
-import { ACTIVE_STATUSES } from "./schedule-ids";
+import {
+  ACTIVE_STATUSES,
+  type ScheduleKind,
+  TO_SCHEDULE_STATUSES,
+} from "./schedule-ids";
 import { topicOf } from "./schedule-rules";
 import type {
   CounsellorScheduleCard,
@@ -34,17 +38,29 @@ const SOON_DAYS = 7;
 
 const OF_STUDENT = eq(students.id, counsellingSchedules.studentId);
 
-const NONE: ScheduleCounts = { submitted: 0, scheduledSoon: 0, proposed: 0 };
+const IS_ACTIVE = inArray(counsellingSchedules.status, [...ACTIVE_STATUSES]);
+
+const NONE: ScheduleCounts = {
+  toSchedule: 0,
+  scheduledSoon: 0,
+  proposed: 0,
+  activeByKind: { voluntary: 0, assigned: 0, called: 0 },
+};
 
 /**
- * Diajukan first, then Usulan jadwal lain, then Dijadwalkan, then the
- * ones that are over: Selesai, Tidak hadir and Dibatalkan together.
+ * Minta jadwal ulang first, then Menunggu jadwal, Diajukan, Usulan
+ * jadwal lain and Dijadwalkan, then the ones that are over: Selesai,
+ * Tidak hadir and Dibatalkan together.
  */
 const STATUS_ORDER = sql`case ${counsellingSchedules.status}
-  when 'submitted' then 0 when 'proposed' then 1 when 'scheduled' then 2
-  else 3 end`;
+  when 'reschedule_asked' then 0 when 'awaiting' then 1
+  when 'submitted' then 2 when 'proposed' then 3 when 'scheduled' then 4
+  else 5 end`;
 
-const IS_ACTIVE = inArray(counsellingSchedules.status, [...ACTIVE_STATUSES]);
+/** How many active ones of a Jenis, as one count of the numbers. */
+function activeOf(kind: ScheduleKind) {
+  return sql<number>`count(*) filter (where ${IS_ACTIVE} and ${counsellingSchedules.kind} = ${kind})::int`;
+}
 
 /** A column of an active request, and nothing for one that is over. */
 function whileActive(column: SQL | AnyPgColumn): SQL {
@@ -63,16 +79,22 @@ async function readCounts(
 ): Promise<ScheduleCounts> {
   const { status, day } = counsellingSchedules;
   const last = daysAfter(today, SOON_DAYS);
+  const toSchedule = inArray(status, [...TO_SCHEDULE_STATUSES]);
   const [counted] = await db
     .select({
-      submitted: sql<number>`count(*) filter (where ${status} = 'submitted')::int`,
+      toSchedule: sql<number>`count(*) filter (where ${toSchedule})::int`,
       scheduledSoon: sql<number>`count(*) filter (where ${status} = 'scheduled' and ${day} between ${today} and ${last})::int`,
       proposed: sql<number>`count(*) filter (where ${status} = 'proposed')::int`,
+      voluntary: activeOf("voluntary"),
+      assigned: activeOf("assigned"),
+      called: activeOf("called"),
     })
     .from(counsellingSchedules)
     .innerJoin(students, OF_STUDENT)
     .where(seen);
-  return counted ?? NONE;
+  if (!counted) return NONE;
+  const { voluntary, assigned, called, ...counts } = counted;
+  return { ...counts, activeByKind: { voluntary, assigned, called } };
 }
 
 async function countCards(db: Database, condition: SQL | undefined) {
@@ -152,6 +174,8 @@ function cardOf(
     way: schedule.way,
     story: schedule.story,
     reason: schedule.reason,
+    basis: schedule.basis,
+    senderMessage: schedule.senderMessage,
     // A request sent back by the student waits for a Konselor again.
     counsellorName: schedule.status === "submitted" ? null : row.counsellorName,
     steps,
@@ -186,9 +210,9 @@ export async function readScheduleCard(
 
 /**
  * "Jadwal konseling" of Konselor: the numbers above the cards, and one
- * page of the cards that match the Status filter, Diajukan first and
- * then by the time each is about, and those over after them, the latest
- * first. Every request of a student who is not removed. A fixed number
+ * page of the cards that match the Status and Jenis filters, Minta
+ * jadwal ulang first, then Menunggu jadwal and Diajukan, each by the
+ * time it is about, and those over after them, the latest first. Every request of a student who is not removed. A fixed number
  * of reads, however many requests there are.
  * Nothing for an account without the right.
  */
@@ -201,9 +225,11 @@ export async function readScheduleBoard(
   if (!may(actor.roles, "manage_counselling_schedules")) return null;
   const seen = visible(actor);
   const statuses = statusesOf(params.filter);
+  const kind = params.kind ?? null;
   const condition = and(
     seen,
     statuses ? inArray(counsellingSchedules.status, statuses) : undefined,
+    kind ? eq(counsellingSchedules.kind, kind) : undefined,
   );
   const [counts, matching] = await Promise.all([
     readCounts(db, seen, campusDay(now)),
@@ -216,6 +242,7 @@ export async function readScheduleBoard(
       STATUS_ORDER,
       asc(whileActive(counsellingSchedules.day)),
       asc(whileActive(counsellingSchedules.hour)),
+      asc(whileActive(counsellingSchedules.createdAt)),
       // Those over have no time above, so the latest of them comes first.
       desc(counsellingSchedules.day),
       desc(counsellingSchedules.hour),

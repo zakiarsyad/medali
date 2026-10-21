@@ -9,12 +9,14 @@ import {
   scheduleListAddress,
   statusesOf,
 } from "./schedule-address";
+import { SCHEDULE_KINDS } from "./schedule-ids";
 
 describe("readScheduleListParams", () => {
   it("starts at Perlu ditindaklanjuti on the first page", () => {
     expect(readScheduleListParams({})).toEqual({
       filter: "needs_action",
       page: 1,
+      kind: null,
     });
   });
 
@@ -22,13 +24,29 @@ describe("readScheduleListParams", () => {
     expect(readScheduleListParams({ status: "semua", hal: "3" })).toEqual({
       filter: "all",
       page: 3,
+      kind: null,
+    });
+  });
+
+  it("reads the Jenis", () => {
+    expect(readScheduleListParams({ jenis: "penugasan" })).toMatchObject({
+      kind: "assigned",
+    });
+    expect(readScheduleListParams({ jenis: "pemanggilan" })).toMatchObject({
+      kind: "called",
+    });
+    expect(readScheduleListParams({ jenis: "sukarela" })).toMatchObject({
+      kind: "voluntary",
     });
   });
 
   it("takes what it does not understand as not chosen", () => {
-    expect(readScheduleListParams({ status: "rahasia", hal: "-1" })).toEqual({
+    expect(
+      readScheduleListParams({ status: "rahasia", hal: "-1", jenis: "x" }),
+    ).toEqual({
       filter: "needs_action",
       page: 1,
+      kind: null,
     });
   });
 });
@@ -44,8 +62,29 @@ describe("scheduleListAddress", () => {
       const params = Object.fromEntries(
         new URL(address, "http://uji").searchParams,
       );
-      expect(readScheduleListParams(params)).toEqual({ filter, page: 2 });
+      expect(readScheduleListParams(params)).toEqual({
+        filter,
+        page: 2,
+        kind: null,
+      });
     }
+  });
+
+  it("keeps the Jenis with every choice and page", () => {
+    for (const kind of SCHEDULE_KINDS) {
+      const address = scheduleListAddress("all", 2, kind);
+      const params = Object.fromEntries(
+        new URL(address, "http://uji").searchParams,
+      );
+      expect(readScheduleListParams(params)).toEqual({
+        filter: "all",
+        page: 2,
+        kind,
+      });
+    }
+    expect(scheduleListAddress("needs_action", 1, "called")).toBe(
+      "/konseling?jenis=pemanggilan",
+    );
   });
 });
 
@@ -62,8 +101,12 @@ describe("the Status filter", () => {
     ]);
   });
 
-  it("narrows Perlu ditindaklanjuti to Diajukan, each status choice to itself, and Semua yang aktif to the active statuses", () => {
-    expect(statusesOf("needs_action")).toEqual(["submitted"]);
+  it("narrows Perlu ditindaklanjuti to Diajukan, Menunggu jadwal and Minta jadwal ulang, each status choice to itself, and Semua yang aktif to the active statuses", () => {
+    expect(statusesOf("needs_action")).toEqual([
+      "submitted",
+      "awaiting",
+      "reschedule_asked",
+    ]);
     expect(statusesOf("scheduled")).toEqual(["scheduled"]);
     expect(statusesOf("done")).toEqual(["done"]);
     expect(statusesOf("missed")).toEqual(["missed"]);

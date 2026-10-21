@@ -37,6 +37,7 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".cards",
       ".card",
       ".cardHead",
+      ".badges",
       ".facts",
       ".steps",
       ".steps ol",
@@ -299,5 +300,15 @@ describe("the style files of Konseling", () => {
         expect(rule, selector).not.toContain("nowrap");
       }
     }
+  });
+});
+
+describe("an assignment card of Konselor on a phone", () => {
+  it("puts the Jenis and the status under each other when there is no room, and Dasar across the card", () => {
+    const CARD = read("counsellor-schedule-card.tsx");
+    expect(CARD).toContain("<div className={styles.badges}>");
+    expect(ruleOf(".badges")).toContain("flex-wrap: wrap;");
+    expect(CARD).toMatch(/<Fact title="Dasar" isWide>/);
+    expect(CARD).toMatch(/<Fact title="Pesan pengirim" isWide>/);
   });
 });

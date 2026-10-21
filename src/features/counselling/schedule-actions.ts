@@ -18,6 +18,7 @@ import {
 } from "./move-schedule";
 import { COUNSELLING_ADDRESS } from "./schedule-address";
 import type { SentProposal } from "./schedule-rules";
+import { setScheduleTime } from "./set-schedule-time";
 
 /**
  * The signed-in account when it has the right to manage counselling
@@ -69,6 +70,18 @@ export async function rescheduleScheduleAction(
   const actor = await scheduler();
   return drawnAgain(
     await rescheduleSchedule(database(), actor, id, version, sent),
+  );
+}
+
+/** "Simpan jadwal" of "Tetapkan jadwal" on an assignment. */
+export async function setScheduleTimeAction(
+  id: string,
+  version: string,
+  sent: SentProposal,
+): Promise<CounsellorMoveOutcome> {
+  const actor = await scheduler();
+  return drawnAgain(
+    await setScheduleTime(database(), actor, id, version, sent),
   );
 }
 
