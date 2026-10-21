@@ -1277,6 +1277,59 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit, Direktur, Ketua Program Studi and Pengasuh read the counselling data published for their role, on Kesehatan mental", () => {
+    expect(ACTION_TITLES.view_shared_counselling_data).toContain(
+      "dipublikasikan konselor",
+    );
+    expect(ACTION_TITLES.view_shared_counselling_data).toContain(
+      "Sesi konseling 30 hari",
+    );
+    for (const role of screeningCounters) {
+      expect(may([role], "view_shared_counselling_data")).toBe(true);
+      expect(mayOpenTab([role], "assessment", "mental_health")).toBe(true);
+    }
+  });
+
+  it("refuses the shared counselling data to every other role, Konselor, Penilai Mahasiswa, Pegawai UPK, Pengelola Asrama, the BAM roles and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter((role) => !screeningCounters.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "counsellor",
+        "assessor",
+        "upk_staff",
+        "dorm_manager",
+        ...BAM_ROLES,
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_shared_counselling_data")).toBe(false);
+    }
+  });
+
+  it("gives the shared counselling data to the same roles as the campus count of screened students", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_shared_counselling_data")).toBe(
+        may([role], "view_mental_health_screening_count"),
+      );
+    }
+  });
+
+  it("keeps Ketua Program Studi to their program and Pengasuh to their mentees for the shared counselling data", () => {
+    const account = {
+      id: "m",
+      roles: ["head_of_program", "mentor"] as RoleId[],
+      studyProgramId: 7,
+      studentId: null,
+    };
+    expect(rowLimitForAction(account, "view_shared_counselling_data")).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: ["m"],
+      studentIds: [],
+    });
+  });
+
   it("opens Kesehatan mental to Konselor, Kepala Unit, Direktur, Ketua Program Studi and Pengasuh only", () => {
     const openers: RoleId[] = [
       "counsellor",

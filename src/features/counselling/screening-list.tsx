@@ -43,6 +43,9 @@ function FilterRow({ params }: { params: ScreeningParams }) {
             </option>
           ))}
         </select>
+        {params.sharedPage > 1 && (
+          <input type="hidden" name="hal-data" value={params.sharedPage} />
+        )}
         <button type="submit" className={shared.quiet}>
           Cari
         </button>

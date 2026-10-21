@@ -1,4 +1,4 @@
-import type { SessionContent, SessionKind } from "./session-ids";
+import type { FollowUp, SessionContent, SessionKind } from "./session-ids";
 
 /*
  * Read by the screen parts in the browser, so nothing here may take from
@@ -49,4 +49,9 @@ export interface OwnSessionSummary {
   lastDay: string;
   /** "Sesi berikutnya" of the latest session, when one is set and has not passed. */
   nextDay: string | null;
+}
+
+/** The same with "Tindak lanjut" of the latest session, as a recipient reads it. */
+export interface SessionSummary extends OwnSessionSummary {
+  followUp: FollowUp;
 }
