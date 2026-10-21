@@ -36,7 +36,8 @@ const asked = (daysAgo: number): SampleConsentStep => ({
  * declined once and was asked again, so an earlier answer shows in the
  * log. Dimas Halim and Hadi Kurniawan gave theirs by registering for
  * voluntary counselling. Intan Harahap agreed, was screened, withdrew it
- * and was asked again, so a screened student waits for consent.
+ * and was asked again, so a screened student waits for consent. Nanda
+ * Gunawan signed a paper form, so his data can be shared.
  */
 export const SAMPLE_CONSENTS: SampleConsent[] = [
   { nim: "9900230001", steps: [asked(2)] },
@@ -84,6 +85,10 @@ export const SAMPLE_CONSENTS: SampleConsent[] = [
       { status: "withdrawn", way: null, daysAgo: 9 },
       asked(2),
     ],
+  },
+  {
+    nim: "9900240014",
+    steps: [{ status: "approved", way: "paper", daysAgo: 16 }],
   },
 ];
 

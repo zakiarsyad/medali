@@ -268,6 +268,26 @@ describe("the student's sharing box on a phone", () => {
   });
 });
 
+describe("Data yang dipublikasikan untuk Anda on a phone", () => {
+  it("lays its lines out one under the other", () => {
+    expect(read("shared-list.tsx")).toMatch(
+      /className=\{`\$\{shared\.panel\} \$\{styles\.stack\}`\}/,
+    );
+  });
+
+  it("turns each student into a card that folds its words, with no sideways scroll", () => {
+    expect(read("shared-table.tsx")).toMatch(
+      /className=\{`\$\{shared\.table\} \$\{shared\.stacked\}`\}/,
+    );
+    expect(ruleOf(".stacked tbody tr", SHARED)).toContain(
+      "grid-template-columns: minmax(0, 1fr);",
+    );
+    expect(ruleOf(".stacked td", SHARED)).toContain(
+      "overflow-wrap: break-word;",
+    );
+  });
+});
+
 describe("the style files of Konseling", () => {
   it("force no width wider than a phone", () => {
     for (const [styles, selectors] of LAYOUT_RULES) {

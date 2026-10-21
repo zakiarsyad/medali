@@ -3672,6 +3672,34 @@ export const counsellingSharingChanges = pgTable(
   ],
 );
 
+/**
+ * Every opening of "Rincian" of a published sharing by a recipient: who
+ * read whose data, which sharing and when, never what it showed. Rows
+ * here cannot be changed or deleted; the database refuses it.
+ */
+export const counsellingSharingReads = pgTable(
+  "counselling_sharing_reads",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sharingId: uuid()
+      .notNull()
+      .references(() => counsellingSharings.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    readBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    readAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("counselling_sharing_reads_student").on(
+      table.studentId,
+      table.readAt,
+    ),
+  ],
+);
+
 /** A limit of "Ambang skor" of the fitness test is in its range. */
 function inFitnessLimitRange(limit: AnyPgColumn): SQL {
   return sql`${limit} between ${sql.raw(String(FITNESS_LIMIT_MIN))} and ${sql.raw(String(FITNESS_LIMIT_MAX))}`;

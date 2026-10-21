@@ -456,6 +456,20 @@
       "when": 1792543476992,
       "tag": "0064_counselling-sharing-log-cannot-change",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1792548763728,
+      "tag": "0065_counselling-sharing-reads",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1792548764772,
+      "tag": "0066_counselling-sharing-reads-cannot-change",
+      "breakpoints": true
     }
   ]
 }

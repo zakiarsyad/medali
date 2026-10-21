@@ -13,7 +13,7 @@ describe("the address of Kesehatan mental", () => {
         filter: "perlu-konseling",
         hal: "2",
       }),
-    ).toEqual({ query: "Bayu", filter: "counselling", page: 2 });
+    ).toEqual({ query: "Bayu", filter: "counselling", page: 2, sharedPage: 1 });
     expect(readScreeningParams({ filter: "menunggu-persetujuan" }).filter).toBe(
       "waiting",
     );
@@ -21,21 +21,34 @@ describe("the address of Kesehatan mental", () => {
 
   it("takes what it does not understand as not chosen", () => {
     expect(
-      readScreeningParams({ filter: "semua-rahasia", hal: "-3", cari: [] }),
-    ).toEqual({ query: "", filter: "all", page: 1 });
+      readScreeningParams({
+        filter: "semua-rahasia",
+        hal: "-3",
+        "hal-data": "x",
+        cari: [],
+      }),
+    ).toEqual({ query: "", filter: "all", page: 1, sharedPage: 1 });
+  });
+
+  it("reads the page of Data yang dipublikasikan untuk Anda apart from the page of Daftar mahasiswa", () => {
+    expect(readScreeningParams({ hal: "2", "hal-data": "3" })).toMatchObject({
+      page: 2,
+      sharedPage: 3,
+    });
   });
 
   it("leaves out what is not chosen, and puts back what is", () => {
-    expect(screeningAddress({ query: "", filter: "all", page: 1 })).toBe(
-      SCREENING_ADDRESS,
-    );
+    expect(
+      screeningAddress({ query: "", filter: "all", page: 1, sharedPage: 1 }),
+    ).toBe(SCREENING_ADDRESS);
     const address = screeningAddress({
       query: "Bayu",
       filter: "waiting",
       page: 3,
+      sharedPage: 2,
     });
     expect(address).toBe(
-      "/penilaian/mental?cari=Bayu&filter=menunggu-persetujuan&hal=3",
+      "/penilaian/mental?cari=Bayu&filter=menunggu-persetujuan&hal=3&hal-data=2",
     );
   });
 });
