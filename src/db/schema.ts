@@ -133,6 +133,8 @@ import {
 import {
   PLACE_MAX_LENGTH as CALL_PLACE_MAX_LENGTH,
   PLACE_MIN_LENGTH as CALL_PLACE_MIN_LENGTH,
+  HANDLING_NOTE_MAX_LENGTH,
+  HANDLING_NOTE_MIN_LENGTH,
   PROPOSAL_NOTE_MAX_LENGTH,
   RESULT_MAX_LENGTH,
   RESULT_MIN_LENGTH,
@@ -1820,8 +1822,10 @@ export const dormViolationAppeals = pgTable(
  * in a semester. A resident has one of each level per semester at most.
  * The schedule is set by "Kirim panggilan" and may change until the SP
  * is issued; an SP may be issued without a call. Once issued, with who,
- * when and Hasil klarifikasi, the row cannot change; the database refuses
- * it. Every schedule and every issue has its line in the log.
+ * when and Hasil klarifikasi, the row cannot change, except that Kepala
+ * Unit sets the handling of the proposal of an SP 2 once; the database
+ * refuses anything else. Every schedule, issue and handling has its
+ * line in the log.
  */
 export const dormWarningLetters = pgTable(
   "dorm_warning_letters",
@@ -1846,6 +1850,14 @@ export const dormWarningLetters = pgTable(
     proposalNote: text().notNull().default(""),
     issuedBy: uuid().references(() => accounts.id),
     issuedAt: timestamp({ withTimezone: true }),
+    /**
+     * Catatan tindak lanjut of Kepala Unit, who and when, set together
+     * once on an issued SP 2: the proposal is Diproses then, and
+     * Diajukan while they are empty.
+     */
+    handlingNote: text(),
+    handledBy: uuid().references(() => accounts.id),
+    handledAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     unique("dorm_warning_letters_one_per_level_and_period").on(
@@ -1879,12 +1891,26 @@ export const dormWarningLetters = pgTable(
       "dorm_warning_letters_proposal_note_length",
       sql`char_length(${table.proposalNote}) <= ${sql.raw(String(PROPOSAL_NOTE_MAX_LENGTH))}`,
     ),
+    check(
+      "dorm_warning_letters_handling_is_whole",
+      sql`(${table.handledAt} is null) = (${table.handledBy} is null) and (${table.handledAt} is null) = (${table.handlingNote} is null)`,
+    ),
+    check(
+      "dorm_warning_letters_handling_only_on_issued_sp2",
+      sql`${table.handledAt} is null or (${table.level} = 2 and ${table.issuedAt} is not null)`,
+    ),
+    check(
+      "dorm_warning_letters_handling_note_length",
+      sql`char_length(${table.handlingNote}) between ${sql.raw(String(HANDLING_NOTE_MIN_LENGTH))} and ${sql.raw(String(HANDLING_NOTE_MAX_LENGTH))}`,
+    ),
   ],
 );
 
 /**
- * Every schedule of a call and every issue of a warning letter: who,
- * when, and the schedule after it, empty for an SP issued without one.
+ * Every schedule of a call, every issue of a warning letter and every
+ * handling of a proposal: who, when, and the schedule after it, empty
+ * for an SP issued without one. The note of a handling is on the letter,
+ * which cannot change after it.
  * Rows here cannot be changed or deleted; the database refuses it. A
  * letter is held by its log lines, so it cannot be deleted either.
  */

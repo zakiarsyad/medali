@@ -4,6 +4,7 @@ import type { SamplePeriod } from "./sample-data";
 import type { SampleResident } from "./sample-dorm-counts";
 import {
   type SampleCountedViolation,
+  type SampleHandling,
   type SampleLetter,
   type SampleReduction,
   sampleDormWarnings,
@@ -112,17 +113,37 @@ async function addViolations(
   await db.insert(dormViolationChanges).values(lines);
 }
 
-/** Adds the calls and their SPs, with a line for each call and each SP. */
+/** The handling of a proposal by Kepala Unit, or nothing while it is Diajukan. */
+function handlingOf(handling: SampleHandling | null, by: string) {
+  if (handling === null) return {};
+  return {
+    handlingNote: handling.note,
+    handledBy: by,
+    handledAt: handling.at,
+  };
+}
+
+/** Who called and issued the sample SPs, and who handled their proposals. */
+interface LetterActors {
+  manager: string;
+  head: string;
+}
+
+/**
+ * Adds the calls and their SPs, with a line for each call, each SP and
+ * each handling of a proposal.
+ */
 async function addLetters(
   db: Database,
   letters: SampleLetter[],
   residents: SampleResident[],
   periodId: string,
-  by: string,
+  actors: LetterActors,
 ): Promise<void> {
+  const by = actors.manager;
   const rows: (typeof dormWarningLetters.$inferInsert)[] = [];
   const lines: (typeof dormWarningLetterChanges.$inferInsert)[] = [];
-  for (const { resident, level, call, issue } of letters) {
+  for (const { resident, level, call, issue, handling } of letters) {
     const id = crypto.randomUUID();
     const schedule = {
       callDay: call.day,
@@ -145,11 +166,20 @@ async function addLetters(
       level,
       ...schedule,
       ...issued,
+      ...handlingOf(handling, actors.head),
     });
     const line = { letterId: id, changedBy: by, ...schedule };
     lines.push({ ...line, changedAt: call.sentAt, action: "scheduled" });
     if (issue !== null) {
       lines.push({ ...line, changedAt: issue.at, action: "issued" });
+    }
+    if (handling !== null) {
+      lines.push({
+        ...line,
+        changedBy: actors.head,
+        changedAt: handling.at,
+        action: "handled",
+      });
     }
   }
   await db.insert(dormWarningLetters).values(rows);
@@ -159,7 +189,8 @@ async function addLetters(
 /**
  * Adds the sample calls and warning letters of the running sample
  * period, with the violations that led to them: recorded by the sample
- * BAM - BPHK, called, issued and reduced by the sample Pengelola Asrama.
+ * BAM - BPHK, called, issued and reduced by the sample Pengelola Asrama,
+ * and one proposal handled by the sample Kepala Unit.
  */
 export async function addSampleDormWarnings(
   db: Database,
@@ -173,11 +204,8 @@ export async function addSampleDormWarnings(
     recorder: await sampleAccount(db, "bam_bphk"),
     manager,
   });
-  await addLetters(
-    db,
-    letters,
-    residents,
-    await periodIdOf(db, period),
+  await addLetters(db, letters, residents, await periodIdOf(db, period), {
     manager,
-  );
+    head: await sampleAccount(db, "head_of_unit"),
+  });
 }

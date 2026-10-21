@@ -112,7 +112,7 @@ Decided while building, because the issue did not say:
 
 ## Steps
 
-- [ ] 1. The handling fields (status, note, who, when) are added to the
+- [x] 1. The handling fields (status, note, who, when) are added to the
   SP 2 proposal, with a sample proposal Diajukan and one Diproses.
 - [ ] 2. The right to handle a proposal is added to the permission list,
   with its checks.

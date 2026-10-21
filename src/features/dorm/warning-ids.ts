@@ -32,8 +32,15 @@ export interface CallSchedule {
   place: string;
 }
 
-/** What a line of the log of a call and its SP records. */
-export const WARNING_CHANGE_ACTIONS = ["scheduled", "issued"] as const;
+/**
+ * What a line of the log of a call and its SP records; "handled" is
+ * Kepala Unit marking the proposal of an SP 2 Diproses.
+ */
+export const WARNING_CHANGE_ACTIONS = [
+  "scheduled",
+  "issued",
+  "handled",
+] as const;
 
 export type WarningChangeAction = (typeof WARNING_CHANGE_ACTIONS)[number];
 
@@ -47,6 +54,10 @@ export const RESULT_MAX_LENGTH = 1000;
 
 /** The most letters "Catatan pengajuan hukuman disiplin ke Kepala UPK" holds. */
 export const PROPOSAL_NOTE_MAX_LENGTH = 1000;
+
+/** How long "Catatan tindak lanjut" of Kepala Unit is, without spaces around it. */
+export const HANDLING_NOTE_MIN_LENGTH = 5;
+export const HANDLING_NOTE_MAX_LENGTH = 1000;
 
 /** How many days after today a call may be scheduled at most. */
 export const CALL_DAYS_AHEAD_MAX = 30;
