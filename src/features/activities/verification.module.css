@@ -38,6 +38,12 @@
   display: block;
 }
 
+/* Drawn inside: the card cuts off a ring drawn around the link. */
+.photoLink:focus-visible {
+  outline: var(--line-width-strong) solid var(--gold);
+  outline-offset: calc(-1 * var(--line-width-strong));
+}
+
 .photo {
   display: block;
   object-fit: contain;

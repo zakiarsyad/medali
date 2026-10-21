@@ -1,12 +1,12 @@
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import { openAttendancePhoto } from "@/features/activities/open-attendance-photo";
-import { downloadResponse, refusalResponse } from "@/files/download-response";
+import { refusalResponse, viewResponse } from "@/files/download-response";
 import { fileStorage } from "@/files/file-storage";
 
 /**
- * Downloads the photo of an attendance, to the student who sent it and to
- * staff who may verify attendance.
+ * The photo of an attendance, shown in the browser tab, to the student who
+ * sent it and to staff who may verify attendance.
  */
 export async function GET(
   _request: Request,
@@ -21,5 +21,5 @@ export async function GET(
     id,
   );
   if (!opened.ok) return refusalResponse(opened.refusal);
-  return downloadResponse(opened.file);
+  return viewResponse(opened.file);
 }

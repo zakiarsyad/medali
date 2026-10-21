@@ -27,6 +27,21 @@ describe("the tab Verifikasi presensi on a phone", () => {
     expect(ruleOf(".photo,\n.noPhoto")).toContain("width: 100%;");
     expect(ruleOf(".decision")).toContain("flex-wrap: wrap;");
   });
+
+  it("gives each thing a card offers to decide the whole width of the card and more height, through the names for phone width", () => {
+    const control = ruleOf(".decide .decideControl");
+    const tokens = readFileSync("src/ui/tokens.css", "utf8");
+    const atPhoneWidth = tokens.slice(tokens.indexOf("@media (max-width"));
+
+    expect(ruleOf(".decide")).toContain("flex-wrap: wrap;");
+    expect(control).toContain("flex: 1 1 var(--decide-control-basis);");
+    expect(control).toContain("padding-top: var(--decide-control-padding);");
+    expect(control).toContain("max-width: 100%;");
+    expect(atPhoneWidth).toContain("--decide-control-basis: 100%;");
+    expect(atPhoneWidth).toContain(
+      "--decide-control-padding: var(--space-md);",
+    );
+  });
 });
 
 describe("the photo on a card of Verifikasi presensi", () => {
@@ -47,18 +62,15 @@ describe("the photo on a card of Verifikasi presensi", () => {
     );
   });
 
-  it("gives each thing a card offers to decide the whole width of the card and more height, through the names for phone width", () => {
-    const control = ruleOf(".decide .decideControl");
-    const tokens = readFileSync("src/ui/tokens.css", "utf8");
-    const atPhoneWidth = tokens.slice(tokens.indexOf("@media (max-width"));
+  it("shows the focus of the photo link inside the card, which cuts off whatever spills out", () => {
+    const focus = ruleOf(".photoLink:focus-visible");
 
-    expect(ruleOf(".decide")).toContain("flex-wrap: wrap;");
-    expect(control).toContain("flex: 1 1 var(--decide-control-basis);");
-    expect(control).toContain("padding-top: var(--decide-control-padding);");
-    expect(control).toContain("max-width: 100%;");
-    expect(atPhoneWidth).toContain("--decide-control-basis: 100%;");
-    expect(atPhoneWidth).toContain(
-      "--decide-control-padding: var(--space-md);",
+    expect(ruleOf(".photoCard")).toContain("overflow: hidden;");
+    expect(focus).toContain(
+      "outline: var(--line-width-strong) solid var(--gold);",
+    );
+    expect(focus).toContain(
+      "outline-offset: calc(-1 * var(--line-width-strong));",
     );
   });
 });
