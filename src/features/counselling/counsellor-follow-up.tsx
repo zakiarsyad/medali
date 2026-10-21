@@ -3,6 +3,10 @@
 import { useRef } from "react";
 import type { Parsed } from "@/parsed";
 import { type ConsentView, versionOfConsent } from "./consent-view";
+import {
+  CounsellingListPart,
+  type CounsellorStudents,
+} from "./counselling-list-panel";
 import { CounsellorConsentPanel } from "./counsellor-consent-panel";
 import { CounsellorSharingPanel } from "./counsellor-sharing-panel";
 import { followUpOf } from "./follow-up";
@@ -19,22 +23,26 @@ function consentVersionOf(
 }
 
 /**
- * The dorm referrals, "Persetujuan konseling" and "Publikasi data
- * kesehatan mental" of Konselor, which share the student picked:
- * "Tindak lanjuti" of a referral picks the student in the panel and
- * brings it into view. Each shows only to an account with its own right.
+ * The dorm referrals, "Persetujuan konseling", "Publikasi data
+ * kesehatan mental" and "Daftar mahasiswa" of Konselor, which share
+ * the student picked: "Tindak lanjuti" of a referral and "Buka" of
+ * the list pick the student in the panels and bring them into view.
+ * Each shows only to an account with its own right.
  */
 export function CounsellorFollowUp({
   referrals,
   mayManageConsent,
   mayKeepSessions,
   mayShare = false,
+  students = null,
 }: {
   referrals: ReferralList | null;
   mayManageConsent: boolean;
   mayKeepSessions: boolean;
   /** "Publikasi data kesehatan mental" about the student picked. */
   mayShare?: boolean;
+  /** The numbers and "Daftar mahasiswa", or null without the right. */
+  students?: CounsellorStudents | null;
 }) {
   const picking = useConsentPick(mayKeepSessions);
   const consentPanel = useRef<HTMLElement>(null);
@@ -58,6 +66,12 @@ export function CounsellorFollowUp({
         <CounsellorSharingPanel
           picked={picking.picked}
           consentVersion={consentVersionOf(picking.looked)}
+        />
+      )}
+      {students && (
+        <CounsellingListPart
+          students={students}
+          onOpen={mayManageConsent ? followUp : null}
         />
       )}
     </>
