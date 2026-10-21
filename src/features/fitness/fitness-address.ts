@@ -1,3 +1,4 @@
+import { isUuid } from "@/db/is-uuid";
 import { CATEGORY_CHOICES } from "@/health-notes/filter-choices";
 import type { ShownCategory } from "@/health-notes/fitness-category";
 import { firstParam, type SearchParams } from "@/ui/search-params";
@@ -40,18 +41,25 @@ export interface FitnessParams {
   filter: FitnessFilter;
   /** The page of the list, counted from 1. */
   page: number;
+  /** The student whose profile is open over the tab, or null for none. */
+  profileId: string | null;
 }
 
 export const START_PARAMS: FitnessParams = {
   query: "",
   filter: "all",
   page: 1,
+  profileId: null,
 };
 
 const PAGE = /^[1-9]\d{0,5}$/;
 
 function pageNamed(sent: string): number {
   return PAGE.test(sent) ? Number(sent) : 1;
+}
+
+function idNamed(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
 }
 
 /** The filter an address names, or every student for any other. */
@@ -70,6 +78,7 @@ export function readFitnessParams(params: SearchParams): FitnessParams {
     query: searchText(firstParam(params.cari)) ?? "",
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
+    profileId: idNamed(firstParam(params.profil)),
   };
 }
 
@@ -84,6 +93,7 @@ export function fitnessAddress(params: FitnessParams): string {
     search.set("saring", FILTER_CHOICES[params.filter]);
   }
   if (params.page > 1) search.set("hal", String(params.page));
+  if (params.profileId !== null) search.set("profil", params.profileId);
   const text = search.toString();
   if (text === "") return FITNESS_ADDRESS;
   return `${FITNESS_ADDRESS}?${text}`;

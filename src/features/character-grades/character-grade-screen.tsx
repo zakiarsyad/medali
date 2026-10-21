@@ -46,7 +46,7 @@ export function CharacterGradeScreen({
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar nilai karakter</h2>
         <GradeFilterRow params={params} />
-        <GradeListTable rows={list.rows} />
+        <GradeListTable rows={list.rows} params={params} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

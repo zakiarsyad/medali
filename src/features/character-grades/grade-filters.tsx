@@ -52,7 +52,12 @@ export function GradeFilterRow({ params }: { params: GradeParams }) {
 
   function choose(sent: string) {
     const query = searchText(typed) ?? "";
-    const chosen = { query, filter: filterNamed(sent), page: 1 };
+    const chosen = {
+      query,
+      filter: filterNamed(sent),
+      page: 1,
+      profileId: null,
+    };
     router.push(gradeAddress(chosen), { scroll: false });
   }
 

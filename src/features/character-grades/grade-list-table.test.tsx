@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { START_PARAMS } from "./grade-address";
 import { type GradeInput, gradeRowOf } from "./grade-list";
 import { GradeListTable, NO_GRADE_MATCHES } from "./grade-list-table";
 import { STARTING_SCHEME } from "./scheme-ids";
@@ -27,7 +28,9 @@ const BUDI: GradeInput = {
 
 function pageOf(inputs: GradeInput[]): string {
   const rows = inputs.map((input) => gradeRowOf(input, STARTING_SCHEME));
-  return renderToStaticMarkup(<GradeListTable rows={rows} />);
+  return renderToStaticMarkup(
+    <GradeListTable rows={rows} params={START_PARAMS} />,
+  );
 }
 
 describe("Daftar nilai karakter", () => {
@@ -121,5 +124,18 @@ describe("Daftar nilai karakter", () => {
 
   it("says so when no student matches", () => {
     expect(pageOf([])).toContain(NO_GRADE_MATCHES);
+  });
+});
+
+describe("names in Daftar nilai karakter", () => {
+  it("open the student's profile over the tab, keeping the page", () => {
+    const rows = [gradeRowOf(ANI, STARTING_SCHEME)];
+    const html = renderToStaticMarkup(
+      <GradeListTable rows={rows} params={{ ...START_PARAMS, page: 2 }} />,
+    );
+
+    expect(html).toContain(
+      'href="/penilaian/karakter?hal=2&amp;profil=id-ani"',
+    );
   });
 });

@@ -52,7 +52,8 @@ import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
  * their own SIKU, whatever the address asks for. Nilai dasar is the one
  * set in Kurikulum. A name in the lists opens the student over the tab:
  * the whole detail for a role that may open it, else name, NIM, program
- * studi and status, each with "Rincian nilai SIKU".
+ * studi and status with the character panels, each with "Rincian nilai
+ * SIKU".
  */
 export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const opened = await openPage("penilaian", "siku");
@@ -181,11 +182,18 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
             </>
           )}
           briefPanelsOf={(studentId) => (
-            <StudentSikuPanel
-              account={account}
-              studentId={studentId}
-              base={Promise.resolve(base)}
-            />
+            <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={Promise.resolve(base)}
+              />
+            </>
           )}
         />
       )}

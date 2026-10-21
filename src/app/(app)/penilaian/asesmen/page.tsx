@@ -2,9 +2,13 @@ import { periodTitle } from "@/academic-periods/period-labels";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
+import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
-import { readAssessmentParams } from "@/features/character-assessment/assessment-address";
+import {
+  assessmentAddress,
+  readAssessmentParams,
+} from "@/features/character-assessment/assessment-address";
 import {
   readAssessmentList,
   readAssessmentNumbers,
@@ -24,12 +28,26 @@ import {
   CoachingPanel,
   type CounsellingCell,
 } from "@/features/character-assessment/coaching-panel";
+import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
+import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { AssessmentCallCell } from "@/features/counselling/assessment-call-cell";
 import {
   type AssessmentCall,
   readAssessmentCalls,
 } from "@/features/counselling/assessment-calls";
+import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
+import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { readMainIndicators } from "@/features/curriculum/stored-main-indicators";
+import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
+import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
+import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
+import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
+import { noteRowsFor } from "@/features/mentoring/visible-notes";
+import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
+import { askedDetailOrBrief } from "@/features/students/asked-detail";
+import { runningPeriodNow } from "@/features/students/running-period-now";
+import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
+import { activeAmong } from "@/mentoring/active-member";
 
 /**
  * The tab Asesmen karakter. Each role sees the students its roles that
@@ -41,7 +59,12 @@ import { readMainIndicators } from "@/features/curriculum/stored-main-indicators
  * Mahasiswa sees its column Konseling, with the calls read for it alone.
  * A student's earlier assessments open over the tab only for a student
  * the account sees. "Input asesmen" in a student's detail opens the form
- * with that student picked, only when the account may assess them.
+ * with that student picked, only when the account may assess them. A
+ * name in "Teridentifikasi perlu pembinaan" opens the student over the
+ * tab: the whole detail for a role that may open it, else name, NIM,
+ * program studi, status and the character panels, only for a student
+ * the tab lists. A name in the list of assessments keeps opening the
+ * earlier assessments.
  */
 export default async function AssessmentPage(
   props: PageProps<"/penilaian/asesmen">,
@@ -54,19 +77,22 @@ export default async function AssessmentPage(
   const visible = assessmentVisibleTo(account);
   const mayAssess = may(account.roles, "assess_character");
   const running = await readRunningPeriod(db);
-  const [numbers, coaching, list, history] = await Promise.all([
+  const [numbers, coaching, list, history, profile] = await Promise.all([
     readAssessmentNumbers(db, visible, running?.id ?? null),
     readCoachingList(db, visible, params),
     readAssessmentList(db, visible, params),
     params.historyId === null
       ? null
       : readAssessmentHistory(db, visible, params.historyId, mayAssess),
+    askedDetailOrBrief(account, params.profileId, activeAmong(visible)),
   ]);
   const calls = await readAssessmentCalls(
     db,
     account,
     coaching.rows.map((row) => row.id),
   );
+  const noteLimit = noteRowsFor(account);
+  const notesVisible = noteLimit === null ? null : visibleTo(noteLimit);
   return (
     <>
       <AssessmentScreen
@@ -98,7 +124,50 @@ export default async function AssessmentPage(
           )
         }
       />
-      {history && (
+      {profile && (
+        <StudentDetailDialog
+          detail={profile}
+          period={await runningPeriodNow()}
+          openedFrom="coaching_list"
+          closeAddress={assessmentAddress({ ...params, profileId: null })}
+          groupAddressOf={(group) => openGroupAddress(account, group)}
+          mentorAddressOf={(mentorId, group) =>
+            openMentorAddress(account, mentorId, group)
+          }
+          morePanelsOf={(studentId) => (
+            <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={baseScoreNow()}
+              />
+              <StudentFitnessPanel account={account} studentId={studentId} />
+              <StudentMentalPanel account={account} studentId={studentId} />
+              <StudentNotesPanel
+                account={account}
+                visible={notesVisible}
+                studentId={studentId}
+              />
+            </>
+          )}
+          briefPanelsOf={(studentId) => (
+            <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
+              <StudentMentalPanel account={account} studentId={studentId} />
+            </>
+          )}
+        />
+      )}
+      {history && !profile && (
         <AssessmentHistoryDialog
           history={history}
           params={params}

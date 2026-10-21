@@ -49,6 +49,8 @@ export interface AssessmentParams {
    * the server picks only a student the account may assess.
    */
   pickId: string | null;
+  /** The student whose profile is open over the tab, or null for none. */
+  profileId: string | null;
 }
 
 export const START_PARAMS: AssessmentParams = {
@@ -59,6 +61,7 @@ export const START_PARAMS: AssessmentParams = {
   coachingAll: false,
   coachingPage: 1,
   pickId: null,
+  profileId: null,
 };
 
 /** How many students "Teridentifikasi perlu pembinaan" shows before "Tampilkan semua". */
@@ -100,6 +103,7 @@ export function readAssessmentParams(params: SearchParams): AssessmentParams {
     coachingAll: firstParam(params.pembinaan) === ALL,
     coachingPage: pageNamed(firstParam(params.pembinaanhal)),
     pickId: idNamed(firstParam(params.mahasiswa)),
+    profileId: idNamed(firstParam(params.profil)),
   };
 }
 
@@ -120,6 +124,7 @@ export function assessmentAddress(params: AssessmentParams): string {
     search.set("pembinaanhal", String(params.coachingPage));
   }
   if (params.pickId !== null) search.set("mahasiswa", params.pickId);
+  if (params.profileId !== null) search.set("profil", params.profileId);
   const text = search.toString();
   if (text === "") return ASSESSMENT_ADDRESS;
   return `${ASSESSMENT_ADDRESS}?${text}`;

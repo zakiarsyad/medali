@@ -1,4 +1,5 @@
 import { GRADE_CHOICE_WORDS } from "@/character-grades/grade-choice";
+import { isUuid } from "@/db/is-uuid";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
@@ -37,14 +38,25 @@ export interface GradeParams {
   filter: GradeFilter;
   /** The page of the list, counted from 1. */
   page: number;
+  /** The student whose profile is open over the tab, or null for none. */
+  profileId: string | null;
 }
 
-export const START_PARAMS: GradeParams = { query: "", filter: "all", page: 1 };
+export const START_PARAMS: GradeParams = {
+  query: "",
+  filter: "all",
+  page: 1,
+  profileId: null,
+};
 
 const PAGE = /^[1-9]\d{0,5}$/;
 
 function pageNamed(sent: string): number {
   return PAGE.test(sent) ? Number(sent) : 1;
+}
+
+function idNamed(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
 }
 
 /** The filter an address names, or every student for any other. */
@@ -63,6 +75,7 @@ export function readGradeParams(params: SearchParams): GradeParams {
     query: searchText(firstParam(params.cari)) ?? "",
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
+    profileId: idNamed(firstParam(params.profil)),
   };
 }
 
@@ -77,6 +90,7 @@ export function gradeAddress(params: GradeParams): string {
     search.set("saring", FILTER_CHOICES[params.filter]);
   }
   if (params.page > 1) search.set("hal", String(params.page));
+  if (params.profileId !== null) search.set("profil", params.profileId);
   const text = search.toString();
   if (text === "") return GRADE_ADDRESS;
   return `${GRADE_ADDRESS}?${text}`;

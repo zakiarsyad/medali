@@ -11,6 +11,7 @@ import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { valueNameOf } from "@/ui/medali-values";
+import { ProfileNameLink } from "@/ui/profile-name-link";
 import {
   type AssessmentParams,
   assessmentAddress,
@@ -34,15 +35,20 @@ export type CounsellingCell = (row: CoachingRow) => ReactNode;
 function CoachingRowCells({
   row,
   counsellingCell,
+  params,
 }: {
   row: CoachingRow;
   counsellingCell: CounsellingCell | null;
+  params: AssessmentParams;
 }) {
   const { level, weakest } = row.need;
   return (
     <tr>
       <td className={shared.rowHeading} data-title="Mahasiswa">
-        <b className={shared.typed}>{row.name}</b>
+        <ProfileNameLink
+          name={row.name}
+          href={assessmentAddress({ ...params, profileId: row.id })}
+        />
         <small className={shared.detail}>
           {row.nim} · {row.program}
         </small>
@@ -69,9 +75,11 @@ function CoachingRowCells({
 function CoachingTable({
   rows,
   counsellingCell,
+  params,
 }: {
   rows: readonly CoachingRow[];
   counsellingCell: CounsellingCell | null;
+  params: AssessmentParams;
 }) {
   if (rows.length === 0) return <p className={shared.empty}>{NO_COACHING}</p>;
   return (
@@ -92,6 +100,7 @@ function CoachingTable({
               key={row.id}
               row={row}
               counsellingCell={counsellingCell}
+              params={params}
             />
           ))}
         </tbody>
@@ -162,7 +171,11 @@ export function CoachingPanel({
         satu nilai di bawah {LISTED_BELOW_SCORE}). Penilai Mahasiswa dapat
         memanggil mahasiswa untuk konseling bila diperlukan.
       </p>
-      <CoachingTable rows={list.rows} counsellingCell={counsellingCell} />
+      <CoachingTable
+        rows={list.rows}
+        counsellingCell={counsellingCell}
+        params={params}
+      />
       <CoachingMore list={list} params={params} />
     </section>
   );

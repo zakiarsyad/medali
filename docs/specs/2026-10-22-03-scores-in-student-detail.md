@@ -140,6 +140,6 @@ name from a Penilaian list shows the same detail.
 - [x] 4. "Kesehatan jasmani" in the detail, with the note rule.
 - [x] 5. "Kesehatan mental" for Konselor and for recipients of a
   sharing.
-- [ ] 6. Names in the Penilaian lists that do not open it yet,
+- [x] 6. Names in the Penilaian lists that do not open it yet,
   Konselor's "Daftar mahasiswa" on Kesehatan mental among them, open
   the detail.

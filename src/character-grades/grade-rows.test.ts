@@ -263,7 +263,10 @@ describe("the parts of the character grade", () => {
         records.ani.studentId,
       );
       const list = renderToStaticMarkup(
-        createElement(GradeListTable, { rows: [await aniRow(db, records)] }),
+        createElement(GradeListTable, {
+          rows: [await aniRow(db, records)],
+          params: START_PARAMS,
+        }),
       );
 
       if (ownPage.kind !== "found") throw new Error("Ani has no page.");

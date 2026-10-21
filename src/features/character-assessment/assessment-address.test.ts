@@ -72,6 +72,7 @@ describe("assessmentAddress", () => {
       coachingAll: true,
       coachingPage: 3,
       pickId: STUDENT,
+      profileId: null,
     } as const;
 
     const address = assessmentAddress(params);
@@ -92,6 +93,26 @@ describe("assessmentAddress", () => {
   it("leaves out the page of the full list while only the first rows show", () => {
     expect(assessmentAddress({ ...START_PARAMS, coachingPage: 3 })).toBe(
       "/penilaian/asesmen",
+    );
+  });
+});
+
+describe("the student whose profile is open over the tab", () => {
+  const PROFILE = "3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b";
+
+  it("is read from the address, and only as an id", () => {
+    expect(readAssessmentParams({ profil: PROFILE }).profileId).toBe(PROFILE);
+    expect(readAssessmentParams({ profil: "bukan-id" }).profileId).toBeNull();
+    expect(readAssessmentParams({}).profileId).toBeNull();
+  });
+
+  it("is named in the address, and read back", () => {
+    const address = assessmentAddress({ ...START_PARAMS, profileId: PROFILE });
+
+    expect(address).toBe(`/penilaian/asesmen?profil=${PROFILE}`);
+    const search = new URLSearchParams(address.split("?")[1]);
+    expect(readAssessmentParams(Object.fromEntries(search)).profileId).toBe(
+      PROFILE,
     );
   });
 });

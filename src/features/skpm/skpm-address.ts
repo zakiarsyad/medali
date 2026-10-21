@@ -40,6 +40,8 @@ export interface SkpmParams {
   detailId: string | null;
   /** The page of "Riwayat unggahan". */
   historyPage: number;
+  /** The student whose profile is open over the tab, or null for none. */
+  profileId: string | null;
 }
 
 export const START_PARAMS: SkpmParams = {
@@ -48,6 +50,7 @@ export const START_PARAMS: SkpmParams = {
   page: 1,
   detailId: null,
   historyPage: 1,
+  profileId: null,
 };
 
 /** How many uploads one page of "Riwayat unggahan" shows. */
@@ -81,6 +84,7 @@ export function readSkpmParams(params: SearchParams): SkpmParams {
     page: pageNamed(firstParam(params.hal)),
     detailId: idNamed(firstParam(params.rincian)),
     historyPage: pageNamed(firstParam(params.riwayat)),
+    profileId: idNamed(firstParam(params.profil)),
   };
 }
 
@@ -99,6 +103,7 @@ export function skpmAddress(params: SkpmParams): string {
   if (params.historyPage > 1) {
     search.set("riwayat", String(params.historyPage));
   }
+  if (params.profileId !== null) search.set("profil", params.profileId);
   const text = search.toString();
   if (text === "") return SKPM_ADDRESS;
   return `${SKPM_ADDRESS}?${text}`;

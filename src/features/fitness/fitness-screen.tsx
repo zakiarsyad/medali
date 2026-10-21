@@ -104,7 +104,11 @@ export function FitnessScreen({
       <section className={shared.panel}>
         <h2 className={shared.heading}>Hasil tes kebugaran</h2>
         <FitnessFilterRow params={params} />
-        <FitnessListTable rows={list.rows} showsNotes={showsNotes} />
+        <FitnessListTable
+          rows={list.rows}
+          showsNotes={showsNotes}
+          params={params}
+        />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

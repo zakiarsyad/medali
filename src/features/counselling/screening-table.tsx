@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { ProfileNameLink } from "@/ui/profile-name-link";
 import { ConsentBadge } from "./consent-badge";
 import { NOTHING, sessionsWords } from "./counselling-list-words";
 import { openScreeningDetailAction } from "./screening-actions";
+import { type ScreeningParams, screeningAddress } from "./screening-address";
 import { LevelBadges } from "./screening-badges";
 import { ScreeningHistory } from "./screening-history";
 import type { ScreeningDetailItem, ScreeningRow } from "./screening-view";
@@ -22,7 +24,13 @@ export const DETAIL_GONE =
  * One screened student of "Daftar mahasiswa". "Rincian" asks the server
  * for every screening each time it is opened, so each opening is logged.
  */
-function ScreeningListRow({ row }: { row: ScreeningRow }) {
+function ScreeningListRow({
+  row,
+  params,
+}: {
+  row: ScreeningRow;
+  params: ScreeningParams;
+}) {
   const [opened, setOpened] = useState<ScreeningDetailItem[] | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [pending, startOpening] = useTransition();
@@ -43,7 +51,10 @@ function ScreeningListRow({ row }: { row: ScreeningRow }) {
     <>
       <tr>
         <td className={shared.rowHeading} data-title="Mahasiswa">
-          <b className={shared.typed}>{row.name}</b>
+          <ProfileNameLink
+            name={row.name}
+            href={screeningAddress({ ...params, profileId: row.studentId })}
+          />
           <small className={shared.detail}>
             {row.nim} · {row.program}
           </small>
@@ -96,7 +107,14 @@ function ScreeningListRow({ row }: { row: ScreeningRow }) {
 }
 
 /** The rows of "Daftar mahasiswa"; on a phone each student is a card. */
-export function ScreeningTable({ rows }: { rows: ScreeningRow[] }) {
+export function ScreeningTable({
+  rows,
+  params,
+}: {
+  rows: ScreeningRow[];
+  /** The tab's choices, kept when a name opens the student's profile. */
+  params: ScreeningParams;
+}) {
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -116,7 +134,7 @@ export function ScreeningTable({ rows }: { rows: ScreeningRow[] }) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <ScreeningListRow key={row.studentId} row={row} />
+            <ScreeningListRow key={row.studentId} row={row} params={params} />
           ))}
         </tbody>
       </table>

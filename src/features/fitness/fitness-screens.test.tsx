@@ -167,7 +167,11 @@ describe("Penilaian jasmani", () => {
 describe("Hasil tes kebugaran", () => {
   it("shows the name, NIM and program, the day of the test, Skor and Kategori, or Belum dites", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={LIST.rows} showsNotes={false} />,
+      <FitnessListTable
+        rows={LIST.rows}
+        showsNotes={false}
+        params={START_PARAMS}
+      />,
     );
 
     expect(html).toContain("Ani Contoh");
@@ -183,7 +187,11 @@ describe("Hasil tes kebugaran", () => {
 
   it("shows no column Catatan kesehatan and no mark to a role that reads no notes", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={LIST.rows} showsNotes={false} />,
+      <FitnessListTable
+        rows={LIST.rows}
+        showsNotes={false}
+        params={START_PARAMS}
+      />,
     );
 
     expect(html).not.toContain("Catatan kesehatan");
@@ -192,7 +200,7 @@ describe("Hasil tes kebugaran", () => {
 
   it("shows a reader of notes the final category with its mark, the latest note, and Belum ada catatan where one is needed", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={READ_ROWS} showsNotes />,
+      <FitnessListTable rows={READ_ROWS} showsNotes params={START_PARAMS} />,
     );
 
     expect(html).toContain("<th>Catatan kesehatan</th>");
@@ -213,7 +221,11 @@ describe("Hasil tes kebugaran", () => {
 
   it("leaves the note and the mark out of a row whose notes the account does not read", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={[{ ...CITRA, health: null }]} showsNotes />,
+      <FitnessListTable
+        rows={[{ ...CITRA, health: null }]}
+        showsNotes
+        params={START_PARAMS}
+      />,
     );
 
     expect(html).toContain('<td data-title="Catatan kesehatan"></td>');
@@ -222,7 +234,7 @@ describe("Hasil tes kebugaran", () => {
 
   it("says when no student matches", () => {
     const html = renderToStaticMarkup(
-      <FitnessListTable rows={[]} showsNotes />,
+      <FitnessListTable rows={[]} showsNotes params={START_PARAMS} />,
     );
 
     expect(html).toContain("Tidak ada data pada filter ini.");
@@ -271,5 +283,21 @@ describe("Ambang skor for a role that only reads it", () => {
     );
 
     expect(html).toContain("Ditetapkan 16 Okt 2026 oleh Kepala Uji.");
+  });
+});
+
+describe("names in Hasil tes kebugaran", () => {
+  it("open the student's profile over the tab, keeping the page", () => {
+    const html = renderToStaticMarkup(
+      <FitnessListTable
+        rows={LIST.rows}
+        showsNotes={false}
+        params={{ ...START_PARAMS, page: 2 }}
+      />,
+    );
+
+    expect(html).toContain(
+      'href="/penilaian/jasmani?hal=2&amp;profil=00000000-0000-4000-8000-000000000601"',
+    );
   });
 });

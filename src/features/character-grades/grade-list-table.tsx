@@ -5,7 +5,9 @@ import {
   shownPart,
 } from "@/character-grades/grade-words";
 import shared from "@/ui/data-screen.module.css";
+import { ProfileNameLink } from "@/ui/profile-name-link";
 import styles from "./character-grades.module.css";
+import { type GradeParams, gradeAddress } from "./grade-address";
 import type { AttendancePart, GradeRow } from "./grade-list";
 
 export const NO_GRADE_MATCHES = "Tidak ada data pada filter ini.";
@@ -28,7 +30,14 @@ function Attendance({ part }: { part: AttendancePart }) {
  * screens they come from. A missing part shows "-", and the grade "Belum
  * lengkap". On a phone each student is a block of its own.
  */
-export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
+export function GradeListTable({
+  rows,
+  params,
+}: {
+  rows: readonly GradeRow[];
+  /** The tab's choices, kept when a name opens the student's profile. */
+  params: GradeParams;
+}) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_GRADE_MATCHES}</p>;
   }
@@ -51,7 +60,10 @@ export function GradeListTable({ rows }: { rows: readonly GradeRow[] }) {
           {rows.map((row) => (
             <tr key={row.student.id}>
               <td className={shared.rowHeading} data-title="Mahasiswa">
-                <b className={shared.typed}>{row.student.name}</b>
+                <ProfileNameLink
+                  name={row.student.name}
+                  href={gradeAddress({ ...params, profileId: row.student.id })}
+                />
                 <small className={shared.detail}>
                   {row.student.nim} · {row.student.program}
                 </small>

@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { and, type SQL, sql } from "drizzle-orm";
 import { students } from "@/db/schema";
 
 /**
@@ -7,3 +7,11 @@ import { students } from "@/db/schema";
  * does one who is Non aktif or was removed.
  */
 export const ACTIVE_MEMBER = sql`${students.status} = 'active' and ${students.deletedAt} is null`;
+
+/**
+ * The Aktif students among those `visible` lets through: the students
+ * the lists of Penilaian hold, and so those a name there may open.
+ */
+export function activeAmong(visible: SQL): SQL {
+  return and(visible, ACTIVE_MEMBER) ?? ACTIVE_MEMBER;
+}
