@@ -98,4 +98,4 @@ Studi and Pengasuh, who open Penilaian karakter.
 
 - [x] 1. The database finds, counts and pages "Daftar nilai karakter",
   with its search and filters, and the parts are read for the page only.
-- [ ] 2. The four numbers at the top are worked out by the database.
+- [x] 2. The four numbers at the top are worked out by the database.
