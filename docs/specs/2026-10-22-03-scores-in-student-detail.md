@@ -129,6 +129,32 @@ name from a Penilaian list shows the same detail.
     score. Kepala Unit and Pengasuh also see the note text, or "Belum ada
     catatan kesehatan." when the category asks for attention, as in the
     prototype.
+12. Direktur / Wakil Direktur and Ketua Program Studi see the final
+    category, as asked, the same as on Penilaian jasmani. A category
+    raised by a note, such as "Perlu perhatian" beside a good score, can
+    still let them guess that a note exists, though never its text or
+    the illness.
+13. "Input asesmen" shows only while the student has no assessment, as
+    in the prototype.
+14. A student who is not Aktif has no character grade: the list shows
+    "Belum lengkap", neither grade filter finds them, and the detail
+    leaves out "Nilai karakter (KEP-220)". An incomplete grade shows
+    "Belum lengkap", "-" for each missing part, and no pass line.
+15. The two new filters sit beside Angkatan and Status and, like them,
+    show no counts and are not cleared by "Atur ulang filter".
+16. The panels show wherever the full detail opens, not only on
+    Mahasiswa, so the detail looks the same everywhere.
+17. "Skor tes kebugaran" names the year of the test date.
+18. Konselor's panel shows the crisis advice when the screening asks for
+    it, as Konselor's own "Rincian" does, but never the "Risiko" mark,
+    the scores or the note. Opening it is not logged, as Konselor's own
+    list is not. An account that is both Konselor and a recipient gets
+    Konselor's panel only.
+19. A sharing that holds the level, for a student with no screening,
+    shows the panel with "Belum ada asesmen.".
+20. On Penilaian, the detail opens only for the students the tab lists;
+    on Kesehatan mental only for screened students within Konselor's
+    reach. Any other student asked for by hand is not found.
 
 ## Steps
 
