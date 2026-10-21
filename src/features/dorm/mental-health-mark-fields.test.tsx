@@ -15,6 +15,7 @@ describe("MarkFields", () => {
     expect(html).toContain("Potensi kesehatan mental");
     expect(html).toContain(MARK_FORM_NOTE);
     expect(MARK_FORM_NOTE).toContain("bukan diagnosis");
+    expect(MARK_FORM_NOTE).toContain("Konselor");
     expect(html).toContain("Kategori potensi");
     expect(html).toContain("Pengamatan (rahasia)");
     expect(html).toContain(
