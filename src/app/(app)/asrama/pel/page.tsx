@@ -7,6 +7,7 @@ import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { readAppealInbox } from "@/features/dorm/appeal-inbox";
 import { AppealInboxPanel } from "@/features/dorm/appeal-inbox-panel";
+import { readDisciplineProposals } from "@/features/dorm/discipline-proposals";
 import {
   readOwnRecord,
   readOwnViolations,
@@ -15,6 +16,7 @@ import {
   OwnRecord,
   OwnViolationsView,
 } from "@/features/dorm/own-violations-view";
+import { ProposalsPanel } from "@/features/dorm/proposals-panel";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { readStaffViolations } from "@/features/dorm/staff-violations";
 import { StaffViolationsScreen } from "@/features/dorm/staff-violations-screen";
@@ -105,6 +107,35 @@ async function callProcessOf(
 }
 
 /**
+ * "Pengajuan hukuman disiplin dari Pengelola Asrama" for Pengelola Asrama
+ * and Kepala Unit, with "Proses" for Kepala Unit; null for any other
+ * account.
+ */
+async function proposalsOf(
+  account: Account,
+  params: StaffViolationParams,
+  now: Date,
+) {
+  const proposals = await readDisciplineProposals(
+    database(),
+    account,
+    params.proposalPage,
+    now,
+  );
+  if (proposals === null) return null;
+  return (
+    <ProposalsPanel
+      proposals={proposals}
+      params={params}
+      tools={{
+        handles: may(account.roles, "handle_dorm_discipline_proposals"),
+        ownStudentId: account.studentId,
+      }}
+    />
+  );
+}
+
+/**
  * The staff screen: BAM records violations, schedules their announcement
  * and cancels one that waits; Pengelola Asrama and Kepala Unit read them.
  * Only those who record see what waits for its announcement, and only
@@ -177,6 +208,7 @@ async function StaffScreen({
       schedule={schedule}
       appeals={appeals}
       waitingAppeals={inbox?.waiting ?? null}
+      proposals={await proposalsOf(account, params, now)}
       warnings={warnings}
       processes={may(account.roles, "issue_dorm_warning_letters")}
       ownStudentId={account.studentId}

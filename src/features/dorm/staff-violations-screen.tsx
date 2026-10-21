@@ -121,7 +121,8 @@ function keptBesideDay(params: StaffViolationParams): [string, string][] {
  * Pelanggaran for staff: the three numbers, "Input dan publikasi
  * pelanggaran" and "Jadwal publikasi" for those who record and a note for
  * those who only read, "Advokasi masuk" for those who decide,
- * "Panggilan klarifikasi dan surat peringatan", "Rekap pelanggaran per
+ * "Pengajuan hukuman disiplin dari Pengelola Asrama" for those who read
+ * it, "Panggilan klarifikasi dan surat peringatan", "Rekap pelanggaran per
  * mahasiswa" with the box of one student, "Riwayat pengurangan
  * pelanggaran" for those who read it, and "Pengumuman pelanggaran".
  */
@@ -134,6 +135,7 @@ export function StaffViolationsScreen({
   schedule,
   appeals,
   waitingAppeals,
+  proposals,
   warnings,
   processes,
   ownStudentId,
@@ -153,6 +155,8 @@ export function StaffViolationsScreen({
   appeals: ReactNode;
   /** How many appeals wait, for an account that decides them, or else null. */
   waitingAppeals: number | null;
+  /** "Pengajuan hukuman disiplin dari Pengelola Asrama", or null for an account that does not read it. */
+  proposals: ReactNode;
   /** "Panggilan klarifikasi dan surat peringatan" of the running semester. */
   warnings: WarningCalls;
   /** Whether the account schedules calls and issues SPs: Pengelola Asrama. */
@@ -188,6 +192,7 @@ export function StaffViolationsScreen({
         <SchedulePanel schedule={schedule} params={params} />
       )}
       {appeals}
+      {proposals}
       <WarningCallsPanel
         calls={warnings}
         params={params}

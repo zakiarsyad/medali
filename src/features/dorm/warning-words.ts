@@ -89,6 +89,11 @@ export function issueButtonWords(level: WarningLevel): string {
 const CANNOT_BE_UNDONE =
   "SP yang sudah terbit tidak dapat diubah atau ditarik.";
 
+/** What is asked before a proposal is marked Diproses, as it cannot be undone. */
+export function handleQuestion(name: string): string {
+  return `Tandai pengajuan hukuman disiplin ${name} diproses? Catatan tindak lanjut tidak dapat diubah setelahnya.`;
+}
+
 /** What is asked before an SP is issued, as it cannot be undone. */
 export function issueQuestion(name: string, level: WarningLevel): string {
   if (level === 1) return `Terbitkan SP 1 untuk ${name}? ${CANNOT_BE_UNDONE}`;

@@ -30,6 +30,25 @@ export const OWN_CALL = refusal(
   "Panggilan dan SP atas diri Anda sendiri diproses oleh Pengelola Asrama yang lain.",
 );
 
+export const PROPOSAL_NOT_ALLOWED = refusal(
+  "Anda tidak berhak menindaklanjuti pengajuan hukuman disiplin. Pengajuan ditindaklanjuti oleh Kepala Unit.",
+);
+
+/** A proposal that is not there, not seen, or not of an issued SP 2. */
+export const NO_PROPOSAL = refusal(
+  "Pengajuan hukuman disiplin ini tidak ditemukan. Muat ulang halaman.",
+);
+
+export const ALREADY_HANDLED = refusal(
+  "Pengajuan ini sudah diproses dan catatannya tidak dapat diubah. Muat ulang halaman.",
+);
+
+export const OWN_PROPOSAL = refusal(
+  "Pengajuan hukuman disiplin atas diri Anda sendiri ditindaklanjuti oleh Kepala Unit yang lain.",
+);
+
+export const PROPOSAL_HANDLED = "Pengajuan ditandai diproses.";
+
 export const CALL_SENT = "Panggilan klarifikasi dikirim ke mahasiswa.";
 export const CALL_MOVED = "Jadwal klarifikasi diubah.";
 export const SP1_ISSUED = "SP 1 terbit.";
