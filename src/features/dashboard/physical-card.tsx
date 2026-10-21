@@ -1,9 +1,9 @@
 import { CATEGORY_WORDS } from "@/health-notes/category-words";
 import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
+import { countWords } from "@/health-notes/shown-count";
 import styles from "./dashboard.module.css";
 import type { PhysicalRecap } from "./physical-recap";
 import {
-  countWords,
   physicalCardLine,
   physicalCardValue,
   stackParts,

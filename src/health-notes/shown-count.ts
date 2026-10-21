@@ -14,3 +14,9 @@ export function shownCount(count: number): CountShown {
   if (count >= 1 && count < FEWEST_COUNTED) return "<5";
   return count;
 }
+
+/** A count as it was sent, written out, such as 1.200 or <5. */
+export function countWords(count: CountShown): string {
+  if (count === "<5") return count;
+  return count.toLocaleString("id-ID");
+}

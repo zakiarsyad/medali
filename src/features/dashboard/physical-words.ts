@@ -2,7 +2,7 @@ import {
   FITNESS_CATEGORIES,
   type FitnessCategory,
 } from "@/health-notes/fitness-ids";
-import type { CountShown } from "@/health-notes/shown-count";
+import { type CountShown, countWords } from "@/health-notes/shown-count";
 import type { PhysicalRecap } from "./physical-recap";
 
 /** What the card and section 3 say instead of counts for a small group. */
@@ -11,12 +11,6 @@ export const PHYSICAL_TOO_FEW =
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
-}
-
-/** A count as the server sent it, such as 1.200 or <5. */
-export function countWords(count: CountShown): string {
-  if (count === "<5") return count;
-  return shown(count);
 }
 
 /** The number of the card: the percent prima dan baik, or "-" without one. */
