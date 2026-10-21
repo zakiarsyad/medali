@@ -76,5 +76,5 @@ Studi and Pengasuh, who read Penilaian karakter.
 
 ## Steps
 
-- [ ] 1. Kehadiran and SKPM are written with one decimal in "Daftar
+- [x] 1. Kehadiran and SKPM are written with one decimal in "Daftar
   nilai karakter", on a computer and on a phone.
