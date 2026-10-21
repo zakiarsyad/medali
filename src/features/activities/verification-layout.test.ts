@@ -43,3 +43,34 @@ describe("the tab Verifikasi presensi on a phone", () => {
     );
   });
 });
+
+describe("the photo on a card of Verifikasi presensi", () => {
+  it("takes an upright box 3 wide by 4 high, the same with or without a picture", () => {
+    const box = ruleOf(".photo,\n.noPhoto");
+    const tokens = readFileSync("src/ui/tokens.css", "utf8");
+
+    expect(box).toContain("aspect-ratio: var(--photo-card-ratio);");
+    expect(box).not.toContain("height");
+    expect(tokens).toContain("--photo-card-ratio: 3 / 4;");
+  });
+
+  it("shows the whole picture, with the plain background around one that is wider than high", () => {
+    expect(ruleOf(".photo")).toContain("object-fit: contain;");
+    expect(ruleOf(".photo")).not.toContain("cover");
+    expect(ruleOf(".photo,\n.noPhoto")).toContain(
+      "background: var(--surface2);",
+    );
+  });
+
+  it("shows the focus of the photo link inside the card, which cuts off whatever spills out", () => {
+    const focus = ruleOf(".photoLink:focus-visible");
+
+    expect(ruleOf(".photoCard")).toContain("overflow: hidden;");
+    expect(focus).toContain(
+      "outline: var(--line-width-strong) solid var(--gold);",
+    );
+    expect(focus).toContain(
+      "outline-offset: calc(-1 * var(--line-width-strong));",
+    );
+  });
+});

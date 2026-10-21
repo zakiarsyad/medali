@@ -130,11 +130,23 @@ describe("VerificationScreen", () => {
     );
   });
 
-  it("says so in place of the picture where no file is kept, and asks for none", () => {
+  it("opens the whole photo in a new tab, from the address the card already asks", () => {
+    const screen = shown(listOf([TEST_CARD]));
+    const photo = `/kegiatan/ppks/foto/${TEST_CARD.id}`;
+
+    expect(screen).toMatch(
+      new RegExp(
+        `<a href="${photo}" target="_blank" rel="noopener"[^>]*><img src="${photo}"`,
+      ),
+    );
+  });
+
+  it("says so in place of the picture where no file is kept, and asks for none and links none", () => {
     const screen = shown(listOf([{ ...TEST_CARD, hasPhoto: false }]));
 
     expect(screen).toContain("Foto tidak tersimpan di sini.");
     expect(screen).not.toContain("<img");
+    expect(screen).not.toContain(`href="/kegiatan/ppks/foto/`);
   });
 
   it("marks a photo sent outside the dates of the activity", () => {
