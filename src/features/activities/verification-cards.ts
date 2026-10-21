@@ -19,7 +19,6 @@ import {
 } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
 import { removedFileWords } from "@/ui/removed-file";
-import { countedAtEither } from "./counted-students";
 import { isOutsideDates } from "./outside-dates";
 import {
   CARDS_PAGE_SIZE,
@@ -138,19 +137,18 @@ async function countCards(
 
 /**
  * One page of the photo cards that match the filters, the oldest first.
- * Two sent at the same moment keep one order on every page.
+ * Two sent at the same moment keep one order on every page. `counted` is
+ * who the photos count for, as `countedAtEither` gives it.
  */
 export async function readCards(
   db: Database,
   filters: VerificationFilters,
   page: number,
   keepsPhotos: boolean,
+  counted: SQL,
 ): Promise<CardList> {
   const condition = matching(filters);
-  const [total, counted] = await Promise.all([
-    countCards(db, condition),
-    countedAtEither(db),
-  ]);
+  const total = await countCards(db, condition);
   const shownPage = pageWithin(page, total, CARDS_PAGE_SIZE);
   const rows = await storedCards(db, condition, counted)
     .orderBy(asc(activityAttendances.sentAt), asc(activityAttendances.id))

@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, type SQL, sql } from "drizzle-orm";
 import type { CampusMoment } from "@/academic-periods/campus-clock";
 import { daysAfter } from "@/academic-periods/days-after";
 import { daysBefore } from "@/academic-periods/days-before";
@@ -10,7 +10,6 @@ import {
   students,
 } from "@/db/schema";
 import { hourAndMinute } from "@/db/stored-time";
-import { countedAtEither } from "./counted-students";
 import { OF_SCHEDULE } from "./list-schedules";
 import { IS_NEWEST } from "./newest-attendances";
 import { scheduleStatus } from "./schedule-status";
@@ -41,11 +40,10 @@ function startOf(day: string): Date {
  * while they still count for their student: the schedule is still meant
  * for them, and a rejected one is not followed by a newer attendance.
  */
-async function countCards(db: Database, today: string) {
+async function countCards(db: Database, today: string, counted: SQL) {
   const { status, decidedAt } = activityAttendances;
   const from = startOf(today).toISOString();
   const until = startOf(daysAfter(today, 1)).toISOString();
-  const counted = await countedAtEither(db);
   const [cards] = await db
     .select({
       waiting: sql<number>`count(*) filter (where ${status} = 'waiting' and (${counted}))::int`,
@@ -83,13 +81,17 @@ function readBegun(db: Database, today: string) {
     );
 }
 
-/** The numbers above the cards at a moment on campus. */
+/**
+ * The numbers above the cards at a moment on campus. `counted` is who the
+ * photos count for, as `countedAtEither` gives it.
+ */
 export async function readVerificationNumbers(
   db: Database,
   now: CampusMoment,
+  counted: SQL,
 ): Promise<VerificationNumbers> {
   const [cards, begun] = await Promise.all([
-    countCards(db, now.day),
+    countCards(db, now.day, counted),
     readBegun(db, now.day),
   ]);
   const open = begun.filter((schedule) => {
