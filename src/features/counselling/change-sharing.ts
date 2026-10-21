@@ -225,8 +225,9 @@ function addRequest(db: Database, ask: Ask): Promise<SharingOutcome> {
  * "Minta persetujuan mahasiswa" for any student who is not removed, by
  * Konselor: only while the student's consent to counselling is
  * Disetujui, the level only after a screening and the other data only
- * after a session, and while no sharing of theirs is current. What was sent comes from outside. Refused for any role
- * without the right, giving nothing back.
+ * after a session, and while no sharing of theirs is current. What was
+ * sent comes from outside. Refused for any role without the right,
+ * giving nothing back.
  */
 export async function askSharing(
   db: Database,

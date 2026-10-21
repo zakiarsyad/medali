@@ -58,8 +58,8 @@ async function readSharedScreening(
  * the parts the student agreed to share, read when it is opened, and who
  * published it when. The level is of the latest screening, without its
  * scores, "Risiko" mark or note. Each opening is logged in the same
- * transaction:
- * who, whose data, which sharing and when, never what it showed.
+ * transaction: who, whose data, which sharing and when, never what it
+ * showed.
  * Refused, with nothing read or logged, for an account without the
  * right, and for a student whose sharing it does not reach, also one
  * withdrawn since the list was loaded. `studentId` comes from outside.
