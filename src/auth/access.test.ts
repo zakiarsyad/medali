@@ -1541,6 +1541,46 @@ describe("may", () => {
     }
   });
 
+  it("lets the same two roles alone follow up a discipline penalty, its status, conditions and Keputusan, every other reader only reading it", () => {
+    expect(ACTION_TITLES.follow_up_discipline_penalties).toBe(
+      "Menindaklanjuti hukuman disiplin: status, syarat melanjutkan studi, dan keputusan",
+    );
+    for (const role of penaltyRecorders) {
+      expect(may([role], "follow_up_discipline_penalties")).toBe(true);
+      expect(ROLES[role].rows).toBe("all");
+    }
+    const others = ROLE_IDS.filter((role) => !penaltyRecorders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["director", "head_of_program", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "follow_up_discipline_penalties")).toBe(false);
+    }
+  });
+
+  it("limits following up a penalty to the rows of the roles that may, not those of another role of the account", () => {
+    const account = {
+      id: "a1",
+      roles: ["mentor", "head_of_program"] as RoleId[],
+      studyProgramId: 7,
+      studentId: null,
+    };
+    expect(
+      rowLimitForAction(account, "follow_up_discipline_penalties"),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: [],
+      studentIds: [],
+    });
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["mentor", "discipline_officer"] },
+        "follow_up_discipline_penalties",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
   it("opens Pelanggaran disiplin to exactly the roles that read discipline records, not to Mahasiswa, Konselor, Penilai Mahasiswa, Pegawai UPK, Pengelola Asrama or BAM", () => {
     const others = ROLE_IDS.filter((role) => !disciplineReaders.includes(role));
     expect(others).toEqual(
