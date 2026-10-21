@@ -136,7 +136,7 @@ time. Session notes are never shared.
 
 - [x] 1. The tables for sharing and its log are added, with made-up
   sharings in every status.
-- [ ] 2. The rights to ask and publish (Konselor) and to answer
+- [x] 2. The rights to ask and publish (Konselor) and to answer
   (Mahasiswa) are added to the permission list, with their checks.
 - [ ] 3. Konselor asks for approval in "Publikasi data kesehatan mental".
 - [ ] 4. The student approves, declines or withdraws on Konseling;

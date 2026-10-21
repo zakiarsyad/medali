@@ -99,6 +99,8 @@ export const ACTIONS = [
   "record_mental_health_screenings",
   "view_mental_health_screening_count",
   "view_dorm_referrals",
+  "share_counselling_data",
+  "answer_own_counselling_sharing",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -233,6 +235,10 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Melihat jumlah mahasiswa yang sudah diasesmen kesehatan mental di seluruh kampus, tanpa nama",
   view_dorm_referrals:
     "Rujukan potensi kesehatan mental dari asrama: melihat penghuni yang ditandai perlu dirujuk ke konselor, dengan pengamatannya",
+  share_counselling_data:
+    "Publikasi data kesehatan mental: meminta persetujuan mahasiswa, mencatat persetujuan tertulis, mempublikasikan, dan menarik data konseling yang dibagikan",
+  answer_own_counselling_sharing:
+    "Menyetujui, menolak, dan mencabut persetujuan berbagi data kesehatan mental sendiri",
 };
 
 /**
@@ -520,6 +526,7 @@ export const ROLES: Record<RoleId, Role> = {
       "answer_own_counselling_consent",
       "register_own_counselling",
       "view_own_counselling_sessions",
+      "answer_own_counselling_sharing",
       "answer_own_survey",
     ],
     rows: "self",
@@ -684,6 +691,7 @@ export const ROLES: Record<RoleId, Role> = {
       "keep_counselling_sessions",
       "record_mental_health_screenings",
       "view_dorm_referrals",
+      "share_counselling_data",
     ],
     rows: "all",
   },
