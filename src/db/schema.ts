@@ -68,6 +68,16 @@ import {
   type SessionContent,
 } from "@/features/counselling/session-ids";
 import {
+  SHARED_DATA,
+  SHARING_RECIPIENTS,
+  SHARING_STATUSES,
+  SHARING_STEPS,
+  SHARING_WAYS,
+  type SharingContent,
+  SUMMARY_MAX,
+  SUMMARY_MIN,
+} from "@/features/counselling/sharing-ids";
+import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -414,6 +424,31 @@ export const counsellingFollowUp = pgEnum(
 export const counsellingSessionStep = pgEnum(
   "counselling_session_step",
   SESSION_STEPS,
+);
+
+export const counsellingSharingStatus = pgEnum(
+  "counselling_sharing_status",
+  SHARING_STATUSES,
+);
+
+export const counsellingSharedData = pgEnum(
+  "counselling_shared_data",
+  SHARED_DATA,
+);
+
+export const counsellingSharingRecipient = pgEnum(
+  "counselling_sharing_recipient",
+  SHARING_RECIPIENTS,
+);
+
+export const counsellingSharingWay = pgEnum(
+  "counselling_sharing_way",
+  SHARING_WAYS,
+);
+
+export const counsellingSharingStep = pgEnum(
+  "counselling_sharing_step",
+  SHARING_STEPS,
 );
 
 export const cohortAssignmentStatus = pgEnum("cohort_assignment_status", [
@@ -3536,6 +3571,103 @@ export const counsellingSessionReads = pgTable(
     index("counselling_session_reads_student").on(
       table.studentId,
       table.readAt,
+    ),
+  ],
+);
+
+/**
+ * One request to share a student's counselling data ("Publikasi data
+ * kesehatan mental"): what is shared, with whom, and where it stands.
+ * Its data, recipients and summary are fixed once asked; the database
+ * refuses a change of them, so a change needs a new request. A student
+ * has at most one current sharing: Menunggu persetujuan, Disetujui or
+ * Dipublikasikan. One that ended stays, and a new request is a new row.
+ * Never deleted: its log lines hold it.
+ */
+export const counsellingSharings = pgTable(
+  "counselling_sharings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    status: counsellingSharingStatus().notNull(),
+    data: counsellingSharedData().array().notNull(),
+    recipients: counsellingSharingRecipient().array().notNull(),
+    /** "Ringkasan untuk penerima", only when the summary is shared. */
+    summary: text(),
+    /** How the student approved; none until then. */
+    way: counsellingSharingWay(),
+    askedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    askedAt: timestamp({ withTimezone: true }).notNull(),
+    /** When the student answered or a paper approval was recorded. */
+    answeredAt: timestamp({ withTimezone: true }),
+    publishedBy: uuid().references(() => accounts.id),
+    publishedAt: timestamp({ withTimezone: true }),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("counselling_sharings_one_current")
+      .on(table.studentId)
+      .where(sql`${table.status} in ('waiting', 'approved', 'published')`),
+    index("counselling_sharings_student").on(table.studentId, table.askedAt),
+    check(
+      "counselling_sharings_some_data",
+      sql`cardinality(${table.data}) > 0`,
+    ),
+    check(
+      "counselling_sharings_some_recipient",
+      sql`cardinality(${table.recipients}) > 0`,
+    ),
+    check(
+      "counselling_sharings_summary_when_shared",
+      sql`('summary' = any(${table.data})) = (${table.summary} is not null)`,
+    ),
+    check(
+      "counselling_sharings_summary_length",
+      sql`char_length(trim(${table.summary})) >= ${sql.raw(String(SUMMARY_MIN))} and char_length(${table.summary}) <= ${sql.raw(String(SUMMARY_MAX))}`,
+    ),
+    check(
+      "counselling_sharings_way_once_approved",
+      sql`${table.status} not in ('approved', 'published') or ${table.way} is not null`,
+    ),
+    check(
+      "counselling_sharings_publisher_once_published",
+      sql`${table.status} <> 'published' or (${table.publishedAt} is not null and ${table.publishedBy} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * Every step of a sharing: who, when, which step, the status before and
+ * after, and what it gave to whom. Asking has no status before. Rows here
+ * cannot be changed or deleted; the database refuses it.
+ */
+export const counsellingSharingChanges = pgTable(
+  "counselling_sharing_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    sharingId: uuid()
+      .notNull()
+      .references(() => counsellingSharings.id),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+    step: counsellingSharingStep().notNull(),
+    statusBefore: counsellingSharingStatus(),
+    statusAfter: counsellingSharingStatus().notNull(),
+    shared: jsonb().$type<SharingContent>().notNull(),
+  },
+  (table) => [
+    index("counselling_sharing_changes_sharing").on(
+      table.sharingId,
+      table.changedAt,
     ),
   ],
 );

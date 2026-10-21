@@ -6,6 +6,7 @@ import { OwnConsentBox } from "./own-consent-box";
 import { OwnHistoryList } from "./own-history-list";
 import { OwnScheduleList } from "./own-schedule-list";
 import { OwnSessionSummaryBox } from "./own-session-summary";
+import { OwnSharingBox } from "./own-sharing-box";
 import type { ReferralList } from "./referral-view";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
@@ -17,6 +18,7 @@ import type {
   ScheduleBoard,
 } from "./schedule-view";
 import type { OwnSessionSummary } from "./session-view";
+import type { SharingView } from "./sharing-view";
 import { WarnBox } from "./warn-box";
 
 /** What Konselor reads first on Konseling, as the prototype words it. */
@@ -36,11 +38,13 @@ export interface CounsellorSchedules {
 function CounsellorPart({
   mayManageConsent,
   mayKeepSessions,
+  mayShare,
   schedules,
   referrals,
 }: {
   mayManageConsent: boolean;
   mayKeepSessions: boolean;
+  mayShare: boolean;
   schedules: CounsellorSchedules | null;
   referrals: ReferralList | null;
 }) {
@@ -51,6 +55,7 @@ function CounsellorPart({
         referrals={referrals}
         mayManageConsent={mayManageConsent}
         mayKeepSessions={mayKeepSessions}
+        mayShare={mayShare}
       />
       {schedules && (
         <SchedulePanel
@@ -71,6 +76,8 @@ export interface OwnCounselling {
   registration: OwnRegistration | null;
   /** How many sessions they had and the next one; null for none. */
   sessions?: OwnSessionSummary | null;
+  /** Their current sharing of counselling data; null for none. */
+  sharing?: SharingView | null;
 }
 
 /** What a student who may register sees of their own requests. */
@@ -88,6 +95,7 @@ function OwnPart({ own }: { own: OwnCounselling }) {
     <>
       <WarnBox title="Butuh bantuan segera?">{HELP_TEXT}</WarnBox>
       <OwnConsentBox consent={own.consent} />
+      <OwnSharingBox sharing={own.sharing ?? null} />
       <OwnSessionSummaryBox summary={own.sessions ?? null} />
       {own.registration && (
         // A new step of Riwayat in the address starts with no message.
@@ -113,6 +121,7 @@ export function CounsellingScreen({
   own,
   mayManage,
   mayKeepSessions = false,
+  mayShare = false,
   schedules = null,
   referrals = null,
 }: {
@@ -122,12 +131,15 @@ export function CounsellingScreen({
   mayManage: boolean;
   /** Konselor: "Catat sesi" in "Persetujuan konseling". */
   mayKeepSessions?: boolean;
+  /** Konselor: "Publikasi data kesehatan mental". */
+  mayShare?: boolean;
   /** Konselor: "Jadwal konseling", or null for an account without the right. */
   schedules?: CounsellorSchedules | null;
   /** Konselor: the dorm referrals, or null for an account without the right. */
   referrals?: ReferralList | null;
 }) {
-  const showsCounsellor = mayManage || schedules !== null || referrals !== null;
+  const showsCounsellor =
+    mayManage || mayShare || schedules !== null || referrals !== null;
   return (
     <>
       <PageHead title="Konseling" />
@@ -137,6 +149,7 @@ export function CounsellingScreen({
           <CounsellorPart
             mayManageConsent={mayManage}
             mayKeepSessions={mayKeepSessions}
+            mayShare={mayShare}
             schedules={schedules}
             referrals={referrals}
           />
