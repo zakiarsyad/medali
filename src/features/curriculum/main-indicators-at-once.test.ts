@@ -8,10 +8,8 @@ import {
   MAIN_INDICATORS_CHANGED_BY_OTHER,
   saveMainIndicators,
 } from "./save-main-indicators";
-import {
-  readMainIndicators,
-  STARTING_INDICATORS_VERSION,
-} from "./stored-main-indicators";
+import { STARTING_VERSION } from "./saved-version";
+import { readMainIndicators } from "./stored-main-indicators";
 import { addTestActor } from "./test-records";
 
 /*
@@ -59,8 +57,8 @@ describe("two staff who save the main indicators at the same moment", () => {
     const [staff, head] = await addTwoStaff();
 
     const both = await own.atOnce(
-      saveAll(staff, STARTING_INDICATORS_VERSION, "Pertama"),
-      saveAll(head, STARTING_INDICATORS_VERSION, "Kedua"),
+      saveAll(staff, STARTING_VERSION, "Pertama"),
+      saveAll(head, STARTING_VERSION, "Kedua"),
     );
 
     expect(both.sooner).toEqual({ ok: true, value: null });
@@ -70,7 +68,7 @@ describe("two staff who save the main indicators at the same moment", () => {
 
   it("keep one whole save when the texts were saved before: the second waits, then is refused", async () => {
     const [staff, head] = await addTwoStaff();
-    await saveAll(staff, STARTING_INDICATORS_VERSION, "Awal")(own.db);
+    await saveAll(staff, STARTING_VERSION, "Awal")(own.db);
     const { version } = await readMainIndicators(own.db);
 
     const both = await own.atOnce(

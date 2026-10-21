@@ -39,6 +39,9 @@ export function BreakdownForm({
     value.activities.map((text, id) => ({ id, text })),
   );
   const [ticked, setTicked] = useState(value.indicatorCodes);
+  // Fixed when the form opens: the page may load a newer box while it is
+  // open, and the save must still be checked against the box it shows.
+  const [openedOn] = useState(value.version);
 
   function addRow() {
     const id = (rows.at(-1)?.id ?? -1) + 1;
@@ -66,6 +69,7 @@ export function BreakdownForm({
       <BreakdownTitle value={value} />
       <input type="hidden" name="tahap" value={tahapNo} />
       <input type="hidden" name="value" value={value.key} />
+      <input type="hidden" name="version" value={openedOn} />
       <div className={styles.fields}>
         <label className={shared.field}>
           Penjabaran tugas

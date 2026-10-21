@@ -59,5 +59,5 @@ Kepala Unit and Pegawai UPK.
 
 ## Steps
 
-- [ ] 1. A save of a Penjabaran box made after another one since its form
+- [x] 1. A save of a Penjabaran box made after another one since its form
   was opened is refused with its message, also at the same moment.

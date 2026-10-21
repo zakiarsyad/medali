@@ -6,7 +6,7 @@ import { mainIndicators } from "@/db/schema";
 import type { Parsed } from "@/parsed";
 import { type IndicatorText, parseIndicatorTexts } from "./indicator-input";
 import { NOT_ALLOWED } from "./not-allowed";
-import { indicatorsVersion } from "./stored-main-indicators";
+import { nextChangedAt, savedVersion } from "./saved-version";
 
 /** What a save answers when the indicators were saved after its form opened. */
 export const MAIN_INDICATORS_CHANGED_BY_OTHER = {
@@ -24,18 +24,6 @@ async function latestChangedAt(tx: Database): Promise<Date | null> {
   return row?.at ?? null;
 }
 
-/**
- * Now, or one millisecond after the last save when that one was made
- * within the same millisecond or later. A version is told by this moment,
- * so no two saves may share it. Made here, not by the database clock, so
- * it keeps to the millisecond a version shows.
- */
-function nextChangedAt(latest: Date | null): Date {
-  const now = new Date();
-  if (latest === null || now > latest) return now;
-  return new Date(latest.getTime() + 1);
-}
-
 async function saveOpened(
   tx: Database,
   actorId: string,
@@ -49,7 +37,7 @@ async function saveOpened(
     sql`select pg_advisory_xact_lock(hashtext('main_indicators'))`,
   );
   const latest = await latestChangedAt(tx);
-  if (version !== indicatorsVersion(latest)) {
+  if (version !== savedVersion(latest)) {
     return MAIN_INDICATORS_CHANGED_BY_OTHER;
   }
   const changedAt = nextChangedAt(latest);
