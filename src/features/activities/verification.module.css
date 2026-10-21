@@ -23,19 +23,30 @@
 }
 
 /*
- * Every picture takes the same room, loaded or not: a card keeps its
- * height while its picture is still on its way.
+ * Every picture takes the same upright room, loaded or not: a card keeps
+ * its height while its picture is still on its way. The whole picture
+ * shows, as a cut face could not be judged; a wide one gets plain bands.
  */
 .photo,
 .noPhoto {
   width: 100%;
-  height: var(--photo-card-height);
+  aspect-ratio: var(--photo-card-ratio);
   background: var(--surface2);
+}
+
+.photoLink {
+  display: block;
+}
+
+/* Drawn inside: the card cuts off a ring drawn around the link. */
+.photoLink:focus-visible {
+  outline: var(--line-width-strong) solid var(--gold);
+  outline-offset: calc(-1 * var(--line-width-strong));
 }
 
 .photo {
   display: block;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .noPhoto {
