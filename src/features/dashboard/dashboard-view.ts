@@ -2,6 +2,8 @@ import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { stageCohorts } from "@/academic-periods/stage-cohorts";
 import type { Database } from "@/db/connect";
 import { listStudyPrograms, type StudyProgram } from "@/db/study-programs";
+import type { FitnessLimits } from "@/health-notes/fitness-ids";
+import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { type Achievement, readAchievement } from "./achievement-read";
 import {
   type DashboardFilters,
@@ -17,6 +19,8 @@ import {
 } from "./dashboard-choices";
 import type { DashboardScope } from "./dashboard-scope";
 import { dashboardStudents } from "./dashboard-students";
+import { readPhysical } from "./physical-read";
+import type { PhysicalRecap } from "./physical-recap";
 
 /** The running period as the semester rule reads it, or null when none runs. */
 export type RunningPeriod = Pick<AcademicPeriod, "startYear" | "term"> | null;
@@ -34,6 +38,9 @@ export interface DashboardView {
   held: HeldChoices;
   counts: ChoiceCounts;
   achievement: Achievement;
+  physical: PhysicalRecap;
+  /** The limits in force, which give each fitness category its scores. */
+  fitnessLimits: FitnessLimits;
 }
 
 /**
@@ -46,9 +53,10 @@ export async function loadDashboard(
   asked: DashboardFilters,
   period: RunningPeriod,
 ): Promise<DashboardView> {
-  const [held, programs] = await Promise.all([
+  const [held, programs, { limits }] = await Promise.all([
     readHeldChoices(db, scope.visible),
     scope.picksProgram ? listStudyPrograms(db) : null,
+    readFitnessLimits(db),
   ]);
   const filters = knownFilters(asked, {
     stages: period !== null,
@@ -57,13 +65,11 @@ export async function loadDashboard(
     agencies: new Set([NO_AGENCY, ...held.agencies]),
   });
   const stages = stageCohorts(held.cohortYears, period);
-  const [counts, achievement] = await Promise.all([
+  const counted = dashboardStudents(scope.visible, filters, stages);
+  const [counts, achievement, physical] = await Promise.all([
     countChoices(db, scope.visible, filters, stages),
-    readAchievement(
-      db,
-      dashboardStudents(scope.visible, filters, stages),
-      filtersInUse(filters) > 0,
-    ),
+    readAchievement(db, counted, filtersInUse(filters) > 0),
+    readPhysical(db, limits, counted, scope.illnesses),
   ]);
   return {
     filters,
@@ -73,5 +79,7 @@ export async function loadDashboard(
     held,
     counts,
     achievement,
+    physical,
+    fitnessLimits: limits,
   };
 }

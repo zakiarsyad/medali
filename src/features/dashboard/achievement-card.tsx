@@ -14,24 +14,22 @@ export const ACHIEVEMENT_SECTION = "capaian-karakter";
  */
 export function AchievementCard({ recap }: { recap: Recap | null }) {
   return (
-    <div className={styles.cards}>
-      <a className={styles.card} href={`#${ACHIEVEMENT_SECTION}`}>
-        <span className={styles.cardHead}>
-          <span className={styles.sectionNo}>1</span>
-          Capaian karakter
-        </span>
-        {recap === null ? (
-          <span className={styles.cardLine}>{TOO_FEW}</span>
-        ) : (
-          <>
-            <span className={styles.cardValue}>
-              {shownRerata(recap.rerata)} <small>MEDALI</small>
-            </span>
-            <span className={styles.cardLine}>{cardLine(recap)}</span>
-            <SpreadBar spread={recap.spread} />
-          </>
-        )}
-      </a>
-    </div>
+    <a className={styles.card} href={`#${ACHIEVEMENT_SECTION}`}>
+      <span className={styles.cardHead}>
+        <span className={styles.sectionNo}>1</span>
+        Capaian karakter
+      </span>
+      {recap === null ? (
+        <span className={styles.cardLine}>{TOO_FEW}</span>
+      ) : (
+        <>
+          <span className={styles.cardValue}>
+            {shownRerata(recap.rerata)} <small>MEDALI</small>
+          </span>
+          <span className={styles.cardLine}>{cardLine(recap)}</span>
+          <SpreadBar spread={recap.spread} />
+        </>
+      )}
+    </a>
   );
 }

@@ -3,22 +3,37 @@ import { PageHead } from "@/ui/page-head";
 import { AchievementCard } from "./achievement-card";
 import { AchievementSection } from "./achievement-section";
 import { CohortTable } from "./cohort-table";
+import styles from "./dashboard.module.css";
 import { filtersInUse } from "./dashboard-address";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import type { DashboardView } from "./dashboard-view";
+import { PhysicalCard } from "./physical-card";
+import { PhysicalSection } from "./physical-section";
+
+/**
+ * Where "Lihat rincian" of each section leads, or null for an account
+ * that may not open that tab.
+ */
+export interface DetailLinks {
+  assessment: string | null;
+  fitness: string | null;
+}
 
 function DashboardContent({
   view,
-  detailAddress,
+  links,
 }: {
   view: DashboardView;
-  detailAddress: string | null;
+  links: DetailLinks;
 }) {
   const { recap, cohorts } = view.achievement;
   return (
     <>
-      <AchievementCard recap={recap} />
-      <AchievementSection recap={recap} detailAddress={detailAddress}>
+      <div className={styles.cards}>
+        <AchievementCard recap={recap} />
+        <PhysicalCard recap={view.physical} />
+      </div>
+      <AchievementSection recap={recap} detailAddress={links.assessment}>
         {recap !== null && (
           <CohortTable
             rows={cohorts}
@@ -27,21 +42,22 @@ function DashboardContent({
           />
         )}
       </AchievementSection>
+      <PhysicalSection
+        recap={view.physical}
+        limits={view.fitnessLimits}
+        detailAddress={links.fitness}
+      />
     </>
   );
 }
 
-/**
- * Dashboard pembangunan karakter, for the roles that read its numbers.
- * `detailAddress` leads to Asesmen karakter, for an account that may
- * open it.
- */
+/** Dashboard pembangunan karakter, for the roles that read its numbers. */
 export function DashboardScreen({
   view,
-  detailAddress,
+  links,
 }: {
   view: DashboardView;
-  detailAddress: string | null;
+  links: DetailLinks;
 }) {
   return (
     <>
@@ -58,7 +74,7 @@ export function DashboardScreen({
           </p>
         </section>
       ) : (
-        <DashboardContent view={view} detailAddress={detailAddress} />
+        <DashboardContent view={view} links={links} />
       )}
     </>
   );

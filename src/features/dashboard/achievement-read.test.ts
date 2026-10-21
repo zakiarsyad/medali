@@ -56,6 +56,7 @@ async function addRecords(db: Database) {
   return {
     visible: eq(students.studyProgramId, programId),
     picksProgram: true,
+    illnesses: null,
   };
 }
 

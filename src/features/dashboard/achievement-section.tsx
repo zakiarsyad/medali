@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { Medal } from "@/character-scores/medal";
 import shared from "@/ui/data-screen.module.css";
@@ -14,6 +13,7 @@ import {
   TOO_FEW,
 } from "./achievement-words";
 import styles from "./dashboard.module.css";
+import { SectionHead } from "./section-head";
 
 function ValueAverages({ recap }: { recap: Recap }) {
   return (
@@ -67,24 +67,15 @@ export function AchievementSection({
 }) {
   return (
     <section className={styles.section} aria-labelledby={ACHIEVEMENT_SECTION}>
-      <div className={styles.sectionHead}>
-        <span className={styles.sectionNoBig}>1</span>
-        <div>
-          <h2 id={ACHIEVEMENT_SECTION} className={styles.sectionTitle}>
-            Capaian karakter
-          </h2>
-          <p className={styles.sectionLine}>
-            Nilai MEDALI dari hasil asesmen karakter (Penilaian &gt; Asesmen
-            karakter): mandiri, empati, disiplin, adaptif, loyal, dan
-            integritas.
-          </p>
-        </div>
-        {detailAddress !== null && (
-          <Link href={detailAddress} className={shared.quiet}>
-            Lihat rincian
-          </Link>
-        )}
-      </div>
+      <SectionHead
+        number={1}
+        id={ACHIEVEMENT_SECTION}
+        title="Capaian karakter"
+        detailAddress={detailAddress}
+      >
+        Nilai MEDALI dari hasil asesmen karakter (Penilaian &gt; Asesmen
+        karakter): mandiri, empati, disiplin, adaptif, loyal, dan integritas.
+      </SectionHead>
       {recap === null ? (
         <div className={shared.panel}>
           <p className={shared.empty}>{TOO_FEW}</p>

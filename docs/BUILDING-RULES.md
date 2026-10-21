@@ -42,8 +42,10 @@ while building.
 - `src/health-notes/`: the categories of a fitness test and of a health
   note, the limits in force and each student's latest score and note,
   the final category, how a note is checked, written, kept and shown,
-  its form, and the list of sick students with its numbers, read by
-  every area that keeps health notes.
+  its form, the list of sick students with its numbers, the bars of
+  how many students are in each category, and how a
+  health count of 1 to 4 students shows as "<5", read by every area
+  that keeps or counts health notes.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.

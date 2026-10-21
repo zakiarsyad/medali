@@ -1,6 +1,12 @@
 import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
-import { academicPeriods, accounts, characterAssessments } from "@/db/schema";
+import {
+  academicPeriods,
+  accounts,
+  characterAssessments,
+  fitnessScores,
+  fitnessTests,
+} from "@/db/schema";
 
 /** Made-up records for the checks of the Dashboard. */
 
@@ -66,4 +72,30 @@ export async function addTestAssessment(
     enteredBy: record.enteredBy,
     enteredAt: record.enteredAt,
   });
+}
+
+/** A made-up fingerprint of an uploaded file, as the table asks for one. */
+function testFingerprint(): string {
+  const hex = () => crypto.randomUUID().replaceAll("-", "");
+  return `${hex()}${hex()}`;
+}
+
+/** Fitness scores kept as one uploaded file, without the rules that check it. */
+export async function addTestFitnessScores(
+  db: Database,
+  enteredBy: string,
+  scores: { studentId: string; score: number }[],
+): Promise<void> {
+  const id = crypto.randomUUID();
+  await db.insert(fitnessTests).values({
+    id,
+    fileName: "tes-kebugaran-uji.xlsx",
+    fingerprint: testFingerprint(),
+    testedOn: "2026-09-01",
+    enteredBy,
+    enteredAt: new Date("2026-09-02T03:00:00Z"),
+  });
+  await db
+    .insert(fitnessScores)
+    .values(scores.map((each) => ({ ...each, testId: id })));
 }

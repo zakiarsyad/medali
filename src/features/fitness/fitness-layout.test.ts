@@ -21,9 +21,6 @@ function ruleOf(selector: string): string {
 /** The rules that place the parts of the tab. */
 const LAYOUT_RULES = [
   ".sideBySide",
-  ".bars",
-  ".bar",
-  ".barLabel",
   ".limits",
   ".limitBox",
   ".saveRow",
@@ -49,12 +46,8 @@ describe("Penilaian jasmani on a phone", () => {
     }
   });
 
-  it("lets every column of a bar of Kategori shrink, so a bar never widens the panel", () => {
-    expect(PANEL).toContain("className={styles.bar}");
-    expect(ruleOf(".bar")).toContain(
-      "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;",
-    );
-    expect(ruleOf(".barLabel")).toContain("overflow-wrap: anywhere;");
+  it("draws Kategori with the shared bars, which fit a phone", () => {
+    expect(PANEL).toContain("<CategoryBars");
   });
 
   it("folds the limits of Ambang skor onto more lines, and keeps a number box inside its box", () => {
