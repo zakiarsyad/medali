@@ -94,6 +94,7 @@ function screen(board = BOARD, reduces = false): string {
       schedule={null}
       appeals={null}
       waitingAppeals={null}
+      proposals={null}
       warnings={WARNINGS}
       processes={false}
       ownStudentId={OWN_STUDENT}

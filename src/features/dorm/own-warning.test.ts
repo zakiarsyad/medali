@@ -1,7 +1,9 @@
 // Sample Tahun akademik of this file: 3295 to 3295.
 // Sample NIMs of this file: 9986106000 to 9986106099.
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
+import { dormWarningLetters } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readOwnWarning } from "./own-warning";
 import { addViolationActor, addViolationSetting } from "./test-violations";
@@ -78,6 +80,47 @@ describe("readOwnWarning", () => {
       });
       expect(own?.rejected).toHaveLength(1);
       expect(own?.semesterTitle).toContain("3295");
+    });
+  });
+
+  it("tells the resident whether the proposal of their SP 2 is Diajukan or Diproses, without the notes", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, manager, aniAccount, periodId } = await setUp(db);
+      await addTestLetter(db, {
+        studentId: ani,
+        periodId,
+        level: 1,
+        ...issuedBy(manager.id, ISSUED_AT),
+      });
+      const second = await addTestLetter(db, {
+        studentId: ani,
+        periodId,
+        level: 2,
+        ...issuedBy(manager.id, ISSUED_AT),
+        proposalNote: "Pelanggaran berulang setelah SP 1.",
+      });
+
+      const before = await readOwnWarning(db, aniAccount, NOW);
+      expect(before?.letters.map((letter) => letter.proposal)).toEqual([
+        null,
+        "proposed",
+      ]);
+
+      await db
+        .update(dormWarningLetters)
+        .set({
+          handlingNote: "Diteruskan ke Pembinaan.",
+          handledBy: manager.id,
+          handledAt: NOW,
+        })
+        .where(eq(dormWarningLetters.id, second));
+      const after = await readOwnWarning(db, aniAccount, NOW);
+      expect(after?.letters.map((letter) => letter.proposal)).toEqual([
+        null,
+        "handled",
+      ]);
+      expect(JSON.stringify(after)).not.toContain("Diteruskan ke Pembinaan.");
+      expect(JSON.stringify(after)).not.toContain("Pelanggaran berulang");
     });
   });
 

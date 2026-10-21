@@ -26,8 +26,10 @@ export const SAMPLE_WARNING_RESIDENTS = {
   called: SAMPLE_VIOLATION_RESIDENTS,
   /** Given SP 1, with one violation more since. */
   firstLetter: SAMPLE_VIOLATION_RESIDENTS + 1,
-  /** Given SP 1 and SP 2, with the proposal to Kepala Unit. */
+  /** Given SP 1 and SP 2, with the proposal to Kepala Unit, Diajukan. */
   secondLetter: SAMPLE_VIOLATION_RESIDENTS + 2,
+  /** Given SP 1 and SP 2, with the proposal Diproses by Kepala Unit. */
+  handledLetter: SAMPLE_VIOLATION_RESIDENTS + 3,
 } as const;
 
 /** A reduction by Pengelola Asrama of a sample violation. */
@@ -61,12 +63,20 @@ export interface SampleIssue {
   proposalNote: string;
 }
 
+/** Kepala Unit marking the proposal of a sample SP 2 Diproses. */
+export interface SampleHandling {
+  at: Date;
+  note: string;
+}
+
 /** A sample call and the SP that followed it, or none yet. */
 export interface SampleLetter {
   resident: number;
   level: WarningLevel;
   call: SampleCall;
   issue: SampleIssue | null;
+  /** The handling of the proposal of an SP 2, or null while it is Diajukan. */
+  handling: SampleHandling | null;
 }
 
 export interface SampleWarnings {
@@ -135,7 +145,19 @@ function heldCall(
       sentAt: campusMoment(daysAfter(day, -2), "10:00"),
     },
     issue: { ...issue, at: campusMoment(day, "16:30") },
+    handling: null,
   };
+}
+
+/** A held call whose SP 2 proposal Kepala Unit handled at 10:00 so many days before today. */
+function handledCall(
+  letter: SampleLetter,
+  back: number,
+  today: string,
+  note: string,
+): SampleLetter {
+  const at = campusMoment(daysAfter(today, -back), "10:00");
+  return { ...letter, handling: { at, note } };
 }
 
 /**
@@ -161,22 +183,33 @@ function reduceLatest(
 }
 
 /**
- * Three residents past the ones the other sample violations are spread
+ * Four residents past the ones the other sample violations are spread
  * over: one with 7 counted violations, called for tomorrow at 16:00; one
- * with 8, given SP 1 ten days ago; and one with 12, given SP 1 fourteen
- * days ago and SP 2 three days ago, with its proposal to Kepala Unit.
- * Their violations fall on the days of the running period before that.
- * The latest violation of the second was reduced five days ago, and the
- * latest of the third yesterday, each after an accepted clarification:
- * their SPs stay, and the first is still called.
+ * with 8, given SP 1 ten days ago; one with 12, given SP 1 fourteen days
+ * ago and SP 2 three days ago, with its proposal to Kepala Unit still
+ * Diajukan; and one with 12, given SP 1 eighteen days ago and SP 2 seven
+ * days ago, its proposal Diproses five days ago. Their violations fall
+ * on the days of the running period before that. The latest violation
+ * of the second was reduced five days ago, and the latest of the third
+ * yesterday, each after an accepted clarification: their SPs stay, and
+ * the first is still called.
  */
 export function sampleDormWarnings(
   now: Date,
   periodStart: string,
 ): SampleWarnings {
   const today = campusDay(now);
-  const { called, firstLetter, secondLetter } = SAMPLE_WARNING_RESIDENTS;
+  const { called, firstLetter, secondLetter, handledLetter } =
+    SAMPLE_WARNING_RESIDENTS;
   const counted = [
+    ...violationsOf(handledLetter, SP1_VIOLATIONS, 26, today, periodStart),
+    ...violationsOf(
+      handledLetter,
+      SP2_VIOLATIONS - SP1_VIOLATIONS,
+      15,
+      today,
+      periodStart,
+    ),
     ...violationsOf(called, SP1_VIOLATIONS, 18, today, periodStart),
     ...violationsOf(firstLetter, SP1_VIOLATIONS + 1, 20, today, periodStart),
     ...violationsOf(secondLetter, SP1_VIOLATIONS, 22, today, periodStart),
@@ -214,6 +247,7 @@ export function sampleDormWarnings(
         sentAt: new Date(now.getTime() - 60 * 60 * 1000),
       },
       issue: null,
+      handling: null,
     },
     heldCall(firstLetter, 1, 10, today, {
       result:
@@ -231,6 +265,22 @@ export function sampleDormWarnings(
       proposalNote:
         "Pelanggaran tetap berulang setelah SP 1; diusulkan hukuman disiplin ringan.",
     }),
+    heldCall(handledLetter, 1, 18, today, {
+      result:
+        "Mahasiswa hadir, mengakui sering tidak mengikuti apel malam, dan berjanji memperbaiki.",
+      proposalNote: "",
+    }),
+    handledCall(
+      heldCall(handledLetter, 2, 7, today, {
+        result:
+          "Mahasiswa hadir dan mengakui masih tidak mengikuti apel malam setelah SP 1.",
+        proposalNote:
+          "Pelanggaran apel malam berulang setelah SP 1; mohon diproses hukuman disiplin.",
+      }),
+      5,
+      today,
+      "Diteruskan ke Pembina Disiplin Mahasiswa untuk pemeriksaan dan penetapan hukuman ringan.",
+    ),
   ];
   return { violations, letters };
 }

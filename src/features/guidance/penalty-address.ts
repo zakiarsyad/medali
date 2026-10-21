@@ -87,7 +87,8 @@ export function penaltiesAddress(params: PenaltiesParams): string {
 
 /**
  * The address of the tab with the form opened on a student, as
- * "Hukuman ringan" on Catatan pelanggaran sends it.
+ * "Hukuman ringan" on Catatan pelanggaran and "Catat hukuman disiplin"
+ * on Pelanggaran asrama send it.
  */
 export function penaltyFormAddress(studentId: string): string {
   return `${PENALTIES_ADDRESS}?mahasiswa=${encodeURIComponent(studentId)}`;

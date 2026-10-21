@@ -44,6 +44,7 @@ export const ACTIONS = [
   "decide_dorm_violation_appeals",
   "issue_dorm_warning_letters",
   "view_dorm_warning_results",
+  "handle_dorm_discipline_proposals",
   "reduce_dorm_violations",
   "view_dorm_violation_reductions",
   "view_dorm_dashboard",
@@ -160,7 +161,9 @@ export const ACTION_TITLES: Record<Action, string> = {
   issue_dorm_warning_letters:
     "Menjadwalkan panggilan klarifikasi dan menerbitkan surat peringatan asrama",
   view_dorm_warning_results:
-    "Membaca hasil klarifikasi surat peringatan asrama dan catatan pengajuan hukuman disiplin",
+    "Membaca hasil klarifikasi surat peringatan asrama, catatan pengajuan hukuman disiplin, dan tindak lanjutnya",
+  handle_dorm_discipline_proposals:
+    "Menindaklanjuti pengajuan hukuman disiplin dari Pengelola Asrama",
   reduce_dorm_violations:
     "Mengurangi pelanggaran asrama dan membatalkan pengurangannya",
   view_dorm_violation_reductions:
@@ -370,6 +373,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_clarifications",
       "view_dorm_violations",
       "view_dorm_warning_results",
+      "handle_dorm_discipline_proposals",
       "view_dorm_violation_reductions",
       "view_dorm_dashboard",
       "view_dorm_dashboard_names",

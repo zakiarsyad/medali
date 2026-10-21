@@ -14,14 +14,16 @@ const PERIOD_START = "2026-08-01";
 
 describe("sampleDormWarnings", () => {
   const { violations, letters } = sampleDormWarnings(NOW, PERIOD_START);
-  const { called, firstLetter, secondLetter } = SAMPLE_WARNING_RESIDENTS;
+  const { called, firstLetter, secondLetter, handledLetter } =
+    SAMPLE_WARNING_RESIDENTS;
   const countOf = (resident: number) =>
     violations.filter((violation) => violation.resident === resident).length;
 
-  it("gives one resident 7 counted violations, one 8 and one 12, none of the other sample violations' residents", () => {
+  it("gives one resident 7 counted violations, one 8 and two 12, none of the other sample violations' residents", () => {
     expect(countOf(called)).toBe(SP1_VIOLATIONS);
     expect(countOf(firstLetter)).toBe(SP1_VIOLATIONS + 1);
     expect(countOf(secondLetter)).toBe(SP2_VIOLATIONS);
+    expect(countOf(handledLetter)).toBe(SP2_VIOLATIONS);
     for (const violation of violations) {
       expect(violation.resident).toBeGreaterThanOrEqual(
         SAMPLE_VIOLATION_RESIDENTS,
@@ -33,19 +35,22 @@ describe("sampleDormWarnings", () => {
     }
   });
 
-  it("calls one resident for tomorrow, gives one SP 1 and one SP 1 and SP 2 with the proposal", () => {
+  it("calls one resident for tomorrow, gives one SP 1, and two SP 1 and SP 2 with the proposal, one of them handled", () => {
     const shown = letters.map((letter) => [
       letter.resident,
       letter.level,
       letter.issue !== null,
       letter.issue?.proposalNote !== "" && letter.issue !== null,
+      letter.handling !== null,
     ]);
 
     expect(shown).toEqual([
-      [called, 1, false, false],
-      [firstLetter, 1, true, false],
-      [secondLetter, 1, true, false],
-      [secondLetter, 2, true, true],
+      [called, 1, false, false, false],
+      [firstLetter, 1, true, false, false],
+      [secondLetter, 1, true, false, false],
+      [secondLetter, 2, true, true, false],
+      [handledLetter, 1, true, false, false],
+      [handledLetter, 2, true, true, true],
     ]);
     const [call] = letters;
     expect(call && call.call.day > campusDay(NOW)).toBe(true);
@@ -57,6 +62,15 @@ describe("sampleDormWarnings", () => {
       if (issue === null) continue;
       expect(issue.at.getTime()).toBeGreaterThan(call.sentAt.getTime());
       expect(issue.at.getTime()).toBeLessThan(NOW.getTime());
+    }
+  });
+
+  it("handles the proposal after its SP 2 was issued, and before now, with a note of 5 letters or more", () => {
+    for (const { issue, handling } of letters) {
+      if (handling === null) continue;
+      expect(handling.at.getTime()).toBeGreaterThan(issue?.at.getTime() ?? 0);
+      expect(handling.at.getTime()).toBeLessThan(NOW.getTime());
+      expect(handling.note.length).toBeGreaterThanOrEqual(5);
     }
   });
 
