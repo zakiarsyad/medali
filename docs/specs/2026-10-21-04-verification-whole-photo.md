@@ -56,6 +56,11 @@ Pegawai UPK, who judges each photo, on a phone and on a computer.
 3. The box with no kept photo, "Foto tidak tersimpan di sini." or the words
    for a removed photo, takes the same 3 by 4 box, so a card keeps its
    height while its photo loads, as today.
+4. The photo's address made the browser save the photo as a file instead
+   of showing it, so the new tab would stay empty. The address now asks
+   the browser to show the photo. Who may open it does not change.
+   Decided by the builder, from the case "the full photo opens in a new
+   tab".
 
 ## Steps
 
