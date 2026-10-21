@@ -89,7 +89,7 @@ Character coaching list reads it.
 
 ## Steps
 
-- [ ] 1. The rule that lists a student and gives the level and weakest
+- [x] 1. The rule that lists a student and gives the level and weakest
   value, with checks.
 - [ ] 2. The panel shows the list, sorted, with "Tampilkan semua".
 - [ ] 3. The right "Panggil konseling dari asesmen" is added for Penilai

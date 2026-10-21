@@ -32,8 +32,9 @@ while building.
   every area that needs them.
 - `src/character-scores/`: the scores of a character assessment, their
   Rerata and predikat, how a Rerata and a predikat are shown, the medal
-  chart, and each student's latest assessment and the one before it,
-  read by every area that shows character scores.
+  chart, each student's latest assessment and the one before it, and
+  who needs coaching by it, with the level and the weakest value, read
+  by every area that shows character scores.
 - `src/character-grades/`: each student's semester character grade with
   its four parts, read from the areas each part belongs to, for every
   screen that shows the grade.
