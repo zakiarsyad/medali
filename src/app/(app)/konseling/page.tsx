@@ -8,6 +8,7 @@ import {
   readCounsellingList,
   readCounsellingNumbers,
 } from "@/features/counselling/counselling-list";
+import { readCounsellingListParams } from "@/features/counselling/counselling-list-address";
 import { CounsellingScreen } from "@/features/counselling/counselling-screen";
 import { readDormReferrals } from "@/features/counselling/dorm-referrals";
 import { readOwnHistory } from "@/features/counselling/own-history";
@@ -61,13 +62,14 @@ function referralsPart(account: AccountForAccess, params: SearchParams) {
   return readDormReferrals(database(), account, page, campusDay());
 }
 
-async function studentsPart(account: AccountForAccess) {
+async function studentsPart(account: AccountForAccess, params: SearchParams) {
+  const asked = readCounsellingListParams(params);
   const [numbers, list] = await Promise.all([
     readCounsellingNumbers(database(), account),
-    readCounsellingList(database(), account),
+    readCounsellingList(database(), account, asked),
   ]);
   if (numbers === null || list === null) return null;
-  return { numbers, list };
+  return { numbers, list, params: asked };
 }
 
 export default async function CounsellingPage(props: PageProps<"/konseling">) {
@@ -81,7 +83,7 @@ export default async function CounsellingPage(props: PageProps<"/konseling">) {
       mayShare={may(account.roles, "share_counselling_data")}
       schedules={await schedulesPart(account, searchParams)}
       referrals={await referralsPart(account, searchParams)}
-      students={await studentsPart(account)}
+      students={await studentsPart(account, searchParams)}
     />
   );
 }

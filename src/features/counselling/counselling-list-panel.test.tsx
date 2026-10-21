@@ -1,12 +1,16 @@
 // Sample NIMs of this file: 9986330100 to 9986330199.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { CounsellingListParams } from "./counselling-list-address";
 import {
   CounsellingListPart,
   type CounsellorStudents,
 } from "./counselling-list-panel";
 import type { CounsellingStudentRow } from "./counselling-list-view";
-import { NO_COUNSELLING_DATA } from "./counselling-list-words";
+import {
+  NO_COUNSELLING_DATA,
+  NOBODY_ON_FILTER,
+} from "./counselling-list-words";
 import { CounsellingScreen } from "./counselling-screen";
 
 const ROW: CounsellingStudentRow = {
@@ -33,16 +37,27 @@ const BUSY: CounsellingStudentRow = {
   sharing: "published",
 };
 
-function studentsOf(rows: CounsellingStudentRow[]): CounsellorStudents {
+const ALL: CounsellingListParams = { query: "", filter: "all", page: 1 };
+
+function studentsOf(
+  rows: CounsellingStudentRow[],
+  params: CounsellingListParams = ALL,
+  matching = rows.length,
+): CounsellorStudents {
   return {
     numbers: { waitingConsent: 3, recentSessions: 12 },
-    list: { rows, matching: rows.length, page: 1 },
+    list: { rows, matching, page: params.page },
+    params,
   };
 }
 
-function render(rows: CounsellingStudentRow[]): string {
+function render(
+  rows: CounsellingStudentRow[],
+  params: CounsellingListParams = ALL,
+  matching = rows.length,
+): string {
   return renderToStaticMarkup(
-    <CounsellingListPart students={studentsOf(rows)} />,
+    <CounsellingListPart students={studentsOf(rows, params, matching)} />,
   );
 }
 
@@ -96,6 +111,42 @@ describe("Daftar mahasiswa on Konseling", () => {
     expect(NO_COUNSELLING_DATA).toBe("Belum ada data konseling.");
     expect(html).toContain(NO_COUNSELLING_DATA);
     expect(html).not.toContain("<table");
+  });
+});
+
+describe("the search, the filter and the pages of Daftar mahasiswa", () => {
+  it("offers Cari nama atau NIM and the four choices of the filter, keeping what was chosen", () => {
+    const html = render([BUSY], { query: "Budi", filter: "approved", page: 1 });
+    expect(html).toContain('placeholder="Cari nama atau NIM"');
+    expect(html).toContain('value="Budi"');
+    for (const words of [
+      "Semua",
+      "Menunggu persetujuan",
+      "Disetujui",
+      "Ada sesi berikutnya",
+    ]) {
+      expect(html).toContain(`>${words}</option>`);
+    }
+    expect(html).toMatch(/<option value="disetujui" selected="">/);
+  });
+
+  it("says Tidak ada mahasiswa pada filter ini. when nothing matches", () => {
+    const html = render([], { query: "Zz", filter: "all", page: 1 });
+    expect(NOBODY_ON_FILTER).toBe("Tidak ada mahasiswa pada filter ini.");
+    expect(html).toContain(NOBODY_ON_FILTER);
+    expect(html).not.toContain(NO_COUNSELLING_DATA);
+  });
+
+  it("steps to the next 20 with the search and the filter kept", () => {
+    const rows = Array.from({ length: 20 }, (_, place) => ({
+      ...ROW,
+      studentId: `00000000-0000-4000-8000-0000000001${String(place).padStart(2, "0")}`,
+    }));
+    const html = render(rows, { query: "Ani", filter: "waiting", page: 1 }, 21);
+    expect(html).toContain("1–20 dari 21 mahasiswa");
+    expect(html).toContain(
+      'href="/konseling?cari=Ani&amp;filter=menunggu-persetujuan&amp;hal-mahasiswa=2"',
+    );
   });
 });
 

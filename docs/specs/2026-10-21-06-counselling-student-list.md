@@ -103,6 +103,12 @@ panels. It replaces looking students up one by one.
     "Publikasi data kesehatan mental" shows it.
 11. The list is in name order. A removed student is not in it, nor the
     student of the account itself, as on the other lists of Konselor.
+12. "Cari nama atau NIM" finds part of a name or a NIM. "Menunggu
+    persetujuan" and "Disetujui" are the status of the consent; "Ada
+    sesi berikutnya" is the next session of decision 8.
+13. The search, the filter and the page are kept in the address. Using
+    them shows the other lists of Konseling as they first open, as
+    those lists already do with their own filters and pages.
 
 ## Steps
 
@@ -110,5 +116,5 @@ panels. It replaces looking students up one by one.
   only, with its checks.
 - [x] 2. The numbers and "Daftar mahasiswa" with its columns and empty
   states.
-- [ ] 3. Search, filter and paging.
+- [x] 3. Search, filter and paging.
 - [ ] 4. "Rincian" with the sessions, and "Buka" into the panels.

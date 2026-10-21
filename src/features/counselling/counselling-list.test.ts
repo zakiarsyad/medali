@@ -14,12 +14,15 @@ import {
   readCounsellingList,
   readCounsellingNumbers,
 } from "./counselling-list";
+import type { CounsellingListParams } from "./counselling-list-address";
 import type { SharingStatus } from "./sharing-ids";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { addTestAssignment, addTestSchedule } from "./test-schedules";
 import { setTestConsent } from "./test-screenings";
 
 const inTestDatabase = withTestDatabase();
+
+const ALL: CounsellingListParams = { query: "", filter: "all", page: 1 };
 
 // 10:00 on campus on Rabu 21 October 2026.
 const NOW = new Date("2026-10-21T03:00:00Z");
@@ -124,7 +127,7 @@ describe("Daftar mahasiswa of Konselor on Konseling", () => {
     await inTestDatabase(async (db) => {
       const { counsellor, ids } = await addList(db);
 
-      const list = await readCounsellingList(db, counsellor, NOW);
+      const list = await readCounsellingList(db, counsellor, ALL, NOW);
 
       expect(list?.matching).toBe(5);
       expect(list?.page).toBe(1);
@@ -169,7 +172,7 @@ describe("Daftar mahasiswa of Konselor on Konseling", () => {
       const { counsellor, ids } = await addList(db);
       const later = new Date("2026-10-29T03:00:00Z");
 
-      const list = await readCounsellingList(db, counsellor, later);
+      const list = await readCounsellingList(db, counsellor, ALL, later);
       const two = list?.rows.find((row) => row.studentId === ids.two);
 
       expect(two?.nextDay).toBeNull();
@@ -189,7 +192,7 @@ describe("Daftar mahasiswa of Konselor on Konseling", () => {
         counsellorId: counsellor.id,
       });
 
-      const list = await readCounsellingList(db, counsellor, NOW);
+      const list = await readCounsellingList(db, counsellor, ALL, NOW);
       const three = list?.rows.find((row) => row.studentId === ids.three);
 
       expect(three?.schedule).toEqual({
@@ -206,7 +209,7 @@ describe("Daftar mahasiswa of Konselor on Konseling", () => {
         "counsellor",
       ]);
 
-      const list = await readCounsellingList(db, counsellor, NOW);
+      const list = await readCounsellingList(db, counsellor, ALL, NOW);
 
       expect(list).toEqual({ rows: [], matching: 0, page: 1 });
     });
@@ -217,7 +220,7 @@ describe("Daftar mahasiswa of Konselor on Konseling", () => {
       const { counsellor, ids } = await addList(db);
       await setTestConsent(db, ids.six, counsellor.id, "waiting");
 
-      const list = await readCounsellingList(db, counsellor, NOW);
+      const list = await readCounsellingList(db, counsellor, ALL, NOW);
 
       expect(list?.matching).toBe(6);
       expect(list?.rows.map((row) => row.studentId)).toContain(ids.six);
@@ -236,12 +239,114 @@ describe("Daftar mahasiswa of Konselor on Konseling", () => {
         studentId: ids.two,
       };
 
-      const list = await readCounsellingList(db, alsoStudent, NOW);
+      const list = await readCounsellingList(db, alsoStudent, ALL, NOW);
       const shown = list?.rows.map((row) => row.studentId);
 
       expect(shown).not.toContain(ids.one);
       expect(shown).not.toContain(ids.two);
       expect(list?.matching).toBe(3);
+    });
+  });
+});
+
+describe("the search and the filter of Daftar mahasiswa", () => {
+  async function shownFor(
+    db: Database,
+    actor: AccountForAccess,
+    asked: Partial<CounsellingListParams>,
+  ) {
+    const list = await readCounsellingList(
+      db,
+      actor,
+      { ...ALL, ...asked },
+      NOW,
+    );
+    return list?.rows.map((row) => row.nim);
+  }
+
+  it("finds a student by part of the name or the NIM", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor } = await addList(db);
+
+      expect(await shownFor(db, counsellor, { query: "konseling 3" })).toEqual([
+        "9986330003",
+      ]);
+      expect(await shownFor(db, counsellor, { query: "330002" })).toEqual([
+        "9986330002",
+      ]);
+    });
+  });
+
+  it("keeps only the consents waiting, or only those approved", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor } = await addList(db);
+
+      expect(await shownFor(db, counsellor, { filter: "waiting" })).toEqual([
+        "9986330001",
+      ]);
+      expect(await shownFor(db, counsellor, { filter: "approved" })).toEqual([
+        "9986330002",
+      ]);
+    });
+  });
+
+  it("keeps only those whose latest session sets a next one that has not passed", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, ids } = await addList(db);
+      await addSession(
+        db,
+        ids.three,
+        counsellor.id,
+        "2026-10-01",
+        "2026-10-08",
+      );
+
+      expect(
+        await shownFor(db, counsellor, { filter: "next_session" }),
+      ).toEqual(["9986330002"]);
+    });
+  });
+
+  it("finds nobody when nothing matches", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor } = await addList(db);
+
+      const list = await readCounsellingList(
+        db,
+        counsellor,
+        { ...ALL, query: "Tidak Ada", filter: "approved" },
+        NOW,
+      );
+
+      expect(list).toEqual({ rows: [], matching: 0, page: 1 });
+    });
+  });
+});
+
+describe("the pages of Daftar mahasiswa", () => {
+  it("loads 20 students at a time, and the last page for a page past the end", async () => {
+    await inTestDatabase(async (db) => {
+      const nims = Array.from(
+        { length: 21 },
+        (_, place) => `99863300${String(place + 10).padStart(2, "0")}`,
+      );
+      const people = await addTestPeople(db, "Prodi Uji Halaman Daftar", nims);
+      for (const studentId of people.studentIds) {
+        await setTestConsent(db, studentId, people.counsellor.id, "waiting");
+      }
+
+      const first = await readCounsellingList(db, people.counsellor, ALL, NOW);
+      const past = await readCounsellingList(
+        db,
+        people.counsellor,
+        { ...ALL, page: 9 },
+        NOW,
+      );
+
+      expect(first?.rows).toHaveLength(20);
+      expect(first?.matching).toBe(21);
+      expect(past?.page).toBe(2);
+      expect(past?.rows).toHaveLength(1);
     });
   });
 });
@@ -291,7 +396,7 @@ describe("a hand-made request for Daftar mahasiswa or its numbers", () => {
         await addList(db);
         const other = await addTestActor(db, "Akun Uji Lain", [role]);
 
-        expect(await readCounsellingList(db, other, NOW)).toBeNull();
+        expect(await readCounsellingList(db, other, ALL, NOW)).toBeNull();
         expect(await readCounsellingNumbers(db, other, NOW)).toBeNull();
       });
     },

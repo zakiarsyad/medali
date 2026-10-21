@@ -3,6 +3,7 @@ import {
   asc,
   count,
   eq,
+  ilike,
   inArray,
   ne,
   or,
@@ -14,6 +15,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
+import { containsPattern } from "@/db/contains-pattern";
 import {
   counsellingConsents,
   counsellingSchedules,
@@ -23,7 +25,10 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { pageWithin } from "@/ui/list-pages";
-import { COUNSELLING_LIST_PAGE_SIZE } from "./counselling-list-address";
+import {
+  COUNSELLING_LIST_PAGE_SIZE,
+  type CounsellingListParams,
+} from "./counselling-list-address";
 import type {
   CounsellingNumbers,
   CounsellingStudentList,
@@ -81,6 +86,29 @@ const LATEST_NEXT_DAY = sql<string | null>`(
     ${counsellingSessions.id} desc
   limit 1
 )`;
+
+function searched(query: string): SQL | undefined {
+  if (query === "") return undefined;
+  const pattern = containsPattern(query);
+  return or(ilike(students.name, pattern), ilike(students.nim, pattern));
+}
+
+/** The filter of "Daftar mahasiswa"; nothing for "Semua". */
+function filtered(
+  params: CounsellingListParams,
+  today: string,
+): SQL | undefined {
+  if (params.filter === "waiting") {
+    return eq(counsellingConsents.status, "waiting");
+  }
+  if (params.filter === "approved") {
+    return eq(counsellingConsents.status, "approved");
+  }
+  if (params.filter === "next_session") {
+    return sql`${LATEST_NEXT_DAY} >= ${today}`;
+  }
+  return undefined;
+}
 
 const shownSchedule = alias(counsellingSchedules, "shown_schedule");
 
@@ -156,18 +184,25 @@ function rowOf(read: ReadRow, today: string): CounsellingStudentRow {
 
 /**
  * One page of "Daftar mahasiswa": each student with a consent record, a
- * schedule or a session, by name. Each row holds only what the list
- * shows, never the notes. Null, with nothing read, for an account
- * without the right.
+ * schedule or a session that matches the search and the filter, by
+ * name. Each row holds only what the list shows, never the notes. Null,
+ * with nothing read, for an account without the right.
  */
 export async function readCounsellingList(
   db: Database,
   actor: AccountForAccess,
+  params: CounsellingListParams,
   now: Date = new Date(),
 ): Promise<CounsellingStudentList | null> {
   const reach = counsellingListReachOf(actor);
   if (reach === null) return null;
-  const where = and(reach, IN_LIST);
+  const today = campusDay(now);
+  const where = and(
+    reach,
+    IN_LIST,
+    searched(params.query),
+    filtered(params, today),
+  );
   const [found] = await db
     .select({ matching: count() })
     .from(students)
@@ -177,7 +212,7 @@ export async function readCounsellingList(
     )
     .where(where);
   const matching = found?.matching ?? 0;
-  const page = pageWithin(1, matching, COUNSELLING_LIST_PAGE_SIZE);
+  const page = pageWithin(params.page, matching, COUNSELLING_LIST_PAGE_SIZE);
   const rows: ReadRow[] = await db
     .select({
       studentId: students.id,
@@ -204,6 +239,5 @@ export async function readCounsellingList(
     .orderBy(asc(students.name), asc(students.nim))
     .limit(COUNSELLING_LIST_PAGE_SIZE)
     .offset((page - 1) * COUNSELLING_LIST_PAGE_SIZE);
-  const today = campusDay(now);
   return { rows: rows.map((row) => rowOf(row, today)), matching, page };
 }
