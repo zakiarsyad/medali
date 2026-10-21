@@ -37,21 +37,26 @@ export function AssessmentFilterRow({ params }: { params: AssessmentParams }) {
     if (params.query !== asked) setTyped(params.query);
   }
 
-  const { query: heldQuery, filter } = params;
+  const { query: heldQuery, filter, coachingAll, coachingPage } = params;
   useEffect(() => {
     const query = searchText(typed) ?? "";
     if (query === heldQuery) return;
     const timer = setTimeout(() => {
       setAsked(query);
-      const kept = { ...START_PARAMS, filter };
+      const kept = { ...START_PARAMS, filter, coachingAll, coachingPage };
       router.replace(assessmentAddress({ ...kept, query }), { scroll: false });
     }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [typed, heldQuery, filter, router]);
+  }, [typed, heldQuery, filter, coachingAll, coachingPage, router]);
 
   function choose(sent: string) {
     const query = searchText(typed) ?? "";
-    const chosen = { query, filter: filterNamed(sent) };
+    const chosen = {
+      query,
+      filter: filterNamed(sent),
+      coachingAll,
+      coachingPage,
+    };
     router.push(assessmentAddress({ ...START_PARAMS, ...chosen }), {
       scroll: false,
     });

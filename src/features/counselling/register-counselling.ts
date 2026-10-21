@@ -27,10 +27,13 @@ export const REGISTER_NOT_ALLOWED = {
 } as const;
 
 /**
- * Locks the student, so of two registrations at the same moment the
- * second waits until the first is kept and then finds it.
+ * Locks the student, so of two registrations, or two calls, at the same
+ * moment the second waits until the first is kept and then finds it.
  */
-async function lockStudent(tx: Database, studentId: string): Promise<boolean> {
+export async function lockStudent(
+  tx: Database,
+  studentId: string,
+): Promise<boolean> {
   const [found] = await tx
     .select({ id: students.id })
     .from(students)

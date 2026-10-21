@@ -18,6 +18,16 @@ import {
   AssessmentScreen,
   ReadOnlyNote,
 } from "@/features/character-assessment/assessment-screen";
+import { readCoachingList } from "@/features/character-assessment/coaching-list";
+import {
+  CoachingPanel,
+  type CounsellingCell,
+} from "@/features/character-assessment/coaching-panel";
+import { AssessmentCallCell } from "@/features/counselling/assessment-call-cell";
+import {
+  type AssessmentCall,
+  readAssessmentCalls,
+} from "@/features/counselling/assessment-calls";
 import { readMainIndicators } from "@/features/curriculum/stored-main-indicators";
 
 /**
@@ -25,8 +35,11 @@ import { readMainIndicators } from "@/features/curriculum/stored-main-indicators
  * open the tab see: Ketua Program Studi those of their own program only,
  * Pengasuh their own mentees only. Kepala Unit and Penilai Mahasiswa may
  * also enter an assessment, and alone read "Catatan penilai"; the others
- * are told who enters. A student's earlier assessments open over the tab
- * only for a student the account sees.
+ * are told who enters. "Teridentifikasi perlu pembinaan" lists, of the
+ * same students, those whose latest assessment is low; only Penilai
+ * Mahasiswa sees its column Konseling, with the calls read for it alone.
+ * A student's earlier assessments open over the tab only for a student
+ * the account sees.
  */
 export default async function AssessmentPage(
   props: PageProps<"/penilaian/asesmen">,
@@ -39,13 +52,19 @@ export default async function AssessmentPage(
   const visible = assessmentVisibleTo(account);
   const mayAssess = may(account.roles, "assess_character");
   const running = await readRunningPeriod(db);
-  const [numbers, list, history] = await Promise.all([
+  const [numbers, coaching, list, history] = await Promise.all([
     readAssessmentNumbers(db, visible, running?.id ?? null),
+    readCoachingList(db, visible, params),
     readAssessmentList(db, visible, params),
     params.historyId === null
       ? null
       : readAssessmentHistory(db, visible, params.historyId, mayAssess),
   ]);
+  const calls = await readAssessmentCalls(
+    db,
+    account,
+    coaching.rows.map((row) => row.id),
+  );
   return (
     <>
       <AssessmentScreen
@@ -54,6 +73,13 @@ export default async function AssessmentPage(
         numbers={numbers}
         periodName={running ? periodTitle(running) : null}
         list={list}
+        coaching={
+          <CoachingPanel
+            list={coaching}
+            params={params}
+            counsellingCell={callCellsOf(calls)}
+          />
+        }
         manage={
           mayAssess ? (
             <AssessmentInputPanel
@@ -73,6 +99,20 @@ export default async function AssessmentPage(
         />
       )}
     </>
+  );
+}
+
+/** The column Konseling, or none for an account not given the calls. */
+function callCellsOf(
+  calls: Map<string, AssessmentCall> | null,
+): CounsellingCell | null {
+  if (calls === null) return null;
+  return (row) => (
+    <AssessmentCallCell
+      studentId={row.id}
+      name={row.name}
+      call={calls.get(row.id)}
+    />
   );
 }
 

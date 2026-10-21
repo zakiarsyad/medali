@@ -33,8 +33,9 @@ function thisPeriodNote(periodName: string | null): string {
 
 /**
  * Asesmen karakter: the four numbers, the form for those who may enter
- * an assessment or the note for a role that only reads, and "Hasil
- * asesmen karakter", all of the students the account may see.
+ * an assessment or the note for a role that only reads, "Teridentifikasi
+ * perlu pembinaan" and "Hasil asesmen karakter", all of the students the
+ * account may see.
  */
 export function AssessmentScreen({
   tabs,
@@ -43,6 +44,7 @@ export function AssessmentScreen({
   periodName,
   list,
   manage,
+  coaching,
 }: {
   tabs: TabLinksProps;
   params: AssessmentParams;
@@ -52,6 +54,8 @@ export function AssessmentScreen({
   list: AssessmentList;
   /** "Input capaian MEDALI", or the read-only note. */
   manage: ReactNode;
+  /** "Teridentifikasi perlu pembinaan". */
+  coaching: ReactNode;
 }) {
   return (
     <>
@@ -83,6 +87,7 @@ export function AssessmentScreen({
         />
       </NumberCards>
       {manage}
+      {coaching}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Hasil asesmen karakter</h2>
         <p className={styles.sub}>Hasil asesmen terakhir tiap mahasiswa.</p>
