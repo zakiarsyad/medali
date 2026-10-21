@@ -1459,6 +1459,7 @@ describe("may", () => {
     "director",
     "head_of_program",
     "mentor",
+    "discipline_officer",
   ];
 
   it.each(disciplineReaders)("lets %s read discipline records", (role) => {
@@ -1476,6 +1477,55 @@ describe("may", () => {
     for (const role of others) {
       expect(may([role], "view_discipline_records")).toBe(false);
     }
+  });
+
+  it("limits Ketua Program Studi to their program and Pengasuh to their own mentees when reading discipline records", () => {
+    expect(ROLES.head_of_program.rows).toBe("own_program");
+    expect(ROLES.mentor.rows).toBe("own_mentees");
+  });
+
+  const penaltyRecorders: RoleId[] = ["discipline_officer", "head_of_unit"];
+
+  it("lets Pembina Disiplin Mahasiswa and Kepala Unit alone record discipline penalties, on Pembinaan > Pelanggaran disiplin", () => {
+    expect(ACTION_TITLES.record_discipline_penalties).toBe(
+      "Mencatat pelanggaran dan hukuman disiplin",
+    );
+    for (const role of penaltyRecorders) {
+      expect(may([role], "record_discipline_penalties")).toBe(true);
+      expect(may([role], "view_discipline_records")).toBe(true);
+      expect(mayOpenTab([role], "guidance", "discipline")).toBe(true);
+    }
+    const others = ROLE_IDS.filter((role) => !penaltyRecorders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["director", "head_of_program", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "record_discipline_penalties")).toBe(false);
+    }
+  });
+
+  it("opens Pelanggaran disiplin to exactly the roles that read discipline records, not to Mahasiswa, Konselor, Penilai Mahasiswa, Pegawai UPK, Pengelola Asrama or BAM", () => {
+    const others = ROLE_IDS.filter((role) => !disciplineReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "counsellor",
+        "assessor",
+        "upk_staff",
+        "dorm_manager",
+        ...BAM_ROLES,
+      ]),
+    );
+    for (const role of disciplineReaders) {
+      expect(mayOpenTab([role], "guidance", "discipline")).toBe(true);
+    }
+    for (const role of others) {
+      expect(mayOpenTab([role], "guidance", "discipline")).toBe(false);
+    }
+  });
+
+  it("keeps Catatan pelanggaran closed to Pengasuh, who reads discipline penalties", () => {
+    expect(mayOpenTab(["mentor"], "guidance", "violation_notes")).toBe(false);
   });
 
   const violationNoteWriters: RoleId[] = ["discipline_officer", "head_of_unit"];

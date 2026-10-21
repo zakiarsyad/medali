@@ -88,6 +88,7 @@ export const ACTIONS = [
   "view_mental_health_marks",
   "view_mental_health_mark_log",
   "view_discipline_records",
+  "record_discipline_penalties",
   "view_violation_notes",
   "write_violation_notes",
   "manage_counselling_consent",
@@ -216,6 +217,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_mental_health_mark_log:
     "Melihat riwayat perubahan penanda potensi kesehatan mental",
   view_discipline_records: "Melihat catatan disiplin mahasiswa",
+  record_discipline_penalties: "Mencatat pelanggaran dan hukuman disiplin",
   view_violation_notes: "Melihat catatan pelanggaran",
   write_violation_notes: "Mencatat dan menghapus catatan pelanggaran",
   manage_counselling_consent:
@@ -402,6 +404,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mental_health_screening_count",
       "view_shared_counselling_data",
       "view_discipline_records",
+      "record_discipline_penalties",
       "view_violation_notes",
       "write_violation_notes",
     ],
@@ -707,7 +710,12 @@ export const ROLES: Record<RoleId, Role> = {
     initials: "PD",
     pages: ["guidance"],
     tabs: { guidance: ["discipline", "violation_notes"] },
-    actions: ["view_violation_notes", "write_violation_notes"],
+    actions: [
+      "view_discipline_records",
+      "record_discipline_penalties",
+      "view_violation_notes",
+      "write_violation_notes",
+    ],
     rows: "all",
   },
   assessor: {

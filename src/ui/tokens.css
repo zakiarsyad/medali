@@ -90,6 +90,8 @@
   --typed-max-width: 40ch;
   --column-min-width: 360px;
   --box-min-width: 200px;
+  /* A table of many columns scrolls inside its own box below this width. */
+  --wide-table-min-width: 720px;
   --score-box-width: 90px;
   /*
    * A survey statement stands beside its buttons of a score of 1 to 5

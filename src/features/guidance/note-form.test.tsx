@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { NoteForm } from "./note-form";
+import { NoteForm, penaltiesWords } from "./note-form";
 import { NoteTerms } from "./note-terms";
 import { DESCRIPTION_EXAMPLES } from "./violation-note-ids";
 
@@ -51,5 +51,14 @@ describe("NoteTerms", () => {
     expect(shown).toContain("Ketentuan");
     expect(shown).toContain("Catatan semester Ganjil 2026/2027 berlaku");
     expect(shown).toContain("Pembinaan langsung, Teguran, Hukuman lainnya.");
+  });
+});
+
+describe("penaltiesWords", () => {
+  it("says how many discipline penalties the student has, and nothing for none", () => {
+    expect(penaltiesWords(2)).toBe(
+      " Mahasiswa ini juga punya 2 hukuman disiplin tercatat.",
+    );
+    expect(penaltiesWords(0)).toBe("");
   });
 });
