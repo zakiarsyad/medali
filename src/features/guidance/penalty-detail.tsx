@@ -1,9 +1,10 @@
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import { shownDay } from "@/ui/day";
 import styles from "./discipline-penalties.module.css";
 import type { PenaltyRow } from "./penalty-board";
 import { PenaltyConditions } from "./penalty-conditions";
 import type { PenaltyFollowUp } from "./penalty-follow-up";
-import { CHARACTER_SCORE_CAP, ruleOf } from "./penalty-rules";
+import { ruleOf } from "./penalty-rules";
 import {
   formsWords,
   SOCIAL_WORK_PLACE_WORDS,

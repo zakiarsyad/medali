@@ -32,6 +32,10 @@ import {
   SCORE_MAX as ASSESSMENT_SCORE_MAX,
   SCORE_MIN as ASSESSMENT_SCORE_MIN,
 } from "@/character-scores/assessment-score";
+import {
+  PENALTY_CATEGORIES,
+  type PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
 import { DORM_IDS } from "@/dorms/dorms";
 import {
   NOTE_MAX_LENGTH as ASSESSMENT_NOTE_MAX_LENGTH,
@@ -146,12 +150,10 @@ import {
   CONTINUATION_DECISIONS,
   DECISION_NUMBER_MAX_LENGTH,
   OTHER_SOCIAL_WORK_MAX_LENGTH,
-  PENALTY_CATEGORIES,
   PENALTY_CHANGE_ACTIONS,
   PENALTY_DESCRIPTION_MAX_LENGTH,
   PENALTY_DESCRIPTION_MIN_LENGTH,
   PENALTY_STATUSES,
-  type PenaltyLevel,
   SOCIAL_WORK_FORMS,
   SOCIAL_WORK_PLACES,
 } from "@/features/guidance/penalty-ids";

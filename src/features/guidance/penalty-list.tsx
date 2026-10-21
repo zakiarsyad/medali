@@ -1,3 +1,7 @@
+import {
+  CATEGORY_WORDS,
+  PENALTY_CATEGORIES,
+} from "@/discipline-penalties/penalty-kinds";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
@@ -9,14 +13,9 @@ import {
   STATUS_CHOICES,
 } from "./penalty-address";
 import type { PenaltyBoard } from "./penalty-board";
-import {
-  PENALTIES_PAGE_SIZE,
-  PENALTY_CATEGORIES,
-  PENALTY_STATUSES,
-} from "./penalty-ids";
+import { PENALTIES_PAGE_SIZE, PENALTY_STATUSES } from "./penalty-ids";
 import { PenaltyTable } from "./penalty-table";
 import {
-  CATEGORY_WORDS,
   NO_PENALTIES_FOUND,
   PENALTY_NOUN,
   STATUS_WORDS,

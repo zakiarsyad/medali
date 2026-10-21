@@ -1,17 +1,18 @@
+import {
+  CATEGORY_WORDS,
+  LEVEL_WORDS,
+  type PenaltyCategory,
+  type PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import type {
   ContinuationCondition,
   ContinuationDecision,
-  PenaltyCategory,
-  PenaltyLevel,
   PenaltyStatus,
   SocialWorkForm,
   SocialWorkPlace,
 } from "./penalty-ids";
-import {
-  CHARACTER_SCORE_CAP,
-  type PenaltyRule,
-  type SocialWorkLength,
-} from "./penalty-rules";
+import type { PenaltyRule, SocialWorkLength } from "./penalty-rules";
 
 /*
  * The words of Pelanggaran disiplin. Read by the screen parts in the
@@ -35,18 +36,6 @@ export const NO_PENALTIES_FOUND = "Belum ada pelanggaran pada filter ini.";
 
 /** What one row of the list is, as the pager says it. */
 export const PENALTY_NOUN = "pelanggaran";
-
-export const CATEGORY_WORDS: Record<PenaltyCategory, string> = {
-  light: "Ringan",
-  medium: "Sedang",
-  heavy: "Berat",
-};
-
-export const LEVEL_WORDS: Record<PenaltyLevel, string> = {
-  1: "pertama",
-  2: "kedua",
-  3: "ketiga",
-};
 
 export const STATUS_WORDS: Record<PenaltyStatus, string> = {
   imposed: "Dijatuhkan",

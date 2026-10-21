@@ -1,3 +1,7 @@
+import type {
+  PenaltyCategory,
+  PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
 import {
@@ -5,8 +9,6 @@ import {
   CONTINUATION_DECISIONS,
   type ContinuationCondition,
   type ContinuationDecision,
-  type PenaltyCategory,
-  type PenaltyLevel,
   type PenaltyStatus,
 } from "./penalty-ids";
 import {

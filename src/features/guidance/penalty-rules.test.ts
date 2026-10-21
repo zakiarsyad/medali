@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { limits } from "@/discipline-penalties/score-limit";
 import {
-  CHARACTER_SCORE_CAP,
   PENALTY_RULES,
-  rankOf,
   ruleOf,
   socialWorkEnd,
   statusOf,
@@ -46,7 +45,6 @@ describe("the rules of the nine Jenjang", () => {
   });
 
   it("cap nilai karakter at 70 for Ringan and Sedang, suspend for Berat jenjang pertama, and end the status for the other two", () => {
-    expect(CHARACTER_SCORE_CAP).toBe(70);
     expect(PENALTY_RULES.map((rule) => rule.outcome)).toEqual([
       "capped",
       "capped",
@@ -67,10 +65,10 @@ describe("the rules of the nine Jenjang", () => {
     expect(statusOf(ruleOf("light", 1))).toBe("imposed");
   });
 
-  it("rank the Jenjang from Ringan pertama to Berat ketiga", () => {
-    expect(rankOf("light", 1)).toBe(0);
-    expect(rankOf("light", 3)).toBeLessThan(rankOf("medium", 1));
-    expect(rankOf("heavy", 3)).toBe(8);
+  it("cap exactly the Jenjang that limit the character scores", () => {
+    for (const rule of PENALTY_RULES) {
+      expect(rule.outcome === "capped").toBe(limits(rule.category));
+    }
   });
 });
 

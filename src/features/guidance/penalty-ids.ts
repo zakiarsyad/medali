@@ -3,16 +3,6 @@
  * the browser, so nothing here may take from the database code.
  */
 
-/** Kategori hukuman disiplin: Ringan, Sedang and Berat. */
-export const PENALTY_CATEGORIES = ["light", "medium", "heavy"] as const;
-
-export type PenaltyCategory = (typeof PENALTY_CATEGORIES)[number];
-
-/** Jenjang: pertama, kedua and ketiga. */
-export const PENALTY_LEVELS = [1, 2, 3] as const;
-
-export type PenaltyLevel = (typeof PENALTY_LEVELS)[number];
-
 /**
  * The status of a penalty: Dijatuhkan, Sedang dijalani and Selesai
  * dijalani as it is followed up, or Ditetapkan for one that ends the

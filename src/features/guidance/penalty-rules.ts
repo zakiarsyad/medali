@@ -1,10 +1,10 @@
 import { daysAfter } from "@/academic-periods/days-after";
 import {
-  PENALTY_CATEGORIES,
   type PenaltyCategory,
   type PenaltyLevel,
-  type PenaltyStatus,
-} from "./penalty-ids";
+  rankOf,
+} from "@/discipline-penalties/penalty-kinds";
+import type { PenaltyStatus } from "./penalty-ids";
 
 /*
  * The fixed rules of the nine Jenjang of a discipline penalty: the
@@ -12,9 +12,6 @@ import {
  * by the screen parts in the browser, so nothing here may take from the
  * database code.
  */
-
-/** The highest nilai karakter under a Ringan or Sedang penalty. */
-export const CHARACTER_SCORE_CAP = 70;
 
 export type SocialWorkUnit = "day" | "month";
 
@@ -118,11 +115,6 @@ export const PENALTY_RULES: readonly PenaltyRule[] = [
     "dismissed",
   ),
 ];
-
-/** The place of a Jenjang from Ringan pertama, 0, to Berat ketiga, 8. */
-export function rankOf(category: PenaltyCategory, level: PenaltyLevel): number {
-  return PENALTY_CATEGORIES.indexOf(category) * 3 + (level - 1);
-}
 
 /** The rule of one Jenjang. */
 export function ruleOf(

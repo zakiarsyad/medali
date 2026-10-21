@@ -1,14 +1,15 @@
 import { isDay } from "@/db/is-day";
-import { shownDay } from "@/ui/day";
-import type { PenaltyCategory, PenaltyLevel } from "./penalty-ids";
 import {
-  CHARACTER_SCORE_CAP,
+  kindWords,
+  type PenaltyCategory,
+  type PenaltyLevel,
   rankOf,
-  ruleOf,
-  socialWorkEnd,
-} from "./penalty-rules";
+} from "@/discipline-penalties/penalty-kinds";
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
+import { shownDay } from "@/ui/day";
+import { ruleOf, socialWorkEnd } from "./penalty-rules";
 import { type PeriodOfDay, semesterOnDay } from "./penalty-semester";
-import { CATEGORY_WORDS, LEVEL_WORDS, lengthWords } from "./penalty-words";
+import { lengthWords } from "./penalty-words";
 
 /*
  * What "Konsekuensi" says of a penalty before it is saved. Read by the
@@ -145,6 +146,5 @@ export function isLowerThanBefore(
 export function historyWords(history: PenaltyHistory): string {
   const { top } = history;
   if (top === null) return NO_HISTORY;
-  const highest = `${CATEGORY_WORDS[top.category].toLowerCase()} jenjang ${LEVEL_WORDS[top.level]}`;
-  return `Riwayat: ${history.count} pelanggaran. Hukuman tertinggi sebelumnya ${highest} (${shownDay(top.day)}). Sesuai ayat (6), bila mahasiswa mengulangi perbuatan yang ancamannya lebih tinggi, dikenakan hukuman yang lebih tinggi tersebut.`;
+  return `Riwayat: ${history.count} pelanggaran. Hukuman tertinggi sebelumnya ${kindWords(top)} (${shownDay(top.day)}). Sesuai ayat (6), bila mahasiswa mengulangi perbuatan yang ancamannya lebih tinggi, dikenakan hukuman yang lebih tinggi tersebut.`;
 }

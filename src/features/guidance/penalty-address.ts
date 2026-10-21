@@ -1,6 +1,7 @@
+import type { PenaltyCategory } from "@/discipline-penalties/penalty-kinds";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
-import type { PenaltyCategory, PenaltyStatus } from "./penalty-ids";
+import type { PenaltyStatus } from "./penalty-ids";
 
 /*
  * The address of Pembinaan > Pelanggaran disiplin and what it asks the

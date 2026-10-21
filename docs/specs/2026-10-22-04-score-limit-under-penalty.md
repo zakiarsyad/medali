@@ -87,7 +87,7 @@ nothing is typed again in Penilaian.
 
 ## Steps
 
-- [ ] 1. The rule that says whether a student is limited and gives the
+- [x] 1. The rule that says whether a student is limited and gives the
   limited scores, with checks.
 - [ ] 2. The note and the refusal of a score above 70 in Asesmen
   karakter and in "Unggah berkas".
