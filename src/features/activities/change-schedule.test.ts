@@ -1,9 +1,9 @@
 // Sample Tahun akademik of this file: 2130 to 2130.
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { activitySchedules, ppksActivities } from "@/db/schema";
+import { activitySchedules, ppksActivities, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   changeSchedule,
@@ -13,12 +13,16 @@ import {
 import { listSchedules } from "./list-schedules";
 import { SCHEDULES_NOT_ALLOWED } from "./not-allowed";
 import { NO_ACTIVITY, type SentSchedule } from "./schedule-input";
+import { moveConfirmWords } from "./schedule-move";
 import { BEFORE_FIRST_PERIOD } from "./schedule-place";
 import {
   addTestActivity,
   addTestActor,
+  addTestAttendance,
   addTestPeriods,
+  addTestProgram,
   addTestSchedule,
+  addTestStudents,
   SENT_SCHEDULE,
   type TestActor,
   type TestPeriods,
@@ -462,6 +466,125 @@ describe("the activity of a changed schedule", () => {
 
         expect(changed).toEqual(NO_ACTIVITY);
       }
+    });
+  });
+});
+
+describe("a change of the dates of a schedule with attendances", () => {
+  /** Three students of the schedule, with a valid, a waiting and a rejected photo. */
+  async function addAttendances(db: Database, records: Records) {
+    const programId = await addTestProgram(db, "Program uji ubah jadwal");
+    const nims = ["99213000", "99213001", "99213002", "99213003"];
+    await addTestStudents(
+      db,
+      programId,
+      nims.map((nim) => ({ nim, name: `Mahasiswa ${nim}`, cohortYear: 2129 })),
+    );
+    const added = await db
+      .select({ id: students.id })
+      .from(students)
+      .where(inArray(students.nim, nims))
+      .orderBy(students.nim);
+    const statuses = ["valid", "waiting", "rejected"] as const;
+    for (const [index, status] of statuses.entries()) {
+      const student = added[index];
+      if (!student) throw new Error("The student was not added.");
+      await addTestAttendance(db, records.actor.id, {
+        scheduleId: records.id,
+        studentId: student.id,
+        status,
+      });
+    }
+    const last = added[3];
+    if (!last) throw new Error("The student was not added.");
+    return last.id;
+  }
+
+  const ASKED = {
+    ok: false,
+    error: moveConfirmWords(3),
+    attendances: 3,
+  };
+
+  it("saves nothing at the first press and says how many attendances came in", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAttendances(db, records);
+      const before = await storedOf(db, records.id);
+
+      const { actor, id, version, sent } = records;
+      const changed = await changeSchedule(db, actor, id, version, sent);
+
+      expect(changed).toEqual(ASKED);
+      expect(await storedOf(db, id)).toEqual(before);
+    });
+  });
+
+  it("saves at the second press, which sends back the number asked about", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAttendances(db, records);
+
+      const { actor, id, version, sent } = records;
+      const changed = await changeSchedule(db, actor, id, version, {
+        ...sent,
+        agreedAttendances: "3",
+      });
+
+      expect(changed).toEqual(CHANGED);
+      expect((await storedOf(db, id)).startsOn).toBe("2130-10-05");
+    });
+  });
+
+  it("asks again with the new number when another attendance came in since", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const latecomer = await addAttendances(db, records);
+      await addTestAttendance(db, records.actor.id, {
+        scheduleId: records.id,
+        studentId: latecomer,
+        status: "dispensation",
+      });
+
+      const { actor, id, version, sent } = records;
+      const changed = await changeSchedule(db, actor, id, version, {
+        ...sent,
+        agreedAttendances: "3",
+      });
+
+      expect(changed).toEqual({
+        ok: false,
+        error: moveConfirmWords(4),
+        attendances: 4,
+      });
+      expect((await storedOf(db, id)).startsOn).toBe("2130-09-01");
+    });
+  });
+
+  it("saves at once when the dates stay as they are", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAttendances(db, records);
+
+      const { actor, id, version, sent } = records;
+      const changed = await changeSchedule(db, actor, id, version, {
+        ...sent,
+        startsOn: "2130-09-01",
+        endsOn: "2130-09-01",
+      });
+
+      expect(changed).toEqual(CHANGED);
+      expect((await storedOf(db, id)).location).toBe("Lapangan uji");
+    });
+  });
+
+  it("saves at once when the schedule has no attendance yet", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, id, version, sent } = await addRecords(db);
+
+      expect(await changeSchedule(db, actor, id, version, sent)).toEqual(
+        CHANGED,
+      );
     });
   });
 });

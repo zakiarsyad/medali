@@ -51,17 +51,21 @@ describe("a refused save or removal", () => {
     ]);
   });
 
-  it.each(["saveScheduleAction", "removeScheduleAction"])(
-    "%s answers every refusal that way",
-    (action) => {
-      const refusals = linesOf(ACTIONS, action).filter((line) =>
-        line.includes(".ok) return"),
-      );
+  it.each([
+    ["saveScheduleAction", /^if \(!\w+\.ok\) return saveRefusal\(\w+\);$/],
+    ["removeScheduleAction", /^if \(!\w+\.ok\) return refusal\(\w+\.error\);$/],
+  ])("%s answers every refusal that way", (action, answer) => {
+    const refusals = linesOf(ACTIONS, action).filter((line) =>
+      line.includes(".ok) return"),
+    );
 
-      expect(refusals).toHaveLength(1);
-      expect(refusals[0]).toMatch(
-        /^if \(!\w+\.ok\) return refusal\(\w+\.error\);$/,
-      );
-    },
-  );
+    expect(refusals).toHaveLength(1);
+    expect(refusals[0]).toMatch(answer);
+  });
+
+  it("answers a refused save through refusal, with the attendances it asks about", () => {
+    expect(linesOf(ACTIONS, "saveRefusal")).toContain(
+      "return { ...refusal(refused.error), attendances };",
+    );
+  });
 });

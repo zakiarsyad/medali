@@ -2,6 +2,7 @@ import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { countedAtEither } from "./counted-students";
 import { mayVerify } from "./may-verify";
 import type {
   VerificationFilters,
@@ -50,10 +51,11 @@ export async function readVerification(
   if (!mayVerify(account)) return { kind: "refused" };
   const now = { day: campusDay(at), time: campusTime(at) };
   const { filters, page } = params;
+  const counted = await countedAtEither(db);
   const [numbers, choices, list] = await Promise.all([
-    readVerificationNumbers(db, now),
+    readVerificationNumbers(db, now, counted),
     readScheduleChoices(db),
-    readCards(db, filters, page, keepsPhotos),
+    readCards(db, filters, page, keepsPhotos, counted),
   ]);
   return {
     kind: "found",

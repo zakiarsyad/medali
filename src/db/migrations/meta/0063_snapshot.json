@@ -1,5 +1,5 @@
 {
-  "id": "9e438231-fcd2-4615-bf60-b27743f16e8e",
+  "id": "6da95a19-c86b-468c-ac0d-be6b00b26c1c",
   "prevId": "571db9c7-534e-413b-b79e-5e9422a141bf",
   "version": "7",
   "dialect": "postgresql",
@@ -2971,223 +2971,8 @@
       },
       "isRLSEnabled": false
     },
-    "public.discipline_penalties": {
-      "name": "discipline_penalties",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "day": {
-          "name": "day",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "category": {
-          "name": "category",
-          "type": "discipline_penalty_category",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "level": {
-          "name": "level",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "discipline_penalty_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "decision_number": {
-          "name": "decision_number",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "social_work_forms": {
-          "name": "social_work_forms",
-          "type": "social_work_form[]",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
-        },
-        "social_work_other": {
-          "name": "social_work_other",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "social_work_place": {
-          "name": "social_work_place",
-          "type": "social_work_place",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "social_work_starts_on": {
-          "name": "social_work_starts_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "social_work_ends_on": {
-          "name": "social_work_ends_on",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "saved_by": {
-          "name": "saved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "saved_at": {
-          "name": "saved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "discipline_penalties_student": {
-          "name": "discipline_penalties_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "discipline_penalties_day": {
-          "name": "discipline_penalties_day",
-          "columns": [
-            {
-              "expression": "day",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "discipline_penalties_student_id_students_id_fk": {
-          "name": "discipline_penalties_student_id_students_id_fk",
-          "tableFrom": "discipline_penalties",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "discipline_penalties_saved_by_accounts_id_fk": {
-          "name": "discipline_penalties_saved_by_accounts_id_fk",
-          "tableFrom": "discipline_penalties",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "saved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "discipline_penalties_level": {
-          "name": "discipline_penalties_level",
-          "value": "\"discipline_penalties\".\"level\" between 1 and 3"
-        },
-        "discipline_penalties_description_length": {
-          "name": "discipline_penalties_description_length",
-          "value": "char_length(\"discipline_penalties\".\"description\") between 5 and 1000"
-        },
-        "discipline_penalties_decision_number_length": {
-          "name": "discipline_penalties_decision_number_length",
-          "value": "char_length(\"discipline_penalties\".\"decision_number\") <= 100"
-        },
-        "discipline_penalties_set_only_when_dismissed": {
-          "name": "discipline_penalties_set_only_when_dismissed",
-          "value": "(\"discipline_penalties\".\"status\" = 'set') = (\"discipline_penalties\".\"category\" = 'heavy' and \"discipline_penalties\".\"level\" >= 2)"
-        },
-        "discipline_penalties_social_work_unless_dismissed": {
-          "name": "discipline_penalties_social_work_unless_dismissed",
-          "value": "(\"discipline_penalties\".\"social_work_starts_on\" is null) = (\"discipline_penalties\".\"status\" = 'set')"
-        },
-        "discipline_penalties_social_work_is_whole": {
-          "name": "discipline_penalties_social_work_is_whole",
-          "value": "(\"discipline_penalties\".\"social_work_ends_on\" is null) = (\"discipline_penalties\".\"social_work_starts_on\" is null)\n        and (\"discipline_penalties\".\"social_work_place\" is null) = (\"discipline_penalties\".\"social_work_starts_on\" is null)\n        and (cardinality(\"discipline_penalties\".\"social_work_forms\") = 0) = (\"discipline_penalties\".\"social_work_starts_on\" is null)"
-        },
-        "discipline_penalties_social_work_from_its_day": {
-          "name": "discipline_penalties_social_work_from_its_day",
-          "value": "\"discipline_penalties\".\"social_work_starts_on\" is null or (\"discipline_penalties\".\"social_work_starts_on\" >= \"discipline_penalties\".\"day\" and \"discipline_penalties\".\"social_work_ends_on\" >= \"discipline_penalties\".\"social_work_starts_on\")"
-        },
-        "discipline_penalties_other_social_work_only_for_other": {
-          "name": "discipline_penalties_other_social_work_only_for_other",
-          "value": "('other' = any(\"discipline_penalties\".\"social_work_forms\")) = (\"discipline_penalties\".\"social_work_other\" <> '')"
-        },
-        "discipline_penalties_other_social_work_length": {
-          "name": "discipline_penalties_other_social_work_length",
-          "value": "char_length(\"discipline_penalties\".\"social_work_other\") <= 200"
-        },
-        "discipline_penalties_saved_from_its_day": {
-          "name": "discipline_penalties_saved_from_its_day",
-          "value": "(\"discipline_penalties\".\"saved_at\" at time zone 'Asia/Jakarta')::date >= \"discipline_penalties\".\"day\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.discipline_penalty_changes": {
-      "name": "discipline_penalty_changes",
+    "public.counselling_sharing_changes": {
+      "name": "counselling_sharing_changes",
       "schema": "",
       "columns": {
         "id": {
@@ -3197,8 +2982,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "penalty_id": {
-          "name": "penalty_id",
+        "sharing_id": {
+          "name": "sharing_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -3215,20 +3000,46 @@
           "primaryKey": false,
           "notNull": true
         },
-        "action": {
-          "name": "action",
-          "type": "discipline_penalty_change_action",
+        "step": {
+          "name": "step",
+          "type": "counselling_sharing_step",
           "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_before": {
+          "name": "status_before",
+          "type": "counselling_sharing_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status_after": {
+          "name": "status_after",
+          "type": "counselling_sharing_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "shared": {
+          "name": "shared",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {
-        "discipline_penalty_changes_penalty": {
-          "name": "discipline_penalty_changes_penalty",
+        "counselling_sharing_changes_sharing": {
+          "name": "counselling_sharing_changes_sharing",
           "columns": [
             {
-              "expression": "penalty_id",
+              "expression": "sharing_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "changed_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3241,12 +3052,12 @@
         }
       },
       "foreignKeys": {
-        "discipline_penalty_changes_penalty_id_discipline_penalties_id_fk": {
-          "name": "discipline_penalty_changes_penalty_id_discipline_penalties_id_fk",
-          "tableFrom": "discipline_penalty_changes",
-          "tableTo": "discipline_penalties",
+        "counselling_sharing_changes_sharing_id_counselling_sharings_id_fk": {
+          "name": "counselling_sharing_changes_sharing_id_counselling_sharings_id_fk",
+          "tableFrom": "counselling_sharing_changes",
+          "tableTo": "counselling_sharings",
           "columnsFrom": [
-            "penalty_id"
+            "sharing_id"
           ],
           "columnsTo": [
             "id"
@@ -3254,9 +3065,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "discipline_penalty_changes_changed_by_accounts_id_fk": {
-          "name": "discipline_penalty_changes_changed_by_accounts_id_fk",
-          "tableFrom": "discipline_penalty_changes",
+        "counselling_sharing_changes_changed_by_accounts_id_fk": {
+          "name": "counselling_sharing_changes_changed_by_accounts_id_fk",
+          "tableFrom": "counselling_sharing_changes",
           "tableTo": "accounts",
           "columnsFrom": [
             "changed_by"
@@ -3272,6 +3083,224 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.counselling_sharings": {
+      "name": "counselling_sharings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "counselling_sharing_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "counselling_shared_data[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "counselling_sharing_recipient[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "way": {
+          "name": "way",
+          "type": "counselling_sharing_way",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "asked_by": {
+          "name": "asked_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "asked_at": {
+          "name": "asked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answered_at": {
+          "name": "answered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published_by": {
+          "name": "published_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "changed_by": {
+          "name": "changed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "counselling_sharings_one_current": {
+          "name": "counselling_sharings_one_current",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"counselling_sharings\".\"status\" in ('waiting', 'approved', 'published')",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "counselling_sharings_student": {
+          "name": "counselling_sharings_student",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "asked_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "counselling_sharings_student_id_students_id_fk": {
+          "name": "counselling_sharings_student_id_students_id_fk",
+          "tableFrom": "counselling_sharings",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counselling_sharings_asked_by_accounts_id_fk": {
+          "name": "counselling_sharings_asked_by_accounts_id_fk",
+          "tableFrom": "counselling_sharings",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "asked_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counselling_sharings_published_by_accounts_id_fk": {
+          "name": "counselling_sharings_published_by_accounts_id_fk",
+          "tableFrom": "counselling_sharings",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "published_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counselling_sharings_changed_by_accounts_id_fk": {
+          "name": "counselling_sharings_changed_by_accounts_id_fk",
+          "tableFrom": "counselling_sharings",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "counselling_sharings_some_data": {
+          "name": "counselling_sharings_some_data",
+          "value": "cardinality(\"counselling_sharings\".\"data\") > 0"
+        },
+        "counselling_sharings_some_recipient": {
+          "name": "counselling_sharings_some_recipient",
+          "value": "cardinality(\"counselling_sharings\".\"recipients\") > 0"
+        },
+        "counselling_sharings_summary_when_shared": {
+          "name": "counselling_sharings_summary_when_shared",
+          "value": "('summary' = any(\"counselling_sharings\".\"data\")) = (\"counselling_sharings\".\"summary\" is not null)"
+        },
+        "counselling_sharings_summary_length": {
+          "name": "counselling_sharings_summary_length",
+          "value": "char_length(trim(\"counselling_sharings\".\"summary\")) >= 10 and char_length(\"counselling_sharings\".\"summary\") <= 1000"
+        },
+        "counselling_sharings_way_once_approved": {
+          "name": "counselling_sharings_way_once_approved",
+          "value": "\"counselling_sharings\".\"status\" not in ('approved', 'published') or \"counselling_sharings\".\"way\" is not null"
+        },
+        "counselling_sharings_publisher_once_published": {
+          "name": "counselling_sharings_publisher_once_published",
+          "value": "\"counselling_sharings\".\"status\" <> 'published' or (\"counselling_sharings\".\"published_at\" is not null and \"counselling_sharings\".\"published_by\" is not null)"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.dorm_activities": {
@@ -12481,6 +12510,58 @@
         "change"
       ]
     },
+    "public.counselling_shared_data": {
+      "name": "counselling_shared_data",
+      "schema": "public",
+      "values": [
+        "counselling",
+        "summary"
+      ]
+    },
+    "public.counselling_sharing_recipient": {
+      "name": "counselling_sharing_recipient",
+      "schema": "public",
+      "values": [
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor"
+      ]
+    },
+    "public.counselling_sharing_status": {
+      "name": "counselling_sharing_status",
+      "schema": "public",
+      "values": [
+        "waiting",
+        "approved",
+        "declined",
+        "published",
+        "cancelled",
+        "withdrawn"
+      ]
+    },
+    "public.counselling_sharing_step": {
+      "name": "counselling_sharing_step",
+      "schema": "public",
+      "values": [
+        "ask",
+        "approve",
+        "record_paper",
+        "decline",
+        "publish",
+        "cancel",
+        "withdraw",
+        "consent_withdrawn"
+      ]
+    },
+    "public.counselling_sharing_way": {
+      "name": "counselling_sharing_way",
+      "schema": "public",
+      "values": [
+        "online",
+        "paper"
+      ]
+    },
     "public.counselling_topic": {
       "name": "counselling_topic",
       "schema": "public",
@@ -12500,30 +12581,6 @@
       "values": [
         "in_person",
         "online"
-      ]
-    },
-    "public.discipline_penalty_category": {
-      "name": "discipline_penalty_category",
-      "schema": "public",
-      "values": [
-        "light",
-        "medium",
-        "heavy"
-      ]
-    },
-    "public.discipline_penalty_change_action": {
-      "name": "discipline_penalty_change_action",
-      "schema": "public",
-      "values": [
-        "added"
-      ]
-    },
-    "public.discipline_penalty_status": {
-      "name": "discipline_penalty_status",
-      "schema": "public",
-      "values": [
-        "imposed",
-        "set"
       ]
     },
     "public.dorm": {
@@ -12955,26 +13012,6 @@
       "values": [
         "add",
         "replace"
-      ]
-    },
-    "public.social_work_form": {
-      "name": "social_work_form",
-      "schema": "public",
-      "values": [
-        "staff_help",
-        "traffic",
-        "grounds",
-        "community",
-        "other"
-      ]
-    },
-    "public.social_work_place": {
-      "name": "social_work_place",
-      "schema": "public",
-      "values": [
-        "campus",
-        "home_agency",
-        "outside"
       ]
     },
     "public.student_status": {

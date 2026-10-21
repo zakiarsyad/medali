@@ -10,7 +10,12 @@ import { addTestScreening, setTestConsent } from "./test-screenings";
 
 const inTestDatabase = withTestDatabase();
 
-const EVERYONE: ScreeningParams = { query: "", filter: "all", page: 1 };
+const EVERYONE: ScreeningParams = {
+  query: "",
+  filter: "all",
+  page: 1,
+  sharedPage: 1,
+};
 
 /**
  * Four students: the first screened Ringan and then Berat, the second

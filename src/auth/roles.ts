@@ -100,6 +100,9 @@ export const ACTIONS = [
   "record_mental_health_screenings",
   "view_mental_health_screening_count",
   "view_dorm_referrals",
+  "share_counselling_data",
+  "answer_own_counselling_sharing",
+  "view_shared_counselling_data",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -235,6 +238,12 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Melihat jumlah mahasiswa yang sudah diasesmen kesehatan mental di seluruh kampus, tanpa nama",
   view_dorm_referrals:
     "Rujukan potensi kesehatan mental dari asrama: melihat penghuni yang ditandai perlu dirujuk ke konselor, dengan pengamatannya",
+  share_counselling_data:
+    "Publikasi data kesehatan mental: meminta persetujuan mahasiswa, mencatat persetujuan tertulis, mempublikasikan, dan menarik data konseling yang dibagikan",
+  answer_own_counselling_sharing:
+    "Menyetujui, menolak, dan mencabut persetujuan berbagi data kesehatan mental sendiri",
+  view_shared_counselling_data:
+    "Data yang dipublikasikan untuk Anda: membaca data konseling mahasiswa yang dipublikasikan konselor untuk peran ini dengan persetujuan mahasiswa, dan jumlah Sesi konseling 30 hari di seluruh kampus, tanpa nama",
 };
 
 /**
@@ -393,6 +402,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mental_health_marks",
       "view_mental_health_mark_log",
       "view_mental_health_screening_count",
+      "view_shared_counselling_data",
       "view_discipline_records",
       "record_discipline_penalties",
       "view_violation_notes",
@@ -426,6 +436,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_siku",
       "view_dorm_health_numbers",
       "view_mental_health_screening_count",
+      "view_shared_counselling_data",
       "view_discipline_records",
       "view_violation_notes",
     ],
@@ -457,6 +468,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_siku",
       "view_dorm_health_numbers",
       "view_mental_health_screening_count",
+      "view_shared_counselling_data",
       "view_discipline_records",
       "view_violation_notes",
     ],
@@ -494,6 +506,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_dorm_health_notes",
       "view_mental_health_marks",
       "view_mental_health_screening_count",
+      "view_shared_counselling_data",
       "view_discipline_records",
     ],
     rows: "own_mentees",
@@ -523,6 +536,7 @@ export const ROLES: Record<RoleId, Role> = {
       "answer_own_counselling_consent",
       "register_own_counselling",
       "view_own_counselling_sessions",
+      "answer_own_counselling_sharing",
       "answer_own_survey",
     ],
     rows: "self",
@@ -687,6 +701,7 @@ export const ROLES: Record<RoleId, Role> = {
       "keep_counselling_sessions",
       "record_mental_health_screenings",
       "view_dorm_referrals",
+      "share_counselling_data",
     ],
     rows: "all",
   },

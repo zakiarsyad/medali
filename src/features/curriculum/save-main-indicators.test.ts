@@ -8,10 +8,8 @@ import {
   MAIN_INDICATORS_CHANGED_BY_OTHER,
   saveMainIndicators,
 } from "./save-main-indicators";
-import {
-  readMainIndicators,
-  STARTING_INDICATORS_VERSION,
-} from "./stored-main-indicators";
+import { STARTING_VERSION } from "./saved-version";
+import { readMainIndicators } from "./stored-main-indicators";
 import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -45,7 +43,7 @@ describe("saveMainIndicators", () => {
         const saved = await saveMainIndicators(
           db,
           actor,
-          STARTING_INDICATORS_VERSION,
+          STARTING_VERSION,
           sent({}),
         );
 
@@ -71,7 +69,7 @@ describe("saveMainIndicators", () => {
         const saved = await saveMainIndicators(
           db,
           actor,
-          STARTING_INDICATORS_VERSION,
+          STARTING_VERSION,
           sent({}),
         );
 
@@ -88,7 +86,7 @@ describe("saveMainIndicators", () => {
       const saved = await saveMainIndicators(
         db,
         actor,
-        STARTING_INDICATORS_VERSION,
+        STARTING_VERSION,
         sent({ A2: " " }),
       );
 
@@ -107,7 +105,7 @@ describe("saveMainIndicators", () => {
       const saved = await saveMainIndicators(
         db,
         actor,
-        STARTING_INDICATORS_VERSION,
+        STARTING_VERSION,
         sent({ L4: "a".repeat(301) }),
       );
 
@@ -123,12 +121,7 @@ describe("saveMainIndicators", () => {
     await inTestDatabase(async (db) => {
       const first = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
       const second = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
-      await saveMainIndicators(
-        db,
-        first,
-        STARTING_INDICATORS_VERSION,
-        sent({}),
-      );
+      await saveMainIndicators(db, first, STARTING_VERSION, sent({}));
 
       const saved = await saveMainIndicators(
         db,
@@ -150,12 +143,7 @@ describe("saveMainIndicators", () => {
     await inTestDatabase(async (db) => {
       const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
       const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
-      await saveMainIndicators(
-        db,
-        staff,
-        STARTING_INDICATORS_VERSION,
-        sent({}),
-      );
+      await saveMainIndicators(db, staff, STARTING_VERSION, sent({}));
       const opened = await openedVersion(db);
       await saveMainIndicators(db, staff, opened, sent({ E1: "Teks E1 baru" }));
       const before = await db.select().from(savedIndicators);
@@ -179,7 +167,7 @@ describe("saveMainIndicators", () => {
       const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
       const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
       const opened = await openedVersion(db);
-      expect(opened).toBe(STARTING_INDICATORS_VERSION);
+      expect(opened).toBe(STARTING_VERSION);
 
       const first = await saveMainIndicators(
         db,
@@ -244,12 +232,12 @@ describe("saveMainIndicators", () => {
   it("refuses the starting version once the texts were saved", async () => {
     await inTestDatabase(async (db) => {
       const head = await addTestActor(db, "Kepala Uji", ["head_of_unit"]);
-      await saveMainIndicators(db, head, STARTING_INDICATORS_VERSION, sent({}));
+      await saveMainIndicators(db, head, STARTING_VERSION, sent({}));
 
       const saved = await saveMainIndicators(
         db,
         head,
-        STARTING_INDICATORS_VERSION,
+        STARTING_VERSION,
         sent({ M1: "Teks baru" }),
       );
 

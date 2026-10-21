@@ -29,6 +29,7 @@ import {
   EXTRA_SCHEDULES_ADDRESS,
   SCHEDULES_ADDRESS,
 } from "./schedule-list-address";
+import type { MoveToConfirm, ScheduleAnswer } from "./schedule-move";
 import { sendAttendancePhoto } from "./send-attendance-photo";
 
 async function activityManager(): Promise<Account> {
@@ -59,6 +60,7 @@ function sentSchedule(form: FormData): SentSchedule {
       mode: text(form, "participantMode"),
       values: texts(form, "participant"),
     },
+    agreedAttendances: text(form, "agreedAttendances"),
   };
 }
 
@@ -78,10 +80,22 @@ function refusal(error: string): FormState {
   return { error, done: null };
 }
 
+/** A refused save, with the number of attendances it asks about, or null. */
+function saveRefusal(
+  refused: { error: string } | MoveToConfirm,
+): ScheduleAnswer {
+  const attendances = "attendances" in refused ? refused.attendances : null;
+  return { ...refusal(refused.error), attendances };
+}
+
+/**
+ * When a change must first be agreed to, the answer holds the number of
+ * attendances asked about, which the form sends back with its next press.
+ */
 export async function saveScheduleAction(
-  _before: FormState,
+  _before: ScheduleAnswer,
   form: FormData,
-): Promise<FormState> {
+): Promise<ScheduleAnswer> {
   const manager = await activityManager();
   const sent = sentSchedule(form);
   // A form with a version changes the schedule it was opened for; one
@@ -92,9 +106,9 @@ export async function saveScheduleAction(
     version === ""
       ? await addSchedule(database(), manager, id, sent)
       : await changeSchedule(database(), manager, id, version, sent);
-  if (!saved.ok) return refusal(saved.error);
+  if (!saved.ok) return saveRefusal(saved);
   rereadSchedules();
-  return { error: null, done: savedWords(saved.value) };
+  return { error: null, done: savedWords(saved.value), attendances: null };
 }
 
 export async function removeScheduleAction(id: string): Promise<FormState> {

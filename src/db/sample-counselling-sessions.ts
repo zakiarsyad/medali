@@ -63,7 +63,10 @@ const FIKRI_SESSIONS: SampleSession[] = Array.from({ length: 11 }, (_, place) =>
 /**
  * Bayu Santoso's Selesai session was written down when it was marked,
  * and changed the day after; a later one sets the next session. Citra
- * Nasution had one group session. Every other student has none.
+ * Nasution had one group session, and Dimas Halim one session after he
+ * registered, so all three can be asked to share it. Nanda Gunawan had
+ * one with a next session set, which he shared. Every other student has
+ * none.
  */
 export const SAMPLE_SESSIONS: SampleSession[] = [
   session("9900240002", 11, {
@@ -86,6 +89,17 @@ export const SAMPLE_SESSIONS: SampleSession[] = [
     topic: "campus_adjustment",
     notes: "Sesi kelompok tentang adaptasi kampus. Mahasiswa aktif berbagi.",
     followUp: "closed",
+  }),
+  session("9900240004", 4, {
+    topic: "family",
+    notes: "Mahasiswa bercerita tentang kabar keluarga di kampung halaman.",
+    followUp: "monitoring",
+  }),
+  session("9900240014", 8, {
+    topic: "academic",
+    notes: "Mahasiswa menyusun ulang jadwal belajar menjelang ujian.",
+    followUp: "next_session",
+    nextInDays: 6,
   }),
   ...FIKRI_SESSIONS,
 ];

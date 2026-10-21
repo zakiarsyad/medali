@@ -34,6 +34,7 @@ export function readCounted(
   return db
     .select({
       id: activitySchedules.id,
+      startsOn: activitySchedules.startsOn,
       endsOn: activitySchedules.endsOn,
       uploadCount: activitySchedules.uploadCount,
       uploadUnit: activitySchedules.uploadUnit,

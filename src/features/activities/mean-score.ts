@@ -13,6 +13,7 @@ import type { UploadRange } from "./upload-range";
 /** A schedule of the running period, with what the score reads of it. */
 export interface CountedSchedule extends UploadRange {
   id: string;
+  startsOn: string;
   /**
    * The semester of its PPKS activity, which decides whom it is meant
    * for, or null for a special or additional activity, which is meant for

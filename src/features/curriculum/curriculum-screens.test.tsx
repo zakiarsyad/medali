@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { BreakdownForm } from "./breakdown-form";
 import { mainIndicators } from "./main-indicators";
 import type { PpksActivity } from "./ppks-activities";
 import { type FormTarget, PpksPanel } from "./ppks-panel";
@@ -181,6 +182,25 @@ describe("Penjabaran MEDALI", () => {
     expect(html).toMatch(/_perak_[^"]*"><\/i>77,0/);
     expect(html).toMatch(/_perunggu_[^"]*"><\/i>72,0/);
     expect(html).toMatch(/_bina_[^"]*"><\/i>64,9/);
+  });
+
+  it("sends back the version of the box its form was opened on", () => {
+    const [value] = stageBreakdown(2, new Map());
+    if (!value) throw new Error("The tahap has no box.");
+
+    const html = renderToStaticMarkup(
+      <BreakdownForm
+        tahapNo={2}
+        value={{ ...value, version: "2026-10-21T03:00:00.000Z" }}
+        indicators={VALUES[0]?.indicators ?? []}
+        onSaved={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    expect(html).toContain(
+      '<input type="hidden" name="version" value="2026-10-21T03:00:00.000Z"/>',
+    );
   });
 
   it("shows no score while the tahap has no assessed student", () => {

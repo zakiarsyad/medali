@@ -1,4 +1,4 @@
-import { and, count, eq, type SQL, sql } from "drizzle-orm";
+import { and, count, eq, lte, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import {
   activityAttendances,
@@ -6,7 +6,7 @@ import {
   ppksActivities,
   students,
 } from "@/db/schema";
-import { takingPartIn } from "./chosen-students";
+import { countedAt } from "./counted-students";
 import { listedSchedules, OF_SCHEDULE, ofKind } from "./list-schedules";
 import type { MeanScore } from "./mean-score";
 import { readMeanScore } from "./read-mean-score";
@@ -44,22 +44,18 @@ async function countSchedules(
 }
 
 /**
- * The students whose photos count at the schedules of a kind. At an extra
- * activity only those who take part in it now count, as for Hadir: the
- * photo of one taken out stays to be decided, but counts nowhere.
+ * The photos that wait, at the schedules of the activities of a kind that
+ * have started by `today`: one moved to later dates counts from its first
+ * day on.
  */
-function countedAt(kind: ScheduleKind): SQL | undefined {
-  if (kind === "ppks") return undefined;
-  return takingPartIn(activitySchedules.id);
-}
-
-/** The photos that wait, at the schedules of the activities of a kind. */
 async function countWaiting(
   db: Database,
   visible: SQL,
   kind: ScheduleKind,
+  today: string,
 ): Promise<number> {
-  const [counted] = await db
+  const counted = await countedAt(db, kind);
+  const [waiting] = await db
     .select({ waiting: count() })
     .from(activityAttendances)
     .innerJoin(activitySchedules, OF_ATTENDANCE)
@@ -71,10 +67,11 @@ async function countWaiting(
         ofKind(kind),
         eq(activityAttendances.status, "waiting"),
         visible,
-        countedAt(kind),
+        counted,
+        lte(activitySchedules.startsOn, today),
       ),
     );
-  return counted?.waiting ?? 0;
+  return waiting?.waiting ?? 0;
 }
 
 /**
@@ -94,7 +91,7 @@ export async function readAttendanceNumbers(
   const [mean, schedules, waiting] = await Promise.all([
     readMeanScore(db, visible, today),
     countSchedules(db, scope, today),
-    countWaiting(db, visible, scope.kind),
+    countWaiting(db, visible, scope.kind, today),
   ]);
   return { mean, ...schedules, waiting };
 }

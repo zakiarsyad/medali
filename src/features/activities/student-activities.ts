@@ -19,6 +19,7 @@ import { readOwnMarks } from "./meeting-marks";
 import { readOwnClarifications } from "./own-clarifications";
 import { type OwnStudent, readOwnStudent } from "./own-student";
 import { semestersByPeriod } from "./participants";
+import { hasStarted } from "./schedule-attendance";
 import { scheduleStatus } from "./schedule-status";
 import type { StudentSchedule } from "./student-schedule";
 import {
@@ -147,7 +148,11 @@ export async function readStudentActivities(
   function withOwn(schedule: StudentSchedule): StudentSchedule {
     return { ...schedule, attendance: attendances.get(schedule.id) ?? null };
   }
-  const countedOwn = counted.map(withOwn);
+  // A schedule moved to dates that have not started counts in no number
+  // until its first day, though a photo of it came in before.
+  const countedOwn = counted
+    .filter((schedule) => hasStarted(schedule, now.day))
+    .map(withOwn);
 
   return {
     kind: "found",
