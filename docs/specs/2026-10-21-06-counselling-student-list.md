@@ -83,10 +83,13 @@ panels. It replaces looking students up one by one.
 3. Konselor keeps two lists named "Daftar mahasiswa": this one on
    Konseling, and the screening one on Penilaian > Kesehatan mental, each
    with its own columns.
+4. One right, "Daftar mahasiswa konseling", covers the numbers, the
+   list and "Rincian" with the session notes. Konselor alone has it, in
+   the list of what each role may do.
 
 ## Steps
 
-- [ ] 1. The right to read the counselling list is added for Konselor
+- [x] 1. The right to read the counselling list is added for Konselor
   only, with its checks.
 - [ ] 2. The numbers and "Daftar mahasiswa" with its columns and empty
   states.
