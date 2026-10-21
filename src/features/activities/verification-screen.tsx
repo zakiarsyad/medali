@@ -48,7 +48,7 @@ export function VerificationScreen({
         <h2 className={shared.heading}>Verifikasi presensi</h2>
         {/* Made anew for each address, so its fields show what the address holds. */}
         <AutoSubmitForm
-          key={verificationAddress(filters)}
+          key={`filter:${verificationAddress(filters)}`}
           action={VERIFICATION_ADDRESS}
         >
           <VerificationFilterRow filters={filters} choices={choices} />
@@ -61,7 +61,7 @@ export function VerificationScreen({
           must stay.
         */}
         <PhotoCards
-          key={verificationAddress(filters, askedPage)}
+          key={`cards:${verificationAddress(filters, askedPage)}`}
           cards={list.cards}
           emptyWords={emptyWords(filters)}
         />
