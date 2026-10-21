@@ -44,6 +44,59 @@
   color: var(--bina);
 }
 
+/*
+ * The status choice and the Keputusan: never wider than the card, and
+ * tall enough for a thumb on a phone. Named with its element, so it
+ * counts for more than the shared look of a field.
+ */
+select.control {
+  min-width: 0;
+  max-width: 100%;
+  padding-top: var(--decide-control-padding);
+  padding-bottom: var(--decide-control-padding);
+}
+
+/* Syarat melanjutkan studi and Keputusan, under the facts of "Rincian". */
+.conditions {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.conditionsHeading {
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.conditionList {
+  margin: 0;
+  padding-left: var(--space-lg);
+}
+
+.ticks {
+  display: grid;
+}
+
+/* A whole line presses its tick, tall enough for a thumb on a phone. */
+.tick {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+  min-width: 0;
+  padding: var(--decide-control-padding) 0;
+  cursor: pointer;
+}
+
+.decision {
+  min-width: 0;
+  max-width: min(100%, var(--card-min-width));
+}
+
 /* The rules table keeps its columns and scrolls inside its own box on a phone. */
 .rules {
   min-width: var(--wide-table-min-width);

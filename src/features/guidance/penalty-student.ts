@@ -36,7 +36,8 @@ export function recordableFor(actor: AccountForAccess): SQL | undefined {
   );
 }
 
-const HAS_AGENCY = sql<boolean>`coalesce(btrim(${students.originAgency}), '') <> ''`;
+/** Whether the student has an Instansi asal: one that is not only spaces. */
+export const HAS_AGENCY = sql<boolean>`coalesce(btrim(${students.originAgency}), '') <> ''`;
 
 function picks(db: Database) {
   return db

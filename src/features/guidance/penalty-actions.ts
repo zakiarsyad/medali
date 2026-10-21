@@ -5,13 +5,26 @@ import { forbidden } from "next/navigation";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
+import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import {
+  changePenaltyCondition,
+  changePenaltyDecision,
+  changePenaltyStatus,
+} from "./follow-up-discipline-penalty";
 import { PENALTIES_ADDRESS } from "./penalty-address";
+import { readUnfinishedWork } from "./penalty-board";
 import type { PenaltyHistory } from "./penalty-consequences";
+import type { FollowUpOutcome, FollowUpState } from "./penalty-follow-up";
 import { CONFIRMED } from "./penalty-input";
-import { savedMessage } from "./penalty-messages";
+import {
+  CONDITION_SAVED,
+  DECISION_RECORDED,
+  STATUS_UPDATED,
+  savedMessage,
+} from "./penalty-messages";
 import {
   type PenaltyPick,
   readPenaltyHistory,
@@ -26,6 +39,17 @@ import { saveDisciplinePenalty } from "./save-discipline-penalty";
 async function recorder(): Promise<Account> {
   const account = await currentAccount();
   if (!account || !may(account.roles, "record_discipline_penalties"))
+    forbidden();
+  return account;
+}
+
+/**
+ * The signed-in account when it may follow up discipline penalties. Any
+ * other is refused before anything of what it sent is read.
+ */
+async function follower(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "follow_up_discipline_penalties"))
     forbidden();
   return account;
 }
@@ -77,4 +101,120 @@ export async function saveDisciplinePenaltyAction(
   revalidatePath(PENALTIES_ADDRESS);
   const { name, status } = saved.value;
   return { error: null, done: savedMessage(name, status) };
+}
+
+/**
+ * The highest version a change may be sent from: the version is a
+ * database integer, and a kept change writes the one after it, which a
+ * larger number would make the database refuse with an error.
+ */
+const HIGHEST_SENT_VERSION = 2 ** 31 - 2;
+
+/**
+ * The version of the penalty the screen showed. Anything else, such as
+ * no whole number or one the database cannot hold, becomes 0, which no
+ * penalty has, so the change is refused as outdated.
+ */
+function sentVersion(version: unknown): number {
+  if (typeof version !== "number" || !Number.isSafeInteger(version)) return 0;
+  if (version < 1 || version > HIGHEST_SENT_VERSION) return 0;
+  return version;
+}
+
+function isOutdated(changed: FollowUpOutcome): boolean {
+  return !changed.ok && "current" in changed;
+}
+
+/**
+ * What a follow-up kept or refused tells what was pressed: the penalty
+ * kept, or as it is now when someone changed it first.
+ */
+function answerOf(changed: FollowUpOutcome, done: string): FollowUpState {
+  if (changed.ok) {
+    return { error: null, done, followUp: changed.value, unfinishedWork: null };
+  }
+  return {
+    error: changed.error,
+    done: null,
+    followUp: "current" in changed ? changed.current : null,
+    unfinishedWork: null,
+  };
+}
+
+/** The answer with "Kerja sosial belum selesai" read again, once a status may have changed. */
+async function withUnfinishedWork(
+  db: Database,
+  actor: Account,
+  answer: FollowUpState,
+): Promise<FollowUpState> {
+  if (answer.followUp === null) return answer;
+  return { ...answer, unfinishedWork: await readUnfinishedWork(db, actor) };
+}
+
+/**
+ * The status choice of a row of "Daftar pelanggaran". The page is not
+ * drawn again: the row takes the penalty given back, and the numbers
+ * take "Kerja sosial belum selesai" read again.
+ */
+export async function changePenaltyStatusAction(
+  id: string,
+  version: number,
+  status: string,
+): Promise<FollowUpState> {
+  const actor = await follower();
+  const db = database();
+  const changed = await changePenaltyStatus(
+    db,
+    actor,
+    String(id),
+    sentVersion(version),
+    String(status),
+  );
+  return withUnfinishedWork(db, actor, answerOf(changed, STATUS_UPDATED));
+}
+
+/**
+ * A tick of Syarat melanjutkan studi in "Rincian", kept at once. Refused
+ * because someone changed the penalty first, whose status may have
+ * changed too, it reads "Kerja sosial belum selesai" again.
+ */
+export async function changePenaltyConditionAction(
+  id: string,
+  version: number,
+  condition: string,
+  met: boolean,
+): Promise<FollowUpState> {
+  const actor = await follower();
+  const db = database();
+  const changed = await changePenaltyCondition(
+    db,
+    actor,
+    String(id),
+    sentVersion(version),
+    String(condition),
+    met === true,
+  );
+  const answer = answerOf(changed, CONDITION_SAVED);
+  if (!isOutdated(changed)) return answer;
+  return withUnfinishedWork(db, actor, answer);
+}
+
+/** Keputusan in "Rincian", read again as a tick is. */
+export async function changePenaltyDecisionAction(
+  id: string,
+  version: number,
+  decision: string,
+): Promise<FollowUpState> {
+  const actor = await follower();
+  const db = database();
+  const changed = await changePenaltyDecision(
+    db,
+    actor,
+    String(id),
+    sentVersion(version),
+    String(decision),
+  );
+  const answer = answerOf(changed, DECISION_RECORDED);
+  if (!isOutdated(changed)) return answer;
+  return withUnfinishedWork(db, actor, answer);
 }

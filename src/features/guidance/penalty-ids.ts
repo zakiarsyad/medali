@@ -14,12 +14,46 @@ export const PENALTY_LEVELS = [1, 2, 3] as const;
 export type PenaltyLevel = (typeof PENALTY_LEVELS)[number];
 
 /**
- * The status of a penalty: Dijatuhkan, or Ditetapkan for one that ends
- * the student's status for good.
+ * The status of a penalty: Dijatuhkan, Sedang dijalani and Selesai
+ * dijalani as it is followed up, or Ditetapkan for one that ends the
+ * student's status for good.
  */
-export const PENALTY_STATUSES = ["imposed", "set"] as const;
+export const PENALTY_STATUSES = [
+  "imposed",
+  "serving",
+  "served",
+  "set",
+] as const;
 
 export type PenaltyStatus = (typeof PENALTY_STATUSES)[number];
+
+/**
+ * Syarat melanjutkan studi (ayat 7) of a suspended student with an
+ * Instansi asal, in the prototype's order: the penalty served, the
+ * academic curriculum, the character curriculum, the written
+ * recommendation of the agency, and the rules of study leave.
+ */
+export const CONTINUATION_CONDITIONS = [
+  "served",
+  "academic",
+  "character",
+  "recommendation",
+  "study_leave",
+] as const;
+
+export type ContinuationCondition = (typeof CONTINUATION_CONDITIONS)[number];
+
+/**
+ * Keputusan on the suspension: Menunggu pemenuhan syarat, Melanjutkan
+ * studi, or Diberhentikan dengan hormat (ayat 8).
+ */
+export const CONTINUATION_DECISIONS = [
+  "pending",
+  "continue",
+  "dismissed",
+] as const;
+
+export type ContinuationDecision = (typeof CONTINUATION_DECISIONS)[number];
 
 /** Bentuk kerja sosial, in the prototype's order; the last is "lainnya". */
 export const SOCIAL_WORK_FORMS = [
@@ -37,8 +71,16 @@ export const SOCIAL_WORK_PLACES = ["campus", "home_agency", "outside"] as const;
 
 export type SocialWorkPlace = (typeof SOCIAL_WORK_PLACES)[number];
 
-/** What a line of the log of a penalty records: its save. */
-export const PENALTY_CHANGE_ACTIONS = ["added"] as const;
+/**
+ * What a line of the log of a penalty records: its save, or a change of
+ * its status, its ticks of Syarat melanjutkan studi, or its Keputusan.
+ */
+export const PENALTY_CHANGE_ACTIONS = [
+  "added",
+  "status_changed",
+  "conditions_changed",
+  "decision_changed",
+] as const;
 
 /** How long Uraian pelanggaran is, without spaces around it. The least is the prototype's. */
 export const PENALTY_DESCRIPTION_MIN_LENGTH = 5;

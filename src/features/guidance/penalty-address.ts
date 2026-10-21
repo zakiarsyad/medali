@@ -36,6 +36,8 @@ export const CATEGORY_CHOICES: Record<PenaltyCategory, string> = {
 /** How the address names each status. */
 export const STATUS_CHOICES: Record<PenaltyStatus, string> = {
   imposed: "dijatuhkan",
+  serving: "sedang-dijalani",
+  served: "selesai-dijalani",
   set: "ditetapkan",
 };
 

@@ -1,4 +1,5 @@
 import type {
+  ContinuationCondition,
   PenaltyCategory,
   PenaltyLevel,
   SocialWorkForm,
@@ -36,6 +37,10 @@ export interface SampleDisciplinePenalty {
   /** Null for a Jenjang without kerja sosial. */
   socialWork: SampleSocialWork | null;
   savedAs: "discipline_officer" | "head_of_unit";
+  /** The status it was followed up to; Dijatuhkan or Ditetapkan when left out. */
+  movedTo?: "serving" | "served";
+  /** The conditions of Syarat melanjutkan studi ticked since; none when left out. */
+  conditionsMet?: ContinuationCondition[];
 }
 
 const ON_CAMPUS: SampleSocialWork = {
@@ -51,7 +56,10 @@ const ON_CAMPUS: SampleSocialWork = {
  * some; Gita Purba and Kirana Utomo, mentees of the sample Pengasuh;
  * Oki Rahayu, who has an Instansi asal, with Berat jenjang pertama and
  * kerja sosial there; and Teguh Lubis with Berat jenjang kedua,
- * Ditetapkan. Some kerja sosial is finished and some is not.
+ * Ditetapkan. Some kerja sosial is finished and some is not, and the
+ * statuses are a mix: Dijatuhkan, Sedang dijalani, Selesai dijalani and
+ * Ditetapkan. Oki Rahayu, suspended, has one condition of Syarat
+ * melanjutkan studi ticked, so the Keputusan still waits.
  */
 export const SAMPLE_DISCIPLINE_PENALTIES: SampleDisciplinePenalty[] = [
   {
@@ -81,6 +89,7 @@ export const SAMPLE_DISCIPLINE_PENALTIES: SampleDisciplinePenalty[] = [
       startsAfter: 3,
     },
     savedAs: "head_of_unit",
+    movedTo: "serving",
   },
   {
     nim: "9900250007",
@@ -92,6 +101,7 @@ export const SAMPLE_DISCIPLINE_PENALTIES: SampleDisciplinePenalty[] = [
     decisionNumber: "",
     socialWork: ON_CAMPUS,
     savedAs: "discipline_officer",
+    movedTo: "served",
   },
   {
     nim: "9900240011",
@@ -103,6 +113,7 @@ export const SAMPLE_DISCIPLINE_PENALTIES: SampleDisciplinePenalty[] = [
     decisionNumber: "",
     socialWork: { ...ON_CAMPUS, forms: ["community"], place: "outside" },
     savedAs: "discipline_officer",
+    movedTo: "served",
   },
   {
     nim: "9900240015",
@@ -119,6 +130,8 @@ export const SAMPLE_DISCIPLINE_PENALTIES: SampleDisciplinePenalty[] = [
       startsAfter: 7,
     },
     savedAs: "head_of_unit",
+    movedTo: "serving",
+    conditionsMet: ["recommendation"],
   },
   {
     nim: "9900230018",

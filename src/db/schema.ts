@@ -142,6 +142,8 @@ import {
   WARNING_CHANGE_ACTIONS,
 } from "@/features/dorm/warning-ids";
 import {
+  CONTINUATION_CONDITIONS,
+  CONTINUATION_DECISIONS,
   DECISION_NUMBER_MAX_LENGTH,
   OTHER_SOCIAL_WORK_MAX_LENGTH,
   PENALTY_CATEGORIES,
@@ -4264,10 +4266,29 @@ export const disciplinePenaltyChangeAction = pgEnum(
   PENALTY_CHANGE_ACTIONS,
 );
 
+export const continuationCondition = pgEnum(
+  "continuation_condition",
+  CONTINUATION_CONDITIONS,
+);
+
+export const continuationDecision = pgEnum(
+  "continuation_decision",
+  CONTINUATION_DECISIONS,
+);
+
+/** Every condition of Syarat melanjutkan studi, as the database writes a list of them. */
+const ALL_CONDITIONS = sql.raw(
+  `array[${CONTINUATION_CONDITIONS.map((condition) => `'${condition}'`).join(", ")}]::continuation_condition[]`,
+);
+
 /**
  * One Pelanggaran disiplin of a student and the penalty set for it: its
  * Tanggal pelanggaran, Uraian, Kategori and Jenjang, its status, the
- * optional Nomor keputusan, and who saved it and when. What the Jenjang
+ * optional Nomor keputusan, and who saved it and when. A Berat jenjang
+ * pertama also keeps the conditions of Syarat melanjutkan studi ticked
+ * and its Keputusan; whether they apply, by the student's Instansi asal,
+ * is read when shown. Every follow-up raises the version, so a change
+ * sent from an older one is caught. What the Jenjang
  * means, its Hukuman, kerja sosial length and Dasar, is a fixed rule in
  * the code, never stored. A Jenjang with kerja sosial keeps its Bentuk,
  * Lokasi and its first and last day; the last day follows from the
@@ -4300,6 +4321,12 @@ export const disciplinePenalties = pgTable(
     socialWorkPlace: socialWorkPlace(),
     socialWorkStartsOn: date(),
     socialWorkEndsOn: date(),
+    /** The conditions of Syarat melanjutkan studi ticked, in their fixed order. */
+    conditionsMet: continuationCondition().array().notNull().default([]),
+    /** Keputusan on the suspension. */
+    decision: continuationDecision().notNull().default("pending"),
+    /** Goes up with every follow-up, so a change made from an older one is caught. */
+    version: integer().notNull().default(1),
     savedBy: uuid()
       .notNull()
       .references(() => accounts.id),
@@ -4307,6 +4334,14 @@ export const disciplinePenalties = pgTable(
   },
   (table) => [
     index("discipline_penalties_student").on(table.studentId, table.day),
+    check(
+      "discipline_penalties_conditions_only_when_suspended",
+      sql`(${table.category} = 'heavy' and ${table.level} = 1) or (cardinality(${table.conditionsMet}) = 0 and ${table.decision} = 'pending')`,
+    ),
+    check(
+      "discipline_penalties_continue_only_when_all_met",
+      sql`${table.decision} <> 'continue' or ${table.conditionsMet} @> ${ALL_CONDITIONS}`,
+    ),
     index("discipline_penalties_day").on(table.day),
     check("discipline_penalties_level", sql`${table.level} between 1 and 3`),
     check(
@@ -4351,10 +4386,11 @@ export const disciplinePenalties = pgTable(
 );
 
 /**
- * Every save of a discipline penalty: who and when. A penalty is not
- * changed in any other way yet, so what it was before and after is the
- * action: no penalty before a save, the penalty after it. Rows here
- * cannot be changed or deleted; the database refuses it.
+ * Every save and every follow-up of a discipline penalty: who and when.
+ * A save has no penalty before it and the penalty after it, so its line
+ * holds no values. A follow-up holds the status, the conditions ticked
+ * and the Keputusan before and after it. Rows here cannot be changed or
+ * deleted; the database refuses it.
  */
 export const disciplinePenaltyChanges = pgTable(
   "discipline_penalty_changes",
@@ -4368,6 +4404,23 @@ export const disciplinePenaltyChanges = pgTable(
       .references(() => accounts.id),
     changedAt: timestamp({ withTimezone: true }).notNull(),
     action: disciplinePenaltyChangeAction().notNull(),
+    statusBefore: disciplinePenaltyStatus(),
+    statusAfter: disciplinePenaltyStatus(),
+    conditionsBefore: continuationCondition().array(),
+    conditionsAfter: continuationCondition().array(),
+    decisionBefore: continuationDecision(),
+    decisionAfter: continuationDecision(),
   },
-  (table) => [index("discipline_penalty_changes_penalty").on(table.penaltyId)],
+  (table) => [
+    index("discipline_penalty_changes_penalty").on(table.penaltyId),
+    check(
+      "discipline_penalty_changes_values_only_for_follow_up",
+      sql`(${table.action} = 'added') = (${table.statusBefore} is null)
+        and (${table.statusBefore} is null) = (${table.statusAfter} is null)
+        and (${table.statusBefore} is null) = (${table.conditionsBefore} is null)
+        and (${table.statusBefore} is null) = (${table.conditionsAfter} is null)
+        and (${table.statusBefore} is null) = (${table.decisionBefore} is null)
+        and (${table.statusBefore} is null) = (${table.decisionAfter} is null)`,
+    ),
+  ],
 );

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { visibleTo } from "@/auth/visible-students";
+import { ruleOf, statusOf } from "@/features/guidance/penalty-rules";
 import { samplePeriods } from "./sample-data";
 import { SAMPLE_DISCIPLINE_PENALTIES } from "./sample-discipline-penalties";
 import {
@@ -32,7 +33,6 @@ describe("the sample discipline penalties", { timeout: 20_000 }, () => {
       );
 
       expect(penalties).toHaveLength(SAMPLE_DISCIPLINE_PENALTIES.length);
-      expect(lines).toHaveLength(penalties.length);
       for (const sample of SAMPLE_DISCIPLINE_PENALTIES) {
         const kept = penalties.find(
           (penalty) =>
@@ -42,13 +42,37 @@ describe("the sample discipline penalties", { timeout: 20_000 }, () => {
         const day = kept?.day ?? "";
         expect(day <= today).toBe(true);
         expect(runningPeriodOn(periods, day)).toBe(periods[sample.semester]);
-        expect(lines).toContainEqual(
+        const own = lines.filter((line) => line.penaltyId === kept?.id);
+        expect(own).toContainEqual(
           expect.objectContaining({
-            penaltyId: kept?.id,
             action: "added",
             changedBy: kept?.savedBy,
           }),
         );
+        expect(kept?.status).toBe(
+          sample.movedTo ?? statusOf(ruleOf(sample.category, sample.level)),
+        );
+        expect(kept?.conditionsMet).toEqual(sample.conditionsMet ?? []);
+        expect(kept?.decision).toBe("pending");
+        expect(kept?.version).toBe(own.length);
+        if (sample.movedTo !== undefined) {
+          expect(own).toContainEqual(
+            expect.objectContaining({
+              action: "status_changed",
+              statusBefore: "imposed",
+              statusAfter: sample.movedTo,
+            }),
+          );
+        }
+        if (sample.conditionsMet !== undefined) {
+          expect(own).toContainEqual(
+            expect.objectContaining({
+              action: "conditions_changed",
+              conditionsBefore: [],
+              conditionsAfter: sample.conditionsMet,
+            }),
+          );
+        }
       }
 
       // The sample Pengasuh by name: another account with the role, such
