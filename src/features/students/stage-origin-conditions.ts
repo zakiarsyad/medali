@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull, ne, type SQL, sql } from "drizzle-orm";
+import type { StageCohorts } from "@/academic-periods/stage-cohorts";
 import { students } from "@/db/schema";
-import type { StageCohorts } from "./stage-cohorts";
 import { NO_AGENCY } from "./student-list-address";
 
 /** Only Aktif and Cuti students are in a tahap. */

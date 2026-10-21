@@ -1,0 +1,46 @@
+import { describe, expect, it } from "vitest";
+import type { AccountForAccess } from "@/auth/access";
+import { BAM_ROLES } from "@/auth/bam-roles";
+import type { RoleId } from "@/auth/role-ids";
+import { dashboardScopeOf } from "./dashboard-scope";
+
+function accountOf(roles: RoleId[]): AccountForAccess {
+  return { id: "x", roles, studyProgramId: 3, studentId: null };
+}
+
+describe("dashboardScopeOf", () => {
+  it("gives Kepala Unit and Direktur every student, with the choice of a program studi", () => {
+    for (const role of ["head_of_unit", "director"] as const) {
+      expect(dashboardScopeOf(accountOf([role]))?.picksProgram).toBe(true);
+    }
+  });
+
+  it("gives Ketua Program Studi a scope without the choice of a program studi", () => {
+    const scope = dashboardScopeOf(accountOf(["head_of_program"]));
+
+    expect(scope).not.toBeNull();
+    expect(scope?.picksProgram).toBe(false);
+  });
+
+  it("gives a person who is also Pengasuh the scope of their staff role", () => {
+    const scope = dashboardScopeOf(accountOf(["mentor", "director"]));
+
+    expect(scope?.picksProgram).toBe(true);
+  });
+
+  it("refuses every role without the right, so none of the numbers is read", () => {
+    const refused: RoleId[] = [
+      "mentor",
+      "counsellor",
+      "student",
+      "upk_staff",
+      "dorm_manager",
+      "assessor",
+      "discipline_officer",
+      ...BAM_ROLES,
+    ];
+    for (const role of refused) {
+      expect(dashboardScopeOf(accountOf([role]))).toBeNull();
+    }
+  });
+});

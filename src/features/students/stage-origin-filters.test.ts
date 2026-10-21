@@ -1,10 +1,10 @@
 // Sample NIMs of this file: 9900001400 to 9900001499.
 import { describe, expect, it } from "vitest";
+import { stageCohorts } from "@/academic-periods/stage-cohorts";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import type { ListCohorts } from "./list-cohorts";
-import { stageCohorts } from "./stage-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listStudents } from "./student-list";
 import {

@@ -1,4 +1,4 @@
-import type { StageCohorts } from "./stage-cohorts";
+import type { StageCohorts } from "@/academic-periods/stage-cohorts";
 
 /** Which angkatan is where now, for the filters of the list that read it. */
 export interface ListCohorts {

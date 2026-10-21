@@ -28,6 +28,31 @@
   background: var(--bina);
 }
 
+.spread {
+  display: block;
+  width: 100%;
+  min-width: var(--class-min-width);
+  height: var(--bar-height);
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.goldPart {
+  fill: var(--emas);
+}
+
+.silverPart {
+  fill: var(--perak);
+}
+
+.bronzePart {
+  fill: var(--perunggu);
+}
+
+.guidancePart {
+  fill: var(--bina);
+}
+
 .medal {
   width: 100%;
   max-width: var(--medal-width);
