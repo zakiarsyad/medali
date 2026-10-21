@@ -58,8 +58,8 @@ describe("readStageBreakdowns", () => {
         values: stageBreakdown(
           2,
           new Map([
-            ["M", first],
-            ["E", second],
+            ["M", { ...first, version: "2026-03-01T03:00:00.000Z" }],
+            ["E", { ...second, version: "2026-03-02T03:00:00.000Z" }],
           ]),
         ),
         changed: { at: new Date("2026-03-02T03:00:00Z"), by: "Kepala Uji" },

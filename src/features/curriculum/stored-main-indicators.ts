@@ -3,10 +3,7 @@ import type { Database } from "@/db/connect";
 import { accounts, mainIndicators as savedIndicators } from "@/db/schema";
 import type { Change } from "./change";
 import { mainIndicators, type ValueIndicators } from "./main-indicators";
-import { versionOf } from "./ppks-activities";
-
-/** The version of a form opened while no text of the indicators is saved. */
-export const STARTING_INDICATORS_VERSION = "awal";
+import { savedVersion } from "./saved-version";
 
 export interface ShownIndicators {
   values: ValueIndicators[];
@@ -14,12 +11,6 @@ export interface ShownIndicators {
   changed: Change | null;
   /** What a form opened on these texts sends back with its save. */
   version: string;
-}
-
-/** The version of the indicators last saved at `changedAt`, or never saved. */
-export function indicatorsVersion(changedAt: Date | null): string {
-  if (changedAt === null) return STARTING_INDICATORS_VERSION;
-  return versionOf(changedAt);
 }
 
 /** The main indicators as they are now, with who changed them last. */
@@ -44,6 +35,6 @@ export async function readMainIndicators(
   return {
     values: mainIndicators(texts),
     changed,
-    version: indicatorsVersion(changed?.at ?? null),
+    version: savedVersion(changed?.at ?? null),
   };
 }
