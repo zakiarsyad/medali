@@ -164,6 +164,18 @@ describe("names in Daftar nilai karakter", () => {
     );
   });
 
+  it("keep the closed semester chosen", () => {
+    const semester = "7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
+    const rows = [gradeRowOf(ANI, STARTING_SCHEME)];
+    const html = renderToStaticMarkup(
+      <GradeListTable rows={rows} params={{ ...START_PARAMS, semester }} />,
+    );
+
+    expect(html).toContain(
+      `href="/penilaian/karakter?semester=${semester}&amp;profil=id-ani"`,
+    );
+  });
+
   it("show a student whose detail opens nothing as a name only", () => {
     const rows = [
       gradeRowOf(ANI, STARTING_SCHEME),
