@@ -82,10 +82,11 @@ export async function loadDashboard(
   });
   const stages = stageCohorts(held.cohortYears, period);
   const counted = dashboardStudents(scope.visible, filters, stages);
+  const filtered = filtersInUse(filters) > 0;
   const [counts, achievement, grades, physical] = await Promise.all([
     countChoices(db, scope.visible, filters, stages),
-    readAchievement(db, counted, filtersInUse(filters) > 0),
-    readCharacterGrades(db, counted, basis),
+    readAchievement(db, counted, filtered),
+    readCharacterGrades(db, counted, basis, filtered),
     readPhysical(db, limits, counted, scope.illnesses),
   ]);
   return {

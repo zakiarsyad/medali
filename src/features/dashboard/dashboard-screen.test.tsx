@@ -57,7 +57,11 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       recap: RECAP,
       cohorts: [{ cohortYear: 2025, entryPath: "regular", recap: RECAP }],
     },
-    grades: { scheme: STARTING_SCHEME, recap: GRADES },
+    grades: {
+      scheme: STARTING_SCHEME,
+      recap: GRADES,
+      cohorts: [{ cohortYear: 2025, entryPath: "regular", recap: GRADES }],
+    },
     physical: {
       kind: "shown",
       students: 40,
@@ -134,11 +138,21 @@ describe("DashboardScreen", () => {
   it("shows only why there are no grade numbers on the card for a small or ungraded group", () => {
     const tooFew = shown(
       viewOf({
-        grades: { scheme: STARTING_SCHEME, recap: { kind: "too_few" } },
+        grades: {
+          scheme: STARTING_SCHEME,
+          recap: { kind: "too_few" },
+          cohorts: [],
+        },
       }),
     );
     const none = shown(
-      viewOf({ grades: { scheme: STARTING_SCHEME, recap: { kind: "none" } } }),
+      viewOf({
+        grades: {
+          scheme: STARTING_SCHEME,
+          recap: { kind: "none" },
+          cohorts: [],
+        },
+      }),
     );
 
     expect(tooFew).toContain(TOO_FEW);
@@ -178,12 +192,22 @@ describe("DashboardScreen", () => {
   it("shows only why there are no grade numbers in section 2 for a small or ungraded group", () => {
     const tooFew = shown(
       viewOf({
-        grades: { scheme: STARTING_SCHEME, recap: { kind: "too_few" } },
+        grades: {
+          scheme: STARTING_SCHEME,
+          recap: { kind: "too_few" },
+          cohorts: [],
+        },
         achievement: { recap: RECAP, cohorts: [] },
       }),
     );
     const none = shown(
-      viewOf({ grades: { scheme: STARTING_SCHEME, recap: { kind: "none" } } }),
+      viewOf({
+        grades: {
+          scheme: STARTING_SCHEME,
+          recap: { kind: "none" },
+          cohorts: [],
+        },
+      }),
     );
 
     expect(tooFew.split(TOO_FEW)).toHaveLength(3);
@@ -193,6 +217,40 @@ describe("DashboardScreen", () => {
       expect(html).not.toContain("Komponen nilai karakter");
       expect(html).not.toContain("Sebaran huruf");
     }
+  });
+
+  it("shows Nilai karakter per angkatan with the count, the four parts, Nilai akhir and the percent that meets the pass letter", () => {
+    const html = shown(viewOf());
+    const table = html.slice(html.indexOf("Nilai karakter per angkatan"));
+
+    expect(table).toContain(
+      "<th>Kehadiran</th><th>Pengasuhan</th><th>SIKU</th><th>SKPM</th><th>Nilai akhir</th><th>Memenuhi B</th>",
+    );
+    expect(table).toContain("Angkatan 2025");
+    expect(table).toContain("Reguler · Smt 3");
+    expect(table).toContain('data-title="Jumlah">36<');
+    expect(table).toContain('data-title="Kehadiran">88,2<');
+    expect(table).toContain('data-title="Nilai akhir"><b>78,4</b>');
+    expect(table).toContain('data-title="Memenuhi B">81%<');
+  });
+
+  it("says why no cohort is shown, and shows no table for a group without grade numbers", () => {
+    const view = viewOf();
+    const empty = shown({ ...view, grades: { ...view.grades, cohorts: [] } });
+    const tooFew = shown(
+      viewOf({
+        grades: {
+          scheme: STARTING_SCHEME,
+          recap: { kind: "too_few" },
+          cohorts: [],
+        },
+      }),
+    );
+
+    expect(empty).toContain(
+      "Angkatan tampil bila minimal 20 mahasiswa sudah memiliki nilai akhir",
+    );
+    expect(tooFew).not.toContain("Nilai karakter per angkatan");
   });
 
   it("shows the card Kesehatan jasmani, leading to section 3", () => {

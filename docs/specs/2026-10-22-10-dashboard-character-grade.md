@@ -101,8 +101,21 @@ program only).
 5. Without numbers, section 2 shows only the line that says why, as
    section 1 does.
 
+6. "Nilai karakter per angkatan" counts the students with a worked-out
+   grade: "Jumlah" is those students of the row, a row shows only with
+   at least 5 of them, and without any filter at least 20, and the rule
+   of subtraction of section 1 counts them too. Its rows are ordered as
+   in section 1, and the table shows only while section 2 has numbers.
+   With no row it says "Tidak ada angkatan yang dapat ditampilkan.
+   Angkatan tampil bila minimal 20 mahasiswa sudah memiliki nilai akhir
+   dan nilai perorangan tidak dapat ditebak dari angkatan lain.", with 5
+   instead of 20 under a filter.
+7. The averages of the table are plain numbers, without the prototype's
+   colours, as the parts have no predikat. The last column is headed
+   "Memenuhi (letter)" with the minimum letter in force.
+
 ## Steps
 
 - [x] 1. The "Nilai karakter" card.
 - [x] 2. "Komponen nilai karakter" and "Sebaran huruf".
-- [ ] 3. "Nilai karakter per angkatan".
+- [x] 3. "Nilai karakter per angkatan".

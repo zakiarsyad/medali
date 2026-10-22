@@ -3,7 +3,8 @@ import {
   type GradeScheme,
   STARTING_SCHEME,
 } from "@/character-grades/scheme-ids";
-import { type GradeGroup, gradeRecapOf } from "./grade-recap";
+import type { EntryPath } from "./dashboard-address";
+import { type GradeGroup, gradeCohorts, gradeRecapOf } from "./grade-recap";
 
 /**
  * Students with the same Nilai akhir, or null for "Belum lengkap", each
@@ -112,5 +113,79 @@ describe("gradeRecapOf", () => {
       passing: 100,
       letters: { A: 0, B: 3, C: 2, D: 0, E: 0 },
     });
+  });
+});
+
+/** Students of one angkatan and jalur with the same Nilai akhir. */
+function inCohort(
+  cohortYear: number,
+  entryPath: EntryPath,
+  students: number,
+  final: number | null,
+): GradeGroup {
+  return { ...groupOf(students, final), cohortYear, entryPath };
+}
+
+/** Each row as its angkatan, jalur and how many have a worked-out grade. */
+function rowsOf(groups: GradeGroup[], filtered: boolean) {
+  return gradeCohorts(groups, STARTING_SCHEME, filtered).map((row) => [
+    row.cohortYear,
+    row.entryPath,
+    row.recap.graded,
+  ]);
+}
+
+describe("gradeCohorts", () => {
+  it("gives one row per angkatan and jalur, the newest first and Reguler before Alih program, with its own numbers", () => {
+    const rows = gradeCohorts(
+      [
+        inCohort(2025, "regular", 20, 80),
+        inCohort(2026, "transfer", 20, 60),
+        inCohort(2026, "regular", 25, 90),
+        inCohort(2026, "regular", 3, null),
+      ],
+      STARTING_SCHEME,
+      false,
+    );
+
+    expect(rows.map((row) => [row.cohortYear, row.entryPath])).toEqual([
+      [2026, "regular"],
+      [2026, "transfer"],
+      [2025, "regular"],
+    ]);
+    expect(rows[0]?.recap).toMatchObject({
+      graded: 25,
+      incomplete: 3,
+      meanFinal: 90,
+      passing: 100,
+    });
+    expect(rows[1]?.recap).toMatchObject({ meanFinal: 60, passing: 0 });
+  });
+
+  it("counts only worked-out grades for the rule of 20 without a filter, and of 5 with one, then for the rule of subtraction", () => {
+    const groups = [
+      inCohort(2026, "regular", 20, 80),
+      inCohort(2025, "regular", 19, 80),
+      inCohort(2025, "regular", 10, null),
+      inCohort(2024, "regular", 5, 80),
+      inCohort(2023, "regular", 4, 80),
+      inCohort(2023, "regular", 30, null),
+    ];
+
+    expect(rowsOf(groups, false)).toEqual([[2026, "regular", 20]]);
+    expect(rowsOf(groups, true)).toEqual([
+      [2026, "regular", 20],
+      [2025, "regular", 19],
+    ]);
+  });
+
+  it("leaves out the smallest row too while the rows left out hold 1 to 4 worked-out grades", () => {
+    const groups = [
+      inCohort(2026, "regular", 30, 80),
+      inCohort(2025, "regular", 25, 80),
+      inCohort(2024, "regular", 3, 80),
+    ];
+
+    expect(rowsOf(groups, false)).toEqual([[2026, "regular", 30]]);
   });
 });

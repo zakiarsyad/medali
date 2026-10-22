@@ -148,6 +148,31 @@ describe("Nilai karakter of Dashboard pembangunan karakter", () => {
     });
   });
 
+  it("gives a row per angkatan and jalur under a filter, and none of fewer than 20 worked-out grades without one", async () => {
+    await inTestDatabase(async (db) => {
+      const { scope } = await addRecords(db);
+
+      const all = await loadDashboard(db, scope, NO_FILTERS, ODD_4530, TODAY);
+      const regular = await loadDashboard(
+        db,
+        scope,
+        { ...NO_FILTERS, entryPath: "regular" },
+        ODD_4530,
+        TODAY,
+      );
+
+      expect(all.grades.cohorts).toEqual([]);
+      expect(regular.grades.cohorts).toEqual([
+        {
+          cohortYear: 4529,
+          entryPath: "regular",
+          recap: regular.grades.recap,
+        },
+      ]);
+      expect(regular.grades.recap).toMatchObject({ graded: 6, limited: 1 });
+    });
+  });
+
   it("gives Ketua Program Studi the grades of their own program only", async () => {
     await inTestDatabase(async (db) => {
       const { programId } = await addRecords(db);

@@ -3,13 +3,21 @@ import { type GradeBasis, gradeFacts } from "@/character-grades/grade-facts";
 import type { GradeScheme } from "@/character-grades/scheme-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
-import { type GradeGroup, type GradeRecap, gradeRecapOf } from "./grade-recap";
+import {
+  type GradeCohort,
+  type GradeGroup,
+  type GradeRecap,
+  gradeCohorts,
+  gradeRecapOf,
+} from "./grade-recap";
 
 /** Nilai karakter of the students the Dashboard counts. */
 export interface CharacterGrades {
   /** The scheme in force, which gives each part its weight and the pass letter. */
   scheme: GradeScheme;
   recap: GradeRecap;
+  /** The rows of "Nilai karakter per angkatan" that may be shown. */
+  cohorts: GradeCohort[];
 }
 
 function sumOf(part: SQLWrapper): SQL<number> {
@@ -50,12 +58,22 @@ async function readGradeGroups(
     .groupBy(students.cohortYear, students.entryPath, facts.final);
 }
 
-/** Nilai karakter of the students `where` lets through, by the basis given. */
+/**
+ * Nilai karakter of the students `where` lets through, by the basis
+ * given. `filtered` tells whether a filter is in use, which lets smaller
+ * cohorts be shown.
+ */
 export async function readCharacterGrades(
   db: Database,
   where: SQL,
   basis: GradeBasis,
+  filtered: boolean,
 ): Promise<CharacterGrades> {
+  const { scheme } = basis;
   const groups = await readGradeGroups(db, where, basis);
-  return { scheme: basis.scheme, recap: gradeRecapOf(groups, basis.scheme) };
+  return {
+    scheme,
+    recap: gradeRecapOf(groups, scheme),
+    cohorts: gradeCohorts(groups, scheme, filtered),
+  };
 }

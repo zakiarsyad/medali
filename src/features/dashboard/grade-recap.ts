@@ -7,6 +7,12 @@ import {
 } from "@/character-grades/scheme-ids";
 import { FEWEST_SHOWN } from "./achievement-recap";
 import { oneDecimal } from "./achievement-words";
+import {
+  type CohortCandidate,
+  type CohortRow,
+  cohortsOf,
+  shownCohorts,
+} from "./cohort-recaps";
 import type { EntryPath } from "./dashboard-address";
 
 /**
@@ -120,4 +126,39 @@ export function gradeRecapOf(
     incomplete: tally.students - tally.graded,
     parts: averages(tally),
   };
+}
+
+/** One row of "Nilai karakter per angkatan". */
+export type GradeCohort = CohortRow<ShownGrades>;
+
+function gradedIn(cohort: readonly GradeGroup[]): number {
+  let graded = 0;
+  for (const group of cohort) {
+    if (group.final !== null) graded += group.students;
+  }
+  return graded;
+}
+
+/**
+ * The rows of "Nilai karakter per angkatan": one per angkatan and jalur,
+ * by the cohort rule of section 1, counted by the worked-out grades.
+ */
+export function gradeCohorts(
+  groups: readonly GradeGroup[],
+  scheme: GradeScheme,
+  filtered: boolean,
+): GradeCohort[] {
+  const candidates: CohortCandidate<ShownGrades>[] = [];
+  for (const cohort of cohortsOf(groups).values()) {
+    const [first] = cohort;
+    if (first === undefined) continue;
+    const recap = gradeRecapOf(cohort, scheme);
+    candidates.push({
+      cohortYear: first.cohortYear,
+      entryPath: first.entryPath,
+      counted: gradedIn(cohort),
+      recap: recap.kind === "shown" ? recap : null,
+    });
+  }
+  return shownCohorts(candidates, filtered);
 }

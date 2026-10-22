@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { passes } from "@/character-grades/grade-letter";
 import { shownOneDecimal } from "@/character-grades/grade-words";
 import {
@@ -145,14 +146,16 @@ function GradePanels({ grades }: { grades: CharacterGrades }) {
  * Section 2, Nilai karakter: the parts of the grade with their weights
  * and the letter spread, counts only, never a name. Without numbers it
  * says why. `detailAddress` leads to Penilaian karakter, for an account
- * that may open it.
+ * that may open it; `children` is what the section holds below.
  */
 export function GradeSection({
   grades,
   detailAddress,
+  children,
 }: {
   grades: CharacterGrades;
   detailAddress: string | null;
+  children?: ReactNode;
 }) {
   return (
     <section className={styles.section} aria-labelledby={GRADE_SECTION}>
@@ -166,6 +169,7 @@ export function GradeSection({
         dan perilaku (SIKU), dan nilai SKPM sesuai bobotnya.
       </SectionHead>
       <GradePanels grades={grades} />
+      {children}
     </section>
   );
 }

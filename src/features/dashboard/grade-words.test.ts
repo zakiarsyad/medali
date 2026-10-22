@@ -5,6 +5,7 @@ import {
   gradeCardLine,
   incompleteLine,
   letterParts,
+  noGradeCohortWords,
   partLabel,
 } from "./grade-words";
 
@@ -58,5 +59,14 @@ describe("Komponen nilai karakter and Sebaran huruf", () => {
 
   it("says how many are Belum lengkap and left out", () => {
     expect(incompleteLine(SHOWN)).toBe("35 belum lengkap, tidak dihitung.");
+  });
+});
+
+describe("Nilai karakter per angkatan", () => {
+  it("says why no cohort is shown, with 20 worked-out grades without a filter and 5 with one", () => {
+    expect(noGradeCohortWords(false)).toBe(
+      "Tidak ada angkatan yang dapat ditampilkan. Angkatan tampil bila minimal 20 mahasiswa sudah memiliki nilai akhir dan nilai perorangan tidak dapat ditebak dari angkatan lain.",
+    );
+    expect(noGradeCohortWords(true)).toContain("minimal 5 mahasiswa");
   });
 });

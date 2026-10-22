@@ -5,6 +5,7 @@ import {
   type GradePart,
 } from "@/character-grades/scheme-ids";
 import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
+import { FEWEST_IN_COHORT_UNFILTERED, FEWEST_SHOWN } from "./achievement-recap";
 import type { ShownGrades } from "./grade-recap";
 
 /** What the card and section 2 say while nobody has a worked-out grade. */
@@ -74,4 +75,18 @@ export function incompleteLine(recap: ShownGrades): string {
 /** The line beside "Sebaran huruf": how many have a worked-out grade. */
 export function gradedLine(recap: ShownGrades): string {
   return `${shown(recap.graded)} mahasiswa`;
+}
+
+/** Each part as a heading of "Nilai karakter per angkatan", in the prototype's words. */
+export const PART_HEADINGS: Record<GradePart, string> = {
+  attendance: "Kehadiran",
+  mentoring: "Pengasuhan",
+  siku: "SIKU",
+  skpm: "SKPM",
+};
+
+/** What "Nilai karakter per angkatan" says when no cohort may be shown. */
+export function noGradeCohortWords(filtered: boolean): string {
+  const fewest = filtered ? FEWEST_SHOWN : FEWEST_IN_COHORT_UNFILTERED;
+  return `Tidak ada angkatan yang dapat ditampilkan. Angkatan tampil bila minimal ${fewest} mahasiswa sudah memiliki nilai akhir dan nilai perorangan tidak dapat ditebak dari angkatan lain.`;
 }
