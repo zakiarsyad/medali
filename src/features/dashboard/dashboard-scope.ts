@@ -1,6 +1,6 @@
 import type { SQL } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
-import { visibleTo } from "@/auth/visible-students";
+import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import { sharedReachOf } from "@/mental-health/shared-reach";
 
 /** Who reads the counselling data published to them, and which sharings they reach. */
@@ -35,6 +35,8 @@ export interface DashboardScope {
    * read, or null for one that may read none.
    */
   notes: SQL | null;
+  /** The students whose detail the account may open, or null for none. */
+  detail: SQL | null;
 }
 
 function illnessesOf(account: AccountForAccess): SQL | null {
@@ -85,5 +87,6 @@ export function dashboardScopeOf(
     illnesses: illnessesOf(account),
     shared: sharedOf(account),
     notes: notesOf(account),
+    detail: detailVisibleTo(account),
   };
 }

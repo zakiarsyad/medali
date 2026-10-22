@@ -1,3 +1,5 @@
+import type { ListedNote } from "@/mentoring/listed-note";
+
 /*
  * Pendampingan of the Dashboard, as it may leave the server. Read by the
  * screen parts, so nothing here may take from the database code.
@@ -32,9 +34,20 @@ export interface ProgramAverage {
   average: number | null;
 }
 
+/** How many notes "Catatan pengasuhan terbaru" shows. */
+export const LATEST_NOTES_SHOWN = 6;
+
+/** A note of "Catatan pengasuhan terbaru". */
+export interface LatestNote extends ListedNote {
+  /** Whether the account may open the detail of the note's student. */
+  opensDetail: boolean;
+}
+
 /** Section Pendampingan. */
 export interface MentoringView {
   numbers: MentoringNumbers;
   /** Highest first; null for an account that may not pick a program studi. */
   programs: ProgramAverage[] | null;
+  /** The notes saved last, at most `LATEST_NOTES_SHOWN`; none for an account that may read none. */
+  notes: LatestNote[];
 }

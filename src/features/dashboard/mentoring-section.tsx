@@ -1,5 +1,7 @@
 import Link from "next/link";
 import styles from "./dashboard.module.css";
+import type { DashboardFilters } from "./dashboard-address";
+import { LatestNotesPanel } from "./latest-notes-panel";
 import type { MentoringNumbers, MentoringView } from "./mentoring-recap";
 import {
   everyoneLine,
@@ -97,10 +99,13 @@ function NumberStrip({
 export function MentoringSection({
   mentoring,
   students,
+  filters,
   links,
 }: {
   mentoring: MentoringView;
   students: number;
+  /** The filters in use, which a student's detail closes back to. */
+  filters: DashboardFilters;
   links: MentoringLinks;
 }) {
   return (
@@ -121,6 +126,11 @@ export function MentoringSection({
         {mentoring.programs !== null && (
           <ProgramPanel programs={mentoring.programs} />
         )}
+        <LatestNotesPanel
+          notes={mentoring.notes}
+          filters={filters}
+          notesAddress={links.notes}
+        />
       </div>
     </section>
   );

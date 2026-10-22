@@ -105,6 +105,7 @@ export async function loadDashboard(
         everyone,
         notes: scope.notes,
         byProgram: scope.picksProgram,
+        detail: scope.detail,
         today,
       }),
     ]);

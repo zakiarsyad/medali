@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
+import { StudentLink } from "@/mentoring/student-link";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./mentoring.module.css";
 import { bandOf } from "./score-bands";
 import type { ScoreRow } from "./score-rows";
-import { StudentLink } from "./student-link";
 
 /**
  * "Keterangan" of one row: what the rubric says of the score, and under

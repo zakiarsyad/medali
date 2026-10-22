@@ -17,6 +17,7 @@ import { NOT_DONE } from "@/character-scores/coaching-shown-status";
 import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import {
+  accounts,
   coachingStatuses,
   mentorGroupMembers,
   mentorGroupMentors,
@@ -26,10 +27,14 @@ import {
   studyPrograms,
 } from "@/db/schema";
 import { NOT_ENDED } from "@/mentoring/group-in-force";
-import type {
-  MentoringNumbers,
-  MentoringView,
-  ProgramAverage,
+import { LISTED_NOTE, NEWEST_FIRST } from "@/mentoring/listed-note";
+import { opensDetailOf } from "@/mentoring/opens-detail";
+import {
+  LATEST_NOTES_SHOWN,
+  type LatestNote,
+  type MentoringNumbers,
+  type MentoringView,
+  type ProgramAverage,
 } from "./mentoring-recap";
 import { programAverages } from "./program-averages";
 
@@ -46,6 +51,8 @@ export interface MentoringAsked {
   notes: SQL | null;
   /** Whether the average of each program studi is read: not for Ketua Program Studi. */
   byProgram: boolean;
+  /** The students whose detail the account may open, or null for none. */
+  detail: SQL | null;
   today: string;
 }
 
@@ -169,6 +176,25 @@ async function readPrograms(
 }
 
 /**
+ * "Catatan pengasuhan terbaru": the notes saved last about the students
+ * of the group whose notes the account may read, as Pengasuhan shows them.
+ */
+async function readLatestNotes(
+  db: Database,
+  asked: MentoringAsked,
+): Promise<LatestNote[]> {
+  if (asked.notes === null) return [];
+  return db
+    .select({ ...LISTED_NOTE, opensDetail: opensDetailOf(asked.detail) })
+    .from(mentoringNotes)
+    .innerJoin(students, eq(students.id, mentoringNotes.studentId))
+    .innerJoin(accounts, eq(accounts.id, mentoringNotes.writtenBy))
+    .where(and(asked.where, asked.notes))
+    .orderBy(...NEWEST_FIRST)
+    .limit(LATEST_NOTES_SHOWN);
+}
+
+/**
  * Pendampingan of the students `asked.where` lets through, read on each
  * load, so a note added or a student who left a group shows at once.
  */
@@ -176,9 +202,10 @@ export async function readMentoring(
   db: Database,
   asked: MentoringAsked,
 ): Promise<MentoringView> {
-  const [numbers, programs] = await Promise.all([
+  const [numbers, programs, notes] = await Promise.all([
     readNumbers(db, asked),
     asked.byProgram ? readPrograms(db, asked.where) : null,
+    readLatestNotes(db, asked),
   ]);
-  return { numbers, programs };
+  return { numbers, programs, notes };
 }

@@ -2,7 +2,11 @@ import { and, count, eq, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { accounts, mentoringNotes, students } from "@/db/schema";
-import { LISTED_NOTE, type ListedNote, NEWEST_FIRST } from "./note-list";
+import {
+  LISTED_NOTE,
+  type ListedNote,
+  NEWEST_FIRST,
+} from "@/mentoring/listed-note";
 
 /** How many of a student's notes the detail shows: the newest ones. */
 export const STUDENT_NOTES_SHOWN = 20;

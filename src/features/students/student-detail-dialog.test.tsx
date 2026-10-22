@@ -34,6 +34,7 @@ const PLACES_OUTSIDE_THE_STUDENT_LIST: [DetailOpenedFrom, string][] = [
   ["skpm_list", "kembali ke Data SKPM."],
   ["screening_list", "kembali ke Kesehatan mental."],
   ["penalty_list", "kembali ke Pelanggaran disiplin."],
+  ["dashboard", "kembali ke Dashboard."],
 ];
 
 describe("the brief of a student", () => {

@@ -91,6 +91,7 @@ async function addRecords(db: Database) {
       illnesses: null,
       shared: null,
       notes: null,
+      detail: null,
     },
   };
 }

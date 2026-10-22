@@ -1,10 +1,11 @@
 import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
+import { NoteItem, NoteItems } from "@/mentoring/note-item";
+import { KIND_TITLES } from "@/mentoring/note-words";
+import { StudentLink } from "@/mentoring/student-link";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import styles from "./mentoring.module.css";
-import { NoteItem } from "./note-item";
-import { KIND_TITLES } from "./note-kinds";
 import {
   type KindCounts,
   NOTES_PAGE_SIZE,
@@ -18,7 +19,6 @@ import {
   noteStudentAddress,
   notesAddress,
 } from "./notes-address";
-import { StudentLink } from "./student-link";
 
 function KindFilter({ kind }: { kind: NoteKind | null }) {
   return (
@@ -86,7 +86,7 @@ export function NoteListPanel({
         <p className={shared.empty}>Belum ada catatan.</p>
       ) : (
         <>
-          <ul className={styles.notes}>
+          <NoteItems>
             {list.notes.map((note) => (
               <NoteItem
                 key={note.id}
@@ -99,7 +99,7 @@ export function NoteListPanel({
                 }
               />
             ))}
-          </ul>
+          </NoteItems>
           <ListPager
             page={list.page}
             matching={list.matching}

@@ -73,6 +73,7 @@ function DashboardContent({
       <MentoringSection
         mentoring={view.mentoring}
         students={view.counts.matching}
+        filters={view.filters}
         links={links}
       />
     </>

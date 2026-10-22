@@ -40,6 +40,7 @@ function scopeOf(programId: number): DashboardScope {
     illnesses: null,
     shared: null,
     notes: visible,
+    detail: null,
   };
 }
 
@@ -311,6 +312,110 @@ describe("Capaian MEDALI per program studi on the Dashboard", () => {
       const view = await loadDashboard(db, scope, NO_FILTERS, ODD_5160, TODAY);
 
       expect(view.mentoring.programs).toBeNull();
+    });
+  });
+});
+
+describe("Catatan pengasuhan terbaru on the Dashboard", () => {
+  /** A note saved a number of minutes after the first, so the order is plain. */
+  function savedAt(minutes: number): Date {
+    return new Date(Date.UTC(5160, 9, 1, 3, minutes));
+  }
+
+  it("lists the 6 notes saved last about the students of the filter, each saying whether its student opens", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, writer, ids } = await addRecords(db);
+      const bali = [ids.s03, ids.s06, ids.s07];
+      for (const [place, studentId] of [...bali, ...bali, ids.s03].entries()) {
+        await addTestNote(db, studentId, writer, {
+          note: `Catatan uji ${place}`,
+          writtenAt: savedAt(place),
+        });
+      }
+      await addTestNote(db, ids.s01, writer, {
+        note: "Catatan uji Jawa Barat",
+        writtenAt: savedAt(30),
+      });
+      const scope = {
+        ...scopeOf(programId),
+        detail: eq(students.id, ids.s03),
+      };
+
+      const view = await loadDashboard(
+        db,
+        scope,
+        { ...NO_FILTERS, province: "Bali" },
+        ODD_5160,
+        TODAY,
+      );
+
+      const notes = view.mentoring.notes;
+      expect(notes.map((note) => note.note)).toEqual([
+        "Catatan uji 6",
+        "Catatan uji 5",
+        "Catatan uji 4",
+        "Catatan uji 3",
+        "Catatan uji 2",
+        "Catatan uji 1",
+      ]);
+      expect(notes[0]).toMatchObject({
+        studentId: ids.s03,
+        studentName: "Mahasiswa Uji Pendampingan 03",
+        kind: "individual_counselling",
+        valueKeys: ["M", "A"],
+        followUp: "none",
+        opensDetail: true,
+      });
+      expect(notes[1]?.opensDetail).toBe(false);
+    });
+  });
+
+  it("lists no note for an account that may read none", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, writer, ids } = await addRecords(db);
+      await addTestNote(db, ids.s01, writer);
+
+      const view = await loadDashboard(
+        db,
+        { ...scopeOf(programId), notes: null },
+        NO_FILTERS,
+        ODD_5160,
+        TODAY,
+      );
+
+      expect(view.mentoring.notes).toEqual([]);
+    });
+  });
+
+  it("lists only the notes of the own program for Ketua Program Studi, also when they ask for another one by hand", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, writer, ids } = await addRecords(db);
+      const otherProgramId = await addTestProgram(db, "Prodi Uji Catatan Lain");
+      const other = await addTestStudent(db, otherProgramId, {
+        nim: "9989620060",
+        name: "Mahasiswa Uji Catatan Lain",
+      });
+      await addTestNote(db, other, writer, { note: "Catatan prodi lain" });
+      await addTestNote(db, ids.s01, writer, { note: "Catatan prodi sendiri" });
+      const scope = dashboardScopeOf({
+        id: crypto.randomUUID(),
+        roles: ["head_of_program"],
+        studyProgramId: programId,
+        studentId: null,
+      });
+      if (scope === null) throw new Error("Ketua Program Studi was refused.");
+
+      const view = await loadDashboard(
+        db,
+        scope,
+        { ...NO_FILTERS, studyProgramId: otherProgramId },
+        ODD_5160,
+        TODAY,
+      );
+
+      expect(view.mentoring.notes.map((note) => note.note)).toEqual([
+        "Catatan prodi sendiri",
+      ]);
     });
   });
 });

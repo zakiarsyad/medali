@@ -4,9 +4,9 @@ import { shownDay } from "@/ui/day";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
 import { mentorLabel } from "@/ui/mentor-label";
 import { ValueSwatch } from "@/ui/value-swatch";
-import styles from "./mentoring.module.css";
-import { FOLLOW_UP_TITLES, KIND_TITLES } from "./note-kinds";
-import type { ListedNote } from "./note-list";
+import type { ListedNote } from "./listed-note";
+import styles from "./mentoring-notes.module.css";
+import { FOLLOW_UP_TITLES, KIND_TITLES } from "./note-words";
 
 function ValueTags({ keys }: { keys: ValueKey[] }) {
   const ticked = MEDALI_VALUES.filter((value) => keys.includes(value.key));
@@ -37,7 +37,7 @@ export function NoteItem({
 }) {
   return (
     <li className={styles.item}>
-      <span className={styles.quiet}>{shownDay(note.happenedOn)}</span>
+      <span className={styles.day}>{shownDay(note.happenedOn)}</span>
       <p className={styles.itemTitle}>
         {student}
         <span>{KIND_TITLES[note.kind]}</span>
@@ -54,4 +54,9 @@ export function NoteItem({
       </small>
     </li>
   );
+}
+
+/** The list the notes stand in, the newest first as they are given. */
+export function NoteItems({ children }: { children: ReactNode }) {
+  return <ul className={styles.notes}>{children}</ul>;
 }

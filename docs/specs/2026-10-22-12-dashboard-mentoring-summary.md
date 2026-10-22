@@ -73,4 +73,4 @@ program only).
 
 - [x] 1. The "Pendampingan" section with its four linked numbers.
 - [x] 2. "Capaian MEDALI per program studi".
-- [ ] 3. "Catatan pengasuhan terbaru", limited to the viewer's students.
+- [x] 3. "Catatan pengasuhan terbaru", limited to the viewer's students.

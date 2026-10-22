@@ -2,7 +2,7 @@ import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 
 /**
- * The student a list of Pengasuhan names: a link that opens their detail
+ * The student a list names: a link that opens their detail
  * over the list for an account that may open it, and the name alone
  * otherwise.
  */

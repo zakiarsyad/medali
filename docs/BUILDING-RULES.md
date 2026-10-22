@@ -19,9 +19,10 @@ while building.
 - `src/mentoring/`: who is a mentee of a mentor today, which groups are
   in force, which members of a group are Aktif and how many it holds,
   how a list marks
-  the students whose detail may be opened, the kinds and follow-ups of a
-  mentoring note, how many meetings a period has with their marks and
-  suggested topics, the range a mentoring score lies in, the reasons for
+  the students whose detail may be opened, with the name that links to
+  it, the kinds and follow-ups of a mentoring note with their names, how
+  a note is read for a list and shown in it, how many meetings a period
+  has with their marks and suggested topics, the range a mentoring score lies in, the reasons for
   replacing a mentor with what the old mentor becomes, which mentor a
   replacement set Tidak aktif, which mentor is kept for a replacement
   that waits for its date, whether an account holds a group today, how a

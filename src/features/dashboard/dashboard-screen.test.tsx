@@ -15,6 +15,7 @@ import {
   NOBODY_ASSESSED,
   NOTHING_PUBLISHED,
 } from "./mental-words";
+import type { LatestNote } from "./mentoring-recap";
 import { PHYSICAL_TOO_FEW } from "./physical-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -50,6 +51,21 @@ const PUBLISHED_ROW: PublishedRow = {
   level: "moderate",
   sessions: null,
   summary: null,
+};
+
+const OTHER_NOTE_ID = "00000000-0000-4000-8000-000000000003";
+
+const LATEST_NOTE: LatestNote = {
+  id: "00000000-0000-4000-8000-000000000002",
+  happenedOn: "2026-10-20",
+  kind: "appreciation",
+  valueKeys: ["E", "I"],
+  note: "Memimpin kerja bakti asrama.",
+  followUp: "watch_two_weeks",
+  studentId: "00000000-0000-4000-8000-000000000001",
+  studentName: "Mahasiswa Catatan",
+  writer: { name: "Pengasuh Contoh", title: null },
+  opensDetail: true,
 };
 
 function viewOf(more: Partial<DashboardView> = {}): DashboardView {
@@ -115,6 +131,16 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
         { programId: 1, name: "D3 Pajak", students: 40, average: 80.5 },
         { programId: 2, name: "D4 Akuntansi", students: 12, average: 74.3 },
         { programId: 3, name: "D3 Kepabeanan", students: 3, average: null },
+      ],
+      notes: [
+        LATEST_NOTE,
+        {
+          ...LATEST_NOTE,
+          id: OTHER_NOTE_ID,
+          opensDetail: false,
+          studentName: "Mahasiswa Tanpa Profil",
+          followUp: "none",
+        },
       ],
     },
     fitnessLimits: STARTING_LIMITS,
@@ -573,11 +599,19 @@ describe("Pendampingan on the Dashboard", () => {
     expect(part).toContain("dari 1.250 mahasiswa aktif");
   });
 
-  it("shows the numbers without a link for an account that may not open the menu", () => {
+  it("shows the numbers without a link, and no Lihat semua, for an account that may not open the menu", () => {
     const part = mentoringPart(shown(viewOf()));
 
     expect(part).toContain("Mahasiswa aktif");
-    expect(part).not.toContain("href=");
+    for (const address of [
+      "/mahasiswa",
+      "/pengasuh/daftar",
+      "/pengasuhan/catatan",
+      "/pembinaan/karakter",
+    ]) {
+      expect(part).not.toContain(`href="${address}"`);
+    }
+    expect(part).not.toContain("Lihat semua");
   });
 
   it("shows Capaian MEDALI per program studi as the server sent it, a bar from 50 and the average", () => {
@@ -611,5 +645,37 @@ describe("Pendampingan on the Dashboard", () => {
 
     expect(part).not.toContain("Capaian MEDALI per program studi");
     expect(part).toContain("Perlu pembinaan");
+  });
+
+  it("lists the latest notes with the date, the student, the kind, the values, the note and the follow-up, and Lihat semua", () => {
+    const view = viewOf({ filters: { ...NO_FILTERS, province: "Bali" } });
+    const part = mentoringPart(shown(view, LINKS));
+
+    expect(part).toContain("Catatan pengasuhan terbaru");
+    expect(part).toMatch(/href="\/pengasuhan\/catatan"[^>]*>Lihat semua</);
+    expect(part).toContain("20 Okt 2026");
+    expect(part).toContain(
+      'href="/dashboard?provinsi=Bali&amp;profil=00000000-0000-4000-8000-000000000001"',
+    );
+    expect(part).toContain(">Mahasiswa Catatan</a>");
+    expect(part).toContain("Apresiasi");
+    expect(part).toContain("Integritas");
+    expect(part).toContain("Memimpin kerja bakti asrama.");
+    expect(part).toContain("Tindak lanjut: Pantau dua pekan.");
+  });
+
+  it("names a student whose detail the account may not open without a link", () => {
+    const part = mentoringPart(shown(viewOf(), LINKS));
+
+    expect(part).toContain("<b>Mahasiswa Tanpa Profil</b>");
+  });
+
+  it("says so when there is no note", () => {
+    const view = viewOf();
+    const part = mentoringPart(
+      shown({ ...view, mentoring: { ...view.mentoring, notes: [] } }),
+    );
+
+    expect(part).toContain("Belum ada catatan.");
   });
 });
