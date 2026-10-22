@@ -8,6 +8,8 @@ import { decideLeaveAction } from "./leave-actions";
 import type { LeaveCard } from "./leave-card";
 import { LeaveCardView } from "./leave-card-view";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
+import { isOwnRecord } from "./own-record";
+import { OwnRecordNote } from "./own-record-note";
 import { RecordReturnForm } from "./record-return-form";
 import { ReturnDecide } from "./return-decide";
 import type { DecidedStatus } from "./return-messages";
@@ -113,10 +115,12 @@ export function cardAfter(card: LeaveCard, done: DoneHere): LeaveCard {
 function ReportChecks({
   card,
   rights,
+  isOwn,
   onAnswer,
 }: {
   card: LeaveCard;
   rights: LeaveRights;
+  isOwn: boolean;
   onAnswer: (answer: Answer<DecidedStatus>) => void;
 }) {
   const status = card.report?.status;
@@ -125,6 +129,7 @@ function ReportChecks({
   const answer = (state: FormState, decided: DecidedStatus | null) =>
     onAnswer({ state, decided });
   if (rights.verify && status === "waiting") {
+    if (isOwn) return <OwnRecordNote />;
     return (
       <ReturnDecide reportId={reportId} check="verify" onAnswer={answer} />
     );
@@ -144,15 +149,42 @@ function ReportChecks({
   return null;
 }
 
+/** What a card offers on leave that is out: "Catat sudah kembali", or not on the account's own. */
+function RecordReturn({
+  card,
+  isOwn,
+  asOf,
+  onAnswer,
+}: {
+  card: LeaveCard;
+  isOwn: boolean;
+  asOf: string;
+  onAnswer: (answer: FormState) => void;
+}) {
+  if (isOwn) return <OwnRecordNote />;
+  return (
+    <RecordReturnForm
+      leaveId={card.id}
+      end={card.end}
+      isLate={card.isLate}
+      asOf={asOf}
+      onAnswer={onAnswer}
+    />
+  );
+}
+
 function LeaveCardItem({
   card,
   rights,
+  ownStudentId,
   asOf,
 }: {
   card: LeaveCard;
   rights: LeaveRights;
+  ownStudentId: string | null;
   asOf: string;
 }) {
+  const isOwn = isOwnRecord(ownStudentId, card.studentId);
   const [leaveAnswer, setLeaveAnswer] = useState<Answer<
     "approved" | "rejected"
   > | null>(null);
@@ -171,10 +203,9 @@ function LeaveCardItem({
       )}
       {leaveAnswer && <FormMessage state={leaveAnswer.state} />}
       {rights.record && shown.isOut && (
-        <RecordReturnForm
-          leaveId={card.id}
-          end={card.end}
-          isLate={card.isLate}
+        <RecordReturn
+          card={card}
+          isOwn={isOwn}
           asOf={asOf}
           onAnswer={setRecordAnswer}
         />
@@ -185,6 +216,7 @@ function LeaveCardItem({
           <ReportChecks
             card={shown}
             rights={rights}
+            isOwn={isOwn}
             onAnswer={setReportAnswer}
           />
           {reportAnswer && <FormMessage state={reportAnswer.state} />}
@@ -200,16 +232,20 @@ function LeaveCardItem({
  * answer under it, also once the list it came from no longer holds it.
  * A card that waits offers Catatan, "Setujui" and "Tolak" to an account
  * that may decide, and a report of a return the checks of the account's
- * roles. It is made anew for each address.
+ * roles, except on the account's own leave. It is made anew for each
+ * address.
  */
 export function LeaveCards({
   cards,
   rights,
+  ownStudentId,
   asOf,
   emptyWords,
 }: {
   cards: LeaveCard[];
   rights: LeaveRights;
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
   /** The moment the page was read, as a time on campus. */
   asOf: string;
   /** What is said when there is no card to show. */
@@ -221,7 +257,13 @@ export function LeaveCards({
   return (
     <ul className={styles.cards}>
       {shown.map((card) => (
-        <LeaveCardItem key={card.id} card={card} rights={rights} asOf={asOf} />
+        <LeaveCardItem
+          key={card.id}
+          card={card}
+          rights={rights}
+          ownStudentId={ownStudentId}
+          asOf={asOf}
+        />
       ))}
     </ul>
   );

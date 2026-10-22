@@ -42,6 +42,7 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
           validate: may(account.roles, "validate_dorm_return"),
           record: may(account.roles, "record_dorm_return"),
         }}
+        ownStudentId={account.studentId}
       />
     );
   }
