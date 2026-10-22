@@ -69,6 +69,16 @@ describe("Riwayat per semester in a student's detail", () => {
     expect(countOf(html, /<circle /g)).toBe(7);
   });
 
+  it("says so for a student never assessed, with no chart, legend or table", () => {
+    const html = viewOf([]);
+
+    expect(html).toContain(">Riwayat per semester</h2>");
+    expect(html).toContain("Belum ada riwayat.");
+    expect(html).not.toContain("<svg");
+    expect(html).not.toContain("<table");
+    expect(html).not.toContain("Rerata");
+  });
+
   it("puts the same numbers in a table under the chart, each semester with its period", () => {
     const html = viewOf([FIRST, THIRD]);
 

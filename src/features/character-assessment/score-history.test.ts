@@ -146,6 +146,31 @@ describe("readStudentScoreHistory", () => {
     });
   });
 
+  it("reads a student assessed many times in each semester well within a second", async () => {
+    await inTestDatabase(async (db) => {
+      const { budi, penilai } = await addRecords(db);
+      const periodIds = [
+        await addTestPeriod(db, 4511, "even"),
+        await addTestPeriod(db, 4512),
+      ];
+      for (const [place, periodId] of periodIds.entries()) {
+        for (let day = 1; day <= 25; day += 1) {
+          await addTestAssessment(db, penilai, {
+            studentId: budi,
+            periodId,
+            enteredAt: new Date(Date.UTC(4511 + place, 8, day, 3)),
+          });
+        }
+      }
+      const started = performance.now();
+
+      const points = await readStudentScoreHistory(db, penilai, budi);
+
+      expect(performance.now() - started).toBeLessThan(1000);
+      expect(points?.map((point) => point.semester)).toEqual([4, 5]);
+    });
+  });
+
   it("refuses a role without the character panels, the same whether or not the student was assessed", async () => {
     await inTestDatabase(async (db) => {
       const { ani, budi, actor } = await addRecords(db);

@@ -193,13 +193,22 @@ function HistoryTable({ points }: { points: readonly SemesterPoint[] }) {
 /**
  * "Riwayat per semester" in a student's detail: Rerata and the six
  * values of each assessed semester, the oldest first, as a line chart
- * and as a table of the same numbers.
+ * and as a table of the same numbers. A student never assessed gets a
+ * line saying so.
  */
 export function ScoreHistoryView({
   points,
 }: {
   points: readonly SemesterPoint[];
 }) {
+  if (points.length === 0) {
+    return (
+      <section className={shared.panel}>
+        <h2 className={shared.heading}>Riwayat per semester</h2>
+        <p className={styles.sub}>Belum ada riwayat.</p>
+      </section>
+    );
+  }
   return (
     <section className={shared.panel}>
       <div className={styles.panelHead}>
