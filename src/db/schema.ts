@@ -3465,6 +3465,12 @@ export const counsellingSchedules = pgTable(
     basis: text(),
     /** "Pesan pengirim" of an assignment. Read by Konselor only. */
     senderMessage: text(),
+    /**
+     * The discipline penalty a Penugasan was sent from, which has at most
+     * one. None for any other kind, and for a Penugasan sent before
+     * Pembinaan could send one.
+     */
+    penaltyId: uuid().references(() => disciplinePenalties.id),
     counsellorId: uuid().references(() => accounts.id),
     createdAt: timestamp({ withTimezone: true }).notNull(),
     changedBy: uuid()
@@ -3479,6 +3485,11 @@ export const counsellingSchedules = pgTable(
         sql`${table.kind} = 'voluntary' and ${table.status} in ('submitted', 'proposed', 'scheduled')`,
       ),
     index("counselling_schedules_status").on(table.status, table.day),
+    uniqueIndex("counselling_schedules_one_per_penalty").on(table.penaltyId),
+    check(
+      "counselling_schedules_penalty_of_assignment",
+      sql`${table.penaltyId} is null or ${table.kind} = 'assigned'`,
+    ),
     check(
       "counselling_schedules_story_length",
       sql`char_length(${table.story}) <= ${sql.raw(String(COUNSELLING_STORY_MAX))}`,

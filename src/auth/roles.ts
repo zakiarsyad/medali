@@ -95,6 +95,7 @@ export const ACTIONS = [
   "view_discipline_records",
   "record_discipline_penalties",
   "follow_up_discipline_penalties",
+  "assign_counselling_from_penalty",
   "view_violation_notes",
   "write_violation_notes",
   "manage_counselling_consent",
@@ -238,6 +239,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   record_discipline_penalties: "Mencatat pelanggaran dan hukuman disiplin",
   follow_up_discipline_penalties:
     "Menindaklanjuti hukuman disiplin: status, syarat melanjutkan studi, dan keputusan",
+  assign_counselling_from_penalty:
+    "Tugaskan konseling wajib: menugaskan mahasiswa ke konseling wajib dari hukuman disiplin, dan melihat status, tanggal, dan jam penugasan itu",
   view_violation_notes: "Melihat catatan pelanggaran",
   write_violation_notes: "Mencatat dan menghapus catatan pelanggaran",
   manage_counselling_consent:
@@ -754,6 +757,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_discipline_records",
       "record_discipline_penalties",
       "follow_up_discipline_penalties",
+      "assign_counselling_from_penalty",
       "view_violation_notes",
       "write_violation_notes",
     ],

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { assignmentBasis } from "@/discipline-penalties/assignment-basis";
 import {
   ACTIVE_STATUSES,
   SCHEDULE_STATUSES,
@@ -11,6 +12,7 @@ import {
   SAMPLE_SCHEDULES,
 } from "./sample-counselling-schedules";
 import { SAMPLE_STUDENTS } from "./sample-data";
+import { SAMPLE_DISCIPLINE_PENALTIES } from "./sample-discipline-penalties";
 
 const ASSIGNMENT_STATUSES = [
   "awaiting",
@@ -150,6 +152,37 @@ describe("the sample assignments of counselling", () => {
     for (const sample of SAMPLE_ASSIGNMENTS) {
       expect(sample.basis, sample.nim).toMatch(BASIS[sample.kind]);
     }
+  });
+
+  it("are sent from a penalty only as a Penugasan, of the student's one sample penalty, with that penalty's Kategori and Jenjang as Dasar", () => {
+    const fromPenalty = SAMPLE_ASSIGNMENTS.filter(
+      (sample) => sample.fromPenalty,
+    );
+    expect(fromPenalty.length).toBeGreaterThan(0);
+    for (const sample of fromPenalty) {
+      expect(sample.kind, sample.nim).toBe("assigned");
+      const penalties = SAMPLE_DISCIPLINE_PENALTIES.filter(
+        (penalty) => penalty.nim === sample.nim,
+      );
+      expect(penalties, sample.nim).toHaveLength(1);
+      const [penalty] = penalties;
+      if (!penalty) continue;
+      expect(sample.basis).toBe(
+        assignmentBasis(penalty.category, penalty.level),
+      );
+    }
+  });
+
+  it("leave some sample penalties with no Penugasan sent from them", () => {
+    const sentFrom = new Set(
+      SAMPLE_ASSIGNMENTS.filter((sample) => sample.fromPenalty).map(
+        (sample) => sample.nim,
+      ),
+    );
+    const without = SAMPLE_DISCIPLINE_PENALTIES.filter(
+      (penalty) => !sentFrom.has(penalty.nim),
+    );
+    expect(without.length).toBeGreaterThan(0);
   });
 
   it("give one student an assignment beside an active voluntary request", () => {

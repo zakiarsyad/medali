@@ -189,6 +189,11 @@ export interface SampleAssignment {
   time: SampleAssignmentTime | null;
   /** "Dasar": the Kategori and Jenjang, or the result of the assessment. */
   basis: string;
+  /**
+   * Whether a Penugasan was sent from the student's one sample discipline
+   * penalty; one sent before it stands on its own.
+   */
+  fromPenalty: boolean;
   senderMessage: string | null;
   counsellorMessage: string | null;
   reason: string | null;
@@ -213,7 +218,9 @@ const timeSet = (daysAgo: number): SampleScheduleStep => ({
  * request. Gita Purba, who declined consent, and Ayu Lestiani, whose
  * consent is still asked, have a time set. Nanda Gunawan asked for
  * another time. Mega Saragih came to hers and Oki Rahayu did not. Each
- * Penugasan is of a student with a sample discipline penalty.
+ * Penugasan is of a student with a sample discipline penalty, and was
+ * sent from it, but for Mega Saragih's: it was sent before her penalty
+ * of this semester, which still has none.
  */
 export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
   {
@@ -221,6 +228,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "assigned",
     time: null,
     basis: "Pelanggaran disiplin sedang jenjang pertama",
+    fromPenalty: true,
     senderMessage: "Mohon pendampingan terkait keterlambatan yang berulang.",
     counsellorMessage: null,
     reason: null,
@@ -231,6 +239,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "called",
     time: null,
     basis: "Asesmen karakter: pembinaan intensif",
+    fromPenalty: false,
     senderMessage: "Mohon dibantu menggali kendala belajarnya.",
     counsellorMessage: null,
     reason: null,
@@ -241,6 +250,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "assigned",
     time: { inDays: 2, hour: "10:00", way: "in_person" },
     basis: "Pelanggaran disiplin ringan jenjang pertama",
+    fromPenalty: true,
     senderMessage: null,
     counsellorMessage: "Silakan datang ke Ruang Konseling.",
     reason: null,
@@ -251,6 +261,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "called",
     time: { inDays: 4, hour: "08:30", way: "online" },
     basis: "Asesmen karakter: pembinaan ringan",
+    fromPenalty: false,
     senderMessage: null,
     counsellorMessage: null,
     reason: null,
@@ -261,6 +272,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "assigned",
     time: { inDays: 5, hour: "13:00", way: "in_person" },
     basis: "Pelanggaran disiplin sedang jenjang kedua",
+    fromPenalty: true,
     senderMessage: null,
     counsellorMessage: null,
     reason: "Bentrok dengan praktikum.",
@@ -275,6 +287,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "assigned",
     time: { inDays: -6, hour: "08:30", way: "in_person" },
     basis: "Pelanggaran disiplin ringan jenjang pertama",
+    fromPenalty: false,
     senderMessage: null,
     counsellorMessage: null,
     reason: null,
@@ -289,6 +302,7 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     kind: "assigned",
     time: { inDays: -4, hour: "14:30", way: "in_person" },
     basis: "Pelanggaran disiplin berat jenjang pertama",
+    fromPenalty: true,
     senderMessage: null,
     counsellorMessage: null,
     reason: null,
