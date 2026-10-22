@@ -519,6 +519,13 @@
       "when": 1792636164204,
       "tag": "0073_semester-closings",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1792641185025,
+      "tag": "0074_coaching-statuses",
+      "breakpoints": true
     }
   ]
 }
