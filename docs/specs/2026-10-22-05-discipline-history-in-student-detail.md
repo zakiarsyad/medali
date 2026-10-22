@@ -94,10 +94,17 @@ student's record in one place. A student with no penalty has no panel.
 4. This spec has no student panel; "My coaching, mentoring notes and
    sanction status" will show the student the Uraian, as in the
    prototype.
+5. The panel uses the right that already lets a role read discipline
+   records, held by exactly the roles above, with the same rows as on
+   Pelanggaran disiplin: Ketua Program Studi their program, Pengasuh
+   their mentees, the others every student. Its name on the role list
+   screen now also names the history in the detail; no role gains or
+   loses anything. A second role of the same account that sees every
+   student but may not read discipline adds no rows.
 
 ## Steps
 
-- [ ] 1. The right to read a student's discipline history is added to
+- [x] 1. The right to read a student's discipline history is added to
   the permission list for the staff roles above, with its checks.
 - [ ] 2. The panel in the student detail for staff, limited to each
   role's rows, and the small detail that a name in "Daftar
