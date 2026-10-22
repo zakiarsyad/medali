@@ -140,6 +140,25 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit close a semester", () => {
+    expect(may(["head_of_unit"], "close_semesters")).toBe(true);
+  });
+
+  it("refuses every other role to close a semester", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others.length).toBe(ROLE_IDS.length - 1);
+    for (const role of others) {
+      expect(may([role], "close_semesters")).toBe(false);
+    }
+  });
+
+  it("lets every role that may close a semester open Periode akademik", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "close_semesters")) continue;
+      expect(mayOpenTab([role], "settings", "academic_periods")).toBe(true);
+    }
+  });
+
   it("lets Kepala Unit manage the proof files", () => {
     expect(may(["head_of_unit"], "manage_proof_files")).toBe(true);
     expect(mayOpenTab(["head_of_unit"], "settings", "proof_files")).toBe(true);
