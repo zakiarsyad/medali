@@ -26,6 +26,8 @@ const BUDI: GradeInput = {
   skpm: null,
 };
 
+const BUDI_FULL_NAME: GradeInput = { ...ANI, student: BUDI.student };
+
 function pageOf(inputs: GradeInput[]): string {
   const rows = inputs.map((input) => gradeRowOf(input, STARTING_SCHEME));
   return renderToStaticMarkup(
@@ -160,5 +162,23 @@ describe("names in Daftar nilai karakter", () => {
     expect(html).toContain(
       'href="/penilaian/karakter?hal=2&amp;profil=id-ani"',
     );
+  });
+
+  it("show a student whose detail opens nothing as a name only", () => {
+    const rows = [
+      gradeRowOf(ANI, STARTING_SCHEME),
+      gradeRowOf(BUDI_FULL_NAME, STARTING_SCHEME),
+    ];
+    const html = renderToStaticMarkup(
+      <GradeListTable
+        rows={rows}
+        params={START_PARAMS}
+        nameOnly={["id-budi"]}
+      />,
+    );
+
+    expect(html).toContain("profil=id-ani");
+    expect(html).not.toContain("profil=id-budi");
+    expect(html).toContain("Budi Uji Daftar");
   });
 });

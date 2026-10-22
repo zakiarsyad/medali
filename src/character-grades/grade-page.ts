@@ -1,12 +1,14 @@
 import {
   and,
   asc,
+  type Column,
   count,
   ilike,
   inArray,
   isNull,
   or,
   type SQL,
+  type Subquery,
   sql,
 } from "drizzle-orm";
 import type { Database } from "@/db/connect";
@@ -22,9 +24,17 @@ import { type GradeBasis, gradeFacts } from "./grade-facts";
 import type { GradeList } from "./grade-list";
 import { readGradeRows } from "./grade-rows";
 
-type Facts = ReturnType<typeof gradeFacts>;
+type Field = Column | SQL.Aliased;
 
-function filterOf(facts: Facts, filter: GradeFilter): SQL | undefined {
+/** What the search and the filters of the list look at, live or fixed. */
+export interface ListFacts {
+  name: Field;
+  nim: Field;
+  final: Field;
+  passes: Field;
+}
+
+function filterOf(facts: ListFacts, filter: GradeFilter): SQL | undefined {
   switch (filter) {
     case "all":
       return undefined;
@@ -35,15 +45,23 @@ function filterOf(facts: Facts, filter: GradeFilter): SQL | undefined {
   }
 }
 
-function matching(facts: Facts, query: string): SQL | undefined {
+function matching(facts: ListFacts, query: string): SQL | undefined {
   if (query === "") return undefined;
   const pattern = containsPattern(query);
   return or(ilike(facts.name, pattern), ilike(facts.nim, pattern));
 }
 
-async function countMatching(
+/** The students the search, by name or NIM, and the filter let through. */
+export function listWhere(
+  facts: ListFacts,
+  params: GradeParams,
+): SQL | undefined {
+  return and(matching(facts, params.query), filterOf(facts, params.filter));
+}
+
+export async function countMatching(
   db: Database,
-  facts: Facts,
+  facts: Subquery,
   where: SQL | undefined,
 ): Promise<number> {
   const [counted] = await db
@@ -67,10 +85,7 @@ export async function readGradePage(
   params: GradeParams,
 ): Promise<GradeList> {
   const facts = gradeFacts(db, visible, basis);
-  const where = and(
-    matching(facts, params.query),
-    filterOf(facts, params.filter),
-  );
+  const where = listWhere(facts, params);
   const total = await countMatching(db, facts, where);
   const page = pageWithin(params.page, total, GRADE_LIST_PAGE_SIZE);
   const shown = await db

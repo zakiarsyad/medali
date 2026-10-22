@@ -89,7 +89,7 @@ Unit, Direktur / Wakil Direktur, Penilai Mahasiswa, Ketua Program Studi
 - [x] 1. The right to read fixed grades, with the same row limits as the
   live list, and its checks.
 - [x] 2. The choice "Semester", kept in the address.
-- [ ] 3. The numbers, the list and "Skema bobot" read from the fixed
+- [x] 3. The numbers, the list and "Skema bobot" read from the fixed
   copy of the chosen period.
 - [ ] 4. Search, filters, paging and the refusals.
 - [ ] 5. The phone layout and the speed check.

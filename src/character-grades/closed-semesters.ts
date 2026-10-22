@@ -2,6 +2,8 @@ import { desc, eq } from "drizzle-orm";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { Database } from "@/db/connect";
 import { academicPeriods, semesterClosings } from "@/db/schema";
+import { schemeOf } from "./grade-scheme";
+import type { GradeScheme } from "./scheme-ids";
 
 /** When a semester was closed, and how many grades its closing fixed. */
 export interface ClosedSemester {
@@ -23,19 +25,19 @@ export async function readClosedSemesters(
   return new Map(rows.map(({ periodId, ...closed }) => [periodId, closed]));
 }
 
-/** A closed period, as the choice "Semester" offers it. */
+/** A closed period, as the choice "Semester" offers it, with the scheme its closing kept. */
 export interface ClosedPeriod {
   closingId: string;
   period: Pick<AcademicPeriod, "id" | "startYear" | "term">;
   closedAt: Date;
+  scheme: GradeScheme;
 }
 
 /** Every closed period, newest first. */
 export async function readClosedPeriods(db: Database): Promise<ClosedPeriod[]> {
   const rows = await db
     .select({
-      closingId: semesterClosings.id,
-      closedAt: semesterClosings.closedAt,
+      closing: semesterClosings,
       id: academicPeriods.id,
       startYear: academicPeriods.startYear,
       term: academicPeriods.term,
@@ -46,10 +48,11 @@ export async function readClosedPeriods(db: Database): Promise<ClosedPeriod[]> {
       eq(academicPeriods.id, semesterClosings.periodId),
     )
     .orderBy(desc(academicPeriods.startsOn));
-  return rows.map(({ closingId, closedAt, ...period }) => ({
-    closingId,
+  return rows.map(({ closing, ...period }) => ({
+    closingId: closing.id,
     period,
-    closedAt,
+    closedAt: closing.closedAt,
+    scheme: schemeOf(closing),
   }));
 }
 

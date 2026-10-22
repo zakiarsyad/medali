@@ -11,7 +11,7 @@ const CLOSED = [
 describe("the choice Semester", () => {
   it("offers Berjalan first, then each closed period in the order given", () => {
     const html = renderToStaticMarkup(
-      <SemesterChoice closed={CLOSED} params={START_PARAMS} />,
+      <SemesterChoice closed={CLOSED} params={START_PARAMS} line={null} />,
     );
 
     expect(html).toContain("Semester");
@@ -31,6 +31,7 @@ describe("the choice Semester", () => {
     const html = renderToStaticMarkup(
       <SemesterChoice
         closed={CLOSED}
+        line={null}
         params={{ ...START_PARAMS, semester: chosen }}
       />,
     );
@@ -44,6 +45,7 @@ describe("the choice Semester", () => {
     const html = renderToStaticMarkup(
       <SemesterChoice
         closed={CLOSED}
+        line={null}
         params={{
           ...START_PARAMS,
           query: "ayu",
@@ -56,5 +58,19 @@ describe("the choice Semester", () => {
     expect(html).toContain('name="cari" value="ayu"');
     expect(html).toContain('name="saring" value="belum-lengkap"');
     expect(html).not.toContain('name="hal"');
+  });
+
+  it("shows the line of the closed period chosen, and none for Berjalan", () => {
+    const line =
+      "Nilai semester Ganjil 2025/2026, ditetapkan 3 Feb 2026. Tidak berubah lagi.";
+    const chosen = renderToStaticMarkup(
+      <SemesterChoice closed={CLOSED} params={START_PARAMS} line={line} />,
+    );
+    const running = renderToStaticMarkup(
+      <SemesterChoice closed={CLOSED} params={START_PARAMS} line={null} />,
+    );
+
+    expect(chosen).toContain(line);
+    expect(running).not.toContain("Nilai semester");
   });
 });

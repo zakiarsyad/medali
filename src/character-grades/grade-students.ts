@@ -1,14 +1,14 @@
-import { and, asc, eq, type SQL } from "drizzle-orm";
+import { and, asc, eq, or, type SQL } from "drizzle-orm";
 import {
   type AccountForAccess,
   may,
   rowLimitForAction,
   rowLimitForTab,
 } from "@/auth/access";
-import { visibleTo } from "@/auth/visible-students";
+import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { students, studyPrograms } from "@/db/schema";
-import { ACTIVE_MEMBER } from "@/mentoring/active-member";
+import { ACTIVE_MEMBER, activeAmong } from "@/mentoring/active-member";
 import type { GradeStudent } from "./grade-list";
 
 /**
@@ -30,6 +30,18 @@ export function gradeVisibleTo(account: AccountForAccess): SQL {
 export function fixedGradeVisibleTo(account: AccountForAccess): SQL | null {
   if (!may(account.roles, "view_fixed_grades")) return null;
   return visibleTo(rowLimitForAction(account, "view_fixed_grades"));
+}
+
+/**
+ * The students whose name in a list of fixed grades opens them over the
+ * tab, by the rule of the live list: the whole detail where the account
+ * may open it, else the brief of a student the live list holds today.
+ */
+export function fixedNameOpensFor(account: AccountForAccess): SQL {
+  const brief = activeAmong(gradeVisibleTo(account));
+  const detail = detailVisibleTo(account);
+  if (detail === null) return brief;
+  return or(detail, brief) ?? brief;
 }
 
 /** The Aktif students among those `visible` lets through, by name. */

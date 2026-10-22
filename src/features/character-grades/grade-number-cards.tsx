@@ -23,7 +23,8 @@ export function GradeNumberCards({
 }: {
   numbers: GradeNumbers;
   passLetter: GradeLetter;
-  sikuBase: number;
+  /** Nilai dasar SIKU, or null when it cannot be told, as of a closed semester. */
+  sikuBase: number | null;
 }) {
   const notPassing = numbers.complete - numbers.passing;
   return (
@@ -41,7 +42,7 @@ export function GradeNumberCards({
       <NumberCard
         label="Mendapat penyesuaian SIKU"
         amount={numbers.adjusted}
-        note={`sisanya SIKU dasar ${shown(sikuBase)}`}
+        note={`sisanya SIKU dasar ${sikuBase === null ? "-" : shown(sikuBase)}`}
       />
       <NumberCard
         label="Belum lengkap"

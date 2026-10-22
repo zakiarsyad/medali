@@ -7,9 +7,15 @@ import {
 } from "@/features/activities/test-records";
 import { chosenClosed, readClosedPeriods } from "./closed-semesters";
 import { keepClosing } from "./keep-closing";
-import { STARTING_SCHEME } from "./scheme-ids";
+import { type GradeScheme, STARTING_SCHEME } from "./scheme-ids";
 
 const inTestDatabase = withTestDatabase();
+
+const KEPT_SCHEME: GradeScheme = {
+  weights: { attendance: 40, mentoring: 20, siku: 20, skpm: 20 },
+  lowerLimits: { A: 90, B: 75, C: 60, D: 45 },
+  passLetter: "C",
+};
 
 describe("readClosedPeriods", () => {
   it("gives every closed period, newest first, and no period that is not closed", async () => {
@@ -19,22 +25,24 @@ describe("readClosedPeriods", () => {
         "head_of_unit",
       ]);
       expect(await readClosedPeriods(db)).toEqual([]);
-      for (const periodId of [periods.oddId, periods.evenId]) {
-        await keepClosing(db, {
-          periodId,
-          closedBy: kepala.id,
-          scheme: STARTING_SCHEME,
-          rows: [],
-        });
-      }
+      const close = (periodId: string, scheme: GradeScheme) =>
+        keepClosing(db, { periodId, closedBy: kepala.id, scheme, rows: [] });
 
-      const closed = await readClosedPeriods(db);
+      await close(periods.oddId, STARTING_SCHEME);
+      const once = await readClosedPeriods(db);
+      await close(periods.evenId, KEPT_SCHEME);
+      const twice = await readClosedPeriods(db);
 
-      expect(closed.map((each) => each.period)).toEqual([
+      expect(once.map((each) => each.period.id)).toEqual([periods.oddId]);
+      expect(twice.map((each) => each.period)).toEqual([
         { id: periods.evenId, startYear: 5130, term: "even" },
         { id: periods.oddId, startYear: 5130, term: "odd" },
       ]);
-      expect(closed[0]?.closedAt).toBeInstanceOf(Date);
+      expect(twice[0]?.closedAt).toBeInstanceOf(Date);
+      expect(twice.map((each) => each.scheme)).toEqual([
+        KEPT_SCHEME,
+        STARTING_SCHEME,
+      ]);
     });
   });
 });

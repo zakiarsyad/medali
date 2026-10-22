@@ -24,6 +24,7 @@ export function CharacterGradeScreen({
   scheme,
   params,
   list,
+  nameOnly,
 }: {
   tabs: TabLinksProps;
   /** The choice "Semester", or null while no semester is closed. */
@@ -34,6 +35,8 @@ export function CharacterGradeScreen({
   scheme: ReactNode;
   params: GradeParams;
   list: GradeList;
+  /** The students in the list whose name opens nothing. */
+  nameOnly: readonly string[];
 }) {
   return (
     <>
@@ -50,7 +53,7 @@ export function CharacterGradeScreen({
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar nilai karakter</h2>
         <GradeFilterRow params={params} />
-        <GradeListTable rows={list.rows} params={params} />
+        <GradeListTable rows={list.rows} params={params} nameOnly={nameOnly} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

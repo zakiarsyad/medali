@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  fixedGradeLine,
   LIMITED_WORDS,
   limitedLine,
   shownFinal,
@@ -36,6 +37,17 @@ describe("the words of the limit", () => {
     expect(LIMITED_WORDS).toBe("Dibatasi 70");
     expect(limitedLine(82.4)).toBe(
       "Dibatasi 70 dari 82,4 karena hukuman disiplin.",
+    );
+  });
+});
+
+describe("fixedGradeLine", () => {
+  it("names the period and the day of closing on campus, and says it changes no more", () => {
+    // 23.30 on 2 February in UTC is already 3 February on campus.
+    const closedAt = new Date("2026-02-02T23:30:00Z");
+
+    expect(fixedGradeLine("Ganjil 2025/2026", closedAt)).toBe(
+      "Nilai semester Ganjil 2025/2026, ditetapkan 3 Feb 2026. Tidak berubah lagi.",
     );
   });
 });

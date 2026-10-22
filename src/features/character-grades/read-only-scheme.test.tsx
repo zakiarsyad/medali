@@ -4,7 +4,7 @@ import {
   STARTING_SCHEME,
   STARTING_VERSION,
 } from "@/character-grades/scheme-ids";
-import { ReadOnlyScheme } from "./read-only-scheme";
+import { ClosedScheme, ReadOnlyScheme } from "./read-only-scheme";
 
 const STARTING = {
   scheme: STARTING_SCHEME,
@@ -64,5 +64,46 @@ describe("Skema bobot for a role that only reads it", () => {
     );
 
     expect(page).toContain("Ditetapkan 16 Okt 2026 oleh Kepala Uji.");
+  });
+});
+
+describe("Skema bobot of a closed semester", () => {
+  const KEPT = {
+    weights: { attendance: 40, mentoring: 20, siku: 20, skpm: 20 },
+    lowerLimits: { A: 90, B: 75, C: 60, D: 45 },
+    passLetter: "C",
+  } as const;
+  const LINE =
+    "Nilai semester Ganjil 2025/2026, ditetapkan 3 Feb 2026. Tidak berubah lagi.";
+
+  it("shows the weights, the letter limits and the pass letter its closing kept, with the line of the period", () => {
+    const page = renderToStaticMarkup(
+      <ClosedScheme scheme={KEPT} line={LINE} />,
+    );
+
+    for (const words of [
+      "Nilai akhir = 40% × kehadiran kegiatan + 20% × pengasuhan",
+      "Total 100%",
+      'value="90"',
+      'value="45"',
+      "di bawah 45",
+      LINE,
+    ]) {
+      expect(page).toContain(words);
+    }
+    expect(page).toContain('<option selected="">C</option>');
+  });
+
+  it("switches every field off and offers no Simpan skema, Kepala Unit too", () => {
+    const page = renderToStaticMarkup(
+      <ClosedScheme scheme={KEPT} line={LINE} />,
+    );
+
+    const fields = fieldsOf(page);
+    expect(fields).toHaveLength(9);
+    for (const field of fields) {
+      expect(field).toContain("disabled");
+    }
+    expect(page).not.toContain("Simpan skema");
   });
 });

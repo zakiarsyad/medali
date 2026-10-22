@@ -1,5 +1,6 @@
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
+import styles from "./character-grades.module.css";
 import {
   FILTER_CHOICES,
   GRADE_ADDRESS,
@@ -22,41 +23,47 @@ export const RUNNING_WORDS = "Berjalan";
 export function SemesterChoice({
   closed,
   params,
+  line,
 }: {
   closed: readonly SemesterOption[];
   params: GradeParams;
+  /** The line over the grades of the closed period chosen, or null for Berjalan. */
+  line: string | null;
 }) {
   return (
-    <div className={shared.filters}>
-      <AutoSubmitForm action={GRADE_ADDRESS}>
-        {params.query !== "" && (
-          <input type="hidden" name="cari" value={params.query} />
-        )}
-        {params.filter !== "all" && (
-          <input
-            type="hidden"
-            name="saring"
-            value={FILTER_CHOICES[params.filter]}
-          />
-        )}
-        <label className={shared.field}>
-          Semester
-          <select
-            // A new address, as on going back, shows its own choice.
-            key={params.semester ?? ""}
-            name="semester"
-            className={shared.input}
-            defaultValue={params.semester ?? ""}
-          >
-            <option value="">{RUNNING_WORDS}</option>
-            {closed.map((each) => (
-              <option key={each.id} value={each.id}>
-                {each.title}
-              </option>
-            ))}
-          </select>
-        </label>
-      </AutoSubmitForm>
-    </div>
+    <>
+      <div className={shared.filters}>
+        <AutoSubmitForm action={GRADE_ADDRESS}>
+          {params.query !== "" && (
+            <input type="hidden" name="cari" value={params.query} />
+          )}
+          {params.filter !== "all" && (
+            <input
+              type="hidden"
+              name="saring"
+              value={FILTER_CHOICES[params.filter]}
+            />
+          )}
+          <label className={shared.field}>
+            Semester
+            <select
+              // A new address, as on going back, shows its own choice.
+              key={params.semester ?? ""}
+              name="semester"
+              className={shared.input}
+              defaultValue={params.semester ?? ""}
+            >
+              <option value="">{RUNNING_WORDS}</option>
+              {closed.map((each) => (
+                <option key={each.id} value={each.id}>
+                  {each.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        </AutoSubmitForm>
+      </div>
+      {line !== null && <p className={styles.sub}>{line}</p>}
+    </>
   );
 }

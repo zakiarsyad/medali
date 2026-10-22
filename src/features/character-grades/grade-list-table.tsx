@@ -34,10 +34,13 @@ function Attendance({ part }: { part: AttendancePart }) {
 export function GradeListTable({
   rows,
   params,
+  nameOnly = [],
 }: {
   rows: readonly GradeRow[];
   /** The tab's choices, kept when a name opens the student's profile. */
   params: GradeParams;
+  /** The students whose name opens nothing, as one who has left since a closing. */
+  nameOnly?: readonly string[];
 }) {
   if (rows.length === 0) {
     return <p className={shared.empty}>{NO_GRADE_MATCHES}</p>;
@@ -61,10 +64,17 @@ export function GradeListTable({
           {rows.map((row) => (
             <tr key={row.student.id}>
               <td className={shared.rowHeading} data-title="Mahasiswa">
-                <ProfileNameLink
-                  name={row.student.name}
-                  href={gradeAddress({ ...params, profileId: row.student.id })}
-                />
+                {nameOnly.includes(row.student.id) ? (
+                  <b className={shared.typed}>{row.student.name}</b>
+                ) : (
+                  <ProfileNameLink
+                    name={row.student.name}
+                    href={gradeAddress({
+                      ...params,
+                      profileId: row.student.id,
+                    })}
+                  />
+                )}
                 <small className={shared.detail}>
                   {row.student.nim} · {row.student.program}
                 </small>
