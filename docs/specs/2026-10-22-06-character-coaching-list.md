@@ -109,11 +109,19 @@ Pemantauan, Selesai.
    needing coaching owns.
 6. "Catatan" holds at most 300 characters. A status is never deleted,
    and its log cannot be changed or deleted.
+7. Reading the tab needs no right of its own: a role that opens the tab
+   reads its rows. Only the new right "Mengubah status pembinaan
+   karakter dan catatannya" changes a status, for Kepala Unit on every
+   student and for Pengasuh on their own mentees. An account with
+   several roles sees the rows of each role that opens the tab, and
+   changes only the rows of its roles with that right: a Ketua Program
+   Studi who is also Pengasuh reads the program and changes only the
+   mentees.
 
 ## Steps
 
 - [x] 1. The table for coaching status is added, with sample statuses.
-- [ ] 2. The right to change a coaching status is added to the
+- [x] 2. The right to change a coaching status is added to the
   permission list, with its checks.
 - [ ] 3. The numbers and the list with levels, search and filters and
   the line about "Konseling", read only and limited to each role's

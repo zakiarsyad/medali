@@ -112,6 +112,7 @@ export const ACTIONS = [
   "view_shared_counselling_data",
   "view_counselling_students",
   "view_character_dashboard",
+  "change_coaching_status",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -272,6 +273,7 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Daftar mahasiswa konseling: melihat persetujuan, sesi, jadwal aktif, dan publikasi setiap mahasiswa yang ditangani konselor, dan membuka catatan sesinya yang rahasia",
   view_character_dashboard:
     "Melihat dashboard pembangunan karakter: rekap capaian karakter mahasiswa aktif, tanpa nama",
+  change_coaching_status: "Mengubah status pembinaan karakter dan catatannya",
 };
 
 /**
@@ -441,6 +443,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_violation_notes",
       "write_violation_notes",
       "view_character_dashboard",
+      "change_coaching_status",
     ],
     rows: "all",
   },
@@ -551,6 +554,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mental_health_screening_count",
       "view_shared_counselling_data",
       "view_discipline_records",
+      "change_coaching_status",
     ],
     rows: "own_mentees",
   },
