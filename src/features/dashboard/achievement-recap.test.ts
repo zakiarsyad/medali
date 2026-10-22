@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Scores } from "@/character-scores/assessment-score";
-import { recapOf, type ScoreGroup } from "./achievement-recap";
+import { NONE_HELD_BACK, recapOf, type ScoreGroup } from "./achievement-recap";
 
 function times(scores: Scores, students: number): Scores {
   return {
@@ -80,5 +80,16 @@ describe("recapOf", () => {
 
     expect(recap).not.toBeNull();
     expect(recap?.change).toBeNull();
+  });
+
+  it("gives the numbers of a single student, and their change, for Dashboard anak asuh, which holds none back", () => {
+    const recap = recapOf(
+      [groupOf(1, GOLD, { students: 1, up: 4 }), groupOf(2, null)],
+      NONE_HELD_BACK,
+    );
+
+    expect(recap).toMatchObject({ students: 3, assessed: 1, rerata: 90 });
+    expect(recap?.change?.changes.M).toBe(4);
+    expect(recapOf([groupOf(2, null)], NONE_HELD_BACK)).toBeNull();
   });
 });

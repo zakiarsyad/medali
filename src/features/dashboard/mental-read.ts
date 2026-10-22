@@ -24,6 +24,7 @@ import {
   type MentalView,
   mentalRecapOf,
   PUBLISHED_SHOWN,
+  type PublishedCounts,
   type PublishedMental,
   type PublishedRow,
 } from "./mental-recap";
@@ -122,7 +123,10 @@ async function shownRow(
 }
 
 /** How many the reader reaches, and of them how many need counselling. */
-async function readNumbers(tx: Database, reached: SQL) {
+async function readNumbers(
+  tx: Database,
+  reached: SQL,
+): Promise<PublishedCounts> {
   const { latest, joined } = sharedLevels(tx);
   const [found] = await tx
     .select({
@@ -137,6 +141,19 @@ async function readNumbers(tx: Database, reached: SQL) {
     matching: found?.matching ?? 0,
     needCounselling: found?.needCounselling ?? 0,
   };
+}
+
+/**
+ * How many of the students `where` lets through have data published to
+ * `reader`, and of them how many need counselling. Only counts leave the
+ * database, so no reading is logged.
+ */
+export function readPublishedCounts(
+  db: Database,
+  where: SQL,
+  reader: SharedReader,
+): Promise<PublishedCounts> {
+  return readNumbers(db, and(reader.reach, where) ?? NOBODY);
 }
 
 /**

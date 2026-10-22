@@ -2,6 +2,7 @@ import { shownRerata } from "@/character-scores/shown-rerata";
 import { SpreadBar } from "@/character-scores/spread-bar";
 import type { Recap } from "./achievement-recap";
 import { cardLine, TOO_FEW } from "./achievement-words";
+import { CardBox } from "./card-box";
 import styles from "./dashboard.module.css";
 
 /** Where section 1 starts, for the card that leads to it. */
@@ -10,11 +11,19 @@ export const ACHIEVEMENT_SECTION = "capaian-karakter";
 /**
  * The card "Capaian karakter": the average Rerata, how many are assessed
  * with the counts of Emas and Perlu pembinaan, and the predikat spread.
- * Pressing it moves the page to section 1. Without a recap it says why.
+ * Unless `linked` is off, pressing it moves the page to section 1.
+ * Without a recap it says why.
  */
-export function AchievementCard({ recap }: { recap: Recap | null }) {
+export function AchievementCard({
+  recap,
+  linked = true,
+}: {
+  recap: Recap | null;
+  /** Whether pressing it moves the page to its section: not where there is none. */
+  linked?: boolean;
+}) {
   return (
-    <a className={styles.card} href={`#${ACHIEVEMENT_SECTION}`}>
+    <CardBox target={linked ? ACHIEVEMENT_SECTION : null}>
       <span className={styles.cardHead}>
         <span className={styles.sectionNo}>1</span>
         Capaian karakter
@@ -30,6 +39,6 @@ export function AchievementCard({ recap }: { recap: Recap | null }) {
           <SpreadBar spread={recap.spread} />
         </>
       )}
-    </a>
+    </CardBox>
   );
 }

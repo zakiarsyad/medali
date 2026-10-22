@@ -114,6 +114,7 @@ export const ACTIONS = [
   "view_shared_counselling_data",
   "view_counselling_students",
   "view_character_dashboard",
+  "view_mentee_dashboard",
   "change_coaching_status",
 ] as const;
 
@@ -279,6 +280,8 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Daftar mahasiswa konseling: melihat persetujuan, sesi, jadwal aktif, dan publikasi setiap mahasiswa yang ditangani konselor, dan membuka catatan sesinya yang rahasia",
   view_character_dashboard:
     "Melihat dashboard pembangunan karakter: rekap capaian karakter mahasiswa aktif, tanpa nama",
+  view_mentee_dashboard:
+    "Melihat dashboard anak asuh: empat aspek penilaian, anak asuh yang perlu perhatian, dan catatan pengasuhan anak asuh sendiri",
   change_coaching_status: "Mengubah status pembinaan karakter dan catatannya",
 };
 
@@ -566,6 +569,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_shared_counselling_data",
       "view_discipline_records",
       "change_coaching_status",
+      "view_mentee_dashboard",
     ],
     rows: "own_mentees",
   },

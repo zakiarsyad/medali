@@ -105,17 +105,19 @@ function tallyOf(groups: readonly GradeGroup[], scheme: GradeScheme): Tally {
 }
 
 /**
- * The grade numbers of a group by the scheme in force. A "Belum lengkap"
- * student is left out of every average, letter and percent, as on
- * Penilaian karakter, but counts among those held at 70.
+ * The grade numbers of a group by the scheme in force, held back while
+ * fewer than `fewest` have a worked-out grade. A "Belum lengkap" student
+ * is left out of every average, letter and percent, as on Penilaian
+ * karakter, but counts among those held at 70.
  */
 export function gradeRecapOf(
   groups: readonly GradeGroup[],
   scheme: GradeScheme,
+  fewest: number = FEWEST_SHOWN,
 ): GradeRecap {
   const tally = tallyOf(groups, scheme);
   if (tally.graded === 0) return { kind: "none" };
-  if (tally.graded < FEWEST_SHOWN) return { kind: "too_few" };
+  if (tally.graded < fewest) return { kind: "too_few" };
   return {
     kind: "shown",
     graded: tally.graded,

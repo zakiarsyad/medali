@@ -23,15 +23,28 @@ import {
 } from "./sample-dorms";
 import { studentStatus } from "./schema";
 
-describe("the sample account with two roles", () => {
-  it("shows more pages than either of its roles alone", () => {
-    const twoRoles = SAMPLE_ACCOUNTS.filter((a) => a.roles.length === 2);
-    expect(twoRoles).toHaveLength(1);
-    const roles = twoRoles[0]?.roles ?? [];
+describe("the sample accounts with two roles", () => {
+  const twoRoles = SAMPLE_ACCOUNTS.filter((a) => a.roles.length === 2);
+
+  it("are two: one who sees more pages, and one who has both Dashboards", () => {
+    expect(twoRoles).toHaveLength(2);
+  });
+
+  it("show more pages than either of the roles alone, for the one who is not Pengasuh", () => {
+    const staff = twoRoles.filter((a) => !a.roles.includes("mentor"));
+    expect(staff).toHaveLength(1);
+    const roles = staff[0]?.roles ?? [];
     const together = pagesFor(roles).length;
     for (const role of roles) {
       expect(together).toBeGreaterThan(pagesFor([role]).length);
     }
+  });
+
+  it("give one Pengasuh the role of Ketua Program Studi too, of a program of their own", () => {
+    const both = twoRoles.filter((a) => a.roles.includes("mentor"));
+    expect(both).toHaveLength(1);
+    expect(both[0]?.roles).toContain("head_of_program");
+    expect(both[0]?.studyProgram).toBeTruthy();
   });
 });
 
