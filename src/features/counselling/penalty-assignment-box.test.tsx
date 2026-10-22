@@ -21,7 +21,9 @@ describe("how a Penugasan sent from a penalty stands, for its sender", () => {
 
     expect(html).toContain("<b>Konseling wajib:</b>");
     expect(html).toContain("Menunggu jadwal");
-    expect(html).toContain("Ditugaskan 19 Okt 2026, 10.05 oleh Pembina Contoh.");
+    expect(html).toContain(
+      "Ditugaskan 19 Okt 2026, 10.05 oleh Pembina Contoh.",
+    );
     expect(html).toContain("Isi sesi konseling hanya diketahui konselor.");
     expect(html).not.toContain("pukul");
   });
