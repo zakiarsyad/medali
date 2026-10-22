@@ -5,10 +5,10 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { skpmRows, skpmUploadChanges, skpmUploads } from "@/db/schema";
-import { sourceName } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
-import { fingerprintOf } from "@/files/file-fingerprint";
+import { type UploadMark, uploadMarkOf } from "@/files/upload-mark";
 import type { Parsed } from "@/parsed";
+import { repeatedFile } from "@/ui/repeated-file";
 import type { ReadySkpmRow } from "./skpm-file";
 import { checkSkpmFile } from "./skpm-file-check";
 import { studentsIn } from "./skpm-file-preview";
@@ -20,6 +20,7 @@ import {
   NOTHING_TO_SAVE,
   UNKNOWN_MODE,
 } from "./skpm-messages";
+import { savedBefore } from "./skpm-uploads";
 
 /** What "Simpan (n) baris" tells the one who saved. */
 export interface SavedSkpmFile {
@@ -38,11 +39,25 @@ export function modeNamed(sent: string): SkpmUploadMode | null {
   return SKPM_UPLOAD_MODES.find((mode) => mode === sent) ?? null;
 }
 
-interface Upload {
+interface Upload extends UploadMark {
   id: string;
-  fileName: string;
-  fingerprint: string;
   mode: SkpmUploadMode;
+}
+
+/**
+ * The refusal of a "Tambahkan" file saved before and still in force,
+ * unless `confirmedRepeat`, or null. "Ganti semua data" never asks: it
+ * replaces every upload before it, so nothing counts twice.
+ */
+async function refuseRepeat(
+  tx: Database,
+  upload: Upload,
+  confirmedRepeat: boolean,
+): Promise<Parsed<SavedSkpmFile> | null> {
+  if (upload.mode !== "add" || confirmedRepeat) return null;
+  const before = await savedBefore(tx, upload);
+  if (before === null) return null;
+  return repeatedFile(before);
 }
 
 /**
@@ -93,6 +108,7 @@ async function save(
   actor: AccountForAccess,
   upload: Upload,
   file: SentFile,
+  confirmedRepeat: boolean,
   moment: Date,
 ): Promise<Parsed<SavedSkpmFile>> {
   const taken = await answerTaken(tx, actor, upload);
@@ -103,6 +119,8 @@ async function save(
   if (ready.length === 0) return NOTHING_TO_SAVE;
   const period = await readRunningPeriod(tx, campusDay(moment));
   if (period === null) return NO_PERIOD;
+  const repeat = await refuseRepeat(tx, upload, confirmedRepeat);
+  if (repeat) return repeat;
   // A second press waits here for the first to end, then adds nothing.
   const added = await tx
     .insert(skpmUploads)
@@ -139,9 +157,10 @@ async function save(
  * no more. The file is read and checked again here: what the screen
  * showed is not trusted. The whole file is kept in one go, or nothing of
  * it. Refused for a role without the right "Unggah data SKPM", while no
- * period runs, and for a file with no row to save. `id` is the key the
- * screen made for the file: a file sent twice is kept once, and the
- * second press is answered as the first.
+ * period runs, for a file with no row to save, and in "Tambahkan" for a
+ * file saved before that is still in force unless `confirmedRepeat`.
+ * `id` is the key the screen made for the file: a file sent twice is
+ * kept once, and the second press is answered as the first.
  */
 export async function saveSkpmFile(
   db: Database,
@@ -149,17 +168,15 @@ export async function saveSkpmFile(
   id: string,
   sentMode: string,
   file: SentFile,
+  confirmedRepeat: boolean,
   moment: Date = new Date(),
 ): Promise<Parsed<SavedSkpmFile>> {
   if (!may(actor.roles, "upload_skpm")) return NOT_ALLOWED_TO_UPLOAD;
   if (!isUuid(id)) return FILE_ALREADY_SENT;
   const mode = modeNamed(sentMode);
   if (mode === null) return UNKNOWN_MODE;
-  const upload = {
-    id,
-    fileName: sourceName(file.name),
-    fingerprint: fingerprintOf(file.bytes),
-    mode,
-  };
-  return db.transaction((tx) => save(tx, actor, upload, file, moment));
+  const upload = { id, ...uploadMarkOf(file), mode };
+  return db.transaction((tx) =>
+    save(tx, actor, upload, file, confirmedRepeat, moment),
+  );
 }

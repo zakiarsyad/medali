@@ -1,5 +1,4 @@
 import { PREVIEW_ROWS, PREVIEW_SKIPPED } from "@/files/csv-file";
-import { shownDay } from "@/ui/day";
 import type { SikuFileRows, SkippedSikuRow } from "./siku-file";
 import { REASON_WITH_BASIS, type SikuKind, type SikuReason } from "./siku-ids";
 
@@ -26,14 +25,6 @@ export interface SikuFilePreview {
    * or null. Saving it again then asks for a confirm.
    */
   savedOn: string | null;
-}
-
-/** The words of the confirm a file saved before needs. */
-export const SAVE_AGAIN = "Tetap simpan berkas ini lagi";
-
-/** The warning for a file saved before, on the day it was saved. */
-export function savedBeforeNote(day: string): string {
-  return `Berkas dengan nama dan isi yang sama sudah disimpan pada ${shownDay(day)}.`;
 }
 
 export function sikuPreviewOf(

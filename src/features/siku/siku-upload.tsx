@@ -4,7 +4,9 @@ import { Fragment, useState, useTransition } from "react";
 import { checkFileShape, MAX_FILE_ROWS } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
 import { FileDrop } from "@/ui/file-drop";
+import { FileSaveButtons } from "@/ui/file-save-buttons";
 import styles from "@/ui/file-upload.module.css";
+import { savedBeforeNote } from "@/ui/repeated-file";
 import { previewSikuFileAction, saveSikuFileAction } from "./siku-actions";
 import {
   SIKU_FILE_COLUMNS,
@@ -13,11 +15,7 @@ import {
   SIKU_TEMPLATE_FILE_NAME,
   sikuTemplateCsv,
 } from "./siku-file-columns";
-import {
-  SAVE_AGAIN,
-  type SikuFilePreview,
-  savedBeforeNote,
-} from "./siku-file-preview";
+import type { SikuFilePreview } from "./siku-file-preview";
 import { SikuFilePreviewView } from "./siku-file-preview-view";
 
 const TEMPLATE_LINK = `data:text/csv;charset=utf-8,${encodeURIComponent(sikuTemplateCsv())}`;
@@ -50,60 +48,6 @@ function ColumnNotes() {
       . {SIKU_FILE_NOTE} Satu berkas paling banyak{" "}
       {MAX_FILE_ROWS.toLocaleString("id-ID")} baris dan 1 MB.
     </p>
-  );
-}
-
-/** "Simpan (n) baris" and "Batal", with the confirm a file saved before needs. */
-function SaveButtons({
-  checked,
-  saving,
-  onSave,
-  onCancel,
-}: {
-  checked: Checked;
-  saving: boolean;
-  onSave: (confirmRepeat: boolean) => void;
-  onCancel: () => void;
-}) {
-  const [confirmed, setConfirmed] = useState(false);
-  const { savedOn, ready } = checked.preview;
-  const needsConfirm = savedOn !== null && !confirmed;
-  return (
-    <>
-      {savedOn !== null && (
-        <div>
-          <p className={`${styles.fileResult} ${styles.fileWarn}`} role="alert">
-            {savedBeforeNote(savedOn)}
-          </p>
-          <label className={shared.role}>
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={(event) => setConfirmed(event.target.checked)}
-            />
-            {SAVE_AGAIN}
-          </label>
-        </div>
-      )}
-      <button
-        type="button"
-        className={shared.button}
-        disabled={saving || needsConfirm}
-        onClick={() => onSave(confirmed)}
-      >
-        {saving
-          ? "Menyimpan…"
-          : `Simpan ${ready.toLocaleString("id-ID")} baris`}
-      </button>
-      <button
-        type="button"
-        className={shared.quiet}
-        disabled={saving}
-        onClick={onCancel}
-      >
-        Batal
-      </button>
-    </>
   );
 }
 
@@ -183,9 +127,14 @@ export function SikuUpload() {
       )}
       {checked && !reading && (
         <SikuFilePreviewView name={checked.file.name} preview={checked.preview}>
-          <SaveButtons
+          <FileSaveButtons
             key={checked.id}
-            checked={checked}
+            ready={checked.preview.ready}
+            warning={
+              checked.preview.savedOn === null
+                ? null
+                : savedBeforeNote(checked.preview.savedOn)
+            }
             saving={saving}
             onSave={(confirmRepeat) => save(checked, confirmRepeat)}
             onCancel={() => setChecked(null)}

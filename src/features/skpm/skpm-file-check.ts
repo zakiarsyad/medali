@@ -5,6 +5,7 @@ import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { checkFileShape, readFileText } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
+import { uploadMarkOf } from "@/files/upload-mark";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { Parsed } from "@/parsed";
 import {
@@ -16,6 +17,7 @@ import {
 } from "./skpm-file";
 import { type SkpmFilePreview, skpmPreviewOf } from "./skpm-file-preview";
 import { NOT_ALLOWED_TO_UPLOAD } from "./skpm-messages";
+import { savedBefore } from "./skpm-uploads";
 
 /**
  * The students a file names, by NIM, with whether each is Aktif. A
@@ -70,5 +72,6 @@ export async function previewSkpmFile(
   if (!may(actor.roles, "upload_skpm")) return NOT_ALLOWED_TO_UPLOAD;
   const rows = await checkSkpmFile(db, file);
   if (!rows.ok) return rows;
-  return { ok: true, value: skpmPreviewOf(rows.value) };
+  const savedOn = await savedBefore(db, uploadMarkOf(file));
+  return { ok: true, value: skpmPreviewOf(rows.value, savedOn) };
 }

@@ -40,7 +40,8 @@ export async function previewSkpmFileAction(
 /**
  * "Simpan (n) baris": the file is read and checked again by the server.
  * `id` is the key the screen made for the file; `mode` is "Tambahkan" or
- * "Ganti semua data".
+ * "Ganti semua data"; `confirmRepeat` is the confirm that a file saved
+ * before is to be saved again.
  */
 export async function saveSkpmFileAction(
   form: FormData,
@@ -48,12 +49,14 @@ export async function saveSkpmFileAction(
   const actor = await uploader();
   const file = await sentCsvFile(form);
   if (!file.ok) return file;
+  const confirmed = text(form, "confirmRepeat") === "yes";
   const saved = await saveSkpmFile(
     database(),
     actor,
     text(form, "id"),
     text(form, "mode"),
     file.value,
+    confirmed,
   );
   if (!saved.ok) return saved;
   revalidatePath(SKPM_ADDRESS);

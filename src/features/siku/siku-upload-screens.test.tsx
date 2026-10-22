@@ -4,9 +4,8 @@ import { SeenStudentsDialog } from "./history-panel";
 import { HistoryTable } from "./history-table";
 import type { OwnEntry } from "./own-siku";
 import { OwnSikuScreen } from "./own-siku-screen";
-import { repeatedFile, savedMessage } from "./save-siku-file";
+import { savedMessage } from "./save-siku-file";
 import { START_PARAMS } from "./siku-address";
-import { SAVE_AGAIN, savedBeforeNote } from "./siku-file-preview";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
@@ -127,14 +126,5 @@ describe("a row from a file in Transparansi nilai SIKU", () => {
 describe("the words of a save", () => {
   it("says how many rows were saved", () => {
     expect(savedMessage({ saved: 1250 })).toBe("1.250 baris tersimpan.");
-  });
-
-  it("warns of a file saved before with its day, and names the confirm", () => {
-    expect(savedBeforeNote("2026-10-14")).toBe(
-      "Berkas dengan nama dan isi yang sama sudah disimpan pada 14 Okt 2026.",
-    );
-    expect(repeatedFile("2026-10-14").error).toBe(
-      `Berkas dengan nama dan isi yang sama sudah disimpan pada 14 Okt 2026. Centang "${SAVE_AGAIN}", lalu simpan bila memang perlu.`,
-    );
   });
 });

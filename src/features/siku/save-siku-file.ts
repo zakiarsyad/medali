@@ -11,14 +11,15 @@ import {
   sikuUploads,
 } from "@/db/schema";
 import type { SentFile } from "@/files/file-check";
+import { type UploadMark, uploadMarkOf } from "@/files/upload-mark";
 import type { Parsed } from "@/parsed";
+import { repeatedFile } from "@/ui/repeated-file";
 import { lockEntryKey } from "./entry-key-lock";
 import { enteredAsOf } from "./save-entry";
 import type { ReadySikuRow } from "./siku-file";
 import { checkSikuFile, sikuVisibleTo } from "./siku-file-check";
-import { SAVE_AGAIN, savedBeforeNote } from "./siku-file-preview";
 import { NO_PERIOD, NOT_ALLOWED_TO_ADJUST } from "./siku-messages";
-import { savedBefore, type UploadMark, uploadMarkOf } from "./siku-uploads";
+import { savedBefore } from "./siku-uploads";
 
 /** What "Simpan (n) baris" tells the one who saved. */
 export interface SavedSikuFile {
@@ -41,14 +42,6 @@ export const FILE_ALREADY_SENT = {
   error:
     "Berkas ini sudah pernah terkirim, jadi tidak disimpan lagi. Muat ulang halaman, periksa Riwayat penambahan dan pengurangan SIKU, lalu unggah lagi bila masih perlu.",
 } as const;
-
-/** What a save answers for a file saved before, without the confirm. */
-export function repeatedFile(day: string): { ok: false; error: string } {
-  return {
-    ok: false,
-    error: `${savedBeforeNote(day)} Centang "${SAVE_AGAIN}", lalu simpan bila memang perlu.`,
-  };
-}
 
 /** What "Simpan (n) baris" says once the rows are saved. */
 export function savedMessage(saved: SavedSikuFile): string {
