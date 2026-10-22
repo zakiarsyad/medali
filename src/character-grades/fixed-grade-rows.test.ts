@@ -6,7 +6,7 @@ import type { GradeRow } from "./grade-list";
 const STUDENT = {
   id: "id-ani",
   name: "Ani Uji Tetap",
-  nim: "9987100401",
+  nim: "9951370001",
   program: "Prodi Uji",
 };
 
