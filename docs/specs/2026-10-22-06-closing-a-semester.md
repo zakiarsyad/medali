@@ -130,7 +130,7 @@ weights used, which later changes no longer touch.
 
 ## Steps
 
-- [ ] 1. The table for fixed grades is added, and periods get the state
+- [x] 1. The table for fixed grades is added, and periods get the state
   Berjalan, Selesai belum ditutup or Ditutup.
 - [ ] 2. The right to close a semester is added to the permission list,
   with its checks.
