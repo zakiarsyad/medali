@@ -1,4 +1,4 @@
-// Sample NIMs of this file: 9989640000 to 9989640099. None is added to
+// Sample NIMs of this file: 9989710000 to 9989710099. None is added to
 // the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -16,7 +16,7 @@ const ROW: ScheduledViolation = {
   announcedAt: new Date("2026-10-12T14:00:00Z"),
   day: "2026-10-12",
   name: "Penghuni Uji Jadwal",
-  nim: "9989640001",
+  nim: "9989710001",
   dorm: "dana_rakca",
   reason: "Terlambat apel pagi",
   punishment: "warning",
