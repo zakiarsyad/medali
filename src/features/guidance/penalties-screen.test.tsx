@@ -127,6 +127,21 @@ describe("PenaltiesScreen", () => {
     expect(shown).toContain("Rincian");
   });
 
+  it("makes each name open the student's profile over the tab, keeping the search and the page", () => {
+    const shown = renderToStaticMarkup(
+      <PenaltiesScreen
+        tabs={{ pagePath: "pembinaan", tabs: [], open: "disiplin" }}
+        board={board([ROW])}
+        params={{ ...PENALTIES_START, query: "Mega", page: 2 }}
+        form={null}
+        mayFollowUp={false}
+      />,
+    );
+    expect(shown).toMatch(
+      /<a [^>]*href="\/pembinaan\/disiplin\?cari=Mega&amp;hal=2&amp;profil=s1"[^>]*><b[^>]*>Mega Saragih<\/b><\/a>/,
+    );
+  });
+
   it("counts the kerja sosial that is Dijatuhkan or Sedang dijalani, not by its last day", () => {
     const shown = screen([ROW], null);
     expect(shown).toContain("dijatuhkan atau sedang dijalani");

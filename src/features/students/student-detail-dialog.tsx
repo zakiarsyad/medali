@@ -25,7 +25,8 @@ export type DetailOpenedFrom =
   | "grade_list"
   | "fitness_list"
   | "skpm_list"
-  | "screening_list";
+  | "screening_list"
+  | "penalty_list";
 
 const RETURN_PLACE: Record<DetailOpenedFrom, string> = {
   student_list: "daftar mahasiswa",
@@ -39,6 +40,7 @@ const RETURN_PLACE: Record<DetailOpenedFrom, string> = {
   fitness_list: "Penilaian jasmani",
   skpm_list: "Data SKPM",
   screening_list: "Kesehatan mental",
+  penalty_list: "Pelanggaran disiplin",
 };
 
 /** The detail of one student, over the list it was opened from. */

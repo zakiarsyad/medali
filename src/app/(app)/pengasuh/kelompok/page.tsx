@@ -9,6 +9,7 @@ import { StudentGradePanel } from "@/features/character-grades/student-grade-pan
 import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
+import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import {
   groupAddress,
   readGroupListParams,
@@ -89,6 +90,7 @@ async function GroupPage({
                 studentId={studentId}
                 base={baseScoreNow()}
               />
+              <StudentPenaltiesPanel account={account} studentId={studentId} />
               <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />

@@ -1,0 +1,45 @@
+/* "Riwayat pelanggaran disiplin" in a student's detail: one column at every width. */
+.panelHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-lg);
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-sm);
+}
+
+.quiet {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  min-width: 0;
+  padding: var(--space-md) 0;
+  border-top: var(--line-width) solid var(--line2);
+}
+
+/* The Kategori and Jenjang with the status: they fold onto more lines when narrow. */
+.itemTitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+  align-items: center;
+  margin: var(--space-3xs) 0;
+}
+
+.text {
+  margin: 0 0 var(--space-2xs);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.more {
+  margin-top: var(--space-sm);
+}

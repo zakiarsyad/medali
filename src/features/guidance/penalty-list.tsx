@@ -98,6 +98,7 @@ export function PenaltyListPanel({
         <>
           <PenaltyTable
             rows={list.rows}
+            params={params}
             mayFollowUp={mayFollowUp}
             counselling={counselling}
           />

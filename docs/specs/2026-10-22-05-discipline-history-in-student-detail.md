@@ -101,12 +101,32 @@ student's record in one place. A student with no penalty has no panel.
    screen now also names the history in the detail; no role gains or
    loses anything. A second role of the same account that sees every
    student but may not read discipline adds no rows.
+6. The panel sits under the SIKU panel and above "Riwayat per
+   semester", as in the prototype, everywhere the whole detail opens:
+   the Mahasiswa list and every other list whose names open it. The
+   brief of Penilai Mahasiswa and Konselor does not get it.
+7. A name in "Daftar pelanggaran" opens the student for every role of
+   the tab: the whole detail with all its panels for a role that may
+   open it, and the small detail for Pembina Disiplin Mahasiswa. The
+   small detail opens only for a student with a penalty within the
+   account's rows; any other address shows "Mahasiswa tidak ditemukan".
+   Tutup goes back to the list with its search, filters and page.
+8. Each record shows its date, the Kategori and Jenjang badge with the
+   status beside it, the Uraian on its own line, then "Hukuman: ...,
+   kerja sosial n hari, nilai karakter paling tinggi 70." as in the
+   prototype. The kerja sosial is the length of its Jenjang, shown only
+   when the penalty kept one, as "Daftar pelanggaran" does. Keputusan
+   and Syarat melanjutkan studi stay in "Rincian".
+9. Records run by Tanggal pelanggaran, the newest first, then the one
+   saved last. The first 10 show; the rest fold behind "Tampilkan semua
+   (n)", as the SIKU panel does. A student's records are read in one
+   go each time the detail opens, so nothing is kept between openings.
 
 ## Steps
 
 - [x] 1. The right to read a student's discipline history is added to
   the permission list for the staff roles above, with its checks.
-- [ ] 2. The panel in the student detail for staff, limited to each
+- [x] 2. The panel in the student detail for staff, limited to each
   role's rows, and the small detail that a name in "Daftar
   pelanggaran" opens for Pembina Disiplin Mahasiswa.
 - [ ] 3. "Catat pelanggaran" from the panel.

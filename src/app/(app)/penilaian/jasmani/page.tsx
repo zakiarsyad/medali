@@ -32,6 +32,7 @@ import { ReadOnlyLimits } from "@/features/fitness/read-only-limits";
 import { readRecapParams } from "@/features/fitness/recap-address";
 import { ScoreForm } from "@/features/fitness/score-form";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
+import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -150,6 +151,7 @@ export default async function FitnessPage(
                 studentId={studentId}
                 base={baseScoreNow()}
               />
+              <StudentPenaltiesPanel account={account} studentId={studentId} />
               <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
