@@ -1,7 +1,12 @@
 import { campusDay } from "@/academic-periods/campus-day";
+import { periodTitle } from "@/academic-periods/period-labels";
 import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
+import {
+  chosenClosed,
+  readClosedPeriods,
+} from "@/character-grades/closed-semesters";
 import { readGradeBasis } from "@/character-grades/grade-facts";
 import { readGradePage } from "@/character-grades/grade-page";
 import { readGradeScheme } from "@/character-grades/grade-scheme";
@@ -19,6 +24,7 @@ import {
 import { GradeNumberCards } from "@/features/character-grades/grade-number-cards";
 import { ReadOnlyScheme } from "@/features/character-grades/read-only-scheme";
 import { SchemeForm } from "@/features/character-grades/scheme-form";
+import { SemesterChoice } from "@/features/character-grades/semester-choice";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
@@ -35,7 +41,8 @@ import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 import { activeAmong } from "@/mentoring/active-member";
 
 /**
- * The tab Penilaian karakter: the four numbers, "Skema bobot", the scheme
+ * The tab Penilaian karakter: the choice "Semester" once a semester is
+ * closed, the four numbers, "Skema bobot", the scheme
  * of the semester character grade, and "Daftar nilai karakter". Kepala
  * Unit, with the right "Bobot penilaian", changes the scheme; every other
  * role that opens the tab only reads it. Each role sees the grades of the
@@ -52,8 +59,13 @@ export default async function CharacterGradePage(
   const opened = await openPage("penilaian", "karakter");
   const { account } = opened;
   const tabs = { pagePath: "penilaian", tabs: opened.tabs, open: "karakter" };
-  const params = readGradeParams(await props.searchParams);
+  const asked = readGradeParams(await props.searchParams);
   const db = database();
+  const closed = may(account.roles, "view_fixed_grades")
+    ? await readClosedPeriods(db)
+    : [];
+  const chosen = chosenClosed(closed, asked.semester);
+  const params = { ...asked, semester: chosen?.period.id ?? null };
   const inForce = await readGradeScheme(db);
   const visible = gradeVisibleTo(account);
   const today = campusDay();
@@ -70,6 +82,17 @@ export default async function CharacterGradePage(
     <>
       <CharacterGradeScreen
         tabs={tabs}
+        semester={
+          closed.length > 0 && (
+            <SemesterChoice
+              closed={closed.map((each) => ({
+                id: each.period.id,
+                title: periodTitle(each.period),
+              }))}
+              params={params}
+            />
+          )
+        }
         numbers={
           <GradeNumberCards
             numbers={numbers}

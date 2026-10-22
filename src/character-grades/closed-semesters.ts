@@ -1,5 +1,7 @@
+import { desc, eq } from "drizzle-orm";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { Database } from "@/db/connect";
-import { semesterClosings } from "@/db/schema";
+import { academicPeriods, semesterClosings } from "@/db/schema";
 
 /** When a semester was closed, and how many grades its closing fixed. */
 export interface ClosedSemester {
@@ -19,4 +21,46 @@ export async function readClosedSemesters(
     })
     .from(semesterClosings);
   return new Map(rows.map(({ periodId, ...closed }) => [periodId, closed]));
+}
+
+/** A closed period, as the choice "Semester" offers it. */
+export interface ClosedPeriod {
+  closingId: string;
+  period: Pick<AcademicPeriod, "id" | "startYear" | "term">;
+  closedAt: Date;
+}
+
+/** Every closed period, newest first. */
+export async function readClosedPeriods(db: Database): Promise<ClosedPeriod[]> {
+  const rows = await db
+    .select({
+      closingId: semesterClosings.id,
+      closedAt: semesterClosings.closedAt,
+      id: academicPeriods.id,
+      startYear: academicPeriods.startYear,
+      term: academicPeriods.term,
+    })
+    .from(semesterClosings)
+    .innerJoin(
+      academicPeriods,
+      eq(academicPeriods.id, semesterClosings.periodId),
+    )
+    .orderBy(desc(academicPeriods.startsOn));
+  return rows.map(({ closingId, closedAt, ...period }) => ({
+    closingId,
+    period,
+    closedAt,
+  }));
+}
+
+/**
+ * The closed period an address asks for, or null for the running
+ * semester: also when it names a period that is not closed, or none.
+ */
+export function chosenClosed<Closed extends { period: { id: string } }>(
+  closed: readonly Closed[],
+  asked: string | null,
+): Closed | null {
+  if (asked === null) return null;
+  return closed.find((each) => each.period.id === asked) ?? null;
 }
