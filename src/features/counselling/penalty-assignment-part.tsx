@@ -6,6 +6,7 @@ import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./counselling.module.css";
 import { assignFromPenaltyAction } from "./penalty-assignment-actions";
+import { readsPageAgain } from "./penalty-assignment-rules";
 import {
   ASSIGN_BUTTON,
   ASSIGN_HEADING,
@@ -20,8 +21,8 @@ const NO_MESSAGE: FormState = { error: null, done: null };
  * "Tugaskan konseling wajib" in "Rincian" of a penalty, for Pembina
  * Disiplin Mahasiswa: the message and the button, asked before it is
  * sent, while the penalty has no Penugasan; else `box`, how it stands.
- * Once one is kept the page is read again, so `box` takes the place of
- * the form, and the message that it was sent stays under it.
+ * Once there is one the page is read again, so `box` takes the place of
+ * the form, and the message of the send stays under it.
  */
 export function PenaltyAssignmentPart({
   penaltyId,
@@ -44,7 +45,7 @@ export function PenaltyAssignmentPart({
     startSending(async () => {
       const answer = await assignFromPenaltyAction(penaltyId, typed);
       setMessage(answer);
-      if (answer.done !== null) router.refresh();
+      if (readsPageAgain(answer)) router.refresh();
     });
   }
 
