@@ -2,6 +2,7 @@
 // the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import shared from "@/ui/data-screen.module.css";
 import { OWN_RECORD_NOTE } from "./own-record";
 import type { ScheduledViolation } from "./violation-schedule";
 import { ViolationScheduleTable } from "./violation-schedule-table";
@@ -45,7 +46,9 @@ describe("ViolationScheduleTable", () => {
       const shown = table(own);
 
       expect(shown).toContain("Penghuni Uji Jadwal");
-      expect(shown).toContain(OWN_RECORD_NOTE);
+      expect(shown).toContain(
+        `<td><p class="${shared.detail}">${OWN_RECORD_NOTE}`,
+      );
       expect(shown).not.toContain("Batalkan");
     }
   });

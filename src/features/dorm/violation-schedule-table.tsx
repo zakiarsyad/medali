@@ -112,13 +112,16 @@ export function ViolationScheduleTable({
                 <td data-title="Diinput">
                   <span className={shared.typed}>{row.enteredBy}</span>
                 </td>
-                <td className={shared.rowActions}>
-                  {isOwnRecord(ownStudentId, row.studentId) ? (
+                {/* The line on one's own row is no button: it folds, so it never widens the list. */}
+                {isOwnRecord(ownStudentId, row.studentId) ? (
+                  <td>
                     <OwnRecordNote />
-                  ) : (
+                  </td>
+                ) : (
+                  <td className={shared.rowActions}>
                     <CancelButton id={row.id} onAnswer={setAnswer} />
-                  )}
-                </td>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
