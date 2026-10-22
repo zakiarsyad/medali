@@ -1,5 +1,4 @@
 import { CoachingLevelBadge } from "@/character-scores/coaching-level-badge";
-import { COACHING_STATUS_WORDS } from "@/character-scores/coaching-status";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { valueNameOf } from "@/ui/medali-values";
@@ -8,6 +7,10 @@ import { ValueSwatch } from "@/ui/value-swatch";
 import { type CoachingParams, coachingAddress } from "./coaching-address";
 import type { CoachingRow } from "./coaching-board";
 import styles from "./coaching-list.module.css";
+import {
+  CoachingStatusCell,
+  CoachingStatusLabel,
+} from "./coaching-status-cell";
 
 /** NIM, program studi and, while a period runs, the semester. */
 function factsOf(row: CoachingRow): string {
@@ -16,13 +19,21 @@ function factsOf(row: CoachingRow): string {
   return facts.join(" · ");
 }
 
-/** The status of a row, with the note of what was done under it. */
+/**
+ * The status of a row, with the note of what was done under it: a choice
+ * for a student the account may change, a label otherwise.
+ */
 function StatusCell({ row }: { row: CoachingRow }) {
+  if (!row.mayChange) {
+    return <CoachingStatusLabel status={row.status} note={row.note} />;
+  }
   return (
-    <>
-      <span className={shared.badge}>{COACHING_STATUS_WORDS[row.status]}</span>
-      {row.note !== "" && <small className={styles.note}>{row.note}</small>}
-    </>
+    <CoachingStatusCell
+      studentId={row.studentId}
+      name={row.name}
+      status={row.status}
+      note={row.note}
+    />
   );
 }
 

@@ -22,6 +22,7 @@ import {
   COUNSELLING_ONLY_A_MARK,
   NO_COACHING_FOUND,
 } from "./coaching-list-words";
+import { CoachingMessageArea } from "./coaching-message";
 import { CoachingTable } from "./coaching-table";
 
 /** "Cari nama atau NIM", the level and the status, "Belum selesai" first. */
@@ -88,20 +89,22 @@ export function CoachingListPanel({
       <AutoSubmitForm action={COACHING_ADDRESS}>
         <FilterRow params={params} />
       </AutoSubmitForm>
-      {list.matching === 0 ? (
-        <p className={shared.empty}>{NO_COACHING_FOUND}</p>
-      ) : (
-        <>
-          <CoachingTable rows={list.rows} params={params} />
-          <ListPager
-            page={list.page}
-            matching={list.matching}
-            pageSize={COACHING_PAGE_SIZE}
-            noun={COACHING_NOUN}
-            addressOf={(page) => coachingAddress({ ...params, page })}
-          />
-        </>
-      )}
+      <CoachingMessageArea>
+        {list.matching === 0 ? (
+          <p className={shared.empty}>{NO_COACHING_FOUND}</p>
+        ) : (
+          <>
+            <CoachingTable rows={list.rows} params={params} />
+            <ListPager
+              page={list.page}
+              matching={list.matching}
+              pageSize={COACHING_PAGE_SIZE}
+              noun={COACHING_NOUN}
+              addressOf={(page) => coachingAddress({ ...params, page })}
+            />
+          </>
+        )}
+      </CoachingMessageArea>
       <p className={styles.mark}>{COUNSELLING_ONLY_A_MARK}</p>
     </section>
   );

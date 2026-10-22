@@ -127,6 +127,21 @@ Pemantauan, Selesai.
 10. A name opens the whole student detail, for a student the account may
     open it for; there is no brief, as every role with the tab may open
     the detail.
+11. Being identified again (decision 4) is judged when an assessment is
+    saved, from "Simpan asesmen" and from a file alike: when the new
+    latest assessment lists a student and the one before it did not,
+    and their saved status moved on from Teridentifikasi, it goes back
+    to Teridentifikasi with no note, in the same save, and the log names
+    the one who saved the assessment. A student who leaves or joins the
+    list only because a penalty limit starts or ends keeps their status.
+12. Choosing another status opens "Catatan (opsional)" with "Simpan
+    status" and "Batal"; nothing is kept until "Simpan status". The note
+    is written only with a status change, and a new change starts with
+    an empty note. Any of the four statuses may be chosen, also an
+    earlier one. A change that changes nothing keeps and logs nothing.
+13. Only the status of an Aktif student whom their latest assessment
+    lists can be changed. The message shows above the list, so it stays
+    when a student set to "Selesai" leaves the "Belum selesai" view.
 
 ## Steps
 
@@ -136,6 +151,6 @@ Pemantauan, Selesai.
 - [x] 3. The numbers and the list with levels, search and filters and
   the line about "Konseling", read only and limited to each role's
   rows.
-- [ ] 4. Changing a status, with the optional note and the log.
+- [x] 4. Changing a status, with the optional note and the log.
 - [ ] 5. Refusing a change made on an outdated status.
 - [ ] 6. The number beside the Pembinaan menu item.

@@ -27,6 +27,32 @@
   font-weight: var(--weight-heavy);
 }
 
+/*
+ * The status choice: never wider than the card, and tall enough for a
+ * thumb on a phone. Named with its element, so it counts for more than
+ * the shared look of a field.
+ */
+select.control {
+  min-width: 0;
+  max-width: 100%;
+  padding-top: var(--decide-control-padding);
+  padding-bottom: var(--decide-control-padding);
+}
+
+/* "Catatan" and "Simpan status", under the choice, one under the other. */
+.change {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+  margin-top: var(--space-sm);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
 /* The note of what was done, under the status, wrapping on a phone. */
 .note {
   display: block;

@@ -10,6 +10,10 @@ vi.mock("next/form", () => ({
   default: ({ children }: { children: unknown }) => children,
 }));
 
+vi.mock("./coaching-actions", () => ({
+  changeCoachingStatusAction: vi.fn(),
+}));
+
 const ROW: CoachingRow = {
   studentId: "s1",
   name: "Gita Purba",
@@ -126,6 +130,25 @@ describe("CoachingScreen", () => {
     expect(shown).toMatch(
       /<a [^>]*href="\/pembinaan\/karakter\?cari=Gita&amp;hal=2&amp;profil=s1"[^>]*><b[^>]*>Gita Purba<\/b><\/a>/,
     );
+  });
+
+  it("gives a row the account may change a choice of the four statuses, with the note under it", () => {
+    const shown = screen([{ ...ROW, mayChange: true }]);
+    const choice = shown.match(
+      /<select[^>]*aria-label="Status pembinaan Gita Purba"[^>]*>(.*?)<\/select>/,
+    )?.[1];
+    expect(choice).toBeDefined();
+    for (const word of [
+      "Teridentifikasi",
+      "Konseling",
+      "Pemantauan",
+      "Selesai",
+    ]) {
+      expect(choice).toContain(`>${word}</option>`);
+    }
+    expect(choice).toContain('value="counselling" selected=""');
+    expect(shown).toContain("Diajak bicara tentang kehadiran apel.");
+    expect(shown).not.toContain(">Konseling</span>");
   });
 
   it("shows a reader the status as a label, with nothing to choose", () => {
