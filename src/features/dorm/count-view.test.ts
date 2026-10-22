@@ -171,7 +171,7 @@ describe("withOwnMarkKept", () => {
     });
   });
 
-  it("keeps the own mark as kept, and the others as sent, when the own mark is sent unchanged", () => {
+  it("keeps the own mark as the form starts from it, and the others as sent, when the own mark is sent unchanged", () => {
     const kept = { [OWN]: ABSENT, [OTHER]: PRESENT };
 
     expect(
@@ -180,17 +180,36 @@ describe("withOwnMarkKept", () => {
       marks: { [OWN]: ABSENT, [OTHER]: ABSENT },
       ownChangeLeftOut: false,
     });
-    expect(withOwnMarkKept({ [OTHER]: ABSENT }, {}, OWN)).toEqual({
-      marks: { [OTHER]: ABSENT },
+    expect(
+      withOwnMarkKept({ [OTHER]: ABSENT }, { [OWN]: PRESENT }, OWN),
+    ).toEqual({
+      marks: { [OTHER]: ABSENT, [OWN]: PRESENT },
       ownChangeLeftOut: false,
     });
+  });
+
+  it("leaves out the own row, without a word, once the student no longer takes part", () => {
+    expect(
+      withOwnMarkKept(
+        { [OWN]: ABSENT, [OTHER]: ABSENT },
+        { [OTHER]: PRESENT },
+        OWN,
+      ),
+    ).toEqual({ marks: { [OTHER]: ABSENT }, ownChangeLeftOut: false });
   });
 
   it("leaves out a change of the own mark, also with its key in capitals, and says so", () => {
     for (const key of [OWN, OWN.toUpperCase()]) {
       expect(
-        withOwnMarkKept({ [key]: ABSENT, [OTHER]: ABSENT }, {}, OWN),
-      ).toEqual({ marks: { [OTHER]: ABSENT }, ownChangeLeftOut: true });
+        withOwnMarkKept(
+          { [key]: ABSENT, [OTHER]: ABSENT },
+          { [OWN]: PRESENT },
+          OWN,
+        ),
+      ).toEqual({
+        marks: { [OTHER]: ABSENT, [OWN]: PRESENT },
+        ownChangeLeftOut: true,
+      });
     }
     expect(withOwnMarkKept({}, { [OWN]: ABSENT }, OWN)).toEqual({
       marks: { [OWN]: ABSENT },

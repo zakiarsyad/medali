@@ -6,6 +6,7 @@ import type { Database } from "@/db/connect";
 import { brokeUniqueRule } from "@/db/unique-violation";
 import type { Parsed } from "@/parsed";
 import { closeWithdrawn } from "./clarification-store";
+import type { CountMarks } from "./count-ids";
 import type { CountInput } from "./count-input";
 import {
   ANNOUNCED_ALREADY,
@@ -17,15 +18,27 @@ import {
   ON_LEAVE,
 } from "./count-messages";
 import { readParticipants } from "./count-participants";
-import { lockActivity, readStoredCount, writeCount } from "./count-store";
+import {
+  lockActivity,
+  readStoredCount,
+  type StoredCount,
+  writeCount,
+} from "./count-store";
 import {
   hasStarted,
+  marksFor,
   NOT_COUNTED_YET,
   type Participant,
   withOwnMarkKept,
+  withoutLeaveAbsences,
 } from "./count-view";
 import { readActivityOn } from "./daily-activities";
-import { type ApprovedLeave, type HeldTimes, leaveMarkOf } from "./leave-marks";
+import {
+  type ApprovedLeave,
+  type HeldTimes,
+  leaveMarkOf,
+  leaveMarksAt,
+} from "./leave-marks";
 import { readApprovedLeaves, spanOfHeld } from "./leave-store";
 import { OWN_RECORD } from "./own-record";
 
@@ -74,6 +87,20 @@ function absentIn(input: CountInput): Set<string> {
   return new Set(absent.map(([id]) => id));
 }
 
+/** The marks the form of the count starts from, as the screen reads them. */
+function formStart(
+  participants: Participant[],
+  kept: StoredCount | null,
+  leaves: ApprovedLeave[],
+  held: HeldTimes,
+): CountMarks {
+  const ids = participants.map((participant) => participant.id);
+  return withoutLeaveAbsences(
+    marksFor(participants, kept?.marks ?? {}),
+    leaveMarksAt(leaves, ids, held),
+  );
+}
+
 async function saveIn(
   tx: Database,
   actor: Counter,
@@ -89,14 +116,15 @@ async function saveIn(
   if ((kept?.version ?? NOT_COUNTED_YET) !== sent.version) {
     return COUNT_CHANGED;
   }
-  const own = withOwnMarkKept(sent.marks, kept?.marks ?? {}, actor.studentId);
-  const input = { ...sent, marks: own.marks };
   const wasAnnounced = kept !== null && kept.announcedAt !== null;
-  if (wasAnnounced && !input.isAnnouncement) return ANNOUNCED_ALREADY;
-  const participants = await readParticipants(tx, held.audience, input.day);
-  if (!marksOnly(input, participants)) return NOT_A_PARTICIPANT;
-  const times = { ...held, day: input.day };
+  if (wasAnnounced && !sent.isAnnouncement) return ANNOUNCED_ALREADY;
+  const participants = await readParticipants(tx, held.audience, sent.day);
+  const times = { ...held, day: sent.day };
   const leaves = await readApprovedLeaves(tx, spanOfHeld(times));
+  const start = formStart(participants, kept, leaves, times);
+  const own = withOwnMarkKept(sent.marks, start, actor.studentId);
+  const input = { ...sent, marks: own.marks };
+  if (!marksOnly(input, participants)) return NOT_A_PARTICIPANT;
   if (marksAbsentOnLeave(input, leaves, times)) return ON_LEAVE;
 
   const version = await writeCount(tx, actor.id, input, participants, kept);

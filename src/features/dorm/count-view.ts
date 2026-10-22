@@ -134,28 +134,29 @@ export interface OwnMarkKept {
 }
 
 /**
- * The marks sent, with the account's own mark as the count keeps it: a
- * resident who also counts never marks themselves. A mark not sent is
- * Hadir without a note, and the own key is found in any case.
+ * The marks sent, with the account's own mark as the form starts from it
+ * (`start`, one mark for each participant): a resident who also counts
+ * never marks themselves. A mark not sent is Hadir without a note, and
+ * the own key is found in any case. Once the student no longer takes
+ * part, their row is left out, as any other one's would be.
  */
 export function withOwnMarkKept(
   sent: CountMarks,
-  kept: CountMarks,
+  start: CountMarks,
   ownStudentId: string | null,
 ): OwnMarkKept {
   if (ownStudentId === null) return { marks: sent, ownChangeLeftOut: false };
-  const keptOwn = kept[ownStudentId];
+  const startOwn = start[ownStudentId];
   const marks: CountMarks = {};
   const sentOwn: CountMark[] = [];
   for (const [id, mark] of Object.entries(sent)) {
     if (isOwnRecord(ownStudentId, id)) sentOwn.push(mark);
     else marks[id] = mark;
   }
-  if (keptOwn !== undefined) marks[ownStudentId] = keptOwn;
+  if (startOwn === undefined) return { marks, ownChangeLeftOut: false };
+  marks[ownStudentId] = startOwn;
   if (sentOwn.length === 0) sentOwn.push(PRESENT);
-  const ownChangeLeftOut = sentOwn.some(
-    (mark) => !isSameMark(mark, keptOwn ?? PRESENT),
-  );
+  const ownChangeLeftOut = sentOwn.some((mark) => !isSameMark(mark, startOwn));
   return { marks, ownChangeLeftOut };
 }
 
