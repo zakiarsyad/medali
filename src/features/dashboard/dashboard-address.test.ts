@@ -7,7 +7,9 @@ import {
   knownFilters,
   NO_AGENCY,
   NO_FILTERS,
+  readDashboardDetail,
   readDashboardFilters,
+  studentDetailAddress,
 } from "./dashboard-address";
 
 const EVERY_CHOICE: DashboardFilters = {
@@ -107,5 +109,28 @@ describe("dashboardAddress", () => {
 
   it("is the plain address without a filter", () => {
     expect(dashboardAddress(NO_FILTERS)).toBe("/dashboard");
+  });
+});
+
+describe("the student detail over the Dashboard", () => {
+  const ID = "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f5001";
+
+  it("opens over the Dashboard as it was filtered, and closes back to it", () => {
+    const address = studentDetailAddress(
+      { ...NO_FILTERS, province: "Bali" },
+      ID,
+    );
+
+    expect(address).toBe(`/dashboard?provinsi=Bali&profil=${ID}`);
+    expect(studentDetailAddress(NO_FILTERS, ID)).toBe(
+      `/dashboard?profil=${ID}`,
+    );
+  });
+
+  it("reads the student the address asks for, cut to the length of an id, or none", () => {
+    expect(readDashboardDetail({ profil: ID })).toBe(ID);
+    expect(readDashboardDetail({ profil: ` ${ID}x` })).toBe(ID);
+    expect(readDashboardDetail({ profil: "" })).toBeNull();
+    expect(readDashboardDetail({})).toBeNull();
   });
 });

@@ -1,25 +1,17 @@
-import { and, count, desc, eq, type SQL } from "drizzle-orm";
+import { and, count, eq, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { accounts, mentoringNotes, students } from "@/db/schema";
+import {
+  LISTED_NOTE,
+  type ListedNote,
+  NEWEST_FIRST,
+} from "@/mentoring/listed-note";
 import { NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
 import { opensDetailOf } from "@/mentoring/opens-detail";
 import { pageWithin } from "@/ui/list-pages";
 
 /** How many notes one page of the list shows. */
 export const NOTES_PAGE_SIZE = 20;
-
-type StoredNote = typeof mentoringNotes.$inferSelect;
-
-/** One note as a list shows it. The NIP of the writer is never read. */
-export interface ListedNote
-  extends Pick<
-    StoredNote,
-    "id" | "happenedOn" | "kind" | "valueKeys" | "note" | "followUp"
-  > {
-  studentId: string;
-  studentName: string;
-  writer: { name: string; title: string | null };
-}
 
 export type KindCounts = Record<NoteKind, number>;
 
@@ -39,24 +31,6 @@ export interface NoteList {
   /** How many notes there are of each kind, whatever kind is chosen. */
   counts: KindCounts;
 }
-
-export const LISTED_NOTE = {
-  id: mentoringNotes.id,
-  happenedOn: mentoringNotes.happenedOn,
-  kind: mentoringNotes.kind,
-  valueKeys: mentoringNotes.valueKeys,
-  note: mentoringNotes.note,
-  followUp: mentoringNotes.followUp,
-  studentId: students.id,
-  studentName: students.name,
-  writer: { name: accounts.name, title: accounts.title },
-};
-
-/** The one saved last first; the key settles two saved at the same moment. */
-export const NEWEST_FIRST = [
-  desc(mentoringNotes.writtenAt),
-  desc(mentoringNotes.id),
-];
 
 const NO_NOTES: KindCounts = {
   individual_counselling: 0,

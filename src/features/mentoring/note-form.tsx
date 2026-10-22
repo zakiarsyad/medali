@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, useActionState, useState } from "react";
 import { FOLLOW_UPS, NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
+import { FOLLOW_UP_TITLES, KIND_TITLES } from "@/mentoring/note-words";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
@@ -13,12 +14,7 @@ import type { Mentee } from "./mentees";
 import styles from "./mentoring.module.css";
 import type { NoteFormState } from "./note-form-state";
 import { NOTE_MAX_LENGTH } from "./note-input";
-import {
-  FOLLOW_UP_TITLES,
-  isNoteKind,
-  KIND_TITLES,
-  KIND_VALUES,
-} from "./note-kinds";
+import { isNoteKind, KIND_VALUES } from "./note-kinds";
 
 const FIRST_KIND: NoteKind = NOTE_KINDS[0];
 

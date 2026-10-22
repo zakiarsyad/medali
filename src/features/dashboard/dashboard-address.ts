@@ -119,8 +119,7 @@ function yesNo(choice: boolean): string {
   return choice ? YES : NO;
 }
 
-/** The address of the Dashboard with these filters; what is not chosen is left out. */
-export function dashboardAddress(filters: DashboardFilters): string {
+function filterParams(filters: DashboardFilters): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.stageNo !== null) params.set("tahap", String(filters.stageNo));
   if (filters.studyProgramId !== null) {
@@ -138,6 +137,40 @@ export function dashboardAddress(filters: DashboardFilters): string {
   if (filters.originAgency !== null) {
     params.set("instansi", filters.originAgency);
   }
+  return params;
+}
+
+function addressWith(params: URLSearchParams): string {
   const search = params.toString();
   return search === "" ? DASHBOARD_ADDRESS : `${DASHBOARD_ADDRESS}?${search}`;
+}
+
+/** The address of the Dashboard with these filters; what is not chosen is left out. */
+export function dashboardAddress(filters: DashboardFilters): string {
+  return addressWith(filterParams(filters));
+}
+
+/** The part of the address that names the student whose detail is open. */
+const DETAIL_PARAM = "profil";
+/** As long as the id of a record is. */
+const ID_LENGTH = 36;
+
+/** The address of a student's detail, open over the Dashboard with these filters. */
+export function studentDetailAddress(
+  filters: DashboardFilters,
+  studentId: string,
+): string {
+  const params = filterParams(filters);
+  params.set(DETAIL_PARAM, studentId);
+  return addressWith(params);
+}
+
+/**
+ * What the address gives as the id of the student whose detail is open,
+ * or null when it names none. It is not checked here: the read of the
+ * detail answers "not found" for what is no id.
+ */
+export function readDashboardDetail(params: SearchParams): string | null {
+  const id = firstParam(params[DETAIL_PARAM]).trim().slice(0, ID_LENGTH);
+  return id === "" ? null : id;
 }

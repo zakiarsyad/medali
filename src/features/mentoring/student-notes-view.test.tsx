@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { ListedNote } from "@/mentoring/listed-note";
 import shared from "@/ui/data-screen.module.css";
-import type { ListedNote } from "./note-list";
 import type { StudentNotes } from "./student-notes";
 import { StudentNotesView } from "./student-notes-view";
 

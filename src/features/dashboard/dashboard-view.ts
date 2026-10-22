@@ -15,6 +15,7 @@ import {
   filtersInUse,
   knownFilters,
   NO_AGENCY,
+  NO_FILTERS,
 } from "./dashboard-address";
 import {
   type ChoiceCounts,
@@ -27,6 +28,8 @@ import { dashboardStudents } from "./dashboard-students";
 import { type CharacterGrades, readCharacterGrades } from "./grade-read";
 import { readMental } from "./mental-read";
 import type { MentalView } from "./mental-recap";
+import { readMentoring } from "./mentoring-read";
+import type { MentoringView } from "./mentoring-recap";
 import { readPhysical } from "./physical-read";
 import type { PhysicalRecap } from "./physical-recap";
 
@@ -49,6 +52,7 @@ export interface DashboardView {
   grades: CharacterGrades;
   physical: PhysicalRecap;
   mental: MentalView;
+  mentoring: MentoringView;
   /** The limits in force, which give each fitness category its scores. */
   fitnessLimits: FitnessLimits;
 }
@@ -86,13 +90,25 @@ export async function loadDashboard(
   const stages = stageCohorts(held.cohortYears, period);
   const counted = dashboardStudents(scope.visible, filters, stages);
   const filtered = filtersInUse(filters) > 0;
-  const [counts, achievement, grades, physical, mental] = await Promise.all([
-    countChoices(db, scope.visible, filters, stages),
-    readAchievement(db, counted, filtered),
-    readCharacterGrades(db, counted, basis, filtered),
-    readPhysical(db, limits, counted, scope.illnesses),
-    readMental(db, counted, scope.shared),
-  ]);
+  const everyone = filtered
+    ? dashboardStudents(scope.visible, NO_FILTERS, stages)
+    : null;
+  const [counts, achievement, grades, physical, mental, mentoring] =
+    await Promise.all([
+      countChoices(db, scope.visible, filters, stages),
+      readAchievement(db, counted, filtered),
+      readCharacterGrades(db, counted, basis, filtered),
+      readPhysical(db, limits, counted, scope.illnesses),
+      readMental(db, counted, scope.shared),
+      readMentoring(db, {
+        where: counted,
+        everyone,
+        notes: scope.notes,
+        byProgram: scope.picksProgram,
+        detail: scope.detail,
+        today,
+      }),
+    ]);
   return {
     filters,
     programs,
@@ -104,6 +120,7 @@ export async function loadDashboard(
     grades,
     physical,
     mental,
+    mentoring,
     fitnessLimits: limits,
   };
 }

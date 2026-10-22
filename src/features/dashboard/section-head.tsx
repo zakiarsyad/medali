@@ -4,7 +4,7 @@ import shared from "@/ui/data-screen.module.css";
 import styles from "./dashboard.module.css";
 
 /**
- * The head of a numbered section: its number, its title, which its card
+ * The head of a section: its number, when it has one, its title, which its card
  * moves the page to, the line under it, and "Lihat rincian" to the tab
  * behind it, for an account that may open that tab.
  */
@@ -15,7 +15,8 @@ export function SectionHead({
   detailAddress,
   children,
 }: {
-  number: number;
+  /** None for a section without a card. */
+  number?: number;
   id: string;
   title: string;
   detailAddress: string | null;
@@ -24,7 +25,9 @@ export function SectionHead({
 }) {
   return (
     <div className={styles.sectionHead}>
-      <span className={styles.sectionNoBig}>{number}</span>
+      {number !== undefined && (
+        <span className={styles.sectionNoBig}>{number}</span>
+      )}
       <div>
         <h2 id={id} className={styles.sectionTitle}>
           {title}

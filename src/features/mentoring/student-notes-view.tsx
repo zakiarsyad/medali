@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { NoteItem, NoteItems } from "@/mentoring/note-item";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./mentoring.module.css";
-import { NoteItem } from "./note-item";
 import type { StudentNotes } from "./student-notes";
 
 /**
@@ -32,11 +32,11 @@ export function StudentNotesView({
       {notes.length === 0 ? (
         <p className={styles.quiet}>Belum ada catatan untuk mahasiswa ini.</p>
       ) : (
-        <ul className={styles.notes}>
+        <NoteItems>
           {notes.map((note) => (
             <NoteItem key={note.id} note={note} />
           ))}
-        </ul>
+        </NoteItems>
       )}
       {count > notes.length && (
         <p className={styles.quiet}>

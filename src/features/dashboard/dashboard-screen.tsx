@@ -12,14 +12,15 @@ import { GradeCohortTable } from "./grade-cohort-table";
 import { GradeSection } from "./grade-section";
 import { MentalCard } from "./mental-card";
 import { MentalSection } from "./mental-section";
+import { type MentoringLinks, MentoringSection } from "./mentoring-section";
 import { PhysicalCard } from "./physical-card";
 import { PhysicalSection } from "./physical-section";
 
 /**
- * Where "Lihat rincian" of each section leads, or null for an account
- * that may not open that tab.
+ * Where "Lihat rincian" of each section and each number of Pendampingan
+ * leads, or null for an account that may not open that tab.
  */
-export interface DetailLinks {
+export interface DetailLinks extends MentoringLinks {
   assessment: string | null;
   grade: string | null;
   fitness: string | null;
@@ -69,6 +70,12 @@ function DashboardContent({
         detailAddress={links.fitness}
       />
       <MentalSection mental={view.mental} detailAddress={links.mental} />
+      <MentoringSection
+        mentoring={view.mentoring}
+        students={view.counts.matching}
+        filters={view.filters}
+        links={links}
+      />
     </>
   );
 }

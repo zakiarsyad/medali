@@ -1,13 +1,14 @@
 import { and, eq, sql } from "drizzle-orm";
 import type { AccountForAccess } from "@/auth/access";
 import type { CoachingLevel } from "@/character-scores/coaching-need";
+import { SHOWN_STATUS } from "@/character-scores/coaching-shown-status";
 import type { CoachingStatus } from "@/character-scores/coaching-status";
 import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { coachingStatuses, students } from "@/db/schema";
 import type { ValueKey } from "@/ui/medali-values";
-import { listedWithin, needOf, SHOWN_STATUS } from "./coaching-board";
+import { listedWithin, needOf } from "./coaching-board";
 import { coachingReachOf } from "./coaching-reach";
 
 /** What the panel "Pembinaan (level)" of a student's detail shows. */
