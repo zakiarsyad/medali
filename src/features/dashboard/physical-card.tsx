@@ -49,7 +49,7 @@ function CategoryStack({ recap }: { recap: ShownPhysical }) {
 /**
  * The card "Kesehatan jasmani": the percent prima dan baik, how many are
  * tested and how many need a doctor, and a bar of the categories.
- * Pressing it moves the page to section 3.
+ * Unless `linked` is off, pressing it moves the page to section 3.
  */
 export function PhysicalCard({
   recap,

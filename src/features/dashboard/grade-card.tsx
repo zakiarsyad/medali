@@ -58,7 +58,8 @@ function LetterStack({
 /**
  * The card "Nilai karakter": Rerata nilai akhir, the percent that meets
  * the pass letter, how many are held at 70, and the letter spread.
- * Pressing it moves the page to section 2. Without numbers it says why.
+ * Unless `linked` is off, pressing it moves the page to section 2.
+ * Without numbers it says why.
  */
 export function GradeCard({
   grades,

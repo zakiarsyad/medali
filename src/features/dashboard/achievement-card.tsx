@@ -11,7 +11,8 @@ export const ACHIEVEMENT_SECTION = "capaian-karakter";
 /**
  * The card "Capaian karakter": the average Rerata, how many are assessed
  * with the counts of Emas and Perlu pembinaan, and the predikat spread.
- * Pressing it moves the page to section 1. Without a recap it says why.
+ * Unless `linked` is off, pressing it moves the page to section 1.
+ * Without a recap it says why.
  */
 export function AchievementCard({
   recap,

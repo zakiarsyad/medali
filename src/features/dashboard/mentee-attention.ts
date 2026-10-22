@@ -11,7 +11,6 @@ import type { FitnessCategory } from "@/health-notes/fitness-ids";
 import type { ScreeningLevel } from "@/mental-health/screening-ids";
 import { COUNSELLING_LEVELS } from "@/mental-health/screening-rules";
 import { LEVEL_WORDS } from "@/mental-health/screening-words";
-import { averageWords } from "./achievement-words";
 
 /*
  * Which anak asuh need attention, and why. Read by the screen parts, so
@@ -81,9 +80,18 @@ function gradeReason(grade: MenteeFacts["grade"]): Reason | null {
   return { words: `Nilai karakter ${grade.letter}`, tone: "warning" };
 }
 
+/**
+ * A value cut down to one decimal, never rounded up, so one flagged under
+ * 75 never shows as 75,0. The tiny addition keeps 74.6, which the
+ * computer holds as a hair below it, at 74,6.
+ */
+function tenthsDown(value: number): number {
+  return Math.floor(value * 10 + 1e-9) / 10;
+}
+
 function attendanceReason(attendance: number | null): Reason | null {
   if (attendance === null || attendance >= ATTENDANCE_BELOW) return null;
-  const words = `Kehadiran kegiatan ${averageWords(attendance)}%`;
+  const words = `Kehadiran kegiatan ${shownRerata(tenthsDown(attendance))}%`;
   return { words, tone: "warning" };
 }
 

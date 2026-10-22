@@ -57,6 +57,9 @@ describe("reasonsOf", () => {
     expect(words({ ...CALM, attendance: 74.9 })).toEqual([
       "Kehadiran kegiatan 74,9%",
     ]);
+    expect(words({ ...CALM, attendance: 74.96 })).toEqual([
+      "Kehadiran kegiatan 74,9%",
+    ]);
     expect(words({ ...CALM, attendance: null })).toEqual([]);
   });
 

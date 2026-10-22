@@ -37,7 +37,8 @@
   text-decoration: none;
 }
 
-.card:hover {
+/* Only a card that leads to its section looks pressable. */
+a.card:hover {
   border-color: var(--navy3);
   border-top-color: var(--gold);
 }
