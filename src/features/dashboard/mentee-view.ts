@@ -6,6 +6,8 @@ import { attentionRows } from "./mentee-attention";
 import { readMenteeCards } from "./mentee-cards";
 import { readMenteeFacts } from "./mentee-facts-read";
 import { countMentees, readMenteeGroups } from "./mentee-groups";
+import { attendanceAverageOf, openCoachingOf } from "./mentee-notes";
+import { readMenteeNotes } from "./mentee-notes-read";
 import { readProgress } from "./mentee-progress-read";
 import type { MenteeDashboard } from "./mentee-recap";
 import type { MenteeScope } from "./mentee-scope";
@@ -29,11 +31,25 @@ export async function loadMenteeDashboard(
     readFitnessLimits(db),
   ]);
   const groupIds = groups.map((group) => group.id);
-  const [progress, cards, facts] = await Promise.all([
+  const [progress, cards, facts, written] = await Promise.all([
     readProgress(db, { groupIds, mentees, students, period }),
     readMenteeCards(db, scope, basis, limits),
     readMenteeFacts(db, scope, basis, limits),
+    readMenteeNotes(db, scope, today),
   ]);
-  const attention = attentionRows(facts);
-  return { kind: "shown", groups, students, progress, cards, attention };
+  return {
+    kind: "shown",
+    groups,
+    students,
+    progress,
+    cards,
+    attention: attentionRows(facts),
+    notes: written.notes,
+    noteNumbers: {
+      recentNotes: written.recentNotes,
+      openCoaching: openCoachingOf(facts),
+      penalties: written.penalties,
+      attendance: attendanceAverageOf(facts),
+    },
+  };
 }

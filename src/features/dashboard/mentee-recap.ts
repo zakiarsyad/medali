@@ -4,7 +4,9 @@ import type { Recap } from "./achievement-recap";
 import type { GradeRecap } from "./grade-recap";
 import type { PublishedCounts } from "./mental-recap";
 import type { AttentionRow } from "./mentee-attention";
+import type { MenteeNoteNumbers } from "./mentee-notes";
 import type { MentoringProgress } from "./mentee-progress";
+import type { LatestNote } from "./mentoring-recap";
 import type { PhysicalRecap } from "./physical-recap";
 
 /*
@@ -38,6 +40,9 @@ export interface MenteeContent {
   cards: MenteeCards;
   /** "Perlu perhatian": the anak asuh with a reason, the most reasons first. */
   attention: AttentionRow[];
+  /** "Catatan pengasuhan terbaru", the newest first. */
+  notes: LatestNote[];
+  noteNumbers: MenteeNoteNumbers;
 }
 
 /** Dashboard anak asuh: only the message while no group is held. */

@@ -169,6 +169,7 @@ function menteeLinksOf(roles: AccountForAccess["roles"]): MenteeLinks {
   return {
     meetings: opens("meetings") ? MEETINGS_ADDRESS : null,
     scores: opens("scores") ? SCORES_ADDRESS : null,
+    notes: opens("notes") ? NOTES_ADDRESS : null,
   };
 }
 

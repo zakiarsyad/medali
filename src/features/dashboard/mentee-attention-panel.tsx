@@ -5,7 +5,7 @@ import { menteeDetailAddress } from "./dashboard-kind";
 import {
   ATTENTION_SHOWN,
   type AttentionRow,
-  averageWords,
+  medaliWords,
   type ReasonTone,
 } from "./mentee-attention";
 
@@ -21,7 +21,7 @@ function AttentionItem({ row }: { row: AttentionRow }) {
       <span>
         <StudentLink name={row.name} address={address} />{" "}
         <span className={styles.attentionAverage}>
-          · {averageWords(row.rerata)}
+          · {medaliWords(row.rerata)}
         </span>
       </span>
       <span className={styles.tags}>
@@ -63,7 +63,7 @@ export function MenteeAttentionPanel({
   return (
     <section className={shared.panel}>
       <div className={styles.panelHead}>
-        <h2 className={shared.heading}>Perlu perhatian</h2>
+        <h3 className={shared.heading}>Perlu perhatian</h3>
         <span className={styles.attentionAverage}>
           {rows.length.toLocaleString("id-ID")} anak asuh
         </span>

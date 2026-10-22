@@ -15,6 +15,7 @@ import {
 import {
   addTestAccount,
   addTestGroup,
+  addTestNote,
   addTestProgram,
   addTestStudent,
 } from "@/features/mentoring/test-records";
@@ -147,6 +148,36 @@ describe("Perlu perhatian of Dashboard anak asuh", () => {
         .where(eq(counsellingSharingReads.readBy, mentor.id));
 
       expect(readings).toEqual([{ studentId: ids.s05 }]);
+    });
+  });
+
+  it("gives the latest notes about the anak asuh, at most 5, with the numbers under them", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, ids } = await addRecords(db);
+      const note = (studentId: string, day: string, hour: number) =>
+        addTestNote(db, studentId, mentor.id, {
+          happenedOn: day,
+          writtenAt: new Date(`${day}T0${hour}:00:00Z`),
+        });
+      await note(ids.s07, "5190-09-01", 9);
+      for (const day of ["01", "02", "03", "04", "05", "06"]) {
+        await note(ids.s01, `5190-10-${day}`, 3);
+      }
+      await note(ids.s08, "5190-10-30", 3);
+      const scope = menteeScopeOf(mentor);
+      if (scope === null) throw new Error("No scope.");
+
+      const view = await loadMenteeDashboard(db, scope, null, TODAY);
+      if (view.kind !== "shown") throw new Error("No group.");
+
+      expect(view.notes).toHaveLength(5);
+      expect(view.notes.every((note) => note.studentId === ids.s01)).toBe(true);
+      expect(view.noteNumbers).toEqual({
+        recentNotes: 5,
+        openCoaching: 1,
+        penalties: 1,
+        attendance: null,
+      });
     });
   });
 });

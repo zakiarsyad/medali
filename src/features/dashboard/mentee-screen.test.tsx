@@ -33,9 +33,20 @@ const SHOWN: MenteeDashboard = {
     published: { matching: 3, needCounselling: 2 },
   },
   attention: [],
+  notes: [],
+  noteNumbers: {
+    recentNotes: 4,
+    openCoaching: 2,
+    penalties: 1,
+    attendance: null,
+  },
 };
 
-const LINKS = { meetings: "/pengasuhan/hadir", scores: "/pengasuhan/nilai" };
+const LINKS = {
+  meetings: "/pengasuhan/hadir",
+  scores: "/pengasuhan/nilai",
+  notes: "/pengasuhan/catatan",
+};
 
 describe("Dashboard anak asuh", () => {
   it("shows the title and the line of a Pengasuh with a group", () => {
@@ -63,6 +74,20 @@ describe("Dashboard anak asuh", () => {
     );
     expect(html).not.toContain("diasesmen</small>");
     expect(html).not.toContain("Filter");
+  });
+
+  it("shows Catatan pengasuhan terbaru with Tulis catatan and its four numbers", () => {
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toMatch(/href="\/pengasuhan\/catatan"[^>]*>Tulis catatan</);
+    expect(html).toContain("Belum ada catatan.");
+    expect(html).toContain("<dt>Catatan 30 hari</dt><dd>4</dd>");
+    expect(html).toContain("<dt>Perlu pembinaan</dt><dd>2</dd>");
+    expect(html).toContain("<dt>Pelanggaran disiplin</dt><dd>1</dd>");
+    expect(html).toContain("<dt>Rerata kehadiran kegiatan</dt><dd>-</dd>");
+    expect(html).toContain("Tidak ada anak asuh yang perlu perhatian");
   });
 
   it("shows only the message to a Pengasuh without a group", () => {

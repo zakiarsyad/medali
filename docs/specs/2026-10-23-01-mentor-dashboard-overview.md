@@ -96,4 +96,4 @@ Pengasuh.
 - [x] 2. The progress box with its two links.
 - [x] 3. The four cards for anak asuh.
 - [x] 4. "Perlu perhatian" with its reasons and "Lihat semua".
-- [ ] 5. "Catatan pengasuhan terbaru" and its four numbers.
+- [x] 5. "Catatan pengasuhan terbaru" and its four numbers.

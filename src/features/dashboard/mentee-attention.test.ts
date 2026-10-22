@@ -3,8 +3,8 @@ import {
   ATTENDANCE_BELOW,
   ATTENTION_SHOWN,
   attentionRows,
-  averageWords,
   type MenteeFacts,
+  medaliWords,
   reasonsOf,
 } from "./mentee-attention";
 
@@ -111,9 +111,9 @@ describe("attentionRows", () => {
   });
 });
 
-describe("averageWords", () => {
+describe("medaliWords", () => {
   it("names the MEDALI average, or says the anak asuh is not assessed", () => {
-    expect(averageWords(81.7)).toBe("MEDALI 81,7");
-    expect(averageWords(null)).toBe("belum diasesmen");
+    expect(medaliWords(81.7)).toBe("MEDALI 81,7");
+    expect(medaliWords(null)).toBe("belum diasesmen");
   });
 });

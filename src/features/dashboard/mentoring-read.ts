@@ -95,7 +95,8 @@ async function countGroups(db: Database, where: SQL) {
   return { mentors: found?.mentors ?? 0, groups: found?.groups ?? 0 };
 }
 
-async function countRecentNotes(
+/** The notes of the last 30 days about the students `where` lets through whose notes the account may read. */
+export async function countRecentNotes(
   db: Database,
   where: SQL,
   notes: SQL | null,
@@ -177,11 +178,13 @@ async function readPrograms(
 
 /**
  * "Catatan pengasuhan terbaru": the notes saved last about the students
- * of the group whose notes the account may read, as Pengasuhan shows them.
+ * of the group whose notes the account may read, as Pengasuhan shows
+ * them, at most `shown`.
  */
-async function readLatestNotes(
+export async function readLatestNotes(
   db: Database,
-  asked: MentoringAsked,
+  asked: Pick<MentoringAsked, "where" | "notes" | "detail">,
+  shown: number = LATEST_NOTES_SHOWN,
 ): Promise<LatestNote[]> {
   if (asked.notes === null) return [];
   return db
@@ -191,7 +194,7 @@ async function readLatestNotes(
     .innerJoin(accounts, eq(accounts.id, mentoringNotes.writtenBy))
     .where(and(asked.where, asked.notes))
     .orderBy(...NEWEST_FIRST)
-    .limit(LATEST_NOTES_SHOWN);
+    .limit(shown);
 }
 
 /**

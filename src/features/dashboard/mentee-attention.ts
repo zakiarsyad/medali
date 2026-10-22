@@ -148,7 +148,7 @@ export function attentionRows(facts: readonly MenteeFacts[]): AttentionRow[] {
 }
 
 /** "MEDALI 81,7" beside a name, or "belum diasesmen". */
-export function averageWords(rerata: number | null): string {
+export function medaliWords(rerata: number | null): string {
   if (rerata === null) return "belum diasesmen";
   return `MEDALI ${shownRerata(rerata)}`;
 }
