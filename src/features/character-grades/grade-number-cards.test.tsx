@@ -54,4 +54,13 @@ describe("the numbers above Skema bobot", () => {
     expect(page).toContain(">3<");
     expect(page).toContain("karena hukuman disiplin");
   });
+
+  it("shows a dash for Nilai dasar SIKU when it cannot be told, as of a closed semester", () => {
+    const page = renderToStaticMarkup(
+      <GradeNumberCards numbers={NUMBERS} passLetter="C" sikuBase={null} />,
+    );
+
+    expect(page).toContain("sisanya SIKU dasar -");
+    expect(page).toContain("Memenuhi minimal C");
+  });
 });

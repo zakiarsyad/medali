@@ -56,6 +56,11 @@
   max-width: 100%;
 }
 
+/* The choice "Semester" never widens the page on a phone. */
+.choice {
+  max-width: 100%;
+}
+
 .swatch {
   display: inline-block;
   width: var(--swatch-size);

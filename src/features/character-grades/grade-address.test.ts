@@ -9,7 +9,13 @@ describe("readGradeParams", () => {
   it("reads the search, the filter and the page", () => {
     expect(
       readGradeParams({ cari: " ayu ", saring: "belum-lengkap", hal: "3" }),
-    ).toEqual({ query: "ayu", filter: "incomplete", page: 3, profileId: null });
+    ).toEqual({
+      semester: null,
+      query: "ayu",
+      filter: "incomplete",
+      page: 3,
+      profileId: null,
+    });
   });
 
   it("trusts nothing it does not understand", () => {
@@ -26,6 +32,7 @@ describe("gradeAddress", () => {
 
   it("names every choice, and reads back to the same choices", () => {
     const params = {
+      semester: "0b6c3f1e-2d4a-4e5f-9a8b-7c6d5e4f3a2b",
       query: "ayu",
       filter: "failing",
       page: 2,
@@ -35,7 +42,7 @@ describe("gradeAddress", () => {
     const address = gradeAddress(params);
 
     expect(address).toBe(
-      "/penilaian/karakter?cari=ayu&saring=belum-lulus&hal=2",
+      "/penilaian/karakter?semester=0b6c3f1e-2d4a-4e5f-9a8b-7c6d5e4f3a2b&cari=ayu&saring=belum-lulus&hal=2",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readGradeParams(Object.fromEntries(search))).toEqual(params);
@@ -57,5 +64,25 @@ describe("the student whose profile is open over the tab", () => {
     expect(address).toBe(`/penilaian/karakter?profil=${PROFILE}`);
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readGradeParams(Object.fromEntries(search)).profileId).toBe(PROFILE);
+  });
+});
+
+describe("the semester chosen", () => {
+  const PERIOD = "7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
+
+  it("is read from the address, and only as an id", () => {
+    expect(readGradeParams({ semester: PERIOD }).semester).toBe(PERIOD);
+    expect(readGradeParams({ semester: "ganjil" }).semester).toBeNull();
+    expect(readGradeParams({}).semester).toBeNull();
+  });
+
+  it("is kept by the address of another page of the list", () => {
+    const address = gradeAddress({
+      ...START_PARAMS,
+      semester: PERIOD,
+      page: 3,
+    });
+
+    expect(address).toBe(`/penilaian/karakter?semester=${PERIOD}&hal=3`);
   });
 });

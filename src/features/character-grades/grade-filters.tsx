@@ -20,7 +20,7 @@ import {
  * Both are kept in the address of the page: a choice at once, and a typed
  * text after a pause in the typing, in place of the address before it,
  * so going back does not step through every letter. Either starts the
- * list again at its first page.
+ * list again at its first page, of the same semester.
  */
 export function GradeFilterRow({ params }: { params: GradeParams }) {
   const router = useRouter();
@@ -37,22 +37,26 @@ export function GradeFilterRow({ params }: { params: GradeParams }) {
     if (params.query !== asked) setTyped(params.query);
   }
 
-  const { query: heldQuery, filter } = params;
+  const { query: heldQuery, filter, semester } = params;
   useEffect(() => {
     const query = searchText(typed) ?? "";
     if (query === heldQuery) return;
     const timer = setTimeout(() => {
       setAsked(query);
-      router.replace(gradeAddress({ ...START_PARAMS, filter, query }), {
-        scroll: false,
-      });
+      router.replace(
+        gradeAddress({ ...START_PARAMS, semester, filter, query }),
+        {
+          scroll: false,
+        },
+      );
     }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [typed, heldQuery, filter, router]);
+  }, [typed, heldQuery, filter, semester, router]);
 
   function choose(sent: string) {
     const query = searchText(typed) ?? "";
     const chosen = {
+      semester,
       query,
       filter: filterNamed(sent),
       page: 1,

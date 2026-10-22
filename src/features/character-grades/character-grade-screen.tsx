@@ -13,24 +13,30 @@ import { GradeFilterRow } from "./grade-filters";
 import { GradeListTable } from "./grade-list-table";
 
 /**
- * Penilaian karakter: the head of the tab, the four numbers, "Skema
- * bobot", then "Daftar nilai karakter", of the students the account may
- * see.
+ * Penilaian karakter: the head of the tab, the choice "Semester" once a
+ * semester is closed, the four numbers, "Skema bobot", then "Daftar nilai
+ * karakter", of the students the account may see.
  */
 export function CharacterGradeScreen({
   tabs,
+  semester,
   numbers,
   scheme,
   params,
   list,
+  nameOnly,
 }: {
   tabs: TabLinksProps;
+  /** The choice "Semester", or null while no semester is closed. */
+  semester: ReactNode;
   /** The four numbers above "Skema bobot". */
   numbers: ReactNode;
   /** "Skema bobot", to change or only to read. */
   scheme: ReactNode;
   params: GradeParams;
   list: GradeList;
+  /** The students in the list whose name opens nothing. */
+  nameOnly: readonly string[];
 }) {
   return (
     <>
@@ -41,12 +47,13 @@ export function CharacterGradeScreen({
         masing-masing dengan bobotnya.
       </PageHead>
       <TabLinks {...tabs} />
+      {semester}
       {numbers}
       {scheme}
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar nilai karakter</h2>
         <GradeFilterRow params={params} />
-        <GradeListTable rows={list.rows} params={params} />
+        <GradeListTable rows={list.rows} params={params} nameOnly={nameOnly} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

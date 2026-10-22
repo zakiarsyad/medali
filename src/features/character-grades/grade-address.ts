@@ -33,6 +33,11 @@ export const FILTER_WORDS: Record<GradeFilter, string> = {
 };
 
 export interface GradeParams {
+  /**
+   * The period of a closed semester whose fixed grades are shown, or null
+   * for the running semester, "Berjalan".
+   */
+  semester: string | null;
   /** The text to find in a name or a NIM. Empty when nothing is searched. */
   query: string;
   filter: GradeFilter;
@@ -43,6 +48,7 @@ export interface GradeParams {
 }
 
 export const START_PARAMS: GradeParams = {
+  semester: null,
   query: "",
   filter: "all",
   page: 1,
@@ -72,6 +78,7 @@ export function filterNamed(sent: string): GradeFilter {
  */
 export function readGradeParams(params: SearchParams): GradeParams {
   return {
+    semester: idNamed(firstParam(params.semester)),
     query: searchText(firstParam(params.cari)) ?? "",
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
@@ -85,6 +92,7 @@ export function readGradeParams(params: SearchParams): GradeParams {
  */
 export function gradeAddress(params: GradeParams): string {
   const search = new URLSearchParams();
+  if (params.semester !== null) search.set("semester", params.semester);
   if (params.query !== "") search.set("cari", params.query);
   if (params.filter !== "all") {
     search.set("saring", FILTER_CHOICES[params.filter]);

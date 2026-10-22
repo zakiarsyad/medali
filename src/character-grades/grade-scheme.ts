@@ -23,10 +23,22 @@ export interface LatestSetting extends SchemeInForce {
   replaces: string | null;
 }
 
-type SettingRow = typeof characterGradeSchemes.$inferSelect;
+/** The columns of a scheme, as a setting and a semester closing keep them. */
+type SchemeColumns = Pick<
+  typeof characterGradeSchemes.$inferSelect,
+  | "attendanceWeight"
+  | "mentoringWeight"
+  | "sikuWeight"
+  | "skpmWeight"
+  | "aFrom"
+  | "bFrom"
+  | "cFrom"
+  | "dFrom"
+  | "passLetter"
+>;
 
-/** The scheme a stored setting holds. */
-export function schemeOf(row: SettingRow): GradeScheme {
+/** The scheme a stored setting, or a semester closing, holds. */
+export function schemeOf(row: SchemeColumns): GradeScheme {
   return {
     weights: {
       attendance: row.attendanceWeight,

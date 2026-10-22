@@ -1,4 +1,5 @@
 import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
+import { DAY } from "@/ui/day";
 import type { CharacterGrade } from "./character-grade";
 import type { GradePart } from "./scheme-ids";
 
@@ -48,4 +49,9 @@ export const LIMITED_WORDS = `Dibatasi ${CHARACTER_SCORE_CAP}`;
 /** What a grade the limit lowered says: from what Nilai akhir it was held. */
 export function limitedLine(limitedFrom: number): string {
   return `${LIMITED_WORDS} dari ${shownOneDecimal(limitedFrom)} karena hukuman disiplin.`;
+}
+
+/** The line over the grades of a closed semester, dated by the day of closing on campus. */
+export function fixedGradeLine(periodTitle: string, closedAt: Date): string {
+  return `Nilai semester ${periodTitle}, ditetapkan ${DAY.format(closedAt)}. Tidak berubah lagi.`;
 }
