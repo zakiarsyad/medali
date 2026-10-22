@@ -4,11 +4,13 @@ import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { disciplinePenalties, students } from "@/db/schema";
+import { penaltyFormAddress } from "./penalty-address";
 import type {
   PenaltyCategory,
   PenaltyLevel,
   PenaltyStatus,
 } from "./penalty-ids";
+import { readPenaltyPick } from "./penalty-student";
 
 /** One penalty of "Riwayat pelanggaran disiplin" in a student's detail. */
 export interface StudentPenalty {
@@ -80,4 +82,19 @@ export async function readStudentPenalties(
       desc(disciplinePenalties.savedAt),
       desc(disciplinePenalties.id),
     );
+}
+
+/**
+ * The address "Catat pelanggaran" opens: Pelanggaran disiplin with the
+ * form on the student. Null where the account may not record a penalty
+ * for them, which needs an Aktif student within its rows.
+ */
+export async function readRecordAddress(
+  db: Database,
+  actor: AccountForAccess,
+  studentId: string,
+): Promise<string | null> {
+  const pick = await readPenaltyPick(db, actor, studentId);
+  if (pick === null) return null;
+  return penaltyFormAddress(studentId);
 }

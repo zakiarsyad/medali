@@ -8,7 +8,11 @@ import type { Database } from "@/db/connect";
 import { disciplinePenalties, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readDetailOrBrief } from "@/features/students/student-brief";
-import { penalisedReachOf, readStudentPenalties } from "./student-penalties";
+import {
+  penalisedReachOf,
+  readRecordAddress,
+  readStudentPenalties,
+} from "./student-penalties";
 import {
   addPenaltyGroup,
   addTestPenalty,
@@ -214,6 +218,50 @@ describe("readStudentPenalties", () => {
       expect(await readStudentPenalties(db, officer, "bukan-id")).toEqual([]);
     });
   });
+});
+
+describe("readRecordAddress", () => {
+  it.each(["head_of_unit", "discipline_officer"] as const)(
+    "gives %s Catat pelanggaran for an active student, opening the form on them",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { inA } = await setting(db);
+
+        expect(
+          await readRecordAddress(db, await reader(db, [role]), inA[0]),
+        ).toBe(`/pembinaan/disiplin?mahasiswa=${inA[0]}`);
+      });
+    },
+  );
+
+  it("gives no Catat pelanggaran for a student on Cuti or Non aktif", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, inA } = await setting(db);
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, inA[0]));
+      await db
+        .update(students)
+        .set({ status: "inactive" })
+        .where(eq(students.id, inA[1]));
+
+      expect(await readRecordAddress(db, officer, inA[0])).toBeNull();
+      expect(await readRecordAddress(db, officer, inA[1])).toBeNull();
+    });
+  });
+
+  it.each(["director", "head_of_program", "mentor"] as const)(
+    "gives %s, who only reads, no Catat pelanggaran",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { inA, programA } = await setting(db);
+        const asking = await reader(db, [role], programA);
+
+        expect(await readRecordAddress(db, asking, inA[0])).toBeNull();
+      });
+    },
+  );
 });
 
 describe("the small detail a name in Daftar pelanggaran opens", () => {

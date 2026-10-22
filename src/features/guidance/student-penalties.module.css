@@ -43,3 +43,7 @@
 .more {
   margin-top: var(--space-sm);
 }
+
+.actions {
+  margin: var(--space-lg) 0 0;
+}

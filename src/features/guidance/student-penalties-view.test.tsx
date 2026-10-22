@@ -16,8 +16,16 @@ function penalty(more: Partial<StudentPenalty> = {}): StudentPenalty {
   };
 }
 
-function shown(penalties: StudentPenalty[]): string {
-  return renderToStaticMarkup(<StudentPenaltiesView penalties={penalties} />);
+function shown(
+  penalties: StudentPenalty[],
+  recordAddress: string | null = null,
+): string {
+  return renderToStaticMarkup(
+    <StudentPenaltiesView
+      penalties={penalties}
+      recordAddress={recordAddress}
+    />,
+  );
 }
 
 describe("Riwayat pelanggaran disiplin", () => {
@@ -82,6 +90,15 @@ describe("Riwayat pelanggaran disiplin", () => {
     expect(folded).toContain("Uraian uji 11.");
     expect(folded).toContain("Uraian uji 12.");
     expect(folded).not.toContain("Uraian uji 10.");
+  });
+
+  it("offers Catat pelanggaran, opening the form on the student, only when given its address", () => {
+    const address = "/pembinaan/disiplin?mahasiswa=s1";
+
+    expect(shown([penalty()], address)).toMatch(
+      /<a [^>]*href="\/pembinaan\/disiplin\?mahasiswa=s1"[^>]*>Catat pelanggaran<\/a>/,
+    );
+    expect(shown([penalty()])).not.toContain("Catat pelanggaran");
   });
 
   it("folds nothing for 10 records", () => {

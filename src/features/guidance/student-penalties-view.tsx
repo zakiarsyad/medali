@@ -1,3 +1,4 @@
+import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { JenjangBadge } from "./penalty-badges";
@@ -56,8 +57,14 @@ function PenaltyItems({ penalties }: { penalties: StudentPenalty[] }) {
  */
 export function StudentPenaltiesView({
   penalties,
+  recordAddress,
 }: {
   penalties: StudentPenalty[];
+  /**
+   * Where "Catat pelanggaran" opens the form on this student, or null for
+   * an account that may not record for them: it gets no button.
+   */
+  recordAddress: string | null;
 }) {
   const first = penalties.slice(0, PENALTIES_SHOWN);
   const rest = penalties.slice(PENALTIES_SHOWN);
@@ -77,6 +84,13 @@ export function StudentPenaltiesView({
           </summary>
           <PenaltyItems penalties={rest} />
         </details>
+      )}
+      {recordAddress !== null && (
+        <p className={styles.actions}>
+          <Link href={recordAddress} className={shared.quiet}>
+            Catat pelanggaran
+          </Link>
+        </p>
       )}
     </section>
   );

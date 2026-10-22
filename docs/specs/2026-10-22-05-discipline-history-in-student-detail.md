@@ -121,6 +121,12 @@ student's record in one place. A student with no penalty has no panel.
    saved last. The first 10 show; the rest fold behind "Tampilkan semua
    (n)", as the SIKU panel does. A student's records are read in one
    go each time the detail opens, so nothing is kept between openings.
+10. An active student is an Aktif one, the same students the form of
+    Pelanggaran disiplin lets Kepala Unit and Pembina Disiplin
+    Mahasiswa pick, so "Catat pelanggaran" always opens the form with
+    the student picked. A student on Cuti or Non aktif gets no button,
+    as in the prototype. The button sits under the records, as a quiet
+    button.
 
 ## Steps
 
@@ -129,6 +135,6 @@ student's record in one place. A student with no penalty has no panel.
 - [x] 2. The panel in the student detail for staff, limited to each
   role's rows, and the small detail that a name in "Daftar
   pelanggaran" opens for Pembina Disiplin Mahasiswa.
-- [ ] 3. "Catat pelanggaran" from the panel.
+- [x] 3. "Catat pelanggaran" from the panel.
 - [ ] 4. The badge for a suspended or dismissed student on the
   Mahasiswa list and in the detail.
