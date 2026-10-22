@@ -1,12 +1,14 @@
+import {
+  CATEGORY_WORDS,
+  LEVEL_WORDS,
+} from "@/discipline-penalties/penalty-kinds";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./discipline-penalties.module.css";
 import { SOCIAL_WORK_FORMS, SOCIAL_WORK_PLACES } from "./penalty-ids";
 import { PENALTY_RULES } from "./penalty-rules";
 import {
-  CATEGORY_WORDS,
   capitalized,
   inSentence,
-  LEVEL_WORDS,
   lengthWords,
   SOCIAL_WORK_FORM_WORDS,
   SOCIAL_WORK_PLACE_WORDS,

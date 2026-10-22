@@ -1,3 +1,4 @@
+import { limitedScore } from "@/discipline-penalties/score-limit";
 import { letterOf, passes } from "./grade-letter";
 import {
   GRADE_PARTS,
@@ -15,7 +16,14 @@ export type PartScores = Record<GradePart, number | null>;
  */
 export type CharacterGrade =
   | { complete: false }
-  | { complete: true; final: number; letter: GradeLetter; passes: boolean };
+  | {
+      complete: true;
+      final: number;
+      letter: GradeLetter;
+      passes: boolean;
+      /** Nilai akhir before the limit of a penalty, only when it lowered it. */
+      limitedFrom?: number;
+    };
 
 const INCOMPLETE: CharacterGrade = { complete: false };
 
@@ -38,23 +46,29 @@ function completeScores(scores: PartScores): Record<GradePart, number> | null {
 
 /**
  * The grade of a student by the scheme. Nothing fills a missing part: the
- * grade is "Belum lengkap" instead. The letter is that of Nilai akhir as
- * it is shown, to one decimal, so the two never disagree.
+ * grade is "Belum lengkap" instead. For a `limited` student, under a
+ * Ringan or Sedang penalty, Nilai akhir is at most 70. The letter is that
+ * of Nilai akhir as it is shown, to one decimal and after the limit, so
+ * the two never disagree.
  */
 export function gradeOf(
   scores: PartScores,
   scheme: GradeScheme,
+  limited = false,
 ): CharacterGrade {
   const complete = completeScores(scores);
   if (complete === null) return INCOMPLETE;
-  const final = finalScoreOf(complete, scheme.weights);
+  const unlimited = finalScoreOf(complete, scheme.weights);
+  const final = limitedScore(unlimited, limited);
   const letter = letterOf(final, scheme);
-  return {
+  const grade: CharacterGrade = {
     complete: true,
     final,
     letter,
     passes: passes(letter, scheme.passLetter),
   };
+  if (final === unlimited) return grade;
+  return { ...grade, limitedFrom: unlimited };
 }
 
 /**

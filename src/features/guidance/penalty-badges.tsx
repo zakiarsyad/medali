@@ -1,10 +1,10 @@
-import shared from "@/ui/data-screen.module.css";
-import styles from "./discipline-penalties.module.css";
 import type {
   PenaltyCategory,
   PenaltyLevel,
-  PenaltyStatus,
-} from "./penalty-ids";
+} from "@/discipline-penalties/penalty-kinds";
+import shared from "@/ui/data-screen.module.css";
+import styles from "./discipline-penalties.module.css";
+import type { PenaltyStatus } from "./penalty-ids";
 import { jenjangWords, STATUS_WORDS } from "./penalty-words";
 
 /*

@@ -1,6 +1,7 @@
 import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
 import type { AttendancePart, GradeRow } from "@/character-grades/grade-list";
 import {
+  LIMITED_WORDS,
   shownFinal,
   shownOneDecimal,
   shownPart,
@@ -26,7 +27,7 @@ function Attendance({ part }: { part: AttendancePart }) {
 
 /**
  * "Daftar nilai karakter": each student with the four parts, Nilai akhir,
- * Huruf and Keterangan. Kehadiran and SKPM have one decimal, as on the
+ * Huruf and Keterangan, which marks a grade held at 70 by a penalty. Kehadiran and SKPM have one decimal, as on the
  * screens they come from. A missing part shows "-", and the grade "Belum
  * lengkap". On a phone each student is a block of its own.
  */
@@ -81,6 +82,11 @@ export function GradeListTable({
                 <GradeLetterBadge grade={row.grade} />
               </td>
               <td data-title="Keterangan">
+                {row.limited && (
+                  <span className={`${shared.badge} ${styles.limited}`}>
+                    {LIMITED_WORDS}
+                  </span>
+                )}
                 <span className={styles.muted}>{row.siku.note}</span>
               </td>
             </tr>

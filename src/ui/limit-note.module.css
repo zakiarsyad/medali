@@ -1,0 +1,10 @@
+/* Long words break too, so a note never pushes a phone screen sideways. */
+.note {
+  margin: var(--space-sm) 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--line-width) solid var(--bina);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}

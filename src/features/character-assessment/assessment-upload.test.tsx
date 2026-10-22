@@ -10,7 +10,9 @@ describe("Unggah berkas of Input capaian MEDALI", () => {
     expect(html).toContain(
       "Satu baris per mahasiswa. Kolom: <b>nim</b>, <b>mandiri</b>, <b>empati</b>, <b>disiplin</b>, <b>adaptif</b>, <b>loyal</b>, <b>integritas</b>.",
     );
-    expect(html).toContain("Skor 40–100.");
+    expect(html).toContain(
+      "Skor 40–100; paling tinggi 70 untuk mahasiswa yang menjalani hukuman disiplin ringan atau sedang.",
+    );
     expect(html).toContain("Satu berkas paling banyak 1.000 baris dan 1 MB.");
   });
 

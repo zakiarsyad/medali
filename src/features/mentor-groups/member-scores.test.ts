@@ -3,6 +3,10 @@
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+} from "@/discipline-penalties/test-penalties";
 import { readMemberScores } from "./member-scores";
 import { addTestGroup, addTestProgram } from "./test-records";
 import {
@@ -38,6 +42,25 @@ describe("readMemberScores", () => {
 
       expect(scores.get(id)).toEqual({
         latest: allScores(90),
+        earlier: allScores(70),
+      });
+    });
+  });
+
+  it("holds each score of a member under a Ringan or Sedang penalty at 70, in the latest assessment and the one before it", async () => {
+    await inTestDatabase(async (db) => {
+      const group = await addGroup(db);
+      const id = await addTestScoredMember(db, group, "9987650105", null);
+      await addTestScores(db, group.by, id, allScores(60), FIRST);
+      await addTestScores(db, group.by, id, allScores(70), SECOND);
+      await addTestScores(db, group.by, id, allScores(90), THIRD);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, id, recorder, { category: "light", level: 1 });
+
+      const scores = await readMemberScores(db, [id]);
+
+      expect(scores.get(id)).toEqual({
+        latest: allScores(70),
         earlier: allScores(70),
       });
     });

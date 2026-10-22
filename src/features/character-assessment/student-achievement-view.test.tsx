@@ -14,9 +14,11 @@ const ASSESSED: StudentAchievement = {
     fileName: null,
     enteredBy: "Penilai Contoh",
     scores: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+    storedRerata: 80.3,
   },
   earlier: { M: 60, E: 55, D: 70, A: 62, L: 64, I: 68 },
   mayAssess: true,
+  limit: null,
 };
 
 const NOT_YET: StudentAchievement = {
@@ -77,5 +79,27 @@ describe("Capaian karakter in a student's detail", () => {
     const html = viewOf({ ...ASSESSED, semester: null });
 
     expect(html).toContain(">Capaian karakter<");
+  });
+
+  it("shows the limited scores of a student under a Ringan or Sedang penalty, saying why, with the Rerata as stored", () => {
+    const html = viewOf({
+      ...ASSESSED,
+      latest: ASSESSED.latest && {
+        ...ASSESSED.latest,
+        scores: { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+      },
+      limit: { category: "medium", level: 1 },
+    });
+
+    expect(html).toContain("Rerata 70,0");
+    expect(html).toContain("Perunggu");
+    expect(html).toContain(
+      "Nilai semester ini dibatasi paling tinggi 70 karena hukuman disiplin sedang jenjang pertama. Rerata sebelum pembatasan 80,3.",
+    );
+    expect(html).not.toContain("(86)");
+  });
+
+  it("says nothing of a limit for a student without one", () => {
+    expect(viewOf(ASSESSED)).not.toContain("dibatasi");
   });
 });

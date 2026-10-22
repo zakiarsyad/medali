@@ -199,3 +199,14 @@ select.control {
   color: var(--muted);
   font-size: var(--text-md);
 }
+
+/* The medal shrinks to the width of a phone, its note wrapping under it. */
+.cappedMedal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+  margin-top: var(--space-md);
+  text-align: center;
+}

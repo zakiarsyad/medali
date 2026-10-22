@@ -28,8 +28,10 @@ function numbersInMemory(rows: readonly GradeRow[]): GradeNumbers {
   let complete = 0;
   let passing = 0;
   let adjusted = 0;
+  let limited = 0;
   for (const row of rows) {
     if (row.siku.adjusted) adjusted += 1;
+    if (row.limited) limited += 1;
     if (!row.grade.complete) continue;
     complete += 1;
     sum += row.grade.final;
@@ -44,11 +46,12 @@ function numbersInMemory(rows: readonly GradeRow[]): GradeNumbers {
     passing,
     adjusted,
     incomplete: rows.length - complete,
+    limited,
   };
 }
 
 describe("readGradeNumbers", { timeout: 60_000 }, () => {
-  it("gives each role the four numbers the server worked out before", async () => {
+  it("gives each role the numbers the server worked out before, the count held at 70 among them", async () => {
     const { db } = own;
     await fillWithSampleData(db);
     const { scheme } = await readGradeScheme(db);
@@ -76,5 +79,6 @@ describe("readGradeNumbers", { timeout: 60_000 }, () => {
     expect(kepala?.complete).toBeGreaterThan(kepala?.passing ?? 0);
     expect(kepala?.adjusted).toBeGreaterThan(0);
     expect(kepala?.incomplete).toBeGreaterThan(0);
+    expect(kepala?.limited).toBeGreaterThan(0);
   });
 });

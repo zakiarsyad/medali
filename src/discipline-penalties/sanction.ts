@@ -1,8 +1,8 @@
 import type {
   ContinuationDecision,
-  PenaltyLevel,
   PenaltyStatus,
 } from "@/features/guidance/penalty-ids";
+import type { PenaltyLevel } from "./penalty-kinds";
 
 /*
  * The badge beside the status of a student with a Berat penalty: the

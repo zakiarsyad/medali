@@ -31,6 +31,17 @@ export const INVALID_SCORES = {
   error: "Skor setiap nilai harus bilangan bulat 40–100.",
 } as const;
 
+/**
+ * What a save answers for a score above 70 of a student under a Ringan
+ * or Sedang penalty: the form does not offer one, so it was sent by hand
+ * or the penalty came after the form opened.
+ */
+export const OVER_LIMIT = {
+  ok: false,
+  error:
+    "Skor di atas 70 untuk mahasiswa dalam hukuman disiplin tidak dapat disimpan. Muat ulang halaman, ubah skor menjadi paling tinggi 70, lalu simpan lagi.",
+} as const;
+
 export const UNKNOWN_SOURCE = {
   ok: false,
   error: "Pilih sumber asesmen dari daftar.",

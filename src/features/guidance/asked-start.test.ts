@@ -17,7 +17,7 @@ function startOn(id: string, nim: string): PenaltyStart {
       hasAgency: false,
       cohortYear: 2025,
     },
-    history: { count: 0, top: null },
+    history: { count: 0, top: null, latest: null },
   };
 }
 

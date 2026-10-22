@@ -1,17 +1,19 @@
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { isDay } from "@/db/is-day";
 import { isUuid } from "@/db/is-uuid";
+import {
+  PENALTY_CATEGORIES,
+  PENALTY_LEVELS,
+  type PenaltyCategory,
+  type PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
 import type { Parsed } from "@/parsed";
 import { dayRefusal, NEEDS_STUDENT } from "./note-input";
 import {
   DECISION_NUMBER_MAX_LENGTH,
   OTHER_SOCIAL_WORK_MAX_LENGTH,
-  PENALTY_CATEGORIES,
   PENALTY_DESCRIPTION_MAX_LENGTH,
   PENALTY_DESCRIPTION_MIN_LENGTH,
-  PENALTY_LEVELS,
-  type PenaltyCategory,
-  type PenaltyLevel,
   type PenaltyStatus,
   SOCIAL_WORK_FORMS,
   SOCIAL_WORK_PLACES,

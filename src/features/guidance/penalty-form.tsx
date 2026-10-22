@@ -7,6 +7,14 @@ import {
   useState,
   useTransition,
 } from "react";
+import {
+  CATEGORY_WORDS,
+  LEVEL_WORDS,
+  PENALTY_CATEGORIES,
+  PENALTY_LEVELS,
+  type PenaltyCategory,
+  type PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -25,11 +33,7 @@ import type { PenaltyHistory } from "./penalty-consequences";
 import {
   DECISION_NUMBER_MAX_LENGTH,
   OTHER_SOCIAL_WORK_MAX_LENGTH,
-  PENALTY_CATEGORIES,
   PENALTY_DESCRIPTION_MAX_LENGTH,
-  PENALTY_LEVELS,
-  type PenaltyCategory,
-  type PenaltyLevel,
   SOCIAL_WORK_FORMS,
   SOCIAL_WORK_PLACES,
   type SocialWorkForm,
@@ -40,8 +44,6 @@ import { type PenaltyRule, ruleOf, socialWorkEnd } from "./penalty-rules";
 import type { PeriodOfDay } from "./penalty-semester";
 import type { PenaltyPick, PenaltyStart } from "./penalty-student";
 import {
-  CATEGORY_WORDS,
-  LEVEL_WORDS,
   lengthWords,
   SOCIAL_WORK_FORM_WORDS,
   SOCIAL_WORK_PLACE_WORDS,

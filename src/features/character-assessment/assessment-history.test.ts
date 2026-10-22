@@ -3,6 +3,10 @@
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+} from "@/discipline-penalties/test-penalties";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { readAssessmentHistory } from "./assessment-history";
 import { assessmentVisibleTo } from "./assessment-readers";
@@ -12,6 +16,7 @@ import {
   addTestGroup,
   addTestPeriod,
   addTestStudents,
+  SILVER_SCORES,
 } from "./test-assessments";
 
 const inTestDatabase = withTestDatabase();
@@ -97,6 +102,27 @@ describe("readAssessmentHistory", () => {
           "Catatan pertama.",
         ],
       ]);
+    });
+  });
+
+  it("shows every score of a student under a Ringan or Sedang penalty at 70 at most, as stored for another student", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, budi, penilai } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "light",
+        level: 1,
+      });
+      const visible = assessmentVisibleTo(penilai);
+
+      const limited = await readAssessmentHistory(db, visible, ani, false);
+      const free = await readAssessmentHistory(db, visible, budi, false);
+
+      expect(limited?.entries.map((entry) => entry.scores)).toEqual([
+        { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+        { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+      ]);
+      expect(free?.entries[0]?.scores).toEqual(SILVER_SCORES);
     });
   });
 

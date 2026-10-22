@@ -34,7 +34,8 @@ while building.
   Rerata and predikat, the predikat as the database asks it, how a
   Rerata and a predikat are shown, the medal
   chart, the bar of the predikat spread, each student's latest
-  assessment and the one before it, and who needs coaching by it, with
+  assessment and the one before it, their scores held at 70 under a
+  Ringan or Sedang penalty, and who needs coaching by it, with
   the level and the weakest value, read by every area that shows
   character scores.
 - `src/character-grades/`: the grade scheme in force with its weights
@@ -50,6 +51,10 @@ while building.
   how many students are in each category, and how a
   health count of 1 to 4 students shows as "<5", read by every area
   that keeps or counts health notes.
+- `src/discipline-penalties/`: the Kategori and Jenjang of a discipline
+  penalty with their words and order, and the limit a Ringan or Sedang
+  penalty puts on a student's character scores, with its reading, read
+  by every area that shows those scores or records penalties.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.

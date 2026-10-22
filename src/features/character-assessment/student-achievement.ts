@@ -9,6 +9,8 @@ import { earlierAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { students } from "@/db/schema";
+import type { PenaltyKind } from "@/discipline-penalties/penalty-kinds";
+import { readLimitsOf } from "@/discipline-penalties/read-limits";
 import { readAssessmentPick } from "./assessment-picks";
 import {
   type LatestAssessment,
@@ -27,6 +29,12 @@ export interface StudentAchievement {
   earlier: Scores | null;
   /** Whether "Input asesmen" opens the form for this student. */
   mayAssess: boolean;
+  /**
+   * The penalty that holds the scores at 70, or null for none: its
+   * Kategori and Jenjang only, so a role that may not read discipline
+   * records sees the limit and never the Uraian.
+   */
+  limit: PenaltyKind | null;
 }
 
 type ShownStudent = Pick<typeof students.$inferSelect, "cohortYear" | "status">;
@@ -73,7 +81,8 @@ async function semesterOn(
  * without the character panels and for a student outside its rows: the
  * same answer whether or not the student was assessed, so a refusal
  * tells nothing. "Input asesmen" is offered only where the account may
- * assess the student, who must be Aktif.
+ * assess the student, who must be Aktif. The scores are held at 70 under
+ * a Ringan or Sedang penalty.
  */
 export async function readStudentAchievement(
   db: Database,
@@ -86,11 +95,12 @@ export async function readStudentAchievement(
   if (!isUuid(studentId)) return null;
   const student = await readShownStudent(db, account, studentId);
   if (!student) return null;
-  const [latest, earlier, semester, pick] = await Promise.all([
+  const [latest, earlier, semester, pick, limits] = await Promise.all([
     readLatestOf(db, [studentId]),
     readEarlier(db, studentId),
     semesterOn(db, student, today),
     readAssessmentPick(db, account, studentId),
+    readLimitsOf(db, [studentId]),
   ]);
   return {
     studentId,
@@ -98,5 +108,6 @@ export async function readStudentAchievement(
     latest: latest.get(studentId) ?? null,
     earlier,
     mayAssess: pick !== null,
+    limit: limits.get(studentId) ?? null,
   };
 }

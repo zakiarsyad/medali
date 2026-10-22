@@ -9,9 +9,10 @@ const NUMBERS = {
   passing: 82,
   adjusted: 14,
   incomplete: 20,
+  limited: 3,
 };
 
-describe("the four numbers above Skema bobot", () => {
+describe("the numbers above Skema bobot", () => {
   it("shows Rerata nilai akhir, Memenuhi minimal with how many do not, Mendapat penyesuaian SIKU and Belum lengkap", () => {
     const page = renderToStaticMarkup(
       <GradeNumberCards numbers={NUMBERS} passLetter="B" sikuBase={65} />,
@@ -42,5 +43,15 @@ describe("the four numbers above Skema bobot", () => {
     );
 
     expect(page.match(/>-</g)).toHaveLength(2);
+  });
+
+  it("counts the students whose grade is held at 70, as Dibatasi 70", () => {
+    const page = renderToStaticMarkup(
+      <GradeNumberCards numbers={NUMBERS} passLetter="B" sikuBase={65} />,
+    );
+
+    expect(page).toContain("Dibatasi 70");
+    expect(page).toContain(">3<");
+    expect(page).toContain("karena hukuman disiplin");
   });
 });

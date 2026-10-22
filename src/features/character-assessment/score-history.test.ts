@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { limitedScores } from "@/discipline-penalties/score-limit";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+} from "@/discipline-penalties/test-penalties";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { readStudentScoreHistory } from "./score-history";
 import {
@@ -116,6 +121,34 @@ describe("readStudentScoreHistory", () => {
           ANI_POINTS,
         );
       }
+    });
+  });
+
+  it("holds every semester at 70 for a student under a Ringan or Sedang penalty, but not under Berat", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, citra, penilai } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "light",
+        level: 1,
+      });
+      await addTestPenaltyOf(db, citra, recorder, {
+        category: "heavy",
+        level: 1,
+      });
+      const kepala = await addTestActor(db, "Kepala Uji Riwayat", [
+        "head_of_unit",
+      ]);
+
+      const points = await readStudentScoreHistory(db, penilai, ani);
+
+      expect(points?.map((point) => point.scores)).toEqual([
+        limitedScores(SILVER_SCORES, true),
+        { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+      ]);
+      expect(points?.[1]?.rerata).toBe(70);
+      const heavy = await readStudentScoreHistory(db, kepala, citra);
+      expect(heavy?.[0]?.scores).toEqual(SILVER_SCORES);
     });
   });
 

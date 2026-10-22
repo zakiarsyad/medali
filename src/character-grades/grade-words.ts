@@ -1,3 +1,4 @@
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import type { CharacterGrade } from "./character-grade";
 
 /** What a row shows in place of Nilai akhir and Huruf while a part is missing. */
@@ -30,4 +31,12 @@ export function shownFinal(grade: CharacterGrade): string {
 /** Whether the pass letter is reached, as a reader of the letter hears it. */
 export function passWords(passes: boolean): string {
   return passes ? "Lulus" : "Belum lulus";
+}
+
+/** The mark of a student whose grade a Ringan or Sedang penalty holds at 70. */
+export const LIMITED_WORDS = `Dibatasi ${CHARACTER_SCORE_CAP}`;
+
+/** What a grade the limit lowered says: from what Nilai akhir it was held. */
+export function limitedLine(limitedFrom: number): string {
+  return `${LIMITED_WORDS} dari ${shownOneDecimal(limitedFrom)} karena hukuman disiplin.`;
 }

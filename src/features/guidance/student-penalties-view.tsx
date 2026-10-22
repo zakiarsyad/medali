@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { JenjangBadge } from "./penalty-badges";
-import { CHARACTER_SCORE_CAP, ruleOf } from "./penalty-rules";
+import { ruleOf } from "./penalty-rules";
 import { inSentence, lengthWords, STATUS_WORDS } from "./penalty-words";
 import type { StudentPenalty } from "./student-penalties";
 import styles from "./student-penalties.module.css";
