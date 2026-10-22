@@ -141,7 +141,9 @@ The rule about real people's data is in `CLAUDE.md`. These add to it.
 3. Every change to a score, a discipline record, a counselling record or a
    person's role adds a line to a log: who changed it, what it was before
    and after, and when. The data itself can be corrected. The log cannot
-   be edited or deleted, so it can always be trusted.
+   be edited or deleted, so it can always be trusted. The text of a
+   counselling note is never copied into a log; the log says only that
+   it was written or changed.
 4. Those records are never truly deleted. A removal is a mark, with who
    and when.
 5. Changes to database tables: Drizzle writes the change file, and Claude

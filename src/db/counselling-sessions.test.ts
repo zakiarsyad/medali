@@ -107,7 +107,7 @@ async function addLogLine(db: Database): Promise<{ id: string; of: string }> {
         day: session.day,
         kind: session.kind,
         topic: session.topic,
-        notes: session.notes,
+        notes: "written",
         followUp: session.followUp,
         nextDay: session.nextDay,
       },

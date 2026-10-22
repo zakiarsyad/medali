@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { daysAfter } from "@/academic-periods/days-after";
 import type { SessionContent } from "@/mental-health/session-ids";
+import { changeLine, writeLine } from "@/mental-health/session-log";
 import type { Database } from "./connect";
 import {
   SAMPLE_SESSIONS,
@@ -95,8 +96,7 @@ export async function addSampleCounsellingSessions(
         changedBy: counsellor,
         changedAt: writtenAt,
         step: "write",
-        before: null,
-        after: first,
+        ...writeLine(first),
       },
     ];
     if (sample.firstNotes) {
@@ -105,8 +105,7 @@ export async function addSampleCounsellingSessions(
         changedBy: counsellor,
         changedAt,
         step: "change",
-        before: first,
-        after: content,
+        ...changeLine(first, content),
       });
     }
     await db.insert(counsellingSessionChanges).values(lines);
