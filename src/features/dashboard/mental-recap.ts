@@ -1,4 +1,9 @@
-import { FEWEST_COUNTED } from "@/health-notes/shown-count";
+import type { ScreeningLevel } from "@/features/counselling/screening-ids";
+import {
+  type CountShown,
+  FEWEST_COUNTED,
+  shownCount,
+} from "@/health-notes/shown-count";
 
 /*
  * Kesehatan mental of the Dashboard, as it may leave the server. Read by
@@ -9,13 +14,22 @@ import { FEWEST_COUNTED } from "@/health-notes/shown-count";
 export interface MentalTally {
   /** The Aktif students of the group with a screening. */
   assessed: number;
+  /** How many of them are at each level by their latest screening. */
+  byLevel: Record<ScreeningLevel, number>;
 }
 
 /** The anonymous count of a group, held back while it is small. */
 export type MentalRecap =
   | { kind: "none" }
   | { kind: "too_few" }
-  | { kind: "shown"; assessed: number };
+  | {
+      kind: "shown";
+      assessed: number;
+      byLevel: Record<ScreeningLevel, CountShown>;
+    };
+
+/** The anonymous count of a group with enough assessed students for counts. */
+export type ShownMental = Extract<MentalRecap, { kind: "shown" }>;
 
 /** What the account is given of the counselling data published to it. */
 export interface PublishedMental {
@@ -32,14 +46,26 @@ export interface MentalView {
   published: PublishedMental | null;
 }
 
+function shownByLevel(
+  byLevel: Record<ScreeningLevel, number>,
+): Record<ScreeningLevel, CountShown> {
+  return {
+    normal: shownCount(byLevel.normal),
+    mild: shownCount(byLevel.mild),
+    moderate: shownCount(byLevel.moderate),
+    severe: shownCount(byLevel.severe),
+    extremely_severe: shownCount(byLevel.extremely_severe),
+  };
+}
+
 /**
- * The count as it may be shown: none at all while fewer than
- * `FEWEST_COUNTED` students are assessed, so nobody's level can be told
- * from it.
+ * The counts as they may be shown: none at all while fewer than
+ * `FEWEST_COUNTED` students are assessed, and "<5" for a level of 1 to
+ * 4, so nobody's level can be told from them.
  */
 export function mentalRecapOf(tally: MentalTally): MentalRecap {
-  const { assessed } = tally;
+  const { assessed, byLevel } = tally;
   if (assessed === 0) return { kind: "none" };
   if (assessed < FEWEST_COUNTED) return { kind: "too_few" };
-  return { kind: "shown", assessed };
+  return { kind: "shown", assessed, byLevel: shownByLevel(byLevel) };
 }

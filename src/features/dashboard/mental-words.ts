@@ -19,3 +19,15 @@ export function mentalCardLine(published: PublishedMental | null): string {
     needCounselling > 0 ? `, ${shown(needCounselling)} perlu konseling` : "";
   return `${shown(matching)} data dipublikasikan konselor untuk Anda${need}.`;
 }
+
+/** What section 4 says instead of counts while 1 to 4 students are assessed. */
+export const MENTAL_TOO_FEW =
+  "Rekap ditampilkan setelah minimal 5 mahasiswa diasesmen, agar identitas tidak dapat ditebak.";
+
+/** What section 4 says while nobody in the group is assessed. */
+export const NOBODY_ASSESSED = "Belum ada asesmen kesehatan mental.";
+
+/** The line under the levels. */
+export function assessedLine(assessed: number): string {
+  return `${shown(assessed)} mahasiswa sudah diasesmen. Identitas tidak ditampilkan kecuali dipublikasikan konselor.`;
+}

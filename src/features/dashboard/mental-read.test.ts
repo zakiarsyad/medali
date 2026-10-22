@@ -6,8 +6,10 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSessions, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import type { TestPeople } from "@/features/counselling/test-consents";
-import { addTestActor } from "@/features/counselling/test-consents";
+import {
+  addTestActor,
+  type TestPeople,
+} from "@/features/counselling/test-consents";
 import { addTestScreening } from "@/features/counselling/test-screenings";
 import {
   addConsentedPeople,
@@ -124,6 +126,13 @@ async function readerOf(
   return { ...actor, studyProgramId: programId };
 }
 
+/** Every number the value holds, however deep. */
+function numbersIn(value: unknown): number[] {
+  if (typeof value === "number") return [value];
+  if (value === null || typeof value !== "object") return [];
+  return Object.values(value).flatMap(numbersIn);
+}
+
 async function mentalOf(
   db: Database,
   reader: AccountForAccess,
@@ -149,11 +158,47 @@ describe("Kesehatan mental of Dashboard pembangunan karakter", () => {
 
       const mental = await mentalOf(db, head, { studyProgramId: programId });
 
-      expect(mental.recap).toMatchObject({ kind: "shown", assessed: 5 });
+      expect(mental.recap).toEqual({
+        kind: "shown",
+        assessed: 5,
+        byLevel: {
+          normal: "<5",
+          mild: "<5",
+          moderate: "<5",
+          severe: "<5",
+          extremely_severe: 0,
+        },
+      });
       expect(mental.published).toMatchObject({
         matching: 2,
         needCounselling: 1,
       });
+    });
+  });
+
+  it("counts each Aktif student once, at the level of their latest screening, and sends no count of 1 to 4", async () => {
+    await inTestDatabase(async (db) => {
+      const { people, programId } = await addRecords(db);
+      for (const place of [0, 1, 2]) {
+        const { studentId, counsellor } = studentOf(people, place);
+        await addTestScreening(db, studentId, counsellor.id, {
+          screenedOn: "2026-10-20",
+          level: "normal",
+        });
+      }
+      const head = await readerOf(db, ["head_of_unit"], programId);
+
+      const mental = await mentalOf(db, head, { studyProgramId: programId });
+
+      expect(mental.recap).toMatchObject({
+        kind: "shown",
+        assessed: 5,
+        byLevel: { normal: 5, mild: 0, moderate: 0, severe: 0 },
+      });
+      const small = numbersIn(mental.recap).filter(
+        (each) => each >= 1 && each <= 4,
+      );
+      expect(small).toEqual([]);
     });
   });
 

@@ -9,6 +9,7 @@ import { DashboardScreen, type DetailLinks } from "./dashboard-screen";
 import type { DashboardView } from "./dashboard-view";
 import type { ShownGrades } from "./grade-recap";
 import { NO_GRADES } from "./grade-words";
+import { MENTAL_TOO_FEW, NOBODY_ASSESSED } from "./mental-words";
 import { PHYSICAL_TOO_FEW } from "./physical-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -72,7 +73,17 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       illnesses: null,
     },
     mental: {
-      recap: { kind: "shown", assessed: 30 },
+      recap: {
+        kind: "shown",
+        assessed: 30,
+        byLevel: {
+          normal: 14,
+          mild: 7,
+          moderate: 5,
+          severe: "<5",
+          extremely_severe: 0,
+        },
+      },
       published: { matching: 3, needCounselling: 1 },
     },
     fitnessLimits: STARTING_LIMITS,
@@ -80,20 +91,34 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
   };
 }
 
-const NO_LINKS = { assessment: null, grade: null, fitness: null };
+const NO_LINKS = {
+  assessment: null,
+  grade: null,
+  fitness: null,
+  mental: null,
+};
 const LINKS = {
   assessment: "/penilaian/asesmen",
   grade: "/penilaian/karakter",
   fitness: "/penilaian/jasmani",
+  mental: "/penilaian/mental",
 };
 
 function shown(view: DashboardView, links: DetailLinks = NO_LINKS) {
   return renderToStaticMarkup(<DashboardScreen view={view} links={links} />);
 }
 
-/** What the page shows from section 3 on, where section 2's bars are not. */
+/** What the page shows from section 4 on. */
+function sectionFour(html: string): string {
+  return html.slice(html.indexOf('id="kesehatan-mental"'));
+}
+
+/** What the page shows of section 3, where the bars of 2 and 4 are not. */
 function sectionThree(html: string): string {
-  return html.slice(html.indexOf('id="kesehatan-jasmani"'));
+  return html.slice(
+    html.indexOf('id="kesehatan-jasmani"'),
+    html.indexOf('id="kesehatan-mental"'),
+  );
 }
 
 describe("DashboardScreen", () => {
@@ -364,6 +389,39 @@ describe("DashboardScreen", () => {
     expect(html.split(PHYSICAL_TOO_FEW)).toHaveLength(3);
     expect(html).not.toContain("sudah dites");
     expect(sectionThree(html)).not.toContain("<meter");
+  });
+
+  it("shows section 4 with the count of each level, <5 for 1 to 4, and Lihat rincian to Penilaian > Kesehatan mental", () => {
+    const html = shown(viewOf(), LINKS);
+    const four = sectionFour(html);
+
+    expect(four).toContain("Rekap anonim asesmen dan data perorangan");
+    expect(four).toContain("Kesehatan mental mahasiswa");
+    expect(four).toContain("rekap anonim");
+    expect(four).toMatch(/>Normal<\/span><meter[^>]*><\/meter><span[^>]*>14</);
+    expect(four).toMatch(/aria-label="Berat"><\/meter><span[^>]*>&lt;5</);
+    expect(four).toMatch(/aria-label="Sangat berat"><\/meter><span[^>]*>0</);
+    expect(four).toContain(
+      "30 mahasiswa sudah diasesmen. Identitas tidak ditampilkan kecuali dipublikasikan konselor.",
+    );
+    expect(four).toContain('href="/penilaian/mental"');
+  });
+
+  it("shows only why there are no counts in section 4 for a group with 1 to 4 assessed, or none", () => {
+    const few = sectionFour(
+      shown(
+        viewOf({ mental: { recap: { kind: "too_few" }, published: null } }),
+      ),
+    );
+    const none = sectionFour(
+      shown(viewOf({ mental: { recap: { kind: "none" }, published: null } })),
+    );
+
+    expect(few).toContain(MENTAL_TOO_FEW);
+    expect(few).not.toContain("<meter");
+    expect(few).not.toContain("sudah diasesmen");
+    expect(none).toContain(NOBODY_ASSESSED);
+    expect(none).not.toContain("<meter");
   });
 
   it("leaves out Program studi for Ketua Program Studi, Tahapan while no period runs, and Lihat rincian without the tab", () => {

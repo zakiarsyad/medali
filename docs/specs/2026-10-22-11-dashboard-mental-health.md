@@ -94,6 +94,6 @@ program only).
 ## Steps
 
 - [x] 1. The "Kesehatan mental" card, with the 5-student rule.
-- [ ] 2. The anonymous rekap per level, with its checks.
+- [x] 2. The anonymous rekap per level, with its checks.
 - [ ] 3. The published list, limited to recipients with the sharing still
   on, with each showing logged and the refusal checks.
