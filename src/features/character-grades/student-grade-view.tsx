@@ -3,6 +3,7 @@ import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
 import { partScoresOf } from "@/character-grades/grade-list";
 import {
   limitedLine,
+  PART_LABELS,
   shownFinal,
   shownOneDecimal,
   shownPart,
@@ -16,7 +17,6 @@ import type { StudentGrade } from "@/character-grades/student-grade";
 import shared from "@/ui/data-screen.module.css";
 import { LimitNote } from "@/ui/limit-note";
 import styles from "./character-grades.module.css";
-import { PART_LABELS } from "./scheme-words";
 
 /** The highest score of a part, the end of its bar. */
 const PART_MAX = 100;

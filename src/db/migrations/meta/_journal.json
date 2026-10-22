@@ -512,6 +512,13 @@
       "when": 1792616153202,
       "tag": "0072_penalty-counselling-assignments",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1792636164204,
+      "tag": "0073_semester-closings",
+      "breakpoints": true
     }
   ]
 }

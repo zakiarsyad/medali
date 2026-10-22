@@ -1,4 +1,5 @@
 import type { SQL } from "drizzle-orm";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
@@ -7,7 +8,7 @@ import {
   type AttendanceScore,
   scorePercent,
 } from "@/features/activities/attendance-score";
-import { readStudentScores } from "@/features/activities/read-student-scores";
+import { readStudentScoresIn } from "@/features/activities/read-student-scores";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
 import { readPeriodScores } from "@/features/mentoring/period-scores";
 import { type SikuTotals, sikuOf } from "@/features/siku/siku-score";
@@ -59,26 +60,36 @@ function readMentoringScores(
   return readPeriodScores(db, studentIds, periodId);
 }
 
+function readAttendanceScores(
+  db: Database,
+  visible: SQL,
+  period: AcademicPeriod | null,
+  today: string,
+): Promise<Map<string, AttendanceScore>> {
+  if (period === null) return Promise.resolve(new Map());
+  return readStudentScoresIn(db, visible, period, today);
+}
+
 /**
  * Each part of the grades of some students, read once for all of them,
- * never student by student, each by the area it belongs to, in the
- * period that runs on `today`.
+ * never student by student, each by the area it belongs to: Kehadiran and
+ * Pengasuhan of `period` as they stand on `today`, SIKU and SKPM as they
+ * stand now.
  */
 async function readGradeParts(
   db: Database,
   visible: SQL,
   studentIds: readonly string[],
+  period: AcademicPeriod | null,
   today: string,
 ): Promise<{ parts: GradeParts; sikuBase: number }> {
-  const [periods, base, conversion] = await Promise.all([
-    readAcademicPeriods(db),
+  const [base, conversion] = await Promise.all([
     readBaseScore(db),
     readConversion(db),
   ]);
-  const running = runningPeriodOn(periods, today);
   const [attendance, mentoring, siku, skpm] = await Promise.all([
-    readStudentScores(db, visible, today),
-    readMentoringScores(db, studentIds, running?.id ?? null),
+    readAttendanceScores(db, visible, period, today),
+    readMentoringScores(db, studentIds, period?.id ?? null),
     readTotalsOf(db, studentIds),
     readSkpmScores(db, studentIds, conversion.pointsForHundred),
   ]);
@@ -108,10 +119,25 @@ export async function readGradeRows(
   scheme: GradeScheme,
   today: string,
 ): Promise<GradeRows> {
+  const running = runningPeriodOn(await readAcademicPeriods(db), today);
+  return readGradeRowsIn(db, visible, scheme, running, today);
+}
+
+/**
+ * The same rows with Kehadiran and Pengasuhan of one period, as they stand
+ * on `today`, which may be after its end: the grade a closing fixes.
+ */
+export async function readGradeRowsIn(
+  db: Database,
+  visible: SQL,
+  scheme: GradeScheme,
+  period: AcademicPeriod | null,
+  today: string,
+): Promise<GradeRows> {
   const students = await readGradeStudents(db, visible);
   const ids = students.map((student) => student.id);
   const [{ parts, sikuBase }, limits] = await Promise.all([
-    readGradeParts(db, visible, ids, today),
+    readGradeParts(db, visible, ids, period, today),
     readLimitsOf(db, ids),
   ]);
   const rows = gradeInputsOf(students, parts).map((input) =>

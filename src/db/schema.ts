@@ -3364,6 +3364,101 @@ export const characterGradeSchemes = pgTable(
 );
 
 /**
+ * The closing of a semester, which is also its line in the change log:
+ * who closed which period and when, the scheme its grades were worked out
+ * with, and how many grades it kept, complete or "Belum lengkap". A period
+ * is closed once at most. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const semesterClosings = pgTable(
+  "semester_closings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    periodId: uuid()
+      .notNull()
+      .references(() => academicPeriods.id),
+    closedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    closedAt: timestamp({ withTimezone: true }).notNull(),
+    attendanceWeight: smallint().notNull(),
+    mentoringWeight: smallint().notNull(),
+    sikuWeight: smallint().notNull(),
+    skpmWeight: smallint().notNull(),
+    aFrom: smallint().notNull(),
+    bFrom: smallint().notNull(),
+    cFrom: smallint().notNull(),
+    dFrom: smallint().notNull(),
+    passLetter: gradeLetter().notNull(),
+    students: integer().notNull(),
+    complete: integer().notNull(),
+    incomplete: integer().notNull(),
+  },
+  (table) => [
+    unique("semester_closings_once_per_period").on(table.periodId),
+    check(
+      "semester_closings_counts_add_up",
+      sql`${table.complete} >= 0 and ${table.incomplete} >= 0 and ${table.complete} + ${table.incomplete} = ${table.students}`,
+    ),
+  ],
+);
+
+/** A score with one decimal, up to 100.0. */
+function oneDecimal() {
+  return numeric({ precision: 4, scale: 1, mode: "number" });
+}
+
+/**
+ * A student's character grade as a semester closing fixed it: each part,
+ * Nilai akhir, Huruf and pass, or "Belum lengkap" with no Nilai akhir and
+ * the parts the student had. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const fixedCharacterGrades = pgTable(
+  "fixed_character_grades",
+  {
+    closingId: uuid()
+      .notNull()
+      .references(() => semesterClosings.id),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    /** Nilai kehadiran, or null with nothing counted. */
+    attendance: oneDecimal(),
+    attended: integer().notNull(),
+    counted: integer().notNull(),
+    /** The score the Pengasuh gave for the period, or null for none. */
+    mentoring: smallint(),
+    siku: smallint().notNull(),
+    /** Whether an entry in force gained or lost the student SIKU points. */
+    sikuAdjusted: boolean().notNull(),
+    /** Keterangan as the grade list showed it at the closing. */
+    sikuNote: text().notNull(),
+    /** Nilai SKPM, or null while no SKPM upload counted. */
+    skpm: oneDecimal(),
+    /** Nilai akhir, or null for "Belum lengkap". */
+    final: oneDecimal(),
+    letter: gradeLetter(),
+    passes: boolean(),
+    /** Whether a Ringan or Sedang penalty held the grade at 70. */
+    limited: boolean().notNull(),
+    /** Nilai akhir before the limit, only when the limit lowered it. */
+    limitedFrom: oneDecimal(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.closingId, table.studentId] }),
+    check(
+      "fixed_character_grades_complete_or_not",
+      sql`(${table.final} is null) = (${table.attendance} is null or ${table.mentoring} is null or ${table.skpm} is null) and (${table.final} is null) = (${table.letter} is null) and (${table.final} is null) = (${table.passes} is null)`,
+    ),
+    check(
+      "fixed_character_grades_limited_from",
+      sql`${table.limitedFrom} is null or (${table.limited} and ${table.final} is not null and ${table.limitedFrom} > ${table.final})`,
+    ),
+  ],
+);
+
+/**
  * A student's one current consent to counselling: Menunggu, Disetujui,
  * Ditolak or Dicabut, with how a Disetujui was given, and who changed it
  * last and when. A student with none has not been asked. A new request
