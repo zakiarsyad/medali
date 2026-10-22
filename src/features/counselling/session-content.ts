@@ -3,7 +3,7 @@ import type { SessionContent } from "@/mental-health/session-ids";
 
 type StoredSession = typeof counsellingSessions.$inferSelect;
 
-/** What a stored session holds, as its log keeps it. */
+/** What a stored session holds. */
 export function contentOf(session: StoredSession): SessionContent {
   return {
     day: session.day,

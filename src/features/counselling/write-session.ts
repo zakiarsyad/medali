@@ -9,6 +9,7 @@ import {
   counsellingSessions,
 } from "@/db/schema";
 import type { SessionContent } from "@/mental-health/session-ids";
+import { writeLine } from "@/mental-health/session-log";
 import {
   NEEDS_CONSENT,
   SCHEDULE_HAS_SESSION,
@@ -126,8 +127,7 @@ async function write(tx: Database, writing: Writing): Promise<SessionOutcome> {
     changedBy: writing.actorId,
     changedAt: writing.now,
     step: "write",
-    before: null,
-    after: writing.content,
+    ...writeLine(writing.content),
   });
   return KEPT;
 }
