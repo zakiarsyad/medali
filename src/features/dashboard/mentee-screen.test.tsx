@@ -32,6 +32,7 @@ const SHOWN: MenteeDashboard = {
     physical: { kind: "untested", students: 12 },
     published: { matching: 3, needCounselling: 2 },
   },
+  attention: [],
 };
 
 const LINKS = { meetings: "/pengasuhan/hadir", scores: "/pengasuhan/nilai" };

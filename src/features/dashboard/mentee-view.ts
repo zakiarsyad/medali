@@ -2,7 +2,9 @@ import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { Database } from "@/db/connect";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { readBasis } from "./dashboard-view";
+import { attentionRows } from "./mentee-attention";
 import { readMenteeCards } from "./mentee-cards";
+import { readMenteeFacts } from "./mentee-facts-read";
 import { countMentees, readMenteeGroups } from "./mentee-groups";
 import { readProgress } from "./mentee-progress-read";
 import type { MenteeDashboard } from "./mentee-recap";
@@ -27,9 +29,11 @@ export async function loadMenteeDashboard(
     readFitnessLimits(db),
   ]);
   const groupIds = groups.map((group) => group.id);
-  const [progress, cards] = await Promise.all([
+  const [progress, cards, facts] = await Promise.all([
     readProgress(db, { groupIds, mentees, students, period }),
     readMenteeCards(db, scope, basis, limits),
+    readMenteeFacts(db, scope, basis, limits),
   ]);
-  return { kind: "shown", groups, students, progress, cards };
+  const attention = attentionRows(facts);
+  return { kind: "shown", groups, students, progress, cards, attention };
 }

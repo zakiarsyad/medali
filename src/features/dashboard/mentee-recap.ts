@@ -3,6 +3,7 @@ import type { GroupCodeParts } from "@/ui/group-code";
 import type { Recap } from "./achievement-recap";
 import type { GradeRecap } from "./grade-recap";
 import type { PublishedCounts } from "./mental-recap";
+import type { AttentionRow } from "./mentee-attention";
 import type { MentoringProgress } from "./mentee-progress";
 import type { PhysicalRecap } from "./physical-recap";
 
@@ -35,6 +36,8 @@ export interface MenteeContent {
   /** What they have filled in this semester, or null while no period runs. */
   progress: MentoringProgress | null;
   cards: MenteeCards;
+  /** "Perlu perhatian": the anak asuh with a reason, the most reasons first. */
+  attention: AttentionRow[];
 }
 
 /** Dashboard anak asuh: only the message while no group is held. */

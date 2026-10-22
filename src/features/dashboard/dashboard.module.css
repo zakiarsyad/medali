@@ -520,3 +520,51 @@ a.tile:hover {
 .progressWarn {
   border-color: var(--warn);
 }
+
+/* The anak asuh of "Perlu perhatian": the name, then the tags, which fold onto new lines. */
+.attentionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attentionItem {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md) 0;
+  border-top: var(--line-width) solid var(--line2);
+  overflow-wrap: anywhere;
+}
+
+.attentionAverage {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.seriousTag {
+  border: var(--line-width) solid var(--bina);
+  background: var(--surface);
+  color: var(--bina);
+}
+
+.warningTag {
+  border: var(--line-width) solid var(--warn);
+  background: var(--surface);
+  color: var(--warn);
+}
+
+.more {
+  margin: 0;
+}
+
+.more summary {
+  padding: var(--space-sm) 0;
+  color: var(--navy3);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
