@@ -58,7 +58,7 @@ function PeriodItem({
     <li className={styles.item}>
       <span className={styles.name}>
         {periodTitle(period)}
-        <span className={shared.badge}>{stateWords(state)}</span>
+        <span className={styles.state}>{stateWords(state)}</span>
       </span>
       <PeriodDates period={period} />
       {!hasEnded(period, today) && <PeriodDatesForm period={period} />}

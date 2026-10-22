@@ -140,4 +140,4 @@ weights used, which later changes no longer touch.
   writes the log line.
 - [x] 6. Later changes leave the copy as it is, and double closing is
   refused, with checks.
-- [ ] 7. The phone layout and the time check.
+- [x] 7. The phone layout and the time check.
