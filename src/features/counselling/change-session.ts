@@ -11,6 +11,7 @@ import {
   students,
 } from "@/db/schema";
 import type { SessionContent } from "@/mental-health/session-ids";
+import { changeLine } from "@/mental-health/session-log";
 import {
   NEEDS_CONSENT,
   SESSION_CHANGED,
@@ -75,8 +76,7 @@ async function apply(tx: Database, change: Change): Promise<ChangeOutcome> {
     changedBy: actor.id,
     changedAt: now,
     step: "change",
-    before: contentOf(current),
-    after: content,
+    ...changeLine(contentOf(current), content),
   });
   return { kind: "kept", done: SESSION_CHANGED };
 }
@@ -84,7 +84,7 @@ async function apply(tx: Database, change: Change): Promise<ChangeOutcome> {
 /**
  * "Simpan perubahan" of "Ubah" on a session: it holds the new content as
  * the work of the Konselor who changed it, with a log line of before and
- * after in the same transaction. The session is locked first, so of two
+ * after, without the words of the notes, in the same transaction. The session is locked first, so of two
  * changes at the same moment the second sees the first and is refused.
  * Refused, changing nothing, for any role without the right, for what
  * the rules refuse, for a session not found, while the consent is not

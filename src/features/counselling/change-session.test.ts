@@ -110,8 +110,21 @@ describe("Ubah on a session", () => {
       expect(lines[1]).toMatchObject({
         changedBy: colleague.id,
         changedAt: NOW,
-        before: { notes: "Catatan uji sesi.", kind: "individual_in_person" },
-        after: { notes: "Catatan yang diubah.", kind: "group" },
+      });
+      expect(lines[1]?.before).toEqual({
+        day: "2026-10-19",
+        kind: "individual_in_person",
+        topic: "academic",
+        followUp: "monitoring",
+        nextDay: null,
+      });
+      expect(lines[1]?.after).toEqual({
+        day: "2026-10-19",
+        kind: "group",
+        topic: "family",
+        notes: "changed",
+        followUp: "next_session",
+        nextDay: "2026-10-28",
       });
 
       const read = await readSessionHistory(db, colleague, studentId, 1, NOW);
@@ -120,6 +133,50 @@ describe("Ubah on a session", () => {
         counsellorName: "Konselor Uji",
         changed: { at: NOW, by: "Konselor Uji Lain" },
       });
+    });
+  });
+
+  it("says in its log line when the notes did not change", async () => {
+    await inTestDatabase(async (db) => {
+      const { counsellor, id } = await written(db, "9986215008");
+      const sameNotes = { ...CHANGED, notes: TEST_SESSION.notes };
+
+      await changeSession(db, counsellor, id, VERSION, sameNotes, NOW);
+
+      const lines = await logOf(db, id);
+      expect(lines[1]?.after.notes).toBe("unchanged");
+    });
+  });
+
+  it("copies no word of the notes into any log line", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addConsentedPeople(
+        db,
+        "Prodi Uji Log Tanpa Catatan",
+        ["9986215009"],
+      );
+      const [studentId] = people.studentIds;
+      if (!studentId) throw new Error("Student missing.");
+      const id = randomUUID();
+      const first = { ...TEST_SESSION, notes: "Kata rahasia Zorbatul." };
+      await writeSession(
+        db,
+        people.counsellor,
+        { id, studentId },
+        first,
+        WRITTEN_AT,
+      );
+      const second = { ...CHANGED, notes: "Kata rahasia Quembrilo." };
+
+      await changeSession(db, people.counsellor, id, VERSION, second, NOW);
+
+      const lines = await logOf(db, id);
+      expect(lines).toHaveLength(2);
+      const logged = JSON.stringify(lines);
+      expect(logged).not.toContain("Zorbatul");
+      expect(logged).not.toContain("Quembrilo");
+      const [kept] = await sessionOf(db, id);
+      expect(kept?.notes).toBe("Kata rahasia Quembrilo.");
     });
   });
 

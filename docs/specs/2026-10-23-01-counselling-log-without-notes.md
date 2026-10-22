@@ -66,6 +66,6 @@ Konselor, who writes the notes; Mahasiswa, whose notes they are.
 
 ## Steps
 
-- [ ] 1. Session log lines keep every field but the notes, and say whether
+- [x] 1. Session log lines keep every field but the notes, and say whether
   the notes were written or changed; the sample data and the rule in
   `docs/BUILDING-RULES.md` follow.

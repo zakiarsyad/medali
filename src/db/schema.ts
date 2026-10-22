@@ -197,11 +197,12 @@ import {
   SRQ_MAX,
 } from "@/mental-health/screening-ids";
 import {
+  type LoggedSession,
+  type LoggedSessionAfter,
   SESSION_FOLLOW_UPS,
   SESSION_KINDS,
   SESSION_NOTES_MAX,
   SESSION_STEPS,
-  type SessionContent,
 } from "@/mental-health/session-ids";
 import {
   SHARED_DATA,
@@ -3721,8 +3722,11 @@ export const counsellingSessions = pgTable(
 
 /**
  * Every writing and change of a counselling session: who, when, and what
- * it held before and after. Writing has nothing before. Rows here cannot
- * be changed or deleted; the database refuses it.
+ * it held before and after, but never the words of its notes; "after"
+ * says only whether they were written or changed. Lines written before
+ * that rule hold the notes' text and stay, since the log cannot change.
+ * Writing has nothing before. Rows here cannot be changed or deleted; the
+ * database refuses it.
  */
 export const counsellingSessionChanges = pgTable(
   "counselling_session_changes",
@@ -3736,8 +3740,8 @@ export const counsellingSessionChanges = pgTable(
       .references(() => accounts.id),
     changedAt: timestamp({ withTimezone: true }).notNull(),
     step: counsellingSessionStep().notNull(),
-    before: jsonb().$type<SessionContent>(),
-    after: jsonb().$type<SessionContent>().notNull(),
+    before: jsonb().$type<LoggedSession>(),
+    after: jsonb().$type<LoggedSessionAfter>().notNull(),
   },
   (table) => [
     index("counselling_session_changes_session").on(

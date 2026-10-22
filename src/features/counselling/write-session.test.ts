@@ -90,7 +90,7 @@ describe("Simpan sesi of Konselor", () => {
             day: "2026-10-19",
             kind: "individual_in_person",
             topic: "academic",
-            notes: "Catatan uji sesi.",
+            notes: "written",
             followUp: "monitoring",
             nextDay: "2026-10-26",
           },

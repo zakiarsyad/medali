@@ -64,9 +64,12 @@ describe("the sample counselling sessions", { timeout: 20_000 }, () => {
         const steps = sample.firstNotes ? ["write", "change"] : ["write"];
         expect(own.map((line) => line.step)).toEqual(steps);
         expect(own[0]?.before).toBeNull();
-        expect(own[0]?.after.notes).toBe(sample.firstNotes ?? sample.notes);
-        expect(own.at(-1)?.after.notes).toBe(sample.notes);
+        expect(own[0]?.after.notes).toBe("written");
+        if (sample.firstNotes) expect(own[1]?.after.notes).toBe("changed");
         expect(own.at(-1)?.changedAt).toEqual(session?.changedAt);
+        const logged = JSON.stringify(own);
+        expect(logged).not.toContain(sample.notes);
+        if (sample.firstNotes) expect(logged).not.toContain(sample.firstNotes);
       }
     });
   });
