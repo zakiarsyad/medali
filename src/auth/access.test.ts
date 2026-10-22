@@ -1673,6 +1673,40 @@ describe("may", () => {
     }
   });
 
+  it("lets Pengasuh read Dashboard anak asuh, for their own anak asuh only", () => {
+    expect(ACTION_TITLES.view_mentee_dashboard).toContain(
+      "dashboard anak asuh",
+    );
+    expect(may(["mentor"], "view_mentee_dashboard")).toBe(true);
+    expect(mayOpenPage(["mentor"], "dashboard")).toBe(true);
+    expect(
+      rowLimitForAction(
+        {
+          id: "x",
+          roles: ["head_of_unit", "mentor"],
+          studyProgramId: 7,
+          studentId: null,
+        },
+        "view_mentee_dashboard",
+      ),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["x"],
+      studentIds: [],
+    });
+  });
+
+  it("refuses every other role Dashboard anak asuh, the three roles of Dashboard pembangunan karakter among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "mentor");
+    expect(others).toEqual(
+      expect.arrayContaining([...dashboardRoles, "student", "counsellor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_mentee_dashboard")).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa approve, decline and withdraw the sharing of their own counselling data, on Konseling", () => {
     expect(ACTION_TITLES.answer_own_counselling_sharing).toContain(
       "berbagi data",

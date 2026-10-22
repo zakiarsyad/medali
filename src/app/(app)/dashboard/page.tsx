@@ -1,3 +1,4 @@
+import { forbidden } from "next/navigation";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { type AccountForAccess, mayOpenPage, mayOpenTab } from "@/auth/access";
@@ -19,12 +20,23 @@ import {
   readDashboardDetail,
   readDashboardFilters,
 } from "@/features/dashboard/dashboard-address";
+import {
+  type DashboardKind,
+  dashboardKindsOf,
+  kindToShow,
+  MENTEE_DASHBOARD_ADDRESS,
+  readDashboardKind,
+} from "@/features/dashboard/dashboard-kind";
 import { dashboardScopeOf } from "@/features/dashboard/dashboard-scope";
 import {
   DashboardScreen,
   type DetailLinks,
 } from "@/features/dashboard/dashboard-screen";
+import { DashboardSwitch } from "@/features/dashboard/dashboard-switch";
 import { loadDashboard } from "@/features/dashboard/dashboard-view";
+import { menteeScopeOf } from "@/features/dashboard/mentee-scope";
+import { MenteeScreen } from "@/features/dashboard/mentee-screen";
+import { loadMenteeDashboard } from "@/features/dashboard/mentee-view";
 import { FITNESS_ADDRESS } from "@/features/fitness/fitness-address";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import { COACHING_ADDRESS } from "@/features/guidance/coaching-address";
@@ -44,7 +56,7 @@ import {
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
 import { STUDENT_LIST_ADDRESS } from "@/features/students/student-list-address";
-import { EmptyPage } from "@/ui/empty-page";
+import type { SearchParams } from "@/ui/search-params";
 
 function linksOf(roles: AccountForAccess["roles"]): DetailLinks {
   const opens = (page: PageId, tab: string) => mayOpenTab(roles, page, tab);
@@ -112,22 +124,18 @@ async function DashboardDetail({
   );
 }
 
-/**
- * Dashboard. An account with the right to its numbers sees Dashboard
- * pembangunan karakter, Ketua Program Studi for their own program only.
- * The other role that opens the page, Pengasuh, sees Dashboard anak asuh,
- * which a later piece of work fills. The numbers are read here only, so
- * no other address gives them out. A name of a note opens the student's
- * detail over the page, for a student the account may open the detail
- * of; any other is "not found".
- */
-export default async function DashboardPage(props: PageProps<"/dashboard">) {
-  const { account } = await openPage("dashboard");
+interface ViewProps {
+  account: AccountForAccess;
+  kinds: DashboardKind[];
+  params: SearchParams;
+}
+
+/** Dashboard pembangunan karakter, with the filters its address asks for. */
+async function CharacterView({ account, kinds, params }: ViewProps) {
   const scope = dashboardScopeOf(account);
-  if (scope === null) return <EmptyPage title="Dashboard anak asuh" />;
+  if (scope === null) forbidden();
   const db = database();
   const today = campusDay();
-  const params = await props.searchParams;
   const view = await loadDashboard(
     db,
     scope,
@@ -138,6 +146,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const detail = await askedDetail(account, readDashboardDetail(params));
   return (
     <>
+      <DashboardSwitch kinds={kinds} open="character" />
       <DashboardScreen view={view} links={linksOf(account.roles)} />
       {detail && (
         <DashboardDetail
@@ -148,4 +157,45 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
       )}
     </>
   );
+}
+
+/** Dashboard anak asuh, of the account's own anak asuh only. */
+async function MenteeView({ account, kinds, params }: ViewProps) {
+  const scope = menteeScopeOf(account);
+  if (scope === null) forbidden();
+  const view = await loadMenteeDashboard(database(), scope);
+  const detail = await askedDetail(account, readDashboardDetail(params));
+  return (
+    <>
+      <DashboardSwitch kinds={kinds} open="mentees" />
+      <MenteeScreen view={view} />
+      {detail && (
+        <DashboardDetail
+          account={account}
+          detail={detail}
+          closeAddress={MENTEE_DASHBOARD_ADDRESS}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * Dashboard. An account with the right to its numbers sees Dashboard
+ * pembangunan karakter, Ketua Program Studi for their own program only.
+ * Pengasuh sees Dashboard anak asuh, of their own anak asuh only. A
+ * person who is both has a switch between the two, each with its own
+ * limits. The numbers are read here only, so no other address gives
+ * them out. A name opens the student's detail over the page, for a
+ * student the account may open the detail of; any other is "not found".
+ */
+export default async function DashboardPage(props: PageProps<"/dashboard">) {
+  const { account } = await openPage("dashboard");
+  const params = await props.searchParams;
+  const kinds = dashboardKindsOf(account.roles);
+  const kind = kindToShow(kinds, readDashboardKind(params));
+  if (kind === null) forbidden();
+  const shown = { account, kinds, params };
+  if (kind === "mentees") return <MenteeView {...shown} />;
+  return <CharacterView {...shown} />;
 }

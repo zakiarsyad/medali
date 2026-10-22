@@ -1,5 +1,6 @@
 import type { SQL } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
+import type { Action } from "@/auth/roles";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import { sharedReachOf } from "@/mental-health/shared-reach";
 
@@ -44,12 +45,18 @@ function illnessesOf(account: AccountForAccess): SQL | null {
   return visibleTo(rowLimitForAction(account, "view_health_recap"));
 }
 
+/** The account with only those of its roles that allow an action. */
+export function rolesAllowing(
+  account: AccountForAccess,
+  action: Action,
+): AccountForAccess {
+  const roles = account.roles.filter((role) => may([role], action));
+  return { ...account, roles };
+}
+
 /** The roles of the account that open the Dashboard, without the others. */
 function dashboardRoles(account: AccountForAccess): AccountForAccess {
-  const roles = account.roles.filter((role) =>
-    may([role], "view_character_dashboard"),
-  );
-  return { ...account, roles };
+  return rolesAllowing(account, "view_character_dashboard");
 }
 
 /**

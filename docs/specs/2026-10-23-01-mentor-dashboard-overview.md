@@ -90,7 +90,7 @@ Pengasuh.
 
 ## Steps
 
-- [ ] 1. "Dashboard anak asuh" opens for Pengasuh, limited to their own
+- [x] 1. "Dashboard anak asuh" opens for Pengasuh, limited to their own
   anak asuh, with the message for a Pengasuh without a group and the
   switch for an account with both Dashboards.
 - [ ] 2. The progress box with its two links.

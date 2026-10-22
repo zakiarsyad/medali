@@ -151,7 +151,7 @@ export function dashboardAddress(filters: DashboardFilters): string {
 }
 
 /** The part of the address that names the student whose detail is open. */
-const DETAIL_PARAM = "profil";
+export const DETAIL_PARAM = "profil";
 /** As long as the id of a record is. */
 const ID_LENGTH = 36;
 
