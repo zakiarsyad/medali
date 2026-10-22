@@ -90,6 +90,9 @@ without going to Pembinaan karakter and searching.
    a student who is not on the list, so the screen tells nothing about
    whether they are listed. The data is read each time the detail opens;
    nothing is kept between openings.
+8. The status badge and the panel's border use the coaching red the app
+   already names, with no light red fill; the app names no colour like
+   the prototype's soft one.
 
 ## Steps
 
