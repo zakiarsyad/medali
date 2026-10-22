@@ -2,6 +2,7 @@ import { passes } from "@/character-grades/grade-letter";
 import { shownOneDecimal } from "@/character-grades/grade-words";
 import { GRADE_LETTERS, type GradeLetter } from "@/character-grades/scheme-ids";
 import { TOO_FEW } from "./achievement-words";
+import { CardBox } from "./card-box";
 import styles from "./dashboard.module.css";
 import type { CharacterGrades } from "./grade-read";
 import type { ShownGrades } from "./grade-recap";
@@ -57,12 +58,20 @@ function LetterStack({
 /**
  * The card "Nilai karakter": Rerata nilai akhir, the percent that meets
  * the pass letter, how many are held at 70, and the letter spread.
- * Pressing it moves the page to section 2. Without numbers it says why.
+ * Unless `linked` is off, pressing it moves the page to section 2.
+ * Without numbers it says why.
  */
-export function GradeCard({ grades }: { grades: CharacterGrades }) {
+export function GradeCard({
+  grades,
+  linked = true,
+}: {
+  grades: Pick<CharacterGrades, "recap" | "scheme">;
+  /** Whether pressing it moves the page to its section: not where there is none. */
+  linked?: boolean;
+}) {
   const { recap, scheme } = grades;
   return (
-    <a className={styles.card} href={`#${GRADE_SECTION}`}>
+    <CardBox target={linked ? GRADE_SECTION : null}>
       <span className={styles.cardHead}>
         <span className={styles.sectionNo}>2</span>
         Nilai karakter
@@ -84,6 +93,6 @@ export function GradeCard({ grades }: { grades: CharacterGrades }) {
           <LetterStack recap={recap} passLetter={scheme.passLetter} />
         </>
       )}
-    </a>
+    </CardBox>
   );
 }

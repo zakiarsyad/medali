@@ -112,8 +112,10 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
   {
     name: "Suryo Adinugroho",
     title: "M.Ak.",
-    roles: ["mentor"],
+    // Both Pengasuh and Ketua Program Studi, to show the switch between the two Dashboards.
+    roles: ["mentor", "head_of_program"],
     unit: "Jurusan Akuntansi",
+    studyProgram: "D3 Akuntansi",
   },
   {
     name: "Retno Wulansari",

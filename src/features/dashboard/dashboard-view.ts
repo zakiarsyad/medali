@@ -58,7 +58,10 @@ export interface DashboardView {
 }
 
 /** What the grades are worked out with on `today`, by the scheme in force. */
-async function readBasis(db: Database, today: string): Promise<GradeBasis> {
+export async function readBasis(
+  db: Database,
+  today: string,
+): Promise<GradeBasis> {
   const { scheme } = await readGradeScheme(db);
   return readGradeBasis(db, scheme, today);
 }

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import styles from "./dashboard.module.css";
-import type { DashboardFilters } from "./dashboard-address";
+import {
+  type DashboardFilters,
+  studentDetailAddress,
+} from "./dashboard-address";
 import { LatestNotesPanel } from "./latest-notes-panel";
 import type { MentoringNumbers, MentoringView } from "./mentoring-recap";
 import {
@@ -128,8 +131,14 @@ export function MentoringSection({
         )}
         <LatestNotesPanel
           notes={mentoring.notes}
-          filters={filters}
-          notesAddress={links.notes}
+          detailAddressOf={(studentId) =>
+            studentDetailAddress(filters, studentId)
+          }
+          link={
+            links.notes === null
+              ? null
+              : { address: links.notes, words: "Lihat semua" }
+          }
         />
       </div>
     </section>

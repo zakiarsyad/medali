@@ -4,9 +4,11 @@ import {
   academicPeriods,
   accounts,
   characterAssessments,
+  counsellingSharings,
   fitnessScores,
   fitnessTests,
 } from "@/db/schema";
+import type { SharingRecipient } from "@/mental-health/sharing-ids";
 
 /** Made-up records for the checks of the Dashboard. */
 
@@ -98,4 +100,36 @@ export async function addTestFitnessScores(
   await db
     .insert(fitnessScores)
     .values(scores.map((each) => ({ ...each, testId: id })));
+}
+
+/**
+ * A sharing published straight in the table, with the level only, to
+ * the recipients given, without the steps of Konselor that lead to it.
+ */
+export async function addTestPublishedLevel(
+  db: Database,
+  studentId: string,
+  by: string,
+  recipients: SharingRecipient[],
+): Promise<string> {
+  const at = new Date("2026-10-15T03:00:00Z");
+  const [sharing] = await db
+    .insert(counsellingSharings)
+    .values({
+      studentId,
+      status: "published",
+      data: ["level"],
+      recipients,
+      way: "paper",
+      askedBy: by,
+      askedAt: at,
+      answeredAt: at,
+      publishedBy: by,
+      publishedAt: at,
+      changedBy: by,
+      changedAt: at,
+    })
+    .returning({ id: counsellingSharings.id });
+  if (!sharing) throw new Error("The sharing was not added.");
+  return sharing.id;
 }

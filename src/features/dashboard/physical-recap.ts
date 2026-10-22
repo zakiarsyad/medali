@@ -53,14 +53,20 @@ export type PhysicalRecap =
 /** Kesehatan jasmani of a group with enough tested students for counts. */
 export type ShownPhysical = Extract<PhysicalRecap, { kind: "shown" }>;
 
+/** A count as it may show: as it is when no count is held back, or else `shownCount`. */
+function heldCount(count: number, fewest: number): CountShown {
+  return fewest > 1 ? shownCount(count) : count;
+}
+
 function shownByCategory(
   byCategory: Record<FitnessCategory, number>,
+  fewest: number,
 ): Record<FitnessCategory, CountShown> {
   return {
-    excellent: shownCount(byCategory.excellent),
-    good: shownCount(byCategory.good),
-    attention: shownCount(byCategory.attention),
-    medical: shownCount(byCategory.medical),
+    excellent: heldCount(byCategory.excellent, fewest),
+    good: heldCount(byCategory.good, fewest),
+    attention: heldCount(byCategory.attention, fewest),
+    medical: heldCount(byCategory.medical, fewest),
   };
 }
 
@@ -70,9 +76,10 @@ function shownByCategory(
  */
 function fitShareOf(
   byCategory: Record<FitnessCategory, number>,
+  fewest: number,
 ): number | null {
   const fit = byCategory.excellent + byCategory.good;
-  if (shownCount(fit) === "<5") return null;
+  if (heldCount(fit, fewest) === "<5") return null;
   let categorised = 0;
   for (const category of FITNESS_CATEGORIES) {
     categorised += byCategory[category];
@@ -113,24 +120,26 @@ function commonIllnesses(tallies: readonly IllnessTally[]): IllnessCount[] {
 
 /**
  * Kesehatan jasmani as it may be shown: no count at all while fewer than
- * `FEWEST_COUNTED` students are tested, and "<5" for any count of 1 to 4,
- * so that nobody's health can be told from it. `illnesses` is null for an
- * account that may not count them, and then no illness is given out.
+ * `fewest` students are tested, `FEWEST_COUNTED` unless said otherwise,
+ * and then "<5" for any count of 1 to 4, so that nobody's health can be
+ * told from it. `illnesses` is null for an account that may not count
+ * them, and then no illness is given out.
  */
 export function physicalRecapOf(
   tally: FitnessTally,
   illnesses: readonly IllnessTally[] | null,
+  fewest: number = FEWEST_COUNTED,
 ): PhysicalRecap {
   const { students, tested, byCategory } = tally;
   if (tested === 0) return { kind: "untested", students };
-  if (tested < FEWEST_COUNTED) return { kind: "too_few", students };
+  if (tested < fewest) return { kind: "too_few", students };
   return {
     kind: "shown",
     students,
     tested,
-    untested: shownCount(students - tested),
-    byCategory: shownByCategory(byCategory),
-    fitShare: fitShareOf(byCategory),
+    untested: heldCount(students - tested, fewest),
+    byCategory: shownByCategory(byCategory, fewest),
+    fitShare: fitShareOf(byCategory, fewest),
     illnesses: illnesses === null ? null : commonIllnesses(illnesses),
   };
 }
