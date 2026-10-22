@@ -22,9 +22,9 @@ export function StudentNotesView({
 }) {
   const { notes, count } = found;
   return (
-    <section className={styles.inDetail}>
+    <section className={shared.panel}>
       <div className={styles.panelHead}>
-        <h3 className={styles.subheading}>Catatan pengasuhan</h3>
+        <h2 className={shared.heading}>Catatan pengasuhan</h2>
         <span className={styles.quiet}>
           {count.toLocaleString("id-ID")} catatan
         </span>

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import shared from "@/ui/data-screen.module.css";
 import type { ListedNote } from "./note-list";
 import type { StudentNotes } from "./student-notes";
 import { StudentNotesView } from "./student-notes-view";
@@ -54,6 +55,15 @@ describe("StudentNotesView", () => {
   it("shows no Tulis catatan to an account that only reads", () => {
     expect(viewOf({ notes: [NOTE], count: 1 }, null)).not.toContain(
       "Tulis catatan",
+    );
+  });
+
+  it("is a panel with a heading like the other panels of the detail", () => {
+    const view = viewOf({ notes: [], count: 0 }, null);
+
+    expect(view).toMatch(new RegExp(`^<section class="${shared.panel}">`));
+    expect(view).toContain(
+      `<h2 class="${shared.heading}">Catatan pengasuhan</h2>`,
     );
   });
 

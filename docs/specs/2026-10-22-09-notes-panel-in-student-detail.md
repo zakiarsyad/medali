@@ -59,5 +59,5 @@ Pengasuh, the roles that see "Catatan pengasuhan" in the student detail.
 
 ## Steps
 
-- [ ] 1. "Catatan pengasuhan" in the student detail uses the same panel
+- [x] 1. "Catatan pengasuhan" in the student detail uses the same panel
   box and heading as the other panels, with a check that it does.
