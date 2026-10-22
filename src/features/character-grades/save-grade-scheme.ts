@@ -1,17 +1,20 @@
 import { sql } from "drizzle-orm";
 import { type AccountForAccess, may } from "@/auth/access";
-import type { Database } from "@/db/connect";
-import { characterGradeSchemes } from "@/db/schema";
-import { WRITTEN_NOW } from "@/db/written-now";
-import type { Parsed } from "@/parsed";
-import { type LatestSetting, readLatestSetting } from "./grade-scheme";
+import {
+  type LatestSetting,
+  readLatestSetting,
+} from "@/character-grades/grade-scheme";
 import {
   GRADE_PARTS,
   type GradeScheme,
   LIMITED_LETTERS,
   STARTING_SCHEME,
   STARTING_VERSION,
-} from "./scheme-ids";
+} from "@/character-grades/scheme-ids";
+import type { Database } from "@/db/connect";
+import { characterGradeSchemes } from "@/db/schema";
+import { WRITTEN_NOW } from "@/db/written-now";
+import type { Parsed } from "@/parsed";
 import { parseScheme, type SentScheme } from "./scheme-input";
 
 export const NOT_ALLOWED_TO_SET = {

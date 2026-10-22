@@ -3,14 +3,14 @@
  * browser, so nothing here may take from the database code.
  */
 
-import { DAY } from "@/ui/day";
-import { weightTotal } from "./grade-letter";
+import { weightTotal } from "@/character-grades/grade-letter";
 import {
   GRADE_PARTS,
   type GradePart,
   type GradeScheme,
   WEIGHT_TOTAL,
-} from "./scheme-ids";
+} from "@/character-grades/scheme-ids";
+import { DAY } from "@/ui/day";
 import { wholeNumberOf } from "./scheme-input";
 
 /** Each part as its weight field names it, in the prototype's words. */

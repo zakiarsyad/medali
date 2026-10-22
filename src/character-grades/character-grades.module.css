@@ -1,0 +1,17 @@
+/* The letter of a character grade, for every screen that shows it. */
+
+.passes,
+.fails {
+  border: var(--line-width) solid var(--line);
+  background: var(--surface);
+}
+
+.passes {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.fails {
+  border-color: var(--bad);
+  color: var(--bad);
+}

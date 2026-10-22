@@ -1,9 +1,10 @@
-import { and, asc, eq, ilike, or } from "drizzle-orm";
-import { type AccountForAccess, rowLimitForAction } from "@/auth/access";
+import { and, asc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
+import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
@@ -23,6 +24,40 @@ export interface AssessmentPick {
 }
 
 /**
+ * The Aktif students the account may assess that `condition` lets
+ * through, 10 at most, by name, with their latest scores. An account
+ * without the right sees no student at all.
+ */
+async function readPicks(
+  db: Database,
+  actor: AccountForAccess,
+  condition: SQL | undefined,
+): Promise<AssessmentPick[]> {
+  if (!may(actor.roles, "assess_character")) return [];
+  const scope = visibleTo(rowLimitForAction(actor, "assess_character"));
+  const found = await db
+    .select({
+      id: students.id,
+      name: students.name,
+      nim: students.nim,
+      program: studyPrograms.name,
+    })
+    .from(students)
+    .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
+    .where(and(ACTIVE_MEMBER, scope, condition))
+    .orderBy(asc(students.name), asc(students.nim))
+    .limit(SEARCH_LIMIT);
+  const latest = await readLatestOf(
+    db,
+    found.map((student) => student.id),
+  );
+  return found.map((student) => ({
+    ...student,
+    latest: latest.get(student.id)?.scores ?? null,
+  }));
+}
+
+/**
  * The Aktif students the account may assess whose name or NIM holds the
  * text, 10 at most, by name. An empty or too long text finds nobody, and
  * so does what is no text at all: `query` comes from outside.
@@ -35,31 +70,25 @@ export async function searchAssessmentStudents(
   const text = typeof query === "string" ? searchText(query) : null;
   if (text === null) return [];
   const pattern = containsPattern(text);
-  const scope = visibleTo(rowLimitForAction(actor, "assess_character"));
-  const found = await db
-    .select({
-      id: students.id,
-      name: students.name,
-      nim: students.nim,
-      program: studyPrograms.name,
-    })
-    .from(students)
-    .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .where(
-      and(
-        ACTIVE_MEMBER,
-        scope,
-        or(ilike(students.name, pattern), ilike(students.nim, pattern)),
-      ),
-    )
-    .orderBy(asc(students.name), asc(students.nim))
-    .limit(SEARCH_LIMIT);
-  const latest = await readLatestOf(
+  return readPicks(
     db,
-    found.map((student) => student.id),
+    actor,
+    or(ilike(students.name, pattern), ilike(students.nim, pattern)),
   );
-  return found.map((student) => ({
-    ...student,
-    latest: latest.get(student.id)?.scores ?? null,
-  }));
+}
+
+/**
+ * The student an address asks the form to open with, picked, when the
+ * account may assess them: Aktif and within its rows. Null for any
+ * other, so the form opens with nobody picked.
+ */
+export async function readAssessmentPick(
+  db: Database,
+  actor: AccountForAccess,
+  studentId: string,
+): Promise<AssessmentPick | null> {
+  // The database refuses to compare its ids with a text of another shape.
+  if (!isUuid(studentId)) return null;
+  const [pick] = await readPicks(db, actor, eq(students.id, studentId));
+  return pick ?? null;
 }

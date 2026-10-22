@@ -1,5 +1,7 @@
 import { type SQL, type SQLWrapper, sql } from "drizzle-orm";
-import { passes } from "@/features/character-grades/grade-letter";
+import { SIKU_MAX, SIKU_MIN } from "@/features/siku/siku-score";
+import { SKPM_MAX } from "@/features/skpm/skpm-score";
+import { passes } from "./grade-letter";
 import {
   GRADE_LETTERS,
   GRADE_PARTS,
@@ -7,9 +9,7 @@ import {
   type GradePart,
   type GradeScheme,
   LIMITED_LETTERS,
-} from "@/features/character-grades/scheme-ids";
-import { SIKU_MAX, SIKU_MIN } from "@/features/siku/siku-score";
-import { SKPM_MAX } from "@/features/skpm/skpm-score";
+} from "./scheme-ids";
 
 /*
  * The sums of the character grade, written for the database as well, so

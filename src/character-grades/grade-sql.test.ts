@@ -3,18 +3,10 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { scorePercent } from "@/features/activities/attendance-score";
-import {
-  finalScoreOf,
-  gradeOf,
-} from "@/features/character-grades/character-grade";
-import { letterOf } from "@/features/character-grades/grade-letter";
-import {
-  GRADE_LETTERS,
-  type GradeScheme,
-  STARTING_SCHEME,
-} from "@/features/character-grades/scheme-ids";
 import { sikuOf } from "@/features/siku/siku-score";
 import { skpmScoreOf } from "@/features/skpm/skpm-score";
+import { finalScoreOf, gradeOf } from "./character-grade";
+import { letterOf } from "./grade-letter";
 import {
   finalSql,
   letterSql,
@@ -23,6 +15,7 @@ import {
   sikuSql,
   skpmSql,
 } from "./grade-sql";
+import { GRADE_LETTERS, type GradeScheme, STARTING_SCHEME } from "./scheme-ids";
 
 const inTestDatabase = withTestDatabase();
 

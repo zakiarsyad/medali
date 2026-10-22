@@ -1,7 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import {
+  STARTING_SCHEME,
+  STARTING_VERSION,
+} from "@/character-grades/scheme-ids";
 import { SchemeForm } from "./scheme-form";
-import { STARTING_SCHEME, STARTING_VERSION } from "./scheme-ids";
 
 function shownForm(): string {
   return renderToStaticMarkup(

@@ -1,5 +1,5 @@
+import type { SchemeInForce } from "@/character-grades/grade-scheme";
 import styles from "./character-grades.module.css";
-import type { SchemeInForce } from "./grade-scheme";
 import { typedOf } from "./scheme-fields";
 import { SchemeView } from "./scheme-view";
 import { READ_ONLY_NOTE, schemeNote } from "./scheme-words";

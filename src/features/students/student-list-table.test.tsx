@@ -2,6 +2,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { ListedStudent } from "./student-list";
+import type { ListScores } from "./student-list-scores";
 import { StudentListTable } from "./student-list-table";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -25,14 +26,22 @@ const RESIDENT: ListedStudent = {
   dorm: "dana_rakca",
 };
 
-function tableOf(student: ListedStudent): string {
+const NOT_SCORED: ListScores = { rerata: null, grade: { complete: false } };
+
+function tableOf(student: ListedStudent, scores = NOT_SCORED): string {
   return renderToStaticMarkup(
     <StudentListTable
       students={[student]}
+      scores={new Map([[student.id, scores]])}
       period={null}
       detailAddressOf={() => "/mahasiswa"}
     />,
   );
+}
+
+function cellOf(table: string, title: string): string {
+  const start = table.indexOf(`data-title="${title}"`);
+  return table.slice(start, table.indexOf("</td>", start));
 }
 
 describe("StudentListTable", () => {
@@ -48,5 +57,32 @@ describe("StudentListTable", () => {
 
   it("shows no dorm for a student who lives in none", () => {
     expect(tableOf({ ...RESIDENT, dorm: null })).not.toContain("Asrama");
+  });
+
+  it("shows the predikat with Rerata, and the letter with Nilai akhir, each in a cell that folds into the card on a phone", () => {
+    const table = tableOf(RESIDENT, {
+      rerata: 80.3,
+      grade: { complete: true, final: 77, letter: "B", passes: true },
+    });
+
+    const achievement = cellOf(table, "Capaian karakter (MEDALI)");
+    expect(achievement).toContain("Perak");
+    expect(achievement).toContain("Rerata 80,3");
+    const grade = cellOf(table, "Nilai karakter (KEP-220)");
+    expect(grade).toContain(">B<");
+    expect(grade).toContain("77,0");
+    expect(table).toContain("<th>Capaian karakter (MEDALI)</th>");
+    expect(table).toContain("<th>Nilai karakter (KEP-220)</th>");
+  });
+
+  it("says Belum diasesmen and Belum lengkap for a student without either", () => {
+    const table = tableOf(RESIDENT);
+
+    expect(cellOf(table, "Capaian karakter (MEDALI)")).toContain(
+      "Belum diasesmen",
+    );
+    expect(cellOf(table, "Nilai karakter (KEP-220)")).toContain(
+      "Belum lengkap",
+    );
   });
 });

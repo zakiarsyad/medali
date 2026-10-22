@@ -263,3 +263,14 @@ describe("the top of Data SKPM", () => {
     expect(html).toContain("50 poin setara nilai 100.");
   });
 });
+
+describe("names in Nilai SKPM per mahasiswa", () => {
+  it("open the student's profile over the tab, apart from Rincian", () => {
+    const html = renderToStaticMarkup(
+      <SkpmListTable rows={ROWS} params={{ ...START_PARAMS, page: 2 }} />,
+    );
+
+    expect(html).toContain(`href="/penilaian/skpm?hal=2&amp;profil=${BUDI}"`);
+    expect(html).toContain(`href="/penilaian/skpm?hal=2&amp;rincian=${ANI}"`);
+  });
+});

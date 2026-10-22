@@ -105,3 +105,16 @@ describe("Teridentifikasi perlu pembinaan", () => {
     expect(empty).not.toContain("<table");
   });
 });
+
+describe("names in Teridentifikasi perlu pembinaan", () => {
+  it("open the student's profile over the tab, keeping the full list", () => {
+    const html = panel(listOf({ showsAll: true }), {
+      ...START_PARAMS,
+      coachingAll: true,
+    });
+
+    expect(html).toContain(
+      'href="/penilaian/asesmen?pembinaan=semua&amp;profil=00000000-0000-4000-8000-000000000501"',
+    );
+  });
+});

@@ -7,18 +7,6 @@ import {
   scorePercent,
 } from "@/features/activities/attendance-score";
 import { readStudentScores } from "@/features/activities/read-student-scores";
-import {
-  type GradeParts,
-  gradeInputsOf,
-} from "@/features/character-grades/grade-inputs";
-import {
-  type AttendancePart,
-  type GradeRow,
-  gradeRowOf,
-  type SikuPart,
-} from "@/features/character-grades/grade-list";
-import { readGradeStudents } from "@/features/character-grades/grade-students";
-import type { GradeScheme } from "@/features/character-grades/scheme-ids";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
 import { readPeriodScores } from "@/features/mentoring/period-scores";
 import { type SikuTotals, sikuOf } from "@/features/siku/siku-score";
@@ -26,6 +14,15 @@ import { readTotalsOf } from "@/features/siku/siku-totals";
 import { sikuNote } from "@/features/siku/siku-words";
 import { readConversion } from "@/features/skpm/skpm-conversion";
 import { readSkpmScores } from "@/features/skpm/skpm-scores";
+import { type GradeParts, gradeInputsOf } from "./grade-inputs";
+import {
+  type AttendancePart,
+  type GradeRow,
+  gradeRowOf,
+  type SikuPart,
+} from "./grade-list";
+import { readGradeStudents } from "./grade-students";
+import type { GradeScheme } from "./scheme-ids";
 
 function attendanceParts(
   scores: ReadonlyMap<string, AttendanceScore>,

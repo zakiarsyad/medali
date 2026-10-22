@@ -1,3 +1,4 @@
+import { campusDay } from "@/academic-periods/campus-day";
 import { stageCohorts } from "@/academic-periods/stage-cohorts";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
@@ -23,6 +24,7 @@ import {
 import { StudentListBar } from "./student-list-bar";
 import { StudentListFilterRow } from "./student-list-filters";
 import { StudentListPager } from "./student-list-pager";
+import { readListScores, scoreFilterOf } from "./student-list-scores";
 import { StudentListTable } from "./student-list-table";
 import type { GroupAddressOf, MentorAddressOf } from "./student-mentor-group";
 
@@ -53,19 +55,23 @@ export async function StudentListScreen({
   ]);
   // The angkatan of the rows the account sees are enough: every filter
   // finds within those rows only.
+  const today = campusDay();
   const cohorts = {
     stages: stageCohorts(cohortYears, period),
     dorms: dormCohortsOf(cohortYears, period),
+    scored: await scoreFilterOf(db, limit, filters, today),
   };
   const [list, counts] = await Promise.all([
     listStudents(db, limit, filters, params.page, cohorts),
     countChoices(db, limit, filters, cohorts),
   ]);
+  const ids = list.students.map((student) => student.id);
+  const scores = await readListScores(db, limit, ids, today);
   return (
     <>
       <PageHead title="Mahasiswa">
-        Data mahasiswa beserta program studi, angkatan, dan provinsi domisili.
-        Pilih nama untuk melihat profil lengkap.
+        Data mahasiswa beserta capaian karakter (MEDALI) dan nilai karakter
+        (KEP-220) semester berjalan. Pilih nama untuk melihat profil lengkap.
       </PageHead>
       {/* Made anew for each address, so its fields show what the address holds. */}
       <AutoSubmitForm
@@ -84,6 +90,7 @@ export async function StudentListScreen({
             <>
               <StudentListTable
                 students={list.students}
+                scores={scores}
                 period={period}
                 detailAddressOf={(studentId) =>
                   studentDetailAddress(filters, list.page, studentId)

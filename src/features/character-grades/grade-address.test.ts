@@ -9,7 +9,7 @@ describe("readGradeParams", () => {
   it("reads the search, the filter and the page", () => {
     expect(
       readGradeParams({ cari: " ayu ", saring: "belum-lengkap", hal: "3" }),
-    ).toEqual({ query: "ayu", filter: "incomplete", page: 3 });
+    ).toEqual({ query: "ayu", filter: "incomplete", page: 3, profileId: null });
   });
 
   it("trusts nothing it does not understand", () => {
@@ -25,7 +25,12 @@ describe("gradeAddress", () => {
   });
 
   it("names every choice, and reads back to the same choices", () => {
-    const params = { query: "ayu", filter: "failing", page: 2 } as const;
+    const params = {
+      query: "ayu",
+      filter: "failing",
+      page: 2,
+      profileId: null,
+    } as const;
 
     const address = gradeAddress(params);
 
@@ -34,5 +39,23 @@ describe("gradeAddress", () => {
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readGradeParams(Object.fromEntries(search))).toEqual(params);
+  });
+});
+
+describe("the student whose profile is open over the tab", () => {
+  const PROFILE = "3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b";
+
+  it("is read from the address, and only as an id", () => {
+    expect(readGradeParams({ profil: PROFILE }).profileId).toBe(PROFILE);
+    expect(readGradeParams({ profil: "bukan-id" }).profileId).toBeNull();
+    expect(readGradeParams({}).profileId).toBeNull();
+  });
+
+  it("is named in the address, and read back", () => {
+    const address = gradeAddress({ ...START_PARAMS, profileId: PROFILE });
+
+    expect(address).toBe(`/penilaian/karakter?profil=${PROFILE}`);
+    const search = new URLSearchParams(address.split("?")[1]);
+    expect(readGradeParams(Object.fromEntries(search)).profileId).toBe(PROFILE);
   });
 });

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { GradeList } from "@/character-grades/grade-list";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { PageHead } from "@/ui/page-head";
@@ -9,7 +10,6 @@ import {
   gradeAddress,
 } from "./grade-address";
 import { GradeFilterRow } from "./grade-filters";
-import type { GradeList } from "./grade-list";
 import { GradeListTable } from "./grade-list-table";
 
 /**
@@ -46,7 +46,7 @@ export function CharacterGradeScreen({
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar nilai karakter</h2>
         <GradeFilterRow params={params} />
-        <GradeListTable rows={list.rows} />
+        <GradeListTable rows={list.rows} params={params} />
         {list.matching > 0 && (
           <ListPager
             page={list.page}

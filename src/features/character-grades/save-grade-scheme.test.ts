@@ -1,21 +1,25 @@
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
+import { readGradeScheme } from "@/character-grades/grade-scheme";
+import {
+  STARTING_SCHEME,
+  STARTING_VERSION,
+} from "@/character-grades/scheme-ids";
+import { FORTY_TWENTY } from "@/character-grades/test-weights";
 import { characterGradeSchemes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { readGradeScheme } from "./grade-scheme";
 import {
   CHANGED_SINCE,
   NOT_ALLOWED_TO_SET,
   saveGradeScheme,
 } from "./save-grade-scheme";
-import { STARTING_SCHEME, STARTING_VERSION } from "./scheme-ids";
 import {
   LIMITS_NOT_DOWN,
   NOT_WHOLE,
   type SentScheme,
   TOTAL_NOT_100,
 } from "./scheme-input";
-import { addTestActor, FORTY_TWENTY, sentWithWeights } from "./test-scheme";
+import { addTestActor, sentWithWeights } from "./test-scheme";
 
 const inTestDatabase = withTestDatabase();
 

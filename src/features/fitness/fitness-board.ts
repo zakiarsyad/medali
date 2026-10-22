@@ -137,7 +137,8 @@ function matching(query: string): SQL | undefined {
   return or(ilike(students.name, pattern), ilike(students.nim, pattern));
 }
 
-interface ReadRow {
+/** A student as read from the database, before its note is read. */
+export interface ReadRow {
   id: string;
   name: string;
   nim: string;
@@ -153,7 +154,7 @@ interface ReadRow {
  * The notes of the rows whose notes the account reads. A row it may not
  * read asks for nothing, so no note text of it leaves the database.
  */
-async function readableNotes(
+export async function readableNotes(
   db: Database,
   rows: readonly ReadRow[],
 ): Promise<Map<string, NoteContent>> {
@@ -170,7 +171,8 @@ async function readableNotes(
   return contents;
 }
 
-function listRow(
+/** A student read, with the note only when the account reads it. */
+export function listRow(
   row: ReadRow,
   limits: FitnessLimits,
   notes: Map<string, NoteContent>,

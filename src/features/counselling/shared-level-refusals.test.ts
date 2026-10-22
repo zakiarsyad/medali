@@ -34,6 +34,7 @@ const EVERYONE: ScreeningParams = {
   filter: "all",
   page: 1,
   sharedPage: 1,
+  profileId: null,
 };
 
 let place = 0;

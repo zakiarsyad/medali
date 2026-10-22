@@ -1,9 +1,12 @@
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
+import {
+  type GradeScheme,
+  STARTING_SCHEME,
+} from "@/character-grades/scheme-ids";
 import type { Database } from "@/db/connect";
 import { accounts } from "@/db/schema";
 import { typedOf } from "./scheme-fields";
-import { type GradeScheme, STARTING_SCHEME } from "./scheme-ids";
 import type { SentScheme } from "./scheme-input";
 
 /** Made-up records for the checks of this area. */
@@ -25,10 +28,3 @@ export function sentWithWeights(
 ): SentScheme {
   return typedOf({ ...STARTING_SCHEME, weights, ...more });
 }
-
-export const FORTY_TWENTY: GradeScheme["weights"] = {
-  attendance: 40,
-  mentoring: 20,
-  siku: 20,
-  skpm: 20,
-};

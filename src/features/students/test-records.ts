@@ -1,8 +1,11 @@
 import type { RoleId } from "@/auth/role-ids";
+import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
 import {
+  academicPeriods,
   accountRoles,
   accounts,
+  characterAssessments,
   mentorGroupMembers,
   mentorGroupMentors,
   mentorGroups,
@@ -121,4 +124,53 @@ export async function addTestMentorGroup(
   if (members.length > 0) await db.insert(mentorGroupMembers).values(members);
   await db.insert(mentorGroupMentors).values(mentorLinesOf(added.id, group));
   return added.id;
+}
+
+/** The Ganjil period of a year that a test file keeps as its own. */
+export async function addTestPeriod(
+  db: Database,
+  year: number,
+): Promise<string> {
+  const [period] = await db
+    .insert(academicPeriods)
+    .values({
+      startYear: year,
+      term: "odd",
+      startsOn: `${year}-08-01`,
+      endsOn: `${year + 1}-01-31`,
+    })
+    .returning({ id: academicPeriods.id });
+  if (!period) throw new Error("The period was not added.");
+  return period.id;
+}
+
+export interface TestAssessment {
+  studentId: string;
+  periodId: string;
+  enteredAt: Date;
+  scores: Scores;
+}
+
+/** A character assessment kept as it is, entered by `byId`. */
+export async function addTestAssessment(
+  db: Database,
+  byId: string,
+  assessment: TestAssessment,
+): Promise<void> {
+  const { scores } = assessment;
+  await db.insert(characterAssessments).values({
+    id: crypto.randomUUID(),
+    studentId: assessment.studentId,
+    scoreM: scores.M,
+    scoreE: scores.E,
+    scoreD: scores.D,
+    scoreA: scores.A,
+    scoreL: scores.L,
+    scoreI: scores.I,
+    source: "mentor_observation",
+    note: "",
+    periodId: assessment.periodId,
+    enteredBy: byId,
+    enteredAt: assessment.enteredAt,
+  });
 }

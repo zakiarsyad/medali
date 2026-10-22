@@ -1,7 +1,17 @@
+import type { SQL } from "drizzle-orm";
 import type { StageCohorts } from "@/academic-periods/stage-cohorts";
 
-/** Which angkatan is where now, for the filters of the list that read it. */
+/**
+ * What the filters of the list read that is looked up before the list:
+ * which angkatan is where now, and who the score filters let through.
+ */
 export interface ListCohorts {
+  /**
+   * The students the predikat and grade choices let through, or nothing
+   * while neither is chosen. Worked out first, because the grade reads
+   * its scheme and parts before it can be asked.
+   */
+  scored?: SQL | undefined;
   /** The angkatan years in each tahap, for the Tahapan filter. */
   stages: StageCohorts;
   /**

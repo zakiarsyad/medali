@@ -18,9 +18,9 @@ export const PREDICATES = ["gold", "silver", "bronze", "guidance"] as const;
 export type Predicate = (typeof PREDICATES)[number];
 
 /** The lowest Rerata of each predikat but the last, which takes the rest. */
-const GOLD_FROM = 85;
-const SILVER_FROM = 75;
-const BRONZE_FROM = 65;
+export const GOLD_FROM = 85;
+export const SILVER_FROM = 75;
+export const BRONZE_FROM = 65;
 
 /** A slider's level: 1 below 65, 2 from 65, 3 from 75, 4 from 85. */
 export type Level = 1 | 2 | 3 | 4;

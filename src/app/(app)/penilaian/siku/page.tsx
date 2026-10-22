@@ -4,7 +4,11 @@ import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
+import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
+import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
+import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -48,7 +52,8 @@ import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
  * their own SIKU, whatever the address asks for. Nilai dasar is the one
  * set in Kurikulum. A name in the lists opens the student over the tab:
  * the whole detail for a role that may open it, else name, NIM, program
- * studi and status, each with "Rincian nilai SIKU".
+ * studi and status with the character panels, each with "Rincian nilai
+ * SIKU".
  */
 export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const opened = await openPage("penilaian", "siku");
@@ -157,11 +162,18 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
           }
           morePanelsOf={(studentId) => (
             <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
               <StudentSikuPanel
                 account={account}
                 studentId={studentId}
                 base={Promise.resolve(base)}
               />
+              <StudentFitnessPanel account={account} studentId={studentId} />
+              <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel
                 account={account}
                 visible={notesVisible}
@@ -170,11 +182,18 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
             </>
           )}
           briefPanelsOf={(studentId) => (
-            <StudentSikuPanel
-              account={account}
-              studentId={studentId}
-              base={Promise.resolve(base)}
-            />
+            <>
+              <StudentAchievementPanel
+                account={account}
+                studentId={studentId}
+              />
+              <StudentGradePanel account={account} studentId={studentId} />
+              <StudentSikuPanel
+                account={account}
+                studentId={studentId}
+                base={Promise.resolve(base)}
+              />
+            </>
           )}
         />
       )}
