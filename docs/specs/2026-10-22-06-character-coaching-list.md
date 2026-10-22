@@ -149,6 +149,10 @@ Pemantauan, Selesai.
     terbaru; pilih lagi bila masih perlu.", and the list is read again
     so the row shows the current status. Two changes at the same moment
     wait for each other, so the second is refused the same way.
+15. The number beside "Pembinaan" in the menu is "Belum selesai" as the
+    tab counts it for the account, on every page, and follows a status
+    change at once. An account whose roles do not open the tab gets no
+    number and no count is read for it.
 
 ## Steps
 
@@ -160,4 +164,4 @@ Pemantauan, Selesai.
   rows.
 - [x] 4. Changing a status, with the optional note and the log.
 - [x] 5. Refusing a change made on an outdated status.
-- [ ] 6. The number beside the Pembinaan menu item.
+- [x] 6. The number beside the Pembinaan menu item.

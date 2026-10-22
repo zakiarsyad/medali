@@ -8,7 +8,6 @@ import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
 import type { FormState } from "@/ui/form-message";
 import { changeCoachingStatus } from "./change-coaching-status";
-import { COACHING_ADDRESS } from "./coaching-address";
 import { statusChangedMessage } from "./coaching-messages";
 
 /**
@@ -64,7 +63,9 @@ export async function changeCoachingStatusAction(
     String(note),
   );
   const isOutdated = "current" in changed;
-  if (changed.ok || isOutdated) revalidatePath(COACHING_ADDRESS);
+  // The tab and the number beside Pembinaan in the menu of every page
+  // change with a status.
+  if (changed.ok || isOutdated) revalidatePath("/", "layout");
   if (!changed.ok) return { error: changed.error, done: null };
   const { name, status: kept } = changed.value;
   return { error: null, done: statusChangedMessage(name, kept) };
