@@ -120,6 +120,11 @@ nothing is typed again in Penilaian.
     their wording asks, and never the Uraian.
 15. "Konsekuensi" shows the latest Rerata and medal only for a student
     the account may record a penalty for.
+16. "Riwayat per semester" in the student detail, merged while this was
+    built, holds every semester of a limited student at 70 too, so no
+    score shows above 70 anywhere, as this issue asks. The prototype
+    holds only the latest semester, and the spec of that panel had said
+    a semester under a penalty shows as stored, as its card did then.
 
 ## Steps
 
