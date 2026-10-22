@@ -87,6 +87,16 @@ handle their own case.
    when sent by hand.
 3. "Batalkan tugas" is refused for a duty of the room the student lives
    in, because cancelling a duty is the same as judging it away.
+4. In "Penghitungan kehadiran" the own mark is both "Tidak hadir" and its
+   note. The own row shows "Hadir" or "Tidak hadir" with the note, and
+   the line. A save that changes it keeps the own row as it was, saves
+   the other rows, and shows the message.
+5. The room the student lives in is their room today, the same room shown
+   to them as their own, so a kakak pendamping's room counts too.
+6. Only the BAM steps named above are checked. The Pengelola Asrama steps
+   on the same records ("Validasi kembali" and the decision on a
+   clarification) are left as they are.
+7. "Tugas saya" needs no change: it shows none of these BAM buttons.
 
 ## Steps
 
