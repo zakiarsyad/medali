@@ -31,7 +31,8 @@ export interface StudentAchievement {
 
 type ShownStudent = Pick<typeof students.$inferSelect, "cohortYear" | "status">;
 
-async function readShownStudent(
+/** A student within the rows of the character panels, or null. */
+export async function readShownStudent(
   db: Database,
   account: AccountForAccess,
   studentId: string,

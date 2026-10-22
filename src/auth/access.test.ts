@@ -2527,6 +2527,9 @@ describe("may", () => {
     expect(ACTION_TITLES.view_student_character_panels).toContain(
       "detail mahasiswa",
     );
+    expect(ACTION_TITLES.view_student_character_panels).toContain(
+      "riwayat per semester",
+    );
     const others = ROLE_IDS.filter(
       (role) => !characterPanelReaders.includes(role),
     );
