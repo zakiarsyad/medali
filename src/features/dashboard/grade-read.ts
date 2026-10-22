@@ -1,5 +1,6 @@
 import { count, eq, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import { type GradeBasis, gradeFacts } from "@/character-grades/grade-facts";
+import { readGradeNumbers } from "@/character-grades/read-grade-numbers";
 import type { GradeScheme } from "@/character-grades/scheme-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
@@ -70,10 +71,19 @@ export async function readCharacterGrades(
   filtered: boolean,
 ): Promise<CharacterGrades> {
   const { scheme } = basis;
-  const groups = await readGradeGroups(db, where, basis);
+  const [groups, numbers] = await Promise.all([
+    readGradeGroups(db, where, basis),
+    readGradeNumbers(db, where, basis),
+  ]);
+  const recap = gradeRecapOf(groups, scheme);
+  // Rerata nilai akhir is taken as Penilaian karakter takes it, so the two
+  // pages never round the same students apart.
+  if (recap.kind === "shown" && numbers.meanFinal !== null) {
+    recap.meanFinal = numbers.meanFinal;
+  }
   return {
     scheme,
-    recap: gradeRecapOf(groups, scheme),
+    recap,
     cohorts: gradeCohorts(groups, scheme, filtered),
   };
 }
