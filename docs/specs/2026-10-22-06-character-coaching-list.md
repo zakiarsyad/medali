@@ -142,6 +142,13 @@ Pemantauan, Selesai.
 13. Only the status of an Aktif student whom their latest assessment
     lists can be changed. The message shows above the list, so it stays
     when a student set to "Selesai" leaves the "Belum selesai" view.
+14. A change is sent with the version of the status the screen showed.
+    When someone changed it since, also by a new assessment that started
+    it again, the change is refused with "Status mahasiswa ini baru saja
+    diubah orang lain. Yang tampil sekarang adalah statusnya yang
+    terbaru; pilih lagi bila masih perlu.", and the list is read again
+    so the row shows the current status. Two changes at the same moment
+    wait for each other, so the second is refused the same way.
 
 ## Steps
 
@@ -152,5 +159,5 @@ Pemantauan, Selesai.
   the line about "Konseling", read only and limited to each role's
   rows.
 - [x] 4. Changing a status, with the optional note and the log.
-- [ ] 5. Refusing a change made on an outdated status.
+- [x] 5. Refusing a change made on an outdated status.
 - [ ] 6. The number beside the Pembinaan menu item.

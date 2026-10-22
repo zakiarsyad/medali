@@ -10,6 +10,7 @@ import { withTestDatabase } from "@/db/test-database";
 import { changeCoachingStatus } from "./change-coaching-status";
 import {
   COACHING_NOTE_TOO_LONG,
+  COACHING_OUTDATED,
   NOT_A_COACHING_STATUS,
   NOT_ALLOWED_TO_CHANGE,
   NOT_IN_COACHING,
@@ -85,6 +86,7 @@ describe("changeCoachingStatus", () => {
         db,
         kepala,
         one,
+        0,
         "counselling",
         " Diajak bicara. ",
       );
@@ -120,9 +122,16 @@ describe("changeCoachingStatus", () => {
     await inTestDatabase(async (db) => {
       const { kepala, listed } = await setting(db);
       const [one = ""] = listed;
-      await changeCoachingStatus(db, kepala, one, "counselling", "Diajak.");
+      await changeCoachingStatus(db, kepala, one, 0, "counselling", "Diajak.");
 
-      const changed = await changeCoachingStatus(db, kepala, one, "done", "");
+      const changed = await changeCoachingStatus(
+        db,
+        kepala,
+        one,
+        1,
+        "done",
+        "",
+      );
 
       expect(changed.ok && changed.value.version).toBe(2);
       expect(await coachingStatusAt(db, one)).toMatchObject({
@@ -145,12 +154,13 @@ describe("changeCoachingStatus", () => {
     await inTestDatabase(async (db) => {
       const { kepala, listed } = await setting(db);
       const [one = ""] = listed;
-      await changeCoachingStatus(db, kepala, one, "monitoring", "Dipantau.");
+      await changeCoachingStatus(db, kepala, one, 0, "monitoring", "Dipantau.");
 
       const again = await changeCoachingStatus(
         db,
         kepala,
         one,
+        1,
         "monitoring",
         "Dipantau.",
       );
@@ -158,6 +168,7 @@ describe("changeCoachingStatus", () => {
         db,
         kepala,
         listed[1] ?? "",
+        0,
         "identified",
         "",
       );
@@ -169,16 +180,56 @@ describe("changeCoachingStatus", () => {
     });
   });
 
+  it("refuses a change made on a status someone changed since it was shown, keeping nothing and giving the current one", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, listed } = await setting(db);
+      const [one = "", two = ""] = listed;
+      await changeCoachingStatus(db, kepala, one, 0, "counselling", "Diajak.");
+
+      const fromNone = await changeCoachingStatus(
+        db,
+        kepala,
+        one,
+        0,
+        "done",
+        "",
+      );
+      const fromLater = await changeCoachingStatus(
+        db,
+        kepala,
+        two,
+        3,
+        "done",
+        "",
+      );
+
+      expect(fromNone).toEqual({
+        ...COACHING_OUTDATED,
+        current: { status: "counselling", note: "Diajak.", version: 1 },
+      });
+      expect(fromLater).toEqual({
+        ...COACHING_OUTDATED,
+        current: { status: "identified", note: "", version: 0 },
+      });
+      expect(await coachingStatusAt(db, one)).toMatchObject({
+        status: "counselling",
+        version: 1,
+      });
+      expect(await coachingLinesOf(db, one)).toHaveLength(1);
+      expect(await coachingStatusAt(db, two)).toBeUndefined();
+    });
+  });
+
   it("refuses a status not on the list and a note too long, keeping nothing", async () => {
     await inTestDatabase(async (db) => {
       const { kepala, listed } = await setting(db);
       const [one = ""] = listed;
 
       expect(
-        await changeCoachingStatus(db, kepala, one, "Selesai", ""),
+        await changeCoachingStatus(db, kepala, one, 0, "Selesai", ""),
       ).toEqual(NOT_A_COACHING_STATUS);
       expect(
-        await changeCoachingStatus(db, kepala, one, "done", "a".repeat(301)),
+        await changeCoachingStatus(db, kepala, one, 0, "done", "a".repeat(301)),
       ).toEqual(COACHING_NOTE_TOO_LONG);
       expect(await coachingStatusAt(db, one)).toBeUndefined();
     });
@@ -191,8 +242,8 @@ describe("changeCoachingStatus", () => {
       const mentor = await actor(db, ["mentor"]);
       await addPenaltyGroup(db, programId, [one], mentor.id);
 
-      const own = await changeCoachingStatus(db, mentor, one, "done", "");
-      const other = await changeCoachingStatus(db, mentor, two, "done", "");
+      const own = await changeCoachingStatus(db, mentor, one, 0, "done", "");
+      const other = await changeCoachingStatus(db, mentor, two, 0, "done", "");
 
       expect(own.ok).toBe(true);
       expect(other).toEqual(NOT_IN_COACHING);
@@ -207,10 +258,10 @@ describe("changeCoachingStatus", () => {
       const both = await actor(db, ["head_of_program", "mentor"], programId);
       await addPenaltyGroup(db, programId, [one], both.id);
 
-      expect((await changeCoachingStatus(db, both, one, "done", "")).ok).toBe(
-        true,
-      );
-      expect(await changeCoachingStatus(db, both, two, "done", "")).toEqual(
+      expect(
+        (await changeCoachingStatus(db, both, one, 0, "done", "")).ok,
+      ).toBe(true);
+      expect(await changeCoachingStatus(db, both, two, 0, "done", "")).toEqual(
         NOT_IN_COACHING,
       );
     });
@@ -232,7 +283,7 @@ describe("changeCoachingStatus", () => {
       const [one = ""] = listed;
       const other = await actor(db, [role], programId);
 
-      expect(await changeCoachingStatus(db, other, one, "done", "")).toEqual(
+      expect(await changeCoachingStatus(db, other, one, 0, "done", "")).toEqual(
         NOT_ALLOWED_TO_CHANGE,
       );
       expect(await coachingStatusAt(db, one)).toBeUndefined();
@@ -250,7 +301,7 @@ describe("changeCoachingStatus", () => {
 
       for (const studentId of [fine, two, "bukan-id"]) {
         expect(
-          await changeCoachingStatus(db, kepala, studentId, "done", ""),
+          await changeCoachingStatus(db, kepala, studentId, 0, "done", ""),
         ).toEqual(NOT_IN_COACHING);
       }
       expect(await coachingStatusAt(db, fine)).toBeUndefined();

@@ -39,19 +39,23 @@ export function CoachingStatusLabel({
  * The status choice of a row. Choosing another status opens the short
  * "Catatan" of what was done and "Simpan status"; what the server
  * answers shows above the list, and the row follows once the page is
- * read again.
+ * read again: the new status, or the current one when someone changed
+ * it first.
  */
 export function CoachingStatusCell({
   studentId,
   name,
   status,
   note,
+  version,
 }: {
   studentId: string;
   /** The student's name, for the choice's label. */
   name: string;
   status: CoachingStatus;
   note: string;
+  /** The version of the status shown, 0 for none saved, sent with a change. */
+  version: number;
 }) {
   const setMessage = use(SetCoachingMessage);
   const [chosen, setChosen] = useState<CoachingStatus | null>(null);
@@ -69,11 +73,13 @@ export function CoachingStatusCell({
     startSending(async () => {
       const answer = await changeCoachingStatusAction(
         studentId,
+        version,
         sending,
         typed,
       );
       setMessage(answer);
-      if (answer.done !== null) setChosen(null);
+      // Kept or refused, the row shows the status the page reads again.
+      setChosen(null);
     });
   }
 

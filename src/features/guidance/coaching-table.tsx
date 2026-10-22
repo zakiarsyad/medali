@@ -33,6 +33,7 @@ function StatusCell({ row }: { row: CoachingRow }) {
       name={row.name}
       status={row.status}
       note={row.note}
+      version={row.version}
     />
   );
 }

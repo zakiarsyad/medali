@@ -8,17 +8,18 @@ import { isUuid } from "@/db/is-uuid";
 import { coachingStatusChanges, coachingStatuses, students } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
-import type { Parsed } from "@/parsed";
-import { type CoachingChange, parseCoachingChange } from "./coaching-change";
-import { NOT_ALLOWED_TO_CHANGE, NOT_IN_COACHING } from "./coaching-messages";
+import {
+  type CoachingChange,
+  type CoachingOutcome,
+  parseCoachingChange,
+  type ShownCoachingStatus,
+} from "./coaching-change";
+import {
+  COACHING_OUTDATED,
+  NOT_ALLOWED_TO_CHANGE,
+  NOT_IN_COACHING,
+} from "./coaching-messages";
 import { coachingChangeReachOf } from "./coaching-reach";
-
-/** A student's status as it stands after a change, with whose it is. */
-export interface KeptCoachingStatus extends CoachingChange {
-  name: string;
-  /** 0 while no status is saved. */
-  version: number;
-}
 
 /**
  * The name of a student the actor may change the status of, Aktif and
@@ -55,8 +56,15 @@ async function holdStudent(
   return listed ? held.name : null;
 }
 
-/** The saved status of a student, or Teridentifikasi at version 0 for none. */
-async function currentOf(tx: Database, studentId: string) {
+/**
+ * The saved status of a student, or Teridentifikasi at version 0 for
+ * none, held until the change ends, as a new assessment that starts it
+ * again holds it too.
+ */
+async function currentOf(
+  tx: Database,
+  studentId: string,
+): Promise<ShownCoachingStatus> {
   const [saved] = await tx
     .select({
       status: coachingStatuses.status,
@@ -92,11 +100,14 @@ async function change(
   tx: Database,
   actor: AccountForAccess,
   studentId: string,
+  shown: number,
   after: CoachingChange,
-): Promise<Parsed<KeptCoachingStatus>> {
+): Promise<CoachingOutcome> {
   const name = await holdStudent(tx, actor, studentId);
   if (name === null) return NOT_IN_COACHING;
   const before = await currentOf(tx, studentId);
+  if (before.version !== shown)
+    return { ...COACHING_OUTDATED, current: before };
   const isSame = before.status === after.status && before.note === after.note;
   if (isSame) return { ok: true, value: { name, ...before } };
   const version = before.version + 1;
@@ -119,21 +130,25 @@ async function change(
  * before. Refused, with nothing kept, for a role without the right to
  * change a coaching status, for what the form rules refuse, and for a
  * student outside the rows of the actor's roles with that right, not
- * Aktif, or not listed by their latest assessment. A change that changes
- * nothing keeps and logs nothing.
+ * Aktif, or not listed by their latest assessment. Refused too, with the
+ * status as it is now, when someone changed it since the screen showed
+ * `version`: the student is held, so a second change at the same moment
+ * waits for the first and is refused then. A change that changes nothing
+ * keeps and logs nothing.
  */
 export async function changeCoachingStatus(
   db: Database,
   actor: AccountForAccess,
   studentId: string,
+  version: number,
   sentStatus: string,
   sentNote: string,
-): Promise<Parsed<KeptCoachingStatus>> {
+): Promise<CoachingOutcome> {
   if (!may(actor.roles, "change_coaching_status")) return NOT_ALLOWED_TO_CHANGE;
   const parsed = parseCoachingChange(sentStatus, sentNote);
   if (!parsed.ok) return parsed;
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(studentId)) return NOT_IN_COACHING;
   const after = parsed.value;
-  return db.transaction((tx) => change(tx, actor, studentId, after));
+  return db.transaction((tx) => change(tx, actor, studentId, version, after));
 }

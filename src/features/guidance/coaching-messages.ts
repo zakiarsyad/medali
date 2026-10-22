@@ -32,6 +32,13 @@ export const NOT_IN_COACHING = {
     "Mahasiswa ini tidak ada di daftar pembinaan yang dapat Anda ubah. Muat ulang halaman.",
 } as const;
 
+/** What a change made on a status someone else changed since it was shown answers. */
+export const COACHING_OUTDATED = {
+  ok: false,
+  error:
+    "Status mahasiswa ini baru saja diubah orang lain. Yang tampil sekarang adalah statusnya yang terbaru; pilih lagi bila masih perlu.",
+} as const;
+
 /** What a kept change says: whose status and what it is now. */
 export function statusChangedMessage(
   name: string,

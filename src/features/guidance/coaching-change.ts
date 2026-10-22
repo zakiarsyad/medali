@@ -6,6 +6,7 @@ import {
 import type { Parsed } from "@/parsed";
 import {
   COACHING_NOTE_TOO_LONG,
+  type COACHING_OUTDATED,
   NOT_A_COACHING_STATUS,
 } from "./coaching-messages";
 
@@ -20,6 +21,24 @@ export interface CoachingChange {
   status: CoachingStatus;
   note: string;
 }
+
+/** A student's status as the screen shows it, with the version it was read at. */
+export interface ShownCoachingStatus extends CoachingChange {
+  /** 0 while no status is saved. */
+  version: number;
+}
+
+/** A student's status as it stands after a change, with whose it is. */
+export interface KeptCoachingStatus extends ShownCoachingStatus {
+  name: string;
+}
+
+/** A change refused as someone changed the status first, with the status now. */
+export type OutdatedCoaching = typeof COACHING_OUTDATED & {
+  current: ShownCoachingStatus;
+};
+
+export type CoachingOutcome = Parsed<KeptCoachingStatus> | OutdatedCoaching;
 
 /** The status chosen and the "Catatan" typed, checked; the note trimmed. */
 export function parseCoachingChange(
