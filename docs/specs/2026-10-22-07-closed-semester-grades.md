@@ -92,4 +92,4 @@ Unit, Direktur / Wakil Direktur, Penilai Mahasiswa, Ketua Program Studi
 - [x] 3. The numbers, the list and "Skema bobot" read from the fixed
   copy of the chosen period.
 - [x] 4. Search, filters, paging and the refusals.
-- [ ] 5. The phone layout and the speed check.
+- [x] 5. The phone layout and the speed check.

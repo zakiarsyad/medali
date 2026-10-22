@@ -50,7 +50,7 @@ export function SemesterChoice({
               // A new address, as on going back, shows its own choice.
               key={params.semester ?? ""}
               name="semester"
-              className={shared.input}
+              className={`${shared.input} ${styles.choice}`}
               defaultValue={params.semester ?? ""}
             >
               <option value="">{RUNNING_WORDS}</option>
