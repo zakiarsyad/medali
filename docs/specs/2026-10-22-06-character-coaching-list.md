@@ -1,0 +1,167 @@
+# Character coaching list
+
+Depends on: Mentor groups, Character assessment, Students needing coaching, Student list and detail, Academic period
+Group: Pembinaan
+
+## What we want
+
+"Pembinaan karakter" lists the active students whose character
+assessment says they need coaching: an average under 65, or one value
+under 58. Each has a level (Intensif, Sedang, Ringan). Who is listed and
+at which level is read from the rule that Students needing coaching
+owns; it is not worked out again here. Each also has a status that
+staff move forward after each coaching step: Teridentifikasi, Konseling,
+Pemantauan, Selesai.
+
+## Who it is for
+
+- Change the status: Kepala Unit, and Pengasuh for their own mentees.
+- Read only: Direktur / Wakil Direktur, and Ketua Program Studi (their
+  program only).
+
+## What should happen
+
+- When Kepala Unit opens the tab, then they see the numbers "Belum
+  selesai" (out of all identified), "Intensif" (average under 60),
+  "Sedang" (average 60 to 64) and "Ringan" (one value under 58), and the
+  list of students not yet "Selesai".
+- When they look at a row, then they see the student (name, NIM,
+  program studi, semester), their Pengasuh, the level, "Aspek terlemah"
+  with its value, "Rerata" and the status. Rows are ordered Intensif
+  first, then by lowest Rerata.
+- When they use "Cari nama atau NIM", the filter by level, or the
+  filter by status ("Belum selesai", "Semua status" or one status), then
+  the list narrows; an empty result shows "Tidak ada mahasiswa pada
+  filter ini."
+- When they choose another status for a student, then they may add a
+  short "Catatan" of what was done, a message says
+  "Status (name): (status)", the row shows the note, and the numbers
+  update. The note is read by the roles with this tab, within their
+  rows, and by the student on Profil saya. A student set to
+  "Selesai" leaves the "Belum selesai" view.
+- When a student has no saved status yet, then they show as
+  "Teridentifikasi".
+- When anyone looks at the list, then a line under it says "Status
+  Konseling di sini hanya penanda; mahasiswa tidak otomatis didaftarkan
+  konseling."
+- When a new assessment lifts a student above both limits, then they
+  leave the list; when it drops them below, they appear as
+  "Teridentifikasi".
+- When Pengasuh opens the tab, then they see "Menampilkan mahasiswa
+  binaan Anda." and only their own mentees, and can change their status.
+- When Direktur or Ketua Program Studi opens the tab, then the status
+  shows but cannot be changed. Ketua Program Studi sees only their
+  program.
+- When a student is pressed, then their student detail opens, for roles
+  allowed to open it.
+- When a role with this tab looks at the menu, then the Pembinaan item
+  shows the number of students not yet "Selesai" among the rows that
+  role may see, and no number at zero.
+- When Pembina Disiplin Mahasiswa, Mahasiswa, Konselor, Penilai
+  Mahasiswa, Pengelola Asrama or a BAM role types the address, a reading
+  role sends a hand-made status change, or Pengasuh changes a student
+  outside their mentees, then the server refuses it. Confirmed by a
+  check.
+- When two people change one student's status at once, then the second
+  is refused with a message and sees the current status. Each change
+  adds a line to the log: who, when, before and after. Confirmed by a
+  check.
+- When the tab is opened on a phone, then each student is a card with
+  the status choice, with no sideways scroll.
+- When the tab is opened on the preview, then it shows within about 1
+  second, and the list is paged, 25 at a time.
+
+## Not included
+
+- "Perlu pembinaan" on the Dashboard (Dashboard mentoring summary).
+- The card "Pembinaan (level)" that shows a student their own level,
+  status, weakest aspect and the staff note (My coaching, mentoring
+  notes and sanction status). This spec saves the note; that one shows
+  it on Profil saya.
+- Starting the status again each semester.
+- The numbers here are the prototype's values, to be confirmed by the
+  campus before launch.
+- "Panggil konseling" from Asesmen karakter (Students needing coaching).
+- Coaching notes by Pengasuh (Mentoring notes).
+
+## Better than the prototype
+
+- The prototype gives students with no saved status a made-up one; here
+  everyone starts at "Teridentifikasi".
+- The list is paged instead of cut off at 80.
+- Two people changing one status cannot overwrite each other, and the
+  change is logged.
+
+## Decided
+
+1. Choosing "Konseling" here does not send anyone to counselling; it is
+   only a label, and a line under the list says so, since counselling is
+   asked for on Konseling.
+2. A status change may carry an optional short note of what was done,
+   shown in the row and, through My coaching, mentoring notes and
+   sanction status, to the student.
+3. The student's own "Pembinaan (level)" card is kept, and is built by
+   My coaching, mentoring notes and sanction status, not here.
+4. One status per student runs on; it does not start over in a later
+   semester. A student who left the list and is identified again shows
+   as "Teridentifikasi", with the change in the log.
+5. The limits 65, 60 and 58 are fixed, in the one rule that Students
+   needing coaching owns.
+6. "Catatan" holds at most 300 characters. A status is never deleted,
+   and its log cannot be changed or deleted.
+7. Reading the tab needs no right of its own: a role that opens the tab
+   reads its rows. Only the new right "Mengubah status pembinaan
+   karakter dan catatannya" changes a status, for Kepala Unit on every
+   student and for Pengasuh on their own mentees. An account with
+   several roles sees the rows of each role that opens the tab, and
+   changes only the rows of its roles with that right: a Ketua Program
+   Studi who is also Pengasuh reads the program and changes only the
+   mentees.
+8. "Intensif", "Sedang" and "Ringan" count the students not yet
+   "Selesai", as the prototype does; "Belum selesai" says under it
+   "dari (n) teridentifikasi", every listed student of the role's rows.
+   The numbers do not follow the search or the filters.
+9. A row says the semester as "Smt (n)" while an academic period runs,
+   and nothing in its place otherwise. A student with no Pengasuh today
+   shows "-". Among equal Rerata, the list goes by name.
+10. A name opens the whole student detail, for a student the account may
+    open it for; there is no brief, as every role with the tab may open
+    the detail.
+11. Being identified again (decision 4) is judged when an assessment is
+    saved, from "Simpan asesmen" and from a file alike: when the new
+    latest assessment lists a student and the one before it did not,
+    and their saved status moved on from Teridentifikasi, it goes back
+    to Teridentifikasi with no note, in the same save, and the log names
+    the one who saved the assessment. A student who leaves or joins the
+    list only because a penalty limit starts or ends keeps their status.
+12. Choosing another status opens "Catatan (opsional)" with "Simpan
+    status" and "Batal"; nothing is kept until "Simpan status". The note
+    is written only with a status change, and a new change starts with
+    an empty note. Any of the four statuses may be chosen, also an
+    earlier one. A change that changes nothing keeps and logs nothing.
+13. Only the status of an Aktif student whom their latest assessment
+    lists can be changed. The message shows above the list, so it stays
+    when a student set to "Selesai" leaves the "Belum selesai" view.
+14. A change is sent with the version of the status the screen showed.
+    When someone changed it since, also by a new assessment that started
+    it again, the change is refused with "Status mahasiswa ini baru saja
+    diubah orang lain. Yang tampil sekarang adalah statusnya yang
+    terbaru; pilih lagi bila masih perlu.", and the list is read again
+    so the row shows the current status. Two changes at the same moment
+    wait for each other, so the second is refused the same way.
+15. The number beside "Pembinaan" in the menu is "Belum selesai" as the
+    tab counts it for the account, on every page, and follows a status
+    change at once. An account whose roles do not open the tab gets no
+    number and no count is read for it.
+
+## Steps
+
+- [x] 1. The table for coaching status is added, with sample statuses.
+- [x] 2. The right to change a coaching status is added to the
+  permission list, with its checks.
+- [x] 3. The numbers and the list with levels, search and filters and
+  the line about "Konseling", read only and limited to each role's
+  rows.
+- [x] 4. Changing a status, with the optional note and the log.
+- [x] 5. Refusing a change made on an outdated status.
+- [x] 6. The number beside the Pembinaan menu item.

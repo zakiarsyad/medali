@@ -9,6 +9,8 @@ import type { Database } from "@/db/connect";
 import {
   characterAssessments,
   characterAssessmentUploads,
+  coachingStatusChanges,
+  coachingStatuses,
   students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -171,6 +173,58 @@ describe("saveAssessmentFile", () => {
       expect(history?.entries.map((entry) => entry.fileName)).toEqual([
         "asesmen-oktober.csv",
         null,
+      ]);
+    });
+  });
+
+  it("puts a student the file identifies for coaching again back at Teridentifikasi, logged as the work of who saved it", async () => {
+    await inTestDatabase(async (db) => {
+      const { periodId, citra, penilai } = await addRecords(db);
+      const kepala = await addTestActor(db, "Kepala Uji Berkas", [
+        "head_of_unit",
+      ]);
+      await addTestAssessment(db, penilai, {
+        studentId: citra,
+        periodId,
+        enteredAt: new Date("3265-09-01T03:00:00Z"),
+      });
+      await db.insert(coachingStatuses).values({
+        studentId: citra,
+        status: "done",
+        note: "Sudah membaik.",
+        changedBy: kepala.id,
+        changedAt: new Date("3265-09-02T03:00:00Z"),
+      });
+      const file = csv([TITLES, "9986160003,55,58,60,57,59,61"]);
+
+      await saveAssessmentFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "medali_instrument",
+        file,
+        MOMENT,
+      );
+
+      const [kept] = await db
+        .select()
+        .from(coachingStatuses)
+        .where(eq(coachingStatuses.studentId, citra));
+      expect(kept).toMatchObject({
+        status: "identified",
+        note: "",
+        changedBy: penilai.id,
+      });
+      const lines = await db
+        .select()
+        .from(coachingStatusChanges)
+        .where(eq(coachingStatusChanges.studentId, citra));
+      expect(lines).toEqual([
+        expect.objectContaining({
+          statusBefore: "done",
+          statusAfter: "identified",
+          changedBy: penilai.id,
+        }),
       ]);
     });
   });

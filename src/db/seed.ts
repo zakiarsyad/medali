@@ -28,6 +28,7 @@ import {
   addSampleExtraSchedules,
 } from "./seed-activity-schedules";
 import { addSampleCharacterAssessments } from "./seed-character-assessments";
+import { addSampleCoachingStatuses } from "./seed-coaching-statuses";
 import { addSampleCounsellingConsents } from "./seed-counselling-consents";
 import { addSampleCounsellingSchedules } from "./seed-counselling-schedules";
 import { addSampleCounsellingSessions } from "./seed-counselling-sessions";
@@ -193,7 +194,8 @@ async function addSampleFirstYears(
  * status, health notes of
  * students in and out of the dorm in every category, and mental health
  * marks of dorm residents of both kinds, and violation notes and
- * discipline penalties of this semester and the one before.
+ * discipline penalties of this semester and the one before, and the
+ * coaching statuses of some students their assessment lists.
  * Every role given is logged as the
  * work of the first sample account, the sample Kepala Unit, who is logged
  * as adding themselves.
@@ -286,6 +288,7 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleSikuRequests(tx, today, sikuEntryIds);
     await addSampleSkpm(tx, today);
     await addSampleCharacterAssessments(tx, today);
+    await addSampleCoachingStatuses(tx, today);
     await addSampleCounsellingConsents(tx, today);
     // A sample Penugasan is sent from a penalty, which must be there first.
     await addSampleDisciplinePenalties(tx, periods, today);

@@ -5,7 +5,12 @@ import { describe, expect, it } from "vitest";
 import { may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { characterAssessments, students } from "@/db/schema";
+import {
+  characterAssessments,
+  coachingStatusChanges,
+  coachingStatuses,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestPenaltyOf,
@@ -98,6 +103,58 @@ describe("saveAssessment", () => {
           enteredAt: MOMENT,
           uploadId: null,
         },
+      ]);
+    });
+  });
+
+  it("puts a student it identifies for coaching again back at Teridentifikasi, logged as the work of who saved it", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai } = await addRecords(db);
+      const kepala = await addTestActor(db, "Kepala Uji Simpan", [
+        "head_of_unit",
+      ]);
+      await saveAssessment(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        sentFor(ani),
+        MOMENT,
+      );
+      await db.insert(coachingStatuses).values({
+        studentId: ani,
+        status: "monitoring",
+        note: "Dipantau.",
+        changedBy: kepala.id,
+        changedAt: MOMENT,
+      });
+      const low = {
+        ...sentFor(ani),
+        scores: { M: "55", E: "58", D: "60", A: "57", L: "59", I: "61" },
+      };
+
+      const later = new Date(MOMENT.getTime() + 60 * 60 * 1000);
+      await saveAssessment(db, penilai, crypto.randomUUID(), low, later);
+
+      const [kept] = await db
+        .select()
+        .from(coachingStatuses)
+        .where(eq(coachingStatuses.studentId, ani));
+      expect(kept).toMatchObject({
+        status: "identified",
+        note: "",
+        changedBy: penilai.id,
+      });
+      const lines = await db
+        .select()
+        .from(coachingStatusChanges)
+        .where(eq(coachingStatusChanges.studentId, ani));
+      expect(lines).toEqual([
+        expect.objectContaining({
+          statusBefore: "monitoring",
+          noteBefore: "Dipantau.",
+          statusAfter: "identified",
+          changedBy: penilai.id,
+        }),
       ]);
     });
   });

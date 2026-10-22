@@ -1,12 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { rerataOf } from "@/character-scores/assessment-score";
+import { CoachingLevelBadge } from "@/character-scores/coaching-level-badge";
 import {
-  type CoachingLevel,
   LISTED_BELOW_RERATA,
   LISTED_BELOW_SCORE,
 } from "@/character-scores/coaching-need";
-import { COACHING_LEVEL_WORDS } from "@/character-scores/coaching-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
@@ -22,12 +21,6 @@ import type { CoachingList, CoachingRow } from "./coaching-list";
 
 export const NO_COACHING =
   "Tidak ada mahasiswa yang teridentifikasi perlu pembinaan.";
-
-const LEVEL_LOOKS: Record<CoachingLevel, string | undefined> = {
-  intensive: styles.intensive,
-  moderate: styles.moderate,
-  light: styles.light,
-};
 
 /** What the column Konseling shows for a student, for the one role that has it. */
 export type CounsellingCell = (row: CoachingRow) => ReactNode;
@@ -54,9 +47,7 @@ function CoachingRowCells({
         </small>
       </td>
       <td data-title="Tingkat">
-        <span className={`${shared.badge} ${LEVEL_LOOKS[level]}`}>
-          {COACHING_LEVEL_WORDS[level]}
-        </span>
+        <CoachingLevelBadge level={level} />
       </td>
       <td className={styles.strong} data-title="Rerata MEDALI">
         {shownRerata(rerataOf(row.scores))}
