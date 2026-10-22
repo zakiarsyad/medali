@@ -115,6 +115,59 @@ async function closings(db: Database) {
   return db.select().from(semesterClosings);
 }
 
+describe("the order of closings", () => {
+  /** A day after Genap 5110/5111 has ended too. */
+  const AFTER_BOTH = "5111-08-15";
+
+  it("refuses a later period while an earlier one is not closed, and names it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const close = (id: string) =>
+        closeSemester(db, records.kepala, id, true, AFTER_BOTH);
+
+      expect(await close(records.evenId)).toEqual({
+        ok: false,
+        error:
+          "Semester Ganjil 5110/5111 belum ditutup. Tutup semester itu terlebih dahulu.",
+      });
+      expect(await closings(db)).toEqual([]);
+      expect(await close(records.oddId)).toEqual({
+        ok: true,
+        value: "Ganjil 5110/5111",
+      });
+      expect(await close(records.evenId)).toEqual({
+        ok: true,
+        value: "Genap 5110/5111",
+      });
+    });
+  });
+});
+
+describe("the line in the change log", () => {
+  it("says who closed which period, when, and how many grades it kept", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addParts(db, records);
+      const before = new Date();
+
+      await closeSemester(db, records.kepala, records.oddId, true, TODAY);
+
+      const [line, ...more] = await closings(db);
+      expect(more).toEqual([]);
+      expect(line).toMatchObject({
+        periodId: records.oddId,
+        closedBy: records.kepala.id,
+        students: 2,
+        complete: 1,
+        incomplete: 1,
+      });
+      expect(line?.closedAt.getTime()).toBeGreaterThanOrEqual(
+        before.getTime() - 1000,
+      );
+    });
+  });
+});
+
 describe("closing a semester", () => {
   it("keeps nothing without the tick", async () => {
     await inTestDatabase(async (db) => {

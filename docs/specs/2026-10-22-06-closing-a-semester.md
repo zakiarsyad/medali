@@ -136,7 +136,7 @@ weights used, which later changes no longer touch.
   with its checks.
 - [x] 3. The period list shows the state and "Tutup semester".
 - [x] 4. The step that shows the counts, the weights and the tick.
-- [ ] 5. The closing keeps every grade at once, in order of periods, and
+- [x] 5. The closing keeps every grade at once, in order of periods, and
   writes the log line.
 - [ ] 6. Later changes leave the copy as it is, and double closing is
   refused, with checks.
