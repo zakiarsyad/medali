@@ -4,6 +4,7 @@ import type { AccountForAccess } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
@@ -139,6 +140,9 @@ export default async function MentalHealthPage(
           detail={profile}
           period={await runningPeriodNow()}
           openedFrom="screening_list"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={screeningAddress({ ...params, profileId: null })}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

@@ -3,6 +3,7 @@ import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
@@ -73,6 +74,9 @@ async function GroupPage({
           detail={detail}
           period={await runningPeriodNow()}
           openedFrom="group_page"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={groupAddress(groupId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

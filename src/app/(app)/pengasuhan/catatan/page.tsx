@@ -1,6 +1,7 @@
 import { forbidden } from "next/navigation";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
@@ -54,6 +55,9 @@ export default async function MentoringNotesPage(
           detail={detail}
           period={await runningPeriodNow()}
           openedFrom="notes_list"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={notesAddress(params.kind, params.page)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

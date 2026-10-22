@@ -1,6 +1,9 @@
 import { rowLimitForPage } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
+import { database } from "@/db/database";
+import { readSanctions } from "@/discipline-penalties/read-sanctions";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
@@ -31,6 +34,10 @@ export default async function StudentsPage(props: PageProps<"/mahasiswa">) {
       mentorAddressOf={(mentorId, group) =>
         openMentorAddress(account, mentorId, group)
       }
+      sanctionsOf={(ids) => readSanctions(database(), account, ids)}
+      headTagsOf={(studentId) => (
+        <StudentSanctionBadge account={account} studentId={studentId} />
+      )}
       morePanelsOf={(studentId) => (
         <>
           <StudentAchievementPanel account={account} studentId={studentId} />

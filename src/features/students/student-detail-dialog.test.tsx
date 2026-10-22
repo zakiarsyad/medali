@@ -76,6 +76,66 @@ describe("the brief of a student", () => {
   });
 });
 
+describe("the tags another area adds beside the status", () => {
+  const BRIEF = {
+    id: "00000000-0000-4000-8000-000000000002",
+    name: "Mahasiswa Uji Tanda",
+    nim: "NIM-UJI-TANDA",
+    studyProgram: "Prodi Uji Tanda",
+    status: "active",
+  } as const;
+
+  function dialog(
+    detail: Parameters<typeof StudentDetailDialog>[0]["detail"],
+  ): string {
+    return renderToStaticMarkup(
+      <StudentDetailDialog
+        detail={detail}
+        period={{ startYear: 2026, term: "odd" }}
+        openedFrom="penalty_list"
+        closeAddress="/kembali"
+        groupAddressOf={() => null}
+        mentorAddressOf={() => null}
+        morePanelsOf={() => null}
+        headTagsOf={(studentId) => <em>Tanda uji {studentId}</em>}
+      />,
+    );
+  }
+
+  it("shows them right after the status in the brief", () => {
+    const box = dialog({ kind: "brief", student: BRIEF });
+
+    expect(box).toMatch(
+      /Aktif<\/span><em>Tanda uji 00000000-0000-4000-8000-000000000002<\/em>/,
+    );
+  });
+
+  it("shows them right after the status in the whole detail", () => {
+    const box = dialog({
+      kind: "found",
+      student: {
+        ...BRIEF,
+        isAffirmation: false,
+        isSeedling: false,
+        isInternational: false,
+        isBlended: false,
+        entryPath: "regular",
+        originAgency: null,
+        cohortYear: 2025,
+        className: null,
+        province: null,
+        sex: "female",
+        mentorGroup: null,
+        residence: null,
+      },
+    });
+
+    expect(box).toMatch(
+      /Aktif<\/span><em>Tanda uji 00000000-0000-4000-8000-000000000002<\/em>/,
+    );
+  });
+});
+
 describe("the box Mahasiswa tidak ditemukan", () => {
   it("sends the reader back to the Mahasiswa list from the Mahasiswa list", () => {
     expect(notFoundBox("student_list")).toContain(

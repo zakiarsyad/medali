@@ -1,0 +1,5 @@
+/* The badge of a suspended or dismissed student, in the colour of a Berat penalty. */
+.sanction {
+  background: var(--bina);
+  color: var(--surface);
+}

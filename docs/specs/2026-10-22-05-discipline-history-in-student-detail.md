@@ -127,6 +127,19 @@ student's record in one place. A student with no penalty has no panel.
     the student picked. A student on Cuti or Non aktif gets no button,
     as in the prototype. The button sits under the records, as a quiet
     button.
+11. The badge goes by the student's Berat penalty of the highest
+    Jenjang, the latest of two as high, as the prototype does. It sits
+    right after the status: in the detail beside the status badge, on
+    the Mahasiswa list after the NIM and status line, before the other
+    tags. The prototype puts it in place of the status; the issue asks
+    for it beside, so the status still shows.
+12. The badge shows wherever a student's detail opens, and in the small
+    detail of Pembina Disiplin Mahasiswa, since it is part of the
+    status there. Each role sees it only within the rows it reads
+    discipline records in; a role that may not read them is sent
+    nothing of it, in the detail, the brief or the list.
+13. The badges of a page of the Mahasiswa list are read in one go for
+    the students of that page.
 
 ## Steps
 
@@ -136,5 +149,5 @@ student's record in one place. A student with no penalty has no panel.
   role's rows, and the small detail that a name in "Daftar
   pelanggaran" opens for Pembina Disiplin Mahasiswa.
 - [x] 3. "Catat pelanggaran" from the panel.
-- [ ] 4. The badge for a suspended or dismissed student on the
+- [x] 4. The badge for a suspended or dismissed student on the
   Mahasiswa list and in the detail.

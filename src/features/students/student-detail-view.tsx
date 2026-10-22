@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { residenceWords } from "./residence-words";
 import { type RunningPeriod, semesterNow } from "./semester-now";
 import type { StudentDetail } from "./student-detail";
@@ -38,18 +39,26 @@ export function StudentDetailView({
   period,
   groupAddressOf,
   mentorAddressOf,
+  headTags,
 }: {
   student: StudentDetail;
   /** The academic period that runs now, which says the semester. */
   period: RunningPeriod;
   groupAddressOf: GroupAddressOf;
   mentorAddressOf: MentorAddressOf;
+  /** What another area adds beside the status, before the category tags. */
+  headTags?: ReactNode;
 }) {
   return (
     <>
       <StudentHead
         student={student}
-        tags={<CategoryTags student={student} />}
+        tags={
+          <>
+            {headTags}
+            <CategoryTags student={student} />
+          </>
+        }
       />
       <dl className={styles.facts}>
         <MainFacts student={student} semester={semesterNow(student, period)} />

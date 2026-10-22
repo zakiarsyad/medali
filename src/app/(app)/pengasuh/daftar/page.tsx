@@ -3,6 +3,7 @@ import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { USERS_ADDRESS } from "@/features/accounts/list-address";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
@@ -64,6 +65,9 @@ async function MentorPage({
           detail={detail}
           period={await runningPeriodNow()}
           openedFrom="mentor_page"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={mentorAddress(mentorId)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

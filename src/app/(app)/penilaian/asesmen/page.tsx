@@ -5,6 +5,7 @@ import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import {
   assessmentAddress,
   readAssessmentParams,
@@ -131,6 +132,9 @@ export default async function AssessmentPage(
           detail={profile}
           period={await runningPeriodNow()}
           openedFrom="coaching_list"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={assessmentAddress({ ...params, profileId: null })}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>

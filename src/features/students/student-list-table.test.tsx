@@ -1,6 +1,7 @@
 // Sample NIMs of this file: 9900400200 to 9900400299.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { Sanction } from "@/discipline-penalties/sanction";
 import type { ListedStudent } from "./student-list";
 import type { ListScores } from "./student-list-scores";
 import { StudentListTable } from "./student-list-table";
@@ -28,11 +29,18 @@ const RESIDENT: ListedStudent = {
 
 const NOT_SCORED: ListScores = { rerata: null, grade: { complete: false } };
 
-function tableOf(student: ListedStudent, scores = NOT_SCORED): string {
+function tableOf(
+  student: ListedStudent,
+  scores = NOT_SCORED,
+  sanction: Sanction | null = null,
+): string {
+  const sanctions = new Map<string, Sanction>();
+  if (sanction !== null) sanctions.set(student.id, sanction);
   return renderToStaticMarkup(
     <StudentListTable
       students={[student]}
       scores={new Map([[student.id, scores]])}
+      sanctions={sanctions}
       period={null}
       detailAddressOf={() => "/mahasiswa"}
     />,
@@ -53,6 +61,22 @@ describe("StudentListTable", () => {
       table.indexOf('data-title="Program studi"'),
     );
     expect(cell).toContain("Asrama Dana Rakca");
+  });
+
+  it("shows the badge of a suspended or dismissed student right after the NIM and status, before the other tags", () => {
+    const table = tableOf(
+      { ...RESIDENT, status: "inactive" },
+      NOT_SCORED,
+      "dismissed",
+    );
+
+    expect(cellOf(table, "Mahasiswa")).toMatch(
+      /9900400201 · non aktif<\/small><span class="[^"]*">Diberhentikan permanen<\/span><span[^>]*>Asrama Dana Rakca/,
+    );
+  });
+
+  it("shows no such badge for a student without one", () => {
+    expect(tableOf(RESIDENT)).not.toContain("Diberhentikan");
   });
 
   it("shows no dorm for a student who lives in none", () => {

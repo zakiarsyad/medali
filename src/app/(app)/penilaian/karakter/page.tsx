@@ -8,6 +8,7 @@ import { readGradeScheme } from "@/character-grades/grade-scheme";
 import { gradeVisibleTo } from "@/character-grades/grade-students";
 import { readGradeNumbers } from "@/character-grades/read-grade-numbers";
 import { database } from "@/db/database";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { CharacterGradeScreen } from "@/features/character-grades/character-grade-screen";
@@ -91,6 +92,9 @@ export default async function CharacterGradePage(
           detail={detail}
           period={await runningPeriodNow()}
           openedFrom="grade_list"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={gradeAddress({ ...params, profileId: null })}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>
