@@ -71,6 +71,10 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       fitShare: 70,
       illnesses: null,
     },
+    mental: {
+      recap: { kind: "shown", assessed: 30 },
+      published: { matching: 3, needCounselling: 1 },
+    },
     fitnessLimits: STARTING_LIMITS,
     ...more,
   };
@@ -262,6 +266,31 @@ describe("DashboardScreen", () => {
       "30 dari 40 sudah dites. &lt;5 perlu tindak lanjut medis.",
     );
     expect(html).toContain("Perlu perhatian 6");
+  });
+
+  it("shows the card Kesehatan mental after Kesehatan jasmani, leading to section 4", () => {
+    const html = shown(viewOf());
+
+    expect(html.indexOf('href="#kesehatan-mental"')).toBeGreaterThan(
+      html.indexOf('href="#kesehatan-jasmani"'),
+    );
+    expect(html).toContain("30 <small>diasesmen</small>");
+    expect(html).toContain(
+      "3 data dipublikasikan konselor untuk Anda, 1 perlu konseling.",
+    );
+  });
+
+  it("shows <5 or 0 on the card Kesehatan mental for a small group", () => {
+    const few = shown(
+      viewOf({ mental: { recap: { kind: "too_few" }, published: null } }),
+    );
+    const none = shown(
+      viewOf({ mental: { recap: { kind: "none" }, published: null } }),
+    );
+
+    expect(few).toContain("&lt;5 <small>diasesmen</small>");
+    expect(none).toContain("0 <small>diasesmen</small>");
+    expect(none).toContain("0 data dipublikasikan konselor untuk Anda.");
   });
 
   it("shows - and no bar on the card while nobody is tested", () => {

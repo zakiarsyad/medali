@@ -43,7 +43,7 @@ function publishedDate(publishedAt: Date | null): Date {
  * The latest screening of a sharing's student, joined only when the
  * sharing holds the level, so a level left out is never read.
  */
-function sharedLevels(db: Database) {
+export function sharedLevels(db: Database) {
   const latest = latestScreenings(db, {});
   const joined = and(
     eq(latest.studentId, students.id),
