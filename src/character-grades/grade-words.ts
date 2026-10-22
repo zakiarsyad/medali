@@ -1,5 +1,14 @@
 import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import type { CharacterGrade } from "./character-grade";
+import type { GradePart } from "./scheme-ids";
+
+/** Each part as its weight field names it, in the prototype's words. */
+export const PART_LABELS: Record<GradePart, string> = {
+  attendance: "Kehadiran kegiatan",
+  mentoring: "Nilai pengasuhan",
+  siku: "Nilai sikap dan perilaku (SIKU)",
+  skpm: "Nilai Sistem Kredit Prestasi Mahasiswa",
+};
 
 /** What a row shows in place of Nilai akhir and Huruf while a part is missing. */
 export const INCOMPLETE_WORDS = "Belum lengkap";
