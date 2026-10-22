@@ -9,6 +9,7 @@ import { StudentGradePanel } from "@/features/character-grades/student-grade-pan
 import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
+import { StudentCoachingPanel } from "@/features/guidance/student-coaching-panel";
 import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
@@ -109,6 +110,7 @@ export default async function SkpmPage(props: PageProps<"/penilaian/skpm">) {
               />
               <StudentPenaltiesPanel account={account} studentId={studentId} />
               <ScoreHistoryPanel account={account} studentId={studentId} />
+              <StudentCoachingPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel
