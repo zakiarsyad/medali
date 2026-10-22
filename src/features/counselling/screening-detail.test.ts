@@ -5,8 +5,8 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { mentalHealthScreeningLog } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { ADVICE_WORDS, CRISIS_ADVICE } from "@/mental-health/screening-words";
 import { openScreeningDetail } from "./screening-detail";
-import { ADVICE_WORDS, CRISIS_ADVICE } from "./screening-words";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { addTestScreening } from "./test-screenings";
 

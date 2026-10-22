@@ -1,6 +1,9 @@
 import type { Database } from "@/db/connect";
 import { counsellingScheduleChanges, counsellingSchedules } from "@/db/schema";
-import type { AssignmentKind, ScheduleStatus } from "./schedule-ids";
+import type {
+  AssignmentKind,
+  ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 
 /** Made-up requests for the checks of this area. */
 

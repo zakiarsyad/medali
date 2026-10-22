@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { NEEDS_CONSENT } from "@/mental-health/session-words";
 import { CounsellingScreen } from "./counselling-screen";
 import type { CounsellorScheduleCard, ScheduleBoard } from "./schedule-view";
-import { NEEDS_CONSENT } from "./session-words";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),

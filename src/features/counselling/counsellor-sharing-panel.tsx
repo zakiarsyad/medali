@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import {
+  NEEDS_COUNSELLING_CONSENT,
+  NO_SCREENING_OR_SESSION,
+  PANEL_LEDE,
+  PICK_FIRST,
+} from "@/mental-health/sharing-words";
 import type { Parsed } from "@/parsed";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -13,12 +19,6 @@ import { type SharingAsk, SharingForm } from "./sharing-form";
 import { SharingMoves, type SharingStepAction } from "./sharing-moves";
 import { isCurrentSharing, offeredData } from "./sharing-rules";
 import type { SharingPanel, SharingView } from "./sharing-view";
-import {
-  NEEDS_COUNSELLING_CONSENT,
-  NO_SCREENING_OR_SESSION,
-  PANEL_LEDE,
-  PICK_FIRST,
-} from "./sharing-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 

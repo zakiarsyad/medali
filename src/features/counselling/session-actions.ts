@@ -5,13 +5,16 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import type {
+  ScheduleSession,
+  SessionHistory,
+} from "@/mental-health/session-view";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import { type ChangeOutcome, changeSession } from "./change-session";
 import { readScheduleSession } from "./schedule-session";
 import { readSessionHistory } from "./session-history";
 import type { SentSession } from "./session-rules";
-import type { ScheduleSession, SessionHistory } from "./session-view";
 import { type SessionOutcome, writeSession } from "./write-session";
 
 /**

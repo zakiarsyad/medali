@@ -1,5 +1,6 @@
 "use client";
 
+import { NEEDS_CONSENT } from "@/mental-health/session-words";
 import styles from "./counselling.module.css";
 import {
   NO_SESSION,
@@ -7,7 +8,6 @@ import {
   useScheduleSession,
 } from "./schedule-notice";
 import { SessionForm } from "./session-form";
-import { NEEDS_CONSENT } from "./session-words";
 
 /**
  * Above the cards, what "Tandai selesai" opened: "Catat sesi" for that

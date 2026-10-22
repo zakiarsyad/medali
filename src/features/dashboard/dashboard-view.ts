@@ -25,6 +25,8 @@ import {
 import type { DashboardScope } from "./dashboard-scope";
 import { dashboardStudents } from "./dashboard-students";
 import { type CharacterGrades, readCharacterGrades } from "./grade-read";
+import { readMental } from "./mental-read";
+import type { MentalView } from "./mental-recap";
 import { readPhysical } from "./physical-read";
 import type { PhysicalRecap } from "./physical-recap";
 
@@ -46,6 +48,7 @@ export interface DashboardView {
   achievement: Achievement;
   grades: CharacterGrades;
   physical: PhysicalRecap;
+  mental: MentalView;
   /** The limits in force, which give each fitness category its scores. */
   fitnessLimits: FitnessLimits;
 }
@@ -83,11 +86,12 @@ export async function loadDashboard(
   const stages = stageCohorts(held.cohortYears, period);
   const counted = dashboardStudents(scope.visible, filters, stages);
   const filtered = filtersInUse(filters) > 0;
-  const [counts, achievement, grades, physical] = await Promise.all([
+  const [counts, achievement, grades, physical, mental] = await Promise.all([
     countChoices(db, scope.visible, filters, stages),
     readAchievement(db, counted, filtered),
     readCharacterGrades(db, counted, basis, filtered),
     readPhysical(db, limits, counted, scope.illnesses),
+    readMental(db, counted, scope.shared),
   ]);
   return {
     filters,
@@ -99,6 +103,7 @@ export async function loadDashboard(
     achievement,
     grades,
     physical,
+    mental,
     fitnessLimits: limits,
   };
 }

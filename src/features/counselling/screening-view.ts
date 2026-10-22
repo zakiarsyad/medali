@@ -1,7 +1,7 @@
+import type { Instrument, ScreeningLevel } from "@/mental-health/screening-ids";
+import type { ScalePart } from "@/mental-health/screening-rules";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
 import type { ConsentStatus } from "./consent-ids";
-import type { Instrument, ScreeningLevel } from "./screening-ids";
-import type { ScalePart } from "./screening-rules";
-import type { SharingStatus } from "./sharing-ids";
 
 /*
  * What the server sends Konselor of the screenings. Read by the screen

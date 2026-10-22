@@ -1,4 +1,3 @@
-import { shownDay } from "@/ui/day";
 import {
   COUNSELLING_HOURS,
   type CounsellingTopic,
@@ -7,7 +6,8 @@ import {
   type ScheduleStatus,
   type ScheduleStep,
   type ScheduleTopic,
-} from "./schedule-ids";
+} from "@/mental-health/schedule-ids";
+import { shownDay } from "@/ui/day";
 
 /*
  * The words of counselling schedules on screen, as the prototype has

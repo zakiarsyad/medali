@@ -1,6 +1,11 @@
 // Sample NIMs of this file: 9986330100 to 9986330199.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { SessionHistory, SessionView } from "@/mental-health/session-view";
+import {
+  FOLLOW_UP_WORDS,
+  SESSION_KIND_WORDS,
+} from "@/mental-health/session-words";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import type { CounsellingListParams } from "./counselling-list-address";
 import {
@@ -14,8 +19,6 @@ import {
   NOBODY_ON_FILTER,
 } from "./counselling-list-words";
 import { CounsellingScreen } from "./counselling-screen";
-import type { SessionHistory, SessionView } from "./session-view";
-import { FOLLOW_UP_WORDS, SESSION_KIND_WORDS } from "./session-words";
 
 const ROW: CounsellingStudentRow = {
   studentId: "00000000-0000-4000-8000-000000000001",

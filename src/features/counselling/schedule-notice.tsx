@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, type ReactNode, use, useState } from "react";
+import type { ScheduleSession } from "@/mental-health/session-view";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import type { ScheduleSession } from "./session-view";
 
 type Announce = (message: FormState | null) => void;
 

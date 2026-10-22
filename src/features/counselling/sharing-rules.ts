@@ -6,8 +6,8 @@ import {
   type SharingStatus,
   type SharingStep,
   type SharingWay,
-} from "./sharing-ids";
-import { NO_SCREENING, NO_SESSION } from "./sharing-words";
+} from "@/mental-health/sharing-ids";
+import { NO_SCREENING, NO_SESSION } from "@/mental-health/sharing-words";
 
 /** What Konselor, the student, or a withdrawn consent does to a sharing. */
 export type SharingMove = SharingStep;

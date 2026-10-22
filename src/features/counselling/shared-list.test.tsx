@@ -1,15 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import {
+  ADVICE_WORDS,
+  CRISIS_ADVICE,
+  RISK_WORDS,
+} from "@/mental-health/screening-words";
+import {
+  nothingSharedWords,
+  SHARED_HEADING,
+} from "@/mental-health/shared-words";
 import { type ScreeningParams, screeningAddress } from "./screening-address";
 import { CampusScreenedCount, PERSONAL_DATA_NOTE } from "./screening-campus";
 import { ScreeningListPanel } from "./screening-list";
 import { ScreeningScreen } from "./screening-screen";
 import type { ScreeningRow } from "./screening-view";
-import { ADVICE_WORDS, CRISIS_ADVICE, RISK_WORDS } from "./screening-words";
 import { SharedDetailBox } from "./shared-detail-box";
 import { SharedListPanel } from "./shared-list";
 import type { SharedList, SharedRow } from "./shared-view";
-import { nothingSharedWords, SHARED_HEADING } from "./shared-words";
 
 const ROW: SharedRow = {
   studentId: "00000000-0000-4000-8000-000000000001",

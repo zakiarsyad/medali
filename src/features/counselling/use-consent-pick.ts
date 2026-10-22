@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import type { SessionHistory } from "@/mental-health/session-view";
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
 import type { ConsentOutcome } from "./change-consent";
@@ -8,7 +9,6 @@ import { type askConsentAction, lookUpConsentAction } from "./consent-actions";
 import type { ConsentPick } from "./consent-picks";
 import { type ConsentView, versionOfConsent } from "./consent-view";
 import { readSessionHistoryAction } from "./session-actions";
-import type { SessionHistory } from "./session-view";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 

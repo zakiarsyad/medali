@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { checkSession, kindOfWay, type SentSession } from "./session-rules";
 import {
   DAY_IN_FUTURE,
   NEXT_BEFORE_DAY,
@@ -8,7 +7,8 @@ import {
   PICK_NEXT_DAY,
   PICK_SESSION_CHOICES,
   PICK_SESSION_DAY,
-} from "./session-words";
+} from "@/mental-health/session-words";
+import { checkSession, kindOfWay, type SentSession } from "./session-rules";
 
 const TODAY = "2026-10-20";
 

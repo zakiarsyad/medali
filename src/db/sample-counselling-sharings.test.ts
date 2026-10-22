@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  isCurrentSharing,
+  sharingAfter,
+} from "@/features/counselling/sharing-rules";
+import {
   SHARING_RECIPIENTS,
   SHARING_STATUSES,
   type SharingStatus,
   SUMMARY_MAX,
   SUMMARY_MIN,
-} from "@/features/counselling/sharing-ids";
-import {
-  isCurrentSharing,
-  sharingAfter,
-} from "@/features/counselling/sharing-rules";
+} from "@/mental-health/sharing-ids";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import { SAMPLE_SESSIONS } from "./sample-counselling-sessions";
 import {

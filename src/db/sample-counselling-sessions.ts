@@ -1,5 +1,5 @@
-import type { CounsellingTopic } from "@/features/counselling/schedule-ids";
-import type { FollowUp, SessionKind } from "@/features/counselling/session-ids";
+import type { CounsellingTopic } from "@/mental-health/schedule-ids";
+import type { FollowUp, SessionKind } from "@/mental-health/session-ids";
 
 /*
  * Made-up counselling sessions only, for the made-up students.

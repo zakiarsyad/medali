@@ -1,11 +1,11 @@
-import { firstParam, type SearchParams } from "@/ui/search-params";
 import {
   ACTIVE_STATUSES,
   SCHEDULE_KINDS,
   type ScheduleKind,
   type ScheduleStatus,
   TO_SCHEDULE_STATUSES,
-} from "./schedule-ids";
+} from "@/mental-health/schedule-ids";
+import { firstParam, type SearchParams } from "@/ui/search-params";
 
 /*
  * The address of "Jadwal konseling" and what it asks for. Read by the

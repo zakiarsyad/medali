@@ -10,17 +10,17 @@ import {
   counsellingSessions,
   students,
 } from "@/db/schema";
-import { holdsConsent } from "./session-checks";
-import { contentOf } from "./session-content";
-import type { SessionContent } from "./session-ids";
-import { checkSession, type SentSession } from "./session-rules";
+import type { SessionContent } from "@/mental-health/session-ids";
 import {
   NEEDS_CONSENT,
   SESSION_CHANGED,
   SESSION_CHANGED_SINCE,
   SESSION_NOT_ALLOWED,
   SESSION_NOT_FOUND,
-} from "./session-words";
+} from "@/mental-health/session-words";
+import { holdsConsent } from "./session-checks";
+import { contentOf } from "./session-content";
+import { checkSession, type SentSession } from "./session-rules";
 
 /**
  * What "Simpan perubahan" gives back. A session that changed since its

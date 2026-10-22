@@ -3,7 +3,7 @@ import {
   INSTRUMENTS,
   SCREENING_LEVELS,
   SCREENING_NOTE_MAX,
-} from "@/features/counselling/screening-ids";
+} from "@/mental-health/screening-ids";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import { SAMPLE_STUDENTS } from "./sample-data";
 import { SAMPLE_SCREENINGS } from "./sample-mental-health-screenings";

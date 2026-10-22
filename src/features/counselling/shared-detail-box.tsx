@@ -1,11 +1,18 @@
+import { LevelBadges } from "@/mental-health/screening-badges";
+import {
+  ADVICE_WORDS,
+  INSTRUMENT_WORDS,
+} from "@/mental-health/screening-words";
+import type { SessionSummary } from "@/mental-health/session-view";
+import { FOLLOW_UP_WORDS } from "@/mental-health/session-words";
+import {
+  NOT_SCREENED,
+  publishedLine,
+  SHARED_PART_WORDS,
+} from "@/mental-health/shared-words";
 import { DAY, shownDay } from "@/ui/day";
 import styles from "./counselling.module.css";
-import { LevelBadges } from "./screening-badges";
-import { ADVICE_WORDS, INSTRUMENT_WORDS } from "./screening-words";
-import type { SessionSummary } from "./session-view";
-import { FOLLOW_UP_WORDS } from "./session-words";
 import type { SharedDetail, SharedScreening } from "./shared-view";
-import { NOT_SCREENED, publishedLine, SHARED_PART_WORDS } from "./shared-words";
 
 function CounsellingPart({ sessions }: { sessions: SessionSummary | null }) {
   if (sessions === null) {

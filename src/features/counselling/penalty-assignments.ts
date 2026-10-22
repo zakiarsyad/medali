@@ -11,6 +11,11 @@ import {
   students,
 } from "@/db/schema";
 import { assignmentBasis } from "@/discipline-penalties/assignment-basis";
+import {
+  ASSIGNMENT_TEXT_MAX,
+  type CounsellingHour,
+  type ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 import { showsCallTime } from "./assessment-call-rules";
 import { senderMessageOf } from "./penalty-assignment-rules";
 import {
@@ -20,11 +25,6 @@ import {
   MESSAGE_TOO_LONG,
   PENALTY_NOT_FOUND,
 } from "./penalty-assignment-words";
-import {
-  ASSIGNMENT_TEXT_MAX,
-  type CounsellingHour,
-  type ScheduleStatus,
-} from "./schedule-ids";
 
 const RIGHT = "assign_counselling_from_penalty";
 

@@ -6,14 +6,20 @@ import {
   counsellingSharingChanges,
   counsellingSharings,
 } from "@/db/schema";
-import type { ConsentStatus } from "./consent-ids";
-import { STUDENT_NOT_FOUND } from "./consent-words";
 import {
   CURRENT_SHARING_STATUSES,
   type SharingContent,
   type SharingStatus,
   type SharingStep,
-} from "./sharing-ids";
+} from "@/mental-health/sharing-ids";
+import {
+  askedMessage,
+  NEEDS_COUNSELLING_CONSENT,
+  SHARING_CHANGED,
+  SHARING_NOT_ALLOWED,
+} from "@/mental-health/sharing-words";
+import type { ConsentStatus } from "./consent-ids";
+import { STUDENT_NOT_FOUND } from "./consent-words";
 import { readSharingInput } from "./sharing-input";
 import {
   readLatestSharing,
@@ -22,12 +28,6 @@ import {
 } from "./sharing-reads";
 import { missingBasis, sharingAfter } from "./sharing-rules";
 import type { SharingView } from "./sharing-view";
-import {
-  askedMessage,
-  NEEDS_COUNSELLING_CONSENT,
-  SHARING_CHANGED,
-  SHARING_NOT_ALLOWED,
-} from "./sharing-words";
 
 /**
  * What a press on a sharing gives back. A kept change, and a press

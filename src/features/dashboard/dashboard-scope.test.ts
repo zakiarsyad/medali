@@ -37,6 +37,26 @@ describe("dashboardScopeOf", () => {
     expect(scope?.picksProgram).toBe(true);
   });
 
+  it("lets the three roles read the counselling data published to them, as themselves", () => {
+    for (const role of [
+      "head_of_unit",
+      "director",
+      "head_of_program",
+    ] as const) {
+      const scope = dashboardScopeOf(accountOf([role]));
+
+      expect(scope?.shared?.readerId).toBe("x");
+      expect(scope?.shared?.reach).toBeTruthy();
+    }
+  });
+
+  it("reads no data published to Pengasuh on the Dashboard of a person who is also Pengasuh", () => {
+    const both = dashboardScopeOf(accountOf(["mentor", "head_of_program"]));
+    const alone = dashboardScopeOf(accountOf(["head_of_program"]));
+
+    expect(both?.shared?.reach).toEqual(alone?.shared?.reach);
+  });
+
   it("refuses every role without the right, so none of the numbers is read", () => {
     const refused: RoleId[] = [
       "mentor",

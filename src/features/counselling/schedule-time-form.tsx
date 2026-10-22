@@ -1,9 +1,13 @@
 "use client";
 
 import type { FormEvent } from "react";
+import {
+  COUNSELLING_HOURS,
+  COUNSELLING_WAYS,
+  NOTE_MAX,
+} from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
-import { COUNSELLING_HOURS, COUNSELLING_WAYS, NOTE_MAX } from "./schedule-ids";
 import { ChoiceOptions } from "./schedule-options";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import { COUNSELLING_WAY_WORDS } from "./schedule-words";

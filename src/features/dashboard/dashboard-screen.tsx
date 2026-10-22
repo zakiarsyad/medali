@@ -10,6 +10,8 @@ import type { DashboardView } from "./dashboard-view";
 import { GradeCard } from "./grade-card";
 import { GradeCohortTable } from "./grade-cohort-table";
 import { GradeSection } from "./grade-section";
+import { MentalCard } from "./mental-card";
+import { MentalSection } from "./mental-section";
 import { PhysicalCard } from "./physical-card";
 import { PhysicalSection } from "./physical-section";
 
@@ -21,6 +23,7 @@ export interface DetailLinks {
   assessment: string | null;
   grade: string | null;
   fitness: string | null;
+  mental: string | null;
 }
 
 function DashboardContent({
@@ -39,6 +42,7 @@ function DashboardContent({
         <AchievementCard recap={recap} />
         <GradeCard grades={grades} />
         <PhysicalCard recap={view.physical} />
+        <MentalCard mental={view.mental} />
       </div>
       <AchievementSection recap={recap} detailAddress={links.assessment}>
         {recap !== null && (
@@ -64,6 +68,7 @@ function DashboardContent({
         limits={view.fitnessLimits}
         detailAddress={links.fitness}
       />
+      <MentalSection mental={view.mental} detailAddress={links.mental} />
     </>
   );
 }

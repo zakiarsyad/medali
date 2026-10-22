@@ -9,8 +9,8 @@ import {
   counsellingSessions,
   students,
 } from "@/db/schema";
+import type { ScheduleSession } from "@/mental-health/session-view";
 import { kindOfWay } from "./session-rules";
-import type { ScheduleSession } from "./session-view";
 
 const NONE: ScheduleSession = { kind: "none" };
 

@@ -1,8 +1,12 @@
+import {
+  dataLine,
+  recipientsLine,
+  SHARING_WAY_WORDS,
+} from "@/mental-health/sharing-words";
 import { DAY } from "@/ui/day";
 import styles from "./counselling.module.css";
 import { SharingBadge } from "./sharing-badge";
 import type { SharingView } from "./sharing-view";
-import { dataLine, recipientsLine, SHARING_WAY_WORDS } from "./sharing-words";
 
 /** How it was approved and when, and who published it and when. */
 function stepsLine(sharing: SharingView): string {

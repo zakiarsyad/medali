@@ -61,6 +61,7 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         visible: eq(students.studyProgramId, programId),
         picksProgram: true,
         illnesses: null,
+        shared: null,
       };
 
       const all = await loadDashboard(db, scope, NO_FILTERS, ODD_3331, TODAY);
@@ -115,6 +116,7 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         visible: eq(students.studyProgramId, programId),
         picksProgram: true,
         illnesses: null,
+        shared: null,
       };
 
       const view = await loadDashboard(

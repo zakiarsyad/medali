@@ -5,6 +5,7 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { counsellingScheduleChanges, counsellingSchedules } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import type { ScheduleStatus } from "@/mental-health/schedule-ids";
 import {
   cancelSchedule,
   markScheduleDone,
@@ -15,7 +16,6 @@ import { askAnotherTime, MOVE_NOT_ALLOWED } from "./move-schedule";
 import { readOwnSchedules } from "./own-schedules";
 import { registerCounselling } from "./register-counselling";
 import { readScheduleBoard } from "./schedule-board";
-import type { ScheduleStatus } from "./schedule-ids";
 import {
   ASKED_ANOTHER,
   CANCELLED,

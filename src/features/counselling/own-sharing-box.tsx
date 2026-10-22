@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { SHARED_DATA } from "@/mental-health/sharing-ids";
+import {
+  dataLine,
+  inFormOrder,
+  recipientsLine,
+  SHARED_DATA_WORDS,
+} from "@/mental-health/sharing-words";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import type { SharingOutcome } from "./change-sharing";
@@ -10,15 +17,8 @@ import {
   declineSharingAction,
   withdrawSharingAction,
 } from "./own-sharing-actions";
-import { SHARED_DATA } from "./sharing-ids";
 import { studentSharingMoves } from "./sharing-rules";
 import type { SharingView } from "./sharing-view";
-import {
-  dataLine,
-  inFormOrder,
-  recipientsLine,
-  SHARED_DATA_WORDS,
-} from "./sharing-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 

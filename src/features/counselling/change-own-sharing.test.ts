@@ -5,11 +5,6 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSharingChanges, counsellingSharings } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { changeOwnConsent } from "./change-consent";
-import { askSharing } from "./change-sharing";
-import { readConsentOf } from "./consent-reads";
-import { changeOwnSharing } from "./press-sharing";
-import { readOwnSharing, readShownSharing } from "./sharing-reads";
 import {
   askedMessage,
   SHARING_CHANGED,
@@ -17,7 +12,12 @@ import {
   STUDENT_APPROVED_MESSAGE,
   STUDENT_DECLINED_MESSAGE,
   STUDENT_WITHDRAWN_MESSAGE,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import { changeOwnConsent } from "./change-consent";
+import { askSharing } from "./change-sharing";
+import { readConsentOf } from "./consent-reads";
+import { changeOwnSharing } from "./press-sharing";
+import { readOwnSharing, readShownSharing } from "./sharing-reads";
 import {
   ASKED_AT,
   addSharingStudent,

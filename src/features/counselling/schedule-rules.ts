@@ -1,7 +1,6 @@
 import { daysAfter } from "@/academic-periods/days-after";
 import { isWeekday } from "@/academic-periods/weekdays";
 import { isDay } from "@/db/is-day";
-import type { Parsed } from "@/parsed";
 import {
   ASSIGNMENT_TOPICS,
   COUNSELLING_HOURS,
@@ -16,7 +15,8 @@ import {
   type ScheduleStep,
   type ScheduleTopic,
   STORY_MAX,
-} from "./schedule-ids";
+} from "@/mental-health/schedule-ids";
+import type { Parsed } from "@/parsed";
 import {
   NOTE_TOO_LONG,
   PICK_FROM_LIST,

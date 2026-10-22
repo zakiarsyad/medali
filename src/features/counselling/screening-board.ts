@@ -20,6 +20,8 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { latestScreenings } from "@/mental-health/latest-screenings";
+import { COUNSELLING_LEVELS } from "@/mental-health/screening-rules";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import {
@@ -29,10 +31,8 @@ import {
   SESSION_COUNT,
 } from "./counselling-list";
 import { comingDay } from "./counselling-list-words";
-import { latestScreenings } from "./latest-screenings";
 import type { ScreeningParams } from "./screening-address";
 import { screeningReachOf } from "./screening-reach";
-import { COUNSELLING_LEVELS } from "./screening-rules";
 import type {
   ScreeningList,
   ScreeningNumbers,

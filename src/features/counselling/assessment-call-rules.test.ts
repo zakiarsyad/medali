@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { SCHEDULE_STATUSES } from "@/mental-health/schedule-ids";
 import { callReason, showsCallTime } from "./assessment-call-rules";
-import { SCHEDULE_STATUSES } from "./schedule-ids";
 
 describe("the reason of a call from Asesmen karakter", () => {
   it("names the Rerata, the level and the weakest value", () => {

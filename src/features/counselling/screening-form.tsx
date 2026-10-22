@@ -1,6 +1,21 @@
 "use client";
 
 import { type FormEvent, useState, useTransition } from "react";
+import {
+  DASS_SUM_MAX,
+  INSTRUMENTS,
+  type Instrument,
+  SCREENING_NOTE_MAX,
+  SRQ_MAX,
+} from "@/mental-health/screening-ids";
+import { DASS_SCALES } from "@/mental-health/screening-rules";
+import {
+  CONSENT_FIRST,
+  INSTRUMENT_WORDS,
+  SCALE_WORDS,
+  SELF_HARM_WORDS,
+  SRQ_FIELD,
+} from "@/mental-health/screening-words";
 import type { Parsed } from "@/parsed";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -15,22 +30,7 @@ import {
   searchScreeningStudentsAction,
 } from "./screening-actions";
 import { ScreeningEvaluation } from "./screening-evaluation";
-import {
-  DASS_SUM_MAX,
-  INSTRUMENTS,
-  type Instrument,
-  SCREENING_NOTE_MAX,
-  SRQ_MAX,
-} from "./screening-ids";
 import { checkScreening, type SentScreening } from "./screening-input";
-import { DASS_SCALES } from "./screening-rules";
-import {
-  CONSENT_FIRST,
-  INSTRUMENT_WORDS,
-  SCALE_WORDS,
-  SELF_HARM_WORDS,
-  SRQ_FIELD,
-} from "./screening-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 

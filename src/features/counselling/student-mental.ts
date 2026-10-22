@@ -3,9 +3,9 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { mentalHealthScreenings, students } from "@/db/schema";
-import { latestScreenings } from "./latest-screenings";
+import { latestScreenings } from "@/mental-health/latest-screenings";
+import { ADVICE_WORDS, CRISIS_ADVICE } from "@/mental-health/screening-words";
 import { screeningReachOf } from "./screening-reach";
-import { ADVICE_WORDS, CRISIS_ADVICE } from "./screening-words";
 import { openSharedLevel } from "./shared-detail";
 import type { SharedScreening } from "./shared-view";
 

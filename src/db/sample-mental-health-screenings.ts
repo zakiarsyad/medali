@@ -1,7 +1,4 @@
-import type {
-  Instrument,
-  ScreeningLevel,
-} from "@/features/counselling/screening-ids";
+import type { Instrument, ScreeningLevel } from "@/mental-health/screening-ids";
 
 /*
  * Made-up mental health screenings only, for made-up students, each
@@ -44,7 +41,8 @@ function srq(
  * Berat, so "Rincian" shows a history and the latest counts. Hadi
  * Kurniawan ticked self-harm, so Sangat berat and "Risiko". Intan
  * Harahap was screened before she withdrew her consent, and now waits
- * for it again.
+ * for it again. Nanda Gunawan makes five Aktif students screened, so the
+ * Dashboard shows its anonymous count to Kepala Unit and Direktur.
  */
 export const SAMPLE_SCREENINGS: SampleScreening[] = [
   {
@@ -100,5 +98,14 @@ export const SAMPLE_SCREENINGS: SampleScreening[] = [
     selfHarm: false,
     level: "moderate",
     note: "Kesulitan menyesuaikan diri dengan kegiatan asrama.",
+  },
+  {
+    nim: "9900240014",
+    daysAgo: 5,
+    instrument: "dass21",
+    ...dass([3, 2, 5]),
+    selfHarm: false,
+    level: "normal",
+    note: "",
   },
 ];

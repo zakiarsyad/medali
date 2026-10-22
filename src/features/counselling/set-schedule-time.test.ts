@@ -5,8 +5,8 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { counsellingScheduleChanges, counsellingSchedules } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import type { ScheduleStatus } from "@/mental-health/schedule-ids";
 import { approveSchedule, MOVE_NOT_ALLOWED } from "./move-schedule";
-import type { ScheduleStatus } from "./schedule-ids";
 import {
   APPROVED,
   NOT_FOR_THIS_KIND,

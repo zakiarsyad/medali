@@ -1,16 +1,19 @@
 import { campusDay } from "@/academic-periods/campus-day";
-import shared from "@/ui/data-screen.module.css";
-import styles from "./counselling.module.css";
-import { COUNSELLING_TOPICS } from "./schedule-ids";
-import { ChoiceOptions } from "./schedule-options";
-import { TOPIC_WORDS } from "./schedule-words";
+import { COUNSELLING_TOPICS } from "@/mental-health/schedule-ids";
 import {
   SESSION_FOLLOW_UPS,
   SESSION_KINDS,
   SESSION_NOTES_MAX,
   type SessionContent,
-} from "./session-ids";
-import { FOLLOW_UP_WORDS, SESSION_KIND_WORDS } from "./session-words";
+} from "@/mental-health/session-ids";
+import {
+  FOLLOW_UP_WORDS,
+  SESSION_KIND_WORDS,
+} from "@/mental-health/session-words";
+import shared from "@/ui/data-screen.module.css";
+import styles from "./counselling.module.css";
+import { ChoiceOptions } from "./schedule-options";
+import { TOPIC_WORDS } from "./schedule-words";
 
 /** What the fields start with; a field not given starts with its first choice. */
 export type SessionDefaults = Partial<SessionContent>;

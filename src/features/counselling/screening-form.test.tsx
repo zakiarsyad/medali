@@ -1,15 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { ConsentView } from "./consent-view";
-import { ScreeningEvaluation } from "./screening-evaluation";
-import { ConsentPart, ScreeningForm } from "./screening-form";
-import type { SentScores } from "./screening-input";
 import {
   ADVICE_WORDS,
   CONSENT_FIRST,
   CRISIS_ADVICE,
   scoreOutOfRange,
-} from "./screening-words";
+} from "@/mental-health/screening-words";
+import type { ConsentView } from "./consent-view";
+import { ScreeningEvaluation } from "./screening-evaluation";
+import { ConsentPart, ScreeningForm } from "./screening-form";
+import type { SentScores } from "./screening-input";
 
 // 10:00 on campus on 16 October 2026.
 const MOMENT = new Date("2026-10-16T03:00:00Z");

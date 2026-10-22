@@ -1,17 +1,17 @@
 "use client";
 
 import { type FormEvent, startTransition, useActionState } from "react";
-import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
-import { CONSENT_TEXT } from "./consent-words";
-import styles from "./counselling.module.css";
-import { registerCounsellingAction } from "./own-schedule-actions";
 import {
   COUNSELLING_HOURS,
   COUNSELLING_TOPICS,
   COUNSELLING_WAYS,
   STORY_MAX,
-} from "./schedule-ids";
+} from "@/mental-health/schedule-ids";
+import shared from "@/ui/data-screen.module.css";
+import { FormMessage, type FormState } from "@/ui/form-message";
+import { CONSENT_TEXT } from "./consent-words";
+import styles from "./counselling.module.css";
+import { registerCounsellingAction } from "./own-schedule-actions";
 import { useScheduleNotice } from "./schedule-notice";
 import { ChoiceOptions } from "./schedule-options";
 import {

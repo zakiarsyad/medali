@@ -1,3 +1,7 @@
+import {
+  SCHEDULE_KINDS,
+  type ScheduleKind,
+} from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards, WordsCard } from "@/ui/number-cards";
@@ -9,7 +13,6 @@ import {
   scheduleListAddress,
 } from "./schedule-address";
 import { ScheduleFilterRow } from "./schedule-filter";
-import { SCHEDULE_KINDS, type ScheduleKind } from "./schedule-ids";
 import { ScheduleNotice, ScheduleNoticeMessage } from "./schedule-notice";
 import { ScheduleSessionPart } from "./schedule-session-part";
 import type { ScheduleBoard, ScheduleCounts } from "./schedule-view";

@@ -1,6 +1,12 @@
 "use client";
 
 import { type FormEvent, useState, useTransition } from "react";
+import type { SessionHistory, SessionView } from "@/mental-health/session-view";
+import {
+  FOLLOW_UP_WORDS,
+  NO_SESSIONS,
+  SESSION_KIND_WORDS,
+} from "@/mental-health/session-words";
 import shared from "@/ui/data-screen.module.css";
 import { DAY, shownDay } from "@/ui/day";
 import { FormMessage } from "@/ui/form-message";
@@ -9,12 +15,6 @@ import styles from "./counselling.module.css";
 import { TOPIC_WORDS } from "./schedule-words";
 import { changeSessionAction } from "./session-actions";
 import { SessionFields } from "./session-fields";
-import type { SessionHistory, SessionView } from "./session-view";
-import {
-  FOLLOW_UP_WORDS,
-  NO_SESSIONS,
-  SESSION_KIND_WORDS,
-} from "./session-words";
 
 /** Who wrote the session down, its Tindak lanjut and its next session. */
 export function sessionFacts(session: SessionView): string {

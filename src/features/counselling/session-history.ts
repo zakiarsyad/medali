@@ -8,11 +8,14 @@ import {
   counsellingSessionReads,
   counsellingSessions,
 } from "@/db/schema";
+import type { SessionHistory, SessionView } from "@/mental-health/session-view";
+import {
+  NEEDS_CONSENT,
+  SESSION_NOT_ALLOWED,
+} from "@/mental-health/session-words";
 import type { Parsed } from "@/parsed";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { holdsConsent, isSessionStudent } from "./session-checks";
-import type { SessionHistory, SessionView } from "./session-view";
-import { NEEDS_CONSENT, SESSION_NOT_ALLOWED } from "./session-words";
 
 /** How many sessions "Riwayat sesi" shows at first, and how many more each time. */
 export const SESSIONS_PAGE_SIZE = 10;

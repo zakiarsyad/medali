@@ -1,12 +1,12 @@
 "use client";
 
 import { type FormEvent, useState, useTransition } from "react";
+import type { SessionStart } from "@/mental-health/session-view";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import styles from "./counselling.module.css";
 import { writeSessionAction } from "./session-actions";
 import { SessionFields } from "./session-fields";
-import type { SessionStart } from "./session-view";
 import type { SessionOutcome } from "./write-session";
 
 const NO_MESSAGE: FormState = { error: null, done: null };

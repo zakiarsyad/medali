@@ -5,11 +5,6 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { mentalHealthScreeningLog, mentalHealthScreenings } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import type { ConsentStatus } from "./consent-ids";
-import { STUDENT_NOT_FOUND } from "./consent-words";
-import { saveScreening } from "./save-screening";
-import { lookUpScreeningConsent } from "./screening-consent";
-import type { SentScreening } from "./screening-input";
 import {
   CONSENT_NEEDED,
   FORM_STALE,
@@ -17,7 +12,12 @@ import {
   PICK_STUDENT,
   SCREENING_NOT_ALLOWED,
   scoreOutOfRange,
-} from "./screening-words";
+} from "@/mental-health/screening-words";
+import type { ConsentStatus } from "./consent-ids";
+import { STUDENT_NOT_FOUND } from "./consent-words";
+import { saveScreening } from "./save-screening";
+import { lookUpScreeningConsent } from "./screening-consent";
+import type { SentScreening } from "./screening-input";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { setTestConsent } from "./test-screenings";
 

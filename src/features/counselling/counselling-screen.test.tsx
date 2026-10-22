@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { OwnSessionSummary } from "@/mental-health/session-view";
 import { ConsentStatusLine } from "./consent-badge";
 import type { ConsentView } from "./consent-view";
 import { CONSENT_TEXT } from "./consent-words";
@@ -9,7 +10,6 @@ import {
   HELP_TEXT,
 } from "./counselling-screen";
 import type { OwnHistory, OwnScheduleView } from "./schedule-view";
-import type { OwnSessionSummary } from "./session-view";
 
 // 10:00 on campus on 16 October 2026.
 const MOMENT = new Date("2026-10-16T03:00:00Z");

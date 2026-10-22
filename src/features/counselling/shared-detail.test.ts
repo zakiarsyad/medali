@@ -11,9 +11,9 @@ import {
   counsellingSharingReads,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { SHARED_GONE, SHARED_NOT_ALLOWED } from "@/mental-health/shared-words";
 import { changeOwnSharing } from "./press-sharing";
 import { openSharedDetail } from "./shared-detail";
-import { SHARED_GONE, SHARED_NOT_ALLOWED } from "./shared-words";
 import type { SharingView } from "./sharing-view";
 import { addTestActor } from "./test-consents";
 import { addTestScreening } from "./test-screenings";

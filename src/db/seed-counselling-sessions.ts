@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { daysAfter } from "@/academic-periods/days-after";
-import type { SessionContent } from "@/features/counselling/session-ids";
+import type { SessionContent } from "@/mental-health/session-ids";
 import type { Database } from "./connect";
 import {
   SAMPLE_SESSIONS,

@@ -5,6 +5,7 @@ import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import { ASSESSMENT_ADDRESS } from "@/features/character-assessment/assessment-address";
 import { GRADE_ADDRESS } from "@/features/character-grades/grade-address";
+import { SCREENING_ADDRESS } from "@/features/counselling/screening-address";
 import { readDashboardFilters } from "@/features/dashboard/dashboard-address";
 import { dashboardScopeOf } from "@/features/dashboard/dashboard-scope";
 import { DashboardScreen } from "@/features/dashboard/dashboard-screen";
@@ -36,6 +37,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const opensAssessments = mayOpenTab(roles, "assessment", "character_test");
   const opensGrades = mayOpenTab(roles, "assessment", "character");
   const opensFitness = mayOpenTab(roles, "assessment", "fitness");
+  const opensMental = mayOpenTab(roles, "assessment", "mental_health");
   return (
     <DashboardScreen
       view={view}
@@ -43,6 +45,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
         assessment: opensAssessments ? ASSESSMENT_ADDRESS : null,
         grade: opensGrades ? GRADE_ADDRESS : null,
         fitness: opensFitness ? FITNESS_ADDRESS : null,
+        mental: opensMental ? SCREENING_ADDRESS : null,
       }}
     />
   );

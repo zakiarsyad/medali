@@ -4,12 +4,12 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { counsellingSessionChanges, counsellingSessions } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
-import { changeSession } from "./change-session";
 import {
   SESSION_CHANGED,
   SESSION_CHANGED_SINCE,
   SESSION_SAVED,
-} from "./session-words";
+} from "@/mental-health/session-words";
+import { changeSession } from "./change-session";
 import { addTestActor } from "./test-consents";
 import { addConsentedPeople, TEST_SESSION } from "./test-sessions";
 import { writeSession } from "./write-session";

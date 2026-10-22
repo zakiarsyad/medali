@@ -5,7 +5,7 @@ import type {
   ScheduleStatus,
   ScheduleStep,
   ScheduleTopic,
-} from "./schedule-ids";
+} from "@/mental-health/schedule-ids";
 
 /*
  * Read by the screen parts in the browser, so nothing here may take from

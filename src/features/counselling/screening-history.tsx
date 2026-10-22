@@ -1,9 +1,13 @@
+import { LevelBadges } from "@/mental-health/screening-badges";
+import type { ScalePart } from "@/mental-health/screening-rules";
+import {
+  INSTRUMENT_WORDS,
+  LEVEL_WORDS,
+  SCALE_WORDS,
+} from "@/mental-health/screening-words";
 import { shownDay } from "@/ui/day";
 import styles from "./counselling.module.css";
-import { LevelBadges } from "./screening-badges";
-import type { ScalePart } from "./screening-rules";
 import type { ScreeningDetailItem } from "./screening-view";
-import { INSTRUMENT_WORDS, LEVEL_WORDS, SCALE_WORDS } from "./screening-words";
 
 /*
  * "Riwayat asesmen" of "Rincian". Read by the list in the browser, so

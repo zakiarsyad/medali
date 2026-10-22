@@ -1,7 +1,7 @@
+import type { OwnSessionSummary } from "@/mental-health/session-view";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import styles from "./counselling.module.css";
-import type { OwnSessionSummary } from "./session-view";
 
 /**
  * What the student sees of their own counselling sessions: how many,

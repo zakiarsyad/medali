@@ -10,12 +10,12 @@ import {
   students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
 import {
   readCounsellingList,
   readCounsellingNumbers,
 } from "./counselling-list";
 import type { CounsellingListParams } from "./counselling-list-address";
-import type { SharingStatus } from "./sharing-ids";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { addTestAssignment, addTestSchedule } from "./test-schedules";
 import { setTestConsent } from "./test-screenings";

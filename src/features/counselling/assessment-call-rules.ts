@@ -2,8 +2,8 @@ import { rerataOf, type Scores } from "@/character-scores/assessment-score";
 import type { CoachingNeed } from "@/character-scores/coaching-need";
 import { COACHING_LEVEL_WORDS } from "@/character-scores/coaching-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
+import type { ScheduleStatus } from "@/mental-health/schedule-ids";
 import { valueNameOf } from "@/ui/medali-values";
-import type { ScheduleStatus } from "./schedule-ids";
 
 /*
  * The rules of a call for counselling made from Asesmen karakter. Read by

@@ -1,17 +1,17 @@
-import type { Parsed } from "@/parsed";
 import {
   SHARED_DATA,
   SHARING_RECIPIENTS,
   type SharingContent,
   SUMMARY_MAX,
   SUMMARY_MIN,
-} from "./sharing-ids";
+} from "@/mental-health/sharing-ids";
 import {
   NO_DATA,
   NO_RECIPIENT,
   NO_SUMMARY,
   SUMMARY_TOO_LONG,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import type { Parsed } from "@/parsed";
 
 /** The known values that were sent, each once, in their fixed order. */
 function picked<T extends string>(known: readonly T[], sent: unknown): T[] {

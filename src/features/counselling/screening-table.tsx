@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { LevelBadges } from "@/mental-health/screening-badges";
+import { INSTRUMENT_WORDS } from "@/mental-health/screening-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { ProfileNameLink } from "@/ui/profile-name-link";
@@ -8,10 +10,8 @@ import { ConsentBadge } from "./consent-badge";
 import { NOTHING, sessionsWords } from "./counselling-list-words";
 import { openScreeningDetailAction } from "./screening-actions";
 import { type ScreeningParams, screeningAddress } from "./screening-address";
-import { LevelBadges } from "./screening-badges";
 import { ScreeningHistory } from "./screening-history";
 import type { ScreeningDetailItem, ScreeningRow } from "./screening-view";
-import { INSTRUMENT_WORDS } from "./screening-words";
 import { SharingBadge } from "./sharing-badge";
 
 /** How many columns "Daftar mahasiswa" has, for the row of "Rincian". */

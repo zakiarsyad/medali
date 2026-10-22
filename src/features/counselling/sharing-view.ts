@@ -3,7 +3,7 @@ import type {
   SharingRecipient,
   SharingStatus,
   SharingWay,
-} from "./sharing-ids";
+} from "@/mental-health/sharing-ids";
 
 /*
  * Read by the screen parts in the browser, so nothing here may take from

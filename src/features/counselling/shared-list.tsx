@@ -1,10 +1,13 @@
+import {
+  nothingSharedWords,
+  SHARED_HEADING,
+} from "@/mental-health/shared-words";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import styles from "./counselling.module.css";
 import { type ScreeningParams, screeningAddress } from "./screening-address";
 import { SharedTable } from "./shared-table";
 import { SHARED_PAGE_SIZE, type SharedList } from "./shared-view";
-import { nothingSharedWords, SHARED_HEADING } from "./shared-words";
 
 /**
  * "Data yang dipublikasikan untuk Anda": one page of the students whose

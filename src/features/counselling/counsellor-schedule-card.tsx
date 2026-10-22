@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
+import type { ScheduleStatus } from "@/mental-health/schedule-ids";
 import styles from "./counselling.module.css";
 import { Fact, KindBadge, ScheduleBadge } from "./schedule-card-parts";
-import type { ScheduleStatus } from "./schedule-ids";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import {
   COUNSELLING_WAY_WORDS,

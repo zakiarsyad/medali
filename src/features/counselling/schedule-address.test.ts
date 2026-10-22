@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { SCHEDULE_KINDS } from "@/mental-health/schedule-ids";
 import {
   FILTER_ORDER,
   FILTER_WORDS,
@@ -9,7 +10,6 @@ import {
   scheduleListAddress,
   statusesOf,
 } from "./schedule-address";
-import { SCHEDULE_KINDS } from "./schedule-ids";
 
 describe("readScheduleListParams", () => {
   it("starts at Perlu ditindaklanjuti on the first page", () => {
