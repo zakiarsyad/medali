@@ -1,17 +1,17 @@
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { NOT_ALLOWED, type SharingOutcome } from "./change-sharing";
-import { STUDENT_NOT_FOUND } from "./consent-words";
-import { applySharingPress } from "./press-sharing";
-import type { SharingStatus } from "./sharing-ids";
-import { sharingStudentName } from "./sharing-reads";
-import type { CounsellorSharingMove } from "./sharing-rules";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
 import {
   CANCELLED_MESSAGE,
   PAPER_MESSAGE,
   PULLED_MESSAGE,
   publishedMessage,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import { NOT_ALLOWED, type SharingOutcome } from "./change-sharing";
+import { STUDENT_NOT_FOUND } from "./consent-words";
+import { applySharingPress } from "./press-sharing";
+import { sharingStudentName } from "./sharing-reads";
+import type { CounsellorSharingMove } from "./sharing-rules";
 
 /** What Konselor does to a request already sent. */
 export type CounsellorStep = Exclude<CounsellorSharingMove, "ask">;

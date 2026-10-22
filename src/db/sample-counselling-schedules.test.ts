@@ -3,7 +3,7 @@ import { assignmentBasis } from "@/discipline-penalties/assignment-basis";
 import {
   ACTIVE_STATUSES,
   SCHEDULE_STATUSES,
-} from "@/features/counselling/schedule-ids";
+} from "@/mental-health/schedule-ids";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import {
   isSenderScheduleStep,

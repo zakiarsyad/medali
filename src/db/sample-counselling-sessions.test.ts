@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SESSION_NOTES_MAX } from "@/features/counselling/session-ids";
+import { SESSION_NOTES_MAX } from "@/mental-health/session-ids";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import { SAMPLE_SCHEDULES } from "./sample-counselling-schedules";
 import { SAMPLE_SESSIONS } from "./sample-counselling-sessions";

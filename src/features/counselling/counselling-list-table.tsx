@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import type { SessionHistory } from "@/mental-health/session-view";
 import type { Parsed } from "@/parsed";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
@@ -13,7 +14,6 @@ import {
   sessionsWords,
 } from "./counselling-list-words";
 import { SessionHistoryList } from "./session-history-list";
-import type { SessionHistory } from "./session-view";
 import { SharingBadge } from "./sharing-badge";
 
 /** How many columns "Daftar mahasiswa" has, for the row of "Rincian". */

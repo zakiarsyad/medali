@@ -1,13 +1,4 @@
-import {
-  and,
-  arrayContains,
-  asc,
-  count,
-  desc,
-  eq,
-  inArray,
-  sql,
-} from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { type AccountForAccess, may } from "@/auth/access";
 import { NOT_REMOVED } from "@/auth/visible-students";
@@ -18,14 +9,20 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import {
+  logSharedReads,
+  type SharedShowing,
+} from "@/mental-health/log-shared-reads";
+import type { ScreeningLevel } from "@/mental-health/screening-ids";
+import {
+  COUNSELLING_LEVELS,
+  shownCount,
+} from "@/mental-health/screening-rules";
+import { sharedLevels } from "@/mental-health/shared-levels";
+import { recipientRolesOf, sharedReachOf } from "@/mental-health/shared-reach";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { pageWithin } from "@/ui/list-pages";
-import { latestScreenings } from "./latest-screenings";
-import { logSharedReads, type SharedShowing } from "./log-shared-reads";
 import { heldInLast30Days } from "./recent-sessions";
-import type { ScreeningLevel } from "./screening-ids";
-import { COUNSELLING_LEVELS, shownCount } from "./screening-rules";
-import { recipientRolesOf, sharedReachOf } from "./shared-reach";
 import { SHARED_PAGE_SIZE, type SharedList } from "./shared-view";
 
 function isMenteesOnly(actor: AccountForAccess): boolean {
@@ -37,19 +34,6 @@ function isMenteesOnly(actor: AccountForAccess): boolean {
 function publishedDate(publishedAt: Date | null): Date {
   if (publishedAt === null) throw new Error("A published sharing has no date.");
   return publishedAt;
-}
-
-/**
- * The latest screening of a sharing's student, joined only when the
- * sharing holds the level, so a level left out is never read.
- */
-export function sharedLevels(db: Database) {
-  const latest = latestScreenings(db, {});
-  const joined = and(
-    eq(latest.studentId, students.id),
-    arrayContains(counsellingSharings.data, ["level"]),
-  );
-  return { latest, joined };
 }
 
 /** The rows that show a level, each a showing for the log of readings. */

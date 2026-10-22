@@ -3,7 +3,7 @@ import { type AccountForAccess, may } from "@/auth/access";
 import { NOT_REMOVED } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { mentalHealthScreenings, students } from "@/db/schema";
-import { shownCount } from "./screening-rules";
+import { shownCount } from "@/mental-health/screening-rules";
 
 /**
  * "Sudah diasesmen" for the whole campus, as Kepala Unit, Direktur,

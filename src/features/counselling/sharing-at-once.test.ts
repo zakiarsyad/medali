@@ -3,13 +3,13 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { counsellingSharings } from "@/db/schema";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import { SHARING_CHANGED } from "@/mental-health/sharing-words";
 import { changeOwnConsent } from "./change-consent";
 import { askSharing } from "./change-sharing";
 import { readConsentOf } from "./consent-reads";
 import { changeOwnSharing } from "./press-sharing";
 import { changeSharingAsCounsellor } from "./publish-sharing";
 import { readShownSharing } from "./sharing-reads";
-import { SHARING_CHANGED } from "./sharing-words";
 import {
   ASKED_AT,
   addSharingStudent,

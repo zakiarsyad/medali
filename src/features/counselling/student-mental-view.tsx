@@ -1,9 +1,9 @@
+import { LevelBadges } from "@/mental-health/screening-badges";
+import { INSTRUMENT_WORDS } from "@/mental-health/screening-words";
+import { NOT_SCREENED } from "@/mental-health/shared-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import styles from "./counselling.module.css";
-import { LevelBadges } from "./screening-badges";
-import { INSTRUMENT_WORDS } from "./screening-words";
-import { NOT_SCREENED } from "./shared-words";
 import type { ShownScreening, StudentMental } from "./student-mental";
 
 /** The mark of a panel a recipient sees through a sharing. */

@@ -7,8 +7,8 @@ import {
   mentalHealthScreenings,
   students,
 } from "@/db/schema";
+import { scoresOf, screeningResult } from "@/mental-health/screening-rules";
 import { screeningReachOf } from "./screening-reach";
-import { scoresOf, screeningResult } from "./screening-rules";
 import type { ScreeningDetailItem } from "./screening-view";
 
 type KeptRow = typeof mentalHealthScreenings.$inferSelect;

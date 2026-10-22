@@ -1,3 +1,5 @@
+import type { ScheduleKind } from "@/mental-health/schedule-ids";
+import type { OwnSessionSummary } from "@/mental-health/session-view";
 import { PageHead } from "@/ui/page-head";
 import type { ConsentView } from "./consent-view";
 import styles from "./counselling.module.css";
@@ -11,7 +13,6 @@ import { OwnSharingBox } from "./own-sharing-box";
 import type { ReferralList } from "./referral-view";
 import { RegisterForm } from "./register-form";
 import type { ScheduleFilter } from "./schedule-address";
-import type { ScheduleKind } from "./schedule-ids";
 import { ScheduleNotice } from "./schedule-notice";
 import { SchedulePanel } from "./schedule-panel";
 import type {
@@ -19,7 +20,6 @@ import type {
   OwnScheduleView,
   ScheduleBoard,
 } from "./schedule-view";
-import type { OwnSessionSummary } from "./session-view";
 import type { SharingView } from "./sharing-view";
 import { WarnBox } from "./warn-box";
 

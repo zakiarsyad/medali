@@ -1,8 +1,8 @@
+import { LevelBadges } from "@/mental-health/screening-badges";
+import { screeningResult } from "@/mental-health/screening-rules";
+import { SCALE_WORDS } from "@/mental-health/screening-words";
 import styles from "./counselling.module.css";
-import { LevelBadges } from "./screening-badges";
 import { checkScores, type SentScores } from "./screening-input";
-import { screeningResult } from "./screening-rules";
-import { SCALE_WORDS } from "./screening-words";
 
 /*
  * The level and "Rekomendasi" as the scores are typed. Read by the form

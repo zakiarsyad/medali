@@ -13,9 +13,9 @@ import {
   mentalHealthScreenings,
   students,
 } from "@/db/schema";
+import { CURRENT_SHARING_STATUSES } from "@/mental-health/sharing-ids";
 import type { Parsed } from "@/parsed";
 import { STUDENT_NOT_FOUND } from "./consent-words";
-import { CURRENT_SHARING_STATUSES } from "./sharing-ids";
 import type { SharingBasis } from "./sharing-rules";
 import {
   type SharingPanel,

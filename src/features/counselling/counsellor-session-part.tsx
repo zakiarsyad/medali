@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import type { SessionHistory } from "@/mental-health/session-view";
+import { NEEDS_CONSENT } from "@/mental-health/session-words";
 import type { Parsed } from "@/parsed";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import type { ChangeOutcome } from "./change-session";
@@ -9,8 +11,6 @@ import styles from "./counselling.module.css";
 import { readSessionHistoryAction } from "./session-actions";
 import { SessionForm } from "./session-form";
 import { SessionHistoryList } from "./session-history-list";
-import type { SessionHistory } from "./session-view";
-import { NEEDS_CONSENT } from "./session-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 

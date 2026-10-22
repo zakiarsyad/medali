@@ -15,6 +15,10 @@ import {
   counsellingSchedules,
   students,
 } from "@/db/schema";
+import type {
+  CounsellingHour,
+  ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { callReason, showsCallTime } from "./assessment-call-rules";
 import {
@@ -25,7 +29,6 @@ import {
   NOT_LISTED,
 } from "./assessment-call-words";
 import { lockStudent } from "./register-counselling";
-import type { CounsellingHour, ScheduleStatus } from "./schedule-ids";
 
 const RIGHT = "call_counselling_from_assessment";
 

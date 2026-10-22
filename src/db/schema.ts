@@ -51,42 +51,6 @@ import {
   CONSENT_WAYS,
 } from "@/features/counselling/consent-ids";
 import {
-  ASSIGNMENT_TEXT_MAX,
-  COUNSELLING_HOURS,
-  NOTE_MAX as COUNSELLING_NOTE_MAX,
-  STORY_MAX as COUNSELLING_STORY_MAX,
-  COUNSELLING_TOPICS,
-  COUNSELLING_WAYS,
-  SCHEDULE_KINDS,
-  SCHEDULE_STATUSES,
-  SCHEDULE_STEPS,
-} from "@/features/counselling/schedule-ids";
-import {
-  DASS_SUM_MAX,
-  INSTRUMENTS,
-  SCREENING_EVENTS,
-  SCREENING_LEVELS,
-  SCREENING_NOTE_MAX,
-  SRQ_MAX,
-} from "@/features/counselling/screening-ids";
-import {
-  SESSION_FOLLOW_UPS,
-  SESSION_KINDS,
-  SESSION_NOTES_MAX,
-  SESSION_STEPS,
-  type SessionContent,
-} from "@/features/counselling/session-ids";
-import {
-  SHARED_DATA,
-  SHARING_RECIPIENTS,
-  SHARING_STATUSES,
-  SHARING_STEPS,
-  SHARING_WAYS,
-  type SharingContent,
-  SUMMARY_MAX,
-  SUMMARY_MIN,
-} from "@/features/counselling/sharing-ids";
-import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_PATTERNS,
   AUDIENCES,
@@ -213,6 +177,42 @@ import {
   ILLNESSES,
   type RecapReadFilters,
 } from "@/health-notes/health-ids";
+import {
+  ASSIGNMENT_TEXT_MAX,
+  COUNSELLING_HOURS,
+  NOTE_MAX as COUNSELLING_NOTE_MAX,
+  STORY_MAX as COUNSELLING_STORY_MAX,
+  COUNSELLING_TOPICS,
+  COUNSELLING_WAYS,
+  SCHEDULE_KINDS,
+  SCHEDULE_STATUSES,
+  SCHEDULE_STEPS,
+} from "@/mental-health/schedule-ids";
+import {
+  DASS_SUM_MAX,
+  INSTRUMENTS,
+  SCREENING_EVENTS,
+  SCREENING_LEVELS,
+  SCREENING_NOTE_MAX,
+  SRQ_MAX,
+} from "@/mental-health/screening-ids";
+import {
+  SESSION_FOLLOW_UPS,
+  SESSION_KINDS,
+  SESSION_NOTES_MAX,
+  SESSION_STEPS,
+  type SessionContent,
+} from "@/mental-health/session-ids";
+import {
+  SHARED_DATA,
+  SHARING_RECIPIENTS,
+  SHARING_STATUSES,
+  SHARING_STEPS,
+  SHARING_WAYS,
+  type SharingContent,
+  SUMMARY_MAX,
+  SUMMARY_MIN,
+} from "@/mental-health/sharing-ids";
 import {
   ATTENDANCE_MARKS,
   type MarksByStudent,

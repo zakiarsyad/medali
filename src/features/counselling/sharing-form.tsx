@@ -1,20 +1,20 @@
 "use client";
 
 import type { FormEvent } from "react";
-import shared from "@/ui/data-screen.module.css";
-import styles from "./counselling.module.css";
 import {
   SHARING_RECIPIENTS,
   type SharedData,
   SUMMARY_MAX,
-} from "./sharing-ids";
+} from "@/mental-health/sharing-ids";
 import {
   ASK_NOTE,
   RECIPIENT_LIMITS,
   recipientWords,
   SHARED_DATA_WORDS,
   SUMMARY_PLACEHOLDER,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import shared from "@/ui/data-screen.module.css";
+import styles from "./counselling.module.css";
 
 /** What "Minta persetujuan mahasiswa" sends, as the form holds it. */
 export interface SharingAsk {

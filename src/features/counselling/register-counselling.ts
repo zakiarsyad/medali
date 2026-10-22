@@ -7,8 +7,8 @@ import {
   counsellingSchedules,
   students,
 } from "@/db/schema";
+import { ACTIVE_STATUSES } from "@/mental-health/schedule-ids";
 import { consentByRegistration } from "./change-consent";
-import { ACTIVE_STATUSES } from "./schedule-ids";
 import {
   type CheckedRegistration,
   checkRegistration,

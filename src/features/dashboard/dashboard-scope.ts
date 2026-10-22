@@ -1,7 +1,7 @@
 import type { SQL } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
-import { sharedReachOf } from "@/features/counselling/shared-reach";
+import { sharedReachOf } from "@/mental-health/shared-reach";
 
 /** Who reads the counselling data published to them, and which sharings they reach. */
 export interface SharedReader {

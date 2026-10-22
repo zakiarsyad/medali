@@ -1,18 +1,17 @@
 import { isDay } from "@/db/is-day";
 import { isUuid } from "@/db/is-uuid";
-import type { Parsed } from "@/parsed";
 import {
   DASS_SUM_MAX,
   INSTRUMENTS,
   type Instrument,
   SCREENING_NOTE_MAX,
   SRQ_MAX,
-} from "./screening-ids";
+} from "@/mental-health/screening-ids";
 import {
   DASS_SCALES,
   type DassScale,
   type ScreeningScores,
-} from "./screening-rules";
+} from "@/mental-health/screening-rules";
 import {
   DATE_MISSING,
   FUTURE_DATE,
@@ -22,7 +21,8 @@ import {
   SRQ_FIELD,
   scoreOutOfRange,
   UNKNOWN_INSTRUMENT,
-} from "./screening-words";
+} from "@/mental-health/screening-words";
+import type { Parsed } from "@/parsed";
 
 /*
  * How a sent screening is checked. Read by the form in the browser and by

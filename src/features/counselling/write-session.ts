@@ -8,11 +8,7 @@ import {
   counsellingSessionChanges,
   counsellingSessions,
 } from "@/db/schema";
-import { STUDENT_NOT_FOUND } from "./consent-words";
-import { holdsConsent, isSessionStudent } from "./session-checks";
-import { contentOf, isSameContent } from "./session-content";
-import type { SessionContent } from "./session-ids";
-import { checkSession, type SentSession } from "./session-rules";
+import type { SessionContent } from "@/mental-health/session-ids";
 import {
   NEEDS_CONSENT,
   SCHEDULE_HAS_SESSION,
@@ -20,7 +16,11 @@ import {
   SESSION_ALREADY_SENT,
   SESSION_NOT_ALLOWED,
   SESSION_SAVED,
-} from "./session-words";
+} from "@/mental-health/session-words";
+import { STUDENT_NOT_FOUND } from "./consent-words";
+import { holdsConsent, isSessionStudent } from "./session-checks";
+import { contentOf, isSameContent } from "./session-content";
+import { checkSession, type SentSession } from "./session-rules";
 
 /** What "Simpan sesi" gives back. */
 export type SessionOutcome =

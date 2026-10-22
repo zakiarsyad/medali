@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { SHARING_STATUSES, type SharingStatus } from "./sharing-ids";
+import {
+  SHARING_STATUSES,
+  type SharingStatus,
+} from "@/mental-health/sharing-ids";
+import { NO_SCREENING, NO_SESSION } from "@/mental-health/sharing-words";
 import {
   counsellorSharingMoves,
   isCurrentSharing,
@@ -11,7 +15,6 @@ import {
   studentSharingMoves,
   wayOf,
 } from "./sharing-rules";
-import { NO_SCREENING, NO_SESSION } from "./sharing-words";
 
 const ENDED: SharingStatus[] = ["declined", "cancelled", "withdrawn"];
 

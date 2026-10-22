@@ -5,7 +5,7 @@ import type {
   CounsellingWay,
   ScheduleStatus,
   ScheduleStep,
-} from "@/features/counselling/schedule-ids";
+} from "@/mental-health/schedule-ids";
 
 /*
  * Made-up requests for counselling only, for the made-up students.

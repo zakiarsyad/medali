@@ -11,8 +11,11 @@ import {
   counsellingSchedules,
   students,
 } from "@/db/schema";
+import type {
+  ScheduleKind,
+  ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 import { readScheduleCard } from "./schedule-board";
-import type { ScheduleKind, ScheduleStatus } from "./schedule-ids";
 import {
   checkAnotherTime,
   checkProposal,

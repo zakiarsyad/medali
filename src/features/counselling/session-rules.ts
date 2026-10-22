@@ -1,14 +1,15 @@
 import { isDay } from "@/db/is-day";
-import type { Parsed } from "@/parsed";
-import { COUNSELLING_TOPICS, type CounsellingWay } from "./schedule-ids";
-import { isOneOf } from "./schedule-rules";
+import {
+  COUNSELLING_TOPICS,
+  type CounsellingWay,
+} from "@/mental-health/schedule-ids";
 import {
   SESSION_FOLLOW_UPS,
   SESSION_KINDS,
   SESSION_NOTES_MAX,
   type SessionContent,
   type SessionKind,
-} from "./session-ids";
+} from "@/mental-health/session-ids";
 import {
   DAY_IN_FUTURE,
   NEXT_BEFORE_DAY,
@@ -17,7 +18,9 @@ import {
   PICK_NEXT_DAY,
   PICK_SESSION_CHOICES,
   PICK_SESSION_DAY,
-} from "./session-words";
+} from "@/mental-health/session-words";
+import type { Parsed } from "@/parsed";
+import { isOneOf } from "./schedule-rules";
 
 /** What Konselor sends of a session; none of it is trusted. */
 export interface SentSession {

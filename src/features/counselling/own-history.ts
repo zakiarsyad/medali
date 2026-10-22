@@ -2,7 +2,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { counsellingSchedules } from "@/db/schema";
-import { FINISHED_STATUSES } from "./schedule-ids";
+import { FINISHED_STATUSES } from "@/mental-health/schedule-ids";
 import { topicOf } from "./schedule-rules";
 import type { OwnHistoryPage, OwnHistoryView } from "./schedule-view";
 

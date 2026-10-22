@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { daysAfter } from "@/academic-periods/days-after";
 import { weekdayFrom } from "@/academic-periods/weekdays";
-import type { AssignmentKind } from "@/features/counselling/schedule-ids";
+import type { AssignmentKind } from "@/mental-health/schedule-ids";
 import type { Database } from "./connect";
 import {
   isSenderScheduleStep,

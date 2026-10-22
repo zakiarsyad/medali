@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
 import { CounsellingScreen } from "./counselling-screen";
-import type { SharingStatus } from "./sharing-ids";
 import type { SharingView } from "./sharing-view";
 
 // 10:00 on campus on 21 October 2026.

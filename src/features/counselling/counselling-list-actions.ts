@@ -5,9 +5,9 @@ import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
 import { database } from "@/db/database";
+import type { SessionHistory } from "@/mental-health/session-view";
 import type { Parsed } from "@/parsed";
 import { openStudentSessions } from "./counselling-list-detail";
-import type { SessionHistory } from "./session-view";
 
 /**
  * The signed-in account when it has the right to read "Daftar

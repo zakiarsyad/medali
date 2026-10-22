@@ -2,7 +2,7 @@ import type {
   SharedData,
   SharingRecipient,
   SharingStep,
-} from "@/features/counselling/sharing-ids";
+} from "@/mental-health/sharing-ids";
 
 /*
  * Made-up sharings of counselling data only, for the made-up students.

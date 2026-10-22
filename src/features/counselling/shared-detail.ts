@@ -3,13 +3,13 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { accounts, counsellingSharings, students } from "@/db/schema";
+import { latestScreenings } from "@/mental-health/latest-screenings";
+import { logSharedReads } from "@/mental-health/log-shared-reads";
+import { readSessionSummary } from "@/mental-health/session-summary";
+import { sharedReachOf } from "@/mental-health/shared-reach";
+import { SHARED_GONE, SHARED_NOT_ALLOWED } from "@/mental-health/shared-words";
 import type { Parsed } from "@/parsed";
-import { latestScreenings } from "./latest-screenings";
-import { logSharedReads } from "./log-shared-reads";
-import { readSessionSummary } from "./own-sessions";
-import { sharedReachOf } from "./shared-reach";
 import type { SharedDetail, SharedScreening } from "./shared-view";
-import { SHARED_GONE, SHARED_NOT_ALLOWED } from "./shared-words";
 
 const GONE = { ok: false, error: SHARED_GONE } as const;
 

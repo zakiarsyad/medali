@@ -1,6 +1,6 @@
-import type { Instrument, ScreeningLevel } from "./screening-ids";
-import type { SessionSummary } from "./session-view";
-import type { SharedData } from "./sharing-ids";
+import type { Instrument, ScreeningLevel } from "@/mental-health/screening-ids";
+import type { SessionSummary } from "@/mental-health/session-view";
+import type { SharedData } from "@/mental-health/sharing-ids";
 
 /*
  * What the server sends a recipient of shared counselling data. Read by

@@ -3,7 +3,7 @@ import { type AccountForAccess, may } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { versionOf } from "@/db/row-version";
 import { accounts, counsellingSchedules } from "@/db/schema";
-import { ACTIVE_STATUSES } from "./schedule-ids";
+import { ACTIVE_STATUSES } from "@/mental-health/schedule-ids";
 import { topicOf } from "./schedule-rules";
 import type { OwnScheduleView } from "./schedule-view";
 

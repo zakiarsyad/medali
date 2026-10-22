@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  checkScores,
-  checkScreening,
-  type SentScreening,
-} from "./screening-input";
-import {
   DATE_MISSING,
   FUTURE_DATE,
   NOTE_TOO_LONG,
   PICK_STUDENT,
   scoreOutOfRange,
   UNKNOWN_INSTRUMENT,
-} from "./screening-words";
+} from "@/mental-health/screening-words";
+import {
+  checkScores,
+  checkScreening,
+  type SentScreening,
+} from "./screening-input";
 
 const TODAY = "2026-10-16";
 const STUDENT = "00000000-0000-4000-8000-000000000001";

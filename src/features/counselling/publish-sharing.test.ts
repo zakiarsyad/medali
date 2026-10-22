@@ -5,12 +5,6 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSharingChanges, counsellingSharings } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { askSharing } from "./change-sharing";
-import { changeOwnSharing } from "./press-sharing";
-import { changeSharingAsCounsellor } from "./publish-sharing";
-import { readShownSharing } from "./sharing-reads";
-import { recipientSees } from "./sharing-rules";
-import type { SharingView } from "./sharing-view";
 import {
   CANCELLED_MESSAGE,
   PAPER_MESSAGE,
@@ -18,7 +12,13 @@ import {
   publishedMessage,
   SHARING_CHANGED,
   SHARING_NOT_ALLOWED,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import { askSharing } from "./change-sharing";
+import { changeOwnSharing } from "./press-sharing";
+import { changeSharingAsCounsellor } from "./publish-sharing";
+import { readShownSharing } from "./sharing-reads";
+import { recipientSees } from "./sharing-rules";
+import type { SharingView } from "./sharing-view";
 import { addTestActor } from "./test-consents";
 import {
   ASKED_AT,

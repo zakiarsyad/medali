@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState, useTransition } from "react";
+import { COUNSELLING_HOURS, NOTE_MAX } from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -12,7 +13,6 @@ import {
   cancelScheduleAction,
 } from "./own-schedule-actions";
 import { OwnScheduleCard } from "./own-schedule-card";
-import { COUNSELLING_HOURS, NOTE_MAX } from "./schedule-ids";
 import { useScheduleNotice } from "./schedule-notice";
 import { ChoiceOptions } from "./schedule-options";
 import type { OwnScheduleView } from "./schedule-view";

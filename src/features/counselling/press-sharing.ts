@@ -4,6 +4,12 @@ import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { versionOf } from "@/db/row-version";
 import { counsellingSharings } from "@/db/schema";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
+import {
+  STUDENT_APPROVED_MESSAGE,
+  STUDENT_DECLINED_MESSAGE,
+  STUDENT_WITHDRAWN_MESSAGE,
+} from "@/mental-health/sharing-words";
 import {
   changedSince,
   lockConsentStatus,
@@ -13,7 +19,6 @@ import {
   NOT_ALLOWED,
   type SharingOutcome,
 } from "./change-sharing";
-import type { SharingStatus } from "./sharing-ids";
 import { readCurrentSharing, readLatestSharing } from "./sharing-reads";
 import {
   isStop,
@@ -23,11 +28,6 @@ import {
   wayOf,
 } from "./sharing-rules";
 import { withoutPublisher } from "./sharing-view";
-import {
-  STUDENT_APPROVED_MESSAGE,
-  STUDENT_DECLINED_MESSAGE,
-  STUDENT_WITHDRAWN_MESSAGE,
-} from "./sharing-words";
 
 /** A press on one sharing the screen showed. */
 export interface SharingPress {

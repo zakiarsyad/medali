@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import type {
+  ScheduleKind,
+  ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
-import type { ScheduleKind, ScheduleStatus } from "./schedule-ids";
 import { KIND_WORDS, SCHEDULE_STATUS_WORDS } from "./schedule-words";
 
 /**

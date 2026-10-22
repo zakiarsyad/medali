@@ -5,12 +5,6 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSharingChanges, counsellingSharings } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { changeOwnConsent } from "./change-consent";
-import { askSharing } from "./change-sharing";
-import { readConsentOf } from "./consent-reads";
-import { STUDENT_NOT_FOUND } from "./consent-words";
-import { changeSharingAsCounsellor } from "./publish-sharing";
-import { readSharingPanel } from "./sharing-reads";
 import {
   askedMessage,
   NEEDS_COUNSELLING_CONSENT,
@@ -21,7 +15,13 @@ import {
   NO_SUMMARY,
   SHARING_CHANGED,
   SHARING_NOT_ALLOWED,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import { changeOwnConsent } from "./change-consent";
+import { askSharing } from "./change-sharing";
+import { readConsentOf } from "./consent-reads";
+import { STUDENT_NOT_FOUND } from "./consent-words";
+import { changeSharingAsCounsellor } from "./publish-sharing";
+import { readSharingPanel } from "./sharing-reads";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { addTestScreening } from "./test-screenings";
 import { addConsentedPeople } from "./test-sessions";

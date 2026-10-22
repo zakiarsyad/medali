@@ -1,5 +1,5 @@
 import type { counsellingSessions } from "@/db/schema";
-import type { SessionContent } from "./session-ids";
+import type { SessionContent } from "@/mental-health/session-ids";
 
 type StoredSession = typeof counsellingSessions.$inferSelect;
 

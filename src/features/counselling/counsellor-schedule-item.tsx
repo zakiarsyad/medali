@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { NEEDS_CONSENT } from "@/mental-health/session-words";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
@@ -25,7 +26,6 @@ import { ScheduleTimeForm } from "./schedule-time-form";
 import type { CounsellorScheduleCard } from "./schedule-view";
 import { DONE_QUESTION, MISSED_QUESTION } from "./schedule-words";
 import { scheduleSessionAction } from "./session-actions";
-import { NEEDS_CONSENT } from "./session-words";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 

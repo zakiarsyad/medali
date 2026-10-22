@@ -1,7 +1,4 @@
-import type {
-  Instrument,
-  ScreeningLevel,
-} from "@/features/counselling/screening-ids";
+import type { Instrument, ScreeningLevel } from "@/mental-health/screening-ids";
 
 /*
  * Made-up mental health screenings only, for made-up students, each

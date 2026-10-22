@@ -11,12 +11,12 @@ import {
 } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { counsellingSharings, students } from "@/db/schema";
-import { latestScreenings } from "@/features/counselling/latest-screenings";
-import { logSharedReads } from "@/features/counselling/log-shared-reads";
-import { readSessionSummary } from "@/features/counselling/own-sessions";
-import type { ScreeningLevel } from "@/features/counselling/screening-ids";
-import { COUNSELLING_LEVELS } from "@/features/counselling/screening-rules";
-import { sharedLevels } from "@/features/counselling/shared-board";
+import { latestScreenings } from "@/mental-health/latest-screenings";
+import { logSharedReads } from "@/mental-health/log-shared-reads";
+import type { ScreeningLevel } from "@/mental-health/screening-ids";
+import { COUNSELLING_LEVELS } from "@/mental-health/screening-rules";
+import { readSessionSummary } from "@/mental-health/session-summary";
+import { sharedLevels } from "@/mental-health/shared-levels";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import type { SharedReader } from "./dashboard-scope";
 import {

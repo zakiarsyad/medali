@@ -6,11 +6,14 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSessionReads } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  NEEDS_CONSENT,
+  SESSION_NOT_ALLOWED,
+} from "@/mental-health/session-words";
 import { changeConsentAsCounsellor, changeOwnConsent } from "./change-consent";
 import { NO_CONSENT_VERSION } from "./consent-view";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { readSessionHistory } from "./session-history";
-import { NEEDS_CONSENT, SESSION_NOT_ALLOWED } from "./session-words";
 import { addTestActor, addTestPeople } from "./test-consents";
 import {
   addConsentedPeople,

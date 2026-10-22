@@ -4,6 +4,13 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { mentalHealthScreeningLog, mentalHealthScreenings } from "@/db/schema";
+import { screeningResult } from "@/mental-health/screening-rules";
+import {
+  CONSENT_NEEDED,
+  FORM_STALE,
+  SCREENING_NOT_ALLOWED,
+  savedMessage,
+} from "@/mental-health/screening-words";
 import { readConsentOf } from "./consent-reads";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { screenableStudentName } from "./screening-consent";
@@ -13,13 +20,6 @@ import {
   type SentScreening,
 } from "./screening-input";
 import { screeningReachOf } from "./screening-reach";
-import { screeningResult } from "./screening-rules";
-import {
-  CONSENT_NEEDED,
-  FORM_STALE,
-  SCREENING_NOT_ALLOWED,
-  savedMessage,
-} from "./screening-words";
 
 /** What "Simpan asesmen" gives back: nothing is saved on a refusal. */
 export type ScreeningOutcome =

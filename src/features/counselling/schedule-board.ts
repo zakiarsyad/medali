@@ -14,6 +14,11 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import {
+  ACTIVE_STATUSES,
+  type ScheduleKind,
+  TO_SCHEDULE_STATUSES,
+} from "@/mental-health/schedule-ids";
 import { shownMoment } from "@/ui/day";
 import { pageWithin } from "@/ui/list-pages";
 import {
@@ -21,11 +26,6 @@ import {
   type ScheduleListParams,
   statusesOf,
 } from "./schedule-address";
-import {
-  ACTIVE_STATUSES,
-  type ScheduleKind,
-  TO_SCHEDULE_STATUSES,
-} from "./schedule-ids";
 import { topicOf } from "./schedule-rules";
 import type {
   CounsellorScheduleCard,

@@ -24,6 +24,11 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import {
+  ACTIVE_STATUSES,
+  type CounsellingHour,
+  type ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 import { pageWithin } from "@/ui/list-pages";
 import {
   COUNSELLING_LIST_PAGE_SIZE,
@@ -36,11 +41,6 @@ import type {
 } from "./counselling-list-view";
 import { comingDay } from "./counselling-list-words";
 import { heldInLast30Days } from "./recent-sessions";
-import {
-  ACTIVE_STATUSES,
-  type CounsellingHour,
-  type ScheduleStatus,
-} from "./schedule-ids";
 
 /**
  * The students whose counselling the account may list, never the

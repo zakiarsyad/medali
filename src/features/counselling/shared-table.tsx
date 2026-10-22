@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { Parsed } from "@/parsed";
-import shared from "@/ui/data-screen.module.css";
-import { DAY } from "@/ui/day";
-import styles from "./counselling.module.css";
-import { LevelBadges } from "./screening-badges";
-import { openSharedDetailAction } from "./shared-actions";
-import { SharedDetailBox } from "./shared-detail-box";
-import type { SharedDetail, SharedRow } from "./shared-view";
+import { LevelBadges } from "@/mental-health/screening-badges";
 import {
   LEVEL_NOT_SHARED,
   NOT_SCREENED,
   sharedPartsLine,
-} from "./shared-words";
+} from "@/mental-health/shared-words";
+import type { Parsed } from "@/parsed";
+import shared from "@/ui/data-screen.module.css";
+import { DAY } from "@/ui/day";
+import styles from "./counselling.module.css";
+import { openSharedDetailAction } from "./shared-actions";
+import { SharedDetailBox } from "./shared-detail-box";
+import type { SharedDetail, SharedRow } from "./shared-view";
 
 /** How many columns the list has, for the row of "Rincian". */
 const SHARED_COLUMNS = 6;

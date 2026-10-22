@@ -1,10 +1,10 @@
 import { daysAfter } from "@/academic-periods/days-after";
+import { sharingAfter, wayOf } from "@/features/counselling/sharing-rules";
 import type {
   SharingContent,
   SharingStatus,
   SharingStep,
-} from "@/features/counselling/sharing-ids";
-import { sharingAfter, wayOf } from "@/features/counselling/sharing-rules";
+} from "@/mental-health/sharing-ids";
 import type { Database } from "./connect";
 import {
   isStudentSharingStep,

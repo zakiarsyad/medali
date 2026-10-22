@@ -1,5 +1,5 @@
+import { ASSIGNMENT_TEXT_MAX } from "@/mental-health/schedule-ids";
 import { shownMoment } from "@/ui/day";
-import { ASSIGNMENT_TEXT_MAX } from "./schedule-ids";
 
 /*
  * The words of mandatory counselling sent from a discipline penalty.

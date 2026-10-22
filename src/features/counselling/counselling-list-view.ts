@@ -1,6 +1,9 @@
+import type {
+  CounsellingHour,
+  ScheduleStatus,
+} from "@/mental-health/schedule-ids";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
 import type { ConsentStatus } from "./consent-ids";
-import type { CounsellingHour, ScheduleStatus } from "./schedule-ids";
-import type { SharingStatus } from "./sharing-ids";
 
 /*
  * What the server sends Konselor of "Daftar mahasiswa" on Konseling. Read

@@ -6,9 +6,6 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSessionChanges, counsellingSessions } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { changeConsentAsCounsellor, changeOwnConsent } from "./change-consent";
-import { NO_CONSENT_VERSION } from "./consent-view";
-import { STUDENT_NOT_FOUND } from "./consent-words";
 import {
   DAY_IN_FUTURE,
   NEEDS_CONSENT,
@@ -17,7 +14,10 @@ import {
   SESSION_ALREADY_SENT,
   SESSION_NOT_ALLOWED,
   SESSION_SAVED,
-} from "./session-words";
+} from "@/mental-health/session-words";
+import { changeConsentAsCounsellor, changeOwnConsent } from "./change-consent";
+import { NO_CONSENT_VERSION } from "./consent-view";
+import { STUDENT_NOT_FOUND } from "./consent-words";
 import { addTestActor, addTestPeople } from "./test-consents";
 import { addTestSchedule } from "./test-schedules";
 import { addConsentedPeople, TEST_SESSION } from "./test-sessions";

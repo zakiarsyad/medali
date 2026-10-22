@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { SUMMARY_MAX } from "./sharing-ids";
-import { readSharingInput } from "./sharing-input";
+import { SUMMARY_MAX } from "@/mental-health/sharing-ids";
 import {
   NO_DATA,
   NO_RECIPIENT,
   NO_SUMMARY,
   SUMMARY_TOO_LONG,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import { readSharingInput } from "./sharing-input";
 
 const SUMMARY = "Mahasiswa sedang dalam pendampingan rutin.";
 

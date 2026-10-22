@@ -1,11 +1,11 @@
-import type { ScreeningLevel } from "@/features/counselling/screening-ids";
-import type { SessionSummary } from "@/features/counselling/session-view";
-import type { SharedData } from "@/features/counselling/sharing-ids";
 import {
   type CountShown,
   FEWEST_COUNTED,
   shownCount,
 } from "@/health-notes/shown-count";
+import type { ScreeningLevel } from "@/mental-health/screening-ids";
+import type { SessionSummary } from "@/mental-health/session-view";
+import type { SharedData } from "@/mental-health/sharing-ids";
 
 /*
  * Kesehatan mental of the Dashboard, as it may leave the server. Read by

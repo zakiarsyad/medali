@@ -1,6 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import {
+  SCHEDULE_KINDS,
+  type ScheduleKind,
+} from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import {
   FILTER_ORDER,
@@ -12,7 +16,6 @@ import {
   type ScheduleFilter,
   scheduleListAddress,
 } from "./schedule-address";
-import { SCHEDULE_KINDS, type ScheduleKind } from "./schedule-ids";
 import { KIND_WORDS } from "./schedule-words";
 
 /** The Status and Jenis filters above the request cards, kept in the address. */

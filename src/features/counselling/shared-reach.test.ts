@@ -7,8 +7,8 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { counsellingSharings, mentorGroupMentors, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { recipientRolesOf, sharedReachOf } from "@/mental-health/shared-reach";
 import { changeOwnSharing } from "./press-sharing";
-import { recipientRolesOf, sharedReachOf } from "./shared-reach";
 import { addTestActor } from "./test-consents";
 import {
   addTestMentorOf,

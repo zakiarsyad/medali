@@ -1,7 +1,7 @@
-import type { ScreeningLevel } from "@/features/counselling/screening-ids";
-import { SCREENING_LEVELS } from "@/features/counselling/screening-ids";
-import { LEVEL_WORDS } from "@/features/counselling/screening-words";
 import { type CountShown, countWords } from "@/health-notes/shown-count";
+import type { ScreeningLevel } from "@/mental-health/screening-ids";
+import { SCREENING_LEVELS } from "@/mental-health/screening-ids";
+import { LEVEL_WORDS } from "@/mental-health/screening-words";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./dashboard.module.css";
 import { MENTAL_SECTION } from "./mental-card";

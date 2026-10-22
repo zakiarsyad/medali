@@ -25,10 +25,13 @@ import {
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import type { DormId } from "@/dorms/dorms";
 import { dormInSql, isPlaceRoomOf } from "@/dorms/resident-condition";
+import {
+  ACTIVE_STATUSES,
+  type ScheduleStatus,
+} from "@/mental-health/schedule-ids";
 import { pageWithin } from "@/ui/list-pages";
 import { REFERRALS_PAGE_SIZE } from "./referral-address";
 import type { ReferralList, ReferralRow } from "./referral-view";
-import { ACTIVE_STATUSES, type ScheduleStatus } from "./schedule-ids";
 
 /**
  * The students whose referrals the account may read, never the

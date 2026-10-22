@@ -2,8 +2,8 @@
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import type { ScheduleStatus } from "@/mental-health/schedule-ids";
 import { readOwnHistory } from "./own-history";
-import type { ScheduleStatus } from "./schedule-ids";
 import { addTestPeople, type TestPeople } from "./test-consents";
 import { addTestSchedule } from "./test-schedules";
 

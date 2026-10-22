@@ -1,5 +1,5 @@
-import { FOLLOW_UP_WORDS } from "@/features/counselling/session-words";
-import { NOT_SCREENED } from "@/features/counselling/shared-words";
+import { FOLLOW_UP_WORDS } from "@/mental-health/session-words";
+import { NOT_SCREENED } from "@/mental-health/shared-words";
 import type {
   MentalRecap,
   PublishedMental,

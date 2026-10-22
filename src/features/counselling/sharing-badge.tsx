@@ -1,7 +1,7 @@
+import type { SharingStatus } from "@/mental-health/sharing-ids";
+import { SHARING_STATUS_WORDS } from "@/mental-health/sharing-words";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./counselling.module.css";
-import type { SharingStatus } from "./sharing-ids";
-import { SHARING_STATUS_WORDS } from "./sharing-words";
 
 /** The colours of the prototype: waits, given or shown, declined, ended. */
 const STATUS_STYLES: Record<SharingStatus, string | undefined> = {

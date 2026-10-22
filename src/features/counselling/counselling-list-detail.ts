@@ -3,12 +3,12 @@ import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { counsellingSessionReads, students } from "@/db/schema";
+import type { SessionHistory } from "@/mental-health/session-view";
+import { SESSION_NOT_ALLOWED } from "@/mental-health/session-words";
 import type { Parsed } from "@/parsed";
 import { STUDENT_NOT_FOUND } from "./consent-words";
 import { counsellingListReachOf } from "./counselling-list";
 import { readSessions, SESSIONS_PAGE_SIZE, stepsOf } from "./session-history";
-import type { SessionHistory } from "./session-view";
-import { SESSION_NOT_ALLOWED } from "./session-words";
 
 /** Whether the student is one the account may list. */
 async function isListedStudent(

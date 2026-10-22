@@ -1,5 +1,5 @@
 import shared from "@/ui/data-screen.module.css";
-import styles from "./counselling.module.css";
+import styles from "./mental-health.module.css";
 import type { ScreeningLevel } from "./screening-ids";
 import { LEVEL_WORDS, RISK_WORDS } from "./screening-words";
 

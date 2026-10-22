@@ -1,18 +1,18 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { CounsellingScreen } from "./counselling-screen";
-import {
-  CounsellorSharingPanel,
-  StudentSharing,
-} from "./counsellor-sharing-panel";
-import type { SharingStatus } from "./sharing-ids";
-import type { SharingPanel, SharingView } from "./sharing-view";
+import type { SharingStatus } from "@/mental-health/sharing-ids";
 import {
   NEEDS_COUNSELLING_CONSENT,
   NO_SCREENING_OR_SESSION,
   NO_SESSION,
   PICK_FIRST,
-} from "./sharing-words";
+} from "@/mental-health/sharing-words";
+import { CounsellingScreen } from "./counselling-screen";
+import {
+  CounsellorSharingPanel,
+  StudentSharing,
+} from "./counsellor-sharing-panel";
+import type { SharingPanel, SharingView } from "./sharing-view";
 
 // 10:00 on campus on 21 October 2026.
 const MOMENT = new Date("2026-10-21T03:00:00Z");

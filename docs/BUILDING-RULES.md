@@ -54,6 +54,12 @@ while building.
   how many students are in each category, and how a
   health count of 1 to 4 students shows as "<5", read by every area
   that keeps or counts health notes.
+- `src/mental-health/`: the levels of a mental health screening with
+  their rules, words and badges, each student's latest screening, the
+  fixed facts of a counselling schedule, session and sharing, the reach
+  of a published sharing with its level, the log of readings, and the
+  summary of a student's sessions, read by every area that shows
+  counselling or screening data.
 - `src/discipline-penalties/`: the Kategori and Jenjang of a discipline
   penalty with their words and order, and the limit a Ringan or Sedang
   penalty puts on a student's character scores, with its reading, read

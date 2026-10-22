@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LevelBadges } from "@/features/counselling/screening-badges";
+import { LevelBadges } from "@/mental-health/screening-badges";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import styles from "./dashboard.module.css";
