@@ -28,6 +28,7 @@ import {
   CoachingPanel,
   type CounsellingCell,
 } from "@/features/character-assessment/coaching-panel";
+import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { AssessmentCallCell } from "@/features/counselling/assessment-call-cell";
@@ -146,6 +147,7 @@ export default async function AssessmentPage(
                 studentId={studentId}
                 base={baseScoreNow()}
               />
+              <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel
@@ -162,6 +164,7 @@ export default async function AssessmentPage(
                 studentId={studentId}
               />
               <StudentGradePanel account={account} studentId={studentId} />
+              <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
             </>
           )}

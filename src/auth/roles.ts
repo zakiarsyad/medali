@@ -182,7 +182,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   view_student_detail: "Melihat detail mahasiswa",
   view_student_room: "Melihat lantai dan kamar asrama mahasiswa",
   view_student_character_panels:
-    "Melihat capaian karakter dan nilai karakter di detail mahasiswa",
+    "Melihat capaian karakter, riwayat per semester, dan nilai karakter di detail mahasiswa",
   view_student_fitness_panel:
     "Melihat kesehatan jasmani di detail mahasiswa: skor tes, tanggal, dan kategori akhir, tanpa catatan kesehatan",
   view_student_fitness_notes:
