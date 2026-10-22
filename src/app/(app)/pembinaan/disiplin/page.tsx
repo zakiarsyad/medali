@@ -33,6 +33,7 @@ import {
 import { PenaltyForm } from "@/features/guidance/penalty-form";
 import { readPenaltyStart } from "@/features/guidance/penalty-student";
 import type { PenaltyCounselling } from "@/features/guidance/penalty-table";
+import { StudentCoachingPanel } from "@/features/guidance/student-coaching-panel";
 import { penalisedReachOf } from "@/features/guidance/student-penalties";
 import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
@@ -123,6 +124,7 @@ export default async function DisciplinePenaltiesPage(
               />
               <StudentPenaltiesPanel account={account} studentId={studentId} />
               <ScoreHistoryPanel account={account} studentId={studentId} />
+              <StudentCoachingPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel

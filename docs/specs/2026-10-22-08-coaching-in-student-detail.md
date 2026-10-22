@@ -95,7 +95,7 @@ without going to Pembinaan karakter and searching.
 
 - [x] 1. The read of one student's coaching for the detail, for the four
   roles within their rows, with its checks.
-- [ ] 2. The panel with the level, the status, "Aspek terlemah" and the
+- [x] 2. The panel with the level, the status, "Aspek terlemah" and the
   note.
 - [ ] 3. No panel for a student off the list, and none for the roles
   with a small detail, with checks.
