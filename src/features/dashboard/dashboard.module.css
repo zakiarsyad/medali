@@ -114,6 +114,28 @@
   fill: var(--bad);
 }
 
+/* The letters that meet the pass letter, from the best down, and those below it. */
+.passAPart,
+.passEPart {
+  fill: var(--ok);
+}
+
+.passBPart {
+  fill: var(--fit-good);
+}
+
+.passCPart {
+  fill: var(--pass-light);
+}
+
+.passDPart {
+  fill: var(--pass-lighter);
+}
+
+.failPart {
+  fill: var(--bad);
+}
+
 .section {
   margin-top: var(--space-2xl);
 }

@@ -1,11 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import type { Recap } from "./achievement-recap";
 import { TOO_FEW } from "./achievement-words";
 import { NO_FILTERS } from "./dashboard-address";
 import { DashboardScreen, type DetailLinks } from "./dashboard-screen";
 import type { DashboardView } from "./dashboard-view";
+import type { ShownGrades } from "./grade-recap";
+import { NO_GRADES } from "./grade-words";
 import { PHYSICAL_TOO_FEW } from "./physical-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -19,6 +22,15 @@ const RECAP: Recap = {
   spread: { gold: 7, silver: 15, bronze: 6, guidance: 2 },
   averages: SCORES,
   change: null,
+};
+
+const GRADES: ShownGrades = {
+  kind: "shown",
+  graded: 36,
+  limited: 2,
+  meanFinal: 78.4,
+  passing: 81,
+  letters: { A: 9, B: 20, C: 4, D: 0, E: 3 },
 };
 
 function viewOf(more: Partial<DashboardView> = {}): DashboardView {
@@ -43,6 +55,7 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       recap: RECAP,
       cohorts: [{ cohortYear: 2025, entryPath: "regular", recap: RECAP }],
     },
+    grades: { scheme: STARTING_SCHEME, recap: GRADES },
     physical: {
       kind: "shown",
       students: 40,
@@ -95,6 +108,36 @@ describe("DashboardScreen", () => {
     expect(html).toContain('href="/penilaian/asesmen"');
     expect(html).toContain("Angkatan 2025");
     expect(html).toContain("Reguler · Smt 3");
+  });
+
+  it("shows the card Nilai karakter between Capaian karakter and Kesehatan jasmani, leading to section 2", () => {
+    const html = shown(viewOf());
+    const card = html.indexOf('href="#nilai-karakter"');
+
+    expect(card).toBeGreaterThan(html.indexOf('href="#capaian-karakter"'));
+    expect(card).toBeLessThan(html.indexOf('href="#kesehatan-jasmani"'));
+    expect(html).toContain("78,4 <small>nilai akhir</small>");
+    expect(html).toContain("81% memenuhi minimal B. 2 dibatasi 70.");
+    expect(html).toContain(
+      'aria-label="Huruf A 9, Huruf B 20, Huruf C 4, Huruf D 0, Huruf E 3"',
+    );
+  });
+
+  it("shows only why there are no grade numbers on the card for a small or ungraded group", () => {
+    const tooFew = shown(
+      viewOf({
+        grades: { scheme: STARTING_SCHEME, recap: { kind: "too_few" } },
+      }),
+    );
+    const none = shown(
+      viewOf({ grades: { scheme: STARTING_SCHEME, recap: { kind: "none" } } }),
+    );
+
+    expect(tooFew).toContain(TOO_FEW);
+    expect(tooFew).not.toContain("nilai akhir");
+    expect(none).toContain(NO_GRADES);
+    expect(none).not.toContain("nilai akhir");
+    expect(none).not.toContain("Huruf A");
   });
 
   it("shows the card Kesehatan jasmani, leading to section 3", () => {

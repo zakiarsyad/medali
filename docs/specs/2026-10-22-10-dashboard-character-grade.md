@@ -79,8 +79,19 @@ program only).
    whose grade is "Belum lengkap", as Penilaian karakter does.
 4. "Sebaran huruf" says how many are "Belum lengkap" and left out.
 
+## Decided while building
+
+1. The card's bar lays each letter along the students with a worked-out
+   grade, as in the prototype: the letters that meet the minimum in
+   shades of green from the best down, those below it in red. The card
+   shows no number while the group has none or 1 to 4 worked-out
+   grades, only the line that says why.
+2. The percent that meets the minimum is of the students with a
+   worked-out grade, as a whole number, and Rerata nilai akhir is to one
+   decimal, as on Penilaian karakter.
+
 ## Steps
 
-- [ ] 1. The "Nilai karakter" card.
+- [x] 1. The "Nilai karakter" card.
 - [ ] 2. "Komponen nilai karakter" and "Sebaran huruf".
 - [ ] 3. "Nilai karakter per angkatan".

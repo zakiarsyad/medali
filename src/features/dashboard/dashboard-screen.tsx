@@ -7,6 +7,7 @@ import styles from "./dashboard.module.css";
 import { filtersInUse } from "./dashboard-address";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import type { DashboardView } from "./dashboard-view";
+import { GradeCard } from "./grade-card";
 import { PhysicalCard } from "./physical-card";
 import { PhysicalSection } from "./physical-section";
 
@@ -31,6 +32,7 @@ function DashboardContent({
     <>
       <div className={styles.cards}>
         <AchievementCard recap={recap} />
+        <GradeCard grades={view.grades} />
         <PhysicalCard recap={view.physical} />
       </div>
       <AchievementSection recap={recap} detailAddress={links.assessment}>

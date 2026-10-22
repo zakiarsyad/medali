@@ -1,3 +1,4 @@
+import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { mayOpenTab } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
@@ -22,11 +23,13 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const scope = dashboardScopeOf(account);
   if (scope === null) return <EmptyPage title="Dashboard anak asuh" />;
   const db = database();
+  const today = campusDay();
   const view = await loadDashboard(
     db,
     scope,
     readDashboardFilters(await props.searchParams),
-    await readRunningPeriod(db),
+    await readRunningPeriod(db, today),
+    today,
   );
   const { roles } = account;
   const opensAssessments = mayOpenTab(roles, "assessment", "character_test");
