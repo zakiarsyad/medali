@@ -55,5 +55,5 @@ Kepala Unit and Penilai Mahasiswa, who enter fitness test scores.
 
 ## Steps
 
-- [ ] 1. "(n) skor siap disimpan." counts only scores that can be saved,
+- [x] 1. "(n) skor siap disimpan." counts only scores that can be saved,
   on a computer and on a phone.
