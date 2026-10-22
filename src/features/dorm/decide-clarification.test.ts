@@ -1,9 +1,10 @@
 // Sample Tahun akademik of this file: 3050 to 3050.
 // Sample NIMs of this file: 9937980600 to 9937980699.
 import { describe, expect, it } from "vitest";
-import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
+import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import {
   CLARIFICATION_NOT_FOUND,
   DECIDE_NOT_ALLOWED,
@@ -15,6 +16,7 @@ import {
 } from "./clarification-decision";
 import { readDayAttendance } from "./day-attendance";
 import { decideDormClarification } from "./decide-clarification";
+import { OWN_RECORD } from "./own-record";
 import { readOwnAttendance } from "./resident-attendance";
 import { addTestActivity } from "./test-activities";
 import {
@@ -24,7 +26,7 @@ import {
   clarificationById,
 } from "./test-clarifications";
 import { addTestResidents } from "./test-leave";
-import { addTestActor, EVERYONE } from "./test-records";
+import { addTestActor, EVERYONE, type TestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -64,7 +66,7 @@ async function addRecords(db: Database) {
   return { ani, bam, ki, manager, head, activityId, countId, id };
 }
 
-type Actor = { id: string; roles: RoleId[] };
+type Actor = Pick<TestActor, "id" | "roles" | "studentId">;
 
 function verify(
   db: Database,
@@ -116,6 +118,58 @@ describe("the check of BAM", () => {
       });
     },
   );
+
+  it.each([
+    ["bam_bphk", "pass"],
+    ["bam_compliance", "reject"],
+  ] as const)(
+    "refuses a resident who is also %s their own clarification, %s also with its key in capitals, and keeps it waiting",
+    async (role, kind) => {
+      await inTestDatabase(async (db) => {
+        const { ani, id } = await addRecords(db);
+        const own = await addTestActor(
+          db,
+          "Ani BAM Uji Putus Klar",
+          ["student", role],
+          ani.studentId,
+        );
+
+        for (const key of [id, id.toUpperCase()]) {
+          expect(await verify(db, own, key, kind, "Catatan uji.")).toEqual(
+            OWN_RECORD,
+          );
+        }
+        expect(await clarificationById(db, id)).toMatchObject({
+          status: "submitted",
+          verifiedBy: null,
+        });
+        expect(await changesOf(db, id)).toEqual([]);
+      });
+    },
+  );
+
+  it("lets a resident who is BAM check the clarification of another resident", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addRecords(db);
+      const programId = await addTestProgram(db, "Prodi Uji Putus Klar Bea");
+      const bea = await addTestStudent(db, programId, {
+        nim: "9937980602",
+        name: "Bea Uji Putus Klar",
+        cohortYear: 3050,
+      });
+      const beaBam = await addTestActor(
+        db,
+        "Bea BAM Uji Putus Klar",
+        ["student", "bam_bphk"],
+        bea,
+      );
+
+      expect(await verify(db, beaBam, id, "pass")).toEqual({
+        ok: true,
+        value: "verified",
+      });
+    });
+  });
 
   it("rejects only with a note, and then it does not go to Pengelola Asrama", async () => {
     await inTestDatabase(async (db) => {

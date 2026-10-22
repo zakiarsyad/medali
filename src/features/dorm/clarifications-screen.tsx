@@ -36,12 +36,15 @@ export function ClarificationsScreen({
   params,
   board,
   rights,
+  ownStudentId,
   rejectedPanel = null,
 }: {
   tabs: TabLinksProps;
   params: ClarificationListParams;
   board: ClarificationBoard;
   rights: ClarificationRights;
+  /** The student the account belongs to, whose own clarification it does not check. */
+  ownStudentId: string | null;
   /** "Klarifikasi ditolak dan penetapan SP", or null for an account that does not get it. */
   rejectedPanel?: ReactNode;
 }) {
@@ -99,6 +102,7 @@ export function ClarificationsScreen({
           key={address}
           cards={list.cards}
           rights={rights}
+          ownStudentId={ownStudentId}
           emptyWords={emptyWords(filters)}
         />
         {list.matching > 0 && (

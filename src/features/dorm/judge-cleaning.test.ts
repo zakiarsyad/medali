@@ -1,15 +1,20 @@
+// Sample Tahun akademik of this file: 5170 to 5170.
+// Sample NIMs of this file: 9989630000 to 9989630099.
 // Room numbers of this file: NJ101 to NJ199.
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { placeTestResident } from "@/dorms/test-records";
 import { judgeDuty } from "./judge-cleaning";
+import { OWN_RECORD } from "./own-record";
 import {
   addTestDuty,
   changesOfDuty,
   dutyById,
   judgedBy,
 } from "./test-cleaning";
+import { addTestResidents } from "./test-leave";
 import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -39,7 +44,72 @@ async function expectUnjudged(db: Database, dutyId: string) {
   expect(await changesOfDuty(db, dutyId)).toEqual([]);
 }
 
+/** A day of 5170, when angkatan 5170 lives in Dana Rakca. */
+const OWN_TODAY = "5170-10-12";
+
+/**
+ * A duty of today given to a room where Ani lives, and Ani's account with
+ * a BAM role that judges cleaning.
+ */
+async function setUpOwn(db: Database, room: string, role: RoleId) {
+  const { duty, bam } = await setUp(db, room, { day: OWN_TODAY });
+  const [ani] = await addTestResidents(db, 5170, "Prodi Uji Nilai Kamar", [
+    "9989630001",
+  ]);
+  if (!ani) throw new Error("The resident was not added.");
+  await placeTestResident(db, duty.roomId, ani.studentId);
+  const own = await addTestActor(
+    db,
+    `Ani BAM Uji Nilai ${room}`,
+    ["student", role],
+    ani.studentId,
+  );
+  return { duty, bam, own };
+}
+
 describe("judgeDuty", () => {
+  it.each(["bam_bphk", "bam_household"] as const)(
+    "refuses a resident who is also %s a duty of the room they live in, also with its key in capitals",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { duty, own } = await setUpOwn(db, "NJ150", role);
+
+        for (const dutyId of [duty.id, duty.id.toUpperCase()]) {
+          for (const result of ["met", "not_met"]) {
+            expect(
+              await judgeDuty(
+                db,
+                own,
+                { dutyId, result, note: "Lantai kotor." },
+                OWN_TODAY,
+              ),
+            ).toEqual(OWN_RECORD);
+          }
+        }
+        await expectUnjudged(db, duty.id);
+      });
+    },
+  );
+
+  it("lets another BAM member judge that duty, and the resident judge a duty of another room", async () => {
+    await inTestDatabase(async (db) => {
+      const { duty, bam, own } = await setUpOwn(db, "NJ151", "bam_bphk");
+      const other = await addTestDuty(
+        db,
+        { room: "NJ152", place: "Lorong Uji Nilai NJ152" },
+        { day: OWN_TODAY },
+      );
+      const met = { result: "met", note: "" };
+
+      expect(
+        await judgeDuty(db, bam, { dutyId: duty.id, ...met }, OWN_TODAY),
+      ).toMatchObject({ ok: true });
+      expect(
+        await judgeDuty(db, own, { dutyId: other.id, ...met }, OWN_TODAY),
+      ).toMatchObject({ ok: true });
+    });
+  });
+
   it("makes a duty of today Dinilai BAM with Memenuhi, who and when, and logs it", async () => {
     await inTestDatabase(async (db) => {
       const { duty, bam } = await setUp(db, "NJ101");

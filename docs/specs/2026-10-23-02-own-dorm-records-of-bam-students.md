@@ -93,7 +93,7 @@ handle their own case.
 - [x] 1. Return reports and late leaves: the own-record check in
   "Verifikasi", "Tolak" and "Catat sudah kembali", the line on screen, and
   checks.
-- [ ] 2. Dorm clarifications and cleaning duties: the own-record check in
+- [x] 2. Dorm clarifications and cleaning duties: the own-record check in
   deciding a clarification and in judging or cancelling a duty of one's
   own room, the line on screen, and checks.
 - [ ] 3. Violations and attendance: the own-record check in "Batalkan" in

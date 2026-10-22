@@ -13,6 +13,7 @@ import { isChangeable, placeRows } from "./cleaning-rows";
 import { CleaningScheduleBoard } from "./cleaning-schedule-board";
 import { CleaningSwitch } from "./cleaning-switch";
 import { type CleaningView, loadCleaning } from "./cleaning-view";
+import type { RoomKey } from "./own-record";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
@@ -79,12 +80,15 @@ export async function CleaningScreen({
   params,
   today,
   rights,
+  ownRoom,
 }: {
   tabs: TabLinksProps;
   params: CleaningParams;
   today: string;
   /** What the account may do with places and duties; nothing when it only sees them. */
   rights: DutyRights;
+  /** The room the account's own student lives in, or null. */
+  ownRoom: RoomKey | null;
 }) {
   const mayManage = rights.manage;
   const view = await loadCleaning(database(), params, today);
@@ -153,6 +157,7 @@ export async function CleaningScreen({
               rooms: schedule.rooms,
               mayChange,
               rights,
+              ownRoom,
             }}
             rows={placeRows(schedule.places, view.placeDuties)}
             ownRooms={schedule.ownRooms}

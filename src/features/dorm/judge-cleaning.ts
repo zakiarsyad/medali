@@ -15,8 +15,10 @@ import {
   JUDGED_TOO_EARLY,
   JUDGED_WORDS,
 } from "./cleaning-messages";
+import { OWN_RECORD } from "./own-record";
+import { isOwnRoomDuty } from "./own-room";
 
-type Judge = Pick<Account, "id" | "roles">;
+type Judge = Pick<Account, "id" | "roles" | "studentId">;
 
 /** What "Memenuhi" or "Tidak memenuhi" sends, not trusted. */
 export interface SentJudgement {
@@ -80,7 +82,8 @@ async function judgeIn(
  * "Memenuhi" or "Tidak memenuhi" of BAM - BPHK or BAM - Kerumahtanggaan
  * on a duty that is Terjadwal, from its date on, with its Catatan and its
  * line in the log, all or nothing. Tidak memenuhi needs a note. Refused
- * to a role without the right, Pengelola Asrama and BAM - KI among them.
+ * to a role without the right, Pengelola Asrama and BAM - KI among them,
+ * and for a duty of the room the account's own student lives in.
  * The database changes a duty only while it is Terjadwal, so of two
  * judgements at once the second waits for the first, then is refused.
  * `today` is the day on campus.
@@ -95,6 +98,7 @@ export async function judgeDuty(
   if (!isUuid(sent.dutyId)) return ASSESSED_DUTY_NOT_FOUND;
   const judgement = parseJudgement(sent.result, sent.note);
   if (!judgement.ok) return judgement;
+  if (await isOwnRoomDuty(db, judge, sent.dutyId, today)) return OWN_RECORD;
   return db.transaction((tx) =>
     judgeIn(tx, judge, sent.dutyId, judgement.value, today),
   );

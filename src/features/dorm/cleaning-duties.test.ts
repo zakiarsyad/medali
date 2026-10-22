@@ -17,6 +17,7 @@ import {
 } from "@/dorms/test-records";
 import { assignOwnRooms, assignPlaceDuty, cancelDuty } from "./cleaning-duties";
 import { removeCleaningPlace } from "./cleaning-places";
+import { OWN_RECORD } from "./own-record";
 import { removeRoom } from "./remove-room";
 import { addTestActor, type TestActor } from "./test-records";
 
@@ -62,6 +63,8 @@ interface Setting {
   full: string;
   empty: string;
   single: string;
+  /** The one resident of BD103. */
+  singleResident: string;
 }
 
 async function addResident(db: Database, program: number, nim: string) {
@@ -88,11 +91,8 @@ async function setUp(db: Database): Promise<Setting> {
     full,
     await addResident(db, program, "9981020002"),
   );
-  await placeTestResident(
-    db,
-    single,
-    await addResident(db, program, "9981020003"),
-  );
+  const singleResident = await addResident(db, program, "9981020003");
+  await placeTestResident(db, single, singleResident);
   const [place] = await db
     .insert(dormCleaningPlaces)
     .values({ dorm: DORM, name: "Lorong Uji Tugas" })
@@ -101,7 +101,7 @@ async function setUp(db: Database): Promise<Setting> {
   const manager = await addTestActor(db, "Pengelola Uji Tugas", [
     "dorm_manager",
   ]);
-  return { manager, placeId: place.id, full, empty, single };
+  return { manager, placeId: place.id, full, empty, single, singleResident };
 }
 
 async function dutiesKept(db: Database) {
@@ -380,15 +380,20 @@ describe("assignOwnRooms", () => {
 });
 
 describe("cancelDuty", () => {
-  async function dutyOn(db: Database, setting: Setting, day: string) {
+  async function dutyOn(
+    db: Database,
+    setting: Setting,
+    day: string,
+    room = { id: setting.full, number: "BD101" },
+  ) {
     const [duty] = await db
       .insert(dormCleaningDuties)
       .values({
         day,
         dorm: DORM,
         placeId: setting.placeId,
-        roomId: setting.full,
-        roomNumber: "BD101",
+        roomId: room.id,
+        roomNumber: room.number,
         createdBy: setting.manager.id,
       })
       .returning();
@@ -452,6 +457,53 @@ describe("cancelDuty", () => {
         refused,
       );
       expect(await dutiesKept(db)).toHaveLength(1);
+    });
+  });
+
+  it.each(["bam_bphk", "bam_household"] as const)(
+    "refuses a resident who is also %s a duty of the room they live in, also with its key in capitals, and keeps it",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const setting = await setUp(db);
+        const dutyId = await dutyOn(db, setting, TODAY, {
+          id: setting.single,
+          number: "BD103",
+        });
+        const own = await addTestActor(
+          db,
+          "Penghuni BAM Uji Tugas",
+          ["student", role],
+          setting.singleResident,
+        );
+
+        for (const key of [dutyId, dutyId.toUpperCase()]) {
+          expect(await cancelDuty(db, own, key, TODAY)).toEqual(OWN_RECORD);
+        }
+        expect(await dutiesKept(db)).toHaveLength(1);
+      });
+    },
+  );
+
+  it("lets that resident cancel a duty of another room, and another member cancel theirs", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const ownRoom = await dutyOn(db, setting, TODAY, {
+        id: setting.single,
+        number: "BD103",
+      });
+      const otherRoom = await dutyOn(db, setting, TOMORROW);
+      const own = await addTestActor(
+        db,
+        "Penghuni BAM Uji Tugas",
+        ["student", "bam_household"],
+        setting.singleResident,
+      );
+      const cancelled = { ok: true, value: "Tugas dibatalkan." };
+
+      expect(await cancelDuty(db, own, otherRoom, TODAY)).toEqual(cancelled);
+      expect(await cancelDuty(db, setting.manager, ownRoom, TODAY)).toEqual(
+        cancelled,
+      );
     });
   });
 

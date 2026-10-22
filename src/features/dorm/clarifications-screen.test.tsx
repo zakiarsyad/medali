@@ -6,6 +6,7 @@ import {
   type ClarificationRights,
   ClarificationsScreen,
 } from "./clarifications-screen";
+import { OWN_RECORD_NOTE } from "./own-record";
 
 vi.mock("./clarification-actions", () => ({
   verifyDormClarificationAction: vi.fn(),
@@ -16,8 +17,11 @@ vi.mock("next/navigation", () => ({
   unstable_rethrow: vi.fn(),
 }));
 
+const ANI = "00000000-0000-4000-8000-0000000000a1";
+
 const CARD: DormClarificationCard = {
   id: "00000000-0000-4000-8000-00000000c1a3",
+  studentId: ANI,
   sentAt: "2026-10-13T05:00:00.000Z",
   name: "Penghuni Uji Layar",
   nim: "9937980901",
@@ -49,6 +53,7 @@ function screen(
   board: ClarificationBoard = BOARD,
   rights: ClarificationRights = { verify: true, decide: false },
   status: "all" | "closed" = "all",
+  ownStudentId: string | null = null,
 ): string {
   return renderToStaticMarkup(
     <ClarificationsScreen
@@ -56,6 +61,7 @@ function screen(
       params={{ filters: { query: "", status }, page: 1 }}
       board={board}
       rights={rights}
+      ownStudentId={ownStudentId}
     />,
   );
 }
@@ -185,6 +191,31 @@ describe("the presses on a card", () => {
       "Menunggu verifikasi Badan Asrama Mahasiswa sebelum dapat divalidasi.",
     );
     expect(shown).not.toContain('aria-label="Catatan"');
+  });
+
+  it("shows a resident who is also BAM the line in place of the check on their own clarification, with the key in capitals too", () => {
+    const bam = { verify: true, decide: false };
+    for (const own of [ANI, ANI.toUpperCase()]) {
+      const shown = screen(withStatus("submitted"), bam, "all", own);
+
+      expect(shown).toContain("<b>Penghuni Uji Layar</b>");
+      expect(shown).toContain(OWN_RECORD_NOTE);
+      expect(shown).not.toContain("Terima, teruskan ke pengelola");
+      expect(shown).not.toContain("Tolak klarifikasi");
+    }
+  });
+
+  it("offers a resident who is also BAM the check of another resident's clarification", () => {
+    const other = "00000000-0000-4000-8000-0000000000b2";
+    const shown = screen(
+      withStatus("submitted"),
+      { verify: true, decide: false },
+      "all",
+      other,
+    );
+
+    expect(shown).toContain(">Terima, teruskan ke pengelola</button>");
+    expect(shown).not.toContain(OWN_RECORD_NOTE);
   });
 
   it("offers a role that only reads nothing to press", () => {

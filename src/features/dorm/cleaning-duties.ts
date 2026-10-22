@@ -28,9 +28,11 @@ import {
 import { parseDorm } from "./cleaning-place-input";
 import { type OccupiedRoom, readOccupiedRooms } from "./cleaning-rooms";
 import { NEVER_JUDGED } from "./cleaning-schedule";
+import { OWN_RECORD } from "./own-record";
+import { isOwnRoomDuty } from "./own-room";
 import { lockRoom } from "./room-lock";
 
-type Actor = Pick<Account, "id" | "roles">;
+type Actor = Pick<Account, "id" | "roles" | "studentId">;
 
 export interface SentPlaceDuty {
   placeId: string;
@@ -221,7 +223,9 @@ async function isJudged(
 /**
  * "Batalkan tugas": removes a duty of today or later that was never
  * judged. A duty gone by stays as history, and so does a judged one.
- * `today` is the day on campus.
+ * Refused for a duty of the room the account's own student lives in, as
+ * cancelling it is the same as judging it away. `today` is the day on
+ * campus.
  */
 export async function cancelDuty(
   db: Database,
@@ -231,6 +235,7 @@ export async function cancelDuty(
 ): Promise<Parsed<string>> {
   if (!may(actor.roles, "manage_dorm_cleaning")) return CLEANING_NOT_ALLOWED;
   if (!isUuid(dutyId)) return DUTY_NOT_FOUND;
+  if (await isOwnRoomDuty(db, actor, dutyId, today)) return OWN_RECORD;
 
   const [cancelled] = await db
     .delete(dormCleaningDuties)
