@@ -5,6 +5,8 @@ import { DORM_SHORT_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { isOwnRecord } from "./own-record";
+import { OwnRecordNote } from "./own-record-note";
 import { cancelViolationAction } from "./violation-actions";
 import type { ScheduledViolation } from "./violation-schedule";
 import { appealEndOf } from "./violation-status";
@@ -45,12 +47,16 @@ function CancelButton({
 /**
  * "Jadwal publikasi": each violation that waits for its announcement,
  * with the hour it is announced, until when it may be appealed, and
- * "Batalkan". A cancelled row leaves the list as the page is drawn again.
+ * "Batalkan", but not on the account's own violation. A cancelled row
+ * leaves the list as the page is drawn again.
  */
 export function ViolationScheduleTable({
   rows,
+  ownStudentId,
 }: {
   rows: ScheduledViolation[];
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
 }) {
   const [answer, setAnswer] = useState<FormState>(START);
   if (rows.length === 0) {
@@ -107,7 +113,11 @@ export function ViolationScheduleTable({
                   <span className={shared.typed}>{row.enteredBy}</span>
                 </td>
                 <td className={shared.rowActions}>
-                  <CancelButton id={row.id} onAnswer={setAnswer} />
+                  {isOwnRecord(ownStudentId, row.studentId) ? (
+                    <OwnRecordNote />
+                  ) : (
+                    <CancelButton id={row.id} onAnswer={setAnswer} />
+                  )}
                 </td>
               </tr>
             ))}

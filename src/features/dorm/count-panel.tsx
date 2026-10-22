@@ -52,12 +52,15 @@ export function CountPanel({
   view,
   params,
   today,
+  ownStudentId,
   onUnsaved,
 }: {
   activities: ActivityRow[];
   view: CountPanelView;
   params: ActivitiesParams;
   today: string;
+  /** The student the account belongs to, whose own row it does not mark. */
+  ownStudentId: string | null;
   onUnsaved: (isUnsaved: boolean) => void;
 }) {
   const { activity } = view;
@@ -85,6 +88,7 @@ export function CountPanel({
           participants={view.participants}
           kept={view.kept}
           onLeave={view.onLeave}
+          ownStudentId={ownStudentId}
           onUnsaved={onUnsaved}
         />
       )}

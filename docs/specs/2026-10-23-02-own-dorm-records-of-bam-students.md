@@ -96,6 +96,6 @@ handle their own case.
 - [x] 2. Dorm clarifications and cleaning duties: the own-record check in
   deciding a clarification and in judging or cancelling a duty of one's
   own room, the line on screen, and checks.
-- [ ] 3. Violations and attendance: the own-record check in "Batalkan" in
+- [x] 3. Violations and attendance: the own-record check in "Batalkan" in
   "Jadwal publikasi" and for one's own row in "Penghitungan kehadiran",
   and checks.

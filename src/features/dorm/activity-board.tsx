@@ -116,6 +116,7 @@ export function ActivityBoard({
   view,
   now,
   form,
+  ownStudentId,
 }: {
   params: ActivitiesParams;
   view: ActivitiesView;
@@ -123,6 +124,8 @@ export function ActivityBoard({
   now: CampusMoment;
   /** What the form needs, or null for an account that only reads. */
   form: FormParts | null;
+  /** The student the account belongs to, whose own attendance it does not mark. */
+  ownStudentId: string | null;
 }) {
   const [target, setTarget] = useState<FormTarget | null>(null);
   const [said, setSaid] = useState<Said | null>(null);
@@ -230,6 +233,7 @@ export function ActivityBoard({
           view={view.count}
           params={params}
           today={now.day}
+          ownStudentId={ownStudentId}
           onUnsaved={setCountUnsaved}
         />
       )}

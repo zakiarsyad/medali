@@ -25,9 +25,11 @@ export const READ_ONLY_NOTE =
 function SchedulePanel({
   schedule,
   params,
+  ownStudentId,
 }: {
   schedule: ViolationSchedule;
   params: StaffViolationParams;
+  ownStudentId: string | null;
 }) {
   return (
     <section className={shared.panel}>
@@ -36,7 +38,11 @@ function SchedulePanel({
         Pelanggaran yang sudah diinput dan menunggu jam pengumuman
       </p>
       {/* Made anew for each page, so an answer shown on one is not kept on another. */}
-      <ViolationScheduleTable key={schedule.page} rows={schedule.rows} />
+      <ViolationScheduleTable
+        key={schedule.page}
+        rows={schedule.rows}
+        ownStudentId={ownStudentId}
+      />
       {schedule.matching > 0 && (
         <ListPager
           page={schedule.page}
@@ -161,7 +167,7 @@ export function StaffViolationsScreen({
   warnings: WarningCalls;
   /** Whether the account schedules calls and issues SPs: Pengelola Asrama. */
   processes: boolean;
-  /** The student the account belongs to, whose row has no "Proses", or null. */
+  /** The student the account belongs to, whose rows have no "Proses" or "Batalkan", or null. */
   ownStudentId: string | null;
   /** Whether the account reduces violations: Pengelola Asrama. */
   reduces: boolean;
@@ -189,7 +195,11 @@ export function StaffViolationsScreen({
         <section className={shared.panel}>{form}</section>
       )}
       {schedule !== null && (
-        <SchedulePanel schedule={schedule} params={params} />
+        <SchedulePanel
+          schedule={schedule}
+          params={params}
+          ownStudentId={ownStudentId}
+        />
       )}
       {appeals}
       {proposals}

@@ -18,17 +18,30 @@ import {
 } from "./count-messages";
 import { readParticipants } from "./count-participants";
 import { lockActivity, readStoredCount, writeCount } from "./count-store";
-import { hasStarted, NOT_COUNTED_YET, type Participant } from "./count-view";
+import {
+  hasStarted,
+  NOT_COUNTED_YET,
+  type Participant,
+  withOwnMarkKept,
+} from "./count-view";
 import { readActivityOn } from "./daily-activities";
 import { type ApprovedLeave, type HeldTimes, leaveMarkOf } from "./leave-marks";
 import { readApprovedLeaves, spanOfHeld } from "./leave-store";
+import { OWN_RECORD } from "./own-record";
 
 /** What a save tells the one who saved. */
 export interface SavedCount {
   /** Which save of the count is kept now, for the form to send next. */
   version: number;
   isAnnounced: boolean;
+  /**
+   * What is said when a change of the account's own mark was left out
+   * while the other rows were saved, or null.
+   */
+  ownMarkRefusal: string | null;
 }
+
+type Counter = Pick<Account, "id" | "roles" | "studentId">;
 
 /** The database's rule of one count for an activity on a day. */
 const ONE_COUNT_RULE = "dorm_attendance_counts_one_per_activity_and_day";
@@ -63,19 +76,21 @@ function absentIn(input: CountInput): Set<string> {
 
 async function saveIn(
   tx: Database,
-  actorId: string,
-  input: CountInput,
+  actor: Counter,
+  sent: CountInput,
   moment: Date,
 ): Promise<Parsed<SavedCount>> {
-  if (!(await lockActivity(tx, input.activityId))) return NOT_HELD_THAT_DAY;
-  const held = await readActivityOn(tx, input.activityId, input.day);
+  if (!(await lockActivity(tx, sent.activityId))) return NOT_HELD_THAT_DAY;
+  const held = await readActivityOn(tx, sent.activityId, sent.day);
   if (held === null) return NOT_HELD_THAT_DAY;
   const now = { day: campusDay(moment), time: campusTime(moment) };
-  if (!hasStarted({ ...held, day: input.day }, now)) return NOT_STARTED;
-  const kept = await readStoredCount(tx, input.activityId, input.day);
-  if ((kept?.version ?? NOT_COUNTED_YET) !== input.version) {
+  if (!hasStarted({ ...held, day: sent.day }, now)) return NOT_STARTED;
+  const kept = await readStoredCount(tx, sent.activityId, sent.day);
+  if ((kept?.version ?? NOT_COUNTED_YET) !== sent.version) {
     return COUNT_CHANGED;
   }
+  const own = withOwnMarkKept(sent.marks, kept?.marks ?? {}, actor.studentId);
+  const input = { ...sent, marks: own.marks };
   const wasAnnounced = kept !== null && kept.announcedAt !== null;
   if (wasAnnounced && !input.isAnnouncement) return ANNOUNCED_ALREADY;
   const participants = await readParticipants(tx, held.audience, input.day);
@@ -84,13 +99,14 @@ async function saveIn(
   const leaves = await readApprovedLeaves(tx, spanOfHeld(times));
   if (marksAbsentOnLeave(input, leaves, times)) return ON_LEAVE;
 
-  const version = await writeCount(tx, actorId, input, participants, kept);
+  const version = await writeCount(tx, actor.id, input, participants, kept);
   // Only a count announced before can have clarifications.
   if (input.isAnnouncement && wasAnnounced) {
-    await closeWithdrawn(tx, kept.id, absentIn(input), actorId);
+    await closeWithdrawn(tx, kept.id, absentIn(input), actor.id);
   }
   const isAnnounced = wasAnnounced || input.isAnnouncement;
-  return { ok: true, value: { version, isAnnounced } };
+  const ownMarkRefusal = own.ownChangeLeftOut ? OWN_RECORD.error : null;
+  return { ok: true, value: { version, isAnnounced, ownMarkRefusal } };
 }
 
 /**
@@ -101,21 +117,23 @@ async function saveIn(
  * was opened on another state of the count than the one kept now, for a
  * draft of a count already announced, for a form that marks someone
  * who does not take part, and for one that marks Tidak hadir someone
- * whose approved leave covers the activity. Two saves of one activity at once are taken one
- * after the other, and the database keeps one count for it on a day.
+ * whose approved leave covers the activity. A change of the account's own
+ * mark is left out and said, and the other rows are saved. Two saves of
+ * one activity at once are taken one after the other, and the database
+ * keeps one count for it on a day.
  * "Umumkan ulang" closes the waiting clarification of each resident it
  * no longer marks Tidak hadir, with the note that the absence was
  * withdrawn.
  */
 export async function saveCount(
   db: Database,
-  actor: Pick<Account, "id" | "roles">,
+  actor: Counter,
   input: CountInput,
   moment: Date = new Date(),
 ): Promise<Parsed<SavedCount>> {
   if (!may(actor.roles, "count_dorm_attendance")) return COUNT_NOT_ALLOWED;
   try {
-    return await db.transaction((tx) => saveIn(tx, actor.id, input, moment));
+    return await db.transaction((tx) => saveIn(tx, actor, input, moment));
   } catch (error) {
     if (brokeUniqueRule(error, ONE_COUNT_RULE)) return COUNT_CHANGED;
     throw error;

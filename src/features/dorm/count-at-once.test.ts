@@ -103,7 +103,7 @@ describe("two BAM members saving one count at the same moment", () => {
 
     expect(both.sooner).toEqual({
       ok: true,
-      value: { version: 1, isAnnounced: true },
+      value: { version: 1, isAnnounced: true, ownMarkRefusal: null },
     });
     expect(both.later).toEqual(COUNT_CHANGED);
     const counts = await countsOf(own.db, records.activityId);
@@ -138,7 +138,7 @@ describe("two BAM members saving one count at the same moment", () => {
 
     expect(both.sooner).toEqual({
       ok: true,
-      value: { version: 2, isAnnounced: true },
+      value: { version: 2, isAnnounced: true, ownMarkRefusal: null },
     });
     expect(both.later).toEqual(COUNT_CHANGED);
     const kept = await readStoredCount(own.db, records.activityId, DAY);

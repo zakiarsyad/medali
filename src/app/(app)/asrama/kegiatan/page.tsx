@@ -70,6 +70,7 @@ export default async function DormActivitiesPage(
             : null
         }
         ownPart={residentPart}
+        ownStudentId={account.studentId}
       />
     );
   }
