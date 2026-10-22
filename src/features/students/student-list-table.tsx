@@ -5,6 +5,8 @@ import { INCOMPLETE_WORDS, shownFinal } from "@/character-grades/grade-words";
 import { PredicateBadge } from "@/character-scores/predicate-badge";
 import { NOT_ASSESSED } from "@/character-scores/predicate-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
+import type { Sanction } from "@/discipline-penalties/sanction";
+import { SanctionBadge } from "@/discipline-penalties/sanction-badge";
 import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { PressableRow } from "@/ui/pressable-row";
@@ -55,11 +57,13 @@ function Grade({ grade }: { grade: CharacterGrade }) {
 function StudentRow({
   student,
   scores,
+  sanction,
   period,
   detailAddress,
 }: {
   student: ListedStudent;
   scores: ListScores;
+  sanction: Sanction | null;
   period: RunningPeriod;
   detailAddress: string;
 }) {
@@ -72,6 +76,7 @@ function StudentRow({
           <b>{student.name}</b>
         </Link>
         <small className={shared.detail}>{nimAndStatus(student)}</small>
+        {sanction !== null && <SanctionBadge sanction={sanction} />}
         {tags.map(({ field, label }) => (
           <span key={field} className={shared.badge}>
             {label}
@@ -106,12 +111,18 @@ function StudentRow({
 export function StudentListTable({
   students,
   scores,
+  sanctions,
   period,
   detailAddressOf,
 }: {
   students: ListedStudent[];
   /** The scores of each student of the page, by id. */
   scores: ReadonlyMap<string, ListScores>;
+  /**
+   * The badge of each suspended or dismissed student of the page, by id;
+   * none for an account that may not read discipline records.
+   */
+  sanctions: ReadonlyMap<string, Sanction>;
   /** The academic period that runs now, which says each row's semester. */
   period: RunningPeriod;
   /** The address that opens the detail of a student over this list. */
@@ -137,6 +148,7 @@ export function StudentListTable({
               key={student.nim}
               student={student}
               scores={scores.get(student.id) ?? NOT_SCORED}
+              sanction={sanctions.get(student.id) ?? null}
               period={period}
               detailAddress={detailAddressOf(student.id)}
             />

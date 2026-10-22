@@ -21,7 +21,13 @@ describe("readPenaltiesParams", () => {
         status: "ditetapkan",
         hal: "2",
       }),
-    ).toEqual({ query: "Mega", category: "medium", status: "set", page: 2 });
+    ).toEqual({
+      query: "Mega",
+      category: "medium",
+      status: "set",
+      page: 2,
+      profileId: null,
+    });
     expect(readPenaltiesParams({ kategori: "ringan" }).category).toBe("light");
     expect(readPenaltiesParams({ kategori: "berat" }).category).toBe("heavy");
     expect(readPenaltiesParams({ status: "dijatuhkan" }).status).toBe(
@@ -36,6 +42,7 @@ describe("readPenaltiesParams", () => {
         kategori: "semua",
         status: "selesai",
         hal: "0",
+        profil: "bukan-id",
       }),
     ).toEqual(PENALTIES_START);
   });
@@ -52,10 +59,11 @@ describe("penaltiesAddress", () => {
       category: "heavy",
       status: "imposed",
       page: 3,
+      profileId: "00000000-0000-4000-8000-000000000704",
     } as const;
     const address = penaltiesAddress(params);
     expect(address).toBe(
-      "/pembinaan/disiplin?cari=Mega&kategori=berat&status=dijatuhkan&hal=3",
+      "/pembinaan/disiplin?cari=Mega&kategori=berat&status=dijatuhkan&hal=3&profil=00000000-0000-4000-8000-000000000704",
     );
     const search = new URLSearchParams(address.split("?")[1]);
     expect(readPenaltiesParams(Object.fromEntries(search))).toEqual(params);

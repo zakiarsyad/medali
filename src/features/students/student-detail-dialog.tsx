@@ -25,7 +25,8 @@ export type DetailOpenedFrom =
   | "grade_list"
   | "fitness_list"
   | "skpm_list"
-  | "screening_list";
+  | "screening_list"
+  | "penalty_list";
 
 const RETURN_PLACE: Record<DetailOpenedFrom, string> = {
   student_list: "daftar mahasiswa",
@@ -39,6 +40,7 @@ const RETURN_PLACE: Record<DetailOpenedFrom, string> = {
   fitness_list: "Penilaian jasmani",
   skpm_list: "Data SKPM",
   screening_list: "Kesehatan mental",
+  penalty_list: "Pelanggaran disiplin",
 };
 
 /** The detail of one student, over the list it was opened from. */
@@ -51,6 +53,7 @@ export function StudentDetailDialog({
   mentorAddressOf,
   morePanelsOf,
   briefPanelsOf,
+  headTagsOf,
 }: {
   detail: DetailOrBrief;
   period: RunningPeriod;
@@ -65,6 +68,12 @@ export function StudentDetailDialog({
    * else of the detail. None when not given.
    */
   briefPanelsOf?: MorePanelsOf;
+  /**
+   * What another area adds beside the student's status, in the detail
+   * and the brief alike, such as the badge of a suspension. None when not
+   * given.
+   */
+  headTagsOf?: MorePanelsOf;
 }) {
   if (detail.kind === "not_found") {
     return (
@@ -83,7 +92,10 @@ export function StudentDetailDialog({
   if (detail.kind === "brief") {
     return (
       <ModalDialog label="Profil mahasiswa" closeAddress={closeAddress}>
-        <StudentHead student={detail.student} />
+        <StudentHead
+          student={detail.student}
+          tags={headTagsOf?.(detail.student.id)}
+        />
         {briefPanelsOf?.(detail.student.id)}
       </ModalDialog>
     );
@@ -95,6 +107,7 @@ export function StudentDetailDialog({
         period={period}
         groupAddressOf={groupAddressOf}
         mentorAddressOf={mentorAddressOf}
+        headTags={headTagsOf?.(detail.student.id)}
       />
       {morePanelsOf(detail.student.id)}
     </ModalDialog>
