@@ -7,6 +7,7 @@ import type { PenaltyBoard } from "./penalty-board";
 import { PenaltyListPanel } from "./penalty-list";
 import { PenaltyNumbersAbove } from "./penalty-numbers";
 import { PenaltyRulesTable } from "./penalty-rules-table";
+import type { PenaltyCounselling } from "./penalty-table";
 import {
   MENTEES_ONLY,
   READER_LEDE,
@@ -25,6 +26,7 @@ export function PenaltiesScreen({
   params,
   form,
   mayFollowUp,
+  counselling = {},
 }: {
   tabs: TabLinksProps;
   board: PenaltyBoard;
@@ -33,6 +35,8 @@ export function PenaltiesScreen({
   form: ReactNode;
   /** Whether the account changes the status, the conditions and the Keputusan. */
   mayFollowUp: boolean;
+  /** Mandatory counselling in "Rincian", only for the account that sends to it. */
+  counselling?: PenaltyCounselling;
 }) {
   return (
     <>
@@ -47,6 +51,7 @@ export function PenaltiesScreen({
           board={board}
           params={params}
           mayFollowUp={mayFollowUp}
+          counselling={counselling}
         />
       </PenaltyNumbersAbove>
       <PenaltyRulesTable />

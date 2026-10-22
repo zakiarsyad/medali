@@ -1687,6 +1687,59 @@ describe("may", () => {
     ).toEqual({ kind: "all" });
   });
 
+  it("lets Pembina Disiplin Mahasiswa alone send a student to mandatory counselling from a penalty and read how those requests stand", () => {
+    expect(ACTION_TITLES.assign_counselling_from_penalty).toBe(
+      "Tugaskan konseling wajib: menugaskan mahasiswa ke konseling wajib dari hukuman disiplin, dan melihat status, tanggal, dan jam penugasan itu",
+    );
+    expect(may(["discipline_officer"], "assign_counselling_from_penalty")).toBe(
+      true,
+    );
+    expect(mayOpenTab(["discipline_officer"], "guidance", "discipline")).toBe(
+      true,
+    );
+    expect(ROLES.discipline_officer.rows).toBe("all");
+  });
+
+  it("refuses every other role to send a student to mandatory counselling from a penalty, Kepala Unit and the roles that read penalties among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "discipline_officer");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "head_of_unit",
+        "director",
+        "head_of_program",
+        "mentor",
+        "counsellor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "assign_counselling_from_penalty")).toBe(false);
+    }
+  });
+
+  it("limits sending to mandatory counselling from a penalty to the rows of Pembina Disiplin Mahasiswa, not those of another role of the account", () => {
+    const account = {
+      id: "a1",
+      roles: ["head_of_unit", "mentor"] as RoleId[],
+      studyProgramId: null,
+      studentId: null,
+    };
+    expect(
+      rowLimitForAction(account, "assign_counselling_from_penalty"),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: [],
+      studentIds: [],
+    });
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["mentor", "discipline_officer"] },
+        "assign_counselling_from_penalty",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
   it("opens Pelanggaran disiplin to exactly the roles that read discipline records, not to Mahasiswa, Konselor, Penilai Mahasiswa, Pegawai UPK, Pengelola Asrama or BAM", () => {
     const others = ROLE_IDS.filter((role) => !disciplineReaders.includes(role));
     expect(others).toEqual(

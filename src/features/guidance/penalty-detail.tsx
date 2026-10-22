@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { shownDay } from "@/ui/day";
 import styles from "./discipline-penalties.module.css";
 import type { PenaltyRow } from "./penalty-board";
@@ -80,16 +81,19 @@ function OutcomeItem({ row }: { row: PenaltyRow }) {
 /**
  * "Rincian" of a penalty: Uraian, the kerja sosial, Nomor keputusan, who
  * recorded it, Dasar, and the effect on nilai karakter or the suspension,
- * then Syarat melanjutkan studi with Keputusan where they apply.
+ * then Syarat melanjutkan studi with Keputusan where they apply, and
+ * last `counselling`, given only to the account that sends to it.
  */
 export function PenaltyDetail({
   row,
   mayFollowUp,
   onFollowUp,
+  counselling = null,
 }: {
   row: PenaltyRow;
   mayFollowUp: boolean;
   onFollowUp: (next: PenaltyFollowUp) => void;
+  counselling?: ReactNode;
 }) {
   return (
     <>
@@ -110,6 +114,7 @@ export function PenaltyDetail({
         mayFollowUp={mayFollowUp}
         onFollowUp={onFollowUp}
       />
+      {counselling}
     </>
   );
 }

@@ -1,0 +1,4 @@
+ALTER TABLE "counselling_schedules" ADD COLUMN "penalty_id" uuid;--> statement-breakpoint
+ALTER TABLE "counselling_schedules" ADD CONSTRAINT "counselling_schedules_penalty_id_discipline_penalties_id_fk" FOREIGN KEY ("penalty_id") REFERENCES "public"."discipline_penalties"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "counselling_schedules_one_per_penalty" ON "counselling_schedules" USING btree ("penalty_id");--> statement-breakpoint
+ALTER TABLE "counselling_schedules" ADD CONSTRAINT "counselling_schedules_penalty_of_assignment" CHECK ("counselling_schedules"."penalty_id" is null or "counselling_schedules"."kind" = 'assigned');

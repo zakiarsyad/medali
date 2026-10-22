@@ -241,6 +241,11 @@
   overflow-wrap: anywhere;
 }
 
+/* "Tugaskan konseling wajib", or how it stands, under the facts of "Rincian" of a penalty. */
+.assignment {
+  margin-top: var(--space-md);
+}
+
 /* The notes of a session in "Riwayat sesi", keeping their line breaks. */
 .notes {
   margin: 0;

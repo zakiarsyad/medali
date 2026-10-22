@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { JenjangBadge } from "./penalty-badges";
@@ -42,9 +42,11 @@ function followUpOf(row: PenaltyRow): PenaltyFollowUp {
 function PenaltyLine({
   row: read,
   mayFollowUp,
+  counselling,
 }: {
   row: PenaltyRow;
   mayFollowUp: boolean;
+  counselling: ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [readRow, setReadRow] = useState(read);
@@ -100,6 +102,7 @@ function PenaltyLine({
               row={row}
               mayFollowUp={mayFollowUp}
               onFollowUp={setFollowUp}
+              counselling={counselling}
             />
           </td>
         </tr>
@@ -108,13 +111,21 @@ function PenaltyLine({
   );
 }
 
+/**
+ * What "Rincian" of each penalty shows of mandatory counselling, by the
+ * penalty's key; none for an account that does not send to it.
+ */
+export type PenaltyCounselling = Readonly<Record<string, ReactNode>>;
+
 /** The penalties of one page. On a phone each is a card. */
 export function PenaltyTable({
   rows,
   mayFollowUp,
+  counselling = {},
 }: {
   rows: PenaltyRow[];
   mayFollowUp: boolean;
+  counselling?: PenaltyCounselling;
 }) {
   return (
     <div className={shared.tableWrap}>
@@ -133,7 +144,12 @@ export function PenaltyTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <PenaltyLine key={row.id} row={row} mayFollowUp={mayFollowUp} />
+            <PenaltyLine
+              key={row.id}
+              row={row}
+              mayFollowUp={mayFollowUp}
+              counselling={counselling[row.id] ?? null}
+            />
           ))}
         </tbody>
       </table>

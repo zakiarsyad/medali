@@ -53,6 +53,9 @@ while building.
 - `src/clarifications/`: what a clarification of an absence takes, how
   its form and its file are checked, and how its file is shown, read by
   every area that takes clarifications.
+- `src/discipline-penalties/`: what of a discipline penalty another area
+  is told, such as the "Dasar" of a Penugasan sent from it, read by
+  every area that needs it.
 - `src/auth/`: sign-in, the one list of what each role may do, and which
   students an account may see by it.
 - `src/campus/`: what the campus server package checks and does when it

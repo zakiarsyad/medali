@@ -287,6 +287,8 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleSkpm(tx, today);
     await addSampleCharacterAssessments(tx, today);
     await addSampleCounsellingConsents(tx, today);
+    // A sample Penugasan is sent from a penalty, which must be there first.
+    await addSampleDisciplinePenalties(tx, periods, today);
     await addSampleCounsellingSchedules(tx, today);
     await addSampleCounsellingSessions(tx, today);
     await addSampleCounsellingSharings(tx, today);
@@ -296,6 +298,5 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleMentalHealthMarks(tx, running, today);
     await addSampleMentalHealthScreenings(tx, today);
     await addSampleViolationNotes(tx, periods, today);
-    await addSampleDisciplinePenalties(tx, periods, today);
   });
 }
