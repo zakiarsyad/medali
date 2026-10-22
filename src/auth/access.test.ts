@@ -1630,7 +1630,7 @@ describe("may", () => {
 
   it("refuses every other role to read discipline records, Penilai Mahasiswa and Mahasiswa among them", () => {
     expect(ACTION_TITLES.view_discipline_records).toBe(
-      "Melihat catatan disiplin mahasiswa",
+      "Melihat catatan disiplin mahasiswa, juga riwayat pelanggaran disiplin di detail mahasiswa",
     );
     const others = ROLE_IDS.filter((role) => !disciplineReaders.includes(role));
     expect(others).toEqual(
@@ -1644,6 +1644,59 @@ describe("may", () => {
   it("limits Ketua Program Studi to their program and Pengasuh to their own mentees when reading discipline records", () => {
     expect(ROLES.head_of_program.rows).toBe("own_program");
     expect(ROLES.mentor.rows).toBe("own_mentees");
+  });
+
+  it("lets the staff who open the student detail read its discipline history there, and Pembina Disiplin Mahasiswa only through the small detail", () => {
+    const detailReaders: RoleId[] = [
+      "head_of_unit",
+      "director",
+      "head_of_program",
+      "mentor",
+    ];
+    for (const role of detailReaders) {
+      expect(may([role], "view_discipline_records")).toBe(true);
+      expect(may([role], "view_student_detail")).toBe(true);
+    }
+    expect(may(["discipline_officer"], "view_discipline_records")).toBe(true);
+    expect(may(["discipline_officer"], "view_student_detail")).toBe(false);
+  });
+
+  it.each([
+    "counsellor",
+    "assessor",
+    "upk_staff",
+    "dorm_manager",
+    "student",
+    ...BAM_ROLES,
+  ] as const)("refuses %s the discipline history of a student", (role) => {
+    expect(may([role], "view_discipline_records")).toBe(false);
+  });
+
+  it("keeps Ketua Program Studi to their program and Pengasuh to their mentees for the discipline history, whatever wide role without it they also hold", () => {
+    const head: AccountForAccess = {
+      id: "account-1",
+      roles: ["head_of_program", "counsellor"],
+      studyProgramId: 7,
+      studentId: null,
+    };
+    const mentor: AccountForAccess = {
+      ...head,
+      roles: ["mentor", "assessor"],
+      studyProgramId: null,
+    };
+
+    expect(rowLimitForAction(head, "view_discipline_records")).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: [],
+      studentIds: [],
+    });
+    expect(rowLimitForAction(mentor, "view_discipline_records")).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["account-1"],
+      studentIds: [],
+    });
   });
 
   const penaltyRecorders: RoleId[] = ["discipline_officer", "head_of_unit"];

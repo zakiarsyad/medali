@@ -5,6 +5,7 @@ import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
 import { isUuid } from "@/db/is-uuid";
 import { students, studyPrograms } from "@/db/schema";
+import { HAS_AGENCY } from "@/discipline-penalties/has-agency";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { searchText } from "@/ui/search-text";
 import { SEARCH_LIMIT } from "./note-student";
@@ -35,9 +36,6 @@ export function recordableFor(actor: AccountForAccess): SQL | undefined {
     visibleTo(rowLimitForAction(actor, "record_discipline_penalties")),
   );
 }
-
-/** Whether the student has an Instansi asal: one that is not only spaces. */
-export const HAS_AGENCY = sql<boolean>`coalesce(btrim(${students.originAgency}), '') <> ''`;
 
 function picks(db: Database) {
   return db

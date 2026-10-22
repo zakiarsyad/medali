@@ -3,6 +3,7 @@ import { stageCohorts } from "@/academic-periods/stage-cohorts";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
+import type { Sanction } from "@/discipline-penalties/sanction";
 import { dormCohortsOf } from "@/dorms/dorm-cohorts";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
@@ -35,6 +36,8 @@ export async function StudentListScreen({
   groupAddressOf,
   mentorAddressOf,
   morePanelsOf,
+  sanctionsOf,
+  headTagsOf,
 }: {
   /** Which student rows the account that opened the page may see. */
   limit: RowLimit;
@@ -45,6 +48,15 @@ export async function StudentListScreen({
   mentorAddressOf: MentorAddressOf;
   /** The panels other areas add to the detail. */
   morePanelsOf: MorePanelsOf;
+  /**
+   * The badge of each suspended or dismissed student among these, read
+   * once for the page, as the account may see it.
+   */
+  sanctionsOf: (
+    ids: readonly string[],
+  ) => Promise<ReadonlyMap<string, Sanction>>;
+  /** What other areas add beside the status in the detail. */
+  headTagsOf: MorePanelsOf;
 }) {
   const db = database();
   const { filters } = params;
@@ -66,7 +78,10 @@ export async function StudentListScreen({
     countChoices(db, limit, filters, cohorts),
   ]);
   const ids = list.students.map((student) => student.id);
-  const scores = await readListScores(db, limit, ids, today);
+  const [scores, sanctions] = await Promise.all([
+    readListScores(db, limit, ids, today),
+    sanctionsOf(ids),
+  ]);
   return (
     <>
       <PageHead title="Mahasiswa">
@@ -91,6 +106,7 @@ export async function StudentListScreen({
               <StudentListTable
                 students={list.students}
                 scores={scores}
+                sanctions={sanctions}
                 period={period}
                 detailAddressOf={(studentId) =>
                   studentDetailAddress(filters, list.page, studentId)
@@ -118,6 +134,7 @@ export async function StudentListScreen({
           groupAddressOf={groupAddressOf}
           mentorAddressOf={mentorAddressOf}
           morePanelsOf={morePanelsOf}
+          headTagsOf={headTagsOf}
         />
       )}
     </>

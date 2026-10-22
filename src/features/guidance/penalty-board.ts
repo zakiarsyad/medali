@@ -26,6 +26,7 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { HAS_AGENCY } from "@/discipline-penalties/has-agency";
 import type {
   PenaltyCategory,
   PenaltyLevel,
@@ -41,7 +42,6 @@ import {
   type SocialWorkPlace,
 } from "./penalty-ids";
 import { semesterOnDay } from "./penalty-semester";
-import { HAS_AGENCY } from "./penalty-student";
 
 /** The four numbers of the tab, of the students the account sees. */
 export interface PenaltyNumbers {

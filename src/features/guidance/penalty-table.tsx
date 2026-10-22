@@ -3,6 +3,8 @@
 import { type ReactNode, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { ProfileNameLink } from "@/ui/profile-name-link";
+import { type PenaltiesParams, penaltiesAddress } from "./penalty-address";
 import { JenjangBadge } from "./penalty-badges";
 import type { PenaltyRow } from "./penalty-board";
 import { PenaltyDetail } from "./penalty-detail";
@@ -41,10 +43,12 @@ function followUpOf(row: PenaltyRow): PenaltyFollowUp {
  */
 function PenaltyLine({
   row: read,
+  params,
   mayFollowUp,
   counselling,
 }: {
   row: PenaltyRow;
+  params: PenaltiesParams;
   mayFollowUp: boolean;
   counselling: ReactNode;
 }) {
@@ -60,7 +64,10 @@ function PenaltyLine({
     <>
       <tr>
         <td className={shared.rowHeading} data-title="Mahasiswa">
-          <b className={shared.typed}>{row.name}</b>
+          <ProfileNameLink
+            name={row.name}
+            href={penaltiesAddress({ ...params, profileId: row.studentId })}
+          />
           <small className={shared.detail}>
             {row.nim} · {row.program}
           </small>
@@ -117,13 +124,19 @@ function PenaltyLine({
  */
 export type PenaltyCounselling = Readonly<Record<string, ReactNode>>;
 
-/** The penalties of one page. On a phone each is a card. */
+/**
+ * The penalties of one page. On a phone each is a card. A name opens the
+ * student's profile over the tab, as the server decides to show it.
+ */
 export function PenaltyTable({
   rows,
+  params,
   mayFollowUp,
   counselling = {},
 }: {
   rows: PenaltyRow[];
+  /** The choices of the list, kept when a profile opens over it. */
+  params: PenaltiesParams;
   mayFollowUp: boolean;
   counselling?: PenaltyCounselling;
 }) {
@@ -147,6 +160,7 @@ export function PenaltyTable({
             <PenaltyLine
               key={row.id}
               row={row}
+              params={params}
               mayFollowUp={mayFollowUp}
               counselling={counselling[row.id] ?? null}
             />

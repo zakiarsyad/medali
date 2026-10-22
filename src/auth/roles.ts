@@ -238,7 +238,8 @@ export const ACTION_TITLES: Record<Action, string> = {
     "Melihat penanda potensi kesehatan mental penghuni asrama",
   view_mental_health_mark_log:
     "Melihat riwayat perubahan penanda potensi kesehatan mental",
-  view_discipline_records: "Melihat catatan disiplin mahasiswa",
+  view_discipline_records:
+    "Melihat catatan disiplin mahasiswa, juga riwayat pelanggaran disiplin di detail mahasiswa",
   record_discipline_penalties: "Mencatat pelanggaran dan hukuman disiplin",
   follow_up_discipline_penalties:
     "Menindaklanjuti hukuman disiplin: status, syarat melanjutkan studi, dan keputusan",

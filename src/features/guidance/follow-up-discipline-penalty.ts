@@ -9,6 +9,7 @@ import {
   students,
 } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
+import { HAS_AGENCY } from "@/discipline-penalties/has-agency";
 import type { Parsed } from "@/parsed";
 import {
   type FollowedPenalty,
@@ -31,7 +32,6 @@ import {
   PENALTY_NOT_FOUND,
   PENALTY_OUTDATED,
 } from "./penalty-messages";
-import { HAS_AGENCY } from "./penalty-student";
 
 type FollowUpAction = Exclude<(typeof PENALTY_CHANGE_ACTIONS)[number], "added">;
 

@@ -1,3 +1,4 @@
+import { isUuid } from "@/db/is-uuid";
 import type { PenaltyCategory } from "@/discipline-penalties/penalty-kinds";
 import { firstParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
@@ -18,6 +19,8 @@ export interface PenaltiesParams {
   status: PenaltyStatus | "all";
   /** The page of the list, counted from 1. */
   page: number;
+  /** The student whose profile is open over the tab, or null for none. */
+  profileId: string | null;
 }
 
 export const PENALTIES_START: PenaltiesParams = {
@@ -25,6 +28,7 @@ export const PENALTIES_START: PenaltiesParams = {
   category: "all",
   status: "all",
   page: 1,
+  profileId: null,
 };
 
 /** How the address names each Kategori. */
@@ -54,6 +58,10 @@ function choiceNamed<Choice extends string>(
   return "all";
 }
 
+function idNamed(sent: string): string | null {
+  return isUuid(sent) ? sent : null;
+}
+
 /**
  * What the address asks the list for. Nothing in an address is trusted:
  * a part that is not understood counts as not chosen, and a text too
@@ -66,6 +74,7 @@ export function readPenaltiesParams(params: SearchParams): PenaltiesParams {
     category: choiceNamed(CATEGORY_CHOICES, firstParam(params.kategori)),
     status: choiceNamed(STATUS_CHOICES, firstParam(params.status)),
     page: PAGE.test(page) ? Number(page) : 1,
+    profileId: idNamed(firstParam(params.profil)),
   };
 }
 
@@ -83,6 +92,7 @@ export function penaltiesAddress(params: PenaltiesParams): string {
     search.set("status", STATUS_CHOICES[params.status]);
   }
   if (params.page > 1) search.set("hal", String(params.page));
+  if (params.profileId !== null) search.set("profil", params.profileId);
   const text = search.toString();
   if (text === "") return PENALTIES_ADDRESS;
   return `${PENALTIES_ADDRESS}?${text}`;

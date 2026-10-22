@@ -5,6 +5,7 @@ import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
+import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import {
   assessmentAddress,
   readAssessmentParams,
@@ -40,6 +41,7 @@ import { StudentMentalPanel } from "@/features/counselling/student-mental-panel"
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { readMainIndicators } from "@/features/curriculum/stored-main-indicators";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
+import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
@@ -130,6 +132,9 @@ export default async function AssessmentPage(
           detail={profile}
           period={await runningPeriodNow()}
           openedFrom="coaching_list"
+          headTagsOf={(studentId) => (
+            <StudentSanctionBadge account={account} studentId={studentId} />
+          )}
           closeAddress={assessmentAddress({ ...params, profileId: null })}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>
@@ -147,6 +152,7 @@ export default async function AssessmentPage(
                 studentId={studentId}
                 base={baseScoreNow()}
               />
+              <StudentPenaltiesPanel account={account} studentId={studentId} />
               <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
