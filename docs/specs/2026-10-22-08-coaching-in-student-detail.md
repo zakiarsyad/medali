@@ -99,4 +99,4 @@ without going to Pembinaan karakter and searching.
   note.
 - [x] 3. No panel for a student off the list, and none for the roles
   with a small detail, with checks.
-- [ ] 4. The phone layout and the speed check.
+- [x] 4. The phone layout and the speed check.
