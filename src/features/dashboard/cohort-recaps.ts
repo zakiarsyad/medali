@@ -7,17 +7,36 @@ import {
 } from "./achievement-recap";
 import type { EntryPath } from "./dashboard-address";
 
-/** One row of "Capaian MEDALI per angkatan". */
-export interface CohortRecap {
+/** One row of a table per angkatan: an angkatan and jalur with its numbers. */
+export interface CohortRow<R> {
   cohortYear: number;
   entryPath: EntryPath;
-  recap: Recap;
+  recap: R;
 }
+
+/** One row of "Capaian MEDALI per angkatan". */
+export type CohortRecap = CohortRow<Recap>;
+
+/**
+ * An angkatan and jalur that may be a row: how many of its students the
+ * numbers count, and its numbers, or null while too few count for any.
+ */
+export interface CohortCandidate<R> {
+  cohortYear: number;
+  entryPath: EntryPath;
+  counted: number;
+  recap: R | null;
+}
+
+type ShownCandidate<R> = CohortCandidate<R> & { recap: R };
 
 const PATH_ORDER: readonly EntryPath[] = ["regular", "transfer"];
 
-function cohortsOf(groups: readonly ScoreGroup[]): Map<string, ScoreGroup[]> {
-  const cohorts = new Map<string, ScoreGroup[]>();
+/** The groups of each angkatan and jalur, together. */
+export function cohortsOf<
+  G extends Pick<CohortRow<unknown>, "cohortYear" | "entryPath">,
+>(groups: readonly G[]): Map<string, G[]> {
+  const cohorts = new Map<string, G[]>();
   for (const group of groups) {
     const key = `${group.cohortYear} ${group.entryPath}`;
     const held = cohorts.get(key) ?? [];
@@ -27,7 +46,10 @@ function cohortsOf(groups: readonly ScoreGroup[]): Map<string, ScoreGroup[]> {
   return cohorts;
 }
 
-function newestFirst(one: CohortRecap, other: CohortRecap): number {
+function newestFirst(
+  one: CohortCandidate<unknown>,
+  other: CohortCandidate<unknown>,
+): number {
   if (one.cohortYear !== other.cohortYear) {
     return other.cohortYear - one.cohortYear;
   }
@@ -36,9 +58,63 @@ function newestFirst(one: CohortRecap, other: CohortRecap): number {
   );
 }
 
-function shownWith(recap: Recap, filtered: boolean): boolean {
+function shownWith(counted: number, filtered: boolean): boolean {
   if (filtered) return true;
-  return recap.assessed >= FEWEST_IN_COHORT_UNFILTERED;
+  return counted >= FEWEST_IN_COHORT_UNFILTERED;
+}
+
+/**
+ * Whether the rows left out count so few students that their numbers
+ * would follow from the whole group less the rows shown.
+ */
+function leftOutTooFew(leftOut: number): boolean {
+  return leftOut > 0 && leftOut < FEWEST_SHOWN;
+}
+
+/** The place of the smallest row; of rows alike, the last one shown. */
+function smallestPlace(rows: readonly CohortCandidate<unknown>[]): number {
+  let smallest = 0;
+  let fewest = Number.POSITIVE_INFINITY;
+  for (const [place, row] of rows.entries()) {
+    if (row.counted > fewest) continue;
+    smallest = place;
+    fewest = row.counted;
+  }
+  return smallest;
+}
+
+/**
+ * The rows of a table per angkatan, the newest angkatan first and Reguler
+ * before Alih program. A candidate without numbers is left out, and so,
+ * without a filter, is one that counts fewer than
+ * `FEWEST_IN_COHORT_UNFILTERED` students. While the rows left out count 1
+ * to 4 students, the smallest row shown is left out too, so that nobody's
+ * numbers follow by subtraction from those of the whole group.
+ */
+export function shownCohorts<R>(
+  candidates: readonly CohortCandidate<R>[],
+  filtered: boolean,
+): CohortRow<R>[] {
+  const rows: ShownCandidate<R>[] = [];
+  let leftOut = 0;
+  for (const candidate of candidates) {
+    const { recap } = candidate;
+    if (recap === null || !shownWith(candidate.counted, filtered)) {
+      leftOut += candidate.counted;
+      continue;
+    }
+    rows.push({ ...candidate, recap });
+  }
+  rows.sort(newestFirst);
+  while (rows.length > 0 && leftOutTooFew(leftOut)) {
+    const [hidden] = rows.splice(smallestPlace(rows), 1);
+    leftOut += hidden?.counted ?? 0;
+  }
+  return rows.map(({ cohortYear, entryPath, recap }) => ({
+    cohortYear,
+    entryPath,
+    recap,
+  }));
 }
 
 function assessedIn(cohort: readonly ScoreGroup[]): number {
@@ -50,57 +126,23 @@ function assessedIn(cohort: readonly ScoreGroup[]): number {
 }
 
 /**
- * Whether the rows left out hold so few assessed students that their
- * scores would follow from the whole group less the rows shown.
- */
-function leftOutTooFew(leftOut: number): boolean {
-  return leftOut > 0 && leftOut < FEWEST_SHOWN;
-}
-
-/** The place of the smallest row; of rows alike, the last one shown. */
-function smallestPlace(rows: readonly CohortRecap[]): number {
-  let smallest = 0;
-  let fewest = Number.POSITIVE_INFINITY;
-  for (const [place, row] of rows.entries()) {
-    if (row.recap.assessed > fewest) continue;
-    smallest = place;
-    fewest = row.recap.assessed;
-  }
-  return smallest;
-}
-
-/**
- * The rows of "Capaian MEDALI per angkatan": one per angkatan and jalur,
- * the newest angkatan first and Reguler before Alih program. A row with
- * too few assessed students for a recap is left out, and so, without a
- * filter, is one with fewer than `FEWEST_IN_COHORT_UNFILTERED`. While the
- * rows left out hold 1 to 4 assessed students, the smallest row shown is
- * left out too, so that nobody's scores follow by subtraction from the
- * numbers of the whole group.
+ * The rows of "Capaian MEDALI per angkatan": one per angkatan and jalur
+ * with enough assessed students, by the rules of `shownCohorts`.
  */
 export function cohortRecaps(
   groups: readonly ScoreGroup[],
   filtered: boolean,
 ): CohortRecap[] {
-  const rows: CohortRecap[] = [];
-  let leftOut = 0;
+  const candidates: CohortCandidate<Recap>[] = [];
   for (const cohort of cohortsOf(groups).values()) {
     const [first] = cohort;
-    const recap = recapOf(cohort);
-    if (first === undefined || recap === null || !shownWith(recap, filtered)) {
-      leftOut += assessedIn(cohort);
-      continue;
-    }
-    rows.push({
+    if (first === undefined) continue;
+    candidates.push({
       cohortYear: first.cohortYear,
       entryPath: first.entryPath,
-      recap,
+      counted: assessedIn(cohort),
+      recap: recapOf(cohort),
     });
   }
-  rows.sort(newestFirst);
-  while (rows.length > 0 && leftOutTooFew(leftOut)) {
-    const [hidden] = rows.splice(smallestPlace(rows), 1);
-    leftOut += hidden?.recap.assessed ?? 0;
-  }
-  return rows;
+  return shownCohorts(candidates, filtered);
 }

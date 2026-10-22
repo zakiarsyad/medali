@@ -17,6 +17,8 @@ import { addTestAccount, addTestFitnessScores } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const ODD_3351 = { startYear: 3351, term: "odd" } as const;
+/** A day of that Ganjil, which gives the character grades. */
+const TODAY = "3351-10-01";
 const SAVED = new Date("2026-09-03T03:00:00Z");
 
 /**
@@ -115,7 +117,7 @@ describe("Kesehatan jasmani of Dashboard pembangunan karakter", () => {
     await inTestDatabase(async (db) => {
       const { scope } = await addRecords(db);
 
-      const view = await loadDashboard(db, scope, NO_FILTERS, ODD_3351);
+      const view = await loadDashboard(db, scope, NO_FILTERS, ODD_3351, TODAY);
 
       expect(view.physical).toEqual({
         kind: "shown",
@@ -143,6 +145,7 @@ describe("Kesehatan jasmani of Dashboard pembangunan karakter", () => {
         scopeOf(["head_of_unit"], programId),
         { ...NO_FILTERS, studyProgramId: programId },
         ODD_3351,
+        TODAY,
       );
 
       expect(view.physical).toMatchObject({
@@ -165,6 +168,7 @@ describe("Kesehatan jasmani of Dashboard pembangunan karakter", () => {
           scopeOf([...roles], programId),
           asked,
           ODD_3351,
+          TODAY,
         );
 
         expect(view.physical).toMatchObject({ kind: "shown", tested: 7 });
@@ -183,6 +187,7 @@ describe("Kesehatan jasmani of Dashboard pembangunan karakter", () => {
         scopeOf(["head_of_unit"], programId),
         { ...NO_FILTERS, studyProgramId: programId },
         ODD_3351,
+        TODAY,
       );
       const small = numbersIn(view.physical).filter(
         (each) => each >= 1 && each <= 4,
@@ -202,6 +207,7 @@ describe("Kesehatan jasmani of Dashboard pembangunan karakter", () => {
         scopeOf(["head_of_unit"], programId),
         { ...NO_FILTERS, studyProgramId: programId, province: "Bali" },
         ODD_3351,
+        TODAY,
       );
 
       expect(bali.counts.matching).toBe(5);

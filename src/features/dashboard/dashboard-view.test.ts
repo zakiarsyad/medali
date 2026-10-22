@@ -14,6 +14,8 @@ const inTestDatabase = withTestDatabase();
 
 /** Angkatan 3331 is in semester 1, tahap 1; angkatan 3330 in semester 3, tahap 2. */
 const ODD_3331 = { startYear: 3331, term: "odd" } as const;
+/** A day of that Ganjil, which gives the character grades. */
+const TODAY = "3331-10-01";
 const AGENCY = "Instansi Uji Dashboard";
 
 async function addRecords(db: Database) {
@@ -61,12 +63,13 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         illnesses: null,
       };
 
-      const all = await loadDashboard(db, scope, NO_FILTERS, ODD_3331);
+      const all = await loadDashboard(db, scope, NO_FILTERS, ODD_3331, TODAY);
       const regular = await loadDashboard(
         db,
         scope,
         { ...NO_FILTERS, entryPath: "regular" },
         ODD_3331,
+        TODAY,
       );
 
       expect(all.counts.matching).toBe(3);
@@ -119,6 +122,7 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         scope,
         { ...NO_FILTERS, province: "Atlantis", stageNo: 1 },
         null,
+        TODAY,
       );
 
       expect(view.filters).toEqual(NO_FILTERS);
@@ -143,6 +147,7 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         scope,
         { ...NO_FILTERS, studyProgramId: otherProgramId },
         ODD_3331,
+        TODAY,
       );
 
       expect(view.programs).toBeNull();

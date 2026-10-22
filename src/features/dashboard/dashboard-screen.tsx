@@ -7,6 +7,9 @@ import styles from "./dashboard.module.css";
 import { filtersInUse } from "./dashboard-address";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import type { DashboardView } from "./dashboard-view";
+import { GradeCard } from "./grade-card";
+import { GradeCohortTable } from "./grade-cohort-table";
+import { GradeSection } from "./grade-section";
 import { PhysicalCard } from "./physical-card";
 import { PhysicalSection } from "./physical-section";
 
@@ -16,6 +19,7 @@ import { PhysicalSection } from "./physical-section";
  */
 export interface DetailLinks {
   assessment: string | null;
+  grade: string | null;
   fitness: string | null;
 }
 
@@ -27,10 +31,13 @@ function DashboardContent({
   links: DetailLinks;
 }) {
   const { recap, cohorts } = view.achievement;
+  const { grades } = view;
+  const filtered = filtersInUse(view.filters) > 0;
   return (
     <>
       <div className={styles.cards}>
         <AchievementCard recap={recap} />
+        <GradeCard grades={grades} />
         <PhysicalCard recap={view.physical} />
       </div>
       <AchievementSection recap={recap} detailAddress={links.assessment}>
@@ -38,10 +45,20 @@ function DashboardContent({
           <CohortTable
             rows={cohorts}
             period={view.period}
-            filtered={filtersInUse(view.filters) > 0}
+            filtered={filtered}
           />
         )}
       </AchievementSection>
+      <GradeSection grades={grades} detailAddress={links.grade}>
+        {grades.recap.kind === "shown" && (
+          <GradeCohortTable
+            rows={grades.cohorts}
+            period={view.period}
+            filtered={filtered}
+            passLetter={grades.scheme.passLetter}
+          />
+        )}
+      </GradeSection>
       <PhysicalSection
         recap={view.physical}
         limits={view.fitnessLimits}

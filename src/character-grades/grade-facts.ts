@@ -20,7 +20,7 @@ import {
 } from "@/features/skpm/skpm-totals";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { finalSql, passesSql, percentSql, sikuSql, skpmSql } from "./grade-sql";
-import type { GradeScheme } from "./scheme-ids";
+import type { GradePart, GradeScheme } from "./scheme-ids";
 
 /** What the grades of many students are worked out with, read first. */
 export interface GradeBasis {
@@ -75,13 +75,19 @@ function mentoringOfPeriod(basis: AttendanceBasis | null): SQL {
   );
 }
 
+/** A part as a column, or null while it is missing, as it stands before any limit. */
+function partColumn(part: SQL, name: GradePart) {
+  return sql<number | null>`(${part})::float8`.as(name);
+}
+
 /**
  * Each Aktif student `visible` lets through with what the list filters
  * and counts by, as a table to read from: Nilai akhir, or null while a
  * part is missing, held at 70 under a Ringan or Sedang penalty, whether
  * such a penalty limits it, whether it passes, and whether an entry in
- * force gave or took SIKU points. Every part is worked out in the
- * database from where it is recorded, as the server would.
+ * force gave or took SIKU points, and each of the four parts. Every part
+ * is worked out in the database from where it is recorded, as the server
+ * would.
  */
 export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
   const attendance = attendancePart(db, visible, basis.attendance);
@@ -94,15 +100,13 @@ export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
     basis.skpmUploads === 0
       ? NONE
       : skpmSql(sql`coalesce(${skpm.total}, 0)`, basis.pointsForHundred);
-  const unlimited = finalSql(
-    {
-      attendance: attendance.percent,
-      mentoring: sql`${mentoringScores.score}`,
-      siku: sikuSql(basis.sikuBase, gains, losses),
-      skpm: skpmPart,
-    },
-    basis.scheme.weights,
-  );
+  const parts = {
+    attendance: attendance.percent,
+    mentoring: sql`${mentoringScores.score}`,
+    siku: sikuSql(basis.sikuBase, gains, losses),
+    skpm: skpmPart,
+  };
+  const unlimited = finalSql(parts, basis.scheme.weights);
   const limitedOnes = limitedStudents(db);
   const limited = isLimitedSql(limitedOnes);
   const final = limitedScoreSql(unlimited, limited);
@@ -117,6 +121,10 @@ export function gradeFacts(db: Database, visible: SQL, basis: GradeBasis) {
         "passes",
       ),
       adjusted: sql<boolean>`(${gains} > 0 or ${losses} > 0)`.as("adjusted"),
+      attendance: partColumn(parts.attendance, "attendance"),
+      mentoring: partColumn(parts.mentoring, "mentoring"),
+      siku: partColumn(parts.siku, "siku"),
+      skpm: partColumn(parts.skpm, "skpm"),
     })
     .from(students)
     .leftJoin(siku, eq(siku.studentId, students.id))

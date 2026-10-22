@@ -18,6 +18,8 @@ import {
 const inTestDatabase = withTestDatabase();
 
 const ODD_3341 = { startYear: 3341, term: "odd" } as const;
+/** A day of that Ganjil, which gives the character grades. */
+const TODAY = "3341-10-01";
 const BEFORE = new Date("3341-09-01T03:00:00Z");
 const LATER = new Date("3341-10-01T03:00:00Z");
 
@@ -70,6 +72,7 @@ describe("Capaian karakter of Dashboard pembangunan karakter", () => {
         scope,
         NO_FILTERS,
         ODD_3341,
+        TODAY,
       );
       const recap = achievement.recap;
 
@@ -89,12 +92,13 @@ describe("Capaian karakter of Dashboard pembangunan karakter", () => {
     await inTestDatabase(async (db) => {
       const scope = await addRecords(db);
 
-      const all = await loadDashboard(db, scope, NO_FILTERS, ODD_3341);
+      const all = await loadDashboard(db, scope, NO_FILTERS, ODD_3341, TODAY);
       const regular = await loadDashboard(
         db,
         scope,
         { ...NO_FILTERS, entryPath: "regular" },
         ODD_3341,
+        TODAY,
       );
 
       expect(all.achievement.cohorts).toEqual([]);
@@ -117,6 +121,7 @@ describe("Capaian karakter of Dashboard pembangunan karakter", () => {
         scope,
         { ...NO_FILTERS, province: "Bali" },
         ODD_3341,
+        TODAY,
       );
 
       expect(bali.counts.matching).toBe(2);

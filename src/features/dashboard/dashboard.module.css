@@ -114,6 +114,28 @@
   fill: var(--bad);
 }
 
+/* The letters that meet the pass letter, from the best down, and those below it. */
+.passAPart,
+.passEPart {
+  fill: var(--ok);
+}
+
+.passBPart {
+  fill: var(--fit-good);
+}
+
+.passCPart {
+  fill: var(--pass-light);
+}
+
+.passDPart {
+  fill: var(--pass-lighter);
+}
+
+.failPart {
+  fill: var(--bad);
+}
+
 .section {
   margin-top: var(--space-2xl);
 }
@@ -248,6 +270,104 @@
 
 .range {
   color: var(--muted);
+}
+
+/* Bars each as long as their share, a name, a bar and a number, on a phone too. */
+.bars {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+  font-size: var(--text-md);
+}
+
+.barLabel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.meter {
+  width: 100%;
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+  appearance: none;
+}
+
+.meter::-webkit-meter-bar {
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.meter::-webkit-meter-optimum-value,
+.meter::-webkit-meter-suboptimum-value,
+.meter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-md);
+  background: var(--meter-colour);
+}
+
+.meter::-moz-meter-bar {
+  border-radius: var(--radius-md);
+  background: var(--meter-colour);
+}
+
+.attendanceMeter {
+  --meter-colour: var(--navy3);
+}
+
+.mentoringMeter {
+  --meter-colour: var(--gold);
+}
+
+.sikuMeter {
+  --meter-colour: var(--vI);
+}
+
+.skpmMeter {
+  --meter-colour: var(--vE);
+}
+
+.passMeter {
+  --meter-colour: var(--ok);
+}
+
+.failMeter {
+  --meter-colour: var(--bad);
+}
+
+.barValue {
+  font-weight: var(--weight-heavy);
+  text-align: right;
+}
+
+/* Rerata nilai akhir and the percent that meets the pass letter, side by side. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm) var(--space-lg);
+  margin: var(--space-lg) 0 0;
+}
+
+.facts dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.facts dd {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heavy);
 }
 
 .panelHead {
