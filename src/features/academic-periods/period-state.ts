@@ -1,12 +1,7 @@
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
+import type { ClosedSemester } from "@/character-grades/closed-semesters";
 import { DAY } from "@/ui/day";
 import { hasEnded } from "./change-period-dates";
-
-/** What a period's closing tells the list: when it was closed, and how many grades it kept. */
-export interface ClosingFacts {
-  closedAt: Date;
-  kept: number;
-}
 
 /**
  * Where a period stands on a day: not started yet, running, ended and not
@@ -18,11 +13,11 @@ export type PeriodState =
   | { kind: "upcoming" }
   | { kind: "running" }
   | { kind: "ended" }
-  | ({ kind: "closed" } & ClosingFacts);
+  | ({ kind: "closed" } & ClosedSemester);
 
 export function periodStateOf(
   period: Pick<AcademicPeriod, "startsOn" | "endsOn">,
-  closing: ClosingFacts | null,
+  closing: ClosedSemester | null,
   today: string,
 ): PeriodState {
   if (closing) return { kind: "closed", ...closing };

@@ -134,7 +134,7 @@ weights used, which later changes no longer touch.
   Berjalan, Selesai belum ditutup or Ditutup.
 - [x] 2. The right to close a semester is added to the permission list,
   with its checks.
-- [ ] 3. The period list shows the state and "Tutup semester".
+- [x] 3. The period list shows the state and "Tutup semester".
 - [ ] 4. The step that shows the counts, the weights and the tick.
 - [ ] 5. The closing keeps every grade at once, in order of periods, and
   writes the log line.

@@ -3,6 +3,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { periodTitle } from "@/academic-periods/period-labels";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
+import { readClosedSemesters } from "@/character-grades/closed-semesters";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
@@ -24,8 +25,18 @@ function RunningPeriod({ running }: { running: AcademicPeriod | null }) {
   );
 }
 
-export async function PeriodsScreen({ tabs }: { tabs: TabLinksProps }) {
-  const periods = await readAcademicPeriods(database());
+export async function PeriodsScreen({
+  tabs,
+  mayClose,
+}: {
+  tabs: TabLinksProps;
+  mayClose: boolean;
+}) {
+  const db = database();
+  const [periods, closed] = await Promise.all([
+    readAcademicPeriods(db),
+    readClosedSemesters(db),
+  ]);
   const today = campusDay();
   const running = runningPeriodOn(periods, today);
   return (
@@ -45,7 +56,13 @@ export async function PeriodsScreen({ tabs }: { tabs: TabLinksProps }) {
       <AddPeriodForm startYear={academicYearOn(today)} />
       <section className={shared.panel}>
         <h2 className={shared.heading}>Daftar periode</h2>
-        <PeriodList periods={periods} running={running} today={today} />
+        <PeriodList
+          periods={periods}
+          today={today}
+          closed={closed}
+          step={null}
+          mayClose={mayClose}
+        />
       </section>
     </>
   );

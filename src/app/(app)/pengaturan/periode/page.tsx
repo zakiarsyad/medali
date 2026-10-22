@@ -5,10 +5,12 @@ import { PeriodsScreen } from "@/features/academic-periods/periods-screen";
 
 export default async function AcademicPeriodsPage() {
   const opened = await openPage("pengaturan", "periode");
-  if (!may(opened.account.roles, "set_academic_periods")) forbidden();
+  const { roles } = opened.account;
+  if (!may(roles, "set_academic_periods")) forbidden();
   return (
     <PeriodsScreen
       tabs={{ pagePath: "pengaturan", tabs: opened.tabs, open: "periode" }}
+      mayClose={may(roles, "close_semesters")}
     />
   );
 }

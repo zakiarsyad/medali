@@ -10,8 +10,7 @@ import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
 import { addPeriod } from "./add-period";
 import { changePeriodDates } from "./change-period-dates";
-
-const PERIODS_ADDRESS = "/pengaturan/periode";
+import { PERIODS_ADDRESS } from "./period-address";
 
 async function periodSetter(): Promise<Account> {
   const account = await currentAccount();
