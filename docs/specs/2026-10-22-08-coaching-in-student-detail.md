@@ -97,6 +97,6 @@ without going to Pembinaan karakter and searching.
   roles within their rows, with its checks.
 - [x] 2. The panel with the level, the status, "Aspek terlemah" and the
   note.
-- [ ] 3. No panel for a student off the list, and none for the roles
+- [x] 3. No panel for a student off the list, and none for the roles
   with a small detail, with checks.
 - [ ] 4. The phone layout and the speed check.
