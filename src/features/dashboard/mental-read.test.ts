@@ -4,8 +4,14 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { counsellingSessions, students } from "@/db/schema";
+import {
+  counsellingSessions,
+  counsellingSharingReads,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { changeOwnSharing } from "@/features/counselling/press-sharing";
+import { changeSharingAsCounsellor } from "@/features/counselling/publish-sharing";
 import {
   addTestActor,
   type TestPeople,
@@ -16,7 +22,9 @@ import {
   CONSENTED_AT,
 } from "@/features/counselling/test-sessions";
 import {
+  PUBLISHED_AT,
   publishTestSharing,
+  TEST_SUMMARY,
   type TestShare,
 } from "@/features/counselling/test-shared";
 import { type DashboardFilters, NO_FILTERS } from "./dashboard-address";
@@ -99,11 +107,11 @@ async function addRecords(db: Database) {
     }
     return publishTestSharing(db, studentOf(people, place), how);
   };
-  await share(0, {
+  const first = await share(0, {
     data: ["level"],
     recipients: ["head_of_unit", "head_of_program"],
   });
-  await share(1, {
+  const second = await share(1, {
     data: ["counselling", "summary"],
     recipients: ["head_of_unit"],
   });
@@ -114,7 +122,17 @@ async function addRecords(db: Database) {
     .from(students)
     .where(eq(students.id, studentOf(people, 0).studentId));
   if (!programId) throw new Error("No program.");
-  return { people, programId: programId.id };
+  return { people, programId: programId.id, sharings: [first, second] };
+}
+
+function readingsBy(db: Database, readBy: string) {
+  return db
+    .select({
+      sharingId: counsellingSharingReads.sharingId,
+      studentId: counsellingSharingReads.studentId,
+    })
+    .from(counsellingSharingReads)
+    .where(eq(counsellingSharingReads.readBy, readBy));
 }
 
 async function readerOf(
@@ -256,6 +274,171 @@ describe("Kesehatan mental of Dashboard pembangunan karakter", () => {
         matching: 0,
         needCounselling: 0,
       });
+    });
+  });
+});
+
+describe("Data kesehatan mental yang dipublikasikan on the Dashboard", () => {
+  it("lists only the parts each student agreed to share, the newest first, never the session notes", async () => {
+    await inTestDatabase(async (db) => {
+      const { people, programId } = await addRecords(db);
+      const head = await readerOf(db, ["head_of_unit"], programId);
+
+      const mental = await mentalOf(db, head, { studyProgramId: programId });
+
+      expect(mental.published?.rows).toEqual([
+        {
+          studentId: studentOf(people, 0).studentId,
+          publishedAt: PUBLISHED_AT,
+          name: "Mahasiswa Uji Konseling 1",
+          mentorName: null,
+          data: ["level"],
+          level: "moderate",
+          sessions: null,
+          summary: null,
+        },
+        {
+          studentId: studentOf(people, 1).studentId,
+          publishedAt: PUBLISHED_AT,
+          name: "Mahasiswa Uji Konseling 2",
+          mentorName: null,
+          data: ["counselling", "summary"],
+          level: null,
+          sessions: {
+            count: 1,
+            lastDay: "2026-10-19",
+            followUp: "monitoring",
+            nextDay: null,
+          },
+          summary: TEST_SUMMARY,
+        },
+      ]);
+      expect(JSON.stringify(mental)).not.toContain("Catatan uji sesi rahasia");
+      expect(JSON.stringify(mental.published)).not.toContain("severe");
+    });
+  });
+
+  it("logs each row shown: who, whose data and which sharing", async () => {
+    await inTestDatabase(async (db) => {
+      const { people, programId, sharings } = await addRecords(db);
+      const head = await readerOf(db, ["head_of_unit"], programId);
+
+      await mentalOf(db, head, { studyProgramId: programId });
+
+      const logged = await readingsBy(db, head.id);
+      expect(logged).toHaveLength(2);
+      expect(logged).toEqual(
+        expect.arrayContaining(
+          [0, 1].map((place) => ({
+            sharingId: sharings[place]?.id,
+            studentId: studentOf(people, place).studentId,
+          })),
+        ),
+      );
+    });
+  });
+
+  it("drops a student on the next load once the student or the counsellor withdraws the sharing", async () => {
+    await inTestDatabase(async (db) => {
+      const { people, programId, sharings } = await addRecords(db);
+      const [first, second] = sharings;
+      const student = people.students[0];
+      if (!first || !second || !student) throw new Error("Missing records.");
+      const head = await readerOf(db, ["head_of_unit"], programId);
+      const inProgram = { studyProgramId: programId };
+
+      await changeOwnSharing(db, student, "withdraw", first.id, first.version);
+      const afterStudent = await mentalOf(db, head, inProgram);
+      await changeSharingAsCounsellor(
+        db,
+        people.counsellor,
+        studentOf(people, 1).studentId,
+        "cancel",
+        second.id,
+        second.version,
+      );
+      const afterCounsellor = await mentalOf(db, head, inProgram);
+
+      expect(afterStudent.published).toMatchObject({
+        matching: 1,
+        needCounselling: 0,
+        rows: [{ name: "Mahasiswa Uji Konseling 2" }],
+      });
+      expect(afterCounsellor.published).toEqual({
+        rows: [],
+        matching: 0,
+        needCounselling: 0,
+      });
+      expect(await readingsBy(db, head.id)).toHaveLength(1);
+    });
+  });
+
+  it("shows the newest 8 of more, with every one counted", async () => {
+    await inTestDatabase(async (db) => {
+      const nims = Array.from(
+        { length: 10 },
+        (_, place) => `99865400${String(place + 20)}`,
+      );
+      const people = await addConsentedPeople(db, `${PROGRAM} Banyak`, nims);
+      for (const place of nims.keys()) {
+        const { studentId, counsellor } = studentOf(people, place);
+        await addTestScreening(db, studentId, counsellor.id);
+        await publishTestSharing(db, studentOf(people, place), {
+          data: ["level"],
+          recipients: ["director"],
+        });
+      }
+      const [found] = await db
+        .select({ id: students.studyProgramId })
+        .from(students)
+        .where(eq(students.id, studentOf(people, 0).studentId));
+      if (!found) throw new Error("No program.");
+      const director = await readerOf(db, ["director"], found.id);
+
+      const mental = await mentalOf(db, director, { studyProgramId: found.id });
+
+      expect(mental.published?.matching).toBe(10);
+      expect(mental.published?.rows).toHaveLength(8);
+      expect(await readingsBy(db, director.id)).toHaveLength(8);
+    });
+  });
+
+  it("is refused to Pengasuh, Konselor, Penilai Mahasiswa and every role without the Dashboard, so nothing is read or logged", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId } = await addRecords(db);
+      const refused: RoleId[][] = [
+        ["mentor"],
+        ["counsellor"],
+        ["assessor"],
+        ["student"],
+        ["dorm_manager"],
+      ];
+      for (const roles of refused) {
+        const reader = await readerOf(db, roles, programId);
+
+        expect(dashboardScopeOf(reader)).toBeNull();
+        expect(await readingsBy(db, reader.id)).toHaveLength(0);
+      }
+    });
+  });
+
+  it("reads nothing published and logs nothing for a scope without a reader", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId } = await addRecords(db);
+      const head = await readerOf(db, ["head_of_unit"], programId);
+      const scope = dashboardScopeOf(head);
+      if (scope === null) throw new Error("Kepala Unit was refused.");
+
+      const view = await loadDashboard(
+        db,
+        { ...scope, shared: null },
+        { ...NO_FILTERS, studyProgramId: programId },
+        null,
+        TODAY,
+      );
+
+      expect(view.mental.published).toBeNull();
+      expect(await readingsBy(db, head.id)).toHaveLength(0);
     });
   });
 });

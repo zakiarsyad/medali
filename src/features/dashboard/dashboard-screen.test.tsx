@@ -9,7 +9,12 @@ import { DashboardScreen, type DetailLinks } from "./dashboard-screen";
 import type { DashboardView } from "./dashboard-view";
 import type { ShownGrades } from "./grade-recap";
 import { NO_GRADES } from "./grade-words";
-import { MENTAL_TOO_FEW, NOBODY_ASSESSED } from "./mental-words";
+import type { PublishedRow } from "./mental-recap";
+import {
+  MENTAL_TOO_FEW,
+  NOBODY_ASSESSED,
+  NOTHING_PUBLISHED,
+} from "./mental-words";
 import { PHYSICAL_TOO_FEW } from "./physical-words";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -34,6 +39,17 @@ const GRADES: ShownGrades = {
   letters: { A: 9, B: 20, C: 4, D: 0, E: 3 },
   incomplete: 5,
   parts: { attendance: 88.24, mentoring: 80, siku: 75.5, skpm: 61 },
+};
+
+const PUBLISHED_ROW: PublishedRow = {
+  studentId: "00000000-0000-4000-8000-000000000001",
+  publishedAt: new Date("2026-10-21T03:00:00Z"),
+  name: "Mahasiswa Contoh",
+  mentorName: "Pengasuh Contoh",
+  data: ["level", "counselling"],
+  level: "moderate",
+  sessions: null,
+  summary: null,
 };
 
 function viewOf(more: Partial<DashboardView> = {}): DashboardView {
@@ -84,7 +100,7 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
           extremely_severe: 0,
         },
       },
-      published: { matching: 3, needCounselling: 1 },
+      published: { rows: [PUBLISHED_ROW], matching: 3, needCounselling: 1 },
     },
     fitnessLimits: STARTING_LIMITS,
     ...more,
@@ -422,6 +438,32 @@ describe("DashboardScreen", () => {
     expect(few).not.toContain("sudah diasesmen");
     expect(none).toContain(NOBODY_ASSESSED);
     expect(none).not.toContain("<meter");
+  });
+
+  it("lists each published student with the date, the name and level, the Pengasuh and the parts shared, the name not a link", () => {
+    const four = sectionFour(shown(viewOf(), LINKS));
+
+    expect(four).toContain("Data kesehatan mental yang dipublikasikan");
+    expect(four).toContain("21 Okt 2026");
+    expect(four).toMatch(/<b>Mahasiswa Contoh<\/b> <span[^>]*>Sedang<\/span>/);
+    expect(four).toContain(
+      "Pengasuh: Pengasuh Contoh. Belum ada sesi konseling.",
+    );
+    expect(four.split('href="/penilaian/mental"')).toHaveLength(3);
+    expect(four).not.toContain("Risiko");
+  });
+
+  it("says so when nothing is published to the account", () => {
+    const view = viewOf();
+    const html = shown({
+      ...view,
+      mental: {
+        ...view.mental,
+        published: { rows: [], matching: 0, needCounselling: 0 },
+      },
+    });
+
+    expect(sectionFour(html)).toContain(NOTHING_PUBLISHED);
   });
 
   it("leaves out Program studi for Ketua Program Studi, Tahapan while no period runs, and Lihat rincian without the tab", () => {

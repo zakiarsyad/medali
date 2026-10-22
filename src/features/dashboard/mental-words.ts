@@ -1,4 +1,10 @@
-import type { MentalRecap, PublishedMental } from "./mental-recap";
+import { FOLLOW_UP_WORDS } from "@/features/counselling/session-words";
+import { NOT_SCREENED } from "@/features/counselling/shared-words";
+import type {
+  MentalRecap,
+  PublishedMental,
+  PublishedRow,
+} from "./mental-recap";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
@@ -30,4 +36,30 @@ export const NOBODY_ASSESSED = "Belum ada asesmen kesehatan mental.";
 /** The line under the levels. */
 export function assessedLine(assessed: number): string {
   return `${shown(assessed)} mahasiswa sudah diasesmen. Identitas tidak ditampilkan kecuali dipublikasikan konselor.`;
+}
+
+/** What the list says while nothing is published to the account. */
+export const NOTHING_PUBLISHED =
+  "Belum ada data yang dipublikasikan konselor. Data hanya tampil dengan persetujuan mahasiswa.";
+
+function sessionsLine(row: PublishedRow): string | null {
+  if (!row.data.includes("counselling")) return null;
+  if (row.sessions === null) return "Belum ada sesi konseling.";
+  const { count, followUp } = row.sessions;
+  return `${shown(count)} sesi konseling. Tindak lanjut: ${FOLLOW_UP_WORDS[followUp]}.`;
+}
+
+/**
+ * The line under a name: the Pengasuh, and only the parts the student
+ * agreed to share besides the level, which shows as a badge.
+ */
+export function publishedLine(row: PublishedRow): string {
+  const unscreened = row.data.includes("level") && row.level === null;
+  const parts = [
+    row.mentorName === null ? null : `Pengasuh: ${row.mentorName}.`,
+    unscreened ? `${NOT_SCREENED}.` : null,
+    sessionsLine(row),
+    row.summary,
+  ];
+  return parts.filter((part) => part !== null && part !== "").join(" ");
 }

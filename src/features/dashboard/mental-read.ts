@@ -1,16 +1,31 @@
-import { and, count, eq, inArray, type SQL, sql } from "drizzle-orm";
+import {
+  and,
+  arrayContains,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { counsellingSharings, students } from "@/db/schema";
 import { latestScreenings } from "@/features/counselling/latest-screenings";
+import { logSharedReads } from "@/features/counselling/log-shared-reads";
+import { readSessionSummary } from "@/features/counselling/own-sessions";
 import type { ScreeningLevel } from "@/features/counselling/screening-ids";
 import { COUNSELLING_LEVELS } from "@/features/counselling/screening-rules";
 import { sharedLevels } from "@/features/counselling/shared-board";
+import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import type { SharedReader } from "./dashboard-scope";
 import {
   type MentalRecap,
   type MentalView,
   mentalRecapOf,
+  PUBLISHED_SHOWN,
   type PublishedMental,
+  type PublishedRow,
 } from "./mental-recap";
 
 const NOBODY = sql`false`;
@@ -42,18 +57,74 @@ async function readRecap(db: Database, where: SQL): Promise<MentalRecap> {
   return mentalRecapOf(tally);
 }
 
+/** "Ringkasan konselor", read only of a sharing that holds it. */
+const SHARED_SUMMARY = sql<
+  string | null
+>`case when ${arrayContains(counsellingSharings.data, ["summary"])} then ${counsellingSharings.summary} end`;
+
+/** The date of a published sharing, which the database keeps for every one. */
+function publishedDate(publishedAt: Date | null): Date {
+  if (publishedAt === null) throw new Error("A published sharing has no date.");
+  return publishedAt;
+}
+
 /**
- * How many students of the group have data published to the reader, and
- * of them how many need counselling: the level is read only where the
- * sharing holds it.
+ * The newest published sharings the reader reaches among the students
+ * `reached` lets through: only what the list shows, the level only where
+ * it is shared, the summary only where it is shared, never the notes.
  */
-async function readPublished(
-  db: Database,
-  where: SQL,
-  reader: SharedReader,
-): Promise<PublishedMental> {
-  const { latest, joined } = sharedLevels(db);
-  const [found] = await db
+async function readRows(tx: Database, reached: SQL) {
+  const { latest, joined } = sharedLevels(tx);
+  return tx
+    .select({
+      sharingId: counsellingSharings.id,
+      studentId: students.id,
+      name: students.name,
+      mentorName: MENTOR_NAME,
+      data: counsellingSharings.data,
+      level: latest.level,
+      summary: SHARED_SUMMARY,
+      publishedAt: counsellingSharings.publishedAt,
+    })
+    .from(counsellingSharings)
+    .innerJoin(students, eq(students.id, counsellingSharings.studentId))
+    .leftJoin(latest, joined)
+    .where(reached)
+    .orderBy(
+      desc(counsellingSharings.publishedAt),
+      asc(students.name),
+      asc(students.nim),
+    )
+    .limit(PUBLISHED_SHOWN);
+}
+
+type FoundRow = Awaited<ReturnType<typeof readRows>>[number];
+
+/** A row as it is shown, with its sessions read only when they are shared. */
+async function shownRow(
+  tx: Database,
+  row: FoundRow,
+  now: Date,
+): Promise<PublishedRow> {
+  const sessions = row.data.includes("counselling")
+    ? await readSessionSummary(tx, row.studentId, now)
+    : null;
+  return {
+    studentId: row.studentId,
+    publishedAt: publishedDate(row.publishedAt),
+    name: row.name,
+    mentorName: row.mentorName,
+    data: row.data,
+    level: row.level,
+    sessions,
+    summary: row.summary,
+  };
+}
+
+/** How many the reader reaches, and of them how many need counselling. */
+async function readNumbers(tx: Database, reached: SQL) {
+  const { latest, joined } = sharedLevels(tx);
+  const [found] = await tx
     .select({
       matching: count(),
       needCounselling: sql<number>`(count(*) filter (where ${inArray(latest.level, [...COUNSELLING_LEVELS])}))::int`,
@@ -61,11 +132,39 @@ async function readPublished(
     .from(counsellingSharings)
     .innerJoin(students, eq(students.id, counsellingSharings.studentId))
     .leftJoin(latest, joined)
-    .where(and(reader.reach, where) ?? NOBODY);
+    .where(reached);
   return {
     matching: found?.matching ?? 0,
     needCounselling: found?.needCounselling ?? 0,
   };
+}
+
+/**
+ * "Data kesehatan mental yang dipublikasikan" of the students of the
+ * group: those whose sharing is published to the reader, read on each
+ * load, so one withdrawn since is gone. Each row shown is written to the
+ * log of readings in the same transaction.
+ */
+async function readPublished(
+  db: Database,
+  where: SQL,
+  reader: SharedReader,
+  now: Date,
+): Promise<PublishedMental> {
+  const reached = and(reader.reach, where) ?? NOBODY;
+  return db.transaction(async (tx) => {
+    const numbers = await readNumbers(tx, reached);
+    const found = await readRows(tx, reached);
+    const rows: PublishedRow[] = [];
+    for (const row of found) rows.push(await shownRow(tx, row, now));
+    await logSharedReads(
+      tx,
+      reader.readerId,
+      found.map(({ sharingId, studentId }) => ({ sharingId, studentId })),
+      now,
+    );
+    return { rows, ...numbers };
+  });
 }
 
 /**
@@ -77,10 +176,11 @@ export async function readMental(
   db: Database,
   where: SQL,
   reader: SharedReader | null,
+  now: Date = new Date(),
 ): Promise<MentalView> {
   const [recap, published] = await Promise.all([
     readRecap(db, where),
-    reader === null ? null : readPublished(db, where, reader),
+    reader === null ? null : readPublished(db, where, reader, now),
   ]);
   return { recap, published };
 }

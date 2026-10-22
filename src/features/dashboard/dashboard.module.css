@@ -364,6 +364,41 @@
   text-align: right;
 }
 
+.publishedList {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The date beside the student here; above them once it does not fit. */
+.publishedItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--line-width) solid var(--line2);
+  font-size: var(--text-md);
+}
+
+.when {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.publishedBody {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.publishedLine {
+  margin: var(--space-2xs) 0 0;
+  color: var(--muted);
+}
+
 /* Rerata nilai akhir and the percent that meets the pass letter, side by side. */
 .facts {
   display: grid;

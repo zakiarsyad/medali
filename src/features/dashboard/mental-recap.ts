@@ -1,4 +1,6 @@
 import type { ScreeningLevel } from "@/features/counselling/screening-ids";
+import type { SessionSummary } from "@/features/counselling/session-view";
+import type { SharedData } from "@/features/counselling/sharing-ids";
 import {
   type CountShown,
   FEWEST_COUNTED,
@@ -31,8 +33,32 @@ export type MentalRecap =
 /** The anonymous count of a group with enough assessed students for counts. */
 export type ShownMental = Extract<MentalRecap, { kind: "shown" }>;
 
+/** How many students "Data kesehatan mental yang dipublikasikan" shows at most. */
+export const PUBLISHED_SHOWN = 8;
+
+/**
+ * One student whose data a counsellor published to the account: only the
+ * parts the student agreed to share, never the session notes.
+ */
+export interface PublishedRow {
+  studentId: string;
+  publishedAt: Date;
+  name: string;
+  mentorName: string | null;
+  /** "Data yang dibagikan": what the student agreed to share. */
+  data: SharedData[];
+  /** The level of the latest screening; null when not shared or not screened. */
+  level: ScreeningLevel | null;
+  /** The sessions and "Tindak lanjut"; null when not shared or with no session. */
+  sessions: SessionSummary | null;
+  /** "Ringkasan konselor"; null when not shared. */
+  summary: string | null;
+}
+
 /** What the account is given of the counselling data published to it. */
 export interface PublishedMental {
+  /** The newest published, at most `PUBLISHED_SHOWN`. */
+  rows: PublishedRow[];
   /** Every student of the group whose data is published to the account. */
   matching: number;
   /** Those of them whose sharing holds the level and whose latest is Sedang or above. */

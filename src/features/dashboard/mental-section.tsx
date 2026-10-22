@@ -5,6 +5,7 @@ import { type CountShown, countWords } from "@/health-notes/shown-count";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./dashboard.module.css";
 import { MENTAL_SECTION } from "./mental-card";
+import { PublishedPanel } from "./mental-published";
 import type { MentalRecap, MentalView, ShownMental } from "./mental-recap";
 import { assessedLine, MENTAL_TOO_FEW, NOBODY_ASSESSED } from "./mental-words";
 import { SectionHead } from "./section-head";
@@ -100,6 +101,10 @@ export function MentalSection({
       </SectionHead>
       <div className={styles.panels}>
         <LevelPanel recap={mental.recap} />
+        <PublishedPanel
+          published={mental.published}
+          detailAddress={detailAddress}
+        />
       </div>
     </section>
   );
