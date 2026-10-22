@@ -95,12 +95,12 @@ const NO_NUMBERS: CoachingNumbers = {
 };
 
 /** The status a student shows: the one saved, or Teridentifikasi. */
-const SHOWN_STATUS = sql<CoachingStatus>`coalesce(${coachingStatuses.status}, ${sql.raw(`'${FIRST_COACHING_STATUS}'`)})`;
+export const SHOWN_STATUS = sql<CoachingStatus>`coalesce(${coachingStatuses.status}, ${sql.raw(`'${FIRST_COACHING_STATUS}'`)})`;
 
 const NOT_DONE = ne(SHOWN_STATUS, "done");
 
 /** The Aktif students within `reach` whose latest assessment lists them. */
-function listedWithin(reach: SQL, latest: Latest): SQL {
+export function listedWithin(reach: SQL, latest: Latest): SQL {
   return and(reach, ACTIVE_MEMBER, listedForCoaching(latest)) ?? reach;
 }
 
@@ -150,7 +150,7 @@ async function readNumbers(
   return found ?? NO_NUMBERS;
 }
 
-function needOf(scores: Scores) {
+export function needOf(scores: Scores) {
   const need = coachingNeedOf(scores);
   if (need === null) {
     throw new Error("The database listed a student the rule does not list.");
