@@ -1,4 +1,5 @@
 import { groupCode } from "@/ui/group-code";
+import type { PublishedCounts } from "./mental-recap";
 import type { MenteeContent } from "./mentee-recap";
 
 /** What Dashboard anak asuh says, alone, to a Pengasuh who holds no group. */
@@ -16,4 +17,9 @@ export function menteeLede(
   const codes = content.groups.map(groupCode);
   const years = [...new Set(content.groups.map((group) => group.cohortYear))];
   return `Empat aspek penilaian ${shown(content.students)} anak asuh Anda di ${codes.join(", ")}, angkatan ${years.join(", ")}.`;
+}
+
+/** The line of the card "Kesehatan mental" of Dashboard anak asuh. */
+export function menteeMentalLine(published: PublishedCounts): string {
+  return `${shown(published.needCounselling)} perlu konseling. Hanya data yang disetujui mahasiswa.`;
 }

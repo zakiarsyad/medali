@@ -1,5 +1,6 @@
 import { PageHead } from "@/ui/page-head";
 import { KIND_TITLES } from "./dashboard-kind";
+import { MenteeCardsRow } from "./mentee-cards-row";
 import { MenteeProgressBox, type ProgressLinks } from "./mentee-progress-box";
 import type { MenteeDashboard } from "./mentee-recap";
 import { menteeLede, NO_GROUP_HELD } from "./mentee-words";
@@ -22,6 +23,7 @@ export function MenteeScreen({
     <>
       <PageHead title={KIND_TITLES.mentees}>{menteeLede(view)}</PageHead>
       <MenteeProgressBox progress={view.progress} links={links} />
+      <MenteeCardsRow cards={view.cards} />
     </>
   );
 }

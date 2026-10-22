@@ -92,13 +92,15 @@ async function readIllnesses(
  * Kesehatan jasmani of the students `where` lets through, with the
  * limits in force, worked out by the database, so no student leaves it. The illnesses are read only of
  * the students `illnesses` lets through, and only once enough are tested
- * for any count to be shown; with null none is read.
+ * for any count to be shown; with null none is read. `fewest` is the
+ * fewest tested for any count to be given out.
  */
 export async function readPhysical(
   db: Database,
   limits: FitnessLimits,
   where: SQL,
   illnesses: SQL | null,
+  fewest: number = FEWEST_COUNTED,
 ): Promise<PhysicalRecap> {
   const parts = partsOf(db, limits);
   const tally = await readTally(db, parts, where);
@@ -106,5 +108,5 @@ export async function readPhysical(
   const found = countsIllnesses
     ? await readIllnesses(db, parts, and(where, illnesses) ?? where)
     : null;
-  return physicalRecapOf(tally, found);
+  return physicalRecapOf(tally, found, fewest);
 }

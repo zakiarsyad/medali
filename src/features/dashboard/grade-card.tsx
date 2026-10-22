@@ -59,7 +59,11 @@ function LetterStack({
  * the pass letter, how many are held at 70, and the letter spread.
  * Pressing it moves the page to section 2. Without numbers it says why.
  */
-export function GradeCard({ grades }: { grades: CharacterGrades }) {
+export function GradeCard({
+  grades,
+}: {
+  grades: Pick<CharacterGrades, "recap" | "scheme">;
+}) {
   const { recap, scheme } = grades;
   return (
     <a className={styles.card} href={`#${GRADE_SECTION}`}>

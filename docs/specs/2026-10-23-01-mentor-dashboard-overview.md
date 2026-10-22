@@ -94,6 +94,6 @@ Pengasuh.
   anak asuh, with the message for a Pengasuh without a group and the
   switch for an account with both Dashboards.
 - [x] 2. The progress box with its two links.
-- [ ] 3. The four cards for anak asuh.
+- [x] 3. The four cards for anak asuh.
 - [ ] 4. "Perlu perhatian" with its reasons and "Lihat semua".
 - [ ] 5. "Catatan pengasuhan terbaru" and its four numbers.

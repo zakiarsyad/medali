@@ -3,6 +3,7 @@ import {
   type GradeScheme,
   STARTING_SCHEME,
 } from "@/character-grades/scheme-ids";
+import { NONE_HELD_BACK } from "./achievement-recap";
 import type { EntryPath } from "./dashboard-address";
 import { type GradeGroup, gradeCohorts, gradeRecapOf } from "./grade-recap";
 
@@ -46,6 +47,16 @@ describe("gradeRecapOf", () => {
     );
 
     expect(recap).toEqual({ kind: "too_few" });
+  });
+
+  it("gives the numbers of a single worked-out grade for Dashboard anak asuh, which holds none back", () => {
+    const recap = gradeRecapOf(
+      [groupOf(1, 90), groupOf(2, null)],
+      STARTING_SCHEME,
+      NONE_HELD_BACK,
+    );
+
+    expect(recap).toMatchObject({ kind: "shown", graded: 1, meanFinal: 90 });
   });
 
   it("averages the worked-out grades only, and counts each letter and who meets the pass letter", () => {

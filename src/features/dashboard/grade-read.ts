@@ -4,6 +4,7 @@ import { readGradeNumbers } from "@/character-grades/read-grade-numbers";
 import type { GradeScheme } from "@/character-grades/scheme-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
+import { FEWEST_SHOWN } from "./achievement-recap";
 import {
   type GradeCohort,
   type GradeGroup,
@@ -62,20 +63,22 @@ async function readGradeGroups(
 /**
  * Nilai karakter of the students `where` lets through, by the basis
  * given. `filtered` tells whether a filter is in use, which lets smaller
- * cohorts be shown.
+ * cohorts be shown; `fewest` is the fewest worked-out grades for any
+ * number to be given out.
  */
 export async function readCharacterGrades(
   db: Database,
   where: SQL,
   basis: GradeBasis,
   filtered: boolean,
+  fewest: number = FEWEST_SHOWN,
 ): Promise<CharacterGrades> {
   const { scheme } = basis;
   const [groups, numbers] = await Promise.all([
     readGradeGroups(db, where, basis),
     readGradeNumbers(db, where, basis),
   ]);
-  const recap = gradeRecapOf(groups, scheme);
+  const recap = gradeRecapOf(groups, scheme, fewest);
   // Rerata nilai akhir is taken as Penilaian karakter takes it, so the two
   // pages never round the same students apart.
   if (recap.kind === "shown" && numbers.meanFinal !== null) {

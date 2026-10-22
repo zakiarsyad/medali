@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { menteeLede, NO_GROUP_HELD } from "./mentee-words";
+import { menteeLede, menteeMentalLine, NO_GROUP_HELD } from "./mentee-words";
 
 const KP_26 = {
   id: "a",
@@ -31,6 +31,14 @@ describe("the line under Dashboard anak asuh", () => {
   it("tells a Pengasuh without a group when the data will show", () => {
     expect(NO_GROUP_HELD).toBe(
       "Anda belum memegang kelompok pengasuhan. Data akan tampil setelah Kepala Unit menugaskan kelompok kepada Anda.",
+    );
+  });
+});
+
+describe("the line of the card Kesehatan mental of Dashboard anak asuh", () => {
+  it("says how many need counselling, and that only data the students agreed to is shown", () => {
+    expect(menteeMentalLine({ matching: 3, needCounselling: 2 })).toBe(
+      "2 perlu konseling. Hanya data yang disetujui mahasiswa.",
     );
   });
 });

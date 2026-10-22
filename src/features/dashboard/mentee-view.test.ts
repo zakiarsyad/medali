@@ -25,6 +25,7 @@ import { loadMenteeDashboard } from "./mentee-view";
 const inTestDatabase = withTestDatabase();
 
 const ODD_5170 = { startYear: 5170, term: "odd" } as const;
+const TODAY = "5170-10-31";
 
 /**
  * Two groups of one program: the first held by `mentor`, with three
@@ -92,7 +93,7 @@ async function load(
   const scope = menteeScopeOf(account);
   if (scope === null)
     throw new Error("The account has no Dashboard anak asuh.");
-  return loadMenteeDashboard(db, scope, period);
+  return loadMenteeDashboard(db, scope, period, TODAY);
 }
 
 function shown(view: MenteeDashboard) {

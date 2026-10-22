@@ -177,8 +177,9 @@ async function MenteeView({ account, kinds, params }: ViewProps) {
   const scope = menteeScopeOf(account);
   if (scope === null) forbidden();
   const db = database();
-  const period = await readRunningPeriod(db, campusDay());
-  const view = await loadMenteeDashboard(db, scope, period);
+  const today = campusDay();
+  const period = await readRunningPeriod(db, today);
+  const view = await loadMenteeDashboard(db, scope, period, today);
   const detail = await askedDetail(account, readDashboardDetail(params));
   return (
     <>
