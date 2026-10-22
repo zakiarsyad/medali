@@ -1,7 +1,9 @@
-import { count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, max, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { campusDay } from "@/academic-periods/campus-day";
 import type { Database } from "@/db/connect";
 import { accounts, skpmUploads } from "@/db/schema";
+import type { UploadMark } from "@/files/upload-mark";
 import { pageWithin } from "@/ui/list-pages";
 import { HISTORY_PAGE_SIZE } from "./skpm-address";
 import type { SkpmUploadMode } from "./skpm-ids";
@@ -31,6 +33,28 @@ export interface UploadHistory {
   matching: number;
   /** The page shown, the last one when the address asked for more. */
   page: number;
+}
+
+/**
+ * The campus day the same file was last saved, by anyone, in an upload
+ * still in force, or null when there is none.
+ */
+export async function savedBefore(
+  db: Database,
+  mark: UploadMark,
+): Promise<string | null> {
+  const [found] = await db
+    .select({ at: max(skpmUploads.enteredAt) })
+    .from(skpmUploads)
+    .where(
+      and(
+        eq(skpmUploads.fileName, mark.fileName),
+        eq(skpmUploads.fingerprint, mark.fingerprint),
+        IN_FORCE,
+      ),
+    );
+  const at = found?.at ?? null;
+  return at === null ? null : campusDay(at);
 }
 
 const remover = alias(accounts, "remover");

@@ -64,9 +64,12 @@ student whose Nilai SKPM comes from those files.
    earlier upload replaced, so nothing counts twice.
 2. Files are matched by name and rows, the same rule as the SIKU file
    upload, so the two uploads behave alike.
+3. Two staff who press "Simpan" on the same new file at the very same
+   moment can both still save it. SIKU has the same gap, and the spec
+   asks only for the SIKU behaviour.
 
 ## Steps
 
-- [ ] 1. A repeated SKPM file in "Tambahkan" mode shows the warning and
+- [x] 1. A repeated SKPM file in "Tambahkan" mode shows the warning and
   needs the tick before it saves, on a computer and on a phone, with
   the server refusing it by hand.

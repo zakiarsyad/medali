@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { fingerprintOf } from "@/files/file-fingerprint";
+import { repeatedFile } from "@/ui/repeated-file";
 import { removeSkpmUpload } from "./remove-skpm-upload";
 import { savedMessage, saveSkpmFile } from "./save-skpm-file";
 import { START_PARAMS } from "./skpm-address";
@@ -101,7 +102,15 @@ describe("saveSkpmFile", () => {
       const id = crypto.randomUUID();
       const file = csv(ROWS);
 
-      const saved = await saveSkpmFile(db, penilai, id, "add", file, MOMENT);
+      const saved = await saveSkpmFile(
+        db,
+        penilai,
+        id,
+        "add",
+        file,
+        false,
+        MOMENT,
+      );
 
       expect(saved).toEqual({
         ok: true,
@@ -169,6 +178,7 @@ describe("saveSkpmFile", () => {
         id,
         "add",
         csv(ROWS),
+        false,
         MOMENT,
       );
       const second = await saveSkpmFile(
@@ -177,6 +187,7 @@ describe("saveSkpmFile", () => {
         id,
         "add",
         csv(ROWS),
+        false,
         MOMENT,
       );
 
@@ -192,19 +203,238 @@ describe("saveSkpmFile", () => {
         "head_of_unit",
       ]);
       const id = crypto.randomUUID();
-      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), MOMENT);
+      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), false, MOMENT);
       const changed = csv([...ROWS, "9985030003,Seminar,,,,,1"]);
 
       expect(
-        await saveSkpmFile(db, penilai, id, "add", changed, MOMENT),
+        await saveSkpmFile(db, penilai, id, "add", changed, false, MOMENT),
       ).toEqual(FILE_ALREADY_SENT);
       expect(
-        await saveSkpmFile(db, penilai, id, "replace", csv(ROWS), MOMENT),
+        await saveSkpmFile(
+          db,
+          penilai,
+          id,
+          "replace",
+          csv(ROWS),
+          false,
+          MOMENT,
+        ),
       ).toEqual(FILE_ALREADY_SENT);
       expect(
-        await saveSkpmFile(db, kepala, id, "add", csv(ROWS), MOMENT),
+        await saveSkpmFile(db, kepala, id, "add", csv(ROWS), false, MOMENT),
       ).toEqual(FILE_ALREADY_SENT);
       expect(await countOf(db, id)).toEqual({ uploads: 1, rows: 3, lines: 1 });
+    });
+  });
+
+  it("refuses the same file saved again in Tambahkan by anyone without a confirm, saving nothing, and saves it with one", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      const kepala = await addTestActor(db, "Kepala Uji Ulang", [
+        "head_of_unit",
+      ]);
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
+      const again = crypto.randomUUID();
+
+      const refused = await saveSkpmFile(
+        db,
+        kepala,
+        again,
+        "add",
+        csv(ROWS),
+        false,
+        LATER,
+      );
+      const refusedCount = await countOf(db, again);
+      const confirmed = await saveSkpmFile(
+        db,
+        kepala,
+        again,
+        "add",
+        csv(ROWS),
+        true,
+        LATER,
+      );
+
+      expect(refused).toEqual(repeatedFile("3230-10-12"));
+      expect(refusedCount).toEqual({ uploads: 0, rows: 0, lines: 0 });
+      expect(confirmed).toEqual({
+        ok: true,
+        value: { saved: 3, fileName: "skpm-oktober.csv" },
+      });
+      expect(await totalsOf(db, penilai)).toEqual([40, 15, null]);
+    });
+  });
+
+  it("answers a second press of a confirmed repeat as the first, even without the confirm", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
+      const again = crypto.randomUUID();
+
+      const first = await saveSkpmFile(
+        db,
+        penilai,
+        again,
+        "add",
+        csv(ROWS),
+        true,
+        LATER,
+      );
+      const second = await saveSkpmFile(
+        db,
+        penilai,
+        again,
+        "add",
+        csv(ROWS),
+        false,
+        LATER,
+      );
+
+      expect(second).toEqual(first);
+      expect(await countOf(db, again)).toEqual({
+        uploads: 1,
+        rows: 3,
+        lines: 1,
+      });
+    });
+  });
+
+  it("saves the same file again with no confirm once the earlier upload was removed", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      const first = crypto.randomUUID();
+      await saveSkpmFile(db, penilai, first, "add", csv(ROWS), false, MOMENT);
+      await removeSkpmUpload(db, penilai, first, LATER);
+
+      const again = await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        LATER,
+      );
+
+      expect(again.ok).toBe(true);
+    });
+  });
+
+  it("saves the same file again with no confirm once a Ganti semua data replaced it", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "replace",
+        csv([TITLES, "9985030003,Seminar,,,,,1"], "skpm-baru.csv"),
+        false,
+        new Date("3230-10-13T03:00:00Z"),
+      );
+
+      const again = await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        LATER,
+      );
+
+      expect(again.ok).toBe(true);
+    });
+  });
+
+  it("never asks for the confirm in Ganti semua data", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
+
+      const replaced = await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "replace",
+        csv(ROWS),
+        false,
+        LATER,
+      );
+
+      expect(replaced.ok).toBe(true);
+      expect(await totalsOf(db, penilai)).toEqual([20, 7.5, null]);
+    });
+  });
+
+  it("does not take a file with another name or other rows for one saved before", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
+
+      const renamed = await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS, "skpm-lain.csv"),
+        false,
+        LATER,
+      );
+      const changed = await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv([...ROWS, "9985030003,Seminar,,,,,1"]),
+        false,
+        LATER,
+      );
+
+      expect(renamed.ok).toBe(true);
+      expect(changed.ok).toBe(true);
     });
   });
 
@@ -217,7 +447,7 @@ describe("saveSkpmFile", () => {
       const id = crypto.randomUUID();
 
       await expect(
-        saveSkpmFile(db, penilai, id, "add", csv(ROWS), MOMENT),
+        saveSkpmFile(db, penilai, id, "add", csv(ROWS), false, MOMENT),
       ).rejects.toThrow();
 
       expect(await countOf(db, id)).toEqual({ uploads: 0, rows: 0, lines: 0 });
@@ -244,6 +474,7 @@ describe("saveSkpmFile", () => {
         crypto.randomUUID(),
         "replace",
         csv(ROWS),
+        false,
         MOMENT,
       );
 
@@ -266,7 +497,15 @@ describe("saveSkpmFile", () => {
       const id = crypto.randomUUID();
       const file = csv([TITLES, ...empty, "9985030001,Seminar,,,,,4"]);
 
-      const saved = await saveSkpmFile(db, penilai, id, "add", file, MOMENT);
+      const saved = await saveSkpmFile(
+        db,
+        penilai,
+        id,
+        "add",
+        file,
+        false,
+        MOMENT,
+      );
 
       expect(saved).toEqual({
         ok: true,
@@ -294,6 +533,7 @@ describe("saveSkpmFile", () => {
         crypto.randomUUID(),
         "add",
         csv(ROWS),
+        false,
         MOMENT,
       );
 
@@ -312,6 +552,7 @@ describe("saveSkpmFile", () => {
         id,
         "add",
         csv([TITLES, "9985030099,Seminar,,,,,4"]),
+        false,
         MOMENT,
       );
       const notCsv = await saveSkpmFile(
@@ -320,10 +561,11 @@ describe("saveSkpmFile", () => {
         id,
         "add",
         { name: "skpm.xlsx", bytes: new Uint8Array([80, 75, 3, 4]) },
+        false,
         MOMENT,
       );
-      const mode = await saveSkpmFile(db, penilai, id, "all", csv(ROWS));
-      const key = await saveSkpmFile(db, penilai, "1", "add", csv(ROWS));
+      const mode = await saveSkpmFile(db, penilai, id, "all", csv(ROWS), false);
+      const key = await saveSkpmFile(db, penilai, "1", "add", csv(ROWS), false);
 
       expect(none).toEqual(NOTHING_TO_SAVE);
       expect(notCsv).toEqual({
@@ -347,6 +589,7 @@ describe("saveSkpmFile", () => {
         crypto.randomUUID(),
         "add",
         csv(ROWS),
+        false,
         new Date("3230-07-01T03:00:00Z"),
       );
 
@@ -365,7 +608,15 @@ describe("saveSkpmFile", () => {
       const actor = await addTestActor(db, "Tanpa Hak Unggah", [role]);
       const id = crypto.randomUUID();
 
-      const saved = await saveSkpmFile(db, actor, id, "add", csv(ROWS), MOMENT);
+      const saved = await saveSkpmFile(
+        db,
+        actor,
+        id,
+        "add",
+        csv(ROWS),
+        false,
+        MOMENT,
+      );
       const preview = await previewSkpmFile(db, actor, csv(ROWS));
 
       expect(saved).toEqual(NOT_ALLOWED_TO_UPLOAD);
@@ -410,6 +661,49 @@ describe("previewSkpmFile", () => {
     });
   });
 
+  it("names the day the same file was saved by anyone, only while that upload is in force", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai } = await addRecords(db);
+      const kepala = await addTestActor(db, "Kepala Uji Pratinjau", [
+        "head_of_unit",
+      ]);
+      const savedOnOf = async () => {
+        const preview = await previewSkpmFile(db, kepala, csv(ROWS));
+        return preview.ok ? preview.value.savedOn : "refused";
+      };
+      const before = await savedOnOf();
+      const first = crypto.randomUUID();
+      await saveSkpmFile(db, penilai, first, "add", csv(ROWS), false, MOMENT);
+      const saved = await savedOnOf();
+      await removeSkpmUpload(db, penilai, first, LATER);
+      const removed = await savedOnOf();
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "add",
+        csv(ROWS),
+        false,
+        LATER,
+      );
+      await saveSkpmFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "replace",
+        csv([TITLES, "9985030003,Seminar,,,,,1"], "skpm-baru.csv"),
+        false,
+        new Date("3230-10-15T03:00:00Z"),
+      );
+      const replaced = await savedOnOf();
+
+      expect(before).toBe(null);
+      expect(saved).toBe("3230-10-12");
+      expect(removed).toBe(null);
+      expect(replaced).toBe(null);
+    });
+  });
+
   it("says what is wrong with a file that is too large or empty", async () => {
     await inTestDatabase(async (db) => {
       const { penilai } = await addRecords(db);
@@ -440,7 +734,7 @@ describe("removeSkpmUpload", () => {
         "head_of_unit",
       ]);
       const id = crypto.randomUUID();
-      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), MOMENT);
+      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), false, MOMENT);
 
       const removed = await removeSkpmUpload(db, kepala, id, LATER);
 
@@ -474,7 +768,7 @@ describe("removeSkpmUpload", () => {
     await inTestDatabase(async (db) => {
       const { penilai } = await addRecords(db);
       const id = crypto.randomUUID();
-      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), MOMENT);
+      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), false, MOMENT);
       await removeSkpmUpload(db, penilai, id, LATER);
 
       expect(await removeSkpmUpload(db, penilai, id, LATER)).toEqual(
@@ -498,7 +792,7 @@ describe("removeSkpmUpload", () => {
     await inTestDatabase(async (db) => {
       const { penilai } = await addRecords(db);
       const id = crypto.randomUUID();
-      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), MOMENT);
+      await saveSkpmFile(db, penilai, id, "add", csv(ROWS), false, MOMENT);
       const actor = await addTestActor(db, "Tanpa Hak Hapus", [role]);
 
       expect(await removeSkpmUpload(db, actor, id, LATER)).toEqual(

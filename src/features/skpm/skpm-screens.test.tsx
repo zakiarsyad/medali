@@ -3,11 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { ConversionPanel } from "./conversion-panel";
 import { START_PARAMS } from "./skpm-address";
 import { skpmTemplateCsv } from "./skpm-file-columns";
+import type { SkpmFilePreview } from "./skpm-file-preview";
 import { SkpmFilePreviewView } from "./skpm-file-preview-view";
+import type { SkpmUploadMode } from "./skpm-ids";
 import { SkpmListTable } from "./skpm-list-table";
 import { ReadOnlyNote } from "./skpm-read-only";
 import { SkpmScreen } from "./skpm-screen";
-import { SkpmUpload } from "./skpm-upload";
+import { SkpmSaveButtons, SkpmUpload } from "./skpm-upload";
 import { UploadHistoryTable } from "./upload-history-table";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
@@ -114,6 +116,7 @@ describe("a picked SKPM file", () => {
         reason: "NIM tidak ada dalam data mahasiswa.",
       },
     ],
+    savedOn: null,
   };
   const html = renderToStaticMarkup(
     <SkpmFilePreviewView name="skpm.csv" preview={preview}>
@@ -135,6 +138,47 @@ describe("a picked SKPM file", () => {
     expect(html).toContain(
       "Baris 9 (9985060099): NIM tidak ada dalam data mahasiswa.",
     );
+  });
+
+  describe("saved before", () => {
+    const repeat = { ...preview, savedOn: "2026-10-22" };
+    const buttons = (mode: SkpmUploadMode, shown: SkpmFilePreview = repeat) =>
+      renderToStaticMarkup(
+        <SkpmSaveButtons
+          preview={shown}
+          mode={mode}
+          saving={false}
+          onSave={() => undefined}
+          onCancel={() => undefined}
+        />,
+      );
+
+    it("in Tambahkan warns with the day and keeps Simpan off until Tetap simpan berkas ini lagi is ticked", () => {
+      const html = buttons("add");
+
+      expect(html).toContain(
+        "Berkas dengan nama dan isi yang sama sudah disimpan pada 22 Okt 2026. Centang &quot;Tetap simpan berkas ini lagi&quot;, lalu simpan bila memang perlu.",
+      );
+      expect(html).toMatch(
+        /<input type="checkbox"\/>Tetap simpan berkas ini lagi<\/label>/,
+      );
+      expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Simpan 7 baris/);
+    });
+
+    it("in Ganti semua data neither warns nor asks for the tick", () => {
+      const html = buttons("replace");
+
+      expect(html).not.toContain("sudah disimpan pada");
+      expect(html).not.toContain("Tetap simpan berkas ini lagi");
+      expect(html).not.toMatch(/disabled=""[^>]*>Simpan 7 baris/);
+    });
+
+    it("gives no warning for a file not saved before", () => {
+      const html = buttons("add", preview);
+
+      expect(html).not.toContain("sudah disimpan pada");
+      expect(html).not.toMatch(/disabled=""[^>]*>Simpan 7 baris/);
+    });
   });
 });
 

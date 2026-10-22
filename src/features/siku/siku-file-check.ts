@@ -5,6 +5,7 @@ import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { checkFileShape, readFileText } from "@/files/csv-file";
 import type { SentFile } from "@/files/file-check";
+import { uploadMarkOf } from "@/files/upload-mark";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { Parsed } from "@/parsed";
 import {
@@ -16,7 +17,7 @@ import {
 } from "./siku-file";
 import { type SikuFilePreview, sikuPreviewOf } from "./siku-file-preview";
 import { NOT_ALLOWED_TO_ADJUST } from "./siku-messages";
-import { savedBefore, uploadMarkOf } from "./siku-uploads";
+import { savedBefore } from "./siku-uploads";
 
 /** The students an account may give SIKU to: those it sees on Penilaian SIKU. */
 export function sikuVisibleTo(actor: AccountForAccess): SQL {
