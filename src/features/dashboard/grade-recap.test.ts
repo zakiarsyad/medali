@@ -5,13 +5,29 @@ import {
 } from "@/character-grades/scheme-ids";
 import { type GradeGroup, gradeRecapOf } from "./grade-recap";
 
-/** Students with the same Nilai akhir, or null for "Belum lengkap". */
+/**
+ * Students with the same Nilai akhir, or null for "Belum lengkap", each
+ * with the parts given, or with parts that are missing.
+ */
 function groupOf(
   students: number,
   final: number | null,
   limited = 0,
+  parts = { attendance: 90, mentoring: 80, siku: 70, skpm: 60 },
 ): GradeGroup {
-  return { cohortYear: 2026, entryPath: "regular", final, students, limited };
+  return {
+    cohortYear: 2026,
+    entryPath: "regular",
+    final,
+    students,
+    limited,
+    sums: {
+      attendance: parts.attendance * students,
+      mentoring: parts.mentoring * students,
+      siku: parts.siku * students,
+      skpm: parts.skpm * students,
+    },
+  };
 }
 
 describe("gradeRecapOf", () => {
@@ -43,6 +59,34 @@ describe("gradeRecapOf", () => {
       meanFinal: 75.8,
       passing: 83,
       letters: { A: 3, B: 2, C: 0, D: 0, E: 1 },
+    });
+  });
+
+  it("averages each part over the worked-out grades only, and counts those left out", () => {
+    const recap = gradeRecapOf(
+      [
+        groupOf(4, 80),
+        groupOf(1, 40, 0, {
+          attendance: 40,
+          mentoring: 30,
+          siku: 20,
+          skpm: 10,
+        }),
+        groupOf(3, null, 0, {
+          attendance: 100,
+          mentoring: 0,
+          siku: 100,
+          skpm: 100,
+        }),
+      ],
+      STARTING_SCHEME,
+    );
+
+    expect(recap).toMatchObject({
+      kind: "shown",
+      graded: 5,
+      incomplete: 3,
+      parts: { attendance: 80, mentoring: 70, siku: 60, skpm: 50 },
     });
   });
 

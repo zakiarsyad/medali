@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { ShownGrades } from "./grade-recap";
-import { gradeCardLine, letterParts } from "./grade-words";
+import {
+  componentsNote,
+  gradeCardLine,
+  incompleteLine,
+  letterParts,
+  partLabel,
+} from "./grade-words";
 
 const SHOWN: ShownGrades = {
   kind: "shown",
@@ -9,6 +15,8 @@ const SHOWN: ShownGrades = {
   meanFinal: 78.4,
   passing: 81,
   letters: { A: 300, B: 672, C: 0, D: 128, E: 100 },
+  incomplete: 35,
+  parts: { attendance: 88.2, mentoring: 80, siku: 75.5, skpm: 61 },
 };
 
 describe("the card Nilai karakter", () => {
@@ -29,5 +37,26 @@ describe("the card Nilai karakter", () => {
         length: (100 * 100) / 1200,
       },
     ]);
+  });
+});
+
+describe("Komponen nilai karakter and Sebaran huruf", () => {
+  it("names each part with its weight in brackets, as the prototype does", () => {
+    const weights = { attendance: 40, mentoring: 20, siku: 25, skpm: 15 };
+
+    expect(partLabel("attendance", weights)).toBe("Kehadiran kegiatan (40%)");
+    expect(partLabel("mentoring", weights)).toBe("Pengasuhan (20%)");
+    expect(partLabel("siku", weights)).toBe("Sikap dan perilaku (SIKU) (25%)");
+    expect(partLabel("skpm", weights)).toBe("SKPM (15%)");
+  });
+
+  it("says where Kehadiran comes from and how many are held at 70", () => {
+    expect(componentsNote(SHOWN)).toBe(
+      "Kehadiran dihitung otomatis dari presensi kegiatan karakter. 14 mahasiswa nilainya dibatasi 70 karena hukuman disiplin.",
+    );
+  });
+
+  it("says how many are Belum lengkap and left out", () => {
+    expect(incompleteLine(SHOWN)).toBe("35 belum lengkap, tidak dihitung.");
   });
 });

@@ -31,6 +31,8 @@ const GRADES: ShownGrades = {
   meanFinal: 78.4,
   passing: 81,
   letters: { A: 9, B: 20, C: 4, D: 0, E: 3 },
+  incomplete: 5,
+  parts: { attendance: 88.24, mentoring: 80, siku: 75.5, skpm: 61 },
 };
 
 function viewOf(more: Partial<DashboardView> = {}): DashboardView {
@@ -70,14 +72,20 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
   };
 }
 
-const NO_LINKS = { assessment: null, fitness: null };
+const NO_LINKS = { assessment: null, grade: null, fitness: null };
 const LINKS = {
   assessment: "/penilaian/asesmen",
+  grade: "/penilaian/karakter",
   fitness: "/penilaian/jasmani",
 };
 
 function shown(view: DashboardView, links: DetailLinks = NO_LINKS) {
   return renderToStaticMarkup(<DashboardScreen view={view} links={links} />);
+}
+
+/** What the page shows from section 3 on, where section 2's bars are not. */
+function sectionThree(html: string): string {
+  return html.slice(html.indexOf('id="kesehatan-jasmani"'));
 }
 
 describe("DashboardScreen", () => {
@@ -140,6 +148,53 @@ describe("DashboardScreen", () => {
     expect(none).not.toContain("Huruf A");
   });
 
+  it("shows section 2 between sections 1 and 3, with each part and its weight, the letters and Lihat rincian to Penilaian karakter", () => {
+    const html = shown(viewOf(), LINKS);
+    const section = html.indexOf('id="nilai-karakter"');
+
+    expect(section).toBeGreaterThan(html.indexOf('id="capaian-karakter"'));
+    expect(section).toBeLessThan(html.indexOf('id="kesehatan-jasmani"'));
+    expect(html).toContain("Komponen nilai karakter");
+    expect(html).toContain("rerata, bobot dalam kurung");
+    expect(html).toMatch(
+      /Kehadiran kegiatan \(25%\)<\/span><meter[^>]*><\/meter><span[^>]*>88,2</,
+    );
+    expect(html).toContain("Pengasuhan (25%)");
+    expect(html).toContain("Sikap dan perilaku (SIKU) (25%)");
+    expect(html).toContain("SKPM (25%)");
+    expect(html).toContain("<dt>Rerata nilai akhir</dt><dd>78,4</dd>");
+    expect(html).toContain("<dt>Memenuhi minimal B</dt><dd>81%</dd>");
+    expect(html).toContain(
+      "Kehadiran dihitung otomatis dari presensi kegiatan karakter. 2 mahasiswa nilainya dibatasi 70 karena hukuman disiplin.",
+    );
+    expect(html).toContain("Sebaran huruf");
+    expect(html).toContain("36 mahasiswa");
+    expect(html).toMatch(/Huruf B<\/span><meter/);
+    expect(html).toMatch(/Huruf C<span[^>]*> \(belum lulus\)<\/span>/);
+    expect(html).toContain("5 belum lengkap, tidak dihitung.");
+    expect(html).toContain('href="/penilaian/karakter"');
+  });
+
+  it("shows only why there are no grade numbers in section 2 for a small or ungraded group", () => {
+    const tooFew = shown(
+      viewOf({
+        grades: { scheme: STARTING_SCHEME, recap: { kind: "too_few" } },
+        achievement: { recap: RECAP, cohorts: [] },
+      }),
+    );
+    const none = shown(
+      viewOf({ grades: { scheme: STARTING_SCHEME, recap: { kind: "none" } } }),
+    );
+
+    expect(tooFew.split(TOO_FEW)).toHaveLength(3);
+    expect(none.split(NO_GRADES)).toHaveLength(3);
+    for (const html of [tooFew, none]) {
+      expect(html).toContain('id="nilai-karakter"');
+      expect(html).not.toContain("Komponen nilai karakter");
+      expect(html).not.toContain("Sebaran huruf");
+    }
+  });
+
   it("shows the card Kesehatan jasmani, leading to section 3", () => {
     const html = shown(viewOf());
 
@@ -159,7 +214,7 @@ describe("DashboardScreen", () => {
     expect(html).toContain("- <small>prima dan baik</small>");
     expect(html).toContain("Belum ada hasil tes kebugaran dari 40 mahasiswa.");
     expect(html).toContain("Belum ada hasil tes kebugaran.<");
-    expect(html).not.toContain("<meter");
+    expect(sectionThree(html)).not.toContain("<meter");
     expect(html).not.toContain('aria-label="Prima ');
   });
 
@@ -221,7 +276,7 @@ describe("DashboardScreen", () => {
 
     expect(html.split(PHYSICAL_TOO_FEW)).toHaveLength(3);
     expect(html).not.toContain("sudah dites");
-    expect(html).not.toContain("<meter");
+    expect(sectionThree(html)).not.toContain("<meter");
   });
 
   it("leaves out Program studi for Ketua Program Studi, Tahapan while no period runs, and Lihat rincian without the tab", () => {

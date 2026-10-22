@@ -89,9 +89,20 @@ program only).
 2. The percent that meets the minimum is of the students with a
    worked-out grade, as a whole number, and Rerata nilai akhir is to one
    decimal, as on Penilaian karakter.
+3. The average of each part is of the part as it is recorded, before
+   the hold at 70, as Penilaian karakter shows the parts. Only Nilai
+   akhir and the letter use the score held at 70.
+4. "Komponen nilai karakter" names the parts in the prototype's words,
+   "Kehadiran kegiatan", "Pengasuhan", "Sikap dan perilaku (SIKU)" and
+   "SKPM", each bar out of 100. In "Sebaran huruf" each bar is as long
+   as its share of the largest letter, green for a letter that meets the
+   minimum and red below it, with "(n) mahasiswa" with a worked-out
+   grade beside the title, as in the prototype.
+5. Without numbers, section 2 shows only the line that says why, as
+   section 1 does.
 
 ## Steps
 
 - [x] 1. The "Nilai karakter" card.
-- [ ] 2. "Komponen nilai karakter" and "Sebaran huruf".
+- [x] 2. "Komponen nilai karakter" and "Sebaran huruf".
 - [ ] 3. "Nilai karakter per angkatan".

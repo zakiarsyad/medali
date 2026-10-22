@@ -8,6 +8,7 @@ import { filtersInUse } from "./dashboard-address";
 import { DashboardFilterBar } from "./dashboard-filter-bar";
 import type { DashboardView } from "./dashboard-view";
 import { GradeCard } from "./grade-card";
+import { GradeSection } from "./grade-section";
 import { PhysicalCard } from "./physical-card";
 import { PhysicalSection } from "./physical-section";
 
@@ -17,6 +18,7 @@ import { PhysicalSection } from "./physical-section";
  */
 export interface DetailLinks {
   assessment: string | null;
+  grade: string | null;
   fitness: string | null;
 }
 
@@ -44,6 +46,7 @@ function DashboardContent({
           />
         )}
       </AchievementSection>
+      <GradeSection grades={view.grades} detailAddress={links.grade} />
       <PhysicalSection
         recap={view.physical}
         limits={view.fitnessLimits}

@@ -1,4 +1,4 @@
-import { count, eq, type SQL, sql } from "drizzle-orm";
+import { count, eq, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import { type GradeBasis, gradeFacts } from "@/character-grades/grade-facts";
 import type { GradeScheme } from "@/character-grades/scheme-ids";
 import type { Database } from "@/db/connect";
@@ -12,11 +12,16 @@ export interface CharacterGrades {
   recap: GradeRecap;
 }
 
+function sumOf(part: SQLWrapper): SQL<number> {
+  return sql<number>`coalesce(sum(${part}), 0)`.mapWith(Number);
+}
+
 /**
  * The students grouped by angkatan, jalur and Nilai akhir, held at 70
- * where a penalty limits it, each group with how many it holds and how
- * many of them are held. Every grade is worked out in the database by
- * the rule of Penilaian karakter, and only these few rows leave it.
+ * where a penalty limits it, each group with how many it holds, how
+ * many of them are held, and the sum of each part. Every grade is worked
+ * out in the database by the rule of Penilaian karakter, and only these
+ * few rows leave it.
  */
 async function readGradeGroups(
   db: Database,
@@ -33,6 +38,12 @@ async function readGradeGroups(
       limited: sql<number>`count(*) filter (where ${facts.limited})`.mapWith(
         Number,
       ),
+      sums: {
+        attendance: sumOf(facts.attendance),
+        mentoring: sumOf(facts.mentoring),
+        siku: sumOf(facts.siku),
+        skpm: sumOf(facts.skpm),
+      },
     })
     .from(facts)
     .innerJoin(students, eq(students.id, facts.studentId))

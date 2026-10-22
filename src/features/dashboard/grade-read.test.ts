@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
+import { FORTY_TWENTY } from "@/character-grades/test-weights";
 import type { Database } from "@/db/connect";
 import { characterGradeSchemes, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
@@ -141,6 +142,8 @@ describe("Nilai karakter of Dashboard pembangunan karakter", () => {
         meanFinal: 70.6,
         passing: 83,
         letters: { A: 0, B: 5, C: 0, D: 0, E: 1 },
+        incomplete: 1,
+        parts: { attendance: 500 / 6, mentoring: 80, siku: 65, skpm: 60 },
       });
     });
   });
@@ -192,14 +195,14 @@ describe("Nilai karakter of Dashboard pembangunan karakter", () => {
     });
   });
 
-  it("works the letters out by the scheme in force on the next load", async () => {
+  it("works Nilai akhir and the letters out by the weights, limits and pass letter in force on the next load", async () => {
     await inTestDatabase(async (db) => {
       const { scope, kepala } = await addRecords(db);
       await db.insert(characterGradeSchemes).values({
-        attendanceWeight: 25,
-        mentoringWeight: 25,
-        sikuWeight: 25,
-        skpmWeight: 25,
+        attendanceWeight: 40,
+        mentoringWeight: 20,
+        sikuWeight: 20,
+        skpmWeight: 20,
         aFrom: 90,
         bFrom: 80,
         cFrom: 75,
@@ -212,10 +215,12 @@ describe("Nilai karakter of Dashboard pembangunan karakter", () => {
 
       const view = await loadDashboard(db, scope, NO_FILTERS, ODD_4530, TODAY);
 
+      expect(view.grades.scheme.weights).toEqual(FORTY_TWENTY);
       expect(view.grades.scheme.passLetter).toBe("C");
       expect(view.grades.recap).toMatchObject({
+        meanFinal: 72.1,
         passing: 67,
-        letters: { A: 0, B: 0, C: 4, D: 1, E: 1 },
+        letters: { A: 0, B: 4, C: 0, D: 1, E: 1 },
       });
     });
   });

@@ -5,6 +5,7 @@ const FOLDER = "src/features/dashboard";
 // Starts with a break, so the first rule is found like every other.
 const STYLES = `\n${readFileSync(`${FOLDER}/dashboard.module.css`, "utf8")}`;
 const SECTION = readFileSync(`${FOLDER}/physical-section.tsx`, "utf8");
+const GRADES = readFileSync(`${FOLDER}/grade-section.tsx`, "utf8");
 
 /** What a rule of the style file holds, without the breaks between its lines. */
 function ruleOf(selector: string): string {
@@ -25,6 +26,26 @@ describe("section 3 of the Dashboard on a phone", () => {
 
   it("forces no width wider than a phone", () => {
     for (const selector of [".panels", ".meanings", ".meaning", ".note"]) {
+      const rule = ruleOf(selector);
+      expect(rule, selector).not.toBe("");
+      expect(rule, selector).not.toMatch(/(^|[ ;{])width:/);
+      expect(rule, selector).not.toMatch(/min-width: (?!0;)/);
+      expect(rule, selector).not.toContain("nowrap");
+    }
+  });
+});
+
+describe("section 2 of the Dashboard on a phone", () => {
+  it("stacks its two panels in one column when the screen has no room for two", () => {
+    expect(GRADES).toContain("<div className={styles.panels}>");
+  });
+
+  it("lets each bar shrink to the width of a phone", () => {
+    expect(ruleOf(".bar")).toContain(
+      "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;",
+    );
+    expect(ruleOf(".facts")).toContain("repeat(2, minmax(0, 1fr))");
+    for (const selector of [".bars", ".bar", ".barLabel", ".facts"]) {
       const rule = ruleOf(selector);
       expect(rule, selector).not.toBe("");
       expect(rule, selector).not.toMatch(/(^|[ ;{])width:/);

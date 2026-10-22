@@ -1,5 +1,10 @@
 import { letterOf, passes } from "@/character-grades/grade-letter";
-import type { GradeLetter, GradeScheme } from "@/character-grades/scheme-ids";
+import {
+  GRADE_PARTS,
+  type GradeLetter,
+  type GradePart,
+  type GradeScheme,
+} from "@/character-grades/scheme-ids";
 import { FEWEST_SHOWN } from "./achievement-recap";
 import { oneDecimal } from "./achievement-words";
 import type { EntryPath } from "./dashboard-address";
@@ -16,6 +21,8 @@ export interface GradeGroup {
   students: number;
   /** How many of them a Ringan or Sedang penalty holds at 70. */
   limited: number;
+  /** The sum of each part of the group, as it stands before any limit. */
+  sums: Record<GradePart, number>;
 }
 
 /** The grade numbers of a group with enough worked-out grades. */
@@ -31,6 +38,10 @@ export interface ShownGrades {
   passing: number;
   /** How many have each letter. */
   letters: Record<GradeLetter, number>;
+  /** The students whose grade is "Belum lengkap", left out of every number but `limited`. */
+  incomplete: number;
+  /** The average of each part over the worked-out grades. */
+  parts: Record<GradePart, number>;
 }
 
 /**
@@ -40,26 +51,41 @@ export interface ShownGrades {
 export type GradeRecap = { kind: "none" } | { kind: "too_few" } | ShownGrades;
 
 interface Tally {
+  students: number;
   graded: number;
   limited: number;
   finalSum: number;
   passing: number;
   letters: Record<GradeLetter, number>;
+  sums: Record<GradePart, number>;
+}
+
+function noParts(): Record<GradePart, number> {
+  return { attendance: 0, mentoring: 0, siku: 0, skpm: 0 };
 }
 
 function emptyTally(): Tally {
   return {
+    students: 0,
     graded: 0,
     limited: 0,
     finalSum: 0,
     passing: 0,
     letters: { A: 0, B: 0, C: 0, D: 0, E: 0 },
+    sums: noParts(),
   };
+}
+
+function averages(tally: Tally): Record<GradePart, number> {
+  const each = noParts();
+  for (const part of GRADE_PARTS) each[part] = tally.sums[part] / tally.graded;
+  return each;
 }
 
 function tallyOf(groups: readonly GradeGroup[], scheme: GradeScheme): Tally {
   const tally = emptyTally();
   for (const group of groups) {
+    tally.students += group.students;
     tally.limited += group.limited;
     if (group.final === null) continue;
     const letter = letterOf(group.final, scheme);
@@ -67,6 +93,7 @@ function tallyOf(groups: readonly GradeGroup[], scheme: GradeScheme): Tally {
     tally.finalSum += group.final * group.students;
     tally.letters[letter] += group.students;
     if (passes(letter, scheme.passLetter)) tally.passing += group.students;
+    for (const part of GRADE_PARTS) tally.sums[part] += group.sums[part];
   }
   return tally;
 }
@@ -90,5 +117,7 @@ export function gradeRecapOf(
     meanFinal: oneDecimal(tally.finalSum / tally.graded),
     passing: Math.round((tally.passing / tally.graded) * 100),
     letters: tally.letters,
+    incomplete: tally.students - tally.graded,
+    parts: averages(tally),
   };
 }
