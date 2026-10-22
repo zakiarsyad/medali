@@ -94,6 +94,7 @@ export async function readRecordAddress(
   actor: AccountForAccess,
   studentId: string,
 ): Promise<string | null> {
+  if (!may(actor.roles, "record_discipline_penalties")) return null;
   const pick = await readPenaltyPick(db, actor, studentId);
   if (pick === null) return null;
   return penaltyFormAddress(studentId);

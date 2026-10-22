@@ -13,6 +13,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
+import { startChange } from "./asked-start";
 import styles from "./discipline-penalties.module.css";
 import {
   penaltyHistoryAction,
@@ -347,7 +348,10 @@ export function PenaltyForm({
   today: string;
   /** The academic periods, for the semester of a suspension. */
   periods: PeriodOfDay[];
-  /** The student the form opens on, from "Hukuman ringan"; null for none. */
+  /**
+   * The student the address asks the form to pick, from "Hukuman ringan"
+   * or "Catat pelanggaran"; null for none.
+   */
   start: PenaltyStart | null;
 }) {
   const [key, setKey] = useState(newKey);
@@ -366,7 +370,22 @@ export function PenaltyForm({
   // The student asked for last: the history of one picked before must
   // not replace that of a later pick that answers sooner.
   const asked = useRef(start?.pick.id ?? "");
+  const [takenId, setTakenId] = useState<string | null>(start?.pick.id ?? null);
   const rule = ruleOf(category, level);
+
+  // The page keeps this form when its address asks for another student.
+  const change = startChange(start, takenId);
+  if (change.remember !== takenId) setTakenId(change.remember);
+  if (change.take !== null) takeStart(change.take);
+
+  function takeStart(started: PenaltyStart) {
+    setPicked(started.pick);
+    setHistory(started.history);
+    if (work.place === "home_agency" && !started.pick.hasAgency) {
+      setWork({ ...work, place: "campus" });
+    }
+    asked.current = started.pick.id;
+  }
 
   function pick(student: PenaltyPick | null) {
     setPicked(student);

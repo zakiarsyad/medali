@@ -264,6 +264,30 @@ describe("readRecordAddress", () => {
   );
 });
 
+describe("readRecordAddress for an account that may not record", () => {
+  it("asks the database nothing", async () => {
+    const untouched = new Proxy({} as Database, {
+      get: () => {
+        throw new Error("The database was asked.");
+      },
+    });
+    const director: AccountForAccess = {
+      id: "00000000-0000-4000-8000-000000000000",
+      roles: ["director"],
+      studyProgramId: null,
+      studentId: null,
+    };
+
+    expect(
+      await readRecordAddress(
+        untouched,
+        director,
+        "00000000-0000-4000-8000-000000000001",
+      ),
+    ).toBeNull();
+  });
+});
+
 describe("the small detail a name in Daftar pelanggaran opens", () => {
   function open(db: Database, asking: AccountForAccess, id: string) {
     const listed = penalisedReachOf(asking);
