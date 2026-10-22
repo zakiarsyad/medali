@@ -12,6 +12,7 @@ import {
   parseLimits,
   parseScores,
   parseTestDay,
+  readyCount,
   SCORE_NOT_WHOLE,
   scoreOf,
   testYearOf,
@@ -82,6 +83,27 @@ describe("scoreOf", () => {
     "reads %j as no score",
     (typed) => {
       expect(scoreOf(typed)).toBeNull();
+    },
+  );
+});
+
+describe("readyCount", () => {
+  it("counts every filled field when all are whole scores", () => {
+    expect(readyCount(["72", "", "100", " 0 "])).toBe(3);
+  });
+
+  it("counts only the whole scores beside wrong ones", () => {
+    expect(readyCount(["72", "101", "7.5"])).toBe(1);
+  });
+
+  it("counts nothing when every filled field is wrong", () => {
+    expect(readyCount(["101", "7.5", ""])).toBe(0);
+  });
+
+  it.each(["0", "100", "72", "101", "-1", "72.5", "72,5", "abc", "007"])(
+    "counts %j just as the field's own message judges it",
+    (typed) => {
+      expect(readyCount([typed])).toBe(scoreOf(typed) === null ? 0 : 1);
     },
   );
 });
