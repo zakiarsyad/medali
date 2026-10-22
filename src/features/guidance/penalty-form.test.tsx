@@ -86,7 +86,7 @@ describe("PenaltyForm", () => {
         hasAgency: true,
         cohortYear: 2024,
       },
-      history: { count: 0, top: null },
+      history: { count: 0, top: null, latest: null },
     });
     expect(shown).toContain(
       'name="studentId" value="00000000-0000-4000-8000-000000000705"',

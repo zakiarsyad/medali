@@ -1,8 +1,9 @@
-import type {
-  PenaltyCategory,
-  PenaltyLevel,
-} from "@/features/guidance/penalty-ids";
-import { CATEGORY_WORDS, LEVEL_WORDS } from "@/features/guidance/penalty-words";
+import {
+  CATEGORY_WORDS,
+  LEVEL_WORDS,
+  type PenaltyCategory,
+  type PenaltyLevel,
+} from "./penalty-kinds";
 
 /**
  * "Dasar" of a Penugasan sent from a discipline penalty, which Konselor

@@ -26,14 +26,16 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import type {
+  PenaltyCategory,
+  PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
 import { pageWithin } from "@/ui/list-pages";
 import type { PenaltiesParams } from "./penalty-address";
 import {
   type ContinuationCondition,
   type ContinuationDecision,
   PENALTIES_PAGE_SIZE,
-  type PenaltyCategory,
-  type PenaltyLevel,
   type PenaltyStatus,
   type SocialWorkForm,
   type SocialWorkPlace,

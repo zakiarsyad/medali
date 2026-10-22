@@ -1,7 +1,9 @@
 import type {
-  ContinuationCondition,
   PenaltyCategory,
   PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
+import type {
+  ContinuationCondition,
   SocialWorkForm,
   SocialWorkPlace,
 } from "@/features/guidance/penalty-ids";

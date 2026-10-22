@@ -161,6 +161,13 @@
   color: var(--muted);
 }
 
+/* "Dibatasi 70": a grade held lower by a discipline penalty. */
+.limited {
+  border: var(--line-width) solid var(--bina);
+  background: none;
+  color: var(--bina);
+}
+
 /* "Nilai karakter (KEP-220)" in a student's detail: one bar per part. */
 .partBars {
   display: grid;

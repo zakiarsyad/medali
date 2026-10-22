@@ -1,14 +1,25 @@
+import {
+  predicateOf,
+  rerataOf,
+  type Scores,
+} from "@/character-scores/assessment-score";
+import { PREDICATE_WORDS } from "@/character-scores/predicate-words";
+import { shownRerata } from "@/character-scores/shown-rerata";
 import { isDay } from "@/db/is-day";
-import { shownDay } from "@/ui/day";
-import type { PenaltyCategory, PenaltyLevel } from "./penalty-ids";
+import {
+  kindWords,
+  type PenaltyCategory,
+  type PenaltyLevel,
+  rankOf,
+} from "@/discipline-penalties/penalty-kinds";
 import {
   CHARACTER_SCORE_CAP,
-  rankOf,
-  ruleOf,
-  socialWorkEnd,
-} from "./penalty-rules";
+  limitedScores,
+} from "@/discipline-penalties/score-limit";
+import { shownDay } from "@/ui/day";
+import { ruleOf, socialWorkEnd } from "./penalty-rules";
 import { type PeriodOfDay, semesterOnDay } from "./penalty-semester";
-import { CATEGORY_WORDS, LEVEL_WORDS, lengthWords } from "./penalty-words";
+import { lengthWords } from "./penalty-words";
 
 /*
  * What "Konsekuensi" says of a penalty before it is saved. Read by the
@@ -28,6 +39,8 @@ export interface PenaltyHistory {
   count: number;
   /** Null for a student with none. */
   top: TopPenalty | null;
+  /** The scores of the latest assessment as stored; null for a student never assessed. */
+  latest: Scores | null;
 }
 
 /** One line of "Konsekuensi": what it is about, and what it says. */
@@ -98,15 +111,25 @@ function suspensionLines(semester: number | null): ConsequenceLine[] {
   ];
 }
 
-function outcomeLines(choice: ConsequenceChoice): ConsequenceLine[] {
+/**
+ * What the cap does to nilai karakter: with the student's latest scores,
+ * their Rerata before and after it, and the predikat after it.
+ */
+function capWords(latest: Scores | null): string {
+  const capped = `Dibatasi paling tinggi ${CHARACTER_SCORE_CAP}.`;
+  if (latest === null) return capped;
+  const after = rerataOf(limitedScores(latest, true));
+  const predicate = PREDICATE_WORDS[predicateOf(after)];
+  return `${capped} Rerata ${shownRerata(rerataOf(latest))} menjadi ${shownRerata(after)} (${predicate}).`;
+}
+
+function outcomeLines(
+  choice: ConsequenceChoice,
+  latest: Scores | null,
+): ConsequenceLine[] {
   const { outcome } = ruleOf(choice.category, choice.level);
   if (outcome === "capped") {
-    return [
-      {
-        title: "Nilai karakter",
-        text: `Dibatasi paling tinggi ${CHARACTER_SCORE_CAP}.`,
-      },
-    ];
+    return [{ title: "Nilai karakter", text: capWords(latest) }];
   }
   if (outcome === "suspended") return suspensionLines(semesterOf(choice));
   return [
@@ -119,16 +142,20 @@ function outcomeLines(choice: ConsequenceChoice): ConsequenceLine[] {
 
 /**
  * What the chosen Jenjang means for the student: the penalty, the kerja
- * sosial with its dates, and the cap on nilai karakter, the suspension,
- * or the end of the status.
+ * sosial with its dates, and the cap on nilai karakter with what it does
+ * to the Rerata of their `latest` scores, the suspension, or the end of
+ * the status.
  */
-export function consequencesOf(choice: ConsequenceChoice): ConsequenceLine[] {
+export function consequencesOf(
+  choice: ConsequenceChoice,
+  latest: Scores | null = null,
+): ConsequenceLine[] {
   const lines: ConsequenceLine[] = [
     { title: "Hukuman", text: ruleOf(choice.category, choice.level).penalty },
   ];
   const work = socialWorkLine(choice);
   if (work !== null) lines.push(work);
-  return [...lines, ...outcomeLines(choice)];
+  return [...lines, ...outcomeLines(choice, latest)];
 }
 
 /** Whether the chosen Jenjang is lower than the highest the student had before. */
@@ -145,6 +172,5 @@ export function isLowerThanBefore(
 export function historyWords(history: PenaltyHistory): string {
   const { top } = history;
   if (top === null) return NO_HISTORY;
-  const highest = `${CATEGORY_WORDS[top.category].toLowerCase()} jenjang ${LEVEL_WORDS[top.level]}`;
-  return `Riwayat: ${history.count} pelanggaran. Hukuman tertinggi sebelumnya ${highest} (${shownDay(top.day)}). Sesuai ayat (6), bila mahasiswa mengulangi perbuatan yang ancamannya lebih tinggi, dikenakan hukuman yang lebih tinggi tersebut.`;
+  return `Riwayat: ${history.count} pelanggaran. Hukuman tertinggi sebelumnya ${kindWords(top)} (${shownDay(top.day)}). Sesuai ayat (6), bila mahasiswa mengulangi perbuatan yang ancamannya lebih tinggi, dikenakan hukuman yang lebih tinggi tersebut.`;
 }

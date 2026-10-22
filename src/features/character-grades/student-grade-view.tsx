@@ -2,6 +2,7 @@ import type { CharacterGrade } from "@/character-grades/character-grade";
 import { GradeLetterBadge } from "@/character-grades/grade-letter-badge";
 import { partScoresOf } from "@/character-grades/grade-list";
 import {
+  limitedLine,
   shownFinal,
   shownOneDecimal,
   shownPart,
@@ -13,6 +14,7 @@ import {
 } from "@/character-grades/scheme-ids";
 import type { StudentGrade } from "@/character-grades/student-grade";
 import shared from "@/ui/data-screen.module.css";
+import { LimitNote } from "@/ui/limit-note";
 import styles from "./character-grades.module.css";
 import { PART_LABELS } from "./scheme-words";
 
@@ -70,10 +72,17 @@ function PassLine({
   );
 }
 
+/** From what Nilai akhir a Ringan or Sedang penalty held the grade at 70. */
+function LimitLine({ grade }: { grade: CharacterGrade }) {
+  if (!grade.complete || grade.limitedFrom === undefined) return null;
+  return <LimitNote text={limitedLine(grade.limitedFrom)} />;
+}
+
 /**
  * "Nilai karakter (KEP-220)" in a student's detail: the letter and Nilai
  * akhir, a bar for each part with its weight and score, and whether the
- * grade reaches the pass letter of the scheme in force. A missing part
+ * grade reaches the pass letter of the scheme in force, with the limit
+ * of a discipline penalty when it lowered the grade. A missing part
  * shows "-" and no bar, and the grade "Belum lengkap".
  */
 export function StudentGradeView({ grade }: { grade: StudentGrade }) {
@@ -99,6 +108,7 @@ export function StudentGradeView({ grade }: { grade: StudentGrade }) {
         ))}
       </ul>
       <PassLine grade={row.grade} scheme={scheme} />
+      <LimitLine grade={row.grade} />
     </section>
   );
 }

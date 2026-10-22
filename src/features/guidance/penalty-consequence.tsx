@@ -1,3 +1,6 @@
+import type { Scores } from "@/character-scores/assessment-score";
+import { Medal } from "@/character-scores/medal";
+import { limitedScores, limits } from "@/discipline-penalties/score-limit";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./discipline-penalties.module.css";
 import { JenjangBadge } from "./penalty-badges";
@@ -40,11 +43,25 @@ function HistoryBox({
   );
 }
 
+/** The medal of the latest scores held at 70, over the one as stored. */
+function CappedMedal({ latest }: { latest: Scores }) {
+  return (
+    <div className={styles.cappedMedal}>
+      <Medal scores={limitedScores(latest, true)} last={latest} />
+      <p className={styles.line}>
+        Garis putus-putus menunjukkan skor sebelum pembatasan.
+      </p>
+    </div>
+  );
+}
+
 /**
  * "Konsekuensi": the history of the student picked, with a warning when
  * the chosen Jenjang is lower than the highest before, and what the
- * chosen Jenjang means for the student. `history` is null while no
- * student is picked or theirs is being read.
+ * chosen Jenjang means for the student: for Ringan and Sedang, what the
+ * cap does to the Rerata of their latest assessment, with the medal
+ * before and after. `history` is null while no student is picked or
+ * theirs is being read.
  */
 export function PenaltyConsequence({
   choice,
@@ -55,6 +72,7 @@ export function PenaltyConsequence({
   isPicked: boolean;
   history: PenaltyHistory | null;
 }) {
+  const latest = isPicked ? (history?.latest ?? null) : null;
   return (
     <section className={shared.panel}>
       <div className={styles.head}>
@@ -66,13 +84,14 @@ export function PenaltyConsequence({
         <HistoryBox history={history} choice={choice} />
       )}
       <dl className={styles.consequences}>
-        {consequencesOf(choice).map((line) => (
+        {consequencesOf(choice, latest).map((line) => (
           <div key={line.title}>
             <dt>{line.title}</dt>
             <dd>{line.text}</dd>
           </div>
         ))}
       </dl>
+      {latest && limits(choice.category) && <CappedMedal latest={latest} />}
     </section>
   );
 }

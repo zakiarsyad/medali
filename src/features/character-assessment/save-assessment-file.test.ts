@@ -12,6 +12,12 @@ import {
   students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+} from "@/discipline-penalties/test-penalties";
+import { SCORE_ABOVE_LIMIT } from "./assessment-file";
+import { previewAssessmentFile } from "./assessment-file-check";
 import { readAssessmentHistory } from "./assessment-history";
 import {
   FILE_ALREADY_SENT,
@@ -314,6 +320,40 @@ describe("saveAssessmentFile", () => {
         MOMENT,
       );
 
+      expect(saved).toEqual({ ok: true, value: { saved: 1 } });
+      expect(await keptOf(db, [budi])).toEqual([]);
+      expect(await keptOf(db, [ani])).toHaveLength(1);
+    });
+  });
+
+  it("skips a row with a score above 70 for a student under a Ringan or Sedang penalty, in the preview and at the save", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, budi, penilai } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, budi, recorder, {
+        category: "light",
+        level: 1,
+      });
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "heavy",
+        level: 1,
+      });
+
+      const preview = await previewAssessmentFile(db, penilai, csv(ROWS));
+      const saved = await saveAssessmentFile(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        "mentor_observation",
+        csv(ROWS),
+        MOMENT,
+      );
+
+      expect(preview.ok && preview.value.firstSkipped).toContainEqual({
+        row: 3,
+        nim: "9986160002",
+        reason: SCORE_ABOVE_LIMIT,
+      });
       expect(saved).toEqual({ ok: true, value: { saved: 1 } });
       expect(await keptOf(db, [budi])).toEqual([]);
       expect(await keptOf(db, [ani])).toHaveLength(1);

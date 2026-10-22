@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, type ReactNode, useState } from "react";
+import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import type { PenaltyNumbers } from "./penalty-board";
-import { CHARACTER_SCORE_CAP } from "./penalty-rules";
 
 /**
  * Puts the "Kerja sosial belum selesai" a status change answers in the

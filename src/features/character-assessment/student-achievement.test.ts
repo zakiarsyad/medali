@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+  TEST_DESCRIPTION,
+} from "@/discipline-penalties/test-penalties";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { readStudentAchievement } from "./student-achievement";
 import {
@@ -83,7 +88,32 @@ describe("readStudentAchievement", () => {
         }),
         earlier: LOW_SCORES,
         mayAssess: true,
+        limit: null,
       });
+    });
+  });
+
+  it("gives the scores held at 70 of a student under a Ringan or Sedang penalty, with the Rerata as stored and the penalty's Kategori and Jenjang, never its Uraian", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai, actor } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "light",
+        level: 3,
+      });
+      const kepala = await actor("Kepala Uji Capaian Batas", ["head_of_unit"]);
+
+      for (const account of [kepala, penilai]) {
+        const shown = await readStudentAchievement(db, account, ani, TODAY);
+
+        expect(shown?.latest).toMatchObject({
+          scores: { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+          storedRerata: 80.3,
+        });
+        expect(shown?.earlier).toEqual(LOW_SCORES);
+        expect(shown?.limit).toEqual({ category: "light", level: 3 });
+        expect(JSON.stringify(shown)).not.toContain(TEST_DESCRIPTION);
+      }
     });
   });
 

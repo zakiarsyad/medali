@@ -119,10 +119,12 @@ describe("readPenaltyHistory", () => {
       expect(await readPenaltyHistory(db, officer, one)).toEqual({
         count: 3,
         top: { category: "medium", level: 1, day: "2026-09-20" },
+        latest: null,
       });
       expect(await readPenaltyHistory(db, officer, two)).toEqual({
         count: 0,
         top: null,
+        latest: null,
       });
     });
   });

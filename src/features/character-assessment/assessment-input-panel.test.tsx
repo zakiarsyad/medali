@@ -38,6 +38,7 @@ describe("Input capaian MEDALI opened by Input asesmen", () => {
         nim: "9989330001",
         program: "D3 Akuntansi",
         latest: { M: 80, E: 64, D: 85, A: 72, L: 82, I: 86 },
+        limit: null,
       }}
     />,
   );

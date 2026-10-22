@@ -5,6 +5,10 @@ import type { AccountForAccess, RowLimit } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  addTestRecorder,
+} from "@/discipline-penalties/test-penalties";
 import { readGroupReratas, readMentorReratas } from "./medali-averages";
 import {
   addTestGroup,
@@ -62,7 +66,12 @@ async function addRecords(db: Database) {
   await addTestMentorLine(db, groupId, mentorId);
   const group = await addTestGroupOf(db, programId, groupId);
   const { by } = group;
-  await addTestScoredMember(db, group, "9987650001", allScores(80));
+  const eighty = await addTestScoredMember(
+    db,
+    group,
+    "9987650001",
+    allScores(80),
+  );
   const seventy = await addTestScoredMember(
     db,
     group,
@@ -73,7 +82,7 @@ async function addRecords(db: Database) {
   await addTestScoredMember(db, group, "9987650004", allScores(40), {
     status: "on_leave",
   });
-  return { programId, otherProgramId, groupId, mentorId, by, seventy };
+  return { programId, otherProgramId, groupId, mentorId, by, seventy, eighty };
 }
 
 describe("readGroupReratas", () => {
@@ -96,6 +105,23 @@ describe("readGroupReratas", () => {
       const reratas = await readGroupReratas(db, EVERY_ROW, [groupId]);
 
       expect(reratas.get(groupId)).toBe(85);
+    });
+  });
+
+  it("counts a member under a Ringan or Sedang penalty at 70, for the group and for its mentor", async () => {
+    await inTestDatabase(async (db) => {
+      const { groupId, mentorId, eighty } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, eighty, recorder, {
+        category: "medium",
+        level: 2,
+      });
+
+      const groups = await readGroupReratas(db, EVERY_ROW, [groupId]);
+      const mentors = await readMentorReratas(db, EVERY_ROW, [mentorId]);
+
+      expect(groups.get(groupId)).toBe(70);
+      expect(mentors.get(mentorId)).toBe(70);
     });
   });
 

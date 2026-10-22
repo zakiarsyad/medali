@@ -4,7 +4,7 @@ import { type GradeBasis, gradeFacts } from "./grade-facts";
 import { type GradeNumbers, gradeNumbersFrom } from "./grade-numbers";
 
 /**
- * The four numbers above "Skema bobot", of the Aktif students `visible`
+ * The numbers above "Skema bobot", of the Aktif students `visible`
  * lets through, counted in the database, so one row leaves it. Nilai
  * akhir is added in the order of the list, as the server added it, so
  * the mean rounds as it did.
@@ -23,6 +23,9 @@ export async function readGradeNumbers(
         Number,
       ),
       adjusted: sql<number>`count(*) filter (where ${facts.adjusted})`.mapWith(
+        Number,
+      ),
+      limited: sql<number>`count(*) filter (where ${facts.limited})`.mapWith(
         Number,
       ),
       finalSum: sql<

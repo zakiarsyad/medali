@@ -2,7 +2,7 @@ import {
   type GradeNumbers,
   passingPercent,
 } from "@/character-grades/grade-numbers";
-import { shownOneDecimal } from "@/character-grades/grade-words";
+import { LIMITED_WORDS, shownOneDecimal } from "@/character-grades/grade-words";
 import type { GradeLetter } from "@/character-grades/scheme-ids";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 
@@ -15,7 +15,7 @@ function shownShare(percent: number | null): string {
   return `${shown(percent)}%`;
 }
 
-/** The four numbers above "Skema bobot". */
+/** The numbers above "Skema bobot". */
 export function GradeNumberCards({
   numbers,
   passLetter,
@@ -47,6 +47,11 @@ export function GradeNumberCards({
         label="Belum lengkap"
         amount={numbers.incomplete}
         note="tidak dihitung dalam rerata"
+      />
+      <NumberCard
+        label={LIMITED_WORDS}
+        amount={numbers.limited}
+        note="karena hukuman disiplin"
       />
     </NumberCards>
   );

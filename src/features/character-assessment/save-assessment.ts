@@ -6,6 +6,8 @@ import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { characterAssessments, students } from "@/db/schema";
+import { readLimitsOf } from "@/discipline-penalties/read-limits";
+import { isAboveLimit } from "@/discipline-penalties/score-limit";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import type { Parsed } from "@/parsed";
 import { MEDALI_VALUES } from "@/ui/medali-values";
@@ -18,6 +20,7 @@ import {
   ASSESSMENT_ALREADY_SENT,
   NO_PERIOD,
   NOT_ALLOWED_TO_ASSESS,
+  OVER_LIMIT,
   STUDENT_NOT_FOUND,
 } from "./assessment-messages";
 import { scoresOf } from "./latest-assessments";
@@ -82,6 +85,8 @@ async function save(
   const name = await assessedStudentName(tx, actor, input.studentId);
   if (name === null) return STUDENT_NOT_FOUND;
   const { scores } = input;
+  const limits = await readLimitsOf(tx, [input.studentId]);
+  if (limits.has(input.studentId) && isAboveLimit(scores)) return OVER_LIMIT;
   // A second press waits here for the first to end, then adds nothing.
   const added = await tx
     .insert(characterAssessments)
@@ -119,7 +124,8 @@ async function save(
  * it is saved, as the work of the actor. The assessment is its own line
  * in the log: it can never be changed or deleted. Refused, with nothing
  * kept, for a role without the right Asesmen karakter, for what the form
- * rules refuse, while no period runs, and for any other student. `id`
+ * rules refuse, while no period runs, for any other student, and for a
+ * score above 70 of a student under a Ringan or Sedang penalty. `id`
  * is the key its form made: a form sent twice is kept once, and the
  * second press is answered as the first. Gives the student's name.
  */

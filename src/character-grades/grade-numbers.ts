@@ -1,4 +1,4 @@
-/** The four numbers above "Skema bobot", of the students the account sees. */
+/** The numbers above "Skema bobot", of the students the account sees. */
 export interface GradeNumbers {
   /** How many Aktif students they are. */
   students: number;
@@ -11,24 +11,27 @@ export interface GradeNumbers {
   adjusted: number;
   /** How many are "Belum lengkap". */
   incomplete: number;
+  /** How many a Ringan or Sedang penalty holds at 70. */
+  limited: number;
 }
 
-/** What the four numbers are worked out from, as the database counts them. */
+/** What the numbers are worked out from, as the database counts them. */
 export interface GradeTotals {
   students: number;
   complete: number;
   passing: number;
   adjusted: number;
+  limited: number;
   /** The sum of the worked-out Nilai akhir, or null with none. */
   finalSum: number | null;
 }
 
 /**
- * The four numbers. A "Belum lengkap" student is left out of Rerata nilai
+ * The numbers. A "Belum lengkap" student is left out of Rerata nilai
  * akhir and of who meets the pass letter: nothing is guessed for them.
  */
 export function gradeNumbersFrom(totals: GradeTotals): GradeNumbers {
-  const { students, complete, passing, adjusted, finalSum } = totals;
+  const { students, complete, passing, adjusted, limited, finalSum } = totals;
   const meanFinal =
     complete === 0 || finalSum === null
       ? null
@@ -40,6 +43,7 @@ export function gradeNumbersFrom(totals: GradeTotals): GradeNumbers {
     passing,
     adjusted,
     incomplete: students - complete,
+    limited,
   };
 }
 
