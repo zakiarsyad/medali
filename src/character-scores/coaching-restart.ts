@@ -7,7 +7,10 @@ import { isIdentifiedAgain } from "./coaching-again";
 import { FIRST_COACHING_STATUS } from "./coaching-status";
 import { earlierAssessments, latestAssessments } from "./latest-assessments";
 
-/** A saved status other than Teridentifikasi with no note. */
+/**
+ * A saved status that is anything but Teridentifikasi with no note: any
+ * other status, or Teridentifikasi with a note.
+ */
 const MOVED_ON = not(
   and(
     eq(coachingStatuses.status, FIRST_COACHING_STATUS),
