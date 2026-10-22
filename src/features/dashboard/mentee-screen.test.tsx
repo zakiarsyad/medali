@@ -17,11 +17,16 @@ const SHOWN: MenteeDashboard = {
       programCode: "D3PJK",
     },
   ],
+  progress: null,
 };
+
+const LINKS = { meetings: "/pengasuhan/hadir", scores: "/pengasuhan/nilai" };
 
 describe("Dashboard anak asuh", () => {
   it("shows the title and the line of a Pengasuh with a group", () => {
-    const html = renderToStaticMarkup(<MenteeScreen view={SHOWN} />);
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
 
     expect(html).toContain("Dashboard anak asuh");
     expect(html).toContain(
@@ -31,7 +36,7 @@ describe("Dashboard anak asuh", () => {
 
   it("shows only the message to a Pengasuh without a group", () => {
     const html = renderToStaticMarkup(
-      <MenteeScreen view={{ kind: "no_group" }} />,
+      <MenteeScreen view={{ kind: "no_group" }} links={LINKS} />,
     );
 
     expect(html).toContain("Dashboard anak asuh");

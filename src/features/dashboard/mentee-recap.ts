@@ -1,4 +1,5 @@
 import type { GroupCodeParts } from "@/ui/group-code";
+import type { MentoringProgress } from "./mentee-progress";
 
 /*
  * Dashboard anak asuh, as it may leave the server. Read by the screen
@@ -16,6 +17,8 @@ export interface MenteeContent {
   groups: MenteeGroup[];
   /** Their Aktif anak asuh. */
   students: number;
+  /** What they have filled in this semester, or null while no period runs. */
+  progress: MentoringProgress | null;
 }
 
 /** Dashboard anak asuh: only the message while no group is held. */

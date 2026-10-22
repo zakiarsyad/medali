@@ -93,7 +93,7 @@ Pengasuh.
 - [x] 1. "Dashboard anak asuh" opens for Pengasuh, limited to their own
   anak asuh, with the message for a Pengasuh without a group and the
   switch for an account with both Dashboards.
-- [ ] 2. The progress box with its two links.
+- [x] 2. The progress box with its two links.
 - [ ] 3. The four cards for anak asuh.
 - [ ] 4. "Perlu perhatian" with its reasons and "Lihat semua".
 - [ ] 5. "Catatan pengasuhan terbaru" and its four numbers.

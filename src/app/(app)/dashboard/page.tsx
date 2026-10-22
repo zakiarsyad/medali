@@ -35,7 +35,10 @@ import {
 import { DashboardSwitch } from "@/features/dashboard/dashboard-switch";
 import { loadDashboard } from "@/features/dashboard/dashboard-view";
 import { menteeScopeOf } from "@/features/dashboard/mentee-scope";
-import { MenteeScreen } from "@/features/dashboard/mentee-screen";
+import {
+  type MenteeLinks,
+  MenteeScreen,
+} from "@/features/dashboard/mentee-screen";
 import { loadMenteeDashboard } from "@/features/dashboard/mentee-view";
 import { FITNESS_ADDRESS } from "@/features/fitness/fitness-address";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
@@ -45,7 +48,9 @@ import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-pan
 import { MENTOR_LIST_ADDRESS } from "@/features/mentor-groups/mentor-list-address";
 import { openGroupAddress } from "@/features/mentor-groups/open-group-address";
 import { openMentorAddress } from "@/features/mentor-groups/open-mentor-address";
+import { MEETINGS_ADDRESS } from "@/features/mentoring/meetings-address";
 import { NOTES_ADDRESS } from "@/features/mentoring/notes-address";
+import { SCORES_ADDRESS } from "@/features/mentoring/scores-address";
 import { StudentNotesPanel } from "@/features/mentoring/student-notes-panel";
 import { noteRowsFor } from "@/features/mentoring/visible-notes";
 import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
@@ -159,16 +164,26 @@ async function CharacterView({ account, kinds, params }: ViewProps) {
   );
 }
 
+function menteeLinksOf(roles: AccountForAccess["roles"]): MenteeLinks {
+  const opens = (tab: string) => mayOpenTab(roles, "mentoring", tab);
+  return {
+    meetings: opens("meetings") ? MEETINGS_ADDRESS : null,
+    scores: opens("scores") ? SCORES_ADDRESS : null,
+  };
+}
+
 /** Dashboard anak asuh, of the account's own anak asuh only. */
 async function MenteeView({ account, kinds, params }: ViewProps) {
   const scope = menteeScopeOf(account);
   if (scope === null) forbidden();
-  const view = await loadMenteeDashboard(database(), scope);
+  const db = database();
+  const period = await readRunningPeriod(db, campusDay());
+  const view = await loadMenteeDashboard(db, scope, period);
   const detail = await askedDetail(account, readDashboardDetail(params));
   return (
     <>
       <DashboardSwitch kinds={kinds} open="mentees" />
-      <MenteeScreen view={view} />
+      <MenteeScreen view={view} links={menteeLinksOf(account.roles)} />
       {detail && (
         <DashboardDetail
           account={account}

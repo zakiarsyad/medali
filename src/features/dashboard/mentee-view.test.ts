@@ -2,10 +2,12 @@
 // Sample NIMs of this file: 9989630000 to 9989630099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { mentorGroupMembers, type students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestPeriod } from "@/features/mentoring/test-meetings";
 import {
   addTestAccount,
   addTestGroup,
@@ -13,7 +15,9 @@ import {
   addTestStudent,
   replaceTestMentor,
 } from "@/features/mentoring/test-records";
+import { addTestScore } from "@/features/mentoring/test-scores";
 import { readStudentDetail } from "@/features/students/student-detail";
+import { addTestMeeting } from "@/mentoring/test-meetings";
 import type { MenteeDashboard } from "./mentee-recap";
 import { menteeScopeOf } from "./mentee-scope";
 import { loadMenteeDashboard } from "./mentee-view";
@@ -60,17 +64,35 @@ async function addRecords(db: Database) {
     memberIds: [ids.s05, ids.s06],
     mentorId: other.id,
   });
-  return { mentor, other, spare, ids, groupId, otherGroupId };
+  const { day: _day, ...days } = await addTestPeriod(db, 5170);
+  const period: AcademicPeriod = { ...ODD_5170, ...days };
+  return { mentor, other, spare, ids, groupId, otherGroupId, period };
+}
+
+/** A second group of `mentor`, with one Aktif student of its own. */
+async function addSecondGroup(db: Database, mentor: AccountForAccess) {
+  const programId = await addTestProgram(db, "Prodi Uji Anak Asuh Kedua");
+  const s07 = await addTestStudent(db, programId, {
+    nim: "9989630007",
+    name: "Mahasiswa Uji Anak Asuh 07",
+  });
+  const groupId = await addTestGroup(db, programId, {
+    number: 1,
+    memberIds: [s07],
+    mentorId: mentor.id,
+  });
+  return groupId;
 }
 
 async function load(
   db: Database,
   account: AccountForAccess,
+  period: AcademicPeriod | null = null,
 ): Promise<MenteeDashboard> {
   const scope = menteeScopeOf(account);
   if (scope === null)
     throw new Error("The account has no Dashboard anak asuh.");
-  return loadMenteeDashboard(db, scope);
+  return loadMenteeDashboard(db, scope, period);
 }
 
 function shown(view: MenteeDashboard) {
@@ -125,6 +147,50 @@ describe("Dashboard anak asuh", () => {
 
       expect(await load(db, mentor)).toEqual({ kind: "no_group" });
       expect(shown(await load(db, other)).students).toBe(4);
+    });
+  });
+
+  it("counts the meetings filled in of the group with the fewest, and the Aktif anak asuh scored, in the running period only", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, other, ids, otherGroupId, period } = await addRecords(db);
+      const secondId = await addSecondGroup(db, mentor);
+      const lastYear = await addTestPeriod(db, 5171);
+      const meet = (groupId: string, number: number, periodId = period.id) =>
+        addTestMeeting(db, { groupId, periodId, number, savedBy: mentor.id });
+      await meet(secondId, 1);
+      await meet(secondId, 2);
+      await meet(secondId, 3, lastYear.id);
+      await meet(otherGroupId, 1);
+      const score = (studentId: string, periodId = period.id) =>
+        addTestScore(db, {
+          studentId,
+          periodId,
+          score: 80,
+          scoredBy: mentor.id,
+        });
+      await score(ids.s01);
+      await score(ids.s04);
+      await score(ids.s02, lastYear.id);
+      await score(ids.s05);
+
+      const view = shown(await load(db, mentor, period));
+
+      expect(view.progress).toEqual({
+        period: ODD_5170,
+        filled: 0,
+        meetings: 4,
+        scored: 1,
+        students: 4,
+      });
+      expect(shown(await load(db, other, period)).progress?.filled).toBe(1);
+    });
+  });
+
+  it("counts no progress while no academic period runs", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor } = await addRecords(db);
+
+      expect(shown(await load(db, mentor)).progress).toBeNull();
     });
   });
 
