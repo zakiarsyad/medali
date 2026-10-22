@@ -74,6 +74,7 @@ describe("Dashboard anak asuh", () => {
     );
     expect(html).not.toContain("diasesmen</small>");
     expect(html).not.toContain("Filter");
+    expect(html).not.toContain('href="#');
   });
 
   it("shows Catatan pengasuhan terbaru with Tulis catatan and its four numbers", () => {

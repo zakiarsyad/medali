@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import { BAM_ROLES } from "@/auth/bam-roles";
 import type { RoleId } from "@/auth/role-ids";
-import { menteeScopeOf } from "./mentee-scope";
+import { menteeAccountOf, menteeScopeOf } from "./mentee-scope";
 
 function accountOf(roles: RoleId[]): AccountForAccess {
   return { id: "x", roles, studyProgramId: 3, studentId: null };
@@ -31,6 +31,10 @@ describe("menteeScopeOf", () => {
       expect(both?.mentees).toEqual(alone?.mentees);
       expect(both?.shared?.reach).toEqual(alone?.shared?.reach);
       expect(both?.notes).toEqual(alone?.notes);
+      expect(both?.detail).toEqual(alone?.detail);
+      expect(menteeAccountOf(accountOf(["mentor", role])).roles).toEqual([
+        "mentor",
+      ]);
     }
   });
 

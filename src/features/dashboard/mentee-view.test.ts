@@ -19,7 +19,7 @@ import { addTestScore } from "@/features/mentoring/test-scores";
 import { readStudentDetail } from "@/features/students/student-detail";
 import { addTestMeeting } from "@/mentoring/test-meetings";
 import type { MenteeDashboard } from "./mentee-recap";
-import { menteeScopeOf } from "./mentee-scope";
+import { menteeAccountOf, menteeScopeOf } from "./mentee-scope";
 import { loadMenteeDashboard } from "./mentee-view";
 
 const inTestDatabase = withTestDatabase();
@@ -192,6 +192,26 @@ describe("Dashboard anak asuh", () => {
       const { mentor } = await addRecords(db);
 
       expect(shown(await load(db, mentor)).progress).toBeNull();
+    });
+  });
+
+  it("refuses a person who is also Kepala Unit, on this view, the detail of a student who is not their anak asuh", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, ids } = await addRecords(db);
+      const both: AccountForAccess = {
+        ...mentor,
+        roles: ["head_of_unit", "mentor"],
+      };
+      const viewer = menteeAccountOf(both);
+
+      const own = await readStudentDetail(db, viewer, ids.s01, ODD_5170);
+      const notOwn = await readStudentDetail(db, viewer, ids.s05, ODD_5170);
+
+      expect(own.kind).toBe("found");
+      expect(notOwn.kind).toBe("not_found");
+      expect((await readStudentDetail(db, both, ids.s05, ODD_5170)).kind).toBe(
+        "found",
+      );
     });
   });
 

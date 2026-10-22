@@ -34,7 +34,10 @@ import {
 } from "@/features/dashboard/dashboard-screen";
 import { DashboardSwitch } from "@/features/dashboard/dashboard-switch";
 import { loadDashboard } from "@/features/dashboard/dashboard-view";
-import { menteeScopeOf } from "@/features/dashboard/mentee-scope";
+import {
+  menteeAccountOf,
+  menteeScopeOf,
+} from "@/features/dashboard/mentee-scope";
 import {
   type MenteeLinks,
   MenteeScreen,
@@ -181,14 +184,16 @@ async function MenteeView({ account, kinds, params }: ViewProps) {
   const today = campusDay();
   const period = await readRunningPeriod(db, today);
   const view = await loadMenteeDashboard(db, scope, period, today);
-  const detail = await askedDetail(account, readDashboardDetail(params));
+  // The detail keeps to the Pengasuh's own anak asuh, as every number here does.
+  const viewer = menteeAccountOf(account);
+  const detail = await askedDetail(viewer, readDashboardDetail(params));
   return (
     <>
       <DashboardSwitch kinds={kinds} open="mentees" />
       <MenteeScreen view={view} links={menteeLinksOf(account.roles)} />
       {detail && (
         <DashboardDetail
-          account={account}
+          account={viewer}
           detail={detail}
           closeAddress={MENTEE_DASHBOARD_ADDRESS}
         />

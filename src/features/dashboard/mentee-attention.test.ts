@@ -44,7 +44,7 @@ describe("reasonsOf", () => {
     expect(words(all)).toEqual([
       "Capaian: pembinaan intensif",
       "Nilai karakter D",
-      "Kehadiran kegiatan 75%",
+      "Kehadiran kegiatan 74,6%",
       "Hukuman disiplin sedang",
       "Jasmani: perlu tindak lanjut medis",
       "Mental: berat",
@@ -55,7 +55,7 @@ describe("reasonsOf", () => {
     expect(ATTENDANCE_BELOW).toBe(75);
     expect(words({ ...CALM, attendance: 75 })).toEqual([]);
     expect(words({ ...CALM, attendance: 74.9 })).toEqual([
-      "Kehadiran kegiatan 75%",
+      "Kehadiran kegiatan 74,9%",
     ]);
     expect(words({ ...CALM, attendance: null })).toEqual([]);
   });

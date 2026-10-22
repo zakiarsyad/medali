@@ -11,6 +11,7 @@ import type { FitnessCategory } from "@/health-notes/fitness-ids";
 import type { ScreeningLevel } from "@/mental-health/screening-ids";
 import { COUNSELLING_LEVELS } from "@/mental-health/screening-rules";
 import { LEVEL_WORDS } from "@/mental-health/screening-words";
+import { averageWords } from "./achievement-words";
 
 /*
  * Which anak asuh need attention, and why. Read by the screen parts, so
@@ -82,8 +83,8 @@ function gradeReason(grade: MenteeFacts["grade"]): Reason | null {
 
 function attendanceReason(attendance: number | null): Reason | null {
   if (attendance === null || attendance >= ATTENDANCE_BELOW) return null;
-  const percent = Math.round(attendance);
-  return { words: `Kehadiran kegiatan ${percent}%`, tone: "warning" };
+  const words = `Kehadiran kegiatan ${averageWords(attendance)}%`;
+  return { words, tone: "warning" };
 }
 
 function penaltyReason(category: PenaltyCategory | null): Reason | null {

@@ -1,6 +1,7 @@
 import { CATEGORY_WORDS } from "@/health-notes/category-words";
 import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
 import { countWords } from "@/health-notes/shown-count";
+import { CardBox } from "./card-box";
 import styles from "./dashboard.module.css";
 import type { PhysicalRecap, ShownPhysical } from "./physical-recap";
 import {
@@ -50,9 +51,16 @@ function CategoryStack({ recap }: { recap: ShownPhysical }) {
  * tested and how many need a doctor, and a bar of the categories.
  * Pressing it moves the page to section 3.
  */
-export function PhysicalCard({ recap }: { recap: PhysicalRecap }) {
+export function PhysicalCard({
+  recap,
+  linked = true,
+}: {
+  recap: PhysicalRecap;
+  /** Whether pressing it moves the page to its section: not where there is none. */
+  linked?: boolean;
+}) {
   return (
-    <a className={styles.card} href={`#${PHYSICAL_SECTION}`}>
+    <CardBox target={linked ? PHYSICAL_SECTION : null}>
       <span className={styles.cardHead}>
         <span className={styles.sectionNo}>3</span>
         Kesehatan jasmani
@@ -62,6 +70,6 @@ export function PhysicalCard({ recap }: { recap: PhysicalRecap }) {
       </span>
       <span className={styles.cardLine}>{physicalCardLine(recap)}</span>
       {recap.kind === "shown" && <CategoryStack recap={recap} />}
-    </a>
+    </CardBox>
   );
 }

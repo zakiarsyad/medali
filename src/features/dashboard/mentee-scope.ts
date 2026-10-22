@@ -15,7 +15,7 @@ export interface MenteeScope {
   shared: SharedReader | null;
   /** The students whose notes the account may read as Pengasuh, or null for none. */
   notes: SQL | null;
-  /** The students whose detail the account may open, or null for none. */
+  /** The students whose detail the account may open as Pengasuh, or null for none. */
   detail: SQL | null;
 }
 
@@ -23,6 +23,14 @@ export interface MenteeScope {
 function notesOf(mentor: AccountForAccess): SQL | null {
   if (!may(mentor.roles, "view_mentoring_notes")) return null;
   return visibleTo(rowLimitForAction(mentor, "view_mentoring_notes"));
+}
+
+/**
+ * The account with only its roles that open Dashboard anak asuh, so the
+ * detail opened from it keeps to the Pengasuh's own anak asuh too.
+ */
+export function menteeAccountOf(account: AccountForAccess): AccountForAccess {
+  return rolesAllowing(account, "view_mentee_dashboard");
 }
 
 /**
@@ -34,13 +42,13 @@ export function menteeScopeOf(account: AccountForAccess): MenteeScope | null {
   if (!may(account.roles, "view_mentee_dashboard")) return null;
   const limit = rowLimitForAction(account, "view_mentee_dashboard");
   if (limit.kind === "all") return null;
-  const mentor = rolesAllowing(account, "view_mentee_dashboard");
+  const mentor = menteeAccountOf(account);
   const reach = sharedReachOf(mentor);
   return {
     mentorIds: limit.menteesOf,
     mentees: activeAmong(visibleTo(limit)),
     shared: reach === null ? null : { readerId: account.id, reach },
     notes: notesOf(mentor),
-    detail: detailVisibleTo(account),
+    detail: detailVisibleTo(mentor),
   };
 }
