@@ -83,6 +83,20 @@ Unit, Direktur / Wakil Direktur, Penilai Mahasiswa, Ketua Program Studi
    decided; a period is closed on the app first to try this.
 9. The speed is confirmed on this computer with sample data, since a PR
    has no preview.
+10. Reading the fixed grades is its own named right, given to the same
+    roles that open the tab. A student removed from the app stays hidden
+    for every role, as everywhere else.
+11. "Semester" sits under the tabs, above the four numbers, "Skema
+    bobot" and the list, since all three change with it. The line
+    "Nilai semester (period) …" shows under the choice and as the
+    subtitle of "Skema bobot".
+12. A new choice keeps the search and the filter, goes back to page 1
+    and closes an open student. "Berjalan" is the choice with no period
+    or an empty one in the address; a period that is not closed is left out of every
+    link.
+13. The closing did not keep the SIKU base score, so the number card
+    reads it from a kept student with neither gains nor losses, and
+    shows "-" when there is none.
 
 ## Steps
 
