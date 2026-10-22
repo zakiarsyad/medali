@@ -79,6 +79,18 @@ Direktur / Wakil Direktur, Ketua Program Studi (own program), Pengasuh
    100, as in the prototype. A score below 40 is drawn at the bottom
    edge; the table shows the stored number.
 7. Rerata is shown with one decimal, the same way the card shows it.
+8. Every line has a dot at each semester, not only Rerata, so the six
+   values still show when one semester was assessed; that one point sits
+   in the middle of the chart.
+9. The legend shows the letters, with the value's full name on hover. On
+   a phone each row of the table becomes a small card with the full
+   value names, as the other tables in the detail do.
+10. "Belum ada riwayat." stands alone under the heading, with no legend,
+    chart or table.
+11. The history is shown for the same students as the card, so a Cuti or
+    Tidak aktif student keeps theirs. The right's name on the role list
+    screen now also names "riwayat per semester"; no role gains or loses
+    anything.
 
 ## Steps
 
