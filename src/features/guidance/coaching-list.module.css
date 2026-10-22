@@ -1,0 +1,37 @@
+/* Pengasuh sees only their own mentees. */
+.scope {
+  margin: 0 0 var(--space-lg);
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The line under the list: Konseling here is only a mark. */
+.mark {
+  margin: var(--space-md) 0 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.weakest {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.weakScore {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.rerata {
+  font-weight: var(--weight-heavy);
+}
+
+/* The note of what was done, under the status, wrapping on a phone. */
+.note {
+  display: block;
+  margin-top: var(--space-xs);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}

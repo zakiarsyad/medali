@@ -117,13 +117,23 @@ Pemantauan, Selesai.
    changes only the rows of its roles with that right: a Ketua Program
    Studi who is also Pengasuh reads the program and changes only the
    mentees.
+8. "Intensif", "Sedang" and "Ringan" count the students not yet
+   "Selesai", as the prototype does; "Belum selesai" says under it
+   "dari (n) teridentifikasi", every listed student of the role's rows.
+   The numbers do not follow the search or the filters.
+9. A row says the semester as "Smt (n)" while an academic period runs,
+   and nothing in its place otherwise. A student with no Pengasuh today
+   shows "-". Among equal Rerata, the list goes by name.
+10. A name opens the whole student detail, for a student the account may
+    open it for; there is no brief, as every role with the tab may open
+    the detail.
 
 ## Steps
 
 - [x] 1. The table for coaching status is added, with sample statuses.
 - [x] 2. The right to change a coaching status is added to the
   permission list, with its checks.
-- [ ] 3. The numbers and the list with levels, search and filters and
+- [x] 3. The numbers and the list with levels, search and filters and
   the line about "Konseling", read only and limited to each role's
   rows.
 - [ ] 4. Changing a status, with the optional note and the log.
