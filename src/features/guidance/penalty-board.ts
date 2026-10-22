@@ -210,7 +210,7 @@ async function readList(
 }
 
 /** Whether a limit is that of a Pengasuh alone: their own mentees. */
-function isMenteesOnly(limit: RowLimit): boolean {
+export function isMenteesOnly(limit: RowLimit): boolean {
   if (limit.kind === "all") return false;
   return limit.menteesOf.length > 0 && limit.studyProgramIds.length === 0;
 }

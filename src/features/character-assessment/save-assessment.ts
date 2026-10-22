@@ -3,6 +3,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
+import { restartReturningCoaching } from "@/character-scores/coaching-restart";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { characterAssessments, students } from "@/db/schema";
@@ -107,7 +108,10 @@ async function save(
     })
     .onConflictDoNothing({ target: characterAssessments.id })
     .returning({ id: characterAssessments.id });
-  if (added.length > 0) return { ok: true, value: name };
+  if (added.length > 0) {
+    await restartReturningCoaching(tx, [input.studentId], actor.id);
+    return { ok: true, value: name };
+  }
   const [kept] = await tx
     .select()
     .from(characterAssessments)
@@ -127,7 +131,9 @@ async function save(
  * rules refuse, while no period runs, for any other student, and for a
  * score above 70 of a student under a Ringan or Sedang penalty. `id`
  * is the key its form made: a form sent twice is kept once, and the
- * second press is answered as the first. Gives the student's name.
+ * second press is answered as the first. A student it identifies for
+ * coaching again starts again at Teridentifikasi. Gives the student's
+ * name.
  */
 export async function saveAssessment(
   db: Database,

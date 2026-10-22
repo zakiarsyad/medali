@@ -2,6 +2,7 @@ import { count, eq } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { type AccountForAccess, may } from "@/auth/access";
+import { restartReturningCoaching } from "@/character-scores/coaching-restart";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import { characterAssessments, characterAssessmentUploads } from "@/db/schema";
@@ -129,6 +130,11 @@ async function save(
   await tx
     .insert(characterAssessments)
     .values(ready.map((row) => assessmentOf(row, period.id, saving)));
+  await restartReturningCoaching(
+    tx,
+    ready.map((row) => row.studentId),
+    saving.actor.id,
+  );
   return { ok: true, value: { saved: ready.length } };
 }
 
@@ -143,7 +149,9 @@ async function save(
  * Refused for a role without the right Asesmen karakter, for a source
  * not on the list, while no period runs, and for a file with no row to
  * save. `id` is the key the screen made for the file: a file sent twice
- * is kept once, and the second press is answered as the first.
+ * is kept once, and the second press is answered as the first. A
+ * student the file identifies for coaching again starts again at
+ * Teridentifikasi.
  */
 export async function saveAssessmentFile(
   db: Database,

@@ -1914,6 +1914,86 @@ describe("may", () => {
     }
   });
 
+  const coachingReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+  ];
+
+  it("opens Pembinaan karakter to Kepala Unit, Direktur, Ketua Program Studi and Pengasuh alone", () => {
+    const others = ROLE_IDS.filter((role) => !coachingReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "discipline_officer",
+        "student",
+        "counsellor",
+        "assessor",
+        "dorm_manager",
+        ...BAM_ROLES,
+      ]),
+    );
+    for (const role of coachingReaders) {
+      expect(mayOpenTab([role], "guidance", "character")).toBe(true);
+    }
+    for (const role of others) {
+      expect(mayOpenTab([role], "guidance", "character")).toBe(false);
+    }
+  });
+
+  it("lets Kepala Unit and Pengasuh alone change a coaching status", () => {
+    expect(ACTION_TITLES.change_coaching_status).toBe(
+      "Mengubah status pembinaan karakter dan catatannya",
+    );
+    expect(may(["head_of_unit"], "change_coaching_status")).toBe(true);
+    expect(may(["mentor"], "change_coaching_status")).toBe(true);
+    const others = ROLE_IDS.filter(
+      (role) => role !== "head_of_unit" && role !== "mentor",
+    );
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "discipline_officer",
+        "student",
+        "counsellor",
+        "assessor",
+        "dorm_manager",
+        ...BAM_ROLES,
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "change_coaching_status")).toBe(false);
+    }
+  });
+
+  it("limits changing a coaching status to every student for Kepala Unit and to their own mentees for Pengasuh, not to the program of a Ketua Program Studi who is also Pengasuh", () => {
+    const account = {
+      id: "a1",
+      roles: ["head_of_program", "mentor"] as RoleId[],
+      studyProgramId: 7,
+      studentId: null,
+    };
+    expect(rowLimitForAction(account, "change_coaching_status")).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["a1"],
+      studentIds: [],
+    });
+    expect(rowLimitForTab(account, "guidance", "character")).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: ["a1"],
+      studentIds: [],
+    });
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["head_of_unit", "mentor"] },
+        "change_coaching_status",
+      ),
+    ).toEqual({ kind: "all" });
+  });
+
   it("keeps Catatan pelanggaran closed to Pengasuh, who reads discipline penalties", () => {
     expect(mayOpenTab(["mentor"], "guidance", "violation_notes")).toBe(false);
   });

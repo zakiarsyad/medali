@@ -14,7 +14,7 @@ export const LISTED_BELOW_RERATA = 65;
 export const LISTED_BELOW_SCORE = 58;
 
 /** Below this Rerata the coaching is Intensif; up to the listing one, Sedang. */
-const INTENSIVE_BELOW_RERATA = 60;
+export const INTENSIVE_BELOW_RERATA = 60;
 
 /** Intensif, Sedang and Ringan, the most serious first. */
 export const COACHING_LEVELS = ["intensive", "moderate", "light"] as const;
