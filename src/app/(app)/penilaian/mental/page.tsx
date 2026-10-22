@@ -4,6 +4,7 @@ import type { AccountForAccess } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
+import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import {
@@ -154,6 +155,7 @@ export default async function MentalHealthPage(
                 studentId={studentId}
                 base={baseScoreNow()}
               />
+              <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel
@@ -170,6 +172,7 @@ export default async function MentalHealthPage(
                 studentId={studentId}
               />
               <StudentGradePanel account={account} studentId={studentId} />
+              <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
             </>
           )}

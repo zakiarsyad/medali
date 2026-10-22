@@ -1,6 +1,7 @@
 import { rowLimitForPage } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
+import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
 import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
@@ -38,6 +39,7 @@ export default async function StudentsPage(props: PageProps<"/mahasiswa">) {
             studentId={studentId}
             base={baseScoreNow()}
           />
+          <ScoreHistoryPanel account={account} studentId={studentId} />
           <StudentFitnessPanel account={account} studentId={studentId} />
           <StudentMentalPanel account={account} studentId={studentId} />
           <StudentNotesPanel
