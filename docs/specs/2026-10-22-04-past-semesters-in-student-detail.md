@@ -84,5 +84,5 @@ Direktur / Wakil Direktur, Ketua Program Studi (own program), Pengasuh
 
 - [x] 1. The right to read a student's past assessments in the detail,
   within each role's rows, with its checks.
-- [ ] 2. The chart with its legend and the table under it.
+- [x] 2. The chart with its legend and the table under it.
 - [ ] 3. The empty state, the phone layout and the speed check.

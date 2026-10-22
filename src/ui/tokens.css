@@ -80,6 +80,7 @@
   --radius-round: 50%;
   --line-width: 1px;
   --line-width-strong: 2px;
+  --line-width-heavy: 3px;
   --avatar-size: 34px;
   --swatch-size: 8px;
   --bar-height: 8px;
@@ -103,6 +104,7 @@
   --scores-width: auto;
   --statement-text-basis: var(--card-min-width);
   --medal-width: 370px;
+  --history-chart-width: 560px;
   --bare-box-width: 380px;
   --photo-preview-height: 260px;
   --photo-card-ratio: 3 / 4;

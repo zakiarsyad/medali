@@ -8,6 +8,7 @@ import { readGradeScheme } from "@/character-grades/grade-scheme";
 import { gradeVisibleTo } from "@/character-grades/grade-students";
 import { readGradeNumbers } from "@/character-grades/read-grade-numbers";
 import { database } from "@/db/database";
+import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { CharacterGradeScreen } from "@/features/character-grades/character-grade-screen";
 import {
@@ -106,6 +107,7 @@ export default async function CharacterGradePage(
                 studentId={studentId}
                 base={baseScoreNow()}
               />
+              <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentFitnessPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
               <StudentNotesPanel
@@ -122,6 +124,7 @@ export default async function CharacterGradePage(
                 studentId={studentId}
               />
               <StudentGradePanel account={account} studentId={studentId} />
+              <ScoreHistoryPanel account={account} studentId={studentId} />
               <StudentMentalPanel account={account} studentId={studentId} />
             </>
           )}
