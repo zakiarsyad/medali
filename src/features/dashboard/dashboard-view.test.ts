@@ -62,6 +62,7 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         picksProgram: true,
         illnesses: null,
         shared: null,
+        notes: null,
       };
 
       const all = await loadDashboard(db, scope, NO_FILTERS, ODD_3331, TODAY);
@@ -117,6 +118,7 @@ describe("the filter of Dashboard pembangunan karakter", () => {
         picksProgram: true,
         illnesses: null,
         shared: null,
+        notes: null,
       };
 
       const view = await loadDashboard(

@@ -30,6 +30,11 @@ export interface DashboardScope {
    * null for one that may read none.
    */
   shared: SharedReader | null;
+  /**
+   * The students whose mentoring notes the account's Dashboard roles may
+   * read, or null for one that may read none.
+   */
+  notes: SQL | null;
 }
 
 function illnessesOf(account: AccountForAccess): SQL | null {
@@ -37,17 +42,32 @@ function illnessesOf(account: AccountForAccess): SQL | null {
   return visibleTo(rowLimitForAction(account, "view_health_recap"));
 }
 
+/** The roles of the account that open the Dashboard, without the others. */
+function dashboardRoles(account: AccountForAccess): AccountForAccess {
+  const roles = account.roles.filter((role) =>
+    may([role], "view_character_dashboard"),
+  );
+  return { ...account, roles };
+}
+
 /**
  * Only the sharings named to a role that opens the Dashboard, so a
  * person who is also Pengasuh gets no row of their mentees here.
  */
 function sharedOf(account: AccountForAccess): SharedReader | null {
-  const roles = account.roles.filter((role) =>
-    may([role], "view_character_dashboard"),
-  );
-  const reach = sharedReachOf({ ...account, roles });
+  const reach = sharedReachOf(dashboardRoles(account));
   if (reach === null) return null;
   return { readerId: account.id, reach };
+}
+
+/**
+ * Only the notes the Dashboard roles read in Pengasuhan, so a person who
+ * is also Pengasuh gets no note of their mentees here.
+ */
+function notesOf(account: AccountForAccess): SQL | null {
+  const readers = dashboardRoles(account);
+  if (!may(readers.roles, "view_mentoring_notes")) return null;
+  return visibleTo(rowLimitForAction(readers, "view_mentoring_notes"));
 }
 
 /**
@@ -64,5 +84,6 @@ export function dashboardScopeOf(
     picksProgram: limit.kind === "all",
     illnesses: illnessesOf(account),
     shared: sharedOf(account),
+    notes: notesOf(account),
   };
 }

@@ -102,6 +102,16 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       },
       published: { rows: [PUBLISHED_ROW], matching: 3, needCounselling: 1 },
     },
+    mentoring: {
+      numbers: {
+        everyone: null,
+        mentors: 6,
+        groups: 8,
+        recentNotes: 12,
+        openCoaching: 5,
+        intensiveCoaching: 2,
+      },
+    },
     fitnessLimits: STARTING_LIMITS,
     ...more,
   };
@@ -112,12 +122,20 @@ const NO_LINKS = {
   grade: null,
   fitness: null,
   mental: null,
+  students: null,
+  mentors: null,
+  notes: null,
+  coaching: null,
 };
 const LINKS = {
   assessment: "/penilaian/asesmen",
   grade: "/penilaian/karakter",
   fitness: "/penilaian/jasmani",
   mental: "/penilaian/mental",
+  students: "/mahasiswa",
+  mentors: "/pengasuh/daftar",
+  notes: "/pengasuhan/catatan",
+  coaching: "/pembinaan/karakter",
 };
 
 function shown(view: DashboardView, links: DetailLinks = NO_LINKS) {
@@ -127,6 +145,11 @@ function shown(view: DashboardView, links: DetailLinks = NO_LINKS) {
 /** What the page shows from section 4 on. */
 function sectionFour(html: string): string {
   return html.slice(html.indexOf('id="kesehatan-mental"'));
+}
+
+/** What the page shows from Pendampingan on. */
+function mentoringPart(html: string): string {
+  return html.slice(html.indexOf('id="pendampingan"'));
 }
 
 /** What the page shows of section 3, where the bars of 2 and 4 are not. */
@@ -497,5 +520,55 @@ describe("DashboardScreen", () => {
     expect(html).toContain("mahasiswa sesuai 1 filter");
     expect(html).toContain("Atur ulang filter");
     expect(html).not.toContain("Capaian karakter");
+  });
+});
+
+describe("Pendampingan on the Dashboard", () => {
+  it("comes below section 4, with its line", () => {
+    const html = shown(viewOf(), LINKS);
+    const part = mentoringPart(html);
+
+    expect(html.indexOf('id="pendampingan"')).toBeGreaterThan(
+      html.indexOf('id="kesehatan-mental"'),
+    );
+    expect(part).toContain(">Pendampingan</h2>");
+    expect(part).toContain("Pengasuhan dan pembinaan mahasiswa sesuai filter.");
+  });
+
+  it("shows the four numbers, each leading to its menu", () => {
+    const part = mentoringPart(shown(viewOf(), LINKS));
+
+    expect(part).toMatch(/href="\/mahasiswa".*Mahasiswa aktif.*>40</);
+    expect(part).toMatch(/href="\/pengasuh\/daftar".*Pengasuh.*>6</);
+    expect(part).toContain("8 kelompok pengasuhan");
+    expect(part).toMatch(
+      /href="\/pengasuhan\/catatan".*Catatan 30 hari terakhir.*>12</,
+    );
+    expect(part).toContain("konseling, mentoring, apresiasi");
+    expect(part).toMatch(/href="\/pembinaan\/karakter".*Perlu pembinaan.*>5</);
+    expect(part).toContain("2 di antaranya intensif");
+    expect(part).not.toMatch(/dari [\d.]+ mahasiswa aktif/);
+  });
+
+  it("says how many Aktif students there are without the filter while one is in use", () => {
+    const view = viewOf({ filters: { ...NO_FILTERS, province: "Bali" } });
+    const part = mentoringPart(
+      shown({
+        ...view,
+        mentoring: {
+          ...view.mentoring,
+          numbers: { ...view.mentoring.numbers, everyone: 1250 },
+        },
+      }),
+    );
+
+    expect(part).toContain("dari 1.250 mahasiswa aktif");
+  });
+
+  it("shows the numbers without a link for an account that may not open the menu", () => {
+    const part = mentoringPart(shown(viewOf()));
+
+    expect(part).toContain("Mahasiswa aktif");
+    expect(part).not.toContain("href=");
   });
 });

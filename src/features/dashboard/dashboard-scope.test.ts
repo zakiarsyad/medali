@@ -57,6 +57,29 @@ describe("dashboardScopeOf", () => {
     expect(both?.shared?.reach).toEqual(alone?.shared?.reach);
   });
 
+  it("lets the three roles read the mentoring notes of their students", () => {
+    for (const role of [
+      "head_of_unit",
+      "director",
+      "head_of_program",
+    ] as const) {
+      expect(dashboardScopeOf(accountOf([role]))?.notes).toBeTruthy();
+    }
+  });
+
+  it("reads no notes of the mentees of a person who is also Pengasuh", () => {
+    const both = dashboardScopeOf(accountOf(["mentor", "head_of_program"]));
+    const alone = dashboardScopeOf(accountOf(["head_of_program"]));
+
+    expect(both?.notes).toEqual(alone?.notes);
+  });
+
+  it("refuses Pegawai UPK, Penilai Mahasiswa and Mahasiswa, so no number or note of Pendampingan is read", () => {
+    for (const role of ["upk_staff", "assessor", "student"] as const) {
+      expect(dashboardScopeOf(accountOf([role]))).toBeNull();
+    }
+  });
+
   it("refuses every role without the right, so none of the numbers is read", () => {
     const refused: RoleId[] = [
       "mentor",

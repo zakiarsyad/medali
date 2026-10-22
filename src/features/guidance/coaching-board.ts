@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike, ne, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, eq, ilike, or, type SQL, sql } from "drizzle-orm";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import { studentSemester } from "@/academic-periods/student-semester";
@@ -13,9 +13,10 @@ import {
   coachingNeedOf,
 } from "@/character-scores/coaching-need";
 import {
-  type CoachingStatus,
-  FIRST_COACHING_STATUS,
-} from "@/character-scores/coaching-status";
+  NOT_DONE,
+  SHOWN_STATUS,
+} from "@/character-scores/coaching-shown-status";
+import type { CoachingStatus } from "@/character-scores/coaching-status";
 import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
@@ -93,11 +94,6 @@ const NO_NUMBERS: CoachingNumbers = {
   moderate: 0,
   light: 0,
 };
-
-/** The status a student shows: the one saved, or Teridentifikasi. */
-export const SHOWN_STATUS = sql<CoachingStatus>`coalesce(${coachingStatuses.status}, ${sql.raw(`'${FIRST_COACHING_STATUS}'`)})`;
-
-const NOT_DONE = ne(SHOWN_STATUS, "done");
 
 /** The Aktif students within `reach` whose latest assessment lists them. */
 export function listedWithin(reach: SQL, latest: Latest): SQL {

@@ -1,0 +1,148 @@
+import {
+  and,
+  count,
+  countDistinct,
+  eq,
+  gt,
+  isNull,
+  type SQL,
+  sql,
+} from "drizzle-orm";
+import { daysBefore } from "@/academic-periods/days-before";
+import {
+  coachingLevelSql,
+  listedForCoaching,
+} from "@/character-scores/coaching-listed";
+import { NOT_DONE } from "@/character-scores/coaching-shown-status";
+import { latestAssessments } from "@/character-scores/latest-assessments";
+import type { Database } from "@/db/connect";
+import {
+  coachingStatuses,
+  mentorGroupMembers,
+  mentorGroupMentors,
+  mentorGroups,
+  mentoringNotes,
+  students,
+} from "@/db/schema";
+import { NOT_ENDED } from "@/mentoring/group-in-force";
+import type { MentoringNumbers, MentoringView } from "./mentoring-recap";
+
+/** "Catatan 30 hari terakhir" looks this many days back, today included. */
+export const RECENT_NOTE_DAYS = 30;
+
+/** Which students Pendampingan counts, and on which day. */
+export interface MentoringAsked {
+  /** The students of the Dashboard, the filters applied. */
+  where: SQL;
+  /** The same without any filter, or null while no filter is in use. */
+  everyone: SQL | null;
+  /** The students whose notes the account may read, or null for none. */
+  notes: SQL | null;
+  today: string;
+}
+
+async function countEveryone(
+  db: Database,
+  everyone: SQL | null,
+): Promise<number | null> {
+  if (everyone === null) return null;
+  const [found] = await db
+    .select({ students: count() })
+    .from(students)
+    .where(everyone);
+  return found?.students ?? 0;
+}
+
+/** Today's mentors and the groups in force that hold the students. */
+async function countGroups(db: Database, where: SQL) {
+  const [found] = await db
+    .select({
+      mentors: countDistinct(mentorGroupMentors.mentorId),
+      groups: countDistinct(mentorGroups.id),
+    })
+    .from(students)
+    .innerJoin(
+      mentorGroupMembers,
+      eq(mentorGroupMembers.studentId, students.id),
+    )
+    .innerJoin(
+      mentorGroups,
+      and(eq(mentorGroups.id, mentorGroupMembers.groupId), NOT_ENDED),
+    )
+    .leftJoin(
+      mentorGroupMentors,
+      and(
+        eq(mentorGroupMentors.groupId, mentorGroups.id),
+        isNull(mentorGroupMentors.endsOn),
+      ),
+    )
+    .where(where);
+  return { mentors: found?.mentors ?? 0, groups: found?.groups ?? 0 };
+}
+
+async function countRecentNotes(
+  db: Database,
+  where: SQL,
+  notes: SQL | null,
+  today: string,
+): Promise<number> {
+  if (notes === null) return 0;
+  const [found] = await db
+    .select({ notes: count() })
+    .from(mentoringNotes)
+    .innerJoin(students, eq(students.id, mentoringNotes.studentId))
+    .where(
+      and(
+        where,
+        notes,
+        gt(mentoringNotes.happenedOn, daysBefore(today, RECENT_NOTE_DAYS)),
+      ),
+    );
+  return found?.notes ?? 0;
+}
+
+/** The students on the coaching list not yet Selesai, and of them the Intensif ones. */
+async function countCoaching(db: Database, where: SQL) {
+  const latest = latestAssessments(db);
+  const [found] = await db
+    .select({
+      open: count(),
+      intensive: sql<number>`(count(*) filter (where ${coachingLevelSql(latest)} = 'intensive'))::int`,
+    })
+    .from(students)
+    .innerJoin(latest, eq(latest.studentId, students.id))
+    .leftJoin(coachingStatuses, eq(coachingStatuses.studentId, students.id))
+    .where(and(where, listedForCoaching(latest), NOT_DONE));
+  return { open: found?.open ?? 0, intensive: found?.intensive ?? 0 };
+}
+
+async function readNumbers(
+  db: Database,
+  asked: MentoringAsked,
+): Promise<MentoringNumbers> {
+  const { where, notes, today } = asked;
+  const [everyone, groups, recentNotes, coaching] = await Promise.all([
+    countEveryone(db, asked.everyone),
+    countGroups(db, where),
+    countRecentNotes(db, where, notes, today),
+    countCoaching(db, where),
+  ]);
+  return {
+    everyone,
+    ...groups,
+    recentNotes,
+    openCoaching: coaching.open,
+    intensiveCoaching: coaching.intensive,
+  };
+}
+
+/**
+ * Pendampingan of the students `asked.where` lets through, read on each
+ * load, so a note added or a student who left a group shows at once.
+ */
+export async function readMentoring(
+  db: Database,
+  asked: MentoringAsked,
+): Promise<MentoringView> {
+  return { numbers: await readNumbers(db, asked) };
+}
