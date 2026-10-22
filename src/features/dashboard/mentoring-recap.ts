@@ -22,7 +22,19 @@ export interface MentoringNumbers {
   intensiveCoaching: number;
 }
 
+/** One bar of "Capaian MEDALI per program studi". */
+export interface ProgramAverage {
+  programId: number;
+  name: string;
+  /** The Aktif students of the program in the group. */
+  students: number;
+  /** The average Rerata, to one decimal; null while fewer than 5 are assessed. */
+  average: number | null;
+}
+
 /** Section Pendampingan. */
 export interface MentoringView {
   numbers: MentoringNumbers;
+  /** Highest first; null for an account that may not pick a program studi. */
+  programs: ProgramAverage[] | null;
 }

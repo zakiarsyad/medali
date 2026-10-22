@@ -104,6 +104,7 @@ export async function loadDashboard(
         where: counted,
         everyone,
         notes: scope.notes,
+        byProgram: scope.picksProgram,
         today,
       }),
     ]);

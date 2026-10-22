@@ -1,6 +1,6 @@
-// Sample Tahun akademik of this file: 5160 to 5160.
+// Sample Tahun akademik of this file: 5160 to 5161.
 // Sample NIMs of this file: 9989620000 to 9989620099.
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Scores } from "@/character-scores/assessment-score";
 import type { Database } from "@/db/connect";
@@ -208,6 +208,109 @@ describe("the numbers of Pendampingan on the Dashboard", () => {
       expect(view.filters.studyProgramId).toBeNull();
       expect(view.mentoring.numbers.recentNotes).toBe(1);
       expect(view.mentoring.numbers.groups).toBe(2);
+    });
+  });
+});
+
+describe("Capaian MEDALI per program studi on the Dashboard", () => {
+  /** A second program with four assessed Aktif students. */
+  async function addSmallProgram(db: Database, byId: string) {
+    const programId = await addTestProgram(db, "Prodi Uji Pendampingan Kecil");
+    const periodId = await addCoachingPeriod(db, 5161);
+    for (const nim of ["21", "22", "23", "24"]) {
+      const studentId = await addTestStudent(db, programId, {
+        nim: `99896200${nim}`,
+        name: `Mahasiswa Uji Pendampingan ${nim}`,
+      });
+      await addCoachingAssessment(
+        db,
+        studentId,
+        byId,
+        periodId,
+        NOT_LISTED,
+        ASSESSED_AT,
+      );
+    }
+    return programId;
+  }
+
+  function scopeOfBoth(programIds: number[]): DashboardScope {
+    return {
+      ...scopeOf(programIds[0] ?? 0),
+      visible: inArray(students.studyProgramId, programIds),
+    };
+  }
+
+  it("averages each program's assessed Aktif students, and sends no average for one with fewer than 5", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, writer, ids } = await addRecords(db);
+      await addCoaching(db, writer, ids);
+      const smallId = await addSmallProgram(db, writer);
+
+      const view = await loadDashboard(
+        db,
+        scopeOfBoth([programId, smallId]),
+        NO_FILTERS,
+        ODD_5160,
+        TODAY,
+      );
+
+      expect(view.mentoring.programs).toEqual([
+        {
+          programId,
+          name: "Prodi Uji Pendampingan",
+          students: 7,
+          average: 62.3,
+        },
+        {
+          programId: smallId,
+          name: "Prodi Uji Pendampingan Kecil",
+          students: 4,
+          average: null,
+        },
+      ]);
+    });
+  });
+
+  it("averages only the students of the filter", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, writer, ids } = await addRecords(db);
+      await addCoaching(db, writer, ids);
+
+      const view = await loadDashboard(
+        db,
+        scopeOf(programId),
+        { ...NO_FILTERS, province: "Bali" },
+        ODD_5160,
+        TODAY,
+      );
+
+      expect(view.mentoring.programs).toEqual([
+        {
+          programId,
+          name: "Prodi Uji Pendampingan",
+          students: 3,
+          average: null,
+        },
+      ]);
+    });
+  });
+
+  it("reads no program for Ketua Program Studi", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, writer, ids } = await addRecords(db);
+      await addCoaching(db, writer, ids);
+      const scope = dashboardScopeOf({
+        id: crypto.randomUUID(),
+        roles: ["head_of_program"],
+        studyProgramId: programId,
+        studentId: null,
+      });
+      if (scope === null) throw new Error("Ketua Program Studi was refused.");
+
+      const view = await loadDashboard(db, scope, NO_FILTERS, ODD_5160, TODAY);
+
+      expect(view.mentoring.programs).toBeNull();
     });
   });
 });

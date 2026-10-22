@@ -23,9 +23,15 @@ import {
   mentorGroups,
   mentoringNotes,
   students,
+  studyPrograms,
 } from "@/db/schema";
 import { NOT_ENDED } from "@/mentoring/group-in-force";
-import type { MentoringNumbers, MentoringView } from "./mentoring-recap";
+import type {
+  MentoringNumbers,
+  MentoringView,
+  ProgramAverage,
+} from "./mentoring-recap";
+import { programAverages } from "./program-averages";
 
 /** "Catatan 30 hari terakhir" looks this many days back, today included. */
 export const RECENT_NOTE_DAYS = 30;
@@ -38,6 +44,8 @@ export interface MentoringAsked {
   everyone: SQL | null;
   /** The students whose notes the account may read, or null for none. */
   notes: SQL | null;
+  /** Whether the average of each program studi is read: not for Ketua Program Studi. */
+  byProgram: boolean;
   today: string;
 }
 
@@ -137,6 +145,30 @@ async function readNumbers(
 }
 
 /**
+ * The students grouped by program studi and the total of their latest
+ * scores: only these few rows leave the database.
+ */
+async function readPrograms(
+  db: Database,
+  where: SQL,
+): Promise<ProgramAverage[]> {
+  const latest = latestAssessments(db);
+  const groups = await db
+    .select({
+      programId: studyPrograms.id,
+      name: studyPrograms.name,
+      total: latest.total,
+      students: count(),
+    })
+    .from(students)
+    .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
+    .leftJoin(latest, eq(latest.studentId, students.id))
+    .where(where)
+    .groupBy(studyPrograms.id, studyPrograms.name, latest.total);
+  return programAverages(groups);
+}
+
+/**
  * Pendampingan of the students `asked.where` lets through, read on each
  * load, so a note added or a student who left a group shows at once.
  */
@@ -144,5 +176,9 @@ export async function readMentoring(
   db: Database,
   asked: MentoringAsked,
 ): Promise<MentoringView> {
-  return { numbers: await readNumbers(db, asked) };
+  const [numbers, programs] = await Promise.all([
+    readNumbers(db, asked),
+    asked.byProgram ? readPrograms(db, asked.where) : null,
+  ]);
+  return { numbers, programs };
 }

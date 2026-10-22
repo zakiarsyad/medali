@@ -7,6 +7,7 @@ import {
   intensiveLine,
   RECENT_NOTES_LINE,
 } from "./mentoring-words";
+import { ProgramPanel } from "./program-panel";
 import { SectionHead } from "./section-head";
 
 /** Where section Pendampingan starts. */
@@ -116,6 +117,11 @@ export function MentoringSection({
         students={students}
         links={links}
       />
+      <div className={styles.panels}>
+        {mentoring.programs !== null && (
+          <ProgramPanel programs={mentoring.programs} />
+        )}
+      </div>
     </section>
   );
 }

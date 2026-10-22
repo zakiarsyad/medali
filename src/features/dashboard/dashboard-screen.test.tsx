@@ -111,6 +111,11 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
         openCoaching: 5,
         intensiveCoaching: 2,
       },
+      programs: [
+        { programId: 1, name: "D3 Pajak", students: 40, average: 80.5 },
+        { programId: 2, name: "D4 Akuntansi", students: 12, average: 74.3 },
+        { programId: 3, name: "D3 Kepabeanan", students: 3, average: null },
+      ],
     },
     fitnessLimits: STARTING_LIMITS,
     ...more,
@@ -142,9 +147,12 @@ function shown(view: DashboardView, links: DetailLinks = NO_LINKS) {
   return renderToStaticMarkup(<DashboardScreen view={view} links={links} />);
 }
 
-/** What the page shows from section 4 on. */
+/** What the page shows of section 4. */
 function sectionFour(html: string): string {
-  return html.slice(html.indexOf('id="kesehatan-mental"'));
+  return html.slice(
+    html.indexOf('id="kesehatan-mental"'),
+    html.indexOf('id="pendampingan"'),
+  );
 }
 
 /** What the page shows from Pendampingan on. */
@@ -570,5 +578,38 @@ describe("Pendampingan on the Dashboard", () => {
 
     expect(part).toContain("Mahasiswa aktif");
     expect(part).not.toContain("href=");
+  });
+
+  it("shows Capaian MEDALI per program studi as the server sent it, a bar from 50 and the average", () => {
+    const part = mentoringPart(shown(viewOf()));
+
+    expect(part).toContain("Capaian MEDALI per program studi");
+    expect(part).toContain("skala 0–100");
+    expect(part).toContain(
+      "Batang dimulai dari nilai 50 agar selisih antarprodi terlihat.",
+    );
+    expect(part).toMatch(
+      /D3 Pajak.*\(40\).*min="50" max="100" value="80.5".*80,5/,
+    );
+    expect(part.indexOf("D3 Pajak")).toBeLessThan(part.indexOf("D4 Akuntansi"));
+    expect(part).toContain("74,3");
+  });
+
+  it("shows - and no bar for a program without an average", () => {
+    const part = mentoringPart(shown(viewOf()));
+    const small = part.slice(part.indexOf("D3 Kepabeanan"));
+
+    expect(part.split("<meter")).toHaveLength(3);
+    expect(small).toMatch(/\(3\).*>-</);
+  });
+
+  it("leaves out the panel for Ketua Program Studi", () => {
+    const view = viewOf({ programs: null });
+    const part = mentoringPart(
+      shown({ ...view, mentoring: { ...view.mentoring, programs: null } }),
+    );
+
+    expect(part).not.toContain("Capaian MEDALI per program studi");
+    expect(part).toContain("Perlu pembinaan");
   });
 });
