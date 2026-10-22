@@ -138,6 +138,6 @@ weights used, which later changes no longer touch.
 - [x] 4. The step that shows the counts, the weights and the tick.
 - [x] 5. The closing keeps every grade at once, in order of periods, and
   writes the log line.
-- [ ] 6. Later changes leave the copy as it is, and double closing is
+- [x] 6. Later changes leave the copy as it is, and double closing is
   refused, with checks.
 - [ ] 7. The phone layout and the time check.

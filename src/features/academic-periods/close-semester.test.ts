@@ -1,8 +1,16 @@
 // Sample Tahun akademik of this file: 5110 to 5111.
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { readClosingGrades } from "@/character-grades/closing-grades";
+import { readGradeScheme } from "@/character-grades/grade-scheme";
+import { FORTY_TWENTY } from "@/character-grades/test-weights";
 import type { Database } from "@/db/connect";
-import { fixedCharacterGrades, semesterClosings } from "@/db/schema";
+import {
+  academicPeriods,
+  fixedCharacterGrades,
+  mentoringScores,
+  semesterClosings,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestActivity,
@@ -12,6 +20,8 @@ import {
   addTestSchedule,
   addTestStudentAccount,
 } from "@/features/activities/test-records";
+import { saveGradeScheme } from "@/features/character-grades/save-grade-scheme";
+import { sentWithWeights } from "@/features/character-grades/test-scheme";
 import { addTestScore } from "@/features/mentoring/test-scores";
 import { addTestEntry } from "@/features/siku/test-siku";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
@@ -114,6 +124,67 @@ async function fixedGrades(db: Database, periodId: string) {
 async function closings(db: Database) {
   return db.select().from(semesterClosings);
 }
+
+describe("after a closing", () => {
+  it("leaves the fixed grades and the kept scheme as they are when a part, a weight or a letter limit changes", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addParts(db, records);
+      await closeSemester(db, records.kepala, records.oddId, true, TODAY);
+      const gradesBefore = await fixedGrades(db, records.oddId);
+      const closingsBefore = await closings(db);
+
+      await db
+        .update(mentoringScores)
+        .set({ score: 95 })
+        .where(eq(mentoringScores.periodId, records.oddId));
+      await addTestEntry(db, records.kepala, {
+        kind: "loss",
+        reason: "student_violation",
+        points: 10,
+        day: "5111-03-11",
+        periodId: records.evenId,
+        studentIds: [records.ani.studentId],
+      });
+      const { version } = await readGradeScheme(db);
+      const changed = sentWithWeights(FORTY_TWENTY, {
+        lowerLimits: { A: 90, B: 75, C: 65, D: 55 },
+      });
+      const saved = await saveGradeScheme(db, records.kepala, changed, version);
+
+      expect(saved.ok).toBe(true);
+      // The grade worked out live from the parts is now another one.
+      const [odd] = await db
+        .select()
+        .from(academicPeriods)
+        .where(eq(academicPeriods.id, records.oddId));
+      if (!odd) throw new Error("The period is gone.");
+      const live = await readClosingGrades(db, odd, TODAY);
+      const aniLive = live.rows.find(
+        (row) => row.student.id === records.ani.studentId,
+      );
+      // 50, 95, 60 and 72 with 40, 20, 20, 20.
+      expect(aniLive?.grade).toMatchObject({ final: 65.4, letter: "C" });
+      expect(await fixedGrades(db, records.oddId)).toEqual(gradesBefore);
+      expect(await closings(db)).toEqual(closingsBefore);
+    });
+  });
+
+  it('refuses a second closing of the same period with "Semester ini sudah ditutup."', async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const close = () =>
+        closeSemester(db, records.kepala, records.oddId, true, TODAY);
+
+      expect((await close()).ok).toBe(true);
+      expect(await close()).toEqual({
+        ok: false,
+        error: "Semester ini sudah ditutup.",
+      });
+      expect(await closings(db)).toHaveLength(1);
+    });
+  });
+});
 
 describe("the order of closings", () => {
   /** A day after Genap 5110/5111 has ended too. */

@@ -8,6 +8,7 @@ import {
   semesterClosings,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { brokeUniqueRule } from "@/db/unique-violation";
 import {
   addTestActor,
   addTestProgram,
@@ -15,7 +16,7 @@ import {
 } from "@/features/activities/test-records";
 import { sourceFilesEndingWith } from "@/ui/source-files";
 import type { GradeRow } from "./grade-list";
-import { keepClosing } from "./keep-closing";
+import { CLOSED_ONCE_RULE, keepClosing } from "./keep-closing";
 import { STARTING_SCHEME } from "./scheme-ids";
 
 /*
@@ -126,6 +127,30 @@ describe("keepClosing", () => {
 
       expect(await db.select().from(semesterClosings)).toEqual([]);
       expect(await db.select().from(fixedCharacterGrades)).toEqual([]);
+    });
+  });
+});
+
+describe("a second closing of one period", () => {
+  it("is refused by the database rule the closing names", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const closing = {
+        periodId: records.periodId,
+        closedBy: records.kepala.id,
+        scheme: STARTING_SCHEME,
+        rows: [],
+      };
+      await keepClosing(db, closing);
+
+      const second = await db
+        .transaction((tx) => keepClosing(tx, closing))
+        .then(
+          () => null,
+          (error: unknown) => error,
+        );
+
+      expect(brokeUniqueRule(second, CLOSED_ONCE_RULE)).toBe(true);
     });
   });
 });
