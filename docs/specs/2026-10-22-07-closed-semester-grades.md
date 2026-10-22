@@ -86,7 +86,7 @@ Unit, Direktur / Wakil Direktur, Penilai Mahasiswa, Ketua Program Studi
 
 ## Steps
 
-- [ ] 1. The right to read fixed grades, with the same row limits as the
+- [x] 1. The right to read fixed grades, with the same row limits as the
   live list, and its checks.
 - [ ] 2. The choice "Semester", kept in the address.
 - [ ] 3. The numbers, the list and "Skema bobot" read from the fixed

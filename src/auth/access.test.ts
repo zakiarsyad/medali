@@ -877,6 +877,88 @@ describe("may", () => {
     }
   });
 
+  const fixedGradeReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "mentor",
+    "assessor",
+  ];
+
+  it.each(fixedGradeReaders)(
+    "lets %s read the grades of a closed semester",
+    (role) => {
+      expect(may([role], "view_fixed_grades")).toBe(true);
+    },
+  );
+
+  it("refuses the grades of a closed semester to every other role, Mahasiswa, Konselor, Pegawai UPK and the BAM roles among them", () => {
+    const others = ROLE_IDS.filter((role) => !fixedGradeReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "student",
+        "counsellor",
+        "upk_staff",
+        ...BAM_ROLES,
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_fixed_grades")).toBe(false);
+    }
+  });
+
+  it("gives the right to read the grades of a closed semester to exactly the roles that read Daftar nilai karakter", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_fixed_grades")).toBe(
+        mayOpenTab([role], "assessment", "character"),
+      );
+    }
+  });
+
+  it("limits the grades of a closed semester to the rows each role sees: its own program, its mentees today, or every student", () => {
+    const account: AccountForAccess = {
+      id: "mentor-account",
+      roles: ["head_of_program"],
+      studyProgramId: 7,
+      studentId: null,
+    };
+    expect(rowLimitForAction(account, "view_fixed_grades")).toEqual({
+      kind: "some",
+      studyProgramIds: [7],
+      menteesOf: [],
+      studentIds: [],
+    });
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["mentor"], studyProgramId: null },
+        "view_fixed_grades",
+      ),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["mentor-account"],
+      studentIds: [],
+    });
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["assessor"] },
+        "view_fixed_grades",
+      ),
+    ).toEqual({ kind: "all" });
+    // A role without the right adds no rows, however many it sees elsewhere.
+    expect(
+      rowLimitForAction(
+        { ...account, roles: ["mentor", "dorm_manager"] },
+        "view_fixed_grades",
+      ),
+    ).toEqual({
+      kind: "some",
+      studyProgramIds: [],
+      menteesOf: ["mentor-account"],
+      studentIds: [],
+    });
+  });
+
   it("lets Kepala Unit and Penilai Mahasiswa enter fitness scores, on Penilaian jasmani", () => {
     expect(ACTION_TITLES.enter_fitness_scores).toBe("Penilaian jasmani");
     for (const role of ["head_of_unit", "assessor"] as const) {
