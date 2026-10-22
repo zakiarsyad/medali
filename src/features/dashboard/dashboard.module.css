@@ -37,7 +37,8 @@
   text-decoration: none;
 }
 
-.card:hover {
+/* Only a card that leads to its section looks pressable. */
+a.card:hover {
   border-color: var(--navy3);
   border-top-color: var(--gold);
 }
@@ -495,4 +496,76 @@ a.tile:hover {
   font-size: var(--text-title);
   font-weight: var(--weight-heavy);
   line-height: var(--leading-title);
+}
+
+/* The switch between the two Dashboards: its links fold onto a new line on a phone. */
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin: 0 0 var(--space-lg);
+  border-bottom: var(--line-width) solid var(--line);
+}
+
+/* What a Pengasuh has filled in this semester, marked while some is left. */
+.progress {
+  margin: var(--space-lg) 0 0;
+  padding: var(--space-md) var(--space-lg);
+  border: var(--line-width) solid var(--line2);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.progressWarn {
+  border-color: var(--warn);
+}
+
+/* The anak asuh of "Perlu perhatian": the name, then the tags, which fold onto new lines. */
+.attentionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attentionItem {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md) 0;
+  border-top: var(--line-width) solid var(--line2);
+  overflow-wrap: anywhere;
+}
+
+.attentionAverage {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.seriousTag {
+  border: var(--line-width) solid var(--bina);
+  background: var(--surface);
+  color: var(--bina);
+}
+
+.warningTag {
+  border: var(--line-width) solid var(--warn);
+  background: var(--surface);
+  color: var(--warn);
+}
+
+.more {
+  margin: 0;
+}
+
+.more summary {
+  padding: var(--space-sm) 0;
+  color: var(--navy3);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
 }

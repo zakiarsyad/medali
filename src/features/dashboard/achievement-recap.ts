@@ -14,6 +14,12 @@ import type { EntryPath } from "./dashboard-address";
  */
 export const FEWEST_SHOWN = 5;
 
+/**
+ * The fewest for Dashboard anak asuh, which holds no number back: its
+ * Pengasuh sees each anak asuh's own values in Pengasuhan anyway.
+ */
+export const NONE_HELD_BACK = 1;
+
 /** Without a filter, a cohort with fewer assessed students is left out. */
 export const FEWEST_IN_COHORT_UNFILTERED = 20;
 
@@ -111,20 +117,28 @@ function tallyOf(groups: readonly ScoreGroup[]): Tally {
   return tally;
 }
 
-function changeOf(tally: Tally, averages: Scores): Recap["change"] {
-  if (tally.withEarlier < FEWEST_SHOWN) return null;
+function changeOf(
+  tally: Tally,
+  averages: Scores,
+  fewest: number,
+): Recap["change"] {
+  if (tally.withEarlier < Math.max(fewest, 1)) return null;
   const changes = divided(tally.changes, tally.withEarlier);
   return { changes, last: less(averages, changes) };
 }
 
 /**
- * The numbers of a group, or null while fewer than `FEWEST_SHOWN` of its
- * students are assessed: then none of them is given out. The Rerata
- * average adds each student's Rerata as shown, so it matches theirs.
+ * The numbers of a group, or null while fewer than `fewest` of its
+ * students are assessed, `FEWEST_SHOWN` unless said otherwise: then none
+ * of them is given out. The Rerata average adds each student's Rerata as
+ * shown, so it matches theirs.
  */
-export function recapOf(groups: readonly ScoreGroup[]): Recap | null {
+export function recapOf(
+  groups: readonly ScoreGroup[],
+  fewest: number = FEWEST_SHOWN,
+): Recap | null {
   const tally = tallyOf(groups);
-  if (tally.assessed < FEWEST_SHOWN) return null;
+  if (tally.assessed === 0 || tally.assessed < fewest) return null;
   const averages = divided(tally.sums, tally.assessed);
   return {
     students: tally.students,
@@ -132,6 +146,6 @@ export function recapOf(groups: readonly ScoreGroup[]): Recap | null {
     rerata: Math.round(tally.tenths / tally.assessed) / 10,
     spread: tally.spread,
     averages,
-    change: changeOf(tally, averages),
+    change: changeOf(tally, averages, fewest),
   };
 }

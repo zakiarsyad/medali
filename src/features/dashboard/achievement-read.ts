@@ -5,7 +5,12 @@ import {
 } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
-import { type Recap, recapOf, type ScoreGroup } from "./achievement-recap";
+import {
+  FEWEST_SHOWN,
+  type Recap,
+  recapOf,
+  type ScoreGroup,
+} from "./achievement-recap";
 import { type CohortRecap, cohortRecaps } from "./cohort-recaps";
 
 /** Capaian karakter of the students the Dashboard counts. */
@@ -69,16 +74,18 @@ async function readScoreGroups(
 
 /**
  * Capaian karakter of the students `where` lets through. `filtered` tells
- * whether a filter is in use, which lets smaller cohorts be shown.
+ * whether a filter is in use, which lets smaller cohorts be shown;
+ * `fewest` is the fewest assessed for any number to be given out.
  */
 export async function readAchievement(
   db: Database,
   where: SQL,
   filtered: boolean,
+  fewest: number = FEWEST_SHOWN,
 ): Promise<Achievement> {
   const groups = await readScoreGroups(db, where);
   return {
-    recap: recapOf(groups),
+    recap: recapOf(groups, fewest),
     cohorts: cohortRecaps(groups, filtered),
   };
 }

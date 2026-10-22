@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { NONE_HELD_BACK } from "./achievement-recap";
 import { type FitnessTally, physicalRecapOf } from "./physical-recap";
 
 const TALLY: FitnessTally = {
@@ -86,6 +87,25 @@ describe("physicalRecapOf", () => {
         ),
       ).toEqual({ kind: "too_few", students: 40 });
     }
+  });
+
+  it("gives every count as it is for Dashboard anak asuh, which holds none back", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 6,
+        tested: 3,
+        byCategory: { excellent: 1, good: 1, attention: 0, medical: 1 },
+      },
+      null,
+      NONE_HELD_BACK,
+    );
+
+    expect(recap).toMatchObject({
+      kind: "shown",
+      untested: 3,
+      byCategory: { excellent: 1, good: 1, attention: 0, medical: 1 },
+      fitShare: 67,
+    });
   });
 
   it("sends a count of 1 to 4 only as <5, also those not tested", () => {

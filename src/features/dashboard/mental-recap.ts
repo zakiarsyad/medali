@@ -55,14 +55,18 @@ export interface PublishedRow {
   summary: string | null;
 }
 
-/** What the account is given of the counselling data published to it. */
-export interface PublishedMental {
-  /** The newest published, at most `PUBLISHED_SHOWN`. */
-  rows: PublishedRow[];
+/** How many students' counselling data is published to the account. */
+export interface PublishedCounts {
   /** Every student of the group whose data is published to the account. */
   matching: number;
   /** Those of them whose sharing holds the level and whose latest is Sedang or above. */
   needCounselling: number;
+}
+
+/** What the account is given of the counselling data published to it. */
+export interface PublishedMental extends PublishedCounts {
+  /** The newest published, at most `PUBLISHED_SHOWN`. */
+  rows: PublishedRow[];
 }
 
 /** Section 4 and its card. */
