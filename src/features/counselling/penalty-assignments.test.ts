@@ -19,6 +19,7 @@ import {
 } from "./penalty-assignment-words";
 import {
   assignFromPenalty,
+  readPenaltyAssignmentOf,
   readPenaltyAssignments,
 } from "./penalty-assignments";
 import { addTestActor, addTestPeople } from "./test-consents";
@@ -322,6 +323,68 @@ describe("how a Penugasan sent from a penalty stands", () => {
       expect(await readPenaltyAssignments(db, pembina, [penaltyId])).toEqual(
         new Map(),
       );
+    });
+  });
+});
+
+describe("the Penugasan of the one penalty opened", () => {
+  it("gives Pembina Disiplin Mahasiswa the student's name, and how the Penugasan stands once sent", async () => {
+    await inTestDatabase(async (db) => {
+      const { pembina, penaltyId } = await addRecords(db);
+
+      const before = await readPenaltyAssignmentOf(db, pembina, penaltyId);
+      await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+      const after = await readPenaltyAssignmentOf(db, pembina, penaltyId);
+
+      expect(before).toEqual({
+        name: "Mahasiswa Uji Konseling 1",
+        assignment: null,
+      });
+      expect(after).toEqual({
+        name: "Mahasiswa Uji Konseling 1",
+        assignment: {
+          status: "awaiting",
+          day: null,
+          hour: null,
+          sentAt: NOW,
+          sentBy: "Pembina Uji Tugaskan",
+        },
+      });
+    });
+  });
+
+  it.each<RoleId>(["head_of_unit", "director", "mentor", "student"])(
+    "gives %s nothing",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { penaltyId } = await addRecords(db);
+        const other = await addTestActor(db, "Bukan Pembina Uji", [role]);
+
+        expect(await readPenaltyAssignmentOf(db, other, penaltyId)).toBeNull();
+      });
+    },
+  );
+
+  it.each([
+    ["a made-up key", "6f1c1d1e-0000-4000-8000-000000000000"],
+    ["a text that is no key", "bukan-kunci"],
+  ])("gives nothing for %s", async (_kind, asked) => {
+    await inTestDatabase(async (db) => {
+      const { pembina } = await addRecords(db);
+
+      expect(await readPenaltyAssignmentOf(db, pembina, asked)).toBeNull();
+    });
+  });
+
+  it("gives nothing of a student outside the sender's rows", async () => {
+    await inTestDatabase(async (db) => {
+      const { punished, pembina, penaltyId } = await addRecords(db);
+      await db
+        .update(students)
+        .set({ deletedAt: NOW, deletedBy: pembina.id })
+        .where(eq(students.id, punished));
+
+      expect(await readPenaltyAssignmentOf(db, pembina, penaltyId)).toBeNull();
     });
   });
 });

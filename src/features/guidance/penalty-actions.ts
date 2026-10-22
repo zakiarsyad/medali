@@ -17,6 +17,7 @@ import {
 import { PENALTIES_ADDRESS } from "./penalty-address";
 import { readUnfinishedWork } from "./penalty-board";
 import type { PenaltyHistory } from "./penalty-consequences";
+import { type OpenedPenalty, readPenaltyDetail } from "./penalty-detail-read";
 import type { FollowUpOutcome, FollowUpState } from "./penalty-follow-up";
 import { CONFIRMED } from "./penalty-input";
 import {
@@ -52,6 +53,27 @@ async function follower(): Promise<Account> {
   if (!account || !may(account.roles, "follow_up_discipline_penalties"))
     forbidden();
   return account;
+}
+
+/**
+ * The signed-in account when it may read discipline records. Any other
+ * is refused before anything of what it sent is read.
+ */
+async function reader(): Promise<Account> {
+  const account = await currentAccount();
+  if (!account || !may(account.roles, "view_discipline_records")) forbidden();
+  return account;
+}
+
+/**
+ * "Rincian" of one penalty of "Daftar pelanggaran", read when it is
+ * opened; null for a penalty that is not the account's to see.
+ */
+export async function openPenaltyAction(
+  penaltyId: string,
+): Promise<OpenedPenalty | null> {
+  const actor = await reader();
+  return readPenaltyDetail(database(), actor, String(penaltyId));
 }
 
 /** "Mahasiswa" of "Catat pelanggaran": the students found for the text typed. */

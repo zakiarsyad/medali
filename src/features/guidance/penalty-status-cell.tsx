@@ -11,6 +11,7 @@ import {
   type PenaltyFollowUp,
 } from "./penalty-follow-up";
 import { useFollowUpSend } from "./penalty-follow-up-send";
+import type { PenaltyStatus } from "./penalty-ids";
 import { statusQuestion } from "./penalty-messages";
 import { STATUS_WORDS } from "./penalty-words";
 
@@ -23,25 +24,26 @@ import { STATUS_WORDS } from "./penalty-words";
 export function PenaltyStatusCell({
   id,
   name,
-  followUp,
+  status,
+  version,
   mayFollowUp,
   onFollowUp,
 }: {
   id: string;
   /** The student's name, for the question. */
   name: string;
-  followUp: PenaltyFollowUp;
+  status: PenaltyStatus;
+  version: number;
   mayFollowUp: boolean;
   onFollowUp: (next: PenaltyFollowUp) => void;
 }) {
   const { message, pending, send } = useFollowUpSend(onFollowUp);
-  const { status } = followUp;
   if (!mayFollowUp || status === "set") return <StatusBadge status={status} />;
 
   function choose(chosen: string) {
     if (!isFollowUpStatus(chosen) || chosen === status) return;
     if (!window.confirm(statusQuestion(name, chosen))) return;
-    send(() => changePenaltyStatusAction(id, followUp.version, chosen));
+    send(() => changePenaltyStatusAction(id, version, chosen));
   }
 
   return (

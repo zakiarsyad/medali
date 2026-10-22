@@ -79,6 +79,6 @@ who read them.
 
 ## Steps
 
-- [ ] 1. The list of "Pelanggaran disiplin" sends only what its rows
+- [x] 1. The list of "Pelanggaran disiplin" sends only what its rows
   show, and "Rincian" loads one penalty from the server when opened, with
   the same access rules as the list.

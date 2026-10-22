@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
-import { changePenaltyStatusAction } from "./penalty-actions";
+import {
+  changePenaltyStatusAction,
+  openPenaltyAction,
+} from "./penalty-actions";
 import { PENALTY_OUTDATED } from "./penalty-messages";
 import {
   addTestPenalty,
@@ -60,4 +63,56 @@ describe("changePenaltyStatusAction", () => {
       });
     },
   );
+});
+
+describe("openPenaltyAction", () => {
+  async function addPenalty(db: Database) {
+    const officer = await addNoteActor(db, "Pembina Uji Buka Rincian", [
+      "discipline_officer",
+    ]);
+    const { studentIds } = await addNoteStudents(
+      db,
+      "Prodi Uji Buka Rincian",
+      "Mahasiswa Uji Buka Rincian",
+      ["9944300011"],
+    );
+    const id = await addTestPenalty(
+      db,
+      studentIds[0] ?? "",
+      officer.id,
+      "2026-10-12",
+      { decisionNumber: "KEP-03/UJI" },
+    );
+    signedIn.db = db;
+    return { officer, id };
+  }
+
+  it("gives an account that reads discipline records the Rincian of one penalty", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, id } = await addPenalty(db);
+      signedIn.account = officer;
+
+      expect(await openPenaltyAction(id)).toEqual(
+        expect.objectContaining({
+          id,
+          description: "Terlambat mengikuti apel pagi tiga kali",
+          decisionNumber: "KEP-03/UJI",
+        }),
+      );
+      expect(await openPenaltyAction("bukan-kunci")).toBeNull();
+    });
+  });
+
+  it("refuses an account without the tab before anything is read", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addPenalty(db);
+      signedIn.account = await addNoteActor(db, "Konselor Uji Buka Rincian", [
+        "counsellor",
+      ]);
+
+      await expect(openPenaltyAction(id)).rejects.toThrow();
+      signedIn.account = null;
+      await expect(openPenaltyAction(id)).rejects.toThrow();
+    });
+  });
 });
