@@ -44,8 +44,9 @@ while building.
   and letters, each student's semester character grade with its four
   parts, read from the areas each part belongs to, who sees which
   grades, the rows and numbers of the grade list, how the
-  grade and its letter are shown, and the choice of those who reach the
-  pass letter or not, for every screen that shows the grade.
+  grade and its letter are shown, the choice of those who reach the
+  pass letter or not, and the closed semesters with the grades and the
+  scheme each closing fixed, for every screen that shows the grade.
 - `src/health-notes/`: the categories of a fitness test and of a health
   note, the limits in force and each student's latest score and note,
   the final category, how a note is checked, written, kept and shown,

@@ -8,6 +8,7 @@ export const ACTIONS = [
   "change_curriculum",
   "manage_activities",
   "set_academic_periods",
+  "close_semesters",
   "manage_proof_files",
   "view_dorm_rooms",
   "manage_dorm_rooms",
@@ -123,6 +124,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   change_curriculum: "Mengubah kurikulum",
   manage_activities: "Mengelola kegiatan",
   set_academic_periods: "Mengatur periode akademik",
+  close_semesters:
+    "Menutup semester yang sudah selesai dan menetapkan nilai karakternya",
   manage_proof_files:
     "Mengatur lama simpan berkas bukti dan menghapus berkas bukti lama",
   view_dorm_rooms: "Melihat ploting kamar",
@@ -390,6 +393,7 @@ export const ROLES: Record<RoleId, Role> = {
       "change_curriculum",
       "manage_activities",
       "set_academic_periods",
+      "close_semesters",
       "manage_proof_files",
       "view_dorm_rooms",
       "view_dorm_companions",

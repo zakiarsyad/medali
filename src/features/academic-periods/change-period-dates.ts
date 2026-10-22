@@ -39,12 +39,12 @@ export function hasEnded(period: { endsOn: string }, day: string): boolean {
 
 /**
  * Reads a period and holds it until the transaction ends. Every change of
- * dates starts here, so two of them for one period never run at the same
- * moment: the second waits and then sees the days the first one saved.
- * The hold is the weaker one, which lets other rows still name this
- * period.
+ * dates and every closing starts here, so two of them for one period never
+ * run at the same moment: the second waits and then sees what the first
+ * one saved. The hold is the weaker one, which lets other rows still name
+ * this period.
  */
-async function lockPeriod(
+export async function lockPeriod(
   tx: Database,
   id: string,
 ): Promise<AcademicPeriod | null> {

@@ -1,4 +1,5 @@
 import type { SQL } from "drizzle-orm";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import { runningPeriodOn } from "@/academic-periods/running-period";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
@@ -17,18 +18,31 @@ export async function readStudentScores(
   visible: SQL,
   today: string,
 ): Promise<Map<string, AttendanceScore>> {
-  const scores = new Map<string, AttendanceScore>();
   const running = runningPeriodOn(await readAcademicPeriods(db), today);
-  if (running === null) return scores;
-  const schedules = await readCounted(db, running.id);
+  if (running === null) return new Map();
+  return readStudentScoresIn(db, visible, running, today);
+}
+
+/**
+ * Nilai kehadiran kegiatan of each Aktif student `visible` lets through,
+ * over one period as it stands on `today`, which may be after its end.
+ */
+export async function readStudentScoresIn(
+  db: Database,
+  visible: SQL,
+  period: AcademicPeriod,
+  today: string,
+): Promise<Map<string, AttendanceScore>> {
+  const scores = new Map<string, AttendanceScore>();
+  const schedules = await readCounted(db, period.id);
   const standings = await readStudentStandings(
     db,
     visible,
     schedules,
-    running.id,
+    period.id,
   );
   for (const standing of standings) {
-    const score = groupScore(standing, schedules, running, today);
+    const score = groupScore(standing, schedules, period, today);
     scores.set(standing.studentId, score);
   }
   return scores;

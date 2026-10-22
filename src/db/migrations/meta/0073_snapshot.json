@@ -1,5 +1,5 @@
 {
-  "id": "cfd77591-5588-492e-8120-15a9980920b1",
+  "id": "10a3414f-769f-4c71-b792-31e2bc073ddd",
   "prevId": "093d95e5-540d-46d1-a361-451c7eb0ceb7",
   "version": "7",
   "dialect": "postgresql",
@@ -1678,216 +1678,6 @@
         "character_grade_schemes_limits_go_down": {
           "name": "character_grade_schemes_limits_go_down",
           "value": "\"character_grade_schemes\".\"a_from\" > \"character_grade_schemes\".\"b_from\" and \"character_grade_schemes\".\"b_from\" > \"character_grade_schemes\".\"c_from\" and \"character_grade_schemes\".\"c_from\" > \"character_grade_schemes\".\"d_from\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.coaching_status_changes": {
-      "name": "coaching_status_changes",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status_before": {
-          "name": "status_before",
-          "type": "coaching_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note_before": {
-          "name": "note_before",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status_after": {
-          "name": "status_after",
-          "type": "coaching_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note_after": {
-          "name": "note_after",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "coaching_status_changes_student": {
-          "name": "coaching_status_changes_student",
-          "columns": [
-            {
-              "expression": "student_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "changed_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "coaching_status_changes_student_id_students_id_fk": {
-          "name": "coaching_status_changes_student_id_students_id_fk",
-          "tableFrom": "coaching_status_changes",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "coaching_status_changes_changed_by_accounts_id_fk": {
-          "name": "coaching_status_changes_changed_by_accounts_id_fk",
-          "tableFrom": "coaching_status_changes",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "coaching_status_changes_note_length": {
-          "name": "coaching_status_changes_note_length",
-          "value": "char_length(\"coaching_status_changes\".\"note_before\") <= 300 and char_length(\"coaching_status_changes\".\"note_after\") <= 300"
-        },
-        "coaching_status_changes_differs": {
-          "name": "coaching_status_changes_differs",
-          "value": "(\"coaching_status_changes\".\"status_before\", \"coaching_status_changes\".\"note_before\") is distinct from (\"coaching_status_changes\".\"status_after\", \"coaching_status_changes\".\"note_after\")"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.coaching_statuses": {
-      "name": "coaching_statuses",
-      "schema": "",
-      "columns": {
-        "student_id": {
-          "name": "student_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "coaching_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "changed_by": {
-          "name": "changed_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "changed_at": {
-          "name": "changed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "coaching_statuses_student_id_students_id_fk": {
-          "name": "coaching_statuses_student_id_students_id_fk",
-          "tableFrom": "coaching_statuses",
-          "tableTo": "students",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "coaching_statuses_changed_by_accounts_id_fk": {
-          "name": "coaching_statuses_changed_by_accounts_id_fk",
-          "tableFrom": "coaching_statuses",
-          "tableTo": "accounts",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "coaching_statuses_note_length": {
-          "name": "coaching_statuses_note_length",
-          "value": "char_length(\"coaching_statuses\".\"note\") <= 300"
-        },
-        "coaching_statuses_version": {
-          "name": "coaching_statuses_version",
-          "value": "\"coaching_statuses\".\"version\" >= 1"
         }
       },
       "isRLSEnabled": false
@@ -7855,6 +7645,154 @@
       },
       "isRLSEnabled": false
     },
+    "public.fixed_character_grades": {
+      "name": "fixed_character_grades",
+      "schema": "",
+      "columns": {
+        "closing_id": {
+          "name": "closing_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attendance": {
+          "name": "attendance",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attended": {
+          "name": "attended",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "counted": {
+          "name": "counted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mentoring": {
+          "name": "mentoring",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "siku": {
+          "name": "siku",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "siku_adjusted": {
+          "name": "siku_adjusted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "siku_note": {
+          "name": "siku_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skpm": {
+          "name": "skpm",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "final": {
+          "name": "final",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "letter": {
+          "name": "letter",
+          "type": "grade_letter",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "passes": {
+          "name": "passes",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "limited": {
+          "name": "limited",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "limited_from": {
+          "name": "limited_from",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "fixed_character_grades_closing_id_semester_closings_id_fk": {
+          "name": "fixed_character_grades_closing_id_semester_closings_id_fk",
+          "tableFrom": "fixed_character_grades",
+          "tableTo": "semester_closings",
+          "columnsFrom": [
+            "closing_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fixed_character_grades_student_id_students_id_fk": {
+          "name": "fixed_character_grades_student_id_students_id_fk",
+          "tableFrom": "fixed_character_grades",
+          "tableTo": "students",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "fixed_character_grades_closing_id_student_id_pk": {
+          "name": "fixed_character_grades_closing_id_student_id_pk",
+          "columns": [
+            "closing_id",
+            "student_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "fixed_character_grades_complete_or_not": {
+          "name": "fixed_character_grades_complete_or_not",
+          "value": "(\"fixed_character_grades\".\"final\" is null) = (\"fixed_character_grades\".\"attendance\" is null or \"fixed_character_grades\".\"mentoring\" is null or \"fixed_character_grades\".\"skpm\" is null) and (\"fixed_character_grades\".\"final\" is null) = (\"fixed_character_grades\".\"letter\" is null) and (\"fixed_character_grades\".\"final\" is null) = (\"fixed_character_grades\".\"passes\" is null)"
+        },
+        "fixed_character_grades_limited_from": {
+          "name": "fixed_character_grades_limited_from",
+          "value": "\"fixed_character_grades\".\"limited_from\" is null or (\"fixed_character_grades\".\"limited\" and \"fixed_character_grades\".\"final\" is not null and \"fixed_character_grades\".\"limited_from\" > \"fixed_character_grades\".\"final\")"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.health_note_illnesses": {
       "name": "health_note_illnesses",
       "schema": "",
@@ -10641,6 +10579,157 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.semester_closings": {
+      "name": "semester_closings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "period_id": {
+          "name": "period_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "closed_by": {
+          "name": "closed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attendance_weight": {
+          "name": "attendance_weight",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mentoring_weight": {
+          "name": "mentoring_weight",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "siku_weight": {
+          "name": "siku_weight",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skpm_weight": {
+          "name": "skpm_weight",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "a_from": {
+          "name": "a_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "b_from": {
+          "name": "b_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "c_from": {
+          "name": "c_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "d_from": {
+          "name": "d_from",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pass_letter": {
+          "name": "pass_letter",
+          "type": "grade_letter",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "students": {
+          "name": "students",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "complete": {
+          "name": "complete",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "incomplete": {
+          "name": "incomplete",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "semester_closings_period_id_academic_periods_id_fk": {
+          "name": "semester_closings_period_id_academic_periods_id_fk",
+          "tableFrom": "semester_closings",
+          "tableTo": "academic_periods",
+          "columnsFrom": [
+            "period_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "semester_closings_closed_by_accounts_id_fk": {
+          "name": "semester_closings_closed_by_accounts_id_fk",
+          "tableFrom": "semester_closings",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "closed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "semester_closings_once_per_period": {
+          "name": "semester_closings_once_per_period",
+          "nullsNotDistinct": false,
+          "columns": [
+            "period_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "semester_closings_counts_add_up": {
+          "name": "semester_closings_counts_add_up",
+          "value": "\"semester_closings\".\"complete\" >= 0 and \"semester_closings\".\"incomplete\" >= 0 and \"semester_closings\".\"complete\" + \"semester_closings\".\"incomplete\" = \"semester_closings\".\"students\""
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.sessions": {
       "name": "sessions",
       "schema": "",
@@ -13203,16 +13292,6 @@
         "peer_assessment",
         "mentor_board_meeting",
         "medali_instrument"
-      ]
-    },
-    "public.coaching_status": {
-      "name": "coaching_status",
-      "schema": "public",
-      "values": [
-        "identified",
-        "counselling",
-        "monitoring",
-        "done"
       ]
     },
     "public.cohort_assignment_change_action": {

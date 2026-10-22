@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { weightTotal } from "@/character-grades/grade-letter";
+import { PART_LABELS } from "@/character-grades/grade-words";
 import {
   GRADE_LETTERS,
   GRADE_PARTS,
@@ -15,12 +16,7 @@ import shared from "@/ui/data-screen.module.css";
 import styles from "./character-grades.module.css";
 import { limitField, PASS_LETTER_FIELD, weightField } from "./scheme-fields";
 import type { SchemeFaults, SentScheme } from "./scheme-input";
-import {
-  barCells,
-  formulaSentence,
-  PART_LABELS,
-  shownWeights,
-} from "./scheme-words";
+import { barCells, formulaSentence, shownWeights } from "./scheme-words";
 
 /** Takes the scheme as typed after each change. */
 type OnType = (typed: SentScheme) => void;

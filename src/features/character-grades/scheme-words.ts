@@ -13,14 +13,6 @@ import {
 import { DAY } from "@/ui/day";
 import { wholeNumberOf } from "./scheme-input";
 
-/** Each part as its weight field names it, in the prototype's words. */
-export const PART_LABELS: Record<GradePart, string> = {
-  attendance: "Kehadiran kegiatan",
-  mentoring: "Nilai pengasuhan",
-  siku: "Nilai sikap dan perilaku (SIKU)",
-  skpm: "Nilai Sistem Kredit Prestasi Mahasiswa",
-};
-
 /** Each part as the sentence "Nilai akhir = …" names it. */
 const PART_IN_SENTENCE: Record<GradePart, string> = {
   attendance: "kehadiran kegiatan",
