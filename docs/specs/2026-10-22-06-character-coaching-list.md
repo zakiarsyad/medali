@@ -107,10 +107,12 @@ Pemantauan, Selesai.
    as "Teridentifikasi", with the change in the log.
 5. The limits 65, 60 and 58 are fixed, in the one rule that Students
    needing coaching owns.
+6. "Catatan" holds at most 300 characters. A status is never deleted,
+   and its log cannot be changed or deleted.
 
 ## Steps
 
-- [ ] 1. The table for coaching status is added, with sample statuses.
+- [x] 1. The table for coaching status is added, with sample statuses.
 - [ ] 2. The right to change a coaching status is added to the
   permission list, with its checks.
 - [ ] 3. The numbers and the list with levels, search and filters and

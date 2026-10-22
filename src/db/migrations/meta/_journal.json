@@ -512,6 +512,13 @@
       "when": 1792616153202,
       "tag": "0072_penalty-counselling-assignments",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1792639028816,
+      "tag": "0073_coaching-statuses",
+      "breakpoints": true
     }
   ]
 }

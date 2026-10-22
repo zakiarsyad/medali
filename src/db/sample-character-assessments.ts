@@ -30,7 +30,10 @@ export const RECENT = 10;
  * one, some only one made in an earlier period, some only one made in
  * the running period, and most none. D3 Pajak students are among them,
  * for the sample Ketua Program Studi, and so are mentees of the sample
- * Pengasuh.
+ * Pengasuh. Some latest ones are low, so Pembinaan karakter lists a
+ * student of each level: Gita Purba, a mentee of the sample Pengasuh,
+ * and Lutfi Tarigan Intensif, Nanda Gunawan of D3 Pajak and Citra
+ * Nasution Sedang, and Fikri Wibowo Ringan.
  */
 export const SAMPLE_ASSESSMENTS: SampleAssessment[] = [
   {
@@ -90,11 +93,35 @@ export const SAMPLE_ASSESSMENTS: SampleAssessment[] = [
     enteredAs: "assessor",
   },
   {
+    nim: "9900250007",
+    scores: [55, 58, 60, 57, 59, 61],
+    source: "mentor_observation",
+    note: "Sering tidak hadir apel dan kegiatan asrama.",
+    daysAgo: 7,
+    enteredAs: "assessor",
+  },
+  {
     nim: "9900230052",
     scores: [82, 84, 80, 83, 81, 85],
     source: "peer_assessment",
     note: "Dinilai teman sekelompok sebagai penggerak kegiatan.",
     daysAgo: 6,
+    enteredAs: "assessor",
+  },
+  {
+    nim: "9900250012",
+    scores: [57, 59, 56, 60, 58, 58],
+    source: "mentor_board_meeting",
+    note: "",
+    daysAgo: 5,
+    enteredAs: "head_of_unit",
+  },
+  {
+    nim: "9900230006",
+    scores: [70, 72, 56, 75, 74, 73],
+    source: "medali_instrument",
+    note: "Perlu perhatian pada Disiplin.",
+    daysAgo: 5,
     enteredAs: "assessor",
   },
   {
@@ -112,6 +139,14 @@ export const SAMPLE_ASSESSMENTS: SampleAssessment[] = [
     note: "",
     daysAgo: 3,
     enteredAs: "head_of_unit",
+  },
+  {
+    nim: "9900240014",
+    scores: [62, 60, 64, 58, 61, 63],
+    source: "mentor_observation",
+    note: "",
+    daysAgo: 3,
+    enteredAs: "assessor",
   },
   {
     nim: "9900250003",

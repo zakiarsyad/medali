@@ -33,6 +33,10 @@ import {
   SCORE_MIN as ASSESSMENT_SCORE_MIN,
 } from "@/character-scores/assessment-score";
 import {
+  COACHING_NOTE_MAX_LENGTH,
+  COACHING_STATUSES,
+} from "@/character-scores/coaching-status";
+import {
   PENALTY_CATEGORIES,
   type PenaltyLevel,
 } from "@/discipline-penalties/penalty-kinds";
@@ -4435,6 +4439,79 @@ export const disciplinePenaltyChanges = pgTable(
         and (${table.statusBefore} is null) = (${table.conditionsAfter} is null)
         and (${table.statusBefore} is null) = (${table.decisionBefore} is null)
         and (${table.statusBefore} is null) = (${table.decisionAfter} is null)`,
+    ),
+  ],
+);
+
+export const coachingStatus = pgEnum("coaching_status", COACHING_STATUSES);
+
+/**
+ * The one status of a student who needs coaching, as staff moved it
+ * last: Teridentifikasi, Konseling, Pemantauan or Selesai, with the short
+ * "Catatan" of what was done, and who changed it and when. A student
+ * without a row is Teridentifikasi. Every change raises the version, so a
+ * change sent from an older one is caught. Never deleted: every change
+ * is in its log.
+ */
+export const coachingStatuses = pgTable(
+  "coaching_statuses",
+  {
+    studentId: uuid()
+      .primaryKey()
+      .references(() => students.id),
+    status: coachingStatus().notNull(),
+    /** Catatan; empty when none was written. */
+    note: text().notNull().default(""),
+    /** Goes up with every change, so a change made from an older one is caught. */
+    version: integer().notNull().default(1),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check(
+      "coaching_statuses_note_length",
+      atMost(table.note, COACHING_NOTE_MAX_LENGTH),
+    ),
+    check("coaching_statuses_version", sql`${table.version} >= 1`),
+  ],
+);
+
+/**
+ * Every change of a coaching status: who, when, and the status and
+ * "Catatan" before and after. A student's first change has Teridentifikasi
+ * with no note before it. Rows here cannot be changed or deleted; the
+ * database refuses it.
+ */
+export const coachingStatusChanges = pgTable(
+  "coaching_status_changes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    studentId: uuid()
+      .notNull()
+      .references(() => students.id),
+    statusBefore: coachingStatus().notNull(),
+    noteBefore: text().notNull(),
+    statusAfter: coachingStatus().notNull(),
+    noteAfter: text().notNull(),
+    changedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    changedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("coaching_status_changes_student").on(
+      table.studentId,
+      table.changedAt,
+    ),
+    check(
+      "coaching_status_changes_note_length",
+      sql`${atMost(table.noteBefore, COACHING_NOTE_MAX_LENGTH)} and ${atMost(table.noteAfter, COACHING_NOTE_MAX_LENGTH)}`,
+    ),
+    check(
+      "coaching_status_changes_differs",
+      sql`(${table.statusBefore}, ${table.noteBefore}) is distinct from (${table.statusAfter}, ${table.noteAfter})`,
     ),
   ],
 );
