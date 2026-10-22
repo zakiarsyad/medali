@@ -76,6 +76,10 @@ who read them.
    builder.
 5. An answer that comes after "Rincian" was closed, or after a later ask,
    is dropped. Decided by the builder.
+6. A role without the tab is refused before anything is read, for a
+   real penalty and a made-up one alike, so it too gets the same answer
+   as for a made-up penalty. On screen every refusal shows "Rincian
+   tidak dapat dimuat. Coba lagi." Decided by the builder.
 
 ## Steps
 

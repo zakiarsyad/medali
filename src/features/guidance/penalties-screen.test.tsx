@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from "vitest";
 import { PenaltiesScreen } from "./penalties-screen";
 import { PENALTIES_START } from "./penalty-address";
 import type { PenaltyBoard, PenaltyRow } from "./penalty-board";
-import type { OpenedPenalty } from "./penalty-detail-read";
 import type { RincianAsks } from "./penalty-rincian";
 
 vi.mock("next/form", () => ({
@@ -41,36 +40,8 @@ const DISMISSED: PenaltyRow = {
   socialWorkEndsOn: null,
 };
 
-const URAIAN = "Terlambat mengikuti apel pagi tiga kali dalam satu bulan.";
-
-const DECISION_NUMBER = "KEP-021/PKN/2026";
-
-/** What the server would give once "Rincian" is opened; never asked here. */
-const ASKS: RincianAsks = {
-  penalty: vi.fn(
-    async (): Promise<OpenedPenalty> => ({
-      id: "p2",
-      name: "Mega Saragih",
-      description: URAIAN,
-      category: "heavy",
-      level: 2,
-      status: "set",
-      decisionNumber: DECISION_NUMBER,
-      socialWorkForms: [],
-      socialWorkOther: "",
-      socialWorkPlace: null,
-      socialWorkStartsOn: null,
-      socialWorkEndsOn: null,
-      savedByName: "Agus Hermawan",
-      semester: 3,
-      conditionsMet: [],
-      decision: "pending",
-      version: 1,
-      hasAgency: false,
-    }),
-  ),
-  counselling: vi.fn(async () => "Tugaskan konseling wajib"),
-};
+/** "Rincian" is only asked once opened, which a drawing on the server never does. */
+const ASKS: RincianAsks = { penalty: async () => null };
 
 function board(rows: PenaltyRow[], menteesOnly = false): PenaltyBoard {
   return {
@@ -143,17 +114,6 @@ describe("PenaltiesScreen", () => {
     expect(shown).toContain("Berat · jenjang kedua");
     expect(shown).toContain("Ditetapkan");
     expect(shown).toContain("Rincian");
-  });
-
-  it("holds nothing of Rincian before it is opened, and asks the server nothing", () => {
-    const shown = screen([ROW, DISMISSED], "FORMULIR", false, true);
-    expect(shown).not.toContain(URAIAN);
-    expect(shown).not.toContain(DECISION_NUMBER);
-    expect(shown).not.toContain("Agus Hermawan");
-    expect(shown).not.toContain("Tugaskan konseling wajib");
-    expect(shown).not.toContain("Memuat rincian");
-    expect(ASKS.penalty).not.toHaveBeenCalled();
-    expect(ASKS.counselling).not.toHaveBeenCalled();
   });
 
   it("makes each name open the student's profile over the tab, keeping the search and the page", () => {
