@@ -14,7 +14,7 @@ import {
   SILVER_SCORES,
 } from "./test-assessments";
 
-// Sample NIMs of this file: 9989500000 to 9989500099.
+// Sample NIMs of this file: 9989610000 to 9989610099.
 
 const inTestDatabase = withTestDatabase();
 
@@ -37,13 +37,13 @@ async function addRecords(db: Database) {
     db,
     "Prodi Uji Riwayat Semester",
     4510,
-    ["9989500001", "9989500002"],
+    ["9989610001", "9989610002"],
   );
   const [ani, budi] = studentIds;
   if (!ani || !budi) throw new Error("Students missing.");
   const otherId = await addTestProgram(db, "Prodi Uji Riwayat Lain");
   const citra = await addTestStudent(db, otherId, {
-    nim: "9989500003",
+    nim: "9989610003",
     name: "Mahasiswa Uji Riwayat Lain",
     cohortYear: 4510,
   });
@@ -204,7 +204,7 @@ describe("readStudentScoreHistory", () => {
         await readStudentScoreHistory(db, penilai, crypto.randomUUID()),
       ).toBeNull();
       expect(
-        await readStudentScoreHistory(db, penilai, "9989500001"),
+        await readStudentScoreHistory(db, penilai, "9989610001"),
       ).toBeNull();
     });
   });
