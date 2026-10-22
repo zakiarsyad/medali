@@ -15,6 +15,8 @@ export const ASSIGN_BUTTON = "Tugaskan konseling";
 export const ASSIGN_NOT_ALLOWED_WORDS =
   "Anda tidak memiliki hak untuk menugaskan konseling wajib.";
 
+export const ALREADY_ASSIGNED = "Sudah ditugaskan.";
+
 export const PENALTY_NOT_FOUND =
   "Hukuman disiplin ini tidak ditemukan. Muat ulang halaman.";
 

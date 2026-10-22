@@ -11,6 +11,7 @@ import {
 import { withTestDatabase } from "@/db/test-database";
 import { addTestPenalty } from "@/features/guidance/test-discipline-penalties";
 import {
+  ALREADY_ASSIGNED,
   ASSIGN_NOT_ALLOWED_WORDS,
   assignedTo,
   MESSAGE_TOO_LONG,
@@ -40,11 +41,17 @@ async function addRecords(db: Database) {
   const pembina = await addTestActor(db, "Pembina Uji Tugaskan", [
     "discipline_officer",
   ]);
-  const penaltyId = await addTestPenalty(db, punished, pembina.id, "2026-10-15", {
-    category: "medium",
-    level: 2,
-    description: "Uraian rahasia pelanggaran uji.",
-  });
+  const penaltyId = await addTestPenalty(
+    db,
+    punished,
+    pembina.id,
+    "2026-10-15",
+    {
+      category: "medium",
+      level: 2,
+      description: "Uraian rahasia pelanggaran uji.",
+    },
+  );
   return { punished, pembina, penaltyId };
 }
 
@@ -169,6 +176,37 @@ describe("Tugaskan konseling from a discipline penalty", () => {
     });
   });
 
+  it("refuses a second for the same penalty with Sudah ditugaskan., whatever the first's status", async () => {
+    await inTestDatabase(async (db) => {
+      const { pembina, penaltyId } = await addRecords(db);
+      const pembinaLain = await addTestActor(db, "Pembina Uji Lain", [
+        "discipline_officer",
+      ]);
+      await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+
+      const again = await assignFromPenalty(db, pembina, penaltyId, "", NOW);
+      await moveTo(db, penaltyId, {
+        status: "done",
+        day: "2026-10-21",
+        hour: "10:00",
+        way: "in_person",
+        counsellorId: pembina.id,
+      });
+      const afterDone = await assignFromPenalty(
+        db,
+        pembinaLain,
+        penaltyId,
+        "",
+        NOW,
+      );
+
+      const refused = { kind: "refused", error: ALREADY_ASSIGNED };
+      expect(again).toEqual(refused);
+      expect(afterDone).toEqual(refused);
+      expect(await schedulesOf(db)).toHaveLength(1);
+    });
+  });
+
   it("refuses a message longer than 500 characters, keeping nothing", async () => {
     await inTestDatabase(async (db) => {
       const { pembina, penaltyId } = await addRecords(db);
@@ -268,9 +306,7 @@ describe("how a Penugasan sent from a penalty stands", () => {
       await assignFromPenalty(db, pembina, penaltyId, "", NOW);
       const other = await addTestActor(db, "Bukan Pembina Uji", [role]);
 
-      expect(
-        await readPenaltyAssignments(db, other, [penaltyId]),
-      ).toBeNull();
+      expect(await readPenaltyAssignments(db, other, [penaltyId])).toBeNull();
     });
   });
 

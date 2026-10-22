@@ -14,6 +14,7 @@ import { assignmentBasis } from "@/discipline-penalties/assignment-basis";
 import { showsCallTime } from "./assessment-call-rules";
 import { senderMessageOf } from "./penalty-assignment-rules";
 import {
+  ALREADY_ASSIGNED,
   ASSIGN_NOT_ALLOWED_WORDS,
   assignedTo,
   MESSAGE_TOO_LONG,
@@ -39,6 +40,8 @@ const NOT_ALLOWED: AssignOutcome = {
 
 const NOT_FOUND: AssignOutcome = { kind: "refused", error: PENALTY_NOT_FOUND };
 
+const ALREADY: AssignOutcome = { kind: "refused", error: ALREADY_ASSIGNED };
+
 /** The penalties of the students the account may send for. */
 function penaltiesOfRows(actor: AccountForAccess) {
   return visibleTo(rowLimitForAction(actor, RIGHT));
@@ -51,8 +54,12 @@ interface SentPenalty {
   basis: string;
 }
 
-/** The penalty, with its student, when it is of a student the account may send for. */
-async function readPenalty(
+/**
+ * The penalty, with its student, when it is of a student the account may
+ * send for. It is locked, so of two sends for it at the same moment the
+ * second waits until the first is kept and then finds it.
+ */
+async function lockPenalty(
   tx: Database,
   actor: AccountForAccess,
   penaltyId: string,
@@ -67,10 +74,22 @@ async function readPenalty(
     })
     .from(disciplinePenalties)
     .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
-    .where(and(eq(disciplinePenalties.id, penaltyId), penaltiesOfRows(actor)));
+    .where(and(eq(disciplinePenalties.id, penaltyId), penaltiesOfRows(actor)))
+    .for("no key update", { of: disciplinePenalties });
   if (!found) return null;
   const { category, level, ...penalty } = found;
   return { ...penalty, basis: assignmentBasis(category, level) };
+}
+
+async function hasAssignment(
+  tx: Database,
+  penaltyId: string,
+): Promise<boolean> {
+  const [found] = await tx
+    .select({ id: counsellingSchedules.id })
+    .from(counsellingSchedules)
+    .where(eq(counsellingSchedules.penaltyId, penaltyId));
+  return found !== undefined;
 }
 
 async function addAssignment(
@@ -111,8 +130,8 @@ async function addAssignment(
  * own student, with the penalty's Kategori and Jenjang as its Dasar, the
  * message typed as Pesan pengirim, and its log line. Nothing names the
  * student but the penalty. Refused, saving nothing, without the right,
- * for a penalty not found among the account's rows, or a message too
- * long.
+ * for a penalty not found among the account's rows, a penalty already
+ * sent, or a message too long.
  */
 export async function assignFromPenalty(
   db: Database,
@@ -128,8 +147,9 @@ export async function assignFromPenalty(
     return { kind: "refused", error: MESSAGE_TOO_LONG };
   }
   return db.transaction(async (tx) => {
-    const penalty = await readPenalty(tx, actor, penaltyId);
+    const penalty = await lockPenalty(tx, actor, penaltyId);
     if (penalty === null) return NOT_FOUND;
+    if (await hasAssignment(tx, penalty.id)) return ALREADY;
     await addAssignment(tx, actor.id, penalty, senderMessage, now);
     return { kind: "kept", done: assignedTo(penalty.name) };
   });
@@ -180,10 +200,7 @@ export async function readPenaltyAssignments(
     )
     .innerJoin(accounts, eq(accounts.id, counsellingScheduleChanges.changedBy))
     .where(
-      and(
-        inArray(counsellingSchedules.penaltyId, ids),
-        penaltiesOfRows(actor),
-      ),
+      and(inArray(counsellingSchedules.penaltyId, ids), penaltiesOfRows(actor)),
     );
   for (const { penaltyId, status, day, hour, ...sent } of found) {
     if (penaltyId === null) continue;

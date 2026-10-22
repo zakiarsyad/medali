@@ -135,4 +135,4 @@ what was said in the session.
   counselling) can point to one discipline penalty, with samples.
 - [x] 3. "Tugaskan konseling wajib" in "Rincian", with confirmation.
 - [x] 4. The status box for Pembina Disiplin Mahasiswa only.
-- [ ] 5. One request per penalty, also when sent twice at once.
+- [x] 5. One request per penalty, also when sent twice at once.
