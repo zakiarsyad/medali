@@ -55,10 +55,10 @@ export function savedScoresMessage(saved: number): string {
   return `${shown(saved)} skor tes kebugaran disimpan.`;
 }
 
-/** The line beside "Simpan skor" while scores are typed. */
-export function readyLine(filled: number): string {
-  if (filled === 0) return "Isi skor yang tersedia; kolom kosong dilewati.";
-  return `${shown(filled)} skor siap disimpan.`;
+/** The line beside "Simpan skor" while scores are typed: how many a save would keep. */
+export function readyLine(ready: number): string {
+  if (ready === 0) return "Isi skor yang tersedia; kolom kosong dilewati.";
+  return `${shown(ready)} skor siap disimpan.`;
 }
 
 /** "Rerata skor" with one decimal, such as 75,3, or "-" for none. */

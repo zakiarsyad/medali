@@ -54,6 +54,11 @@ export function scoreOf(typed: string): number | null {
   return wholeWithin(typed, SCORE_MIN, SCORE_MAX);
 }
 
+/** How many typed scores a save would keep: the whole ones from 0 to 100. */
+export function readyCount(typed: readonly string[]): number {
+  return typed.filter((text) => scoreOf(text) !== null).length;
+}
+
 /** Limits as their form shows them before anything is typed. */
 export function typedLimitsOf(limits: FitnessLimits): SentLimits {
   return {

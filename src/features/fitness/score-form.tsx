@@ -17,6 +17,7 @@ import { groupMembersAction, saveScoresAction } from "./fitness-actions";
 import type { GroupChoice, GroupMember } from "./fitness-groups";
 import {
   DAY_IN_FUTURE,
+  readyCount,
   SCORE_NOT_WHOLE,
   scoreOf,
   testYearOf,
@@ -118,9 +119,8 @@ export function MemberTable({
   );
 }
 
-function filledCount(members: readonly GroupMember[], typed: Typed): number {
-  return members.filter((member) => (typed[member.id] ?? "").trim() !== "")
-    .length;
+function savableCount(members: readonly GroupMember[], typed: Typed): number {
+  return readyCount(members.map((member) => typed[member.id] ?? ""));
 }
 
 /**
@@ -246,7 +246,7 @@ export function ScoreForm({
               Simpan skor
             </button>
             <span className={styles.ready}>
-              {readyLine(filledCount(members, typed))}
+              {readyLine(savableCount(members, typed))}
             </span>
           </div>
         </>
