@@ -1,14 +1,22 @@
 // Sample Tahun akademik of this file: 3360 to 3361.
 // Sample NIMs of this file: 9986560000 to 9986560099.
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import type { AccountForAccess } from "@/auth/access";
+import { BAM_ROLES } from "@/auth/bam-roles";
+import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { students } from "@/db/schema";
+import { dormResidentChoices, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { addTestScreening } from "@/features/counselling/test-screenings";
 import { type DashboardFilters, NO_FILTERS } from "./dashboard-address";
-import type { DashboardScope } from "./dashboard-scope";
+import {
+  dashboardKindsOf,
+  kindToShow,
+  readDashboardKind,
+} from "./dashboard-kind";
+import { type DashboardScope, dashboardScopeOf } from "./dashboard-scope";
 import { loadDashboard } from "./dashboard-view";
 import {
   addTestAccount,
@@ -112,6 +120,15 @@ function programScope(programId: number): DashboardScope {
     shared: null,
     notes: null,
     detail: null,
+  };
+}
+
+function accountOf(roles: RoleId[], programId: number): AccountForAccess {
+  return {
+    id: crypto.randomUUID(),
+    roles,
+    studyProgramId: programId,
+    studentId: null,
   };
 }
 
@@ -223,6 +240,77 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
       expect(
         numbersIn([view.achievement, view.grades.recap, view.mental.recap]),
       ).toEqual([]);
+    });
+  });
+
+  it("gives Ketua Program Studi only their own program, in every number and every count beside a choice, also when they ask for another program by hand", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, otherProgramId } = await addRecords(db);
+      const scope = dashboardScopeOf(accountOf(["head_of_program"], programId));
+      if (scope === null) throw new Error("Ketua Program Studi was refused.");
+      const both = {
+        ...programScope(programId),
+        visible: inArray(students.studyProgramId, [programId, otherProgramId]),
+      };
+      const asked: Partial<DashboardFilters> = {
+        dorm: "dana_rakca",
+        studyProgramId: otherProgramId,
+      };
+
+      const own = await loadWith(db, scope, asked);
+      const wider = await loadWith(db, both, { dorm: "dana_rakca" });
+
+      expect(own.programs).toBeNull();
+      expect(own.filters.studyProgramId).toBeNull();
+      expect(own.filters.dorm).toBe("dana_rakca");
+      expect(own.counts.matching).toBe(3);
+      expect(own.counts.dorms.get("dana_rakca")).toBe(3);
+      expect(own.counts.dorms.get("semua")).toBe(6);
+      expect(own.counts.programs).toEqual(new Map([[programId, 3]]));
+      expect(own.mentoring.numbers.everyone).toBe(11);
+      expect(wider.counts.dorms.get("dana_rakca")).toBe(4);
+    });
+  });
+
+  it("refuses Konselor, Mahasiswa, Pegawai UPK, Pengelola Asrama and every BAM role asking by hand with the Asrama filter, as without it", () => {
+    const refused: RoleId[] = [
+      "counsellor",
+      "student",
+      "upk_staff",
+      "dorm_manager",
+      ...BAM_ROLES,
+    ];
+    const asked = readDashboardKind({ tampilan: "karakter", asrama: "semua" });
+
+    for (const role of refused) {
+      const account = accountOf([role], 1);
+
+      expect(kindToShow(dashboardKindsOf([role]), asked), role).toBeNull();
+      expect(dashboardScopeOf(account), role).toBeNull();
+    }
+  });
+
+  it("follows a student who stops being a resident on the next load", async () => {
+    await inTestDatabase(async (db) => {
+      const { programId, danaRakca } = await addRecords(db);
+      const scope = programScope(programId);
+      const [leaving] = danaRakca;
+      if (leaving === undefined) throw new Error("No resident was added.");
+      const before = await loadWith(db, scope, { dorm: "dana_rakca" });
+      await db.insert(dormResidentChoices).values({
+        studentId: leaving,
+        dorm: null,
+        setBy: await addTestAccount(db, "Pengelola Uji Asrama Dashboard"),
+        setAt: new Date("3361-10-01T03:00:00Z"),
+      });
+
+      const after = await loadWith(db, scope, { dorm: "dana_rakca" });
+
+      expect(before.counts.matching).toBe(3);
+      expect(after.counts.matching).toBe(2);
+      expect(after.counts.dorms.get("dana_rakca")).toBe(2);
+      expect(after.counts.dorms.get("semua")).toBe(5);
+      expect(after.counts.dorms.get("non")).toBe(6);
     });
   });
 });

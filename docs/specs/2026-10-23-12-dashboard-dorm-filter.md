@@ -98,6 +98,6 @@ program only), the three roles that already use the Dashboard filter.
   the check for groups under 5.
 - [x] 3. The choice is kept in the address and cleared by "Atur ulang
   filter".
-- [ ] 4. Ketua Program Studi stays inside their program, and the other
+- [x] 4. Ketua Program Studi stays inside their program, and the other
   roles are refused, with checks.
 - [ ] 5. The phone layout and the speed check.
