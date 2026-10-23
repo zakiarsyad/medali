@@ -6,7 +6,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { ListPager } from "@/ui/list-pager";
 import { CancelLeaveButton } from "./cancel-leave-button";
 import styles from "./leave.module.css";
-import { ownLeaveAddress } from "./leave-address";
+import { type LeaveListParams, ownLeaveAddress } from "./leave-address";
 import { ReportBadge, StatusBadge, TimelinessBadge } from "./leave-badges";
 import { coveredCountWords } from "./leave-row";
 import { KIND_WORDS } from "./leave-words";
@@ -159,12 +159,15 @@ export function OwnLeaveTable({
   said,
   reporting,
   onCancelled,
+  staffList,
 }: {
   leave: OwnLeave;
   /** What the last cancel or report made here said, or null. */
   said: string | null;
   reporting: Reporting;
   onCancelled: (answer: FormState) => void;
+  /** The staff list shown below, whose place a page step keeps; or null. */
+  staffList: LeaveListParams | null;
 }) {
   if (leave.rows.length === 0) {
     return <p className={shared.empty}>Belum pernah mengajukan izin.</p>;
@@ -204,7 +207,7 @@ export function OwnLeaveTable({
         noun="izin"
         stepsOnOnePage={false}
         keepsPlace
-        addressOf={ownLeaveAddress}
+        addressOf={(page) => ownLeaveAddress(page, staffList)}
       />
     </>
   );
@@ -231,9 +234,11 @@ export function historyKey(leave: OwnLeave): string {
 function OwnLeaveHistory({
   leave,
   newReportId,
+  staffList,
 }: {
   leave: OwnLeave;
   newReportId: string;
+  staffList: LeaveListParams | null;
 }) {
   const [said, setSaid] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -255,6 +260,7 @@ function OwnLeaveHistory({
       said={said}
       reporting={reporting}
       onCancelled={(answer) => setSaid(saidAfterCancel(answer))}
+      staffList={staffList}
     />
   );
 }
@@ -263,16 +269,20 @@ function OwnLeaveHistory({
 export function OwnLeaveView({
   leave,
   newReportId,
+  staffList,
 }: {
   leave: OwnLeave;
   /** The key the next report of a return is kept under. */
   newReportId: string;
+  /** The staff list shown below, whose place a page step keeps; or null. */
+  staffList: LeaveListParams | null;
 }) {
   return (
     <OwnLeaveHistory
       key={historyKey(leave)}
       leave={leave}
       newReportId={newReportId}
+      staffList={staffList}
     />
   );
 }
