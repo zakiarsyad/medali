@@ -71,9 +71,11 @@ export function OwnMentalView({
       <ScreeningLine screening={screening} />
       <CounsellingFacts mental={mental} />
       <OwnMentalNotices mental={mental} />
-      <p className={styles.sub}>{HELP_LINE}</p>
+      <p className={`${styles.sub} ${styles.helpLine}`}>{HELP_LINE}</p>
       {contact !== "" && (
-        <p className={styles.sub}>{campusContactLine(contact)}</p>
+        <p className={`${styles.sub} ${styles.helpLine}`}>
+          {campusContactLine(contact)}
+        </p>
       )}
     </section>
   );

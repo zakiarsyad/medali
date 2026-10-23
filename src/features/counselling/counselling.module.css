@@ -246,6 +246,11 @@
   margin-top: var(--space-md);
 }
 
+/* The help line and the campus contact, whose long words fold on a phone. */
+.helpLine {
+  overflow-wrap: anywhere;
+}
+
 /* The notes of a session in "Riwayat sesi", keeping their line breaks. */
 .notes {
   margin: 0;

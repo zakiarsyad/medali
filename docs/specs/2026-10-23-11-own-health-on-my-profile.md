@@ -117,4 +117,4 @@ only the student sees this view, and it always shows where to get help.
   the help line and the campus contact setting.
 - [x] 4. The notices for a waiting consent or sharing request, with
   "Buka Konseling".
-- [ ] 5. Phone layout for both cards.
+- [x] 5. Phone layout for both cards.
