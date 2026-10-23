@@ -62,7 +62,7 @@ describe("a cancel and a decision of one request at the same moment", () => {
     const { asker, id, manager } = await waitingRequest(2);
 
     const both = await own.atOnce<Parsed<unknown>>(
-      (db) => cancelLeave(db, asker, id),
+      (db) => cancelLeave(db, asker, id, MOMENT),
       (db) => decideLeave(db, manager, id, "approve", ""),
     );
 
@@ -76,7 +76,7 @@ describe("a cancel and a decision of one request at the same moment", () => {
 
     const both = await own.atOnce<Parsed<unknown>>(
       (db) => decideLeave(db, manager, id, "approve", ""),
-      (db) => cancelLeave(db, asker, id),
+      (db) => cancelLeave(db, asker, id, MOMENT),
     );
 
     expect(both.sooner).toEqual({ ok: true, value: "approved" });

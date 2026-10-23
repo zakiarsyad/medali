@@ -54,5 +54,5 @@ cancelling does not.
 
 ## Steps
 
-- [ ] 1. The leave cancel action refuses a student who does not live in
+- [x] 1. The leave cancel action refuses a student who does not live in
   the dorm, with checks for a non-resident and a resident.
