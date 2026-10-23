@@ -87,6 +87,6 @@ own and can change none.
   checks.
 - [x] 2. The student's own "Riwayat pelanggaran disiplin", and the
   sanction beside the name.
-- [ ] 3. The card "Pembinaan (level)".
+- [x] 3. The card "Pembinaan (level)".
 - [ ] 4. "Catatan pengasuhan" with its empty state and fold.
 - [ ] 5. Phone layout and speed of the cards.

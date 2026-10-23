@@ -7,6 +7,7 @@ import { OwnAchievementPanel } from "@/features/character-assessment/own-achieve
 import { OwnScoreHistoryPanel } from "@/features/character-assessment/own-score-history-panel";
 import { OwnGradePanel } from "@/features/character-grades/own-grade-panel";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import { OwnCoachingPanel } from "@/features/guidance/own-coaching-panel";
 import { OwnPenaltiesPanel } from "@/features/guidance/own-penalties-panel";
 import { ProfileSikuPanel } from "@/features/siku/profile-siku-panel";
 import { readOwnProfile } from "@/features/students/own-profile";
@@ -43,6 +44,7 @@ export default async function OwnProfilePage() {
           )}
           <OwnPenaltiesPanel account={account} />
           <OwnScoreHistoryPanel account={account} />
+          <OwnCoachingPanel account={account} />
         </>
       }
     />
