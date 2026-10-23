@@ -1,55 +1,21 @@
-import { type CountShown, countWords } from "@/health-notes/shown-count";
-import type { ScreeningLevel } from "@/mental-health/screening-ids";
-import { SCREENING_LEVELS } from "@/mental-health/screening-ids";
-import { LEVEL_WORDS } from "@/mental-health/screening-words";
+import { LevelBars } from "@/mental-health/level-bars";
+import type {
+  MentalRecap,
+  MentalView,
+  ShownMental,
+} from "@/mental-health/mental-recap";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./dashboard.module.css";
 import { MENTAL_SECTION } from "./mental-card";
 import { PublishedPanel } from "./mental-published";
-import type { MentalRecap, MentalView, ShownMental } from "./mental-recap";
 import { assessedLine, MENTAL_TOO_FEW, NOBODY_ASSESSED } from "./mental-words";
 import { SectionHead } from "./section-head";
 
-/** The colours of the prototype: fine, Sedang, and Berat or worse. */
-const LEVEL_METERS: Record<ScreeningLevel, string | undefined> = {
-  normal: styles.okMeter,
-  mild: styles.okMeter,
-  moderate: styles.warnMeter,
-  severe: styles.badMeter,
-  extremely_severe: styles.badMeter,
-};
-
-function barLength(count: CountShown): number {
-  if (count === "<5") return 0;
-  return count;
-}
-
-/**
- * One bar for each level, as long as its share of the largest. A count
- * sent as "<5" says so and draws no bar.
- */
-function LevelBars({ recap }: { recap: ShownMental }) {
-  const { byLevel } = recap;
-  const largest = Math.max(1, ...Object.values(byLevel).map(barLength));
+/** One bar for each level, and how many are assessed. */
+function AssessedBars({ recap }: { recap: ShownMental }) {
   return (
     <>
-      <ul className={styles.bars}>
-        {SCREENING_LEVELS.map((level) => (
-          <li key={level} className={styles.bar}>
-            <span className={styles.barLabel}>{LEVEL_WORDS[level]}</span>
-            <meter
-              className={`${styles.meter} ${LEVEL_METERS[level]}`}
-              min={0}
-              max={largest}
-              value={barLength(byLevel[level])}
-              aria-label={LEVEL_WORDS[level]}
-            />
-            <span className={styles.barValue}>
-              {countWords(byLevel[level])}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <LevelBars byLevel={recap.byLevel} />
       <p className={styles.note}>{assessedLine(recap.assessed)}</p>
     </>
   );
@@ -72,7 +38,7 @@ function LevelPanel({ recap }: { recap: MentalRecap }) {
       {recap.kind === "too_few" && (
         <p className={shared.empty}>{MENTAL_TOO_FEW}</p>
       )}
-      {recap.kind === "shown" && <LevelBars recap={recap} />}
+      {recap.kind === "shown" && <AssessedBars recap={recap} />}
     </div>
   );
 }

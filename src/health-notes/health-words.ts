@@ -48,6 +48,10 @@ export const NOTE_MISSING = "Belum ada catatan";
 /** What the list says of any other student with no note. */
 export const NO_NOTE = "Tidak ada catatan";
 
+/** What a student is told under their own note: who else reads it. */
+export const OWN_NOTE_READERS =
+  "Catatan kesehatan Anda juga dapat dibaca pengasuh Anda dan petugas yang berwenang, untuk keselamatan dalam kegiatan.";
+
 /** The mark of a category that a note made more serious than the test. */
 export const FROM_NOTE_MARK = "berdasarkan catatan kesehatan";
 

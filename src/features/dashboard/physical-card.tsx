@@ -1,9 +1,12 @@
 import { CATEGORY_WORDS } from "@/health-notes/category-words";
 import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
+import type {
+  PhysicalRecap,
+  ShownPhysical,
+} from "@/health-notes/fitness-recap";
 import { countWords } from "@/health-notes/shown-count";
 import { CardBox } from "./card-box";
 import styles from "./dashboard.module.css";
-import type { PhysicalRecap, ShownPhysical } from "./physical-recap";
 import {
   physicalCardLine,
   physicalCardValue,

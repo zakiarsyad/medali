@@ -42,12 +42,14 @@ async function GroupPage({
   account,
   limit,
   groupId,
+  memberPage,
   detailId,
 }: {
   account: Account;
   /** Which groups the account may read. */
   limit: RowLimit;
   groupId: string;
+  memberPage: number;
   detailId: string | null;
 }) {
   const detail = await askedDetail(account, detailId);
@@ -64,8 +66,13 @@ async function GroupPage({
         evaluateAddress={openEvaluationAddress(account, groupId)}
         replaceAddress={openReplacementAddress(account, groupId)}
         groupId={groupId}
+        memberPage={memberPage}
         detailVisible={detailVisibleTo(account)}
-        memberAddressOf={openMemberAddresses(account.roles, groupId)}
+        memberAddressOf={openMemberAddresses(
+          account.roles,
+          groupId,
+          memberPage,
+        )}
         mentorAddressOf={(mentorId, group) =>
           openMentorAddress(account, mentorId, group)
         }
@@ -78,7 +85,7 @@ async function GroupPage({
           headTagsOf={(studentId) => (
             <StudentSanctionBadge account={account} studentId={studentId} />
           )}
-          closeAddress={groupAddress(groupId)}
+          closeAddress={groupAddress(groupId, memberPage)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>
             openMentorAddress(account, mentorId, group)
@@ -127,6 +134,7 @@ export default async function MentorGroupsPage(
         account={account}
         limit={limit}
         groupId={params.groupId}
+        memberPage={params.memberPage}
         detailId={params.detailId}
       />
     );

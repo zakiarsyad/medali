@@ -21,9 +21,14 @@ export interface MentorListParams {
    * here: the read of the mentor answers "not found" for what is no id.
    */
   mentorId: string | null;
+  /** The page of "Mahasiswa binaan" on the mentor's page, counted from 1. */
+  studentPage: number;
   /** The same for the student whose detail is open over the mentor's page. */
   detailId: string | null;
 }
+
+/** Apart from the list's own page, so paging the students moves nothing else. */
+const STUDENT_PAGE = "hal-binaan";
 
 export const NO_FILTERS: MentorListFilters = {
   query: "",
@@ -49,6 +54,11 @@ function readId(value: SearchParams[string]): string | null {
   return id === "" ? null : id;
 }
 
+function readPage(value: SearchParams[string]): number {
+  const page = firstParam(value);
+  return PAGE.test(page) ? Number(page) : 1;
+}
+
 function readStatus(value: SearchParams[string]): MentorStatus | null {
   const text = firstParam(value);
   return (
@@ -67,10 +77,10 @@ function readUnit(value: SearchParams[string]): string | null {
  * part that is not understood counts as not chosen.
  */
 export function readMentorListParams(params: SearchParams): MentorListParams {
-  const page = firstParam(params.hal);
   return {
-    page: PAGE.test(page) ? Number(page) : 1,
+    page: readPage(params.hal),
     mentorId: readId(params.pengasuh),
+    studentPage: readPage(params[STUDENT_PAGE]),
     detailId: readId(params.profil),
     filters: {
       query: firstParam(params.q).trim().slice(0, SEARCH_MAX_LENGTH),
@@ -101,17 +111,28 @@ export function mentorListAddress(
     : `${MENTOR_LIST_ADDRESS}?${search}`;
 }
 
-/** The address of the page of one mentor. */
-export function mentorAddress(mentorId: string): string {
+function setStudentPage(params: URLSearchParams, studentPage: number): void {
+  if (studentPage > 1) params.set(STUDENT_PAGE, String(studentPage));
+}
+
+/** The address of the page of one mentor, at a page of their students. */
+export function mentorAddress(mentorId: string, studentPage = 1): string {
   const params = new URLSearchParams({ pengasuh: mentorId });
+  setStudentPage(params, studentPage);
   return `${MENTOR_LIST_ADDRESS}?${params}`;
 }
 
-/** The address of a student's detail, open over the page of their mentor. */
+/**
+ * The address of a student's detail, open over the page of their mentor
+ * at the page of students it was opened from.
+ */
 export function mentorStudentAddress(
   mentorId: string,
   studentId: string,
+  studentPage = 1,
 ): string {
-  const params = new URLSearchParams({ pengasuh: mentorId, profil: studentId });
+  const params = new URLSearchParams({ pengasuh: mentorId });
+  setStudentPage(params, studentPage);
+  params.set("profil", studentId);
   return `${MENTOR_LIST_ADDRESS}?${params}`;
 }

@@ -134,3 +134,7 @@
   margin: 0 0 var(--space-sm);
   color: var(--muted);
 }
+
+.dormTable {
+  margin-top: var(--space-md);
+}

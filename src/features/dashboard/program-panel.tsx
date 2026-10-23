@@ -34,17 +34,13 @@ function ProgramBar({ program }: { program: ProgramAverage }) {
   );
 }
 
-/**
- * "Capaian MEDALI per program studi": each program of the group, highest
- * average first, as the server sent them.
- */
-export function ProgramPanel({ programs }: { programs: ProgramAverage[] }) {
+const NO_PROGRAM_SHOWN =
+  "Belum ada program studi yang dapat ditampilkan. Rerata program studi tampil bila minimal 5 mahasiswa sudah diasesmen, agar nilai perorangan tidak dapat ditebak.";
+
+/** Every program with its bar or "-", and the note on where the bars start. */
+function ProgramBars({ programs }: { programs: ProgramAverage[] }) {
   return (
-    <div className={shared.panel}>
-      <div className={styles.panelHead}>
-        <h3 className={shared.heading}>Capaian MEDALI per program studi</h3>
-        <span className={styles.caption}>skala 0–100</span>
-      </div>
+    <>
       <ul className={styles.bars}>
         {programs.map((program) => (
           <ProgramBar key={program.programId} program={program} />
@@ -53,6 +49,28 @@ export function ProgramPanel({ programs }: { programs: ProgramAverage[] }) {
       <p className={styles.note}>
         Batang dimulai dari nilai 50 agar selisih antarprodi terlihat.
       </p>
+    </>
+  );
+}
+
+/**
+ * "Capaian MEDALI per program studi": each program of the group, highest
+ * average first, as the server sent them, or one line when none has an
+ * average.
+ */
+export function ProgramPanel({ programs }: { programs: ProgramAverage[] }) {
+  const anyAverage = programs.some((program) => program.average !== null);
+  return (
+    <div className={shared.panel}>
+      <div className={styles.panelHead}>
+        <h3 className={shared.heading}>Capaian MEDALI per program studi</h3>
+        <span className={styles.caption}>skala 0–100</span>
+      </div>
+      {anyAverage ? (
+        <ProgramBars programs={programs} />
+      ) : (
+        <p className={shared.empty}>{NO_PROGRAM_SHOWN}</p>
+      )}
     </div>
   );
 }

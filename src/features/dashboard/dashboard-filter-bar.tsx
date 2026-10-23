@@ -12,6 +12,7 @@ import {
 import type { DashboardView } from "./dashboard-view";
 import {
   agencyChoices,
+  dormChoices,
   entryPathChoices,
   nameChoices,
   programChoices,
@@ -22,8 +23,8 @@ import {
 import { foundWords } from "./found-words";
 
 /**
- * The filter for a group of students, as in the prototype but without
- * Asrama. A choice sends the filter at once, and the address keeps it.
+ * The filter for a group of students, as in the prototype. A choice
+ * sends the filter at once, and the address keeps it.
  */
 export function DashboardFilterBar({ view }: { view: DashboardView }) {
   const { filters, counts, programs, held } = view;
@@ -42,6 +43,13 @@ export function DashboardFilterBar({ view }: { view: DashboardView }) {
               chosen={String(filters.stageNo ?? "")}
             />
           )}
+          <CountedSelect
+            label="Asrama"
+            name="asrama"
+            every="Asrama dan non asrama"
+            choices={dormChoices(counts)}
+            chosen={filters.dorm ?? ""}
+          />
           {programs !== null && (
             <CountedSelect
               label="Program studi"

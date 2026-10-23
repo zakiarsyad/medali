@@ -13,6 +13,7 @@ import {
   logSharedReads,
   type SharedShowing,
 } from "@/mental-health/log-shared-reads";
+import { heldInLast30Days } from "@/mental-health/recent-sessions";
 import type { ScreeningLevel } from "@/mental-health/screening-ids";
 import {
   COUNSELLING_LEVELS,
@@ -22,7 +23,6 @@ import { sharedLevels } from "@/mental-health/shared-levels";
 import { recipientRolesOf, sharedReachOf } from "@/mental-health/shared-reach";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
 import { pageWithin } from "@/ui/list-pages";
-import { heldInLast30Days } from "./recent-sessions";
 import { SHARED_PAGE_SIZE, type SharedList } from "./shared-view";
 
 function isMenteesOnly(actor: AccountForAccess): boolean {

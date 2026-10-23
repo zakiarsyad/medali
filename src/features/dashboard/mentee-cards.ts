@@ -1,14 +1,14 @@
 import type { GradeBasis } from "@/character-grades/grade-facts";
 import type { Database } from "@/db/connect";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
+import { readPhysical } from "@/health-notes/fitness-recap-read";
+import type { PublishedMental } from "@/mental-health/mental-recap";
+import { readPublished } from "@/mental-health/mental-recap-read";
 import { readAchievement } from "./achievement-read";
 import { NONE_HELD_BACK } from "./achievement-recap";
 import { readCharacterGrades } from "./grade-read";
-import { readPublished } from "./mental-read";
-import type { PublishedMental } from "./mental-recap";
 import type { MenteeCards } from "./mentee-recap";
 import type { MenteeScope } from "./mentee-scope";
-import { readPhysical } from "./physical-read";
 
 const NONE_PUBLISHED: PublishedMental = {
   matching: 0,

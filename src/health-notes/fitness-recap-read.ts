@@ -1,21 +1,19 @@
 import { and, count, countDistinct, eq, type SQL, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { healthNoteIllnesses, students } from "@/db/schema";
-import { finalRankSql } from "@/health-notes/final-category-sql";
-import type {
-  FitnessCategory,
-  FitnessLimits,
-} from "@/health-notes/fitness-ids";
-import { SERIOUSNESS } from "@/health-notes/health-category";
-import { latestFitnessScores } from "@/health-notes/latest-fitness-scores";
-import { latestHealthNotes } from "@/health-notes/latest-health-notes";
-import { FEWEST_COUNTED } from "@/health-notes/shown-count";
+import { finalRankSql } from "./final-category-sql";
+import type { FitnessCategory, FitnessLimits } from "./fitness-ids";
 import {
   type FitnessTally,
+  type GroupTally,
   type IllnessTally,
   type PhysicalRecap,
   physicalRecapOf,
-} from "./physical-recap";
+} from "./fitness-recap";
+import { SERIOUSNESS } from "./health-category";
+import { latestFitnessScores } from "./latest-fitness-scores";
+import { latestHealthNotes } from "./latest-health-notes";
+import { FEWEST_COUNTED } from "./shown-count";
 
 function countedWhere(condition: SQL): SQL<number> {
   return sql<number>`(count(*) filter (where ${condition}))::int`;
@@ -39,29 +37,65 @@ function partsOf(db: Database, limits: FitnessLimits) {
   return { latest, note, rank };
 }
 
+/** What a read counts of its students: how many, how many tested, and per category. */
+function tallyFields(parts: Parts) {
+  const { latest, rank } = parts;
+  return {
+    students: count(),
+    tested: count(latest.studentId),
+    byCategory: {
+      excellent: inCategory(rank, "excellent"),
+      good: inCategory(rank, "good"),
+      attention: inCategory(rank, "attention"),
+      medical: inCategory(rank, "medical"),
+    },
+  };
+}
+
 async function readTally(
   db: Database,
   parts: Parts,
   where: SQL,
 ): Promise<FitnessTally> {
-  const { latest, note, rank } = parts;
+  const { latest, note } = parts;
   const [tally] = await db
-    .select({
-      students: count(),
-      tested: count(latest.studentId),
-      byCategory: {
-        excellent: inCategory(rank, "excellent"),
-        good: inCategory(rank, "good"),
-        attention: inCategory(rank, "attention"),
-        medical: inCategory(rank, "medical"),
-      },
-    })
+    .select(tallyFields(parts))
     .from(students)
     .leftJoin(latest, eq(latest.studentId, students.id))
     .leftJoin(note, eq(note.studentId, students.id))
     .where(where);
   if (!tally) throw new Error("Kesehatan jasmani was not counted.");
   return tally;
+}
+
+/**
+ * Kesehatan jasmani of the students `where` lets through, counted apart
+ * for each key `group` gives them, with the limits in force, worked out
+ * by the database, so no student leaves it. A student `group` gives no
+ * key is not counted. In one read, however many keys there are.
+ */
+export async function readFitnessByGroup<Key extends string>(
+  db: Database,
+  limits: FitnessLimits,
+  where: SQL,
+  group: SQL<Key | null>,
+): Promise<GroupTally<Key>[]> {
+  const parts = partsOf(db, limits);
+  const { latest, note } = parts;
+  const rows = await db
+    .select({ key: group, ...tallyFields(parts) })
+    .from(students)
+    .leftJoin(latest, eq(latest.studentId, students.id))
+    .leftJoin(note, eq(note.studentId, students.id))
+    .where(and(where, sql`${group} is not null`))
+    // By its place in the list: the key may hold values of its own, so
+    // the database would not take it written a second time as the same.
+    .groupBy(sql`1`);
+  const tallies: GroupTally<Key>[] = [];
+  for (const { key, ...tally } of rows) {
+    if (key !== null) tallies.push({ key, tally });
+  }
+  return tallies;
 }
 
 /**

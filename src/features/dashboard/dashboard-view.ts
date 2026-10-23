@@ -7,8 +7,13 @@ import {
 import { readGradeScheme } from "@/character-grades/grade-scheme";
 import type { Database } from "@/db/connect";
 import { listStudyPrograms, type StudyProgram } from "@/db/study-programs";
+import { dormCohortsOf } from "@/dorms/dorm-cohorts";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
+import type { PhysicalRecap } from "@/health-notes/fitness-recap";
+import { readPhysical } from "@/health-notes/fitness-recap-read";
+import type { MentalView } from "@/mental-health/mental-recap";
+import { readMental } from "@/mental-health/mental-recap-read";
 import { type Achievement, readAchievement } from "./achievement-read";
 import {
   type DashboardFilters,
@@ -26,12 +31,8 @@ import {
 import type { DashboardScope } from "./dashboard-scope";
 import { dashboardStudents } from "./dashboard-students";
 import { type CharacterGrades, readCharacterGrades } from "./grade-read";
-import { readMental } from "./mental-read";
-import type { MentalView } from "./mental-recap";
 import { readMentoring } from "./mentoring-read";
 import type { MentoringView } from "./mentoring-recap";
-import { readPhysical } from "./physical-read";
-import type { PhysicalRecap } from "./physical-recap";
 
 /** The running period as the semester rule reads it, or null when none runs. */
 export type RunningPeriod = Pick<AcademicPeriod, "startYear" | "term"> | null;
@@ -90,15 +91,18 @@ export async function loadDashboard(
     provinces: new Set(held.provinces),
     agencies: new Set([NO_AGENCY, ...held.agencies]),
   });
-  const stages = stageCohorts(held.cohortYears, period);
-  const counted = dashboardStudents(scope.visible, filters, stages);
+  const cohorts = {
+    stages: stageCohorts(held.cohortYears, period),
+    dorms: dormCohortsOf(held.cohortYears, period),
+  };
+  const counted = dashboardStudents(scope.visible, filters, cohorts);
   const filtered = filtersInUse(filters) > 0;
   const everyone = filtered
-    ? dashboardStudents(scope.visible, NO_FILTERS, stages)
+    ? dashboardStudents(scope.visible, NO_FILTERS, cohorts)
     : null;
   const [counts, achievement, grades, physical, mental, mentoring] =
     await Promise.all([
-      countChoices(db, scope.visible, filters, stages),
+      countChoices(db, scope.visible, filters, cohorts),
       readAchievement(db, counted, filtered),
       readCharacterGrades(db, counted, basis, filtered),
       readPhysical(db, limits, counted, scope.illnesses),

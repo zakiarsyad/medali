@@ -2,15 +2,7 @@ import type { SQL } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { Action } from "@/auth/roles";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
-import { sharedReachOf } from "@/mental-health/shared-reach";
-
-/** Who reads the counselling data published to them, and which sharings they reach. */
-export interface SharedReader {
-  /** The account, written to the log of readings for each row shown. */
-  readerId: string;
-  /** The published sharings it reaches, on the sharings joined with their students. */
-  reach: SQL;
-}
+import { type SharedReader, sharedReachOf } from "@/mental-health/shared-reach";
 
 /** Which students the numbers of an account's Dashboard count. */
 export interface DashboardScope {

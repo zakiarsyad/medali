@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
+import type { PublishedRow } from "@/mental-health/mental-recap";
 import type { Recap } from "./achievement-recap";
 import { TOO_FEW } from "./achievement-words";
 import { NO_FILTERS } from "./dashboard-address";
@@ -9,7 +10,6 @@ import { DashboardScreen, type DetailLinks } from "./dashboard-screen";
 import type { DashboardView } from "./dashboard-view";
 import type { ShownGrades } from "./grade-recap";
 import { NO_GRADES } from "./grade-words";
-import type { PublishedRow } from "./mental-recap";
 import {
   MENTAL_TOO_FEW,
   NOBODY_ASSESSED,
@@ -85,6 +85,13 @@ function viewOf(more: Partial<DashboardView> = {}): DashboardView {
       seedling: new Map([[false, 40]]),
       international: new Map([[false, 40]]),
       agencies: new Map([["tanpa", 40]]),
+      dorms: new Map([
+        ["semua", 30],
+        ["wismantara", 0],
+        ["dana_rakca", 18],
+        ["cipta_bakti", 12],
+        ["non", 10],
+      ]),
     },
     achievement: {
       recap: RECAP,
@@ -201,6 +208,7 @@ describe("DashboardScreen", () => {
     expect(html).toContain("Dashboard pembangunan karakter");
     for (const label of [
       "Tahapan",
+      "Asrama",
       "Program studi",
       "Reguler atau alih program",
       "Provinsi",
@@ -211,7 +219,6 @@ describe("DashboardScreen", () => {
     ]) {
       expect(html).toContain(`${label}<select`);
     }
-    expect(html).not.toContain("Asrama");
     expect(html).toContain("mahasiswa aktif");
     expect(html).toContain('href="#capaian-karakter"');
     expect(html).toContain(
@@ -222,6 +229,77 @@ describe("DashboardScreen", () => {
     expect(html).toContain('href="/penilaian/asesmen"');
     expect(html).toContain("Angkatan 2025");
     expect(html).toContain("Reguler · Smt 3");
+  });
+
+  it("offers Asrama second, after Tahapan, with the count beside each choice, Asrama dan non asrama chosen and a choice with none hidden", () => {
+    const html = shown(viewOf());
+    const asrama = html.slice(
+      html.indexOf("Asrama<select"),
+      html.indexOf("</select>", html.indexOf("Asrama<select")),
+    );
+
+    expect(html.indexOf("Asrama<select")).toBeGreaterThan(
+      html.indexOf("Tahapan<select"),
+    );
+    expect(html.indexOf("Asrama<select")).toBeLessThan(
+      html.indexOf("Program studi<select"),
+    );
+    expect(asrama).toContain('name="asrama"');
+    expect(asrama).toContain(
+      '<option value="" selected="">Asrama dan non asrama</option>',
+    );
+    expect(asrama).toContain(
+      '<option value="semua">Semua asrama (30)</option>',
+    );
+    expect(asrama).toContain(
+      '<option value="dana_rakca">Asrama Dana Rakca (18)</option>',
+    );
+    expect(asrama).toContain(
+      '<option value="cipta_bakti">Asrama Cipta Bakti (12)</option>',
+    );
+    expect(asrama).toContain('<option value="non">Non asrama (10)</option>');
+    expect(asrama).not.toContain("Wismantara");
+  });
+
+  it("puts Asrama inside the folded Filter button with the other choices, for a phone", () => {
+    const html = shown(viewOf());
+    const button = html.indexOf('aria-expanded="false"');
+    // The choices sit in a form part inside the part that folds; both end here.
+    const folded = html.slice(button, html.indexOf("</div></div>", button));
+
+    expect(folded).toContain(">Filter</button>");
+    for (const label of ["Tahapan", "Asrama", "Program studi", "Instansi"]) {
+      expect(folded).toContain(`${label}<select`);
+    }
+  });
+
+  it("names Asrama Wismantara when it holds students", () => {
+    const view = viewOf();
+    const html = shown({
+      ...view,
+      counts: {
+        ...view.counts,
+        dorms: new Map([...view.counts.dorms, ["wismantara", 4]]),
+      },
+    });
+
+    expect(html).toContain(
+      '<option value="wismantara">Asrama Wismantara (4)</option>',
+    );
+  });
+
+  it("counts Asrama as one filter in the line, keeps it chosen, and clears it with Atur ulang filter", () => {
+    const html = shown(
+      viewOf({
+        filters: { ...NO_FILTERS, dorm: "dana_rakca", province: "Bali" },
+      }),
+    );
+
+    expect(html).toContain("mahasiswa sesuai 2 filter");
+    expect(html).toContain(
+      '<option value="dana_rakca" selected="">Asrama Dana Rakca (18)</option>',
+    );
+    expect(html).toMatch(/href="\/dashboard"[^>]*>Atur ulang filter</);
   });
 
   it("shows the card Nilai karakter between Capaian karakter and Kesehatan jasmani, leading to section 2", () => {
@@ -635,6 +713,30 @@ describe("Pendampingan on the Dashboard", () => {
 
     expect(part.split("<meter")).toHaveLength(3);
     expect(small).toMatch(/\(3\).*>-</);
+  });
+
+  it("shows one line in place of the programs and the note when no program has an average", () => {
+    const view = viewOf();
+    const part = mentoringPart(
+      shown({
+        ...view,
+        mentoring: {
+          ...view.mentoring,
+          programs: [
+            { programId: 1, name: "D3 Pajak", students: 4, average: null },
+            { programId: 3, name: "D3 Kepabeanan", students: 3, average: null },
+          ],
+        },
+      }),
+    );
+
+    expect(part).toContain("Capaian MEDALI per program studi");
+    expect(part).toContain(
+      "Belum ada program studi yang dapat ditampilkan. Rerata program studi tampil bila minimal 5 mahasiswa sudah diasesmen, agar nilai perorangan tidak dapat ditebak.",
+    );
+    expect(part).not.toContain("D3 Pajak");
+    expect(part).not.toContain("D3 Kepabeanan");
+    expect(part).not.toContain("Batang dimulai dari nilai 50");
   });
 
   it("leaves out the panel for Ketua Program Studi", () => {

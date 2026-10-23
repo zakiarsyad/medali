@@ -6,10 +6,12 @@ import { readOwnSanction } from "@/discipline-penalties/read-sanctions";
 import { OwnAchievementPanel } from "@/features/character-assessment/own-achievement-panel";
 import { OwnScoreHistoryPanel } from "@/features/character-assessment/own-score-history-panel";
 import { OwnGradePanel } from "@/features/character-grades/own-grade-panel";
+import { OwnMentalPanel } from "@/features/counselling/own-mental-panel";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
 import { OwnCoachingPanel } from "@/features/guidance/own-coaching-panel";
 import { OwnPenaltiesPanel } from "@/features/guidance/own-penalties-panel";
 import { OwnNotesPanel } from "@/features/mentoring/own-notes-panel";
+import { OwnFitnessPanel } from "@/features/fitness/own-fitness-panel";
 import { ProfileSikuPanel } from "@/features/siku/profile-siku-panel";
 import { readOwnProfile } from "@/features/students/own-profile";
 import { OwnProfileScreen } from "@/features/students/own-profile-screen";
@@ -47,6 +49,8 @@ export default async function OwnProfilePage() {
           <OwnScoreHistoryPanel account={account} />
           <OwnCoachingPanel account={account} />
           <OwnNotesPanel account={account} />
+          <OwnFitnessPanel account={account} />
+          <OwnMentalPanel account={account} />
         </>
       }
     />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PhysicalRecap } from "./physical-recap";
+import type { PhysicalRecap } from "@/health-notes/fitness-recap";
 import {
   illnessLine,
   PHYSICAL_TOO_FEW,
@@ -76,6 +76,18 @@ describe("stackParts", () => {
   it("lays the categories shown along the whole group, leaving out <5 and 0", () => {
     expect(
       stackParts({ excellent: 50, good: 0, attention: "<5", medical: 25 }, 100),
+    ).toEqual([
+      { category: "excellent", start: 0, length: 50 },
+      { category: "medical", start: 50, length: 25 },
+    ]);
+  });
+
+  it("leaves out a category hidden as 5+", () => {
+    expect(
+      stackParts(
+        { excellent: 50, good: "5+", attention: "<5", medical: 25 },
+        100,
+      ),
     ).toEqual([
       { category: "excellent", start: 0, length: 50 },
       { category: "medical", start: 50, length: 25 },

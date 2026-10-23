@@ -28,9 +28,10 @@ export async function readGroupPage(
   limit: RowLimit,
   groupId: string,
   detailVisible: SQL | null,
+  memberPage = 1,
   day: string = campusDay(),
 ): Promise<GroupPageAnswer> {
-  const answer = await readGroup(db, limit, groupId, detailVisible);
+  const answer = await readGroup(db, limit, groupId, detailVisible, memberPage);
   if (answer.kind !== "found") return answer;
   const recentNotes = await countRecentNotes(db, answer.group.id, day);
   return { ...answer, recentNotes };

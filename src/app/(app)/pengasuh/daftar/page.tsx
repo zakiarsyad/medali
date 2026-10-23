@@ -41,12 +41,14 @@ async function MentorPage({
   account,
   limit,
   mentorId,
+  studentPage,
   detailId,
 }: {
   account: Account;
   /** Which mentors the account may read. */
   limit: RowLimit;
   mentorId: string;
+  studentPage: number;
   detailId: string | null;
 }) {
   const detail = await askedDetail(account, detailId);
@@ -58,8 +60,13 @@ async function MentorPage({
         limit={limit}
         evaluationLimit={evaluationRowsFor(account)}
         mentorId={mentorId}
+        studentPage={studentPage}
         detailVisible={detailVisibleTo(account)}
-        studentAddressOf={openMentorStudentAddresses(account.roles, mentorId)}
+        studentAddressOf={openMentorStudentAddresses(
+          account.roles,
+          mentorId,
+          studentPage,
+        )}
       />
       {detail && (
         <StudentDetailDialog
@@ -69,7 +76,7 @@ async function MentorPage({
           headTagsOf={(studentId) => (
             <StudentSanctionBadge account={account} studentId={studentId} />
           )}
-          closeAddress={mentorAddress(mentorId)}
+          closeAddress={mentorAddress(mentorId, studentPage)}
           groupAddressOf={(group) => openGroupAddress(account, group)}
           mentorAddressOf={(mentorId, group) =>
             openMentorAddress(account, mentorId, group)
@@ -118,6 +125,7 @@ export default async function MentorsPage(
         account={account}
         limit={limit}
         mentorId={params.mentorId}
+        studentPage={params.studentPage}
         detailId={params.detailId}
       />
     );

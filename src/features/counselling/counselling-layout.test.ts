@@ -49,6 +49,7 @@ const LAYOUT_RULES: [string, string[]][] = [
       ".history li",
       ".notes",
       ".assignment",
+      ".helpLine",
     ],
   ],
   [SHARED, [".actions", ".form"]],
@@ -353,5 +354,47 @@ describe("an assignment card of the student on a phone", () => {
       "<div className={styles.badges}>",
     );
     expect(ruleOf(".badges")).toContain("flex-wrap: wrap;");
+  });
+});
+
+describe("Kesehatan mental on Profil saya on a phone", () => {
+  const VIEW = read("own-mental-view.tsx");
+  const NOTICES = read("own-mental-notices.tsx");
+
+  it("lays its lines out one under the other, in one column", () => {
+    expect(VIEW).toMatch(
+      /className=\{`\$\{shared\.panel\} \$\{styles\.stack\}`\}/,
+    );
+    expect(ruleOf(".stack")).toContain("display: grid;");
+    expect(ruleOf(".stack")).not.toContain("grid-template-columns");
+  });
+
+  it("puts the level under the title, and the facts one under the other, when there is no room", () => {
+    expect(VIEW).toContain("<div className={styles.panelHead}>");
+    expect(ruleOf(".panelHead")).toContain("flex-wrap: wrap;");
+    expect(VIEW).toContain("<dl className={styles.facts}>");
+    expect(ruleOf(".facts")).toContain("min(100%, var(--card-min-width))");
+  });
+
+  it("folds the long words of a notice, a shared line, the help line and the campus contact", () => {
+    expect(NOTICES).toContain("<div className={styles.warnBox}>");
+    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(NOTICES).toMatch(
+      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
+    );
+    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(VIEW.match(/styles\.helpLine/g)).toHaveLength(2);
+    expect(ruleOf(".helpLine")).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("puts Buka Konseling on its own line that wraps", () => {
+    expect(NOTICES).toContain("<div className={shared.actions}>");
+    expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
+  });
+
+  it("sets no style in its code", () => {
+    for (const code of [VIEW, NOTICES, read("own-mental-panel.tsx")]) {
+      expect(code).not.toContain("style=");
+    }
   });
 });

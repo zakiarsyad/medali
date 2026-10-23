@@ -1,7 +1,7 @@
+import type { PublishedCounts } from "@/mental-health/mental-recap";
 import { CardBox } from "./card-box";
 import styles from "./dashboard.module.css";
 import { MENTAL_SECTION } from "./mental-card";
-import type { PublishedCounts } from "./mental-recap";
 import { menteeMentalLine } from "./mentee-words";
 
 /**

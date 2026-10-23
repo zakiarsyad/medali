@@ -22,6 +22,14 @@ describe("openMemberAddresses", () => {
     },
   );
 
+  it("keeps the page of the members shown", () => {
+    const addressOf = openMemberAddresses(["head_of_unit"], GROUP_ID, 2);
+
+    expect(addressOf?.(STUDENT_ID)).toBe(
+      groupMemberAddress(GROUP_ID, STUDENT_ID, 2),
+    );
+  });
+
   it("gives Pegawai UPK none, so a member is no link", () => {
     expect(openMemberAddresses(["upk_staff"], GROUP_ID)).toBeNull();
   });
@@ -38,6 +46,18 @@ describe("openMentorStudentAddresses", () => {
       );
     },
   );
+
+  it("keeps the page of the students shown", () => {
+    const addressOf = openMentorStudentAddresses(
+      ["head_of_unit"],
+      MENTOR_ID,
+      3,
+    );
+
+    expect(addressOf?.(STUDENT_ID)).toBe(
+      mentorStudentAddress(MENTOR_ID, STUDENT_ID, 3),
+    );
+  });
 
   it("gives Pegawai UPK none, so a student is no link", () => {
     expect(openMentorStudentAddresses(["upk_staff"], MENTOR_ID)).toBeNull();

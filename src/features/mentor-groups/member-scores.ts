@@ -1,10 +1,20 @@
-import { inArray } from "drizzle-orm";
+import {
+  and,
+  count,
+  eq,
+  inArray,
+  type SQL,
+  type SQLWrapper,
+  sql,
+} from "drizzle-orm";
 import {
   earlierAssessments,
   latestAssessments,
 } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
-import type { MemberScores } from "./score-averages";
+import { students } from "@/db/schema";
+import { ACTIVE_MEMBER } from "@/mentoring/active-member";
+import type { MemberScores, ScoreSums } from "./score-averages";
 
 function readLatest(db: Database, studentIds: string[]) {
   const latest = latestAssessments(db);
@@ -63,4 +73,49 @@ export async function readMemberScores(
     });
   }
   return found;
+}
+
+function summed(score: SQLWrapper): SQL<number> {
+  return sql<number>`coalesce(sum(${score}), 0)`.mapWith(Number);
+}
+
+function changeOf(latest: SQLWrapper, earlier: SQLWrapper): SQL {
+  return sql`${latest} - ${earlier}`;
+}
+
+/**
+ * The sums the medal of a whole list is drawn from, for the Aktif ones
+ * among the students `listed` names, grouped by the total of their latest
+ * scores. Only sums leave the database, however many students it holds.
+ */
+export function readScoreSums(db: Database, listed: SQL): Promise<ScoreSums[]> {
+  const latest = latestAssessments(db);
+  const earlier = earlierAssessments(db);
+  return db
+    .select({
+      total: latest.total,
+      students: count(),
+      latest: {
+        M: summed(latest.scoreM),
+        E: summed(latest.scoreE),
+        D: summed(latest.scoreD),
+        A: summed(latest.scoreA),
+        L: summed(latest.scoreL),
+        I: summed(latest.scoreI),
+      },
+      changed: count(earlier.studentId),
+      change: {
+        M: summed(changeOf(latest.scoreM, earlier.scoreM)),
+        E: summed(changeOf(latest.scoreE, earlier.scoreE)),
+        D: summed(changeOf(latest.scoreD, earlier.scoreD)),
+        A: summed(changeOf(latest.scoreA, earlier.scoreA)),
+        L: summed(changeOf(latest.scoreL, earlier.scoreL)),
+        I: summed(changeOf(latest.scoreI, earlier.scoreI)),
+      },
+    })
+    .from(students)
+    .innerJoin(latest, eq(latest.studentId, students.id))
+    .leftJoin(earlier, eq(earlier.studentId, students.id))
+    .where(and(listed, ACTIVE_MEMBER))
+    .groupBy(latest.total);
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { NONE_HELD_BACK } from "./achievement-recap";
-import { type FitnessTally, physicalRecapOf } from "./physical-recap";
+import { type FitnessTally, physicalRecapOf } from "./fitness-recap";
+
+/** The fewest a count needs when none is held back, as for one's own anak asuh. */
+const NONE_HELD_BACK = 1;
 
 const TALLY: FitnessTally = {
   students: 40,
@@ -142,8 +144,78 @@ describe("physicalRecapOf", () => {
 
     expect(recap).toMatchObject({
       untested: "<5",
-      byCategory: { excellent: 20, good: 0, attention: "<5", medical: 6 },
+      byCategory: { excellent: 20, good: 0, attention: "<5", medical: "5+" },
       fitShare: 67,
+    });
+  });
+
+  it("hides Prima too while the <5 and the 5+ add up to the fewest they could, 1 and 5", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 26,
+        tested: 26,
+        byCategory: { excellent: 20, good: 0, attention: 1, medical: 5 },
+      },
+      null,
+    );
+
+    expect(recap).toMatchObject({
+      byCategory: { excellent: "5+", good: 0, attention: "<5", medical: "5+" },
+      fitShare: null,
+    });
+  });
+
+  it("sends the smallest other category above 0 as 5+ while only one is <5, with no number of either", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 40,
+        tested: 30,
+        byCategory: { excellent: 12, good: 7, attention: 3, medical: 7 },
+      },
+      null,
+    );
+
+    expect(recap).toEqual({
+      kind: "shown",
+      students: 40,
+      tested: 30,
+      untested: 10,
+      byCategory: { excellent: 12, good: "5+", attention: "<5", medical: 7 },
+      fitShare: null,
+      illnesses: null,
+    });
+  });
+
+  it("leaves out the share while Prima is hidden as 5+", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 30,
+        tested: 30,
+        byCategory: { excellent: 6, good: 10, attention: 3, medical: 11 },
+      },
+      null,
+    );
+
+    expect(recap).toMatchObject({
+      byCategory: { excellent: "5+", good: 10, attention: "<5", medical: 11 },
+      fitShare: null,
+    });
+  });
+
+  it("hides no second category for Dashboard anak asuh, which holds none back", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 20,
+        tested: 20,
+        byCategory: { excellent: 12, good: 6, attention: 2, medical: 0 },
+      },
+      null,
+      NONE_HELD_BACK,
+    );
+
+    expect(recap).toMatchObject({
+      byCategory: { excellent: 12, good: 6, attention: 2, medical: 0 },
+      fitShare: 90,
     });
   });
 

@@ -1,14 +1,12 @@
 import {
   type Predicate,
   predicateOf,
+  rerataFromTotal,
   rerataOf,
   rerataTenths,
   type Scores,
-  totalOf,
 } from "@/character-scores/assessment-score";
-import type { students } from "@/db/schema";
 import { MEDALI_VALUES } from "@/ui/medali-values";
-import { isCounted } from "./member-rules";
 
 /*
  * The averages of the character scores of a group or of a mentor's
@@ -59,20 +57,61 @@ export interface ScoreSummary {
   predicates: Record<Predicate, number>;
 }
 
-/** The average of each value, to one decimal. Null for no scores. */
-function averageValues(all: readonly Scores[]): Scores | null {
-  if (all.length === 0) return null;
-  const values = { M: 0, E: 0, D: 0, A: 0, L: 0, I: 0 };
-  for (const { key } of MEDALI_VALUES) {
-    let sum = 0;
-    for (const scores of all) sum += scores[key];
-    values[key] = Math.round((sum * 10) / all.length) / 10;
+/**
+ * Assessed active members whose latest six scores have the same total,
+ * with their scores added up, so the medal of a whole list is drawn from
+ * a few sums instead of a row for each member.
+ */
+export interface ScoreSums extends SameTotal {
+  /** Each value of their latest assessments, added up. */
+  latest: Scores;
+  /** How many of them have an assessment before the latest one. */
+  changed: number;
+  /** For those, each value's change from that assessment, added up. */
+  change: Scores;
+}
+
+function noScores(): Scores {
+  return { M: 0, E: 0, D: 0, A: 0, L: 0, I: 0 };
+}
+
+/** The sums of every total together. */
+interface AllSums {
+  assessed: number;
+  latest: Scores;
+  changed: number;
+  change: Scores;
+}
+
+function sumsOfAll(sums: readonly ScoreSums[]): AllSums {
+  const all: AllSums = {
+    assessed: 0,
+    latest: noScores(),
+    changed: 0,
+    change: noScores(),
+  };
+  for (const row of sums) {
+    all.assessed += row.students;
+    all.changed += row.changed;
+    for (const { key } of MEDALI_VALUES) {
+      all.latest[key] += row.latest[key];
+      all.change[key] += row.change[key];
+    }
   }
-  return values;
+  return all;
 }
 
 function toOneDecimal(value: number): number {
   return Math.round(value * 10) / 10;
+}
+
+/** The average of each value, to one decimal. */
+function averageValues(latest: Scores, assessed: number): Scores {
+  const values = noScores();
+  for (const { key } of MEDALI_VALUES) {
+    values[key] = Math.round((latest[key] * 10) / assessed) / 10;
+  }
+  return values;
 }
 
 /**
@@ -80,31 +119,23 @@ function toOneDecimal(value: number): number {
  * the change of those assessed before stands for the change of all, so a
  * member assessed only once adds no false gain.
  */
-function earlierShape(members: readonly MemberScores[]): Scores | null {
-  const changed: { latest: Scores; earlier: Scores }[] = [];
-  for (const { latest, earlier } of members) {
-    if (earlier !== null) changed.push({ latest, earlier });
-  }
-  if (changed.length === 0) return null;
-  const shape = { M: 0, E: 0, D: 0, A: 0, L: 0, I: 0 };
+function earlierShape(all: AllSums): Scores | null {
+  if (all.changed === 0) return null;
+  const shape = noScores();
   for (const { key } of MEDALI_VALUES) {
-    let latestSum = 0;
-    for (const { latest } of members) latestSum += latest[key];
-    let changeSum = 0;
-    for (const { latest, earlier } of changed) {
-      changeSum += latest[key] - earlier[key];
-    }
-    const average = latestSum / members.length;
-    shape[key] = toOneDecimal(average - changeSum / changed.length);
+    const average = all.latest[key] / all.assessed;
+    shape[key] = toOneDecimal(average - all.change[key] / all.changed);
   }
   return shape;
 }
 
 function countPredicates(
-  members: readonly MemberScores[],
+  sums: readonly ScoreSums[],
 ): Record<Predicate, number> {
   const counts = { gold: 0, silver: 0, bronze: 0, guidance: 0 };
-  for (const { latest } of members) counts[predicateOf(rerataOf(latest))]++;
+  for (const { total, students } of sums) {
+    counts[predicateOf(rerataFromTotal(total))] += students;
+  }
   return counts;
 }
 
@@ -113,22 +144,15 @@ function countPredicates(
  * assessment before, Rerata and the predikat of each. Null when nobody is
  * assessed.
  */
-export function scoreSummary(
-  members: readonly MemberScores[],
-): ScoreSummary | null {
-  const latest = members.map((member) => member.latest);
-  const values = averageValues(latest);
-  const totals = latest.map((scores) => ({
-    total: totalOf(scores),
-    students: 1,
-  }));
-  const rerata = averageRerata(totals);
-  if (values === null || rerata === null) return null;
+export function scoreSummary(sums: readonly ScoreSums[]): ScoreSummary | null {
+  const rerata = averageRerata(sums);
+  if (rerata === null) return null;
+  const all = sumsOfAll(sums);
   return {
-    values,
-    earlier: earlierShape(members),
+    values: averageValues(all.latest, all.assessed),
+    earlier: earlierShape(all),
     rerata,
-    predicates: countPredicates(members),
+    predicates: countPredicates(sums),
   };
 }
 
@@ -152,23 +176,4 @@ export function lowestRerataFirst<Member>(
     }
     return first - second;
   });
-}
-
-/**
- * The medal of the members who count in a group, those on Cuti left out,
- * from the assessments of those who have one.
- */
-export function activeSummary(
-  members: readonly ({ id: string } & Pick<
-    typeof students.$inferSelect,
-    "status"
-  >)[],
-  scores: Map<string, MemberScores>,
-): ScoreSummary | null {
-  const assessed: MemberScores[] = [];
-  for (const member of members) {
-    const found = scores.get(member.id);
-    if (isCounted(member) && found) assessed.push(found);
-  }
-  return scoreSummary(assessed);
 }

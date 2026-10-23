@@ -86,3 +86,36 @@ describe("Penilaian jasmani on a phone", () => {
     }
   });
 });
+
+describe("Kesehatan jasmani on Profil saya on a phone", () => {
+  const VIEW = readFileSync(`${FOLDER}/student-fitness-view.tsx`, "utf8");
+  const OWN = readFileSync(`${FOLDER}/own-fitness-panel.tsx`, "utf8");
+  const NOTE_BOXES = ".noteBox,\n.noteBoxWarn";
+
+  it("puts the category under the title, and the score and the day under each other, when there is no room", () => {
+    expect(VIEW).toContain("<div className={styles.panelHead}>");
+    expect(ruleOf(".panelHead")).toContain("flex-wrap: wrap;");
+    expect(VIEW).toContain("<dl className={styles.facts}>");
+    expect(ruleOf(".facts")).toContain(
+      "minmax(min(100%, var(--box-min-width)), 1fr)",
+    );
+  });
+
+  it("folds the long words of the note and the line on who reads it inside its box", () => {
+    expect(VIEW).toContain("styles.noteBoxWarn : styles.noteBox");
+    expect(ruleOf(NOTE_BOXES)).toContain("overflow-wrap: anywhere;");
+  });
+
+  it("forces no width wider than a phone, and sets no style in its code", () => {
+    for (const selector of [".panelHead", ".facts", NOTE_BOXES]) {
+      const rule = ruleOf(selector);
+      expect(rule, selector).not.toBe("");
+      expect(rule, selector).not.toMatch(/(^|[ ;{])width:/);
+      expect(rule, selector).not.toMatch(/min-width: (?!0;)/);
+      expect(rule, selector).not.toContain("nowrap");
+    }
+    for (const code of [VIEW, OWN]) {
+      expect(code).not.toContain("style=");
+    }
+  });
+});

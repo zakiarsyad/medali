@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { totalOf } from "@/character-scores/assessment-score";
+import { MEDALI_VALUES } from "@/ui/medali-values";
 import {
-  activeSummary,
   averageRerata,
   lowestRerataFirst,
   type MemberScores,
+  type ScoreSums,
   scoreSummary,
 } from "./score-averages";
 
@@ -53,9 +55,28 @@ const LOW = { M: 60, E: 62, D: 64, A: 60, L: 62, I: 64 };
 const GOLD = { M: 90, E: 88, D: 86, A: 90, L: 88, I: 86 };
 const SILVER = { M: 80, E: 80, D: 80, A: 80, L: 80, I: 80 };
 
+/** The sums of one member, as the database gives them for one total. */
+function sumsOfOne({ latest, earlier }: MemberScores): ScoreSums {
+  const change = { M: 0, E: 0, D: 0, A: 0, L: 0, I: 0 };
+  for (const { key } of MEDALI_VALUES) {
+    if (earlier !== null) change[key] = latest[key] - earlier[key];
+  }
+  return {
+    total: totalOf(latest),
+    students: 1,
+    latest,
+    changed: earlier === null ? 0 : 1,
+    change,
+  };
+}
+
+function summaryOf(members: readonly MemberScores[]) {
+  return scoreSummary(members.map(sumsOfOne));
+}
+
 describe("scoreSummary", () => {
   it("gives the average of each value and of the Rerata, to one decimal", () => {
-    const summary = scoreSummary([
+    const summary = summaryOf([
       { latest: GOLD, earlier: null },
       { latest: SILVER, earlier: null },
     ]);
@@ -72,7 +93,7 @@ describe("scoreSummary", () => {
   });
 
   it("counts the members of each predikat", () => {
-    const summary = scoreSummary([
+    const summary = summaryOf([
       { latest: GOLD, earlier: null },
       { latest: SILVER, earlier: null },
       { latest: SILVER, earlier: null },
@@ -88,7 +109,7 @@ describe("scoreSummary", () => {
   });
 
   it("draws the assessment before as the average less the average change of the members who have one", () => {
-    const summary = scoreSummary([
+    const summary = summaryOf([
       { latest: GOLD, earlier: SILVER },
       { latest: SILVER, earlier: LOW },
       { latest: LOW, earlier: null },
@@ -109,20 +130,39 @@ describe("scoreSummary", () => {
     const members = Array.from({ length: 10 }, () => once);
     members.push({ latest: allOf(60), earlier: allOf(50) });
 
-    const summary = scoreSummary(members);
+    const summary = summaryOf(members);
 
     expect(summary?.values.M).toBe(82.7);
     expect(summary?.earlier?.M).toBe(72.7);
   });
 
   it("gives no assessment before when no member has one", () => {
-    const summary = scoreSummary([{ latest: GOLD, earlier: null }]);
+    const summary = summaryOf([{ latest: GOLD, earlier: null }]);
 
     expect(summary?.earlier).toBeNull();
   });
 
   it("gives nothing when nobody is assessed", () => {
     expect(scoreSummary([])).toBeNull();
+  });
+
+  it("gives the same medal from the sums of members who share a total", () => {
+    const members: MemberScores[] = [
+      { latest: SILVER, earlier: LOW },
+      { latest: SILVER, earlier: null },
+      { latest: GOLD, earlier: SILVER },
+    ];
+    const [first, second, third] = members.map(sumsOfOne);
+    if (!first || !second || !third) throw new Error("No sums were made.");
+    const sharedSilver: ScoreSums = {
+      total: first.total,
+      students: 2,
+      latest: allOf(160),
+      changed: 1,
+      change: first.change,
+    };
+
+    expect(scoreSummary([sharedSilver, third])).toEqual(summaryOf(members));
   });
 });
 
@@ -147,29 +187,5 @@ describe("lowestRerataFirst", () => {
       "b",
       "e",
     ]);
-  });
-});
-
-describe("activeSummary", () => {
-  it("leaves out the members on Cuti and those not assessed", () => {
-    const members = [
-      { id: "a", status: "active" as const },
-      { id: "b", status: "on_leave" as const },
-      { id: "c", status: "active" as const },
-    ];
-    const scores = new Map([
-      ["a", { latest: SILVER, earlier: null }],
-      ["b", { latest: LOW, earlier: null }],
-    ]);
-
-    const summary = activeSummary(members, scores);
-
-    expect(summary?.rerata).toBe(80);
-    expect(summary?.predicates).toEqual({
-      gold: 0,
-      silver: 1,
-      bronze: 0,
-      guidance: 0,
-    });
   });
 });

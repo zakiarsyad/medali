@@ -14,6 +14,7 @@ const OPENS_THE_LIST = {
   filters: NO_FILTERS,
   page: 1,
   mentorId: null,
+  studentPage: 1,
   detailId: null,
 };
 
@@ -125,6 +126,39 @@ describe("mentorAddress", () => {
       mentorId: MENTOR_ID,
     });
   });
+
+  it("leaves out the first page of the students", () => {
+    expect(mentorAddress(MENTOR_ID, 1)).toBe(mentorAddress(MENTOR_ID));
+  });
+
+  it("keeps the mentor with a later page of the students", () => {
+    const address = mentorAddress(MENTOR_ID, 2);
+
+    expect(address).toBe(`/pengasuh/daftar?pengasuh=${MENTOR_ID}&hal-binaan=2`);
+    expect(readAddress(address)).toEqual({
+      ...OPENS_THE_LIST,
+      mentorId: MENTOR_ID,
+      studentPage: 2,
+    });
+  });
+});
+
+describe("readMentorListParams, for the page of a mentor", () => {
+  it("reads the page of the students apart from the page of the list", () => {
+    const params = readMentorListParams({
+      pengasuh: MENTOR_ID,
+      "hal-binaan": "3",
+    });
+
+    expect(params.studentPage).toBe(3);
+    expect(params.page).toBe(1);
+  });
+
+  it("takes a page of the students it does not understand as the first", () => {
+    for (const sent of ["0", "-2", "dua", "1.5", ""]) {
+      expect(readMentorListParams({ "hal-binaan": sent }).studentPage).toBe(1);
+    }
+  });
 });
 
 describe("mentorStudentAddress", () => {
@@ -134,6 +168,17 @@ describe("mentorStudentAddress", () => {
     expect(params).toEqual({
       ...OPENS_THE_LIST,
       mentorId: MENTOR_ID,
+      detailId: STUDENT_ID,
+    });
+  });
+
+  it("keeps the page of the students the detail is opened from", () => {
+    const params = readAddress(mentorStudentAddress(MENTOR_ID, STUDENT_ID, 2));
+
+    expect(params).toEqual({
+      ...OPENS_THE_LIST,
+      mentorId: MENTOR_ID,
+      studentPage: 2,
       detailId: STUDENT_ID,
     });
   });

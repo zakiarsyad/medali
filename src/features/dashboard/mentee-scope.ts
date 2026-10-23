@@ -1,9 +1,9 @@
 import type { SQL } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
-import { sharedReachOf } from "@/mental-health/shared-reach";
+import { type SharedReader, sharedReachOf } from "@/mental-health/shared-reach";
 import { activeAmong } from "@/mentoring/active-member";
-import { rolesAllowing, type SharedReader } from "./dashboard-scope";
+import { rolesAllowing } from "./dashboard-scope";
 
 /** Which students and records the numbers of Dashboard anak asuh count. */
 export interface MenteeScope {

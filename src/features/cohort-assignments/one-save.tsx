@@ -7,16 +7,25 @@ import {
   useState,
   useTransition,
 } from "react";
-import { FormMessage } from "@/ui/form-message";
+import { FormMessage, type FormState } from "@/ui/form-message";
+import { isToldAbove } from "./answer-place";
 import styles from "./cohort-assignments.module.css";
+
+const START: FormState = { error: null, done: null };
+
+/** A server action of steps 2 and 3. */
+type ChangeAction = (before: FormState, form: FormData) => Promise<FormState>;
 
 interface OneSave {
   /** Whether a change is on its way to the server, or its answer to the tab. */
   isSaving: boolean;
   /** Sends a change, and holds the other controls until the tab shows it. */
   save: (send: () => void | Promise<void>) => void;
-  /** Says what a step did when the step took away the panel of its button. */
-  announce: (words: string) => void;
+  /**
+   * Tells an answer whose page no longer holds the button that was pressed,
+   * or with null takes away what was told.
+   */
+  announce: (answer: FormState | null) => void;
 }
 
 const OneSaveContext = createContext<OneSave | null>(null);
@@ -27,12 +36,14 @@ const OneSaveContext = createContext<OneSave | null>(null);
  * first came back would be refused as made from an older draft.
  *
  * "Tetapkan" and "Batalkan penetapan" replace the panel their button
- * stands in, and a message under the button would go with it. What they
- * did is said here instead, above the angkatan, until the next change.
+ * stands in, and a message under the button would go with it. So would a
+ * refusal that comes with the angkatan fixed or cancelled by someone else
+ * meanwhile. Both are said here instead, above the angkatan, until the
+ * next change.
  */
 export function OneSaveAtATime({ children }: { children: ReactNode }) {
   const [isSaving, startSaving] = useTransition();
-  const [announced, announce] = useState<string | null>(null);
+  const [announced, announce] = useState<FormState | null>(null);
 
   function save(send: () => void | Promise<void>) {
     announce(null);
@@ -43,7 +54,7 @@ export function OneSaveAtATime({ children }: { children: ReactNode }) {
     <OneSaveContext value={{ isSaving, save, announce }}>
       {announced !== null && (
         <div className={styles.announced}>
-          <FormMessage state={{ error: null, done: announced }} />
+          <FormMessage state={announced} />
         </div>
       )}
       {children}
@@ -57,4 +68,28 @@ export function useOneSave(): OneSave {
     throw new Error("A control of a penetapan stands outside OneSaveAtATime.");
   }
   return oneSave;
+}
+
+/**
+ * The answer a control of steps 2 and 3 shows under it, and how it sends a
+ * change. A refusal that comes with the angkatan fixed meanwhile is said
+ * above the angkatan instead, as steps 2 and 3 are then gone from the page.
+ */
+export function useChangeAnswer(
+  action: ChangeAction,
+): [FormState, (form: FormData) => Promise<void>] {
+  const { announce } = useOneSave();
+  const [answer, setAnswer] = useState(START);
+
+  async function sendChange(form: FormData) {
+    announce(null);
+    const after = await action(START, form);
+    if (isToldAbove("change", after)) {
+      announce(after);
+      return;
+    }
+    setAnswer(after);
+  }
+
+  return [answer, sendChange];
 }

@@ -62,6 +62,10 @@ describe("respondentWords", () => {
     expect(respondentWords(0, 28)).toBe("0 dari 28 (0%)");
   });
 
+  it("rounds the share as the survey results do, so 23 of 40 is 58%", () => {
+    expect(respondentWords(23, 40)).toBe("23 dari 40 (58%)");
+  });
+
   it("shows no share when no student can answer", () => {
     expect(respondentWords(0, 0)).toBe("0 dari 0");
   });

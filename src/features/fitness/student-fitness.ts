@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, type SQL, sql } from "drizzle-orm";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
@@ -24,17 +24,16 @@ export type StudentFitness = Pick<
   "latest" | "final" | "health"
 >;
 
+/**
+ * One student among those `visible` lets through, with whether `readable`
+ * lets their note be read.
+ */
 async function readFitnessRow(
   db: Database,
-  account: AccountForAccess,
   studentId: string,
+  visible: SQL,
+  readable: SQL,
 ): Promise<ReadRow | null> {
-  const visible = visibleTo(
-    rowLimitForAction(account, "view_student_fitness_panel"),
-  );
-  const readable = visibleTo(
-    rowLimitForAction(account, "view_student_fitness_notes"),
-  );
   const latest = latestFitnessScores(db);
   const note = latestHealthNotes(db);
   const [found] = await db
@@ -57,6 +56,15 @@ async function readFitnessRow(
   return found ?? null;
 }
 
+async function fitnessOf(db: Database, row: ReadRow): Promise<StudentFitness> {
+  const [{ limits }, notes] = await Promise.all([
+    readFitnessLimits(db),
+    readableNotes(db, [row]),
+  ]);
+  const { latest, final, health } = listRow(row, limits, notes);
+  return { latest, final, health };
+}
+
 /**
  * The latest fitness score of one student, the day of its test and
  * their final category; their latest note only where the account reads
@@ -72,12 +80,33 @@ export async function readStudentFitness(
   if (!may(account.roles, "view_student_fitness_panel")) return null;
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(studentId)) return null;
-  const row = await readFitnessRow(db, account, studentId);
+  const visible = visibleTo(
+    rowLimitForAction(account, "view_student_fitness_panel"),
+  );
+  const readable = visibleTo(
+    rowLimitForAction(account, "view_student_fitness_notes"),
+  );
+  const row = await readFitnessRow(db, studentId, visible, readable);
   if (!row) return null;
-  const [{ limits }, notes] = await Promise.all([
-    readFitnessLimits(db),
-    readableNotes(db, [row]),
-  ]);
-  const { latest, final, health } = listRow(row, limits, notes);
-  return { latest, final, health };
+  return fitnessOf(db, row);
+}
+
+const OWN_RIGHT = "view_own_physical_health";
+
+/**
+ * "Kesehatan jasmani" of the student of the account, for Profil saya,
+ * with their own note whoever wrote it. Null for an account without the
+ * right. Which student is never asked from outside: it is the account's
+ * own, and the account's own rows must hold it too.
+ */
+export async function readOwnFitness(
+  db: Database,
+  account: AccountForAccess,
+): Promise<StudentFitness | null> {
+  if (!may(account.roles, OWN_RIGHT)) return null;
+  if (account.studentId === null) return null;
+  const own = visibleTo(rowLimitForAction(account, OWN_RIGHT));
+  const row = await readFitnessRow(db, account.studentId, own, own);
+  if (!row) return null;
+  return fitnessOf(db, row);
 }
