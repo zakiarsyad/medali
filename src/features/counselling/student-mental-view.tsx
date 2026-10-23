@@ -9,7 +9,15 @@ import type { ShownScreening, StudentMental } from "./student-mental";
 /** The mark of a panel a recipient sees through a sharing. */
 export const PUBLISHED_MARK = "Dipublikasikan konselor";
 
-function CounsellorBody({ screening }: { screening: ShownScreening | null }) {
+/**
+ * The instrument, day and advice of the latest screening, as Konselor and
+ * the student read it, or that there is none.
+ */
+export function ScreeningLine({
+  screening,
+}: {
+  screening: ShownScreening | null;
+}) {
   if (screening === null) {
     return <p className={styles.sub}>Belum ada asesmen kesehatan mental.</p>;
   }
@@ -68,7 +76,7 @@ export function StudentMentalView({ mental }: { mental: StudentMental }) {
       {mental.kind === "shared" ? (
         <SharedBody screening={mental.screening} />
       ) : (
-        <CounsellorBody screening={mental.screening} />
+        <ScreeningLine screening={mental.screening} />
       )}
     </section>
   );

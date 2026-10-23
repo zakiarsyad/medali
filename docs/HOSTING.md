@@ -251,6 +251,15 @@ that can be trusted is not written, because anyone could cause one by
 hand: the return address opened directly, a cancel at Google, or a code
 Google rejects.
 
+## Kontak konseling kampus
+
+`CAMPUS_COUNSELLING_CONTACT` is how a student reaches the campus
+counsellors, such as a phone number or a room. Profil saya shows it under
+the line that says where to get help. It is optional and empty at the
+start: while it is empty, nothing more shows. It is set in the Vercel
+dashboard for a preview, and in the settings file of the package on the
+campus server.
+
 ## The campus server package
 
 The package is the app, its database, its file storage (MinIO) and the

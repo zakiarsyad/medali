@@ -113,7 +113,7 @@ only the student sees this view, and it always shows where to get help.
   and counselling status are added to the permission list, with their
   checks.
 - [x] 2. The card "Kesehatan jasmani".
-- [ ] 3. The card "Kesehatan mental" with screening, counselling status,
+- [x] 3. The card "Kesehatan mental" with screening, counselling status,
   the help line and the campus contact setting.
 - [ ] 4. The notices for a waiting consent or sharing request, with
   "Buka Konseling".
