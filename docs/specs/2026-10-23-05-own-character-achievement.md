@@ -85,4 +85,4 @@ student's own record only.
   the medal, the sentence, the limit note and the empty state.
 - [x] 3. "Riwayat per semester" on Profil saya, with the chart, its table
   and the empty state.
-- [ ] 4. Phone layout and speed of both cards.
+- [x] 4. Phone layout and speed of both cards.

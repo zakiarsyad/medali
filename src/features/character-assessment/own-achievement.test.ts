@@ -1,4 +1,4 @@
-// Sample Tahun akademik of this file: 5400 to 5400.
+// Sample Tahun akademik of this file: 5400 to 5401.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
@@ -10,6 +10,7 @@ import {
 } from "@/discipline-penalties/test-penalties";
 import { addTestStudent } from "@/dorms/test-records";
 import { readOwnAchievement } from "./own-achievement";
+import { readOwnScoreHistory } from "./score-history";
 import {
   addTestActor,
   addTestAssessment,
@@ -221,6 +222,39 @@ describe("readOwnAchievement", () => {
       const shown = await readOwnAchievement(db, aniAccount, TODAY);
 
       expect(shown).not.toHaveProperty("stored");
+    });
+  });
+});
+
+describe("both character cards of Profil saya", () => {
+  it("read a student assessed many times in each semester, under a limit, well within a second", async () => {
+    await inTestDatabase(async (db) => {
+      const { periodId, ani, penilai, aniAccount } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "light",
+        level: 1,
+      });
+      const periodIds = [periodId, await addTestPeriod(db, 5401)];
+      for (const [place, each] of periodIds.entries()) {
+        for (let day = 1; day <= 25; day += 1) {
+          await addTestAssessment(db, penilai, {
+            studentId: ani,
+            periodId: each,
+            enteredAt: new Date(Date.UTC(5400 + place, 7, day, 3)),
+          });
+        }
+      }
+      const started = performance.now();
+
+      const [card, history] = await Promise.all([
+        readOwnAchievement(db, aniAccount, TODAY),
+        readOwnScoreHistory(db, aniAccount),
+      ]);
+
+      expect(performance.now() - started).toBeLessThan(1000);
+      expect(card?.stored).toBeDefined();
+      expect(history?.map((point) => point.semester)).toEqual([3, 5]);
     });
   });
 });
