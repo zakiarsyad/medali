@@ -14,6 +14,15 @@ export const PHYSICAL_TOO_FEW =
 /** What "Kesehatan jasmani penghuni" says while no resident in reach is tested. */
 export const NOBODY_TESTED = "Belum ada hasil tes kebugaran penghuni.";
 
+/** The heading of the residents who need care, for an account that may see their names. */
+export const CARE_HEADING = "Perlu perhatian dan tindak lanjut medis";
+
+/** What that part says with nobody who needs care. */
+export const NOBODY_NEEDS_CARE = "Tidak ada.";
+
+/** The link under it to the full list on Asrama > Kesehatan. */
+export const CARE_LINK = "Daftar lengkap di Kesehatan";
+
 /** The line beside "Kesehatan jasmani penghuni". */
 export function testedLine(tested: number, residents: number): string {
   return `${shown(tested)} dari ${shown(residents)} sudah dites`;

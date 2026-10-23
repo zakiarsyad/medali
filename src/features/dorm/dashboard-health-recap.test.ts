@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FitnessTally } from "@/health-notes/fitness-recap";
-import { dormPhysicalOf } from "./dashboard-health-recap";
+import type { RecapRow } from "@/health-notes/sick-list";
+import { careRowOf, dormPhysicalOf } from "./dashboard-health-recap";
 
 function tally(
   students: number,
@@ -11,6 +12,49 @@ function tally(
 }
 
 const NO_CATEGORY = { excellent: 0, good: 0, attention: 0, medical: 0 };
+
+const ROW: RecapRow = {
+  id: "s1",
+  name: "Penghuni Contoh",
+  nim: "9911000001",
+  program: "Prodi Contoh",
+  dorm: "dana_rakca",
+  room: { dorm: "dana_rakca", floor: 2, number: "12" },
+  mentorName: "Pengasuh Contoh",
+  final: { category: "medical", fromNote: true },
+  note: null,
+};
+
+describe("careRowOf", () => {
+  it("keeps only the name, the room, the category and the note written out", () => {
+    expect(careRowOf(ROW)).toEqual({
+      id: "s1",
+      name: "Penghuni Contoh",
+      room: "Dana Rakca, lantai 2, kamar 12",
+      final: { category: "medical", fromNote: true },
+      note: null,
+    });
+  });
+
+  it("writes the last note out as Kesehatan does", () => {
+    const row = careRowOf({
+      ...ROW,
+      note: {
+        id: "n1",
+        examinedOn: "2026-10-12",
+        examiner: null,
+        savedBy: "Akun Contoh",
+        illnesses: [{ illness: "asthma", note: "" }],
+        otherHistory: "",
+        medicine: "",
+        advice: "Kontrol rutin.",
+        category: "attention",
+      },
+    });
+
+    expect(row.note).toBe("Riwayat: Asma. Kontrol rutin.");
+  });
+});
 
 describe("dormPhysicalOf", () => {
   it("adds the dorms up for the bars and gives each dorm its own counts, each of 1 to 4 as <5", () => {

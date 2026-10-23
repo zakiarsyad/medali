@@ -1,11 +1,19 @@
 // Sample Tahun akademik of this file: 3911 to 3911.
 // Sample NIMs of this file: 9911000000 to 9911000099.
+
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, type students } from "@/db/schema";
+import { academicPeriods, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addTestProgram, addTestStudent } from "@/dorms/test-records";
+import {
+  addTestProgram,
+  addTestRoom,
+  addTestStudent,
+  placeTestResident,
+} from "@/dorms/test-records";
+import { addTestNote } from "@/health-notes/test-health";
 import { loadDormHealth } from "./dashboard-health";
 import {
   addHealthActor,
@@ -180,6 +188,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         recap: { kind: "too_few", students: 3 },
         byDorm: null,
         limits: expect.any(Object),
+        care: null,
       });
     });
   });
@@ -203,6 +212,145 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         const { physical } = await loadDormHealth(db, actor, MOMENT);
 
         expect(physical).toBeNull();
+      });
+    },
+  );
+});
+
+/**
+ * On top of addRecords' residents:
+ * - Prodi A's woman tested at 40, Perlu tindak lanjut medis with no
+ *   note, is placed in room DH-01 of Dana Rakca;
+ * - Prodi A's first woman tested at 75 has a note "Perlu perhatian";
+ * - Prodi B's first woman tested at 90 has a note "Perlu tindak lanjut
+ *   medis";
+ * - Prodi A's woman tested at 60, Perlu perhatian by the test alone with
+ *   no note, is not in the list of Kesehatan, so not here either;
+ * - Prodi B's woman on Cuti, and the one of angkatan 3909, both tested
+ *   at 40, are no Aktif residents.
+ */
+async function addCareRecords(db: Database) {
+  const records = await addRecords(db);
+  const { kepala, idsA, idsB } = records;
+  const [, , goodA, , attentionA, medicalA] = idsA;
+  const [firstB] = idsB;
+  if (!goodA || !attentionA || !medicalA || !firstB) {
+    throw new Error("The residents were not added.");
+  }
+  const room = await addTestRoom(db, { number: "DH-01" });
+  await placeTestResident(db, room, medicalA);
+  const savedAt = new Date("3911-10-01T03:00:00Z");
+  await addTestNote(db, kepala, {
+    studentId: goodA,
+    savedAt,
+    illnesses: [{ illness: "asthma", note: "" }],
+    advice: "Kontrol rutin.",
+    category: "attention",
+  });
+  await addTestNote(db, kepala, {
+    studentId: firstB,
+    savedAt,
+    advice: "Rujuk ke RS.",
+    category: "medical",
+  });
+  return records;
+}
+
+describe("loadDormHealth: Perlu perhatian dan tindak lanjut medis", () => {
+  it.each(["dorm_manager", "head_of_unit", "bam_health", "bam_bphk"] as const)(
+    "gives %s the residents of the list of Kesehatan in the two lower categories, heaviest first, with the room and the last note",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        await addCareRecords(db);
+        const actor = await actorWith(db, [role]);
+
+        const { physical } = await loadDormHealth(db, actor, MOMENT);
+
+        expect(physical?.care?.map(({ id: _, ...row }) => row)).toEqual([
+          {
+            name: "Penghuni Uji Kesehatan 06",
+            room: "Dana Rakca, lantai 1, kamar DH-01",
+            final: { category: "medical", fromNote: false },
+            note: null,
+          },
+          {
+            name: "Penghuni Uji Kesehatan 10",
+            room: "Dana Rakca, belum diplot",
+            final: { category: "medical", fromNote: true },
+            note: "Rujuk ke RS.",
+          },
+          {
+            name: "Penghuni Uji Kesehatan 03",
+            room: "Dana Rakca, belum diplot",
+            final: { category: "attention", fromNote: true },
+            note: "Riwayat: Asma. Kontrol rutin.",
+          },
+        ]);
+      });
+    },
+  );
+
+  it("gives at most 8 residents, the heaviest", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, idsA, idsB } = await addRecords(db);
+      const savedAt = new Date("3911-10-01T03:00:00Z");
+      for (const studentId of [...idsA, ...idsB]) {
+        await addTestNote(db, kepala, {
+          studentId,
+          savedAt,
+          category: "attention",
+        });
+      }
+      const actor = await actorWith(db, ["bam_health"]);
+
+      const { physical } = await loadDormHealth(db, actor, MOMENT);
+
+      expect(physical?.care).toHaveLength(8);
+      expect(physical?.care?.[0]).toMatchObject({
+        name: "Penghuni Uji Kesehatan 06",
+        final: { category: "medical" },
+      });
+    });
+  });
+
+  it("gives an empty list when no resident in reach needs care", async () => {
+    await inTestDatabase(async (db) => {
+      const { idsA } = await addRecords(db);
+      const medicalA = idsA[5];
+      if (medicalA === undefined) throw new Error("No resident was added.");
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, medicalA));
+      const actor = await actorWith(db, ["dorm_manager"]);
+
+      const { physical } = await loadDormHealth(db, actor, MOMENT);
+
+      expect(physical?.recap.kind).toBe("shown");
+      expect(physical?.care).toEqual([]);
+    });
+  });
+
+  it.each([
+    ["director", null],
+    ["head_of_program", "A"],
+  ] as const)(
+    "gives %s the counts and no name or note",
+    async (role, program) => {
+      await inTestDatabase(async (db) => {
+        const { programA } = await addCareRecords(db);
+        const actor = await actorWith(
+          db,
+          [role],
+          program === null ? null : programA,
+        );
+
+        const { physical } = await loadDormHealth(db, actor, MOMENT);
+
+        expect(physical?.recap.kind).toBe("shown");
+        expect(physical?.care).toBeNull();
+        expect(JSON.stringify(physical)).not.toContain("Penghuni Uji");
+        expect(JSON.stringify(physical)).not.toContain("Rujuk");
       });
     },
   );

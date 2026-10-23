@@ -198,11 +198,17 @@ function sickRow(
   };
 }
 
-async function readPage(
+/** Which rows of a read to take, in its order. */
+interface RowWindow {
+  limit: number;
+  offset: number;
+}
+
+async function readRows(
   db: Database,
   parts: SickParts,
   where: SQL | undefined,
-  page: number,
+  window: RowWindow,
 ): Promise<ReadRow[]> {
   const { latest, note, rank, dorm } = parts;
   return db
@@ -234,8 +240,43 @@ async function readPage(
       asc(students.name),
       asc(students.nim),
     )
-    .limit(SICK_PAGE_SIZE)
-    .offset((page - 1) * SICK_PAGE_SIZE);
+    .limit(window.limit)
+    .offset(window.offset);
+}
+
+/**
+ * The rows `where` lets through, the most serious category first, then
+ * by name, with their latest notes, as many as `window` takes.
+ */
+async function readRecapRows(
+  db: Database,
+  parts: SickParts,
+  where: SQL | undefined,
+  limits: FitnessLimits,
+  window: RowWindow,
+): Promise<RecapRow[]> {
+  const rows = await readRows(db, parts, where, window);
+  const noteIds = rows.flatMap((row) => (row.noteId ? [row.noteId] : []));
+  const notes = await readNotesById(db, noteIds);
+  return rows.map((row) => sickRow(row, limits, notes));
+}
+
+/**
+ * The first `limit` students of the list `seen` lets through who are in
+ * Perlu perhatian or Perlu tindak lanjut medis, the most serious first,
+ * then by name, with their latest notes. Nothing is counted. The caller
+ * decides who may read them and whose rows they are.
+ */
+export function readNeedingCare(
+  db: Database,
+  parts: SickParts,
+  seen: SQL | undefined,
+  limits: FitnessLimits,
+  limit: number,
+): Promise<RecapRow[]> {
+  const serious = sql`${parts.rank} >= ${ATTENTION}`;
+  const where = and(seen, parts.listed, serious);
+  return readRecapRows(db, parts, where, limits, { limit, offset: 0 });
 }
 
 /**
@@ -265,13 +306,9 @@ export async function readSickList(
   ]);
   const matching = found?.matching ?? 0;
   const page = pageWithin(filters.page, matching, SICK_PAGE_SIZE);
-  const rows = await readPage(db, parts, where, page);
-  const noteIds = rows.flatMap((row) => (row.noteId ? [row.noteId] : []));
-  const notes = await readNotesById(db, noteIds);
-  return {
-    numbers,
-    rows: rows.map((row) => sickRow(row, limits, notes)),
-    matching,
-    page,
-  };
+  const rows = await readRecapRows(db, parts, where, limits, {
+    limit: SICK_PAGE_SIZE,
+    offset: (page - 1) * SICK_PAGE_SIZE,
+  });
+  return { numbers, rows, matching, page };
 }

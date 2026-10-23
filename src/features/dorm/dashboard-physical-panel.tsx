@@ -1,17 +1,24 @@
+import Link from "next/link";
 import { DORM_IDS, DORM_SHORT_NAMES, type DormId } from "@/dorms/dorms";
+import { FinalCategoryBadge } from "@/health-notes/category-badge";
 import { CategoryBars } from "@/health-notes/category-bars";
 import { CATEGORY_WORDS } from "@/health-notes/category-words";
 import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
+import { NO_NOTE_YET } from "@/health-notes/health-words";
 import { countWords } from "@/health-notes/shown-count";
 import shared from "@/ui/data-screen.module.css";
 import board from "./dashboard.module.css";
 import type { PhysicalPanel } from "./dashboard-health";
-import type { DormCategories } from "./dashboard-health-recap";
+import type { CareRow, DormCategories } from "./dashboard-health-recap";
 import {
+  CARE_HEADING,
+  CARE_LINK,
+  NOBODY_NEEDS_CARE,
   NOBODY_TESTED,
   PHYSICAL_TOO_FEW,
   testedLine,
 } from "./dashboard-health-words";
+import { DORM_HEALTH_ADDRESS } from "./dorm-health-address";
 
 /** Each dorm's count per category. On a phone each dorm is a card of its own. */
 function DormTable({ byDorm }: { byDorm: Record<DormId, DormCategories> }) {
@@ -59,9 +66,45 @@ function PhysicalCounts({ physical }: { physical: PhysicalPanel }) {
   );
 }
 
+function CareItem({ row }: { row: CareRow }) {
+  return (
+    <li className={board.outItem}>
+      <span className={board.when}>
+        <FinalCategoryBadge final={row.final} showsMark />
+      </span>
+      <div className={board.outBody}>
+        <b>{row.name}</b> <span className={board.sub}>{row.room}</span>
+        <span className={shared.detail}>{row.note ?? NO_NOTE_YET}</span>
+      </div>
+    </li>
+  );
+}
+
+/** The residents who need care, heaviest first, with a link to the full list. */
+function CareList({ care }: { care: readonly CareRow[] }) {
+  return (
+    <>
+      <h3 className={board.subheading}>{CARE_HEADING}</h3>
+      {care.length === 0 ? (
+        <p className={board.none}>{NOBODY_NEEDS_CARE}</p>
+      ) : (
+        <ul className={board.outList}>
+          {care.map((row) => (
+            <CareItem key={row.id} row={row} />
+          ))}
+        </ul>
+      )}
+      <p className={board.more}>
+        <Link href={DORM_HEALTH_ADDRESS}>{CARE_LINK}</Link>
+      </p>
+    </>
+  );
+}
+
 /**
  * "Kesehatan jasmani penghuni": how many residents in reach are tested,
- * a bar per category and each dorm's counts, as the server sent them.
+ * a bar per category and each dorm's counts, as the server sent them,
+ * and for an account that may see names, the residents who need care.
  */
 export function PhysicalHealthPanel({ physical }: { physical: PhysicalPanel }) {
   const { recap } = physical;
@@ -76,6 +119,7 @@ export function PhysicalHealthPanel({ physical }: { physical: PhysicalPanel }) {
         )}
       </div>
       <PhysicalCounts physical={physical} />
+      {physical.care !== null && <CareList care={physical.care} />}
     </section>
   );
 }
