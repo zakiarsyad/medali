@@ -10,6 +10,8 @@ import {
   addTestProgram,
   addTestStudentAccount,
 } from "@/features/activities/test-records";
+import { readOwnSiku } from "@/features/siku/own-siku";
+import { addTestEntry } from "@/features/siku/test-siku";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
 import { readOwnGrade } from "./own-grade";
 
@@ -44,7 +46,7 @@ async function addRecords(db: Database) {
       { studentId: budi.studentId, points: 50 },
     ],
   });
-  return { ani, budi };
+  return { ani, budi, kepala, periodId: periods.oddId };
 }
 
 describe("readOwnGrade", () => {
@@ -111,6 +113,36 @@ describe("readOwnGrade", () => {
       const penilaiOfAni = { ...ani, roles: ["assessor"] as RoleId[] };
 
       expect(await readOwnGrade(db, penilaiOfAni, TODAY)).toBeNull();
+    });
+  });
+});
+
+describe("both cards of Profil saya", () => {
+  it("read a student with many SIKU lines well within a second", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, kepala, periodId } = await addRecords(db);
+      for (let day = 1; day <= 30; day += 1) {
+        await addTestEntry(db, kepala, {
+          kind: day % 3 === 0 ? "loss" : "gain",
+          reason: day % 3 === 0 ? "student_violation" : "peer_mentoring",
+          points: 1,
+          day: `5410-09-${String(day).padStart(2, "0")}`,
+          periodId,
+          studentIds: [ani.studentId],
+        });
+      }
+      const started = performance.now();
+
+      const [grade, siku] = await Promise.all([
+        readOwnGrade(db, ani, TODAY),
+        readOwnSiku(db, ani),
+      ]);
+
+      expect(performance.now() - started).toBeLessThan(1000);
+      expect(grade).toMatchObject({ grade: { row: { siku: { score: 75 } } } });
+      expect(siku).toMatchObject({
+        siku: { totals: { gains: 20, losses: 10 } },
+      });
     });
   });
 });

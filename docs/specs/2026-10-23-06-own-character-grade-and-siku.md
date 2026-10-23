@@ -89,4 +89,4 @@ not built a second time.
 - [x] 3. "Transparansi nilai SIKU" as one panel for Profil saya and
   Penilaian SIKU, with the weight, the sum, both tables and the folded
   list of activities.
-- [ ] 4. Phone layout and speed of both cards.
+- [x] 4. Phone layout and speed of both cards.

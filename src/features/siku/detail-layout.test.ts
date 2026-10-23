@@ -6,6 +6,7 @@ const FOLDER = "src/features/siku";
 const STYLES = `\n${readFileSync(`${FOLDER}/siku.module.css`, "utf8")}`;
 const BREAKDOWN = readFileSync(`${FOLDER}/siku-breakdown.tsx`, "utf8");
 const VIEW = readFileSync(`${FOLDER}/student-siku-view.tsx`, "utf8");
+const OWN = readFileSync(`${FOLDER}/own-siku-panel.tsx`, "utf8");
 
 /** What a rule of the style file holds, without the breaks between its lines. */
 function ruleOf(selector: string): string {
@@ -15,7 +16,7 @@ function ruleOf(selector: string): string {
   return body.replace(/\s+/g, " ");
 }
 
-/** The rules of the style file that "Rincian nilai SIKU" uses. */
+/** The rules of the style file that "Rincian nilai SIKU" and "Transparansi nilai SIKU" use. */
 const PANEL_RULES = [
   ".sum",
   ".sum > div",
@@ -28,9 +29,13 @@ const PANEL_RULES = [
   ".strong",
   ".subheading",
   ".more",
+  ".panelHead",
+  ".spaced",
+  ".list",
+  ".sub",
 ];
 
-describe("Rincian nilai SIKU on a phone", () => {
+describe("Rincian nilai SIKU and Transparansi nilai SIKU on a phone", () => {
   it("wraps the sum Nilai dasar + Penambahan − Pengurangan = SIKU akhir onto several lines", () => {
     expect(BREAKDOWN).toContain("<div className={styles.sum}>");
     expect(ruleOf(".sum")).toContain("display: flex;");
@@ -50,6 +55,11 @@ describe("Rincian nilai SIKU on a phone", () => {
     }
   });
 
+  it("lets the head of Transparansi nilai SIKU wrap its weight under the title", () => {
+    expect(OWN).toContain("<div className={styles.panelHead}>");
+    expect(ruleOf(".panelHead")).toContain("flex-wrap: wrap;");
+  });
+
   it("forces no width wider than a phone", () => {
     for (const selector of PANEL_RULES) {
       const rule = ruleOf(selector);
@@ -58,7 +68,7 @@ describe("Rincian nilai SIKU on a phone", () => {
       expect(rule, selector).not.toMatch(/min-width: (?!0;)/);
       expect(rule, selector).not.toContain("nowrap");
     }
-    for (const code of [BREAKDOWN, VIEW]) {
+    for (const code of [BREAKDOWN, VIEW, OWN]) {
       expect(code).not.toContain("style=");
     }
   });
