@@ -63,5 +63,5 @@ Kepala Unit who is gone.
   none, refusals, and the log, with its checks.
 - [x] 2. "Jadikan Kepala Unit" with its question on Pengguna dan peran,
   with its checks.
-- [ ] 3. The handover command on the campus server, and its part in the
+- [x] 3. The handover command on the campus server, and its part in the
   hosting guide, with its checks.

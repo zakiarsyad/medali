@@ -30,7 +30,8 @@
     "files:deploy": "tsx src/files/deploy-command.ts",
     "campus:start": "docker compose --file compose.campus.yaml --env-file .env.campus up --build --detach --wait",
     "campus:stop": "docker compose --file compose.campus.yaml stop",
-    "account:first": "tsx src/features/accounts/first-account-command.ts"
+    "account:first": "tsx src/features/accounts/first-account-command.ts",
+    "account:head-of-unit": "tsx src/features/accounts/head-of-unit-command.ts"
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",
