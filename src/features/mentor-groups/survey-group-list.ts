@@ -159,6 +159,16 @@ export interface ResultNumbers {
   poor: number;
   /** How many groups the numbers are of. */
   groups: number;
+  /** How many rows get a line in the evaluation history once fixed. */
+  fixable: number;
+}
+
+/**
+ * Whether a row gets a line in the evaluation history when the results
+ * are fixed: it has a Nilai evaluasi, and a mentor its answers count for.
+ */
+export function getsLine(row: SurveyGroupRow): boolean {
+  return row.mentorId !== null && row.result.score !== null;
 }
 
 /** The mean of numbers of one decimal, to one decimal. Null for none. */
@@ -198,5 +208,6 @@ export function resultNumbers(rows: readonly SurveyGroupRow[]): ResultNumbers {
     feedback: meanOf(shown(rows.map((row) => row.result.feedback))),
     poor: rows.filter((row) => row.result.result === "poor").length,
     groups: groups.length,
+    fixable: rows.filter(getsLine).length,
   };
 }

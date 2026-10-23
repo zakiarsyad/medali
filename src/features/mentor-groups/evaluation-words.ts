@@ -1,8 +1,8 @@
 import type { EvaluationScores } from "./evaluation-aspects";
 import {
-  evaluationAverage,
   evaluationResult,
   RESULT_TITLES,
+  resultOf,
   shownAverage,
 } from "./evaluation-result";
 import type { SavedEvaluation } from "./save-evaluation";
@@ -32,10 +32,9 @@ export function poorSaveWords(
 /** What a list shows where a group or a mentor has no evaluation. */
 export const NOT_EVALUATED = "Belum dievaluasi";
 
-/** A result with its average as a badge writes it, such as "Baik · 86,5". */
-export function resultWords(scores: EvaluationScores): string {
-  const title = RESULT_TITLES[evaluationResult(scores)];
-  return `${title} · ${shownAverage(evaluationAverage(scores))}`;
+/** A result with its Nilai evaluasi as a badge writes it, such as "Baik · 86,5". */
+export function resultWords(average: number): string {
+  return `${RESULT_TITLES[resultOf(average)]} · ${shownAverage(average)}`;
 }
 
 /** What is added to a result of Kurang. */

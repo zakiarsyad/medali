@@ -48,16 +48,6 @@ export function evaluationResult(scores: EvaluationScores): EvaluationResult {
   return resultOf(evaluationAverage(scores));
 }
 
-/**
- * Whether four values that add up to this total give Kurang, for the
- * database to count by. A check keeps it the same as `evaluationResult`.
- */
-export const POOR_TOTAL_BELOW = FAIR_FROM * EVALUATION_ASPECTS.length;
-
-export function isPoorTotal(total: number): boolean {
-  return total < POOR_TOTAL_BELOW;
-}
-
 /** An average as the screens write it, such as 79,8. */
 export function shownAverage(average: number): string {
   return average.toLocaleString("id-ID", {

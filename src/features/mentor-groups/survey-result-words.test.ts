@@ -3,6 +3,10 @@ import type { SurveyGroupResult } from "./survey-result";
 import type { ResultPeriod } from "./survey-result-periods";
 import {
   feedbackWords,
+  fixedByWords,
+  fixedResultsWords,
+  fixOfferWords,
+  fixQuestion,
   missingResultWords,
   periodChoiceWords,
   respondentsWords,
@@ -18,6 +22,7 @@ const PERIOD: ResultPeriod = {
   achievementWeight: 40,
   status: "closed",
   numbersDay: "2026-06-21",
+  fixed: null,
 };
 
 function result(more: Partial<SurveyGroupResult>): SurveyGroupResult {
@@ -69,6 +74,35 @@ describe("feedbackWords", () => {
 describe("respondentsWords", () => {
   it("writes who answered out of the members", () => {
     expect(respondentsWords(3, 4)).toBe("3/4");
+  });
+});
+
+describe("the words of fixing the results", () => {
+  it("offers the fixing with the number of groups that get a line", () => {
+    expect(fixOfferWords(4)).toBe(
+      "Periode sudah selesai. Tetapkan hasilnya agar 4 kelompok yang memiliki nilai evaluasi masuk ke riwayat evaluasi pengasuh.",
+    );
+  });
+
+  it("asks first, naming the number of groups and the period", () => {
+    expect(fixQuestion(4, PERIOD)).toBe(
+      "Tetapkan hasil evaluasi 4 kelompok untuk periode Genap 2025/2026? Hasil masuk ke riwayat evaluasi pengasuh.",
+    );
+  });
+
+  it("says how many groups got a line", () => {
+    expect(fixedResultsWords(1)).toBe("Hasil evaluasi 1 kelompok ditetapkan.");
+  });
+
+  it("says who fixed them and when", () => {
+    const fixed = {
+      at: new Date("2026-06-23T03:00:00Z"),
+      byName: "Kepala Uji",
+    };
+
+    expect(fixedByWords(fixed)).toBe(
+      "Hasil periode ini sudah ditetapkan 23 Jun 2026 oleh Kepala Uji dan masuk ke riwayat evaluasi pengasuh.",
+    );
   });
 });
 

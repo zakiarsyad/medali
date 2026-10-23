@@ -29,6 +29,7 @@ const WAITING: ListedReplacement = {
 
 const EVALUATION: ListedEvaluation = {
   id: "00000000-0000-4000-8000-000000000003",
+  source: "head_of_unit",
   period: { startYear: 2026, term: "odd" },
   group: WAITING.group,
   mentorName: "Pengasuh Uji Lama",
@@ -36,7 +37,9 @@ const EVALUATION: ListedEvaluation = {
   attendance: 80,
   achievement: 80,
   feedback: 80,
+  average: 80,
   note: null,
+  respondents: null,
   evaluatedAt: new Date("2026-10-13T03:00:00Z"),
   evaluatorName: "Kepala Uji",
 };

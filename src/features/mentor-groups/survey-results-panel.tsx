@@ -62,9 +62,12 @@ async function readShown(
 export async function SurveyResultsPanel({
   limit,
   choices,
+  mayFix,
 }: {
   limit: RowLimit;
   choices: SurveyResultChoices;
+  /** Whether the account gets "Tetapkan hasil evaluasi". */
+  mayFix: boolean;
 }) {
   const db = database();
   const periods = await readResultPeriods(db, campusDay());
@@ -72,6 +75,11 @@ export async function SurveyResultsPanel({
   const shown =
     period === null ? null : await readShown(db, limit, period, choices);
   return (
-    <SurveyResultsView periods={periods} shown={shown} choices={choices} />
+    <SurveyResultsView
+      periods={periods}
+      shown={shown}
+      choices={choices}
+      mayFix={mayFix}
+    />
   );
 }

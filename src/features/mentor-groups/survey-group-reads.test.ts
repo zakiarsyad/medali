@@ -39,6 +39,7 @@ function resultPeriod(id: string, more: Partial<ResultPeriod> = {}) {
     achievementWeight: 50,
     status: "open",
     numbersDay: DAY,
+    fixed: null,
     ...more,
   } as const satisfies ResultPeriod;
 }

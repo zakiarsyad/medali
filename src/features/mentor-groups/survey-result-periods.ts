@@ -1,13 +1,24 @@
 import { desc, eq, isNull } from "drizzle-orm";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { Database } from "@/db/connect";
-import { academicPeriods, studentSurveyPeriods } from "@/db/schema";
+import {
+  academicPeriods,
+  accounts,
+  studentSurveyPeriods,
+  surveyResultFixings,
+} from "@/db/schema";
 import {
   runsWith,
   type SurveyStatus,
   surveyNumbersDay,
   surveyStatus,
 } from "@/mentoring/survey-status";
+
+/** Who fixed the results of a period into the evaluation history, and when. */
+export interface ResultFixing {
+  at: Date;
+  byName: string;
+}
 
 /** A survey period that "Hasil evaluasi per kelompok" can show. */
 export interface ResultPeriod {
@@ -20,6 +31,13 @@ export interface ResultPeriod {
   status: SurveyStatus;
   /** The day its numbers are taken on: today, or its closing day once over. */
   numbersDay: string;
+  /** Null while its results are not fixed. */
+  fixed: ResultFixing | null;
+}
+
+function fixingOf(at: Date | null, byName: string | null): ResultFixing | null {
+  if (at === null || byName === null) return null;
+  return { at, byName };
 }
 
 /**
@@ -40,23 +58,33 @@ export async function readResultPeriods(
       endsOn: studentSurveyPeriods.endsOn,
       achievementWeight: studentSurveyPeriods.achievementWeight,
       closedAt: studentSurveyPeriods.closedAt,
+      fixedAt: surveyResultFixings.fixedAt,
+      fixerName: accounts.name,
     })
     .from(studentSurveyPeriods)
     .innerJoin(
       academicPeriods,
       eq(academicPeriods.id, studentSurveyPeriods.periodId),
     )
+    .leftJoin(
+      surveyResultFixings,
+      eq(surveyResultFixings.surveyPeriodId, studentSurveyPeriods.id),
+    )
+    .leftJoin(accounts, eq(accounts.id, surveyResultFixings.fixedBy))
     .where(isNull(studentSurveyPeriods.cancelledAt))
     .orderBy(
       desc(studentSurveyPeriods.startsOn),
       desc(studentSurveyPeriods.openedAt),
     );
-  return stored.map(({ startYear, term, closedAt, ...rest }) => ({
-    ...rest,
-    period: { startYear, term },
-    status: surveyStatus({ ...rest, closedAt }, today),
-    numbersDay: surveyNumbersDay({ ...rest, closedAt }, today),
-  }));
+  return stored.map(
+    ({ startYear, term, closedAt, fixedAt, fixerName, ...rest }) => ({
+      ...rest,
+      period: { startYear, term },
+      status: surveyStatus({ ...rest, closedAt }, today),
+      numbersDay: surveyNumbersDay({ ...rest, closedAt }, today),
+      fixed: fixingOf(fixedAt, fixerName),
+    }),
+  );
 }
 
 /**
@@ -72,4 +100,15 @@ export function chooseResultPeriod(
   const running = periods.find((period) => runsWith(period.status));
   if (running) return running;
   return periods[0] ?? null;
+}
+
+/**
+ * Whether the results of a period may be fixed now: it is Ditutup or
+ * Berakhir, and they are not fixed yet.
+ */
+export function isFixable(
+  period: Pick<ResultPeriod, "status" | "fixed">,
+): boolean {
+  if (period.fixed !== null) return false;
+  return period.status === "closed" || period.status === "ended";
 }

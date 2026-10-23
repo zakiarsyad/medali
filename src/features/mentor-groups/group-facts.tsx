@@ -30,7 +30,7 @@ export function MentorFacts({
       <b>{mentorLabel(mentor)}</b> mengasuh {groupCode(group)} sejak{" "}
       {shownDay(mentor.since)}. {group.members.toLocaleString("id-ID")}{" "}
       mahasiswa aktif. Evaluasi terakhir:{" "}
-      <EvaluationBadge scores={group.last} />
+      <EvaluationBadge average={group.last} />
     </p>
   );
 }

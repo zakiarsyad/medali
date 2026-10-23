@@ -1,9 +1,8 @@
 import shared from "@/ui/data-screen.module.css";
-import type { EvaluationScores } from "./evaluation-aspects";
 import {
   type EvaluationResult,
-  evaluationResult,
   RESULT_TITLES,
+  resultOf,
 } from "./evaluation-result";
 import { NOT_EVALUATED, resultWords } from "./evaluation-words";
 import styles from "./mentor-groups.module.css";
@@ -20,18 +19,15 @@ function Badge({ result, words }: { result: EvaluationResult; words: string }) {
   );
 }
 
-/** A result with its average, or "Belum dievaluasi" where there is none. */
-export function EvaluationBadge({
-  scores,
-}: {
-  scores: EvaluationScores | null;
-}) {
-  if (scores === null) {
+/**
+ * The result of a Nilai evaluasi with the number, or "Belum dievaluasi"
+ * where there is none.
+ */
+export function EvaluationBadge({ average }: { average: number | null }) {
+  if (average === null) {
     return <span className={styles.quiet}>{NOT_EVALUATED}</span>;
   }
-  return (
-    <Badge result={evaluationResult(scores)} words={resultWords(scores)} />
-  );
+  return <Badge result={resultOf(average)} words={resultWords(average)} />;
 }
 
 /** A result alone, Baik, Cukup or Kurang, for a list that shows its average apart. */

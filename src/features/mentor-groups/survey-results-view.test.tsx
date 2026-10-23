@@ -28,6 +28,7 @@ const PERIOD: ResultPeriod = {
   achievementWeight: 50,
   status: "closed",
   numbersDay: "2026-06-21",
+  fixed: null,
 };
 
 function group(number: number, members = 3): SurveyGroup {
@@ -70,6 +71,7 @@ function shown(
   period: ResultPeriod = PERIOD,
   choices: SurveyResultChoices = NO_RESULT_CHOICES,
   detail: GroupSurveyDetail | null = null,
+  mayFix = false,
 ): string {
   return renderToStaticMarkup(
     <SurveyResultsView
@@ -81,8 +83,13 @@ function shown(
         detail,
       }}
       choices={choices}
+      mayFix={mayFix}
     />,
   );
+}
+
+function shownToHead(period: ResultPeriod = PERIOD): string {
+  return shown(period, NO_RESULT_CHOICES, null, true);
 }
 
 const OPEN_FIRST: SurveyResultChoices = {
@@ -224,12 +231,48 @@ describe("SurveyResultsView", () => {
     );
   });
 
+  it("offers Kepala Unit Tetapkan hasil evaluasi for a period that is Ditutup or Berakhir, naming the groups that get a line", () => {
+    for (const status of ["closed", "ended"] as const) {
+      const view = shownToHead({ ...PERIOD, status });
+
+      expect(view).toContain("Tetapkan hasil evaluasi</button>");
+      expect(view).toContain(
+        "Tetapkan hasilnya agar 1 kelompok yang memiliki nilai evaluasi",
+      );
+    }
+  });
+
+  it("offers no fixing to a role that only reads, nor for a period that runs", () => {
+    expect(shown()).not.toContain("Tetapkan hasil evaluasi</button>");
+    for (const status of ["open", "scheduled"] as const) {
+      expect(shownToHead({ ...PERIOD, status })).not.toContain(
+        "Tetapkan hasil evaluasi</button>",
+      );
+    }
+  });
+
+  it("says who fixed the results and when once they are fixed, and offers the button no more", () => {
+    const fixed = {
+      at: new Date("2026-06-23T03:00:00Z"),
+      byName: "Kepala Uji",
+    };
+    const words =
+      "Hasil periode ini sudah ditetapkan 23 Jun 2026 oleh Kepala Uji dan masuk ke riwayat evaluasi pengasuh.";
+
+    expect(shownToHead({ ...PERIOD, fixed })).toContain(words);
+    expect(shownToHead({ ...PERIOD, fixed })).not.toContain(
+      "Tetapkan hasil evaluasi</button>",
+    );
+    expect(shown({ ...PERIOD, fixed })).toContain(words);
+  });
+
   it("asks to open a period while there is none", () => {
     const view = renderToStaticMarkup(
       <SurveyResultsView
         periods={[]}
         shown={null}
         choices={NO_RESULT_CHOICES}
+        mayFix
       />,
     );
 

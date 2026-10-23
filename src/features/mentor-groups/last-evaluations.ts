@@ -1,13 +1,4 @@
-import {
-  and,
-  count,
-  desc,
-  eq,
-  inArray,
-  isNull,
-  type SQL,
-  sql,
-} from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, type SQL } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import {
@@ -15,13 +6,18 @@ import {
   mentorEvaluations,
   mentorGroupMentors,
   mentorGroups,
+  mentorSurveyResults,
+  studentSurveyPeriods,
+  surveyResultFixings,
 } from "@/db/schema";
-import type { EvaluationScores } from "./evaluation-aspects";
-import { POOR_TOTAL_BELOW } from "./evaluation-result";
+import { evaluationAverage, resultOf } from "./evaluation-result";
 import { groupsVisibleTo } from "./visible-groups";
 
-/** "Evaluasi terakhir" of groups or of mentors, by the id of each. */
-export type LastEvaluations = Map<string, EvaluationScores>;
+/**
+ * "Evaluasi terakhir" of groups or of mentors, by the id of each: its
+ * Nilai evaluasi, from either source of the evaluation history.
+ */
+export type LastEvaluations = Map<string, number>;
 
 export const SCORES = {
   activity: mentorEvaluations.activity,
@@ -30,6 +26,42 @@ export const SCORES = {
   feedback: mentorEvaluations.feedback,
 };
 
+/** A line of the history, with what decides which is the newest. */
+export interface DatedAverage {
+  /** The id of the group or mentor it is the line of. */
+  id: string;
+  /** The first day of the academic period it is of. */
+  periodStartsOn: string;
+  /** When it was saved or fixed. */
+  savedAt: Date;
+  average: number;
+}
+
+function isNewer(one: DatedAverage, other: DatedAverage): boolean {
+  if (one.periodStartsOn !== other.periodStartsOn) {
+    return one.periodStartsOn > other.periodStartsOn;
+  }
+  return one.savedAt > other.savedAt;
+}
+
+/**
+ * The newest line of each id, of whichever source: the one of the latest
+ * academic period, and among those of one period the one saved last.
+ */
+export function newestOf(lines: readonly DatedAverage[]): LastEvaluations {
+  const newest = new Map<string, DatedAverage>();
+  for (const line of lines) {
+    const found = newest.get(line.id);
+    if (found === undefined || isNewer(line, found)) newest.set(line.id, line);
+  }
+  const averages: LastEvaluations = new Map();
+  for (const [id, line] of newest) averages.set(id, line.average);
+  return averages;
+}
+
+/** Whether the last line is read for each group, or for each mentor. */
+type LastOf = "group" | "mentor";
+
 /** The line that says the evaluated mentor still holds the group today. */
 const OF_MENTOR_TODAY = and(
   eq(mentorGroupMentors.groupId, mentorEvaluations.groupId),
@@ -37,32 +69,131 @@ const OF_MENTOR_TODAY = and(
   isNull(mentorGroupMentors.endsOn),
 );
 
-const OF_PERIOD = eq(academicPeriods.id, mentorEvaluations.periodId);
+/** The same for a line of the survey. */
+const OF_SURVEY_MENTOR_TODAY = and(
+  eq(mentorGroupMentors.groupId, mentorSurveyResults.groupId),
+  eq(mentorGroupMentors.mentorId, mentorSurveyResults.mentorId),
+  isNull(mentorGroupMentors.endsOn),
+);
 
 /**
- * "Evaluasi terakhir" of each group an account with this limit may see:
- * the evaluation of the mentor who holds the group today, for the latest
- * period. One of an earlier mentor says nothing of the mentor of today,
- * so a group whose mentor was replaced starts without one. A group has
- * one evaluation for a period at most, so the period alone decides.
+ * The newest evaluation of Kepala Unit of each group or mentor that an
+ * account with this limit may see and that meets a condition. For a
+ * group, only an evaluation of the mentor who holds it today counts.
  */
-function lastOfGroups(db: Database, limit: RowLimit, condition?: SQL) {
-  return db
-    .selectDistinctOn([mentorEvaluations.groupId], {
-      groupId: mentorEvaluations.groupId,
+async function lastHeadEvaluations(
+  db: Database,
+  limit: RowLimit,
+  of: LastOf,
+  condition: SQL | undefined,
+): Promise<DatedAverage[]> {
+  const key =
+    of === "group" ? mentorEvaluations.groupId : mentorEvaluations.mentorId;
+  const query = db
+    .selectDistinctOn([key], {
+      id: key,
+      periodStartsOn: academicPeriods.startsOn,
+      savedAt: mentorEvaluations.evaluatedAt,
       ...SCORES,
     })
     .from(mentorEvaluations)
     .innerJoin(mentorGroups, eq(mentorGroups.id, mentorEvaluations.groupId))
-    .innerJoin(mentorGroupMentors, OF_MENTOR_TODAY)
-    .innerJoin(academicPeriods, OF_PERIOD)
+    .innerJoin(
+      academicPeriods,
+      eq(academicPeriods.id, mentorEvaluations.periodId),
+    )
+    .$dynamic();
+  const held =
+    of === "group"
+      ? query.innerJoin(mentorGroupMentors, OF_MENTOR_TODAY)
+      : query;
+  const rows = await held
     .where(and(groupsVisibleTo(limit), condition))
-    .orderBy(mentorEvaluations.groupId, desc(academicPeriods.startsOn));
+    .orderBy(
+      key,
+      desc(academicPeriods.startsOn),
+      desc(mentorEvaluations.evaluatedAt),
+    );
+  return rows.map(
+    ({ activity, attendance, achievement, feedback, ...line }) => ({
+      ...line,
+      average: evaluationAverage({
+        activity,
+        attendance,
+        achievement,
+        feedback,
+      }),
+    }),
+  );
+}
+
+/** The same for the lines the survey results were fixed into. */
+async function lastSurveyLines(
+  db: Database,
+  limit: RowLimit,
+  of: LastOf,
+  condition: SQL | undefined,
+): Promise<DatedAverage[]> {
+  const key =
+    of === "group" ? mentorSurveyResults.groupId : mentorSurveyResults.mentorId;
+  const query = db
+    .selectDistinctOn([key], {
+      id: key,
+      periodStartsOn: academicPeriods.startsOn,
+      savedAt: surveyResultFixings.fixedAt,
+      average: mentorSurveyResults.score,
+    })
+    .from(mentorSurveyResults)
+    .innerJoin(
+      surveyResultFixings,
+      eq(surveyResultFixings.id, mentorSurveyResults.fixingId),
+    )
+    .innerJoin(
+      studentSurveyPeriods,
+      eq(studentSurveyPeriods.id, surveyResultFixings.surveyPeriodId),
+    )
+    .innerJoin(
+      academicPeriods,
+      eq(academicPeriods.id, studentSurveyPeriods.periodId),
+    )
+    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorSurveyResults.groupId))
+    .$dynamic();
+  const held =
+    of === "group"
+      ? query.innerJoin(mentorGroupMentors, OF_SURVEY_MENTOR_TODAY)
+      : query;
+  return held
+    .where(and(groupsVisibleTo(limit), condition))
+    .orderBy(
+      key,
+      desc(academicPeriods.startsOn),
+      desc(surveyResultFixings.fixedAt),
+    );
 }
 
 /**
- * "Evaluasi terakhir" of each of these groups, in one read for all of
- * them. A group that has none is not in the answer.
+ * "Evaluasi terakhir" of the groups an account with this limit may see
+ * that meet the conditions: the newest line of the mentor who holds the
+ * group today, of either source. One of an earlier mentor says nothing of
+ * the mentor of today, so a group whose mentor was replaced starts
+ * without one.
+ */
+async function lastOfGroups(
+  db: Database,
+  limit: RowLimit,
+  head: SQL | undefined,
+  survey: SQL | undefined,
+): Promise<LastEvaluations> {
+  const [heads, surveys] = await Promise.all([
+    lastHeadEvaluations(db, limit, "group", head),
+    lastSurveyLines(db, limit, "group", survey),
+  ]);
+  return newestOf([...heads, ...surveys]);
+}
+
+/**
+ * "Evaluasi terakhir" of each of these groups, in one read of each
+ * source for all of them. A group that has none is not in the answer.
  */
 export async function readLastGroupEvaluations(
   db: Database,
@@ -70,19 +201,19 @@ export async function readLastGroupEvaluations(
   groupIds: string[],
 ): Promise<LastEvaluations> {
   if (groupIds.length === 0) return new Map();
-  const rows = await lastOfGroups(
+  return lastOfGroups(
     db,
     limit,
     inArray(mentorEvaluations.groupId, groupIds),
+    inArray(mentorSurveyResults.groupId, groupIds),
   );
-  return new Map(rows.map(({ groupId, ...scores }) => [groupId, scores]));
 }
 
 /**
- * "Evaluasi terakhir" of each of these mentors, in one read for all of
- * them: over every group an account with this limit may see, the
- * evaluation of the latest period, and among those of one period the one
- * saved last. A mentor who has none is not in the answer.
+ * "Evaluasi terakhir" of each of these mentors, in one read of each
+ * source for all of them: over every group an account with this limit
+ * may see, the line of the latest period, and among those of one period
+ * the one saved last. A mentor who has none is not in the answer.
  */
 export async function readLastMentorEvaluations(
   db: Database,
@@ -90,42 +221,35 @@ export async function readLastMentorEvaluations(
   mentorIds: string[],
 ): Promise<LastEvaluations> {
   if (mentorIds.length === 0) return new Map();
-  const rows = await db
-    .selectDistinctOn([mentorEvaluations.mentorId], {
-      mentorId: mentorEvaluations.mentorId,
-      ...SCORES,
-    })
-    .from(mentorEvaluations)
-    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorEvaluations.groupId))
-    .innerJoin(academicPeriods, OF_PERIOD)
-    .where(
-      and(
-        groupsVisibleTo(limit),
-        inArray(mentorEvaluations.mentorId, mentorIds),
-      ),
-    )
-    .orderBy(
-      mentorEvaluations.mentorId,
-      desc(academicPeriods.startsOn),
-      desc(mentorEvaluations.evaluatedAt),
-    );
-  return new Map(rows.map(({ mentorId, ...scores }) => [mentorId, scores]));
+  const [heads, surveys] = await Promise.all([
+    lastHeadEvaluations(
+      db,
+      limit,
+      "mentor",
+      inArray(mentorEvaluations.mentorId, mentorIds),
+    ),
+    lastSurveyLines(
+      db,
+      limit,
+      "mentor",
+      inArray(mentorSurveyResults.mentorId, mentorIds),
+    ),
+  ]);
+  return newestOf([...heads, ...surveys]);
 }
 
 /**
  * "Evaluasi kurang": how many of the groups an account with this limit
- * may see have Kurang as their last evaluation. The database counts, by
- * the total a check keeps the same as the rule of the result.
+ * may see have Kurang as their last evaluation, of either source.
  */
 export async function countPoorGroups(
   db: Database,
   limit: RowLimit,
 ): Promise<number> {
-  const last = lastOfGroups(db, limit).as("last");
-  const total = sql`${last.activity} + ${last.attendance} + ${last.achievement} + ${last.feedback}`;
-  const [counted] = await db
-    .select({ poor: count() })
-    .from(last)
-    .where(sql`${total} < ${POOR_TOTAL_BELOW}`);
-  return counted?.poor ?? 0;
+  const last = await lastOfGroups(db, limit, undefined, undefined);
+  let poor = 0;
+  for (const average of last.values()) {
+    if (resultOf(average) === "poor") poor++;
+  }
+  return poor;
 }

@@ -3,7 +3,6 @@ import type { EvaluationScores } from "./evaluation-aspects";
 import {
   evaluationAverage,
   evaluationResult,
-  isPoorTotal,
   RESULT_TITLES,
   resultOf,
   shownAverage,
@@ -77,15 +76,6 @@ describe("evaluationResult", () => {
       fair: "Cukup",
       poor: "Kurang",
     });
-  });
-});
-
-describe("isPoorTotal", () => {
-  it("agrees with the result of the four values, for every total", () => {
-    for (let total = 0; total <= 400; total += 1) {
-      const isPoor = evaluationResult(scoresWithTotal(total)) === "poor";
-      expect(isPoorTotal(total)).toBe(isPoor);
-    }
   });
 });
 

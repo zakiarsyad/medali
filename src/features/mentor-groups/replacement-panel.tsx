@@ -5,7 +5,7 @@ import shared from "@/ui/data-screen.module.css";
 import { groupCode } from "@/ui/group-code";
 import { readEvaluatedGroup } from "./evaluated-group";
 import { evaluationAddress } from "./evaluation-address";
-import { evaluationResult } from "./evaluation-result";
+import { resultOf } from "./evaluation-result";
 import { poorSaveWords } from "./evaluation-words";
 import { ChooseGroupFirst, MentorFacts } from "./group-facts";
 import styles from "./mentor-groups.module.css";
@@ -54,7 +54,7 @@ export async function ReplacementPart({
     );
   }
   const hasPoorEvaluation =
-    group.last !== null && evaluationResult(group.last) === "poor";
+    group.last !== null && resultOf(group.last) === "poor";
   const savedWords = poorSaveWords(mentor.name, group.stored);
   return (
     <>

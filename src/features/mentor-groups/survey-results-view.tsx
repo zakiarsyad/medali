@@ -5,6 +5,7 @@ import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import styles from "./mentor-groups.module.css";
 import { SURVEY_ADDRESS } from "./survey-address";
+import { SurveyFixPart } from "./survey-fix-part";
 import type { GroupSurveyDetail } from "./survey-group-detail";
 import { GroupSurveyDetailView } from "./survey-group-detail-view";
 import {
@@ -13,9 +14,12 @@ import {
   rowKey,
   type SurveyGroupRow,
 } from "./survey-group-list";
-import type { ResultPeriod } from "./survey-result-periods";
+import { isFixable, type ResultPeriod } from "./survey-result-periods";
 import {
   feedbackWords,
+  fixedByWords,
+  fixOfferWords,
+  fixQuestion,
   NO_MATCH_WORDS,
   NO_PERIOD_WORDS,
   OPEN_PERIOD_WORDS,
@@ -151,13 +155,35 @@ function openDetail(
   return { key, detail };
 }
 
+/**
+ * Who fixed the results and when, or what Kepala Unit is offered while a
+ * period that is over is not fixed. Nothing for a period that runs.
+ */
+function FixPart({ shown, mayFix }: { shown: ShownResults; mayFix: boolean }) {
+  const { period, numbers } = shown;
+  if (period.fixed !== null) {
+    return (
+      <SurveyFixPart fixedWords={fixedByWords(period.fixed)} offer={null} />
+    );
+  }
+  if (!mayFix || !isFixable(period)) return null;
+  const offer = {
+    surveyPeriodId: period.id,
+    words: fixOfferWords(numbers.fixable),
+    question: fixQuestion(numbers.fixable, period),
+  };
+  return <SurveyFixPart fixedWords={null} offer={offer} />;
+}
+
 function Results({
   shown,
   choices,
+  mayFix,
 }: {
   shown: ShownResults;
   /** What the address asks for, the period it names set to the one shown. */
   choices: SurveyResultChoices;
+  mayFix: boolean;
 }) {
   const { period, numbers, page } = shown;
   const open = openDetail(shown, choices);
@@ -169,6 +195,7 @@ function Results({
   return (
     <>
       <Numbers numbers={numbers} />
+      <FixPart shown={shown} mayFix={mayFix} />
       {period.status === "open" && (
         <p className={styles.quiet}>{OPEN_PERIOD_WORDS}</p>
       )}
@@ -198,17 +225,21 @@ function Results({
 /**
  * "Hasil evaluasi per kelompok": the period chosen with its days and
  * weights, a choice of the periods, the numbers of every group, and one
- * page of the groups, lowest first.
+ * page of the groups, lowest first. Kepala Unit also gets "Tetapkan hasil
+ * evaluasi" for a period that is over.
  */
 export function SurveyResultsView({
   periods,
   shown,
   choices,
+  mayFix,
 }: {
   periods: ResultPeriod[];
   /** Null while no period was opened. */
   shown: ShownResults | null;
   choices: SurveyResultChoices;
+  /** Whether the account may fix the results; only a tidiness, the server checks. */
+  mayFix: boolean;
 }) {
   return (
     <section className={shared.panel}>
@@ -231,6 +262,7 @@ export function SurveyResultsView({
         <Results
           shown={shown}
           choices={{ ...choices, surveyPeriodId: shown.period.id }}
+          mayFix={mayFix}
         />
       )}
     </section>

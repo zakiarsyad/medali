@@ -1,11 +1,11 @@
 import { periodTitle } from "@/academic-periods/period-labels";
 import { FEWEST_ANSWERS_SHOWN } from "@/mentoring/survey-statements";
 import { SURVEY_STATUS_TITLES } from "@/mentoring/survey-status";
-import { shownDay } from "@/ui/day";
+import { DAY, shownDay } from "@/ui/day";
 import { shownAverage } from "./evaluation-result";
 import { feedbackWeight } from "./survey-form-start";
 import type { SurveyGroupResult } from "./survey-result";
-import type { ResultPeriod } from "./survey-result-periods";
+import type { ResultFixing, ResultPeriod } from "./survey-result-periods";
 
 /** The line under "Hasil evaluasi per kelompok": the period, its days and weights. */
 export function resultPeriodWords(period: ResultPeriod): string {
@@ -53,3 +53,27 @@ export const OPEN_PERIOD_WORDS =
   "Periode masih dibuka. Angka di bawah sementara dan diperbarui setiap ada jawaban baru.";
 
 export const NO_MATCH_WORDS = "Tidak ada kelompok pada filter ini.";
+
+function groupsWords(groups: number): string {
+  return `${groups.toLocaleString("id-ID")} kelompok`;
+}
+
+/** What the box of a period whose results may be fixed says to Kepala Unit. */
+export function fixOfferWords(groups: number): string {
+  return `Periode sudah selesai. Tetapkan hasilnya agar ${groupsWords(groups)} yang memiliki nilai evaluasi masuk ke riwayat evaluasi pengasuh.`;
+}
+
+/** What "Tetapkan hasil evaluasi" asks first, naming the number of groups. */
+export function fixQuestion(groups: number, period: ResultPeriod): string {
+  return `Tetapkan hasil evaluasi ${groupsWords(groups)} untuk periode ${periodTitle(period.period)}? Hasil masuk ke riwayat evaluasi pengasuh.`;
+}
+
+/** What "Tetapkan hasil evaluasi" says once the results are fixed. */
+export function fixedResultsWords(lines: number): string {
+  return `Hasil evaluasi ${groupsWords(lines)} ditetapkan.`;
+}
+
+/** Who fixed the results of a period and when. */
+export function fixedByWords(fixed: ResultFixing): string {
+  return `Hasil periode ini sudah ditetapkan ${DAY.format(fixed.at)} oleh ${fixed.byName} dan masuk ke riwayat evaluasi pengasuh.`;
+}

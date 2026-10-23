@@ -63,6 +63,7 @@ export const ACTIONS = [
   "manage_survey_periods",
   "answer_own_survey",
   "view_survey_results",
+  "fix_survey_results",
   "view_cohort_assignments",
   "prepare_cohort_assignments",
   "fix_cohort_assignments",
@@ -206,6 +207,8 @@ export const ACTION_TITLES: Record<Action, string> = {
   answer_own_survey: "Mengisi dan mengubah survei kepuasan pengasuhan sendiri",
   view_survey_results:
     "Melihat hasil evaluasi oleh mahasiswa per kelompok, tanpa jawaban per orang",
+  fix_survey_results:
+    "Menetapkan hasil evaluasi oleh mahasiswa ke riwayat evaluasi pengasuh",
   view_cohort_assignments: "Melihat penetapan angkatan baru",
   prepare_cohort_assignments:
     "Menyiapkan dan mengajukan penetapan angkatan baru",
@@ -433,6 +436,7 @@ export const ROLES: Record<RoleId, Role> = {
       "replace_mentors",
       "manage_survey_periods",
       "view_survey_results",
+      "fix_survey_results",
       "view_cohort_assignments",
       "prepare_cohort_assignments",
       "fix_cohort_assignments",

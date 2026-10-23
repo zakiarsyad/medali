@@ -14,9 +14,12 @@ import {
   changeSurveyEnd,
   closeSurveyPeriod,
 } from "./change-survey-period";
+import { fixSurveyResults } from "./fix-survey-results";
 import { openSurveyPeriod } from "./open-survey-period";
 import { SURVEY_ADDRESS } from "./survey-address";
 import { parseSurveyEnd, parseSurveyPeriod } from "./survey-input";
+import { fixedResultsWords } from "./survey-result-words";
+import { mayResultsBeFixedBy } from "./survey-rights";
 import {
   CANCELLED_SURVEY_WORDS,
   CLOSED_WORDS,
@@ -83,6 +86,22 @@ export async function closeSurveyPeriodAction(
   if (!closed.ok) return { error: closed.error, done: null };
   revalidatePath(SURVEY_ADDRESS);
   return { error: null, done: CLOSED_WORDS };
+}
+
+/**
+ * "Tetapkan hasil evaluasi". Any account but Kepala Unit is refused before
+ * anything of what it sent is read.
+ */
+export async function fixSurveyResultsAction(
+  form: FormData,
+): Promise<FormState> {
+  const account = await currentAccount();
+  if (!account || !mayResultsBeFixedBy(account)) forbidden();
+  const id = text(form, "surveyPeriodId");
+  const fixed = await fixSurveyResults(database(), account, id);
+  if (!fixed.ok) return { error: fixed.error, done: null };
+  revalidatePath(SURVEY_ADDRESS);
+  return { error: null, done: fixedResultsWords(fixed.value.lines) };
 }
 
 /** "Batalkan periode". */

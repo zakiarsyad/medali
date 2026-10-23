@@ -29,7 +29,11 @@ export function SurveyScreen({
         panel={<SurveyPanel rights={rights} />}
       />
       {rights.results !== null && (
-        <SurveyResultsPanel limit={rights.results} choices={choices} />
+        <SurveyResultsPanel
+          limit={rights.results}
+          choices={choices}
+          mayFix={rights.mayFix}
+        />
       )}
     </>
   );

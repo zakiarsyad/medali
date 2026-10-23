@@ -23,6 +23,11 @@ export function surveyResultRowsFor(
   return rowLimitForAction(account, "view_survey_results");
 }
 
+/** Whether an account may fix the results of a period into the evaluation history. */
+export function mayResultsBeFixedBy(account: AccountForAccess): boolean {
+  return may(account.roles, "fix_survey_results");
+}
+
 /** What an account that opened the tab "Evaluasi oleh mahasiswa" gets there. */
 export interface SurveyRights {
   /** False for an account that only reads the tab: it gets no form and no button. */
@@ -34,6 +39,8 @@ export interface SurveyRights {
   respondents: RowLimit;
   /** The groups of "Hasil evaluasi per kelompok", or null for none. */
   results: RowLimit | null;
+  /** Whether the account gets "Tetapkan hasil evaluasi". */
+  mayFix: boolean;
 }
 
 /**
@@ -46,5 +53,6 @@ export function surveyRightsFor(account: AccountForAccess): SurveyRights {
     mayManage: maySurveyBeManagedBy(account),
     respondents: rowLimitForPage(account, "mentors"),
     results: surveyResultRowsFor(account),
+    mayFix: mayResultsBeFixedBy(account),
   };
 }

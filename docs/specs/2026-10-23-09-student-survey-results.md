@@ -176,6 +176,46 @@ history. No one ever sees one student's answers.
     since the closing day changes it. Once the results are fixed, the
     line in the evaluation history keeps the value of the day it was
     fixed.
+24. Fixing the results is a new right, held by Kepala Unit only. The
+    list of rights names it "Menetapkan hasil evaluasi oleh mahasiswa
+    ke riwayat evaluasi pengasuh".
+25. A fixing is stored once for a period, with who and when. Each line
+    it writes holds the group, the mentor, Responden as (n) of
+    (members), Capaian karakter, Umpan balik as 0 to 100 and Nilai
+    evaluasi, as the table showed them. The database itself keeps a
+    period fixed once, and refuses to change or delete a fixing or a
+    line, so the fixing is also the record of who fixed and when. Of
+    two requests at the same moment the second waits for the first and
+    is then told "Hasil evaluasi periode ini sudah ditetapkan. Muat
+    ulang halaman untuk melihatnya."
+26. A line is written for each row with a Nilai evaluasi: 3 answers or
+    more and a Capaian karakter. The box and the question name that
+    number: "Periode sudah selesai. Tetapkan hasilnya agar (n) kelompok
+    yang memiliki nilai evaluasi masuk ke riwayat evaluasi pengasuh."
+    and "Tetapkan hasil evaluasi (n) kelompok untuk periode (periode)?
+    Hasil masuk ke riwayat evaluasi pengasuh." Afterwards it says
+    "Hasil evaluasi (n) kelompok ditetapkan.", and every role that
+    reads the tab sees "Hasil periode ini sudah ditetapkan (date) oleh
+    (name) dan masuk ke riwayat evaluasi pengasuh." A period without
+    such a group can be fixed too, writing no line.
+27. A period that runs, is cancelled or names none is refused with
+    "Hasil evaluasi hanya dapat ditetapkan setelah periode ditutup atau
+    berakhir. Muat ulang halaman, lalu periksa lagi." The button is off
+    while the request is on its way.
+28. In "Evaluasi terbaru", on the group page and on the mentor page, a
+    line of the survey shows its Periode, mentor and group, "-" for
+    Keaktifan and Kehadiran, Capaian and Umpan balik with one decimal,
+    Nilai evaluasi as Hasil, who fixed it and when, the mark
+    "Evaluasi oleh mahasiswa" and "(n) dari (N) anggota mengisi
+    survei." Both sources stand in one list, the one saved or fixed
+    last first.
+29. "Evaluasi terakhir" of groups and mentors, the box above the forms
+    and "Evaluasi kurang" take the newest line of either source: that
+    of the latest academic period, and within one period the one saved
+    or fixed last. For a group only the lines of the mentor who holds it
+    today count, as before. A Kurang of the survey therefore allows the
+    reason "Hasil evaluasi kurang" for a replacement; the server checks
+    it again when the replacement is saved.
 
 ## Steps
 
@@ -186,6 +226,6 @@ history. No one ever sees one student's answers.
 - [x] 3. The detail per group, with hidden suggestions kept on the
   server.
 - [x] 4. Capaian karakter is locked when a period closes.
-- [ ] 5. "Tetapkan hasil evaluasi" writes into the evaluation history
+- [x] 5. "Tetapkan hasil evaluasi" writes into the evaluation history
   once.
 - [ ] 6. Refusals and the phone layout.

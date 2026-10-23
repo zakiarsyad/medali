@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import {
+  mayResultsBeFixedBy,
   maySurveyBeManagedBy,
   surveyResultRowsFor,
   surveyRightsFor,
@@ -34,6 +35,22 @@ describe("maySurveyBeManagedBy", () => {
     "student",
   ] as const)("refuses %s, who may not manage them", (role) => {
     expect(maySurveyBeManagedBy(account([role]))).toBe(false);
+  });
+});
+
+describe("mayResultsBeFixedBy", () => {
+  it("lets Kepala Unit fix the results", () => {
+    expect(mayResultsBeFixedBy(account(["head_of_unit"]))).toBe(true);
+  });
+
+  it.each([
+    "director",
+    "head_of_program",
+    "upk_staff",
+    "mentor",
+    "student",
+  ] as const)("refuses %s, who may not fix them", (role) => {
+    expect(mayResultsBeFixedBy(account([role]))).toBe(false);
   });
 });
 
@@ -71,6 +88,7 @@ describe("surveyRightsFor", () => {
       mayManage: true,
       respondents: { kind: "all" },
       results: { kind: "all" },
+      mayFix: true,
     });
   });
 
@@ -81,6 +99,7 @@ describe("surveyRightsFor", () => {
         mayManage: false,
         respondents: { kind: "all" },
         results: { kind: "all" },
+        mayFix: false,
       });
     },
   );
@@ -90,6 +109,7 @@ describe("surveyRightsFor", () => {
       mayManage: false,
       respondents: OWN_PROGRAM,
       results: OWN_PROGRAM,
+      mayFix: false,
     });
   });
 

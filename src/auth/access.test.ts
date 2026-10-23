@@ -3250,6 +3250,40 @@ describe("may", () => {
     expect(ROLES.head_of_program.rows).toBe("own_program");
   });
 
+  it("lets Kepala Unit fix the survey results into the evaluation history", () => {
+    expect(may(["head_of_unit"], "fix_survey_results")).toBe(true);
+  });
+
+  it("refuses every other role to fix the survey results, those who read them among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "upk_staff",
+        "mentor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "fix_survey_results")).toBe(false);
+    }
+  });
+
+  it("lets every role that may fix the survey results read them and the evaluations of mentors", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "fix_survey_results")) continue;
+      expect(may([role], "view_survey_results")).toBe(true);
+      expect(may([role], "view_mentor_evaluations")).toBe(true);
+    }
+  });
+
+  it("names the right to fix the survey results in words for the list of rights", () => {
+    expect(ACTION_TITLES.fix_survey_results).toBe(
+      "Menetapkan hasil evaluasi oleh mahasiswa ke riwayat evaluasi pengasuh",
+    );
+  });
+
   it("names the right to read the survey results in words for the list of rights", () => {
     expect(ACTION_TITLES.view_survey_results).toBe(
       "Melihat hasil evaluasi oleh mahasiswa per kelompok, tanpa jawaban per orang",

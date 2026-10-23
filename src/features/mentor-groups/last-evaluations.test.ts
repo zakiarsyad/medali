@@ -6,9 +6,10 @@ import type { Database } from "@/db/connect";
 import { mentorGroupMentors } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { EvaluationScores } from "./evaluation-aspects";
-import { evaluationResult } from "./evaluation-result";
+import { evaluationAverage, evaluationResult } from "./evaluation-result";
 import {
   countPoorGroups,
+  newestOf,
   readLastGroupEvaluations,
   readLastMentorEvaluations,
 } from "./last-evaluations";
@@ -17,6 +18,7 @@ import {
   addTestEvaluator,
   addTestHeldGroup,
   addTestPeriods,
+  addTestSurveyLine,
   TEST_SCORES,
 } from "./test-evaluations";
 import {
@@ -30,6 +32,8 @@ const inTestDatabase = withTestDatabase();
 
 const YEAR = 2600;
 const PROGRAM = "UJITERAKHIR";
+/** The Nilai evaluasi of the test values. */
+const TEST_AVERAGE = evaluationAverage(TEST_SCORES);
 
 function onlyPrograms(studyProgramIds: number[]): RowLimit {
   return { kind: "some", studyProgramIds, menteesOf: [], studentIds: [] };
@@ -83,7 +87,7 @@ describe("readLastGroupEvaluations", () => {
 
       const last = await readLastGroupEvaluations(db, limit, [held.groupId]);
 
-      expect(last.get(held.groupId)).toEqual(all(90));
+      expect(last.get(held.groupId)).toBe(90);
     });
   });
 
@@ -143,8 +147,8 @@ describe("readLastGroupEvaluations", () => {
         secondId,
       ]);
 
-      expect(last.get(held.groupId)).toEqual(TEST_SCORES);
-      expect(last.get(secondId)).toEqual(all(60));
+      expect(last.get(held.groupId)).toBe(TEST_AVERAGE);
+      expect(last.get(secondId)).toBe(60);
     });
   });
 });
@@ -170,7 +174,7 @@ describe("readLastMentorEvaluations", () => {
 
       const last = await readLastMentorEvaluations(db, limit, [held.mentorId]);
 
-      expect(last.get(held.mentorId)).toEqual(all(90));
+      expect(last.get(held.mentorId)).toBe(90);
     });
   });
 
@@ -196,7 +200,7 @@ describe("readLastMentorEvaluations", () => {
 
       const last = await readLastMentorEvaluations(db, limit, [held.mentorId]);
 
-      expect(last.get(held.mentorId)).toEqual(all(70));
+      expect(last.get(held.mentorId)).toBe(70);
     });
   });
 
@@ -211,7 +215,7 @@ describe("readLastMentorEvaluations", () => {
         nextId,
       ]);
 
-      expect(last.get(held.mentorId)).toEqual(TEST_SCORES);
+      expect(last.get(held.mentorId)).toBe(TEST_AVERAGE);
       expect(last.has(nextId)).toBe(false);
     });
   });
@@ -302,5 +306,115 @@ describe("countPoorGroups", () => {
       await replaceMentor(db, held.groupId);
       expect(await countPoorGroups(db, limit)).toBe(0);
     });
+  });
+});
+
+describe("the lines of the students' survey in Evaluasi terakhir", () => {
+  it("takes a line of the survey of a later period than the evaluation of Kepala Unit", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, periods, head, limit, by } = await addRecords(db);
+      await addTestEvaluation(db, {
+        ...by,
+        ...all(90),
+        periodId: periods.beforeId,
+      });
+      await addTestSurveyLine(db, {
+        ...held,
+        periodId: periods.runningId,
+        fixedBy: head.id,
+        fixedAt: new Date("2601-06-01T03:00:00Z"),
+        score: 60.9,
+      });
+
+      const groups = await readLastGroupEvaluations(db, limit, [held.groupId]);
+      const mentors = await readLastMentorEvaluations(db, limit, [
+        held.mentorId,
+      ]);
+
+      expect(groups.get(held.groupId)).toBe(60.9);
+      expect(mentors.get(held.mentorId)).toBe(60.9);
+      expect(await countPoorGroups(db, limit)).toBe(1);
+    });
+  });
+
+  it("takes the one saved last of the two sources within one period", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, periods, head, limit, by } = await addRecords(db);
+      await addTestSurveyLine(db, {
+        ...held,
+        periodId: periods.runningId,
+        fixedBy: head.id,
+        fixedAt: new Date("2601-10-01T03:00:00Z"),
+        score: 50,
+      });
+      await addTestEvaluation(db, {
+        ...by,
+        ...all(85),
+        periodId: periods.runningId,
+        evaluatedAt: new Date("2601-10-05T03:00:00Z"),
+      });
+
+      const last = await readLastGroupEvaluations(db, limit, [held.groupId]);
+
+      expect(last.get(held.groupId)).toBe(85);
+      expect(await countPoorGroups(db, limit)).toBe(0);
+    });
+  });
+
+  it("gives a group nothing from a line of an earlier mentor", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, periods, head, limit } = await addRecords(db);
+      await addTestSurveyLine(db, {
+        ...held,
+        periodId: periods.runningId,
+        fixedBy: head.id,
+        fixedAt: new Date("2601-06-01T03:00:00Z"),
+        score: 40,
+      });
+      await replaceMentor(db, held.groupId);
+
+      const last = await readLastGroupEvaluations(db, limit, [held.groupId]);
+
+      expect(last.size).toBe(0);
+      expect(await countPoorGroups(db, limit)).toBe(0);
+    });
+  });
+});
+
+describe("newestOf", () => {
+  const line = (
+    id: string,
+    periodStartsOn: string,
+    day: string,
+    average: number,
+  ) => ({
+    id,
+    periodStartsOn,
+    savedAt: new Date(`${day}T03:00:00Z`),
+    average,
+  });
+
+  it("takes the line of the latest period, whenever it was saved", () => {
+    const last = newestOf([
+      line("a", "2026-08-01", "2026-09-01", 70),
+      line("a", "2026-02-01", "2026-10-01", 50),
+    ]);
+
+    expect(last).toEqual(new Map([["a", 70]]));
+  });
+
+  it("takes the one saved last within one period, for each id apart", () => {
+    const last = newestOf([
+      line("a", "2026-08-01", "2026-09-01", 70),
+      line("a", "2026-08-01", "2026-09-02", 60),
+      line("b", "2026-08-01", "2026-09-01", 80),
+    ]);
+
+    expect(last).toEqual(
+      new Map([
+        ["a", 60],
+        ["b", 80],
+      ]),
+    );
   });
 });

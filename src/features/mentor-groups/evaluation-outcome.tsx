@@ -23,13 +23,14 @@ export function EvaluationOutcome({ typed }: { typed: TypedScores }) {
     );
   }
   const isPoor = evaluationResult(scores) === "poor";
+  const average = evaluationAverage(scores);
   return (
     <p
       className={isPoor ? `${styles.outcome} ${styles.warned}` : styles.outcome}
       role="status"
     >
-      Nilai evaluasi <b>{shownAverage(evaluationAverage(scores))}</b>{" "}
-      <EvaluationBadge scores={scores} />
+      Nilai evaluasi <b>{shownAverage(average)}</b>{" "}
+      <EvaluationBadge average={average} />
       {isPoor && ` ${POOR_RESULT_NOTE}`}
     </p>
   );

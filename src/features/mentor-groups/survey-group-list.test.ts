@@ -216,6 +216,7 @@ describe("resultNumbers", () => {
       feedback: 66.7,
       poor: 1,
       groups: 3,
+      fixable: 2,
     });
   });
 
@@ -249,6 +250,7 @@ describe("resultNumbers", () => {
       feedback: null,
       poor: 0,
       groups: 1,
+      fixable: 0,
     });
   });
 });

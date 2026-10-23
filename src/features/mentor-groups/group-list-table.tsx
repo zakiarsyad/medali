@@ -53,7 +53,7 @@ function GroupRow({
       <td data-title="Rerata MEDALI">{shownRerata(rerata)}</td>
       {lastEvaluations !== null && (
         <td data-title="Evaluasi terakhir">
-          <EvaluationBadge scores={lastEvaluations.get(group.id) ?? null} />
+          <EvaluationBadge average={lastEvaluations.get(group.id) ?? null} />
         </td>
       )}
       <td data-title="Riwayat">
