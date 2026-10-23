@@ -187,7 +187,7 @@ export interface SampleAssignment {
   kind: AssignmentKind;
   /** Null while it waits for Konselor to set a time. */
   time: SampleAssignmentTime | null;
-  /** "Dasar": the Kategori and Jenjang, or the result of the assessment. */
+  /** "Dasar": the Kategori and Jenjang, or the reason of the call. */
   basis: string;
   /**
    * Whether a Penugasan was sent from the student's one sample discipline
@@ -214,9 +214,11 @@ const timeSet = (daysAgo: number): SampleScheduleStep => ({
 
 /**
  * One assignment in every status. Kirana Utomo's Penugasan waits for its
- * time, and so does Bayu Santoso's Pemanggilan, beside his voluntary
- * request. Gita Purba, who declined consent, and Ayu Lestiani, whose
- * consent is still asked, have a time set. Nanda Gunawan asked for
+ * time, and so does Fikri Wibowo's Pemanggilan, beside his voluntary
+ * request. Gita Purba, who declined consent, and Lutfi Tarigan have a
+ * time set. A Pemanggilan is of a student Asesmen karakter lists, sent
+ * after the assessment that lists them, with the reason the app writes
+ * and no Pesan pengirim. Nanda Gunawan asked for
  * another time. Mega Saragih came to hers and Oki Rahayu did not. Each
  * Penugasan is of a student with a sample discipline penalty, and was
  * sent from it, but for Mega Saragih's: it was sent before her penalty
@@ -235,12 +237,13 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     steps: [sent("assigned", 3)],
   },
   {
-    nim: "9900240002",
+    nim: "9900230006",
     kind: "called",
     time: null,
-    basis: "Asesmen karakter: pembinaan intensif",
+    basis:
+      "Asesmen karakter: rerata 70,0, pembinaan ringan, aspek terlemah Disiplin",
     fromPenalty: false,
-    senderMessage: "Mohon dibantu menggali kendala belajarnya.",
+    senderMessage: null,
     counsellorMessage: null,
     reason: null,
     steps: [sent("called", 2)],
@@ -257,15 +260,16 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     steps: [sent("assigned", 6), timeSet(5)],
   },
   {
-    nim: "9900230001",
+    nim: "9900250012",
     kind: "called",
     time: { inDays: 4, hour: "08:30", way: "online" },
-    basis: "Asesmen karakter: pembinaan ringan",
+    basis:
+      "Asesmen karakter: rerata 58,0, pembinaan intensif, aspek terlemah Disiplin",
     fromPenalty: false,
     senderMessage: null,
     counsellorMessage: null,
     reason: null,
-    steps: [sent("called", 7), timeSet(6)],
+    steps: [sent("called", 4), timeSet(3)],
   },
   {
     nim: "9900240014",

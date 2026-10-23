@@ -65,6 +65,6 @@ tries the app on the preview with sample data.
 
 ## Steps
 
-- [ ] 1. The sample "Pemanggilan" calls belong to listed students, with
+- [x] 1. The sample "Pemanggilan" calls belong to listed students, with
   the spec's reason and no "Pesan pengirim", with a check over the
   sample data.
