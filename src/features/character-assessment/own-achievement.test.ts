@@ -232,5 +232,13 @@ describe("Profil saya", () => {
     expect(PAGE).toContain("export default async function OwnProfilePage()");
     expect(PAGE).not.toMatch(/params/i);
     expect(PAGE).toContain("<OwnAchievementPanel account={account} />");
+    expect(PAGE).toContain("<OwnScoreHistoryPanel account={account} />");
+  });
+
+  it("puts Riwayat per semester under the card", () => {
+    const card = PAGE.indexOf("<OwnAchievementPanel ");
+
+    expect(card).toBeGreaterThan(-1);
+    expect(PAGE.indexOf("<OwnScoreHistoryPanel ")).toBeGreaterThan(card);
   });
 });
