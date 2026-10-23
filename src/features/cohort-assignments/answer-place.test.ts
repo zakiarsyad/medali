@@ -23,6 +23,15 @@ describe("isToldAbove", () => {
     expect(isToldAbove("cancel", refused(NOT_FIXED.error))).toBe(true);
   });
 
+  it("tells above the angkatan that a change of steps 2 and 3 found it fixed", () => {
+    expect(isToldAbove("change", refused(ALREADY_FIXED.error))).toBe(true);
+  });
+
+  it("keeps under its control what a change of steps 2 and 3 is told otherwise", () => {
+    expect(isToldAbove("change", refused(DRAFT_CHANGED.error))).toBe(false);
+    expect(isToldAbove("change", done("3 kelompok dibentuk."))).toBe(false);
+  });
+
   it("keeps under the button a refusal that leaves the form on the page", () => {
     expect(isToldAbove("fix", refused(DRAFT_CHANGED.error))).toBe(false);
     expect(isToldAbove("fix", refused(ASK_FOR_NUMBER))).toBe(false);

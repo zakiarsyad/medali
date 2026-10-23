@@ -1,15 +1,13 @@
 "use client";
 
-import { type ChangeEvent, useActionState } from "react";
+import type { ChangeEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import { FormMessage } from "@/ui/form-message";
 import { moveMemberAction } from "./actions";
 import { changeForm } from "./change-form";
 import styles from "./cohort-assignments.module.css";
 import type { DraftKey } from "./draft-change-input";
-import { useOneSave } from "./one-save";
-
-const START: FormState = { error: null, done: null };
+import { useChangeAnswer, useOneSave } from "./one-save";
 
 /** A group a member may move to. */
 export interface MoveTarget {
@@ -34,13 +32,13 @@ export function MoveSelect({
   studentName: string;
   targets: MoveTarget[];
 }) {
-  const [state, send] = useActionState(moveMemberAction, START);
+  const [state, sendChange] = useChangeAnswer(moveMemberAction);
   const { isSaving, save } = useOneSave();
 
   function move(event: ChangeEvent<HTMLSelectElement>) {
     const toGroupId = event.target.value;
     if (toGroupId === "") return;
-    save(() => send(changeForm(shown, { studentId, toGroupId })));
+    save(() => sendChange(changeForm(shown, { studentId, toGroupId })));
   }
 
   return (

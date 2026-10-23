@@ -2,8 +2,11 @@ import type { FormState } from "@/ui/form-message";
 import type { DecreeStep } from "./decree-input";
 import { ALREADY_FIXED, NOT_FIXED } from "./refusals";
 
-/** A button of a penetapan that answers with a message. */
-export type AnsweredStep = DecreeStep | "cancel";
+/**
+ * A button of a penetapan that answers with a message. "change" is any
+ * control of steps 2 and 3, which stay on the page after what they did.
+ */
+export type AnsweredStep = DecreeStep | "cancel" | "change";
 
 /**
  * Refusals that come with a page showing the angkatan fixed or cancelled
