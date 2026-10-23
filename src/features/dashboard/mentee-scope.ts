@@ -15,6 +15,11 @@ export interface MenteeScope {
   shared: SharedReader | null;
   /** The students whose notes the account may read as Pengasuh, or null for none. */
   notes: SQL | null;
+  /**
+   * The students whose illnesses the account may count as Pengasuh: those
+   * whose health notes it reads in Penilaian jasmani, or null for none.
+   */
+  illnesses: SQL | null;
   /** The students whose detail the account may open as Pengasuh, or null for none. */
   detail: SQL | null;
 }
@@ -23,6 +28,12 @@ export interface MenteeScope {
 function notesOf(mentor: AccountForAccess): SQL | null {
   if (!may(mentor.roles, "view_mentoring_notes")) return null;
   return visibleTo(rowLimitForAction(mentor, "view_mentoring_notes"));
+}
+
+/** Only the health notes Pengasuh reads, so another role of the account adds none. */
+function illnessesOf(mentor: AccountForAccess): SQL | null {
+  if (!may(mentor.roles, "view_health_notes")) return null;
+  return visibleTo(rowLimitForAction(mentor, "view_health_notes"));
 }
 
 /**
@@ -49,6 +60,7 @@ export function menteeScopeOf(account: AccountForAccess): MenteeScope | null {
     mentees: activeAmong(visibleTo(limit)),
     shared: reach === null ? null : { readerId: account.id, reach },
     notes: notesOf(mentor),
+    illnesses: illnessesOf(mentor),
     detail: detailVisibleTo(mentor),
   };
 }

@@ -1,11 +1,13 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
+import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { DashboardSwitch } from "./dashboard-switch";
 import { NO_GRADES } from "./grade-words";
 import type { MenteeDashboard } from "./mentee-recap";
 import { MenteeScreen } from "./mentee-screen";
 import { MENTEES_NOT_ASSESSED, NO_GROUP_HELD } from "./mentee-words";
+import { NOBODY_TESTED } from "./physical-words";
 
 const SHOWN: MenteeDashboard = {
   kind: "shown",
@@ -33,6 +35,7 @@ const SHOWN: MenteeDashboard = {
     physical: { kind: "untested", students: 12 },
     published: { matching: 3, needCounselling: 2 },
   },
+  fitnessLimits: STARTING_LIMITS,
   attention: [],
   notes: [],
   noteNumbers: {
@@ -46,6 +49,7 @@ const SHOWN: MenteeDashboard = {
 const LINKS = {
   assessment: "/penilaian/asesmen",
   grade: "/penilaian/karakter",
+  fitness: "/penilaian/jasmani",
   meetings: "/pengasuhan/hadir",
   scores: "/pengasuhan/nilai",
   notes: "/pengasuhan/catatan",
@@ -79,7 +83,7 @@ describe("Dashboard anak asuh", () => {
     expect(html).not.toContain("Filter");
   });
 
-  it("moves the page to section 1 or 2 when its card is pressed", () => {
+  it("moves the page to section 1, 2 or 3 when its card is pressed", () => {
     const html = renderToStaticMarkup(
       <MenteeScreen view={SHOWN} links={LINKS} />,
     );
@@ -88,6 +92,8 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain('id="capaian-karakter"');
     expect(html).toContain('href="#nilai-karakter"');
     expect(html).toContain('id="nilai-karakter"');
+    expect(html).toContain('href="#kesehatan-jasmani"');
+    expect(html).toContain('id="kesehatan-jasmani"');
   });
 
   it("shows section 1 for the anak asuh, with Lihat rincian to Asesmen karakter and no table per angkatan", () => {
@@ -164,6 +170,41 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain("<dt>Pelanggaran disiplin</dt><dd>1</dd>");
     expect(html).toContain("<dt>Rerata kehadiran kegiatan</dt><dd>-</dd>");
     expect(html).toContain("Tidak ada anak asuh yang perlu perhatian");
+  });
+
+  it("shows section 3 for the anak asuh with the illnesses of even a few, and Arti kategori", () => {
+    const view: MenteeDashboard = {
+      ...SHOWN,
+      cards: {
+        ...SHOWN.cards,
+        physical: {
+          kind: "shown",
+          students: 12,
+          tested: 2,
+          untested: 10,
+          byCategory: { excellent: 0, good: 0, attention: 1, medical: 1 },
+          fitShare: 0,
+          illnesses: [{ illness: "asthma", students: 2 }],
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={view} links={LINKS} />,
+    );
+    const empty = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain(
+      "Kategori kesehatan fisik anak asuh dari uji kesehatan dan riwayat penyakit.",
+    );
+    expect(html).toContain("Kategori tes kebugaran");
+    expect(html).toContain("2 dari 12 sudah dites");
+    expect(html).toContain("Asma (2)");
+    expect(html).toContain("Arti kategori");
+    expect(html).toMatch(/href="\/penilaian\/jasmani"[^>]*>Lihat rincian</);
+    expect(empty).toContain(NOBODY_TESTED);
   });
 
   it("shows only the message to a Pengasuh without a group", () => {

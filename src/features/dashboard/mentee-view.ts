@@ -43,6 +43,7 @@ export async function loadMenteeDashboard(
     students,
     progress,
     cards,
+    fitnessLimits: limits,
     attention: attentionRows(facts),
     notes: written.notes,
     noteNumbers: {

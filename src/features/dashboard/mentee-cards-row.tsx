@@ -18,7 +18,7 @@ export function MenteeCardsRow({ cards }: { cards: MenteeCards }) {
         emptyWords={MENTEES_NOT_ASSESSED}
       />
       <GradeCard grades={cards.grades} />
-      <PhysicalCard recap={cards.physical} linked={false} />
+      <PhysicalCard recap={cards.physical} />
       <MenteeMentalCard published={cards.published} />
     </div>
   );

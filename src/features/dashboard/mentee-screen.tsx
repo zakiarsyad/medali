@@ -13,6 +13,7 @@ import {
   menteeLede,
   NO_GROUP_HELD,
 } from "./mentee-words";
+import { PhysicalSection } from "./physical-section";
 
 /** Where the links of Dashboard anak asuh lead, or null for a tab the account may not open. */
 export interface MenteeLinks extends ProgressLinks {
@@ -21,6 +22,8 @@ export interface MenteeLinks extends ProgressLinks {
   assessment: string | null;
   /** "Lihat rincian" of section 2: Penilaian > Penilaian karakter. */
   grade: string | null;
+  /** "Lihat rincian" of section 3: Penilaian > Penilaian jasmani. */
+  fitness: string | null;
 }
 
 /** Dashboard anak asuh, for Pengasuh: only their own anak asuh. */
@@ -54,6 +57,12 @@ export function MenteeScreen({
         emptyWords={MENTEES_NOT_ASSESSED}
       />
       <GradeSection grades={view.cards.grades} detailAddress={links.grade} />
+      <PhysicalSection
+        recap={view.cards.physical}
+        limits={view.fitnessLimits}
+        detailAddress={links.fitness}
+        line="Kategori kesehatan fisik anak asuh dari uji kesehatan dan riwayat penyakit."
+      />
     </>
   );
 }

@@ -98,17 +98,22 @@ function byListOrder(a: IllnessTally, b: IllnessTally): number {
 
 /**
  * The most common named illnesses, most first. "Lainnya" names no
- * illness, so it is left out. Those of 1 to 4 students come after the
- * others in the order of Riwayat penyakit, so their order does not tell
- * which of them is larger.
+ * illness, so it is left out. Unless no count is held back, those of 1
+ * to 4 students come after the others in the order of Riwayat penyakit,
+ * so their order does not tell which of them is larger.
  */
-function commonIllnesses(tallies: readonly IllnessTally[]): IllnessCount[] {
+function commonIllnesses(
+  tallies: readonly IllnessTally[],
+  fewest: number,
+): IllnessCount[] {
   const named = tallies.filter(
     (tally) => tally.illness !== "other" && tally.students > 0,
   );
   const most = named.sort(byMostThenListOrder).slice(0, ILLNESSES_NAMED);
-  const large = most.filter((tally) => shownCount(tally.students) !== "<5");
-  const small = most.filter((tally) => shownCount(tally.students) === "<5");
+  const isSmall = (tally: IllnessTally) =>
+    heldCount(tally.students, fewest) === "<5";
+  const large = most.filter((tally) => !isSmall(tally));
+  const small = most.filter(isSmall);
   return [
     ...large,
     ...small.sort(byListOrder).map(({ illness }) => ({
@@ -140,6 +145,6 @@ export function physicalRecapOf(
     untested: heldCount(students - tested, fewest),
     byCategory: shownByCategory(byCategory, fewest),
     fitShare: fitShareOf(byCategory, fewest),
-    illnesses: illnesses === null ? null : commonIllnesses(illnesses),
+    illnesses: illnesses === null ? null : commonIllnesses(illnesses, fewest),
   };
 }

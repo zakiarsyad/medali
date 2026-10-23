@@ -16,6 +16,7 @@ describe("menteeScopeOf", () => {
     expect(scope?.mentees).toBeTruthy();
     expect(scope?.shared?.readerId).toBe("x");
     expect(scope?.notes).toBeTruthy();
+    expect(scope?.illnesses).toBeTruthy();
   });
 
   it("keeps the limits of Pengasuh for a person who is also Kepala Unit or Ketua Program Studi", () => {
@@ -31,6 +32,7 @@ describe("menteeScopeOf", () => {
       expect(both?.mentees).toEqual(alone?.mentees);
       expect(both?.shared?.reach).toEqual(alone?.shared?.reach);
       expect(both?.notes).toEqual(alone?.notes);
+      expect(both?.illnesses).toEqual(alone?.illnesses);
       expect(both?.detail).toEqual(alone?.detail);
       expect(menteeAccountOf(accountOf(["mentor", role])).roles).toEqual([
         "mentor",

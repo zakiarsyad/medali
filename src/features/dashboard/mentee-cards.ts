@@ -13,10 +13,10 @@ import { readPhysical } from "./physical-read";
 const NONE_PUBLISHED: PublishedCounts = { matching: 0, needCounselling: 0 };
 
 /**
- * The four cards of Dashboard anak asuh, by the rules of the main
- * Dashboard, but with no number held back: its Pengasuh sees each anak
- * asuh's own values in Pengasuhan anyway. No illness is counted, as the
- * card names none.
+ * The four cards of Dashboard anak asuh and sections 1 to 3 below them,
+ * by the rules of the main Dashboard, but with no number held back: its
+ * Pengasuh sees each anak asuh's own values in Pengasuhan anyway, and
+ * their health notes in Penilaian jasmani.
  */
 export async function readMenteeCards(
   db: Database,
@@ -28,7 +28,7 @@ export async function readMenteeCards(
   const [achievement, grades, physical, published] = await Promise.all([
     readAchievement(db, where, false, NONE_HELD_BACK),
     readCharacterGrades(db, where, basis, false, NONE_HELD_BACK),
-    readPhysical(db, limits, where, null, NONE_HELD_BACK),
+    readPhysical(db, limits, where, scope.illnesses, NONE_HELD_BACK),
     scope.shared === null
       ? NONE_PUBLISHED
       : readPublishedCounts(db, where, scope.shared),

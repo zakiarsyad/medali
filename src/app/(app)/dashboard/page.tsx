@@ -176,6 +176,7 @@ function menteeLinksOf(roles: AccountForAccess["roles"]): MenteeLinks {
     notes: opens("notes") ? NOTES_ADDRESS : null,
     assessment: assesses("character_test") ? ASSESSMENT_ADDRESS : null,
     grade: assesses("character") ? GRADE_ADDRESS : null,
+    fitness: assesses("fitness") ? FITNESS_ADDRESS : null,
   };
 }
 

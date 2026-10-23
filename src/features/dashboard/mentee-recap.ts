@@ -1,4 +1,5 @@
 import type { GradeScheme } from "@/character-grades/scheme-ids";
+import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { Recap } from "./achievement-recap";
 import type { GradeRecap } from "./grade-recap";
@@ -19,7 +20,7 @@ export interface MenteeGroup extends GroupCodeParts {
   id: string;
 }
 
-/** The four cards, of the anak asuh only, with no number held back. */
+/** The four cards and sections 1 to 3, of the anak asuh only, with no number held back. */
 export interface MenteeCards {
   /** Null while none is assessed. */
   achievement: Recap | null;
@@ -38,6 +39,8 @@ export interface MenteeContent {
   /** What they have filled in this semester, or null while no period runs. */
   progress: MentoringProgress | null;
   cards: MenteeCards;
+  /** The limits in force, which give each fitness category its scores. */
+  fitnessLimits: FitnessLimits;
   /** "Perlu perhatian": the anak asuh with a reason, the most reasons first. */
   attention: AttentionRow[];
   /** "Catatan pengasuhan terbaru", the newest first. */

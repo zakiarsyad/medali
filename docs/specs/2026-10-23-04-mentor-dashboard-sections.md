@@ -82,7 +82,7 @@ Pengasuh.
 ## Steps
 
 - [x] 1. Sections 1 and 2 for anak asuh.
-- [ ] 2. Section 3 for anak asuh.
+- [x] 2. Section 3 for anak asuh.
 - [ ] 3. Section 4 with the published records and the view log.
 - [ ] 4. "Pelanggaran disiplin".
 - [ ] 5. The "Anak asuh" table, opening the student detail.
