@@ -36,6 +36,7 @@ function partOf(
       studentId={STUDENT_ID}
       consent={consent}
       history={{ ok: true, value: history }}
+      onKept={() => undefined}
     />,
   );
 }
@@ -209,6 +210,7 @@ describe("Riwayat sesi of a student who never gave consent", () => {
         studentId={STUDENT_ID}
         consent={null}
         history={{ ok: false, error: NEEDS_CONSENT }}
+        onKept={() => undefined}
       />,
     );
 
