@@ -3443,11 +3443,37 @@ describe("may", () => {
     }
   });
 
+  it.each([
+    ["view_own_discipline_penalties", "Melihat hukuman disiplin sendiri"],
+    ["view_own_coaching", "Melihat pembinaan karakter sendiri"],
+    ["view_own_mentoring_notes", "Melihat catatan pengasuhan sendiri"],
+  ] as const)("lets Mahasiswa %s, on Profil saya", (action, title) => {
+    expect(may(["student"], action)).toBe(true);
+    expect(ACTION_TITLES[action]).toBe(title);
+  });
+
+  it.each([
+    "view_own_discipline_penalties",
+    "view_own_coaching",
+    "view_own_mentoring_notes",
+  ] as const)("refuses every other role to %s", (action) => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["discipline_officer", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], action)).toBe(false);
+    }
+  });
+
   it("gives Mahasiswa no right that changes a student record", () => {
     expect(ROLES.student.actions).toEqual([
       "view_own_profile",
       "view_own_character_achievement",
       "view_own_character_grade",
+      "view_own_discipline_penalties",
+      "view_own_coaching",
+      "view_own_mentoring_notes",
       "send_attendance_photo",
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
@@ -4348,6 +4374,27 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       NO_ROW,
     );
   });
+
+  it.each([
+    "view_own_discipline_penalties",
+    "view_own_coaching",
+    "view_own_mentoring_notes",
+  ] as const)(
+    "keeps a student to their own records by %s, whatever wide role they also hold",
+    (action) => {
+      const both = {
+        ...account(["student", "head_of_unit"]),
+        studentId: "student-1",
+      };
+      const staff = { ...account(["mentor"]), studentId: "student-1" };
+
+      expect(rowLimitForAction(both, action)).toEqual({
+        ...NO_ROW,
+        studentIds: ["student-1"],
+      });
+      expect(rowLimitForAction(staff, action)).toEqual(NO_ROW);
+    },
+  );
 
   it("keeps a student to their own attendance, whatever wide role they also hold", () => {
     const both = {

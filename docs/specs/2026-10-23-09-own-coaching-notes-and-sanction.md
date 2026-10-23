@@ -82,7 +82,7 @@ own and can change none.
 
 ## Steps
 
-- [ ] 1. The rights to read one's own discipline penalties, pembinaan
+- [x] 1. The rights to read one's own discipline penalties, pembinaan
   and mentoring notes are added to the permission list, with their
   checks.
 - [ ] 2. The student's own "Riwayat pelanggaran disiplin", and the
