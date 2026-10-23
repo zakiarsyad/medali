@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ROLES } from "@/auth/roles";
 import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
+import { HandOverHeadButton } from "./hand-over-head-button";
 import { type ListView, listAddress } from "./list-address";
 import type { ManagedAccount } from "./manage-accounts";
 import { isManagedRole } from "./managed-roles";
@@ -65,6 +66,12 @@ function AccountRow({
               >
                 Edit peran
               </Link>
+              {!account.roles.includes("head_of_unit") && (
+                <HandOverHeadButton
+                  accountId={account.id}
+                  name={account.name}
+                />
+              )}
               {account.roles.every(isManagedRole) && (
                 <RemoveAccountButton
                   accountId={account.id}

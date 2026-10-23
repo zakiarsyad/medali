@@ -4,7 +4,7 @@ import { findActiveAccount } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { accountRoles, accounts, roleChanges } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addFirstAccount, firstAccountFault } from "./add-first-account";
+import { accountCommandFault, addFirstAccount } from "./add-first-account";
 import { addTestStaffAccount } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -146,9 +146,9 @@ describe("addFirstAccount", () => {
   });
 });
 
-describe("firstAccountFault", () => {
+describe("accountCommandFault", () => {
   it("does not blame the database for a fault without a code", () => {
-    const shown = firstAccountFault(new Error(`Broke on ${FIRST.email}.`));
+    const shown = accountCommandFault(new Error(`Broke on ${FIRST.email}.`));
 
     expect(shown).toContain("unexpected fault");
     expect(shown).not.toContain("database");

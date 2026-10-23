@@ -14,6 +14,7 @@ import { parseNewAccount, parseRoleChange } from "./account-input";
 import { parseBamRoles } from "./bam-role-input";
 import { changeBamRoles, removeBamRoles } from "./change-bam-roles";
 import { giveBamRoles } from "./give-bam-roles";
+import { handOverHeadOfUnit } from "./hand-over-head-of-unit";
 import { USERS_ADDRESS } from "./list-address";
 import { addAccount, changeRoles, removeAccount } from "./manage-accounts";
 import { type FoundStudent, searchActiveStudents } from "./search-students";
@@ -96,6 +97,25 @@ export async function removeAccountAction(
   if (!removed.ok) return { error: removed.error, done: null };
   refreshScreens();
   return { error: null, done: `Akun ${text(form, "name")} dihapus.` };
+}
+
+/**
+ * Hands Kepala Unit to the chosen account. The one who handed over is no
+ * longer Kepala Unit, so they go to their first page, not back here.
+ */
+export async function handOverHeadOfUnitAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await userManager();
+  const accountId = text(form, "accountId");
+  if (!isAccountId(accountId)) {
+    return { error: "Akun tidak ditemukan.", done: null };
+  }
+  const handed = await handOverHeadOfUnit(database(), accountId, manager.id);
+  if (!handed.ok) return { error: handed.error, done: null };
+  refreshScreens();
+  redirect("/");
 }
 
 /** The students offered in "Tambah pengurus BAM" for what was typed. */

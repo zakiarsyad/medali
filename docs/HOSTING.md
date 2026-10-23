@@ -326,6 +326,24 @@ name or the address back. For the same reason a fault of the database is
 shown by its code only: check that the package is started, then run the
 command again. If it fails again, report the code.
 
+### A new Kepala Unit when the old one is gone
+
+Kepala Unit hands the role over in the app, with "Jadikan Kepala Unit"
+in Pengguna dan peran. When the Kepala Unit in office is gone and cannot
+do that, one command makes another person the Kepala Unit:
+
+    docker compose --file compose.campus.yaml exec app pnpm --silent account:head-of-unit "Nama Lengkap" nama@kampus.example
+
+The account with that address becomes Kepala Unit and keeps its other
+roles; when no account that is not removed has the address, it is made.
+Every other Kepala Unit stops being one and keeps its other roles; one
+left with no role is removed, as "Hapus" does. Each change adds a line
+to the log of role changes, naming the new Kepala Unit as who changed
+it. The command refuses, and says why in one line, an address that does
+not end with `CAMPUS_EMAIL_ENDING` or that belongs to a student account.
+Like the first-account command, it never prints the name or the address
+back, and shows a fault of the database by its code only.
+
 ### Update to a newer version
 
 Bring the copy of the repo on the server up to date, then run the start
