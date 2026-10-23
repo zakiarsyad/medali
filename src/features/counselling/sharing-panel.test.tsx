@@ -11,6 +11,7 @@ import { CounsellingScreen } from "./counselling-screen";
 import {
   CounsellorSharingPanel,
   StudentSharing,
+  sharingReadingOf,
 } from "./counsellor-sharing-panel";
 import type { SharingPanel, SharingView } from "./sharing-view";
 
@@ -54,6 +55,34 @@ function panelOf(panel: Partial<SharingPanel>): string {
     />,
   );
 }
+
+describe("reading the sharing of the picked student again", () => {
+  const STUDENT = "00000000-0000-4000-8000-000000005ab2";
+  const CONSENT = MOMENT.toISOString();
+
+  it("happens once a session is kept or changed", () => {
+    expect(sharingReadingOf(STUDENT, CONSENT, 1)).not.toBe(
+      sharingReadingOf(STUDENT, CONSENT, 0),
+    );
+  });
+
+  it("happens for another student or another consent", () => {
+    const first = sharingReadingOf(STUDENT, CONSENT, 0);
+
+    expect(
+      sharingReadingOf("00000000-0000-4000-8000-000000005ab3", CONSENT, 0),
+    ).not.toBe(first);
+    expect(sharingReadingOf(STUDENT, "2026-10-22T03:00:00.000Z", 0)).not.toBe(
+      first,
+    );
+  });
+
+  it("does not happen while nothing of them changed", () => {
+    expect(sharingReadingOf(STUDENT, CONSENT, 2)).toBe(
+      sharingReadingOf(STUDENT, CONSENT, 2),
+    );
+  });
+});
 
 describe("Publikasi data kesehatan mental", () => {
   it("shows to Konselor with the right, asking to pick a student first", () => {

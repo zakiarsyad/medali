@@ -66,6 +66,7 @@ export function CounsellorFollowUp({
         <CounsellorSharingPanel
           picked={picking.picked}
           consentVersion={consentVersionOf(picking.looked)}
+          sessionsKept={picking.sessionsKept}
         />
       )}
       {students && (

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { forbidden } from "next/navigation";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
@@ -12,6 +13,7 @@ import type {
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import { type ChangeOutcome, changeSession } from "./change-session";
+import { COUNSELLING_ADDRESS } from "./schedule-address";
 import { readScheduleSession } from "./schedule-session";
 import { readSessionHistory } from "./session-history";
 import type { SentSession } from "./session-rules";
@@ -39,6 +41,17 @@ function sentSessionOf(form: FormData): SentSession {
   };
 }
 
+/**
+ * Konseling is drawn again once a session is kept, so "Sesi 30 hari
+ * terakhir" and the other numbers count it.
+ */
+function drawnAgainIfKept<Outcome extends SessionOutcome | ChangeOutcome>(
+  outcome: Outcome,
+): Outcome {
+  if (outcome.kind === "kept") revalidatePath(COUNSELLING_ADDRESS);
+  return outcome;
+}
+
 /** "Simpan sesi". Who wrote it is the signed-in account, never a field. */
 export async function writeSessionAction(
   form: FormData,
@@ -49,7 +62,9 @@ export async function writeSessionAction(
     studentId: text(form, "studentId"),
     scheduleId: text(form, "scheduleId"),
   };
-  return writeSession(database(), actor, press, sentSessionOf(form));
+  return drawnAgainIfKept(
+    await writeSession(database(), actor, press, sentSessionOf(form)),
+  );
 }
 
 /** What "Tandai selesai" opens once the schedule is Selesai. */
@@ -79,5 +94,7 @@ export async function changeSessionAction(
   form: FormData,
 ): Promise<ChangeOutcome> {
   const actor = await keeper();
-  return changeSession(database(), actor, id, version, sentSessionOf(form));
+  return drawnAgainIfKept(
+    await changeSession(database(), actor, id, version, sentSessionOf(form)),
+  );
 }

@@ -63,6 +63,6 @@ Konselor, who records sessions and shares a summary.
 
 ## Steps
 
-- [ ] 1. Saving or changing a session updates the panel "Publikasi data
+- [x] 1. Saving or changing a session updates the panel "Publikasi data
   kesehatan mental" and "Sesi 30 hari terakhir" on the same page, with a
   check.

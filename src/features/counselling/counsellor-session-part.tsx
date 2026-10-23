@@ -33,16 +33,19 @@ export function rereadsHistory(mayWrite: boolean, readable: boolean): boolean {
  * while it is not, and "Riwayat sesi", with "Ubah" only while it is
  * Disetujui. A student who never gave consent has no "Riwayat sesi". `history` is "Riwayat sesi" as read when the student was
  * picked; it is read again when a consent is recorded, and after a session
- * is kept or changed, so a change someone made first shows.
+ * is kept or changed, so a change someone made first shows. `onKept` is
+ * told once a session is kept or changed.
  */
 export function CounsellorSessionPart({
   studentId,
   consent,
   history: first,
+  onKept,
 }: {
   studentId: string;
   consent: ConsentView | null;
   history: Parsed<SessionHistory>;
+  onKept?: () => void;
 }) {
   const [history, setHistory] = useState(first);
   const [steps, setSteps] = useState(1);
@@ -68,7 +71,13 @@ export function CounsellorSessionPart({
   return (
     <>
       {mayWrite ? (
-        <SessionForm studentId={studentId} onSaved={() => reload(1)} />
+        <SessionForm
+          studentId={studentId}
+          onSaved={() => {
+            reload(1);
+            onKept?.();
+          }}
+        />
       ) : (
         <p className={styles.sub}>{NEEDS_CONSENT}</p>
       )}
@@ -79,7 +88,10 @@ export function CounsellorSessionPart({
           mayChange={mayWrite}
           pending={pending}
           onMore={() => reload(steps + 1)}
-          onChanged={(outcome) => reload(steps, messageOf(outcome))}
+          onChanged={(outcome) => {
+            reload(steps, messageOf(outcome));
+            if (outcome.kind === "kept") onKept?.();
+          }}
         />
       )}
       {/* Refused for want of consent, which is said above already. */}
