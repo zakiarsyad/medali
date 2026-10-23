@@ -1,3 +1,4 @@
+import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { AchievementSection } from "./achievement-section";
 import styles from "./dashboard.module.css";
@@ -10,12 +11,17 @@ import { MenteeNotesPanel } from "./mentee-notes-panel";
 import { MenteePenaltiesPanel } from "./mentee-penalties-panel";
 import { MenteeProgressBox, type ProgressLinks } from "./mentee-progress-box";
 import type { MenteeDashboard } from "./mentee-recap";
+import { MenteeTable } from "./mentee-table";
 import {
   MENTEES_NOT_ASSESSED,
   menteeLede,
   NO_GROUP_HELD,
 } from "./mentee-words";
 import { PhysicalSection } from "./physical-section";
+import { SectionHead } from "./section-head";
+
+/** Where the section "Anak asuh" starts. */
+const MEMBERS_SECTION = "anak-asuh";
 
 /** Where the links of Dashboard anak asuh lead, or null for a tab the account may not open. */
 export interface MenteeLinks extends ProgressLinks {
@@ -73,10 +79,23 @@ export function MenteeScreen({
         published={view.cards.published}
         detailAddress={links.mental}
       />
-      <MenteePenaltiesPanel
-        penalties={view.penalties}
-        allAddress={links.penalties}
-      />
+      <section className={styles.section} aria-labelledby={MEMBERS_SECTION}>
+        <SectionHead
+          id={MEMBERS_SECTION}
+          title="Anak asuh"
+          detailAddress={null}
+        >
+          Capaian MEDALI tiap anak asuh, diurutkan dari rerata terendah. Pilih
+          nama untuk melihat profil lengkap.
+        </SectionHead>
+        <MenteePenaltiesPanel
+          penalties={view.penalties}
+          allAddress={links.penalties}
+        />
+        <div className={shared.panel}>
+          <MenteeTable members={view.members} />
+        </div>
+      </section>
     </>
   );
 }

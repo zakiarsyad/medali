@@ -1,4 +1,5 @@
 import type { GradeScheme } from "@/character-grades/scheme-ids";
+import type { Scores } from "@/character-scores/assessment-score";
 import type {
   PenaltyCategory,
   PenaltyLevel,
@@ -52,6 +53,20 @@ export interface MenteePenalty {
   description: string;
 }
 
+/** An anak asuh as the table "Anak asuh" shows them. */
+export interface MenteeMember {
+  studentId: string;
+  name: string;
+  nim: string;
+  className: string | null;
+  /** The semester of the running period, or null while none runs. */
+  semester: number | null;
+  /** The latest six scores as shown, or null while not assessed. */
+  scores: Scores | null;
+  /** Whether the account may open the student's detail. */
+  opensDetail: boolean;
+}
+
 /** What Dashboard anak asuh shows of a Pengasuh who holds a group today. */
 export interface MenteeContent {
   /** The groups in force they hold today, the newest angkatan first. */
@@ -65,6 +80,8 @@ export interface MenteeContent {
   fitnessLimits: FitnessLimits;
   /** "Pelanggaran disiplin": the latest penalties of the anak asuh, newest first. */
   penalties: MenteePenalty[];
+  /** "Anak asuh": every Aktif anak asuh, the lowest Rerata first and those not assessed last. */
+  members: MenteeMember[];
   /** "Perlu perhatian": the anak asuh with a reason, the most reasons first. */
   attention: AttentionRow[];
   /** "Catatan pengasuhan terbaru", the newest first. */

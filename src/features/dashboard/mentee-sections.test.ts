@@ -2,6 +2,7 @@
 // Sample NIMs of this file: 9989660000 to 9989660099.
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import {
@@ -24,7 +25,12 @@ import {
 import type { MenteeDashboard } from "./mentee-recap";
 import { menteeScopeOf } from "./mentee-scope";
 import { loadMenteeDashboard } from "./mentee-view";
-import { addTestPublishedLevel } from "./test-records";
+import {
+  addTestAssessment,
+  addTestPeriod,
+  addTestPublishedLevel,
+  evenScores,
+} from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -45,6 +51,8 @@ async function addRecords(db: Database) {
     addTestStudent(db, programId, {
       nim: `99896600${nim}`,
       name: `Mahasiswa Uji Bagian ${nim}`,
+      cohortYear: 5209,
+      className: nim === "01" ? "1-01" : null,
     });
   const ids = {
     s01: await add("01"),
@@ -76,13 +84,17 @@ async function addRecords(db: Database) {
   return { mentor, ids, sharings };
 }
 
-async function load(db: Database, account: AccountForAccess) {
+async function load(
+  db: Database,
+  account: AccountForAccess,
+  period: AcademicPeriod | null = null,
+) {
   const scope = menteeScopeOf(account);
   if (scope === null) throw new Error("No scope.");
   const view: MenteeDashboard = await loadMenteeDashboard(
     db,
     scope,
-    null,
+    period,
     TODAY,
   );
   if (view.kind !== "shown") throw new Error("No group.");
@@ -187,6 +199,68 @@ describe("Pelanggaran disiplin of Dashboard anak asuh", () => {
       });
 
       expect((await load(db, mentor)).penalties).toEqual([]);
+    });
+  });
+});
+
+describe("the Anak asuh table of Dashboard anak asuh", () => {
+  it("lists every anak asuh, lowest Rerata first and those not assessed last, and no student of another Pengasuh", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, ids } = await addRecords(db);
+      const periodId = await addTestPeriod(db, 5210);
+      const period: AcademicPeriod = {
+        id: periodId,
+        startYear: 5210,
+        term: "odd",
+        startsOn: "5210-08-01",
+        endsOn: "5211-01-31",
+      };
+      const assess = (studentId: string, score: number) =>
+        addTestAssessment(db, {
+          studentId,
+          periodId,
+          enteredBy: mentor.id,
+          enteredAt: new Date("5210-09-15T03:00:00Z"),
+          scores: evenScores(score),
+        });
+      await assess(ids.s01, 80);
+      await assess(ids.s02, 60);
+      await assess(ids.s04, 70);
+      await assess(ids.s05, 50);
+
+      const { members } = await load(db, mentor, period);
+
+      expect(members.map((row) => row.studentId)).toEqual([
+        ids.s02,
+        ids.s04,
+        ids.s01,
+        ids.s03,
+      ]);
+      expect(members[2]).toEqual({
+        studentId: ids.s01,
+        name: "Mahasiswa Uji Bagian 01",
+        nim: "9989660001",
+        className: "1-01",
+        semester: 3,
+        scores: evenScores(80),
+        opensDetail: true,
+      });
+      expect(members[3]?.scores).toBeNull();
+    });
+  });
+
+  it("gives no semester while no academic period runs", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor } = await addRecords(db);
+
+      const { members } = await load(db, mentor);
+
+      expect(members.map((row) => row.semester)).toEqual([
+        null,
+        null,
+        null,
+        null,
+      ]);
     });
   });
 });

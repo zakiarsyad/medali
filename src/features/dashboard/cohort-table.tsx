@@ -1,4 +1,4 @@
-import { PREDICATES, predicateOf } from "@/character-scores/assessment-score";
+import { PREDICATES } from "@/character-scores/assessment-score";
 import scoreStyles from "@/character-scores/character-scores.module.css";
 import { PREDICATE_WORDS } from "@/character-scores/predicate-words";
 import { shownRerata } from "@/character-scores/shown-rerata";
@@ -8,18 +8,14 @@ import { MEDALI_VALUES } from "@/ui/medali-values";
 import { averageWords, oneDecimal } from "./achievement-words";
 import type { CohortRecap } from "./cohort-recaps";
 import { cohortDetail, noCohortWords } from "./cohort-words";
+import { ColouredScore } from "./coloured-score";
 import styles from "./dashboard.module.css";
 import type { RunningPeriod } from "./dashboard-view";
 
 /** An average with the dot of the predikat it would have, named for a reader. */
 function ColouredAverage({ average }: { average: number }) {
-  const predicate = predicateOf(oneDecimal(average));
   return (
-    <span className={styles.coloured}>
-      <i className={`${scoreStyles.dot} ${scoreStyles[predicate]}`} />
-      {averageWords(average)}
-      <span className={shared.hidden}> ({PREDICATE_WORDS[predicate]})</span>
-    </span>
+    <ColouredScore score={oneDecimal(average)} words={averageWords(average)} />
   );
 }
 

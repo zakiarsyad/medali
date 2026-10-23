@@ -1,13 +1,19 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { DashboardSwitch } from "./dashboard-switch";
 import { NO_GRADES } from "./grade-words";
 import type { MenteeDashboard } from "./mentee-recap";
 import { MenteeScreen } from "./mentee-screen";
-import { MENTEES_NOT_ASSESSED, NO_GROUP_HELD } from "./mentee-words";
+import {
+  MENTEES_NOT_ASSESSED,
+  NO_GROUP_HELD,
+  NO_MENTEES,
+} from "./mentee-words";
 import { NOBODY_TESTED } from "./physical-words";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
 const SHOWN: MenteeDashboard = {
   kind: "shown",
@@ -52,6 +58,26 @@ const SHOWN: MenteeDashboard = {
   },
   fitnessLimits: STARTING_LIMITS,
   penalties: [],
+  members: [
+    {
+      studentId: "00000000-0000-4000-8000-000000000003",
+      name: "Mahasiswa Rendah",
+      nim: "9900000003",
+      className: "1-02",
+      semester: 3,
+      scores: { M: 60, E: 70, D: 60, A: 60, L: 60, I: 60 },
+      opensDetail: true,
+    },
+    {
+      studentId: "00000000-0000-4000-8000-000000000004",
+      name: "Mahasiswa Baru",
+      nim: "9900000004",
+      className: null,
+      semester: null,
+      scores: null,
+      opensDetail: false,
+    },
+  ],
   attention: [],
   notes: [],
   noteNumbers: {
@@ -294,6 +320,36 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain("Terlambat apel pagi.");
     expect(html).toMatch(/href="\/pembinaan\/disiplin"[^>]*>Lihat semua</);
     expect(none).not.toContain("Pelanggaran disiplin</h3>");
+  });
+
+  it("lists the anak asuh with their scores, each opening the student detail", () => {
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain('id="anak-asuh"');
+    expect(html).toContain(
+      "Capaian MEDALI tiap anak asuh, diurutkan dari rerata terendah. Pilih nama untuk melihat profil lengkap.",
+    );
+    expect(html).toMatch(
+      /href="\/dashboard\?tampilan=anak-asuh&amp;profil=00000000-0000-4000-8000-000000000003"[^>]*><b>Mahasiswa Rendah<\/b>/,
+    );
+    expect(html).toContain("9900000003");
+    expect(html).toContain('data-title="Kelas akademik">1-02<');
+    expect(html).toContain('data-title="Semester">3<');
+    expect(html).toContain("61,7");
+    expect(html).toContain("Perlu pembinaan");
+    expect(html).toContain("<b>Mahasiswa Baru</b>");
+    expect(html).toContain("Belum diasesmen");
+    expect(html).not.toContain("profil=00000000-0000-4000-8000-000000000004");
+  });
+
+  it("says so in the table while the group holds no Aktif anak asuh", () => {
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={{ ...SHOWN, members: [] }} links={LINKS} />,
+    );
+
+    expect(html).toContain(NO_MENTEES);
   });
 
   it("shows only the message to a Pengasuh without a group", () => {
