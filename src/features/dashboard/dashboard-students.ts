@@ -1,8 +1,10 @@
 import { and, eq, inArray, isNull, type SQL, sql } from "drizzle-orm";
 import type { StageCohorts } from "@/academic-periods/stage-cohorts";
 import { students } from "@/db/schema";
+import { dormInSql } from "@/dorms/resident-condition";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { type DashboardFilters, NO_AGENCY } from "./dashboard-address";
+import { type DormChoice, dormsOf, EVERY_DORM, NO_DORM } from "./dorm-choices";
 
 const NOBODY = sql`false`;
 
@@ -31,6 +33,18 @@ function fromAgency(agency: string | null): SQL | undefined {
   if (agency === null) return undefined;
   if (agency === NO_AGENCY) return isNull(students.originAgency);
   return eq(students.originAgency, agency);
+}
+
+/** The students of an Asrama choice, by the dorm the residents rule gives. */
+function ofDorm(
+  choice: DormChoice | null,
+  dormCohorts: number[],
+): SQL | undefined {
+  if (choice === null) return undefined;
+  const dorm = dormInSql(dormCohorts);
+  if (choice === EVERY_DORM) return sql`${dorm} is not null`;
+  if (choice === NO_DORM) return sql`${dorm} is null`;
+  return inArray(dorm, [...dormsOf(choice)]);
 }
 
 /** The conditions of the filters that compare one column with the choice. */
@@ -67,6 +81,7 @@ export function dashboardStudents(
       inStage(filters.stageNo, cohorts.stages),
       ...plainChoices(filters),
       fromAgency(filters.originAgency),
+      ofDorm(filters.dorm, cohorts.dorms),
     ) ?? NOBODY
   );
 }

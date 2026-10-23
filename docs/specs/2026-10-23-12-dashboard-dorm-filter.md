@@ -94,7 +94,7 @@ program only), the three roles that already use the Dashboard filter.
 
 - [x] 1. The Asrama choice in the filter, with the count beside each
   option and "Semua asrama" as the sum of the dorms.
-- [ ] 2. Every card and section counts only the chosen students, with
+- [x] 2. Every card and section counts only the chosen students, with
   the check for groups under 5.
 - [ ] 3. The choice is kept in the address and cleared by "Atur ulang
   filter".
