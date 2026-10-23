@@ -3,12 +3,21 @@ import { and, count, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { studentSurveyAnswers, studentSurveyPeriods } from "@/db/schema";
+import {
+  mentorGroupMembers,
+  studentSurveyAnswers,
+  studentSurveyPeriods,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestSurveyPeriod } from "@/mentoring/test-survey-periods";
 import { USED_SURVEY_ANSWER } from "@/mentoring/used-survey-answer";
 import { cancelSurveyPeriod } from "./change-survey-period";
 import { readRunningSurveyCard } from "./survey-card";
+import { resultNumbers } from "./survey-group-list";
+import { readSurveyGroupRows } from "./survey-group-reads";
+import { chooseResultPeriod, readResultPeriods } from "./survey-result-periods";
+import { respondentWords } from "./survey-words";
 import { addTestEvaluator, addTestPeriods } from "./test-evaluations";
 import {
   addTestGroup,
@@ -85,7 +94,7 @@ async function addAnswers(
 }
 
 describe("Responden of the running survey period", () => {
-  it("counts the answers sent by the students who can answer, out of all of them", async () => {
+  it("counts every answer sent for a group, out of its Aktif members and each who answered and is not one of them", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       await addAnswers(db, records, records.first, records.first.members);
@@ -95,10 +104,99 @@ describe("Responden of the running survey period", () => {
 
       const card = await readRunningSurveyCard(db, EVERY_ROW, TODAY);
 
-      expect(card?.respondentPool).toBe(5);
-      // The student on Cuti answered before going on leave: not counted.
-      expect(card?.answered).toBe(4);
+      // The student on Cuti answered before going on leave: counted.
+      expect(card?.respondentPool).toBe(6);
+      expect(card?.answered).toBe(5);
       expect(card?.answers).toBe(5);
+    });
+  });
+
+  it("keeps the answer and the student of one who answered and then goes on Cuti, becomes Non aktif, or moves to another group", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const answering = records.first.members.slice(0, 3);
+      await addAnswers(db, records, records.first, answering);
+      const [changing] = answering;
+      if (!changing) throw new Error("No member.");
+      const numbers = async () => {
+        const card = await readRunningSurveyCard(db, EVERY_ROW, TODAY);
+        return { answered: card?.answered, pool: card?.respondentPool };
+      };
+      const before = await numbers();
+
+      await setStatus(db, changing, "on_leave");
+      const onLeave = await numbers();
+      await setStatus(db, changing, "inactive");
+      const inactive = await numbers();
+      await setStatus(db, changing, "active");
+      await db
+        .update(mentorGroupMembers)
+        .set({ groupId: records.second.group })
+        .where(eq(mentorGroupMembers.studentId, changing));
+      const moved = await numbers();
+
+      expect(before).toEqual({ answered: 3, pool: 5 });
+      expect(onLeave).toEqual({ answered: 3, pool: 5 });
+      expect(inactive).toEqual({ answered: 3, pool: 5 });
+      // Counted among the students of the group they answered for, and as
+      // an Aktif member of their new group.
+      expect(moved).toEqual({ answered: 3, pool: 6 });
+    });
+  });
+
+  it("gives the same answers, students and share as the Responden above the table of the same period", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAnswers(db, records, records.first, records.first.members);
+      await addAnswers(db, records, records.second, records.second.members);
+      // 23 of 40 is 57.5%, which a share counted as a fraction first rounds down.
+      const third = await addTestProgram(db, "UJIJAWABTIGA");
+      const thirdGroup = await addTestGroup(db, third, { number: 1 });
+      const thirdMembers = await addTestMembersWithStatus(
+        db,
+        { id: thirdGroup, studyProgramId: third },
+        9900950201,
+        Array.from({ length: 40 }, () => "active" as const),
+      );
+      await addAnswers(
+        db,
+        records,
+        { program: third, group: thirdGroup, members: thirdMembers },
+        thirdMembers.slice(0, 23),
+      );
+      const [onLeave, moving] = records.first.members;
+      if (!onLeave || !moving) throw new Error("No members.");
+      await setStatus(db, onLeave, "on_leave");
+      await db
+        .update(mentorGroupMembers)
+        .set({ groupId: records.second.group })
+        .where(eq(mentorGroupMembers.studentId, moving));
+      const period = chooseResultPeriod(
+        await readResultPeriods(db, TODAY),
+        records.surveyPeriodId,
+      );
+      if (!period) throw new Error("No period.");
+
+      for (const limit of [
+        EVERY_ROW,
+        onlyPrograms([records.first.program]),
+        onlyPrograms([records.second.program]),
+        onlyPrograms([third]),
+      ]) {
+        const card = await readRunningSurveyCard(db, limit, TODAY);
+        const table = resultNumbers(
+          await readSurveyGroupRows(db, limit, period),
+        );
+
+        expect(table.answers).toBeGreaterThan(0);
+        expect({
+          answers: card?.answered,
+          members: card?.respondentPool,
+        }).toEqual({ answers: table.answers, members: table.members });
+        expect(
+          respondentWords(card?.answered ?? 0, card?.respondentPool ?? 0),
+        ).toContain(`(${table.share}%)`);
+      }
     });
   });
 
@@ -154,6 +252,14 @@ describe("the answers of a cancelled survey period", () => {
     });
   });
 });
+
+async function setStatus(
+  db: Database,
+  studentId: string,
+  status: (typeof students.$inferInsert)["status"],
+) {
+  await db.update(students).set({ status }).where(eq(students.id, studentId));
+}
 
 async function countKept(db: Database, surveyPeriodId: string) {
   const [kept] = await db

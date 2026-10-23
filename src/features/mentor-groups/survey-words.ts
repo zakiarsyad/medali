@@ -2,6 +2,7 @@ import { shownDay } from "@/ui/day";
 import type { OpenedSurveyPeriod } from "./open-survey-period";
 import type { RunningSurveyCard } from "./survey-card";
 import { feedbackWeight } from "./survey-form-start";
+import { respondentShare } from "./survey-result";
 
 /**
  * What "Buka periode evaluasi" says once the period is kept: that it is
@@ -31,8 +32,9 @@ export function surveyDaysWords(
  */
 export function respondentWords(answered: number, pool: number): string {
   const counted = `${answered.toLocaleString("id-ID")} dari ${pool.toLocaleString("id-ID")}`;
-  if (pool === 0) return counted;
-  return `${counted} (${Math.round((answered / pool) * 100)}%)`;
+  const share = respondentShare(answered, pool);
+  if (share === null) return counted;
+  return `${counted} (${share}%)`;
 }
 
 /** "Bobot": both weights of a period. */
