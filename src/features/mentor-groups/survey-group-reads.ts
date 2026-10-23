@@ -33,17 +33,25 @@ export function statementScore(place: number) {
 /**
  * For a read of answers: the answer of a student who is today an Aktif
  * member of the group it was sent for, one of the members the group is
- * counted with. Every number of a group is read from these answers only,
- * so Responden never passes the members and the limit of 3 answers is
- * never met by students who are members no more.
+ * counted with.
  */
-export const FROM_COUNTED_MEMBER = sql`exists (
+const FROM_COUNTED_MEMBER = sql`exists (
   select 1 from ${mentorGroupMembers}
   inner join ${students} on ${students.id} = ${mentorGroupMembers.studentId}
   where ${mentorGroupMembers.studentId} = ${studentSurveyAnswers.studentId}
     and ${mentorGroupMembers.groupId} = ${studentSurveyAnswers.groupId}
     and ${ACTIVE_MEMBER}
 )`;
+
+/**
+ * How many of the answers came from students who are no Aktif member of
+ * the group today: on Cuti, Non aktif or in another group by now. Each
+ * is counted among the members, so Responden never passes 100%.
+ */
+const FROM_OTHERS =
+  sql<number>`count(*) filter (where not ${FROM_COUNTED_MEMBER})`.mapWith(
+    Number,
+  );
 
 /** The sum of the eight scores of an answer. */
 const ANSWER_TOTAL = sql.join(
@@ -91,9 +99,11 @@ export function readSurveyGroups(
 
 /**
  * How many answers of a survey period each of these groups sent for each
- * mentor, and the sum of their scores, of its Aktif members of today.
- * Only the sums leave the database; the answers of a cancelled period
- * count for nothing.
+ * mentor, the sum of their scores, and how many of them came from
+ * students who are no Aktif member of the group today. Every answer that
+ * was sent counts, whatever its student is today: one that dropped out
+ * would show, by the change, what that student said. Only the sums leave
+ * the database; the answers of a cancelled period count for nothing.
  */
 export async function readMentorSums(
   db: Database,
@@ -108,6 +118,7 @@ export async function readMentorSums(
       mentorName: accounts.name,
       answers: count(),
       total: sql<number>`sum(${ANSWER_TOTAL})`.mapWith(Number),
+      others: FROM_OTHERS,
     })
     .from(studentSurveyAnswers)
     .innerJoin(
@@ -122,7 +133,6 @@ export async function readMentorSums(
       and(
         eq(studentSurveyAnswers.surveyPeriodId, surveyPeriodId),
         inArray(studentSurveyAnswers.groupId, groupIds),
-        FROM_COUNTED_MEMBER,
       ),
     )
     .groupBy(

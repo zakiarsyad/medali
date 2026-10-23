@@ -37,10 +37,26 @@ function sums(
     mentorName: `Nama ${mentor}`,
     answers: scores.length,
     total,
+    others: 0,
   };
 }
 
 describe("surveyGroupRows", () => {
+  it("counts among the members of a row each who answered and is no Aktif member of today", () => {
+    const rows = surveyGroupRows(
+      [group(1)],
+      [{ ...sums("kelompok-1", "pengasuh-1", 4, 4, 4, 4, 4), others: 2 }],
+      new Map(),
+      50,
+    );
+
+    expect(rows[0]?.result).toMatchObject({
+      answers: 5,
+      members: 6,
+      share: 83,
+    });
+  });
+
   it("gives a group without answers one row, with the mentor who held it on the day", () => {
     const rows = surveyGroupRows([group(1)], [], new Map(), 50);
 
@@ -234,6 +250,25 @@ describe("resultNumbers", () => {
     expect(resultNumbers(rows)).toMatchObject({
       answers: 2,
       members: 4,
+      groups: 1,
+    });
+  });
+
+  it("adds to the members of a group each who answered for one of its rows and is no Aktif member of today", () => {
+    const rows = surveyGroupRows(
+      [group(1)],
+      [
+        { ...sums("kelompok-1", "pengasuh-lama", 4, 4), others: 1 },
+        { ...sums("kelompok-1", "pengasuh-baru", 4), others: 1 },
+      ],
+      new Map(),
+      50,
+    );
+
+    expect(resultNumbers(rows)).toMatchObject({
+      answers: 3,
+      members: 6,
+      share: 50,
       groups: 1,
     });
   });

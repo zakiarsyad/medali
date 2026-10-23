@@ -127,20 +127,26 @@ history. No one ever sees one student's answers.
     and once it is over the day it closed, by hand or by its last day.
     The table holds the groups in force that had started by that day,
     so a group formed after the period is not counted as one that did
-    not answer. A group's members are its Aktif members today, as the
-    card of the period counts them. Only the answers of those members
-    count for the group, as on the card: a student who answered and is
-    on Cuti, Non aktif or in another group by now is left out. Responden,
-    the limit of 3 answers, Umpan balik, the averages per statement, the
-    suggestions and the lines that are fixed all come from those same
-    answers, so Responden never passes the members.
-13. A group whose answers were sent for two mentors, after a
-    replacement during the period, has a row for each mentor, each
-    with the group's members and the answers of those members sent for
-    that mentor. A group without answers shows the mentor
-    who held it on the day of the numbers.
+    not answer. The answers of a group are every answer of the period
+    that was sent for it, whatever its student is today. Responden, the
+    limit of 3 answers, Umpan balik, Nilai evaluasi, the averages per
+    statement, the suggestions and the lines that are fixed all come
+    from that one set. It only grows while the period is Dibuka and
+    never changes once it is over. An answer is never left out later,
+    because the change would show what that student said, and the app
+    shows who went on Cuti or left the group.
+13. The members Responden counts a group's answers out of are its
+    Aktif members of today, together with each student whose answer is
+    in its set and who is not one of them, such as one on Cuti, Non
+    aktif or in another group by now, each student once. So Responden
+    never passes 100%, and the same number stands in "(n) dari (N)
+    anggota mengisi survei." of a fixed line. A group whose answers were
+    sent for two mentors, after a replacement during the period, has a
+    row for each mentor, each with the answers sent for that mentor and
+    the members counted with those answers. A group without answers
+    shows the mentor who held it on the day of the numbers.
 14. Above the table, Responden adds the answers of every group out of
-    their members, "Rerata capaian karakter" is the mean of the groups
+    their members as decision 13 counts them, each group once, "Rerata capaian karakter" is the mean of the groups
     that have one, "Rerata umpan balik" the mean of the groups that
     show one, with the same as 0 to 100 beside it ("setara"), and
     "Nilai evaluasi kurang" counts the rows that are Kurang, "dari (n)
@@ -181,7 +187,7 @@ history. No one ever sees one student's answers.
     its last day without anyone closing it. While the period runs it is
     the Capaian karakter of today.
 23. The members it is taken over are the group's Aktif members of
-    today, as in decision 12, so a student who joined or left the group
+    today, as the card of the period counts them, so a student who joined or left the group
     since the closing day changes it. Once the results are fixed, the
     line in the evaluation history keeps the value of the day it was
     fixed.

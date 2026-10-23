@@ -28,6 +28,11 @@ export interface MentorSums extends AnswerSums {
   groupId: string;
   mentorId: string;
   mentorName: string;
+  /**
+   * How many of the answers came from students who are no Aktif member
+   * of the group today. They are counted among its members.
+   */
+  others: number;
 }
 
 /** One row of the table: a group, and the mentor its answers count for. */
@@ -70,13 +75,13 @@ export function surveyGroupRows(
   const rows: SurveyGroupRow[] = [];
   for (const { mentorId, mentorName, ...group } of groups) {
     const achievement = reratas.get(group.id) ?? null;
-    const facts = { members: group.members, achievement };
     const answered = byGroup.get(group.id) ?? [];
     const mentors =
       answered.length > 0
         ? answered
-        : [{ mentorId, mentorName, answers: 0, total: 0 }];
-    for (const mentor of mentors) {
+        : [{ mentorId, mentorName, answers: 0, total: 0, others: 0 }];
+    for (const { others, ...mentor } of mentors) {
+      const facts = { members: group.members + others, achievement };
       rows.push({
         key: rowKey(group.id, mentor.mentorId),
         group,
@@ -87,6 +92,19 @@ export function surveyGroupRows(
     }
   }
   return rows;
+}
+
+/**
+ * The members of a group as Responden counts them over all its rows: its
+ * Aktif members of today, and each student who answered for it and is
+ * not one of them. A row counts the group's members and its own others.
+ */
+function membersOfGroup(rows: readonly SurveyGroupRow[]): number {
+  const [first] = rows;
+  if (!first) return 0;
+  let members = first.group.members;
+  for (const row of rows) members += row.result.members - row.group.members;
+  return members;
 }
 
 function matchesSearch(row: SurveyGroupRow, query: string): boolean {
@@ -188,15 +206,20 @@ function shown(values: readonly (number | null)[]): number[] {
  * mentors counts its members and its Capaian karakter once.
  */
 export function resultNumbers(rows: readonly SurveyGroupRow[]): ResultNumbers {
-  const firstOfGroup = new Map<string, SurveyGroupRow>();
+  const rowsOfGroup = new Map<string, SurveyGroupRow[]>();
   let answers = 0;
   for (const row of rows) {
     answers += row.result.answers;
-    if (!firstOfGroup.has(row.group.id)) firstOfGroup.set(row.group.id, row);
+    const found = rowsOfGroup.get(row.group.id) ?? [];
+    found.push(row);
+    rowsOfGroup.set(row.group.id, found);
   }
-  const groups = [...firstOfGroup.values()];
+  const groups: SurveyGroupRow[] = [];
   let members = 0;
-  for (const row of groups) members += row.result.members;
+  for (const own of rowsOfGroup.values()) {
+    members += membersOfGroup(own);
+    if (own[0]) groups.push(own[0]);
+  }
   return {
     answers,
     members,

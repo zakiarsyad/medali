@@ -119,26 +119,30 @@ describe("readGroupSurveyDetail", () => {
     });
   });
 
-  it("counts only the answers of the group's Aktif members of today, so 3 answers of whom one went on Cuti stay hidden", async () => {
+  it("keeps the averages and the suggestions as they were after a member who answered goes on Cuti, so nothing shows what that student said", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       await addAnswers(db, records, [
         { scores: [4, 4, 4, 4, 4, 4, 4, 4], suggestion: "Saran pertama." },
-        { scores: [4, 4, 4, 4, 4, 4, 4, 4], suggestion: null },
-        { scores: [4, 4, 4, 4, 4, 4, 4, 4], suggestion: "Saran ketiga." },
+        { scores: [5, 5, 5, 5, 5, 5, 5, 5], suggestion: null },
+        { scores: [1, 2, 3, 4, 5, 1, 2, 3], suggestion: "Saran ketiga." },
       ]);
+      const { surveyId, groupId, mentorId } = records;
+      const read = () =>
+        readGroupSurveyDetail(db, EVERY_ROW, surveyId, { groupId, mentorId });
+      const before = await read();
+
       await db
         .update(students)
         .set({ status: "on_leave" })
         .where(eq(students.id, records.members[2] ?? ""));
-      const { surveyId, groupId, mentorId } = records;
+      const after = await read();
 
-      const detail = await readGroupSurveyDetail(db, EVERY_ROW, surveyId, {
-        groupId,
-        mentorId,
+      expect(after).toEqual(before);
+      expect(after).toMatchObject({
+        answers: 3,
+        suggestions: ["Saran ketiga.", "Saran pertama."],
       });
-
-      expect(detail).toEqual({ answers: 2, averages: null, suggestions: null });
     });
   });
 

@@ -54,6 +54,7 @@ function sums(number: number, ...scores: number[]): MentorSums {
     mentorName: `Pengasuh Uji ${number}`,
     answers: scores.length,
     total,
+    others: 0,
   };
 }
 

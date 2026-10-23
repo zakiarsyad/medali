@@ -220,21 +220,22 @@ describe("readSurveyGroupRows", () => {
     });
   });
 
-  it("counts only the answers of the group's Aktif members of today, so Responden never passes the members", async () => {
+  it("keeps every answer sent, and counts among the members each who answered and is no Aktif member of today, so Responden never passes 100%", async () => {
     await inTestDatabase(async (db) => {
       const surveyId = await addSurvey(db);
       const { program, groupId, later, members } = await addGroup(db);
       const [one, two, three] = members;
       if (!one || !two || !three) throw new Error("No members.");
       const of = { surveyPeriodId: surveyId, groupId, mentorId: later };
-      for (const studentId of [one, two, three]) {
+      for (const studentId of [one, two]) {
         await addTestSurveyAnswer(db, { ...of, studentId });
       }
-      // The third goes on Cuti; another student who left the group answered too.
-      await db
-        .update(students)
-        .set({ status: "on_leave" })
-        .where(eq(students.id, three));
+      await addTestSurveyAnswer(db, {
+        ...of,
+        studentId: three,
+        scores: [1, 1, 1, 1, 1, 1, 1, 1],
+      });
+      // A student who answered for the group and is in another group by now.
       const [gone] = await addTestMembersWithStatus(
         db,
         {
@@ -246,24 +247,34 @@ describe("readSurveyGroupRows", () => {
       );
       if (!gone) throw new Error("No student.");
       await addTestSurveyAnswer(db, { ...of, studentId: gone });
+      const rowOf = async () => {
+        const rows = await readSurveyGroupRows(
+          db,
+          EVERY_ROW,
+          resultPeriod(surveyId),
+        );
+        return rows.find((row) => row.group.id === groupId)?.result;
+      };
+      const before = await rowOf();
+
+      // The third who answered goes on Cuti, and the fourth member, who did not, leaves.
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, three));
       await db
         .update(students)
         .set({ status: "inactive" })
         .where(inArray(students.id, members.slice(3)));
+      const after = await rowOf();
 
-      const rows = await readSurveyGroupRows(
-        db,
-        EVERY_ROW,
-        resultPeriod(surveyId),
-      );
-
-      const row = rows.find((one) => one.group.id === groupId);
-      expect(row?.result).toMatchObject({
-        answers: 2,
-        members: 2,
-        share: 100,
-        feedback: null,
-      });
+      // Four Aktif members and the one who left: 4 of 5.
+      expect(before).toMatchObject({ answers: 4, members: 5, share: 80 });
+      // Two Aktif members, the one on Cuti and the one who left: 4 of 4.
+      expect(after).toMatchObject({ answers: 4, members: 4, share: 100 });
+      expect(after?.feedback).toBe(before?.feedback);
+      expect(after?.feedbackOutOfFive).toBe(before?.feedbackOutOfFive);
+      expect(after?.feedback).toBe(65);
     });
   });
 
