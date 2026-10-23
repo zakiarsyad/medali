@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import type { Sanction } from "@/discipline-penalties/sanction";
+import { SanctionBadge } from "@/discipline-penalties/sanction-badge";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { surveyDraftKey } from "@/ui/survey-drafts";
@@ -31,6 +33,7 @@ export function OwnProfileScreen({
   period,
   survey = null,
   morePanels = null,
+  sanction = null,
 }: {
   student: OwnProfile;
   /** The academic period that runs now, which says the semester. */
@@ -39,6 +42,11 @@ export function OwnProfileScreen({
   survey?: OwnSurvey | null;
   /** The cards of other areas, under the record and its source line. */
   morePanels?: ReactNode;
+  /**
+   * The badge of a suspended or dismissed student, shown instead of the
+   * status; null for none.
+   */
+  sanction?: Sanction | null;
 }) {
   const semester = semesterNow(student, period);
   const hasTags = CATEGORIES.some(({ field }) => student[field]);
@@ -46,7 +54,11 @@ export function OwnProfileScreen({
     <>
       <PageHead title={student.name}>
         {ownProfileLine(student, semester)}{" "}
-        <span className={shared.badge}>{STATUS_LABELS[student.status]}</span>
+        {sanction === null ? (
+          <span className={shared.badge}>{STATUS_LABELS[student.status]}</span>
+        ) : (
+          <SanctionBadge sanction={sanction} />
+        )}
       </PageHead>
       {survey !== null && (
         <OwnSurveyCard

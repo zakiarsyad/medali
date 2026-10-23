@@ -85,7 +85,7 @@ own and can change none.
 - [x] 1. The rights to read one's own discipline penalties, pembinaan
   and mentoring notes are added to the permission list, with their
   checks.
-- [ ] 2. The student's own "Riwayat pelanggaran disiplin", and the
+- [x] 2. The student's own "Riwayat pelanggaran disiplin", and the
   sanction beside the name.
 - [ ] 3. The card "Pembinaan (level)".
 - [ ] 4. "Catatan pengasuhan" with its empty state and fold.

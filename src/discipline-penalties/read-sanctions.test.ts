@@ -13,7 +13,7 @@ import {
   addNoteActor,
   addNoteStudents,
 } from "@/features/guidance/test-violation-notes";
-import { readSanctions } from "./read-sanctions";
+import { readOwnSanction, readSanctions } from "./read-sanctions";
 
 const inTestDatabase = withTestDatabase();
 
@@ -155,6 +155,67 @@ describe("readSanctions", () => {
       expect((await readSanctions(db, officer, ids)).size).toBe(3);
       expect((await readSanctions(db, officer, [])).size).toBe(0);
       expect((await readSanctions(db, officer, ["bukan-id"])).size).toBe(0);
+    });
+  });
+});
+
+describe("readOwnSanction", () => {
+  function own(studentId: string, roles: RoleId[] = ["student"]) {
+    return { id: crypto.randomUUID(), roles, studyProgramId: null, studentId };
+  }
+
+  it("gives a student the badge of their own Berat penalty, and none for a Ringan one", async () => {
+    await inTestDatabase(async (db) => {
+      const { suspended, dismissed, light } = await setting(db);
+
+      expect(await readOwnSanction(db, own(suspended))).toBe("suspended");
+      expect(await readOwnSanction(db, own(dismissed))).toBe("dismissed");
+      expect(await readOwnSanction(db, own(light))).toBeNull();
+    });
+  });
+
+  it("follows the rule of the staff badge for Selesai dijalani and Diberhentikan (ayat 8)", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer } = await setting(db);
+      const { studentIds } = await addNoteStudents(
+        db,
+        "Prodi Uji Sanksi Sendiri",
+        "Uji Sanksi Sendiri",
+        ["9944410031", "9944410032", "9944410033"],
+      );
+      const [served = "", agency = "", ayat8 = ""] = studentIds;
+      await db
+        .update(students)
+        .set({ originAgency: "Instansi Uji" })
+        .where(eq(students.id, agency));
+      for (const id of [served, agency]) {
+        await addTestPenalty(db, id, officer.id, "2026-09-01", {
+          ...SUSPENDED,
+          status: "served",
+        });
+      }
+      await addTestPenalty(db, ayat8, officer.id, "2026-09-01", {
+        ...SUSPENDED,
+        status: "served",
+        decision: "dismissed",
+      });
+
+      expect(await readOwnSanction(db, own(served))).toBeNull();
+      expect(await readOwnSanction(db, own(agency))).toBe("suspended");
+      expect(await readOwnSanction(db, own(ayat8))).toBe("dismissed_ayat_8");
+    });
+  });
+
+  it("gives nothing to an account without the right or without a student", async () => {
+    await inTestDatabase(async (db) => {
+      const { officer, suspended } = await setting(db);
+
+      expect(
+        await readOwnSanction(db, { ...officer, studentId: suspended }),
+      ).toBeNull();
+      expect(
+        await readOwnSanction(db, { ...own(suspended), studentId: null }),
+      ).toBeNull();
     });
   });
 });
