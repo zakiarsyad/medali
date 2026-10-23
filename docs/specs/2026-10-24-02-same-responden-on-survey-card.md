@@ -66,5 +66,5 @@ page never shows two different numbers for the same period.
 
 ## Steps
 
-- [ ] 1. The card counts Responden by the table's rule, with a check
+- [x] 1. The card counts Responden by the table's rule, with a check
   that both give the same numbers.
