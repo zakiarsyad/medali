@@ -6,6 +6,17 @@ import { type DashboardFilters, NO_AGENCY } from "./dashboard-address";
 
 const NOBODY = sql`false`;
 
+/** Which angkatan is where now, read once for every condition of the filters. */
+export interface DashboardCohorts {
+  /** The angkatan years in each tahap, for the Tahapan filter. */
+  stages: StageCohorts;
+  /**
+   * The angkatan years in a semester that lives in the dorm, for the
+   * Asrama filter. None while no academic period runs.
+   */
+  dorms: number[];
+}
+
 function inStage(
   stageNo: number | null,
   stages: StageCohorts,
@@ -47,13 +58,13 @@ function plainChoices(filters: DashboardFilters): (SQL | undefined)[] {
 export function dashboardStudents(
   visible: SQL,
   filters: DashboardFilters,
-  stages: StageCohorts,
+  cohorts: DashboardCohorts,
 ): SQL {
   return (
     and(
       visible,
       ACTIVE_MEMBER,
-      inStage(filters.stageNo, stages),
+      inStage(filters.stageNo, cohorts.stages),
       ...plainChoices(filters),
       fromAgency(filters.originAgency),
     ) ?? NOBODY

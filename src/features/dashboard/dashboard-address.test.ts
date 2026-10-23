@@ -14,6 +14,7 @@ import {
 
 const EVERY_CHOICE: DashboardFilters = {
   stageNo: 2,
+  dorm: null,
   studyProgramId: 7,
   entryPath: "transfer",
   province: "Jawa Barat",
@@ -59,6 +60,21 @@ describe("readDashboardFilters", () => {
     });
 
     expect(filters).toEqual({ ...NO_FILTERS, seedling: true });
+  });
+
+  it("reads each Asrama choice, and takes one it does not know as not chosen", () => {
+    for (const dorm of [
+      "semua",
+      "wismantara",
+      "dana_rakca",
+      "cipta_bakti",
+      "non",
+    ] as const) {
+      expect(readDashboardFilters({ asrama: dorm }).dorm).toBe(dorm);
+    }
+    for (const unknown of ["wismantara_putra", "1", "", "SEMUA"]) {
+      expect(readDashboardFilters({ asrama: unknown }).dorm).toBeNull();
+    }
   });
 });
 

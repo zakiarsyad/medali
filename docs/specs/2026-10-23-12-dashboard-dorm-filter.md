@@ -81,9 +81,18 @@ program only), the three roles that already use the Dashboard filter.
    The prototype gives Dashboard to the three roles above and Pengasuh
    only.
 
+## Decided while building
+
+1. "Asrama Wismantara" is one choice for both Wismantara Putra and
+   Wismantara Putri, as the prototype has three dorms. Its count is the
+   residents of both.
+2. The Asrama choice is offered also while no academic period runs:
+   Internasional and Pembibitan students and those placed by hand still
+   live in a dorm then.
+
 ## Steps
 
-- [ ] 1. The Asrama choice in the filter, with the count beside each
+- [x] 1. The Asrama choice in the filter, with the count beside each
   option and "Semua asrama" as the sum of the dorms.
 - [ ] 2. Every card and section counts only the chosen students, with
   the check for groups under 5.
