@@ -114,6 +114,7 @@ describe("a row from a file in Transparansi nilai SIKU", () => {
       <OwnSikuScreen
         tabs={{ pagePath: "penilaian", tabs: [], open: "siku" }}
         base={70}
+        weight={25}
         siku={{ totals: { gains: 0, losses: 2 }, entries: [entry] }}
         requests={null}
       />,
