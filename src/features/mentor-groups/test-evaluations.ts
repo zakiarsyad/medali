@@ -6,6 +6,9 @@ import {
   academicPeriods,
   mentorEvaluationChanges,
   mentorEvaluations,
+  mentorSurveyResults,
+  studentSurveyPeriods,
+  surveyResultFixings,
 } from "@/db/schema";
 import type { EvaluationScores } from "./evaluation-aspects";
 import {
@@ -126,6 +129,60 @@ export async function addTestEvaluation(
     .values({ ...TEST_SCORES, evaluatedAt: new Date(), ...evaluation })
     .returning({ id: mentorEvaluations.id });
   if (!added) throw new Error("The evaluation was not added.");
+  return added.id;
+}
+
+export interface TestSurveyLine {
+  groupId: string;
+  mentorId: string;
+  /** The academic period the survey was about. */
+  periodId: string;
+  fixedBy: string;
+  fixedAt: Date;
+  /** "Nilai evaluasi". */
+  score: number;
+}
+
+/**
+ * A line of fixed survey results, with a survey period of its own, closed
+ * by hand, and the fixing of it.
+ */
+export async function addTestSurveyLine(
+  db: Database,
+  line: TestSurveyLine,
+): Promise<string> {
+  const { periodId, fixedBy, fixedAt, ...result } = line;
+  const [survey] = await db
+    .insert(studentSurveyPeriods)
+    .values({
+      periodId,
+      startsOn: "2026-06-01",
+      endsOn: "2026-06-21",
+      achievementWeight: 50,
+      openedBy: fixedBy,
+      openedAt: fixedAt,
+      closedBy: fixedBy,
+      closedAt: fixedAt,
+    })
+    .returning({ id: studentSurveyPeriods.id });
+  if (!survey) throw new Error("The survey period was not added.");
+  const [fixing] = await db
+    .insert(surveyResultFixings)
+    .values({ surveyPeriodId: survey.id, fixedBy, fixedAt })
+    .returning({ id: surveyResultFixings.id });
+  if (!fixing) throw new Error("The fixing was not added.");
+  const [added] = await db
+    .insert(mentorSurveyResults)
+    .values({
+      ...result,
+      fixingId: fixing.id,
+      respondents: 3,
+      members: 4,
+      achievement: 70,
+      feedback: 60,
+    })
+    .returning({ id: mentorSurveyResults.id });
+  if (!added) throw new Error("The line was not added.");
   return added.id;
 }
 

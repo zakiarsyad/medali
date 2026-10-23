@@ -38,22 +38,9 @@ describe("savedWords", () => {
 });
 
 describe("resultWords", () => {
-  it("writes the result with the average it was judged by", () => {
-    expect(
-      resultWords({
-        activity: 80,
-        attendance: 80,
-        achievement: 80,
-        feedback: 79,
-      }),
-    ).toBe("Cukup · 79,8");
-    expect(
-      resultWords({
-        activity: 80,
-        attendance: 80,
-        achievement: 80,
-        feedback: 80,
-      }),
-    ).toBe("Baik · 80,0");
+  it("writes the result with the Nilai evaluasi it was judged by", () => {
+    expect(resultWords(79.8)).toBe("Cukup · 79,8");
+    expect(resultWords(80)).toBe("Baik · 80,0");
+    expect(resultWords(60.9)).toBe("Kurang · 60,9");
   });
 });

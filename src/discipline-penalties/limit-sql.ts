@@ -1,4 +1,4 @@
-import { inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
+import { and, inArray, lte, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { disciplinePenalties } from "@/db/schema";
 import { CHARACTER_SCORE_CAP, LIMITING_CATEGORIES } from "./score-limit";
@@ -11,14 +11,35 @@ import { CHARACTER_SCORE_CAP, LIMITING_CATEGORIES } from "./score-limit";
  */
 
 /**
- * Each student with a Ringan or Sedang penalty, whatever its status or
- * date, once, as a table to left join a read of students to.
+ * The penalties known by the end of a day on campus: of a violation on
+ * that day or before, and saved by then, so one recorded later for an
+ * earlier violation changes nothing of that day. Every penalty without a
+ * day.
  */
-export function limitedStudents(db: Database) {
+function knownBy(day: string | undefined): SQL | undefined {
+  if (day === undefined) return undefined;
+  return and(
+    lte(disciplinePenalties.day, day),
+    sql`(${disciplinePenalties.savedAt} at time zone 'Asia/Jakarta')::date <= ${day}`,
+  );
+}
+
+/**
+ * Each student with a Ringan or Sedang penalty, whatever its status or
+ * date, once, as a table to left join a read of students to. Given a day,
+ * only the penalties known by the end of that day count.
+ */
+export function limitedStudents(db: Database, onOrBefore?: string) {
+  const byDay = knownBy(onOrBefore);
   return db
     .selectDistinct({ studentId: disciplinePenalties.studentId })
     .from(disciplinePenalties)
-    .where(inArray(disciplinePenalties.category, [...LIMITING_CATEGORIES]))
+    .where(
+      and(
+        inArray(disciplinePenalties.category, [...LIMITING_CATEGORIES]),
+        byDay,
+      ),
+    )
     .as("limited_students");
 }
 

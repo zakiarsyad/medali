@@ -15,7 +15,7 @@ import { waitForOtherMentorChanges } from "@/mentoring/mentor-change-lock";
 import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
 import type { GroupCodeParts } from "@/ui/group-code";
-import { evaluationResult } from "./evaluation-result";
+import { resultOf } from "./evaluation-result";
 import { readLastGroupEvaluations } from "./last-evaluations";
 import { lockGroup, readMentorOfToday } from "./locked-group";
 import type { ReplacementInput } from "./replacement-input";
@@ -77,15 +77,18 @@ async function readGroupCode(
   return group;
 }
 
-/** Whether the last evaluation of the mentor of today for a group is Kurang. */
+/**
+ * Whether the last evaluation of the mentor of today for a group is
+ * Kurang, by Kepala Unit or by the students' survey.
+ */
 async function hasPoorEvaluation(
   tx: Database,
   limit: RowLimit,
   groupId: string,
 ): Promise<boolean> {
   const last = await readLastGroupEvaluations(tx, limit, [groupId]);
-  const scores = last.get(groupId);
-  return scores !== undefined && evaluationResult(scores) === "poor";
+  const average = last.get(groupId);
+  return average !== undefined && resultOf(average) === "poor";
 }
 
 /** Why a group cannot get the replacement that was sent, or null when it can. */

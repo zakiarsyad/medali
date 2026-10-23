@@ -226,6 +226,7 @@ import {
 } from "@/mentoring/replacement-ids";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 import {
+  FEWEST_ANSWERS_SHOWN,
   HIGHEST_SCORE,
   LOWEST_SCORE,
   SUGGESTION_MAX,
@@ -2433,6 +2434,79 @@ export const studentSurveyAnswers = pgTable(
       "student_survey_answers_suggestion_length",
       sql`${table.suggestion} is null or (btrim(${table.suggestion}) <> ''
         and char_length(${table.suggestion}) <= ${sql.raw(String(SUGGESTION_MAX))})`,
+    ),
+  ],
+);
+
+/**
+ * "Tetapkan hasil evaluasi": the results of a survey period that is over,
+ * fixed into the mentors' evaluation history by Kepala Unit, with who and
+ * when. A period is fixed once. Rows here cannot be changed or deleted;
+ * the database refuses it.
+ */
+export const surveyResultFixings = pgTable(
+  "survey_result_fixings",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    surveyPeriodId: uuid()
+      .notNull()
+      .references(() => studentSurveyPeriods.id),
+    fixedBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    fixedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    unique("survey_result_fixings_once_per_period").on(table.surveyPeriodId),
+  ],
+);
+
+/**
+ * A line of a mentor's evaluation history marked "Evaluasi oleh
+ * mahasiswa": the result of a group for the mentor its answers counted
+ * for, as a fixing kept it, with how many of its members answered. Only a
+ * group with enough answers gets one. Rows here cannot be changed or
+ * deleted; the database refuses it.
+ */
+export const mentorSurveyResults = pgTable(
+  "mentor_survey_results",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    fixingId: uuid()
+      .notNull()
+      .references(() => surveyResultFixings.id),
+    groupId: uuid()
+      .notNull()
+      .references(() => mentorGroups.id),
+    mentorId: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    /** "Responden": how many of the members answered. */
+    respondents: smallint().notNull(),
+    /** How many Aktif members the group held. */
+    members: smallint().notNull(),
+    /** "Capaian karakter". */
+    achievement: oneDecimal().notNull(),
+    /** "Umpan balik", as 0 to 100. */
+    feedback: oneDecimal().notNull(),
+    /** "Nilai evaluasi". */
+    score: oneDecimal().notNull(),
+  },
+  (table) => [
+    unique("mentor_survey_results_once_per_group_and_mentor").on(
+      table.fixingId,
+      table.groupId,
+      table.mentorId,
+    ),
+    index("mentor_survey_results_group").on(table.groupId),
+    index("mentor_survey_results_mentor").on(table.mentorId),
+    check(
+      "mentor_survey_results_enough_respondents",
+      sql`${table.respondents} >= ${sql.raw(String(FEWEST_ANSWERS_SHOWN))}`,
+    ),
+    check(
+      "mentor_survey_results_values_0_to_100",
+      sql`${table.achievement} between 0 and 100 and ${table.feedback} between 0 and 100 and ${table.score} between 0 and 100`,
     ),
   ],
 );

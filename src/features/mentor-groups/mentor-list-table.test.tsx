@@ -58,7 +58,8 @@ function shown(
   );
 }
 
-const POOR = { activity: 60, attendance: 60, achievement: 60, feedback: 59 };
+/** The Nilai evaluasi of 60, 60, 60 and 59. */
+const POOR = 59.8;
 
 describe("MentorListTable", () => {
   it("shows the name as a link to the mentor's page, with gelar and unit", () => {

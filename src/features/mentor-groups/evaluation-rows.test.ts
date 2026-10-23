@@ -14,6 +14,7 @@ import {
   addTestEvaluator,
   addTestHeldGroup,
   addTestPeriods,
+  addTestSurveyLine,
   TEST_SCORES,
 } from "./test-evaluations";
 import { addTestEndedGroup, addTestGroup, addTestMentor } from "./test-records";
@@ -199,6 +200,68 @@ describe("listGroupEvaluations and listMentorEvaluations", () => {
 
       expect(await listGroupEvaluations(db, none, held.groupId)).toEqual([]);
       expect(await listMentorEvaluations(db, none, held.mentorId)).toEqual([]);
+    });
+  });
+});
+
+describe("the lines of the students' survey in the evaluation history", () => {
+  it("stand in every list beside the evaluations of Kepala Unit, marked with their source, the one saved last first", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, periods, head } = await addRecords(db);
+      await addTestEvaluation(db, {
+        ...held,
+        periodId: periods.beforeId,
+        evaluatedBy: head.id,
+        evaluatedAt: new Date("2591-03-01T03:00:00Z"),
+      });
+      const fixedAt = new Date("2591-07-01T03:00:00Z");
+      await addTestSurveyLine(db, {
+        ...held,
+        periodId: periods.beforeId,
+        fixedBy: head.id,
+        fixedAt,
+        score: 65,
+      });
+      const limit = onlyPrograms([held.studyProgramId]);
+
+      const latest = await listLatestEvaluations(db, limit);
+      const ofGroup = await listGroupEvaluations(db, limit, held.groupId);
+      const ofMentor = await listMentorEvaluations(db, limit, held.mentorId);
+
+      for (const list of [latest, ofGroup, ofMentor]) {
+        expect(list.map((row) => row.source)).toEqual([
+          "student_survey",
+          "head_of_unit",
+        ]);
+      }
+      expect(latest[0]).toMatchObject({
+        period: { startYear: YEAR, term: "even" },
+        mentorName: "Pengasuh Uji Baris",
+        activity: null,
+        attendance: null,
+        achievement: 70,
+        feedback: 60,
+        average: 65,
+        respondents: { answered: 3, members: 4 },
+        evaluatedAt: fixedAt,
+        evaluatorName: "Kepala Uji Baris",
+      });
+      expect(latest[1]).toMatchObject({ average: 77.5, respondents: null });
+    });
+  });
+
+  it("are left out for an account whose limit leaves the group out", async () => {
+    await inTestDatabase(async (db) => {
+      const { held, periods, head } = await addRecords(db);
+      await addTestSurveyLine(db, {
+        ...held,
+        periodId: periods.beforeId,
+        fixedBy: head.id,
+        fixedAt: new Date("2591-07-01T03:00:00Z"),
+        score: 65,
+      });
+
+      expect(await listLatestEvaluations(db, onlyPrograms([]))).toEqual([]);
     });
   });
 });

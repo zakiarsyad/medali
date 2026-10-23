@@ -135,7 +135,8 @@ describe("readEvaluatedGroup", () => {
 
       const group = await readEvaluatedGroup(db, limit, held.groupId, offered);
 
-      expect(group?.last).toEqual({ ...TEST_SCORES, activity: 40 });
+      // The Nilai evaluasi of 40, 75, 70 and 85.
+      expect(group?.last).toBe(67.5);
       expect(group?.stored).toHaveLength(2);
       expect(group?.stored).toContainEqual({
         periodId: periods.runningId,

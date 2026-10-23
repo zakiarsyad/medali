@@ -38,8 +38,11 @@ export interface EvaluatedGroup extends GroupCodeParts {
   mentor: MentorOfToday | null;
   /** How many Aktif students the group holds. */
   members: number;
-  /** "Evaluasi terakhir" of the mentor of today. Null when there is none. */
-  last: EvaluationScores | null;
+  /**
+   * "Evaluasi terakhir" of the mentor of today, its Nilai evaluasi, of
+   * either source. Null when there is none.
+   */
+  last: number | null;
   /** What is saved of the mentor of today for the periods asked for. */
   stored: StoredEvaluation[];
 }

@@ -20,7 +20,8 @@ const GROUP: ListedGroup = {
   mentorLines: 1,
 };
 
-const GOOD = { activity: 90, attendance: 85, achievement: 80, feedback: 88 };
+/** The Nilai evaluasi of 90, 85, 80 and 88. */
+const GOOD = 85.8;
 
 function shown(
   lastEvaluations: LastEvaluations | null,
