@@ -12,6 +12,7 @@ import { noteText, roomWords } from "@/health-notes/health-words";
 import {
   type CountShown,
   FEWEST_COUNTED,
+  type SetCountShown,
   shownCount,
 } from "@/health-notes/shown-count";
 import type { RecapRow } from "@/health-notes/sick-list";
@@ -24,7 +25,7 @@ import type { MentalRecap, PublishedRow } from "@/mental-health/mental-recap";
  */
 
 /** How many residents of one dorm are in each category, as they may show. */
-export type DormCategories = Record<FitnessCategory, CountShown>;
+export type DormCategories = Record<FitnessCategory, SetCountShown>;
 
 /** "Kesehatan jasmani penghuni": the bars of every resident in reach, and each dorm's counts. */
 export interface DormPhysical {

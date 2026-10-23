@@ -37,6 +37,23 @@ describe("LevelBars", () => {
     expect(html).toContain(">&lt;5</span>");
   });
 
+  it("draws no bar for a level sent as 5+, and says 5+", () => {
+    const html = renderToStaticMarkup(
+      <LevelBars
+        byLevel={{
+          normal: 20,
+          mild: "5+",
+          moderate: "<5",
+          severe: 0,
+          extremely_severe: 0,
+        }}
+      />,
+    );
+
+    expect(html).toContain('value="0" aria-label="Ringan"');
+    expect(html).toContain(">5+</span>");
+  });
+
   it("lets every column of a bar shrink, so a bar never widens its panel on a phone", () => {
     expect(ruleOf(".levelBar")).toContain(
       "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;",

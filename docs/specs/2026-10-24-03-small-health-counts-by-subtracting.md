@@ -69,7 +69,7 @@ the two health panels on Dashboard asrama.
 
 ## Steps
 
-- [ ] 1. A set of fitness categories or mental health levels with one
+- [x] 1. A set of fitness categories or mental health levels with one
   "<5" hides one more count, and the card's percent shows "-" while
   Prima or Baik is hidden.
 - [ ] 2. On Dashboard asrama a second dorm row is held back when one

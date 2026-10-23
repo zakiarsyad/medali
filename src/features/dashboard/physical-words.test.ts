@@ -81,4 +81,16 @@ describe("stackParts", () => {
       { category: "medical", start: 50, length: 25 },
     ]);
   });
+
+  it("leaves out a category hidden as 5+", () => {
+    expect(
+      stackParts(
+        { excellent: 50, good: "5+", attention: "<5", medical: 25 },
+        100,
+      ),
+    ).toEqual([
+      { category: "excellent", start: 0, length: 50 },
+      { category: "medical", start: 50, length: 25 },
+    ]);
+  });
 });

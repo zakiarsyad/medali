@@ -6,10 +6,10 @@ import {
   type FitnessLimits,
 } from "./fitness-ids";
 import styles from "./health-notes.module.css";
-import { type CountShown, countWords } from "./shown-count";
+import { countWords, isHidden, type SetCountShown } from "./shown-count";
 
-function barLength(count: CountShown): number {
-  if (count === "<5") return 0;
+function barLength(count: SetCountShown): number {
+  if (isHidden(count)) return 0;
   return count;
 }
 
@@ -17,13 +17,13 @@ function barLength(count: CountShown): number {
  * One bar for each category, with its scores in brackets, as long as
  * its share of the largest, as the prototype draws them. A meter shows
  * the share, so no width is written into the screen code. A count sent
- * as "<5" says so and draws no bar.
+ * hidden, as "<5" or "5+", says so and draws no bar.
  */
 export function CategoryBars({
   counts,
   limits,
 }: {
-  counts: Record<FitnessCategory, CountShown>;
+  counts: Record<FitnessCategory, SetCountShown>;
   limits: FitnessLimits;
 }) {
   const largest = Math.max(1, ...Object.values(counts).map(barLength));

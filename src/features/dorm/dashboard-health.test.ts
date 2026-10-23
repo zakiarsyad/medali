@@ -151,7 +151,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
             attention: "<5",
             medical: "<5",
           },
-          fitShare: 82,
+          fitShare: null,
           illnesses: null,
         });
         expect(physical?.byDorm).toEqual({

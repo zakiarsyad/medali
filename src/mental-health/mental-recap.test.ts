@@ -35,6 +35,47 @@ describe("mentalRecapOf", () => {
     });
   });
 
+  it("sends the smallest other level above 0 as 5+ while only one level is <5, the first on a tie", () => {
+    const recap = mentalRecapOf({
+      assessed: 40,
+      byLevel: {
+        normal: 20,
+        mild: 9,
+        moderate: 2,
+        severe: 9,
+        extremely_severe: 0,
+      },
+    });
+
+    expect(recap).toEqual({
+      kind: "shown",
+      assessed: 40,
+      byLevel: {
+        normal: 20,
+        mild: "5+",
+        moderate: "<5",
+        severe: 9,
+        extremely_severe: 0,
+      },
+    });
+  });
+
+  it("gives every level as it is while none is 1 to 4", () => {
+    const byLevel = {
+      normal: 20,
+      mild: 9,
+      moderate: 5,
+      severe: 0,
+      extremely_severe: 0,
+    };
+
+    expect(mentalRecapOf({ assessed: 34, byLevel })).toEqual({
+      kind: "shown",
+      assessed: 34,
+      byLevel,
+    });
+  });
+
   it("gives no number for 1 to 4 assessed, and tells none apart", () => {
     for (const assessed of [1, 4]) {
       expect(
