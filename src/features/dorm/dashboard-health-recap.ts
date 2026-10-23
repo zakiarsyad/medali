@@ -1,17 +1,22 @@
-import type { DormId } from "@/dorms/dorms";
-import type { FitnessCategory } from "@/health-notes/fitness-ids";
+import { DORM_IDS, type DormId } from "@/dorms/dorms";
+import {
+  FITNESS_CATEGORIES,
+  type FitnessCategory,
+} from "@/health-notes/fitness-ids";
 import {
   type FitnessTally,
   type GroupTally,
   type PhysicalRecap,
   physicalRecapOf,
-  shownByCategory,
 } from "@/health-notes/fitness-recap";
 import type { FinalCategory } from "@/health-notes/health-category";
 import { noteText, roomWords } from "@/health-notes/health-words";
 import {
   type CountShown,
   FEWEST_COUNTED,
+  hiddenCount,
+  isHidden,
+  oneMoreToHide,
   type SetCountShown,
   shownCount,
 } from "@/health-notes/shown-count";
@@ -32,8 +37,7 @@ export interface DormPhysical {
   recap: PhysicalRecap;
   /**
    * Each dorm's counts, or null while the bars show none. A dorm's own
-   * counts are null while only 1 to 4 of its residents in reach are in a
-   * category.
+   * counts are null while it is held back.
    */
   byDorm: Record<DormId, DormCategories | null> | null;
 }
@@ -88,26 +92,12 @@ function inAnyCategory(byCategory: FitnessTally["byCategory"]): number {
   );
 }
 
-/**
- * One dorm's counts, or null while only 1 to 4 of its residents in reach
- * are in a category, by test or by health note alike: with so few, even
- * "<5" in one category and 0 in the others would tell someone's category.
- */
-function dormCategoriesOf(
-  tally: FitnessTally | undefined,
-): DormCategories | null {
-  if (tally === undefined) return { ...NO_CATEGORY };
-  const counted = inAnyCategory(tally.byCategory);
-  const isFew = counted > 0 && counted < FEWEST_COUNTED;
-  if (isFew) return null;
-  return shownByCategory(tally.byCategory);
-}
+type CategoryCounts = FitnessTally["byCategory"];
 
-function byDormOf(
-  tallies: readonly GroupTally<DormId>[],
-): Record<DormId, DormCategories | null> {
-  const found = new Map(tallies.map(({ key, tally }) => [key, tally]));
-  const of = (dorm: DormId) => dormCategoriesOf(found.get(dorm));
+/** Which counts of one dorm's row are hidden. */
+type HiddenRow = Record<FitnessCategory, boolean>;
+
+function perDorm<T>(of: (dorm: DormId) => T): Record<DormId, T> {
   return {
     wismantara_putra: of("wismantara_putra"),
     wismantara_putri: of("wismantara_putri"),
@@ -116,19 +106,146 @@ function byDormOf(
   };
 }
 
+function perCategory<T>(
+  of: (category: FitnessCategory) => T,
+): Record<FitnessCategory, T> {
+  return {
+    excellent: of("excellent"),
+    good: of("good"),
+    attention: of("attention"),
+    medical: of("medical"),
+  };
+}
+
+function countsByDorm(
+  tallies: readonly GroupTally<DormId>[],
+): Record<DormId, CategoryCounts> {
+  const found = new Map(tallies.map(({ key, tally }) => [key, tally]));
+  return perDorm((dorm) => found.get(dorm)?.byCategory ?? NO_CATEGORY);
+}
+
+/**
+ * The dorms held back: each where only 1 to 4 residents in reach are in
+ * a category, by test or by health note alike, as with so few even "<5"
+ * in one category and 0 in the others would tell someone's category.
+ * While only one is, the smallest other with a category is held back
+ * too, as the bars less the other rows would give that one back.
+ */
+function heldBackDorms(counts: Record<DormId, CategoryCounts>): Set<DormId> {
+  const rows = DORM_IDS.map((dorm) => {
+    const counted = inAnyCategory(counts[dorm]);
+    const isFew = counted > 0 && counted < FEWEST_COUNTED;
+    return { key: dorm, count: counted, hidden: isFew };
+  });
+  const held = new Set<DormId>();
+  for (const row of rows) {
+    if (row.hidden) held.add(row.key);
+  }
+  const extra = oneMoreToHide(rows);
+  if (extra !== null) held.add(extra);
+  return held;
+}
+
+function startingHidden(counts: CategoryCounts, isHeld: boolean): HiddenRow {
+  return perCategory(
+    (category) => isHeld || shownCount(counts[category]) === "<5",
+  );
+}
+
+/** Hides one more count of a dorm's row while only one is hidden; says whether it did. */
+function hideMoreInRow(counts: CategoryCounts, hidden: HiddenRow): boolean {
+  const row = FITNESS_CATEGORIES.map((category) => ({
+    key: category,
+    count: counts[category],
+    hidden: hidden[category],
+  }));
+  const extra = oneMoreToHide(row);
+  if (extra === null) return false;
+  hidden[extra] = true;
+  return true;
+}
+
+/** Hides one more count of a category's column while only one is hidden; says whether it did. */
+function hideMoreInColumn(
+  counts: Record<DormId, CategoryCounts>,
+  hidden: Record<DormId, HiddenRow>,
+  category: FitnessCategory,
+): boolean {
+  const column = DORM_IDS.map((dorm) => ({
+    key: dorm,
+    count: counts[dorm][category],
+    hidden: hidden[dorm][category],
+  }));
+  const extra = oneMoreToHide(column);
+  if (extra === null) return false;
+  hidden[extra][category] = true;
+  return true;
+}
+
+/**
+ * Hides counts until no dorm's row and no column has exactly one hidden
+ * count. A column counts only while its bar shows a number, as only then
+ * does the bar less the column's other counts give one back. Each pass
+ * that changes something hides one more count, so it ends.
+ */
+function hideUntilNoneSingle(
+  counts: Record<DormId, CategoryCounts>,
+  hidden: Record<DormId, HiddenRow>,
+  bars: Record<FitnessCategory, SetCountShown>,
+): void {
+  const columns = FITNESS_CATEGORIES.filter(
+    (category) => !isHidden(bars[category]),
+  );
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const dorm of DORM_IDS) {
+      if (hideMoreInRow(counts[dorm], hidden[dorm])) changed = true;
+    }
+    for (const category of columns) {
+      if (hideMoreInColumn(counts, hidden, category)) changed = true;
+    }
+  }
+}
+
+function dormCategoriesOf(
+  counts: CategoryCounts,
+  hidden: HiddenRow,
+): DormCategories {
+  return perCategory((category) =>
+    hidden[category] ? hiddenCount(counts[category]) : counts[category],
+  );
+}
+
+function byDormOf(
+  tallies: readonly GroupTally<DormId>[],
+  bars: Record<FitnessCategory, SetCountShown>,
+): Record<DormId, DormCategories | null> {
+  const counts = countsByDorm(tallies);
+  const held = heldBackDorms(counts);
+  const hidden = perDorm((dorm) =>
+    startingHidden(counts[dorm], held.has(dorm)),
+  );
+  hideUntilNoneSingle(counts, hidden, bars);
+  return perDorm((dorm) =>
+    held.has(dorm) ? null : dormCategoriesOf(counts[dorm], hidden[dorm]),
+  );
+}
+
 /**
  * "Kesehatan jasmani penghuni" from each dorm's tally: the bars of every
  * resident in reach with the rules of the Dashboard, and each dorm's
  * counts only while the bars show counts, each of 1 to 4 as "<5", and
- * none for a dorm with only 1 to 4 in a category. No illness is counted
- * here.
+ * none for a dorm held back. A dorm's row and a category's column hide
+ * one more count while only one of theirs is hidden. No illness is
+ * counted here.
  */
 export function dormPhysicalOf(
   tallies: readonly GroupTally<DormId>[],
 ): DormPhysical {
   const recap = physicalRecapOf(sumOf(tallies), null);
   if (recap.kind !== "shown") return { recap, byDorm: null };
-  return { recap, byDorm: byDormOf(tallies) };
+  return { recap, byDorm: byDormOf(tallies, recap.byCategory) };
 }
 
 /** The anonymous count of "Kesehatan mental penghuni", and the sessions of the last 30 days. */

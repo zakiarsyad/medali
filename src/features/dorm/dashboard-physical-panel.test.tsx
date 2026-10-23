@@ -80,6 +80,28 @@ describe("PhysicalHealthPanel", () => {
     expect(shown).toContain('data-title="Prima">30</td>');
   });
 
+  it("writes a count sent as 5+ as it is, with no bar for it", () => {
+    const shown = render({
+      ...SHOWN,
+      recap: {
+        kind: "shown",
+        students: 120,
+        tested: 110,
+        untested: 10,
+        byCategory: { excellent: 40, good: "5+", attention: 16, medical: "<5" },
+        fitShare: null,
+        illnesses: null,
+      },
+      byDorm: {
+        ...BY_DORM,
+        dana_rakca: { excellent: "5+", good: 40, attention: 10, medical: "<5" },
+      },
+    });
+
+    expect(shown).toContain('value="0" aria-label="Baik"');
+    expect(shown).toContain('data-title="Prima">5+</td>');
+  });
+
   it("puts the line in place of the bars and the table while 1 to 4 residents are tested", () => {
     const shown = render({
       ...SHOWN,
