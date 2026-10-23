@@ -79,7 +79,7 @@ student's own record only.
 
 ## Steps
 
-- [ ] 1. The right to read one's own assessment results is added to the
+- [x] 1. The right to read one's own assessment results is added to the
   permission list, with its checks.
 - [ ] 2. The card "Capaian karakter semester (n)" on Profil saya, with
   the medal, the sentence, the limit note and the empty state.
