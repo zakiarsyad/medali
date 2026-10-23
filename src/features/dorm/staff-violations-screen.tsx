@@ -178,7 +178,7 @@ export function StaffViolationsScreen({
 }) {
   return (
     <>
-      <PageHead title="Pelanggaran">
+      <PageHead title="Pelanggaran asrama">
         Pelanggaran tata tertib asrama yang diumumkan Badan Asrama Mahasiswa
         pada jam yang ditentukan. Setelah diumumkan ada masa advokasi{" "}
         {APPEAL_HOURS} jam; setelah itu pelanggaran naik ke Pengelola Asrama.

@@ -88,14 +88,14 @@ describe("Tugas saya", () => {
     expect(html).toContain('id="tugas-lapor"');
   });
 
-  it("shows the number cards Klarifikasi kehadiran and Penilaian kebersihan, which jump to their sections and count toward the all-clear", () => {
+  it("shows the number cards Klarifikasi kehadiran asrama and Penilaian kebersihan, which jump to their sections and count toward the all-clear", () => {
     const html = screenOf({
       ...NOTHING,
       clarifications: { items: [], total: 2 },
     });
 
     expect(html).toMatch(
-      /<a href="#tugas-klar" class="_numberOn_\w+"><span class="_amount_\w+">2<\/span><span>Klarifikasi kehadiran<\/span><\/a>/,
+      /<a href="#tugas-klar" class="_numberOn_\w+"><span class="_amount_\w+">2<\/span><span>Klarifikasi kehadiran asrama<\/span><\/a>/,
     );
     expect(html).toMatch(
       /<a href="#tugas-bersih" class="_number_\w+"><span class="_amount_\w+">0<\/span><span>Penilaian kebersihan<\/span><\/a>/,
@@ -131,12 +131,12 @@ describe("Tugas saya", () => {
     );
   });
 
-  it("says how many advokasi wait for BAM, with a link to Pelanggaran, and keeps them out of the all-clear", () => {
+  it("says how many advokasi wait for BAM, with a link to Pelanggaran asrama, and keeps them out of the all-clear", () => {
     const html = screenOf({ ...NOTHING, waitingAppeals: 3 });
 
     expect(html).toContain("Perlu dipantau:");
     expect(html).toContain(
-      '3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran</a>).',
+      '3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran asrama</a>).',
     );
     expect(html).not.toContain("belum kembali melewati batas izin");
     expect(html).toContain("Semua tugas sudah beres.");
@@ -147,7 +147,7 @@ describe("Tugas saya", () => {
 
     expect(html.match(/Perlu dipantau:/g)).toHaveLength(1);
     expect(html).toContain(
-      'Perizinan asrama</a>); 3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran</a>).',
+      'Perizinan asrama</a>); 3 advokasi pelanggaran menunggu keputusan BAM (<a href="/asrama/pel">Pelanggaran asrama</a>).',
     );
   });
 
@@ -341,11 +341,11 @@ const CLARIFICATION: ClarificationTask = {
   decision: null,
 };
 
-describe("Klarifikasi kehadiran menunggu validasi", () => {
+describe("Klarifikasi kehadiran asrama menunggu validasi", () => {
   it("says Beres and Tidak ada yang menunggu. when nothing waits", () => {
     const html = screenOf({ ...NOTHING, leaves: null, returns: null });
 
-    expect(html).toContain("Klarifikasi kehadiran menunggu validasi");
+    expect(html).toContain("Klarifikasi kehadiran asrama menunggu validasi");
     expect(html).toContain("Beres");
     expect(html).toContain("Tidak ada yang menunggu.");
   });
@@ -382,7 +382,7 @@ describe("Klarifikasi kehadiran menunggu validasi", () => {
     });
 
     expect(html).toContain('href="/asrama/klar?status=diverifikasi"');
-    expect(html).toContain("Lihat semua di Klarifikasi kehadiran");
+    expect(html).toContain("Lihat semua di Klarifikasi kehadiran asrama");
   });
 
   it("asks before a rejection, naming the student and the activity as it was held", () => {
@@ -564,13 +564,13 @@ describe("Penetapan SP", () => {
     expect(html).toContain('aria-label="Proses Penghuni Contoh"');
   });
 
-  it("leads to Pelanggaran when more are due than it shows", () => {
+  it("leads to Pelanggaran asrama when more are due than it shows", () => {
     const html = screenOf({
       ...NOTHING,
       warnings: { items: [DUE], total: 21 },
     });
 
     expect(html).toContain('href="/asrama/pel"');
-    expect(html).toContain("Lihat semua di Pelanggaran");
+    expect(html).toContain("Lihat semua di Pelanggaran asrama");
   });
 });

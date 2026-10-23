@@ -101,6 +101,24 @@ describe("every address the server answers itself", () => {
   });
 });
 
+function tabTitle(pagePath: string, tabPath: string): string | undefined {
+  const page = pageAt(pagePath);
+  if (!page || !("tabs" in page)) return undefined;
+  return page.tabs.find((tab) => tab.path === tabPath)?.title;
+}
+
+describe("the names of the tabs that dorm and campus both have", () => {
+  it("say asrama on the dorm side", () => {
+    expect(tabTitle("asrama", "klar")).toBe("Klarifikasi kehadiran asrama");
+    expect(tabTitle("asrama", "pel")).toBe("Pelanggaran asrama");
+  });
+
+  it("keep their words on the campus side", () => {
+    expect(tabTitle("kegiatan", "klarifikasi")).toBe("Klarifikasi kehadiran");
+    expect(tabTitle("pembinaan", "disiplin")).toBe("Pelanggaran disiplin");
+  });
+});
+
 describe("every screen", () => {
   it.each(screenAddresses())("/%s is a page or tab in the list", (address) => {
     expect(isListed(address)).toBe(true);

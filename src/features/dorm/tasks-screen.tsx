@@ -55,7 +55,7 @@ function WaitingAppealsLine({ waitingAppeals }: { waitingAppeals: number }) {
   return (
     <>
       {waitingAppeals} advokasi pelanggaran menunggu keputusan BAM (
-      <Link href={WAITING_APPEALS_ADDRESS}>Pelanggaran</Link>)
+      <Link href={WAITING_APPEALS_ADDRESS}>Pelanggaran asrama</Link>)
     </>
   );
 }
@@ -99,7 +99,7 @@ function numbersOf(tasks: DormTasks): TaskNumber[] {
   }
   if (tasks.clarifications) {
     numbers.push({
-      label: "Klarifikasi kehadiran",
+      label: "Klarifikasi kehadiran asrama",
       amount: tasks.clarifications.total,
       sectionId: CLARIFICATION_SECTION_ID,
     });
@@ -159,11 +159,14 @@ function ClarificationSection({
   return (
     <TaskSection
       id={CLARIFICATION_SECTION_ID}
-      title="Klarifikasi kehadiran menunggu validasi"
+      title="Klarifikasi kehadiran asrama menunggu validasi"
       purpose="Sudah diterima BAM. Terima sebagai hadir atau izin, atau tolak. Penolakan memicu penetapan SP."
       total={section.total}
       shown={section.items.length}
-      all={{ address: ALL_PASSED_ON_ADDRESS, tab: "Klarifikasi kehadiran" }}
+      all={{
+        address: ALL_PASSED_ON_ADDRESS,
+        tab: "Klarifikasi kehadiran asrama",
+      }}
     >
       <ClarificationTasks tasks={section.items} />
     </TaskSection>
@@ -193,7 +196,7 @@ function WarningSection({ section }: { section: Section<WarningTask> }) {
       purpose="Mahasiswa yang memenuhi ketentuan SP dari pelanggaran asrama atau klarifikasi kehadiran yang ditolak."
       total={section.total}
       shown={section.items.length}
-      all={{ address: ALL_DUE_ADDRESS, tab: "Pelanggaran" }}
+      all={{ address: ALL_DUE_ADDRESS, tab: "Pelanggaran asrama" }}
     >
       <WarningTasks tasks={section.items} />
     </TaskSection>

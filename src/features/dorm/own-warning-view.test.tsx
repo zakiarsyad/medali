@@ -53,7 +53,7 @@ describe("the resident's warning on Kegiatan asrama", () => {
       "Anda masuk <b>penetapan SP 1</b> oleh Pengelola Asrama.",
     );
     expect(shown).toContain('href="/asrama/pel"');
-    expect(shown).toContain("Lihat di menu Pelanggaran");
+    expect(shown).toContain("Lihat di menu Pelanggaran asrama</a>");
   });
 
   it("after SP 1, says the SP and that one more rejection leads to SP 2", () => {

@@ -75,7 +75,7 @@ function ActivityLineRow({
 }
 
 /**
- * Kehadiran kegiatan: every activity of today and the 7 dates before, the
+ * Kehadiran kegiatan asrama: every activity of today and the 7 dates before, the
  * latest first, a page at a time; a card each on a phone. Pressing one
  * opens Jadwal harian of Kegiatan asrama on its date, with the activity
  * chosen in "Penghitungan kehadiran" for an account that counts.
@@ -102,7 +102,7 @@ export function DashboardActivities({
   return (
     <section className={shared.panel}>
       <div className={board.head}>
-        <h2 className={shared.heading}>Kehadiran kegiatan</h2>
+        <h2 className={shared.heading}>Kehadiran kegiatan asrama</h2>
         <span className={board.sub}>Hari ini dan 7 hari terakhir</span>
       </div>
       {activities.matching === 0 ? (

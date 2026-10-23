@@ -39,6 +39,15 @@ describe("RejectedWarningPanel", () => {
     expect(shown).toContain('href="/asrama/pel"');
   });
 
+  it("names the tab Pelanggaran asrama where the SP is set, and leads to it", () => {
+    const shown = panel({ rows: [ROW], matching: 1, page: 1 });
+
+    expect(shown).toContain(
+      "Penetapan dilakukan Pengelola Asrama di tab Pelanggaran asrama.",
+    );
+    expect(shown).toContain("Buka tab Pelanggaran asrama</a>");
+  });
+
   it("says - for a resident with neither a call nor an SP", () => {
     const shown = panel({
       rows: [{ ...ROW, level: null, causes: [], mark: null }],
