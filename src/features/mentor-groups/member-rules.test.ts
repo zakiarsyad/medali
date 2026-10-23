@@ -1,46 +1,13 @@
 import { describe, expect, it } from "vitest";
-import {
-  academicClasses,
-  countedMembers,
-  isOnLeave,
-  memberSemester,
-} from "./member-rules";
+import { isOnLeave, memberSemester } from "./member-rules";
 
-const ACTIVE = { status: "active", className: "2-01" } as const;
-const ON_LEAVE = { status: "on_leave", className: "2-09" } as const;
-
-describe("countedMembers", () => {
-  it("counts the Aktif members, not those on Cuti", () => {
-    expect(countedMembers([ACTIVE, ON_LEAVE, ACTIVE])).toBe(2);
-  });
-
-  it("counts nobody in a group without members", () => {
-    expect(countedMembers([])).toBe(0);
-  });
-});
+const ACTIVE = { status: "active" } as const;
+const ON_LEAVE = { status: "on_leave" } as const;
 
 describe("isOnLeave", () => {
   it("tags a member on Cuti and no other", () => {
     expect(isOnLeave(ON_LEAVE)).toBe(true);
     expect(isOnLeave(ACTIVE)).toBe(false);
-  });
-});
-
-describe("academicClasses", () => {
-  it("counts each kelas akademik of the Aktif members once", () => {
-    const members = [
-      ACTIVE,
-      { ...ACTIVE, className: "2-02" },
-      { ...ACTIVE, className: "2-01" },
-    ];
-
-    expect(academicClasses(members)).toBe(2);
-  });
-
-  it("leaves out a member without a kelas and a member on Cuti", () => {
-    const members = [ACTIVE, { ...ACTIVE, className: null }, ON_LEAVE];
-
-    expect(academicClasses(members)).toBe(1);
   });
 });
 

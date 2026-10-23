@@ -6,6 +6,8 @@ import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
 import { groupCode } from "@/ui/group-code";
+import { ListPager } from "@/ui/list-pager";
+import { PAGE_SIZE } from "@/ui/list-pages";
 import { MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
 import { PageHead } from "@/ui/page-head";
 import { listMentorEvaluations } from "./evaluation-rows";
@@ -15,9 +17,8 @@ import { readMemberScores } from "./member-scores";
 import { MentorAssignmentsPanel } from "./mentor-assignments-panel";
 import { readMentor } from "./mentor-detail";
 import styles from "./mentor-groups.module.css";
-import { MENTOR_LIST_ADDRESS } from "./mentor-list-address";
+import { MENTOR_LIST_ADDRESS, mentorAddress } from "./mentor-list-address";
 import { mentorLede } from "./mentor-words";
-import { activeSummary } from "./score-averages";
 import { ScoresPanel } from "./scores-panel";
 
 /**
@@ -28,6 +29,7 @@ export async function MentorScreen({
   limit,
   evaluationLimit,
   mentorId,
+  studentPage,
   detailVisible,
   studentAddressOf,
 }: {
@@ -39,6 +41,8 @@ export async function MentorScreen({
    */
   evaluationLimit: RowLimit | null;
   mentorId: string;
+  /** The page of "Mahasiswa binaan" the address asks for. */
+  studentPage: number;
   /** The students whose detail the account may open, or null for none. */
   detailVisible: SQL | null;
   /**
@@ -49,7 +53,7 @@ export async function MentorScreen({
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
-    readMentor(db, limit, mentorId, detailVisible),
+    readMentor(db, limit, mentorId, detailVisible, studentPage),
     readRunningPeriod(db),
   ]);
   if (answer.kind === "not_found") notFound();
@@ -65,7 +69,7 @@ export async function MentorScreen({
       mentor.members.map((member) => member.id),
     ),
   ]);
-  const hasMentees = mentor.members.length > 0;
+  const hasMentees = mentor.listed > 0;
   return (
     <>
       <p className={styles.back}>
@@ -84,7 +88,7 @@ export async function MentorScreen({
         {hasMentees && (
           <ScoresPanel
             title="Rerata binaan"
-            summary={activeSummary(mentor.members, scores)}
+            summary={mentor.summary}
             withBar={false}
           />
         )}
@@ -107,6 +111,15 @@ export async function MentorScreen({
           />
         ) : (
           <p className={shared.empty}>Tidak ada mahasiswa binaan saat ini.</p>
+        )}
+        {mentor.listed > PAGE_SIZE && (
+          <ListPager
+            page={mentor.studentPage}
+            matching={mentor.listed}
+            noun="mahasiswa"
+            keepsPlace
+            addressOf={(page) => mentorAddress(mentor.id, page)}
+          />
         )}
       </section>
     </>

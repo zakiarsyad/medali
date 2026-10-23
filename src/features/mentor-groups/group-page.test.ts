@@ -63,7 +63,7 @@ function pageFor(
   };
   const limit = groupRowsFor(account);
   if (limit === null) throw new Error("This account may not see groups.");
-  return readGroupPage(db, limit, groupId, null, TODAY);
+  return readGroupPage(db, limit, groupId, null, 1, TODAY);
 }
 
 describe("readGroupPage", () => {

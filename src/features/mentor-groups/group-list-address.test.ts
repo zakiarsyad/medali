@@ -14,6 +14,7 @@ const OPENS_THE_LIST = {
   filters: NO_FILTERS,
   page: 1,
   groupId: null,
+  memberPage: 1,
   detailId: null,
 };
 
@@ -71,6 +72,22 @@ describe("readGroupListParams", () => {
     expect(params.groupId).toBe(GROUP_ID);
     expect(params.detailId).toBe(STUDENT_ID);
   });
+
+  it("reads the page of the members apart from the page of the list", () => {
+    const params = readGroupListParams({
+      kelompok: GROUP_ID,
+      "hal-anggota": "3",
+    });
+
+    expect(params.memberPage).toBe(3);
+    expect(params.page).toBe(1);
+  });
+
+  it("takes a page of the members it does not understand as the first", () => {
+    for (const sent of ["0", "-2", "dua", "1.5", ""]) {
+      expect(readGroupListParams({ "hal-anggota": sent }).memberPage).toBe(1);
+    }
+  });
 });
 
 describe("groupListAddress", () => {
@@ -107,6 +124,23 @@ describe("groupAddress", () => {
       groupId: GROUP_ID,
     });
   });
+
+  it("leaves out the first page of the members", () => {
+    expect(groupAddress(GROUP_ID, 1)).toBe(groupAddress(GROUP_ID));
+  });
+
+  it("keeps the group with a later page of the members", () => {
+    const address = groupAddress(GROUP_ID, 2);
+
+    expect(address).toBe(
+      `/pengasuh/kelompok?kelompok=${GROUP_ID}&hal-anggota=2`,
+    );
+    expect(readAddress(address)).toEqual({
+      ...OPENS_THE_LIST,
+      groupId: GROUP_ID,
+      memberPage: 2,
+    });
+  });
 });
 
 describe("groupMemberAddress", () => {
@@ -116,6 +150,17 @@ describe("groupMemberAddress", () => {
     expect(readAddress(address)).toEqual({
       ...OPENS_THE_LIST,
       groupId: GROUP_ID,
+      detailId: STUDENT_ID,
+    });
+  });
+
+  it("keeps the page of the members the detail is opened from", () => {
+    const address = groupMemberAddress(GROUP_ID, STUDENT_ID, 2);
+
+    expect(readAddress(address)).toEqual({
+      ...OPENS_THE_LIST,
+      groupId: GROUP_ID,
+      memberPage: 2,
       detailId: STUDENT_ID,
     });
   });
