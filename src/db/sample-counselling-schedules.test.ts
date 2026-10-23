@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
+import type { Scores } from "@/character-scores/assessment-score";
+import { coachingNeedOf } from "@/character-scores/coaching-need";
 import { assignmentBasis } from "@/discipline-penalties/assignment-basis";
+import { limitedScores, limitOf } from "@/discipline-penalties/score-limit";
+import { callReason } from "@/features/counselling/assessment-call-rules";
 import {
   ACTIVE_STATUSES,
   SCHEDULE_STATUSES,
 } from "@/mental-health/schedule-ids";
+import { SAMPLE_ASSESSMENTS } from "./sample-character-assessments";
+import { SAMPLE_COACHING_STATUSES } from "./sample-coaching-statuses";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import {
   isSenderScheduleStep,
@@ -103,12 +109,9 @@ describe("the sample requests for counselling", () => {
   });
 });
 
-/** What "Dasar" may hold: the Kategori and the Jenjang, or the result of the assessment. */
-const BASIS = {
-  assigned:
-    /^Pelanggaran disiplin (ringan|sedang|berat) jenjang (pertama|kedua|ketiga)$/,
-  called: /^Asesmen karakter: pembinaan (ringan|intensif)$/,
-};
+/** What "Dasar" of a Penugasan may hold: the Kategori and the Jenjang. */
+const PENALTY_BASIS =
+  /^Pelanggaran disiplin (ringan|sedang|berat) jenjang (pertama|kedua|ketiga)$/;
 
 function lastStatusOf(sample: { steps: { statusAfter: string }[] }) {
   return sample.steps.at(-1)?.statusAfter ?? "done";
@@ -148,9 +151,10 @@ describe("the sample assignments of counselling", () => {
     }
   });
 
-  it("hold in Dasar only the Kategori and Jenjang, or the result of the assessment", () => {
+  it("hold in Dasar of a Penugasan only the Kategori and Jenjang", () => {
     for (const sample of SAMPLE_ASSIGNMENTS) {
-      expect(sample.basis, sample.nim).toMatch(BASIS[sample.kind]);
+      if (sample.kind !== "assigned") continue;
+      expect(sample.basis, sample.nim).toMatch(PENALTY_BASIS);
     }
   });
 
@@ -216,5 +220,75 @@ describe("the sample assignments of counselling", () => {
     expect(isSenderScheduleStep("ask_another")).toBe(false);
     expect(isStudentScheduleStep("assign")).toBe(false);
     expect(isStudentScheduleStep("set_time")).toBe(false);
+  });
+});
+
+const ACTIVE_NIMS = new Set(
+  SAMPLE_STUDENTS.filter(
+    (student) => (student.status ?? "active") === "active",
+  ).map((student) => student.nim),
+);
+
+/**
+ * A sample student's latest assessment, its scores as every screen shows
+ * them: held at 70 under a sample Ringan or Sedang penalty.
+ */
+function latestOf(nim: string): { scores: Scores; daysAgo: number } | null {
+  const latest = SAMPLE_ASSESSMENTS.filter((each) => each.nim === nim).at(-1);
+  if (!latest) return null;
+  const [M, E, D, A, L, I] = latest.scores;
+  const penalties = SAMPLE_DISCIPLINE_PENALTIES.filter(
+    (penalty) => penalty.nim === nim,
+  );
+  const limited = limitOf(penalties) !== null;
+  const scores = limitedScores({ M, E, D, A, L, I }, limited);
+  return { scores, daysAgo: latest.daysAgo };
+}
+
+function isListed(nim: string): boolean {
+  const latest = latestOf(nim);
+  if (!ACTIVE_NIMS.has(nim) || latest === null) return false;
+  return coachingNeedOf(latest.scores) !== null;
+}
+
+describe("the sample Pemanggilan calls", () => {
+  const calls = SAMPLE_ASSIGNMENTS.filter((sample) => sample.kind === "called");
+
+  it.each(calls)(
+    "are of a listed student, sent after their latest assessment, with its reason as Dasar and no Pesan pengirim: $nim",
+    (sample) => {
+      expect(isListed(sample.nim)).toBe(true);
+      const latest = latestOf(sample.nim);
+      const need = latest && coachingNeedOf(latest.scores);
+      if (!latest || !need) throw new Error("The student is not listed.");
+      expect(sample.basis).toBe(callReason(latest.scores, need));
+      expect(sample.senderMessage).toBeNull();
+      expect(sample.steps[0]?.daysAgo).toBeLessThan(latest.daysAgo);
+    },
+  );
+
+  it("are one per student, one waiting for its time and one with a time set", () => {
+    const nims = calls.map((sample) => sample.nim);
+    expect(new Set(nims).size).toBe(nims.length);
+    const lasts = calls.map(lastStatusOf);
+    expect(lasts).toContain("awaiting");
+    expect(lasts).toContain("scheduled");
+  });
+
+  it("are of students whose coaching is not marked Selesai", () => {
+    for (const sample of calls) {
+      const status = SAMPLE_COACHING_STATUSES.find(
+        (each) => each.nim === sample.nim,
+      );
+      expect(status?.status, sample.nim).not.toBe("done");
+    }
+  });
+
+  it("leave a listed student with no call, to call from Asesmen karakter", () => {
+    const called = new Set(calls.map((sample) => sample.nim));
+    const listed = SAMPLE_STUDENTS.map((student) => student.nim).filter(
+      isListed,
+    );
+    expect(listed.some((nim) => !called.has(nim))).toBe(true);
   });
 });
