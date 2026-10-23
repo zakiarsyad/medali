@@ -20,8 +20,9 @@ import {
 } from "./clarification-decision";
 import type { AcceptedAs, DormClarificationStatus } from "./clarification-ids";
 import type { Decided } from "./leave-messages";
+import { isOwnRecord, OWN_RECORD } from "./own-record";
 
-type Decider = Pick<Account, "id" | "roles">;
+type Decider = Pick<Account, "id" | "roles" | "studentId">;
 
 /** The right each step needs, and what is said to an account without it. */
 const STEP_RIGHTS: Record<
@@ -85,6 +86,21 @@ async function statusOf(
   return kept?.status ?? null;
 }
 
+/** Whether a clarification is of the account's own student. */
+async function isOwnClarification(
+  db: Database,
+  actor: Decider,
+  id: string,
+): Promise<boolean> {
+  if (actor.studentId === null) return false;
+  const [kept] = await db
+    .select({ studentId: dormClarifications.studentId })
+    .from(dormClarifications)
+    .where(eq(dormClarifications.id, id));
+  if (kept === undefined) return false;
+  return isOwnRecord(actor.studentId, kept.studentId);
+}
+
 async function decideIn(
   tx: Database,
   actor: Decider,
@@ -130,7 +146,7 @@ async function decideIn(
  * and its line in the log, all or nothing. Each step is refused to a
  * role without its right: Pengelola Asrama does not check in BAM's
  * place, BAM does not decide, and a role that only reads does neither.
- * The database changes a clarification only while it waits for that
+ * BAM's check of the account's own clarification is refused. The database changes a clarification only while it waits for that
  * step, so of two decisions at once the second waits for the first,
  * then is refused. One that still waits for BAM says so to Pengelola.
  * An accepted one makes the resident Hadir or Izin at the activity from
@@ -148,6 +164,9 @@ export async function decideDormClarification(
   if (!isUuid(sent.id)) return CLARIFICATION_NOT_FOUND;
   const decision = parseDecision(step, sent.kind, sent.note);
   if (!decision.ok) return decision;
+  if (step === "verify" && (await isOwnClarification(db, actor, sent.id))) {
+    return OWN_RECORD;
+  }
   return db.transaction((tx) =>
     decideIn(tx, actor, step, sent.id, decision.value),
   );

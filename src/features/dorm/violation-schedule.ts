@@ -8,6 +8,7 @@ import { type Punishment, VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 /** A violation that waits for its announcement, as Jadwal publikasi shows it. */
 export interface ScheduledViolation {
   id: string;
+  studentId: string;
   announcedAt: Date;
   day: string;
   name: string;
@@ -57,6 +58,7 @@ export async function readViolationSchedule(
   const rows = await db
     .select({
       id: dormViolations.id,
+      studentId: dormViolations.studentId,
       announcedAt: dormViolations.announcedAt,
       day: dormViolations.day,
       name: students.name,

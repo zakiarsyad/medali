@@ -37,6 +37,7 @@ function board(view: ActivitiesView, form: FormParts | null = null): string {
       view={view}
       now={NOW}
       form={form}
+      ownStudentId={null}
     />,
   );
 }

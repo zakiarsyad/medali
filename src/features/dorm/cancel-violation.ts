@@ -5,6 +5,7 @@ import { isUuid } from "@/db/is-uuid";
 import { dormViolationChanges, dormViolations } from "@/db/schema";
 import { WRITTEN_NOW } from "@/db/written-now";
 import type { Parsed } from "@/parsed";
+import { isOwnRecord, OWN_RECORD } from "./own-record";
 import {
   ALREADY_ANNOUNCED,
   ALREADY_CANCELLED,
@@ -23,6 +24,21 @@ async function whyNotCancelled(
     .where(eq(dormViolations.id, id));
   if (!kept) return VIOLATION_NOT_FOUND;
   return kept.cancelledAt === null ? ALREADY_ANNOUNCED : ALREADY_CANCELLED;
+}
+
+/** Whether a violation is of the account's own student. */
+async function isOwnViolation(
+  db: Database,
+  actor: AccountForAccess,
+  id: string,
+): Promise<boolean> {
+  if (actor.studentId === null) return false;
+  const [kept] = await db
+    .select({ studentId: dormViolations.studentId })
+    .from(dormViolations)
+    .where(eq(dormViolations.id, id));
+  if (kept === undefined) return false;
+  return isOwnRecord(actor.studentId, kept.studentId);
 }
 
 async function cancel(
@@ -60,9 +76,10 @@ async function cancel(
  * "Batalkan" on a row of Jadwal publikasi: the violation is never
  * announced. It is marked as cancelled, with who and when, never erased,
  * and the log gets a line. Any account that may record violations may
- * cancel one another recorded. Refused for any other role, for a
- * violation that is not there, for one cancelled before, and from its
- * announcement hour on, by the server's clock.
+ * cancel one another recorded. Refused for any other role, for the
+ * account's own violation, for a violation that is not there, for one
+ * cancelled before, and from its announcement hour on, by the server's
+ * clock.
  */
 export async function cancelViolation(
   db: Database,
@@ -72,5 +89,6 @@ export async function cancelViolation(
 ): Promise<Parsed<null>> {
   if (!may(actor.roles, "record_dorm_violations")) return NOT_ALLOWED_TO_RECORD;
   if (!isUuid(id)) return VIOLATION_NOT_FOUND;
+  if (await isOwnViolation(db, actor, id)) return OWN_RECORD;
   return db.transaction((tx) => cancel(tx, actor.id, id, moment));
 }

@@ -26,6 +26,7 @@ export async function ActivitiesScreen({
   mayCount,
   attendanceVisible,
   ownPart,
+  ownStudentId,
 }: {
   tabs: TabLinksProps;
   searchParams: SearchParams;
@@ -38,6 +39,8 @@ export async function ActivitiesScreen({
   attendanceVisible: SQL | null;
   /** The account's own resident part; null when it has none. */
   ownPart: ReactNode;
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
 }) {
   // The server's clock in campus time, so every browser sees one state.
   const moment = new Date();
@@ -67,6 +70,7 @@ export async function ActivitiesScreen({
         view={view}
         now={now}
         form={mayManage ? { newActivityId: randomUUID() } : null}
+        ownStudentId={ownStudentId}
       />
     </>
   );

@@ -16,6 +16,7 @@ export interface DecisionWords {
 }
 
 export interface LeaveCard extends LeaveRow {
+  studentId: string;
   name: string;
   nim: string;
   /** Where the student lives today, such as Asrama Dana Rakca, kamar 101. */

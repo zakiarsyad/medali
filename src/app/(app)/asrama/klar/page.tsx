@@ -53,6 +53,7 @@ export default async function DormClarificationsPage(
         verify: may(account.roles, "verify_dorm_clarification"),
         decide: may(account.roles, "decide_dorm_clarification"),
       }}
+      ownStudentId={account.studentId}
       rejectedPanel={
         panel === null ? null : (
           <RejectedWarningPanel panel={panel} params={params} />

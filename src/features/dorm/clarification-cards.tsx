@@ -20,10 +20,13 @@ import {
 export function ClarificationCards({
   cards,
   rights,
+  ownStudentId,
   emptyWords,
 }: {
   cards: DormClarificationCard[];
   rights: CardRights;
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
   /** What is said when there is no card to show. */
   emptyWords: string;
 }) {
@@ -34,6 +37,7 @@ export function ClarificationCards({
       <ClarificationCardsView
         cards={cards}
         rights={rights}
+        ownStudentId={ownStudentId}
         answers={answers}
         emptyWords={emptyWords}
         onOpenFile={setOpened}

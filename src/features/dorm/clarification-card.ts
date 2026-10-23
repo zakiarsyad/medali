@@ -19,6 +19,7 @@ export interface CheckWords {
 
 export interface DormClarificationCard {
   id: string;
+  studentId: string;
   /** When it was sent, written so that the newest sorts last. */
   sentAt: string;
   name: string;
@@ -83,16 +84,19 @@ export function byWords(name: string, at: Date): string {
 /**
  * What a card offers an account: the check of BAM on one that waits for
  * it, the decision of Pengelola Asrama on one BAM passed on, to
- * Pengelola a line that one still waits for BAM, or nothing. Hiding the
- * buttons is only for tidiness: the server checks every press.
+ * Pengelola a line that one still waits for BAM, to BAM in place of the
+ * check of the account's own clarification the line that someone else
+ * decides it, or nothing. Hiding the buttons is only for tidiness: the
+ * server checks every press.
  */
-export type CardOffer = "verify" | "decide" | "waits_for_bam" | null;
+export type CardOffer = "verify" | "decide" | "waits_for_bam" | "own" | null;
 
 export function offerOf(
   status: DormClarificationStatus,
   rights: { verify: boolean; decide: boolean },
+  isOwn = false,
 ): CardOffer {
-  if (status === "submitted" && rights.verify) return "verify";
+  if (status === "submitted" && rights.verify) return isOwn ? "own" : "verify";
   if (status === "submitted" && rights.decide) return "waits_for_bam";
   if (status === "verified" && rights.decide) return "decide";
   return null;

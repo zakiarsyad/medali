@@ -6,6 +6,7 @@ import { withTestDatabase } from "@/db/test-database";
 import { NOTE_TOO_LONG } from "./decide-leave";
 import { validateReturn, verifyReturn } from "./decide-return";
 import { REJECTION_NEEDS_NOTE } from "./leave-messages";
+import { OWN_RECORD } from "./own-record";
 import {
   NO_VERIFY_DECISION,
   REPORT_NOT_FOUND,
@@ -27,22 +28,37 @@ const inTestDatabase = withTestDatabase();
 
 /** Izin pesiar out until 16:00 on 13 October 2940, its report sent at 16:12. */
 async function addRecords(db: Database) {
-  const [ani] = await addTestResidents(db, 2940, "Prodi Uji Periksa Lapor", [
-    "9937930001",
-  ]);
-  if (!ani) throw new Error("The resident was not added.");
+  const [ani, bea] = await addTestResidents(
+    db,
+    2940,
+    "Prodi Uji Periksa Lapor",
+    ["9937930001", "9937930002"],
+  );
+  if (!ani || !bea) throw new Error("The residents were not added.");
   const manager = await addTestActor(db, "Pengelola Uji Periksa", [
     "dorm_manager",
   ]);
   const bam = await addTestActor(db, "BAM Uji Periksa", ["bam_bphk"]);
   const head = await addTestActor(db, "Kepala Uji Periksa", ["head_of_unit"]);
+  const aniBam = await addTestActor(
+    db,
+    "Ani BAM Uji Periksa",
+    ["student", "bam_bphk"],
+    ani.studentId,
+  );
+  const beaBam = await addTestActor(
+    db,
+    "Bea BAM Uji Periksa",
+    ["student", "bam_bphk"],
+    bea.studentId,
+  );
   const leaveId = await addApprovedLeave(db, ani.studentId, manager.id, {
     kind: "outing",
     startsAt: "2940-10-13T09:00",
     endsAt: "2940-10-13T16:00",
   });
   const reportId = await addTestReport(db, leaveId, "2940-10-13T16:12");
-  return { manager, bam, head, leaveId, reportId };
+  return { manager, bam, head, aniBam, beaBam, leaveId, reportId };
 }
 
 describe("verifyReturn", () => {
@@ -93,6 +109,36 @@ describe("verifyReturn", () => {
         );
       }
       expect((await reportById(db, reportId))?.status).toBe("waiting");
+    });
+  });
+
+  it("refuses a resident who is also BAM - BPHK their own report, also with its key in capitals, and keeps it waiting", async () => {
+    await inTestDatabase(async (db) => {
+      const { aniBam, reportId } = await addRecords(db);
+
+      for (const key of [reportId, reportId.toUpperCase()]) {
+        expect(await verifyReturn(db, aniBam, key, "verify", "")).toEqual(
+          OWN_RECORD,
+        );
+        expect(
+          await verifyReturn(db, aniBam, key, "reject", "Foto buram."),
+        ).toEqual(OWN_RECORD);
+      }
+      expect(await reportById(db, reportId)).toMatchObject({
+        status: "waiting",
+        verifiedBy: null,
+      });
+    });
+  });
+
+  it("lets another resident who is BAM - BPHK verify that report", async () => {
+    await inTestDatabase(async (db) => {
+      const { beaBam, reportId } = await addRecords(db);
+
+      expect(await verifyReturn(db, beaBam, reportId, "verify", "")).toEqual({
+        ok: true,
+        value: "verified",
+      });
     });
   });
 

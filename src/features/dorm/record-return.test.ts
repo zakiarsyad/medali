@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { LEAVE_NOT_FOUND } from "./leave-messages";
+import { OWN_RECORD } from "./own-record";
 import { recordReturn } from "./record-return";
 import {
   RECORD_NOT_ALLOWED,
@@ -113,6 +114,32 @@ describe("recordReturn", () => {
       expect(
         await recordReturn(db, bam, other, "2960-10-12T16:05", NOW),
       ).toEqual(RETURN_RECORDED_FIRST);
+    });
+  });
+
+  it("refuses a resident who is also BAM - BPHK their own late leave, also with its key in capitals, and keeps it out", async () => {
+    await inTestDatabase(async (db) => {
+      const { studentId, bam, leaveId } = await addRecords(db);
+      const own = await addTestActor(
+        db,
+        "Ani BAM Uji Catat",
+        ["student", "bam_bphk"],
+        studentId,
+      );
+
+      for (const key of [leaveId, leaveId.toUpperCase()]) {
+        expect(
+          await recordReturn(db, own, key, "2960-10-13T15:00", NOW),
+        ).toEqual(OWN_RECORD);
+      }
+      expect(await leaveById(db, leaveId)).toMatchObject({
+        status: "approved",
+        returnedAt: null,
+        returnRecordedBy: null,
+      });
+      expect(
+        await recordReturn(db, bam, leaveId, "2960-10-13T16:20", NOW),
+      ).toMatchObject({ ok: true });
     });
   });
 

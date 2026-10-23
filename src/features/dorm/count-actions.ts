@@ -32,7 +32,8 @@ function doneWords(isAnnouncement: boolean, wasAnnounced: boolean): string {
 /**
  * "Simpan", "Umumkan ketidakhadiran" and "Umumkan ulang". Who counted is
  * the signed-in account, never a field. A save refused because someone
- * else saved first reads the tab anew, so a reload shows their count.
+ * else saved first reads the tab anew, so a reload shows their count. A
+ * save that left out a change of the account's own mark says so.
  */
 export async function saveCountAction(
   before: CountFormState,
@@ -56,10 +57,15 @@ export async function saveCountAction(
     return { ...before, error: saved.error, done: null };
   }
   revalidatePath(ACTIVITIES_ADDRESS);
+  const { version, isAnnounced, ownMarkRefusal } = saved.value;
+  // The other rows were saved, so the form takes the new version too.
+  if (ownMarkRefusal !== null) {
+    return { error: ownMarkRefusal, done: null, version, isAnnounced };
+  }
   return {
     error: null,
     done: doneWords(parsed.value.isAnnouncement, before.isAnnounced),
-    version: saved.value.version,
-    isAnnounced: saved.value.isAnnounced,
+    version,
+    isAnnounced,
   };
 }

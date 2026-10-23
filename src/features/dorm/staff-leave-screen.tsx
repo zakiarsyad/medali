@@ -33,11 +33,14 @@ export function StaffLeaveScreen({
   params,
   board,
   rights,
+  ownStudentId,
 }: {
   tabs: TabLinksProps;
   params: LeaveListParams;
   board: LeaveBoard;
   rights: LeaveRights;
+  /** The student the account belongs to, whose own leave it does not decide. */
+  ownStudentId: string | null;
 }) {
   const { counts, list } = board;
   const { filters } = params;
@@ -93,6 +96,7 @@ export function StaffLeaveScreen({
           key={address}
           cards={list.cards}
           rights={rights}
+          ownStudentId={ownStudentId}
           asOf={board.asOf}
           emptyWords={NO_LEAVE_MATCHES}
         />
