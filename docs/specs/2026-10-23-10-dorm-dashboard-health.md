@@ -111,7 +111,7 @@ here than Dorm health notes and Mental health screening give it.
 
 ## Steps
 
-- [ ] 1. The rights for the two panels and for the names on them are
+- [x] 1. The rights for the two panels and for the names on them are
   added to the permission list, with their checks.
 - [ ] 2. "Kesehatan jasmani penghuni" shows the counts and the table
   per dorm, with the small-count rules.

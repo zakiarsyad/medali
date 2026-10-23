@@ -2698,6 +2698,108 @@ describe("may", () => {
     );
   });
 
+  const physicalReaders: RoleId[] = [
+    "dorm_manager",
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "bam_health",
+    "bam_bphk",
+  ];
+
+  it.each(physicalReaders)(
+    "lets %s see Kesehatan jasmani penghuni on Dashboard asrama, as it opens Kesehatan and the dashboard",
+    (role) => {
+      expect(may([role], "view_dorm_dashboard_physical")).toBe(true);
+      expect(may([role], "view_dorm_dashboard")).toBe(true);
+      expect(mayOpenTab([role], "dorm", "health")).toBe(true);
+    },
+  );
+
+  it("refuses Kesehatan jasmani penghuni to every other role, the other BAM roles and Pengasuh among them", () => {
+    const others = ROLE_IDS.filter((role) => !physicalReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "bam_compliance",
+        "bam_household",
+        "bam_spiritual",
+        "bam_catering",
+        "bam_arts_sports",
+        "mentor",
+        "student",
+        "counsellor",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_dashboard_physical")).toBe(false);
+    }
+  });
+
+  const physicalNameReaders: RoleId[] = [
+    "dorm_manager",
+    "head_of_unit",
+    "bam_health",
+    "bam_bphk",
+  ];
+
+  it.each(physicalNameReaders)(
+    "lets %s see the residents who need care on Dashboard asrama, as it reads the list on Kesehatan",
+    (role) => {
+      expect(may([role], "view_dorm_dashboard_physical_names")).toBe(true);
+      expect(may([role], "view_dorm_dashboard_physical")).toBe(true);
+      expect(may([role], "view_dorm_health_notes")).toBe(true);
+    },
+  );
+
+  it("refuses the residents who need care on Dashboard asrama to every other role, Direktur and Ketua Program Studi among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !physicalNameReaders.includes(role),
+    );
+    expect(others).toEqual(
+      expect.arrayContaining(["director", "head_of_program", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_dashboard_physical_names")).toBe(false);
+    }
+  });
+
+  const mentalReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+  ];
+
+  it.each(mentalReaders)(
+    "lets %s see Kesehatan mental penghuni on Dashboard asrama, as it counts screenings on Penilaian",
+    (role) => {
+      expect(may([role], "view_dorm_dashboard_mental")).toBe(true);
+      expect(may([role], "view_dorm_dashboard")).toBe(true);
+      expect(may([role], "view_mental_health_screening_count")).toBe(true);
+    },
+  );
+
+  it("refuses Kesehatan mental penghuni to every other role, Pengelola Asrama and every BAM role among them", () => {
+    const others = ROLE_IDS.filter((role) => !mentalReaders.includes(role));
+    expect(others).toEqual(
+      expect.arrayContaining(["dorm_manager", ...BAM_ROLES, "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_dorm_dashboard_mental")).toBe(false);
+    }
+  });
+
+  it("gives Kepala Unit plain titles for the rights of the health panels of Dashboard asrama", () => {
+    expect(ACTION_TITLES.view_dorm_dashboard_physical).toBe(
+      "Melihat kesehatan jasmani penghuni di dashboard asrama: jumlah per kategori dan per asrama, tanpa nama",
+    );
+    expect(ACTION_TITLES.view_dorm_dashboard_physical_names).toBe(
+      "Melihat nama, kamar, dan catatan kesehatan terakhir penghuni yang perlu perhatian dan tindak lanjut medis di dashboard asrama",
+    );
+    expect(ACTION_TITLES.view_dorm_dashboard_mental).toBe(
+      "Melihat kesehatan mental penghuni di dashboard asrama: rekap anonim per tingkat dan jumlah sesi konseling 30 hari terakhir, tanpa nama",
+    );
+  });
+
   it("gives a way to see violations to every role with the tab Pelanggaran, and to no other", () => {
     for (const role of ROLE_IDS) {
       const reads =
@@ -4054,6 +4156,31 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       onlyPrograms([7]),
     );
     expect(rowLimitForAction(head, "view_dorm_dashboard_names")).toEqual(
+      onlyPrograms([7]),
+    );
+  });
+
+  it("keeps Ketua Program Studi to their program in the health panels of Dashboard asrama", () => {
+    const head = account(["head_of_program"], 7);
+
+    expect(rowLimitForAction(head, "view_dorm_dashboard_physical")).toEqual(
+      onlyPrograms([7]),
+    );
+    expect(rowLimitForAction(head, "view_dorm_dashboard_mental")).toEqual(
+      onlyPrograms([7]),
+    );
+  });
+
+  it("gives Ketua Program Studi who is also BAM - Kesehatan every resident's physical health, and their own program's mental health only", () => {
+    const both = account(["head_of_program", "bam_health"], 7);
+
+    expect(rowLimitForAction(both, "view_dorm_dashboard_physical")).toEqual(
+      EVERY_ROW,
+    );
+    expect(
+      rowLimitForAction(both, "view_dorm_dashboard_physical_names"),
+    ).toEqual(EVERY_ROW);
+    expect(rowLimitForAction(both, "view_dorm_dashboard_mental")).toEqual(
       onlyPrograms([7]),
     );
   });
