@@ -86,7 +86,7 @@ not built a second time.
 - [x] 2. The card "Nilai karakter (KEP-220)" on Profil saya, with the
   parts, the pass line, the missing parts, the limit line and the empty
   state.
-- [ ] 3. "Transparansi nilai SIKU" as one panel for Profil saya and
+- [x] 3. "Transparansi nilai SIKU" as one panel for Profil saya and
   Penilaian SIKU, with the weight, the sum, both tables and the folded
   list of activities.
 - [ ] 4. Phone layout and speed of both cards.

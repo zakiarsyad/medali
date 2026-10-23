@@ -5,6 +5,8 @@ import { database } from "@/db/database";
 import { OwnAchievementPanel } from "@/features/character-assessment/own-achievement-panel";
 import { OwnScoreHistoryPanel } from "@/features/character-assessment/own-score-history-panel";
 import { OwnGradePanel } from "@/features/character-grades/own-grade-panel";
+import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import { ProfileSikuPanel } from "@/features/siku/profile-siku-panel";
 import { readOwnProfile } from "@/features/students/own-profile";
 import { OwnProfileScreen } from "@/features/students/own-profile-screen";
 import { readOwnSurvey } from "@/features/students/own-survey";
@@ -18,6 +20,8 @@ export default async function OwnProfilePage() {
     readOwnSurvey(database(), account, campusDay()),
   ]);
   if (answer.kind === "refused") forbidden();
+  // Only an Aktif student has a SIKU that counts in a grade now.
+  const isActive = answer.student.status === "active";
   return (
     <OwnProfileScreen
       student={answer.student}
@@ -27,6 +31,12 @@ export default async function OwnProfilePage() {
         <>
           <OwnAchievementPanel account={account} />
           <OwnGradePanel account={account} />
+          {isActive && (
+            <ProfileSikuPanel
+              account={account}
+              base={readBaseScore(database()).then(({ score }) => score)}
+            />
+          )}
           <OwnScoreHistoryPanel account={account} />
         </>
       }

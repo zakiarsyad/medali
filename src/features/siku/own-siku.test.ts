@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { cancelSikuEntry } from "./cancel-entry";
 import { readOwnSiku } from "./own-siku";
 import {
   addTestActor,
@@ -62,7 +63,7 @@ async function addRecords(db: Database) {
     studentIds: [ani],
     cancelled: true,
   });
-  return { ani, budi };
+  return { ani, budi, penilai, periods };
 }
 
 describe("readOwnSiku", () => {
@@ -83,6 +84,53 @@ describe("readOwnSiku", () => {
         ["2908-03-02", "discipline_penalty"],
         ["2907-10-10", "peer_mentoring"],
       ]);
+    });
+  });
+
+  it("drops a line staff cancel from the student's own lines, and the sum follows", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, penilai, periods } = await addRecords(db);
+      const id = await addTestEntry(db, penilai, {
+        kind: "gain",
+        reason: "training_speaker",
+        points: 5,
+        day: "2907-11-01",
+        periodId: periods.odd,
+        studentIds: [ani],
+      });
+      const own = { roles: ["student"] as RoleId[], studentId: ani };
+      const before = await readOwnSiku(db, own);
+
+      await cancelSikuEntry(db, penilai, id);
+
+      const after = await readOwnSiku(db, own);
+      if (before.kind !== "shown" || after.kind !== "shown") {
+        throw new Error("The SIKU was refused.");
+      }
+      expect(before.siku.totals).toEqual({ gains: 9, losses: 3 });
+      expect(after.siku.totals).toEqual({ gains: 4, losses: 3 });
+      expect(after.siku.entries.map((entry) => entry.id)).not.toContain(id);
+    });
+  });
+
+  it("only ever gives a student their own lines, whichever other role they hold", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, budi } = await addRecords(db);
+
+      const forBudi = await readOwnSiku(db, {
+        roles: ["student"],
+        studentId: budi,
+      });
+      const forHead = await readOwnSiku(db, {
+        roles: ["student", "head_of_unit"],
+        studentId: ani,
+      });
+
+      if (forBudi.kind !== "shown" || forHead.kind !== "shown") {
+        throw new Error("The SIKU was refused.");
+      }
+      expect(forBudi.siku.totals).toEqual({ gains: 4, losses: 9 });
+      expect(forHead.siku.totals).toEqual({ gains: 4, losses: 3 });
     });
   });
 

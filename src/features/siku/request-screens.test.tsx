@@ -147,6 +147,7 @@ describe("SIKU akhir of a student who may ask", () => {
       <OwnSikuScreen
         tabs={{ pagePath: "penilaian", tabs: [], open: "siku" }}
         base={70}
+        weight={25}
         siku={{ totals: { gains: 0, losses: 0 }, entries: [] }}
         requests={requests}
       />,
