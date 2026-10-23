@@ -109,7 +109,7 @@ only the student sees this view, and it always shows where to get help.
 
 ## Steps
 
-- [ ] 1. The rights to read one's own fitness, health note, screening
+- [x] 1. The rights to read one's own fitness, health note, screening
   and counselling status are added to the permission list, with their
   checks.
 - [ ] 2. The card "Kesehatan jasmani".
