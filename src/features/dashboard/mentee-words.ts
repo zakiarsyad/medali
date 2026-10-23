@@ -10,6 +10,10 @@ export const NO_GROUP_HELD =
 export const MENTEES_NOT_ASSESSED =
   "Belum ada hasil asesmen karakter untuk anak asuh Anda.";
 
+/** What section 4 says while nothing about the anak asuh is published to the Pengasuh. */
+export const MENTEES_NOTHING_PUBLISHED =
+  "Belum ada data yang dipublikasikan konselor untuk anak asuh Anda. Data hanya tampil dengan persetujuan mahasiswa.";
+
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
 }

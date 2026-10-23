@@ -3,7 +3,7 @@ import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { Recap } from "./achievement-recap";
 import type { GradeRecap } from "./grade-recap";
-import type { PublishedCounts } from "./mental-recap";
+import type { PublishedMental } from "./mental-recap";
 import type { AttentionRow } from "./mentee-attention";
 import type { MenteeNoteNumbers } from "./mentee-notes";
 import type { MentoringProgress } from "./mentee-progress";
@@ -20,14 +20,14 @@ export interface MenteeGroup extends GroupCodeParts {
   id: string;
 }
 
-/** The four cards and sections 1 to 3, of the anak asuh only, with no number held back. */
+/** The four cards and sections 1 to 4, of the anak asuh only, with no number held back. */
 export interface MenteeCards {
   /** Null while none is assessed. */
   achievement: Recap | null;
   grades: { recap: GradeRecap; scheme: GradeScheme };
   physical: PhysicalRecap;
-  /** The counselling data published to the Pengasuh. */
-  published: PublishedCounts;
+  /** The counselling data published to the Pengasuh: no anonymous count. */
+  published: PublishedMental;
 }
 
 /** What Dashboard anak asuh shows of a Pengasuh who holds a group today. */

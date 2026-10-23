@@ -5,6 +5,7 @@ import { KIND_TITLES } from "./dashboard-kind";
 import { GradeSection } from "./grade-section";
 import { MenteeAttentionPanel } from "./mentee-attention-panel";
 import { MenteeCardsRow } from "./mentee-cards-row";
+import { MenteeMentalSection } from "./mentee-mental-section";
 import { MenteeNotesPanel } from "./mentee-notes-panel";
 import { MenteeProgressBox, type ProgressLinks } from "./mentee-progress-box";
 import type { MenteeDashboard } from "./mentee-recap";
@@ -24,6 +25,8 @@ export interface MenteeLinks extends ProgressLinks {
   grade: string | null;
   /** "Lihat rincian" of section 3: Penilaian > Penilaian jasmani. */
   fitness: string | null;
+  /** "Lihat rincian" of section 4: Penilaian > Kesehatan mental. */
+  mental: string | null;
 }
 
 /** Dashboard anak asuh, for Pengasuh: only their own anak asuh. */
@@ -62,6 +65,10 @@ export function MenteeScreen({
         limits={view.fitnessLimits}
         detailAddress={links.fitness}
         line="Kategori kesehatan fisik anak asuh dari uji kesehatan dan riwayat penyakit."
+      />
+      <MenteeMentalSection
+        published={view.cards.published}
+        detailAddress={links.mental}
       />
     </>
   );

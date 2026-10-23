@@ -144,25 +144,12 @@ async function readNumbers(
 }
 
 /**
- * How many of the students `where` lets through have data published to
- * `reader`, and of them how many need counselling. Only counts leave the
- * database, so no reading is logged.
- */
-export function readPublishedCounts(
-  db: Database,
-  where: SQL,
-  reader: SharedReader,
-): Promise<PublishedCounts> {
-  return readNumbers(db, and(reader.reach, where) ?? NOBODY);
-}
-
-/**
  * "Data kesehatan mental yang dipublikasikan" of the students of the
  * group: those whose sharing is published to the reader, read on each
  * load, so one withdrawn since is gone. Each row shown is written to the
  * log of readings in the same transaction.
  */
-async function readPublished(
+export async function readPublished(
   db: Database,
   where: SQL,
   reader: SharedReader,

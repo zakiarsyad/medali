@@ -50,13 +50,15 @@ function sessionsLine(row: PublishedRow): string | null {
 }
 
 /**
- * The line under a name: the Pengasuh, and only the parts the student
- * agreed to share besides the level, which shows as a badge.
+ * The line under a name: the Pengasuh unless `namesMentor` is off, and
+ * only the parts the student agreed to share besides the level, which
+ * shows as a badge.
  */
-export function publishedLine(row: PublishedRow): string {
+export function publishedLine(row: PublishedRow, namesMentor = true): string {
   const unscreened = row.data.includes("level") && row.level === null;
+  const mentor = namesMentor ? row.mentorName : null;
   const parts = [
-    row.mentorName === null ? null : `Pengasuh: ${row.mentorName}.`,
+    mentor === null ? null : `Pengasuh: ${mentor}.`,
     unscreened ? `${NOT_SCREENED}.` : null,
     sessionsLine(row),
     row.summary,

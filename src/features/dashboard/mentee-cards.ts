@@ -4,25 +4,31 @@ import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import { readAchievement } from "./achievement-read";
 import { NONE_HELD_BACK } from "./achievement-recap";
 import { readCharacterGrades } from "./grade-read";
-import { readPublishedCounts } from "./mental-read";
-import type { PublishedCounts } from "./mental-recap";
+import { readPublished } from "./mental-read";
+import type { PublishedMental } from "./mental-recap";
 import type { MenteeCards } from "./mentee-recap";
 import type { MenteeScope } from "./mentee-scope";
 import { readPhysical } from "./physical-read";
 
-const NONE_PUBLISHED: PublishedCounts = { matching: 0, needCounselling: 0 };
+const NONE_PUBLISHED: PublishedMental = {
+  matching: 0,
+  needCounselling: 0,
+  rows: [],
+};
 
 /**
- * The four cards of Dashboard anak asuh and sections 1 to 3 below them,
+ * The four cards of Dashboard anak asuh and sections 1 to 4 below them,
  * by the rules of the main Dashboard, but with no number held back: its
  * Pengasuh sees each anak asuh's own values in Pengasuhan anyway, and
- * their health notes in Penilaian jasmani.
+ * their health notes in Penilaian jasmani. Of Kesehatan mental only what
+ * is published to the Pengasuh, each record shown logged as read.
  */
 export async function readMenteeCards(
   db: Database,
   scope: MenteeScope,
   basis: GradeBasis,
   limits: FitnessLimits,
+  now: Date = new Date(),
 ): Promise<MenteeCards> {
   const where = scope.mentees;
   const [achievement, grades, physical, published] = await Promise.all([
@@ -31,7 +37,7 @@ export async function readMenteeCards(
     readPhysical(db, limits, where, scope.illnesses, NONE_HELD_BACK),
     scope.shared === null
       ? NONE_PUBLISHED
-      : readPublishedCounts(db, where, scope.shared),
+      : readPublished(db, where, scope.shared, now),
   ]);
   return {
     achievement: achievement.recap,

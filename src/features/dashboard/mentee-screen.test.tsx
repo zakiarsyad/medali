@@ -33,7 +33,22 @@ const SHOWN: MenteeDashboard = {
     },
     grades: { recap: { kind: "none" }, scheme: STARTING_SCHEME },
     physical: { kind: "untested", students: 12 },
-    published: { matching: 3, needCounselling: 2 },
+    published: {
+      matching: 1,
+      needCounselling: 1,
+      rows: [
+        {
+          studentId: "00000000-0000-4000-8000-000000000001",
+          publishedAt: new Date("2026-10-21T03:00:00Z"),
+          name: "Mahasiswa Contoh",
+          mentorName: "Pengasuh Contoh",
+          data: ["level", "summary"],
+          level: "moderate",
+          sessions: null,
+          summary: "Pendampingan rutin.",
+        },
+      ],
+    },
   },
   fitnessLimits: STARTING_LIMITS,
   attention: [],
@@ -50,6 +65,7 @@ const LINKS = {
   assessment: "/penilaian/asesmen",
   grade: "/penilaian/karakter",
   fitness: "/penilaian/jasmani",
+  mental: "/penilaian/mental",
   meetings: "/pengasuhan/hadir",
   scores: "/pengasuhan/nilai",
   notes: "/pengasuhan/catatan",
@@ -77,13 +93,13 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain("Belum ada hasil tes kebugaran dari 12 mahasiswa.");
     expect(html).toContain("dipublikasikan");
     expect(html).toContain(
-      "2 perlu konseling. Hanya data yang disetujui mahasiswa.",
+      "1 perlu konseling. Hanya data yang disetujui mahasiswa.",
     );
     expect(html).not.toContain("diasesmen</small>");
     expect(html).not.toContain("Filter");
   });
 
-  it("moves the page to section 1, 2 or 3 when its card is pressed", () => {
+  it("moves the page to each section when its card is pressed", () => {
     const html = renderToStaticMarkup(
       <MenteeScreen view={SHOWN} links={LINKS} />,
     );
@@ -94,6 +110,8 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain('id="nilai-karakter"');
     expect(html).toContain('href="#kesehatan-jasmani"');
     expect(html).toContain('id="kesehatan-jasmani"');
+    expect(html).toContain('href="#kesehatan-mental"');
+    expect(html).toContain('id="kesehatan-mental"');
   });
 
   it("shows section 1 for the anak asuh, with Lihat rincian to Asesmen karakter and no table per angkatan", () => {
@@ -205,6 +223,40 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain("Arti kategori");
     expect(html).toMatch(/href="\/penilaian\/jasmani"[^>]*>Lihat rincian</);
     expect(empty).toContain(NOBODY_TESTED);
+  });
+
+  it("shows in section 4 only Kesehatan mental anak asuh, without the Pengasuh's own name or an anonymous count", () => {
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain(
+      "Hanya data yang dipublikasikan konselor dengan persetujuan anak asuh.",
+    );
+    expect(html).toContain("Kesehatan mental anak asuh");
+    expect(html).toContain("Mahasiswa Contoh");
+    expect(html).toContain("Pendampingan rutin.");
+    expect(html).not.toContain("Pengasuh Contoh");
+    expect(html).not.toContain("rekap anonim");
+    expect(html).toMatch(/href="\/penilaian\/mental"[^>]*>Lihat rincian</);
+  });
+
+  it("says so in section 4 while nothing about the anak asuh is published", () => {
+    const view: MenteeDashboard = {
+      ...SHOWN,
+      cards: {
+        ...SHOWN.cards,
+        published: { matching: 0, needCounselling: 0, rows: [] },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={view} links={LINKS} />,
+    );
+
+    expect(html).toContain(
+      "Belum ada data yang dipublikasikan konselor untuk anak asuh Anda. Data hanya tampil dengan persetujuan mahasiswa.",
+    );
   });
 
   it("shows only the message to a Pengasuh without a group", () => {
