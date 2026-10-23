@@ -1,6 +1,13 @@
 import { FITNESS_CATEGORIES, type FitnessCategory } from "./fitness-ids";
 import { ILLNESSES, type Illness } from "./health-ids";
-import { type CountShown, FEWEST_COUNTED, shownCount } from "./shown-count";
+import {
+  type CountShown,
+  FEWEST_COUNTED,
+  isHidden,
+  type SetCountShown,
+  shownCount,
+  shownSet,
+} from "./shown-count";
 
 /*
  * How many students of a group are in each fitness category, as it may
@@ -48,8 +55,8 @@ export type PhysicalRecap =
       students: number;
       tested: number;
       untested: CountShown;
-      byCategory: Record<FitnessCategory, CountShown>;
-      /** The percent "prima dan baik", or null while it would give a count of 1 to 4 back. */
+      byCategory: Record<FitnessCategory, SetCountShown>;
+      /** The percent "prima dan baik", or null while it would give a hidden count back. */
       fitShare: number | null;
       /** The most common illnesses, or null for an account that may not count them. */
       illnesses: IllnessCount[] | null;
@@ -63,29 +70,29 @@ function heldCount(count: number, fewest: number): CountShown {
   return fewest > 1 ? shownCount(count) : count;
 }
 
-/** Each category's count as it may show: "<5" for 1 to 4 unless none is held back. */
+/**
+ * Each category's count as it may show, as `shownSet` hides them,
+ * unless none is held back.
+ */
 export function shownByCategory(
   byCategory: Record<FitnessCategory, number>,
   fewest: number = FEWEST_COUNTED,
-): Record<FitnessCategory, CountShown> {
-  return {
-    excellent: heldCount(byCategory.excellent, fewest),
-    good: heldCount(byCategory.good, fewest),
-    attention: heldCount(byCategory.attention, fewest),
-    medical: heldCount(byCategory.medical, fewest),
-  };
+): Record<FitnessCategory, SetCountShown> {
+  if (fewest <= 1) return { ...byCategory };
+  return shownSet(FITNESS_CATEGORIES, byCategory);
 }
 
 /**
  * The share of prima and baik among the students with a category, a
- * student with only a note among them, so it never passes 100.
+ * student with only a note among them, so it never passes 100. None
+ * while Prima or Baik is hidden, as it would give the count back.
  */
 function fitShareOf(
   byCategory: Record<FitnessCategory, number>,
-  fewest: number,
+  shown: Record<FitnessCategory, SetCountShown>,
 ): number | null {
+  if (isHidden(shown.excellent) || isHidden(shown.good)) return null;
   const fit = byCategory.excellent + byCategory.good;
-  if (heldCount(fit, fewest) === "<5") return null;
   let categorised = 0;
   for (const category of FITNESS_CATEGORIES) {
     categorised += byCategory[category];
@@ -144,13 +151,14 @@ export function physicalRecapOf(
   const { students, tested, byCategory } = tally;
   if (tested === 0) return { kind: "untested", students };
   if (tested < fewest) return { kind: "too_few", students };
+  const shown = shownByCategory(byCategory, fewest);
   return {
     kind: "shown",
     students,
     tested,
     untested: heldCount(students - tested, fewest),
-    byCategory: shownByCategory(byCategory, fewest),
-    fitShare: fitShareOf(byCategory, fewest),
+    byCategory: shown,
+    fitShare: fitShareOf(byCategory, shown),
     illnesses: illnesses === null ? null : commonIllnesses(illnesses, fewest),
   };
 }

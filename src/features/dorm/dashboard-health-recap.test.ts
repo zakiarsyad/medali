@@ -1,6 +1,7 @@
 // Sample NIMs of this file: 9911000100 to 9911000199. None is added to
 // the database.
 import { describe, expect, it } from "vitest";
+import { DORM_IDS } from "@/dorms/dorms";
 import type { FitnessTally } from "@/health-notes/fitness-recap";
 import type { RecapRow } from "@/health-notes/sick-list";
 import {
@@ -107,22 +108,263 @@ describe("dormPhysicalOf", () => {
       },
       {
         key: "cipta_bakti",
-        tally: tally(2, 2, { ...NO_CATEGORY, excellent: 2 }),
+        tally: tally(10, 9, { ...NO_CATEGORY, excellent: 9 }),
       },
     ]);
 
     expect(physical.recap).toMatchObject({
       kind: "shown",
-      students: 12,
-      tested: 11,
-      byCategory: { excellent: 7, good: "<5", attention: "<5", medical: "<5" },
+      students: 20,
+      tested: 18,
+      byCategory: { excellent: 14, good: "<5", attention: "<5", medical: "<5" },
       illnesses: null,
     });
     expect(physical.byDorm).toEqual({
       wismantara_putra: NO_CATEGORY,
       wismantara_putri: NO_CATEGORY,
       dana_rakca: { excellent: 5, good: "<5", attention: "<5", medical: "<5" },
+      cipta_bakti: { ...NO_CATEGORY, excellent: 9 },
+    });
+  });
+
+  it("holds back the other dorm too when only one dorm is held back, so the bars give neither back", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "dana_rakca",
+        tally: tally(10, 9, {
+          excellent: 5,
+          good: 2,
+          attention: 1,
+          medical: 1,
+        }),
+      },
+      {
+        key: "cipta_bakti",
+        tally: tally(2, 2, { ...NO_CATEGORY, excellent: 2 }),
+      },
+    ]);
+
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: NO_CATEGORY,
+      wismantara_putri: NO_CATEGORY,
+      dana_rakca: null,
       cipta_bakti: null,
+    });
+  });
+
+  it("holds back the smallest other dorm with a category, the first in dorm order on a tie", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(12, 12, { ...NO_CATEGORY, excellent: 12 }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(8, 8, { ...NO_CATEGORY, excellent: 8 }),
+      },
+      {
+        key: "dana_rakca",
+        tally: tally(3, 3, { ...NO_CATEGORY, excellent: 3 }),
+      },
+      {
+        key: "cipta_bakti",
+        tally: tally(8, 8, { ...NO_CATEGORY, excellent: 8 }),
+      },
+    ]);
+
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: { ...NO_CATEGORY, excellent: 12 },
+      wismantara_putri: null,
+      dana_rakca: null,
+      cipta_bakti: { ...NO_CATEGORY, excellent: 8 },
+    });
+  });
+
+  it("hides a dorm's 5 of Perlu tindak lanjut medis as 5+ beside another dorm's <5 under a bar of 7, and each row and column with one hidden count hides one more", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(25, 25, { ...NO_CATEGORY, excellent: 20, medical: 5 }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(29, 29, {
+          excellent: 20,
+          good: 3,
+          attention: 4,
+          medical: 2,
+        }),
+      },
+    ]);
+
+    expect(physical.recap).toMatchObject({
+      byCategory: { excellent: 40, good: "<5", attention: "<5", medical: 7 },
+    });
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: {
+        excellent: "5+",
+        good: 0,
+        attention: 0,
+        medical: "5+",
+      },
+      wismantara_putri: {
+        excellent: "5+",
+        good: "<5",
+        attention: "<5",
+        medical: "<5",
+      },
+      dana_rakca: NO_CATEGORY,
+      cipta_bakti: NO_CATEGORY,
+    });
+    expect(JSON.stringify(physical.byDorm)).not.toMatch(/":[1-9]/);
+  });
+
+  it("takes a column as a set only while its bar shows a number", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(20, 20, { ...NO_CATEGORY, excellent: 15, good: 5 }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(19, 19, {
+          ...NO_CATEGORY,
+          excellent: 15,
+          good: 1,
+          attention: 3,
+        }),
+      },
+    ]);
+
+    expect(physical.recap).toMatchObject({
+      byCategory: { excellent: 30, good: "5+", attention: "<5", medical: 0 },
+    });
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: { ...NO_CATEGORY, excellent: 15, good: 5 },
+      wismantara_putri: {
+        excellent: 15,
+        good: "<5",
+        attention: "<5",
+        medical: 0,
+      },
+      dana_rakca: NO_CATEGORY,
+      cipta_bakti: NO_CATEGORY,
+    });
+  });
+
+  it("hides one more count of a dorm's row while its two <5 add up to the fewest they could", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(12, 12, {
+          ...NO_CATEGORY,
+          excellent: 10,
+          good: 1,
+          attention: 1,
+        }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(22, 22, {
+          ...NO_CATEGORY,
+          excellent: 10,
+          good: 6,
+          attention: 6,
+        }),
+      },
+    ]);
+
+    expect(physical.recap).toMatchObject({
+      byCategory: { excellent: 20, good: 7, attention: 7, medical: 0 },
+    });
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: {
+        excellent: "5+",
+        good: "<5",
+        attention: "<5",
+        medical: 0,
+      },
+      wismantara_putri: {
+        excellent: "5+",
+        good: "5+",
+        attention: "5+",
+        medical: 0,
+      },
+      dana_rakca: NO_CATEGORY,
+      cipta_bakti: NO_CATEGORY,
+    });
+  });
+
+  it("hides a dorm's count in a column whose bar is hidden while none of its counts is, so the column does not give the bar back", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(21, 21, { ...NO_CATEGORY, excellent: 15, good: 6 }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(24, 24, {
+          excellent: 15,
+          good: 0,
+          attention: 3,
+          medical: 6,
+        }),
+      },
+    ]);
+
+    expect(physical.recap).toMatchObject({
+      tested: 45,
+      byCategory: { excellent: 30, good: "5+", attention: "<5", medical: 6 },
+    });
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: {
+        excellent: "5+",
+        good: "5+",
+        attention: 0,
+        medical: 0,
+      },
+      wismantara_putri: {
+        excellent: "5+",
+        good: 0,
+        attention: "<5",
+        medical: "5+",
+      },
+      dana_rakca: NO_CATEGORY,
+      cipta_bakti: NO_CATEGORY,
+    });
+  });
+
+  it("holds back more dorms while a column whose bar is <5 adds up to 4 at its fewest", () => {
+    const counts = { ...NO_CATEGORY, excellent: 10, attention: 1 };
+    const physical = dormPhysicalOf(
+      DORM_IDS.map((key) => ({ key, tally: tally(11, 11, counts) })),
+    );
+
+    expect(physical.recap).toMatchObject({
+      tested: 44,
+      byCategory: { excellent: "5+", good: 0, attention: "<5", medical: 0 },
+    });
+    const shown = { excellent: "5+", good: 0, attention: "<5", medical: 0 };
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: null,
+      wismantara_putri: null,
+      dana_rakca: shown,
+      cipta_bakti: shown,
+    });
+  });
+
+  it("gives every dorm's counts as they are while none is 1 to 4", () => {
+    const counts = { excellent: 10, good: 6, attention: 5, medical: 0 };
+    const physical = dormPhysicalOf([
+      { key: "dana_rakca", tally: tally(21, 21, counts) },
+      { key: "cipta_bakti", tally: tally(21, 21, counts) },
+    ]);
+
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: NO_CATEGORY,
+      wismantara_putri: NO_CATEGORY,
+      dana_rakca: counts,
+      cipta_bakti: counts,
     });
   });
 
@@ -140,6 +382,7 @@ describe("dormPhysicalOf", () => {
 
     expect(physical.recap.kind).toBe("shown");
     expect(physical.byDorm?.cipta_bakti).toBeNull();
+    expect(physical.byDorm?.dana_rakca).toBeNull();
     expect(JSON.stringify(physical.byDorm)).not.toContain("<5");
   });
 

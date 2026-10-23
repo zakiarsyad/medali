@@ -1,9 +1,9 @@
 import {
-  type CountShown,
   FEWEST_COUNTED,
-  shownCount,
+  type SetCountShown,
+  shownSet,
 } from "@/health-notes/shown-count";
-import type { ScreeningLevel } from "./screening-ids";
+import { SCREENING_LEVELS, type ScreeningLevel } from "./screening-ids";
 import type { SessionSummary } from "./session-view";
 import type { SharedData } from "./sharing-ids";
 
@@ -28,7 +28,7 @@ export type MentalRecap =
   | {
       kind: "shown";
       assessed: number;
-      byLevel: Record<ScreeningLevel, CountShown>;
+      byLevel: Record<ScreeningLevel, SetCountShown>;
     };
 
 /** The anonymous count of a group with enough assessed students for counts. */
@@ -79,20 +79,15 @@ export interface MentalView {
 
 function shownByLevel(
   byLevel: Record<ScreeningLevel, number>,
-): Record<ScreeningLevel, CountShown> {
-  return {
-    normal: shownCount(byLevel.normal),
-    mild: shownCount(byLevel.mild),
-    moderate: shownCount(byLevel.moderate),
-    severe: shownCount(byLevel.severe),
-    extremely_severe: shownCount(byLevel.extremely_severe),
-  };
+): Record<ScreeningLevel, SetCountShown> {
+  return shownSet(SCREENING_LEVELS, byLevel);
 }
 
 /**
  * The counts as they may be shown: none at all while fewer than
- * `FEWEST_COUNTED` students are assessed, and "<5" for a level of 1 to
- * 4, so nobody's level can be told from them.
+ * `FEWEST_COUNTED` students are assessed, "<5" for a level of 1 to 4,
+ * and one more level hidden while only one is "<5", so nobody's level
+ * can be told from them.
  */
 export function mentalRecapOf(tally: MentalTally): MentalRecap {
   const { assessed, byLevel } = tally;

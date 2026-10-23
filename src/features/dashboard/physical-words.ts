@@ -8,7 +8,12 @@ import type {
   ShownPhysical,
 } from "@/health-notes/fitness-recap";
 import { ILLNESS_WORDS } from "@/health-notes/health-words";
-import { type CountShown, countWords } from "@/health-notes/shown-count";
+import {
+  type CountShown,
+  countWords,
+  isHidden,
+  type SetCountShown,
+} from "@/health-notes/shown-count";
 
 /** What the card and section 3 say instead of counts for a small group. */
 export const PHYSICAL_TOO_FEW =
@@ -67,17 +72,17 @@ export interface StackPart {
 /**
  * The parts of the bar of the card: each category as its share of the
  * whole group, as the prototype draws it, so those not tested leave the
- * end empty. A category sent as "<5" takes no part.
+ * end empty. A category sent hidden, as "<5" or "5+", takes no part.
  */
 export function stackParts(
-  byCategory: Record<FitnessCategory, CountShown>,
+  byCategory: Record<FitnessCategory, SetCountShown>,
   students: number,
 ): StackPart[] {
   const parts: StackPart[] = [];
   let start = 0;
   for (const category of FITNESS_CATEGORIES) {
     const count = byCategory[category];
-    if (count === "<5" || count === 0) continue;
+    if (isHidden(count) || count === 0) continue;
     const length = (count / students) * 100;
     parts.push({ category, start, length });
     start += length;

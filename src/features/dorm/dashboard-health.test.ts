@@ -132,7 +132,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
     "bam_health",
     "bam_bphk",
   ] as const)(
-    "gives %s every Aktif resident's category, in the bars and per dorm, each of 1 to 4 as <5",
+    "gives %s every Aktif resident's category in the bars, each of 1 to 4 as <5, and holds back a second dorm beside one with 1 to 4",
     async (role) => {
       await inTestDatabase(async (db) => {
         await addRecords(db);
@@ -151,23 +151,45 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
             attention: "<5",
             medical: "<5",
           },
-          fitShare: 82,
+          fitShare: null,
           illnesses: null,
         });
         expect(physical?.byDorm).toEqual({
           wismantara_putra: { excellent: 0, good: 0, attention: 0, medical: 0 },
           wismantara_putri: { excellent: 0, good: 0, attention: 0, medical: 0 },
-          dana_rakca: {
-            excellent: 5,
-            good: "<5",
-            attention: "<5",
-            medical: "<5",
-          },
+          dana_rakca: null,
           cipta_bakti: null,
         });
       });
     },
   );
+
+  it("gives a dorm its own counts, each of 1 to 4 as <5, while no dorm is held back", async () => {
+    await inTestDatabase(async (db) => {
+      const { idsA } = await addRecords(db);
+      const [firstMan, secondMan] = [idsA[6], idsA[7]];
+      if (!firstMan || !secondMan) throw new Error("No resident was added.");
+      await db
+        .update(students)
+        .set({ cohortYear: 3909 })
+        .where(inArray(students.id, [firstMan, secondMan]));
+      const actor = await actorWith(db, ["head_of_unit"]);
+
+      const { physical } = await loadDormHealth(db, actor, MOMENT);
+
+      expect(physical?.byDorm).toEqual({
+        wismantara_putra: { excellent: 0, good: 0, attention: 0, medical: 0 },
+        wismantara_putri: { excellent: 0, good: 0, attention: 0, medical: 0 },
+        dana_rakca: {
+          excellent: 5,
+          good: "<5",
+          attention: "<5",
+          medical: "<5",
+        },
+        cipta_bakti: { excellent: 0, good: 0, attention: 0, medical: 0 },
+      });
+    });
+  });
 
   it("counts only Ketua Program Studi's own program, with the rule of 5 on that group", async () => {
     await inTestDatabase(async (db) => {
@@ -183,7 +205,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         students: 9,
         tested: 8,
       });
-      expect(ofA.physical?.byDorm?.dana_rakca?.excellent).toBe("<5");
+      expect(ofA.physical?.byDorm?.dana_rakca).toBeNull();
       expect(ofA.physical?.byDorm?.cipta_bakti).toBeNull();
       expect(ofB.physical).toEqual({
         recap: { kind: "too_few", students: 3 },
@@ -209,12 +231,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
 
       expect(physical?.recap).toMatchObject({ kind: "shown", tested: 7 });
       expect(physical?.byDorm?.cipta_bakti).toBeNull();
-      expect(physical?.byDorm?.dana_rakca).toEqual({
-        excellent: "<5",
-        good: "<5",
-        attention: "<5",
-        medical: "<5",
-      });
+      expect(physical?.byDorm?.dana_rakca).toBeNull();
     });
   });
 
