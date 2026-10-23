@@ -96,7 +96,7 @@ program only), the three roles that already use the Dashboard filter.
   option and "Semua asrama" as the sum of the dorms.
 - [x] 2. Every card and section counts only the chosen students, with
   the check for groups under 5.
-- [ ] 3. The choice is kept in the address and cleared by "Atur ulang
+- [x] 3. The choice is kept in the address and cleared by "Atur ulang
   filter".
 - [ ] 4. Ketua Program Studi stays inside their program, and the other
   roles are refused, with checks.

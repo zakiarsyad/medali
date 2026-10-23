@@ -276,6 +276,20 @@ describe("DashboardScreen", () => {
     );
   });
 
+  it("counts Asrama as one filter in the line, keeps it chosen, and clears it with Atur ulang filter", () => {
+    const html = shown(
+      viewOf({
+        filters: { ...NO_FILTERS, dorm: "dana_rakca", province: "Bali" },
+      }),
+    );
+
+    expect(html).toContain("mahasiswa sesuai 2 filter");
+    expect(html).toContain(
+      '<option value="dana_rakca" selected="">Asrama Dana Rakca (18)</option>',
+    );
+    expect(html).toMatch(/href="\/dashboard"[^>]*>Atur ulang filter</);
+  });
+
   it("shows the card Nilai karakter between Capaian karakter and Kesehatan jasmani, leading to section 2", () => {
     const html = shown(viewOf());
     const card = html.indexOf('href="#nilai-karakter"');

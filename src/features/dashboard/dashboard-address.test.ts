@@ -14,7 +14,7 @@ import {
 
 const EVERY_CHOICE: DashboardFilters = {
   stageNo: 2,
-  dorm: null,
+  dorm: "dana_rakca",
   studyProgramId: 7,
   entryPath: "transfer",
   province: "Jawa Barat",
@@ -35,6 +35,7 @@ describe("readDashboardFilters", () => {
   it("reads every filter the address holds", () => {
     const filters = readDashboardFilters({
       tahap: "2",
+      asrama: "dana_rakca",
       prodi: "7",
       jalur: "transfer",
       provinsi: "Jawa Barat",
@@ -50,6 +51,7 @@ describe("readDashboardFilters", () => {
   it("takes a part it does not understand as not chosen", () => {
     const filters = readDashboardFilters({
       tahap: "5",
+      asrama: "wismantara_putra",
       prodi: "abc",
       jalur: "lain",
       provinsi: "  ",
@@ -108,7 +110,8 @@ describe("filtersInUse", () => {
   it("counts the filters chosen, a no among them", () => {
     expect(filtersInUse(NO_FILTERS)).toBe(0);
     expect(filtersInUse({ ...NO_FILTERS, seedling: false })).toBe(1);
-    expect(filtersInUse(EVERY_CHOICE)).toBe(8);
+    expect(filtersInUse(EVERY_CHOICE)).toBe(9);
+    expect(filtersInUse({ ...NO_FILTERS, dorm: "non" })).toBe(1);
   });
 });
 
@@ -121,6 +124,15 @@ describe("dashboardAddress", () => {
 
     expect(address.startsWith("/dashboard?")).toBe(true);
     expect(readDashboardFilters(params)).toEqual(EVERY_CHOICE);
+  });
+
+  it("keeps each Asrama choice, so a reload shows the same view", () => {
+    for (const dorm of ["semua", "wismantara", "non"] as const) {
+      const address = dashboardAddress({ ...NO_FILTERS, dorm });
+
+      expect(address).toBe(`/dashboard?asrama=${dorm}`);
+      expect(readDashboardFilters({ asrama: dorm }).dorm).toBe(dorm);
+    }
   });
 
   it("is the plain address without a filter", () => {
@@ -138,6 +150,9 @@ describe("the student detail over the Dashboard", () => {
     );
 
     expect(address).toBe(`/dashboard?provinsi=Bali&profil=${ID}`);
+    expect(studentDetailAddress({ ...NO_FILTERS, dorm: "semua" }, ID)).toBe(
+      `/dashboard?asrama=semua&profil=${ID}`,
+    );
     expect(studentDetailAddress(NO_FILTERS, ID)).toBe(
       `/dashboard?profil=${ID}`,
     );

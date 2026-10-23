@@ -130,6 +130,7 @@ function yesNo(choice: boolean): string {
 function filterParams(filters: DashboardFilters): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.stageNo !== null) params.set("tahap", String(filters.stageNo));
+  if (filters.dorm !== null) params.set("asrama", filters.dorm);
   if (filters.studyProgramId !== null) {
     params.set("prodi", String(filters.studyProgramId));
   }
