@@ -8,15 +8,24 @@ import {
   useTransition,
 } from "react";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { isToldAbove } from "./answer-place";
 import styles from "./cohort-assignments.module.css";
+
+const START: FormState = { error: null, done: null };
+
+/** A server action of steps 2 and 3. */
+type ChangeAction = (before: FormState, form: FormData) => Promise<FormState>;
 
 interface OneSave {
   /** Whether a change is on its way to the server, or its answer to the tab. */
   isSaving: boolean;
   /** Sends a change, and holds the other controls until the tab shows it. */
   save: (send: () => void | Promise<void>) => void;
-  /** Tells an answer whose page no longer holds the button that was pressed. */
-  announce: (answer: FormState) => void;
+  /**
+   * Tells an answer whose page no longer holds the button that was pressed,
+   * or with null takes away what was told.
+   */
+  announce: (answer: FormState | null) => void;
 }
 
 const OneSaveContext = createContext<OneSave | null>(null);
@@ -59,4 +68,28 @@ export function useOneSave(): OneSave {
     throw new Error("A control of a penetapan stands outside OneSaveAtATime.");
   }
   return oneSave;
+}
+
+/**
+ * The answer a control of steps 2 and 3 shows under it, and how it sends a
+ * change. A refusal that comes with the angkatan fixed meanwhile is said
+ * above the angkatan instead, as steps 2 and 3 are then gone from the page.
+ */
+export function useChangeAnswer(
+  action: ChangeAction,
+): [FormState, (form: FormData) => Promise<void>] {
+  const { announce } = useOneSave();
+  const [answer, setAnswer] = useState(START);
+
+  async function sendChange(form: FormData) {
+    announce(null);
+    const after = await action(START, form);
+    if (isToldAbove("change", after)) {
+      announce(after);
+      return;
+    }
+    setAnswer(after);
+  }
+
+  return [answer, sendChange];
 }

@@ -55,5 +55,5 @@ angkatan baru", which fixed the same fault for "Simpan draf",
 
 ## Steps
 
-- [ ] 1. A change of step 2 or 3 refused because the angkatan was fixed
+- [x] 1. A change of step 2 or 3 refused because the angkatan was fixed
   meanwhile is told above the angkatan, with a check.

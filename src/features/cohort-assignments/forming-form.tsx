@@ -1,8 +1,8 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import { type FormEvent, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import { FormMessage } from "@/ui/form-message";
 import { GROUP_MAX, GROUP_MIN } from "@/ui/group-size";
 import { sendForm } from "@/ui/send-form";
 import { formGroupsAction } from "./actions";
@@ -12,8 +12,7 @@ import {
   type AssignmentMethod,
   METHOD_TITLES,
 } from "./methods";
-
-const START: FormState = { error: null, done: null };
+import { useChangeAnswer } from "./one-save";
 
 const ASK_BEFORE_REPLACING =
   "Bentuk ulang kelompok? Susunan dan pengasuh pada draf akan diganti.";
@@ -38,7 +37,8 @@ export function FormingForm({
   cohortYear: number;
   start: FormingStart;
 }) {
-  const [state, save, pending] = useActionState(formGroupsAction, START);
+  const [state, sendChange] = useChangeAnswer(formGroupsAction);
+  const [pending, startSending] = useTransition();
   const hasDraft = start.version > 0;
 
   function send(event: FormEvent<HTMLFormElement>) {
@@ -46,7 +46,7 @@ export function FormingForm({
       event.preventDefault();
       return;
     }
-    sendForm(event, save);
+    sendForm(event, (form) => startSending(() => sendChange(form)));
   }
 
   return (

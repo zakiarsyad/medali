@@ -1,16 +1,14 @@
 "use client";
 
-import { type ChangeEvent, useActionState, useOptimistic } from "react";
+import { type ChangeEvent, useOptimistic } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { FormMessage, type FormState } from "@/ui/form-message";
+import { FormMessage } from "@/ui/form-message";
 import { chooseMentorAction } from "./actions";
 import { changeForm } from "./change-form";
 import styles from "./cohort-assignments.module.css";
 import type { DraftKey } from "./draft-change-input";
 import type { MentorOption } from "./mentor-options";
-import { useOneSave } from "./one-save";
-
-const START: FormState = { error: null, done: null };
+import { useChangeAnswer, useOneSave } from "./one-save";
 
 /**
  * The choice of a mentor for one group, saved as soon as it is made. It
@@ -32,15 +30,15 @@ export function MentorSelect({
   chosenId: string | null;
   options: MentorOption[];
 }) {
-  const [state, send] = useActionState(chooseMentorAction, START);
+  const [state, sendChange] = useChangeAnswer(chooseMentorAction);
   const { isSaving, save } = useOneSave();
   const [picked, showPicked] = useOptimistic(chosenId ?? "");
 
   function choose(event: ChangeEvent<HTMLSelectElement>) {
     const mentorId = event.target.value;
-    save(() => {
+    save(async () => {
       showPicked(mentorId);
-      send(changeForm(shown, { groupId, mentorId }));
+      await sendChange(changeForm(shown, { groupId, mentorId }));
     });
   }
 
