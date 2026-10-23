@@ -2,6 +2,7 @@ import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import styles from "./leave.module.css";
+import type { LeaveListParams } from "./leave-address";
 import { LeaveForm } from "./leave-form";
 import { LEAVE_KINDS } from "./leave-ids";
 import { KIND_RULES, KIND_WORDS } from "./leave-words";
@@ -42,6 +43,8 @@ export interface ResidentLeaveProps {
   newLeaveId: string;
   /** The key the next report of a return is kept under. */
   newReportId: string;
+  /** The staff list shown below, whose place a page step keeps; or null. */
+  staffList: LeaveListParams | null;
 }
 
 /**
@@ -53,6 +56,7 @@ export function ResidentLeavePart({
   leave,
   newLeaveId,
   newReportId,
+  staffList,
 }: ResidentLeaveProps) {
   return (
     <>
@@ -67,7 +71,11 @@ export function ResidentLeavePart({
       </div>
       <section className={shared.panel}>
         <h2 className={shared.heading}>Riwayat izin saya</h2>
-        <OwnLeaveView leave={leave} newReportId={newReportId} />
+        <OwnLeaveView
+          leave={leave}
+          newReportId={newReportId}
+          staffList={staffList}
+        />
       </section>
     </>
   );

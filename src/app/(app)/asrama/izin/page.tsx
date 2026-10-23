@@ -47,6 +47,9 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
   const { account } = opened;
   const tabs = { pagePath: "asrama", tabs: opened.tabs, open: "izin" };
   const searchParams = await props.searchParams;
+  const staffList = leaveScreensOf(account.roles).staff
+    ? readLeaveListParams(searchParams)
+    : null;
   const leave = await ownLeaveOf(account, searchParams);
   const part =
     leave === null
@@ -55,21 +58,21 @@ export default async function DormLeavePage(props: PageProps<"/asrama/izin">) {
           leave,
           newLeaveId: crypto.randomUUID(),
           newReportId: crypto.randomUUID(),
+          staffList,
         };
-  if (leaveScreensOf(account.roles).staff) {
-    const params = readLeaveListParams(searchParams);
+  if (staffList !== null) {
     const visible = visibleTo(rowLimitForAction(account, "view_dorm_leave"));
     const board = await readLeaveBoard(
       database(),
       visible,
-      params.filters,
-      params.page,
+      staffList.filters,
+      staffList.page,
       new Date(),
     );
     return (
       <StaffLeaveScreen
         tabs={tabs}
-        params={params}
+        params={staffList}
         board={board}
         rights={{
           decide: may(account.roles, "decide_dorm_leave"),

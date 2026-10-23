@@ -22,9 +22,16 @@ import {
  * "Cari nama atau NIM", the status and the kind above the request cards.
  * All are kept in the address of the page: a choice at once, and a typed
  * text after a pause in the typing, in place of the address before it,
- * so going back does not step through every letter.
+ * so going back does not step through every letter. `ownPage` is the
+ * page of "Riwayat izin saya" above, which a new choice keeps.
  */
-export function LeaveFilterRow({ filters }: { filters: LeaveFilters }) {
+export function LeaveFilterRow({
+  filters,
+  ownPage,
+}: {
+  filters: LeaveFilters;
+  ownPage: number;
+}) {
   const router = useRouter();
   const [typed, setTyped] = useState(filters.query);
   /** The text the address was last asked to hold by the typing here. */
@@ -45,14 +52,16 @@ export function LeaveFilterRow({ filters }: { filters: LeaveFilters }) {
     if (query === heldQuery) return;
     const timer = setTimeout(() => {
       setAsked(query);
-      router.replace(leaveListAddress({ query, status, kind }));
+      router.replace(leaveListAddress({ query, status, kind }, 1, ownPage));
     }, SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [typed, heldQuery, status, kind, router]);
+  }, [typed, heldQuery, status, kind, ownPage, router]);
 
   function choose(chosen: Partial<LeaveFilters>) {
     const query = searchText(typed) ?? "";
-    router.push(leaveListAddress({ query, status, kind, ...chosen }));
+    router.push(
+      leaveListAddress({ query, status, kind, ...chosen }, 1, ownPage),
+    );
   }
 
   return (

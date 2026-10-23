@@ -50,7 +50,8 @@ export function StaffLeaveScreen({
 }) {
   const { counts, list } = board;
   const { filters } = params;
-  const address = leaveListAddress(filters, params.page);
+  const { ownPage } = params;
+  const address = leaveListAddress(filters, params.page, ownPage);
   return (
     <>
       <PageHead title="Perizinan asrama">
@@ -93,7 +94,7 @@ export function StaffLeaveScreen({
         />
       </NumberCards>
       <section className={shared.panel}>
-        <LeaveFilterRow filters={filters} />
+        <LeaveFilterRow filters={filters} ownPage={ownPage} />
         {/*
           Made anew for each address, so a decision made on one page is not
           shown on another. By the page the address asked for, not the one
@@ -113,7 +114,7 @@ export function StaffLeaveScreen({
             matching={list.matching}
             pageSize={LEAVE_CARDS_PAGE_SIZE}
             noun="pengajuan"
-            addressOf={(page) => leaveListAddress(filters, page)}
+            addressOf={(page) => leaveListAddress(filters, page, ownPage)}
           />
         )}
       </section>

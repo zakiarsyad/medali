@@ -90,6 +90,11 @@ export interface LeaveListParams {
   filters: LeaveFilters;
   /** The page of the list, counted from 1. */
   page: number;
+  /**
+   * The page of "Riwayat izin saya" above the list, for a resident who
+   * also sees it, kept by the list's links.
+   */
+  ownPage: number;
 }
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -141,15 +146,20 @@ export function readLeaveListParams(params: SearchParams): LeaveListParams {
       kind: kindNamed(firstParam(params.jenis)),
     },
     page: pageOf(params),
+    ownPage: ownLeavePageOf(params),
   };
 }
 
 /**
- * The address of a page of the staff list with these filters. What is
- * not chosen is left out, and so are Menunggu verifikasi and the first
- * page.
+ * The address of a page of the staff list with these filters, keeping
+ * the page of "Riwayat izin saya". What is not chosen is left out, and so
+ * are Menunggu verifikasi and the first pages.
  */
-export function leaveListAddress(filters: LeaveFilters, page = 1): string {
+export function leaveListAddress(
+  filters: LeaveFilters,
+  page = 1,
+  ownPage = 1,
+): string {
   const params = new URLSearchParams();
   if (filters.query !== "") params.set("cari", filters.query);
   if (filters.status !== "submitted") {
@@ -157,13 +167,23 @@ export function leaveListAddress(filters: LeaveFilters, page = 1): string {
   }
   if (filters.kind !== "all") params.set("jenis", KIND_CHOICES[filters.kind]);
   if (page > 1) params.set("hal", String(page));
+  if (ownPage > 1) params.set("riwayat", String(ownPage));
   const search = params.toString();
   if (search === "") return LEAVE_ADDRESS;
   return `${LEAVE_ADDRESS}?${search}`;
 }
 
-/** The address of a page of "Riwayat izin saya". */
-export function ownLeaveAddress(page: number): string {
+/**
+ * The address of a page of "Riwayat izin saya", keeping the filters and
+ * the page of the staff list when one is shown below it.
+ */
+export function ownLeaveAddress(
+  page: number,
+  staffList: LeaveListParams | null = null,
+): string {
+  if (staffList !== null) {
+    return leaveListAddress(staffList.filters, staffList.page, page);
+  }
   if (page <= 1) return LEAVE_ADDRESS;
   return `${LEAVE_ADDRESS}?riwayat=${page}`;
 }
