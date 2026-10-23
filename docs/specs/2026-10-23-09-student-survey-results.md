@@ -114,12 +114,47 @@ history. No one ever sees one student's answers.
    Kurang. Each answer names the mentor who held the group on the day
    it was sent, so the answers of the group whose mentor was replaced a
    month ago stay with the earlier mentor.
+10. Reading "Hasil evaluasi per kelompok" is a new right, held by Kepala
+    Unit, Direktur / Wakil Direktur, Ketua Program Studi and Pegawai
+    UPK, the roles that open the tab. The list of rights names it
+    "Melihat hasil evaluasi oleh mahasiswa per kelompok, tanpa jawaban
+    per orang". Ketua Program Studi reads the groups of their program
+    only; one without a program reads none.
+11. The choice of period offers every period that was not cancelled,
+    the latest first, each with its status. A cancelled period is not
+    offered, as its answers are used nowhere.
+12. The numbers of a period are taken on one day: today while it runs,
+    and once it is over the day it closed, by hand or by its last day.
+    The table holds the groups in force that had started by that day,
+    so a group formed after the period is not counted as one that did
+    not answer. A group's members are its Aktif members today, as the
+    card of the period counts them.
+13. A group whose answers were sent for two mentors, after a
+    replacement during the period, has a row for each mentor, each
+    with the group's members. A group without answers shows the mentor
+    who held it on the day of the numbers.
+14. Above the table, Responden adds the answers of every group out of
+    their members, "Rerata capaian karakter" is the mean of the groups
+    that have one, "Rerata umpan balik" the mean of the groups that
+    show one, with the same as 0 to 100 beside it ("setara"), and
+    "Nilai evaluasi kurang" counts the rows that are Kurang, "dari (n)
+    kelompok". The search and the filter narrow the table only, as in
+    the prototype.
+15. Lowest Nilai evaluasi first; the rows without one come after, by
+    group code. Where a row has no Predikat it says why: "Belum ada
+    responden", "Responden kurang dari 3" or "Belum ada capaian
+    karakter".
+16. The server adds up the answers of every group the account may see,
+    because the numbers above the table need them all, and sends only
+    the page of 25 rows asked for.
+17. The line under the heading writes the days as the card of the
+    period does: "1 Jun 2026 sampai 21 Jun 2026".
 
 ## Steps
 
 - [x] 1. The result rule (averages, weights, predikat, the 3-answer
   limit) with tests, and sample answers for the closed sample period.
-- [ ] 2. The table with the numbers, period choice, search, filters and
+- [x] 2. The table with the numbers, period choice, search, filters and
   paging.
 - [ ] 3. The detail per group, with hidden suggestions kept on the
   server.

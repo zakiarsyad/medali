@@ -15,7 +15,9 @@ import { historyWords, NO_MENTOR } from "./mentor-history";
 const BETWEEN = " · ";
 
 /** The program studi, the angkatan, and the jalur when it is alih program. */
-function programAndCohort(group: ListedGroup): string {
+export function programAndCohort(
+  group: Pick<ListedGroup, "studyProgram" | "cohortYear" | "entryPath">,
+): string {
   const words = [group.studyProgram, `angkatan ${group.cohortYear}`];
   if (group.entryPath === "transfer") words.push("alih program");
   return words.join(BETWEEN);
