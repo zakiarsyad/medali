@@ -58,16 +58,22 @@ function ValueAndScore({ scores, value }: { scores: Scores; value: ValueKey }) {
   );
 }
 
+/**
+ * The strongest and the weakest value. `beforeLimit` says the scores are
+ * the stored ones above the limit, which only the student is given.
+ */
 function Standouts({
   scores,
   withEarlier,
+  beforeLimit,
 }: {
   scores: Scores;
   withEarlier: boolean;
+  beforeLimit: boolean;
 }) {
   return (
     <p className={styles.sub}>
-      Paling menonjol pada{" "}
+      {beforeLimit ? "Sebelum pembatasan, paling" : "Paling"} menonjol pada{" "}
       <ValueAndScore scores={scores} value={strongestValueOf(scores)} />. Perlu
       perhatian pada{" "}
       <ValueAndScore scores={scores} value={weakestValueOf(scores)} />.
@@ -88,7 +94,8 @@ function limitNoteOf(limit: PenaltyKind, storedRerata: number): string {
  * assessed gets a line saying so, and "Input asesmen" where the account
  * may assess them. Under a Ringan or Sedang penalty the scores are held
  * at 70, with a note saying why and the Rerata as stored; the single
- * scores as stored are not shown.
+ * scores as stored are not shown, except on the student's own card,
+ * where they name the strongest and the weakest value.
  */
 export function StudentAchievementView({
   achievement,
@@ -114,7 +121,11 @@ export function StudentAchievementView({
         <LimitNote text={limitNoteOf(achievement.limit, latest.storedRerata)} />
       )}
       <Medal scores={latest.scores} last={earlier} />
-      <Standouts scores={latest.scores} withEarlier={earlier !== null} />
+      <Standouts
+        scores={achievement.stored ?? latest.scores}
+        withEarlier={earlier !== null}
+        beforeLimit={achievement.stored !== undefined}
+      />
     </section>
   );
 }

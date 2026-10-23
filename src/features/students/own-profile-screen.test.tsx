@@ -240,4 +240,18 @@ describe("OwnProfileScreen with the survey", () => {
   it("shows no survey when there is none to fill in", () => {
     expect(screenOf(STUDENT)).not.toContain("Survei kepuasan pengasuhan");
   });
+
+  it("puts the panels it is given under the student's record and its source line", () => {
+    const screen = renderToStaticMarkup(
+      <OwnProfileScreen
+        student={STUDENT}
+        period={PERIOD}
+        morePanels={<section>Panel uji capaian</section>}
+      />,
+    );
+
+    const source = screen.indexOf("Data ini berasal dari data kampus.");
+    expect(source).toBeGreaterThan(screen.indexOf("<dl"));
+    expect(screen.indexOf("Panel uji capaian")).toBeGreaterThan(source);
+  });
 });

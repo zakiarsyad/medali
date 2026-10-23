@@ -81,7 +81,7 @@ student's own record only.
 
 - [x] 1. The right to read one's own assessment results is added to the
   permission list, with its checks.
-- [ ] 2. The card "Capaian karakter semester (n)" on Profil saya, with
+- [x] 2. The card "Capaian karakter semester (n)" on Profil saya, with
   the medal, the sentence, the limit note and the empty state.
 - [ ] 3. "Riwayat per semester" on Profil saya, with the chart, its table
   and the empty state.
