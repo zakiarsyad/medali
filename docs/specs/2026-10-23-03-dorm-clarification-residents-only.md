@@ -57,5 +57,5 @@ student who does not live in the dorm.
 
 ## Steps
 
-- [ ] 1. The dorm clarification action refuses a student who does not live
+- [x] 1. The dorm clarification action refuses a student who does not live
   in the dorm, with checks for a non-resident and a resident.
