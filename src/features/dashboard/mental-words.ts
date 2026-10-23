@@ -1,10 +1,10 @@
-import { FOLLOW_UP_WORDS } from "@/mental-health/session-words";
-import { NOT_SCREENED } from "@/mental-health/shared-words";
 import type {
   MentalRecap,
   PublishedMental,
   PublishedRow,
-} from "./mental-recap";
+} from "@/mental-health/mental-recap";
+import { FOLLOW_UP_WORDS } from "@/mental-health/session-words";
+import { NOT_SCREENED } from "@/mental-health/shared-words";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");

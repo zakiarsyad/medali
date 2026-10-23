@@ -1,4 +1,4 @@
-import type { SQL } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
 import type { Action } from "@/auth/roles";
@@ -10,10 +10,14 @@ import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { readFitnessByGroup } from "@/health-notes/fitness-recap-read";
 import { readNeedingCare, sickParts } from "@/health-notes/sick-list";
+import { readMentalRecap } from "@/mental-health/mental-recap-read";
+import { countRecentSessions } from "@/mental-health/recent-sessions";
 import {
   type CareRow,
   careRowOf,
+  type DormMental,
   type DormPhysical,
+  dormMentalOf,
   dormPhysicalOf,
 } from "./dashboard-health-recap";
 import { residentsIn } from "./dorm-health";
@@ -31,6 +35,14 @@ export interface PhysicalPanel extends DormPhysical {
 /** The health panels of Dashboard asrama; null for a panel the account may not see. */
 export interface DormHealthPanels {
   physical: PhysicalPanel | null;
+  mental: DormMental | null;
+}
+
+const NO_PANELS: DormHealthPanels = { physical: null, mental: null };
+
+/** The Aktif residents among the students `reach` lets through. */
+function residentsAmong(reach: SQL, dormCohorts: number[]): SQL {
+  return sql`(${reach} and ${dormInSql(dormCohorts)} is not null)`;
 }
 
 /**
@@ -76,6 +88,25 @@ async function readPhysicalPanel(
 }
 
 /**
+ * The anonymous count of the residents `reach` lets through, by the
+ * campus Dashboard's own count, and how many sessions they had in the
+ * last 30 days.
+ */
+async function readMentalPanel(
+  db: Database,
+  reach: SQL,
+  dormCohorts: number[],
+  today: string,
+): Promise<DormMental> {
+  const residents = residentsAmong(reach, dormCohorts);
+  const [recap, sessions] = await Promise.all([
+    readMentalRecap(db, residents),
+    countRecentSessions(db, residents, today),
+  ]);
+  return dormMentalOf(recap, sessions);
+}
+
+/**
  * The health panels of Dashboard asrama for an account at a moment, each
  * counted over the Aktif residents of the dorms that its own right lets
  * the account see: Ketua Program Studi their own program only. A panel
@@ -87,9 +118,17 @@ export async function loadDormHealth(
   now: Date,
 ): Promise<DormHealthPanels> {
   const physicalReach = reachOf(account, "view_dorm_dashboard_physical");
-  if (physicalReach === null) return { physical: null };
-  const dormCohorts = (await readDormCohorts(db, campusDay(now))) ?? [];
-  return {
-    physical: await readPhysicalPanel(db, account, physicalReach, dormCohorts),
-  };
+  const mentalReach = reachOf(account, "view_dorm_dashboard_mental");
+  if (physicalReach === null && mentalReach === null) return NO_PANELS;
+  const today = campusDay(now);
+  const dormCohorts = (await readDormCohorts(db, today)) ?? [];
+  const [physical, mental] = await Promise.all([
+    physicalReach === null
+      ? null
+      : readPhysicalPanel(db, account, physicalReach, dormCohorts),
+    mentalReach === null
+      ? null
+      : readMentalPanel(db, mentalReach, dormCohorts, today),
+  ]);
+  return { physical, mental };
 }

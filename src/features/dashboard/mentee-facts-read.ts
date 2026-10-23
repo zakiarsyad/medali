@@ -25,8 +25,8 @@ import { logSharedReads } from "@/mental-health/log-shared-reads";
 import type { ScreeningLevel } from "@/mental-health/screening-ids";
 import { COUNSELLING_LEVELS } from "@/mental-health/screening-rules";
 import { sharedLevels } from "@/mental-health/shared-levels";
+import type { SharedReader } from "@/mental-health/shared-reach";
 import { opensDetailOf } from "@/mentoring/opens-detail";
-import type { SharedReader } from "./dashboard-scope";
 import type { MenteeFacts } from "./mentee-attention";
 import type { MenteeScope } from "./mentee-scope";
 

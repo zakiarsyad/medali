@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { FitnessTally } from "@/health-notes/fitness-recap";
 import type { RecapRow } from "@/health-notes/sick-list";
-import { careRowOf, dormPhysicalOf } from "./dashboard-health-recap";
+import {
+  careRowOf,
+  dormMentalOf,
+  dormPhysicalOf,
+} from "./dashboard-health-recap";
 
 function tally(
   students: number,
@@ -53,6 +57,37 @@ describe("careRowOf", () => {
     });
 
     expect(row.note).toBe("Riwayat: Asma. Kontrol rutin.");
+  });
+});
+
+describe("dormMentalOf", () => {
+  const SHOWN = {
+    kind: "shown",
+    assessed: 12,
+    byLevel: {
+      normal: 8,
+      mild: "<5",
+      moderate: "<5",
+      severe: 0,
+      extremely_severe: 0,
+    },
+  } as const;
+
+  it("sends the sessions with the levels, 1 to 4 as <5", () => {
+    expect(dormMentalOf(SHOWN, 12)).toEqual({ recap: SHOWN, sessions: 12 });
+    expect(dormMentalOf(SHOWN, 3)).toEqual({ recap: SHOWN, sessions: "<5" });
+    expect(dormMentalOf(SHOWN, 0)).toEqual({ recap: SHOWN, sessions: 0 });
+  });
+
+  it("sends no session count while the levels show none", () => {
+    expect(dormMentalOf({ kind: "too_few" }, 9)).toEqual({
+      recap: { kind: "too_few" },
+      sessions: null,
+    });
+    expect(dormMentalOf({ kind: "none" }, 9)).toEqual({
+      recap: { kind: "none" },
+      sessions: null,
+    });
   });
 });
 

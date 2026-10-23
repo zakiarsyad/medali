@@ -62,8 +62,9 @@ describe("Dashboard asrama on a phone", () => {
     const screen = read("dashboard-screen.tsx");
     const panel = read("dashboard-physical-panel.tsx");
 
-    expect(screen).toMatch(
-      /<div className=\{board\.parts\}>\s*<PhysicalHealthPanel/,
+    const healthPanels = screen.slice(screen.indexOf("function HealthPanels"));
+    expect(healthPanels).toMatch(
+      /<div className=\{board\.parts\}>[^<]*<PhysicalHealthPanel[^<]*<MentalHealthPanel[^<]*<\/div>/,
     );
     expect(panel).toMatch(/<table className=.*shared\.stacked/);
     expect(panel).not.toContain("tableWrap");

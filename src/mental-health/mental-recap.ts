@@ -3,16 +3,17 @@ import {
   FEWEST_COUNTED,
   shownCount,
 } from "@/health-notes/shown-count";
-import type { ScreeningLevel } from "@/mental-health/screening-ids";
-import type { SessionSummary } from "@/mental-health/session-view";
-import type { SharedData } from "@/mental-health/sharing-ids";
+import type { ScreeningLevel } from "./screening-ids";
+import type { SessionSummary } from "./session-view";
+import type { SharedData } from "./sharing-ids";
 
 /*
- * Kesehatan mental of the Dashboard, as it may leave the server. Read by
- * the screen parts, so nothing here may take from the database code.
+ * Kesehatan mental of a group of students, as it may leave the server:
+ * for the Dashboards and Dashboard asrama. Read by the screen parts, so
+ * nothing here may take from the database code.
  */
 
-/** What the database counts of the screenings of the students of the Dashboard. */
+/** What the database counts of the screenings of a group of students. */
 export interface MentalTally {
   /** The Aktif students of the group with a screening. */
   assessed: number;

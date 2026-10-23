@@ -7,6 +7,7 @@ import { DashboardActivities } from "./dashboard-activities";
 import { AttendanceBars } from "./dashboard-bars";
 import type { DormHealthPanels } from "./dashboard-health";
 import { LeavePanel } from "./dashboard-leave-panel";
+import { MentalHealthPanel } from "./dashboard-mental-panel";
 import { PhysicalHealthPanel } from "./dashboard-physical-panel";
 import type { DashboardView } from "./dashboard-view";
 import {
@@ -94,10 +95,12 @@ export function DashboardScreen({
 
 /** The health panels, below the rest, for an account that may see one. */
 function HealthPanels({ health }: { health: DormHealthPanels }) {
-  if (health.physical === null) return null;
+  const { physical, mental } = health;
+  if (physical === null && mental === null) return null;
   return (
     <div className={board.parts}>
-      <PhysicalHealthPanel physical={health.physical} />
+      {physical !== null && <PhysicalHealthPanel physical={physical} />}
+      {mental !== null && <MentalHealthPanel mental={mental} />}
     </div>
   );
 }

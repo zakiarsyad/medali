@@ -347,19 +347,6 @@ a.card:hover {
   --meter-colour: var(--bad);
 }
 
-/* The levels of a screening: fine, Sedang, and Berat or worse. */
-.okMeter {
-  --meter-colour: var(--ok);
-}
-
-.warnMeter {
-  --meter-colour: var(--warn);
-}
-
-.badMeter {
-  --meter-colour: var(--bad);
-}
-
 .barValue {
   font-weight: var(--weight-heavy);
   text-align: right;

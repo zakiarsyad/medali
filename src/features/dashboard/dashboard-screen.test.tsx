@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
+import type { PublishedRow } from "@/mental-health/mental-recap";
 import type { Recap } from "./achievement-recap";
 import { TOO_FEW } from "./achievement-words";
 import { NO_FILTERS } from "./dashboard-address";
@@ -9,7 +10,6 @@ import { DashboardScreen, type DetailLinks } from "./dashboard-screen";
 import type { DashboardView } from "./dashboard-view";
 import type { ShownGrades } from "./grade-recap";
 import { NO_GRADES } from "./grade-words";
-import type { PublishedRow } from "./mental-recap";
 import {
   MENTAL_TOO_FEW,
   NOBODY_ASSESSED,

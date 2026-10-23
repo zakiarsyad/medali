@@ -116,7 +116,7 @@ here than Dorm health notes and Mental health screening give it.
 - [x] 2. "Kesehatan jasmani penghuni" shows the counts and the table
   per dorm, with the small-count rules.
 - [x] 3. The residents who need follow-up show to the allowed roles.
-- [ ] 4. "Kesehatan mental penghuni" shows the anonymous count with
+- [x] 4. "Kesehatan mental penghuni" shows the anonymous count with
   the rules of 5, to the three roles only.
 - [ ] 5. Data shared by a counsellor shows to the role it was shared
   with.

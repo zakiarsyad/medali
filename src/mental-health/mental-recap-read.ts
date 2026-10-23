@@ -11,14 +11,9 @@ import {
 } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { counsellingSharings, students } from "@/db/schema";
-import { latestScreenings } from "@/mental-health/latest-screenings";
-import { logSharedReads } from "@/mental-health/log-shared-reads";
-import type { ScreeningLevel } from "@/mental-health/screening-ids";
-import { COUNSELLING_LEVELS } from "@/mental-health/screening-rules";
-import { readSessionSummary } from "@/mental-health/session-summary";
-import { sharedLevels } from "@/mental-health/shared-levels";
 import { MENTOR_NAME } from "@/mentoring/mentor-name";
-import type { SharedReader } from "./dashboard-scope";
+import { latestScreenings } from "./latest-screenings";
+import { logSharedReads } from "./log-shared-reads";
 import {
   type MentalRecap,
   type MentalView,
@@ -28,6 +23,11 @@ import {
   type PublishedMental,
   type PublishedRow,
 } from "./mental-recap";
+import type { ScreeningLevel } from "./screening-ids";
+import { COUNSELLING_LEVELS } from "./screening-rules";
+import { readSessionSummary } from "./session-summary";
+import { sharedLevels } from "./shared-levels";
+import type { SharedReader } from "./shared-reach";
 
 const NOBODY = sql`false`;
 
@@ -36,7 +36,10 @@ const NOBODY = sql`false`;
  * level by their latest screening, worked out by the database, so no
  * student leaves it.
  */
-async function readRecap(db: Database, where: SQL): Promise<MentalRecap> {
+export async function readMentalRecap(
+  db: Database,
+  where: SQL,
+): Promise<MentalRecap> {
   const latest = latestScreenings(db, {});
   const atLevel = (level: ScreeningLevel) =>
     sql<number>`(count(*) filter (where ${eq(latest.level, level)}))::int`;
@@ -183,7 +186,7 @@ export async function readMental(
   now: Date = new Date(),
 ): Promise<MentalView> {
   const [recap, published] = await Promise.all([
-    readRecap(db, where),
+    readMentalRecap(db, where),
     reader === null ? null : readPublished(db, where, reader, now),
   ]);
   return { recap, published };

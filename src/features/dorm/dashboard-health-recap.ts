@@ -9,8 +9,9 @@ import {
 } from "@/health-notes/fitness-recap";
 import type { FinalCategory } from "@/health-notes/health-category";
 import { noteText, roomWords } from "@/health-notes/health-words";
-import type { CountShown } from "@/health-notes/shown-count";
+import { type CountShown, shownCount } from "@/health-notes/shown-count";
 import type { RecapRow } from "@/health-notes/sick-list";
+import type { MentalRecap } from "@/mental-health/mental-recap";
 
 /*
  * The health panels of Dashboard asrama, as they may leave the server.
@@ -95,4 +96,22 @@ export function dormPhysicalOf(
   const recap = physicalRecapOf(sumOf(tallies), null);
   if (recap.kind !== "shown") return { recap, byDorm: null };
   return { recap, byDorm: byDormOf(tallies) };
+}
+
+/** "Kesehatan mental penghuni": the anonymous count, and the sessions of the last 30 days. */
+export interface DormMental {
+  recap: MentalRecap;
+  /** "sesi konseling 30 hari terakhir", or null while the levels show none. */
+  sessions: CountShown | null;
+}
+
+/**
+ * "Kesehatan mental penghuni" from the anonymous count of the residents
+ * in reach and how many sessions they had: the sessions only beside the
+ * levels, so they say nothing of a group too small for counts, and 1 to
+ * 4 as "<5".
+ */
+export function dormMentalOf(recap: MentalRecap, sessions: number): DormMental {
+  if (recap.kind !== "shown") return { recap, sessions: null };
+  return { recap, sessions: shownCount(sessions) };
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PublishedRow } from "./mental-recap";
+import type { PublishedRow } from "@/mental-health/mental-recap";
 import {
   assessedLine,
   mentalCardLine,
