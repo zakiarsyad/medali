@@ -1,22 +1,28 @@
-import { eq } from "drizzle-orm";
+// Sample Tahun akademik of this file: 4012 to 4012.
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { readGroup } from "./group-detail";
+import { type GroupDetail, readGroup } from "./group-detail";
 import {
   addTestEndedGroup,
   addTestGroup,
   addTestMembers,
+  addTestMembersWithStatus,
   addTestMentor,
   addTestMentorLine,
   addTestProgram,
   addTestStudent,
   TEST_GROUP_STARTS_ON,
 } from "./test-records";
+import { addTestAssessor, addTestScores, allScores } from "./test-scores";
 
 const inTestDatabase = withTestDatabase();
+
+/** After the default day of an assessment, so it is the latest one. */
+const LATER = new Date("2026-10-02T03:00:00Z");
 
 const EVERYONE: RowLimit = { kind: "all" };
 
@@ -125,6 +131,9 @@ describe("readGroup", () => {
               opensDetail: false,
             },
           ],
+          memberPage: 1,
+          memberCounts: { listed: 3, counted: 2, classes: 1 },
+          summary: null,
         },
       });
     });
@@ -234,6 +243,150 @@ describe("readGroup", () => {
     await inTestDatabase(async (db) => {
       expect(await readGroup(db, EVERYONE, "bukan-id", null)).toEqual({
         kind: "not_found",
+      });
+    });
+  });
+});
+
+/** A group of 30 Aktif members, whose names go in the order of their NIM. */
+async function addLargeGroup(db: Database) {
+  const program = await addTestProgram(db, "UJIHALAMAN");
+  const id = await addTestGroup(db, program);
+  const statuses = Array.from({ length: 30 }, () => "active" as const);
+  const studentIds = await addTestMembersWithStatus(
+    db,
+    { id, studyProgramId: program },
+    9900019300,
+    statuses,
+  );
+  return { id, program, studentIds };
+}
+
+async function foundGroup(
+  db: Database,
+  limit: RowLimit,
+  id: string,
+  page: number,
+): Promise<GroupDetail> {
+  const answer = await readGroup(db, limit, id, null, page);
+  if (answer.kind !== "found") throw new Error("The group was not found.");
+  return answer.group;
+}
+
+function idsOf(group: GroupDetail): string[] {
+  return group.members.map((member) => member.id);
+}
+
+describe("readGroup, a page of members at a time", () => {
+  it("reads 25 members on the first page and the rest on the second, with the count of all", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeGroup(db);
+
+      const first = await foundGroup(db, EVERYONE, id, 1);
+      const second = await foundGroup(db, EVERYONE, id, 2);
+
+      expect(idsOf(first)).toEqual(studentIds.slice(0, 25));
+      expect(idsOf(second)).toEqual(studentIds.slice(25));
+      expect(first.memberCounts.listed).toBe(30);
+      expect(second.memberPage).toBe(2);
+    });
+  });
+
+  it("gives the last page for a page past the end", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeGroup(db);
+
+      const group = await foundGroup(db, EVERYONE, id, 9);
+
+      expect(group.memberPage).toBe(2);
+      expect(idsOf(group)).toEqual(studentIds.slice(25));
+    });
+  });
+
+  it("gives a head of a study program the page of a group of that program", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, program } = await addLargeGroup(db);
+
+      const group = await foundGroup(db, onlyPrograms([program]), id, 1);
+
+      expect(group.members).toHaveLength(25);
+      expect(group.memberCounts.listed).toBe(30);
+    });
+  });
+
+  it("puts the lowest Rerata first and the members not assessed last, across the pages", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeGroup(db);
+      const by = await addTestAssessor(db, 4012);
+      const [firstByName, secondByName] = studentIds;
+      const lastByName = studentIds.at(-1);
+      if (!firstByName || !secondByName || !lastByName) {
+        throw new Error("The members were not added.");
+      }
+      for (const studentId of studentIds.slice(1)) {
+        await addTestScores(db, by, studentId, allScores(80));
+      }
+      await addTestScores(db, by, lastByName, allScores(60), LATER);
+
+      const first = await foundGroup(db, EVERYONE, id, 1);
+      const second = await foundGroup(db, EVERYONE, id, 2);
+
+      expect(idsOf(first)[0]).toBe(lastByName);
+      expect(idsOf(first)[1]).toBe(secondByName);
+      expect(idsOf(second).at(-1)).toBe(firstByName);
+      const all = new Set([...idsOf(first), ...idsOf(second)]);
+      expect(all.size).toBe(30);
+    });
+  });
+
+  it("counts the Aktif members and their kelas akademik over every page", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeGroup(db);
+      const onLeave = studentIds.slice(0, 2);
+      const [, , oneClass, otherClass, emptyClass] = studentIds.slice(-5);
+      await db
+        .update(students)
+        .set({ status: "on_leave", className: "9-99" })
+        .where(inArray(students.id, onLeave));
+      for (const [studentId, className] of [
+        [oneClass, "2-01"],
+        [otherClass, "2-02"],
+        [emptyClass, ""],
+      ] as const) {
+        if (!studentId) throw new Error("The members were not added.");
+        await db
+          .update(students)
+          .set({ className })
+          .where(eq(students.id, studentId));
+      }
+
+      const group = await foundGroup(db, EVERYONE, id, 1);
+
+      expect(group.memberCounts).toEqual({
+        listed: 30,
+        counted: 28,
+        classes: 2,
+      });
+    });
+  });
+
+  it("draws the medal from every Aktif member, not from the page", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeGroup(db);
+      const by = await addTestAssessor(db, 4012);
+      for (const [place, studentId] of studentIds.entries()) {
+        const score = place < 26 ? 70 : 90;
+        await addTestScores(db, by, studentId, allScores(score));
+      }
+
+      const group = await foundGroup(db, EVERYONE, id, 1);
+
+      expect(group.summary?.rerata).toBe(72.7);
+      expect(group.summary?.predicates).toEqual({
+        gold: 4,
+        silver: 0,
+        bronze: 26,
+        guidance: 0,
       });
     });
   });

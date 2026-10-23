@@ -20,9 +20,14 @@ export interface GroupListParams {
    * here: the read of the group answers "not found" for what is no id.
    */
   groupId: string | null;
+  /** The page of "Anggota kelompok" on the group's page, counted from 1. */
+  memberPage: number;
   /** The same for the student whose detail is open over the group's page. */
   detailId: string | null;
 }
+
+/** Apart from the list's own page, so paging the members moves nothing else. */
+const MEMBER_PAGE = "hal-anggota";
 
 export const NO_FILTERS: GroupListFilters = {
   query: "",
@@ -43,6 +48,11 @@ function readId(value: SearchParams[string]): string | null {
   return id === "" ? null : id;
 }
 
+function readPage(value: SearchParams[string]): number {
+  const page = firstParam(value);
+  return PAGE.test(page) ? Number(page) : 1;
+}
+
 /**
  * What the address asks the list for. Nothing in an address is trusted: a
  * part that is not understood counts as not chosen.
@@ -50,10 +60,10 @@ function readId(value: SearchParams[string]): string | null {
 export function readGroupListParams(params: SearchParams): GroupListParams {
   const program = firstParam(params.prodi);
   const year = firstParam(params.angkatan);
-  const page = firstParam(params.hal);
   return {
-    page: PAGE.test(page) ? Number(page) : 1,
+    page: readPage(params.hal),
     groupId: readId(params.kelompok),
+    memberPage: readPage(params[MEMBER_PAGE]),
     detailId: readId(params.profil),
     filters: {
       query: firstParam(params.q).trim().slice(0, SEARCH_MAX_LENGTH),
@@ -81,14 +91,28 @@ export function groupListAddress(filters: GroupListFilters, page = 1): string {
   return search === "" ? GROUP_LIST_ADDRESS : `${GROUP_LIST_ADDRESS}?${search}`;
 }
 
-/** The address of the page of one group. */
-export function groupAddress(groupId: string): string {
+function setMemberPage(params: URLSearchParams, memberPage: number): void {
+  if (memberPage > 1) params.set(MEMBER_PAGE, String(memberPage));
+}
+
+/** The address of the page of one group, at a page of its members. */
+export function groupAddress(groupId: string, memberPage = 1): string {
   const params = new URLSearchParams({ kelompok: groupId });
+  setMemberPage(params, memberPage);
   return `${GROUP_LIST_ADDRESS}?${params}`;
 }
 
-/** The address of a member's detail, open over the page of their group. */
-export function groupMemberAddress(groupId: string, studentId: string): string {
-  const params = new URLSearchParams({ kelompok: groupId, profil: studentId });
+/**
+ * The address of a member's detail, open over the page of their group at
+ * the page of members it was opened from.
+ */
+export function groupMemberAddress(
+  groupId: string,
+  studentId: string,
+  memberPage = 1,
+): string {
+  const params = new URLSearchParams({ kelompok: groupId });
+  setMemberPage(params, memberPage);
+  params.set("profil", studentId);
   return `${GROUP_LIST_ADDRESS}?${params}`;
 }

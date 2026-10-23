@@ -1,5 +1,6 @@
-import { and, asc, desc, eq, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { RowLimit } from "@/auth/access";
+import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
 import { isUuid } from "@/db/is-uuid";
 import {
@@ -12,16 +13,20 @@ import {
 } from "@/db/schema";
 import { opensDetailOf } from "@/mentoring/opens-detail";
 import type { GroupCodeParts } from "@/ui/group-code";
+import { PAGE_SIZE, pageWithin } from "@/ui/list-pages";
 import type { MentorStatus } from "@/ui/mentor-status";
 import { type GroupMember, MEMBER } from "./group-detail";
 import { type InactiveFacts, inactiveFacts } from "./inactive-facts";
 import { LISTED_MEMBER } from "./member-conditions";
+import { lowestRerataOrder, readMemberCounts } from "./member-page";
+import { readScoreSums } from "./member-scores";
 import {
   type HeldGroup,
   readGroupsHeld,
   studentsIn,
 } from "./mentor-held-groups";
 import { shownStatus } from "./mentor-list";
+import { type ScoreSummary, scoreSummary } from "./score-averages";
 import { groupsVisibleTo } from "./visible-groups";
 import { heldTodayBy, MENTOR_END, mentorsVisibleTo } from "./visible-mentors";
 
@@ -53,8 +58,17 @@ export interface MentorDetail extends InactiveFacts {
   students: number;
   /** Every time the mentor held a group, the newest first. */
   assignments: MentorAssignment[];
-  /** By name: the Aktif members of the groups held today, and those on Cuti. */
+  /**
+   * One page of the Aktif members of the groups held today and those on
+   * Cuti, the lowest Rerata first and those not assessed last, then by name.
+   */
   members: MentorStudent[];
+  /** How many students those groups list in all, on every page. */
+  listed: number;
+  /** The page given: the one asked for, or the last when it is past it. */
+  studentPage: number;
+  /** The medal of every Aktif student of those groups, not of the page. */
+  summary: ScoreSummary | null;
 }
 
 export type MentorAnswer =
@@ -120,49 +134,64 @@ function readAssignments(
     );
 }
 
+/**
+ * The students the page of a mentor lists: the Aktif members and those on
+ * Cuti of the groups the mentor holds today, among those the limit shows.
+ */
+function listedFor(db: Database, limit: RowLimit, mentorId: string): SQL {
+  const held = db
+    .select({ id: mentorGroupMembers.studentId })
+    .from(mentorGroupMentors)
+    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorGroupMentors.groupId))
+    .innerJoin(
+      mentorGroupMembers,
+      eq(mentorGroupMembers.groupId, mentorGroups.id),
+    )
+    .where(and(eq(mentorGroupMentors.mentorId, mentorId), heldTodayBy(limit)));
+  return and(inArray(students.id, held), LISTED_MEMBER) ?? sql`false`;
+}
+
 function readStudents(
   db: Database,
-  limit: RowLimit,
-  mentorId: string,
+  listed: SQL,
   detailVisible: SQL | null,
+  page: number,
 ): Promise<MentorStudent[]> {
+  const latest = latestAssessments(db);
   return db
     .select({
       ...MEMBER,
       opensDetail: opensDetailOf(detailVisible),
       group: GROUP_CODE,
     })
-    .from(mentorGroupMentors)
-    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorGroupMentors.groupId))
-    .innerJoin(studyPrograms, eq(studyPrograms.id, mentorGroups.studyProgramId))
+    .from(students)
     .innerJoin(
       mentorGroupMembers,
-      eq(mentorGroupMembers.groupId, mentorGroups.id),
+      eq(mentorGroupMembers.studentId, students.id),
     )
-    .innerJoin(students, eq(students.id, mentorGroupMembers.studentId))
-    .where(
-      and(
-        eq(mentorGroupMentors.mentorId, mentorId),
-        heldTodayBy(limit),
-        LISTED_MEMBER,
-      ),
-    )
-    .orderBy(asc(students.name), asc(students.nim));
+    .innerJoin(mentorGroups, eq(mentorGroups.id, mentorGroupMembers.groupId))
+    .innerJoin(studyPrograms, eq(studyPrograms.id, mentorGroups.studyProgramId))
+    .leftJoin(latest, eq(latest.studentId, students.id))
+    .where(listed)
+    .orderBy(...lowestRerataOrder(latest.total))
+    .limit(PAGE_SIZE)
+    .offset((page - 1) * PAGE_SIZE);
 }
 
 /**
- * One mentor with their groups, history and students, for an account with
- * this row limit. An id that names no mentor is not found. A mentor
- * outside the account's rows is refused, and nothing more is read of them.
- * `detailVisible` holds the students whose detail the account may open,
- * or null for none: an account may see a mentor and still not open the
- * detail of each of their students.
+ * One mentor with their groups, history and one page of their students,
+ * for an account with this row limit. An id that names no mentor is not
+ * found. A mentor outside the account's rows is refused, and nothing more
+ * is read of them. `detailVisible` holds the students whose detail the
+ * account may open, or null for none: an account may see a mentor and
+ * still not open the detail of each of their students.
  */
 export async function readMentor(
   db: Database,
   limit: RowLimit,
   id: string,
   detailVisible: SQL | null,
+  studentPage = 1,
 ): Promise<MentorAnswer> {
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(id)) return NOT_FOUND;
@@ -170,11 +199,15 @@ export async function readMentor(
   if (!account) return NOT_FOUND;
   const { isVisible, end, ...mentor } = account;
   if (!isVisible) return { kind: "refused" };
-  const [groups, assignments, members] = await Promise.all([
+  const listed = listedFor(db, limit, id);
+  const [groups, assignments, counts, sums] = await Promise.all([
     readGroupsHeld(db, limit, [id]),
     readAssignments(db, limit, id),
-    readStudents(db, limit, id, detailVisible),
+    readMemberCounts(db, listed),
+    readScoreSums(db, listed),
   ]);
+  const given = pageWithin(studentPage, counts.listed);
+  const members = await readStudents(db, listed, detailVisible, given);
   return {
     kind: "found",
     mentor: {
@@ -184,6 +217,9 @@ export async function readMentor(
       students: studentsIn(groups),
       assignments,
       members,
+      listed: counts.listed,
+      studentPage: given,
+      summary: scoreSummary(sums),
     },
   };
 }

@@ -54,5 +54,24 @@ grows with every group a mentor is given.
 
 ## Steps
 
-- [ ] 1. "Anggota kelompok" and "Mahasiswa binaan" are read and shown a
+- [x] 1. "Anggota kelompok" and "Mahasiswa binaan" are read and shown a
   page at a time, with checks.
+
+## Decisions made while building
+
+3. The page of "Anggota kelompok" is `hal-anggota` in the address and
+   the page of "Mahasiswa binaan" is `hal-binaan`, apart from `hal`, the
+   page of the lists themselves. The first page is left out of the
+   address. A value that is not a page number counts as the first page.
+4. "The same order as today" is the order the list shows: the lowest
+   Rerata first, those not assessed last, then by name and NIM. The
+   database sorts in that order, so each page follows on from the one
+   before.
+5. Opening a student's detail from a later page, and closing it, keeps
+   that page.
+6. The page links show only when a list has more than 25. Like the other
+   lists far down a page, a step to another page keeps the screen where
+   it is scrolled to.
+7. "Rerata kelompok", "Rerata binaan" and the counts in the line under
+   the title are counted by the database over every member, not from
+   the page shown.

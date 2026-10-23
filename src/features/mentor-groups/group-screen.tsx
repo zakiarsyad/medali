@@ -8,22 +8,22 @@ import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
 import { GROUP_MIN, isSmallGroup } from "@/ui/group-size";
+import { ListPager } from "@/ui/list-pager";
+import { PAGE_SIZE } from "@/ui/list-pages";
 import { PageHead } from "@/ui/page-head";
 import { listGroupEvaluations } from "./evaluation-rows";
 import { EvaluationTable } from "./evaluation-table";
 import type { GroupDetail } from "./group-detail";
 import { GroupHeadActions } from "./group-head-actions";
-import { GROUP_LIST_ADDRESS } from "./group-list-address";
+import { GROUP_LIST_ADDRESS, groupAddress } from "./group-list-address";
 import { GroupMembersTable } from "./group-members-table";
 import { GroupMentorPanel } from "./group-mentor-panel";
 import { readGroupPage } from "./group-page";
-import { academicClasses, countedMembers } from "./member-rules";
 import { readMemberScores } from "./member-scores";
 import styles from "./mentor-groups.module.css";
 import { currentMentor } from "./mentor-history";
 import type { MentorAddressOf } from "./open-mentor-address";
 import { scheduledWords } from "./replacement-words";
-import { activeSummary } from "./score-averages";
 import { ScoresPanel } from "./scores-panel";
 import { readWaitingReplacementOf } from "./waiting-replacement-of";
 
@@ -32,8 +32,8 @@ function groupLede(group: GroupDetail): string {
   const path = group.entryPath === "transfer" ? " jalur alih program" : "";
   const whose = `${group.studyProgram} angkatan ${group.cohortYear}${path}`;
   const formed = `dibentuk saat masuk pada ${shownDay(group.startsOn)}`;
-  const size = `${countedMembers(group.members)} mahasiswa aktif`;
-  const classes = `${academicClasses(group.members)} kelas akademik`;
+  const size = `${group.memberCounts.counted} mahasiswa aktif`;
+  const classes = `${group.memberCounts.classes} kelas akademik`;
   return `Kelompok pengasuhan ${whose}, ${formed}. ${size}, saat ini tersebar di ${classes}.`;
 }
 
@@ -47,6 +47,7 @@ export async function GroupScreen({
   evaluateAddress,
   replaceAddress,
   groupId,
+  memberPage,
   detailVisible,
   memberAddressOf,
   mentorAddressOf,
@@ -69,6 +70,8 @@ export async function GroupScreen({
    */
   replaceAddress: string | null;
   groupId: string;
+  /** The page of "Anggota kelompok" the address asks for. */
+  memberPage: number;
   /** The students whose detail the account may open, or null for none. */
   detailVisible: SQL | null;
   /**
@@ -80,7 +83,7 @@ export async function GroupScreen({
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
-    readGroupPage(db, limit, groupId, detailVisible),
+    readGroupPage(db, limit, groupId, detailVisible, memberPage),
     readRunningPeriod(db),
   ]);
   if (answer.kind === "not_found") notFound();
@@ -113,7 +116,7 @@ export async function GroupScreen({
           replaceAddress={replaceAddress}
         />
       )}
-      {isSmallGroup(countedMembers(group.members)) && (
+      {isSmallGroup(group.memberCounts.counted) && (
         <p className={styles.note}>
           Anggota aktif kelompok ini kurang dari {GROUP_MIN} karena sebagian
           anggota angkatannya sudah lulus, tidak aktif, atau jumlah penerimaan
@@ -131,11 +134,7 @@ export async function GroupScreen({
           mentorAddress={mentor && mentorAddressOf(mentor.mentorId, group)}
           recentNotes={recentNotes}
         />
-        <ScoresPanel
-          title="Rerata kelompok"
-          summary={activeSummary(group.members, scores)}
-          withBar
-        />
+        <ScoresPanel title="Rerata kelompok" summary={group.summary} withBar />
       </div>
       {evaluations && (
         <section className={shared.panel}>
@@ -150,7 +149,7 @@ export async function GroupScreen({
             Kelas akademik dapat berbeda dari kelompok pengasuhan
           </span>
         </div>
-        {group.members.length === 0 ? (
+        {group.memberCounts.listed === 0 ? (
           <p className={shared.empty}>Kelompok ini belum memiliki anggota.</p>
         ) : (
           <GroupMembersTable
@@ -158,6 +157,15 @@ export async function GroupScreen({
             period={period}
             scores={scores}
             detailAddressOf={memberAddressOf}
+          />
+        )}
+        {group.memberCounts.listed > PAGE_SIZE && (
+          <ListPager
+            page={group.memberPage}
+            matching={group.memberCounts.listed}
+            noun="anggota"
+            keepsPlace
+            addressOf={(page) => groupAddress(group.id, page)}
           />
         )}
       </section>

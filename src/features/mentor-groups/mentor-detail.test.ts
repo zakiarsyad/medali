@@ -1,3 +1,4 @@
+// Sample Tahun akademik of this file: 4013 to 4013.
 import { inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
@@ -10,6 +11,7 @@ import {
   addTestEndedGroup,
   addTestGroup,
   addTestMembers,
+  addTestMembersWithStatus,
   addTestMentor,
   addTestMentorLine,
   addTestMentorRole,
@@ -18,6 +20,7 @@ import {
   addTestStudent,
   TEST_GROUP_STARTS_ON,
 } from "./test-records";
+import { addTestAssessor, addTestScores, allScores } from "./test-scores";
 
 const inTestDatabase = withTestDatabase();
 
@@ -189,6 +192,9 @@ describe("readMentor", () => {
               group: foreignCode,
             },
           ],
+          listed: 4,
+          studentPage: 1,
+          summary: null,
         },
       });
     });
@@ -394,6 +400,112 @@ describe("readMentor", () => {
     await inTestDatabase(async (db) => {
       expect(await readMentor(db, EVERYONE, "bukan-id", null)).toEqual({
         kind: "not_found",
+      });
+    });
+  });
+});
+
+/**
+ * A mentor who holds a group of 20 Aktif students of one program and a
+ * group of 10 of another, whose names go in the order of their NIM.
+ */
+async function addLargeMentor(db: Database) {
+  const program = await addTestProgram(db, "UJIPGHALSATU");
+  const other = await addTestProgram(db, "UJIPGHALDUA");
+  const id = await addTestMentor(db, { name: "Pengasuh Uji Halaman" });
+  await addTestMentorRole(db, id);
+  const own = await addTestGroup(db, program);
+  const foreign = await addTestGroup(db, other);
+  await addTestMentorLine(db, own, id);
+  await addTestMentorLine(db, foreign, id);
+  const active = (length: number) =>
+    Array.from({ length }, () => "active" as const);
+  const ownIds = await addTestMembersWithStatus(
+    db,
+    { id: own, studyProgramId: program },
+    9900020300,
+    active(20),
+  );
+  const foreignIds = await addTestMembersWithStatus(
+    db,
+    { id: foreign, studyProgramId: other },
+    9900020400,
+    active(10),
+  );
+  return { id, program, studentIds: [...ownIds, ...foreignIds] };
+}
+
+async function foundAt(
+  db: Database,
+  limit: RowLimit,
+  id: string,
+  page: number,
+): Promise<MentorDetail> {
+  const answer = await readMentor(db, limit, id, null, page);
+  if (answer.kind !== "found") throw new Error("The mentor was not found.");
+  return answer.mentor;
+}
+
+function idsOf(mentor: MentorDetail): string[] {
+  return mentor.members.map((member) => member.id);
+}
+
+describe("readMentor, a page of students at a time", () => {
+  it("reads 25 students on the first page and the rest on the second, with the count of all", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeMentor(db);
+
+      const first = await foundAt(db, EVERYONE, id, 1);
+      const second = await foundAt(db, EVERYONE, id, 2);
+
+      expect(idsOf(first)).toEqual(studentIds.slice(0, 25));
+      expect(idsOf(second)).toEqual(studentIds.slice(25));
+      expect(first.listed).toBe(30);
+      expect(first.students).toBe(30);
+      expect(second.studentPage).toBe(2);
+    });
+  });
+
+  it("gives the last page for a page past the end", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeMentor(db);
+
+      const mentor = await foundAt(db, EVERYONE, id, 7);
+
+      expect(mentor.studentPage).toBe(2);
+      expect(idsOf(mentor)).toEqual(studentIds.slice(25));
+    });
+  });
+
+  it("gives a head of a study program only the students of that program, in the page and in the count", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, program, studentIds } = await addLargeMentor(db);
+
+      const mentor = await foundAt(db, onlyPrograms([program]), id, 2);
+
+      expect(mentor.listed).toBe(20);
+      expect(mentor.studentPage).toBe(1);
+      expect(idsOf(mentor)).toEqual(studentIds.slice(0, 20));
+    });
+  });
+
+  it("draws the medal from every Aktif student, not from the page", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, studentIds } = await addLargeMentor(db);
+      const by = await addTestAssessor(db, 4013);
+      for (const [place, studentId] of studentIds.entries()) {
+        const score = place < 26 ? 70 : 90;
+        await addTestScores(db, by, studentId, allScores(score));
+      }
+
+      const mentor = await foundAt(db, EVERYONE, id, 1);
+
+      expect(mentor.summary?.rerata).toBe(72.7);
+      expect(mentor.summary?.predicates).toEqual({
+        gold: 4,
+        silver: 0,
+        bronze: 26,
+        guidance: 0,
       });
     });
   });
