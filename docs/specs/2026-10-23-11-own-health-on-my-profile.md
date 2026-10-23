@@ -107,6 +107,20 @@ only the student sees this view, and it always shows where to get help.
 10. The two cards sit after "Riwayat per semester", "Kesehatan jasmani"
     first, as in the prototype.
 
+Decided while building, because the issue did not say:
+
+11. "Kontak konseling kampus" shows as "Kontak konseling kampus: (its
+    text)", right after the help line. It is also named in the example
+    settings file of the campus server package and in the hosting notes.
+12. "Persetujuan konseling", "Sesi konseling" and "Sesi berikutnya" show
+    also while a request waits; the notice comes under them, and the
+    help line under the notices, so it still ends the card.
+13. A shared line says with whom and what, as on Konseling, without the
+    summary Konselor wrote for the recipients: that stays on Konseling,
+    with the rest of the sharing.
+14. The days of "Sesi konseling" and "Sesi berikutnya" are written as on
+    Konseling, such as "19 Okt 2026".
+
 ## Steps
 
 - [x] 1. The rights to read one's own fitness, health note, screening
