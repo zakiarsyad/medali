@@ -14,7 +14,7 @@ import { roomWords } from "@/health-notes/health-words";
 import { readNeedingCare, sickParts } from "@/health-notes/sick-list";
 import {
   readMentalRecap,
-  readPublished,
+  readPublishedRows,
 } from "@/mental-health/mental-recap-read";
 import { countRecentSessions } from "@/mental-health/recent-sessions";
 import { type SharedReader, sharedReachOf } from "@/mental-health/shared-reach";
@@ -122,7 +122,7 @@ async function readDormPublished(
 ): Promise<DormPublishedRow[]> {
   const reader = sharedReaderOf(account);
   if (reader === null) return [];
-  const { rows } = await readPublished(db, residents, reader, now);
+  const rows = await readPublishedRows(db, residents, reader, now);
   const ids = rows.map((row) => row.studentId);
   const places = await readResidentPlaces(db, ids, dormCohorts);
   return rows.map((row) => {

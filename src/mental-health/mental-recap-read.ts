@@ -161,17 +161,46 @@ export async function readPublished(
   const reached = and(reader.reach, where) ?? NOBODY;
   return db.transaction(async (tx) => {
     const numbers = await readNumbers(tx, reached);
-    const found = await readRows(tx, reached);
-    const rows: PublishedRow[] = [];
-    for (const row of found) rows.push(await shownRow(tx, row, now));
-    await logSharedReads(
-      tx,
-      reader.readerId,
-      found.map(({ sharingId, studentId }) => ({ sharingId, studentId })),
-      now,
-    );
+    const rows = await readLoggedRows(tx, reached, reader.readerId, now);
     return { rows, ...numbers };
   });
+}
+
+/** The rows shown of the sharings `reached` lets through, each written to the log of readings. */
+async function readLoggedRows(
+  tx: Database,
+  reached: SQL,
+  readerId: string,
+  now: Date,
+): Promise<PublishedRow[]> {
+  const found = await readRows(tx, reached);
+  const rows: PublishedRow[] = [];
+  for (const row of found) rows.push(await shownRow(tx, row, now));
+  await logSharedReads(
+    tx,
+    readerId,
+    found.map(({ sharingId, studentId }) => ({ sharingId, studentId })),
+    now,
+  );
+  return rows;
+}
+
+/**
+ * The newest rows of "Data kesehatan mental yang dipublikasikan" of the
+ * students `where` lets through, as readPublished gives them, without
+ * its counts. Each row shown is written to the log of readings in the
+ * same transaction.
+ */
+export async function readPublishedRows(
+  db: Database,
+  where: SQL,
+  reader: SharedReader,
+  now: Date,
+): Promise<PublishedRow[]> {
+  const reached = and(reader.reach, where) ?? NOBODY;
+  return db.transaction((tx) =>
+    readLoggedRows(tx, reached, reader.readerId, now),
+  );
 }
 
 /**
