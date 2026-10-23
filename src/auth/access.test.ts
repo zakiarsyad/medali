@@ -3408,9 +3408,28 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa read their own character assessment results, on Profil saya", () => {
+    expect(may(["student"], "view_own_character_achievement")).toBe(true);
+    expect(mayOpenPage(["student"], "profile")).toBe(true);
+    expect(ACTION_TITLES.view_own_character_achievement).toBe(
+      "Melihat capaian karakter sendiri",
+    );
+  });
+
+  it("refuses every other role to read their own character assessment results", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["assessor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_own_character_achievement")).toBe(false);
+    }
+  });
+
   it("gives Mahasiswa no right that changes a student record", () => {
     expect(ROLES.student.actions).toEqual([
       "view_own_profile",
+      "view_own_character_achievement",
       "send_attendance_photo",
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
@@ -4278,6 +4297,22 @@ describe("rowLimitForAction and rowLimitForPage", () => {
     const staff = { ...account(["head_of_unit"]), studentId: "student-1" };
 
     expect(rowLimitForAction(staff, "view_own_profile")).toEqual(NO_ROW);
+  });
+
+  it("keeps a student to their own results, whatever wide role they also hold", () => {
+    const both = {
+      ...account(["student", "head_of_unit"]),
+      studentId: "student-1",
+    };
+    const staff = { ...account(["assessor"]), studentId: "student-1" };
+
+    expect(rowLimitForAction(both, "view_own_character_achievement")).toEqual({
+      ...NO_ROW,
+      studentIds: ["student-1"],
+    });
+    expect(rowLimitForAction(staff, "view_own_character_achievement")).toEqual(
+      NO_ROW,
+    );
   });
 
   it("keeps a student to their own attendance, whatever wide role they also hold", () => {

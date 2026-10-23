@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { surveyDraftKey } from "@/ui/survey-drafts";
@@ -22,18 +23,22 @@ import { StudentMentorFact } from "./student-mentor-fact";
  * that changes the record, which only the campus corrects. The pengasuh
  * and the group are named without a link: the Pengasuh menu is not a
  * student's to open. While a survey period is Dibuka, the survey to rate
- * the pengasuh stands at the top.
+ * the pengasuh stands at the top. The cards of other areas, such as the
+ * student's own character results, stand under the record.
  */
 export function OwnProfileScreen({
   student,
   period,
   survey = null,
+  morePanels = null,
 }: {
   student: OwnProfile;
   /** The academic period that runs now, which says the semester. */
   period: RunningPeriod;
   /** Null while the student has no survey to fill in. */
   survey?: OwnSurvey | null;
+  /** The cards of other areas, under the record and its source line. */
+  morePanels?: ReactNode;
 }) {
   const semester = semesterNow(student, period);
   const hasTags = CATEGORIES.some(({ field }) => student[field]);
@@ -66,6 +71,7 @@ export function OwnProfileScreen({
         Data ini berasal dari data kampus. Bila ada yang keliru, hubungi Unit
         Pembangunan Karakter.
       </p>
+      {morePanels}
     </>
   );
 }
