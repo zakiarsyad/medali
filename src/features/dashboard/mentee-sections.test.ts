@@ -10,6 +10,10 @@ import {
   mentorGroupMembers,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import {
+  addTestPenaltyOf,
+  TEST_DESCRIPTION,
+} from "@/discipline-penalties/test-penalties";
 import { addTestScreening } from "@/features/counselling/test-screenings";
 import {
   addTestAccount,
@@ -131,6 +135,58 @@ describe("section 4 of Dashboard anak asuh", () => {
 
       expect(published.rows).toEqual([]);
       expect(published.matching).toBe(0);
+    });
+  });
+});
+
+describe("Pelanggaran disiplin of Dashboard anak asuh", () => {
+  it("gives the 5 latest penalties of the anak asuh, newest first, and none of another Pengasuh's student", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, ids } = await addRecords(db);
+      const light = { category: "light", level: 1 } as const;
+      const days = ["01", "02", "03", "04", "05"];
+      for (const day of days) {
+        await addTestPenaltyOf(db, ids.s01, mentor.id, light, `5210-10-${day}`);
+      }
+      await addTestPenaltyOf(
+        db,
+        ids.s02,
+        mentor.id,
+        { category: "medium", level: 2 },
+        "5210-10-06",
+      );
+      await addTestPenaltyOf(db, ids.s05, mentor.id, light, "5210-10-30");
+
+      const { penalties } = await load(db, mentor);
+
+      expect(penalties.map((row) => row.day)).toEqual([
+        "5210-10-06",
+        "5210-10-05",
+        "5210-10-04",
+        "5210-10-03",
+        "5210-10-02",
+      ]);
+      expect(penalties[0]).toMatchObject({
+        studentId: ids.s02,
+        name: "Mahasiswa Uji Bagian 02",
+        category: "medium",
+        level: 2,
+        description: TEST_DESCRIPTION,
+        opensDetail: true,
+      });
+      expect(penalties.some((row) => row.studentId === ids.s05)).toBe(false);
+    });
+  });
+
+  it("gives none while no anak asuh has a penalty", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, ids } = await addRecords(db);
+      await addTestPenaltyOf(db, ids.s05, mentor.id, {
+        category: "light",
+        level: 1,
+      });
+
+      expect((await load(db, mentor)).penalties).toEqual([]);
     });
   });
 });

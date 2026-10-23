@@ -46,6 +46,7 @@ import { loadMenteeDashboard } from "@/features/dashboard/mentee-view";
 import { FITNESS_ADDRESS } from "@/features/fitness/fitness-address";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import { COACHING_ADDRESS } from "@/features/guidance/coaching-address";
+import { PENALTIES_ADDRESS } from "@/features/guidance/penalty-address";
 import { StudentCoachingPanel } from "@/features/guidance/student-coaching-panel";
 import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import { MENTOR_LIST_ADDRESS } from "@/features/mentor-groups/mentor-list-address";
@@ -178,6 +179,9 @@ function menteeLinksOf(roles: AccountForAccess["roles"]): MenteeLinks {
     grade: assesses("character") ? GRADE_ADDRESS : null,
     fitness: assesses("fitness") ? FITNESS_ADDRESS : null,
     mental: assesses("mental_health") ? SCREENING_ADDRESS : null,
+    penalties: mayOpenTab(roles, "guidance", "discipline")
+      ? PENALTIES_ADDRESS
+      : null,
   };
 }
 

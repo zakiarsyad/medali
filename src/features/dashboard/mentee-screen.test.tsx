@@ -51,6 +51,7 @@ const SHOWN: MenteeDashboard = {
     },
   },
   fitnessLimits: STARTING_LIMITS,
+  penalties: [],
   attention: [],
   notes: [],
   noteNumbers: {
@@ -66,6 +67,7 @@ const LINKS = {
   grade: "/penilaian/karakter",
   fitness: "/penilaian/jasmani",
   mental: "/penilaian/mental",
+  penalties: "/pembinaan/disiplin",
   meetings: "/pengasuhan/hadir",
   scores: "/pengasuhan/nilai",
   notes: "/pengasuhan/catatan",
@@ -257,6 +259,41 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain(
       "Belum ada data yang dipublikasikan konselor untuk anak asuh Anda. Data hanya tampil dengan persetujuan mahasiswa.",
     );
+  });
+
+  it("shows Pelanggaran disiplin with each penalty and Lihat semua, or not at all without one", () => {
+    const view: MenteeDashboard = {
+      ...SHOWN,
+      penalties: [
+        {
+          id: "p1",
+          studentId: "00000000-0000-4000-8000-000000000002",
+          name: "Mahasiswa Pelanggar",
+          opensDetail: true,
+          day: "2026-10-01",
+          category: "light",
+          level: 1,
+          description: "Terlambat apel pagi.",
+        },
+      ],
+    };
+
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={view} links={LINKS} />,
+    );
+    const none = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain("Pelanggaran disiplin</h3>");
+    expect(html).toContain("1 Okt 2026");
+    expect(html).toMatch(
+      /href="\/dashboard\?tampilan=anak-asuh&amp;profil=00000000-0000-4000-8000-000000000002"[^>]*>Mahasiswa Pelanggar</,
+    );
+    expect(html).toContain("Ringan · jenjang pertama");
+    expect(html).toContain("Terlambat apel pagi.");
+    expect(html).toMatch(/href="\/pembinaan\/disiplin"[^>]*>Lihat semua</);
+    expect(none).not.toContain("Pelanggaran disiplin</h3>");
   });
 
   it("shows only the message to a Pengasuh without a group", () => {

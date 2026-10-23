@@ -8,6 +8,7 @@ import { readMenteeFacts } from "./mentee-facts-read";
 import { countMentees, readMenteeGroups } from "./mentee-groups";
 import { attendanceAverageOf, openCoachingOf } from "./mentee-notes";
 import { readMenteeNotes } from "./mentee-notes-read";
+import { readMenteePenalties } from "./mentee-penalties-read";
 import { readProgress } from "./mentee-progress-read";
 import type { MenteeDashboard } from "./mentee-recap";
 import type { MenteeScope } from "./mentee-scope";
@@ -31,11 +32,12 @@ export async function loadMenteeDashboard(
     readFitnessLimits(db),
   ]);
   const groupIds = groups.map((group) => group.id);
-  const [progress, cards, facts, written] = await Promise.all([
+  const [progress, cards, facts, written, penalties] = await Promise.all([
     readProgress(db, { groupIds, mentees, students, period }),
     readMenteeCards(db, scope, basis, limits),
     readMenteeFacts(db, scope, basis, limits),
     readMenteeNotes(db, scope, today),
+    readMenteePenalties(db, scope),
   ]);
   return {
     kind: "shown",
@@ -44,6 +46,7 @@ export async function loadMenteeDashboard(
     progress,
     cards,
     fitnessLimits: limits,
+    penalties,
     attention: attentionRows(facts),
     notes: written.notes,
     noteNumbers: {

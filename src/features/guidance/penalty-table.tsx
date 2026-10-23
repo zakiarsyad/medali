@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { JenjangBadge } from "@/discipline-penalties/jenjang-badge";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage } from "@/ui/form-message";
 import { ProfileNameLink } from "@/ui/profile-name-link";
 import styles from "./discipline-penalties.module.css";
 import { type PenaltiesParams, penaltiesAddress } from "./penalty-address";
-import { JenjangBadge } from "./penalty-badges";
 import type { PenaltyRow } from "./penalty-board";
 import { PenaltyDetail } from "./penalty-detail";
 import type { PenaltyFollowUp } from "./penalty-follow-up";

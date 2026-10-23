@@ -1,4 +1,8 @@
 import type { GradeScheme } from "@/character-grades/scheme-ids";
+import type {
+  PenaltyCategory,
+  PenaltyLevel,
+} from "@/discipline-penalties/penalty-kinds";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { Recap } from "./achievement-recap";
@@ -30,6 +34,24 @@ export interface MenteeCards {
   published: PublishedMental;
 }
 
+/** How many penalties "Pelanggaran disiplin" shows at most, as in the prototype. */
+export const PENALTIES_SHOWN = 5;
+
+/** A discipline penalty of an anak asuh, as "Pelanggaran disiplin" shows it. */
+export interface MenteePenalty {
+  id: string;
+  studentId: string;
+  name: string;
+  /** Whether the account may open the student's detail. */
+  opensDetail: boolean;
+  /** Tanggal pelanggaran. */
+  day: string;
+  category: PenaltyCategory;
+  level: PenaltyLevel;
+  /** Uraian pelanggaran. */
+  description: string;
+}
+
 /** What Dashboard anak asuh shows of a Pengasuh who holds a group today. */
 export interface MenteeContent {
   /** The groups in force they hold today, the newest angkatan first. */
@@ -41,6 +63,8 @@ export interface MenteeContent {
   cards: MenteeCards;
   /** The limits in force, which give each fitness category its scores. */
   fitnessLimits: FitnessLimits;
+  /** "Pelanggaran disiplin": the latest penalties of the anak asuh, newest first. */
+  penalties: MenteePenalty[];
   /** "Perlu perhatian": the anak asuh with a reason, the most reasons first. */
   attention: AttentionRow[];
   /** "Catatan pengasuhan terbaru", the newest first. */
