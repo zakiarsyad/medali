@@ -113,7 +113,7 @@ here than Dorm health notes and Mental health screening give it.
 
 - [x] 1. The rights for the two panels and for the names on them are
   added to the permission list, with their checks.
-- [ ] 2. "Kesehatan jasmani penghuni" shows the counts and the table
+- [x] 2. "Kesehatan jasmani penghuni" shows the counts and the table
   per dorm, with the small-count rules.
 - [ ] 3. The residents who need follow-up show to the allowed roles.
 - [ ] 4. "Kesehatan mental penghuni" shows the anonymous count with

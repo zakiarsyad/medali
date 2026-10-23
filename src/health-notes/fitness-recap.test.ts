@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { NONE_HELD_BACK } from "./achievement-recap";
-import { type FitnessTally, physicalRecapOf } from "./physical-recap";
+import { type FitnessTally, physicalRecapOf } from "./fitness-recap";
+
+/** The fewest a count needs when none is held back, as for one's own anak asuh. */
+const NONE_HELD_BACK = 1;
 
 const TALLY: FitnessTally = {
   students: 40,

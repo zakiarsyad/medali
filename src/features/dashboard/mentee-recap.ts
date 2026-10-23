@@ -5,6 +5,7 @@ import type {
   PenaltyLevel,
 } from "@/discipline-penalties/penalty-kinds";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
+import type { PhysicalRecap } from "@/health-notes/fitness-recap";
 import type { GroupCodeParts } from "@/ui/group-code";
 import type { Recap } from "./achievement-recap";
 import type { GradeRecap } from "./grade-recap";
@@ -13,7 +14,6 @@ import type { AttentionRow } from "./mentee-attention";
 import type { MenteeNoteNumbers } from "./mentee-notes";
 import type { MentoringProgress } from "./mentee-progress";
 import type { LatestNote } from "./mentoring-recap";
-import type { PhysicalRecap } from "./physical-recap";
 
 /*
  * Dashboard anak asuh, as it may leave the server. Read by the screen

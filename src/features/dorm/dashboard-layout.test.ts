@@ -57,4 +57,19 @@ describe("Dashboard asrama on a phone", () => {
       expect(table).toContain(`<td data-title="${title}">`);
     }
   });
+
+  it("puts the health panels under each other once they do not fit, and turns the table per dorm into a card each, with no box that scrolls sideways", () => {
+    const screen = read("dashboard-screen.tsx");
+    const panel = read("dashboard-physical-panel.tsx");
+
+    expect(screen).toMatch(
+      /<div className=\{board\.parts\}>\s*<PhysicalHealthPanel/,
+    );
+    expect(panel).toMatch(/<table className=.*shared\.stacked/);
+    expect(panel).not.toContain("tableWrap");
+    expect(panel).toContain(
+      '<td className={shared.rowHeading} data-title="Asrama">',
+    );
+    expect(panel).toContain("data-title={CATEGORY_WORDS[category]}");
+  });
 });

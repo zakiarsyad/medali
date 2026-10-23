@@ -1,15 +1,14 @@
-import {
-  FITNESS_CATEGORIES,
-  type FitnessCategory,
-} from "@/health-notes/fitness-ids";
-import { ILLNESSES, type Illness } from "@/health-notes/health-ids";
-import {
-  type CountShown,
-  FEWEST_COUNTED,
-  shownCount,
-} from "@/health-notes/shown-count";
+import { FITNESS_CATEGORIES, type FitnessCategory } from "./fitness-ids";
+import { ILLNESSES, type Illness } from "./health-ids";
+import { type CountShown, FEWEST_COUNTED, shownCount } from "./shown-count";
 
-/** What the database counts of the fitness of the students of the Dashboard. */
+/*
+ * How many students of a group are in each fitness category, as it may
+ * leave the server: for the Dashboards and Dashboard asrama. Read by the
+ * screen parts, so nothing here may take from the database code.
+ */
+
+/** What the database counts of the fitness of a group of students. */
 export interface FitnessTally {
   /** The Aktif students of the group. */
   students: number;
@@ -17,6 +16,12 @@ export interface FitnessTally {
   tested: number;
   /** How many are in each final category: the test's or the note's, the more serious. */
   byCategory: Record<FitnessCategory, number>;
+}
+
+/** The tally of the students a read puts under one key, such as their dorm. */
+export interface GroupTally<Key extends string> {
+  key: Key;
+  tally: FitnessTally;
 }
 
 /** How many students of the two lower categories have an illness in their latest note. */
@@ -58,9 +63,10 @@ function heldCount(count: number, fewest: number): CountShown {
   return fewest > 1 ? shownCount(count) : count;
 }
 
-function shownByCategory(
+/** Each category's count as it may show: "<5" for 1 to 4 unless none is held back. */
+export function shownByCategory(
   byCategory: Record<FitnessCategory, number>,
-  fewest: number,
+  fewest: number = FEWEST_COUNTED,
 ): Record<FitnessCategory, CountShown> {
   return {
     excellent: heldCount(byCategory.excellent, fewest),
