@@ -27,7 +27,10 @@ import {
 import { FitnessScreen, ReadOnlyNote } from "@/features/fitness/fitness-screen";
 import { HealthPart } from "@/features/fitness/health-part";
 import { readHealthRecap } from "@/features/fitness/health-recap";
-import { mayWriteNotes } from "@/features/fitness/health-subject";
+import {
+  dormCohortsOn,
+  mayWriteNotes,
+} from "@/features/fitness/health-subject";
 import { LimitsForm } from "@/features/fitness/limits-form";
 import { ReadOnlyLimits } from "@/features/fitness/read-only-limits";
 import { readRecapParams } from "@/features/fitness/recap-address";
@@ -76,7 +79,7 @@ export default async function FitnessPage(
   const { limits } = inForce;
   const mayEnter = may(account.roles, "enter_fitness_scores");
   const showsNotes = may(account.roles, "view_health_notes");
-  const readable = healthReadableTo(account);
+  const readable = healthReadableTo(account, await dormCohortsOn(db, today));
   const [numbers, list, groups, recap, detail] = await Promise.all([
     readFitnessNumbers(db, visible, limits, today),
     readFitnessList(db, visible, limits, params, readable),
