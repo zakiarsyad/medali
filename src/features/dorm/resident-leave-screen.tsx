@@ -2,6 +2,7 @@ import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
 import styles from "./leave.module.css";
+import type { LeaveListParams } from "./leave-address";
 import { LeaveForm } from "./leave-form";
 import { LEAVE_KINDS } from "./leave-ids";
 import { KIND_RULES, KIND_WORDS } from "./leave-words";
@@ -36,34 +37,29 @@ function LeaveTerms() {
   );
 }
 
-/**
- * Perizinan asrama for a resident: "Ajukan izin" beside "Ketentuan", one
- * under the other on a phone, and "Riwayat izin saya" below.
- */
-export function ResidentLeaveScreen({
-  tabs,
-  room,
-  leave,
-  newLeaveId,
-  newReportId,
-}: {
-  tabs: TabLinksProps;
-  /** Where the resident lives, as the Asrama page header says it. */
-  room: string | null;
+export interface ResidentLeaveProps {
   leave: OwnLeave;
   /** The key the next request is kept under. */
   newLeaveId: string;
   /** The key the next report of a return is kept under. */
   newReportId: string;
-}) {
-  const lede =
-    "Ajukan izin keluar asrama atau Izin Tidak Mengikuti Kegiatan (ITMK) dan pantau statusnya.";
+  /** The staff list shown below, whose place a page step keeps; or null. */
+  staffList: LeaveListParams | null;
+}
+
+/**
+ * The resident part of Perizinan asrama: "Ajukan izin" beside
+ * "Ketentuan", one under the other on a phone, and "Riwayat izin saya"
+ * below.
+ */
+export function ResidentLeavePart({
+  leave,
+  newLeaveId,
+  newReportId,
+  staffList,
+}: ResidentLeaveProps) {
   return (
     <>
-      <PageHead title="Perizinan asrama">
-        {room === null ? lede : `${room}. ${lede}`}
-      </PageHead>
-      <TabLinks {...tabs} />
       <div className={styles.sideBySide}>
         <section className={shared.panel}>
           <LeaveForm newLeaveId={newLeaveId} />
@@ -75,8 +71,35 @@ export function ResidentLeaveScreen({
       </div>
       <section className={shared.panel}>
         <h2 className={shared.heading}>Riwayat izin saya</h2>
-        <OwnLeaveView leave={leave} newReportId={newReportId} />
+        <OwnLeaveView
+          leave={leave}
+          newReportId={newReportId}
+          staffList={staffList}
+        />
       </section>
+    </>
+  );
+}
+
+/** Perizinan asrama for a resident: the page head, the tabs and their part. */
+export function ResidentLeaveScreen({
+  tabs,
+  room,
+  ...part
+}: ResidentLeaveProps & {
+  tabs: TabLinksProps;
+  /** Where the resident lives, as the Asrama page header says it. */
+  room: string | null;
+}) {
+  const lede =
+    "Ajukan izin keluar asrama atau Izin Tidak Mengikuti Kegiatan (ITMK) dan pantau statusnya.";
+  return (
+    <>
+      <PageHead title="Perizinan asrama">
+        {room === null ? lede : `${room}. ${lede}`}
+      </PageHead>
+      <TabLinks {...tabs} />
+      <ResidentLeavePart {...part} />
     </>
   );
 }

@@ -333,6 +333,56 @@ describe("readOwnCleaning", () => {
     });
   });
 
+  it("gives a resident who is also BAM - Kerumahtanggaan only their own room, the same as with Mahasiswa alone", async () => {
+    await inTestDatabase(async (db) => {
+      const setting = await setUp(db);
+      const { ownRoom, otherRoom } = setting;
+      await addDuties(db, setting, [
+        { day: TODAY, roomId: ownRoom, roomNumber: "BR101" },
+        { day: TODAY, roomId: otherRoom, roomNumber: "BR102" },
+      ]);
+
+      const alone = await readOwnCleaning(
+        db,
+        studentOf(setting.resident),
+        TODAY,
+      );
+      const withBam = await readOwnCleaning(
+        db,
+        studentOf(setting.resident, ["student", "bam_household"]),
+        TODAY,
+      );
+
+      if (withBam.kind !== "shown") throw new Error("It was not shown.");
+      expect(withBam.duties.map((duty) => duty.roomNumber)).toEqual(["BR101"]);
+      expect(withBam).toEqual(alone);
+    });
+  });
+
+  it("refuses a student who lives in no dorm, also one who is a BAM member", async () => {
+    await inTestDatabase(async (db) => {
+      await setUp(db);
+      const program = await addTestProgram(db, "Prodi Uji Bersih Luar");
+      // Angkatan 3129 is in semester 3 then: it lives in no dorm.
+      const outside = await addTestStudent(db, program, {
+        nim: "9981030004",
+        name: "Luar Uji Bersih",
+        cohortYear: 3129,
+      });
+
+      expect(await readOwnCleaning(db, studentOf(outside), TODAY)).toEqual({
+        kind: "refused",
+      });
+      expect(
+        await readOwnCleaning(
+          db,
+          studentOf(outside, ["student", "bam_household"]),
+          TODAY,
+        ),
+      ).toEqual({ kind: "refused" });
+    });
+  });
+
   it("refuses an account without the right, and one with no student", async () => {
     await inTestDatabase(async (db) => {
       const setting = await setUp(db);

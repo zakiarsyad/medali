@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { type LeaveListParams, readLeaveListParams } from "./leave-address";
 import type { OwnLeave, OwnLeaveRow } from "./own-leave";
 import { historyKey, OwnLeaveTable, saidAfterCancel } from "./own-leave-view";
 
@@ -45,6 +46,7 @@ function table(
         onSent: () => undefined,
       }}
       onCancelled={() => undefined}
+      staffList={null}
     />,
   );
 }
@@ -67,6 +69,37 @@ describe("what a cancel leaves above Riwayat izin saya", () => {
     expect(
       historyKey({ ...now, rows: [{ ...ROW, status: "cancelled" }] }),
     ).toBe(historyKey(now));
+  });
+});
+
+describe("the pages of Riwayat izin saya", () => {
+  function pagerOf(staffList: LeaveListParams | null): string {
+    return renderToStaticMarkup(
+      <OwnLeaveTable
+        leave={{ ...leaveOf([ROW]), matching: 100 }}
+        said={null}
+        reporting={{
+          openId: null,
+          newReportId: "00000000-0000-4000-8000-00000000c0ff",
+          onOpen: () => undefined,
+          onSent: () => undefined,
+        }}
+        onCancelled={() => undefined}
+        staffList={staffList}
+      />,
+    );
+  }
+
+  it("keep the place of the staff list shown below", () => {
+    const staffList = readLeaveListParams({ status: "semua", hal: "3" });
+
+    expect(pagerOf(staffList)).toContain(
+      'href="/asrama/izin?status=semua&amp;hal=3&amp;riwayat=2"',
+    );
+  });
+
+  it("name only their own page for a resident alone", () => {
+    expect(pagerOf(null)).toContain('href="/asrama/izin?riwayat=2"');
   });
 });
 
