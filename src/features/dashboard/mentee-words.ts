@@ -1,5 +1,5 @@
+import type { PublishedCounts } from "@/mental-health/mental-recap";
 import { groupCode } from "@/ui/group-code";
-import type { PublishedCounts } from "./mental-recap";
 import type { MenteeContent } from "./mentee-recap";
 
 /** What Dashboard anak asuh says, alone, to a Pengasuh who holds no group. */

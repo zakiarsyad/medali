@@ -25,3 +25,71 @@
 .plain {
   color: var(--muted);
 }
+
+.levelBars {
+  display: grid;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each column may shrink to nothing, so a bar always fits the width of a phone. */
+.levelBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+  font-size: var(--text-md);
+}
+
+.levelLabel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.levelMeter {
+  width: 100%;
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+  appearance: none;
+}
+
+.levelMeter::-webkit-meter-bar {
+  height: var(--bar-height);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--line2);
+}
+
+.levelMeter::-webkit-meter-optimum-value,
+.levelMeter::-webkit-meter-suboptimum-value,
+.levelMeter::-webkit-meter-even-less-good-value {
+  border-radius: var(--radius-md);
+  background: var(--meter-colour);
+}
+
+.levelMeter::-moz-meter-bar {
+  border-radius: var(--radius-md);
+  background: var(--meter-colour);
+}
+
+/* The levels of a screening: fine, Sedang, and Berat or worse. */
+.okMeter {
+  --meter-colour: var(--ok);
+}
+
+.warnMeter {
+  --meter-colour: var(--warn);
+}
+
+.badMeter {
+  --meter-colour: var(--bad);
+}
+
+.levelValue {
+  font-weight: var(--weight-heavy);
+  text-align: right;
+}

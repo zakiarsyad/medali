@@ -1,10 +1,14 @@
 import Link from "next/link";
+import type {
+  PublishedMental,
+  PublishedRow,
+} from "@/mental-health/mental-recap";
+import { publishedLine } from "@/mental-health/published-words";
 import { LevelBadges } from "@/mental-health/screening-badges";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import styles from "./dashboard.module.css";
-import type { PublishedMental, PublishedRow } from "./mental-recap";
-import { NOTHING_PUBLISHED, publishedLine } from "./mental-words";
+import { NOTHING_PUBLISHED } from "./mental-words";
 
 /** One student: the date, the name with the level when shared, and the line under it. */
 function PublishedItem({

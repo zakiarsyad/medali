@@ -1,5 +1,5 @@
+import type { MentalView } from "@/mental-health/mental-recap";
 import styles from "./dashboard.module.css";
-import type { MentalView } from "./mental-recap";
 import { mentalCardLine, mentalCardValue } from "./mental-words";
 
 /** Where section 4 starts, for the card that leads to it. */

@@ -9,6 +9,10 @@ import type { Database } from "@/db/connect";
 import { listStudyPrograms, type StudyProgram } from "@/db/study-programs";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
+import type { PhysicalRecap } from "@/health-notes/fitness-recap";
+import { readPhysical } from "@/health-notes/fitness-recap-read";
+import type { MentalView } from "@/mental-health/mental-recap";
+import { readMental } from "@/mental-health/mental-recap-read";
 import { type Achievement, readAchievement } from "./achievement-read";
 import {
   type DashboardFilters,
@@ -26,12 +30,8 @@ import {
 import type { DashboardScope } from "./dashboard-scope";
 import { dashboardStudents } from "./dashboard-students";
 import { type CharacterGrades, readCharacterGrades } from "./grade-read";
-import { readMental } from "./mental-read";
-import type { MentalView } from "./mental-recap";
 import { readMentoring } from "./mentoring-read";
 import type { MentoringView } from "./mentoring-recap";
-import { readPhysical } from "./physical-read";
-import type { PhysicalRecap } from "./physical-recap";
 
 /** The running period as the semester rule reads it, or null when none runs. */
 export type RunningPeriod = Pick<AcademicPeriod, "startYear" | "term"> | null;

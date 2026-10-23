@@ -6,6 +6,14 @@ import { SHARING_RECIPIENTS, type SharingRecipient } from "./sharing-ids";
 
 const NOBODY = sql`false`;
 
+/** Who reads the counselling data published to them, and which sharings they reach. */
+export interface SharedReader {
+  /** The account, written to the log of readings for each row shown. */
+  readerId: string;
+  /** The published sharings it reaches, on the sharings joined with their students. */
+  reach: SQL;
+}
+
 /** The roles of the account that may be named on a sharing and read it. */
 export function recipientRolesOf(actor: AccountForAccess): SharingRecipient[] {
   return SHARING_RECIPIENTS.filter(

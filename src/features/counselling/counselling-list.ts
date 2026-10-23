@@ -24,6 +24,7 @@ import {
   students,
   studyPrograms,
 } from "@/db/schema";
+import { heldInLast30Days } from "@/mental-health/recent-sessions";
 import {
   ACTIVE_STATUSES,
   type CounsellingHour,
@@ -40,7 +41,6 @@ import type {
   CounsellingStudentRow,
 } from "./counselling-list-view";
 import { comingDay } from "./counselling-list-words";
-import { heldInLast30Days } from "./recent-sessions";
 
 /**
  * The students whose counselling the account may list, never the

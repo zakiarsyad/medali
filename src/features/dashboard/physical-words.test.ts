@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PhysicalRecap } from "./physical-recap";
+import type { PhysicalRecap } from "@/health-notes/fitness-recap";
 import {
   illnessLine,
   PHYSICAL_TOO_FEW,

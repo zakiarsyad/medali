@@ -5,7 +5,10 @@ import { attendanceRate, rateWords } from "./attendance-rate";
 import board from "./dashboard.module.css";
 import { DashboardActivities } from "./dashboard-activities";
 import { AttendanceBars } from "./dashboard-bars";
+import type { DormHealthPanels } from "./dashboard-health";
 import { LeavePanel } from "./dashboard-leave-panel";
+import { MentalHealthPanel } from "./dashboard-mental-panel";
+import { PhysicalHealthPanel } from "./dashboard-physical-panel";
 import type { DashboardView } from "./dashboard-view";
 import {
   attendanceNote,
@@ -50,10 +53,12 @@ function DashboardNumbers({ view }: { view: DashboardView }) {
 export function DashboardScreen({
   tabs,
   view,
+  health,
   mayCount,
 }: {
   tabs: TabLinksProps;
   view: DashboardView;
+  health: DormHealthPanels;
   /** Whether the account counts the attendance, for the link of a row. */
   mayCount: boolean;
 }) {
@@ -83,6 +88,19 @@ export function DashboardScreen({
           outCount={view.leave.out}
         />
       </div>
+      <HealthPanels health={health} />
     </>
+  );
+}
+
+/** The health panels, below the rest, for an account that may see one. */
+function HealthPanels({ health }: { health: DormHealthPanels }) {
+  const { physical, mental } = health;
+  if (physical === null && mental === null) return null;
+  return (
+    <div className={board.parts}>
+      {physical !== null && <PhysicalHealthPanel physical={physical} />}
+      {mental !== null && <MentalHealthPanel mental={mental} />}
+    </div>
   );
 }

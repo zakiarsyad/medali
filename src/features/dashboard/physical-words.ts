@@ -2,13 +2,13 @@ import {
   FITNESS_CATEGORIES,
   type FitnessCategory,
 } from "@/health-notes/fitness-ids";
-import { ILLNESS_WORDS } from "@/health-notes/health-words";
-import { type CountShown, countWords } from "@/health-notes/shown-count";
 import type {
   IllnessCount,
   PhysicalRecap,
   ShownPhysical,
-} from "./physical-recap";
+} from "@/health-notes/fitness-recap";
+import { ILLNESS_WORDS } from "@/health-notes/health-words";
+import { type CountShown, countWords } from "@/health-notes/shown-count";
 
 /** What the card and section 3 say instead of counts for a small group. */
 export const PHYSICAL_TOO_FEW =

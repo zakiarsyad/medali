@@ -1,7 +1,7 @@
+import type { PublishedMental } from "@/mental-health/mental-recap";
 import styles from "./dashboard.module.css";
 import { MENTAL_SECTION } from "./mental-card";
 import { PublishedPanel } from "./mental-published";
-import type { PublishedMental } from "./mental-recap";
 import { MENTEES_NOTHING_PUBLISHED } from "./mentee-words";
 import { SectionHead } from "./section-head";
 
