@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { isToldAbove } from "./answer-place";
 import { changeForm } from "./change-form";
 import styles from "./cohort-assignments.module.css";
 import { decreeStepAction } from "./decree-actions";
@@ -66,9 +67,8 @@ export function FixingForm({
     const form = changeForm(shown, { step, decreeNumber, effectiveOn });
     save(async () => {
       const after = await decreeStepAction(form);
-      // A penetapan that took effect takes this form away with it.
-      if (step === "fix" && after.done !== null) {
-        announce(after.done);
+      if (isToldAbove(step, after)) {
+        announce(after);
         return;
       }
       setAnswer(after);

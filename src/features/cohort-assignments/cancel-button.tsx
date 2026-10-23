@@ -3,6 +3,7 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { isToldAbove } from "./answer-place";
 import { changeForm } from "./change-form";
 import { cancelAction } from "./decree-actions";
 import type { DraftKey } from "./draft-change-input";
@@ -21,9 +22,8 @@ export function CancelButton({ shown }: { shown: DraftKey }) {
     if (!window.confirm(cancelQuestion(shown.cohortYear))) return;
     save(async () => {
       const after = await cancelAction(changeForm(shown));
-      // A cancelled penetapan takes this button away with its panel.
-      if (after.done !== null) {
-        announce(after.done);
+      if (isToldAbove("cancel", after)) {
+        announce(after);
         return;
       }
       setError(after.error);
