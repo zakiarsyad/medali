@@ -40,6 +40,8 @@ export interface StudentAchievement {
    * given only to the student themselves, and only under a limit.
    */
   stored?: Scores;
+  /** True on the student's own card, which names no staff menu. */
+  own?: boolean;
 }
 
 /** What every reader of "Capaian karakter" gives, whoever asks. */

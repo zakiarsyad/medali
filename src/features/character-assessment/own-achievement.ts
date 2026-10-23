@@ -62,7 +62,13 @@ export async function readOwnAchievement(
     readAchievementParts(db, student.id),
     isActive ? semesterOn(db, student, today) : null,
   ]);
-  const own = { studentId: student.id, semester, ...parts, mayAssess: false };
+  const own = {
+    studentId: student.id,
+    semester,
+    ...parts,
+    mayAssess: false,
+    own: true,
+  };
   if (parts.limit === null) return own;
   const stored = await readStoredLatestOf(db, student.id);
   if (stored === null) return own;

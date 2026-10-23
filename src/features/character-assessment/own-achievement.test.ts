@@ -93,6 +93,7 @@ describe("readOwnAchievement", () => {
         earlier: LOW_SCORES,
         mayAssess: false,
         limit: null,
+        own: true,
       });
     });
   });

@@ -69,6 +69,15 @@ describe("Capaian karakter in a student's detail", () => {
     );
   });
 
+  it("does not point the student on their own card to a menu that is not theirs", () => {
+    const html = viewOf({ ...NOT_YET, mayAssess: false, own: true });
+
+    expect(html).toContain(
+      "Belum ada hasil asesmen karakter semester ini.</p>",
+    );
+    expect(html).not.toContain("Penilaian &gt; Asesmen karakter");
+  });
+
   it("offers no Input asesmen to an account that may not assess the student", () => {
     expect(viewOf({ ...NOT_YET, mayAssess: false })).not.toContain(
       "Input asesmen",
