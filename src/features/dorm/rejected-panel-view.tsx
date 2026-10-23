@@ -53,11 +53,12 @@ export function RejectedWarningPanel({
           <p className={styles.sub}>
             Klarifikasi kehadiran yang ditolak langsung masuk penetapan SP 1.
             Bila ditolak lagi setelah SP 1, masuk SP 2 dan pengajuan hukuman
-            disiplin. Penetapan dilakukan Pengelola Asrama di tab Pelanggaran.
+            disiplin. Penetapan dilakukan Pengelola Asrama di tab Pelanggaran
+            asrama.
           </p>
         </div>
         <Link href={VIOLATIONS_ADDRESS} className={shared.quiet}>
-          Buka tab Pelanggaran
+          Buka tab Pelanggaran asrama
         </Link>
       </div>
       <div className={shared.tableWrap}>

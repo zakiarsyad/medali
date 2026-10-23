@@ -67,6 +67,10 @@ function screen(
 }
 
 describe("ClarificationsScreen", () => {
+  it("is titled Klarifikasi kehadiran asrama, apart from the campus tab", () => {
+    expect(screen()).toMatch(/<h1[^>]*>Klarifikasi kehadiran asrama<\/h1>/);
+  });
+
   it("shows the four numbers, the flow, the search and the status choice", () => {
     const shown = screen();
 

@@ -13,7 +13,7 @@ import { readRejectedPanel } from "@/features/dorm/rejected-panel";
 import { RejectedWarningPanel } from "@/features/dorm/rejected-panel-view";
 
 /**
- * The tab Klarifikasi kehadiran of Asrama. Staff see the clarifications
+ * The tab Klarifikasi kehadiran asrama of Asrama. Staff see the clarifications
  * of the residents they may see through the roles that may see them:
  * Ketua Program Studi those of their own program only. Only the roles
  * that check and decide them are given the files. The roles that also

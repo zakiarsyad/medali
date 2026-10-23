@@ -25,7 +25,7 @@ export interface ClarificationRights {
 }
 
 /**
- * Klarifikasi kehadiran of Asrama for staff: the numbers Menunggu
+ * Klarifikasi kehadiran asrama for staff: the numbers Menunggu
  * verifikasi BAM, Menunggu validasi pengelola, Diterima and Ditolak, the
  * flow in one note, "Klarifikasi ditolak dan penetapan SP" for the roles
  * that get it, the search with the status choice, and one page of
@@ -53,7 +53,7 @@ export function ClarificationsScreen({
   const address = clarificationListAddress(filters, params.page);
   return (
     <>
-      <PageHead title="Klarifikasi kehadiran">
+      <PageHead title="Klarifikasi kehadiran asrama">
         Klarifikasi mahasiswa asrama yang tercatat tidak hadir, beserta
         lampirannya.
       </PageHead>
