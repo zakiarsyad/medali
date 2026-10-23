@@ -61,7 +61,7 @@ const SHOWN: MenteeDashboard = {
     {
       studentId: "00000000-0000-4000-8000-000000000003",
       name: "Mahasiswa Rendah",
-      nim: "9900000003",
+      nim: "9900341003",
       className: "1-02",
       semester: 3,
       scores: { M: 60, E: 70, D: 60, A: 60, L: 60, I: 60 },
@@ -70,7 +70,7 @@ const SHOWN: MenteeDashboard = {
     {
       studentId: "00000000-0000-4000-8000-000000000004",
       name: "Mahasiswa Baru",
-      nim: "9900000004",
+      nim: "9900341004",
       className: null,
       semester: null,
       scores: null,
@@ -333,7 +333,7 @@ describe("Dashboard anak asuh", () => {
     expect(html).toMatch(
       /href="\/dashboard\?tampilan=anak-asuh&amp;profil=00000000-0000-4000-8000-000000000003"[^>]*><b>Mahasiswa Rendah<\/b>/,
     );
-    expect(html).toContain("9900000003");
+    expect(html).toContain("9900341003");
     expect(html).toContain('data-title="Kelas akademik">1-02<');
     expect(html).toContain('data-title="Semester">3<');
     expect(html).toContain("61,7");
