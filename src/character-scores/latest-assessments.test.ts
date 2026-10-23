@@ -126,6 +126,76 @@ describe("latestAssessments", () => {
       }
     });
   });
+
+  it("as of a day, gives the one saved by the end of that day on campus", async () => {
+    await inTestDatabase(async (db) => {
+      const ids = await addRecords(db);
+      // The later assessment was saved at 10:00 on campus on 3600-10-01.
+      const onTheDay = latestAssessments(db, "3600-10-01");
+      const dayBefore = latestAssessments(db, "3600-09-30");
+
+      const free = ids.slice(2);
+      const [then] = await db
+        .select()
+        .from(dayBefore)
+        .where(inArray(dayBefore.studentId, free));
+      const [now] = await db
+        .select()
+        .from(onTheDay)
+        .where(inArray(onTheDay.studentId, free));
+
+      expect(then).toMatchObject({ scoreM: 90, scoreL: 40, total: 431 });
+      expect(now).toMatchObject({ scoreM: 80, total: 482 });
+    });
+  });
+
+  it("as of a day, holds a score at 70 only for a penalty of that day or before", async () => {
+    await inTestDatabase(async (db) => {
+      const periodId = await addPeriod(db);
+      const programId = await addTestProgram(db, "Prodi Uji Skor Pada Hari");
+      const recorder = await addTestRecorder(db);
+      const id = await addTestStudent(db, programId, {
+        nim: "9986710004",
+        name: "Mahasiswa Uji Skor Pada Hari",
+      });
+      const savedAt = new Date("3600-09-01T03:00:00Z");
+      await addAssessment(db, id, periodId, recorder, SILVER, savedAt);
+      const medium = { category: "medium", level: 1 } as const;
+      await addTestPenaltyOf(db, id, recorder, medium, "3600-10-15");
+
+      const asOf = async (day: string) => {
+        const latest = latestAssessments(db, day);
+        const [row] = await db
+          .select()
+          .from(latest)
+          .where(inArray(latest.studentId, [id]));
+        return row;
+      };
+
+      expect(await asOf("3600-10-14")).toMatchObject({
+        total: 482,
+        limited: false,
+      });
+      expect(await asOf("3600-10-15")).toMatchObject({
+        total: 420,
+        limited: true,
+      });
+    });
+  });
+
+  it("as of a day before every assessment, gives none", async () => {
+    await inTestDatabase(async (db) => {
+      const ids = await addRecords(db);
+      const latest = latestAssessments(db, "3600-08-31");
+
+      const rows = await db
+        .select()
+        .from(latest)
+        .where(inArray(latest.studentId, ids));
+
+      expect(rows).toEqual([]);
+    });
+  });
 });
 
 describe("earlierAssessments", () => {

@@ -46,16 +46,25 @@ function shownTotal(limited: SQL<boolean>) {
     .as("total");
 }
 
+/** The assessments saved by the end of a day on campus, or all without a day. */
+function savedBy(day: string | undefined): SQL | undefined {
+  if (day === undefined) return undefined;
+  return sql`(${characterAssessments.enteredAt} at time zone 'Asia/Jakarta')::date <= ${day}`;
+}
+
 /**
  * Each student's latest assessment, as a table to join students to: the
  * one saved last, whatever period it was made in. A student with none
  * has no row here. This latest one is the student's capaian karakter,
  * for any screen that shows it. Its scores and their total are held at
  * 70 under a Ringan or Sedang penalty; the total as stored is kept
- * beside them, for "Rerata sebelum pembatasan".
+ * beside them, for "Rerata sebelum pembatasan". Given a day, it is the
+ * capaian karakter as it stood at the end of that day on campus: the
+ * assessments saved by then, held at 70 for the penalties of that day or
+ * before.
  */
-export function latestAssessments(db: Database) {
-  const limitedOnes = limitedStudents(db);
+export function latestAssessments(db: Database, asOf?: string) {
+  const limitedOnes = limitedStudents(db, asOf);
   const limited = isLimitedSql(limitedOnes);
   return db
     .selectDistinctOn([characterAssessments.studentId], {
@@ -79,6 +88,7 @@ export function latestAssessments(db: Database) {
       limitedOnes,
       eq(limitedOnes.studentId, characterAssessments.studentId),
     )
+    .where(savedBy(asOf))
     .orderBy(...NEWEST_FIRST)
     .as("latest_assessments");
 }

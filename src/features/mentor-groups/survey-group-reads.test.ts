@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
+import { addTestPenaltyOf } from "@/discipline-penalties/test-penalties";
 import {
   addTestSurveyAnswer,
   addTestSurveyPeriod,
@@ -152,6 +153,39 @@ describe("readSurveyGroupRows", () => {
       });
       const left = rows.find((row) => row.mentorId === earlier);
       expect(left?.result.feedback).toBe(null);
+    });
+  });
+
+  it("keeps Capaian karakter of a period that is over as it was on its closing day", async () => {
+    await inTestDatabase(async (db) => {
+      const surveyId = await addSurvey(db);
+      const { groupId, members } = await addGroup(db);
+      const [one, two] = members;
+      if (!one || !two) throw new Error("No members.");
+      const by = await addTestAssessor(db, 7313);
+      const closingDay = "7312-10-21";
+      const onTheDay = new Date(`${closingDay}T20:00:00+07:00`);
+      const nextDay = new Date("7312-10-22T08:00:00+07:00");
+      await addTestScores(db, by, one, allScores(70), onTheDay);
+      await addTestScores(db, by, one, allScores(90), nextDay);
+      await addTestScores(db, by, two, allScores(60), nextDay);
+      const recorder = await addTestMentor(db, { name: "Pencatat Uji Hasil" });
+      const medium = { category: "medium", level: 1 } as const;
+      await addTestPenaltyOf(db, one, recorder, medium, "7312-10-25");
+
+      const over = resultPeriod(surveyId, {
+        status: "closed",
+        numbersDay: closingDay,
+      });
+      const later = resultPeriod(surveyId, { numbersDay: "7312-10-25" });
+      const achievementOn = async (period: ResultPeriod) => {
+        const rows = await readSurveyGroupRows(db, EVERY_ROW, period);
+        return rows.find((row) => row.group.id === groupId)?.result.achievement;
+      };
+
+      expect(await achievementOn(over)).toBe(70);
+      // By the later day both are assessed, and the penalty holds 90 at 70.
+      expect(await achievementOn(later)).toBe(65);
     });
   });
 

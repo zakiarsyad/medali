@@ -116,19 +116,21 @@ export async function readMentorSums(
 /**
  * The rows of "Hasil evaluasi per kelompok" of a period, for an account
  * with this limit: every group it may see, with the sums of its answers
- * and its Capaian karakter.
+ * and its Capaian karakter. Once the period is over, Capaian karakter is
+ * the one of its closing day, so it stays as it was then.
  */
 export async function readSurveyGroupRows(
   db: Database,
   limit: RowLimit,
   period: ResultPeriod,
 ): Promise<SurveyGroupRow[]> {
-  const groups = await readSurveyGroups(db, limit, period.numbersDay);
+  const day = period.numbersDay;
+  const groups = await readSurveyGroups(db, limit, day);
   const groupIds = groups.map((group) => group.id);
   // One read for every group, not one for each.
   const [sums, reratas] = await Promise.all([
     readMentorSums(db, period.id, groupIds),
-    readGroupReratas(db, limit, groupIds),
+    readGroupReratas(db, limit, groupIds, day),
   ]);
   return surveyGroupRows(groups, sums, reratas, period.achievementWeight);
 }

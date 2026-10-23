@@ -1,4 +1,4 @@
-import { inArray, type SQL, type SQLWrapper, sql } from "drizzle-orm";
+import { and, inArray, lte, type SQL, type SQLWrapper, sql } from "drizzle-orm";
 import type { Database } from "@/db/connect";
 import { disciplinePenalties } from "@/db/schema";
 import { CHARACTER_SCORE_CAP, LIMITING_CATEGORIES } from "./score-limit";
@@ -12,13 +12,23 @@ import { CHARACTER_SCORE_CAP, LIMITING_CATEGORIES } from "./score-limit";
 
 /**
  * Each student with a Ringan or Sedang penalty, whatever its status or
- * date, once, as a table to left join a read of students to.
+ * date, once, as a table to left join a read of students to. Given a day,
+ * only the penalties of a violation on that day or before count.
  */
-export function limitedStudents(db: Database) {
+export function limitedStudents(db: Database, onOrBefore?: string) {
+  const byDay =
+    onOrBefore === undefined
+      ? undefined
+      : lte(disciplinePenalties.day, onOrBefore);
   return db
     .selectDistinct({ studentId: disciplinePenalties.studentId })
     .from(disciplinePenalties)
-    .where(inArray(disciplinePenalties.category, [...LIMITING_CATEGORIES]))
+    .where(
+      and(
+        inArray(disciplinePenalties.category, [...LIMITING_CATEGORIES]),
+        byDay,
+      ),
+    )
     .as("limited_students");
 }
 

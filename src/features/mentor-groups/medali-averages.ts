@@ -39,15 +39,17 @@ function reratasOf(rows: readonly TotalOf[]): Reratas {
  * "Rerata MEDALI" of each of these groups an account with this limit may
  * see, in one read for all of them. Only the sums of the latest scores of
  * the Aktif members leave the database. A group where nobody is assessed
- * is not in the answer.
+ * is not in the answer. Given a day, it is the Rerata of the scores as
+ * they stood at the end of that day.
  */
 export async function readGroupReratas(
   db: Database,
   limit: RowLimit,
   groupIds: string[],
+  asOf?: string,
 ): Promise<Reratas> {
   if (groupIds.length === 0) return new Map();
-  const latest = latestAssessments(db);
+  const latest = latestAssessments(db, asOf);
   const rows = await db
     .select({
       id: mentorGroupMembers.groupId,

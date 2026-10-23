@@ -164,6 +164,18 @@ history. No one ever sees one student's answers.
     who wrote one. With none it says "Tidak ada saran tertulis."
 21. The link reads "Buka kelompok (code)" and opens the group's page in
     Kelompok pengasuhan.
+22. Capaian karakter of a period that is over is worked out as it stood
+    at the end of its closing day on campus: each member's latest
+    assessment saved by then, held at 70 for a Ringan or Sedang penalty
+    of a violation on that day or before. Nothing has to be copied when
+    the period closes, so this holds as well for a period that ends by
+    its last day without anyone closing it. While the period runs it is
+    the Capaian karakter of today.
+23. The members it is taken over are the group's Aktif members of
+    today, as in decision 12, so a student who joined or left the group
+    since the closing day changes it. Once the results are fixed, the
+    line in the evaluation history keeps the value of the day it was
+    fixed.
 
 ## Steps
 
@@ -173,7 +185,7 @@ history. No one ever sees one student's answers.
   paging.
 - [x] 3. The detail per group, with hidden suggestions kept on the
   server.
-- [ ] 4. Capaian karakter is locked when a period closes.
+- [x] 4. Capaian karakter is locked when a period closes.
 - [ ] 5. "Tetapkan hasil evaluasi" writes into the evaluation history
   once.
 - [ ] 6. Refusals and the phone layout.
