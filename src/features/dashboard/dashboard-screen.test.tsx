@@ -715,6 +715,30 @@ describe("Pendampingan on the Dashboard", () => {
     expect(small).toMatch(/\(3\).*>-</);
   });
 
+  it("shows one line in place of the programs and the note when no program has an average", () => {
+    const view = viewOf();
+    const part = mentoringPart(
+      shown({
+        ...view,
+        mentoring: {
+          ...view.mentoring,
+          programs: [
+            { programId: 1, name: "D3 Pajak", students: 4, average: null },
+            { programId: 3, name: "D3 Kepabeanan", students: 3, average: null },
+          ],
+        },
+      }),
+    );
+
+    expect(part).toContain("Capaian MEDALI per program studi");
+    expect(part).toContain(
+      "Belum ada program studi yang dapat ditampilkan. Rerata program studi tampil bila minimal 5 mahasiswa sudah diasesmen, agar nilai perorangan tidak dapat ditebak.",
+    );
+    expect(part).not.toContain("D3 Pajak");
+    expect(part).not.toContain("D3 Kepabeanan");
+    expect(part).not.toContain("Batang dimulai dari nilai 50");
+  });
+
   it("leaves out the panel for Ketua Program Studi", () => {
     const view = viewOf({ programs: null });
     const part = mentoringPart(

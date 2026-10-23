@@ -61,5 +61,5 @@ get this panel).
 
 ## Steps
 
-- [ ] 1. The line in place of the program rows and the note when no
+- [x] 1. The line in place of the program rows and the note when no
   program has an average.
