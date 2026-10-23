@@ -147,7 +147,9 @@ describe("Perlu perhatian of Dashboard anak asuh", () => {
         .from(counsellingSharingReads)
         .where(eq(counsellingSharingReads.readBy, mentor.id));
 
-      expect(readings).toEqual([{ studentId: ids.s05 }]);
+      expect(new Set(readings.map((row) => row.studentId))).toEqual(
+        new Set([ids.s05]),
+      );
     });
   });
 

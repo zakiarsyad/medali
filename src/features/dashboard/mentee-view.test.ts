@@ -17,10 +17,13 @@ import {
 } from "@/features/mentoring/test-records";
 import { addTestScore } from "@/features/mentoring/test-scores";
 import { readStudentDetail } from "@/features/students/student-detail";
+import type { Illness } from "@/health-notes/health-ids";
+import { addTestNote } from "@/health-notes/test-health";
 import { addTestMeeting } from "@/mentoring/test-meetings";
 import type { MenteeDashboard } from "./mentee-recap";
 import { menteeAccountOf, menteeScopeOf } from "./mentee-scope";
 import { loadMenteeDashboard } from "./mentee-view";
+import { addTestFitnessScores } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
@@ -184,6 +187,37 @@ describe("Dashboard anak asuh", () => {
         students: 4,
       });
       expect(shown(await load(db, other, period)).progress?.filled).toBe(1);
+    });
+  });
+
+  it("names the illnesses of the two lower categories of even 1 or 2 anak asuh, and none of another Pengasuh's", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, ids } = await addRecords(db);
+      await addTestFitnessScores(db, mentor.id, [
+        { studentId: ids.s01, score: 40 },
+        { studentId: ids.s02, score: 40 },
+        { studentId: ids.s05, score: 40 },
+      ]);
+      const note = (studentId: string, illnesses: Illness[]) =>
+        addTestNote(db, mentor, {
+          studentId,
+          savedAt: new Date("2026-10-12T03:00:00Z"),
+          illnesses: illnesses.map((illness) => ({ illness, note: "" })),
+        });
+      await note(ids.s01, ["asthma", "hypertension"]);
+      await note(ids.s02, ["hypertension"]);
+      await note(ids.s05, ["epilepsy"]);
+
+      const { physical } = shown(await load(db, mentor)).cards;
+
+      expect(physical).toMatchObject({
+        kind: "shown",
+        tested: 2,
+        illnesses: [
+          { illness: "hypertension", students: 2 },
+          { illness: "asthma", students: 1 },
+        ],
+      });
     });
   });
 

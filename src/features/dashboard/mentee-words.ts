@@ -6,6 +6,17 @@ import type { MenteeContent } from "./mentee-recap";
 export const NO_GROUP_HELD =
   "Anda belum memegang kelompok pengasuhan. Data akan tampil setelah Kepala Unit menugaskan kelompok kepada Anda.";
 
+/** What section 1 and its card say while no anak asuh is assessed. */
+export const MENTEES_NOT_ASSESSED =
+  "Belum ada hasil asesmen karakter untuk anak asuh Anda.";
+
+/** What section 4 says while nothing about the anak asuh is published to the Pengasuh. */
+export const MENTEES_NOTHING_PUBLISHED =
+  "Belum ada data yang dipublikasikan konselor untuk anak asuh Anda. Data hanya tampil dengan persetujuan mahasiswa.";
+
+/** What the table "Anak asuh" says while the groups hold no Aktif anak asuh. */
+export const NO_MENTEES = "Belum ada anak asuh aktif di kelompok Anda.";
+
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
 }

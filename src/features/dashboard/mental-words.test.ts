@@ -67,6 +67,12 @@ describe("a row of Data kesehatan mental yang dipublikasikan", () => {
     );
   });
 
+  it("leaves out the Pengasuh for Dashboard anak asuh, whose reader they are", () => {
+    expect(publishedLine(ROW, false)).toBe(
+      "2 sesi konseling. Tindak lanjut: Pemantauan. Mahasiswa sedang dalam pendampingan rutin.",
+    );
+  });
+
   it("says only what is shared, and so when a shared part has nothing yet", () => {
     expect(
       publishedLine({

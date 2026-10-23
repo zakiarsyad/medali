@@ -22,22 +22,6 @@
   font-size: var(--text-md);
 }
 
-/* The Kategori of a penalty: Ringan, Sedang and Berat. */
-.light {
-  border: var(--line-width) solid var(--warn);
-  color: var(--warn);
-}
-
-.medium {
-  border: var(--line-width) solid var(--bad);
-  color: var(--bad);
-}
-
-.heavy {
-  background: var(--bina);
-  color: var(--surface);
-}
-
 /* Ditetapkan: the student's status ends for good. */
 .set {
   border: var(--line-width) solid var(--bina);

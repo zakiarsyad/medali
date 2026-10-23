@@ -108,6 +108,28 @@ describe("physicalRecapOf", () => {
     });
   });
 
+  it("gives each illness count as it is, most first, for Dashboard anak asuh", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 3,
+        tested: 2,
+        byCategory: { excellent: 0, good: 0, attention: 1, medical: 1 },
+      },
+      [
+        { illness: "asthma", students: 1 },
+        { illness: "hypertension", students: 2 },
+      ],
+      NONE_HELD_BACK,
+    );
+
+    expect(recap).toMatchObject({
+      illnesses: [
+        { illness: "hypertension", students: 2 },
+        { illness: "asthma", students: 1 },
+      ],
+    });
+  });
+
   it("sends a count of 1 to 4 only as <5, also those not tested", () => {
     const recap = physicalRecapOf(
       {

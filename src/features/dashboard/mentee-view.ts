@@ -8,9 +8,11 @@ import { readMenteeFacts } from "./mentee-facts-read";
 import { countMentees, readMenteeGroups } from "./mentee-groups";
 import { attendanceAverageOf, openCoachingOf } from "./mentee-notes";
 import { readMenteeNotes } from "./mentee-notes-read";
+import { readMenteePenalties } from "./mentee-penalties-read";
 import { readProgress } from "./mentee-progress-read";
 import type { MenteeDashboard } from "./mentee-recap";
 import type { MenteeScope } from "./mentee-scope";
+import { readMenteeTable } from "./mentee-table-read";
 
 /**
  * Reads Dashboard anak asuh of a scope on each load, so a student who
@@ -31,18 +33,24 @@ export async function loadMenteeDashboard(
     readFitnessLimits(db),
   ]);
   const groupIds = groups.map((group) => group.id);
-  const [progress, cards, facts, written] = await Promise.all([
-    readProgress(db, { groupIds, mentees, students, period }),
-    readMenteeCards(db, scope, basis, limits),
-    readMenteeFacts(db, scope, basis, limits),
-    readMenteeNotes(db, scope, today),
-  ]);
+  const [progress, cards, facts, written, penalties, members] =
+    await Promise.all([
+      readProgress(db, { groupIds, mentees, students, period }),
+      readMenteeCards(db, scope, basis, limits),
+      readMenteeFacts(db, scope, basis, limits),
+      readMenteeNotes(db, scope, today),
+      readMenteePenalties(db, scope),
+      readMenteeTable(db, scope, period),
+    ]);
   return {
     kind: "shown",
     groups,
     students,
     progress,
     cards,
+    fitnessLimits: limits,
+    penalties,
+    members,
     attention: attentionRows(facts),
     notes: written.notes,
     noteNumbers: {
