@@ -68,7 +68,11 @@ export function MenteeScreen({
         line="Nilai MEDALI hasil asesmen anak asuh."
         emptyWords={MENTEES_NOT_ASSESSED}
       />
-      <GradeSection grades={view.cards.grades} detailAddress={links.grade} />
+      <GradeSection
+        grades={view.cards.grades}
+        detailAddress={links.grade}
+        emptyWords="Belum ada nilai karakter untuk anak asuh Anda."
+      />
       <PhysicalSection
         recap={view.cards.physical}
         limits={view.fitnessLimits}

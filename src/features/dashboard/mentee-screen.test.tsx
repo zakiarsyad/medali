@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { DashboardSwitch } from "./dashboard-switch";
-import { NO_GRADES } from "./grade-words";
 import type { MenteeDashboard } from "./mentee-recap";
 import { MenteeScreen } from "./mentee-screen";
 import {
@@ -200,7 +199,7 @@ describe("Dashboard anak asuh", () => {
     expect(html).toContain("Sebaran huruf");
     expect(html).toMatch(/href="\/penilaian\/karakter"[^>]*>Lihat rincian</);
     expect(html).not.toContain("per angkatan");
-    expect(empty).toContain(NO_GRADES);
+    expect(empty).toContain("Belum ada nilai karakter untuk anak asuh Anda.");
     expect(empty).not.toContain("Komponen nilai karakter");
   });
 
