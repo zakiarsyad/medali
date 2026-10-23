@@ -69,5 +69,5 @@ the fixed angkatan.
 
 ## Steps
 
-- [ ] 1. A refused save, fix or cancel keeps its message on screen after
+- [x] 1. A refused save, fix or cancel keeps its message on screen after
   the tab shows the latest state of the angkatan, with a check.
