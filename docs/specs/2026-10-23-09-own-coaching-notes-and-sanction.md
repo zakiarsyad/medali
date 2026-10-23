@@ -89,4 +89,4 @@ own and can change none.
   sanction beside the name.
 - [x] 3. The card "Pembinaan (level)".
 - [x] 4. "Catatan pengasuhan" with its empty state and fold.
-- [ ] 5. Phone layout and speed of the cards.
+- [x] 5. Phone layout and speed of the cards.
