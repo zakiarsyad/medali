@@ -152,7 +152,7 @@ export async function listManagedAccounts(
  * hold two managers saving each other's roles would block each other, and
  * the database would refuse one of the saves.
  */
-async function lockActive(
+export async function lockActive(
   tx: Database,
   accountId: string,
 ): Promise<{ studentId: string | null } | null> {
@@ -164,7 +164,7 @@ async function lockActive(
   return found ?? null;
 }
 
-async function currentRoles(
+export async function currentRoles(
   db: Database,
   accountId: string,
 ): Promise<RoleId[]> {
