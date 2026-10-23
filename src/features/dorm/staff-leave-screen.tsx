@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
@@ -27,18 +28,23 @@ function onlySees(rights: LeaveRights): boolean {
  * page of request cards. Pengelola Asrama approves and rejects there,
  * BAM - BPHK verifies reports of a return and Pengelola validates them,
  * and both record a return directly; every other role only reads.
+ * `ownPart` is the resident part of an account that also lives in the
+ * dorm, shown above the numbers.
  */
 export function StaffLeaveScreen({
   tabs,
   params,
   board,
   rights,
+  ownPart,
   ownStudentId,
 }: {
   tabs: TabLinksProps;
   params: LeaveListParams;
   board: LeaveBoard;
   rights: LeaveRights;
+  /** The account's own resident part; null when it has none. */
+  ownPart: ReactNode;
   /** The student the account belongs to, whose own leave it does not decide. */
   ownStudentId: string | null;
 }) {
@@ -52,6 +58,7 @@ export function StaffLeaveScreen({
         penghuni asrama.
       </PageHead>
       <TabLinks {...tabs} />
+      {ownPart}
       {onlySees(rights) && (
         <p className={styles.note}>
           Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap

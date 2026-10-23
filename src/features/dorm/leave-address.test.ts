@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   leaveListAddress,
   ownLeaveAddress,
+  ownLeavePageOf,
   readLeaveListParams,
 } from "./leave-address";
 
@@ -86,6 +87,24 @@ describe("leaveListAddress", () => {
 describe("ownLeaveAddress", () => {
   it("leaves out the first page", () => {
     expect(ownLeaveAddress(1)).toBe("/asrama/izin");
-    expect(ownLeaveAddress(2)).toBe("/asrama/izin?hal=2");
+    expect(ownLeaveAddress(2)).toBe("/asrama/izin?riwayat=2");
+  });
+});
+
+describe("ownLeavePageOf", () => {
+  it("reads the page of the own history apart from the page of the staff list", () => {
+    const params = Object.fromEntries(
+      new URL(ownLeaveAddress(3), "http://x").searchParams,
+    );
+
+    expect(ownLeavePageOf({ ...params, hal: "2" })).toBe(3);
+    expect(readLeaveListParams({ ...params, hal: "2" }).page).toBe(2);
+    expect(readLeaveListParams(params).page).toBe(1);
+  });
+
+  it("takes the first page for anything it does not understand", () => {
+    expect(ownLeavePageOf({})).toBe(1);
+    expect(ownLeavePageOf({ riwayat: "-1" })).toBe(1);
+    expect(ownLeavePageOf({ hal: "2" })).toBe(1);
   });
 });

@@ -110,10 +110,22 @@ export function kindNamed(sent: string): KindChoice {
   return named ?? "all";
 }
 
+function pageNamed(sent: string): number {
+  return PAGE.test(sent) ? Number(sent) : 1;
+}
+
 /** The page an address asks for, or the first for anything else. */
 export function pageOf(params: SearchParams): number {
-  const page = firstParam(params.hal);
-  return PAGE.test(page) ? Number(page) : 1;
+  return pageNamed(firstParam(params.hal));
+}
+
+/**
+ * The page of "Riwayat izin saya" an address asks for, or the first. It
+ * has its own name, so a resident who also sees the staff list turns the
+ * pages of each apart.
+ */
+export function ownLeavePageOf(params: SearchParams): number {
+  return pageNamed(firstParam(params.riwayat));
 }
 
 /**
@@ -153,5 +165,5 @@ export function leaveListAddress(filters: LeaveFilters, page = 1): string {
 /** The address of a page of "Riwayat izin saya". */
 export function ownLeaveAddress(page: number): string {
   if (page <= 1) return LEAVE_ADDRESS;
-  return `${LEAVE_ADDRESS}?hal=${page}`;
+  return `${LEAVE_ADDRESS}?riwayat=${page}`;
 }

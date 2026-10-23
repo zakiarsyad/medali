@@ -94,6 +94,46 @@ describe("readOwnLeave", () => {
     });
   });
 
+  it("gives a resident who is also BAM - BPHK only their own requests, the same as with Mahasiswa alone", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, bea } = await addRecords(db);
+      await ask(db, ani, { day: "2870-10-13" });
+      await ask(db, bea, { day: "2870-10-15" });
+
+      const alone = await readOwnLeave(db, ani, 1, MOMENT);
+      const withBam = await readOwnLeave(
+        db,
+        { ...ani, roles: ["student", "bam_bphk"] },
+        1,
+        MOMENT,
+      );
+
+      if (withBam.kind !== "shown") throw new Error("It was refused.");
+      expect(withBam.leave.matching).toBe(1);
+      expect(withBam).toEqual(alone);
+    });
+  });
+
+  it("refuses a student who lives in no dorm, also one who is BAM - BPHK", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await addRecords(db);
+      // Angkatan 2869 is in semester 3 then: it lives in no dorm.
+      await db
+        .update(students)
+        .set({ cohortYear: 2869 })
+        .where(eq(students.id, ani.studentId));
+
+      expect(
+        await readOwnLeave(
+          db,
+          { ...ani, roles: ["student", "bam_bphk"] },
+          1,
+          MOMENT,
+        ),
+      ).toEqual({ kind: "refused" });
+    });
+  });
+
   it("refuses a role that may not ask, and a student who lives in no dorm", async () => {
     await inTestDatabase(async (db) => {
       const { ani } = await addRecords(db);

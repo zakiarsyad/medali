@@ -65,7 +65,7 @@ Pelanggaran already show both parts to such an account.
 
 ## Steps
 
-- [ ] 1. Perizinan asrama shows the resident part above the staff screen
+- [x] 1. Perizinan asrama shows the resident part above the staff screen
   for a resident who may see the requests, with a check.
 - [ ] 2. Pembersihan asrama shows the resident part above the staff screen
   for a resident who may see the duties, with a check.
