@@ -17,11 +17,13 @@ import {
   hiddenCount,
   hideWhilePinned,
   isHidden,
+  MOST_UNDER_FIVE,
   oneMoreToHide,
   type SetCountShown,
   type SetEntry,
   shownCount,
   smallestShown,
+  totalOf,
 } from "@/health-notes/shown-count";
 import type { RecapRow } from "@/health-notes/sick-list";
 import type { MentalRecap, PublishedRow } from "@/mental-health/mental-recap";
@@ -128,33 +130,47 @@ function countsByDorm(
 }
 
 /**
- * The dorms held back: each where only 1 to 4 residents in reach are in
+ * Each dorm's count of residents with a category, hidden while it is
+ * held back: each where only 1 to 4 residents in reach are in
  * a category, by test or by health note alike, as with so few even "<5"
  * in one category and 0 in the others would tell someone's category.
  * While those held back are pinned, such as only one, the smallest other
  * with a category is held back too, as the bars less the other rows
  * would give them back.
  */
-function heldBackDorms(counts: Record<DormId, CategoryCounts>): Set<DormId> {
-  let total = 0;
-  const rows = DORM_IDS.map((dorm) => {
+function heldBackDorms(
+  counts: Record<DormId, CategoryCounts>,
+): SetEntry<DormId>[] {
+  const dorms = DORM_IDS.map((dorm) => {
     const counted = inAnyCategory(counts[dorm]);
-    total += counted;
     const isFew = counted > 0 && counted < FEWEST_COUNTED;
     return { key: dorm, count: counted, hidden: isFew };
   });
-  hideWhilePinned(rows, total);
-  const held = new Set<DormId>();
-  for (const row of rows) {
-    if (row.hidden) held.add(row.key);
+  hideWhilePinned(dorms, totalOf(dorms));
+  return dorms;
+}
+
+function isHeld(dorms: readonly SetEntry<DormId>[], dorm: DormId): boolean {
+  for (const entry of dorms) {
+    if (entry.key === dorm) return entry.hidden;
   }
-  return held;
+  return false;
 }
 
 function startingHidden(counts: CategoryCounts, isHeld: boolean): HiddenRow {
   return perCategory(
     (category) => isHeld || shownCount(counts[category]) === "<5",
   );
+}
+
+/** Marks every count of each dorm held back as hidden. */
+function hideHeldRows(
+  dorms: readonly SetEntry<DormId>[],
+  hidden: Record<DormId, HiddenRow>,
+): void {
+  for (const dorm of dorms) {
+    if (dorm.hidden) hidden[dorm.key] = perCategory(() => true);
+  }
 }
 
 /** Hides one more count of a dorm's row while its hidden counts are pinned; says whether it did. */
@@ -211,12 +227,63 @@ function hideMoreInColumn(
 }
 
 /**
+ * The fewest a category's column could add up to, as far as the screen
+ * tells: the counts shown, 1 for each "<5", and none for a dorm held
+ * back, as it shows nothing.
+ */
+function fewestInColumn(
+  counts: Record<DormId, CategoryCounts>,
+  dorms: readonly SetEntry<DormId>[],
+  hidden: Record<DormId, HiddenRow>,
+  category: FitnessCategory,
+): number {
+  let fewest = 0;
+  for (const dorm of dorms) {
+    if (dorm.hidden) continue;
+    const isUnderFive = hidden[dorm.key][category];
+    fewest += isUnderFive ? 1 : counts[dorm.key][category];
+  }
+  return fewest;
+}
+
+/**
+ * While a column's bar is "<5", so 4 at most, and its dorm counts add up
+ * to 4 at their fewest, each is pinned. Then the dorm with a hidden count
+ * there and the fewest residents with a category is held back, and the
+ * dorms held back are checked again. Says whether it held one back.
+ */
+function holdBackForColumn(
+  counts: Record<DormId, CategoryCounts>,
+  dorms: SetEntry<DormId>[],
+  hidden: Record<DormId, HiddenRow>,
+  category: FitnessCategory,
+  bar: SetCountShown,
+): boolean {
+  if (bar !== "<5") return false;
+  const fewest = fewestInColumn(counts, dorms, hidden, category);
+  if (fewest < MOST_UNDER_FIVE) return false;
+  const canHoldBack = dorms.map((dorm) => ({
+    ...dorm,
+    hidden: dorm.hidden || !hidden[dorm.key][category],
+  }));
+  const extra = smallestShown(canHoldBack);
+  if (extra === null) return false;
+  for (const dorm of dorms) {
+    if (dorm.key === extra) dorm.hidden = true;
+  }
+  hideWhilePinned(dorms, totalOf(dorms));
+  hideHeldRows(dorms, hidden);
+  return true;
+}
+
+/**
  * Hides counts until no dorm's row and no column gives a hidden count
  * back by its sums. Each pass that changes something hides one more
- * count, so it ends.
+ * count or holds back one more dorm, so it ends.
  */
 function hideUntilNonePinned(
   counts: Record<DormId, CategoryCounts>,
+  dorms: SetEntry<DormId>[],
   hidden: Record<DormId, HiddenRow>,
   bars: Record<FitnessCategory, SetCountShown>,
 ): void {
@@ -228,6 +295,9 @@ function hideUntilNonePinned(
     }
     for (const category of FITNESS_CATEGORIES) {
       const bar = bars[category];
+      if (holdBackForColumn(counts, dorms, hidden, category, bar)) {
+        changed = true;
+      }
       if (hideMoreInColumn(counts, hidden, category, bar)) changed = true;
     }
   }
@@ -247,13 +317,13 @@ function byDormOf(
   bars: Record<FitnessCategory, SetCountShown>,
 ): Record<DormId, DormCategories | null> {
   const counts = countsByDorm(tallies);
-  const held = heldBackDorms(counts);
+  const dorms = heldBackDorms(counts);
   const hidden = perDorm((dorm) =>
-    startingHidden(counts[dorm], held.has(dorm)),
+    startingHidden(counts[dorm], isHeld(dorms, dorm)),
   );
-  hideUntilNonePinned(counts, hidden, bars);
+  hideUntilNonePinned(counts, dorms, hidden, bars);
   return perDorm((dorm) =>
-    held.has(dorm) ? null : dormCategoriesOf(counts[dorm], hidden[dorm]),
+    isHeld(dorms, dorm) ? null : dormCategoriesOf(counts[dorm], hidden[dorm]),
   );
 }
 

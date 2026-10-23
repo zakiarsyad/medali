@@ -56,7 +56,7 @@ function fewestHidden(count: number): number {
 }
 
 /** The most a hidden "<5" could be. */
-const MOST_UNDER_FIVE = FEWEST_COUNTED - 1;
+export const MOST_UNDER_FIVE = FEWEST_COUNTED - 1;
 
 /**
  * Whether the hidden counts of a set can be worked out from its total
@@ -126,7 +126,9 @@ export function hideWhilePinned<Key extends string>(
   }
 }
 
-function totalOf<Key extends string>(set: readonly SetEntry<Key>[]): number {
+export function totalOf<Key extends string>(
+  set: readonly SetEntry<Key>[],
+): number {
   let total = 0;
   for (const entry of set) total += entry.count;
   return total;

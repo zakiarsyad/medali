@@ -77,6 +77,12 @@ the two health panels on Dashboard asrama.
 10. On Dashboard asrama a column whose bar is hidden, but none of its
     dorm counts, would give the bar back by adding them up. Then that
     column's smallest dorm count above 0 is hidden too.
+11. On Dashboard asrama a column whose bar is "<5" is at most 4, so
+    when its dorm counts add up to 4 at their fewest each is pinned.
+    Then one more dorm row is held back: of those with a hidden count
+    in that column, the one with the fewest residents with a category,
+    the first in dorm order on a tie. A dorm row held back counts as
+    nothing there.
 
 ## Steps
 

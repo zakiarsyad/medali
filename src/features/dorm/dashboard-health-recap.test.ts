@@ -1,6 +1,7 @@
 // Sample NIMs of this file: 9911000100 to 9911000199. None is added to
 // the database.
 import { describe, expect, it } from "vitest";
+import { DORM_IDS } from "@/dorms/dorms";
 import type { FitnessTally } from "@/health-notes/fitness-recap";
 import type { RecapRow } from "@/health-notes/sick-list";
 import {
@@ -330,6 +331,25 @@ describe("dormPhysicalOf", () => {
       },
       dana_rakca: NO_CATEGORY,
       cipta_bakti: NO_CATEGORY,
+    });
+  });
+
+  it("holds back more dorms while a column whose bar is <5 adds up to 4 at its fewest", () => {
+    const counts = { ...NO_CATEGORY, excellent: 10, attention: 1 };
+    const physical = dormPhysicalOf(
+      DORM_IDS.map((key) => ({ key, tally: tally(11, 11, counts) })),
+    );
+
+    expect(physical.recap).toMatchObject({
+      tested: 44,
+      byCategory: { excellent: "5+", good: 0, attention: "<5", medical: 0 },
+    });
+    const shown = { excellent: "5+", good: 0, attention: "<5", medical: 0 };
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: null,
+      wismantara_putri: null,
+      dana_rakca: shown,
+      cipta_bakti: shown,
     });
   });
 
