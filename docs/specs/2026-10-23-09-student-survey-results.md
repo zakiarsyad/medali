@@ -128,10 +128,16 @@ history. No one ever sees one student's answers.
     The table holds the groups in force that had started by that day,
     so a group formed after the period is not counted as one that did
     not answer. A group's members are its Aktif members today, as the
-    card of the period counts them.
+    card of the period counts them. Only the answers of those members
+    count for the group, as on the card: a student who answered and is
+    on Cuti, Non aktif or in another group by now is left out. Responden,
+    the limit of 3 answers, Umpan balik, the averages per statement, the
+    suggestions and the lines that are fixed all come from those same
+    answers, so Responden never passes the members.
 13. A group whose answers were sent for two mentors, after a
     replacement during the period, has a row for each mentor, each
-    with the group's members. A group without answers shows the mentor
+    with the group's members and the answers of those members sent for
+    that mentor. A group without answers shows the mentor
     who held it on the day of the numbers.
 14. Above the table, Responden adds the answers of every group out of
     their members, "Rerata capaian karakter" is the mean of the groups

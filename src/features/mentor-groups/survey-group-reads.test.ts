@@ -1,7 +1,9 @@
 // Sample Tahun akademik of this file: 7311 to 7313.
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestPenaltyOf } from "@/discipline-penalties/test-penalties";
 import {
@@ -215,6 +217,53 @@ describe("readSurveyGroupRows", () => {
         "Pengasuh Uji Baru",
       ]);
       expect(ofGroup(after)[0]?.result.answers).toBe(0);
+    });
+  });
+
+  it("counts only the answers of the group's Aktif members of today, so Responden never passes the members", async () => {
+    await inTestDatabase(async (db) => {
+      const surveyId = await addSurvey(db);
+      const { program, groupId, later, members } = await addGroup(db);
+      const [one, two, three] = members;
+      if (!one || !two || !three) throw new Error("No members.");
+      const of = { surveyPeriodId: surveyId, groupId, mentorId: later };
+      for (const studentId of [one, two, three]) {
+        await addTestSurveyAnswer(db, { ...of, studentId });
+      }
+      // The third goes on Cuti; another student who left the group answered too.
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, three));
+      const [gone] = await addTestMembersWithStatus(
+        db,
+        {
+          id: await addTestGroup(db, program, { number: 9 }),
+          studyProgramId: program,
+        },
+        9900731191,
+        ["active"],
+      );
+      if (!gone) throw new Error("No student.");
+      await addTestSurveyAnswer(db, { ...of, studentId: gone });
+      await db
+        .update(students)
+        .set({ status: "inactive" })
+        .where(inArray(students.id, members.slice(3)));
+
+      const rows = await readSurveyGroupRows(
+        db,
+        EVERY_ROW,
+        resultPeriod(surveyId),
+      );
+
+      const row = rows.find((one) => one.group.id === groupId);
+      expect(row?.result).toMatchObject({
+        answers: 2,
+        members: 2,
+        share: 100,
+        feedback: null,
+      });
     });
   });
 

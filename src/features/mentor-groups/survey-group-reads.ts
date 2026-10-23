@@ -3,12 +3,15 @@ import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import {
   accounts,
+  mentorGroupMembers,
   mentorGroupMentors,
   mentorGroups,
   studentSurveyAnswers,
   studentSurveyPeriods,
+  students,
   studyPrograms,
 } from "@/db/schema";
+import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { MEMBERS } from "@/mentoring/member-count";
 import { SURVEY_STATEMENTS } from "@/mentoring/survey-statements";
 import { USED_SURVEY_ANSWER } from "@/mentoring/used-survey-answer";
@@ -26,6 +29,21 @@ import { groupsVisibleTo } from "./visible-groups";
 export function statementScore(place: number) {
   return sql<number>`${studentSurveyAnswers.scores}[${sql.raw(String(place + 1))}]`;
 }
+
+/**
+ * For a read of answers: the answer of a student who is today an Aktif
+ * member of the group it was sent for, one of the members the group is
+ * counted with. Every number of a group is read from these answers only,
+ * so Responden never passes the members and the limit of 3 answers is
+ * never met by students who are members no more.
+ */
+export const FROM_COUNTED_MEMBER = sql`exists (
+  select 1 from ${mentorGroupMembers}
+  inner join ${students} on ${students.id} = ${mentorGroupMembers.studentId}
+  where ${mentorGroupMembers.studentId} = ${studentSurveyAnswers.studentId}
+    and ${mentorGroupMembers.groupId} = ${studentSurveyAnswers.groupId}
+    and ${ACTIVE_MEMBER}
+)`;
 
 /** The sum of the eight scores of an answer. */
 const ANSWER_TOTAL = sql.join(
@@ -73,8 +91,9 @@ export function readSurveyGroups(
 
 /**
  * How many answers of a survey period each of these groups sent for each
- * mentor, and the sum of their scores. Only the sums leave the database;
- * the answers of a cancelled period count for nothing.
+ * mentor, and the sum of their scores, of its Aktif members of today.
+ * Only the sums leave the database; the answers of a cancelled period
+ * count for nothing.
  */
 export async function readMentorSums(
   db: Database,
@@ -103,6 +122,7 @@ export async function readMentorSums(
       and(
         eq(studentSurveyAnswers.surveyPeriodId, surveyPeriodId),
         inArray(studentSurveyAnswers.groupId, groupIds),
+        FROM_COUNTED_MEMBER,
       ),
     )
     .groupBy(

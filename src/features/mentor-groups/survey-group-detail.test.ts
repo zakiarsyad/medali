@@ -1,7 +1,9 @@
 // Sample Tahun akademik of this file: 7321 to 7322.
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
+import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   addTestSurveyAnswer,
@@ -114,6 +116,29 @@ describe("readGroupSurveyDetail", () => {
 
       expect(detail).toEqual({ answers: 2, averages: null, suggestions: null });
       expect(JSON.stringify(detail)).not.toContain("saran");
+    });
+  });
+
+  it("counts only the answers of the group's Aktif members of today, so 3 answers of whom one went on Cuti stay hidden", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAnswers(db, records, [
+        { scores: [4, 4, 4, 4, 4, 4, 4, 4], suggestion: "Saran pertama." },
+        { scores: [4, 4, 4, 4, 4, 4, 4, 4], suggestion: null },
+        { scores: [4, 4, 4, 4, 4, 4, 4, 4], suggestion: "Saran ketiga." },
+      ]);
+      await db
+        .update(students)
+        .set({ status: "on_leave" })
+        .where(eq(students.id, records.members[2] ?? ""));
+      const { surveyId, groupId, mentorId } = records;
+
+      const detail = await readGroupSurveyDetail(db, EVERY_ROW, surveyId, {
+        groupId,
+        mentorId,
+      });
+
+      expect(detail).toEqual({ answers: 2, averages: null, suggestions: null });
     });
   });
 

@@ -9,7 +9,7 @@ import {
 } from "@/db/schema";
 import { SURVEY_STATEMENTS } from "@/mentoring/survey-statements";
 import { USED_SURVEY_ANSWER } from "@/mentoring/used-survey-answer";
-import { statementScore } from "./survey-group-reads";
+import { FROM_COUNTED_MEMBER, statementScore } from "./survey-group-reads";
 import {
   isShownCount,
   type StatementSums,
@@ -33,13 +33,17 @@ const NO_ANSWERS: GroupSurveyDetail = {
   suggestions: null,
 };
 
-/** The answers of a period for a group and one mentor, when they are used. */
+/**
+ * The answers of a period for a group and one mentor, when they are used:
+ * those of the group's Aktif members of today, as the row counts them.
+ */
 function answersOf(surveyPeriodId: string, groupId: string, mentorId: string) {
   return and(
     eq(studentSurveyAnswers.surveyPeriodId, surveyPeriodId),
     eq(studentSurveyAnswers.groupId, groupId),
     eq(studentSurveyAnswers.mentorId, mentorId),
     USED_SURVEY_ANSWER,
+    FROM_COUNTED_MEMBER,
   );
 }
 
