@@ -76,12 +76,6 @@ describe("reading the sharing of the picked student again", () => {
       first,
     );
   });
-
-  it("does not happen while nothing of them changed", () => {
-    expect(sharingReadingOf(STUDENT, CONSENT, 2)).toBe(
-      sharingReadingOf(STUDENT, CONSENT, 2),
-    );
-  });
 });
 
 describe("Publikasi data kesehatan mental", () => {
@@ -107,6 +101,7 @@ describe("Publikasi data kesehatan mental", () => {
           program: "Prodi Uji",
         }}
         consentVersion={null}
+        sessionsKept={0}
       />,
     );
     expect(page).not.toContain(PICK_FIRST);

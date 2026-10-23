@@ -45,7 +45,7 @@ export function CounsellorSessionPart({
   studentId: string;
   consent: ConsentView | null;
   history: Parsed<SessionHistory>;
-  onKept?: () => void;
+  onKept: () => void;
 }) {
   const [history, setHistory] = useState(first);
   const [steps, setSteps] = useState(1);
@@ -75,7 +75,7 @@ export function CounsellorSessionPart({
           studentId={studentId}
           onSaved={() => {
             reload(1);
-            onKept?.();
+            onKept();
           }}
         />
       ) : (
@@ -90,7 +90,7 @@ export function CounsellorSessionPart({
           onMore={() => reload(steps + 1)}
           onChanged={(outcome) => {
             reload(steps, messageOf(outcome));
-            if (outcome.kind === "kept") onKept?.();
+            if (outcome.kind === "kept") onKept();
           }}
         />
       )}

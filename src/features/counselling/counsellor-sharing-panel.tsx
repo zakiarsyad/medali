@@ -158,11 +158,11 @@ export function sharingReadingOf(
 export function CounsellorSharingPanel({
   picked,
   consentVersion,
-  sessionsKept = 0,
+  sessionsKept,
 }: {
   picked: ConsentPick | null;
   consentVersion: string | null;
-  sessionsKept?: number;
+  sessionsKept: number;
 }) {
   return (
     <section className={`${shared.panel} ${styles.stack}`}>
