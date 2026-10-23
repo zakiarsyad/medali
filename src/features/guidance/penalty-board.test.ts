@@ -114,7 +114,7 @@ describe("readPenaltyBoard", () => {
     });
   });
 
-  it("lists the penalties, the latest first, with what Rincian shows, the semester of the Tanggal and who recorded it", async () => {
+  it("lists the penalties, the latest first, with only what the row shows and nothing of Rincian", async () => {
     await inTestDatabase(async (db) => {
       const { officer, inA } = await setting(db);
       const [one = ""] = inA;
@@ -137,30 +137,23 @@ describe("readPenaltyBoard", () => {
       const board = await read(db, officer);
 
       expect(board?.list.rows.map((row) => row.id)).toEqual([later, early]);
-      expect(board?.list.rows[0]).toEqual({
+      expect(board?.list.rows[0]).toStrictEqual({
         id: later,
         studentId: one,
         name: "Mahasiswa Uji Hukuman A 1",
         nim: "9944210001",
         program: "Prodi Uji Hukuman A",
         day: "4420-10-01",
-        description: "Terlambat mengikuti apel pagi tiga kali",
         category: "heavy",
         level: 1,
         status: "imposed",
-        decisionNumber: "KEP-01/UJI",
-        socialWorkForms: ["staff_help", "other"],
-        socialWorkOther: "Menata arsip",
-        socialWorkPlace: "outside",
-        socialWorkStartsOn: "4420-10-02",
         socialWorkEndsOn: "4421-06-01",
-        savedByName: "Pembina Uji Daftar Hukuman",
-        semester: 3,
-        conditionsMet: [],
-        decision: "pending",
         version: 1,
-        hasAgency: true,
       });
+      const sent = JSON.stringify(board?.list.rows);
+      expect(sent).not.toContain("Terlambat mengikuti apel");
+      expect(sent).not.toContain("KEP-01/UJI");
+      expect(sent).not.toContain("Pembina Uji Daftar Hukuman");
     });
   });
 

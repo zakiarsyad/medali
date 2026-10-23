@@ -14,7 +14,8 @@ import {
 } from "./penalty-address";
 import type { PenaltyBoard } from "./penalty-board";
 import { PENALTIES_PAGE_SIZE, PENALTY_STATUSES } from "./penalty-ids";
-import { type PenaltyCounselling, PenaltyTable } from "./penalty-table";
+import type { RincianAsks } from "./penalty-rincian";
+import { PenaltyTable } from "./penalty-table";
 import {
   NO_PENALTIES_FOUND,
   PENALTY_NOUN,
@@ -77,12 +78,12 @@ export function PenaltyListPanel({
   board,
   params,
   mayFollowUp,
-  counselling = {},
+  asks,
 }: {
   board: PenaltyBoard;
   params: PenaltiesParams;
   mayFollowUp: boolean;
-  counselling?: PenaltyCounselling;
+  asks: RincianAsks;
 }) {
   const { list } = board;
   return (
@@ -99,7 +100,7 @@ export function PenaltyListPanel({
             rows={list.rows}
             params={params}
             mayFollowUp={mayFollowUp}
-            counselling={counselling}
+            asks={asks}
           />
           <ListPager
             page={list.page}

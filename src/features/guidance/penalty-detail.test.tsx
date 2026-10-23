@@ -2,8 +2,8 @@
 // the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { PenaltyRow } from "./penalty-board";
 import { PenaltyDetail } from "./penalty-detail";
+import type { OpenedPenalty } from "./penalty-detail-read";
 import { CONTINUATION_CONDITIONS } from "./penalty-ids";
 
 vi.mock("./penalty-actions", () => ({
@@ -11,13 +11,9 @@ vi.mock("./penalty-actions", () => ({
   changePenaltyDecisionAction: vi.fn(),
 }));
 
-const ROW: PenaltyRow = {
+const ROW: OpenedPenalty = {
   id: "p1",
-  studentId: "s1",
   name: "Mega Saragih",
-  nim: "9944270013",
-  program: "D3 Pajak",
-  day: "2026-10-14",
   description: "Terlambat mengikuti apel pagi tiga kali dalam satu bulan.",
   category: "light",
   level: 1,
@@ -36,17 +32,17 @@ const ROW: PenaltyRow = {
   hasAgency: false,
 };
 
-function detail(row: PenaltyRow, mayFollowUp = false): string {
+function detail(penalty: OpenedPenalty, mayFollowUp = false): string {
   return renderToStaticMarkup(
     <PenaltyDetail
-      row={row}
+      penalty={penalty}
       mayFollowUp={mayFollowUp}
       onFollowUp={() => undefined}
     />,
   );
 }
 
-const SUSPENDED: PenaltyRow = {
+const SUSPENDED: OpenedPenalty = {
   ...ROW,
   category: "heavy",
   level: 1,

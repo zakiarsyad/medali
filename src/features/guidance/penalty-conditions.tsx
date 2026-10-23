@@ -7,7 +7,7 @@ import {
   changePenaltyConditionAction,
   changePenaltyDecisionAction,
 } from "./penalty-actions";
-import type { PenaltyRow } from "./penalty-board";
+import type { OpenedPenalty } from "./penalty-detail-read";
 import {
   allConditionsMet,
   hasConditions,
@@ -26,14 +26,14 @@ import { CONDITION_WORDS, DECISION_WORDS } from "./penalty-words";
 const HEADING = "Syarat melanjutkan studi (ayat 7)";
 
 /** The conditions and Keputusan as a reader sees them, with nothing to press. */
-function ReadOnlyConditions({ row }: { row: PenaltyRow }) {
+function ReadOnlyConditions({ penalty }: { penalty: OpenedPenalty }) {
   return (
     <section className={styles.conditions}>
       <h3 className={styles.conditionsHeading}>{HEADING}</h3>
       <ul className={styles.conditionList}>
         {CONTINUATION_CONDITIONS.map((condition) => (
           <li key={condition}>
-            {row.conditionsMet.includes(condition)
+            {penalty.conditionsMet.includes(condition)
               ? "Terpenuhi"
               : "Belum terpenuhi"}
             : {CONDITION_WORDS[condition]}
@@ -41,7 +41,7 @@ function ReadOnlyConditions({ row }: { row: PenaltyRow }) {
         ))}
       </ul>
       <p className={styles.line}>
-        <b>Keputusan:</b> {DECISION_WORDS[row.decision]}
+        <b>Keputusan:</b> {DECISION_WORDS[penalty.decision]}
       </p>
     </section>
   );
@@ -52,25 +52,27 @@ function ReadOnlyConditions({ row }: { row: PenaltyRow }) {
  * sent. Melanjutkan studi cannot be chosen until all five are ticked.
  */
 function ConditionsForm({
-  row,
+  penalty,
   onFollowUp,
 }: {
-  row: PenaltyRow;
+  penalty: OpenedPenalty;
   onFollowUp: (next: PenaltyFollowUp) => void;
 }) {
   const { message, pending, send } = useFollowUpSend(onFollowUp);
-  const isAllMet = allConditionsMet(row.conditionsMet);
+  const isAllMet = allConditionsMet(penalty.conditionsMet);
 
   function tick(condition: ContinuationCondition, met: boolean) {
     send(() =>
-      changePenaltyConditionAction(row.id, row.version, condition, met),
+      changePenaltyConditionAction(penalty.id, penalty.version, condition, met),
     );
   }
 
   function decide(chosen: string) {
-    if (!isContinuationDecision(chosen) || chosen === row.decision) return;
-    if (!window.confirm(decisionQuestion(row.name, chosen))) return;
-    send(() => changePenaltyDecisionAction(row.id, row.version, chosen));
+    if (!isContinuationDecision(chosen) || chosen === penalty.decision) return;
+    if (!window.confirm(decisionQuestion(penalty.name, chosen))) return;
+    send(() =>
+      changePenaltyDecisionAction(penalty.id, penalty.version, chosen),
+    );
   }
 
   return (
@@ -81,7 +83,7 @@ function ConditionsForm({
           <label key={condition} className={styles.tick}>
             <input
               type="checkbox"
-              checked={row.conditionsMet.includes(condition)}
+              checked={penalty.conditionsMet.includes(condition)}
               disabled={pending}
               onChange={(event) => tick(condition, event.target.checked)}
             />
@@ -93,7 +95,7 @@ function ConditionsForm({
         Keputusan
         <select
           className={`${shared.input} ${styles.control}`}
-          value={row.decision}
+          value={penalty.decision}
           disabled={pending}
           onChange={(event) => decide(event.target.value)}
         >
@@ -121,17 +123,17 @@ function ConditionsForm({
  * Ditetapkan penalty.
  */
 export function PenaltyConditions({
-  row,
+  penalty,
   mayFollowUp,
   onFollowUp,
 }: {
-  row: PenaltyRow;
+  penalty: OpenedPenalty;
   mayFollowUp: boolean;
   onFollowUp: (next: PenaltyFollowUp) => void;
 }) {
-  if (!hasConditions(row)) return null;
-  if (!mayFollowUp || row.status === "set") {
-    return <ReadOnlyConditions row={row} />;
+  if (!hasConditions(penalty)) return null;
+  if (!mayFollowUp || penalty.status === "set") {
+    return <ReadOnlyConditions penalty={penalty} />;
   }
-  return <ConditionsForm row={row} onFollowUp={onFollowUp} />;
+  return <ConditionsForm penalty={penalty} onFollowUp={onFollowUp} />;
 }
