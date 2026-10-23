@@ -7,6 +7,7 @@ import {
   type Participant,
   sameMarks,
   shownParticipants,
+  withOwnMarkKept,
 } from "./count-view";
 import { TEST_ROW } from "./test-activities";
 
@@ -152,6 +153,75 @@ describe("sameMarks", () => {
     expect(
       sameMarks(marks, { ani: marks.ani, cici: { isAbsent: false, note: "" } }),
     ).toBe(false);
+  });
+});
+
+describe("withOwnMarkKept", () => {
+  const OWN = "00000000-0000-4000-8000-0000000000a1";
+  const OTHER = "00000000-0000-4000-8000-0000000000b2";
+  const ABSENT = { isAbsent: true, note: "Sakit" };
+  const PRESENT = { isAbsent: false, note: "" };
+
+  it("keeps every mark sent for an account that is not a student", () => {
+    const sent = { [OWN]: ABSENT, [OTHER]: ABSENT };
+
+    expect(withOwnMarkKept(sent, {}, null)).toEqual({
+      marks: sent,
+      ownChangeLeftOut: false,
+    });
+  });
+
+  it("keeps the own mark as the form starts from it, and the others as sent, when the own mark is sent unchanged", () => {
+    const kept = { [OWN]: ABSENT, [OTHER]: PRESENT };
+
+    expect(
+      withOwnMarkKept({ [OWN]: ABSENT, [OTHER]: ABSENT }, kept, OWN),
+    ).toEqual({
+      marks: { [OWN]: ABSENT, [OTHER]: ABSENT },
+      ownChangeLeftOut: false,
+    });
+    expect(
+      withOwnMarkKept({ [OTHER]: ABSENT }, { [OWN]: PRESENT }, OWN),
+    ).toEqual({
+      marks: { [OTHER]: ABSENT, [OWN]: PRESENT },
+      ownChangeLeftOut: false,
+    });
+  });
+
+  it("leaves out the own row, without a word, once the student no longer takes part", () => {
+    expect(
+      withOwnMarkKept(
+        { [OWN]: ABSENT, [OTHER]: ABSENT },
+        { [OTHER]: PRESENT },
+        OWN,
+      ),
+    ).toEqual({ marks: { [OTHER]: ABSENT }, ownChangeLeftOut: false });
+  });
+
+  it("leaves out a change of the own mark, also with its key in capitals, and says so", () => {
+    for (const key of [OWN, OWN.toUpperCase()]) {
+      expect(
+        withOwnMarkKept(
+          { [key]: ABSENT, [OTHER]: ABSENT },
+          { [OWN]: PRESENT },
+          OWN,
+        ),
+      ).toEqual({
+        marks: { [OTHER]: ABSENT, [OWN]: PRESENT },
+        ownChangeLeftOut: true,
+      });
+    }
+    expect(withOwnMarkKept({}, { [OWN]: ABSENT }, OWN)).toEqual({
+      marks: { [OWN]: ABSENT },
+      ownChangeLeftOut: true,
+    });
+    expect(
+      withOwnMarkKept(
+        { [OWN]: { isAbsent: true, note: "Lain" } },
+        { [OWN]: ABSENT },
+        OWN,
+      ),
+    ).toEqual({ marks: { [OWN]: ABSENT }, ownChangeLeftOut: true });
   });
 });
 

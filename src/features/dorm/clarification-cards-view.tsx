@@ -8,6 +8,8 @@ import {
 import { ClarificationCardView } from "./clarification-card-view";
 import { ClarificationDecide, type DecideAnswer } from "./clarification-decide";
 import styles from "./leave.module.css";
+import { isOwnRecord } from "./own-record";
+import { OwnRecordNote } from "./own-record-note";
 
 /** The last answer to a press on each card, by the key of the card. */
 export type CardAnswers = Readonly<Record<string, DecideAnswer>>;
@@ -34,6 +36,7 @@ function Offer({
       </p>
     );
   }
+  if (offer === "own") return <OwnRecordNote />;
   if (offer === null) return null;
   return <ClarificationDecide id={id} step={offer} onAnswer={onAnswer} />;
 }
@@ -47,6 +50,7 @@ function Offer({
 export function ClarificationCardsView({
   cards,
   rights,
+  ownStudentId,
   answers,
   emptyWords,
   onOpenFile,
@@ -54,6 +58,8 @@ export function ClarificationCardsView({
 }: {
   cards: DormClarificationCard[];
   rights: CardRights;
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
   answers: CardAnswers;
   /** What is said when there is no card to show. */
   emptyWords: string;
@@ -66,6 +72,7 @@ export function ClarificationCardsView({
       {cards.map((card) => {
         const answer = answers[card.id];
         const status = answer?.status ?? card.status;
+        const isOwn = isOwnRecord(ownStudentId, card.studentId);
         return (
           <ClarificationCardView
             key={card.id}
@@ -73,7 +80,7 @@ export function ClarificationCardsView({
             onOpenFile={() => onOpenFile(card)}
           >
             <Offer
-              offer={offerOf(status, rights)}
+              offer={offerOf(status, rights, isOwn)}
               id={card.id}
               onAnswer={(sent) => onAnswer(card.id, sent)}
             />

@@ -7,6 +7,7 @@ import { readCleaningParams } from "@/features/dorm/cleaning-address";
 import { readOwnCleaning } from "@/features/dorm/cleaning-resident";
 import { CleaningResidentView } from "@/features/dorm/cleaning-resident-view";
 import { CleaningScreen } from "@/features/dorm/cleaning-screen";
+import { readLivedInRoom } from "@/features/dorm/own-room";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { PageHead } from "@/ui/page-head";
 import { TabLinks } from "@/ui/tab-links";
@@ -35,6 +36,7 @@ export default async function DormCleaningPage(
           validate: may(account.roles, "validate_dorm_cleaning"),
           manage: may(account.roles, "manage_dorm_cleaning"),
         }}
+        ownRoom={await readLivedInRoom(database(), account.studentId, today)}
       />
     );
   }

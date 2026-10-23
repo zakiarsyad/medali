@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { LeaveCard } from "./leave-card";
 import { cardAfter, LeaveCards, type LeaveRights } from "./leave-cards";
+import { OWN_RECORD_NOTE } from "./own-record";
 import type { ReportCard } from "./return-card";
 
 vi.mock("./leave-actions", () => ({
@@ -23,8 +24,11 @@ const REPORT: ReportCard = {
   validation: null,
 };
 
+const ANI = "00000000-0000-4000-8000-0000000000a1";
+
 const CARD: LeaveCard = {
   id: "00000000-0000-4000-8000-0000000000c1",
+  studentId: ANI,
   kind: "outing",
   status: "approved",
   start: "14 Okt 2026, 09.00",
@@ -62,11 +66,16 @@ const MANAGER: LeaveRights = {
 
 const NOTHING_DONE = { leave: null, report: null, recorded: false };
 
-function shown(card: LeaveCard, rights: LeaveRights): string {
+function shown(
+  card: LeaveCard,
+  rights: LeaveRights,
+  ownStudentId: string | null = null,
+): string {
   return renderToStaticMarkup(
     <LeaveCards
       cards={[card]}
       rights={rights}
+      ownStudentId={ownStudentId}
       asOf="2026-10-14T17:00"
       emptyWords="Kosong"
     />,
@@ -172,6 +181,31 @@ describe("Catat sudah kembali on a card", () => {
     expect(card).toContain("Kembali aktual");
     expect(card).toContain(">Terlambat 20 menit</span>");
     expect(card).toContain("Kembali dicatat Bima BAM (dicatat langsung).");
+  });
+});
+
+describe("the own card of a resident who is also BAM - BPHK", () => {
+  it("shows the report and the line in place of Verifikasi and Tolak", () => {
+    const card = shown(CARD, BAM, ANI);
+
+    expect(card).toContain("Lapor kembali 14 Okt 2026, 16.12");
+    expect(card).toContain(OWN_RECORD_NOTE);
+    expect(card).not.toContain("<button");
+  });
+
+  it("shows the line in place of Catat sudah kembali, with the key in capitals too", () => {
+    const card = shown(OUT, BAM, ANI.toUpperCase());
+
+    expect(card).toContain(OWN_RECORD_NOTE);
+    expect(card).not.toContain("Catat sudah kembali");
+  });
+
+  it("offers the checks as before on a card of another resident", () => {
+    const other = "00000000-0000-4000-8000-0000000000b2";
+
+    expect(shown(CARD, BAM, other)).toContain(">Verifikasi</button>");
+    expect(shown(OUT, BAM, other)).toContain(">Catat sudah kembali</button>");
+    expect(shown(CARD, BAM, other)).not.toContain(OWN_RECORD_NOTE);
   });
 });
 

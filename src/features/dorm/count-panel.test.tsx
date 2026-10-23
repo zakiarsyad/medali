@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { CountPanel } from "./count-panel";
 import type { CountPanelView, KeptCount, Participant } from "./count-view";
 import type { LeaveMarks } from "./leave-marks";
+import { OWN_RECORD_NOTE } from "./own-record";
 import { TEST_ONE_OFF, TEST_ROW } from "./test-activities";
 
 vi.mock("./count-actions", () => ({ saveCountAction: vi.fn() }));
@@ -31,26 +32,37 @@ const [ANI] = PARTICIPANTS;
 // 19:45 on campus on 14 October 2026.
 const EVENING = new Date("2026-10-14T12:45:00Z");
 
-function panel(view: CountPanelView): string {
+function panel(
+  view: CountPanelView,
+  ownStudentId: string | null = null,
+): string {
   return renderToStaticMarkup(
     <CountPanel
       activities={ACTIVITIES}
       view={view}
       params={PARAMS}
       today={DAY}
+      ownStudentId={ownStudentId}
       onUnsaved={() => {}}
     />,
   );
 }
 
-function open(kept: KeptCount | null, onLeave: LeaveMarks = {}): string {
-  return panel({
-    kind: "open",
-    activity: TEST_ROW,
-    participants: PARTICIPANTS,
-    kept,
-    onLeave,
-  });
+function open(
+  kept: KeptCount | null,
+  onLeave: LeaveMarks = {},
+  ownStudentId: string | null = null,
+): string {
+  return panel(
+    {
+      kind: "open",
+      activity: TEST_ROW,
+      participants: PARTICIPANTS,
+      kept,
+      onLeave,
+    },
+    ownStudentId,
+  );
 }
 
 const DRAFT: KeptCount = {
@@ -131,6 +143,27 @@ describe("Penghitungan kehadiran", () => {
     );
     expect(shown).not.toContain(">Simpan</button>");
     expect(shown).toContain(">Umumkan ulang</button>");
+  });
+
+  it("shows the counter's own row with its mark and the line, with no box Tidak hadir and no Catatan, with the key in capitals too", () => {
+    for (const own of [ANI?.id ?? "", (ANI?.id ?? "").toUpperCase()]) {
+      const shown = open(DRAFT, {}, own);
+
+      expect(shown).toContain("<b>Ani Wiratama</b>");
+      expect(shown).toContain("<b>Tidak hadir</b> · Sakit");
+      expect(shown).toContain(OWN_RECORD_NOTE);
+      expect(shown).not.toContain('aria-label="Tidak hadir Ani Wiratama"');
+      expect(shown).not.toContain('aria-label="Catatan Ani Wiratama"');
+      expect(shown).toContain('aria-label="Tidak hadir Budi Hasibuan"');
+      expect(shown).toContain("1 dari 2 peserta ditandai tidak hadir.");
+    }
+  });
+
+  it("shows Hadir on the counter's own row with no mark kept", () => {
+    const shown = open(null, {}, ANI?.id ?? "");
+
+    expect(shown).toMatch(/<b>Hadir<\/b>/);
+    expect(shown).not.toContain('aria-label="Tidak hadir Ani Wiratama"');
   });
 
   it("shows a participant on approved leave as Izin or ITMK, with a box that cannot be ticked", () => {

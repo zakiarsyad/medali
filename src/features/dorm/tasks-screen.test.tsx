@@ -316,6 +316,7 @@ describe("Laporan kembali menunggu validasi", () => {
 
 const CLARIFICATION: ClarificationTask = {
   id: "00000000-0000-4000-8000-0000000000f1",
+  studentId: "00000000-0000-4000-8000-0000000000a1",
   sentAt: "2026-10-13T03:00:00.000Z",
   name: "Penghuni Klarifikasi",
   nim: "9986110003",

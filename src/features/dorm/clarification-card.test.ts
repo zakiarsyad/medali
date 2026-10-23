@@ -62,6 +62,11 @@ describe("offerOf", () => {
     expect(offerOf("verified", bam)).toBeNull();
   });
 
+  it("offers BAM the line in place of the check on its own clarification", () => {
+    expect(offerOf("submitted", bam, true)).toBe("own");
+    expect(offerOf("verified", bam, true)).toBeNull();
+  });
+
   it("offers Pengelola Asrama the decision once BAM passed it on, and says before that it waits for BAM", () => {
     expect(offerOf("verified", manager)).toBe("decide");
     expect(offerOf("submitted", manager)).toBe("waits_for_bam");

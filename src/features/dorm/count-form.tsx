@@ -22,6 +22,8 @@ import {
 } from "./count-view";
 import { absentWords, announceQuestion, countStatusWords } from "./count-words";
 import type { LeaveMark, LeaveMarks } from "./leave-marks";
+import { isOwnRecord } from "./own-record";
+import { OwnRecordNote } from "./own-record-note";
 
 export const LEAVE_QUESTION =
   "Perubahan penghitungan belum disimpan. Tinggalkan tanpa menyimpan?";
@@ -36,16 +38,31 @@ const LEAVE_BADGE_WORDS: Record<LeaveMark, string> = {
   itmk: "Hadir · ITMK",
 };
 
+/** The account's own mark, which it sees but does not change. */
+function OwnMark({ mark }: { mark: CountMark }) {
+  const words = mark.isAbsent ? "Tidak hadir" : "Hadir";
+  return (
+    <div className={styles.countNote}>
+      <b>{words}</b>
+      {mark.note !== "" && ` · ${mark.note}`}
+      <OwnRecordNote />
+    </div>
+  );
+}
+
 function ParticipantRow({
   participant,
   mark,
   onLeave,
+  isOwn,
   onMark,
 }: {
   participant: Participant;
   mark: CountMark;
   /** What approved leave makes of them here, or null for none. */
   onLeave: LeaveMark | null;
+  /** Whether it is the row of the account's own student. */
+  isOwn: boolean;
   onMark: (mark: CountMark) => void;
 }) {
   const { name } = participant;
@@ -62,6 +79,29 @@ function ParticipantRow({
           </span>
         )}
       </span>
+      {isOwn ? (
+        <OwnMark mark={mark} />
+      ) : (
+        <MarkFields name={name} mark={mark} onLeave={onLeave} onMark={onMark} />
+      )}
+    </li>
+  );
+}
+
+/** "Tidak hadir" and Catatan of one participant. */
+function MarkFields({
+  name,
+  mark,
+  onLeave,
+  onMark,
+}: {
+  name: string;
+  mark: CountMark;
+  onLeave: LeaveMark | null;
+  onMark: (mark: CountMark) => void;
+}) {
+  return (
+    <>
       <label className={styles.countAbsent}>
         {/* Approved leave decides how they count: they cannot be ticked. */}
         <input
@@ -83,7 +123,7 @@ function ParticipantRow({
         aria-label={`Catatan ${name}`}
         onChange={(event) => onMark({ ...mark, note: event.target.value })}
       />
-    </li>
+    </>
   );
 }
 
@@ -109,7 +149,8 @@ function sentForm(
 
 /**
  * The count of one activity on one day: a row for each participant with
- * "Tidak hadir" and Catatan, a search and a filter, a count that follows
+ * "Tidak hadir" and Catatan, but for the account's own row, which shows
+ * its mark only, a search and a filter, a count that follows
  * the ticks, and the buttons. Before the first announcement there are
  * "Simpan" and "Umumkan ketidakhadiran"; after it only "Umumkan ulang".
  * An announcement asks first. The form sends which save of the count it
@@ -122,6 +163,7 @@ export function CountForm({
   participants,
   kept,
   onLeave,
+  ownStudentId,
   onUnsaved,
 }: {
   activity: ActivityRow;
@@ -130,6 +172,8 @@ export function CountForm({
   kept: KeptCount | null;
   /** The participants approved leave covers at the activity. */
   onLeave: LeaveMarks;
+  /** The student the account belongs to, or null. */
+  ownStudentId: string | null;
   /** Told whether the form holds changes that are not saved. */
   onUnsaved: (isUnsaved: boolean) => void;
 }) {
@@ -209,6 +253,7 @@ export function CountForm({
               participant={participant}
               mark={marks[participant.id] ?? { isAbsent: false, note: "" }}
               onLeave={onLeave[participant.id] ?? null}
+              isOwn={isOwnRecord(ownStudentId, participant.id)}
               onMark={(mark) => setMarks({ ...marks, [participant.id]: mark })}
             />
           ))}

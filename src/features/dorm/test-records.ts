@@ -13,16 +13,22 @@ import {
 export interface TestActor {
   id: string;
   roles: RoleId[];
+  studentId: string | null;
 }
 
+/** An account with these roles, of a student when `studentId` is given. */
 export async function addTestActor(
   db: Database,
   name: string,
   roles: RoleId[],
+  studentId: string | null = null,
 ): Promise<TestActor> {
-  const [account] = await db.insert(accounts).values({ name }).returning();
+  const [account] = await db
+    .insert(accounts)
+    .values({ name, studentId })
+    .returning();
   if (!account) throw new Error("The account was not added.");
-  return { id: account.id, roles };
+  return { id: account.id, roles, studentId };
 }
 
 /** The student rows an account that sees every student may see. */

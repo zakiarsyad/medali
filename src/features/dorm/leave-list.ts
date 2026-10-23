@@ -261,6 +261,7 @@ function cardOf(
   const waiting = isOpenReport(latest?.report ?? null) ? latest : undefined;
   return {
     ...rowOfLeave(leave, covered),
+    studentId: leave.studentId,
     name: row.name,
     nim: row.nim,
     room: roomWords(dorm, row.room),

@@ -33,6 +33,8 @@ import {
 } from "./cleaning-rows";
 import type { OwnRoomPage, ScheduledDuty } from "./cleaning-schedule";
 import { CleaningValidateButtons } from "./cleaning-validate-buttons";
+import { isOwnRoom, type RoomKey } from "./own-record";
+import { OwnRecordNote } from "./own-record-note";
 
 type OnSaid = (text: string) => void;
 
@@ -46,6 +48,8 @@ export interface ScheduleScope {
   mayChange: boolean;
   /** What the account may do with duties. */
   rights: DutyRights;
+  /** The room the account's own student lives in, whose duties it does not decide. */
+  ownRoom: RoomKey | null;
 }
 
 /** Whether the schedule has a column of buttons for the account. */
@@ -135,7 +139,16 @@ function DutyRow({
   onSaid: OnSaid;
 }) {
   const question = `Batalkan tugas ${roomWords(duty.roomNumber)} untuk ${label} pada ${dayWords(scope.params.day)}?`;
-  const offers = offersOf(duty, scope.params.day, scope.today, scope.rights);
+  const isOwn =
+    duty.roomId !== null &&
+    isOwnRoom(scope.ownRoom, { dorm: scope.dorm, number: duty.roomNumber });
+  const offers = offersOf(
+    duty,
+    scope.params.day,
+    scope.today,
+    scope.rights,
+    isOwn,
+  );
   return (
     <tr>
       <td className={shared.rowHeading} data-title="Tempat">
@@ -148,6 +161,7 @@ function DutyRow({
       <AssessmentCell duty={duty} />
       {hasActions(scope) && (
         <td className={shared.rowActions}>
+          {offers.ownLine && <OwnRecordNote />}
           {offers.judge && (
             <CleaningJudgeForm dutyId={duty.id} onSaid={onSaid} />
           )}

@@ -8,6 +8,7 @@ import {
   academicPeriods,
   dormAttendanceChanges,
   dormLeaves,
+  students,
 } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
@@ -22,6 +23,7 @@ import {
   ON_LEAVE,
 } from "./count-messages";
 import { readStoredCount } from "./count-store";
+import { OWN_RECORD } from "./own-record";
 import { saveCount } from "./save-count";
 import { addTestActivity } from "./test-activities";
 import { addTestActor, type TestActor } from "./test-records";
@@ -104,7 +106,7 @@ describe("saveCount", () => {
 
       expect(saved).toEqual({
         ok: true,
-        value: { version: 1, isAnnounced: false },
+        value: { version: 1, isAnnounced: false, ownMarkRefusal: null },
       });
       const kept = await readStoredCount(db, records.activityId, DAY);
       expect(kept).toMatchObject({ version: 1, announcedAt: null });
@@ -173,7 +175,7 @@ describe("saveCount", () => {
 
       expect(saved).toEqual({
         ok: true,
-        value: { version: 2, isAnnounced: true },
+        value: { version: 2, isAnnounced: true, ownMarkRefusal: null },
       });
       const kept = await readStoredCount(db, records.activityId, DAY);
       expect(kept?.announcedBy).toBe("BAM Uji Hitung");
@@ -217,7 +219,7 @@ describe("saveCount", () => {
       expect(draft).toEqual(ANNOUNCED_ALREADY);
       expect(again).toEqual({
         ok: true,
-        value: { version: 2, isAnnounced: true },
+        value: { version: 2, isAnnounced: true, ownMarkRefusal: null },
       });
       const kept = await readStoredCount(db, records.activityId, DAY);
       expect(kept?.marks[records.ani]).toEqual({ isAbsent: false, note: "" });
@@ -343,6 +345,178 @@ describe("saveCount", () => {
       expect(senior).toEqual(NOT_A_PARTICIPANT);
       expect(woman).toEqual(NOT_A_PARTICIPANT);
       expect(await readStoredCount(db, records.activityId, DAY)).toBeNull();
+    });
+  });
+
+  it("leaves out a change of the own mark of a resident who is also BAM, also with the key in capitals, and saves the other rows", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const own = await addTestActor(
+        db,
+        "Ani BAM Uji Hitung",
+        ["student", "bam_spiritual"],
+        records.ani,
+      );
+
+      for (const [version, key] of [
+        records.ani,
+        records.ani.toUpperCase(),
+      ].entries()) {
+        const saved = await saveCount(
+          db,
+          own,
+          countOf(records, {
+            version,
+            marks: {
+              [key]: { isAbsent: true, note: "Sakit" },
+              [records.cici]: { isAbsent: true, note: "" },
+            },
+          }),
+          MOMENT,
+        );
+
+        expect(saved).toEqual({
+          ok: true,
+          value: {
+            version: version + 1,
+            isAnnounced: false,
+            ownMarkRefusal: OWN_RECORD.error,
+          },
+        });
+        const kept = await readStoredCount(db, records.activityId, DAY);
+        expect(kept?.marks).toEqual({
+          [records.ani]: { isAbsent: false, note: "" },
+          [records.cici]: { isAbsent: true, note: "" },
+        });
+      }
+    });
+  });
+
+  it("saves a count of a resident who is also BAM that leaves their own mark as kept", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await saveCount(db, records.counter, countOf(records), MOMENT);
+      const own = await addTestActor(
+        db,
+        "Ani BAM Uji Hitung",
+        ["student", "bam_spiritual"],
+        records.ani,
+      );
+
+      const saved = await saveCount(
+        db,
+        own,
+        countOf(records, {
+          version: 1,
+          isAnnouncement: true,
+          marks: {
+            [records.ani]: { isAbsent: true, note: "Sakit" },
+            [records.cici]: { isAbsent: true, note: "" },
+          },
+        }),
+        MOMENT,
+      );
+
+      expect(saved).toEqual({
+        ok: true,
+        value: { version: 2, isAnnounced: true, ownMarkRefusal: null },
+      });
+      const kept = await readStoredCount(db, records.activityId, DAY);
+      expect(kept?.marks[records.cici]?.isAbsent).toBe(true);
+      expect(kept?.marks[records.ani]).toEqual({
+        isAbsent: true,
+        note: "Sakit",
+      });
+    });
+  });
+
+  it("saves the other rows of a resident who is also BAM after they stopped taking part, without their own row", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await saveCount(db, records.counter, countOf(records), MOMENT);
+      const own = await addTestActor(
+        db,
+        "Ani BAM Uji Hitung",
+        ["student", "bam_spiritual"],
+        records.ani,
+      );
+      // Semester 3 from now on, so she lives in no dorm any more.
+      await db
+        .update(students)
+        .set({ cohortYear: 2709 })
+        .where(eq(students.id, records.ani));
+
+      const saved = await saveCount(
+        db,
+        own,
+        countOf(records, {
+          version: 1,
+          marks: {
+            [records.ani]: { isAbsent: true, note: "Sakit" },
+            [records.cici]: { isAbsent: true, note: "" },
+          },
+        }),
+        MOMENT,
+      );
+
+      expect(saved).toEqual({
+        ok: true,
+        value: { version: 2, isAnnounced: false, ownMarkRefusal: null },
+      });
+      const kept = await readStoredCount(db, records.activityId, DAY);
+      expect(kept?.marks).toEqual({
+        [records.cici]: { isAbsent: true, note: "" },
+      });
+    });
+  });
+
+  it("saves the form of a resident who is also BAM whose own absence is now covered by approved leave, as the form shows it", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await saveCount(db, records.counter, countOf(records), MOMENT);
+      await db.insert(dormLeaves).values({
+        id: crypto.randomUUID(),
+        studentId: records.ani,
+        kind: "outing",
+        startsAt: new Date(`${DAY}T05:00:00+07:00`),
+        endsAt: new Date(`${DAY}T07:00:00+07:00`),
+        purpose: "Kontrol ke dokter",
+        destination: "Klinik",
+        contact: "",
+        status: "approved",
+        sentAt: MOMENT,
+        decidedBy: records.counter.id,
+        decidedAt: MOMENT,
+      });
+      const own = await addTestActor(
+        db,
+        "Ani BAM Uji Hitung",
+        ["student", "bam_spiritual"],
+        records.ani,
+      );
+
+      const saved = await saveCount(
+        db,
+        own,
+        countOf(records, {
+          version: 1,
+          marks: {
+            [records.ani]: { isAbsent: false, note: "Sakit" },
+            [records.cici]: { isAbsent: true, note: "" },
+          },
+        }),
+        MOMENT,
+      );
+
+      expect(saved).toEqual({
+        ok: true,
+        value: { version: 2, isAnnounced: false, ownMarkRefusal: null },
+      });
+      const kept = await readStoredCount(db, records.activityId, DAY);
+      expect(kept?.marks).toEqual({
+        [records.ani]: { isAbsent: false, note: "Sakit" },
+        [records.cici]: { isAbsent: true, note: "" },
+      });
     });
   });
 

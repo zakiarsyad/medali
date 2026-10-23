@@ -195,6 +195,7 @@ export function cardOf(
   const endTime = hourAndMinute(row.endTime);
   return {
     id: clarification.id,
+    studentId: clarification.studentId,
     sentAt: clarification.sentAt.toISOString(),
     name: row.name,
     nim: row.nim,

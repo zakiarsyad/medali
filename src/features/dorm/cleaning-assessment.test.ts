@@ -185,4 +185,23 @@ describe("offersOf", () => {
     expect(offersOf(sentBack, TODAY, TODAY, manage).cancel).toBe(false);
     expect(offersOf(SCHEDULED, TODAY, TODAY, judge).cancel).toBe(false);
   });
+
+  it("offers no judging and no Batalkan tugas on a duty of the account's own room, but the line in their place", () => {
+    const all = { judge: true, validate: true, manage: true };
+    const judged = { status: "judged", sentBackReason: "" } as const;
+
+    expect(offersOf(SCHEDULED, TODAY, TODAY, all, true)).toEqual({
+      judge: false,
+      validate: false,
+      cancel: false,
+      ownLine: true,
+    });
+    expect(offersOf(judged, TODAY, TODAY, all, true)).toEqual({
+      judge: false,
+      validate: true,
+      cancel: false,
+      ownLine: false,
+    });
+    expect(offersOf(SCHEDULED, TODAY, TODAY, all).ownLine).toBe(false);
+  });
 });

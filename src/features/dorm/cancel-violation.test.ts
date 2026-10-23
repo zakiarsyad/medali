@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
 import { withTestDatabase } from "@/db/test-database";
 import { cancelViolation } from "./cancel-violation";
+import { OWN_RECORD } from "./own-record";
 import { saveViolations } from "./save-violations";
 import {
   addViolationActor,
@@ -37,12 +38,19 @@ async function waiting(db: Database) {
   );
   const recorder = await addViolationActor(db, "BAM Uji Catat", ["bam_bphk"]);
   const key = crypto.randomUUID();
-  const list = sentList("3154-10-12", [sentRow(setting.residents[0] ?? "")]);
+  const studentId = setting.residents[0] ?? "";
+  const list = sentList("3154-10-12", [sentRow(studentId)]);
   const saved = await saveViolations(db, recorder, key, list, MOMENT);
   if (!saved.ok) throw new Error(saved.error);
   const [violation] = await violationsUnder(db, key);
   if (!violation) throw new Error("The violation was not kept.");
-  return { id: violation.id, key, recorder };
+  return {
+    id: violation.id,
+    key,
+    recorder,
+    studentId,
+    otherStudentId: setting.residents[1] ?? "",
+  };
 }
 
 describe("cancelViolation", () => {
@@ -81,6 +89,46 @@ describe("cancelViolation", () => {
       expect(
         await cancelViolation(db, first.recorder, first.id, justBefore),
       ).toEqual({ ok: true, value: null });
+    });
+  });
+
+  it.each(["bam_spiritual", "bam_bphk"] as const)(
+    "refuses a resident who is also %s their own violation, also with its key in capitals, and keeps it waiting",
+    async (role) => {
+      await inTestDatabase(async (db) => {
+        const { id, key, studentId } = await waiting(db);
+        const own = await addViolationActor(
+          db,
+          "Penghuni BAM Uji Batal",
+          ["student", role],
+          studentId,
+        );
+
+        for (const sent of [id, id.toUpperCase()]) {
+          expect(await cancelViolation(db, own, sent, MOMENT)).toEqual(
+            OWN_RECORD,
+          );
+        }
+        expect((await violationsUnder(db, key))[0]?.cancelledAt).toBeNull();
+        expect(await linesOf(db, id)).toHaveLength(1);
+      });
+    },
+  );
+
+  it("lets a resident who is BAM cancel the violation of another resident", async () => {
+    await inTestDatabase(async (db) => {
+      const { id, otherStudentId } = await waiting(db);
+      const resident = await addViolationActor(
+        db,
+        "Penghuni BAM Uji Batal Lain",
+        ["student", "bam_spiritual"],
+        otherStudentId,
+      );
+
+      expect(await cancelViolation(db, resident, id, MOMENT)).toEqual({
+        ok: true,
+        value: null,
+      });
     });
   });
 

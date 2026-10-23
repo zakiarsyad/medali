@@ -10,6 +10,7 @@ import { lettersIn } from "@/ui/letters-in";
 import { NOTE_TOO_LONG } from "./decide-leave";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
 import { type Decided, REJECTION_NEEDS_NOTE } from "./leave-messages";
+import { isOwnRecord, OWN_RECORD } from "./own-record";
 import {
   type DecidedStatus,
   NO_VALIDATE_DECISION,
@@ -22,7 +23,7 @@ import {
 } from "./return-messages";
 import { lockLeave } from "./return-store";
 
-type Decider = Pick<Account, "id" | "roles">;
+type Decider = Pick<Account, "id" | "roles" | "studentId">;
 
 /** What "Verifikasi" and "Tolak" of BAM - BPHK make a report. */
 const VERIFY_DECISIONS: Record<string, DecidedStatus> = {
@@ -73,12 +74,26 @@ async function statusOf(db: Database, reportId: string) {
   return kept;
 }
 
+/** The student whose leave a report is of, or undefined when there is none. */
+async function studentOfReport(
+  db: Database,
+  reportId: string,
+): Promise<string | undefined> {
+  const [kept] = await db
+    .select({ studentId: dormLeaves.studentId })
+    .from(dormReturnReports)
+    .innerJoin(dormLeaves, eq(dormLeaves.id, dormReturnReports.leaveId))
+    .where(eq(dormReturnReports.id, reportId));
+  return kept?.studentId;
+}
+
 /**
  * "Verifikasi" and "Tolak" of BAM - BPHK: a report that waits for BAM
  * moves on to Pengelola Asrama, or is rejected with a note, which the
  * resident sees before sending a new photo. Who decided, when, and the
  * note are kept. Refused for a role that may not verify, Kepala Unit and
- * Pengelola Asrama among them, and for a report that no longer waits for
+ * Pengelola Asrama among them, for the account's own report, and for a
+ * report that no longer waits for
  * BAM: the database changes it only while it waits, so of two decisions
  * at once the second waits for the first, then is refused.
  */
@@ -98,6 +113,9 @@ export async function verifyReturn(
     NO_VERIFY_DECISION,
   );
   if (!sent.ok) return sent;
+  const studentId = await studentOfReport(db, reportId);
+  if (studentId === undefined) return REPORT_NOT_FOUND;
+  if (isOwnRecord(actor.studentId, studentId)) return OWN_RECORD;
   const { status } = sent.value;
   const decided = await db
     .update(dormReturnReports)

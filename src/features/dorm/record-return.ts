@@ -8,6 +8,7 @@ import type { Parsed } from "@/parsed";
 import { shownMoment } from "@/ui/day";
 import { LEAVE_NOT_FOUND } from "./leave-messages";
 import { momentOf } from "./leave-time";
+import { isOwnRecord, OWN_RECORD } from "./own-record";
 import {
   RECORD_NOT_ALLOWED,
   RETURN_TIME_NEEDED,
@@ -16,15 +17,18 @@ import {
 import { lateMinutes, recordFault } from "./return-rules";
 import { hasOpenReport, lockLeave } from "./return-store";
 
+type Recorder = Pick<Account, "id" | "roles" | "studentId">;
+
 async function record(
   tx: Database,
-  actor: Pick<Account, "id">,
+  actor: Recorder,
   leaveId: string,
   returnedAt: Date,
   now: Date,
 ): Promise<Parsed<string>> {
   const leave = await lockLeave(tx, leaveId);
   if (!leave) return LEAVE_NOT_FOUND;
+  if (isOwnRecord(actor.studentId, leave.studentId)) return OWN_RECORD;
   const waits = await hasOpenReport(tx, leaveId);
   const fault = recordFault(leave, waits, returnedAt, now);
   if (fault !== null) return fault;
@@ -45,13 +49,13 @@ async function record(
  * recorded it. A time after `now`, the moment on the server's clock, or
  * before the departure is refused, and so is leave with a report that
  * waits, which is checked instead. Refused for a role that may not
- * record. It holds the leave first, so of two returns recorded at once,
- * or a return and a validation, the second waits for the first, then is
- * refused.
+ * record, and for the account's own leave. It holds the leave first, so
+ * of two returns recorded at once, or a return and a validation, the
+ * second waits for the first, then is refused.
  */
 export async function recordReturn(
   db: Database,
-  actor: Pick<Account, "id" | "roles">,
+  actor: Recorder,
   leaveId: string,
   sentTime: string,
   now: Date,

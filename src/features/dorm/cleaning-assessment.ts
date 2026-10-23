@@ -112,6 +112,8 @@ export interface DutyOffers {
   judge: boolean;
   validate: boolean;
   cancel: boolean;
+  /** Whether the line that someone else decides it stands in place of judging and cancelling. */
+  ownLine: boolean;
 }
 
 function isResult(sent: unknown): sent is CleaningResult {
@@ -164,18 +166,23 @@ export function isNeverJudged(duty: DutyStanding): boolean {
  * What a duty of `day` offers on `today`, the day on campus: judging a
  * duty that is Terjadwal, from its date on; validating or sending back
  * one that is Dinilai BAM; and cancelling one of today or later that was
- * never judged.
+ * never judged. A duty of the room the account's own student lives in is
+ * neither judged nor cancelled by them.
  */
 export function offersOf(
   duty: DutyStanding,
   day: string,
   today: string,
   rights: DutyRights,
+  isOwnRoom = false,
 ): DutyOffers {
   const isDue = day <= today;
+  const judges = rights.judge && duty.status === "scheduled" && isDue;
+  const cancels = rights.manage && day >= today && isNeverJudged(duty);
   return {
-    judge: rights.judge && duty.status === "scheduled" && isDue,
+    judge: judges && !isOwnRoom,
     validate: rights.validate && duty.status === "judged",
-    cancel: rights.manage && day >= today && isNeverJudged(duty),
+    cancel: cancels && !isOwnRoom,
+    ownLine: isOwnRoom && (judges || cancels),
   };
 }
