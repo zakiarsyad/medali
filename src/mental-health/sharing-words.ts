@@ -66,6 +66,12 @@ export function dataLine(data: readonly SharedData[]): string {
     .join("; ");
 }
 
+/** The title of a sharing the student gave, as the prototype words it. */
+export function givenSharingTitle(status: SharingStatus): string {
+  if (status === "published") return "Data dibagikan";
+  return "Persetujuan berbagi data diberikan";
+}
+
 export const PANEL_LEDE =
   "Bagikan data mahasiswa kepada pihak terkait setelah mahasiswa menyetujuinya.";
 

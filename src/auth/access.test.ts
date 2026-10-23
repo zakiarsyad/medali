@@ -3620,11 +3620,45 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa read their own fitness test and health note, on Profil saya", () => {
+    expect(may(["student"], "view_own_physical_health")).toBe(true);
+    expect(ACTION_TITLES.view_own_physical_health).toBe(
+      "Melihat kesehatan jasmani sendiri",
+    );
+  });
+
+  it("lets Mahasiswa read their own screening and counselling status, on Profil saya", () => {
+    expect(may(["student"], "view_own_mental_health")).toBe(true);
+    expect(ACTION_TITLES.view_own_mental_health).toBe(
+      "Melihat kesehatan mental sendiri",
+    );
+  });
+
+  it.each(["view_own_physical_health", "view_own_mental_health"] as const)(
+    "refuses every other role %s, Kepala Unit and Konselor included",
+    (action) => {
+      const others = ROLE_IDS.filter((role) => role !== "student");
+      expect(others).toEqual(
+        expect.arrayContaining([
+          "head_of_unit",
+          "counsellor",
+          "bam_health",
+          "mentor",
+        ]),
+      );
+      for (const role of others) {
+        expect(may([role], action)).toBe(false);
+      }
+    },
+  );
+
   it("gives Mahasiswa no right that changes a student record", () => {
     expect(ROLES.student.actions).toEqual([
       "view_own_profile",
       "view_own_character_achievement",
       "view_own_character_grade",
+      "view_own_physical_health",
+      "view_own_mental_health",
       "send_attendance_photo",
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
@@ -4550,6 +4584,26 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       NO_ROW,
     );
   });
+
+  it.each(["view_own_physical_health", "view_own_mental_health"] as const)(
+    "keeps a student to their own records for %s, whatever wide role they also hold",
+    (action) => {
+      const both = {
+        ...account(["student", "head_of_unit", "counsellor"]),
+        studentId: "student-1",
+      };
+      const staff = {
+        ...account(["head_of_unit", "counsellor", "bam_health"]),
+        studentId: "student-1",
+      };
+
+      expect(rowLimitForAction(both, action)).toEqual({
+        ...NO_ROW,
+        studentIds: ["student-1"],
+      });
+      expect(rowLimitForAction(staff, action)).toEqual(NO_ROW);
+    },
+  );
 
   it("keeps a student to their own attendance, whatever wide role they also hold", () => {
     const both = {

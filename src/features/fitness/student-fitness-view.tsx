@@ -1,6 +1,10 @@
 import { FinalCategoryBadge } from "@/health-notes/category-badge";
 import type { ShownCategory } from "@/health-notes/fitness-category";
-import { NO_NOTE_YET, noteText } from "@/health-notes/health-words";
+import {
+  NO_NOTE_YET,
+  noteText,
+  OWN_NOTE_READERS,
+} from "@/health-notes/health-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import styles from "./fitness.module.css";
@@ -38,9 +42,11 @@ function TestFacts({
 function NoteBox({
   health,
   category,
+  isOwn,
 }: {
   health: RowHealth;
   category: ShownCategory;
+  isOwn: boolean;
 }) {
   const text = health.note === null ? "" : noteText(health.note);
   const boxStyle = category === "medical" ? styles.noteBoxWarn : styles.noteBox;
@@ -49,6 +55,7 @@ function NoteBox({
       <div className={boxStyle}>
         <b>Catatan kesehatan</b>
         <p>{text}</p>
+        {isOwn && <p className={styles.note}>{OWN_NOTE_READERS}</p>}
       </div>
     );
   }
@@ -60,9 +67,16 @@ function NoteBox({
  * "Kesehatan jasmani" in a student's detail: the final category, the
  * latest score with the day of its test, or a line that the student was
  * never tested. The note, and the mark that a note made the category,
- * show only when the reader handed the student's health over.
+ * show only when the reader handed the student's health over. On the
+ * student's own Profil saya the note says who else reads it.
  */
-export function StudentFitnessView({ fitness }: { fitness: StudentFitness }) {
+export function StudentFitnessView({
+  fitness,
+  isOwn = false,
+}: {
+  fitness: StudentFitness;
+  isOwn?: boolean;
+}) {
   const { latest, final, health } = fitness;
   return (
     <section className={shared.panel}>
@@ -77,7 +91,9 @@ export function StudentFitnessView({ fitness }: { fitness: StudentFitness }) {
       ) : (
         <p className={styles.sub}>{NOT_TESTED}</p>
       )}
-      {health && <NoteBox health={health} category={final.category} />}
+      {health && (
+        <NoteBox health={health} category={final.category} isOwn={isOwn} />
+      )}
     </section>
   );
 }

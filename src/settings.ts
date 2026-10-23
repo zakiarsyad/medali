@@ -9,6 +9,7 @@ export const SETTING_NAMES = [
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
   "CAMPUS_EMAIL_ENDING",
+  "CAMPUS_COUNSELLING_CONTACT",
 ] as const;
 
 export type SettingName = (typeof SETTING_NAMES)[number];
@@ -85,6 +86,19 @@ export function campusEmailEndingOf(env: SettingsEnv): string {
 
 export function readCampusEmailEnding(): string {
   return campusEmailEndingOf(process.env);
+}
+
+/**
+ * "Kontak konseling kampus" as the student reads it under the help line,
+ * such as a phone number or a room. Empty while the setting is not
+ * filled in, and then nothing more shows.
+ */
+export function campusCounsellingContactOf(env: SettingsEnv): string {
+  return (env.CAMPUS_COUNSELLING_CONTACT ?? "").trim();
+}
+
+export function readCampusCounsellingContact(): string {
+  return campusCounsellingContactOf(process.env);
 }
 
 /** What sign-in with Google needs: the two Google keys and the ending. */

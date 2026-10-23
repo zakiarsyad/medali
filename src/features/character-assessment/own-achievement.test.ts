@@ -289,6 +289,19 @@ describe("Profil saya", () => {
     expect(PAGE).toContain("{isActive && (");
   });
 
+  it("puts Kesehatan jasmani then Kesehatan mental after Riwayat per semester, for every student whatever their status", () => {
+    const history = PAGE.indexOf("<OwnScoreHistoryPanel ");
+    const fitness = PAGE.indexOf("<OwnFitnessPanel account={account} />");
+    const mental = PAGE.indexOf("<OwnMentalPanel account={account} />");
+
+    expect(history).toBeGreaterThan(-1);
+    expect(fitness).toBeGreaterThan(history);
+    expect(mental).toBeGreaterThan(fitness);
+    const activeOnlyStart = PAGE.lastIndexOf("{isActive && (", fitness);
+    const activeOnlyEnd = PAGE.indexOf(")}", activeOnlyStart);
+    expect(activeOnlyEnd).toBeLessThan(fitness);
+  });
+
   it("puts Riwayat per semester under the card", () => {
     const card = PAGE.indexOf("<OwnAchievementPanel ");
 

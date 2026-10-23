@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  campusCounsellingContactOf,
   campusEmailEndingOf,
   fileStorageSettingsOf,
   googleSignInSettingsOf,
@@ -144,6 +145,24 @@ describe("campusEmailEndingOf", () => {
     [{ CAMPUS_EMAIL_ENDING: "@" }],
   ])("is empty for %o", (env) => {
     expect(campusEmailEndingOf(env)).toBe("");
+  });
+});
+
+describe("campusCounsellingContactOf", () => {
+  it("gives the contact as it is filled in, without spaces at its ends", () => {
+    expect(
+      campusCounsellingContactOf({
+        CAMPUS_COUNSELLING_CONTACT: "  Ruang konseling, Gedung B lantai 2 ",
+      }),
+    ).toBe("Ruang konseling, Gedung B lantai 2");
+  });
+
+  it.each([
+    ["missing", {}],
+    ["empty", { CAMPUS_COUNSELLING_CONTACT: "" }],
+    ["only spaces", { CAMPUS_COUNSELLING_CONTACT: "   " }],
+  ])("gives nothing while the setting is %s", (_, env) => {
+    expect(campusCounsellingContactOf(env)).toBe("");
   });
 });
 

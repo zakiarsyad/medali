@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { SHARED_DATA } from "@/mental-health/sharing-ids";
 import {
   dataLine,
+  givenSharingTitle,
   inFormOrder,
   recipientsLine,
   SHARED_DATA_WORDS,
@@ -93,15 +94,11 @@ function GivenSharing({
   pending: boolean;
   onPress: (action: Press) => void;
 }) {
-  const title =
-    sharing.status === "published"
-      ? "Data dibagikan"
-      : "Persetujuan berbagi data diberikan";
   return (
     <div className={`${styles.card} ${styles.stack}`}>
       <p>
-        <b>{title}</b> kepada {recipientsLine(sharing.recipients)}:{" "}
-        {dataLine(sharing.data)}.
+        <b>{givenSharingTitle(sharing.status)}</b> kepada{" "}
+        {recipientsLine(sharing.recipients)}: {dataLine(sharing.data)}.
       </p>
       {sharing.summary && <p>Ringkasan: “{sharing.summary}”</p>}
       <div>

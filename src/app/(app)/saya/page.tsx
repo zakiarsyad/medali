@@ -5,7 +5,9 @@ import { database } from "@/db/database";
 import { OwnAchievementPanel } from "@/features/character-assessment/own-achievement-panel";
 import { OwnScoreHistoryPanel } from "@/features/character-assessment/own-score-history-panel";
 import { OwnGradePanel } from "@/features/character-grades/own-grade-panel";
+import { OwnMentalPanel } from "@/features/counselling/own-mental-panel";
 import { readBaseScore } from "@/features/curriculum/stored-base-score";
+import { OwnFitnessPanel } from "@/features/fitness/own-fitness-panel";
 import { ProfileSikuPanel } from "@/features/siku/profile-siku-panel";
 import { readOwnProfile } from "@/features/students/own-profile";
 import { OwnProfileScreen } from "@/features/students/own-profile-screen";
@@ -38,6 +40,8 @@ export default async function OwnProfilePage() {
             />
           )}
           <OwnScoreHistoryPanel account={account} />
+          <OwnFitnessPanel account={account} />
+          <OwnMentalPanel account={account} />
         </>
       }
     />
