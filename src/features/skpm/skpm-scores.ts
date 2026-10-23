@@ -1,5 +1,6 @@
-import { inArray } from "drizzle-orm";
+import { eq, inArray, type SQL } from "drizzle-orm";
 import type { Database } from "@/db/connect";
+import { students } from "@/db/schema";
 import { skpmScoreOf } from "./skpm-score";
 import { countUploadsInForce, totalsByStudent } from "./skpm-totals";
 
@@ -28,4 +29,21 @@ export async function readSkpmScores(
     scores.set(studentId, skpmScoreOf(total, pointsForHundred));
   }
   return { uploads, scores };
+}
+
+/**
+ * The SKPM points of each student `visible` lets through, by the uploads
+ * in force; a student with no row in force has no entry.
+ */
+export async function readSkpmPointsOf(
+  db: Database,
+  visible: SQL,
+): Promise<Map<string, number>> {
+  const totals = totalsByStudent(db);
+  const rows = await db
+    .select({ studentId: totals.studentId, total: totals.total })
+    .from(totals)
+    .innerJoin(students, eq(students.id, totals.studentId))
+    .where(visible);
+  return new Map(rows.map((row) => [row.studentId, row.total]));
 }

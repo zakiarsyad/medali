@@ -270,6 +270,25 @@ describe("Profil saya", () => {
     expect(PAGE).toContain("<OwnScoreHistoryPanel account={account} />");
   });
 
+  it("puts Nilai karakter and Transparansi nilai SIKU between Capaian karakter and Riwayat per semester", () => {
+    const order = [
+      "<OwnAchievementPanel ",
+      "<OwnGradePanel account={account} />",
+      "<ProfileSikuPanel",
+      "<OwnScoreHistoryPanel ",
+    ].map((panel) => PAGE.indexOf(panel));
+
+    expect(order[0]).toBeGreaterThan(-1);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  it("shows Transparansi nilai SIKU only to an Aktif student", () => {
+    expect(PAGE).toContain(
+      'const isActive = answer.student.status === "active";',
+    );
+    expect(PAGE).toContain("{isActive && (");
+  });
+
   it("puts Riwayat per semester under the card", () => {
     const card = PAGE.indexOf("<OwnAchievementPanel ");
 

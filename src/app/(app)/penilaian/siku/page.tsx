@@ -3,6 +3,7 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { may, rowLimitForAction } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { visibleTo } from "@/auth/visible-students";
+import { readGradeScheme } from "@/character-grades/grade-scheme";
 import { database } from "@/db/database";
 import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
@@ -66,9 +67,10 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
   const db = database();
   const { score: base } = await readBaseScore(db);
   if (!may(account.roles, "view_siku")) {
-    const [own, asked] = await Promise.all([
+    const [own, asked, { scheme }] = await Promise.all([
       readOwnSiku(db, account),
       readOwnRequests(db, account),
+      readGradeScheme(db),
     ]);
     if (own.kind === "refused") forbidden();
     const requests = asked && {
@@ -89,6 +91,7 @@ export default async function SikuPage(props: PageProps<"/penilaian/siku">) {
       <OwnSikuScreen
         tabs={tabs}
         base={base}
+        weight={scheme.weights.siku}
         siku={own.siku}
         requests={requests}
       />
