@@ -169,10 +169,13 @@ async function CharacterView({ account, kinds, params }: ViewProps) {
 
 function menteeLinksOf(roles: AccountForAccess["roles"]): MenteeLinks {
   const opens = (tab: string) => mayOpenTab(roles, "mentoring", tab);
+  const assesses = (tab: string) => mayOpenTab(roles, "assessment", tab);
   return {
     meetings: opens("meetings") ? MEETINGS_ADDRESS : null,
     scores: opens("scores") ? SCORES_ADDRESS : null,
     notes: opens("notes") ? NOTES_ADDRESS : null,
+    assessment: assesses("character_test") ? ASSESSMENT_ADDRESS : null,
+    grade: assesses("character") ? GRADE_ADDRESS : null,
   };
 }
 

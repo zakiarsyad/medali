@@ -123,7 +123,10 @@ function LettersPanel({
   );
 }
 
-function GradePanels({ grades }: { grades: CharacterGrades }) {
+/** What section 2 reads of the grades. */
+type GradeNumbers = Pick<CharacterGrades, "recap" | "scheme">;
+
+function GradePanels({ grades }: { grades: GradeNumbers }) {
   const { recap, scheme } = grades;
   if (recap.kind !== "shown") {
     return (
@@ -153,7 +156,7 @@ export function GradeSection({
   detailAddress,
   children,
 }: {
-  grades: CharacterGrades;
+  grades: GradeNumbers;
   detailAddress: string | null;
   children?: ReactNode;
 }) {

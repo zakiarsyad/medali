@@ -2,9 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { STARTING_SCHEME } from "@/character-grades/scheme-ids";
 import { DashboardSwitch } from "./dashboard-switch";
+import { NO_GRADES } from "./grade-words";
 import type { MenteeDashboard } from "./mentee-recap";
 import { MenteeScreen } from "./mentee-screen";
-import { NO_GROUP_HELD } from "./mentee-words";
+import { MENTEES_NOT_ASSESSED, NO_GROUP_HELD } from "./mentee-words";
 
 const SHOWN: MenteeDashboard = {
   kind: "shown",
@@ -43,6 +44,8 @@ const SHOWN: MenteeDashboard = {
 };
 
 const LINKS = {
+  assessment: "/penilaian/asesmen",
+  grade: "/penilaian/karakter",
   meetings: "/pengasuhan/hadir",
   scores: "/pengasuhan/nilai",
   notes: "/pengasuhan/catatan",
@@ -74,7 +77,79 @@ describe("Dashboard anak asuh", () => {
     );
     expect(html).not.toContain("diasesmen</small>");
     expect(html).not.toContain("Filter");
-    expect(html).not.toContain('href="#');
+  });
+
+  it("moves the page to section 1 or 2 when its card is pressed", () => {
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain('href="#capaian-karakter"');
+    expect(html).toContain('id="capaian-karakter"');
+    expect(html).toContain('href="#nilai-karakter"');
+    expect(html).toContain('id="nilai-karakter"');
+  });
+
+  it("shows section 1 for the anak asuh, with Lihat rincian to Asesmen karakter and no table per angkatan", () => {
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain("Nilai MEDALI hasil asesmen anak asuh.");
+    expect(html).toContain("Semester pertama");
+    expect(html).toContain("Rerata 90,0 · Emas");
+    expect(html).toContain("1 dari 12 mahasiswa sudah diasesmen.");
+    expect(html).toMatch(/href="\/penilaian\/asesmen"[^>]*>Lihat rincian</);
+    expect(html).not.toContain("per angkatan");
+  });
+
+  it("says so in section 1 and its card, not zeros, while no anak asuh is assessed", () => {
+    const view = {
+      ...SHOWN,
+      cards: { ...SHOWN.cards, achievement: null },
+    };
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={view} links={LINKS} />,
+    );
+
+    expect(html.split(MENTEES_NOT_ASSESSED)).toHaveLength(3);
+    expect(html).not.toContain("minimal 5");
+  });
+
+  it("shows section 2 for the anak asuh, or says there is no grade yet", () => {
+    const graded: MenteeDashboard = {
+      ...SHOWN,
+      cards: {
+        ...SHOWN.cards,
+        grades: {
+          scheme: STARTING_SCHEME,
+          recap: {
+            kind: "shown",
+            graded: 2,
+            limited: 0,
+            meanFinal: 81.5,
+            passing: 100,
+            letters: { A: 1, B: 1, C: 0, D: 0, E: 0 },
+            incomplete: 0,
+            parts: { attendance: 90, mentoring: 80, siku: 75, skpm: 70 },
+          },
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      <MenteeScreen view={graded} links={LINKS} />,
+    );
+    const empty = renderToStaticMarkup(
+      <MenteeScreen view={SHOWN} links={LINKS} />,
+    );
+
+    expect(html).toContain("Komponen nilai karakter");
+    expect(html).toContain("Sebaran huruf");
+    expect(html).toMatch(/href="\/penilaian\/karakter"[^>]*>Lihat rincian</);
+    expect(html).not.toContain("per angkatan");
+    expect(empty).toContain(NO_GRADES);
+    expect(empty).not.toContain("Komponen nilai karakter");
   });
 
   it("shows Catatan pengasuhan terbaru with Tulis catatan and its four numbers", () => {
