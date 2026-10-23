@@ -57,5 +57,5 @@ server.
 
 ## Steps
 
-- [ ] 1. Update Next.js to a version with no known critical or high
+- [x] 1. Update Next.js to a version with no known critical or high
   security problem, with the full checks and the package check passing.
