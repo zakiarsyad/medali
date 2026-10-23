@@ -1,17 +1,32 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { useEffect, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { FormMessage } from "@/ui/form-message";
 import { ProfileNameLink } from "@/ui/profile-name-link";
+import styles from "./discipline-penalties.module.css";
 import { type PenaltiesParams, penaltiesAddress } from "./penalty-address";
 import { JenjangBadge } from "./penalty-badges";
 import type { PenaltyRow } from "./penalty-board";
 import { PenaltyDetail } from "./penalty-detail";
 import type { PenaltyFollowUp } from "./penalty-follow-up";
+import {
+  askRincian,
+  type LoadedRincian,
+  laterFollowUp,
+  type RincianAsks,
+  type RowFollowUp,
+  withFollowUp,
+} from "./penalty-rincian";
 import { ruleOf } from "./penalty-rules";
 import { PenaltyStatusCell } from "./penalty-status-cell";
-import { lengthWords } from "./penalty-words";
+import {
+  lengthWords,
+  RINCIAN_FAILED,
+  RINCIAN_LOADING,
+  TRY_AGAIN,
+} from "./penalty-words";
 
 /** How many columns "Daftar pelanggaran" has, for the row of "Rincian". */
 const PENALTY_COLUMNS = 6;
@@ -30,36 +45,117 @@ function SocialWorkCell({ row }: { row: PenaltyRow }) {
   );
 }
 
-function followUpOf(row: PenaltyRow): PenaltyFollowUp {
-  const { status, conditionsMet, decision, version } = row;
-  return { status, conditionsMet, decision, version };
+function rowFollowUpOf(row: PenaltyRow): RowFollowUp {
+  return { status: row.status, version: row.version };
+}
+
+/** "Rincian" as far as it came: loaded, refused or failed, or still asked. */
+function RincianBody({
+  loaded,
+  failed,
+  mayFollowUp,
+  onFollowUp,
+  onRetry,
+}: {
+  loaded: LoadedRincian | null;
+  failed: boolean;
+  mayFollowUp: boolean;
+  onFollowUp: (next: PenaltyFollowUp) => void;
+  onRetry: () => void;
+}) {
+  if (loaded !== null) {
+    return (
+      <PenaltyDetail
+        penalty={loaded.penalty}
+        mayFollowUp={mayFollowUp}
+        onFollowUp={onFollowUp}
+        counselling={loaded.counselling}
+      />
+    );
+  }
+  if (failed) {
+    return (
+      <>
+        <FormMessage state={{ error: RINCIAN_FAILED, done: null }} />
+        <button type="button" className={shared.quiet} onClick={onRetry}>
+          {TRY_AGAIN}
+        </button>
+      </>
+    );
+  }
+  return <p className={styles.note}>{RINCIAN_LOADING}</p>;
+}
+
+/** One ask of "Rincian": a new one each time, so that asking again is seen. */
+interface RincianAsk {
+  penaltyId: string;
 }
 
 /**
  * One penalty of "Daftar pelanggaran", with "Rincian" under it while it
- * is open. The row holds all "Rincian" shows, so nothing more is asked.
- * A follow-up puts the penalty the server gave back in the row; a row
- * the page reads again takes its place.
+ * is open. "Rincian" is asked of the server each time it opens, and
+ * again when the page reads the row again, keeping the one shown until
+ * the new one comes; an answer to an ask that was closed or followed by
+ * another is dropped. A follow-up puts what the server gave back in both
+ * the row and "Rincian".
  */
 function PenaltyLine({
   row: read,
   params,
   mayFollowUp,
-  counselling,
+  asks,
 }: {
   row: PenaltyRow;
   params: PenaltiesParams;
   mayFollowUp: boolean;
-  counselling: ReactNode;
+  asks: RincianAsks;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [readRow, setReadRow] = useState(read);
-  const [followUp, setFollowUp] = useState(() => followUpOf(read));
+  const [shown, setShown] = useState(() => rowFollowUpOf(read));
+  const [ask, setAsk] = useState<RincianAsk | null>(null);
+  const [loaded, setLoaded] = useState<LoadedRincian | null>(null);
+  const [failed, setFailed] = useState(false);
   if (readRow !== read) {
     setReadRow(read);
-    setFollowUp(followUpOf(read));
+    setShown(rowFollowUpOf(read));
+    if (ask !== null) setAsk({ penaltyId: read.id });
   }
-  const row = { ...read, ...followUp };
+
+  useEffect(() => {
+    if (ask === null) return;
+    let isLatest = true;
+    function take(answer: LoadedRincian | null) {
+      if (!isLatest) return;
+      setLoaded(answer);
+      setFailed(answer === null);
+      if (answer !== null) {
+        setShown((before) => laterFollowUp(before, answer.penalty));
+      }
+    }
+    askRincian(asks, ask.penaltyId).then(take, () => take(null));
+    return () => {
+      isLatest = false;
+    };
+  }, [ask, asks]);
+
+  function open() {
+    setFailed(false);
+    setAsk({ penaltyId: read.id });
+  }
+
+  function close() {
+    setAsk(null);
+    setLoaded(null);
+    setFailed(false);
+  }
+
+  function followUp(next: PenaltyFollowUp) {
+    setShown({ status: next.status, version: next.version });
+    setLoaded((before) => before && withFollowUp(before, next));
+  }
+
+  const isOpen = ask !== null;
+  const row = { ...read, ...shown };
   return (
     <>
       <tr>
@@ -86,9 +182,10 @@ function PenaltyLine({
           <PenaltyStatusCell
             id={row.id}
             name={row.name}
-            followUp={followUp}
+            status={row.status}
+            version={row.version}
             mayFollowUp={mayFollowUp}
-            onFollowUp={setFollowUp}
+            onFollowUp={followUp}
           />
         </td>
         <td className={shared.rowActions}>
@@ -96,7 +193,7 @@ function PenaltyLine({
             type="button"
             className={shared.link}
             aria-expanded={isOpen}
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={isOpen ? close : open}
           >
             {isOpen ? "Tutup" : "Rincian"}
           </button>
@@ -105,11 +202,12 @@ function PenaltyLine({
       {isOpen && (
         <tr>
           <td colSpan={PENALTY_COLUMNS}>
-            <PenaltyDetail
-              row={row}
+            <RincianBody
+              loaded={loaded}
+              failed={failed}
               mayFollowUp={mayFollowUp}
-              onFollowUp={setFollowUp}
-              counselling={counselling}
+              onFollowUp={followUp}
+              onRetry={open}
             />
           </td>
         </tr>
@@ -119,12 +217,6 @@ function PenaltyLine({
 }
 
 /**
- * What "Rincian" of each penalty shows of mandatory counselling, by the
- * penalty's key; none for an account that does not send to it.
- */
-export type PenaltyCounselling = Readonly<Record<string, ReactNode>>;
-
-/**
  * The penalties of one page. On a phone each is a card. A name opens the
  * student's profile over the tab, as the server decides to show it.
  */
@@ -132,13 +224,13 @@ export function PenaltyTable({
   rows,
   params,
   mayFollowUp,
-  counselling = {},
+  asks,
 }: {
   rows: PenaltyRow[];
   /** The choices of the list, kept when a profile opens over it. */
   params: PenaltiesParams;
   mayFollowUp: boolean;
-  counselling?: PenaltyCounselling;
+  asks: RincianAsks;
 }) {
   return (
     <div className={shared.tableWrap}>
@@ -162,7 +254,7 @@ export function PenaltyTable({
               row={row}
               params={params}
               mayFollowUp={mayFollowUp}
-              counselling={counselling[row.id] ?? null}
+              asks={asks}
             />
           ))}
         </tbody>

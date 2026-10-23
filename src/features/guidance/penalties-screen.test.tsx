@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { PenaltiesScreen } from "./penalties-screen";
 import { PENALTIES_START } from "./penalty-address";
 import type { PenaltyBoard, PenaltyRow } from "./penalty-board";
+import type { RincianAsks } from "./penalty-rincian";
 
 vi.mock("next/form", () => ({
   default: ({ children }: { children: unknown }) => children,
@@ -23,22 +24,11 @@ const ROW: PenaltyRow = {
   nim: "9944260013",
   program: "D3 Pajak",
   day: "2026-10-14",
-  description: "Terlambat mengikuti apel pagi tiga kali dalam satu bulan.",
   category: "light",
   level: 1,
   status: "imposed",
-  decisionNumber: "",
-  socialWorkForms: ["grounds", "other"],
-  socialWorkOther: "Menata arsip perpustakaan",
-  socialWorkPlace: "campus",
-  socialWorkStartsOn: "2026-10-15",
   socialWorkEndsOn: "2026-10-21",
-  savedByName: "Agus Hermawan",
-  semester: 3,
-  conditionsMet: [],
-  decision: "pending",
   version: 1,
-  hasAgency: false,
 };
 
 const DISMISSED: PenaltyRow = {
@@ -47,13 +37,11 @@ const DISMISSED: PenaltyRow = {
   category: "heavy",
   level: 2,
   status: "set",
-  decisionNumber: "KEP-021/PKN/2026",
-  socialWorkForms: [],
-  socialWorkOther: "",
-  socialWorkPlace: null,
-  socialWorkStartsOn: null,
   socialWorkEndsOn: null,
 };
+
+/** "Rincian" is only asked once opened, which a drawing on the server never does. */
+const ASKS: RincianAsks = { penalty: async () => null };
 
 function board(rows: PenaltyRow[], menteesOnly = false): PenaltyBoard {
   return {
@@ -76,6 +64,7 @@ function screen(
       params={PENALTIES_START}
       form={form}
       mayFollowUp={mayFollowUp}
+      asks={ASKS}
     />,
   );
 }
@@ -135,6 +124,7 @@ describe("PenaltiesScreen", () => {
         params={{ ...PENALTIES_START, query: "Mega", page: 2 }}
         form={null}
         mayFollowUp={false}
+        asks={ASKS}
       />,
     );
     expect(shown).toMatch(

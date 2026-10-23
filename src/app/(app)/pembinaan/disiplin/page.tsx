@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import { forbidden } from "next/navigation";
-import type { ReactNode } from "react";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import { may } from "@/auth/access";
@@ -11,28 +10,21 @@ import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-ba
 import { ScoreHistoryPanel } from "@/features/character-assessment/score-history-panel";
 import { StudentAchievementPanel } from "@/features/character-assessment/student-achievement-panel";
 import { StudentGradePanel } from "@/features/character-grades/student-grade-panel";
-import { PenaltyAssignmentBox } from "@/features/counselling/penalty-assignment-box";
-import { PenaltyAssignmentPart } from "@/features/counselling/penalty-assignment-part";
-import {
-  type PenaltyAssignment,
-  readPenaltyAssignments,
-} from "@/features/counselling/penalty-assignments";
+import { openPenaltyAssignmentAction } from "@/features/counselling/penalty-assignment-open";
 import { StudentMentalPanel } from "@/features/counselling/student-mental-panel";
 import { baseScoreNow } from "@/features/curriculum/base-score-now";
 import { StudentFitnessPanel } from "@/features/fitness/student-fitness-panel";
 import { PenaltiesScreen } from "@/features/guidance/penalties-screen";
+import { openPenaltyAction } from "@/features/guidance/penalty-actions";
 import {
   penaltiesAddress,
   pickedStudentOf,
   readPenaltiesParams,
 } from "@/features/guidance/penalty-address";
-import {
-  type PenaltyRow,
-  readPenaltyBoard,
-} from "@/features/guidance/penalty-board";
+import { readPenaltyBoard } from "@/features/guidance/penalty-board";
 import { PenaltyForm } from "@/features/guidance/penalty-form";
+import type { RincianAsks } from "@/features/guidance/penalty-rincian";
 import { readPenaltyStart } from "@/features/guidance/penalty-student";
-import type { PenaltyCounselling } from "@/features/guidance/penalty-table";
 import { StudentCoachingPanel } from "@/features/guidance/student-coaching-panel";
 import { penalisedReachOf } from "@/features/guidance/student-penalties";
 import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
@@ -50,8 +42,9 @@ import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
  * Unit record penalties and follow them up; Direktur, Ketua Program
  * Studi and Pengasuh read them, Ketua Program Studi their own program
  * only and Pengasuh their own mentees only. No other role opens the tab.
- * Only Pembina Disiplin Mahasiswa sends a student to mandatory
- * counselling from "Rincian", with the Penugasan read for it alone.
+ * "Rincian" of a penalty is read only when it is opened. Only Pembina
+ * Disiplin Mahasiswa sends a student to mandatory counselling from it,
+ * with the Penugasan read for it alone.
  * A name in "Daftar pelanggaran" opens the student over the tab: the
  * whole detail for an account that may open it; for any other, name,
  * NIM, program studi, status and "Riwayat pelanggaran disiplin", only
@@ -77,11 +70,12 @@ export default async function DisciplinePenaltiesPage(
       }
     />
   ) : null;
-  const assignments = await readPenaltyAssignments(
-    database(),
-    account,
-    board.list.rows.map((row) => row.id),
-  );
+  const asks: RincianAsks = may(
+    account.roles,
+    "assign_counselling_from_penalty",
+  )
+    ? { penalty: openPenaltyAction, counselling: openPenaltyAssignmentAction }
+    : { penalty: openPenaltyAction };
   // An account that reads no penalties is listed nobody here to open.
   const listed = penalisedReachOf(account) ?? sql`false`;
   const profile = await askedDetailOrBrief(account, params.profileId, listed);
@@ -95,7 +89,7 @@ export default async function DisciplinePenaltiesPage(
         params={params}
         form={form}
         mayFollowUp={may(account.roles, "follow_up_discipline_penalties")}
-        counselling={counsellingOf(board.list.rows, assignments)}
+        asks={asks}
       />
       {profile && (
         <StudentDetailDialog
@@ -141,27 +135,4 @@ export default async function DisciplinePenaltiesPage(
       )}
     </>
   );
-}
-
-/**
- * Mandatory counselling in "Rincian" of each penalty: the form, or how
- * its Penugasan stands. Nothing for an account not given the Penugasan
- * sent from penalties.
- */
-function counsellingOf(
-  rows: readonly PenaltyRow[],
-  assignments: Map<string, PenaltyAssignment> | null,
-): PenaltyCounselling {
-  if (assignments === null) return {};
-  const parts: Record<string, ReactNode> = {};
-  for (const row of rows) {
-    const assignment = assignments.get(row.id);
-    const box = assignment ? (
-      <PenaltyAssignmentBox assignment={assignment} />
-    ) : null;
-    parts[row.id] = (
-      <PenaltyAssignmentPart penaltyId={row.id} name={row.name} box={box} />
-    );
-  }
-  return parts;
 }

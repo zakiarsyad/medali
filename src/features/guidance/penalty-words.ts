@@ -34,6 +34,17 @@ export const MENTEES_ONLY = "Menampilkan mahasiswa binaan Anda.";
 
 export const NO_PENALTIES_FOUND = "Belum ada pelanggaran pada filter ini.";
 
+/** What "Rincian" shows while the server is asked for it. */
+export const RINCIAN_LOADING = "Memuat rincian…";
+
+/**
+ * What "Rincian" shows when the server did not answer, refused, or knows
+ * no such penalty: one message for all, so it tells nobody which.
+ */
+export const RINCIAN_FAILED = "Rincian tidak dapat dimuat. Coba lagi.";
+
+export const TRY_AGAIN = "Coba lagi";
+
 /** What one row of the list is, as the pager says it. */
 export const PENALTY_NOUN = "pelanggaran";
 

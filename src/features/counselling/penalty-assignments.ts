@@ -214,3 +214,35 @@ export async function readPenaltyAssignments(
   }
   return assignments;
 }
+
+/** The penalty's student, named in the question, and its Penugasan if one was sent. */
+export interface OpenedAssignment {
+  name: string;
+  assignment: PenaltyAssignment | null;
+}
+
+/**
+ * Mandatory counselling of the one penalty whose "Rincian" is opened,
+ * of a student the account may send for. Null, reading nothing, for an
+ * account without the right or a key that is none, and null for a
+ * penalty not found among the account's rows.
+ */
+export async function readPenaltyAssignmentOf(
+  db: Database,
+  actor: AccountForAccess,
+  penaltyId: string,
+): Promise<OpenedAssignment | null> {
+  if (!may(actor.roles, RIGHT)) return null;
+  if (!isUuid(penaltyId)) return null;
+  const [found] = await db
+    .select({ name: students.name })
+    .from(disciplinePenalties)
+    .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
+    .where(and(eq(disciplinePenalties.id, penaltyId), penaltiesOfRows(actor)));
+  if (!found) return null;
+  const assignments = await readPenaltyAssignments(db, actor, [penaltyId]);
+  return {
+    name: found.name,
+    assignment: assignments?.get(penaltyId) ?? null,
+  };
+}

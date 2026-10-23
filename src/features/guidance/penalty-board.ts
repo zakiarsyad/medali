@@ -10,7 +10,6 @@ import {
   type SQL,
   sql,
 } from "drizzle-orm";
-import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import {
   type AccountForAccess,
   may,
@@ -20,28 +19,14 @@ import {
 import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { containsPattern } from "@/db/contains-pattern";
-import {
-  accounts,
-  disciplinePenalties,
-  students,
-  studyPrograms,
-} from "@/db/schema";
-import { HAS_AGENCY } from "@/discipline-penalties/has-agency";
+import { disciplinePenalties, students, studyPrograms } from "@/db/schema";
 import type {
   PenaltyCategory,
   PenaltyLevel,
 } from "@/discipline-penalties/penalty-kinds";
 import { pageWithin } from "@/ui/list-pages";
 import type { PenaltiesParams } from "./penalty-address";
-import {
-  type ContinuationCondition,
-  type ContinuationDecision,
-  PENALTIES_PAGE_SIZE,
-  type PenaltyStatus,
-  type SocialWorkForm,
-  type SocialWorkPlace,
-} from "./penalty-ids";
-import { semesterOnDay } from "./penalty-semester";
+import { PENALTIES_PAGE_SIZE, type PenaltyStatus } from "./penalty-ids";
 
 /** The four numbers of the tab, of the students the account sees. */
 export interface PenaltyNumbers {
@@ -55,7 +40,11 @@ export interface PenaltyNumbers {
   unfinishedWork: number;
 }
 
-/** One penalty of the list, with all that "Rincian" shows. */
+/**
+ * One penalty of the list, with only what its row shows: "Rincian" is
+ * read on its own once opened, so a page does not carry that of every
+ * penalty. The version goes with the status, which the row changes.
+ */
 export interface PenaltyRow {
   id: string;
   studentId: string;
@@ -63,24 +52,11 @@ export interface PenaltyRow {
   nim: string;
   program: string;
   day: string;
-  description: string;
   category: PenaltyCategory;
   level: PenaltyLevel;
   status: PenaltyStatus;
-  decisionNumber: string;
-  socialWorkForms: SocialWorkForm[];
-  socialWorkOther: string;
-  socialWorkPlace: SocialWorkPlace | null;
-  socialWorkStartsOn: string | null;
   socialWorkEndsOn: string | null;
-  savedByName: string;
-  /** The student's semester on the Tanggal pelanggaran; null when it falls in no academic period. */
-  semester: number | null;
-  conditionsMet: ContinuationCondition[];
-  decision: ContinuationDecision;
   version: number;
-  /** Whether the student has an Instansi asal now, for Syarat melanjutkan studi. */
-  hasAgency: boolean;
 }
 
 export interface PenaltyList {
@@ -171,28 +147,16 @@ async function readList(
       name: students.name,
       nim: students.nim,
       program: studyPrograms.name,
-      cohortYear: students.cohortYear,
       day: disciplinePenalties.day,
-      description: disciplinePenalties.description,
       category: disciplinePenalties.category,
       level: disciplinePenalties.level,
       status: disciplinePenalties.status,
-      decisionNumber: disciplinePenalties.decisionNumber,
-      socialWorkForms: disciplinePenalties.socialWorkForms,
-      socialWorkOther: disciplinePenalties.socialWorkOther,
-      socialWorkPlace: disciplinePenalties.socialWorkPlace,
-      socialWorkStartsOn: disciplinePenalties.socialWorkStartsOn,
       socialWorkEndsOn: disciplinePenalties.socialWorkEndsOn,
-      savedByName: accounts.name,
-      conditionsMet: disciplinePenalties.conditionsMet,
-      decision: disciplinePenalties.decision,
       version: disciplinePenalties.version,
-      hasAgency: HAS_AGENCY,
     })
     .from(disciplinePenalties)
     .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
     .innerJoin(studyPrograms, eq(studyPrograms.id, students.studyProgramId))
-    .innerJoin(accounts, eq(accounts.id, disciplinePenalties.savedBy))
     .where(where)
     .orderBy(
       desc(disciplinePenalties.day),
@@ -201,12 +165,7 @@ async function readList(
     )
     .limit(PENALTIES_PAGE_SIZE)
     .offset((page - 1) * PENALTIES_PAGE_SIZE);
-  const periods = found.length > 0 ? await readAcademicPeriods(db) : [];
-  const rows = found.map(({ cohortYear, ...row }) => ({
-    ...row,
-    semester: semesterOnDay(cohortYear, periods, row.day),
-  }));
-  return { rows, matching, page };
+  return { rows: found, matching, page };
 }
 
 /** Whether a limit is that of a Pengasuh alone: their own mentees. */

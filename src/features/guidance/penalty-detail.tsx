@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import { shownDay } from "@/ui/day";
 import styles from "./discipline-penalties.module.css";
-import type { PenaltyRow } from "./penalty-board";
 import { PenaltyConditions } from "./penalty-conditions";
+import type { OpenedPenalty } from "./penalty-detail-read";
 import type { PenaltyFollowUp } from "./penalty-follow-up";
 import { ruleOf } from "./penalty-rules";
 import {
@@ -37,8 +37,8 @@ function Item({
 }
 
 /** Bentuk, Lokasi and Periode of the kerja sosial, when the penalty has one. */
-function SocialWorkItems({ row }: { row: PenaltyRow }) {
-  const { socialWorkPlace, socialWorkStartsOn, socialWorkEndsOn } = row;
+function SocialWorkItems({ penalty }: { penalty: OpenedPenalty }) {
+  const { socialWorkPlace, socialWorkStartsOn, socialWorkEndsOn } = penalty;
   if (
     socialWorkPlace === null ||
     socialWorkStartsOn === null ||
@@ -49,7 +49,7 @@ function SocialWorkItems({ row }: { row: PenaltyRow }) {
   return (
     <>
       <Item title="Bentuk kerja sosial">
-        {formsWords(row.socialWorkForms, row.socialWorkOther)}
+        {formsWords(penalty.socialWorkForms, penalty.socialWorkOther)}
       </Item>
       <Item title="Lokasi">{SOCIAL_WORK_PLACE_WORDS[socialWorkPlace]}</Item>
       <Item title="Periode">
@@ -60,8 +60,8 @@ function SocialWorkItems({ row }: { row: PenaltyRow }) {
 }
 
 /** The effect on nilai karakter, or the suspension, of the penalty. */
-function OutcomeItem({ row }: { row: PenaltyRow }) {
-  const rule = ruleOf(row.category, row.level);
+function OutcomeItem({ penalty }: { penalty: OpenedPenalty }) {
+  const rule = ruleOf(penalty.category, penalty.level);
   if (rule.outcome === "capped") {
     return (
       <Item title="Dampak nilai">
@@ -72,7 +72,7 @@ function OutcomeItem({ row }: { row: PenaltyRow }) {
   if (rule.outcome === "suspended") {
     return (
       <Item title="Skorsing" wide>
-        {suspensionWords(row.semester)}
+        {suspensionWords(penalty.semester)}
       </Item>
     );
   }
@@ -86,12 +86,12 @@ function OutcomeItem({ row }: { row: PenaltyRow }) {
  * last `counselling`, given only to the account that sends to it.
  */
 export function PenaltyDetail({
-  row,
+  penalty,
   mayFollowUp,
   onFollowUp,
   counselling = null,
 }: {
-  row: PenaltyRow;
+  penalty: OpenedPenalty;
   mayFollowUp: boolean;
   onFollowUp: (next: PenaltyFollowUp) => void;
   counselling?: ReactNode;
@@ -100,18 +100,22 @@ export function PenaltyDetail({
     <>
       <dl className={styles.facts}>
         <Item title="Uraian" wide>
-          {row.description}
+          {penalty.description}
         </Item>
-        <SocialWorkItems row={row} />
+        <SocialWorkItems penalty={penalty} />
         <Item title="Nomor keputusan">
-          {row.decisionNumber === "" ? NO_DECISION_NUMBER : row.decisionNumber}
+          {penalty.decisionNumber === ""
+            ? NO_DECISION_NUMBER
+            : penalty.decisionNumber}
         </Item>
-        <Item title="Dicatat oleh">{row.savedByName}</Item>
-        <Item title="Dasar">{ruleOf(row.category, row.level).basis}</Item>
-        <OutcomeItem row={row} />
+        <Item title="Dicatat oleh">{penalty.savedByName}</Item>
+        <Item title="Dasar">
+          {ruleOf(penalty.category, penalty.level).basis}
+        </Item>
+        <OutcomeItem penalty={penalty} />
       </dl>
       <PenaltyConditions
-        row={row}
+        penalty={penalty}
         mayFollowUp={mayFollowUp}
         onFollowUp={onFollowUp}
       />
