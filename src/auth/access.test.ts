@@ -3426,10 +3426,28 @@ describe("may", () => {
     }
   });
 
+  it("lets Mahasiswa read their own character grade, on Profil saya", () => {
+    expect(may(["student"], "view_own_character_grade")).toBe(true);
+    expect(ACTION_TITLES.view_own_character_grade).toBe(
+      "Melihat nilai karakter sendiri",
+    );
+  });
+
+  it("refuses every other role to read their own character grade", () => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["assessor", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], "view_own_character_grade")).toBe(false);
+    }
+  });
+
   it("gives Mahasiswa no right that changes a student record", () => {
     expect(ROLES.student.actions).toEqual([
       "view_own_profile",
       "view_own_character_achievement",
+      "view_own_character_grade",
       "send_attendance_photo",
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
@@ -4311,6 +4329,22 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       studentIds: ["student-1"],
     });
     expect(rowLimitForAction(staff, "view_own_character_achievement")).toEqual(
+      NO_ROW,
+    );
+  });
+
+  it("keeps a student to their own grade, whatever wide role they also hold", () => {
+    const both = {
+      ...account(["student", "head_of_unit"]),
+      studentId: "student-1",
+    };
+    const staff = { ...account(["assessor"]), studentId: "student-1" };
+
+    expect(rowLimitForAction(both, "view_own_character_grade")).toEqual({
+      ...NO_ROW,
+      studentIds: ["student-1"],
+    });
+    expect(rowLimitForAction(staff, "view_own_character_grade")).toEqual(
       NO_ROW,
     );
   });

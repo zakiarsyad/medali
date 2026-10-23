@@ -81,7 +81,7 @@ not built a second time.
 
 ## Steps
 
-- [ ] 1. The right to read one's own nilai karakter is added to the
+- [x] 1. The right to read one's own nilai karakter is added to the
   permission list, with its checks.
 - [ ] 2. The card "Nilai karakter (KEP-220)" on Profil saya, with the
   parts, the pass line, the missing parts, the limit line and the empty

@@ -67,6 +67,7 @@ export const ACTIONS = [
   "fix_cohort_assignments",
   "view_own_profile",
   "view_own_character_achievement",
+  "view_own_character_grade",
   "view_mentoring_notes",
   "write_mentoring_notes",
   "view_mentoring_attendance",
@@ -208,6 +209,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   fix_cohort_assignments: "Menetapkan dan membatalkan penetapan angkatan baru",
   view_own_profile: "Melihat data diri sendiri",
   view_own_character_achievement: "Melihat capaian karakter sendiri",
+  view_own_character_grade: "Melihat nilai karakter sendiri",
   view_mentoring_notes: "Melihat catatan pengasuhan",
   write_mentoring_notes: "Menulis catatan pengasuhan",
   view_mentoring_attendance: "Melihat daftar hadir pertemuan pengasuhan",
@@ -587,6 +589,7 @@ export const ROLES: Record<RoleId, Role> = {
     actions: [
       "view_own_profile",
       "view_own_character_achievement",
+      "view_own_character_grade",
       "send_attendance_photo",
       "view_own_dorm_activities",
       "view_own_dorm_attendance",
