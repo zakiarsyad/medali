@@ -64,12 +64,13 @@ dorm residents, so only the column leaks.
 4. An account with several roles reads a resident's note text only when
    one of its roles on the dorm list sees that resident, and one of its
    roles reads notes on Penilaian jasmani. Penilai Mahasiswa who is also
-   Pengasuh reads their own mentees' only.
+   Pengasuh reads the notes of dorm residents among their own mentees
+   only, and those of students outside the dorm as today.
 5. The student detail needs no change: only Kepala Unit and Pengasuh read
    notes there, and both are on the dorm list.
 
 ## Steps
 
-- [ ] 1. "Hasil tes kebugaran" shows a dorm resident's note text only to
+- [x] 1. "Hasil tes kebugaran" shows a dorm resident's note text only to
   roles on the dorm list, with checks for Penilai Mahasiswa, Kepala Unit
   and Pengasuh.

@@ -1,16 +1,22 @@
 // Sample NIMs of this file: 9986200100 to 9986200199.
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { dormInSql } from "@/dorms/resident-condition";
 import { addTestStudent } from "@/dorms/test-records";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import { addTestNote, type TestNote } from "@/health-notes/test-health";
-import { type FitnessFilter, START_PARAMS } from "./fitness-address";
+import {
+  type FitnessFilter,
+  type FitnessParams,
+  START_PARAMS,
+} from "./fitness-address";
 import { readFitnessList, readFitnessNumbers } from "./fitness-board";
 import { fitnessVisibleTo, healthReadableTo } from "./fitness-readers";
+import { dormCohortsOn } from "./health-subject";
 import {
   addTestActor,
   addTestGroup,
@@ -386,7 +392,7 @@ describe("the final category on the tab", () => {
         fitnessVisibleTo(kepala),
         STARTING_LIMITS,
         START_PARAMS,
-        healthReadableTo(kepala),
+        healthReadableTo(kepala, []),
       );
 
       expect(idsOf(list)).toEqual([ids.a2, ids.a1, ids.a3, ids.b1, ids.b2]);
@@ -413,7 +419,7 @@ describe("the final category on the tab", () => {
           fitnessVisibleTo(kepala),
           STARTING_LIMITS,
           { ...START_PARAMS, filter },
-          healthReadableTo(kepala),
+          healthReadableTo(kepala, []),
         );
 
       expect(idsOf(await read("attention"))).toEqual([ids.a2, ids.a1, ids.a3]);
@@ -431,7 +437,7 @@ describe("the final category on the tab", () => {
         visible,
         STARTING_LIMITS,
         { ...START_PARAMS, filter: "untested" },
-        healthReadableTo(kepala),
+        healthReadableTo(kepala, []),
       );
       const numbers = await readFitnessNumbers(
         db,
@@ -459,7 +465,7 @@ describe("the final category on the tab", () => {
           fitnessVisibleTo(actor),
           STARTING_LIMITS,
           START_PARAMS,
-          healthReadableTo(actor),
+          healthReadableTo(actor, []),
         );
 
         const a1 = list.rows.find((row) => row.id === ids.a1);
@@ -481,7 +487,7 @@ describe("the final category on the tab", () => {
         fitnessVisibleTo(both),
         STARTING_LIMITS,
         START_PARAMS,
-        healthReadableTo(both),
+        healthReadableTo(both, []),
       );
 
       const byId = new Map(list.rows.map((row) => [row.id, row]));
@@ -489,6 +495,173 @@ describe("the final category on the tab", () => {
       expect(byId.get(ids.a1)?.final.fromNote).toBe(false);
       expect(byId.get(ids.b1)?.health?.note?.advice).toBe("Rahasia B1.");
       expect(JSON.stringify(list)).not.toContain("Rahasia A");
+    });
+  });
+});
+
+/**
+ * The board with notes and two Pembibitan students of program A, who live
+ * in Wismantara whether a period runs or not: R1, a mentee of the
+ * Pengasuh, tested at 90 with a later note "Perlu perhatian", and R2, of
+ * no Pengasuh, with a note "Baik". Penilai Mahasiswa is added too.
+ */
+async function addBoardWithResidents(db: Database) {
+  const board = await addBoardWithNotes(db);
+  const { kepala, mentor, programA } = board;
+  const resident = (nim: string, name: string) =>
+    addTestStudent(db, programA, { nim, name, isSeedling: true });
+  const r1 = await resident("9986200131", "Mahasiswa Uji Asrama 1");
+  const r2 = await resident("9986200132", "Mahasiswa Uji Asrama 2");
+  const groupR = await addTestGroup(db, programA, [r1], {
+    mentorId: mentor.id,
+    number: 2,
+  });
+  await addTestScores(db, kepala, {
+    groupId: groupR,
+    testedOn: "2026-10-01",
+    enteredAt: new Date("2026-10-01T03:00:00Z"),
+    scores: [{ studentId: r1, score: 90 }],
+  });
+  await addTestNote(db, kepala, {
+    studentId: r1,
+    savedAt: new Date("2026-10-12T03:00:00Z"),
+    category: "attention",
+    illnesses: [{ illness: "asthma", note: "sejak kecil" }],
+    advice: "Asrama R1.",
+  });
+  await addTestNote(db, kepala, {
+    studentId: r2,
+    savedAt: new Date("2026-10-12T03:00:00Z"),
+    category: "good",
+    advice: "Asrama R2.",
+  });
+  const penilai = await addTestActor(db, "Penilai Uji Jasmani", ["assessor"]);
+  const cohorts = await dormCohortsOn(db, TODAY);
+  const residents = await db
+    .select({ id: students.id })
+    .from(students)
+    .where(sql`${dormInSql(cohorts)} is not null`);
+  return {
+    ...board,
+    penilai,
+    cohorts,
+    residentIds: residents.map((row) => row.id),
+    ids: { ...board.ids, r1, r2 },
+  };
+}
+
+describe("a dorm resident's note on the tab", () => {
+  it("gives Penilai Mahasiswa a resident's category only, and the note of a student outside the dorm", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai, cohorts, residentIds, ids } =
+        await addBoardWithResidents(db);
+      expect(residentIds).toEqual(expect.arrayContaining([ids.r1, ids.r2]));
+      expect(residentIds).not.toContain(ids.a1);
+
+      const list = await readFitnessList(
+        db,
+        fitnessVisibleTo(penilai),
+        STARTING_LIMITS,
+        START_PARAMS,
+        healthReadableTo(penilai, cohorts),
+      );
+
+      const byId = new Map(list.rows.map((row) => [row.id, row]));
+      expect(byId.get(ids.r1)?.final).toEqual({
+        category: "attention",
+        fromNote: false,
+      });
+      expect(byId.get(ids.r1)?.health).toBeNull();
+      expect(byId.get(ids.r2)?.final.category).toBe("good");
+      expect(byId.get(ids.r2)?.health).toBeNull();
+      expect(byId.get(ids.a1)?.final).toEqual({
+        category: "attention",
+        fromNote: true,
+      });
+      expect(byId.get(ids.a1)?.health?.note?.advice).toBe("Rahasia A1.");
+      expect(JSON.stringify(list)).not.toContain("Asrama R");
+      expect(JSON.stringify(list)).not.toContain("sejak kecil");
+    });
+  });
+
+  it("sends Penilai Mahasiswa no resident's note text by search, filter or page", async () => {
+    await inTestDatabase(async (db) => {
+      const { penilai, cohorts, ids } = await addBoardWithResidents(db);
+      const read = (params: Partial<FitnessParams>) =>
+        readFitnessList(
+          db,
+          fitnessVisibleTo(penilai),
+          STARTING_LIMITS,
+          { ...START_PARAMS, ...params },
+          healthReadableTo(penilai, cohorts),
+        );
+
+      const asked = [
+        await read({ query: "9986200131" }),
+        await read({ query: "Uji Asrama" }),
+        await read({ filter: "attention" }),
+        await read({ filter: "good" }),
+        await read({ query: "9986200131", filter: "attention", page: 1 }),
+        await read({ page: 2 }),
+      ];
+
+      expect(idsOf(asked[0] ?? { rows: [] })).toEqual([ids.r1]);
+      expect(idsOf(asked[2] ?? { rows: [] })).toContain(ids.r1);
+      expect(idsOf(asked[3] ?? { rows: [] })).toContain(ids.r2);
+      for (const list of asked) {
+        expect(JSON.stringify(list)).not.toContain("Asrama R");
+      }
+    });
+  });
+
+  it("gives Kepala Unit a resident's note, and Pengasuh that of an own mentee", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, mentor, cohorts, ids } = await addBoardWithResidents(db);
+      const read = (account: typeof kepala) =>
+        readFitnessList(
+          db,
+          fitnessVisibleTo(account),
+          STARTING_LIMITS,
+          START_PARAMS,
+          healthReadableTo(account, cohorts),
+        );
+
+      const forKepala = new Map(
+        (await read(kepala)).rows.map((row) => [row.id, row]),
+      );
+      const forMentor = new Map(
+        (await read(mentor)).rows.map((row) => [row.id, row]),
+      );
+
+      expect(forKepala.get(ids.r1)?.final.fromNote).toBe(true);
+      expect(forKepala.get(ids.r1)?.health?.note?.illnesses).toEqual([
+        { illness: "asthma", note: "sejak kecil" },
+      ]);
+      expect(forKepala.get(ids.r2)?.health?.note?.advice).toBe("Asrama R2.");
+      expect(forMentor.get(ids.r1)?.health?.note?.advice).toBe("Asrama R1.");
+    });
+  });
+
+  it("gives Penilai Mahasiswa who is also Pengasuh the notes of their own resident mentees only", async () => {
+    await inTestDatabase(async (db) => {
+      const { mentor, cohorts, ids } = await addBoardWithResidents(db);
+      const roles: RoleId[] = ["assessor", "mentor"];
+      const both = { ...mentor, roles };
+
+      const list = await readFitnessList(
+        db,
+        fitnessVisibleTo(both),
+        STARTING_LIMITS,
+        START_PARAMS,
+        healthReadableTo(both, cohorts),
+      );
+
+      const byId = new Map(list.rows.map((row) => [row.id, row]));
+      expect(byId.get(ids.r1)?.health?.note?.advice).toBe("Asrama R1.");
+      expect(byId.get(ids.r2)?.final.category).toBe("good");
+      expect(byId.get(ids.r2)?.health).toBeNull();
+      expect(byId.get(ids.b1)?.health?.note?.advice).toBe("Rahasia B1.");
+      expect(JSON.stringify(list)).not.toContain("Asrama R2.");
     });
   });
 });
