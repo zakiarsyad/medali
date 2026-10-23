@@ -5,6 +5,7 @@ import { shownDay } from "@/ui/day";
 import { ConsentBadge } from "./consent-badge";
 import styles from "./counselling.module.css";
 import type { OwnMental } from "./own-mental";
+import { OwnMentalNotices } from "./own-mental-notices";
 import {
   campusContactLine,
   HELP_LINE,
@@ -69,6 +70,7 @@ export function OwnMentalView({
       </div>
       <ScreeningLine screening={screening} />
       <CounsellingFacts mental={mental} />
+      <OwnMentalNotices mental={mental} />
       <p className={styles.sub}>{HELP_LINE}</p>
       {contact !== "" && (
         <p className={styles.sub}>{campusContactLine(contact)}</p>

@@ -115,6 +115,6 @@ only the student sees this view, and it always shows where to get help.
 - [x] 2. The card "Kesehatan jasmani".
 - [x] 3. The card "Kesehatan mental" with screening, counselling status,
   the help line and the campus contact setting.
-- [ ] 4. The notices for a waiting consent or sharing request, with
+- [x] 4. The notices for a waiting consent or sharing request, with
   "Buka Konseling".
 - [ ] 5. Phone layout for both cards.

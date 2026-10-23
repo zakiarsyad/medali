@@ -143,6 +143,28 @@ describe("readOwnMental", () => {
     });
   });
 
+  it("gives a sharing request that waits for the student, without its summary", async () => {
+    await inTestDatabase(async (db) => {
+      const people = await addSharingStudent(
+        db,
+        "Prodi Uji Mental Menunggu",
+        "9911620004",
+      );
+      await askedSharing(db, people);
+      const [student] = people.students;
+      if (!student) throw new Error("The student was not added.");
+
+      const mental = shown(await readOwnMental(db, student, NOW));
+
+      expect(mental.sharing).toEqual({
+        status: "waiting",
+        recipients: expect.arrayContaining(TEST_ASK.recipients),
+        data: expect.arrayContaining(TEST_ASK.data),
+      });
+      expect(JSON.stringify(mental)).not.toContain(TEST_ASK.summary);
+    });
+  });
+
   it("says a student never asked, never screened and with no session where they stand", async () => {
     await inTestDatabase(async (db) => {
       const people = await addTestPeople(db, "Prodi Uji Mental Kosong", [
@@ -268,6 +290,95 @@ describe("OwnMentalView", () => {
     expect(markup).toContain("3 sesi, terakhir 19 Okt 2026");
     expect(markup).toContain("Sesi berikutnya");
     expect(markup).toContain("26 Okt 2026");
+  });
+
+  it("says a consent request waits for an answer, with Buka Konseling, and no button to answer it here", () => {
+    const markup = renderToStaticMarkup(
+      <OwnMentalView mental={{ ...EMPTY, consent: "waiting" }} contact="" />,
+    );
+
+    expect(markup).toContain(
+      "Permintaan persetujuan konseling menunggu jawaban Anda.",
+    );
+    expect(markup).toContain('href="/konseling"');
+    expect(markup).toContain(">Buka Konseling</a>");
+    expect(markup).not.toContain("<button");
+    expect(markup).not.toContain("berbagi data");
+  });
+
+  it("says a sharing request waits for an answer, with Buka Konseling", () => {
+    const markup = renderToStaticMarkup(
+      <OwnMentalView
+        mental={{
+          ...EMPTY,
+          consent: "approved",
+          sharing: {
+            status: "waiting",
+            recipients: ["mentor"],
+            data: ["level"],
+          },
+        }}
+        contact=""
+      />,
+    );
+
+    expect(markup).toContain(
+      "Permintaan persetujuan berbagi data menunggu jawaban Anda.",
+    );
+    expect(markup).toContain(">Buka Konseling</a>");
+    expect(markup).not.toContain("Data dibagikan");
+    expect(markup).not.toContain("Permintaan persetujuan konseling");
+  });
+
+  it.each([
+    ["published", "Data dibagikan"],
+    ["approved", "Persetujuan berbagi data diberikan"],
+  ] as const)(
+    "says with whom and what a %s sharing is shared, and points to Konseling to withdraw",
+    (status, title) => {
+      const markup = renderToStaticMarkup(
+        <OwnMentalView
+          mental={{
+            ...EMPTY,
+            consent: "approved",
+            sharing: {
+              status,
+              recipients: ["head_of_unit", "mentor"],
+              data: ["level", "counselling"],
+            },
+          }}
+          contact=""
+        />,
+      );
+
+      expect(markup).toContain(
+        `<b>${title}</b> kepada Kepala Unit Pembangunan Karakter, Pengasuh: tingkat hasil asesmen dan rekomendasi tindak lanjut; status, jadwal, dan rencana tindak lanjut konseling, tanpa isi sesi.`,
+      );
+      expect(markup).toContain("Untuk mencabut, buka Konseling.");
+      expect(markup).toContain(">Buka Konseling</a>");
+      expect(markup).not.toContain("menunggu jawaban Anda");
+      expect(markup).not.toContain("<button");
+    },
+  );
+
+  it("shows no notice for a consent that is given, declined or withdrawn", () => {
+    for (const consent of ["approved", "declined", "withdrawn"] as const) {
+      const markup = renderToStaticMarkup(
+        <OwnMentalView mental={{ ...EMPTY, consent }} contact="" />,
+      );
+
+      expect(markup).not.toContain("Buka Konseling");
+    }
+  });
+
+  it("keeps the help line under the notices", () => {
+    const markup = renderToStaticMarkup(
+      <OwnMentalView mental={{ ...EMPTY, consent: "waiting" }} contact="" />,
+    );
+
+    expect(markup.indexOf(HELP_LINE)).toBeGreaterThan(
+      markup.indexOf("Buka Konseling"),
+    );
   });
 
   it("always ends with the help line, and nothing after it while the campus contact is empty", () => {

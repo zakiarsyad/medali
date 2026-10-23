@@ -9,3 +9,17 @@ export function campusContactLine(contact: string): string {
 
 /** "Sesi konseling" of a student with no session. */
 export const NO_SESSION_YET = "Belum ada";
+
+/** The button that takes the student to Konseling, where they answer or withdraw. */
+export const OPEN_COUNSELLING = "Buka Konseling";
+
+/** A consent request that waits for the student, named as Konseling names it. */
+export const CONSENT_WAITS =
+  "Permintaan persetujuan konseling menunggu jawaban Anda.";
+
+/** A sharing request that waits for the student, named as Konseling names it. */
+export const SHARING_WAITS =
+  "Permintaan persetujuan berbagi data menunggu jawaban Anda.";
+
+/** Under a given sharing: it is withdrawn on Konseling, not here. */
+export const WITHDRAW_ON_COUNSELLING = "Untuk mencabut, buka Konseling.";
