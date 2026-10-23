@@ -1,0 +1,101 @@
+# Student survey results
+
+Depends on: Student survey period, Mentor evaluation, The survey form on Profil saya, Character assessment
+Group: Pengasuh
+
+## What we want
+
+The tab "Evaluasi oleh mahasiswa" gets "Hasil evaluasi per kelompok".
+For a period it shows, per group, how many members answered, the
+group's average MEDALI achievement, the average survey answer, and the
+result that combines both by the period's weights. When the period is
+over, Kepala Unit fixes the results into the mentors' evaluation
+history. No one ever sees one student's answers.
+
+## Who it is for
+
+- Fix the results: Kepala Unit.
+- Read: Direktur / Wakil Direktur, Pegawai UPK, and Ketua Program Studi
+  (their program's groups only).
+
+## What should happen
+
+- When one of these roles opens the tab, then "Hasil evaluasi per
+  kelompok" shows the chosen period (the running one, else the latest)
+  with its dates and weights, a choice of period with its status, and
+  the numbers Responden, "Rerata capaian karakter", "Rerata umpan balik"
+  (out of 5) and "Nilai evaluasi kurang".
+- When no period exists, then they see "Buka periode evaluasi untuk
+  mulai mengumpulkan umpan balik mahasiswa."
+- When they look at the table, then each group shows code, program and
+  angkatan, mentor, Responden ((n)/(members) and percent), Capaian
+  karakter, Umpan balik (out of 5 and as 0–100), Nilai evaluasi and
+  Predikat (Baik from 80, Cukup from 65, Kurang below), lowest first;
+  25 per page. A group without answers shows "Belum ada responden". A group
+  with 1 or 2 answers shows Responden only: no Umpan balik, Nilai
+  evaluasi or Predikat, and the server sends none.
+- When they search by group or mentor, or choose "Nilai kurang" or
+  "Belum ada responden", then the list narrows; with no match "Tidak ada
+  kelompok pada filter ini."
+- When they press a group, then it opens "Rata-rata per pernyataan" for
+  the eight statements, "Saran mahasiswa (tanpa nama)" and a link to the
+  group page. With fewer than 3 answers the averages per statement and
+  the suggestions are hidden, with the reason.
+- When the period is Dibuka, then a line says the numbers are temporary.
+- When the period is closed or over, then Capaian karakter stays as it
+  was on the closing day. Confirmed by a check.
+- When the period is Ditutup or Berakhir and not yet fixed, then Kepala
+  Unit sees "Tetapkan hasil evaluasi"; after a confirmation that names
+  the number of groups, each group with at least 3 answers gets a line in the
+  evaluation history marked "Evaluasi oleh mahasiswa", with (n) of
+  (members) who answered, and the tab says who fixed it and when.
+- When results are fixed, then the button is gone and a second request
+  is refused, so no group gets two lines. Confirmed by a check.
+- When any role asks the server for one student's answers, or for
+  suggestions of a group with fewer than 3 answers, then nothing is
+  sent. Pengasuh and Mahasiswa cannot open the tab. Confirmed by a
+  check.
+- When any role but Kepala Unit sends "Tetapkan", then it is refused.
+  Confirmed by a check.
+- When the tab opens on a phone, then groups become cards with no
+  sideways scroll; on the preview it shows within about 1 second.
+
+## Not included
+
+- The survey form for students (The survey form on Profil saya).
+- Showing a mentor their own result.
+- The limits 80 and 65, the scale of 1 to 5 and the 3 answers are the
+  prototype's values, to be confirmed by the campus before launch.
+
+## Better than the prototype
+
+- The list is paged instead of cut off at 60.
+- The server never sends single answers or hidden suggestions; the
+  prototype only hides them on screen.
+- Fixing twice cannot write the results twice.
+
+## Decided
+
+1. Below 3 answers a group shows no averages, and fixing writes no
+   result for that group.
+2. Both results stay in the one evaluation history, each marked with its
+   source, and "Evaluasi terakhir" shows the newest.
+3. A Kurang result from the survey allows replacing the mentor with the
+   reason "Hasil evaluasi kurang", as in the prototype.
+4. An answer counts for the mentor named when the answer was sent, also
+   when the mentor was replaced before the period closed.
+
+## Decisions made while building
+
+## Steps
+
+- [ ] 1. The result rule (averages, weights, predikat, the 3-answer
+  limit) with tests, and sample answers for the closed sample period.
+- [ ] 2. The table with the numbers, period choice, search, filters and
+  paging.
+- [ ] 3. The detail per group, with hidden suggestions kept on the
+  server.
+- [ ] 4. Capaian karakter is locked when a period closes.
+- [ ] 5. "Tetapkan hasil evaluasi" writes into the evaluation history
+  once.
+- [ ] 6. Refusals and the phone layout.
