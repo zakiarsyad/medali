@@ -1,9 +1,13 @@
 // Sample Tahun akademik of this file: 3600 to 3600.
 // Sample NIMs of this file: 9986710000 to 9986710099.
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { Database } from "@/db/connect";
-import { academicPeriods, characterAssessments } from "@/db/schema";
+import {
+  academicPeriods,
+  characterAssessments,
+  disciplinePenalties,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import type { PenaltyKind } from "@/discipline-penalties/penalty-kinds";
 import {
@@ -180,6 +184,47 @@ describe("latestAssessments", () => {
         total: 420,
         limited: true,
       });
+    });
+  });
+
+  it("as of a day, holds no score at 70 for a penalty of an earlier violation saved after that day", async () => {
+    await inTestDatabase(async (db) => {
+      const periodId = await addPeriod(db);
+      const programId = await addTestProgram(db, "Prodi Uji Skor Simpan");
+      const recorder = await addTestRecorder(db);
+      const id = await addTestStudent(db, programId, {
+        nim: "9986710005",
+        name: "Mahasiswa Uji Skor Simpan",
+      });
+      const savedAt = new Date("3600-09-01T03:00:00Z");
+      await addAssessment(db, id, periodId, recorder, SILVER, savedAt);
+      const medium = { category: "medium", level: 1 } as const;
+      const penaltyId = await addTestPenaltyOf(
+        db,
+        id,
+        recorder,
+        medium,
+        "3600-10-10",
+      );
+      // Recorded on 3600-10-20 at 10:00 on campus, for the violation of 3600-10-10.
+      await db
+        .update(disciplinePenalties)
+        .set({ savedAt: new Date("3600-10-20T03:00:00Z") })
+        .where(eq(disciplinePenalties.id, penaltyId));
+
+      const asOf = async (day: string | undefined) => {
+        const latest = latestAssessments(db, day);
+        const [row] = await db
+          .select()
+          .from(latest)
+          .where(inArray(latest.studentId, [id]));
+        return row?.limited;
+      };
+
+      expect(await asOf("3600-10-15")).toBe(false);
+      expect(await asOf("3600-10-19")).toBe(false);
+      expect(await asOf("3600-10-20")).toBe(true);
+      expect(await asOf(undefined)).toBe(true);
     });
   });
 

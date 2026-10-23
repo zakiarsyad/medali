@@ -167,7 +167,10 @@ history. No one ever sees one student's answers.
 22. Capaian karakter of a period that is over is worked out as it stood
     at the end of its closing day on campus: each member's latest
     assessment saved by then, held at 70 for a Ringan or Sedang penalty
-    of a violation on that day or before. Nothing has to be copied when
+    of a violation on that day or before that was also recorded by the
+    end of that day; a penalty recorded later, even for an earlier
+    violation, changes nothing. Every other screen keeps counting every
+    penalty, as before. Nothing has to be copied when
     the period closes, so this holds as well for a period that ends by
     its last day without anyone closing it. While the period runs it is
     the Capaian karakter of today.
