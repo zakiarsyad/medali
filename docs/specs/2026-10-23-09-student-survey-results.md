@@ -87,9 +87,37 @@ history. No one ever sees one student's answers.
 
 ## Decisions made while building
 
+5. Umpan balik is the mean of every score of the answers of a group for
+   one mentor, out of 5. As 0 to 100 it is that mean divided by 5 times
+   100, as "Komponen evaluasi pengasuhan" says, so answers of 1 only
+   give 20. It is worked out from the scores, not from the rounded
+   number out of 5.
+6. Capaian karakter of a group is its Rerata MEDALI, as Kelompok
+   pengasuhan shows it: the mean of the Rerata of its Aktif members who
+   have an assessment. A group where nobody has one shows "-", and then
+   has no Nilai evaluasi and no Predikat, since half of the result is
+   missing.
+7. Every number is kept to one decimal, a half going up, as the app
+   writes numbers (74,2). Nilai evaluasi is worked out from Capaian
+   karakter and Umpan balik as they are shown, and the Predikat from
+   Nilai evaluasi as it is shown, so no number disagrees with those
+   beside it. Responden shows its share as a whole percent.
+8. The limit of 3 answers also hides "Umpan balik" out of 5, the
+   averages per statement and the suggestions. It is one rule, kept
+   with the shared survey rules, and the words on Profil saya read the
+   same number.
+9. The sample period has made-up answers of the Aktif members of every
+   group that had started by its first day: most groups answer in full,
+   in every third one member does not answer, and every fifth group
+   sends none, so each case of the table can be tried. The group whose
+   mentor was replaced a year earlier answers low, and its result is
+   Kurang. Each answer names the mentor who held the group on the day
+   it was sent, so the answers of the group whose mentor was replaced a
+   month ago stay with the earlier mentor.
+
 ## Steps
 
-- [ ] 1. The result rule (averages, weights, predikat, the 3-answer
+- [x] 1. The result rule (averages, weights, predikat, the 3-answer
   limit) with tests, and sample answers for the closed sample period.
 - [ ] 2. The table with the numbers, period choice, search, filters and
   paging.

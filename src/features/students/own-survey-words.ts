@@ -1,5 +1,5 @@
 import {
-  FEWEST_FOR_SUGGESTIONS,
+  FEWEST_ANSWERS_SHOWN,
   SURVEY_SCALE,
   SURVEY_STATEMENTS,
 } from "@/mentoring/survey-statements";
@@ -16,7 +16,7 @@ export function surveyPeriodWords(
 }
 
 /** Who sees what of the answers. */
-export const PRIVACY_WORDS = `Nilai setiap pernyataan dari 1 (sangat tidak setuju) sampai 5 (sangat setuju). Jawaban Anda tidak ditampilkan per orang: Kepala Unit, Direktur / Wakil Direktur, Pegawai UPK, dan Ketua Program Studi hanya melihat rekap kelompok, dan saran ditampilkan tanpa nama bila responden kelompok minimal ${FEWEST_FOR_SUGGESTIONS} orang.`;
+export const PRIVACY_WORDS = `Nilai setiap pernyataan dari 1 (sangat tidak setuju) sampai 5 (sangat setuju). Jawaban Anda tidak ditampilkan per orang: Kepala Unit, Direktur / Wakil Direktur, Pegawai UPK, dan Ketua Program Studi hanya melihat rekap kelompok, dan saran ditampilkan tanpa nama bila responden kelompok minimal ${FEWEST_ANSWERS_SHOWN} orang.`;
 
 /** "1 = Sangat tidak setuju · … · 5 = Sangat setuju". */
 export const SCALE_KEY = SURVEY_SCALE.map(
