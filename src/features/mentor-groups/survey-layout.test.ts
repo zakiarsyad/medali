@@ -78,6 +78,45 @@ describe("the tab Evaluasi oleh mahasiswa on a phone", () => {
     expect(ruleOf(".surveyFacts dd")).toContain("overflow-wrap: anywhere;");
   });
 
+  it("shows each group of Hasil evaluasi per kelompok as a card, with the title of each value in it", () => {
+    const table = codeOf("survey-results-table.tsx");
+
+    expect(table).toMatch(
+      /className=\{`\$\{shared\.table\} \$\{shared\.stacked\}`\}/,
+    );
+    expect(table).toContain("className={shared.tableWrap}");
+  });
+
+  it("never lets the choice of period be wider than its panel, and lets it drop under the heading", () => {
+    const view = codeOf("survey-results-view.tsx");
+    const choice = view.match(/<select\s+name="periode".*?>/s);
+
+    expect(choice?.[0]).toContain("styles.fit");
+    expect(view).toMatch(
+      /className=\{styles\.panelHead\}>\s*<div>\s*<h2 className=\{shared\.heading\}>Hasil evaluasi per kelompok/,
+    );
+  });
+
+  it("puts the search and the filter of the results on the shared row of filters", () => {
+    expect(codeOf("survey-results-view.tsx")).toMatch(
+      /<div className=\{shared\.filters\}>\s*<input\s+name="q"/,
+    );
+  });
+
+  it("stacks the averages per statement and the suggestions of a group where they do not fit side by side", () => {
+    expect(codeOf("survey-group-detail-view.tsx")).toMatch(
+      /<div className=\{styles\.sideBySide\}>\s*<div>\s*<h3 className=\{styles\.subheading\}>Rata-rata per pernyataan/,
+    );
+  });
+
+  it("folds the button Tetapkan hasil evaluasi onto its own line instead of widening the panel", () => {
+    const row = codeOf("survey-fix-part.tsx").match(
+      /<div className=\{shared\.actions\}>.*?<\/div>/s,
+    );
+
+    expect(row?.[0]).toContain("Tetapkan hasil evaluasi");
+  });
+
   it("folds the buttons of the period onto more lines instead of widening the panel", () => {
     const shared = readFileSync("src/ui/data-screen.module.css", "utf8");
     const actions = shared.match(/\.actions\s*\{([^}]*)\}/)?.[1] ?? "";

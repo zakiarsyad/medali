@@ -5,6 +5,7 @@ import { EvaluationTable } from "./evaluation-table";
 
 const EVALUATION: ListedEvaluation = {
   id: "00000000-0000-4000-8000-000000000001",
+  source: "head_of_unit",
   period: { startYear: 2026, term: "odd" },
   group: {
     cohortYear: 2024,
@@ -17,9 +18,25 @@ const EVALUATION: ListedEvaluation = {
   attendance: 62,
   achievement: 60,
   feedback: 58,
+  average: 58.8,
   note: "Perlu rencana perbaikan.",
+  respondents: null,
   evaluatedAt: new Date("2026-10-13T03:00:00Z"),
   evaluatorName: "Kepala Uji",
+};
+
+const SURVEY_LINE: ListedEvaluation = {
+  ...EVALUATION,
+  id: "00000000-0000-4000-8000-000000000002",
+  source: "student_survey",
+  period: { startYear: 2025, term: "even" },
+  activity: null,
+  attendance: null,
+  achievement: 74.2,
+  feedback: 47.5,
+  average: 60.9,
+  note: null,
+  respondents: { answered: 3, members: 4 },
 };
 
 function shown(evaluations: ListedEvaluation[]): string {
@@ -41,6 +58,24 @@ describe("EvaluationTable", () => {
       "Kurang · 58,8",
       "13 Okt 2026 · Kepala Uji",
       "Perlu rencana perbaikan.",
+    ]) {
+      expect(table).toContain(words);
+    }
+    expect(table).not.toContain("Evaluasi oleh mahasiswa");
+  });
+
+  it("marks a line of the survey as Evaluasi oleh mahasiswa, with how many members answered and its two values", () => {
+    const table = shown([SURVEY_LINE]);
+
+    for (const words of [
+      "Genap 2025/2026",
+      '<td data-title="Keaktifan">-</td>',
+      '<td data-title="Kehadiran">-</td>',
+      '<td data-title="Capaian">74,2</td>',
+      '<td data-title="Umpan balik">47,5</td>',
+      "Kurang · 60,9",
+      "Evaluasi oleh mahasiswa",
+      "3 dari 4 anggota mengisi survei.",
     ]) {
       expect(table).toContain(words);
     }

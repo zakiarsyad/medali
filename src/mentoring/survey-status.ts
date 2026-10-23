@@ -1,3 +1,5 @@
+import { campusDay } from "@/academic-periods/campus-day";
+
 /** Terjadwal, Dibuka, Berakhir and Ditutup. */
 export type SurveyStatus = "scheduled" | "open" | "ended" | "closed";
 
@@ -27,6 +29,17 @@ export function surveyStatus(period: SurveyDays, today: string): SurveyStatus {
   if (today < period.startsOn) return "scheduled";
   if (today > period.endsOn) return "ended";
   return "open";
+}
+
+/**
+ * The day the numbers of a survey period are taken on: today while it
+ * runs, and once it is over the day it closed, by hand or by its last
+ * day, so they stay as they were then.
+ */
+export function surveyNumbersDay(period: SurveyDays, today: string): string {
+  if (period.closedAt !== null) return campusDay(period.closedAt);
+  if (today > period.endsOn) return period.endsOn;
+  return today;
 }
 
 /**

@@ -58,6 +58,7 @@ import { addSampleMentoringScores } from "./seed-mentoring-scores";
 import { addSampleSikuAdjustments } from "./seed-siku-adjustments";
 import { addSampleSikuRequests } from "./seed-siku-requests";
 import { addSampleSkpm } from "./seed-skpm";
+import { addSampleSurveyAnswers } from "./seed-survey-answers";
 import { addSampleSurveyPeriods } from "./seed-survey-periods";
 import { addSampleViolationNotes } from "./seed-violation-notes";
 
@@ -283,7 +284,8 @@ export async function fillWithSampleData(db: Database): Promise<void> {
     await addSampleMentoringScores(tx, groups, grouped, running, today);
     await addSampleMentorEvaluations(tx, groups, periods, sampleActor);
     await addSampleMentorReplacements(tx, groups, sampleActor);
-    await addSampleSurveyPeriods(tx, periods, sampleActor);
+    const surveys = await addSampleSurveyPeriods(tx, periods, sampleActor);
+    await addSampleSurveyAnswers(tx, surveys, groups, grouped);
     const sikuEntryIds = await addSampleSikuAdjustments(tx, today);
     await addSampleSikuRequests(tx, today, sikuEntryIds);
     await addSampleSkpm(tx, today);

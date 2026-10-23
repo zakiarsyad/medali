@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import type { Database } from "@/db/connect";
-import { studentSurveyPeriods } from "@/db/schema";
+import { studentSurveyAnswers, studentSurveyPeriods } from "@/db/schema";
+import { SURVEY_STATEMENTS } from "./survey-statements";
 
 /** Made-up survey periods for the checks of every area that reads them. */
 
@@ -23,6 +24,26 @@ export async function addTestSurveyPeriod(
     .returning({ id: studentSurveyPeriods.id });
   if (!added) throw new Error("The survey period was not added.");
   return added.id;
+}
+
+type NewSurveyAnswer = typeof studentSurveyAnswers.$inferInsert;
+
+type TestSurveyAnswer = Pick<
+  NewSurveyAnswer,
+  "surveyPeriodId" | "studentId" | "groupId" | "mentorId"
+> &
+  Partial<NewSurveyAnswer>;
+
+/** A stored answer that gives each statement a 4, sent now unless it says when. */
+export async function addTestSurveyAnswer(
+  db: Database,
+  answer: TestSurveyAnswer,
+): Promise<void> {
+  await db.insert(studentSurveyAnswers).values({
+    scores: SURVEY_STATEMENTS.map(() => 4),
+    sentAt: new Date(),
+    ...answer,
+  });
 }
 
 /** Every stored survey period, the one opened first first. */

@@ -54,7 +54,7 @@ function MentorRow({
       <td data-title="Rerata">{shownRerata(rerata)}</td>
       {lastEvaluations !== null && (
         <td data-title="Evaluasi terakhir">
-          <EvaluationBadge scores={lastEvaluations.get(mentor.id) ?? null} />
+          <EvaluationBadge average={lastEvaluations.get(mentor.id) ?? null} />
         </td>
       )}
     </PressableRow>

@@ -30,6 +30,7 @@ import {
   addTestEvaluator,
   addTestHeldGroup,
   addTestPeriods,
+  addTestSurveyLine,
 } from "./test-evaluations";
 import {
   addTestEndedGroup,
@@ -428,6 +429,34 @@ describe("saveReplacement", () => {
 
       const saved = await saveReplacement(db, made.head, input, TODAY);
 
+      expect(saved).toMatchObject({ ok: true });
+    });
+  });
+
+  it("takes Hasil evaluasi kurang once the last line of the mentor for the group is a Kurang of the students' survey", async () => {
+    await inTestDatabase(async (db) => {
+      const made = await addGroupToReplace(db);
+      const periods = await addTestPeriods(db, 2620);
+      await addTestEvaluation(db, {
+        groupId: made.groupId,
+        mentorId: made.mentorId,
+        periodId: periods.beforeId,
+        evaluatedBy: made.head.id,
+      });
+      const input = { ...made.input, reason: "poor_evaluation" } as const;
+      const before = await saveReplacement(db, made.head, input, TODAY);
+      await addTestSurveyLine(db, {
+        groupId: made.groupId,
+        mentorId: made.mentorId,
+        periodId: periods.runningId,
+        fixedBy: made.head.id,
+        fixedAt: new Date("2621-10-01T03:00:00Z"),
+        score: 60.9,
+      });
+
+      const saved = await saveReplacement(db, made.head, input, TODAY);
+
+      expect(before).toEqual(NEEDS_POOR_EVALUATION);
       expect(saved).toMatchObject({ ok: true });
     });
   });

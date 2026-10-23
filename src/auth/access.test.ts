@@ -3215,6 +3215,81 @@ describe("may", () => {
     );
   });
 
+  const surveyResultReaders: RoleId[] = [
+    "head_of_unit",
+    "director",
+    "head_of_program",
+    "upk_staff",
+  ];
+
+  it("lets Kepala Unit, Direktur, Ketua Program Studi and Pegawai UPK read the survey results per group", () => {
+    for (const role of surveyResultReaders) {
+      expect(may([role], "view_survey_results")).toBe(true);
+    }
+  });
+
+  it("refuses the survey results per group to every other role, Pengasuh and Mahasiswa among them", () => {
+    const others = ROLE_IDS.filter(
+      (role) => !surveyResultReaders.includes(role),
+    );
+    expect(others).toEqual(expect.arrayContaining(["mentor", "student"]));
+    for (const role of others) {
+      expect(may([role], "view_survey_results")).toBe(false);
+    }
+  });
+
+  it("gives the survey results per group only to roles that open their tab", () => {
+    for (const role of ROLE_IDS) {
+      expect(may([role], "view_survey_results")).toBe(
+        mayOpenTab([role], "mentors", "student_survey"),
+      );
+    }
+  });
+
+  it("limits Ketua Program Studi to the groups of their program when reading the survey results", () => {
+    expect(ROLES.head_of_program.rows).toBe("own_program");
+  });
+
+  it("lets Kepala Unit fix the survey results into the evaluation history", () => {
+    expect(may(["head_of_unit"], "fix_survey_results")).toBe(true);
+  });
+
+  it("refuses every other role to fix the survey results, those who read them among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining([
+        "director",
+        "head_of_program",
+        "upk_staff",
+        "mentor",
+        "student",
+      ]),
+    );
+    for (const role of others) {
+      expect(may([role], "fix_survey_results")).toBe(false);
+    }
+  });
+
+  it("lets every role that may fix the survey results read them and the evaluations of mentors", () => {
+    for (const role of ROLE_IDS) {
+      if (!may([role], "fix_survey_results")) continue;
+      expect(may([role], "view_survey_results")).toBe(true);
+      expect(may([role], "view_mentor_evaluations")).toBe(true);
+    }
+  });
+
+  it("names the right to fix the survey results in words for the list of rights", () => {
+    expect(ACTION_TITLES.fix_survey_results).toBe(
+      "Menetapkan hasil evaluasi oleh mahasiswa ke riwayat evaluasi pengasuh",
+    );
+  });
+
+  it("names the right to read the survey results in words for the list of rights", () => {
+    expect(ACTION_TITLES.view_survey_results).toBe(
+      "Melihat hasil evaluasi oleh mahasiswa per kelompok, tanpa jawaban per orang",
+    );
+  });
+
   it("lets every role that sees the evaluations of mentors see the groups and the mentors they are shown with", () => {
     for (const role of ROLE_IDS) {
       if (!may([role], "view_mentor_evaluations")) continue;

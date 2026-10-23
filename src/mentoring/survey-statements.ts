@@ -34,7 +34,8 @@ export const HIGHEST_SCORE = SURVEY_SCALE.length;
 export const SUGGESTION_MAX = 600;
 
 /**
- * How many of a group must answer before its suggestions are shown,
- * without names, so no suggestion can be traced to one student.
+ * How many of a group must answer before its averages and its
+ * suggestions are shown, the suggestions without names, so neither can
+ * be traced to one student.
  */
-export const FEWEST_FOR_SUGGESTIONS = 3;
+export const FEWEST_ANSWERS_SHOWN = 3;
