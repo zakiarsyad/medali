@@ -1,11 +1,16 @@
 import { LevelBars } from "@/mental-health/level-bars";
+import { LevelBadges } from "@/mental-health/screening-badges";
 import shared from "@/ui/data-screen.module.css";
+import { DAY } from "@/ui/day";
 import board from "./dashboard.module.css";
-import type { DormMental } from "./dashboard-health-recap";
+import type { DormMental, DormPublishedRow } from "./dashboard-health-recap";
 import {
   assessedLine,
   MENTAL_TOO_FEW,
   NOBODY_ASSESSED,
+  NOTHING_PUBLISHED,
+  PUBLISHED_HEADING,
+  publishedPlaceLine,
 } from "./dashboard-health-words";
 
 function MentalCounts({ mental }: { mental: DormMental }) {
@@ -24,9 +29,41 @@ function MentalCounts({ mental }: { mental: DormMental }) {
   );
 }
 
+/** One resident: the date, the name with the level when shared, and the room with what was shared. */
+function PublishedItem({ row }: { row: DormPublishedRow }) {
+  return (
+    <li className={board.outItem}>
+      <span className={board.when}>{DAY.format(row.publishedAt)}</span>
+      <div className={board.outBody}>
+        <b>{row.name}</b>{" "}
+        {row.level !== null && <LevelBadges level={row.level} risk={false} />}
+        <span className={shared.detail}>{publishedPlaceLine(row)}</span>
+      </div>
+    </li>
+  );
+}
+
+function PublishedList({ rows }: { rows: readonly DormPublishedRow[] }) {
+  return (
+    <>
+      <h3 className={board.subheading}>{PUBLISHED_HEADING}</h3>
+      {rows.length === 0 ? (
+        <p className={board.none}>{NOTHING_PUBLISHED}</p>
+      ) : (
+        <ul className={board.outList}>
+          {rows.map((row) => (
+            <PublishedItem key={row.studentId} row={row} />
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
 /**
  * "Kesehatan mental penghuni", rekap anonim: how many residents in reach
- * are at each level, never a name, as the server sent them.
+ * are at each level, never a name, and the residents whose data a
+ * counsellor published to the account, as the server sent them.
  */
 export function MentalHealthPanel({ mental }: { mental: DormMental }) {
   return (
@@ -36,6 +73,7 @@ export function MentalHealthPanel({ mental }: { mental: DormMental }) {
         <span className={board.sub}>rekap anonim</span>
       </div>
       <MentalCounts mental={mental} />
+      <PublishedList rows={mental.published} />
     </section>
   );
 }

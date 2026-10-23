@@ -5,11 +5,29 @@ import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { academicPeriods, counsellingSessions, students } from "@/db/schema";
+import {
+  academicPeriods,
+  counsellingSessions,
+  counsellingSharingReads,
+  students,
+} from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { addTestActor } from "@/features/counselling/test-consents";
+import { addTestRoom, placeTestResident } from "@/dorms/test-records";
+import { changeOwnSharing } from "@/features/counselling/press-sharing";
+import { changeSharingAsCounsellor } from "@/features/counselling/publish-sharing";
+import {
+  addTestActor,
+  type TestPeople,
+} from "@/features/counselling/test-consents";
 import { addTestScreening } from "@/features/counselling/test-screenings";
 import { addConsentedPeople } from "@/features/counselling/test-sessions";
+import {
+  addTestMentorOf,
+  PUBLISHED_AT,
+  publishTestSharing,
+  TEST_SUMMARY,
+  type TestShare,
+} from "@/features/counselling/test-shared";
 import type { ScreeningLevel } from "@/mental-health/screening-ids";
 import { loadDormHealth } from "./dashboard-health";
 
@@ -241,4 +259,161 @@ describe("loadDormHealth: Kesehatan mental penghuni", () => {
       });
     },
   );
+});
+
+function readingsBy(db: Database, readBy: string) {
+  return db
+    .select({
+      sharingId: counsellingSharingReads.sharingId,
+      studentId: counsellingSharingReads.studentId,
+    })
+    .from(counsellingSharingReads)
+    .where(eq(counsellingSharingReads.readBy, readBy));
+}
+
+function sharingStudent(people: TestPeople, place: number) {
+  return { ...people, studentId: idOf(people.studentIds, place) };
+}
+
+/**
+ * On top of addRecords' residents, Prodi A's 1 is placed in room DM-01
+ * of Dana Rakca. Published: 1 with the level to Kepala Unit and Ketua
+ * Program Studi; 2 with the sessions and the summary to Kepala Unit; 3
+ * with the level to Pengasuh only; 9, who lives in no dorm, with the
+ * level to Kepala Unit.
+ */
+async function addSharedRecords(db: Database) {
+  const records = await addRecords(db);
+  const { a } = records;
+  const room = await addTestRoom(db, { number: "DM-01" });
+  await placeTestResident(db, room, idOf(a.studentIds, 0));
+  const share = (place: number, how: TestShare) =>
+    publishTestSharing(db, sharingStudent(a, place), how);
+  const first = await share(0, {
+    data: ["level"],
+    recipients: ["head_of_unit", "head_of_program"],
+  });
+  const second = await share(1, {
+    data: ["counselling", "summary"],
+    recipients: ["head_of_unit"],
+  });
+  await share(2, { data: ["level"], recipients: ["mentor"] });
+  await share(8, { data: ["level"], recipients: ["head_of_unit"] });
+  return { ...records, sharings: [first, second] as const };
+}
+
+describe("loadDormHealth: Data yang dipublikasikan konselor untuk Anda", () => {
+  it("gives Kepala Unit each resident whose data is published to the role, with the room and only what was shared, and logs each row", async () => {
+    await inTestDatabase(async (db) => {
+      const { a, sharings } = await addSharedRecords(db);
+      const head = await readerOf(db, ["head_of_unit"]);
+
+      const { mental } = await loadDormHealth(db, head, MOMENT);
+
+      expect(mental?.published).toEqual([
+        {
+          studentId: idOf(a.studentIds, 0),
+          publishedAt: PUBLISHED_AT,
+          name: "Mahasiswa Uji Konseling 1",
+          mentorName: null,
+          room: "Dana Rakca, lantai 1, kamar DM-01",
+          data: ["level"],
+          level: "normal",
+          sessions: null,
+          summary: null,
+        },
+        {
+          studentId: idOf(a.studentIds, 1),
+          publishedAt: PUBLISHED_AT,
+          name: "Mahasiswa Uji Konseling 2",
+          mentorName: null,
+          room: "Dana Rakca, belum diplot",
+          data: ["counselling", "summary"],
+          level: null,
+          sessions: {
+            count: 1,
+            lastDay: "3913-10-01",
+            followUp: "monitoring",
+            nextDay: null,
+          },
+          summary: TEST_SUMMARY,
+        },
+      ]);
+      expect(JSON.stringify(mental)).not.toContain("rahasia");
+      expect(await readingsBy(db, head.id)).toEqual(
+        expect.arrayContaining(
+          [0, 1].map((place) => ({
+            sharingId: sharings[place]?.id,
+            studentId: idOf(a.studentIds, place),
+          })),
+        ),
+      );
+      expect(await readingsBy(db, head.id)).toHaveLength(2);
+    });
+  });
+
+  it("gives each role only what is published to it: Ketua Program Studi their own program, Direktur nothing here", async () => {
+    await inTestDatabase(async (db) => {
+      const { programA, programB } = await addSharedRecords(db);
+      const headA = await readerOf(db, ["head_of_program"], programA);
+      const headB = await readerOf(db, ["head_of_program"], programB);
+      const director = await readerOf(db, ["director"]);
+
+      const ofA = await loadDormHealth(db, headA, MOMENT);
+      const ofB = await loadDormHealth(db, headB, MOMENT);
+      const ofDirector = await loadDormHealth(db, director, MOMENT);
+
+      expect(ofA.mental?.published?.map((row) => row.name)).toEqual([
+        "Mahasiswa Uji Konseling 1",
+      ]);
+      expect(ofB.mental?.published).toEqual([]);
+      expect(ofDirector.mental?.published).toEqual([]);
+      expect(await readingsBy(db, director.id)).toEqual([]);
+    });
+  });
+
+  it("gives a Ketua Program Studi who is also Pengasuh nothing published to Pengasuh", async () => {
+    await inTestDatabase(async (db) => {
+      const { a, programA } = await addSharedRecords(db);
+      const { mentor } = await addTestMentorOf(db, idOf(a.studentIds, 2));
+      const both = {
+        ...mentor,
+        roles: ["mentor", "head_of_program"] as RoleId[],
+        studyProgramId: programA,
+      };
+
+      const { mental } = await loadDormHealth(db, both, MOMENT);
+
+      expect(mental?.published?.map((row) => row.name)).toEqual([
+        "Mahasiswa Uji Konseling 1",
+      ]);
+    });
+  });
+
+  it("drops a resident the next time it is opened once the student withdraws or the counsellor stops sharing", async () => {
+    await inTestDatabase(async (db) => {
+      const { a, sharings } = await addSharedRecords(db);
+      const [first, second] = sharings;
+      const student = a.students[0];
+      if (student === undefined) throw new Error("No student account.");
+      const head = await readerOf(db, ["head_of_unit"]);
+
+      await changeOwnSharing(db, student, "withdraw", first.id, first.version);
+      const afterStudent = await loadDormHealth(db, head, MOMENT);
+      await changeSharingAsCounsellor(
+        db,
+        a.counsellor,
+        idOf(a.studentIds, 1),
+        "cancel",
+        second.id,
+        second.version,
+      );
+      const afterCounsellor = await loadDormHealth(db, head, MOMENT);
+
+      expect(afterStudent.mental?.published?.map((row) => row.name)).toEqual([
+        "Mahasiswa Uji Konseling 2",
+      ]);
+      expect(afterCounsellor.mental?.published).toEqual([]);
+    });
+  });
 });

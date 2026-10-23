@@ -6,17 +6,24 @@ import { visibleTo } from "@/auth/visible-students";
 import type { Database } from "@/db/connect";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import { dormInSql } from "@/dorms/resident-condition";
+import { readResidentPlaces } from "@/dorms/resident-rooms";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import { readFitnessLimits } from "@/health-notes/fitness-limits";
 import { readFitnessByGroup } from "@/health-notes/fitness-recap-read";
+import { roomWords } from "@/health-notes/health-words";
 import { readNeedingCare, sickParts } from "@/health-notes/sick-list";
-import { readMentalRecap } from "@/mental-health/mental-recap-read";
+import {
+  readMentalRecap,
+  readPublished,
+} from "@/mental-health/mental-recap-read";
 import { countRecentSessions } from "@/mental-health/recent-sessions";
+import { type SharedReader, sharedReachOf } from "@/mental-health/shared-reach";
 import {
   type CareRow,
   careRowOf,
   type DormMental,
   type DormPhysical,
+  type DormPublishedRow,
   dormMentalOf,
   dormPhysicalOf,
 } from "./dashboard-health-recap";
@@ -88,22 +95,62 @@ async function readPhysicalPanel(
 }
 
 /**
+ * Only the sharings named to a role that sees the panel, so a person who
+ * is also Pengasuh gets no row of their mentees here. Null for an
+ * account that may read none.
+ */
+function sharedReaderOf(account: AccountForAccess): SharedReader | null {
+  const roles = account.roles.filter((role) =>
+    may([role], "view_dorm_dashboard_mental"),
+  );
+  const reach = sharedReachOf({ ...account, roles });
+  if (reach === null) return null;
+  return { readerId: account.id, reach };
+}
+
+/**
+ * The newest residents among `residents` whose data is published to the
+ * account, each with their room, read on each load so one withdrawn
+ * since is gone, and each written to the log of readings.
+ */
+async function readDormPublished(
+  db: Database,
+  account: AccountForAccess,
+  residents: SQL,
+  dormCohorts: number[],
+  now: Date,
+): Promise<DormPublishedRow[]> {
+  const reader = sharedReaderOf(account);
+  if (reader === null) return [];
+  const { rows } = await readPublished(db, residents, reader, now);
+  const ids = rows.map((row) => row.studentId);
+  const places = await readResidentPlaces(db, ids, dormCohorts);
+  return rows.map((row) => {
+    const place = places.get(row.studentId);
+    const room = roomWords(place?.dorm ?? null, place?.room ?? null);
+    return { ...row, room };
+  });
+}
+
+/**
  * The anonymous count of the residents `reach` lets through, by the
- * campus Dashboard's own count, and how many sessions they had in the
- * last 30 days.
+ * campus Dashboard's own count, how many sessions they had in the last
+ * 30 days, and those of them whose data is published to the account.
  */
 async function readMentalPanel(
   db: Database,
+  account: AccountForAccess,
   reach: SQL,
   dormCohorts: number[],
-  today: string,
+  now: Date,
 ): Promise<DormMental> {
   const residents = residentsAmong(reach, dormCohorts);
-  const [recap, sessions] = await Promise.all([
+  const [recap, sessions, published] = await Promise.all([
     readMentalRecap(db, residents),
-    countRecentSessions(db, residents, today),
+    countRecentSessions(db, residents, campusDay(now)),
+    readDormPublished(db, account, residents, dormCohorts, now),
   ]);
-  return dormMentalOf(recap, sessions);
+  return { ...dormMentalOf(recap, sessions), published };
 }
 
 /**
@@ -120,15 +167,14 @@ export async function loadDormHealth(
   const physicalReach = reachOf(account, "view_dorm_dashboard_physical");
   const mentalReach = reachOf(account, "view_dorm_dashboard_mental");
   if (physicalReach === null && mentalReach === null) return NO_PANELS;
-  const today = campusDay(now);
-  const dormCohorts = (await readDormCohorts(db, today)) ?? [];
+  const dormCohorts = (await readDormCohorts(db, campusDay(now))) ?? [];
   const [physical, mental] = await Promise.all([
     physicalReach === null
       ? null
       : readPhysicalPanel(db, account, physicalReach, dormCohorts),
     mentalReach === null
       ? null
-      : readMentalPanel(db, mentalReach, dormCohorts, today),
+      : readMentalPanel(db, account, mentalReach, dormCohorts, now),
   ]);
   return { physical, mental };
 }

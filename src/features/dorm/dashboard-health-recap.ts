@@ -11,7 +11,7 @@ import type { FinalCategory } from "@/health-notes/health-category";
 import { noteText, roomWords } from "@/health-notes/health-words";
 import { type CountShown, shownCount } from "@/health-notes/shown-count";
 import type { RecapRow } from "@/health-notes/sick-list";
-import type { MentalRecap } from "@/mental-health/mental-recap";
+import type { MentalRecap, PublishedRow } from "@/mental-health/mental-recap";
 
 /*
  * The health panels of Dashboard asrama, as they may leave the server.
@@ -98,11 +98,23 @@ export function dormPhysicalOf(
   return { recap, byDorm: byDormOf(tallies) };
 }
 
-/** "Kesehatan mental penghuni": the anonymous count, and the sessions of the last 30 days. */
-export interface DormMental {
+/** The anonymous count of "Kesehatan mental penghuni", and the sessions of the last 30 days. */
+export interface MentalCounts {
   recap: MentalRecap;
   /** "sesi konseling 30 hari terakhir", or null while the levels show none. */
   sessions: CountShown | null;
+}
+
+/** A resident whose data a counsellor published to the account, with their room. */
+export interface DormPublishedRow extends PublishedRow {
+  /** The room written out, as Kesehatan writes it. */
+  room: string;
+}
+
+/** "Kesehatan mental penghuni" as a whole. */
+export interface DormMental extends MentalCounts {
+  /** "Data yang dipublikasikan konselor untuk Anda": the newest, at most `PUBLISHED_SHOWN`. */
+  published: DormPublishedRow[];
 }
 
 /**
@@ -111,7 +123,10 @@ export interface DormMental {
  * levels, so they say nothing of a group too small for counts, and 1 to
  * 4 as "<5".
  */
-export function dormMentalOf(recap: MentalRecap, sessions: number): DormMental {
+export function dormMentalOf(
+  recap: MentalRecap,
+  sessions: number,
+): MentalCounts {
   if (recap.kind !== "shown") return { recap, sessions: null };
   return { recap, sessions: shownCount(sessions) };
 }

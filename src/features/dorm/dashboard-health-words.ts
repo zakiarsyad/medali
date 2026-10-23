@@ -4,6 +4,8 @@
  */
 
 import { type CountShown, countWords } from "@/health-notes/shown-count";
+import { publishedLine } from "@/mental-health/published-words";
+import type { DormPublishedRow } from "./dashboard-health-recap";
 
 function shown(amount: number): string {
   return amount.toLocaleString("id-ID");
@@ -36,6 +38,20 @@ export const MENTAL_TOO_FEW =
 
 /** What "Kesehatan mental penghuni" says while no resident in reach is assessed. */
 export const NOBODY_ASSESSED = "Belum ada asesmen kesehatan mental penghuni.";
+
+/** The heading of the residents whose data is published to the account. */
+export const PUBLISHED_HEADING = "Data yang dipublikasikan konselor untuk Anda";
+
+/** What that part says while nothing is published to the account. */
+export const NOTHING_PUBLISHED =
+  "Belum ada. Data perorangan hanya tampil bila konselor mempublikasikannya dengan persetujuan mahasiswa.";
+
+/** The line under a published resident's name: the room, then only what was shared. */
+export function publishedPlaceLine(row: DormPublishedRow): string {
+  const shared = publishedLine(row, false);
+  if (shared === "") return row.room;
+  return `${row.room} · ${shared}`;
+}
 
 /** The line under the levels: how many are assessed, and the sessions as sent. */
 export function assessedLine(assessed: number, sessions: CountShown): string {
