@@ -30,9 +30,11 @@ function pickingOf(picked: ConsentPick): ConsentPicking {
     sessions: null,
     message: { error: null, done: null },
     pending: false,
+    sessionsKept: 0,
     pick: () => undefined,
     clear: () => undefined,
     send: () => undefined,
+    noteSessionKept: () => undefined,
   };
 }
 

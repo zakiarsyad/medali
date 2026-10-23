@@ -110,6 +110,7 @@ export function CounsellorConsentPanel({
               studentId={picked.id}
               consent={looked.value}
               history={sessions}
+              onKept={picking.noteSessionKept}
             />
           )}
         </>

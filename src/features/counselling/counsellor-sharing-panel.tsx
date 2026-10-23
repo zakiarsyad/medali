@@ -136,17 +136,33 @@ function PickedSharing({ student }: { student: ConsentPick }) {
 }
 
 /**
+ * Which reading of the sharing the panel shows: a new one for another
+ * student, another consent, or one more session kept or changed.
+ */
+export function sharingReadingOf(
+  studentId: string,
+  consentVersion: string,
+  sessionsKept: number,
+): string {
+  return `${studentId}|${consentVersion}|${sessionsKept}`;
+}
+
+/**
  * "Publikasi data kesehatan mental" of Konselor, about the student picked
  * on "Persetujuan konseling". `consentVersion` is that student's consent
  * as the consent panel shows it, null until it is read: a change of it
- * reads the sharing again, as asking needs the consent.
+ * reads the sharing again, as asking needs the consent. A session kept or
+ * changed there, counted by `sessionsKept`, reads it again too, as what
+ * may be shared depends on the sessions.
  */
 export function CounsellorSharingPanel({
   picked,
   consentVersion,
+  sessionsKept,
 }: {
   picked: ConsentPick | null;
   consentVersion: string | null;
+  sessionsKept: number;
 }) {
   return (
     <section className={`${shared.panel} ${styles.stack}`}>
@@ -157,7 +173,7 @@ export function CounsellorSharingPanel({
       {picked === null && <p className={styles.sub}>{PICK_FIRST}</p>}
       {picked !== null && consentVersion !== null && (
         <PickedSharing
-          key={`${picked.id}|${consentVersion}`}
+          key={sharingReadingOf(picked.id, consentVersion, sessionsKept)}
           student={picked}
         />
       )}

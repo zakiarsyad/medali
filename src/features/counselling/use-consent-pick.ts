@@ -29,6 +29,13 @@ export function useConsentPick(mayKeepSessions: boolean) {
   const [sessions, setSessions] = useState<Parsed<SessionHistory> | null>(null);
   const [message, setMessage] = useState<FormState>(NO_MESSAGE);
   const [pending, startSending] = useTransition();
+  // How many sessions were kept or changed here, so the panels that
+  // depend on the sessions read them again.
+  const [sessionsKept, setSessionsKept] = useState(0);
+
+  function noteSessionKept() {
+    setSessionsKept((kept) => kept + 1);
+  }
 
   function pick(student: ConsentPick) {
     setPicked(student);
@@ -66,7 +73,18 @@ export function useConsentPick(mayKeepSessions: boolean) {
     });
   }
 
-  return { picked, looked, sessions, message, pending, pick, clear, send };
+  return {
+    picked,
+    looked,
+    sessions,
+    message,
+    pending,
+    sessionsKept,
+    pick,
+    clear,
+    send,
+    noteSessionKept,
+  };
 }
 
 export type ConsentPicking = ReturnType<typeof useConsentPick>;
