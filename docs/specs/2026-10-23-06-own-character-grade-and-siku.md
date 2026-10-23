@@ -83,7 +83,7 @@ not built a second time.
 
 - [x] 1. The right to read one's own nilai karakter is added to the
   permission list, with its checks.
-- [ ] 2. The card "Nilai karakter (KEP-220)" on Profil saya, with the
+- [x] 2. The card "Nilai karakter (KEP-220)" on Profil saya, with the
   parts, the pass line, the missing parts, the limit line and the empty
   state.
 - [ ] 3. "Transparansi nilai SIKU" as one panel for Profil saya and

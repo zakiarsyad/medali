@@ -4,6 +4,7 @@ import { openPage } from "@/auth/open-page";
 import { database } from "@/db/database";
 import { OwnAchievementPanel } from "@/features/character-assessment/own-achievement-panel";
 import { OwnScoreHistoryPanel } from "@/features/character-assessment/own-score-history-panel";
+import { OwnGradePanel } from "@/features/character-grades/own-grade-panel";
 import { readOwnProfile } from "@/features/students/own-profile";
 import { OwnProfileScreen } from "@/features/students/own-profile-screen";
 import { readOwnSurvey } from "@/features/students/own-survey";
@@ -25,6 +26,7 @@ export default async function OwnProfilePage() {
       morePanels={
         <>
           <OwnAchievementPanel account={account} />
+          <OwnGradePanel account={account} />
           <OwnScoreHistoryPanel account={account} />
         </>
       }
