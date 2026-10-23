@@ -6,6 +6,7 @@ const FOLDER = "src/features/dashboard";
 const STYLES = `\n${readFileSync(`${FOLDER}/dashboard.module.css`, "utf8")}`;
 const SECTION = readFileSync(`${FOLDER}/physical-section.tsx`, "utf8");
 const GRADES = readFileSync(`${FOLDER}/grade-section.tsx`, "utf8");
+const MEMBERS = readFileSync(`${FOLDER}/mentee-table.tsx`, "utf8");
 
 /** What a rule of the style file holds, without the breaks between its lines. */
 function ruleOf(selector: string): string {
@@ -52,5 +53,27 @@ describe("section 2 of the Dashboard on a phone", () => {
       expect(rule, selector).not.toMatch(/min-width: (?!0;)/);
       expect(rule, selector).not.toContain("nowrap");
     }
+  });
+});
+
+describe("the Anak asuh table of Dashboard anak asuh on a phone", () => {
+  it("shows each anak asuh as a block, the six nilai in two rows of three", () => {
+    expect(MEMBERS).toContain("shared.stacked");
+    expect(ruleOf("table.menteeTable > tbody > tr")).toContain(
+      "grid-template-columns: repeat(3, minmax(0, 1fr));",
+    );
+    expect(ruleOf("table.menteeTable td:not(.valueCell)")).toContain(
+      "grid-column: 1 / -1;",
+    );
+  });
+
+  it("puts the title of each nilai above it, so three fit side by side", () => {
+    expect(ruleOf("table.menteeTable td.valueCell[data-title]")).toContain(
+      "padding: var(--stacked-above-cell-padding);",
+    );
+    const title = ruleOf("table.menteeTable td.valueCell[data-title]::before");
+    expect(title).toContain("float: none;");
+    expect(title).toContain("width: auto;");
+    expect(title).toContain("margin-left: 0;");
   });
 });

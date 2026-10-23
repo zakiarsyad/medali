@@ -96,7 +96,10 @@ describe("the four cards of Dashboard anak asuh", () => {
         byCategory: { excellent: 1, good: 0, attention: 0, medical: 0 },
         fitShare: 100,
       });
-      expect(view.cards.published).toEqual({ matching: 1, needCounselling: 1 });
+      expect(view.cards.published).toMatchObject({
+        matching: 1,
+        needCounselling: 1,
+      });
       expect(view.cards.grades.recap.kind).toBe("none");
     });
   });

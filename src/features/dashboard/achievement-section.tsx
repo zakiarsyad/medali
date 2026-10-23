@@ -36,6 +36,14 @@ function ValueAverages({ recap }: { recap: Recap }) {
   );
 }
 
+/** The line under the title on the main Dashboard. */
+const ACHIEVEMENT_LINE = (
+  <>
+    Nilai MEDALI dari hasil asesmen karakter (Penilaian &gt; Asesmen karakter):
+    mandiri, empati, disiplin, adaptif, loyal, dan integritas.
+  </>
+);
+
 function AchievementHero({ recap }: { recap: Recap }) {
   return (
     <div className={`${shared.panel} ${styles.hero}`}>
@@ -52,17 +60,23 @@ function AchievementHero({ recap }: { recap: Recap }) {
 /**
  * Section 1, Capaian karakter: the average of each nilai with its change
  * since last semester, and the medal of the averages over last semester's
- * as a dashed line. Without a recap it says why there are no numbers.
- * `detailAddress` leads to Asesmen karakter, for an account that may open
- * it; `children` is what the section holds below.
+ * as a dashed line. Without a recap it says why there are no numbers:
+ * `emptyWords`, or else that the group is too small. `detailAddress` leads
+ * to Asesmen karakter, for an account that may open it; `children` is
+ * what the section holds below.
  */
 export function AchievementSection({
   recap,
   detailAddress,
+  line = ACHIEVEMENT_LINE,
+  emptyWords = TOO_FEW,
   children,
 }: {
   recap: Recap | null;
   detailAddress: string | null;
+  /** The line under the title. */
+  line?: ReactNode;
+  emptyWords?: string;
   children?: ReactNode;
 }) {
   return (
@@ -73,12 +87,11 @@ export function AchievementSection({
         title="Capaian karakter"
         detailAddress={detailAddress}
       >
-        Nilai MEDALI dari hasil asesmen karakter (Penilaian &gt; Asesmen
-        karakter): mandiri, empati, disiplin, adaptif, loyal, dan integritas.
+        {line}
       </SectionHead>
       {recap === null ? (
         <div className={shared.panel}>
-          <p className={shared.empty}>{TOO_FEW}</p>
+          <p className={shared.empty}>{emptyWords}</p>
         </div>
       ) : (
         <AchievementHero recap={recap} />

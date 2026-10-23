@@ -449,6 +449,30 @@ a.card:hover {
   white-space: nowrap;
 }
 
+/*
+ * "Anak asuh" of Dashboard anak asuh. On a phone each anak asuh is a
+ * block, the six nilai in two rows of three with each title above its
+ * value; every other cell takes the whole width. At computer width a row
+ * is a table row, so none of this applies.
+ */
+table.menteeTable > tbody > tr {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+table.menteeTable td:not(.valueCell) {
+  grid-column: 1 / -1;
+}
+
+table.menteeTable td.valueCell[data-title] {
+  padding: var(--stacked-above-cell-padding);
+}
+
+table.menteeTable td.valueCell[data-title]::before {
+  float: none;
+  width: auto;
+  margin-left: 0;
+}
+
 /* The four numbers of Pendampingan: in one row, or two by two once they do not fit. */
 .strip {
   display: grid;

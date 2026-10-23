@@ -9,7 +9,7 @@ import {
   addTestRecorder,
 } from "@/discipline-penalties/test-penalties";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
-import { readStudentScoreHistory } from "./score-history";
+import { readOwnScoreHistory, readStudentScoreHistory } from "./score-history";
 import {
   addTestActor,
   addTestAssessment,
@@ -238,6 +238,89 @@ describe("readStudentScoreHistory", () => {
       ).toBeNull();
       expect(
         await readStudentScoreHistory(db, penilai, "9989610001"),
+      ).toBeNull();
+    });
+  });
+});
+
+describe("readOwnScoreHistory", () => {
+  /** An account of a student, for their own Riwayat per semester. */
+  function accountOf(db: Database, name: string, studentId: string) {
+    return addTestActor(db, name, ["student"], { studentId });
+  }
+
+  it("gives a student a point for each of their own assessed semesters, the oldest first", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await addRecords(db);
+      const account = await accountOf(db, "Akun Uji Riwayat Ani", ani);
+
+      expect(await readOwnScoreHistory(db, account)).toEqual(ANI_POINTS);
+    });
+  });
+
+  it("only ever gives a student their own history, whichever other role they hold", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, budi } = await addRecords(db);
+      const aniAccount = await accountOf(db, "Akun Uji Riwayat Ani", ani);
+      const budiAccount = await accountOf(db, "Akun Uji Riwayat Budi", budi);
+      const alsoHead = {
+        ...aniAccount,
+        roles: ["student", "head_of_unit"] as RoleId[],
+      };
+
+      expect(await readOwnScoreHistory(db, budiAccount)).toEqual([]);
+      expect(await readOwnScoreHistory(db, alsoHead)).toEqual(ANI_POINTS);
+    });
+  });
+
+  it("never sends the Catatan penilai", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, first, penilai } = await addRecords(db);
+      const note = "Catatan penilai uji riwayat yang tidak untuk mahasiswa";
+      await addTestAssessment(db, penilai, {
+        studentId: ani,
+        periodId: first,
+        enteredAt: new Date("4510-11-01T03:00:00Z"),
+        note,
+      });
+      const account = await accountOf(db, "Akun Uji Riwayat Ani", ani);
+
+      const points = await readOwnScoreHistory(db, account);
+
+      expect(points?.length).toBe(2);
+      expect(JSON.stringify(points)).not.toContain(note);
+    });
+  });
+
+  it("holds every point at 70 under a Ringan or Sedang penalty, as the card is", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await addRecords(db);
+      const recorder = await addTestRecorder(db);
+      await addTestPenaltyOf(db, ani, recorder, {
+        category: "light",
+        level: 1,
+      });
+      const account = await accountOf(db, "Akun Uji Riwayat Ani", ani);
+
+      const points = await readOwnScoreHistory(db, account);
+
+      expect(points?.map((point) => point.scores)).toEqual([
+        limitedScores(SILVER_SCORES, true),
+        limitedScores(GOLD_SCORES, true),
+      ]);
+    });
+  });
+
+  it("refuses an account without the right, and one with no student record", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani } = await addRecords(db);
+      const account = await accountOf(db, "Akun Uji Riwayat Ani", ani);
+
+      expect(
+        await readOwnScoreHistory(db, { ...account, roles: ["assessor"] }),
+      ).toBeNull();
+      expect(
+        await readOwnScoreHistory(db, { ...account, studentId: null }),
       ).toBeNull();
     });
   });

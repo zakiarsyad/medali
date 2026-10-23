@@ -35,9 +35,25 @@ export interface StudentAchievement {
    * records sees the limit and never the Uraian.
    */
   limit: PenaltyKind | null;
+  /**
+   * The scores of the latest assessment as stored, before the limit:
+   * given only to the student themselves, and only under a limit.
+   */
+  stored?: Scores;
+  /** True on the student's own card, which names no staff menu. */
+  own?: boolean;
 }
 
-type ShownStudent = Pick<typeof students.$inferSelect, "cohortYear" | "status">;
+/** What every reader of "Capaian karakter" gives, whoever asks. */
+type AchievementParts = Pick<
+  StudentAchievement,
+  "latest" | "earlier" | "limit"
+>;
+
+export type ShownStudent = Pick<
+  typeof students.$inferSelect,
+  "cohortYear" | "status"
+>;
 
 /** A student within the rows of the character panels, or null. */
 export async function readShownStudent(
@@ -65,7 +81,28 @@ async function readEarlier(
   return found ? scoresOf(found) : null;
 }
 
-async function semesterOn(
+/**
+ * The latest assessment of one student, the one before it and the
+ * penalty that holds the scores, for a reader that has checked the
+ * account may see them.
+ */
+export async function readAchievementParts(
+  db: Database,
+  studentId: string,
+): Promise<AchievementParts> {
+  const [latest, earlier, limits] = await Promise.all([
+    readLatestOf(db, [studentId]),
+    readEarlier(db, studentId),
+    readLimitsOf(db, [studentId]),
+  ]);
+  return {
+    latest: latest.get(studentId) ?? null,
+    earlier,
+    limit: limits.get(studentId) ?? null,
+  };
+}
+
+export async function semesterOn(
   db: Database,
   student: ShownStudent,
   today: string,
@@ -95,19 +132,10 @@ export async function readStudentAchievement(
   if (!isUuid(studentId)) return null;
   const student = await readShownStudent(db, account, studentId);
   if (!student) return null;
-  const [latest, earlier, semester, pick, limits] = await Promise.all([
-    readLatestOf(db, [studentId]),
-    readEarlier(db, studentId),
+  const [parts, semester, pick] = await Promise.all([
+    readAchievementParts(db, studentId),
     semesterOn(db, student, today),
     readAssessmentPick(db, account, studentId),
-    readLimitsOf(db, [studentId]),
   ]);
-  return {
-    studentId,
-    semester,
-    latest: latest.get(studentId) ?? null,
-    earlier,
-    mayAssess: pick !== null,
-    limit: limits.get(studentId) ?? null,
-  };
+  return { studentId, semester, ...parts, mayAssess: pick !== null };
 }

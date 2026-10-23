@@ -37,6 +37,14 @@ export function rankOf(category: PenaltyCategory, level: PenaltyLevel): number {
   return PENALTY_CATEGORIES.indexOf(category) * 3 + (level - 1);
 }
 
+/** A Kategori and Jenjang as a badge names it: "Ringan · jenjang pertama". */
+export function jenjangWords(
+  category: PenaltyCategory,
+  level: PenaltyLevel,
+): string {
+  return `${CATEGORY_WORDS[category]} · jenjang ${LEVEL_WORDS[level]}`;
+}
+
 /** A Kategori and Jenjang inside a sentence: "ringan jenjang pertama". */
 export function kindWords(kind: PenaltyKind): string {
   return `${CATEGORY_WORDS[kind.category].toLowerCase()} jenjang ${LEVEL_WORDS[kind.level]}`;

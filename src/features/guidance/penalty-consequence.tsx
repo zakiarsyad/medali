@@ -1,9 +1,9 @@
 import type { Scores } from "@/character-scores/assessment-score";
 import { Medal } from "@/character-scores/medal";
+import { JenjangBadge } from "@/discipline-penalties/jenjang-badge";
 import { limitedScores, limits } from "@/discipline-penalties/score-limit";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./discipline-penalties.module.css";
-import { JenjangBadge } from "./penalty-badges";
 import {
   type ConsequenceChoice,
   consequencesOf,
