@@ -146,7 +146,11 @@ history. No one ever sees one student's answers.
     the members counted with those answers. A group without answers
     shows the mentor who held it on the day of the numbers.
 14. Above the table, Responden adds the answers of every group out of
-    their members as decision 13 counts them, each group once, "Rerata capaian karakter" is the mean of the groups
+    their members as decision 13 counts them, each group once. The
+    card of the running period above it is left as it was: it counts
+    only the answers of students who are Aktif today, so once a student
+    who answered goes on Cuti or leaves, the two Responden differ.
+    "Rerata capaian karakter" is the mean of the groups
     that have one, "Rerata umpan balik" the mean of the groups that
     show one, with the same as 0 to 100 beside it ("setara"), and
     "Nilai evaluasi kurang" counts the rows that are Kurang, "dari (n)
