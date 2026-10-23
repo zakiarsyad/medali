@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import { testPaper, testPngPicture } from "@/clarifications/test-paper";
 import type { Database } from "@/db/connect";
+import { dormResidentChoices } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import {
   type MemoryStore,
@@ -16,6 +17,7 @@ import {
   CLARIFICATION_CLOSED,
   FILE_NOT_KEPT,
   NO_FILE_STORAGE,
+  NOT_A_RESIDENT,
   NOT_TO_CLARIFY,
 } from "./clarification-messages";
 import {
@@ -103,6 +105,16 @@ function sentFor(
   };
 }
 
+/** What "Non asrama" on Ploting kamar keeps for a student. */
+async function makeNonResident(db: Database, studentId: string, byId: string) {
+  await db.insert(dormResidentChoices).values({
+    studentId,
+    dorm: null,
+    setBy: byId,
+    setAt: AFTER,
+  });
+}
+
 function send(
   db: Database,
   store: MemoryStore | null,
@@ -185,6 +197,36 @@ describe("sendDormClarification", () => {
         );
       }
       expect(store.files.size).toBe(0);
+    });
+  });
+
+  it("refuses a student made Non asrama after the absence, and saves nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const store = memoryStore();
+      await makeNonResident(db, records.ani.studentId, records.bamId);
+
+      expect(await send(db, store, records.ani, sentFor(records))).toEqual(
+        NOT_A_RESIDENT,
+      );
+      expect(store.files.size).toBe(0);
+      expect(await clarificationsOf(db, records.ani.studentId)).toEqual([]);
+    });
+  });
+
+  it("keeps a clarification sent while the student lived in the dorm as it is, and takes no new send after the move", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const store = memoryStore();
+      await send(db, store, records.ani, sentFor(records));
+      const before = await clarificationsOf(db, records.ani.studentId);
+      await makeNonResident(db, records.ani.studentId, records.bamId);
+
+      expect(await send(db, store, records.ani, sentFor(records))).toEqual(
+        NOT_A_RESIDENT,
+      );
+      expect(await clarificationsOf(db, records.ani.studentId)).toEqual(before);
+      expect(store.files.size).toBe(1);
     });
   });
 
