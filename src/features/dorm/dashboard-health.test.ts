@@ -1,7 +1,7 @@
 // Sample Tahun akademik of this file: 3911 to 3911.
 // Sample NIMs of this file: 9911000000 to 9911000099.
 
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -215,6 +215,35 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         attention: "<5",
         medical: "<5",
       });
+    });
+  });
+
+  it("gives no category count of a dorm with nobody tested whose one resident has a note with a category", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, idsA } = await addRecords(db);
+      const [firstMan, secondMan, untested] = [idsA[6], idsA[7], idsA[8]];
+      if (!firstMan || !secondMan || !untested) {
+        throw new Error("No resident was added.");
+      }
+      await db
+        .update(students)
+        .set({ cohortYear: 3909 })
+        .where(inArray(students.id, [firstMan, secondMan]));
+      await db
+        .update(students)
+        .set({ sex: "male" })
+        .where(eq(students.id, untested));
+      await addTestNote(db, kepala, {
+        studentId: untested,
+        savedAt: new Date("3911-10-01T03:00:00Z"),
+        category: "medical",
+      });
+      const actor = await actorWith(db, ["head_of_unit"]);
+
+      const { physical } = await loadDormHealth(db, actor, MOMENT);
+
+      expect(physical?.recap.kind).toBe("shown");
+      expect(physical?.byDorm?.cipta_bakti).toBeNull();
     });
   });
 

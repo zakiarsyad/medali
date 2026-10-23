@@ -23,7 +23,7 @@ export const HELD_BACK_CELL = "–";
 
 /** What the table says under it when a dorm is held back. */
 export const DORM_HELD_BACK =
-  "–: kurang dari 5 penghuni di asrama ini sudah dites, agar identitas tidak dapat ditebak.";
+  "–: kurang dari 5 penghuni di asrama ini masuk kategori, agar identitas tidak dapat ditebak.";
 
 /** The heading of the residents who need care, for an account that may see their names. */
 export const CARE_HEADING = "Perlu perhatian dan tindak lanjut medis";

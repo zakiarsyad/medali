@@ -141,6 +141,23 @@ describe("dormPhysicalOf", () => {
     expect(JSON.stringify(physical.byDorm)).not.toContain("<5");
   });
 
+  it("sends no category count of a dorm with nobody tested where a note puts 1 to 4 residents in a category", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "dana_rakca",
+        tally: tally(8, 8, { ...NO_CATEGORY, excellent: 8 }),
+      },
+      {
+        key: "cipta_bakti",
+        tally: tally(3, 0, { ...NO_CATEGORY, medical: 1 }),
+      },
+      { key: "wismantara_putra", tally: tally(2, 0, NO_CATEGORY) },
+    ]);
+
+    expect(physical.byDorm?.cipta_bakti).toBeNull();
+    expect(physical.byDorm?.wismantara_putra).toEqual(NO_CATEGORY);
+  });
+
   it("sends no count at all, of the bars or of a dorm, while 1 to 4 residents are tested", () => {
     const physical = dormPhysicalOf([
       {

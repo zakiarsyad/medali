@@ -31,7 +31,8 @@ export interface DormPhysical {
   recap: PhysicalRecap;
   /**
    * Each dorm's counts, or null while the bars show none. A dorm's own
-   * counts are null while only 1 to 4 of its residents in reach are tested.
+   * counts are null while only 1 to 4 of its residents in reach are in a
+   * category.
    */
   byDorm: Record<DormId, DormCategories | null> | null;
 }
@@ -77,16 +78,26 @@ function sumOf(tallies: readonly GroupTally<DormId>[]): FitnessTally {
   return sum;
 }
 
+function inAnyCategory(byCategory: FitnessTally["byCategory"]): number {
+  return (
+    byCategory.excellent +
+    byCategory.good +
+    byCategory.attention +
+    byCategory.medical
+  );
+}
+
 /**
  * One dorm's counts, or null while only 1 to 4 of its residents in reach
- * are tested: with so few, even "<5" in one category and 0 in the others
- * would tell someone's category.
+ * are in a category, by test or by health note alike: with so few, even
+ * "<5" in one category and 0 in the others would tell someone's category.
  */
 function dormCategoriesOf(
   tally: FitnessTally | undefined,
 ): DormCategories | null {
   if (tally === undefined) return { ...NO_CATEGORY };
-  const isFew = tally.tested > 0 && tally.tested < FEWEST_COUNTED;
+  const counted = inAnyCategory(tally.byCategory);
+  const isFew = counted > 0 && counted < FEWEST_COUNTED;
   if (isFew) return null;
   return shownByCategory(tally.byCategory);
 }
@@ -108,7 +119,8 @@ function byDormOf(
  * "Kesehatan jasmani penghuni" from each dorm's tally: the bars of every
  * resident in reach with the rules of the Dashboard, and each dorm's
  * counts only while the bars show counts, each of 1 to 4 as "<5", and
- * none for a dorm with only 1 to 4 tested. No illness is counted here.
+ * none for a dorm with only 1 to 4 in a category. No illness is counted
+ * here.
  */
 export function dormPhysicalOf(
   tallies: readonly GroupTally<DormId>[],

@@ -136,9 +136,10 @@ here than Dorm health notes and Mental health screening give it.
     hanya tampil bila konselor mempublikasikannya dengan persetujuan
     mahasiswa.", as in the prototype.
 12. In the table per dorm, a dorm where only 1 to 4 residents in the
-    viewer's reach are tested shows "–" in each category, with a line
-    under the table saying why, so one resident's category cannot be
-    told from their dorm's row. A dorm with nobody tested shows 0.
+    viewer's reach are in a category, by the fitness test or by a health
+    note, shows "–" in each category, with a line under the table saying
+    why, so one resident's category cannot be told from their dorm's
+    row. A dorm with nobody in a category shows 0.
 
 ## Steps
 
