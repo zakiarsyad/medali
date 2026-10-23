@@ -1,11 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { OwnRecordData } from "./own-violations";
-import { OwnRecord } from "./own-violations-view";
+import { OwnRecord, OwnViolationsView } from "./own-violations-view";
 import type { ShownReduction } from "./reduction-list";
 import type { StaffViolations } from "./staff-violations";
 import { StaffViolationsScreen } from "./staff-violations-screen";
-import { readStaffViolationParams } from "./violation-address";
+import {
+  readOwnViolationParams,
+  readStaffViolationParams,
+} from "./violation-address";
 import type { AnnouncedViolation } from "./violation-announcement";
 import type { WarningCalls } from "./warning-calls";
 
@@ -113,6 +116,22 @@ function screen(board = BOARD, reduces = false): string {
   );
 }
 
+describe("the resident's own screen", () => {
+  it("is titled Pelanggaran asrama, as the staff screen is", () => {
+    const shown = renderToStaticMarkup(
+      <OwnViolationsView
+        tabs={{ pagePath: "asrama", tabs: [], open: "pel" }}
+        room={null}
+        own={{ kind: "shown", announcement: BOARD.announcement, ...OWN }}
+        params={readOwnViolationParams({})}
+        now={NOW}
+      />,
+    );
+
+    expect(shown).toMatch(/<h1[^>]*>Pelanggaran asrama<\/h1>/);
+  });
+});
+
 describe("the staff screen of a resident who is also staff", () => {
   it("shows their own record under the staff panels, headed as their own, with Ajukan advokasi", () => {
     const shown = screen();
@@ -128,6 +147,10 @@ describe("the staff screen of a resident who is also staff", () => {
 });
 
 describe("the staff screen", () => {
+  it("is titled Pelanggaran asrama, apart from Pelanggaran disiplin", () => {
+    expect(screen()).toMatch(/<h1[^>]*>Pelanggaran asrama<\/h1>/);
+  });
+
   it("shows how many residents are called, with how many already have an SP, and the list of calls", () => {
     const shown = screen();
 

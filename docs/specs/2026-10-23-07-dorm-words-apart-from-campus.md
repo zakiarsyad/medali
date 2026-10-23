@@ -85,5 +85,5 @@ asrama", "Pembersihan asrama". The resident's own number already says
 
 ## Steps
 
-- [ ] 1. The Asrama tabs, Tugas saya sections and the Dashboard asrama
+- [x] 1. The Asrama tabs, Tugas saya sections and the Dashboard asrama
   panel use the dorm names above, with checks for the tab names.

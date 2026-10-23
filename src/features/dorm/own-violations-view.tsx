@@ -144,7 +144,7 @@ export function OwnRecord({
 }
 
 /**
- * Pelanggaran for a resident: "Pelanggaran tercatat" of the running
+ * Pelanggaran asrama for a resident: "Pelanggaran tercatat" of the running
  * semester, "Rekam jejak pelanggaran saya" with its period, and
  * "Pengumuman pelanggaran" of the dorm they live in.
  */
@@ -164,7 +164,7 @@ export function OwnViolationsView({
 }) {
   return (
     <>
-      <PageHead title="Pelanggaran">{room}</PageHead>
+      <PageHead title="Pelanggaran asrama">{room}</PageHead>
       <TabLinks {...tabs} />
       <OwnRecord
         own={own}
