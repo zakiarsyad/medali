@@ -176,7 +176,7 @@ function numbersIn(value: unknown): number[] {
 
 describe("loadDormHealth: Kesehatan mental penghuni", () => {
   it.each(["head_of_unit", "director"] as const)(
-    "gives %s every Aktif resident's latest level, each of 1 to 4 as <5, and the sessions of the last 30 days",
+    "gives %s every Aktif resident's latest level, each of 1 to 4 as <5 and Normal as 5+ beside two <5 of 1, and the sessions of the last 30 days",
     async (role) => {
       await inTestDatabase(async (db) => {
         await addRecords(db);
@@ -189,7 +189,7 @@ describe("loadDormHealth: Kesehatan mental penghuni", () => {
             kind: "shown",
             assessed: 10,
             byLevel: {
-              normal: 8,
+              normal: "5+",
               mild: "<5",
               moderate: 0,
               severe: "<5",
@@ -212,7 +212,7 @@ describe("loadDormHealth: Kesehatan mental penghuni", () => {
       const ofB = await loadDormHealth(db, headB, MOMENT);
 
       expect(ofA.mental).toMatchObject({
-        recap: { kind: "shown", assessed: 7, byLevel: { normal: 5 } },
+        recap: { kind: "shown", assessed: 7, byLevel: { normal: "5+" } },
         sessions: 5,
       });
       expect(ofB.mental).toMatchObject({

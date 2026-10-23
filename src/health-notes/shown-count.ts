@@ -44,23 +44,53 @@ export interface SetEntry<Key extends string> {
   hidden: boolean;
 }
 
-function hiddenIn<Key extends string>(set: readonly SetEntry<Key>[]): number {
-  let hidden = 0;
-  for (const entry of set) {
-    if (entry.hidden) hidden += 1;
-  }
-  return hidden;
+/**
+ * The fewest a hidden count could be, as far as the screen tells: 1 for
+ * "<5" and 5 for "5+". A count of 0 is hidden only in a dorm row held
+ * back, where it shows nothing, so it could be 0.
+ */
+function fewestHidden(count: number): number {
+  if (count === 0) return 0;
+  if (count < FEWEST_COUNTED) return 1;
+  return FEWEST_COUNTED;
 }
 
+/** The most a hidden "<5" could be. */
+const MOST_UNDER_FIVE = FEWEST_COUNTED - 1;
+
 /**
- * The count to hide too while exactly one count of a set is hidden, as
- * the total less the others would give that one back: the smallest
- * above 0 still shown, the first on a tie. Null when none is to be.
+ * Whether the hidden counts of a set can be worked out from its total
+ * and the counts shown: one alone is the total less the others, and
+ * several are each pinned while their sum is the fewest they could add
+ * up to or, all "<5", the most.
  */
-export function oneMoreToHide<Key extends string>(
+export function hiddenArePinned<Key extends string>(
+  set: readonly SetEntry<Key>[],
+  total: number,
+): boolean {
+  let hidden = 0;
+  let hiddenSum = total;
+  let fewest = 0;
+  let allUnderFive = true;
+  for (const entry of set) {
+    if (!entry.hidden) {
+      hiddenSum -= entry.count;
+      continue;
+    }
+    hidden += 1;
+    fewest += fewestHidden(entry.count);
+    if (entry.count >= FEWEST_COUNTED) allUnderFive = false;
+  }
+  if (hidden === 0) return false;
+  if (hidden === 1) return true;
+  if (hiddenSum === fewest) return true;
+  return allUnderFive && hiddenSum === hidden * MOST_UNDER_FIVE;
+}
+
+/** The smallest count above 0 still shown, the first on a tie, or null with none. */
+export function smallestShown<Key extends string>(
   set: readonly SetEntry<Key>[],
 ): Key | null {
-  if (hiddenIn(set) !== 1) return null;
   let smallest: SetEntry<Key> | null = null;
   for (const entry of set) {
     const canHide = !entry.hidden && entry.count > 0;
@@ -71,10 +101,42 @@ export function oneMoreToHide<Key extends string>(
 }
 
 /**
+ * The count to hide too while the hidden counts of a set are pinned:
+ * the smallest above 0 still shown. Null when none is to be.
+ */
+export function oneMoreToHide<Key extends string>(
+  set: readonly SetEntry<Key>[],
+  total: number,
+): Key | null {
+  if (!hiddenArePinned(set, total)) return null;
+  return smallestShown(set);
+}
+
+/** Hides one more count of a set while its hidden counts are pinned, until they are not. */
+export function hideWhilePinned<Key extends string>(
+  set: SetEntry<Key>[],
+  total: number,
+): void {
+  let extra = oneMoreToHide(set, total);
+  while (extra !== null) {
+    for (const entry of set) {
+      if (entry.key === extra) entry.hidden = true;
+    }
+    extra = oneMoreToHide(set, total);
+  }
+}
+
+function totalOf<Key extends string>(set: readonly SetEntry<Key>[]): number {
+  let total = 0;
+  for (const entry of set) total += entry.count;
+  return total;
+}
+
+/**
  * The counts of one set as they may show, `order` being the order of
- * the screen: each of 1 to 4 as "<5", and while only one is, the
- * smallest other above 0 hidden too, so no count can be worked out from
- * the total and the others.
+ * the screen: each of 1 to 4 as "<5", and more hidden while the hidden
+ * ones are pinned, so no count can be worked out from the total and the
+ * others.
  */
 export function shownSet<Key extends string>(
   order: readonly Key[],
@@ -85,11 +147,10 @@ export function shownSet<Key extends string>(
     count: counts[key],
     hidden: shownCount(counts[key]) === "<5",
   }));
-  const extra = oneMoreToHide(set);
+  hideWhilePinned(set, totalOf(set));
   const shown: Record<Key, SetCountShown> = { ...counts };
-  for (const key of order) {
-    shown[key] =
-      key === extra ? hiddenCount(counts[key]) : shownCount(counts[key]);
+  for (const entry of set) {
+    shown[entry.key] = entry.hidden ? hiddenCount(entry.count) : entry.count;
   }
   return shown;
 }

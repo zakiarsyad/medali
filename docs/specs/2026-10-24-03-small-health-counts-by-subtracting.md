@@ -66,6 +66,17 @@ the two health panels on Dashboard asrama.
    already uses: residents in reach with a fitness category, by test or
    by health note.
 6. A count shown as "5+" draws no bar, like "<5".
+7. A held-back dorm row counts as hidden in every column, even where
+   its count is 0.
+8. Dashboard anak asuh, which holds no count back, stays exact.
+9. Two or more hidden counts can be worked out too when what they add
+   up to is the least they could be (1 for each "<5", 5 for each "5+")
+   or, all "<5", the most (4 each). Then one more count is hidden, the
+   smallest above 0, again until they cannot. This holds for every set,
+   each dorm row and column, and the dorms held back.
+10. On Dashboard asrama a column whose bar is hidden, but none of its
+    dorm counts, would give the bar back by adding them up. Then that
+    column's smallest dorm count above 0 is hidden too.
 
 ## Steps
 

@@ -251,6 +251,88 @@ describe("dormPhysicalOf", () => {
     });
   });
 
+  it("hides one more count of a dorm's row while its two <5 add up to the fewest they could", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(12, 12, {
+          ...NO_CATEGORY,
+          excellent: 10,
+          good: 1,
+          attention: 1,
+        }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(22, 22, {
+          ...NO_CATEGORY,
+          excellent: 10,
+          good: 6,
+          attention: 6,
+        }),
+      },
+    ]);
+
+    expect(physical.recap).toMatchObject({
+      byCategory: { excellent: 20, good: 7, attention: 7, medical: 0 },
+    });
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: {
+        excellent: "5+",
+        good: "<5",
+        attention: "<5",
+        medical: 0,
+      },
+      wismantara_putri: {
+        excellent: "5+",
+        good: "5+",
+        attention: "5+",
+        medical: 0,
+      },
+      dana_rakca: NO_CATEGORY,
+      cipta_bakti: NO_CATEGORY,
+    });
+  });
+
+  it("hides a dorm's count in a column whose bar is hidden while none of its counts is, so the column does not give the bar back", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "wismantara_putra",
+        tally: tally(21, 21, { ...NO_CATEGORY, excellent: 15, good: 6 }),
+      },
+      {
+        key: "wismantara_putri",
+        tally: tally(24, 24, {
+          excellent: 15,
+          good: 0,
+          attention: 3,
+          medical: 6,
+        }),
+      },
+    ]);
+
+    expect(physical.recap).toMatchObject({
+      tested: 45,
+      byCategory: { excellent: 30, good: "5+", attention: "<5", medical: 6 },
+    });
+    expect(physical.byDorm).toEqual({
+      wismantara_putra: {
+        excellent: "5+",
+        good: "5+",
+        attention: 0,
+        medical: 0,
+      },
+      wismantara_putri: {
+        excellent: "5+",
+        good: 0,
+        attention: "<5",
+        medical: "5+",
+      },
+      dana_rakca: NO_CATEGORY,
+      cipta_bakti: NO_CATEGORY,
+    });
+  });
+
   it("gives every dorm's counts as they are while none is 1 to 4", () => {
     const counts = { excellent: 10, good: 6, attention: 5, medical: 0 };
     const physical = dormPhysicalOf([

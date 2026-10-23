@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   countWords,
+  hiddenArePinned,
   hiddenCount,
   oneMoreToHide,
   shownCount,
@@ -85,30 +86,111 @@ describe("shownSet", () => {
       d: 0,
     });
   });
+
+  it("hides one more while two <5 add up to the fewest they could, 1 each", () => {
+    expect(shownSet(ORDER, { a: 1, b: 1, c: 10, d: 12 })).toEqual({
+      a: "<5",
+      b: "<5",
+      c: "5+",
+      d: 12,
+    });
+  });
+
+  it("hides one more while two <5 add up to the most they could, 4 each", () => {
+    expect(shownSet(ORDER, { a: 4, b: 4, c: 10, d: 12 })).toEqual({
+      a: "<5",
+      b: "<5",
+      c: "5+",
+      d: 12,
+    });
+  });
+
+  it("hides nothing more while two <5 could add up to their sum in more than one way", () => {
+    expect(shownSet(ORDER, { a: 1, b: 3, c: 10, d: 0 })).toEqual({
+      a: "<5",
+      b: "<5",
+      c: 10,
+      d: 0,
+    });
+  });
+
+  it("hides the largest too while a <5 and a 5+ add up to the fewest they could, 1 and 5", () => {
+    expect(shownSet(ORDER, { a: 20, b: 0, c: 1, d: 5 })).toEqual({
+      a: "5+",
+      b: 0,
+      c: "<5",
+      d: "5+",
+    });
+  });
+});
+
+describe("hiddenArePinned", () => {
+  it("says the hidden counts are pinned while exactly one is hidden", () => {
+    const set = [
+      { key: "a", count: 9, hidden: true },
+      { key: "b", count: 6, hidden: false },
+    ];
+    expect(hiddenArePinned(set, 15)).toBe(true);
+  });
+
+  it("says they are pinned at the fewest, 1 per <5 and 5 per 5+", () => {
+    const set = [
+      { key: "a", count: 1, hidden: true },
+      { key: "b", count: 5, hidden: true },
+      { key: "c", count: 20, hidden: false },
+    ];
+    expect(hiddenArePinned(set, 26)).toBe(true);
+  });
+
+  it("says they are pinned at the most while all are <5, 4 each", () => {
+    const set = [
+      { key: "a", count: 4, hidden: true },
+      { key: "b", count: 4, hidden: true },
+      { key: "c", count: 10, hidden: false },
+    ];
+    expect(hiddenArePinned(set, 18)).toBe(true);
+  });
+
+  it("says they are not pinned while none is hidden, or their sum fits more than one way", () => {
+    const shown = [{ key: "a", count: 6, hidden: false }];
+    const loose = [
+      { key: "a", count: 1, hidden: true },
+      { key: "b", count: 3, hidden: true },
+      { key: "c", count: 10, hidden: false },
+    ];
+    expect(hiddenArePinned(shown, 6)).toBe(false);
+    expect(hiddenArePinned(loose, 14)).toBe(false);
+  });
 });
 
 describe("oneMoreToHide", () => {
   it("names the smallest count above 0 still shown while exactly one is hidden, the first on a tie", () => {
     expect(
-      oneMoreToHide([
-        { key: "a", count: 9, hidden: true },
-        { key: "b", count: 0, hidden: false },
-        { key: "c", count: 6, hidden: false },
-        { key: "d", count: 6, hidden: false },
-      ]),
+      oneMoreToHide(
+        [
+          { key: "a", count: 9, hidden: true },
+          { key: "b", count: 0, hidden: false },
+          { key: "c", count: 6, hidden: false },
+          { key: "d", count: 6, hidden: false },
+        ],
+        21,
+      ),
     ).toBe("c");
   });
 
-  it("names none while no count or two counts are hidden", () => {
+  it("names none while no count is hidden, or two hidden are not pinned", () => {
     const shown = { count: 6, hidden: false };
     const hidden = { count: 6, hidden: true };
-    expect(oneMoreToHide([{ key: "a", ...shown }])).toBeNull();
+    expect(oneMoreToHide([{ key: "a", ...shown }], 6)).toBeNull();
     expect(
-      oneMoreToHide([
-        { key: "a", ...hidden },
-        { key: "b", ...hidden },
-        { key: "c", ...shown },
-      ]),
+      oneMoreToHide(
+        [
+          { key: "a", ...hidden },
+          { key: "b", ...hidden },
+          { key: "c", ...shown },
+        ],
+        18,
+      ),
     ).toBeNull();
   });
 });

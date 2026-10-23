@@ -149,6 +149,22 @@ describe("physicalRecapOf", () => {
     });
   });
 
+  it("hides Prima too while the <5 and the 5+ add up to the fewest they could, 1 and 5", () => {
+    const recap = physicalRecapOf(
+      {
+        students: 26,
+        tested: 26,
+        byCategory: { excellent: 20, good: 0, attention: 1, medical: 5 },
+      },
+      null,
+    );
+
+    expect(recap).toMatchObject({
+      byCategory: { excellent: "5+", good: 0, attention: "<5", medical: "5+" },
+      fitShare: null,
+    });
+  });
+
   it("sends the smallest other category above 0 as 5+ while only one is <5, with no number of either", () => {
     const recap = physicalRecapOf(
       {

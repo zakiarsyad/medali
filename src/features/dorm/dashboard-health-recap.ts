@@ -15,10 +15,13 @@ import {
   type CountShown,
   FEWEST_COUNTED,
   hiddenCount,
+  hideWhilePinned,
   isHidden,
   oneMoreToHide,
   type SetCountShown,
+  type SetEntry,
   shownCount,
+  smallestShown,
 } from "@/health-notes/shown-count";
 import type { RecapRow } from "@/health-notes/sick-list";
 import type { MentalRecap, PublishedRow } from "@/mental-health/mental-recap";
@@ -128,21 +131,23 @@ function countsByDorm(
  * The dorms held back: each where only 1 to 4 residents in reach are in
  * a category, by test or by health note alike, as with so few even "<5"
  * in one category and 0 in the others would tell someone's category.
- * While only one is, the smallest other with a category is held back
- * too, as the bars less the other rows would give that one back.
+ * While those held back are pinned, such as only one, the smallest other
+ * with a category is held back too, as the bars less the other rows
+ * would give them back.
  */
 function heldBackDorms(counts: Record<DormId, CategoryCounts>): Set<DormId> {
+  let total = 0;
   const rows = DORM_IDS.map((dorm) => {
     const counted = inAnyCategory(counts[dorm]);
+    total += counted;
     const isFew = counted > 0 && counted < FEWEST_COUNTED;
     return { key: dorm, count: counted, hidden: isFew };
   });
+  hideWhilePinned(rows, total);
   const held = new Set<DormId>();
   for (const row of rows) {
     if (row.hidden) held.add(row.key);
   }
-  const extra = oneMoreToHide(rows);
-  if (extra !== null) held.add(extra);
   return held;
 }
 
@@ -152,58 +157,78 @@ function startingHidden(counts: CategoryCounts, isHeld: boolean): HiddenRow {
   );
 }
 
-/** Hides one more count of a dorm's row while only one is hidden; says whether it did. */
+/** Hides one more count of a dorm's row while its hidden counts are pinned; says whether it did. */
 function hideMoreInRow(counts: CategoryCounts, hidden: HiddenRow): boolean {
   const row = FITNESS_CATEGORIES.map((category) => ({
     key: category,
     count: counts[category],
     hidden: hidden[category],
   }));
-  const extra = oneMoreToHide(row);
+  const extra = oneMoreToHide(row, inAnyCategory(counts));
   if (extra === null) return false;
   hidden[extra] = true;
   return true;
 }
 
-/** Hides one more count of a category's column while only one is hidden; says whether it did. */
+function noneHidden(column: readonly SetEntry<DormId>[]): boolean {
+  for (const entry of column) {
+    if (entry.hidden) return false;
+  }
+  return true;
+}
+
+/**
+ * The dorm to hide too in a category's column. While the bar shows a
+ * number, the bar is the total, so as in a row. While the bar is hidden,
+ * a column with none hidden would give the bar back by adding it up, so
+ * one is hidden then.
+ */
+function oneMoreInColumn(
+  column: readonly SetEntry<DormId>[],
+  bar: SetCountShown,
+): DormId | null {
+  if (!isHidden(bar)) return oneMoreToHide(column, bar);
+  if (noneHidden(column)) return smallestShown(column);
+  return null;
+}
+
+/** Hides one more count of a category's column as `oneMoreInColumn` says; says whether it did. */
 function hideMoreInColumn(
   counts: Record<DormId, CategoryCounts>,
   hidden: Record<DormId, HiddenRow>,
   category: FitnessCategory,
+  bar: SetCountShown,
 ): boolean {
   const column = DORM_IDS.map((dorm) => ({
     key: dorm,
     count: counts[dorm][category],
     hidden: hidden[dorm][category],
   }));
-  const extra = oneMoreToHide(column);
+  const extra = oneMoreInColumn(column, bar);
   if (extra === null) return false;
   hidden[extra][category] = true;
   return true;
 }
 
 /**
- * Hides counts until no dorm's row and no column has exactly one hidden
- * count. A column counts only while its bar shows a number, as only then
- * does the bar less the column's other counts give one back. Each pass
- * that changes something hides one more count, so it ends.
+ * Hides counts until no dorm's row and no column gives a hidden count
+ * back by its sums. Each pass that changes something hides one more
+ * count, so it ends.
  */
-function hideUntilNoneSingle(
+function hideUntilNonePinned(
   counts: Record<DormId, CategoryCounts>,
   hidden: Record<DormId, HiddenRow>,
   bars: Record<FitnessCategory, SetCountShown>,
 ): void {
-  const columns = FITNESS_CATEGORIES.filter(
-    (category) => !isHidden(bars[category]),
-  );
   let changed = true;
   while (changed) {
     changed = false;
     for (const dorm of DORM_IDS) {
       if (hideMoreInRow(counts[dorm], hidden[dorm])) changed = true;
     }
-    for (const category of columns) {
-      if (hideMoreInColumn(counts, hidden, category)) changed = true;
+    for (const category of FITNESS_CATEGORIES) {
+      const bar = bars[category];
+      if (hideMoreInColumn(counts, hidden, category, bar)) changed = true;
     }
   }
 }
@@ -226,7 +251,7 @@ function byDormOf(
   const hidden = perDorm((dorm) =>
     startingHidden(counts[dorm], held.has(dorm)),
   );
-  hideUntilNoneSingle(counts, hidden, bars);
+  hideUntilNonePinned(counts, hidden, bars);
   return perDorm((dorm) =>
     held.has(dorm) ? null : dormCategoriesOf(counts[dorm], hidden[dorm]),
   );
@@ -237,8 +262,8 @@ function byDormOf(
  * resident in reach with the rules of the Dashboard, and each dorm's
  * counts only while the bars show counts, each of 1 to 4 as "<5", and
  * none for a dorm held back. A dorm's row and a category's column hide
- * one more count while only one of theirs is hidden. No illness is
- * counted here.
+ * more counts while their sums would give a hidden one back. No illness
+ * is counted here.
  */
 export function dormPhysicalOf(
   tallies: readonly GroupTally<DormId>[],
