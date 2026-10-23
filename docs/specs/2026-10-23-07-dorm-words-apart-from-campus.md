@@ -71,12 +71,14 @@ asrama", "Pembersihan asrama". The resident's own number already says
 3. "Klarifikasi kehadiran asrama" on Tugas saya is the number card at the
    top, which jumps to the section "Klarifikasi kehadiran asrama menunggu
    validasi".
-4. Where Tugas saya names an Asrama tab, as in "Lihat semua di …" and the
-   link after "advokasi pelanggaran menunggu keputusan BAM" under "Perlu
-   dipantau", it uses the tab's new name, "Klarifikasi kehadiran asrama" or
-   "Pelanggaran asrama", as it already does for "Perizinan asrama" and
-   "Pembersihan asrama". Otherwise a link would name a tab that no longer
-   exists by that name.
+4. Where a dorm screen names an Asrama tab, it uses the tab's new name,
+   "Klarifikasi kehadiran asrama" or "Pelanggaran asrama", as it already
+   does for "Perizinan asrama" and "Pembersihan asrama". Otherwise a link
+   would name a tab that no longer exists by that name. These are, on Tugas
+   saya, "Lihat semua di …" and the link after "advokasi pelanggaran
+   menunggu keputusan BAM" under "Perlu dipantau"; on Klarifikasi kehadiran
+   asrama, "di tab …" and "Buka tab …" in "Klarifikasi ditolak dan
+   penetapan SP"; and on Kegiatan asrama, the resident's "Lihat di menu …".
 5. The resident's own page of the violations tab is titled "Pelanggaran
    asrama" too, as the staff page is: it is the same tab.
 6. On a phone the Asrama tab row keeps scrolling within itself, as every

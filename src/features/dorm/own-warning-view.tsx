@@ -43,7 +43,7 @@ export function ActivitiesWarning({ warning }: { warning: OwnWarning }) {
         </>
       )}
       {isOneFromSecond && <>{ONE_MORE_REJECTION} </>}
-      <Link href={VIOLATIONS_ADDRESS}>Lihat di menu Pelanggaran</Link>
+      <Link href={VIOLATIONS_ADDRESS}>Lihat di menu Pelanggaran asrama</Link>
     </p>
   );
 }
