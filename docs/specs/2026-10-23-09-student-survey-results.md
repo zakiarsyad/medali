@@ -216,6 +216,17 @@ history. No one ever sees one student's answers.
     today count, as before. A Kurang of the survey therefore allows the
     reason "Hasil evaluasi kurang" for a replacement; the server checks
     it again when the replacement is saved.
+30. A hand-made "Tetapkan" from any role but Kepala Unit, or without a
+    sign-in, is refused before anything it sent is read. No read of the
+    tab sends a student, the time of an answer or a single score: only
+    counts and sums leave the database, and suggestions only of a group
+    with 3 answers or more.
+31. On a phone the groups become cards, the choice of period drops under
+    the heading and never gets wider than the panel, the search and the
+    filter fold as the other lists do, the averages per statement come
+    above the suggestions, and the button folds onto its own line. On a
+    local computer the tab answered in about 0.2 to 0.3 second, with a
+    group's detail open.
 
 ## Steps
 
@@ -228,4 +239,4 @@ history. No one ever sees one student's answers.
 - [x] 4. Capaian karakter is locked when a period closes.
 - [x] 5. "Tetapkan hasil evaluasi" writes into the evaluation history
   once.
-- [ ] 6. Refusals and the phone layout.
+- [x] 6. Refusals and the phone layout.
