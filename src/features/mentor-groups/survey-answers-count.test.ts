@@ -17,6 +17,7 @@ import { readRunningSurveyCard } from "./survey-card";
 import { resultNumbers } from "./survey-group-list";
 import { readSurveyGroupRows } from "./survey-group-reads";
 import { chooseResultPeriod, readResultPeriods } from "./survey-result-periods";
+import { respondentWords } from "./survey-words";
 import { addTestEvaluator, addTestPeriods } from "./test-evaluations";
 import {
   addTestGroup,
@@ -143,11 +144,26 @@ describe("Responden of the running survey period", () => {
     });
   });
 
-  it("gives the same answers and students as the Responden above the table of the same period", async () => {
+  it("gives the same answers, students and share as the Responden above the table of the same period", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       await addAnswers(db, records, records.first, records.first.members);
       await addAnswers(db, records, records.second, records.second.members);
+      // 23 of 40 is 57.5%, which a share counted as a fraction first rounds down.
+      const third = await addTestProgram(db, "UJIJAWABTIGA");
+      const thirdGroup = await addTestGroup(db, third, { number: 1 });
+      const thirdMembers = await addTestMembersWithStatus(
+        db,
+        { id: thirdGroup, studyProgramId: third },
+        9900950201,
+        Array.from({ length: 40 }, () => "active" as const),
+      );
+      await addAnswers(
+        db,
+        records,
+        { program: third, group: thirdGroup, members: thirdMembers },
+        thirdMembers.slice(0, 23),
+      );
       const [onLeave, moving] = records.first.members;
       if (!onLeave || !moving) throw new Error("No members.");
       await setStatus(db, onLeave, "on_leave");
@@ -165,6 +181,7 @@ describe("Responden of the running survey period", () => {
         EVERY_ROW,
         onlyPrograms([records.first.program]),
         onlyPrograms([records.second.program]),
+        onlyPrograms([third]),
       ]) {
         const card = await readRunningSurveyCard(db, limit, TODAY);
         const table = resultNumbers(
@@ -176,6 +193,9 @@ describe("Responden of the running survey period", () => {
           answers: card?.answered,
           members: card?.respondentPool,
         }).toEqual({ answers: table.answers, members: table.members });
+        expect(
+          respondentWords(card?.answered ?? 0, card?.respondentPool ?? 0),
+        ).toContain(`(${table.share}%)`);
       }
     });
   });
