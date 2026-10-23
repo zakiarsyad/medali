@@ -1,3 +1,5 @@
+// Sample NIMs of this file: 9911000100 to 9911000199. None is added to
+// the database.
 import { describe, expect, it } from "vitest";
 import type { FitnessTally } from "@/health-notes/fitness-recap";
 import type { RecapRow } from "@/health-notes/sick-list";
@@ -20,7 +22,7 @@ const NO_CATEGORY = { excellent: 0, good: 0, attention: 0, medical: 0 };
 const ROW: RecapRow = {
   id: "s1",
   name: "Penghuni Contoh",
-  nim: "9911000001",
+  nim: "9911000101",
   program: "Prodi Contoh",
   dorm: "dana_rakca",
   room: { dorm: "dana_rakca", floor: 2, number: "12" },
