@@ -214,9 +214,9 @@ const timeSet = (daysAgo: number): SampleScheduleStep => ({
 
 /**
  * One assignment in every status. Kirana Utomo's Penugasan waits for its
- * time, and so does Fikri Wibowo's Pemanggilan, beside his voluntary
- * request. Gita Purba, who declined consent, and Lutfi Tarigan have a
- * time set. A Pemanggilan is of a student Asesmen karakter lists, sent
+ * time, and so does Citra Nasution's Pemanggilan, beside her voluntary
+ * request. Gita Purba, who declined consent, and Fikri Wibowo, who
+ * withdrew his, have a time set. A Pemanggilan is of a student Asesmen karakter lists, sent
  * after the assessment that lists them, with the reason the app writes
  * and no Pesan pengirim. Nanda Gunawan asked for
  * another time. Mega Saragih came to hers and Oki Rahayu did not. Each
@@ -237,16 +237,16 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     steps: [sent("assigned", 3)],
   },
   {
-    nim: "9900230006",
+    nim: "9900250003",
     kind: "called",
     time: null,
     basis:
-      "Asesmen karakter: rerata 70,0, pembinaan ringan, aspek terlemah Disiplin",
+      "Asesmen karakter: rerata 62,2, pembinaan sedang, aspek terlemah Disiplin",
     fromPenalty: false,
     senderMessage: null,
     counsellorMessage: null,
     reason: null,
-    steps: [sent("called", 2)],
+    steps: [sent("called", 1)],
   },
   {
     nim: "9900250007",
@@ -260,11 +260,11 @@ export const SAMPLE_ASSIGNMENTS: SampleAssignment[] = [
     steps: [sent("assigned", 6), timeSet(5)],
   },
   {
-    nim: "9900250012",
+    nim: "9900230006",
     kind: "called",
     time: { inDays: 4, hour: "08:30", way: "online" },
     basis:
-      "Asesmen karakter: rerata 58,0, pembinaan intensif, aspek terlemah Disiplin",
+      "Asesmen karakter: rerata 70,0, pembinaan ringan, aspek terlemah Disiplin",
     fromPenalty: false,
     senderMessage: null,
     counsellorMessage: null,

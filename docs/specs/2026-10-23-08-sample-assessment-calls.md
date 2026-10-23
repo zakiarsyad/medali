@@ -50,16 +50,19 @@ tries the app on the preview with sample data.
 
 1. The two calls are moved to students the sample data already lists, so
    no assessment numbers change and other screens stay as they are.
-2. The call waiting for a schedule goes to Fikri Wibowo (Ringan, aspek
-   terlemah Disiplin), who also has a voluntary session, so one student
-   still has a call beside a voluntary request, as Bayu Santoso had. The
-   call with a set date goes to Lutfi Tarigan (Intensif). Neither has a
-   discipline penalty, so their scores are not held at 70. Gita Purba,
-   Nanda Gunawan and Citra Nasution keep the button.
-3. A call is made after the assessment that lists the student, so Lutfi
-   Tarigan's call is sent 4 days ago and given its date 3 days ago, after
-   his assessment 5 days ago; its date, Jam and way stay as Ayu Lestiani's
-   were. Fikri Wibowo's call keeps the day it was sent, 2 days ago.
+2. The call waiting for a schedule goes to Citra Nasution (Sedang, aspek
+   terlemah Disiplin), whose voluntary request is still open, so one
+   student still has a call beside a voluntary request, as Bayu Santoso
+   had. The call with a set date goes to Fikri Wibowo (Ringan). Neither
+   has a discipline penalty, so their scores are not held at 70, and
+   neither has a coaching status yet, so no status says the coaching is
+   further along than the call. Gita Purba, Nanda Gunawan and Lutfi
+   Tarigan keep the button.
+3. A call is made after the assessment that lists the student. Citra
+   Nasution's call is sent 1 day ago, after her assessment 2 days ago.
+   Fikri Wibowo's call is sent 4 days ago and given its date 3 days ago,
+   after his assessment 5 days ago; its date, Jam and way stay as Ayu
+   Lestiani's were.
 4. Bayu Santoso and Ayu Lestiani keep their voluntary request and consent
    as they were; only their calls go.
 

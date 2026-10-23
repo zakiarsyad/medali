@@ -9,6 +9,7 @@ import {
   SCHEDULE_STATUSES,
 } from "@/mental-health/schedule-ids";
 import { SAMPLE_ASSESSMENTS } from "./sample-character-assessments";
+import { SAMPLE_COACHING_STATUSES } from "./sample-coaching-statuses";
 import { SAMPLE_CONSENTS } from "./sample-counselling-consents";
 import {
   isSenderScheduleStep,
@@ -272,6 +273,15 @@ describe("the sample Pemanggilan calls", () => {
     const lasts = calls.map(lastStatusOf);
     expect(lasts).toContain("awaiting");
     expect(lasts).toContain("scheduled");
+  });
+
+  it("are of students whose coaching is not marked Selesai", () => {
+    for (const sample of calls) {
+      const status = SAMPLE_COACHING_STATUSES.find(
+        (each) => each.nim === sample.nim,
+      );
+      expect(status?.status, sample.nim).not.toBe("done");
+    }
   });
 
   it("leave a listed student with no call, to call from Asesmen karakter", () => {
