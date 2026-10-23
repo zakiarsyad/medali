@@ -73,3 +73,25 @@ export async function readSanctions(
   }
   return sanctions;
 }
+
+const OWN_RIGHT = "view_own_discipline_penalties";
+
+/**
+ * The badge beside the status on Profil saya: the one of the student of
+ * the account, by the same rule as the staff badge. Null for none, and
+ * for an account without the right or without a student. Which student
+ * is never asked from outside.
+ */
+export async function readOwnSanction(
+  db: Database,
+  account: AccountForAccess,
+): Promise<Sanction | null> {
+  const own = account.studentId;
+  if (!may(account.roles, OWN_RIGHT) || own === null) return null;
+  // The database refuses to compare its ids with a text of another shape.
+  if (!isUuid(own)) return null;
+  const reach = visibleTo(rowLimitForAction(account, OWN_RIGHT));
+  const heavy = (await readHeavyPenalties(db, reach, [own])).get(own);
+  if (heavy === undefined) return null;
+  return sanctionOf(heavy.penalties, heavy.hasAgency);
+}

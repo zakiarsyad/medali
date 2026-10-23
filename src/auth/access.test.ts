@@ -3620,6 +3620,29 @@ describe("may", () => {
     }
   });
 
+  it.each([
+    ["view_own_discipline_penalties", "Melihat hukuman disiplin sendiri"],
+    ["view_own_coaching", "Melihat pembinaan karakter sendiri"],
+    ["view_own_mentoring_notes", "Melihat catatan pengasuhan sendiri"],
+  ] as const)("lets Mahasiswa %s, on Profil saya", (action, title) => {
+    expect(may(["student"], action)).toBe(true);
+    expect(ACTION_TITLES[action]).toBe(title);
+  });
+
+  it.each([
+    "view_own_discipline_penalties",
+    "view_own_coaching",
+    "view_own_mentoring_notes",
+  ] as const)("refuses every other role to %s", (action) => {
+    const others = ROLE_IDS.filter((role) => role !== "student");
+    expect(others).toEqual(
+      expect.arrayContaining(["discipline_officer", "head_of_unit", "mentor"]),
+    );
+    for (const role of others) {
+      expect(may([role], action)).toBe(false);
+    }
+  });
+
   it("lets Mahasiswa read their own fitness test and health note, on Profil saya", () => {
     expect(may(["student"], "view_own_physical_health")).toBe(true);
     expect(ACTION_TITLES.view_own_physical_health).toBe(
@@ -3657,6 +3680,9 @@ describe("may", () => {
       "view_own_profile",
       "view_own_character_achievement",
       "view_own_character_grade",
+      "view_own_discipline_penalties",
+      "view_own_coaching",
+      "view_own_mentoring_notes",
       "view_own_physical_health",
       "view_own_mental_health",
       "send_attendance_photo",
@@ -4584,6 +4610,27 @@ describe("rowLimitForAction and rowLimitForPage", () => {
       NO_ROW,
     );
   });
+
+  it.each([
+    "view_own_discipline_penalties",
+    "view_own_coaching",
+    "view_own_mentoring_notes",
+  ] as const)(
+    "keeps a student to their own records by %s, whatever wide role they also hold",
+    (action) => {
+      const both = {
+        ...account(["student", "head_of_unit"]),
+        studentId: "student-1",
+      };
+      const staff = { ...account(["mentor"]), studentId: "student-1" };
+
+      expect(rowLimitForAction(both, action)).toEqual({
+        ...NO_ROW,
+        studentIds: ["student-1"],
+      });
+      expect(rowLimitForAction(staff, action)).toEqual(NO_ROW);
+    },
+  );
 
   it.each(["view_own_physical_health", "view_own_mental_health"] as const)(
     "keeps a student to their own records for %s, whatever wide role they also hold",

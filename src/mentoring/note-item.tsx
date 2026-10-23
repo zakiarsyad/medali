@@ -4,7 +4,7 @@ import { shownDay } from "@/ui/day";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
 import { mentorLabel } from "@/ui/mentor-label";
 import { ValueSwatch } from "@/ui/value-swatch";
-import type { ListedNote } from "./listed-note";
+import type { ListedNote, OwnNote } from "./listed-note";
 import styles from "./mentoring-notes.module.css";
 import { FOLLOW_UP_TITLES, KIND_TITLES } from "./note-words";
 
@@ -24,14 +24,16 @@ function ValueTags({ keys }: { keys: ValueKey[] }) {
 
 /**
  * One note: its day, the kind of contact with the values it touched, the
- * text, the follow-up when one was chosen, and who wrote it. A list of
- * more than one student also names the student, before the kind.
+ * text, the follow-up when one was chosen, and who wrote it when that was
+ * read. A list of more than one student also names the student, before
+ * the kind.
  */
 export function NoteItem({
   note,
   student,
 }: {
-  note: ListedNote;
+  /** A note of a student's own has no writer: it is not named to them. */
+  note: OwnNote & Partial<Pick<ListedNote, "writer">>;
   /** The student as the list names them, or nothing where all notes are of one student. */
   student?: ReactNode;
 }) {
@@ -49,9 +51,11 @@ export function NoteItem({
           <em> Tindak lanjut: {FOLLOW_UP_TITLES[note.followUp]}.</em>
         )}
       </p>
-      <small className={shared.detail}>
-        Dicatat oleh {mentorLabel(note.writer)}
-      </small>
+      {note.writer !== undefined && (
+        <small className={shared.detail}>
+          Dicatat oleh {mentorLabel(note.writer)}
+        </small>
+      )}
     </li>
   );
 }

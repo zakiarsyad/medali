@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import type { StudentCoaching } from "./student-coaching";
 import { StudentCoachingView } from "./student-coaching-view";
 
-function shown(more: Partial<StudentCoaching> = {}): string {
+function shown(
+  more: Partial<StudentCoaching> = {},
+  forStudent = false,
+): string {
   const coaching: StudentCoaching = {
     level: "intensive",
     weakest: "M",
@@ -11,7 +14,9 @@ function shown(more: Partial<StudentCoaching> = {}): string {
     note: "",
     ...more,
   };
-  return renderToStaticMarkup(<StudentCoachingView coaching={coaching} />);
+  return renderToStaticMarkup(
+    <StudentCoachingView coaching={coaching} forStudent={forStudent} />,
+  );
 }
 
 describe("Pembinaan (level) in the student detail", () => {
@@ -52,5 +57,15 @@ describe("Pembinaan (level) in the student detail", () => {
     expect(box).not.toContain("<button");
     expect(box).not.toContain("<a ");
     expect(box).not.toContain("<select");
+  });
+});
+
+describe("Pembinaan (level) on Profil saya", () => {
+  it("adds who to talk to about the next step, which staff do not see", () => {
+    const sentence = "Bicarakan langkah berikutnya dengan pengasuh Anda.";
+
+    expect(shown({}, true)).toContain(sentence);
+    expect(shown({}, true)).toContain("Aspek terlemah: ");
+    expect(shown()).not.toContain(sentence);
   });
 });

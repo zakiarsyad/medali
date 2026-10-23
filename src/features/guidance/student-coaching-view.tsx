@@ -19,8 +19,11 @@ function coachingLine(coaching: StudentCoaching): string {
  */
 export function StudentCoachingView({
   coaching,
+  forStudent = false,
 }: {
   coaching: StudentCoaching;
+  /** On Profil saya, where the student is told who to talk to. */
+  forStudent?: boolean;
 }) {
   const level = COACHING_LEVEL_WORDS[coaching.level].toLowerCase();
   return (
@@ -32,6 +35,11 @@ export function StudentCoachingView({
         </span>
       </div>
       <p className={styles.text}>{coachingLine(coaching)}</p>
+      {forStudent && (
+        <p className={styles.text}>
+          Bicarakan langkah berikutnya dengan pengasuh Anda.
+        </p>
+      )}
     </section>
   );
 }

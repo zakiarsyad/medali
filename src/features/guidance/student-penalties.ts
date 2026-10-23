@@ -62,6 +62,32 @@ export async function readStudentPenalties(
   if (reach === null) return null;
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(studentId)) return [];
+  return readPenaltiesWhere(
+    db,
+    and(eq(disciplinePenalties.studentId, studentId), reach),
+  );
+}
+
+/**
+ * Every discipline penalty of the student of the account, for Profil
+ * saya, the latest Tanggal first, read anew on each opening. Null, with
+ * nothing read, for an account without the right. Which student is never
+ * asked from outside: it is the one the account's own rows hold.
+ */
+export async function readOwnPenalties(
+  db: Database,
+  account: AccountForAccess,
+): Promise<StudentPenalty[] | null> {
+  const right = "view_own_discipline_penalties";
+  if (!may(account.roles, right)) return null;
+  return readPenaltiesWhere(db, visibleTo(rowLimitForAction(account, right)));
+}
+
+/** The penalties `where` holds, with only what the panel shows. */
+function readPenaltiesWhere(
+  db: Database,
+  where: SQL | undefined,
+): Promise<StudentPenalty[]> {
   return db
     .select({
       id: disciplinePenalties.id,
@@ -76,7 +102,7 @@ export async function readStudentPenalties(
     })
     .from(disciplinePenalties)
     .innerJoin(students, eq(students.id, disciplinePenalties.studentId))
-    .where(and(eq(disciplinePenalties.studentId, studentId), reach))
+    .where(where)
     .orderBy(
       desc(disciplinePenalties.day),
       desc(disciplinePenalties.savedAt),

@@ -1,7 +1,11 @@
-import { and, eq, sql } from "drizzle-orm";
-import type { AccountForAccess } from "@/auth/access";
+import { and, eq, type SQL, sql } from "drizzle-orm";
+import { type AccountForAccess, may, rowLimitForAction } from "@/auth/access";
+import { visibleTo } from "@/auth/visible-students";
 import type { CoachingLevel } from "@/character-scores/coaching-need";
-import { SHOWN_STATUS } from "@/character-scores/coaching-shown-status";
+import {
+  NOT_DONE,
+  SHOWN_STATUS,
+} from "@/character-scores/coaching-shown-status";
 import type { CoachingStatus } from "@/character-scores/coaching-status";
 import { latestAssessments } from "@/character-scores/latest-assessments";
 import type { Database } from "@/db/connect";
@@ -38,8 +42,34 @@ export async function readStudentCoaching(
   if (reach === null) return null;
   // The database refuses to compare its ids with a text of another shape.
   if (!isUuid(studentId)) return null;
+  return readCoachingWithin(db, reach, eq(students.id, studentId));
+}
+
+/**
+ * "Pembinaan (level)" of the student of the account, for Profil saya,
+ * read anew on each opening. Null for a student who is not listed or
+ * whose pembinaan is Selesai, and, with nothing read, for an account
+ * without the right. Which student is never asked from outside: it is the
+ * one the account's own rows hold.
+ */
+export async function readOwnCoaching(
+  db: Database,
+  account: AccountForAccess,
+): Promise<StudentCoaching | null> {
+  const right = "view_own_coaching";
+  if (!may(account.roles, right)) return null;
+  const own = visibleTo(rowLimitForAction(account, right));
+  return readCoachingWithin(db, own, NOT_DONE);
+}
+
+/** The one listed student within `reach` that `more` holds, or null. */
+async function readCoachingWithin(
+  db: Database,
+  reach: SQL,
+  more: SQL,
+): Promise<StudentCoaching | null> {
   const latest = latestAssessments(db);
-  const [found] = await db
+  const rows = await db
     .select({
       M: latest.scoreM,
       E: latest.scoreE,
@@ -53,8 +83,11 @@ export async function readStudentCoaching(
     .from(students)
     .innerJoin(latest, eq(latest.studentId, students.id))
     .leftJoin(coachingStatuses, eq(coachingStatuses.studentId, students.id))
-    .where(and(eq(students.id, studentId), listedWithin(reach, latest)));
-  if (!found) return null;
+    .where(and(more, listedWithin(reach, latest)))
+    .limit(2);
+  const [found] = rows;
+  // Rows that hold more than one student are refused and not shown.
+  if (!found || rows.length > 1) return null;
   const { status, note, ...scores } = found;
   const need = needOf(scores);
   return { level: need.level, weakest: need.weakest, status, note };

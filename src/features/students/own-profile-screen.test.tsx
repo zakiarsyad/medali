@@ -55,6 +55,19 @@ describe("OwnProfileScreen", () => {
     expect(screen).toMatch(/<span[^>]*>Aktif<\/span>/);
   });
 
+  it("shows the sanction of a suspended or dismissed student instead of Aktif", () => {
+    const screen = renderToStaticMarkup(
+      <OwnProfileScreen
+        student={STUDENT}
+        period={PERIOD}
+        sanction="suspended"
+      />,
+    );
+
+    expect(screen).toMatch(/<span[^>]*>Diberhentikan sementara<\/span>/);
+    expect(screen).not.toMatch(/<span[^>]*>Aktif<\/span>/);
+  });
+
   it("shows the facts of the first card, with the category tags", () => {
     const screen = screenOf(STUDENT);
 
