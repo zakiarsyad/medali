@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
 import { PageHead } from "@/ui/page-head";
@@ -73,13 +74,15 @@ function CleaningNumbers({ view, day }: { view: CleaningView; day: string }) {
  * the schedule of one date with its judgements, and the ranking of rooms.
  * It shows rooms by number only, never a student; the only names are
  * those of the staff who judged and validated. `today` is the day on
- * campus.
+ * campus. `ownPart` is the resident part of an account that also lives
+ * in the dorm, shown above the rest.
  */
 export async function CleaningScreen({
   tabs,
   params,
   today,
   rights,
+  ownPart,
   ownRoom,
 }: {
   tabs: TabLinksProps;
@@ -87,6 +90,8 @@ export async function CleaningScreen({
   today: string;
   /** What the account may do with places and duties; nothing when it only sees them. */
   rights: DutyRights;
+  /** The account's own resident part; null when it has none. */
+  ownPart: ReactNode;
   /** The room the account's own student lives in, or null. */
   ownRoom: RoomKey | null;
 }) {
@@ -105,6 +110,7 @@ export async function CleaningScreen({
         membersihkannya.
       </PageHead>
       <TabLinks {...tabs} />
+      {ownPart}
       {!mayManage && (
         <p className={styles.note}>
           Pembersihan asrama dikelola oleh Pengelola Asrama dan BAM. Anda dapat
