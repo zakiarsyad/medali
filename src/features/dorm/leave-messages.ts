@@ -22,6 +22,13 @@ export const NOT_A_RESIDENT = {
     "Izin asrama hanya dapat diajukan oleh mahasiswa yang tinggal di asrama.",
 } as const;
 
+/** What cancelling answers to a student who lives in no dorm today. */
+export const CANCEL_NOT_A_RESIDENT = {
+  ok: false,
+  error:
+    "Izin asrama hanya dapat dibatalkan oleh mahasiswa yang tinggal di asrama.",
+} as const;
+
 /**
  * What a request answers when its key is that of a request it did not
  * just add: the form was sent before and changed since, or the key is not

@@ -7,17 +7,22 @@ import { dormLeaves } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { askLeave } from "./ask-leave";
 import { cancelLeave } from "./cancel-leave";
+import { decideLeave } from "./decide-leave";
 import {
   ASK_NOT_ALLOWED,
+  CANCEL_NOT_A_RESIDENT,
   LEAVE_NOT_FOUND,
   tooLateToCancel,
 } from "./leave-messages";
+import { makeNonResident } from "./make-non-resident";
 import { addTestResidents, leaveById, sentOuting } from "./test-leave";
+import { addTestActor } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
 
 // 10:00 on campus on 12 October 2860.
 const MOMENT = new Date("2860-10-12T03:00:00Z");
+const DAY = "2860-10-12";
 
 async function addRecords(db: Database) {
   const [ani, bea] = await addTestResidents(db, 2860, "Prodi Uji Batal Izin", [
@@ -36,7 +41,7 @@ describe("cancelLeave", () => {
     await inTestDatabase(async (db) => {
       const { ani, id } = await addRecords(db);
 
-      const cancelled = await cancelLeave(db, ani, id);
+      const cancelled = await cancelLeave(db, ani, id, MOMENT);
 
       expect(cancelled).toEqual({ ok: true, value: null });
       const kept = await leaveById(db, id);
@@ -49,7 +54,7 @@ describe("cancelLeave", () => {
     await inTestDatabase(async (db) => {
       const { bea, id } = await addRecords(db);
 
-      const cancelled = await cancelLeave(db, bea, id);
+      const cancelled = await cancelLeave(db, bea, id, MOMENT);
 
       expect(cancelled).toEqual(LEAVE_NOT_FOUND);
       expect((await leaveById(db, id))?.status).toBe("submitted");
@@ -64,7 +69,7 @@ describe("cancelLeave", () => {
         .set({ status: "cancelled", cancelledAt: new Date() })
         .where(eq(dormLeaves.id, id));
 
-      const cancelled = await cancelLeave(db, ani, id);
+      const cancelled = await cancelLeave(db, ani, id, MOMENT);
 
       expect(cancelled).toEqual(tooLateToCancel("cancelled"));
       expect(cancelled).toEqual({
@@ -80,11 +85,52 @@ describe("cancelLeave", () => {
       const { ani, id } = await addRecords(db);
 
       expect(
-        await cancelLeave(db, { ...ani, roles: ["dorm_manager"] }, id),
+        await cancelLeave(db, { ...ani, roles: ["dorm_manager"] }, id, MOMENT),
       ).toEqual(ASK_NOT_ALLOWED);
-      expect(await cancelLeave(db, ani, "bukan-kunci")).toEqual(
+      expect(await cancelLeave(db, ani, "bukan-kunci", MOMENT)).toEqual(
         LEAVE_NOT_FOUND,
       );
+      expect((await leaveById(db, id))?.status).toBe("submitted");
+    });
+  });
+
+  it("refuses a student who moved out of the dorm, whose request still waits for Pengelola Asrama", async () => {
+    await inTestDatabase(async (db) => {
+      const { ani, id } = await addRecords(db);
+      const manager = await addTestActor(db, "Pengelola Uji Batal", [
+        "dorm_manager",
+      ]);
+      const moved = await makeNonResident(db, manager, ani.studentId, DAY);
+      if (!moved.ok) throw new Error(moved.error);
+
+      const cancelled = await cancelLeave(db, ani, id, MOMENT);
+
+      expect(cancelled).toEqual(CANCEL_NOT_A_RESIDENT);
+      expect(cancelled).toEqual({
+        ok: false,
+        error:
+          "Izin asrama hanya dapat dibatalkan oleh mahasiswa yang tinggal di asrama.",
+      });
+      expect((await leaveById(db, id))?.status).toBe("submitted");
+      expect(await decideLeave(db, manager, id, "approve", "")).toEqual({
+        ok: true,
+        value: "approved",
+      });
+    });
+  });
+
+  it("refuses an account without a student", async () => {
+    await inTestDatabase(async (db) => {
+      const { id } = await addRecords(db);
+
+      const cancelled = await cancelLeave(
+        db,
+        { roles: ["student"], studentId: null },
+        id,
+        MOMENT,
+      );
+
+      expect(cancelled).toEqual(CANCEL_NOT_A_RESIDENT);
       expect((await leaveById(db, id))?.status).toBe("submitted");
     });
   });
