@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CategoryBars } from "@/health-notes/category-bars";
 import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
@@ -66,6 +67,10 @@ function CategoryPanel({
   );
 }
 
+/** The line under the title on the main Dashboard. */
+const PHYSICAL_LINE =
+  "Kategori dari skor tes kebugaran tahunan (0–100), dengan catatan kesehatan untuk kategori perlu perhatian dan perlu tindak lanjut medis.";
+
 /**
  * Section 3, Kesehatan jasmani: counts only, never a name. `detailAddress`
  * leads to Penilaian jasmani, for an account that may open it.
@@ -74,10 +79,13 @@ export function PhysicalSection({
   recap,
   limits,
   detailAddress,
+  line = PHYSICAL_LINE,
 }: {
   recap: PhysicalRecap;
   limits: FitnessLimits;
   detailAddress: string | null;
+  /** The line under the title. */
+  line?: ReactNode;
 }) {
   return (
     <section className={styles.section} aria-labelledby={PHYSICAL_SECTION}>
@@ -87,8 +95,7 @@ export function PhysicalSection({
         title="Kesehatan jasmani"
         detailAddress={detailAddress}
       >
-        Kategori dari skor tes kebugaran tahunan (0–100), dengan catatan
-        kesehatan untuk kategori perlu perhatian dan perlu tindak lanjut medis.
+        {line}
       </SectionHead>
       <div className={styles.panels}>
         <CategoryPanel recap={recap} limits={limits} />

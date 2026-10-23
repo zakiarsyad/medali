@@ -123,13 +123,22 @@ function LettersPanel({
   );
 }
 
-function GradePanels({ grades }: { grades: CharacterGrades }) {
+/** What section 2 reads of the grades. */
+type GradeNumbers = Pick<CharacterGrades, "recap" | "scheme">;
+
+function GradePanels({
+  grades,
+  emptyWords,
+}: {
+  grades: GradeNumbers;
+  emptyWords: string;
+}) {
   const { recap, scheme } = grades;
   if (recap.kind !== "shown") {
     return (
       <div className={shared.panel}>
         <p className={shared.empty}>
-          {recap.kind === "none" ? NO_GRADES : TOO_FEW}
+          {recap.kind === "none" ? emptyWords : TOO_FEW}
         </p>
       </div>
     );
@@ -146,15 +155,18 @@ function GradePanels({ grades }: { grades: CharacterGrades }) {
  * Section 2, Nilai karakter: the parts of the grade with their weights
  * and the letter spread, counts only, never a name. Without numbers it
  * says why. `detailAddress` leads to Penilaian karakter, for an account
- * that may open it; `children` is what the section holds below.
+ * that may open it; `emptyWords` says there are no grades yet; `children`
+ * is what the section holds below.
  */
 export function GradeSection({
   grades,
   detailAddress,
+  emptyWords = NO_GRADES,
   children,
 }: {
-  grades: CharacterGrades;
+  grades: GradeNumbers;
   detailAddress: string | null;
+  emptyWords?: string;
   children?: ReactNode;
 }) {
   return (
@@ -168,7 +180,7 @@ export function GradeSection({
         Penilaian karakter KEP-220: kehadiran kegiatan, nilai pengasuhan, sikap
         dan perilaku (SIKU), dan nilai SKPM sesuai bobotnya.
       </SectionHead>
-      <GradePanels grades={grades} />
+      <GradePanels grades={grades} emptyWords={emptyWords} />
       {children}
     </section>
   );

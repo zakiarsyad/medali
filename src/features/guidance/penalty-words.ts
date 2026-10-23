@@ -1,9 +1,3 @@
-import {
-  CATEGORY_WORDS,
-  LEVEL_WORDS,
-  type PenaltyCategory,
-  type PenaltyLevel,
-} from "@/discipline-penalties/penalty-kinds";
 import { CHARACTER_SCORE_CAP } from "@/discipline-penalties/score-limit";
 import type {
   ContinuationCondition,
@@ -86,14 +80,6 @@ export const SOCIAL_WORK_PLACE_WORDS: Record<SocialWorkPlace, string> = {
   home_agency: "Unit kerja di instansi asal",
   outside: "Lembaga sosial atau lembaga lain di luar PKN STAN",
 };
-
-/** A Kategori and Jenjang as a badge names it: "Ringan · jenjang pertama". */
-export function jenjangWords(
-  category: PenaltyCategory,
-  level: PenaltyLevel,
-): string {
-  return `${CATEGORY_WORDS[category]} · jenjang ${LEVEL_WORDS[level]}`;
-}
 
 /** How long a kerja sosial lasts: "7 hari" or "8 bulan". */
 export function lengthWords(length: SocialWorkLength): string {

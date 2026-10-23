@@ -69,6 +69,15 @@ describe("Capaian karakter in a student's detail", () => {
     );
   });
 
+  it("does not point the student on their own card to a menu that is not theirs", () => {
+    const html = viewOf({ ...NOT_YET, mayAssess: false, own: true });
+
+    expect(html).toContain(
+      "Belum ada hasil asesmen karakter semester ini.</p>",
+    );
+    expect(html).not.toContain("Penilaian &gt; Asesmen karakter");
+  });
+
   it("offers no Input asesmen to an account that may not assess the student", () => {
     expect(viewOf({ ...NOT_YET, mayAssess: false })).not.toContain(
       "Input asesmen",
@@ -97,6 +106,28 @@ describe("Capaian karakter in a student's detail", () => {
       "Nilai semester ini dibatasi paling tinggi 70 karena hukuman disiplin sedang jenjang pertama. Rerata sebelum pembatasan 80,3.",
     );
     expect(html).not.toContain("(86)");
+  });
+
+  it("names the strongest and the weakest value from the scores as stored on the student's own card under a limit, the medal and Rerata held", () => {
+    const html = viewOf({
+      ...ASSESSED,
+      latest: ASSESSED.latest && {
+        ...ASSESSED.latest,
+        scores: { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+      },
+      limit: { category: "light", level: 2 },
+      stored: { M: 80, E: 78, D: 84, A: 72, L: 82, I: 86 },
+      mayAssess: false,
+    });
+
+    expect(html).toContain("Rerata 70,0");
+    expect(html).toContain(
+      "Nilai semester ini dibatasi paling tinggi 70 karena hukuman disiplin ringan jenjang kedua. Rerata sebelum pembatasan 80,3.",
+    );
+    expect(html).toContain(
+      "Sebelum pembatasan, paling menonjol pada <b>Integritas</b> (86). Perlu perhatian pada <b>Adaptif</b> (72).",
+    );
+    expect(html).not.toContain("Input asesmen");
   });
 
   it("says nothing of a limit for a student without one", () => {
