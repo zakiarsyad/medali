@@ -61,7 +61,7 @@ Kepala Unit who is gone.
 - [x] 1. The handover rule: the role moves to another active staff
   account, the old account keeps its other roles or is removed when it has
   none, refusals, and the log, with its checks.
-- [ ] 2. "Jadikan Kepala Unit" with its question on Pengguna dan peran,
+- [x] 2. "Jadikan Kepala Unit" with its question on Pengguna dan peran,
   with its checks.
 - [ ] 3. The handover command on the campus server, and its part in the
   hosting guide, with its checks.
