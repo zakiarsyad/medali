@@ -89,6 +89,8 @@ program only), the three roles that already use the Dashboard filter.
 2. The Asrama choice is offered also while no academic period runs:
    Internasional and Pembibitan students and those placed by hand still
    live in a dorm then.
+3. A choice that is picked stays shown with its count, even when the
+   count is 0, so it can be seen and changed.
 
 ## Steps
 
