@@ -100,4 +100,4 @@ program only), the three roles that already use the Dashboard filter.
   filter".
 - [x] 4. Ketua Program Studi stays inside their program, and the other
   roles are refused, with checks.
-- [ ] 5. The phone layout and the speed check.
+- [x] 5. The phone layout and the speed check.

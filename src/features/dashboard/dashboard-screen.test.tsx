@@ -261,6 +261,18 @@ describe("DashboardScreen", () => {
     expect(asrama).not.toContain("Wismantara");
   });
 
+  it("puts Asrama inside the folded Filter button with the other choices, for a phone", () => {
+    const html = shown(viewOf());
+    const button = html.indexOf('aria-expanded="false"');
+    // The choices sit in a form part inside the part that folds; both end here.
+    const folded = html.slice(button, html.indexOf("</div></div>", button));
+
+    expect(folded).toContain(">Filter</button>");
+    for (const label of ["Tahapan", "Asrama", "Program studi", "Instansi"]) {
+      expect(folded).toContain(`${label}<select`);
+    }
+  });
+
   it("names Asrama Wismantara when it holds students", () => {
     const view = viewOf();
     const html = shown({
