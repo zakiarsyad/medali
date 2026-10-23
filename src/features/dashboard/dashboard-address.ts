@@ -1,5 +1,6 @@
 import { entryPath } from "@/db/schema";
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { DORM_CHOICES, type DormChoice } from "./dorm-choices";
 
 export const DASHBOARD_ADDRESS = "/dashboard";
 
@@ -12,6 +13,7 @@ export const NO_AGENCY = "tanpa";
 export interface DashboardFilters {
   /** The number of a tahap, 1 to 4. */
   stageNo: number | null;
+  dorm: DormChoice | null;
   studyProgramId: number | null;
   entryPath: EntryPath | null;
   province: string | null;
@@ -24,6 +26,7 @@ export interface DashboardFilters {
 
 export const NO_FILTERS: DashboardFilters = {
   stageNo: null,
+  dorm: null,
   studyProgramId: null,
   entryPath: null,
   province: null,
@@ -55,6 +58,10 @@ function readName(text: string): string | null {
   return name;
 }
 
+function readDorm(text: string): DormChoice | null {
+  return DORM_CHOICES.find((choice) => choice === text) ?? null;
+}
+
 /**
  * What the address asks the Dashboard for. Only the shape of each part is
  * checked here; whether a choice is known is checked against what the
@@ -66,6 +73,7 @@ export function readDashboardFilters(params: SearchParams): DashboardFilters {
   const path = firstParam(params.jalur);
   return {
     stageNo: STAGE_NO.test(stage) ? Number(stage) : null,
+    dorm: readDorm(firstParam(params.asrama)),
     studyProgramId: PROGRAM_ID.test(program) ? Number(program) : null,
     entryPath: entryPath.enumValues.find((one) => one === path) ?? null,
     province: readName(firstParam(params.provinsi)),
@@ -122,6 +130,7 @@ function yesNo(choice: boolean): string {
 function filterParams(filters: DashboardFilters): URLSearchParams {
   const params = new URLSearchParams();
   if (filters.stageNo !== null) params.set("tahap", String(filters.stageNo));
+  if (filters.dorm !== null) params.set("asrama", filters.dorm);
   if (filters.studyProgramId !== null) {
     params.set("prodi", String(filters.studyProgramId));
   }

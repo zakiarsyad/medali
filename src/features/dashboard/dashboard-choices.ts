@@ -1,14 +1,14 @@
 import { and, asc, count, isNotNull, type SQL, sql } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import {
-  heldByStage,
-  type StageCohorts,
-} from "@/academic-periods/stage-cohorts";
+import { heldByStage } from "@/academic-periods/stage-cohorts";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
+import type { DormId } from "@/dorms/dorms";
+import { dormInSql } from "@/dorms/resident-condition";
 import { ACTIVE_MEMBER } from "@/mentoring/active-member";
 import { type DashboardFilters, NO_AGENCY } from "./dashboard-address";
-import { dashboardStudents } from "./dashboard-students";
+import { type DashboardCohorts, dashboardStudents } from "./dashboard-students";
+import { type DormChoice, heldByDormChoice } from "./dorm-choices";
 
 /** What the Aktif students an account sees hold, before any filter. */
 export interface HeldChoices {
@@ -72,6 +72,8 @@ export interface ChoiceCounts {
   international: Map<boolean, number>;
   /** By the name of the instansi, and by `NO_AGENCY`. */
   agencies: Map<string, number>;
+  /** By the Asrama choice. */
+  dorms: Map<DormChoice, number>;
 }
 
 async function countEach<T>(
@@ -110,6 +112,29 @@ async function countAgencies(
 }
 
 /**
+ * How many of the students counted live in each dorm, and in none under
+ * null. The dorm of each student is worked out once, in a read of its own.
+ */
+async function countDorms(
+  db: Database,
+  where: SQL,
+  dormCohorts: number[],
+): Promise<Map<DormChoice, number>> {
+  const lived = db
+    .select({ dorm: dormInSql(dormCohorts).as("dorm") })
+    .from(students)
+    .where(where)
+    .as("lived");
+  const rows = await db
+    .select({ dorm: lived.dorm, held: count() })
+    .from(lived)
+    .groupBy(lived.dorm);
+  return heldByDormChoice(
+    new Map<DormId | null, number>(rows.map((row) => [row.dorm, row.held])),
+  );
+}
+
+/**
  * How many Aktif students the account sees under each choice of the
  * filter. A choice is counted with every other filter applied and without
  * its own, so it says what choosing it would give. The database counts
@@ -119,10 +144,10 @@ export async function countChoices(
   db: Database,
   visible: SQL,
   filters: DashboardFilters,
-  stages: StageCohorts,
+  cohorts: DashboardCohorts,
 ): Promise<ChoiceCounts> {
   const without = (left: Partial<DashboardFilters>) =>
-    dashboardStudents(visible, { ...filters, ...left }, stages);
+    dashboardStudents(visible, { ...filters, ...left }, cohorts);
   const [
     matching,
     byCohort,
@@ -133,6 +158,7 @@ export async function countChoices(
     seedling,
     international,
     agencies,
+    dorms,
   ] = await Promise.all([
     countMatching(db, without({})),
     countEach<number>(db, students.cohortYear, without({ stageNo: null })),
@@ -159,10 +185,11 @@ export async function countChoices(
       without({ international: null }),
     ),
     countAgencies(db, without({ originAgency: null })),
+    countDorms(db, without({ dorm: null }), cohorts.dorms),
   ]);
   return {
     matching,
-    stages: heldByStage(byCohort, stages),
+    stages: heldByStage(byCohort, cohorts.stages),
     programs,
     entryPaths,
     provinces,
@@ -170,5 +197,6 @@ export async function countChoices(
     seedling,
     international,
     agencies,
+    dorms,
   };
 }

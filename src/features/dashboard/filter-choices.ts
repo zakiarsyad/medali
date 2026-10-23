@@ -1,8 +1,10 @@
 import { STAGES } from "@/academic-periods/stages";
 import type { StudyProgram } from "@/db/study-programs";
+import { DORM_NAMES } from "@/dorms/dorms";
 import type { CountedChoice } from "@/ui/counted-select";
 import { type EntryPath, NO, NO_AGENCY, YES } from "./dashboard-address";
 import type { ChoiceCounts } from "./dashboard-choices";
+import { DORM_CHOICES, type DormChoice } from "./dorm-choices";
 
 /** The words of each list of choices of the filter, and its choices. */
 
@@ -10,6 +12,22 @@ export const ENTRY_PATH_WORDS: Record<EntryPath, string> = {
   regular: "Reguler",
   transfer: "Alih program",
 };
+
+const DORM_CHOICE_WORDS: Record<DormChoice, string> = {
+  semua: "Semua asrama",
+  wismantara: "Asrama Wismantara",
+  dana_rakca: DORM_NAMES.dana_rakca,
+  cipta_bakti: DORM_NAMES.cipta_bakti,
+  non: "Non asrama",
+};
+
+export function dormChoices(counts: ChoiceCounts): CountedChoice[] {
+  return DORM_CHOICES.map((choice) => ({
+    value: choice,
+    shown: DORM_CHOICE_WORDS[choice],
+    held: counts.dorms.get(choice) ?? 0,
+  }));
+}
 
 export function stageChoices(counts: ChoiceCounts): CountedChoice[] {
   return STAGES.map((name, place) => {
