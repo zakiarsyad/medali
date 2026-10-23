@@ -12,6 +12,11 @@ export const ASK_NOT_ALLOWED = refusal(
   "Anda tidak berhak mengajukan klarifikasi.",
 );
 
+/** What sending answers to a student who lives in no dorm on that day. */
+export const NOT_A_RESIDENT = refusal(
+  "Klarifikasi asrama hanya dapat diajukan oleh mahasiswa yang tinggal di asrama.",
+);
+
 /** An activity that is unknown, or a day it was not counted on. */
 export const ABSENCE_NOT_FOUND = refusal(
   "Kegiatan ini tidak ditemukan. Muat ulang halaman.",

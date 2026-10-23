@@ -35,6 +35,7 @@ import {
   CLARIFICATION_SENT,
   FILE_NOT_KEPT,
   NO_FILE_STORAGE,
+  NOT_A_RESIDENT,
   NOT_TO_CLARIFY,
 } from "./clarification-messages";
 import { readNewestStatus, readOwnMark } from "./clarification-store";
@@ -42,6 +43,7 @@ import { clarificationOpen } from "./clarification-time";
 import { lockActivity } from "./count-store";
 import { leaveMarkOf } from "./leave-marks";
 import { readApprovedLeaves, spanOfHeld } from "./leave-store";
+import { readStudentDorm } from "./student-dorm";
 
 function refusal(error: string) {
   return { ok: false, error } as const;
@@ -230,7 +232,8 @@ function addSubmitted(
 /**
  * Keeps a clarification of the resident of an account for their absence
  * at an activity on a day, to wait for BAM. Which student is never asked
- * from outside: it is the account's own. The absence must be one Riwayat
+ * from outside: it is the account's own, and they must live in a dorm on
+ * the day it is sent. The absence must be one Riwayat
  * offers to clarify at `at`, the moment on the server's clock, in campus
  * time. The file goes to the file storage first and the clarification is
  * saved after; when that adds nothing the file is removed again, so one
@@ -252,6 +255,8 @@ export async function sendDormClarification(
   const asked = checked(sent);
   if (!asked.ok) return asked;
   if (!isUuid(sent.activityId) || !isDay(sent.day)) return ABSENCE_NOT_FOUND;
+  const dorm = await readStudentDorm(db, studentId, campusDay(at));
+  if (dorm === null) return NOT_A_RESIDENT;
   const before = await standingOf(db, studentId, sent, at);
   if (before.kind === "answered") return before.answer;
   if (store === null) return NO_FILE_STORAGE;
