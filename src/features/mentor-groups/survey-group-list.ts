@@ -40,6 +40,11 @@ export interface SurveyGroupRow {
   result: SurveyGroupResult;
 }
 
+/** What tells one row from every other: its group and its mentor. */
+export function rowKey(groupId: string, mentorId: string | null): string {
+  return `${groupId} ${mentorId ?? ""}`;
+}
+
 function sumsByGroup(sums: readonly MentorSums[]): Map<string, MentorSums[]> {
   const byGroup = new Map<string, MentorSums[]>();
   for (const one of sums) {
@@ -73,7 +78,7 @@ export function surveyGroupRows(
         : [{ mentorId, mentorName, answers: 0, total: 0 }];
     for (const mentor of mentors) {
       rows.push({
-        key: `${group.id} ${mentor.mentorId ?? ""}`,
+        key: rowKey(group.id, mentor.mentorId),
         group,
         mentorId: mentor.mentorId,
         mentorName: mentor.mentorName,

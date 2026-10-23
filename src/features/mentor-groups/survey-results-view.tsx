@@ -1,10 +1,18 @@
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
+import { groupCode } from "@/ui/group-code";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
 import styles from "./mentor-groups.module.css";
 import { SURVEY_ADDRESS } from "./survey-address";
-import type { ResultNumbers, ResultPage } from "./survey-group-list";
+import type { GroupSurveyDetail } from "./survey-group-detail";
+import { GroupSurveyDetailView } from "./survey-group-detail-view";
+import {
+  type ResultNumbers,
+  type ResultPage,
+  rowKey,
+  type SurveyGroupRow,
+} from "./survey-group-list";
 import type { ResultPeriod } from "./survey-result-periods";
 import {
   feedbackWords,
@@ -19,7 +27,7 @@ import {
   type SurveyResultChoices,
   surveyResultsAddress,
 } from "./survey-results-address";
-import { SurveyResultsTable } from "./survey-results-table";
+import { type OpenDetail, SurveyResultsTable } from "./survey-results-table";
 
 const SEARCH_WORDS = "Cari kelompok atau pengasuh";
 
@@ -119,6 +127,28 @@ export interface ShownResults {
   period: ResultPeriod;
   numbers: ResultNumbers;
   page: ResultPage;
+  /** The detail of the row the address opens, or null when it opens none of the page. */
+  detail: GroupSurveyDetail | null;
+}
+
+/** The row of the page the address opens, with its detail, or null. */
+function openDetail(
+  shown: ShownResults,
+  choices: SurveyResultChoices,
+): OpenDetail | null {
+  const { opened } = choices;
+  if (opened === null || shown.detail === null) return null;
+  const key = rowKey(opened.groupId, opened.mentorId);
+  const row = shown.page.rows.find((one) => one.key === key);
+  if (!row) return null;
+  const detail = (
+    <GroupSurveyDetailView
+      detail={shown.detail}
+      groupId={row.group.id}
+      code={groupCode(row.group)}
+    />
+  );
+  return { key, detail };
 }
 
 function Results({
@@ -130,6 +160,12 @@ function Results({
   choices: SurveyResultChoices;
 }) {
   const { period, numbers, page } = shown;
+  const open = openDetail(shown, choices);
+  function addressOf(row: SurveyGroupRow): string {
+    if (row.key === open?.key) return surveyResultsAddress(choices, page.page);
+    const opened = { groupId: row.group.id, mentorId: row.mentorId };
+    return surveyResultsAddress(choices, page.page, opened);
+  }
   return (
     <>
       <Numbers numbers={numbers} />
@@ -139,7 +175,11 @@ function Results({
       <Filters choices={choices} />
       {page.matching > 0 ? (
         <>
-          <SurveyResultsTable rows={page.rows} />
+          <SurveyResultsTable
+            rows={page.rows}
+            open={open}
+            addressOf={addressOf}
+          />
           <ListPager
             page={page.page}
             matching={page.matching}

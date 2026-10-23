@@ -10,6 +10,13 @@ const FILTER_WORDS: Record<NonNullable<ResultFilter>, string> = {
   no_answers: "belum",
 };
 
+/** The row whose detail is open: a group and the mentor its answers count for. */
+export interface OpenedRow {
+  groupId: string;
+  /** Null for a row of a group that had no mentor. */
+  mentorId: string | null;
+}
+
 /** What "Hasil evaluasi per kelompok" is asked to show. */
 export interface SurveyResultChoices {
   /**
@@ -23,6 +30,11 @@ export interface SurveyResultChoices {
   filter: ResultFilter;
   /** The page of the list, counted from 1. */
   page: number;
+  /**
+   * The row whose detail is open, or null. It is not checked here: only a
+   * row of the page shown opens.
+   */
+  opened: OpenedRow | null;
 }
 
 export const NO_RESULT_CHOICES: SurveyResultChoices = {
@@ -30,6 +42,7 @@ export const NO_RESULT_CHOICES: SurveyResultChoices = {
   query: "",
   filter: null,
   page: 1,
+  opened: null,
 };
 
 const PAGE = /^[1-9]\d{0,5}$/;
@@ -48,6 +61,12 @@ function readFilter(value: SearchParams[string]): ResultFilter {
   return null;
 }
 
+function readOpened(params: SearchParams): OpenedRow | null {
+  const groupId = readId(params.kelompok);
+  if (groupId === null) return null;
+  return { groupId, mentorId: readId(params.pengasuh) };
+}
+
 /**
  * What the address asks the results for. Nothing in an address is
  * trusted: a part that is not understood counts as not chosen.
@@ -61,13 +80,18 @@ export function readSurveyResultParams(
     query: searchText(firstParam(params.q)) ?? "",
     filter: readFilter(params.saring),
     page: PAGE.test(page) ? Number(page) : 1,
+    opened: readOpened(params),
   };
 }
 
-/** The address of a page of the results with these choices. */
+/**
+ * The address of a page of the results with these choices, with the
+ * detail of a row open when `opened` names one.
+ */
 export function surveyResultsAddress(
   choices: SurveyResultChoices,
   page = 1,
+  opened: OpenedRow | null = null,
 ): string {
   const params = new URLSearchParams();
   if (choices.surveyPeriodId !== null) {
@@ -78,6 +102,8 @@ export function surveyResultsAddress(
     params.set("saring", FILTER_WORDS[choices.filter]);
   }
   if (page > 1) params.set("hal", String(page));
+  if (opened !== null) params.set("kelompok", opened.groupId);
+  if (opened?.mentorId) params.set("pengasuh", opened.mentorId);
   const search = params.toString();
   return search === "" ? SURVEY_ADDRESS : `${SURVEY_ADDRESS}?${search}`;
 }

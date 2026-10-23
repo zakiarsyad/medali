@@ -2,15 +2,38 @@ import { campusDay } from "@/academic-periods/campus-day";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
-import { resultNumbers, resultPage } from "./survey-group-list";
+import {
+  type GroupSurveyDetail,
+  readGroupSurveyDetail,
+} from "./survey-group-detail";
+import {
+  type ResultPage,
+  resultNumbers,
+  resultPage,
+  rowKey,
+} from "./survey-group-list";
 import { readSurveyGroupRows } from "./survey-group-reads";
 import {
   chooseResultPeriod,
   type ResultPeriod,
   readResultPeriods,
 } from "./survey-result-periods";
-import type { SurveyResultChoices } from "./survey-results-address";
+import type { OpenedRow, SurveyResultChoices } from "./survey-results-address";
 import { type ShownResults, SurveyResultsView } from "./survey-results-view";
+
+/** The detail of the row the address opens, when it is a row of the page. */
+function readOpenDetail(
+  db: Database,
+  limit: RowLimit,
+  period: ResultPeriod,
+  page: ResultPage,
+  opened: OpenedRow | null,
+): Promise<GroupSurveyDetail | null> {
+  if (opened === null) return Promise.resolve(null);
+  const key = rowKey(opened.groupId, opened.mentorId);
+  if (!page.rows.some((row) => row.key === key)) return Promise.resolve(null);
+  return readGroupSurveyDetail(db, limit, period.id, opened);
+}
 
 /**
  * The numbers above the table need every group, so all of them are added
@@ -23,10 +46,12 @@ async function readShown(
   choices: SurveyResultChoices,
 ): Promise<ShownResults> {
   const rows = await readSurveyGroupRows(db, limit, period);
+  const page = resultPage(rows, choices);
   return {
     period,
     numbers: resultNumbers(rows),
-    page: resultPage(rows, choices),
+    page,
+    detail: await readOpenDetail(db, limit, period, page, choices.opened),
   };
 }
 

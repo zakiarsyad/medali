@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { GroupSurveyDetail } from "./survey-group-detail";
 import {
   type MentorSums,
   resultNumbers,
@@ -17,6 +18,7 @@ import { SurveyResultsView } from "./survey-results-view";
 vi.mock("next/form", () => ({
   default: ({ children }: { children: unknown }) => children,
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
 
 const PERIOD: ResultPeriod = {
   id: "periode-uji",
@@ -67,6 +69,7 @@ const ROWS = surveyGroupRows(
 function shown(
   period: ResultPeriod = PERIOD,
   choices: SurveyResultChoices = NO_RESULT_CHOICES,
+  detail: GroupSurveyDetail | null = null,
 ): string {
   return renderToStaticMarkup(
     <SurveyResultsView
@@ -75,11 +78,23 @@ function shown(
         period,
         numbers: resultNumbers(ROWS),
         page: resultPage(ROWS, choices),
+        detail,
       }}
       choices={choices}
     />,
   );
 }
+
+const OPEN_FIRST: SurveyResultChoices = {
+  ...NO_RESULT_CHOICES,
+  opened: { groupId: "kelompok-1", mentorId: "pengasuh-1" },
+};
+
+const DETAIL: GroupSurveyDetail = {
+  answers: 3,
+  averages: [4, 4.3, 4, 3, 2.3, 4.3, 4, 3.7],
+  suggestions: ["Atur jadwal lebih awal."],
+};
 
 describe("SurveyResultsView", () => {
   it("names the period with its days and weights, and offers the periods with their status", () => {
@@ -176,6 +191,37 @@ describe("SurveyResultsView", () => {
       expect(view).toContain(`<th>${title}</th>`);
       expect(view).toContain(`data-title="${title}"`);
     }
+  });
+
+  it("opens the detail of a pressed row under it, and a press on that row closes it", () => {
+    const view = shown(PERIOD, OPEN_FIRST, DETAIL);
+
+    expect(view).toContain("Rata-rata per pernyataan");
+    expect(view).toContain("Saran mahasiswa (tanpa nama)");
+    expect(view).toContain("Atur jadwal lebih awal.");
+    expect(view).toContain("Buka kelompok KP 25-D3PJK-01");
+    expect(view).toContain(
+      'href="/pengasuh/survei?periode=periode-uji&amp;kelompok=kelompok-2&amp;pengasuh=pengasuh-2"',
+    );
+    expect(view).toContain('href="/pengasuh/survei?periode=periode-uji"');
+    expect(view.indexOf("Rata-rata per pernyataan")).toBeGreaterThan(
+      view.indexOf("KP 25-D3PJK-01"),
+    );
+    expect(view.indexOf("Rata-rata per pernyataan")).toBeLessThan(
+      view.indexOf("KP 25-D3PJK-02"),
+    );
+  });
+
+  it("opens no detail without one, nor for a row that is not on the page", () => {
+    const elsewhere = {
+      ...NO_RESULT_CHOICES,
+      opened: { groupId: "kelompok-9", mentorId: "pengasuh-9" },
+    };
+
+    expect(shown(PERIOD, OPEN_FIRST)).not.toContain("Rata-rata per pernyataan");
+    expect(shown(PERIOD, elsewhere, DETAIL)).not.toContain(
+      "Rata-rata per pernyataan",
+    );
   });
 
   it("asks to open a period while there is none", () => {

@@ -149,6 +149,21 @@ history. No one ever sees one student's answers.
     the page of 25 rows asked for.
 17. The line under the heading writes the days as the card of the
     period does: "1 Jun 2026 sampai 21 Jun 2026".
+18. A press on a row opens its detail right under it, and a press on
+    the open row closes it. The address names the open row, so going
+    back closes it too. The server reads the detail only of a row on
+    the page shown, of a group the account may see.
+19. Below 3 answers the averages per statement are hidden with the same
+    reason as the suggestions: "Disembunyikan karena responden kurang
+    dari 3 orang, untuk menjaga kerahasiaan." The server then does not
+    even read them. A group without answers shows "Belum ada
+    responden."
+20. Each statement shows its average beside it, without the
+    prototype's bars. The suggestions are listed in the order of their
+    words, without a name or a date, so neither points to the student
+    who wrote one. With none it says "Tidak ada saran tertulis."
+21. The link reads "Buka kelompok (code)" and opens the group's page in
+    Kelompok pengasuhan.
 
 ## Steps
 
@@ -156,7 +171,7 @@ history. No one ever sees one student's answers.
   limit) with tests, and sample answers for the closed sample period.
 - [x] 2. The table with the numbers, period choice, search, filters and
   paging.
-- [ ] 3. The detail per group, with hidden suggestions kept on the
+- [x] 3. The detail per group, with hidden suggestions kept on the
   server.
 - [ ] 4. Capaian karakter is locked when a period closes.
 - [ ] 5. "Tetapkan hasil evaluasi" writes into the evaluation history
