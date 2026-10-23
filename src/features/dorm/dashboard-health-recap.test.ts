@@ -92,7 +92,7 @@ describe("dormMentalOf", () => {
 });
 
 describe("dormPhysicalOf", () => {
-  it("adds the dorms up for the bars and gives each dorm its own counts, each of 1 to 4 as <5", () => {
+  it("adds the dorms up for the bars and gives a dorm with 5 or more tested its own counts, each of 1 to 4 as <5", () => {
     const physical = dormPhysicalOf([
       {
         key: "dana_rakca",
@@ -120,8 +120,25 @@ describe("dormPhysicalOf", () => {
       wismantara_putra: NO_CATEGORY,
       wismantara_putri: NO_CATEGORY,
       dana_rakca: { excellent: 5, good: "<5", attention: "<5", medical: "<5" },
-      cipta_bakti: { ...NO_CATEGORY, excellent: "<5" },
+      cipta_bakti: null,
     });
+  });
+
+  it("sends no category count of a dorm where only 1 to 4 residents in reach are tested", () => {
+    const physical = dormPhysicalOf([
+      {
+        key: "dana_rakca",
+        tally: tally(8, 8, { ...NO_CATEGORY, excellent: 8 }),
+      },
+      {
+        key: "cipta_bakti",
+        tally: tally(3, 1, { ...NO_CATEGORY, medical: 1 }),
+      },
+    ]);
+
+    expect(physical.recap.kind).toBe("shown");
+    expect(physical.byDorm?.cipta_bakti).toBeNull();
+    expect(JSON.stringify(physical.byDorm)).not.toContain("<5");
   });
 
   it("sends no count at all, of the bars or of a dorm, while 1 to 4 residents are tested", () => {

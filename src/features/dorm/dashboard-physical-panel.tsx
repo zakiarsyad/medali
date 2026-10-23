@@ -3,7 +3,10 @@ import { DORM_IDS, DORM_SHORT_NAMES, type DormId } from "@/dorms/dorms";
 import { FinalCategoryBadge } from "@/health-notes/category-badge";
 import { CategoryBars } from "@/health-notes/category-bars";
 import { CATEGORY_WORDS } from "@/health-notes/category-words";
-import { FITNESS_CATEGORIES } from "@/health-notes/fitness-ids";
+import {
+  FITNESS_CATEGORIES,
+  type FitnessCategory,
+} from "@/health-notes/fitness-ids";
 import { NO_NOTE_YET } from "@/health-notes/health-words";
 import { countWords } from "@/health-notes/shown-count";
 import shared from "@/ui/data-screen.module.css";
@@ -13,6 +16,8 @@ import type { CareRow, DormCategories } from "./dashboard-health-recap";
 import {
   CARE_HEADING,
   CARE_LINK,
+  DORM_HELD_BACK,
+  HELD_BACK_CELL,
   NOBODY_NEEDS_CARE,
   NOBODY_TESTED,
   PHYSICAL_TOO_FEW,
@@ -20,8 +25,37 @@ import {
 } from "./dashboard-health-words";
 import { DORM_HEALTH_ADDRESS } from "./dorm-health-address";
 
-/** Each dorm's count per category. On a phone each dorm is a card of its own. */
-function DormTable({ byDorm }: { byDorm: Record<DormId, DormCategories> }) {
+function cellWords(
+  counts: DormCategories | null,
+  category: FitnessCategory,
+): string {
+  if (counts === null) return HELD_BACK_CELL;
+  return countWords(counts[category]);
+}
+
+/**
+ * Each dorm's count per category, "–" in each for a dorm held back. On a
+ * phone each dorm is a card of its own.
+ */
+function DormTable({
+  byDorm,
+}: {
+  byDorm: Record<DormId, DormCategories | null>;
+}) {
+  const anyHeldBack = DORM_IDS.some((dorm) => byDorm[dorm] === null);
+  return (
+    <>
+      <DormRows byDorm={byDorm} />
+      {anyHeldBack && <p className={board.more}>{DORM_HELD_BACK}</p>}
+    </>
+  );
+}
+
+function DormRows({
+  byDorm,
+}: {
+  byDorm: Record<DormId, DormCategories | null>;
+}) {
   return (
     <table className={`${shared.table} ${shared.stacked} ${board.dormTable}`}>
       <thead>
@@ -40,7 +74,7 @@ function DormTable({ byDorm }: { byDorm: Record<DormId, DormCategories> }) {
             </td>
             {FITNESS_CATEGORIES.map((category) => (
               <td key={category} data-title={CATEGORY_WORDS[category]}>
-                {countWords(byDorm[dorm][category])}
+                {cellWords(byDorm[dorm], category)}
               </td>
             ))}
           </tr>

@@ -18,6 +18,13 @@ export const PHYSICAL_TOO_FEW =
 /** What "Kesehatan jasmani penghuni" says while no resident in reach is tested. */
 export const NOBODY_TESTED = "Belum ada hasil tes kebugaran penghuni.";
 
+/** A category cell of a dorm held back. */
+export const HELD_BACK_CELL = "–";
+
+/** What the table says under it when a dorm is held back. */
+export const DORM_HELD_BACK =
+  "–: kurang dari 5 penghuni di asrama ini sudah dites, agar identitas tidak dapat ditebak.";
+
 /** The heading of the residents who need care, for an account that may see their names. */
 export const CARE_HEADING = "Perlu perhatian dan tindak lanjut medis";
 

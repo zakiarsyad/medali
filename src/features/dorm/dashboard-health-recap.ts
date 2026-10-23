@@ -9,7 +9,11 @@ import {
 } from "@/health-notes/fitness-recap";
 import type { FinalCategory } from "@/health-notes/health-category";
 import { noteText, roomWords } from "@/health-notes/health-words";
-import { type CountShown, shownCount } from "@/health-notes/shown-count";
+import {
+  type CountShown,
+  FEWEST_COUNTED,
+  shownCount,
+} from "@/health-notes/shown-count";
 import type { RecapRow } from "@/health-notes/sick-list";
 import type { MentalRecap, PublishedRow } from "@/mental-health/mental-recap";
 
@@ -25,8 +29,11 @@ export type DormCategories = Record<FitnessCategory, CountShown>;
 /** "Kesehatan jasmani penghuni": the bars of every resident in reach, and each dorm's counts. */
 export interface DormPhysical {
   recap: PhysicalRecap;
-  /** Each dorm's counts, or null while the bars show none. */
-  byDorm: Record<DormId, DormCategories> | null;
+  /**
+   * Each dorm's counts, or null while the bars show none. A dorm's own
+   * counts are null while only 1 to 4 of its residents in reach are tested.
+   */
+  byDorm: Record<DormId, DormCategories | null> | null;
 }
 
 /** A resident under "Perlu perhatian dan tindak lanjut medis". */
@@ -70,12 +77,25 @@ function sumOf(tallies: readonly GroupTally<DormId>[]): FitnessTally {
   return sum;
 }
 
+/**
+ * One dorm's counts, or null while only 1 to 4 of its residents in reach
+ * are tested: with so few, even "<5" in one category and 0 in the others
+ * would tell someone's category.
+ */
+function dormCategoriesOf(
+  tally: FitnessTally | undefined,
+): DormCategories | null {
+  if (tally === undefined) return { ...NO_CATEGORY };
+  const isFew = tally.tested > 0 && tally.tested < FEWEST_COUNTED;
+  if (isFew) return null;
+  return shownByCategory(tally.byCategory);
+}
+
 function byDormOf(
   tallies: readonly GroupTally<DormId>[],
-): Record<DormId, DormCategories> {
+): Record<DormId, DormCategories | null> {
   const found = new Map(tallies.map(({ key, tally }) => [key, tally]));
-  const of = (dorm: DormId) =>
-    shownByCategory(found.get(dorm)?.byCategory ?? NO_CATEGORY);
+  const of = (dorm: DormId) => dormCategoriesOf(found.get(dorm));
   return {
     wismantara_putra: of("wismantara_putra"),
     wismantara_putri: of("wismantara_putri"),
@@ -87,8 +107,8 @@ function byDormOf(
 /**
  * "Kesehatan jasmani penghuni" from each dorm's tally: the bars of every
  * resident in reach with the rules of the Dashboard, and each dorm's
- * counts only while the bars show counts, each of 1 to 4 as "<5". No
- * illness is counted here.
+ * counts only while the bars show counts, each of 1 to 4 as "<5", and
+ * none for a dorm with only 1 to 4 tested. No illness is counted here.
  */
 export function dormPhysicalOf(
   tallies: readonly GroupTally<DormId>[],

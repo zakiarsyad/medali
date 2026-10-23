@@ -1,10 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import type { DormId } from "@/dorms/dorms";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
 import type { PhysicalPanel } from "./dashboard-health";
-import type { CareRow } from "./dashboard-health-recap";
+import type { CareRow, DormCategories } from "./dashboard-health-recap";
 import {
   CARE_HEADING,
+  DORM_HELD_BACK,
   NOBODY_NEEDS_CARE,
   NOBODY_TESTED,
   PHYSICAL_TOO_FEW,
@@ -12,6 +14,13 @@ import {
 import { PhysicalHealthPanel } from "./dashboard-physical-panel";
 
 const NONE = { excellent: 0, good: 0, attention: 0, medical: 0 };
+
+const BY_DORM: Record<DormId, DormCategories | null> = {
+  wismantara_putra: NONE,
+  wismantara_putri: null,
+  dana_rakca: { excellent: 30, good: 40, attention: 10, medical: "<5" },
+  cipta_bakti: { excellent: 10, good: 9, attention: 6, medical: 0 },
+};
 
 const SHOWN: PhysicalPanel = {
   recap: {
@@ -23,12 +32,7 @@ const SHOWN: PhysicalPanel = {
     fitShare: 82,
     illnesses: null,
   },
-  byDorm: {
-    wismantara_putra: NONE,
-    wismantara_putri: { ...NONE, good: "<5" },
-    dana_rakca: { excellent: 30, good: 40, attention: 10, medical: "<5" },
-    cipta_bakti: { excellent: 10, good: 9, attention: 6, medical: 0 },
-  },
+  byDorm: BY_DORM,
   limits: STARTING_LIMITS,
   care: null,
 };
@@ -87,6 +91,27 @@ describe("PhysicalHealthPanel", () => {
     expect(shown).not.toContain("<meter");
     expect(shown).not.toContain("<table");
     expect(shown).not.toContain("sudah dites<");
+  });
+
+  it("shows – in each category of a dorm held back, and says why once", () => {
+    const shown = render(SHOWN);
+
+    const row = shown.slice(
+      shown.indexOf("Wismantara Putri"),
+      shown.indexOf("</tr>", shown.indexOf("Wismantara Putri")),
+    );
+    expect(row.match(/>–<\/td>/g)).toHaveLength(4);
+    expect(shown).toContain(DORM_HELD_BACK);
+  });
+
+  it("says nothing of a held-back dorm when every dorm shows its counts", () => {
+    const shown = render({
+      ...SHOWN,
+      byDorm: { ...BY_DORM, wismantara_putri: NONE },
+    });
+
+    expect(shown).not.toContain(DORM_HELD_BACK);
+    expect(shown).not.toContain(">–<");
   });
 
   it("says so when no resident is tested", () => {

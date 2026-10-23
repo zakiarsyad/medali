@@ -163,7 +163,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
             attention: "<5",
             medical: "<5",
           },
-          cipta_bakti: { excellent: "<5", good: 0, attention: 0, medical: 0 },
+          cipta_bakti: null,
         });
       });
     },
@@ -183,12 +183,37 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         students: 9,
         tested: 8,
       });
-      expect(ofA.physical?.byDorm?.dana_rakca.excellent).toBe("<5");
+      expect(ofA.physical?.byDorm?.dana_rakca?.excellent).toBe("<5");
+      expect(ofA.physical?.byDorm?.cipta_bakti).toBeNull();
       expect(ofB.physical).toEqual({
         recap: { kind: "too_few", students: 3 },
         byDorm: null,
         limits: expect.any(Object),
         care: null,
+      });
+    });
+  });
+
+  it("gives Ketua Program Studi no category count of a dorm with 1 tested resident of their program", async () => {
+    await inTestDatabase(async (db) => {
+      const { programA, idsA } = await addRecords(db);
+      const secondMan = idsA[7];
+      if (secondMan === undefined) throw new Error("No resident was added.");
+      await db
+        .update(students)
+        .set({ cohortYear: 3909 })
+        .where(eq(students.id, secondMan));
+      const headA = await actorWith(db, ["head_of_program"], programA);
+
+      const { physical } = await loadDormHealth(db, headA, MOMENT);
+
+      expect(physical?.recap).toMatchObject({ kind: "shown", tested: 7 });
+      expect(physical?.byDorm?.cipta_bakti).toBeNull();
+      expect(physical?.byDorm?.dana_rakca).toEqual({
+        excellent: "<5",
+        good: "<5",
+        attention: "<5",
+        medical: "<5",
       });
     });
   });
