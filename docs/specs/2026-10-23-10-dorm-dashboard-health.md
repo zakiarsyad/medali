@@ -108,6 +108,37 @@ here than Dorm health notes and Mental health screening give it.
    Pengelola Asrama or BAM roles as in the prototype.
 3. The panels reuse the Dashboard panels' counting and small-count
    rules with a filter to dorm residents, so the numbers always agree.
+4. "Perlu perhatian dan tindak lanjut medis" names only residents that
+   the list on Kesehatan also holds. A resident who is Perlu perhatian
+   by the fitness test alone, with no health note, is counted in the
+   bars but not named, so nobody sees more names here than on Kesehatan.
+5. Each resident in that list shows their category with "berdasarkan
+   catatan kesehatan" when the note made it so, as Kesehatan does. The
+   list and its link still show while the counts are held back.
+6. The link under that list says "Daftar lengkap di Kesehatan" and opens
+   Kesehatan on Asrama with no filter.
+7. With no resident tested, "Kesehatan jasmani penghuni" says "Belum ada
+   hasil tes kebugaran penghuni."
+8. "sesi konseling 30 hari terakhir" counts every counselling session of
+   the last 30 days of the Aktif residents in the viewer's reach, as
+   the campus count does. It shows "<5" for 1 to 4, and is not shown
+   while the levels are held back.
+9. The mental health levels count each resident once, at the level of
+   their latest assessment, as on Dashboard. The line under them says
+   "(n) penghuni sudah diasesmen · (n) sesi konseling 30 hari terakhir".
+10. Shared counselling data counts only the viewer's roles that see
+    this panel, so someone who is also Pengasuh sees nothing here that
+    was shared with Pengasuh. Up to 8 residents show, the newest first,
+    each with the date, the name, the level when it was shared, the room
+    and the rest of what was shared, without the Pengasuh. Each showing
+    is written to the same log of readings as on Dashboard.
+11. With nothing shared, that part says "Belum ada. Data perorangan
+    hanya tampil bila konselor mempublikasikannya dengan persetujuan
+    mahasiswa.", as in the prototype.
+12. In the table per dorm, a dorm where only 1 to 4 residents in the
+    viewer's reach are tested shows "–" in each category, with a line
+    under the table saying why, so one resident's category cannot be
+    told from their dorm's row. A dorm with nobody tested shows 0.
 
 ## Steps
 
