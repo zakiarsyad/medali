@@ -185,6 +185,21 @@ describe("handOverHeadOfUnit", () => {
     });
   });
 
+  it("refuses an account that is not Kepala Unit naming itself as not Kepala Unit", async () => {
+    await inTestDatabase(async (db) => {
+      const director = await addTestStaffAccount(db, "Direktur Uji", [
+        "director",
+      ]);
+
+      const handed = await handOverHeadOfUnit(db, director, director);
+
+      expect(handed).toEqual({
+        ok: false,
+        error: "Hanya Kepala Unit yang bisa menyerahkan jabatan Kepala Unit.",
+      });
+    });
+  });
+
   it("refuses a handover to the one who hands over", async () => {
     await inTestDatabase(async (db) => {
       const head = await addTestStaffAccount(db, "Kepala Uji", [

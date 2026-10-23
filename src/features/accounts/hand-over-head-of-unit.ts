@@ -92,12 +92,12 @@ export async function handOverHeadOfUnit(
   accountId: string,
   by: string,
 ): Promise<Parsed<null>> {
-  if (accountId === by) return NOT_TO_YOURSELF;
   return db.transaction(async (tx) => {
     await waitForHeadOfUnitChanges(tx);
     const giver = await lockActive(tx, by);
     const giverRoles = giver ? await currentRoles(tx, by) : [];
     if (!giverRoles.includes("head_of_unit")) return ONLY_HEAD_OF_UNIT;
+    if (accountId === by) return NOT_TO_YOURSELF;
     const chosen = await lockActive(tx, accountId);
     if (!chosen) return NOT_FOUND;
     if (chosen.studentId !== null) return STUDENT_CANNOT_LEAD;
