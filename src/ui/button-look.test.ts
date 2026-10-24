@@ -45,6 +45,10 @@ describe.each([
     expect(rule).toContain("padding: var(--button-padding);");
   });
 
+  it("centres its words in its height, also on a label, summary or span", () => {
+    expect(rule).toContain("align-content: center;");
+  });
+
   it("has a line as wide as the other button's", () => {
     expect(rule).toContain("border: var(--line-width) solid");
   });
