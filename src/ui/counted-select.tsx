@@ -30,11 +30,14 @@ export function CountedSelect({
   const offered = choices.filter(
     (choice) => choice.held > 0 || choice.value === chosen,
   );
-  const look = chosen ? `${shared.input} ${styles.chosen}` : shared.input;
   return (
     <label className={`${shared.field} ${styles.counted}`}>
       {label}
-      <select name={name} className={look} defaultValue={chosen}>
+      <select
+        name={name}
+        className={chosen ? `${shared.input} ${styles.chosen}` : shared.input}
+        defaultValue={chosen}
+      >
         <option value="">{every}</option>
         {offered.map(({ value, shown, held }) => (
           <option key={value} value={value}>
