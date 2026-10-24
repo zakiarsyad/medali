@@ -1,3 +1,4 @@
+import { shownPart } from "@/character-grades/grade-words";
 import type { ScoreRow } from "./score-rows";
 import { SavedState, ScoreRemark, ScoreTable } from "./score-table";
 
@@ -10,7 +11,7 @@ export function ScoreList({ rows }: { rows: readonly ScoreRow[] }) {
   return (
     <ScoreTable
       rows={rows}
-      scoreOf={(row) => <b>{row.score ?? "-"}</b>}
+      scoreOf={(row) => <b>{shownPart(row.score)}</b>}
       remarkOf={(row) => (
         <ScoreRemark score={row.score}>
           <SavedState row={row} />

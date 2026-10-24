@@ -87,6 +87,12 @@ None.
    indikator" can be tried on the preview. Every other sample score is
    given on the six starting indicators, with the same spread of final
    scores as before.
+5. The rule for the final score is written with the second step, since
+   the sample scores are worked out by it.
+6. A final score is shown with a decimal comma, as other numbers on the
+   screens are, such as 83,3, and a whole one without it, such as 100.
+7. "Panduan penilaian" puts a final score with a decimal in the band
+   whose lowest score it reaches: 84,9 is in 75–84.
 
 ## Steps
 
@@ -96,7 +102,7 @@ None.
 - [x] 2. A score keeps its six indicator scores and the names they were
   given with; earlier scores stay as "Nilai tanpa indikator"; sample data
   gets six-indicator scores.
-- [ ] 3. The rule for the final score (average × 20, one decimal), with
+- [x] 3. The rule for the final score (average × 20, one decimal), with
   checks, used by the tab and by the character grade.
 - [ ] 4. The panel "Indikator penilaian" shows, read only.
 - [ ] 5. Kepala Unit changes and saves the indicators, with the refusal

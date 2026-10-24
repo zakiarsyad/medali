@@ -47,6 +47,13 @@ describe("ScoreList", () => {
     }
   });
 
+  it("shows a final score with its decimal, and what the rubric says of it", () => {
+    const [row] = rowsOf([{ ...SCORED, score: 83.3 }]);
+
+    expect(row).toContain("<b>83,3</b>");
+    expect(row).toContain("Aktif dan konsisten mengikuti pengasuhan");
+  });
+
   it("shows a member with NIM, attendance, the saved score, what the rubric says of it and the day it was saved", () => {
     const [row] = rowsOf([SCORED, UNSCORED]);
 
