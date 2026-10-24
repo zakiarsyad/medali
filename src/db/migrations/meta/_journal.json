@@ -540,6 +540,13 @@
       "when": 1792827560409,
       "tag": "0076_mentoring-indicator-sets",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1792827769263,
+      "tag": "0077_mentoring-score-indicators",
+      "breakpoints": true
     }
   ]
 }

@@ -72,12 +72,28 @@ indicator on the same tab.
 
 None.
 
+## Decisions made while building
+
+1. The starting sentences are the first-level texts Kurikulum starts
+   with. A text changed later in Kurikulum is not taken over, since it
+   may be up to 300 characters long, more than an indicator sentence
+   holds.
+2. A name of an indicator holds at most 50 characters.
+3. A score keeps its final score with one decimal, as it is shown, and
+   the character grade uses that number. A closed semester keeps the
+   mentoring part with one decimal too.
+4. In the sample data the last mentee of each group that is fully
+   scored keeps a score given before the indicators, so "Nilai tanpa
+   indikator" can be tried on the preview. Every other sample score is
+   given on the six starting indicators, with the same spread of final
+   scores as before.
+
 ## Steps
 
 - [x] 1. The indicators are stored with who changed them and when,
   starting with the six MEDALI values; the right for Kepala Unit to
   change them, with checks.
-- [ ] 2. A score keeps its six indicator scores and the names they were
+- [x] 2. A score keeps its six indicator scores and the names they were
   given with; earlier scores stay as "Nilai tanpa indikator"; sample data
   gets six-indicator scores.
 - [ ] 3. The rule for the final score (average × 20, one decimal), with

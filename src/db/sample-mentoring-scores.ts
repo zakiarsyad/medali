@@ -1,3 +1,8 @@
+import {
+  finalScoreOf,
+  INDICATOR_COUNT,
+  INDICATOR_SCORE_MAX,
+} from "@/mentoring/score-indicators";
 import { SCORE_MAX } from "@/mentoring/score-range";
 import type { SamplePeriod } from "./sample-data";
 import type { SampleMentorGroup } from "./sample-mentor-groups";
@@ -12,7 +17,10 @@ import type { SampleStudent } from "./sample-students";
 export interface SampleMentoringScore {
   /** The NIM of the sample student. */
   nim: string;
+  /** The final score, of the six indicator scores or as given before them. */
   score: number;
+  /** The six indicator scores, or null for a score given before them. */
+  indicatorScores: number[] | null;
   /** The day the score was given. */
   scoredOn: string;
   /** The name of the sample Pengasuh who gave it. */
@@ -40,16 +48,53 @@ function activeNims(students: SampleStudent[]): Set<string> {
   return new Set(active.map((student) => student.nim));
 }
 
-/** Scores that differ from member to member and reach every band. */
+/** A whole score that differs from member to member and reaches every band. */
 function scoreAt(groupPlace: number, memberPlace: number): number {
   return LOWEST + ((groupPlace * 11 + memberPlace * 17) % SPREAD);
+}
+
+/**
+ * Six indicator scores whose final score comes nearest to the whole score
+ * `wanted`, the first few one higher than the rest, so the sample keeps
+ * the spread it had before the indicators.
+ */
+function indicatorScoresNear(wanted: number): number[] {
+  const pointsPerStep = SCORE_MAX / INDICATOR_SCORE_MAX;
+  const total = Math.round((wanted * INDICATOR_COUNT) / pointsPerStep);
+  const level = Math.floor(total / INDICATOR_COUNT);
+  const raised = total % INDICATOR_COUNT;
+  const scores: number[] = [];
+  for (let place = 0; place < INDICATOR_COUNT; place++) {
+    scores.push(place < raised ? level + 1 : level);
+  }
+  return scores;
+}
+
+/**
+ * The score of a member: on six indicators, but for the last member of
+ * a group that is done, who keeps a score given before the indicators.
+ */
+function sampleScoreAt(
+  groupPlace: number,
+  memberPlace: number,
+  isLastOfGroupDone: boolean,
+): Pick<SampleMentoringScore, "score" | "indicatorScores"> {
+  if (isLastOfGroupDone) {
+    return { score: scoreAt(groupPlace, memberPlace), indicatorScores: null };
+  }
+  const indicatorScores = indicatorScoresNear(scoreAt(groupPlace, memberPlace));
+  const score = finalScoreOf(indicatorScores);
+  if (score === null) throw new Error("Every sample has six indicator scores.");
+  return { score, indicatorScores };
 }
 
 /**
  * The scores of the running period for part of the sample groups: every
  * Aktif member of one group, the first half of the next, nobody of the
  * third, and so on, by the mentor who held the group on that day. A group
- * that has no mentor by `day` gets none.
+ * that has no mentor by `day` gets none. Each score is given on six
+ * indicators, but for the last member of a group that is done, whose
+ * score is one given before the indicators.
  */
 export function sampleMentoringScores(
   groups: SampleMentorGroup[],
@@ -67,8 +112,9 @@ export function sampleMentoringScores(
     const part = SCORED_PARTS[groupPlace % SCORED_PARTS.length] ?? 0;
     const scored = members.slice(0, Math.ceil(members.length * part));
     for (const [memberPlace, nim] of scored.entries()) {
-      const score = scoreAt(groupPlace, memberPlace);
-      scores.push({ nim, score, scoredOn, scoredBy });
+      const isLast = part === 1 && memberPlace === scored.length - 1;
+      const score = sampleScoreAt(groupPlace, memberPlace, isLast);
+      scores.push({ nim, ...score, scoredOn, scoredBy });
     }
   }
   return scores;

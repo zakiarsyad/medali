@@ -226,6 +226,7 @@ import {
 } from "@/mentoring/replacement-ids";
 import {
   INDICATOR_COUNT,
+  indicatorScoreRange,
   type ScoreIndicator,
 } from "@/mentoring/score-indicators";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
@@ -2632,6 +2633,18 @@ export const mentoringMeetingChanges = pgTable(
 );
 
 /**
+ * Either no indicator scores and no names, or six of each with every
+ * score a whole number from 1 to 5.
+ */
+function indicatorsOrNone(scores: AnyPgColumn, names: AnyPgColumn): SQL {
+  const count = sql.raw(String(INDICATOR_COUNT));
+  const allowed = sql.raw(
+    `array[${indicatorScoreRange().join(",")}]::smallint[]`,
+  );
+  return sql`((${scores} is null and ${names} is null) or (${scores} is not null and ${names} is not null and cardinality(${scores}) = ${count} and cardinality(${names}) = ${count} and ${scores} <@ ${allowed} and array_position(${names}, null) is null))`;
+}
+
+/**
  * The score a mentor gave one student for how they took part in mentoring
  * in an academic period. A student has one in a period at most. Giving it
  * again changes it. Never deleted: its log lines hold it.
@@ -2646,7 +2659,12 @@ export const mentoringScores = pgTable(
     periodId: uuid()
       .notNull()
       .references(() => academicPeriods.id),
-    score: smallint().notNull(),
+    /** The final score, of the six indicators, or as given before them. */
+    score: oneDecimal().notNull(),
+    /** The six indicator scores, or null for a score given before them. */
+    indicatorScores: smallint().array(),
+    /** The names of the indicators the scores were given with, in their order. */
+    indicatorNames: text().array(),
     scoredBy: uuid()
       .notNull()
       .references(() => accounts.id),
@@ -2661,6 +2679,10 @@ export const mentoringScores = pgTable(
     check(
       "mentoring_scores_score_in_range",
       sql`${table.score} between ${sql.raw(String(SCORE_MIN))} and ${sql.raw(String(SCORE_MAX))}`,
+    ),
+    check(
+      "mentoring_scores_six_indicators",
+      indicatorsOrNone(table.indicatorScores, table.indicatorNames),
     ),
   ],
 );
@@ -2681,10 +2703,21 @@ export const mentoringScoreChanges = pgTable(
       .notNull()
       .references(() => accounts.id),
     changedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-    scoreBefore: smallint(),
-    scoreAfter: smallint().notNull(),
+    scoreBefore: oneDecimal(),
+    scoreAfter: oneDecimal().notNull(),
+    /** The six indicator scores and their names, or null for none. */
+    indicatorScoresBefore: smallint().array(),
+    indicatorNamesBefore: text().array(),
+    indicatorScoresAfter: smallint().array(),
+    indicatorNamesAfter: text().array(),
   },
-  (table) => [index("mentoring_score_changes_score").on(table.scoreId)],
+  (table) => [
+    index("mentoring_score_changes_score").on(table.scoreId),
+    check(
+      "mentoring_score_changes_six_indicators",
+      sql`${indicatorsOrNone(table.indicatorScoresBefore, table.indicatorNamesBefore)} and ${indicatorsOrNone(table.indicatorScoresAfter, table.indicatorNamesAfter)}`,
+    ),
+  ],
 );
 
 /** A list of indicators holds exactly as many as a score is given on. */
@@ -3548,7 +3581,7 @@ export const fixedCharacterGrades = pgTable(
     attended: integer().notNull(),
     counted: integer().notNull(),
     /** The score the Pengasuh gave for the period, or null for none. */
-    mentoring: smallint(),
+    mentoring: oneDecimal(),
     siku: smallint().notNull(),
     /** Whether an entry in force gained or lost the student SIKU points. */
     sikuAdjusted: boolean().notNull(),
