@@ -103,10 +103,10 @@ function PhysicalCounts({ physical }: { physical: PhysicalPanel }) {
 function CareItem({ row }: { row: CareRow }) {
   return (
     <li className={board.outItem}>
-      <span className={board.when}>
+      <span className={board.careStatus}>
         <FinalCategoryBadge final={row.final} showsMark />
       </span>
-      <div className={board.outBody}>
+      <div className={board.careBody}>
         <b>{row.name}</b> <span className={board.sub}>{row.room}</span>
         <span className={shared.detail}>{row.note ?? NO_NOTE_YET}</span>
       </div>
