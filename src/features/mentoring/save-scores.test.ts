@@ -380,6 +380,46 @@ describe("saveScores", () => {
     });
   });
 
+  it("tells a form opened before both a score and the indicators changed that the indicators changed, keeping nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani, budi } = records;
+      const openedOn = await readIndicators(db);
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: S70 }),
+        period.day,
+      );
+      const kepala = await addTestAccount(db, "Kepala Uji Dua Ubahan", [
+        "head_of_unit",
+      ]);
+      const swapped = STARTING_INDICATORS.map((indicator, place) =>
+        place === 2 ? { ...indicator, name: "Ketertiban" } : indicator,
+      );
+      await saveIndicators(db, kepala, swapped, openedOn.version);
+
+      const saved = await saveScores(
+        db,
+        mentor,
+        {
+          ...scoresOf(records, { [ani]: S83, [budi]: S80 }),
+          indicatorsVersion: openedOn.version,
+        },
+        period.day,
+      );
+
+      expect(saved).toEqual({
+        ok: false,
+        error:
+          "Indikator penilaian sudah diubah oleh Kepala Uji Dua Ubahan. Muat ulang.",
+      });
+      expect(await keptScoreOf(db, ani)).toBe(70);
+      expect(await keptScoreOf(db, budi)).toBeNull();
+      expect(await testScoreLogOf(db, ani)).toHaveLength(1);
+    });
+  });
+
   it("refuses a form that names indicators that are no setting", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);

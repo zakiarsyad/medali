@@ -213,11 +213,13 @@ export async function saveScores(
     if (!studentIds.every((id) => memberIds.includes(id))) {
       return NOT_MEMBERS_TO_SCORE;
     }
+    // Before the scores kept: a refusal for changed scores reloads the
+    // tab, which would give the form the new indicators under its choices.
+    const names = await namesOpenedOn(tx, input.indicatorsVersion);
+    if (!names.ok) return names;
     const kept = await readKeptScores(tx, period.id, studentIds);
     const changedIds = changedSince(input.basedOn, kept);
     if (changedIds.length > 0) return scoresChanged(changedIds);
-    const names = await namesOpenedOn(tx, input.indicatorsVersion);
-    if (!names.ok) return names;
     for (const [studentId, six] of Object.entries(input.scores)) {
       const given = givenScoreOf(six, names.value);
       const keptScore = kept.get(studentId);

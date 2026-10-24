@@ -134,8 +134,9 @@ None.
     When Kepala Unit has changed them since, the whole save is refused
     and nothing of it is kept, so no score lands under another
     indicator: the message says "Indikator penilaian sudah diubah oleh
-    (name). Muat ulang." A save of scores waits for a save of the
-    indicators under way.
+    (name). Muat ulang." This is checked before whether a score was
+    saved in between, so it is the message given when both changed. A
+    save of scores waits for a save of the indicators under way.
 
 ## Steps
 
