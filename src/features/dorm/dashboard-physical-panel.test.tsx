@@ -162,6 +162,14 @@ describe("PhysicalHealthPanel", () => {
     );
   });
 
+  it("lays each resident who needs care out by the care row, not by the row of a resident on leave", () => {
+    const shown = render({ ...SHOWN, care: CARE });
+
+    expect(shown.match(/class="[^"]*careStatus/g)).toHaveLength(CARE.length);
+    expect(shown.match(/class="[^"]*careBody/g)).toHaveLength(CARE.length);
+    expect(shown).not.toMatch(/class="[^"]*(when|outBody)/);
+  });
+
   it("says Tidak ada. with nobody who needs care, and keeps the link", () => {
     const shown = render({ ...SHOWN, care: [] });
 

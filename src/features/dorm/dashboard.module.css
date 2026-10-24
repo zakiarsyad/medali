@@ -126,6 +126,24 @@
   overflow-wrap: anywhere;
 }
 
+/*
+ * A resident who needs care: the category may be long, so it wraps
+ * inside the card, and the resident moves under it rather than shrink
+ * below a card's narrowest column.
+ */
+.careStatus {
+  flex: 0 1 var(--care-status-basis);
+  min-width: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.careBody {
+  flex: 1 1 var(--care-body-basis);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .more {
   margin: var(--space-sm) 0 0;
 }

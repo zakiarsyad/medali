@@ -51,6 +51,6 @@ Direktur, Pengelola Asrama and BAM.
 
 ## Steps
 
-- [ ] 1. The label of a resident in the health list wraps and goes on its
+- [x] 1. The label of a resident in the health list wraps and goes on its
   own line on a phone, and the resident's name, room and history keep
   their width at any width.

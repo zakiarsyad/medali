@@ -105,6 +105,12 @@
   --score-button-grow: 0;
   --scores-width: auto;
   --statement-text-basis: var(--card-min-width);
+  /*
+   * The category of a resident who needs care on Dashboard asrama stands
+   * beside them here, and on a line of its own above them on a phone.
+   */
+  --care-status-basis: auto;
+  --care-body-basis: var(--card-min-width);
   --medal-width: 370px;
   --history-chart-width: 560px;
   --bare-box-width: 380px;
@@ -274,6 +280,8 @@
     --score-button-grow: 1;
     --scores-width: 100%;
     --statement-text-basis: 100%;
+    --care-status-basis: 100%;
+    --care-body-basis: 100%;
   }
 }
 
