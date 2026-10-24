@@ -1,6 +1,5 @@
-import shared from "@/ui/data-screen.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
 import { toneBadge } from "@/ui/tone-badge";
-import styles from "./jenjang-badge.module.css";
 import {
   jenjangWords,
   type PenaltyCategory,
@@ -12,11 +11,10 @@ import {
  * the database code.
  */
 
-/** Berat is shown stronger than the bad look, in solid red. */
-const CATEGORY_LOOK: Record<PenaltyCategory, string | undefined> = {
-  light: toneBadge("warning"),
-  medium: toneBadge("bad"),
-  heavy: `${shared.badge} ${styles.heavy}`,
+const CATEGORY_TONES: Record<PenaltyCategory, BadgeTone> = {
+  light: "warning",
+  medium: "bad",
+  heavy: "severe",
 };
 
 /** "Ringan · jenjang pertama", in the colour of its Kategori. */
@@ -28,7 +26,7 @@ export function JenjangBadge({
   level: PenaltyLevel;
 }) {
   return (
-    <span className={CATEGORY_LOOK[category]}>
+    <span className={toneBadge(CATEGORY_TONES[category])}>
       {jenjangWords(category, level)}
     </span>
   );

@@ -70,7 +70,8 @@ Pengasuh, Penilaian, Pembinaan, Tugas saya, Dashboard and Profil saya.
 6. Decided while building: badges with a scale of their own take the
    shared looks where a step means good, warning, bad or plain, and the
    heaviest step keeps its solid red with white text, which reaches 5.85
-   to 1. The Jenjang badge: Ringan warning, Sedang bad, Berat solid red.
+   to 1. That solid red is a shared look too, so it also wins over the
+   gold badge whatever screen loads first. The Jenjang badge: Ringan warning, Sedang bad, Berat solid red.
    The coaching level: Ringan plain, Sedang warning, Intensif solid red.
    Ringan of a Jenjang and Sedang of a coaching level had amber text on
    gold, 2.83 to 1. The grade letter: passing good, not passing bad. The
@@ -85,6 +86,10 @@ Pengasuh, Penilaian, Pembinaan, Tugas saya, Dashboard and Profil saya.
 8. Decided while building: "Terkirim" of the survey on Profil saya was
    solid green, and "Tidak aktif" of a BAM student had its own copy of a
    red badge. They take the shared good and bad looks.
+9. Decided while building: the status badges of Pengaturan › Mahasiswa
+   are covered too, as every badge must reach 4.5 to 1: "Aktif" good,
+   "Cuti" and "Belum ditetapkan" of a Kelompok pengasuhan warning, and
+   "Non Aktif" plain. Their amber text on white reached only 3.48 to 1.
 
 ## Steps
 

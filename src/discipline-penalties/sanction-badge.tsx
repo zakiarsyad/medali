@@ -1,12 +1,12 @@
-import shared from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import { SANCTION_WORDS, type Sanction } from "./sanction";
-import styles from "./sanction-badge.module.css";
 
-/** "Diberhentikan sementara", "Diberhentikan permanen" or "Diberhentikan (ayat 8)". */
+/**
+ * "Diberhentikan sementara", "Diberhentikan permanen" or "Diberhentikan
+ * (ayat 8)", in the solid red of a Berat penalty.
+ */
 export function SanctionBadge({ sanction }: { sanction: Sanction }) {
   return (
-    <span className={`${shared.badge} ${styles.sanction}`}>
-      {SANCTION_WORDS[sanction]}
-    </span>
+    <span className={toneBadge("severe")}>{SANCTION_WORDS[sanction]}</span>
   );
 }

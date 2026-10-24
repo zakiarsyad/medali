@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { DORM_NAMES } from "@/dorms/dorms";
 import { ownRoomWords } from "@/dorms/student-room";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
+import { toneBadge } from "@/ui/tone-badge";
 import type { AddedStudent } from "./added-students";
 import { NO_GROUP_WORDS } from "./group-choice-words";
 import {
@@ -23,10 +25,10 @@ import { RemoveStudentButton } from "./remove-student-button";
 
 const NO_EMAIL = "Belum ada email";
 
-const STATUS_STYLES: Record<AddedStudent["status"], string | undefined> = {
-  active: styles.active,
-  on_leave: styles.onLeave,
-  inactive: styles.inactive,
+const STATUS_TONES: Record<AddedStudent["status"], BadgeTone> = {
+  active: "good",
+  on_leave: "warning",
+  inactive: "plain",
 };
 
 function pathAndClass(student: AddedStudent): string {
@@ -60,11 +62,7 @@ function Dorm({ student }: { student: AddedStudent }) {
 
 function MentorGroup({ group }: { group: AddedStudent["group"] }) {
   if (group === null) {
-    return (
-      <span className={`${styles.status} ${styles.noGroup}`}>
-        {NO_GROUP_WORDS}
-      </span>
-    );
+    return <span className={toneBadge("warning")}>{NO_GROUP_WORDS}</span>;
   }
   return (
     <>
@@ -110,7 +108,7 @@ function StudentRow({
         <MentorGroup group={student.group} />
       </td>
       <td data-title="Status">
-        <span className={`${styles.status} ${STATUS_STYLES[student.status]}`}>
+        <span className={toneBadge(STATUS_TONES[student.status])}>
           {STATUS_LABELS[student.status]}
         </span>
       </td>

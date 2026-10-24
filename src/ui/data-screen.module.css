@@ -344,6 +344,13 @@
   color: var(--badge-bad-ink);
 }
 
+/* The heaviest step of a scale, such as Berat or Intensif. */
+.badge.severe {
+  border: var(--line-width) solid var(--badge-severe-line);
+  background: var(--badge-severe-bg);
+  color: var(--badge-severe-ink);
+}
+
 .badge.plain {
   border: var(--line-width) solid var(--badge-plain-line);
   background: var(--badge-plain-bg);

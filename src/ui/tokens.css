@@ -244,6 +244,9 @@
   --badge-bad-ink: var(--bad);
   --badge-bad-bg: var(--surface);
   --badge-bad-line: var(--bad);
+  --badge-severe-ink: var(--surface);
+  --badge-severe-bg: var(--bad);
+  --badge-severe-line: var(--bad);
   --badge-plain-ink: var(--muted);
   --badge-plain-bg: var(--surface);
   --badge-plain-line: var(--line);

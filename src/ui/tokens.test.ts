@@ -12,7 +12,7 @@ import {
 
 const TOKENS = tokenBlocks(readFileSync("src/ui/tokens.css", "utf8"));
 const PHONE = inForce(TOKENS.light, TOKENS.phone);
-const BADGE_KINDS = ["good", "warning", "bad", "plain"];
+const BADGE_KINDS = ["good", "warning", "bad", "severe", "plain"];
 const MUTED = "#5a6577";
 
 const PART_VALUES: [string, string][] = [

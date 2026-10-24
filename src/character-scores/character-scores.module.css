@@ -28,12 +28,6 @@
   background: var(--bad);
 }
 
-/* Intensif, the highest level of coaching a student needs. */
-.intensive {
-  background: var(--bad);
-  color: var(--surface);
-}
-
 .spread {
   display: block;
   width: 100%;

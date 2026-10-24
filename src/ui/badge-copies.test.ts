@@ -8,9 +8,14 @@ const SHARED_LOOK_FILES = [
   "src/ui/tokens.css",
 ];
 
-/** Rules that colour a box that is not a badge, such as a note, by file. */
-const NOT_BADGES: Record<string, string[]> = {
+/**
+ * Rules the check leaves alone, by file: a note box that is not a badge,
+ * and the "Penuh" chip of a room on Kamar, which is not a `.badge` and has
+ * a look of its own.
+ */
+const LEFT_ALONE: Record<string, string[]> = {
   "src/features/dorm/leave.module.css": [".warning"],
+  "src/features/dorm/rooms.module.css": [".full"],
 };
 
 function screenStylesheets(): string[] {
@@ -25,14 +30,25 @@ describe("statusBadgeCopies", () => {
     [".a { border: var(--line-width) solid var(--warn); color: var(--warn); }"],
     [".a { border: var(--line-width) solid var(--bad); color: var(--bad); }"],
     [".a { color: var(--category-colour); }"],
+    [".a { background: var(--bad); color: var(--surface); }"],
   ])("finds a badge colour of its own in %s", (stylesheet) => {
     expect(statusBadgeCopies(stylesheet)).toEqual([".a"]);
+  });
+
+  it("finds the text colours of a badge whose border takes the colour of its text", () => {
+    const stylesheet = `
+      .status { border: var(--line-width) solid currentColor; }
+      .active { color: var(--ok); }
+      .onLeave { color: var(--warn); }
+    `;
+
+    expect(statusBadgeCopies(stylesheet)).toEqual([".active", ".onLeave"]);
   });
 
   it.each([
     [".a { color: var(--bad); }"],
     [".a { border: var(--line-width) solid var(--warn); color: var(--ink); }"],
-    [".a { background: var(--bad); color: var(--surface); }"],
+    [".a { background: var(--bad); }"],
     ["/* .a { border-color: var(--ok); color: var(--ok); } */"],
   ])("leaves %s alone", (stylesheet) => {
     expect(statusBadgeCopies(stylesheet)).toEqual([]);
@@ -51,7 +67,7 @@ describe("screen styles", () => {
     (path) => {
       const copies = statusBadgeCopies(readFileSync(path, "utf8"));
 
-      expect(copies).toEqual(NOT_BADGES[path] ?? []);
+      expect(copies).toEqual(LEFT_ALONE[path] ?? []);
     },
   );
 });
