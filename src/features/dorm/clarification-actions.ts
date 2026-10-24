@@ -83,6 +83,7 @@ export async function verifyDormClarificationAction(
 /**
  * "Terima sebagai hadir", "Terima sebagai izin" or "Tolak" of Pengelola
  * Asrama, with its Catatan, on Klarifikasi kehadiran and on Tugas saya.
+ * A refusal stays on its card, which a redraw would take away.
  */
 export async function decideDormClarificationAction(
   id: string,
@@ -95,7 +96,7 @@ export async function decideDormClarificationAction(
     kind,
     note,
   });
-  showDecision();
+  if (answer.ok) showDecision();
   return answerOf(answer, kind);
 }
 
