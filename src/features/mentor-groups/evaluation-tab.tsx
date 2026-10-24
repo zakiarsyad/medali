@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { TabNote } from "@/ui/tabbed-head";
 import type { ListedEvaluation } from "./evaluation-rows";
 import { EvaluationTable } from "./evaluation-table";
 import styles from "./mentor-groups.module.css";
@@ -11,9 +12,22 @@ import {
 } from "./replacement-table";
 
 /**
+ * What an account that only reads the tab "Evaluasi dan penggantian" is
+ * told under the head, in place of the forms: who does the work.
+ */
+export function FormNote({ form }: { form: ReactNode | null }) {
+  if (form !== null) return null;
+  return (
+    <TabNote>
+      Evaluasi dan penggantian pengasuh dilakukan oleh Kepala Unit Pembangunan
+      Karakter.
+    </TabNote>
+  );
+}
+
+/**
  * The top of the tab "Evaluasi dan penggantian": the panel with the forms
- * beside "Alur penggantian". An account that only reads gets a line that
- * says who does the work, in place of both.
+ * beside "Alur penggantian", or nothing for an account that only reads.
  */
 export function FormArea({
   form,
@@ -21,14 +35,7 @@ export function FormArea({
   /** The panel with the forms, or null for an account that only reads. */
   form: ReactNode | null;
 }) {
-  if (form === null) {
-    return (
-      <p className={styles.note}>
-        Evaluasi dan penggantian pengasuh dilakukan oleh Kepala Unit Pembangunan
-        Karakter.
-      </p>
-    );
-  }
+  if (form === null) return null;
   return (
     <div className={styles.sideBySide}>
       {form}

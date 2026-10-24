@@ -1,17 +1,16 @@
 import type { ReactNode } from "react";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead, TabNote } from "@/ui/tabbed-head";
 import type { NotesParams } from "./note-address";
 import type { NoteBoard, NoteRow } from "./note-board";
 import { NoteListPanel } from "./note-list";
 import { NoteNumbersRow } from "./note-numbers";
 import { NOTES_LEDE, WHO_WRITES } from "./note-words";
-import styles from "./violation-notes.module.css";
 
 /**
  * Pembinaan > Catatan pelanggaran, in the prototype's order: the
- * numbers, the form with "Ketentuan" for a writer or the line on who
- * fills the notes for a reader, and the list.
+ * numbers, the form with "Ketentuan" for a writer, and the list. A
+ * reader is told under the head who fills the notes.
  */
 export function NotesScreen({
   tabs,
@@ -30,10 +29,11 @@ export function NotesScreen({
 }) {
   return (
     <>
-      <PageHead title="Pembinaan">{NOTES_LEDE}</PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead title="Pembinaan" tabs={tabs} lede={NOTES_LEDE}>
+        {form === null && <TabNote>{WHO_WRITES}</TabNote>}
+      </TabbedHead>
       <NoteNumbersRow board={board} />
-      {form ?? <p className={styles.readOnly}>{WHO_WRITES}</p>}
+      {form}
       <NoteListPanel board={board} params={params} actionsOf={actionsOf} />
     </>
   );

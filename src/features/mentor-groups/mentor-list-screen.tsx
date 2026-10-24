@@ -56,8 +56,9 @@ export async function MentorListScreen({
   ]);
   return (
     <>
-      <MentorsHead tabs={tabs} />
-      {usersAddress && <NewMentorsNote usersAddress={usersAddress} />}
+      <MentorsHead tabs={tabs}>
+        {usersAddress && <NewMentorsNote usersAddress={usersAddress} />}
+      </MentorsHead>
       <section className={shared.panel}>
         {/* Made anew for each address, so its fields show what the address holds. */}
         <AutoSubmitForm

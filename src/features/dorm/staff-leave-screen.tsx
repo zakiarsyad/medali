@@ -2,9 +2,8 @@ import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
-import styles from "./leave.module.css";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import {
   LEAVE_CARDS_PAGE_SIZE,
   type LeaveListParams,
@@ -13,6 +12,7 @@ import {
 import { LeaveCards, type LeaveRights } from "./leave-cards";
 import { LeaveFilterRow } from "./leave-filters";
 import type { LeaveBoard } from "./leave-list";
+import { ManagedNote } from "./managed-note";
 
 export const NO_LEAVE_MATCHES = "Tidak ada pengajuan pada filter ini.";
 
@@ -54,18 +54,14 @@ export function StaffLeaveScreen({
   const address = leaveListAddress(filters, params.page, ownPage);
   return (
     <>
-      <PageHead title="Perizinan asrama">
-        Izin pesiar, Izin Tidak Mengikuti Kegiatan (ITMK), dan izin khusus
-        penghuni asrama.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Izin pesiar, Izin Tidak Mengikuti Kegiatan (ITMK), dan izin khusus penghuni asrama."
+      >
+        {onlySees(rights) && <ManagedNote />}
+      </TabbedHead>
       {ownPart}
-      {onlySees(rights) && (
-        <p className={styles.note}>
-          Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
-          dan rinciannya.
-        </p>
-      )}
       <NumberCards>
         <NumberCard
           label="Menunggu verifikasi"

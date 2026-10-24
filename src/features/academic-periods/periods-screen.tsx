@@ -12,8 +12,8 @@ import { closingCounts } from "@/character-grades/fixed-grades";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { AddPeriodForm } from "./add-period-form";
 import { CloseStep } from "./close-step";
 import { type OpenStep, PeriodDates, PeriodList } from "./period-list";
@@ -112,12 +112,11 @@ export async function PeriodsScreen({
   const step = mayClose ? await readStep(db, shown, asked.stepId) : null;
   return (
     <>
-      <PageHead title="Periode akademik">
-        Tahun akademik dan semester Ganjil atau Genap yang sedang berjalan.
-        Semester mahasiswa dan pilihan periode di seluruh aplikasi mengikuti
-        pengaturan ini.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Pengaturan"
+        tabs={tabs}
+        lede="Tahun akademik dan semester Ganjil atau Genap yang sedang berjalan. Semester mahasiswa dan pilihan periode di seluruh aplikasi mengikuti pengaturan ini."
+      />
       {periods.length > 0 && (
         <section className={shared.panel}>
           <h2 className={shared.heading}>Periode berjalan</h2>

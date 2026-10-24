@@ -1,15 +1,22 @@
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { ReactNode } from "react";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
+import { ReadOnlyLine } from "./read-only-line";
 
-/** The head of the tab "Catatan pendampingan", and the tabs under it. */
-export function MentoringHead({ tabs }: { tabs: TabLinksProps }) {
+/** The head of every tab of Pengasuhan, with the tab's description under the tabs. */
+export function MentoringHead({
+  tabs,
+  lede,
+  readsOnly,
+}: {
+  tabs: TabLinksProps;
+  lede: ReactNode;
+  /** Whether the account only reads the tab, and is told who fills it in. */
+  readsOnly: boolean;
+}) {
   return (
-    <>
-      <PageHead title="Pengasuhan">
-        Catat setiap pendampingan: konseling, mentoring, apresiasi, atau
-        pembinaan. Catatan muncul di profil mahasiswa.
-      </PageHead>
-      <TabLinks {...tabs} />
-    </>
+    <TabbedHead title="Pengasuhan" tabs={tabs} lede={lede}>
+      {readsOnly && <ReadOnlyLine />}
+    </TabbedHead>
   );
 }

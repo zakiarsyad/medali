@@ -4,8 +4,8 @@ import { database } from "@/db/database";
 import { readDormCohorts } from "@/dorms/dorm-cohorts";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { type Candidates, listCandidates } from "./companion-candidates";
 import { listCompanions } from "./companion-list";
 import { CompanionTable } from "./companion-table";
@@ -44,14 +44,11 @@ export async function CompanionsScreen({
   ]);
   return (
     <>
-      <PageHead title="Kakak pendamping" />
-      <TabLinks {...tabs} />
-      <p className={styles.note}>
-        Kakak pendamping adalah mahasiswa senior yang ditugaskan tinggal dan
-        mendampingi penghuni di Asrama Dana Rakca (putri) atau Cipta Bakti
-        (putra). Setelah ditetapkan di sini, kakak pendamping dapat diplot ke
-        kamar di tab Ploting kamar.
-      </p>
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Kakak pendamping adalah mahasiswa senior yang ditugaskan tinggal dan mendampingi penghuni di Asrama Dana Rakca (putri) atau Cipta Bakti (putra). Setelah ditetapkan di sini, kakak pendamping dapat diplot ke kamar di tab Ploting kamar."
+      />
       {mayManage && (
         <NameCompanionPanel query={params.query} candidates={candidates} />
       )}

@@ -1,4 +1,5 @@
 import { openPage } from "@/auth/open-page";
+import { OwnRoomLine } from "@/features/dorm/own-room-line";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { EmptyPage } from "@/ui/empty-page";
 
@@ -9,8 +10,11 @@ export default async function TabPage(props: PageProps<"/[page]/[tab]">) {
   return (
     <EmptyPage
       title={opened.page.title}
-      lede={isDorm ? await residentHeader(opened.account.studentId) : null}
       tabs={{ pagePath: opened.page.path, tabs: opened.tabs, open: tab }}
-    />
+    >
+      {isDorm && (
+        <OwnRoomLine room={await residentHeader(opened.account.studentId)} />
+      )}
+    </EmptyPage>
   );
 }

@@ -4,7 +4,7 @@ import { MentorsHead } from "@/ui/mentors-head";
 import type { TabLinksProps } from "@/ui/tab-links";
 import type { FormPart } from "./evaluation-address";
 import { listLatestEvaluations } from "./evaluation-rows";
-import { FormArea, TabLists } from "./evaluation-tab";
+import { FormArea, FormNote, TabLists } from "./evaluation-tab";
 import { FormPanel } from "./form-panel";
 import { type FormLimits, openPart } from "./form-parts";
 import { listReplacements } from "./replacement-rows";
@@ -74,7 +74,9 @@ export function EvaluationScreen({
     );
   return (
     <>
-      <MentorsHead tabs={tabs} />
+      <MentorsHead tabs={tabs}>
+        <FormNote form={form} />
+      </MentorsHead>
       <FormArea form={form} />
       <StoredLists limit={limit} rights={rights} />
     </>

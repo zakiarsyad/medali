@@ -1,8 +1,8 @@
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { ManualRecordForm } from "./manual-record-form";
 import { PhotoCards } from "./photo-cards";
 import type { Verification } from "./verification";
@@ -38,11 +38,11 @@ export function VerificationScreen({
   const { numbers, choices, filters, askedPage, list } = verification;
   return (
     <>
-      <PageHead title="Kegiatan karakter">
-        Periksa foto kehadiran yang diunggah mahasiswa. Presensi yang divalidasi
-        dihitung sebagai hadir dalam nilai kehadiran kegiatan.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Kegiatan karakter"
+        tabs={tabs}
+        lede="Periksa foto kehadiran yang diunggah mahasiswa. Presensi yang divalidasi dihitung sebagai hadir dalam nilai kehadiran kegiatan."
+      />
       <VerificationNumbersView numbers={numbers} />
       <section className={shared.panel}>
         <h2 className={shared.heading}>Verifikasi presensi</h2>

@@ -3,9 +3,10 @@ import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { AnnouncementPanel } from "./announcement-panel";
+import { OwnRoomLine } from "./own-room-line";
 import { OwnViolationTable } from "./own-violation-table";
 import type { OwnRecordData, OwnViolations } from "./own-violations";
 import { OwnWarningBoxes, WarningProgressCard } from "./own-warning-view";
@@ -156,7 +157,7 @@ export function OwnViolationsView({
   now,
 }: {
   tabs: TabLinksProps;
-  /** Where the resident lives, as the Asrama page header says it. */
+  /** Where the resident lives, at the top of the tab's content. */
   room: string | null;
   own: Shown;
   params: OwnViolationParams;
@@ -164,8 +165,8 @@ export function OwnViolationsView({
 }) {
   return (
     <>
-      <PageHead title="Pelanggaran asrama">{room}</PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead title="Asrama" tabs={tabs} />
+      <OwnRoomLine room={room} />
       <OwnRecord
         own={own}
         now={now}

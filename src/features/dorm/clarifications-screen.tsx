@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import {
   CLARIFICATIONS_PAGE_SIZE,
   type ClarificationListParams,
@@ -14,7 +14,7 @@ import { ClarificationCards } from "./clarification-cards";
 import { ClarificationFilterRow } from "./clarification-filters";
 import type { ClarificationBoard } from "./clarification-list";
 import own from "./clarifications.module.css";
-import styles from "./leave.module.css";
+import { ManagedNote } from "./managed-note";
 
 /** What the signed-in account may do on the cards. */
 export interface ClarificationRights {
@@ -53,17 +53,13 @@ export function ClarificationsScreen({
   const address = clarificationListAddress(filters, params.page);
   return (
     <>
-      <PageHead title="Klarifikasi kehadiran asrama">
-        Klarifikasi mahasiswa asrama yang tercatat tidak hadir, beserta
-        lampirannya.
-      </PageHead>
-      <TabLinks {...tabs} />
-      {!rights.verify && !rights.decide && (
-        <p className={styles.note}>
-          Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
-          dan rinciannya.
-        </p>
-      )}
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Klarifikasi mahasiswa asrama yang tercatat tidak hadir, beserta lampirannya."
+      >
+        {!rights.verify && !rights.decide && <ManagedNote />}
+      </TabbedHead>
       <NumberCards>
         <NumberCard
           label="Menunggu verifikasi BAM"

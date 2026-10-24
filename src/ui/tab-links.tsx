@@ -8,9 +8,13 @@ export interface TabLinksProps {
   open: string;
 }
 
+/** Whether the role has a choice of tabs, so the tab bar is drawn. */
+export function showsTabBar(tabs: TabLinksProps["tabs"]): boolean {
+  return tabs.length > 1;
+}
+
 export function TabLinks({ pagePath, tabs, open }: TabLinksProps) {
-  const hasChoice = tabs.length > 1;
-  if (!hasChoice) return null;
+  if (!showsTabBar(tabs)) return null;
 
   return (
     <nav className={styles.tabs} aria-label="Bagian halaman">

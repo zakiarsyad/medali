@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import type { DormHealthList, DormHealthNumbersOnly } from "./dorm-health";
 import styles from "./dorm-health.module.css";
 import type { DormHealthParams } from "./dorm-health-address";
@@ -37,8 +37,7 @@ export function DormHealthScreen({
 }) {
   return (
     <>
-      <PageHead title="Kesehatan">{DORM_HEALTH_LEDE}</PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead title="Asrama" tabs={tabs} lede={DORM_HEALTH_LEDE} />
       {found && <DormHealthNumbers found={found} />}
       {counts && <DormHealthCountCards found={counts} />}
       <section className={shared.panel}>

@@ -1,9 +1,8 @@
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead, TabNote } from "@/ui/tabbed-head";
 import type { CoachingParams } from "./coaching-address";
 import type { CoachingBoard } from "./coaching-board";
 import { CoachingListPanel } from "./coaching-list";
-import styles from "./coaching-list.module.css";
 import { COACHING_LEDE } from "./coaching-list-words";
 import { CoachingNumbersRow } from "./coaching-numbers";
 import { MENTEES_ONLY } from "./penalty-words";
@@ -23,9 +22,9 @@ export function CoachingScreen({
 }) {
   return (
     <>
-      <PageHead title="Pembinaan">{COACHING_LEDE}</PageHead>
-      <TabLinks {...tabs} />
-      {board.menteesOnly && <p className={styles.scope}>{MENTEES_ONLY}</p>}
+      <TabbedHead title="Pembinaan" tabs={tabs} lede={COACHING_LEDE}>
+        {board.menteesOnly && <TabNote>{MENTEES_ONLY}</TabNote>}
+      </TabbedHead>
       <CoachingNumbersRow numbers={board.numbers} />
       <CoachingListPanel list={board.list} params={params} />
     </>

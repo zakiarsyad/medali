@@ -17,17 +17,6 @@
   min-width: 0;
 }
 
-/* The line that tells a role which only reads who fills this in. */
-.readOnly {
-  margin: 0;
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--muted);
-  font-size: var(--text-md);
-}
-
 /* A line of a form that takes its whole width. */
 .whole {
   grid-column: 1 / -1;
@@ -84,11 +73,6 @@
 
 .detailActions {
   margin: var(--space-lg) 0 0;
-}
-
-/* What the tab of meetings shows keeps clear of the line above it. */
-.readOnly + .meetings {
-  margin-top: var(--space-lg);
 }
 
 /* "Kelompok pengasuhan": the group shown, and the search for another. */

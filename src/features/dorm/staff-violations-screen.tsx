@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead, TabNote } from "@/ui/tabbed-head";
 import { AnnouncementPanel } from "./announcement-panel";
 import { ReductionsPanel } from "./reductions-panel";
 import type { StaffViolations } from "./staff-violations";
@@ -178,22 +178,26 @@ export function StaffViolationsScreen({
 }) {
   return (
     <>
-      <PageHead title="Pelanggaran asrama">
-        Pelanggaran tata tertib asrama yang diumumkan Badan Asrama Mahasiswa
-        pada jam yang ditentukan. Setelah diumumkan ada masa advokasi{" "}
-        {APPEAL_HOURS} jam; setelah itu pelanggaran naik ke Pengelola Asrama.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede={
+          <>
+            Pelanggaran tata tertib asrama yang diumumkan Badan Asrama Mahasiswa
+            pada jam yang ditentukan. Setelah diumumkan ada masa advokasi{" "}
+            {APPEAL_HOURS} jam; setelah itu pelanggaran naik ke Pengelola
+            Asrama.
+          </>
+        }
+      >
+        {form === null && <TabNote>{READ_ONLY_NOTE}</TabNote>}
+      </TabbedHead>
       <Numbers
         board={board}
         waitingAppeals={waitingAppeals}
         warnings={warnings}
       />
-      {form === null ? (
-        <p className={styles.note}>{READ_ONLY_NOTE}</p>
-      ) : (
-        <section className={shared.panel}>{form}</section>
-      )}
+      {form !== null && <section className={shared.panel}>{form}</section>}
       {schedule !== null && (
         <SchedulePanel
           schedule={schedule}

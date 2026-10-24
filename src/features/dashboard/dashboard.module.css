@@ -509,15 +509,6 @@ a.tile:hover {
   line-height: var(--leading-title);
 }
 
-/* The switch between the two Dashboards: its links fold onto a new line on a phone. */
-.switch {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2xs);
-  margin: 0 0 var(--space-lg);
-  border-bottom: var(--line-width) solid var(--line);
-}
-
 /* What a Pengasuh has filled in this semester, marked while some is left. */
 .progress {
   margin: var(--space-lg) 0 0;

@@ -1,6 +1,6 @@
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import styles from "./leave.module.css";
 import type { LeaveListParams } from "./leave-address";
 import { LeaveForm } from "./leave-form";
@@ -8,6 +8,7 @@ import { LEAVE_KINDS } from "./leave-ids";
 import { KIND_RULES, KIND_WORDS } from "./leave-words";
 import type { OwnLeave } from "./own-leave";
 import { OwnLeaveView } from "./own-leave-view";
+import { OwnRoomLine } from "./own-room-line";
 
 /** Ketentuan: the rule of each kind, how it is approved, and what ITMK does. */
 function LeaveTerms() {
@@ -88,17 +89,17 @@ export function ResidentLeaveScreen({
   ...part
 }: ResidentLeaveProps & {
   tabs: TabLinksProps;
-  /** Where the resident lives, as the Asrama page header says it. */
+  /** Where the resident lives, at the top of the tab's content. */
   room: string | null;
 }) {
-  const lede =
-    "Ajukan izin keluar asrama atau Izin Tidak Mengikuti Kegiatan (ITMK) dan pantau statusnya.";
   return (
     <>
-      <PageHead title="Perizinan asrama">
-        {room === null ? lede : `${room}. ${lede}`}
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Ajukan izin keluar asrama atau Izin Tidak Mengikuti Kegiatan (ITMK) dan pantau statusnya."
+      />
+      <OwnRoomLine room={room} />
       <ResidentLeavePart {...part} />
     </>
   );

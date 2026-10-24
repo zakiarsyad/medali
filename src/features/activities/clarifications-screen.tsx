@@ -1,7 +1,7 @@
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { ClarificationCards } from "./clarification-cards";
 import { ClarificationFilterRow } from "./clarification-filters";
 import {
@@ -30,12 +30,11 @@ export function ClarificationsScreen({
   const { counts, filters, askedPage, list } = clarifications;
   return (
     <>
-      <PageHead title="Kegiatan karakter">
-        Klarifikasi mahasiswa yang tercatat tidak hadir pada kegiatan karakter.
-        Periksa alasan dan lampirannya, lalu terima sebagai hadir, terima
-        sebagai dispensasi, atau tolak.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Kegiatan karakter"
+        tabs={tabs}
+        lede="Klarifikasi mahasiswa yang tercatat tidak hadir pada kegiatan karakter. Periksa alasan dan lampirannya, lalu terima sebagai hadir, terima sebagai dispensasi, atau tolak."
+      />
       <ClarificationNumbersView counts={counts} />
       <p className={styles.flowLine}>
         Alur: mahasiswa mengajukan, lalu Penilai Mahasiswa memverifikasi dan

@@ -14,6 +14,18 @@ import type { OwnHistory, OwnScheduleView } from "./schedule-view";
 // 10:00 on campus on 16 October 2026.
 const MOMENT = new Date("2026-10-16T03:00:00Z");
 
+describe("the head of Konseling", () => {
+  it("shows the prototype's description under its title", () => {
+    const page = renderToStaticMarkup(
+      <CounsellingScreen own={null} mayManage={true} />,
+    );
+
+    expect(page).toMatch(
+      /<h1[^>]*>Konseling<\/h1><p[^>]*>Daftar konseling secara sukarela, dan pantau jadwal konseling yang ditugaskan kepada Anda\. Isi pembicaraan dalam sesi bersifat rahasia antara Anda dan konselor\.<\/p>/,
+    );
+  });
+});
+
 describe("Konseling of Konselor", () => {
   it("shows the emergency notice with 119, and Persetujuan konseling with a student search until one is picked", () => {
     const page = renderToStaticMarkup(

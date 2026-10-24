@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import type { GradeList } from "@/character-grades/grade-list";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import {
   GRADE_LIST_PAGE_SIZE,
   type GradeParams,
@@ -40,13 +40,11 @@ export function CharacterGradeScreen({
 }) {
   return (
     <>
-      <PageHead title="Penilaian karakter">
-        Nilai karakter semester berdasarkan Keputusan Direktur Nomor KEP-220
-        tentang Pedoman Penilaian Karakter Mahasiswa: kehadiran kegiatan, nilai
-        pengasuhan, nilai sikap dan perilaku (SIKU), serta nilai SKPM,
-        masing-masing dengan bobotnya.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Nilai karakter semester berdasarkan Keputusan Direktur Nomor KEP-220 tentang Pedoman Penilaian Karakter Mahasiswa: kehadiran kegiatan, nilai pengasuhan, nilai sikap dan perilaku (SIKU), serta nilai SKPM, masing-masing dengan bobotnya."
+      />
       {semester}
       {numbers}
       {scheme}

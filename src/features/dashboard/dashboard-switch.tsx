@@ -1,11 +1,11 @@
 import Link from "next/link";
 import tabs from "@/ui/tab-links.module.css";
-import styles from "./dashboard.module.css";
 import { type DashboardKind, KIND_TITLES, kindAddress } from "./dashboard-kind";
 
 /**
  * The switch at the top of the Dashboard of a person who has both views,
- * the open one marked. Nothing shows for an account with one view.
+ * the open one marked, drawn as the tab bar of every other page. Nothing
+ * shows for an account with one view.
  */
 export function DashboardSwitch({
   kinds,
@@ -16,7 +16,7 @@ export function DashboardSwitch({
 }) {
   if (kinds.length < 2) return null;
   return (
-    <nav className={styles.switch} aria-label="Pilih dashboard">
+    <nav className={tabs.tabs} aria-label="Pilih dashboard">
       {kinds.map((kind) => (
         <Link
           key={kind}

@@ -5,8 +5,8 @@ import { listStudyPrograms } from "@/db/study-programs";
 import { dormCohortsOf } from "@/dorms/dorm-cohorts";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import {
   countStudents,
   findAddedStudent,
@@ -88,13 +88,11 @@ export async function NewStudentsScreen({
   const thisYear = new Date().getFullYear();
   return (
     <>
-      <PageHead title="Pengguna baru mahasiswa">
-        Tambahkan mahasiswa yang belum ada di data induk, misalnya mahasiswa
-        baru, pindahan, atau penghuni asrama baru. Mahasiswa yang ditambahkan
-        langsung bisa dipilih sebagai pengguna (masuk dengan NIM), muncul di
-        semua menu, dan masuk ke penetapan pengasuh angkatannya.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Pengaturan"
+        tabs={tabs}
+        lede="Tambahkan mahasiswa yang belum ada di data induk, misalnya mahasiswa baru, pindahan, atau penghuni asrama baru. Mahasiswa yang ditambahkan langsung bisa dipilih sebagai pengguna (masuk dengan NIM), muncul di semua menu, dan masuk ke penetapan pengasuh angkatannya."
+      />
       <StudentNumbers counts={counts} />
       <StudentNotice>
         <StudentInputPanel

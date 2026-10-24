@@ -4,13 +4,13 @@ import type { ReactNode } from "react";
 import { campusTime } from "@/academic-periods/campus-clock";
 import { campusDay } from "@/academic-periods/campus-day";
 import { database } from "@/db/database";
-import { PageHead } from "@/ui/page-head";
 import type { SearchParams } from "@/ui/search-params";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
-import styles from "./activities.module.css";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { readActivitiesParams } from "./activities-address";
 import { loadActivitiesView } from "./activities-view";
 import { ActivityBoard } from "./activity-board";
+import { ManagedNote } from "./managed-note";
 
 /**
  * Kegiatan asrama for staff: Jadwal harian, Kegiatan rutin and Kegiatan
@@ -54,17 +54,14 @@ export async function ActivitiesScreen({
   });
   return (
     <>
-      <PageHead title="Kegiatan asrama">
-        Jadwal kegiatan rutin dan non rutin para penghuni asrama.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Jadwal kegiatan rutin dan non rutin para penghuni asrama."
+      >
+        {!mayManage && <ManagedNote />}
+      </TabbedHead>
       {ownPart}
-      {!mayManage && (
-        <p className={styles.note}>
-          Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
-          dan rinciannya.
-        </p>
-      )}
       <ActivityBoard
         params={params}
         view={view}

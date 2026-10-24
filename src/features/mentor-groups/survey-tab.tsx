@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { TabNote } from "@/ui/tabbed-head";
 import styles from "./mentor-groups.module.css";
 import type { RunningSurveyCard } from "./survey-card";
 import { SurveyCard } from "./survey-card-view";
@@ -82,30 +83,26 @@ export function SurveyPanelBody({
   );
 }
 
+/** What an account that only reads is told under the head: who opens a period. */
+export function SurveyNote({ mayManage }: { mayManage: boolean }) {
+  if (mayManage) return null;
+  return (
+    <TabNote>
+      Periode evaluasi pengasuhan dibuka oleh Kepala Unit Pembangunan Karakter.
+    </TabNote>
+  );
+}
+
 /**
  * The tab under its head: the panel of the survey period beside
  * "Komponen evaluasi pengasuhan", and one under the other where they do
- * not fit. An account that only reads is told first who opens a period.
+ * not fit.
  */
-export function SurveyArea({
-  mayManage,
-  panel,
-}: {
-  mayManage: boolean;
-  panel: ReactNode;
-}) {
+export function SurveyArea({ panel }: { panel: ReactNode }) {
   return (
-    <>
-      {!mayManage && (
-        <p className={styles.note}>
-          Periode evaluasi pengasuhan dibuka oleh Kepala Unit Pembangunan
-          Karakter.
-        </p>
-      )}
-      <div className={styles.sideBySide}>
-        {panel}
-        <SurveyComponents />
-      </div>
-    </>
+    <div className={styles.sideBySide}>
+      {panel}
+      <SurveyComponents />
+    </div>
   );
 }
