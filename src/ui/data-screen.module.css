@@ -79,27 +79,49 @@
   align-items: center;
 }
 
+/*
+ * The main and the second button. Both have a line of the same width, so
+ * they are as tall side by side; the main one's is the colour of its
+ * background. The size and weight are set here, or a button takes those
+ * of the table it sits in.
+ */
 .button {
   display: inline-block;
-  padding: var(--space-xs) var(--space-lg);
-  border: 0;
+  min-height: var(--button-height);
+  padding: var(--button-padding);
+  border: var(--line-width) solid var(--navy);
   border-radius: var(--radius-md);
   background: var(--navy);
   color: var(--surface);
   font: inherit;
-  font-weight: var(--weight-semibold);
+  font-size: var(--button-text);
+  font-weight: var(--button-weight);
   cursor: pointer;
 }
 
 .quiet {
-  padding: var(--space-xs) var(--space-md);
+  min-height: var(--button-height);
+  padding: var(--button-padding);
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius-md);
   background: none;
   color: var(--ink);
   font: inherit;
+  font-size: var(--button-text);
+  font-weight: var(--button-weight);
   text-decoration: none;
   cursor: pointer;
+}
+
+/*
+ * A link takes no height of its own, and inside a box of a set height its
+ * words stand at the top. Only links: the menu's fold button sets its own
+ * display, which this would override.
+ */
+a.button,
+a.quiet {
+  display: inline-flex;
+  align-items: center;
 }
 
 .link,

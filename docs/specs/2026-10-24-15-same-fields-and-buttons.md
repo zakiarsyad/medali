@@ -61,11 +61,15 @@ Every role, on every screen with a form, a filter or a button.
 4. Decided while building: the second button takes the shared button
    values in full, so its text becomes semibold like the main button's,
    as the shared set names one look for both.
+5. Decided while building: buttons with a look of their own that are
+   neither the main nor the second button keep it: "Keluar" in the side
+   menu, the account cards on the sign-in page and the mark that removes
+   a photo.
 
 ## Steps
 
 - [x] 1. Every form field takes its text size, weight and height from
   the shared field values wherever it sits, with a check.
-- [ ] 2. The main and the second button take their text size, weight,
+- [x] 2. The main and the second button take their text size, weight,
   height and inner space from the shared button values wherever they
   sit, buttons that look like links unchanged, with a check.
