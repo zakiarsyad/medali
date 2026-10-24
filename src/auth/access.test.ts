@@ -3549,6 +3549,24 @@ describe("may", () => {
     }
   });
 
+  it("lets Kepala Unit set the indicators of the mentoring score, on Nilai pengasuhan", () => {
+    expect(ACTION_TITLES.set_mentoring_indicators).toBe(
+      "Mengatur indikator penilaian pengasuhan",
+    );
+    expect(may(["head_of_unit"], "set_mentoring_indicators")).toBe(true);
+    expect(mayOpenTab(["head_of_unit"], "mentoring", "scores")).toBe(true);
+  });
+
+  it("refuses every other role to set the indicators of the mentoring score, Pengasuh, Direktur and Ketua Program Studi among them", () => {
+    const others = ROLE_IDS.filter((role) => role !== "head_of_unit");
+    expect(others).toEqual(
+      expect.arrayContaining(["mentor", "director", "head_of_program"]),
+    );
+    for (const role of others) {
+      expect(may([role], "set_mentoring_indicators")).toBe(false);
+    }
+  });
+
   it("lets every role that may give a mentoring score read the scores", () => {
     for (const role of ROLE_IDS) {
       if (!may([role], "give_mentoring_scores")) continue;

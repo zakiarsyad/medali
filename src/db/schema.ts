@@ -224,6 +224,10 @@ import {
   OLD_MENTOR_STATUSES,
   REPLACEMENT_REASONS,
 } from "@/mentoring/replacement-ids";
+import {
+  INDICATOR_COUNT,
+  type ScoreIndicator,
+} from "@/mentoring/score-indicators";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 import {
   FEWEST_ANSWERS_SHOWN,
@@ -2681,6 +2685,43 @@ export const mentoringScoreChanges = pgTable(
     scoreAfter: smallint().notNull(),
   },
   (table) => [index("mentoring_score_changes_score").on(table.scoreId)],
+);
+
+/** A list of indicators holds exactly as many as a score is given on. */
+function holdsAllIndicators(list: AnyPgColumn): SQL {
+  return sql`jsonb_typeof(${list}) = 'array' and jsonb_array_length(${list}) = ${sql.raw(String(INDICATOR_COUNT))}`;
+}
+
+/**
+ * Every setting of the indicators of the mentoring score, with the
+ * indicators before it, who set them and when: the latest is the one in
+ * force, and without any it is the starting one. A setting names the one
+ * it replaced, or none for the starting one, and each is replaced at most
+ * once, so two saves made from the same form are never both kept. Rows
+ * here cannot be changed or deleted; the database refuses it.
+ */
+export const mentoringIndicatorSets = pgTable(
+  "mentoring_indicator_sets",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    indicators: jsonb().$type<ScoreIndicator[]>().notNull(),
+    before: jsonb().$type<ScoreIndicator[]>().notNull(),
+    replaces: uuid().references((): AnyPgColumn => mentoringIndicatorSets.id),
+    setBy: uuid()
+      .notNull()
+      .references(() => accounts.id),
+    setAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("mentoring_indicator_sets_set_at").on(table.setAt),
+    unique("mentoring_indicator_sets_replaced_once")
+      .on(table.replaces)
+      .nullsNotDistinct(),
+    check(
+      "mentoring_indicator_sets_six",
+      sql`${holdsAllIndicators(table.indicators)} and ${holdsAllIndicators(table.before)}`,
+    ),
+  ],
 );
 
 /**

@@ -74,7 +74,7 @@ None.
 
 ## Steps
 
-- [ ] 1. The indicators are stored with who changed them and when,
+- [x] 1. The indicators are stored with who changed them and when,
   starting with the six MEDALI values; the right for Kepala Unit to
   change them, with checks.
 - [ ] 2. A score keeps its six indicator scores and the names they were
