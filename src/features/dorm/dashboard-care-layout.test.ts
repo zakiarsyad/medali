@@ -23,11 +23,11 @@ describe("a resident in Perlu perhatian dan tindak lanjut medis", () => {
     expect(ruleOf(".careStatus")).not.toContain("nowrap");
   });
 
-  it("never squeezes the resident's name, room and history below a card's narrowest column", () => {
+  it("never squeezes the resident's name, room and history below a column of the dashboard, which is wider than the longest category", () => {
     expect(ruleOf(".careBody")).toContain("flex: 1 1 var(--care-body-basis);");
     expect(ruleOf(".careBody")).toContain("min-width: 0;");
     expect(ruleOf(".careBody")).toContain("overflow-wrap: anywhere;");
-    expect(COMPUTER).toContain("--care-body-basis: var(--card-min-width);");
+    expect(COMPUTER).toContain("--care-body-basis: var(--column-min-width);");
   });
 
   it("keeps the category beside the resident on a computer and on a line of its own on a phone", () => {

@@ -43,9 +43,10 @@ Direktur, Pengelola Asrama and BAM.
 1. On a phone the label goes on its own line above the resident, as
    other lists of the app do with a long status.
 2. On a computer the resident stays beside the label while they take at
-   least the width of a card's narrowest column beside it; in a column
-   narrower than that, they move under the label instead of being
-   squeezed.
+   least the width of one column of the dashboard beside it, which is
+   wider than the longest label; in a card narrower than that, such as
+   Kepala Unit's half-width card, they move under the label instead of
+   being squeezed.
 3. The rows of the other lists on Dashboard asrama, such as the residents
    on leave, keep their own layout: only the health list changes.
 

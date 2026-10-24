@@ -129,7 +129,7 @@
 /*
  * A resident who needs care: the category may be long, so it wraps
  * inside the card, and the resident moves under it rather than shrink
- * below a card's narrowest column.
+ * below a column of the dashboard, which is wider than any category.
  */
 .careStatus {
   flex: 0 1 var(--care-status-basis);

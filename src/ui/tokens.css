@@ -110,7 +110,7 @@
    * beside them here, and on a line of its own above them on a phone.
    */
   --care-status-basis: auto;
-  --care-body-basis: var(--card-min-width);
+  --care-body-basis: var(--column-min-width);
   --medal-width: 370px;
   --history-chart-width: 560px;
   --bare-box-width: 380px;
