@@ -130,6 +130,31 @@ describe("the resident's own screen", () => {
 
     expect(shown).toMatch(/<h1[^>]*>Asrama<\/h1>/);
   });
+
+  it("shows the room status in the tab's content, under the tab bar", () => {
+    const shown = renderToStaticMarkup(
+      <OwnViolationsView
+        tabs={{
+          pagePath: "asrama",
+          tabs: [
+            { path: "kegiatan", title: "Kegiatan asrama" },
+            { path: "pel", title: "Pelanggaran asrama" },
+          ],
+          open: "pel",
+        }}
+        room="Belum diplot"
+        own={{ kind: "shown", announcement: BOARD.announcement, ...OWN }}
+        params={readOwnViolationParams({})}
+        now={NOW}
+      />,
+    );
+
+    expect(shown).not.toMatch(/class="_lede_\w+">Belum diplot/);
+    expect(shown).toMatch(/<p class="_ownRoom_\w+">Belum diplot<\/p>/);
+    expect(shown.indexOf("Belum diplot")).toBeGreaterThan(
+      shown.indexOf("</nav>"),
+    );
+  });
 });
 
 describe("the staff screen of a resident who is also staff", () => {

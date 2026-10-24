@@ -1,0 +1,5 @@
+.ownRoom {
+  margin: 0 0 var(--space-lg);
+  color: var(--muted);
+  font-size: var(--text-base);
+}

@@ -6,6 +6,7 @@ import { visibleTo } from "@/auth/visible-students";
 import { database } from "@/db/database";
 import { ActivitiesScreen } from "@/features/dorm/activities-screen";
 import { activitiesScreensOf } from "@/features/dorm/activities-screens";
+import { OwnRoomLine } from "@/features/dorm/own-room-line";
 import { readOwnWarning } from "@/features/dorm/own-warning";
 import { ActivitiesWarning } from "@/features/dorm/own-warning-view";
 import { readResidentActivities } from "@/features/dorm/resident-activities";
@@ -76,11 +77,8 @@ export default async function DormActivitiesPage(
   if (residentPart === null) forbidden();
   return (
     <>
-      <TabbedHead
-        title="Asrama"
-        tabs={tabs}
-        lede={await residentHeader(account.studentId)}
-      />
+      <TabbedHead title="Asrama" tabs={tabs} />
+      <OwnRoomLine room={await residentHeader(account.studentId)} />
       {residentPart}
     </>
   );

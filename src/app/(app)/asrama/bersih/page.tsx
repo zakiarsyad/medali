@@ -10,6 +10,7 @@ import { CleaningResidentView } from "@/features/dorm/cleaning-resident-view";
 import { CleaningScreen } from "@/features/dorm/cleaning-screen";
 import { cleaningScreensOf } from "@/features/dorm/cleaning-screens";
 import { readLivedInRoom } from "@/features/dorm/own-room";
+import { OwnRoomLine } from "@/features/dorm/own-room-line";
 import { residentHeader } from "@/features/dorm/resident-header";
 import { TabbedHead } from "@/ui/tabbed-head";
 
@@ -60,11 +61,8 @@ export default async function DormCleaningPage(
   if (residentPart === null) forbidden();
   return (
     <>
-      <TabbedHead
-        title="Asrama"
-        tabs={tabs}
-        lede={await residentHeader(account.studentId)}
-      />
+      <TabbedHead title="Asrama" tabs={tabs} />
+      <OwnRoomLine room={await residentHeader(account.studentId)} />
       {residentPart}
     </>
   );

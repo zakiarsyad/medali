@@ -99,11 +99,15 @@ Konseling.
 9. Decided while building: the space between the title and the tab bar
    is the shared space under a page heading, 24 px, as Kakak pendamping
    already had.
+10. Decided while building: a student's room status is the first line
+    of the tab's content, with the same words and in the same muted
+    15 px text it had. On Perizinan asrama the description no longer
+    starts with it.
 
 ## Steps
 
 - [x] 1. One shared page head for pages with tabs: the title, the tab
   bar, then the chosen tab's description and its note, with the shared
   spaces; every page with tabs and the dashboard choice use it.
-- [ ] 2. A student's room status on Asrama moves into the tab's content.
+- [x] 2. A student's room status on Asrama moves into the tab's content.
 - [ ] 3. Konseling shows the prototype's description under its title.

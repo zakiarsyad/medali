@@ -39,6 +39,21 @@ describe("the row of tabs", () => {
     expect(html).toContain('aria-label="Isi halaman"');
     expect(html).not.toContain("Bagian halaman");
   });
+
+  it("shows what a page not built yet is given in its content, under the tab bar", () => {
+    const html = renderToStaticMarkup(
+      <EmptyPage
+        title="Asrama"
+        tabs={{ pagePath: "asrama", tabs: [kamar, kesehatan], open: "kamar" }}
+      >
+        <p>Belum diplot</p>
+      </EmptyPage>,
+    );
+
+    expect(html.indexOf("Belum diplot")).toBeGreaterThan(
+      html.indexOf("</nav>"),
+    );
+  });
 });
 
 describe("a row of tabs that does not fit on one line", () => {
