@@ -48,7 +48,7 @@
 
 .quiet {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 /* The buttons of a page, under its head. */
@@ -169,7 +169,7 @@
 
 .surveyFacts dt {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .surveyFacts dd {
@@ -252,7 +252,7 @@
 }
 
 .barGold {
-  fill: var(--emas);
+  fill: var(--gold);
 }
 
 .barSilver {
@@ -264,7 +264,7 @@
 }
 
 .barGuidance {
-  fill: var(--bina);
+  fill: var(--bad);
 }
 
 .strong {

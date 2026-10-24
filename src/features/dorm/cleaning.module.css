@@ -167,7 +167,7 @@
 .sentBack {
   display: block;
   color: var(--bad);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   overflow-wrap: anywhere;
 }
 

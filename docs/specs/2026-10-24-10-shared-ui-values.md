@@ -88,7 +88,7 @@ and the content growing to 1440 px on a very wide screen.
 
 ## Steps
 
-- [ ] 1. Merge the names that hold the same value: the close text sizes
+- [x] 1. Merge the names that hold the same value: the close text sizes
   and the colour pairs, with a check that no two remain.
 - [ ] 2. Name one value for each repeating part, with the content's
   widest size at 1440 px, a check for each value and a check of the badge

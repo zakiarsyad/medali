@@ -141,7 +141,7 @@
 .fault {
   margin: 0;
   color: var(--bad);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .saveRow {
@@ -168,9 +168,9 @@
 
 /* "Dibatasi 70": a grade held lower by a discipline penalty. */
 .limited {
-  border: var(--line-width) solid var(--bina);
+  border: var(--line-width) solid var(--bad);
   background: none;
-  color: var(--bina);
+  color: var(--bad);
 }
 
 /* "Nilai karakter (KEP-220)" in a student's detail: one bar per part. */

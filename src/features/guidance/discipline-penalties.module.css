@@ -24,8 +24,8 @@
 
 /* Ditetapkan: the student's status ends for good. */
 .set {
-  border: var(--line-width) solid var(--bina);
-  color: var(--bina);
+  border: var(--line-width) solid var(--bad);
+  color: var(--bad);
 }
 
 /*
@@ -111,7 +111,7 @@ select.control {
 
 .facts dt {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .facts dd {

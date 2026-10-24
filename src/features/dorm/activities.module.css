@@ -84,7 +84,7 @@
 
 .facts dt {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }
 
@@ -362,6 +362,6 @@
  */
 .sentFile {
   display: block;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   overflow-wrap: anywhere;
 }

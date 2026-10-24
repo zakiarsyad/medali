@@ -51,7 +51,7 @@
 
 .kindRule {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 /* A field that takes the whole width of the form grid. */
@@ -111,7 +111,7 @@
 .quietLine {
   margin: 0;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .ok,
@@ -192,7 +192,7 @@
 
 .facts dt {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }
 
@@ -253,7 +253,7 @@
   margin: 0;
   padding: var(--space-md);
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 /* "Waktu kembali" over its field, as wide as the card lets it be. */
@@ -264,7 +264,7 @@
   gap: var(--space-2xs);
   min-width: 0;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }
 

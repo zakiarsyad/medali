@@ -25,13 +25,11 @@
   --fit-good: #7fb89a;
   --pass-light: #a9cdb8;
   --pass-lighter: #c9ddd1;
-  --emas: #b8892a;
   --perak: #7c8899;
   --perunggu: #a0643a;
-  --bina: #b23a48;
+  /* The value Disiplin has the colour --ok, the same green. */
   --vM: #2f6fb0;
   --vE: #c2557a;
-  --vD: #2e7d5b;
   --vA: #c9831c;
   --vL: #6a4fb0;
   --vI: #16858c;
@@ -51,10 +49,8 @@
   --font-body:
     var(--font-brand), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --text-xs: 11.5px;
-  --text-sm: 12.5px;
   --text-md: 13px;
   --text-base: 15px;
-  --text-nav: 14.5px;
   --text-lg: 19px;
   --text-title: 30px;
   --weight-medium: 500;

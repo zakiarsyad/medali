@@ -37,7 +37,7 @@
 .numberNote {
   margin: 0;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .notice {
@@ -51,7 +51,7 @@
   padding: 0 var(--space-sm);
   border: var(--line-width) solid currentColor;
   border-radius: var(--radius-md);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   white-space: nowrap;
 }
@@ -100,6 +100,6 @@
 
 .groupWarning {
   color: var(--warn);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }

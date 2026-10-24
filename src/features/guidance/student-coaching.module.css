@@ -1,6 +1,6 @@
 /* "Pembinaan (level)" in a student's detail: one column at every width. */
 .panel {
-  border-color: var(--bina);
+  border-color: var(--bad);
 }
 
 /* The heading and the status badge fold onto two lines when narrow. */
@@ -13,9 +13,9 @@
 }
 
 .status {
-  border: var(--line-width) solid var(--bina);
+  border: var(--line-width) solid var(--bad);
   background: none;
-  color: var(--bina);
+  color: var(--bad);
 }
 
 /* The note is typed by staff and may be one long word. */

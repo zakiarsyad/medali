@@ -20,7 +20,7 @@
 
 .weakScore {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .rerata {
@@ -58,6 +58,6 @@ select.control {
   display: block;
   margin-top: var(--space-xs);
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   overflow-wrap: anywhere;
 }

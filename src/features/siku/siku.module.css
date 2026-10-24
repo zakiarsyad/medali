@@ -43,7 +43,7 @@
 
 .sum small {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .sum b {
@@ -192,7 +192,7 @@
   border-radius: var(--radius-md);
   background: var(--goldsoft);
   color: var(--ink);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   overflow-wrap: anywhere;
 }
 
