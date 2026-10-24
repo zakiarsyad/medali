@@ -68,7 +68,16 @@ and the content growing to 1440 px on a very wide screen.
    the later fixes change the fewest screens. Where the issue gives no
    number, such as the badge colours, the button's inner space and the
    space under the tab bar and the page description, the value most
-   screens use today is taken.
+   screens use today is taken:
+   - button inner space: 6 px top and bottom and 12 px at the sides, as
+     the second button and the choice buttons have it;
+   - badge colours: text and border in the colour of good, warning or
+     bad, or muted text with a thin grey border for plain, on a white
+     background, as most badges show them. The warning orange reaches
+     only 3.5 to 1 on white, so its text is the same orange made darker
+     until it reaches 4.5 to 1; its border keeps the orange;
+   - space under the tab bar and under the page description: 24 px each,
+     as the tab bar and the page heading have it.
 2. The two close text sizes become one, 13 px, because 0.5 px cannot be
    told apart on screen.
 3. Of each pair of colour names with the same colour, the name that
@@ -85,11 +94,14 @@ and the content growing to 1440 px on a very wide screen.
    parts of Kurikulum, 14.5 px, is also less than 1 px from 15 px, so by
    the same reason as decision 2 it becomes 15 px, the size more screens
    use.
+7. Decided while building: the badge contrast is checked in light mode.
+   Dark mode is left alone by this work, and there the good, warning
+   and bad colours on the dark background reach less than 4.5 to 1.
 
 ## Steps
 
 - [x] 1. Merge the names that hold the same value: the close text sizes
   and the colour pairs, with a check that no two remain.
-- [ ] 2. Name one value for each repeating part, with the content's
+- [x] 2. Name one value for each repeating part, with the content's
   widest size at 1440 px, a check for each value and a check of the badge
   contrast.

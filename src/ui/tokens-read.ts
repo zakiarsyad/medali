@@ -3,6 +3,7 @@ const NAMED_VALUE_DECLARATION = /(--[\w-]+)\s*:\s*([^;]+);/g;
 const PHONE_RULE = "@media (max-width:";
 const DARK_RULE = "@media (prefers-color-scheme: dark)";
 const LITERAL_COLOUR = /^(?:#[0-9a-f]{3,8}|(?:rgba?|hsla?)\(.*\))$/;
+const POINTER = /var\((--[\w-]+)\)/g;
 const PX = /^(-?\d*\.?\d+)px$/;
 const TEXT_SIZE_NAME = "--text-";
 
@@ -77,6 +78,18 @@ export function sameColourNames(
     namesByColours.set(key, [...(namesByColours.get(key) ?? []), name]);
   }
   return [...namesByColours.values()].filter((names) => names.length > 1);
+}
+
+/**
+ * The value of a name with every name it points at replaced by its own
+ * value, so `var(--space-md) var(--space-lg)` reads `12px 16px`.
+ */
+export function resolvedValue(name: string, values: NamedValues): string {
+  const value = values.get(name);
+  if (value === undefined) throw new Error(`No named value ${name}.`);
+  return value.replace(POINTER, (_pointer, pointed: string) =>
+    resolvedValue(pointed, values),
+  );
 }
 
 /** A size in px as a number, or undefined for any other value. */

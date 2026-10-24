@@ -53,6 +53,7 @@
   --text-base: 15px;
   --text-lg: 19px;
   --text-title: 30px;
+  --weight-normal: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-heavy: 800;
@@ -143,7 +144,7 @@
 
   /* dvh, not vh: the bar of a phone browser must not cover the bottom. */
   --screen-height: 100dvh;
-  --content-max-width: 1360px;
+  --content-max-width: 1440px;
   --side-width: 248px;
   --shell-columns: var(--side-width) 1fr;
   --main-column: 2;
@@ -213,6 +214,64 @@
    * several lines in it.
    */
   --above-save-bar: 0;
+
+  /* The parts that repeat on every screen take their look from these. */
+  --field-text: var(--text-base);
+  --field-weight: var(--weight-normal);
+  --field-height: 40px;
+
+  --button-text: var(--text-base);
+  --button-weight: var(--weight-semibold);
+  --button-height: 40px;
+  --button-padding: var(--space-xs) var(--space-md);
+
+  /*
+   * A status badge. The orange of --warn is too light for text on white,
+   * so the warning badge's text is the same orange made darker.
+   */
+  --badge-good-ink: var(--ok);
+  --badge-good-bg: var(--surface);
+  --badge-good-line: var(--ok);
+  --badge-warning-ink: #a5690f;
+  --badge-warning-bg: var(--surface);
+  --badge-warning-line: var(--warn);
+  --badge-bad-ink: var(--bad);
+  --badge-bad-bg: var(--surface);
+  --badge-bad-line: var(--bad);
+  --badge-plain-ink: var(--muted);
+  --badge-plain-bg: var(--surface);
+  --badge-plain-line: var(--line);
+
+  --card-padding: var(--space-md) var(--space-lg);
+  --card-radius: var(--radius-lg);
+  --card-shadow: none;
+  --card-gap: var(--space-sm);
+
+  --note-padding: var(--space-sm) var(--space-md);
+  --note-text: var(--text-md);
+  --note-ink: var(--muted);
+  --note-line: var(--line-width);
+  --note-line-colour: var(--line);
+
+  --section-heading-text: var(--text-base);
+  --section-heading-weight: var(--weight-heavy);
+  --section-heading-ink: var(--navy);
+
+  /* "Nothing here yet", for a whole list and for one section of a panel. */
+  --empty-list-text: var(--text-base);
+  --empty-list-ink: var(--muted);
+  --empty-list-align: center;
+  --empty-list-padding: var(--space-xl);
+  --empty-section-text: var(--text-md);
+  --empty-section-ink: var(--muted);
+  --empty-section-align: left;
+  --empty-section-padding: 0;
+
+  --below-tabs: var(--space-xl);
+  --below-lede: var(--space-xl);
+
+  /* The smallest a part pressed on a phone may be, both ways. */
+  --tap-size: 44px;
 }
 
 /*
