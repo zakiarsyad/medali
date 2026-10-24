@@ -34,11 +34,9 @@
 }
 
 .subheading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   display: block;
   margin: var(--space-lg) 0 var(--space-xs);
-  color: var(--muted);
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
 }
 
 /*

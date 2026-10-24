@@ -29,8 +29,8 @@ select.control {
 }
 
 .conditionsHeading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: 0;
-  font-size: var(--text-md);
 }
 
 .conditionList {

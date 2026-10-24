@@ -62,8 +62,8 @@
 }
 
 .subheading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: var(--space-lg) 0 var(--space-sm);
-  font-size: var(--text-base);
 }
 
 .list {

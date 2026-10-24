@@ -159,10 +159,8 @@
 
 /* "Riwayat asesmen" in "Rincian" of a screened student. */
 .subHeading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: 0;
-  color: var(--navy);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
 }
 
 .card > p {

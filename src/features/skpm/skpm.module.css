@@ -31,8 +31,8 @@
 }
 
 .subheading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: var(--space-lg) 0 var(--space-xs);
-  font-size: var(--text-base);
 }
 
 .conversionRow {

@@ -19,10 +19,8 @@
 }
 
 .subheading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: var(--space-xl) 0 var(--space-sm);
-  color: var(--navy);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
 }
 
 .history {

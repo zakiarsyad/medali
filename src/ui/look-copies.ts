@@ -29,6 +29,8 @@ const NOTE_LOOK = [
   "color",
   "font-size",
 ];
+const HEADING_NAME = /^\.(?:[\w-]*[Hh]eading|[\w-]*Title)$/;
+const HEADING_LOOK = ["color", "font-size", "font-weight"];
 const NO_LINE = new Set(["0", "none"]);
 
 function sharedLookOf(rule: Rule): string | undefined {
@@ -109,5 +111,29 @@ function isNoteCopy(rule: Rule): boolean {
 export function noteCopies(stylesheet: string): string[] {
   return rulesOf(stylesheet)
     .filter(isNoteCopy)
+    .map((rule) => rule.selector);
+}
+
+function looksLikeHeading(rule: Rule): boolean {
+  if (!setsAny(rule, HEADING_LOOK)) return false;
+  return selectorsOf(rule).some((part) => HEADING_NAME.test(part));
+}
+
+function isHeadingCopy(rule: Rule): boolean {
+  const shared = sharedLookOf(rule);
+  if (shared === "sectionHeading") return setsAny(rule, HEADING_LOOK);
+  if (shared !== undefined) return false;
+  return looksLikeHeading(rule);
+}
+
+/**
+ * The selectors of a style file whose rule gives a heading a look of its
+ * own: a class named as a heading or a title that sets its text size,
+ * weight or colour, without the shared section heading look or on top of
+ * it.
+ */
+export function headingCopies(stylesheet: string): string[] {
+  return rulesOf(stylesheet)
+    .filter(isHeadingCopy)
     .map((rule) => rule.selector);
 }

@@ -95,10 +95,8 @@
 }
 
 .dormTitle {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: 0 0 var(--space-sm);
-  color: var(--navy);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
 }
 
 /* The room picked for a place and "Tugaskan": they fold under each other on a phone. */

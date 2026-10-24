@@ -15,6 +15,16 @@
 }
 
 /*
+ * The heading of a part inside a panel, one level under the panel's own
+ * heading. Each screen keeps the space around it.
+ */
+.sectionHeading {
+  color: var(--section-heading-ink);
+  font-size: var(--section-heading-text);
+  font-weight: var(--section-heading-weight);
+}
+
+/*
  * A card: one item of a list in a box of its own, its lines one under
  * another. Every card of every screen takes this look; a screen adds only
  * where the card stands. Long words break, so a card never pushes a phone

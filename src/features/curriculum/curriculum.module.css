@@ -18,12 +18,11 @@
 }
 
 .boxTitle {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   display: flex;
   gap: var(--space-sm);
   align-items: center;
   margin: 0;
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
 }
 
 .indicators {
