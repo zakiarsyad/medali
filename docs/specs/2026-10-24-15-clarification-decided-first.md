@@ -65,5 +65,5 @@ Pengelola Asrama, on Klarifikasi kehadiran asrama and on Tugas saya.
 
 ## Steps
 
-- [ ] 1. A refused decision of Pengelola Asrama on a clarification no
+- [x] 1. A refused decision of Pengelola Asrama on a clarification no
   longer redraws the page, with a check.
