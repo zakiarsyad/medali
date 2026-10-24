@@ -64,7 +64,7 @@ Every role, on every screen with a form, a filter or a button.
 
 ## Steps
 
-- [ ] 1. Every form field takes its text size, weight and height from
+- [x] 1. Every form field takes its text size, weight and height from
   the shared field values wherever it sits, with a check.
 - [ ] 2. The main and the second button take their text size, weight,
   height and inner space from the shared button values wherever they

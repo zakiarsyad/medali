@@ -41,13 +41,20 @@
   font-weight: var(--weight-semibold);
 }
 
+/*
+ * The size and weight are set here, or a field takes those of the label
+ * or the table it sits in.
+ */
 .input {
+  min-height: var(--field-height);
   padding: var(--space-xs) var(--space-sm);
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
+  font-size: var(--field-text);
+  font-weight: var(--field-weight);
 }
 
 .roles {
