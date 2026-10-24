@@ -65,7 +65,7 @@ Pengasuh, Penilaian, Pembinaan, Tugas saya, Dashboard and Profil saya.
 
 ## Steps
 
-- [ ] 1. One shared badge look for each meaning, which wins over the
+- [x] 1. One shared badge look for each meaning, which wins over the
   general badge look whatever order the styles load in, with a check.
 - [ ] 2. The status badges of every screen use the shared look, and the
   copies on each screen are removed.

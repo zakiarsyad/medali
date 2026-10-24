@@ -321,6 +321,35 @@
   white-space: nowrap;
 }
 
+/*
+ * A status badge in the colours of what it says. Two classes, so it wins
+ * over the gold of .badge and over a screen's own badge class, whichever
+ * style file loads last.
+ */
+.badge.good {
+  border: var(--line-width) solid var(--badge-good-line);
+  background: var(--badge-good-bg);
+  color: var(--badge-good-ink);
+}
+
+.badge.warning {
+  border: var(--line-width) solid var(--badge-warning-line);
+  background: var(--badge-warning-bg);
+  color: var(--badge-warning-ink);
+}
+
+.badge.bad {
+  border: var(--line-width) solid var(--badge-bad-line);
+  background: var(--badge-bad-bg);
+  color: var(--badge-bad-ink);
+}
+
+.badge.plain {
+  border: var(--line-width) solid var(--badge-plain-line);
+  background: var(--badge-plain-bg);
+  color: var(--badge-plain-ink);
+}
+
 /* A long role name must fold, or it pushes the list wider than a phone. */
 .stacked .badge {
   white-space: var(--stacked-badge-wrap);
