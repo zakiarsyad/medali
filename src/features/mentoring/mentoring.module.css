@@ -308,3 +308,16 @@
   align-items: center;
   margin-top: var(--space-md);
 }
+
+/* The cell of one indicator, never wider than its share of the table or its card. */
+.indicatorCell {
+  min-width: 0;
+}
+
+/* The choice of one indicator: as wide as its cell, never wider. */
+.indicatorChoice {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  scroll-margin-bottom: var(--above-save-bar);
+}

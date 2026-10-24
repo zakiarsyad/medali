@@ -110,6 +110,23 @@ None.
     "Skema bobot". The server checks the same again.
 13. "Simpan indikator" saves without asking first: unlike "Skema bobot",
     it changes no score given already.
+14. Each of the six is a choice from a list: "-" for none, then 1 to 5
+    with its meaning, such as "4 Baik". Each indicator has a column of
+    its own, headed by its name, then "Nilai akhir" and "Keterangan".
+15. A role that only reads sees the same columns, with the six scores
+    as numbers and a dash where there are none. A score given under
+    another name than the one in force shows that name under it.
+16. The head of "Nilai anak asuh" says "Nilai akhir = rerata enam
+    indikator × 20" in place of "Skala 0–100".
+17. A score given before the indicators shows its six choices empty.
+    Emptying the choices again leaves it as it is; filling in all six
+    replaces it.
+18. A row with only part of the six is sent with the others, so the
+    server refuses the whole save and says so, as a box that held no
+    score did before. Emptying all six of a row that has six saved also
+    says "Lengkapi enam indikator".
+19. Six choices that are the six kept write nothing and add no log
+    line, even when the indicator names changed since.
 
 ## Steps
 
@@ -124,6 +141,6 @@ None.
 - [x] 4. The panel "Indikator penilaian" shows, read only.
 - [x] 5. Kepala Unit changes and saves the indicators, with the refusal
   of a second save.
-- [ ] 6. Pengasuh gives six scores per mentee and saves them, with the
+- [x] 6. Pengasuh gives six scores per mentee and saves them, with the
   final score and "Lengkapi enam indikator".
 - [ ] 7. Refusals, the log and the phone layout.

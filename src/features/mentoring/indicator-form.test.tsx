@@ -21,7 +21,9 @@ describe("Indikator penilaian for Kepala Unit", () => {
   it("gives a box for the name and the sentence of each of the six, filled in with what is in force", () => {
     const page = shownForm();
 
-    expect(page.match(/<input[^>]*name="indicator\.\d\.name"/g)).toHaveLength(6);
+    expect(page.match(/<input[^>]*name="indicator\.\d\.name"/g)).toHaveLength(
+      6,
+    );
     expect(
       page.match(/<textarea[^>]*name="indicator\.\d\.sentence"/g),
     ).toHaveLength(6);

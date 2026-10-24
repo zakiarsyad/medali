@@ -10,7 +10,9 @@ const ANI: ScoredMember = {
   id: "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f7501",
   name: "Ani Uji Baris",
   nim: "9962000801",
-  score: 88,
+  score: 83.3,
+  indicatorScores: [4, 5, 4, 3, 5, 4],
+  indicatorNames: ["A", "B", "C", "D", "E", "F"],
   scoredAt: new Date("2026-10-08T09:00:00+07:00"),
   opensDetail: true,
 };
@@ -19,6 +21,8 @@ const BUDI: ScoredMember = {
   name: "Budi Uji Baris",
   nim: "9962000802",
   score: null,
+  indicatorScores: null,
+  indicatorNames: null,
   scoredAt: null,
   opensDetail: false,
 };
@@ -50,7 +54,12 @@ describe("scoreRowsOf", () => {
   it("keeps the saved score and the day it was saved, in campus time", () => {
     const [ani, budi] = scoreRowsOf(GROUP_ID, [ANI, BUDI], MARKS);
 
-    expect(ani).toMatchObject({ score: 88, scoredOn: "8 Okt 2026" });
+    expect(ani).toMatchObject({
+      score: 83.3,
+      indicatorScores: [4, 5, 4, 3, 5, 4],
+      indicatorNames: ["A", "B", "C", "D", "E", "F"],
+      scoredOn: "8 Okt 2026",
+    });
     expect(budi).toMatchObject({ score: null, scoredOn: null });
   });
 

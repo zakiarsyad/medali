@@ -30,20 +30,23 @@ const NOTHING_SENT: ScoreFormState = {
 };
 
 /**
- * The form "Nilai anak asuh": a box for the score of each member, and a
- * button that saves the changed ones together. The button is off while
- * nothing is changed and while a save is on its way, so two presses send
- * once. A box whose score was saved in between, from another window, is
- * not saved: it goes back to the score kept now. Leaving with scores
- * that are not saved asks first.
+ * The form "Nilai anak asuh": six choices for each member, and a button
+ * that saves the changed rows together. The button is off while nothing
+ * is changed and while a save is on its way, so two presses send once. A
+ * row whose score was saved in between, from another window, is not
+ * saved: it goes back to the score kept now. Leaving with scores that
+ * are not saved asks first.
  */
 export function ScoreForm({
   groupId,
   rows,
+  names,
 }: {
   groupId: string;
   /** The Aktif members of the group, each with the score kept for them. */
   rows: readonly ScoreRow[];
+  /** The names of the indicators in force, in their order. */
+  names: readonly string[];
 }) {
   const [typed, setTyped] = useState<Typed>({});
   const sentIds = idsToSend(rows, typed);
@@ -70,10 +73,11 @@ export function ScoreForm({
       <input type="hidden" name="groupId" value={groupId} />
       <ScoreBoxes
         rows={rows}
+        names={names}
         typed={typed}
         sentIds={sentIds}
-        onType={(studentId, text) =>
-          setTyped(withTyped(typed, studentId, text))
+        onChoose={(row, place, text) =>
+          setTyped(withTyped(typed, row, place, text))
         }
       />
       <div className={`${styles.saveBar} ${styles.saveScores}`}>

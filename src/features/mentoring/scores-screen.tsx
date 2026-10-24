@@ -4,7 +4,6 @@ import { periodTitle } from "@/academic-periods/period-labels";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
-import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 import shared from "@/ui/data-screen.module.css";
 import type { TabLinksProps } from "@/ui/tab-links";
 import {
@@ -30,15 +29,21 @@ import { ScoreRubric } from "./score-rubric";
 import { SCORES_ADDRESS, type ScoresParams } from "./scores-address";
 import { scoresOverview } from "./scores-overview";
 
+/** How the final score is worked out, as the head of "Nilai anak asuh" says it. */
+const FINAL_SCORE_RULE = "Nilai akhir = rerata enam indikator × 20";
+
 /** The numbers, the rubric and the scores of one group in the running period. */
 async function GroupScores({
   groupId,
   period,
+  names,
   mayGive,
   detailVisible,
 }: {
   groupId: string;
   period: AcademicPeriod;
+  /** The names of the indicators in force, in their order. */
+  names: readonly string[];
   /** Whether the account may give the scores of this group. */
   mayGive: boolean;
   detailVisible: SQL | null;
@@ -60,12 +65,10 @@ async function GroupScores({
       <section className={shared.panel}>
         <div className={styles.panelHead}>
           <h2 className={shared.heading}>Nilai anak asuh</h2>
-          <span className={styles.quiet}>
-            Skala {SCORE_MIN}–{SCORE_MAX}
-          </span>
+          <span className={styles.quiet}>{FINAL_SCORE_RULE}</span>
         </div>
         <ScoreRubric />
-        <Scores groupId={groupId} rows={rows} mayGive={mayGive} />
+        <Scores groupId={groupId} rows={rows} names={names} mayGive={mayGive} />
       </section>
     </>
   );
@@ -78,10 +81,12 @@ async function GroupScores({
 function Scores({
   groupId,
   rows,
+  names,
   mayGive,
 }: {
   groupId: string;
   rows: ScoreRow[];
+  names: readonly string[];
   mayGive: boolean;
 }) {
   if (rows.length === 0) {
@@ -91,21 +96,25 @@ function Scores({
       </p>
     );
   }
-  if (!mayGive) return <ScoreList rows={rows} />;
-  // Made anew for each group, so nothing typed for one stays for another.
-  return <ScoreForm key={groupId} groupId={groupId} rows={rows} />;
+  if (!mayGive) return <ScoreList rows={rows} names={names} />;
+  // Made anew for each group, so nothing chosen for one stays for another.
+  return (
+    <ScoreForm key={groupId} groupId={groupId} rows={rows} names={names} />
+  );
 }
 
 /** What the tab shows under its head, for the groups an account may read. */
 function Groups({
   groups,
   period,
+  names,
   giveLimit,
   detailVisible,
   askedGroupId,
 }: {
   groups: AttendanceGroup[];
   period: AcademicPeriod | null;
+  names: readonly string[];
   /** The groups the account may give scores in, or null for one that only reads. */
   giveLimit: RowLimit | null;
   detailVisible: SQL | null;
@@ -145,6 +154,7 @@ function Groups({
       <GroupScores
         groupId={shown.id}
         period={period}
+        names={names}
         mayGive={mayFillInFor(giveLimit, shown.mentor?.id ?? null)}
         detailVisible={detailVisible}
       />
@@ -209,6 +219,7 @@ export async function ScoresScreen({
         <Groups
           groups={groups}
           period={period}
+          names={indicators.indicators.map((indicator) => indicator.name)}
           giveLimit={giveLimit}
           detailVisible={detailVisible}
           askedGroupId={params.groupId}

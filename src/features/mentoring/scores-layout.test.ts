@@ -24,11 +24,12 @@ describe("the tab Nilai pengasuhan on a phone", () => {
     for (const title of [
       "Anak asuh",
       "Kehadiran pengasuhan",
-      "Nilai pengasuhan",
+      "Nilai akhir",
       "Keterangan",
     ]) {
       expect(TABLE).toContain(`<td data-title="${title}">`);
     }
+    expect(TABLE).toMatch(/<td\s+key=\{name\}\s+data-title=\{name\}/);
   });
 
   it("shows the form and the list that only reads in the one table, so both are cards", () => {

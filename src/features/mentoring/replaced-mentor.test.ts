@@ -104,8 +104,8 @@ async function savesBy(
     account,
     {
       groupId,
-      scores: { [round.scored]: 80 },
-      basedOn: { [round.scored]: null },
+      scores: { [round.scored]: [4, 4, 4, 4, 4, 4] },
+      basedOn: { [round.scored]: "" },
     },
     period.day,
   );
