@@ -60,4 +60,4 @@ and Pengaturan.
   the field's text size, and is named by the screen that uses it, with
   a check.
 - [x] 2. Kurikulum's semester choice uses the shared row.
-- [ ] 3. SIKU's Penambahan / Pengurangan choice uses the shared row.
+- [x] 3. SIKU's Penambahan / Pengurangan choice uses the shared row.

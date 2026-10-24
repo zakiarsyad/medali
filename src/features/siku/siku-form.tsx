@@ -3,6 +3,7 @@
 import { type KeyboardEvent, useActionState, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { ModeSwitch } from "@/ui/mode-switch";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
@@ -35,6 +36,8 @@ import type { GroupChoice, SikuPick } from "./siku-picks";
 import { KIND_WORDS, REASON_WORDS } from "./siku-words";
 
 const START: FormState = { error: null, done: null };
+
+const KIND_MODES = SIKU_KINDS.map((each) => [each, KIND_WORDS[each]] as const);
 
 export const NOBODY_FOUND = "Tidak ada mahasiswa aktif yang cocok.";
 
@@ -232,20 +235,12 @@ export function SikuForm({
       {chosen.map((each) => (
         <input key={each.id} type="hidden" name="student" value={each.id} />
       ))}
-      <fieldset className={styles.choices}>
-        <legend className={shared.hidden}>Jenis</legend>
-        {SIKU_KINDS.map((each) => (
-          <button
-            key={each}
-            type="button"
-            className={styles.choice}
-            aria-pressed={kind === each}
-            onClick={() => chooseKind(each)}
-          >
-            {KIND_WORDS[each]}
-          </button>
-        ))}
-      </fieldset>
+      <ModeSwitch
+        legend="Jenis"
+        modes={KIND_MODES}
+        mode={kind}
+        onChoose={chooseKind}
+      />
       <div className={shared.form}>
         <label className={`${shared.field} ${styles.full}`}>
           Alasan {KIND_WORDS[kind].toLowerCase()}
