@@ -83,7 +83,7 @@ Every role.
 
 ## Steps
 
-- [ ] 1. Every card takes the shared card look, with a check.
+- [x] 1. Every card takes the shared card look, with a check.
 - [ ] 2. Every note takes the shared note look and every warning note
   its amber border, "Belum diumumkan…" in it, with a check.
 - [ ] 3. Every section heading inside a page takes the shared heading

@@ -72,7 +72,9 @@ describe("the cards of Advokasi masuk on a phone", () => {
     expect(ruleOf(".cards")).toContain(
       "minmax(min(100%, var(--card-min-width)), 1fr)",
     );
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
   });
 
   it("fold Catatan BAM and the two decisions onto lines of their own", () => {

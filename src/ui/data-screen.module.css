@@ -14,6 +14,25 @@
   font-weight: var(--weight-heavy);
 }
 
+/*
+ * A card: one item of a list in a box of its own, its lines one under
+ * another. Every card of every screen takes this look; a screen adds only
+ * where the card stands. Long words break, so a card never pushes a phone
+ * screen sideways.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+  min-width: 0;
+  padding: var(--card-padding);
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--card-radius);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  overflow-wrap: anywhere;
+}
+
 .form {
   display: grid;
   /* A column is never asked to be wider than the room a narrow phone leaves. */

@@ -14,17 +14,14 @@
 }
 
 .box {
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line2);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .boxTitle {
   display: flex;
   gap: var(--space-sm);
   align-items: center;
-  margin: 0 0 var(--space-xs);
+  margin: 0;
   font-size: var(--text-base);
   font-weight: var(--weight-heavy);
 }

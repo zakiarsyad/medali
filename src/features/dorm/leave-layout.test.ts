@@ -62,8 +62,12 @@ describe("the request cards of staff on a phone", () => {
     expect(ruleOf(".cards")).toContain(
       "minmax(min(100%, var(--column-min-width)), 1fr)",
     );
-    expect(ruleOf(".card")).toContain("min-width: 0;");
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
     expect(ruleOf(".cardHead")).toContain("flex-wrap: wrap;");
     expect(ruleOf(".badges")).toContain("flex-wrap: wrap;");
   });

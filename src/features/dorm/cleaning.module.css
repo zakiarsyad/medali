@@ -28,7 +28,7 @@
 }
 
 .box {
-  composes: card from "./rooms.module.css";
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .places {

@@ -25,7 +25,9 @@ describe("the tab Klarifikasi kehadiran on a phone", () => {
     expect(ruleOf(BASE, ".cards")).toContain(
       "minmax(min(100%, var(--column-min-width)), 1fr)",
     );
-    expect(ruleOf(BASE, ".card")).toContain("min-width: 0;");
+    expect(ruleOf(BASE, ".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
   });
 
   it("puts the facts of a card under each other where there is no room beside", () => {
@@ -36,7 +38,9 @@ describe("the tab Klarifikasi kehadiran on a phone", () => {
   });
 
   it("folds a long name, explanation or file name instead of widening the page", () => {
-    expect(ruleOf(BASE, ".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(BASE, ".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
     expect(ruleOf(OWN, ".fileName")).toContain("overflow-wrap: anywhere;");
     expect(ruleOf(OWN, ".fileName")).toContain("max-width: 100%;");
     expect(ruleOf(FILE_BOX, ".fileHead")).toContain("flex-wrap: wrap;");
