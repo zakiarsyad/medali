@@ -54,6 +54,6 @@ screen.
 
 ## Steps
 
-- [ ] 1. The content and the top bar's row are centred at the widest
+- [x] 1. The content and the top bar's row are centred at the widest
   content size, with the top bar's background and line still running
   the full width.
