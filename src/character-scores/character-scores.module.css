@@ -28,22 +28,6 @@
   background: var(--bad);
 }
 
-/* The level of coaching a student needs: Intensif, Sedang and Ringan. */
-.intensive {
-  background: var(--bad);
-  color: var(--surface);
-}
-
-.moderate {
-  border: var(--line-width) solid var(--warn);
-  color: var(--warn);
-}
-
-.light {
-  background: var(--surface2);
-  color: var(--muted);
-}
-
 .spread {
   display: block;
   width: 100%;

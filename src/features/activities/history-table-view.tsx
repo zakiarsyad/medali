@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { ToneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 import { CLARIFICATION_LOOKS, HISTORY_LOOKS } from "./badge-look";
 import type { CardsState } from "./cards-state";
@@ -14,7 +15,6 @@ import {
 } from "./clarification-time";
 import type { HistoryRow } from "./history-row";
 import { HISTORY_WORDS } from "./history-status";
-import { LookBadge } from "./look-badge";
 
 const TITLES = ["Tanggal", "Kegiatan", "Status", "Keterangan", "Klarifikasi"];
 
@@ -35,10 +35,9 @@ function ClarificationCellView({
   return (
     <>
       {badge !== null && (
-        <LookBadge
-          words={CLARIFICATION_BADGE_WORDS[badge]}
-          look={CLARIFICATION_LOOKS[badge]}
-        />
+        <ToneBadge tone={CLARIFICATION_LOOKS[badge]}>
+          {CLARIFICATION_BADGE_WORDS[badge]}
+        </ToneBadge>
       )}
       {file !== null && (
         <a
@@ -75,10 +74,9 @@ function RowCells({ row, onOpen }: { row: HistoryRow; onOpen: () => void }) {
         )}
       </td>
       <td data-title="Status">
-        <LookBadge
-          words={HISTORY_WORDS[row.status]}
-          look={HISTORY_LOOKS[row.status]}
-        />
+        <ToneBadge tone={HISTORY_LOOKS[row.status]}>
+          {HISTORY_WORDS[row.status]}
+        </ToneBadge>
         {row.uploadUntil !== null && (
           <span className={shared.detail}>sampai {row.uploadUntil}</span>
         )}

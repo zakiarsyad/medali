@@ -1,15 +1,15 @@
-import shared from "@/ui/data-screen.module.css";
-import styles from "./mental-health.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import type { ScreeningLevel } from "./screening-ids";
 import { LEVEL_WORDS, RISK_WORDS } from "./screening-words";
 
 /** The colours of the prototype, from fine to most serious. */
-const LEVEL_STYLES: Record<ScreeningLevel, string | undefined> = {
-  normal: styles.ok,
-  mild: styles.plain,
-  moderate: styles.warn,
-  severe: styles.bad,
-  extremely_severe: styles.bad,
+const LEVEL_TONES: Record<ScreeningLevel, BadgeTone> = {
+  normal: "good",
+  mild: "plain",
+  moderate: "warning",
+  severe: "bad",
+  extremely_severe: "bad",
 };
 
 /** "Tingkat" of a screening, with "Risiko" beside it when self-harm was ticked. */
@@ -22,13 +22,13 @@ export function LevelBadges({
 }) {
   return (
     <>
-      <span className={`${shared.badge} ${LEVEL_STYLES[level]}`}>
+      <span className={toneBadge(LEVEL_TONES[level])}>
         {LEVEL_WORDS[level]}
       </span>
       {risk && (
         <>
           {" "}
-          <span className={`${shared.badge} ${styles.bad}`}>{RISK_WORDS}</span>
+          <span className={toneBadge("bad")}>{RISK_WORDS}</span>
         </>
       )}
     </>

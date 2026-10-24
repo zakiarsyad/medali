@@ -189,28 +189,6 @@
   margin-bottom: var(--space-md);
 }
 
-.good,
-.fair,
-.poor {
-  border: var(--line-width) solid var(--line);
-  background: var(--surface);
-}
-
-.good {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
-.fair {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-
-.poor {
-  border-color: var(--bad);
-  color: var(--bad);
-}
-
 /*
  * The medal of a group or of a mentor's mentees beside its Rerata. The
  * medal gives way first, so both fit the width of a phone.

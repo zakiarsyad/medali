@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode, useState } from "react";
 import type { CampusMoment } from "@/academic-periods/campus-clock";
 import shared from "@/ui/data-screen.module.css";
-import styles from "./activities.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import { countAudience, type ResidentsByDorm } from "./activity-audience";
 import { KindBadge, OrganiserBadge, StateBadge } from "./activity-badges";
 import { ActivityDetail } from "./activity-detail";
@@ -65,9 +65,7 @@ function AttendanceCells({
       <td data-title="Hadir">-</td>
       <td data-title="Kehadiran">
         {state === "over" ? (
-          <span className={`${shared.badge} ${styles.warn}`}>
-            Belum diumumkan
-          </span>
+          <span className={toneBadge("warning")}>Belum diumumkan</span>
         ) : (
           "-"
         )}

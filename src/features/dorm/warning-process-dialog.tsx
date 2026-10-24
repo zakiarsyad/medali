@@ -1,6 +1,7 @@
 import { campusDay } from "@/academic-periods/campus-day";
 import shared from "@/ui/data-screen.module.css";
 import { ModalDialog } from "@/ui/modal-dialog";
+import { toneBadge } from "@/ui/tone-badge";
 import { CallScheduleForm } from "./call-schedule-form";
 import { IssueLetterForm } from "./issue-letter-form";
 import { NO_COUNTED, ReduceManyForm } from "./reduce-many-form";
@@ -49,9 +50,7 @@ function CallParts({ call, now }: { call: WarningCall; now: Date }) {
   return (
     <>
       <p className={styles.spaced}>
-        <span className={`${shared.badge} ${styles.warn}`}>
-          Penetapan SP {call.level}
-        </span>{" "}
+        <span className={toneBadge("warning")}>Penetapan SP {call.level}</span>{" "}
         <LetterMark level={call.mark} /> {causeWords(call.causes)}
       </p>
       <div className={shared.form}>

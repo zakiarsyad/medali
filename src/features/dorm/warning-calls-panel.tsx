@@ -1,6 +1,7 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
+import { toneBadge } from "@/ui/tone-badge";
 import {
   type StaffViolationParams,
   staffViolationsAddress,
@@ -20,7 +21,7 @@ export const NO_CALLS = "Tidak ada panggilan klarifikasi aktif.";
 /** The mark of an SP already issued, as "SP 1" or "SP 2". */
 export function LetterMark({ level }: { level: WarningLevel | null }) {
   if (level === null) return null;
-  return <span className={`${shared.badge} ${styles.bad}`}>SP {level}</span>;
+  return <span className={toneBadge("bad")}>SP {level}</span>;
 }
 
 /**
@@ -68,9 +69,7 @@ function CallRow({
         <b>{call.counted.toLocaleString("id-ID")}</b>
       </td>
       <td data-title="Panggilan">
-        <span className={`${shared.badge} ${styles.warn}`}>
-          Penetapan SP {call.level}
-        </span>{" "}
+        <span className={toneBadge("warning")}>Penetapan SP {call.level}</span>{" "}
         <LetterMark level={call.mark} />
         <p className={styles.sub}>{causeWords(call.causes)}</p>
       </td>

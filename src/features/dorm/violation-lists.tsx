@@ -1,6 +1,8 @@
 import { DORM_SHORT_NAMES } from "@/dorms/dorms";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import type { AnnouncedViolation } from "./violation-announcement";
 import {
   appealEndOf,
@@ -8,18 +10,17 @@ import {
   type ViolationStatus,
 } from "./violation-status";
 import { punishmentText, STATUS_WORDS, shownHour } from "./violation-words";
-import styles from "./violations.module.css";
 
 /** Who looks at a list: staff see the NIM and the dorm, a resident sees a name only. */
 export type ListReader = "staff" | "resident";
 
-const STATUS_LOOKS: Record<ViolationStatus, string | undefined> = {
-  scheduled: undefined,
-  appeal: styles.warn,
-  appeal_waiting: styles.warn,
-  appeal_accepted: styles.ok,
-  escalated: styles.bad,
-  reduced: styles.ok,
+const STATUS_TONES: Record<ViolationStatus, BadgeTone | null> = {
+  scheduled: null,
+  appeal: "warning",
+  appeal_waiting: "warning",
+  appeal_accepted: "good",
+  escalated: "bad",
+  reduced: "good",
 };
 
 /** What the status of a violation is drawn from. */
@@ -40,7 +41,7 @@ export function StatusBadge({ row, now }: { row: StatusOf; now: Date }) {
   const status = recordStatus(announcedAt, appeal, row.reduced, now);
   return (
     <>
-      <span className={`${shared.badge} ${STATUS_LOOKS[status] ?? ""}`}>
+      <span className={toneBadge(STATUS_TONES[status])}>
         {STATUS_WORDS[status]}
       </span>
       {status === "appeal" && (

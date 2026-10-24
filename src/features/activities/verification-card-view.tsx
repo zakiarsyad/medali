@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
+import { ToneBadge } from "@/ui/tone-badge";
 import base from "./activities.module.css";
 import { ATTENDANCE_WORDS } from "./attendance-status";
 import { HISTORY_LOOKS } from "./badge-look";
-import { LookBadge } from "./look-badge";
 import styles from "./verification.module.css";
 import {
   decisionWords,
@@ -41,10 +41,9 @@ function Photo({ card }: { card: VerificationCard }) {
 function Decision({ card }: { card: VerificationCard }) {
   return (
     <div className={styles.decision}>
-      <LookBadge
-        words={ATTENDANCE_WORDS[card.status]}
-        look={HISTORY_LOOKS[card.status]}
-      />
+      <ToneBadge tone={HISTORY_LOOKS[card.status]}>
+        {ATTENDANCE_WORDS[card.status]}
+      </ToneBadge>
       <span className={base.cardText}>{decisionWords(card)}</span>
     </div>
   );
@@ -74,13 +73,13 @@ export function VerificationCardView({
         <p className={base.cardText}>{card.activity}</p>
         {!card.isMeant && (
           <div>
-            <LookBadge words={NO_LONGER_MEANT} look="plain" />
+            <ToneBadge tone="plain">{NO_LONGER_MEANT}</ToneBadge>
           </div>
         )}
         <p className={base.cardText}>{card.sent}</p>
         {card.isOutsideDates && (
           <div>
-            <LookBadge words={OUTSIDE_DATES} look="warn" />
+            <ToneBadge tone="warning">{OUTSIDE_DATES}</ToneBadge>
           </div>
         )}
         {card.status !== "waiting" && <Decision card={card} />}

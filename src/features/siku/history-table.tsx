@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./siku.module.css";
 import { cancelSikuEntryAction } from "./siku-actions";
 import type { FormEntry, HistoryEntry } from "./siku-history";
@@ -64,9 +65,7 @@ function Adjustment({ row }: { row: HistoryRow }) {
   }
   return (
     <>
-      <span
-        className={`${shared.badge} ${row.kind === "gain" ? styles.gain : styles.loss}`}
-      >
+      <span className={toneBadge(row.kind === "gain" ? "good" : "bad")}>
         {KIND_WORDS[row.kind]}
       </span>{" "}
       {REASON_WORDS[row.reason]}

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
+import { ToneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 import type { ActivityCard } from "./activity-card";
-import { LookBadge } from "./look-badge";
 import { ValueTags } from "./value-tags";
 
 /**
@@ -24,7 +24,7 @@ export function ActivityCardView({
           <p className={styles.cardText}>{card.when}</p>
           <p className={styles.cardText}>{card.until}</p>
         </div>
-        <LookBadge {...card.badge} />
+        <ToneBadge tone={card.badge.look}>{card.badge.words}</ToneBadge>
       </div>
       {card.description !== "" && (
         <p className={styles.cardText}>{card.description}</p>

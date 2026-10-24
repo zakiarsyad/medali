@@ -1,7 +1,9 @@
 import { Fragment } from "react";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 import { clarificationFileAddress } from "./clarification-address";
 import { ClarificationForm } from "./clarification-form";
@@ -18,22 +20,19 @@ import type { HistoryState } from "./history-state";
 
 const TITLES = ["Tanggal", "Kegiatan", "Status", "Catatan", "Klarifikasi"];
 
-const STATUS_STYLES: Record<HistoryStatus, string | undefined> = {
-  present: styles.ok,
-  absent: styles.bad,
-  leave: styles.plain,
-  not_announced: styles.warn,
+const STATUS_TONES: Record<HistoryStatus, BadgeTone> = {
+  present: "good",
+  absent: "bad",
+  leave: "plain",
+  not_announced: "warning",
 };
 
-const CLARIFICATION_STYLES: Record<
-  DormClarificationStatus,
-  string | undefined
-> = {
-  submitted: styles.warn,
-  verified: styles.warn,
-  accepted: styles.ok,
-  rejected: styles.bad,
-  closed: styles.plain,
+const CLARIFICATION_TONES: Record<DormClarificationStatus, BadgeTone> = {
+  submitted: "warning",
+  verified: "warning",
+  accepted: "good",
+  rejected: "bad",
+  closed: "plain",
 };
 
 /**
@@ -54,7 +53,7 @@ function ClarificationCellView({
   return (
     <>
       {badge !== null && (
-        <span className={`${shared.badge} ${CLARIFICATION_STYLES[badge]}`}>
+        <span className={toneBadge(CLARIFICATION_TONES[badge])}>
           {CLARIFICATION_BADGE_WORDS[badge]}
         </span>
       )}
@@ -97,7 +96,7 @@ function RowCells({
       </td>
       <td data-title="Kegiatan">{entry.name}</td>
       <td data-title="Status">
-        <span className={`${shared.badge} ${STATUS_STYLES[entry.status]}`}>
+        <span className={toneBadge(STATUS_TONES[entry.status])}>
           {HISTORY_STATUS_WORDS[entry.status]}
         </span>
       </td>

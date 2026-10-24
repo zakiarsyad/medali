@@ -4,6 +4,7 @@ import { startTransition, useActionState, useEffect, useState } from "react";
 import { useAskBeforeLeaving } from "@/ui/ask-before-leaving";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 import type { ActivityRow } from "./activity-row";
 import { saveCountAction } from "./count-actions";
@@ -74,7 +75,7 @@ function ParticipantRow({
           {participant.nim} · {roomWords(participant)}
         </span>
         {onLeave && (
-          <span className={`${shared.badge} ${styles.plain}`}>
+          <span className={toneBadge("plain")}>
             {LEAVE_BADGE_WORDS[onLeave]}
           </span>
         )}

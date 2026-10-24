@@ -549,18 +549,6 @@ a.tile:hover {
   flex-wrap: wrap;
 }
 
-.seriousTag {
-  border: var(--line-width) solid var(--bad);
-  background: var(--surface);
-  color: var(--bad);
-}
-
-.warningTag {
-  border: var(--line-width) solid var(--warn);
-  background: var(--surface);
-  color: var(--warn);
-}
-
 .more {
   margin: 0;
 }

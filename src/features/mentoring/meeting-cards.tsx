@@ -1,6 +1,7 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import { countWords } from "./attendance-marks";
 import { attendanceListAddress } from "./meetings-address";
 import type { MeetingCard } from "./meetings-overview";
@@ -58,11 +59,9 @@ function CardLines({ card }: { card: MeetingCard }) {
 
 function StateBadge({ isHeld }: { isHeld: boolean }) {
   if (!isHeld) {
-    return (
-      <span className={`${shared.badge} ${styles.notHeld}`}>Belum diisi</span>
-    );
+    return <span className={toneBadge("plain")}>Belum diisi</span>;
   }
-  return <span className={`${shared.badge} ${styles.held}`}>Terlaksana</span>;
+  return <span className={toneBadge("good")}>Terlaksana</span>;
 }
 
 /** The cards "Pertemuan 1" to the last of one group in the running period. */

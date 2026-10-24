@@ -3,7 +3,7 @@ import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
-import styles from "./activities.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import { activitiesAddress } from "./activities-address";
 import { OrganiserBadge, StateBadge } from "./activity-badges";
 import { audienceWords, dayWords, hoursWords } from "./activity-words";
@@ -23,9 +23,7 @@ function KehadiranCell({ line }: { line: ShownLine }) {
   const kehadiran = kehadiranOf(line);
   if (kehadiran.kind === "state") return <StateBadge state={kehadiran.state} />;
   if (kehadiran.kind === "not_announced") {
-    return (
-      <span className={`${shared.badge} ${styles.warn}`}>Belum diumumkan</span>
-    );
+    return <span className={toneBadge("warning")}>Belum diumumkan</span>;
   }
   return <b>{rateWords(kehadiran.rate)}</b>;
 }

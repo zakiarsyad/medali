@@ -12,14 +12,6 @@
   font-size: var(--text-md);
 }
 
-.totalRight {
-  color: var(--ok);
-}
-
-.totalWrong {
-  color: var(--bad);
-}
-
 /*
  * The four weights side by side on a laptop. On a phone the smallest width
  * of a box gives way and they stack in one column.
@@ -164,13 +156,6 @@
 
 .muted {
   color: var(--muted);
-}
-
-/* "Dibatasi 70": a grade held lower by a discipline penalty. */
-.limited {
-  border: var(--line-width) solid var(--bad);
-  background: none;
-  color: var(--bad);
 }
 
 /* "Nilai karakter (KEP-220)" in a student's detail: one bar per part. */

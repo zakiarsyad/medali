@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ROLES } from "@/auth/roles";
 import styles from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import { BamEditForm } from "./bam-edit-form";
-import panel from "./bam-panel.module.css";
 import { type ListView, listAddress } from "./list-address";
 import type { BamStudent } from "./list-bam-students";
 import { RemoveBamButton } from "./remove-bam-button";
@@ -54,7 +54,7 @@ function BamRoles({ student }: { student: BamStudent }) {
       ))}
       {!student.isActive && (
         <span
-          className={panel.off}
+          className={toneBadge("bad")}
           title="Mahasiswa tidak lagi aktif, sehingga peran BAM-nya tidak berlaku."
         >
           Tidak aktif

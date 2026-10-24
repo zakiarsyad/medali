@@ -1,18 +1,18 @@
-import shared from "@/ui/data-screen.module.css";
-import styles from "./character-scores.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import type { CoachingLevel } from "./coaching-need";
 import { COACHING_LEVEL_WORDS } from "./coaching-words";
 
-const LEVEL_LOOKS: Record<CoachingLevel, string | undefined> = {
-  intensive: styles.intensive,
-  moderate: styles.moderate,
-  light: styles.light,
+const LEVEL_TONES: Record<CoachingLevel, BadgeTone> = {
+  intensive: "severe",
+  moderate: "warning",
+  light: "plain",
 };
 
 /** The level of the coaching a student needs: Intensif, Sedang or Ringan. */
 export function CoachingLevelBadge({ level }: { level: CoachingLevel }) {
   return (
-    <span className={`${shared.badge} ${LEVEL_LOOKS[level]}`}>
+    <span className={toneBadge(LEVEL_TONES[level])}>
       {COACHING_LEVEL_WORDS[level]}
     </span>
   );

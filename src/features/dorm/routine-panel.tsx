@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 import { OrganiserBadge } from "./activity-badges";
 import type { ActivityRow } from "./activity-row";
@@ -18,7 +19,7 @@ function Pattern({ activity }: { activity: ActivityRow }) {
   if (activity.pattern === "once") return null;
   return (
     <>
-      <span className={`${shared.badge} ${styles.plain}`}>
+      <span className={toneBadge("plain")}>
         {PATTERN_WORDS[activity.pattern]}
       </span>
       <span className={shared.detail}>{repeatWords(activity)}</span>

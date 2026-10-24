@@ -1,5 +1,4 @@
-import shared from "@/ui/data-screen.module.css";
-import styles from "./discipline-penalties.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import type { PenaltyStatus } from "./penalty-ids";
 import { STATUS_WORDS } from "./penalty-words";
 
@@ -10,8 +9,6 @@ import { STATUS_WORDS } from "./penalty-words";
 
 /** Dijatuhkan or Ditetapkan. */
 export function StatusBadge({ status }: { status: PenaltyStatus }) {
-  const look = status === "set" ? styles.set : "";
-  return (
-    <span className={`${shared.badge} ${look}`}>{STATUS_WORDS[status]}</span>
-  );
+  const tone = status === "set" ? "bad" : null;
+  return <span className={toneBadge(tone)}>{STATUS_WORDS[status]}</span>;
 }

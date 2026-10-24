@@ -42,27 +42,6 @@
   max-width: 100%;
 }
 
-.ok,
-.warn,
-.plain {
-  border: var(--line-width) solid var(--line);
-  background: var(--surface);
-}
-
-.ok {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
-.warn {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-
-.plain {
-  color: var(--muted);
-}
-
 /* What "Rincian" opens under the row of its activity. */
 .detail {
   display: flex;
@@ -329,12 +308,6 @@
   padding: var(--save-bar-padding);
   border-top: var(--save-bar-line) solid var(--line);
   background: var(--surface);
-}
-
-.bad {
-  border: var(--line-width) solid var(--bad);
-  background: var(--surface);
-  color: var(--bad);
 }
 
 /* Who was absent or has a note, under Rincian of an announced count. */

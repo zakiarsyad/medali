@@ -1,17 +1,18 @@
 import type { SickRowMore } from "@/health-notes/sick-table";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
-import styles from "./dorm-health.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import type { MarkCategory, MentalHealthMark } from "./mental-health-mark-ids";
 import { MARK_BADGE_WORDS } from "./mental-health-mark-words";
 
-const MARK_CLASS: Record<MarkCategory, string | undefined> = {
-  monitor: styles.markMonitor,
-  refer: styles.markRefer,
+const MARK_TONES: Record<MarkCategory, BadgeTone> = {
+  monitor: "warning",
+  refer: "bad",
 };
 
 function MarkBadge({ mark }: { mark: MentalHealthMark }) {
   return (
-    <span className={`${shared.badge} ${MARK_CLASS[mark.category]}`}>
+    <span className={toneBadge(MARK_TONES[mark.category])}>
       {MARK_BADGE_WORDS[mark.category]}
     </span>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
+import { toneBadge } from "@/ui/tone-badge";
 import {
   type ClarificationListParams,
   rejectedPanelAddress,
@@ -17,9 +18,7 @@ function Status({ row }: { row: RejectedRow }) {
   return (
     <>
       {row.level !== null && (
-        <span className={`${shared.badge} ${styles.warn}`}>
-          Penetapan SP {row.level}
-        </span>
+        <span className={toneBadge("warning")}>Penetapan SP {row.level}</span>
       )}{" "}
       <LetterMark level={row.mark} />
       {row.level !== null && (

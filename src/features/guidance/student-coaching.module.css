@@ -12,12 +12,6 @@
   align-items: baseline;
 }
 
-.status {
-  border: var(--line-width) solid var(--bad);
-  background: none;
-  color: var(--bad);
-}
-
 /* The note is typed by staff and may be one long word. */
 .text {
   margin: 0;

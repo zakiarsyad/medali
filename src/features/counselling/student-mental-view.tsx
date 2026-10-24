@@ -3,6 +3,7 @@ import { INSTRUMENT_WORDS } from "@/mental-health/screening-words";
 import { NOT_SCREENED } from "@/mental-health/shared-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./counselling.module.css";
 import type { ShownScreening, StudentMental } from "./student-mental";
 
@@ -50,9 +51,7 @@ function SharedBody({ screening }: { screening: ShownScreening | null }) {
 
 function HeadBadge({ mental }: { mental: StudentMental }) {
   if (mental.kind === "shared") {
-    return (
-      <span className={`${shared.badge} ${styles.ok}`}>{PUBLISHED_MARK}</span>
-    );
+    return <span className={toneBadge("good")}>{PUBLISHED_MARK}</span>;
   }
   if (mental.screening === null) return null;
   return <LevelBadges level={mental.screening.level} risk={false} />;

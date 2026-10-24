@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { deviceStorage, forgetSurveyDrafts } from "@/ui/survey-drafts";
+import { toneBadge } from "@/ui/tone-badge";
 import type { OwnSurvey, SentSurvey } from "./own-survey";
 import styles from "./own-survey.module.css";
 import { OwnSurveyForm } from "./own-survey-form";
@@ -44,9 +45,7 @@ function SentAnswer({
     <>
       <CardHead
         line={surveyPeriodWords(survey)}
-        badge={
-          <span className={`${shared.badge} ${styles.sent}`}>Terkirim</span>
-        }
+        badge={<span className={toneBadge("good")}>Terkirim</span>}
       />
       <p className={styles.sub}>{sentWords(sent)}</p>
       <div className={shared.actions}>

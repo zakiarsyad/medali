@@ -1,9 +1,11 @@
 "use client";
 
 import { Fragment, useReducer } from "react";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage } from "@/ui/form-message";
+import { toneBadge } from "@/ui/tone-badge";
 import { AppealForm } from "./appeal-form";
 import type { AppealStatus } from "./appeal-ids";
 import { appealStanding } from "./appeal-rules";
@@ -14,7 +16,6 @@ import { appealProofAddress } from "./violation-address";
 import { StatusBadge } from "./violation-lists";
 import { appealEndOf } from "./violation-status";
 import { punishmentText, shownHour } from "./violation-words";
-import styles from "./violations.module.css";
 
 const TITLES = [
   "Tanggal",
@@ -25,17 +26,17 @@ const TITLES = [
   "Advokasi",
 ];
 
-const APPEAL_LOOKS: Record<AppealStatus, string | undefined> = {
-  waiting: styles.warn,
-  accepted: styles.ok,
-  rejected: styles.bad,
+const APPEAL_TONES: Record<AppealStatus, BadgeTone> = {
+  waiting: "warning",
+  accepted: "good",
+  rejected: "bad",
 };
 
 /** The appeal as its resident sees it: its status, its reason, the note of BAM and the proof. */
 function AppealCell({ appeal }: { appeal: OwnAppeal }) {
   return (
     <>
-      <span className={`${shared.badge} ${APPEAL_LOOKS[appeal.status]}`}>
+      <span className={toneBadge(APPEAL_TONES[appeal.status])}>
         {APPEAL_BADGE_WORDS[appeal.status]}
       </span>
       <small className={`${shared.detail} ${shared.typed}`}>
