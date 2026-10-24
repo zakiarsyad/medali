@@ -25,7 +25,12 @@ function InputHead({
   return (
     <div className={styles.panelHead}>
       <h2 className={shared.heading}>Input capaian MEDALI</h2>
-      <ModeSwitch modes={MODES} mode={mode} onChoose={onChoose} />
+      <ModeSwitch
+        legend="Cara input"
+        modes={MODES}
+        mode={mode}
+        onChoose={onChoose}
+      />
     </div>
   );
 }

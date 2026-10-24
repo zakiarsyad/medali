@@ -56,7 +56,7 @@ and Pengaturan.
 
 ## Steps
 
-- [ ] 1. The shared choose-one row is as tall as a form field, takes
+- [x] 1. The shared choose-one row is as tall as a form field, takes
   the field's text size, and is named by the screen that uses it, with
   a check.
 - [ ] 2. Kurikulum's semester choice uses the shared row.

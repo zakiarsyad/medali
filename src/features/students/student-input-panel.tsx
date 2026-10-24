@@ -36,7 +36,12 @@ export function StudentInputPanel(props: StudentFormProps) {
           </p>
         </div>
         {!editing && (
-          <ModeSwitch modes={MODES} mode={mode} onChoose={setMode} />
+          <ModeSwitch
+            legend="Cara input"
+            modes={MODES}
+            mode={mode}
+            onChoose={setMode}
+          />
         )}
       </div>
       {mode === "upload" && !editing ? (
