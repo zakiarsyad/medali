@@ -41,11 +41,23 @@ describe("the tab Nilai pengasuhan on a phone", () => {
     }
   });
 
-  it("never makes the box of a score wider than its card, so nothing scrolls sideways", () => {
-    const box = ruleOf(".scoreBox");
+  it("never makes a choice of an indicator wider than its card, so the six stack with no sideways scroll", () => {
+    const choice = ruleOf(".indicatorChoice");
 
-    expect(box).toContain("width: var(--score-box-width);");
-    expect(box).toContain("max-width: 100%;");
+    expect(choice).toContain("width: 100%;");
+    expect(choice).toContain("max-width: 100%;");
+    expect(choice).toContain("min-width: 0;");
+    expect(ruleOf(".indicatorCell")).toContain("min-width: 0;");
+  });
+
+  it("gives each indicator its own line on a card, named by the indicator", () => {
+    expect(TABLE).toContain("data-title={name}");
+  });
+
+  it("folds the names and sentences of the panel Indikator penilaian and its save instead of widening the page", () => {
+    expect(ruleOf(".indicator")).toContain("min-width: 0;");
+    expect(ruleOf(".indicator")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".saveIndicators")).toContain("flex-wrap: wrap;");
   });
 
   it("folds what a row says of its box, the button with its message, and the rubric instead of widening the page", () => {

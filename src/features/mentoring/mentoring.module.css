@@ -259,13 +259,6 @@
   overflow-wrap: anywhere;
 }
 
-/* The box of one score: as wide as a score needs, never wider than its card. */
-.scoreBox {
-  width: var(--score-box-width);
-  max-width: 100%;
-  scroll-margin-bottom: var(--above-save-bar);
-}
-
 /* Why what a box holds cannot be saved, on the row of that box. */
 .boxFault {
   color: var(--bad);

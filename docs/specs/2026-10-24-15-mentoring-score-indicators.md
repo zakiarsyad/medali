@@ -127,6 +127,9 @@ None.
     says "Lengkapi enam indikator".
 19. Six choices that are the six kept write nothing and add no log
     line, even when the indicator names changed since.
+20. On a laptop screen too narrow for the ten columns, the table
+    scrolls sideways inside its own frame, as other wide tables do; the
+    page itself does not.
 
 ## Steps
 
@@ -143,4 +146,4 @@ None.
   of a second save.
 - [x] 6. Pengasuh gives six scores per mentee and saves them, with the
   final score and "Lengkapi enam indikator".
-- [ ] 7. Refusals, the log and the phone layout.
+- [x] 7. Refusals, the log and the phone layout.
