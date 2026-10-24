@@ -3,6 +3,7 @@ import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
 import { MentorsHead } from "@/ui/mentors-head";
 import type { TabLinksProps } from "@/ui/tab-links";
+import { TabNote } from "@/ui/tabbed-head";
 import styles from "./cohort-assignments.module.css";
 import { listCohorts } from "./cohort-list";
 import { chosenCohort } from "./cohort-rows";
@@ -35,7 +36,13 @@ export async function AssignmentScreen({
   const chosen = chosenCohort(cohorts, askedYear);
   return (
     <>
-      <MentorsHead tabs={tabs} />
+      <MentorsHead tabs={tabs}>
+        {!mayPrepare && (
+          <TabNote>
+            Penetapan pengasuh dilakukan oleh Kepala Unit dan Pegawai UPK.
+          </TabNote>
+        )}
+      </MentorsHead>
       <div className={styles.pair}>
         <section className={shared.panel}>
           <h2 className={shared.heading}>Angkatan</h2>

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { RunningSurveyCard } from "./survey-card";
 import type { SurveyFormStart } from "./survey-form-start";
-import { SurveyArea, SurveyPanelBody } from "./survey-tab";
+import { SurveyArea, SurveyNote, SurveyPanelBody } from "./survey-tab";
 
 const CARD: RunningSurveyCard = {
   id: "00000000-0000-4000-8000-000000000025",
@@ -42,12 +42,14 @@ function shownTo(
   const mayManage = reader === "kepala unit";
   const start = mayManage ? START : null;
   return renderToStaticMarkup(
-    <SurveyArea
-      mayManage={mayManage}
-      panel={
-        <SurveyPanelBody card={card} start={start} mayManage={mayManage} />
-      }
-    />,
+    <>
+      <SurveyNote mayManage={mayManage} />
+      <SurveyArea
+        panel={
+          <SurveyPanelBody card={card} start={start} mayManage={mayManage} />
+        }
+      />
+    </>,
   );
 }
 

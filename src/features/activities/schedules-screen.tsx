@@ -5,8 +5,8 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { readActivityChoices } from "./activity-choices";
 import { readAttendanceNumbers } from "./attendance-numbers";
 import { AttendanceNumbersView } from "./attendance-numbers-view";
@@ -131,11 +131,16 @@ export async function SchedulesScreen({
   };
   return (
     <>
-      <PageHead title="Kegiatan karakter">
-        {INTROS[scope.kind]} Kehadiran dihitung dari foto kehadiran yang
-        diunggah mahasiswa dan divalidasi Pegawai UPK.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Kegiatan karakter"
+        tabs={tabs}
+        lede={
+          <>
+            {INTROS[scope.kind]} Kehadiran dihitung dari foto kehadiran yang
+            diunggah mahasiswa dan divalidasi Pegawai UPK.
+          </>
+        }
+      />
       <AttendanceNumbersView numbers={numbers} kind={scope.kind} />
       <ScheduleBoard
         list={list}

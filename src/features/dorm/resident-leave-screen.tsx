@@ -1,6 +1,6 @@
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import styles from "./leave.module.css";
 import type { LeaveListParams } from "./leave-address";
 import { LeaveForm } from "./leave-form";
@@ -95,10 +95,11 @@ export function ResidentLeaveScreen({
     "Ajukan izin keluar asrama atau Izin Tidak Mengikuti Kegiatan (ITMK) dan pantau statusnya.";
   return (
     <>
-      <PageHead title="Perizinan asrama">
-        {room === null ? lede : `${room}. ${lede}`}
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede={room === null ? lede : `${room}. ${lede}`}
+      />
       <ResidentLeavePart {...part} />
     </>
   );

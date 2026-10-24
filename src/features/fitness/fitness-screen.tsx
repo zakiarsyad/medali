@@ -3,8 +3,8 @@ import type { FitnessLimits } from "@/health-notes/fitness-ids";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { CategoryPanel } from "./category-panel";
 import styles from "./fitness.module.css";
 import {
@@ -82,11 +82,11 @@ export function FitnessScreen({
 }) {
   return (
     <>
-      <PageHead title="Penilaian jasmani">
-        Penilaian jasmani berdasarkan skor tes kebugaran tahunan (0–100) yang
-        diinput secara kolektif.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Penilaian jasmani berdasarkan skor tes kebugaran tahunan (0–100) yang diinput secara kolektif."
+      />
       <Numbers numbers={numbers} year={year} />
       <div className={styles.sideBySide}>
         <section className={shared.panel}>

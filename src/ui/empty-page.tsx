@@ -1,10 +1,11 @@
 import styles from "./empty-page.module.css";
 import { PageHead } from "./page-head";
-import { TabLinks, type TabLinksProps } from "./tab-links";
+import type { TabLinksProps } from "./tab-links";
+import { TabbedHead } from "./tabbed-head";
 
 /**
- * A page that is not built yet: its title, a line under it when there is
- * one, its tabs, and an empty area.
+ * A page that is not built yet: its title, its tabs, a line under them
+ * when there is one, and an empty area.
  */
 export function EmptyPage({
   title,
@@ -17,8 +18,11 @@ export function EmptyPage({
 }) {
   return (
     <>
-      <PageHead title={title}>{lede}</PageHead>
-      {tabs && <TabLinks {...tabs} />}
+      {tabs ? (
+        <TabbedHead title={title} tabs={tabs} lede={lede} />
+      ) : (
+        <PageHead title={title}>{lede}</PageHead>
+      )}
       <section className={styles.empty} aria-label="Isi halaman" />
     </>
   );

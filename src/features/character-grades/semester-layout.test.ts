@@ -21,7 +21,7 @@ describe("the grades of a closed semester on a phone", () => {
   it("puts the choice Semester above the numbers and the cards of the list", () => {
     const choice = SCREEN.indexOf("{semester}");
 
-    expect(choice).toBeGreaterThan(SCREEN.indexOf("<TabLinks"));
+    expect(choice).toBeGreaterThan(SCREEN.indexOf("<TabbedHead"));
     expect(choice).toBeLessThan(SCREEN.indexOf("{numbers}"));
     expect(choice).toBeLessThan(SCREEN.indexOf("<GradeListTable"));
   });

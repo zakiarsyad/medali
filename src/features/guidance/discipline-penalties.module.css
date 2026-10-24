@@ -4,24 +4,6 @@
   font-size: var(--text-md);
 }
 
-/* What an account that only reads is told instead of the form. */
-.readOnly {
-  margin: var(--space-lg) 0 0;
-  padding: var(--space-sm) var(--space-md);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--muted);
-  font-size: var(--text-md);
-}
-
-/* Pengasuh sees only their own mentees. */
-.scope {
-  margin: 0 0 var(--space-lg);
-  color: var(--muted);
-  font-size: var(--text-md);
-}
-
 /* Ditetapkan: the student's status ends for good. */
 .set {
   border: var(--line-width) solid var(--bad);

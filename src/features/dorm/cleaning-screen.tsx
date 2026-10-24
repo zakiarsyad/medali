@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead, TabNote } from "@/ui/tabbed-head";
 import { dayWords } from "./activity-words";
 import styles from "./cleaning.module.css";
 import type { CleaningParams } from "./cleaning-address";
@@ -105,18 +105,19 @@ export async function CleaningScreen({
   const mayChange = mayManage && isChangeable(params.day, today);
   return (
     <>
-      <PageHead title="Pembersihan asrama">
-        Tempat pembersihan bersama tiap asrama dan kamar yang bertugas
-        membersihkannya.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Tempat pembersihan bersama tiap asrama dan kamar yang bertugas membersihkannya."
+      >
+        {!mayManage && (
+          <TabNote>
+            Pembersihan asrama dikelola oleh Pengelola Asrama dan BAM. Anda
+            dapat melihat tempat, jadwal, penilaian dan skornya.
+          </TabNote>
+        )}
+      </TabbedHead>
       {ownPart}
-      {!mayManage && (
-        <p className={styles.note}>
-          Pembersihan asrama dikelola oleh Pengelola Asrama dan BAM. Anda dapat
-          melihat tempat, jadwal, penilaian dan skornya.
-        </p>
-      )}
       <CleaningSwitch params={params} today={today} />
       <CleaningNumbers view={view} day={params.day} />
       <p className={styles.note}>

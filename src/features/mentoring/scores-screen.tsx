@@ -6,8 +6,7 @@ import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
 import {
   type AttendanceGroup,
   groupToShow,
@@ -19,7 +18,7 @@ import { GroupPicker } from "./group-picker";
 import { listScoredMembers } from "./group-scores";
 import { groupChoiceOf } from "./group-search";
 import styles from "./mentoring.module.css";
-import { ReadOnlyLine } from "./read-only-line";
+import { MentoringHead } from "./mentoring-head";
 import { ScoreForm } from "./score-form";
 import { ScoreList } from "./score-list";
 import { ScoreNumbers } from "./score-numbers";
@@ -189,11 +188,11 @@ export async function ScoresScreen({
   ]);
   return (
     <>
-      <PageHead title="Pengasuhan">
-        <Intro period={period} />
-      </PageHead>
-      <TabLinks {...tabs} />
-      {giveLimit === null && <ReadOnlyLine />}
+      <MentoringHead
+        tabs={tabs}
+        lede={<Intro period={period} />}
+        readsOnly={giveLimit === null}
+      />
       <div className={styles.meetings}>
         <Groups
           groups={groups}

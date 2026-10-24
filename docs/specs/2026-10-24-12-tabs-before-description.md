@@ -77,10 +77,32 @@ Konseling.
    tab bar can change length.
 3. Konseling takes the prototype's description, as the reference for
    wording.
+4. Decided while building: the title above the tab bar is the page's
+   name in the menu, such as Asrama, Penilaian and Pengaturan, as
+   Pengasuh, Pembinaan, Pengasuhan and Kegiatan karakter already show.
+   The open tab's own name shows marked in the tab bar.
+5. Decided while building: Dashboard keeps its order, the choice of
+   dashboard first and then the chosen dashboard's title and
+   description, as this spec calls it right. The choice takes the look
+   of the tab bar and the shared space under it.
+6. Decided while building: a role that sees only one tab has no tab
+   bar, so its description stays under the title, as on a page without
+   tabs.
+7. Decided while building: the notes that move under the description
+   are those that speak for the whole tab: who manages it or fills it
+   in, and that the list holds only the account's own mentees. A note
+   that sits inside a panel, in place of a form there, stays in its
+   panel.
+8. Decided while building: the note look takes the light grey
+   background and the 8 px rounded corner the notes of the app already
+   have. Two notes of one tab sit 8 px apart.
+9. Decided while building: the space between the title and the tab bar
+   is the shared space under a page heading, 24 px, as Kakak pendamping
+   already had.
 
 ## Steps
 
-- [ ] 1. One shared page head for pages with tabs: the title, the tab
+- [x] 1. One shared page head for pages with tabs: the title, the tab
   bar, then the chosen tab's description and its note, with the shared
   spaces; every page with tabs and the dashboard choice use it.
 - [ ] 2. A student's room status on Asrama moves into the tab's content.

@@ -12,8 +12,7 @@ import { readResidentActivities } from "@/features/dorm/resident-activities";
 import { ResidentActivitiesView } from "@/features/dorm/resident-activities-view";
 import { readOwnAttendance } from "@/features/dorm/resident-attendance";
 import { residentHeader } from "@/features/dorm/resident-header";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 
 /**
  * The resident part: today's and the next activities of the student's
@@ -77,10 +76,11 @@ export default async function DormActivitiesPage(
   if (residentPart === null) forbidden();
   return (
     <>
-      <PageHead title="Kegiatan asrama">
-        {await residentHeader(account.studentId)}
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede={await residentHeader(account.studentId)}
+      />
       {residentPart}
     </>
   );

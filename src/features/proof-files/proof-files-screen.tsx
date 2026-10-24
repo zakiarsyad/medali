@@ -2,8 +2,8 @@ import { campusDay } from "@/academic-periods/campus-day";
 import { readAcademicPeriods } from "@/academic-periods/stored-periods";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { NOT_SET_WORDS } from "./keep-days";
 import { KeepDaysForm } from "./keep-days-form";
 import { ProofCountTable } from "./proof-count-table";
@@ -34,11 +34,11 @@ export async function ProofFilesScreen({ tabs }: { tabs: TabLinksProps }) {
   const counts = countProofs(groups, { keepDays, periods, today: campusDay() });
   return (
     <>
-      <PageHead title="Berkas bukti">
-        Foto bukti dan lampiran yang sudah tidak diperlukan dapat dihapus.
-        Status, keputusan, dan siapa yang memutuskan tetap tersimpan.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Pengaturan"
+        tabs={tabs}
+        lede="Foto bukti dan lampiran yang sudah tidak diperlukan dapat dihapus. Status, keputusan, dan siapa yang memutuskan tetap tersimpan."
+      />
       <section className={shared.panel}>
         <h2 className={shared.heading}>Lama simpan berkas bukti</h2>
         <KeepingNote keepDays={keepDays} />

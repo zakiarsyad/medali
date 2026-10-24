@@ -185,11 +185,6 @@ export async function OpenCohort({
           assignment={assignment}
         />
       )}
-      {!mayPrepare && (
-        <p className={styles.note}>
-          Penetapan pengasuh dilakukan oleh Kepala Unit dan Pegawai UPK.
-        </p>
-      )}
       {formed && showsSteps && (
         <DraftSteps
           assignment={formed}

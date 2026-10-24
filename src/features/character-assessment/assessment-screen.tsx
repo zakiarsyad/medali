@@ -3,8 +3,8 @@ import { shownRerata } from "@/character-scores/shown-rerata";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import {
   ASSESSMENT_LIST_PAGE_SIZE,
   type AssessmentParams,
@@ -59,11 +59,11 @@ export function AssessmentScreen({
 }) {
   return (
     <>
-      <PageHead title="Asesmen karakter">
-        Hasil asesmen capaian enam nilai MEDALI. Hasil asesmen terakhir tiap
-        mahasiswa menjadi capaian karakternya.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Hasil asesmen capaian enam nilai MEDALI. Hasil asesmen terakhir tiap mahasiswa menjadi capaian karakternya."
+      />
       <NumberCards>
         <NumberCard
           label="Sudah diasesmen"

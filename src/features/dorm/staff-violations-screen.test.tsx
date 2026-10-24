@@ -117,7 +117,7 @@ function screen(board = BOARD, reduces = false): string {
 }
 
 describe("the resident's own screen", () => {
-  it("is titled Pelanggaran asrama, as the staff screen is", () => {
+  it("is titled Asrama, as the staff screen is", () => {
     const shown = renderToStaticMarkup(
       <OwnViolationsView
         tabs={{ pagePath: "asrama", tabs: [], open: "pel" }}
@@ -128,7 +128,7 @@ describe("the resident's own screen", () => {
       />,
     );
 
-    expect(shown).toMatch(/<h1[^>]*>Pelanggaran asrama<\/h1>/);
+    expect(shown).toMatch(/<h1[^>]*>Asrama<\/h1>/);
   });
 });
 
@@ -147,8 +147,8 @@ describe("the staff screen of a resident who is also staff", () => {
 });
 
 describe("the staff screen", () => {
-  it("is titled Pelanggaran asrama, apart from Pelanggaran disiplin", () => {
-    expect(screen()).toMatch(/<h1[^>]*>Pelanggaran asrama<\/h1>/);
+  it("is titled Asrama, the page the tab belongs to, as every tab of it is", () => {
+    expect(screen()).toMatch(/<h1[^>]*>Asrama<\/h1>/);
   });
 
   it("shows how many residents are called, with how many already have an SP, and the list of calls", () => {

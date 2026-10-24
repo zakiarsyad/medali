@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import styles from "./siku.module.css";
 import {
   SIKU_LIST_PAGE_SIZE,
@@ -51,11 +51,11 @@ export function StaffSikuScreen({
 }) {
   return (
     <>
-      <PageHead title="Penilaian SIKU">
-        Penilaian sikap dan perilaku (SIKU): setiap mahasiswa mulai dari nilai
-        dasar yang sama, lalu mendapat penambahan atau pengurangan beralasan.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Penilaian sikap dan perilaku (SIKU): setiap mahasiswa mulai dari nilai dasar yang sama, lalu mendapat penambahan atau pengurangan beralasan."
+      />
       <NumberCards>
         <NumberCard
           label="Nilai dasar SIKU"

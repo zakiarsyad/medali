@@ -3,11 +3,12 @@ import Link from "next/link";
 import type { Database } from "@/db/connect";
 import { database } from "@/db/database";
 import shared from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { AddResidentPanel } from "./add-resident-panel";
 import { DormNumbers, DormSwitch } from "./dorm-summary";
 import { FloorPanel } from "./floor-panel";
+import { ManagedNote } from "./managed-note";
 import { NO_PERIOD } from "./place-resident";
 import styles from "./rooms.module.css";
 import { addingAddress, type RoomsParams } from "./rooms-address";
@@ -61,16 +62,13 @@ export async function RoomsScreen({
   const { rooms, residents, counts, unplaced, companions } = view;
   return (
     <>
-      <PageHead title="Ploting kamar">
-        Penempatan penghuni ke kamar asrama, lantai 1 sampai 8.
-      </PageHead>
-      <TabLinks {...tabs} />
-      {!mayManage && (
-        <p className={styles.note}>
-          Menu asrama dikelola oleh Pengelola Asrama. Anda dapat melihat rekap
-          dan rinciannya.
-        </p>
-      )}
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Penempatan penghuni ke kamar asrama, lantai 1 sampai 8."
+      >
+        {!mayManage && <ManagedNote />}
+      </TabbedHead>
       {!view.periodRuns && (
         <p className={styles.note} role="status">
           {NO_PERIOD.error}

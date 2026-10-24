@@ -2,8 +2,8 @@ import { ROLES } from "@/auth/roles";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { AccessMatrix } from "./access-matrix";
 import { AccountTable } from "./account-table";
 import { AddAccountForm } from "./add-account-form";
@@ -68,13 +68,11 @@ export async function UsersScreen({
   const shown = { ...params, page: list.page };
   return (
     <>
-      <PageHead title="Pengaturan pengguna">
-        Tambah, hapus, atau edit peran akun (satu orang boleh punya lebih dari
-        satu peran) pengasuh, pembina disiplin mahasiswa, konselor, penilai
-        mahasiswa, pegawai UPK, pengelola asrama, Badan Asrama Mahasiswa, ketua
-        program studi, serta direktur dan wakil direktur.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Pengaturan"
+        tabs={tabs}
+        lede="Tambah, hapus, atau edit peran akun (satu orang boleh punya lebih dari satu peran) pengasuh, pembina disiplin mahasiswa, konselor, penilai mahasiswa, pegawai UPK, pengelola asrama, Badan Asrama Mahasiswa, ketua program studi, serta direktur dan wakil direktur."
+      />
       <AddAccountForm programs={programs} />
       <section className={styles.panel}>
         <Filters params={params} />

@@ -3,8 +3,8 @@ import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { AnnouncementPanel } from "./announcement-panel";
 import { OwnViolationTable } from "./own-violation-table";
 import type { OwnRecordData, OwnViolations } from "./own-violations";
@@ -164,8 +164,7 @@ export function OwnViolationsView({
 }) {
   return (
     <>
-      <PageHead title="Pelanggaran asrama">{room}</PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead title="Asrama" tabs={tabs} lede={room} />
       <OwnRecord
         own={own}
         now={now}

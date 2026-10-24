@@ -4,8 +4,7 @@ import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
 import { MEETINGS_PER_PERIOD } from "@/mentoring/meeting-ids";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
 import {
   type AttendanceGroup,
   groupToShow,
@@ -35,7 +34,7 @@ import {
   meetingsOverview,
 } from "./meetings-overview";
 import styles from "./mentoring.module.css";
-import { ReadOnlyLine } from "./read-only-line";
+import { MentoringHead } from "./mentoring-head";
 
 /** The numbers and the cards of one group in the running period. */
 async function GroupMeetings({
@@ -214,14 +213,18 @@ export async function MeetingsScreen({
   ]);
   return (
     <>
-      <PageHead title="Pengasuhan">
-        Pertemuan pengasuhan dilaksanakan {MEETINGS_PER_PERIOD} kali setiap
-        semester. Pengasuh mengisi daftar hadir anak asuh di setiap pertemuan;
-        kehadiran ini ikut dihitung dalam komponen kehadiran kegiatan pada nilai
-        karakter.
-      </PageHead>
-      <TabLinks {...tabs} />
-      {fillLimit === null && <ReadOnlyLine />}
+      <MentoringHead
+        tabs={tabs}
+        lede={
+          <>
+            Pertemuan pengasuhan dilaksanakan {MEETINGS_PER_PERIOD} kali setiap
+            semester. Pengasuh mengisi daftar hadir anak asuh di setiap
+            pertemuan; kehadiran ini ikut dihitung dalam komponen kehadiran
+            kegiatan pada nilai karakter.
+          </>
+        }
+        readsOnly={fillLimit === null}
+      />
       <div className={styles.meetings}>
         <Groups
           groups={groups}

@@ -11,8 +11,7 @@ import { CleaningScreen } from "@/features/dorm/cleaning-screen";
 import { cleaningScreensOf } from "@/features/dorm/cleaning-screens";
 import { readLivedInRoom } from "@/features/dorm/own-room";
 import { residentHeader } from "@/features/dorm/resident-header";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 
 /**
  * The resident part: the duties of the student's own room. Null for an
@@ -61,10 +60,11 @@ export default async function DormCleaningPage(
   if (residentPart === null) forbidden();
   return (
     <>
-      <PageHead title="Pembersihan asrama">
-        {await residentHeader(account.studentId)}
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede={await residentHeader(account.studentId)}
+      />
       {residentPart}
     </>
   );

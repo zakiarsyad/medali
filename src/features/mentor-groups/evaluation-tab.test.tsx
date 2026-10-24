@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ListedEvaluation } from "./evaluation-rows";
-import { FormArea, TabLists } from "./evaluation-tab";
+import { FormArea, FormNote, TabLists } from "./evaluation-tab";
 import { FormPartLinks } from "./form-part-links";
 import type { ListedReplacement } from "./replacement-rows";
 
@@ -59,6 +59,7 @@ function shownTo(reader: "reads" | "kepala unit"): string {
   ) : null;
   return renderToStaticMarkup(
     <>
+      <FormNote form={form} />
       <FormArea form={form} />
       <TabLists
         replacements={[WAITING]}

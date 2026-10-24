@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import styles from "./counselling.module.css";
 import { EMERGENCY_TEXT } from "./counselling-screen";
 import type { ScreeningParams } from "./screening-address";
@@ -59,12 +59,11 @@ export function ScreeningScreen({
 }) {
   return (
     <>
-      <PageHead title="Kesehatan mental">
-        Asesmen kesehatan mental yang ditindaklanjuti konseling oleh konselor.
-        Data perorangan hanya dibagikan bila konselor mempublikasikannya dengan
-        persetujuan mahasiswa.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Asesmen kesehatan mental yang ditindaklanjuti konseling oleh konselor. Data perorangan hanya dibagikan bila konselor mempublikasikannya dengan persetujuan mahasiswa."
+      />
       <div className={styles.parts}>
         <WarnBox title="Keadaan darurat.">{EMERGENCY_TEXT}</WarnBox>
         {counsellor && (

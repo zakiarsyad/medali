@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import type { OwnSiku } from "./own-siku";
 import { OwnSikuPanel } from "./own-siku-panel";
 import { waitingWords } from "./request-status";
@@ -34,11 +34,11 @@ export function OwnSikuScreen({
   const final = sikuOf(base, totals);
   return (
     <>
-      <PageHead title="Penilaian SIKU">
-        Nilai sikap dan perilaku (SIKU) Anda: nilai dasar yang sama untuk semua
-        mahasiswa, ditambah dan dikurangi sesuai catatan di bawah.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Nilai sikap dan perilaku (SIKU) Anda: nilai dasar yang sama untuk semua mahasiswa, ditambah dan dikurangi sesuai catatan di bawah."
+      />
       <NumberCards>
         <NumberCard
           label="Nilai dasar SIKU"

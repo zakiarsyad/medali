@@ -2,8 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import { ListPager } from "@/ui/list-pager";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { ManualRecordForm } from "./manual-record-form";
 import { PhotoCards } from "./photo-cards";
 import { draw } from "./test-press";
@@ -200,9 +199,8 @@ describe("the photo cards of the screen", () => {
     AutoSubmitForm,
     ListPager,
     ManualRecordForm,
-    PageHead,
     PhotoCards,
-    TabLinks,
+    TabbedHead,
     VerificationNumbersView,
   ];
 

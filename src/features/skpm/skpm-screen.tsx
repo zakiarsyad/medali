@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
 import { NumberCard, NumberCards, WordsCard } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import {
   SKPM_LIST_PAGE_SIZE,
   type SkpmParams,
@@ -56,12 +56,11 @@ export function SkpmScreen({
 }) {
   return (
     <>
-      <PageHead title="Data SKPM">
-        Unggah data Sistem Kredit Prestasi Mahasiswa (SKPM). Total poin kegiatan
-        tiap mahasiswa dikonversi menjadi komponen nilai SKPM pada penilaian
-        karakter.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Penilaian"
+        tabs={tabs}
+        lede="Unggah data Sistem Kredit Prestasi Mahasiswa (SKPM). Total poin kegiatan tiap mahasiswa dikonversi menjadi komponen nilai SKPM pada penilaian karakter."
+      />
       <NumberCards>
         <NumberCard
           label="Mahasiswa dengan data SKPM"

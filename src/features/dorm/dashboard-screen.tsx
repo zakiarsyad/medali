@@ -1,6 +1,6 @@
 import { NumberCard, NumberCards } from "@/ui/number-cards";
-import { PageHead } from "@/ui/page-head";
-import { TabLinks, type TabLinksProps } from "@/ui/tab-links";
+import type { TabLinksProps } from "@/ui/tab-links";
+import { TabbedHead } from "@/ui/tabbed-head";
 import { attendanceRate, rateWords } from "./attendance-rate";
 import board from "./dashboard.module.css";
 import { DashboardActivities } from "./dashboard-activities";
@@ -64,11 +64,11 @@ export function DashboardScreen({
 }) {
   return (
     <>
-      <PageHead title="Dashboard asrama">
-        Rekap kegiatan dan perizinan penghuni Asrama Wismantara, Dana Rakca, dan
-        Cipta Bakti.
-      </PageHead>
-      <TabLinks {...tabs} />
+      <TabbedHead
+        title="Asrama"
+        tabs={tabs}
+        lede="Rekap kegiatan dan perizinan penghuni Asrama Wismantara, Dana Rakca, dan Cipta Bakti."
+      />
       <DashboardNumbers view={view} />
       <DashboardActivities
         activities={view.activities}
