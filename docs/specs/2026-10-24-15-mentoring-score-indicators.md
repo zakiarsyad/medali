@@ -100,6 +100,16 @@ None.
    penilaian".
 9. While nobody has set the indicators, the note says "Indikator awal:
    nilai MEDALI dengan indikator utama tingkat 1 dari Kurikulum."
+10. An empty sentence saves nothing either, and its field says
+    "Kalimat indikator wajib diisi."
+11. Two names are equal also when they differ only in capitals or in
+    blanks around them. Both fields say so. Blanks around a name or a
+    sentence are not kept.
+12. Each field says at once what is wrong with it, and "Simpan
+    indikator" is off while anything typed cannot be saved, as in
+    "Skema bobot". The server checks the same again.
+13. "Simpan indikator" saves without asking first: unlike "Skema bobot",
+    it changes no score given already.
 
 ## Steps
 
@@ -112,7 +122,7 @@ None.
 - [x] 3. The rule for the final score (average × 20, one decimal), with
   checks, used by the tab and by the character grade.
 - [x] 4. The panel "Indikator penilaian" shows, read only.
-- [ ] 5. Kepala Unit changes and saves the indicators, with the refusal
+- [x] 5. Kepala Unit changes and saves the indicators, with the refusal
   of a second save.
 - [ ] 6. Pengasuh gives six scores per mentee and saves them, with the
   final score and "Lengkapi enam indikator".

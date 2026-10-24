@@ -17,6 +17,7 @@ import { readMarks, readMeetings } from "./group-meetings";
 import { GroupPicker } from "./group-picker";
 import { listScoredMembers } from "./group-scores";
 import { groupChoiceOf } from "./group-search";
+import { IndicatorForm } from "./indicator-form";
 import { IndicatorPanel } from "./indicator-panel";
 import { readIndicators } from "./indicator-set";
 import styles from "./mentoring.module.css";
@@ -169,6 +170,7 @@ export async function ScoresScreen({
   limit,
   giveLimit,
   detailVisible,
+  maySetIndicators,
   params,
 }: {
   tabs: TabLinksProps;
@@ -181,6 +183,8 @@ export async function ScoresScreen({
   giveLimit: RowLimit | null;
   /** The students whose detail the account may open, or null for none. */
   detailVisible: SQL | null;
+  /** Whether the account may change the indicators, or only reads them. */
+  maySetIndicators: boolean;
   params: ScoresParams;
 }) {
   const db = database();
@@ -197,7 +201,11 @@ export async function ScoresScreen({
         readsOnly={giveLimit === null}
       />
       <div className={styles.meetings}>
-        <IndicatorPanel inForce={indicators} />
+        {maySetIndicators ? (
+          <IndicatorForm inForce={indicators} />
+        ) : (
+          <IndicatorPanel inForce={indicators} />
+        )}
         <Groups
           groups={groups}
           period={period}

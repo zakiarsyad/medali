@@ -299,3 +299,12 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* "Simpan indikator", with what the save answered beside it, or under it where there is no room. */
+.saveIndicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: center;
+  margin-top: var(--space-md);
+}
