@@ -32,6 +32,16 @@ export function pagesFor(roles: readonly RoleId[]): Page[] {
   return PAGES.filter((page) => mayOpenPage(roles, page.id));
 }
 
+function roleFirstPage(role: RoleId): PageId | undefined {
+  return ROLES[role].firstPage ?? pagesFor([role])[0]?.id;
+}
+
+/** The page an account lands on: the earliest, in menu order, of its roles' first pages. */
+export function firstPageFor(roles: readonly RoleId[]): Page | undefined {
+  const firstPages = roles.map(roleFirstPage);
+  return PAGES.find((page) => firstPages.includes(page.id));
+}
+
 /**
  * Whether a page is open to these roles only while the account's student
  * lives in the dorm: every role that opens it asks for a resident.
