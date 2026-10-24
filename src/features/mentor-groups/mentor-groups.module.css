@@ -3,13 +3,14 @@
 }
 
 .note {
+  composes: note from "../../ui/data-screen.module.css";
   margin: 0;
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--muted);
-  font-size: var(--text-md);
+}
+
+/* A note about what holds a replacement back. */
+.warnedNote {
+  composes: warningNote from "../../ui/data-screen.module.css";
+  margin: 0;
 }
 
 .mentor {
@@ -18,10 +19,8 @@
 }
 
 .subheading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: var(--space-xl) 0 var(--space-sm);
-  color: var(--navy);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
 }
 
 .history {
@@ -60,7 +59,8 @@
 }
 
 /* A second note of a page stands clear of the first. */
-.note + .note {
+.note + .note,
+.note + .warnedNote {
   margin-top: var(--space-md);
 }
 
@@ -79,7 +79,7 @@
   margin: 0;
 }
 
-/* A result of Kurang, and a note about what holds a replacement back. */
+/* A result of Kurang. */
 .warned {
   border-color: var(--warn);
 }

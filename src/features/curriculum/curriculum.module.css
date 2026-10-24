@@ -14,19 +14,15 @@
 }
 
 .box {
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line2);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .boxTitle {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   display: flex;
   gap: var(--space-sm);
   align-items: center;
-  margin: 0 0 var(--space-xs);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
+  margin: 0;
 }
 
 .indicators {

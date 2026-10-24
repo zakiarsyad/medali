@@ -11,12 +11,7 @@
 
 /* A box that must be read first: the emergency notice, or a request waiting. */
 .warnBox {
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--warn);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--ink);
-  overflow-wrap: anywhere;
+  composes: warningNote from "../../ui/data-screen.module.css";
 }
 
 .warnBox p {
@@ -108,15 +103,7 @@
 }
 
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  min-width: 0;
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  overflow-wrap: anywhere;
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .cardHead {
@@ -172,10 +159,8 @@
 
 /* "Riwayat asesmen" in "Rincian" of a screened student. */
 .subHeading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: 0;
-  color: var(--navy);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
 }
 
 .card > p {

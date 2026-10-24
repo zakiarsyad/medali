@@ -150,7 +150,7 @@ function StudentBox({ box }: { box: Box }) {
     .map((note) => `${shownDay(note.day)} ${note.description}`)
     .join("; ");
   return (
-    <p className={`${styles.box} ${styles.warnBox}`}>
+    <p className={styles.warnBox}>
       <b>{notes.length} catatan aktif semester ini</b>: {listed}. Catatan baru
       semester ini menjadi Pelanggaran lanjutan.{penaltiesWords(penalties)}
     </p>

@@ -42,7 +42,9 @@ describe("Catatan pelanggaran on a phone", () => {
     expect(STYLES).toMatch(
       /\.found button,\s*\.picked \{[^}]*overflow-wrap: anywhere;/,
     );
-    expect(ruleOf(".box")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".box")).toContain(
+      'composes: note from "../../ui/data-screen.module.css";',
+    );
     expect(ruleOf(".terms li")).toContain("overflow-wrap: anywhere;");
   });
 

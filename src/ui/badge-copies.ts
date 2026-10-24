@@ -1,37 +1,11 @@
-const COMMENT = /\/\*[\s\S]*?\*\//g;
-const RULE = /([^{}]+)\{([^{}]*)\}/g;
-const DECLARATION = /([\w-]+)\s*:\s*([^;]+)/g;
+import { rulesOf } from "./css-rules";
+
 const STATUS_COLOUR =
   /var\(--(?:ok|warn|bad|fit-good|category-colour|badge-[\w-]+)\)/;
 const CATEGORY_COLOUR = "var(--category-colour)";
 const SURFACE_TEXT = "var(--surface)";
 const TEXT_COLOURED_LINE = "currentcolor";
 const LINE_PROPERTIES = ["border", "border-color"];
-
-interface Rule {
-  selector: string;
-  declarations: Map<string, string>;
-}
-
-function declarationsOf(body: string): Map<string, string> {
-  const found = new Map<string, string>();
-  for (const [, property = "", value = ""] of body.matchAll(DECLARATION)) {
-    found.set(property.toLowerCase(), value.trim());
-  }
-  return found;
-}
-
-function rulesOf(stylesheet: string): Rule[] {
-  const checked = stylesheet.replace(COMMENT, "");
-  const rules: Rule[] = [];
-  for (const [, selector = "", body = ""] of checked.matchAll(RULE)) {
-    rules.push({
-      selector: selector.trim(),
-      declarations: declarationsOf(body),
-    });
-  }
-  return rules;
-}
 
 function lineValues(declarations: Map<string, string>): string[] {
   return LINE_PROPERTIES.map((property) => declarations.get(property) ?? "");

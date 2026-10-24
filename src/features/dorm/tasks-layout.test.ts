@@ -41,7 +41,7 @@ describe("Tugas saya on a phone", () => {
       "minmax(min(100%, var(--column-min-width)), 1fr)",
     );
     expect(ruleOf("leave.module.css", ".card")).toContain(
-      "overflow-wrap: anywhere;",
+      'composes: card from "../../ui/data-screen.module.css";',
     );
   });
 

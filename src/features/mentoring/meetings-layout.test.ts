@@ -21,7 +21,9 @@ describe("the tab Pertemuan dan daftar hadir on a phone", () => {
     expect(cards).toContain("display: grid;");
     expect(cards).toContain("auto-fit");
     expect(cards).toContain("minmax(min(100%, var(--card-min-width)), 1fr)");
-    expect(ruleOf(".card")).toContain("min-width: 0;");
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
   });
 
   it("folds the head and the lines of a card instead of widening it", () => {

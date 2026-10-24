@@ -123,7 +123,7 @@ function DraftSteps({
   return (
     <>
       {assignment.dropped > 0 && (
-        <p className={`${styles.note} ${styles.held}`} role="status">
+        <p className={styles.held} role="status">
           {droppedWords(assignment.dropped)}
         </p>
       )}

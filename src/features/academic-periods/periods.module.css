@@ -84,10 +84,8 @@
 }
 
 .factsHeading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: var(--space-md) 0 0;
-  color: var(--muted);
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
 }
 
 .closeForm {

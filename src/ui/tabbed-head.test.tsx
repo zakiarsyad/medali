@@ -93,15 +93,8 @@ describe("the spaces of the head", () => {
   });
 
   it("gives a note the shared note look", () => {
-    const note = STYLES.slice(STYLES.indexOf(".note {"));
-    for (const name of [
-      "--note-padding",
-      "--note-text",
-      "--note-ink",
-      "--note-line",
-      "--note-line-colour",
-    ]) {
-      expect(note.slice(0, note.indexOf("}"))).toContain(`var(${name})`);
-    }
+    expect(STYLES).toMatch(
+      /\.note \{\s*composes: note from "\.\/data-screen\.module\.css";/,
+    );
   });
 });

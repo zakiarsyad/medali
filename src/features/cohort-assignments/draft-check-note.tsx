@@ -16,9 +16,7 @@ export function DraftCheckNote({
   /** How many groups have a mentor who can no longer be chosen. */
   notOffered: number;
 }) {
-  const look = isReadyToFix(check, notOffered)
-    ? styles.note
-    : `${styles.note} ${styles.held}`;
+  const look = isReadyToFix(check, notOffered) ? styles.note : styles.held;
   return (
     <p className={look} role="status">
       {checkWords(check, notOffered).join(" ")}

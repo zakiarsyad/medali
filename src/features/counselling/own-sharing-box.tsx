@@ -95,7 +95,7 @@ function GivenSharing({
   onPress: (action: Press) => void;
 }) {
   return (
-    <div className={`${styles.card} ${styles.stack}`}>
+    <div className={styles.card}>
       <p>
         <b>{givenSharingTitle(sharing.status)}</b> kepada{" "}
         {recipientsLine(sharing.recipients)}: {dataLine(sharing.data)}.

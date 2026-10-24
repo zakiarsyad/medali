@@ -137,7 +137,7 @@ export function ReplacementForm({
       <input type="hidden" name="groupId" value={group.id} />
       <input type="hidden" name="oldMentorId" value={group.oldMentorId} />
       {group.waitingFrom !== null && (
-        <p className={`${styles.outcome} ${styles.warned} ${styles.whole}`}>
+        <p className={`${styles.warnedNote} ${styles.whole}`}>
           {alreadyScheduledWords(group.waitingFrom)}
         </p>
       )}
@@ -170,7 +170,7 @@ export function ReplacementForm({
         />
       </label>
       {needsEvaluation && (
-        <p className={`${styles.outcome} ${styles.warned} ${styles.whole}`}>
+        <p className={`${styles.warnedNote} ${styles.whole}`}>
           {needsPoorEvaluationWords(group.code)}{" "}
           <Link href={group.evaluationAddress} className={shared.link}>
             Lakukan evaluasi dulu

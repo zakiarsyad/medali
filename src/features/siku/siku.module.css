@@ -62,8 +62,8 @@
 }
 
 .subheading {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   margin: var(--space-lg) 0 var(--space-sm);
-  font-size: var(--text-base);
 }
 
 .list {
@@ -94,13 +94,8 @@
 }
 
 .note {
+  composes: note from "../../ui/data-screen.module.css";
   margin: 0;
-  padding: var(--space-sm) var(--space-md);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--muted);
-  font-size: var(--text-md);
 }
 
 .more {
@@ -308,15 +303,7 @@ a.choice {
 }
 
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  min-width: 0;
-  padding: var(--space-md);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  overflow-wrap: anywhere;
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .card p {
@@ -337,11 +324,7 @@ a.choice {
 }
 
 .warning {
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-md);
-  background: var(--goldsoft);
-  color: var(--ink);
-  font-size: var(--text-md);
+  composes: warningNote from "../../ui/data-screen.module.css";
 }
 
 /* Poin, the note and the two decisions fold onto lines of their own on a phone. */

@@ -76,7 +76,7 @@ describe("the tab Evaluasi dan penggantian on a phone", () => {
     expect(ruleOf(".whole")).toContain("grid-column: 1 / -1;");
     const notes =
       codeOf("replacement-form.tsx").match(
-        /className=\{`[^`]*outcome[^`]*`\}/g,
+        /className=\{`[^`]*warnedNote[^`]*`\}/g,
       ) ?? [];
     expect(notes.length).toBeGreaterThan(0);
     for (const note of notes) {

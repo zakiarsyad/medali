@@ -124,9 +124,7 @@ export async function GroupScreen({
         </p>
       )}
       {waiting !== null && (
-        <p className={`${styles.note} ${styles.warned}`}>
-          {scheduledWords(waiting)}
-        </p>
+        <p className={styles.warnedNote}>{scheduledWords(waiting)}</p>
       )}
       <div className={styles.sideBySide}>
         <GroupMentorPanel

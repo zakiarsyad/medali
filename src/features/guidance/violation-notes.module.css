@@ -64,19 +64,14 @@
 
 /* The active notes of the student picked. */
 .box {
+  composes: note from "../../ui/data-screen.module.css";
   margin: 0;
-  padding: var(--space-sm) var(--space-md);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--ink);
-  font-size: var(--text-md);
-  overflow-wrap: anywhere;
 }
 
 /* A student who has a note already: the next one is Pelanggaran lanjutan. */
 .warnBox {
-  border-color: var(--warn);
+  composes: warningNote from "../../ui/data-screen.module.css";
+  margin: 0;
 }
 
 /* Ketentuan: each rule its name, then what it says. */
