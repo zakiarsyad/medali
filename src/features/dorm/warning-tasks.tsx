@@ -1,8 +1,8 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import { processLetterAddress } from "./tasks-address";
 import { NOTHING_WAITS, type WarningTask } from "./tasks-card";
-import styles from "./violations.module.css";
 import { LetterMark } from "./warning-calls-panel";
 
 /** Klarifikasi ditolak, or a dash for none, as in the prototype. */
@@ -21,9 +21,7 @@ function WarningTaskRow({ task }: { task: WarningTask }) {
         </small>
       </td>
       <td data-title="Penetapan">
-        <span className={`${shared.badge} ${styles.warn}`}>
-          Penetapan SP {task.level}
-        </span>{" "}
+        <span className={toneBadge("warning")}>Penetapan SP {task.level}</span>{" "}
         <LetterMark level={task.mark} />
       </td>
       <td data-title="Pelanggaran">{task.counted.toLocaleString("id-ID")}</td>

@@ -1,14 +1,24 @@
-import shared from "@/ui/data-screen.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import { CATEGORY_WORDS } from "./category-words";
 import type { ShownCategory } from "./fitness-category";
 import type { FinalCategory } from "./health-category";
 import styles from "./health-notes.module.css";
 import { FROM_NOTE_MARK } from "./health-words";
 
-/** A category, or Belum dites, in its colour. */
+/** Prima and Baik both say all is well; their words tell them apart. */
+const CATEGORY_TONES: Record<ShownCategory, BadgeTone> = {
+  excellent: "good",
+  good: "good",
+  attention: "warning",
+  medical: "bad",
+  untested: "plain",
+};
+
+/** A category, or Belum dites, in the colour of what it means. */
 export function CategoryBadge({ category }: { category: ShownCategory }) {
   return (
-    <span className={`${shared.badge} ${styles.category} ${styles[category]}`}>
+    <span className={toneBadge(CATEGORY_TONES[category])}>
       {CATEGORY_WORDS[category]}
     </span>
   );

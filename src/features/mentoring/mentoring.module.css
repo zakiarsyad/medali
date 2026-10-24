@@ -118,18 +118,6 @@
   font-weight: var(--weight-heavy);
 }
 
-/* "Terlaksana" and "Belum diisi". */
-.held {
-  border: var(--line-width) solid var(--ok);
-  background: var(--surface);
-  color: var(--ok);
-}
-
-.notHeld {
-  background: var(--surface2);
-  color: var(--muted);
-}
-
 .cardLine {
   margin: var(--space-2xs) 0 0;
   color: var(--muted);

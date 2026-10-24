@@ -2,6 +2,7 @@ import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { DAY, shownDay, shownMoment } from "@/ui/day";
 import { ListPager } from "@/ui/list-pager";
+import { toneBadge } from "@/ui/tone-badge";
 import type {
   DisciplineProposal,
   DisciplineProposals,
@@ -63,7 +64,7 @@ function Status({
   if (handling !== null) {
     return (
       <>
-        <span className={`${shared.badge} ${styles.ok}`}>
+        <span className={toneBadge("good")}>
           {PROPOSAL_STATUS_WORDS.handled}
         </span>
         <p className={styles.note}>{handling.note}</p>
@@ -76,7 +77,7 @@ function Status({
   const handles = tools.handles && proposal.studentId !== tools.ownStudentId;
   return (
     <>
-      <span className={`${shared.badge} ${styles.warn}`}>
+      <span className={toneBadge("warning")}>
         {PROPOSAL_STATUS_WORDS.proposed}
       </span>
       {handles && (

@@ -18,7 +18,7 @@ describe("Pembinaan (level) on a phone", () => {
   it("is one column, with no table and nothing held wide", () => {
     expect(VIEW).not.toContain("<table");
     expect(VIEW).not.toContain("style=");
-    for (const selector of [".panel", ".panelHead", ".status", ".text"]) {
+    for (const selector of [".panel", ".panelHead", ".text"]) {
       const rule = ruleOf(selector);
       expect(rule, selector).not.toBe("");
       expect(rule, selector).not.toContain("grid-template-columns");

@@ -127,23 +127,6 @@
   overflow-wrap: anywhere;
 }
 
-/* The look of a badge by what it says: waiting, good, bad or plain. */
-.ok {
-  composes: ok from "./leave.module.css";
-}
-
-.warn {
-  composes: warn from "./leave.module.css";
-}
-
-.bad {
-  composes: bad from "./leave.module.css";
-}
-
-.plain {
-  composes: plain from "./leave.module.css";
-}
-
 /* Catatan with Memenuhi and Tidak memenuhi: they fold under each other on a phone. */
 .judge {
   display: flex;

@@ -1,14 +1,4 @@
-/* The Kategori of a penalty: Ringan, Sedang and Berat. */
-.light {
-  border: var(--line-width) solid var(--warn);
-  color: var(--warn);
-}
-
-.medium {
-  border: var(--line-width) solid var(--bad);
-  color: var(--bad);
-}
-
+/* Berat, the heaviest Kategori of a penalty. */
 .heavy {
   background: var(--bad);
   color: var(--surface);

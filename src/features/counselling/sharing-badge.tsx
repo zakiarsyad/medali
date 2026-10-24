@@ -1,21 +1,21 @@
 import type { SharingStatus } from "@/mental-health/sharing-ids";
 import { SHARING_STATUS_WORDS } from "@/mental-health/sharing-words";
-import shared from "@/ui/data-screen.module.css";
-import styles from "./counselling.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 
 /** The colours of the prototype: waits, given or shown, declined, ended. */
-const STATUS_STYLES: Record<SharingStatus, string | undefined> = {
-  waiting: styles.warn,
-  approved: styles.ok,
-  declined: styles.bad,
-  published: styles.ok,
-  cancelled: styles.plain,
-  withdrawn: styles.plain,
+const STATUS_TONES: Record<SharingStatus, BadgeTone> = {
+  waiting: "warning",
+  approved: "good",
+  declined: "bad",
+  published: "good",
+  cancelled: "plain",
+  withdrawn: "plain",
 };
 
 export function SharingBadge({ status }: { status: SharingStatus }) {
   return (
-    <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
+    <span className={toneBadge(STATUS_TONES[status])}>
       {SHARING_STATUS_WORDS[status]}
     </span>
   );

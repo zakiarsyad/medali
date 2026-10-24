@@ -1,25 +1,27 @@
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
 import { shownMoment } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./cleaning.module.css";
 import { RESULT_WORDS, STATUS_WORDS } from "./cleaning-assessment";
 import type { CleaningResult, CleaningStatus } from "./cleaning-ids";
 import type { ScheduledDuty } from "./cleaning-schedule";
 
-const STATUS_STYLES: Record<CleaningStatus, string | undefined> = {
-  scheduled: styles.plain,
-  judged: styles.warn,
-  validated: styles.ok,
+const STATUS_TONES: Record<CleaningStatus, BadgeTone> = {
+  scheduled: "plain",
+  judged: "warning",
+  validated: "good",
 };
 
-const RESULT_STYLES: Record<CleaningResult, string | undefined> = {
-  met: styles.ok,
-  not_met: styles.bad,
+const RESULT_TONES: Record<CleaningResult, BadgeTone> = {
+  met: "good",
+  not_met: "bad",
 };
 
 /** Terjadwal, Dinilai BAM or Divalidasi. */
 export function CleaningStatusBadge({ status }: { status: CleaningStatus }) {
   return (
-    <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
+    <span className={toneBadge(STATUS_TONES[status])}>
       {STATUS_WORDS[status]}
     </span>
   );
@@ -33,16 +35,12 @@ export function CleaningResultBadge({
   result: CleaningResult;
   words?: string;
 }) {
-  return (
-    <span className={`${shared.badge} ${RESULT_STYLES[result]}`}>{words}</span>
-  );
+  return <span className={toneBadge(RESULT_TONES[result])}>{words}</span>;
 }
 
 /** Marks a duty made again after a validated Tidak memenuhi. */
 export function RepeatBadge() {
-  return (
-    <span className={`${shared.badge} ${styles.warn}`}>Pembersihan ulang</span>
-  );
+  return <span className={toneBadge("warning")}>Pembersihan ulang</span>;
 }
 
 /** Who did a step and when, such as Nama · 12 Okt 2026, 10.00. */

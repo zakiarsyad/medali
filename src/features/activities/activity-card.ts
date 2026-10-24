@@ -1,7 +1,8 @@
 import type { CampusMoment } from "@/academic-periods/campus-clock";
+import type { BadgeTone } from "@/ui/badge-tone";
 import type { ValueKey } from "@/ui/medali-values";
 import { ATTENDANCE_WORDS, takesNewPhoto } from "./attendance-status";
-import { type BadgeLook, HISTORY_LOOKS, SCHEDULE_LOOKS } from "./badge-look";
+import { HISTORY_LOOKS, SCHEDULE_LOOKS } from "./badge-look";
 import { STATUS_WORDS, scheduleStatus } from "./schedule-status";
 import {
   rejectedWords,
@@ -30,7 +31,7 @@ export interface ActivityCard {
   /** Empty when Kurikulum gives none. */
   description: string;
   valueKeys: ValueKey[];
-  badge: { words: string; look: BadgeLook };
+  badge: { words: string; look: BadgeTone };
   /** What is said of the student's own photo, or null when nothing is. */
   photoLine: string | null;
   /** Whether "Unggah foto kehadiran" is offered. */

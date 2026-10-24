@@ -1,17 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./tasks.module.css";
 
 function WaitingBadge({ total }: { total: number }) {
   if (total === 0) {
-    return <span className={`${shared.badge} ${styles.clear}`}>Beres</span>;
+    return <span className={toneBadge("good")}>Beres</span>;
   }
-  return (
-    <span className={`${shared.badge} ${styles.waiting}`}>
-      {total} menunggu
-    </span>
-  );
+  return <span className={toneBadge("warning")}>{total} menunggu</span>;
 }
 
 /**

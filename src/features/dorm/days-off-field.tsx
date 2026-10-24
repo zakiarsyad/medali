@@ -1,6 +1,7 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 
 function DayChip({
@@ -12,7 +13,7 @@ function DayChip({
   onRemove: (() => void) | null;
 }) {
   return (
-    <li className={`${shared.badge} ${styles.plain}`}>
+    <li className={toneBadge("plain")}>
       {shownDay(day)}
       {onRemove && (
         <>

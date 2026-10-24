@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import { FinalCategoryBadge } from "./category-badge";
-import styles from "./health-notes.module.css";
 import {
   examinerOf,
   ILLNESS_WORDS,
@@ -15,13 +15,7 @@ import type { RecapRow } from "./sick-list";
 function HistoryCell({ row }: { row: RecapRow }) {
   const { note } = row;
   if (note === null) {
-    return (
-      <span
-        className={`${shared.badge} ${styles.category} ${styles.attention}`}
-      >
-        {NOTE_MISSING}
-      </span>
-    );
+    return <span className={toneBadge("warning")}>{NOTE_MISSING}</span>;
   }
   return (
     <>

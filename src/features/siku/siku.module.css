@@ -292,22 +292,6 @@
   margin: var(--space-xs) 0 0;
 }
 
-.waiting {
-  color: var(--warn);
-}
-
-.approved {
-  color: var(--ok);
-}
-
-.rejected {
-  color: var(--bad);
-}
-
-.cancelled {
-  color: var(--muted);
-}
-
 a.choice {
   text-decoration: none;
 }

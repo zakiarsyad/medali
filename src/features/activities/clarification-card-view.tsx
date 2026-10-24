@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ClarificationFile } from "@/clarifications/shown-file";
 import shared from "@/ui/data-screen.module.css";
+import { ToneBadge } from "@/ui/tone-badge";
 import base from "./activities.module.css";
 import { CLARIFICATION_LOOKS } from "./badge-look";
 import {
@@ -11,7 +12,6 @@ import {
   NO_FILE,
 } from "./clarification-card";
 import styles from "./clarifications.module.css";
-import { LookBadge } from "./look-badge";
 
 function Fact({
   title,
@@ -77,10 +77,9 @@ export function ClarificationCardView({
             {card.nim} · {card.program}
           </p>
         </div>
-        <LookBadge
-          words={CLARIFICATION_STATUS_WORDS[card.status]}
-          look={CLARIFICATION_LOOKS[card.status]}
-        />
+        <ToneBadge tone={CLARIFICATION_LOOKS[card.status]}>
+          {CLARIFICATION_STATUS_WORDS[card.status]}
+        </ToneBadge>
       </div>
       <dl className={styles.facts}>
         <Fact title="Kegiatan">

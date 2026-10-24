@@ -4,18 +4,6 @@
   font-size: var(--text-md);
 }
 
-/* Pelanggaran lanjutan: a light discipline penalty may be next. */
-.warn {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-
-/* A note of the running semester, still in force. */
-.ok {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
 /* A tick with its words beside it, in the row of filters. */
 .tick {
   display: inline-flex;

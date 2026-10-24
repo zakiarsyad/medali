@@ -1,37 +1,37 @@
-import shared from "@/ui/data-screen.module.css";
-import styles from "./leave.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import type { LeaveKind, LeaveStatus, ReportStatus } from "./leave-ids";
 import { KIND_SHORT_WORDS, STATUS_WORDS } from "./leave-words";
 import type { Timeliness } from "./return-rules";
 import { REPORT_STATUS_WORDS } from "./return-words";
 
-const STATUS_STYLES: Record<LeaveStatus, string | undefined> = {
-  submitted: styles.warn,
-  approved: styles.ok,
-  rejected: styles.bad,
-  cancelled: styles.plain,
-  completed: styles.plain,
+const STATUS_TONES: Record<LeaveStatus, BadgeTone> = {
+  submitted: "warning",
+  approved: "good",
+  rejected: "bad",
+  cancelled: "plain",
+  completed: "plain",
 };
 
 export function StatusBadge({ status }: { status: LeaveStatus }) {
   return (
-    <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
+    <span className={toneBadge(STATUS_TONES[status])}>
       {STATUS_WORDS[status]}
     </span>
   );
 }
 
-const REPORT_STYLES: Record<ReportStatus, string | undefined> = {
-  waiting: styles.warn,
-  verified: styles.warn,
-  rejected: styles.bad,
-  validated: styles.ok,
+const REPORT_TONES: Record<ReportStatus, BadgeTone> = {
+  waiting: "warning",
+  verified: "warning",
+  rejected: "bad",
+  validated: "good",
 };
 
 /** Where a report of a return stands, such as Menunggu verifikasi BAM. */
 export function ReportBadge({ status }: { status: ReportStatus }) {
   return (
-    <span className={`${shared.badge} ${REPORT_STYLES[status]}`}>
+    <span className={toneBadge(REPORT_TONES[status])}>
       {REPORT_STATUS_WORDS[status]}
     </span>
   );
@@ -39,23 +39,19 @@ export function ReportBadge({ status }: { status: ReportStatus }) {
 
 /** Tepat waktu, or Terlambat with the minutes. */
 export function TimelinessBadge({ timeliness }: { timeliness: Timeliness }) {
-  const look = timeliness.late ? styles.bad : styles.ok;
-  return <span className={`${shared.badge} ${look}`}>{timeliness.words}</span>;
+  const tone = timeliness.late ? "bad" : "good";
+  return <span className={toneBadge(tone)}>{timeliness.words}</span>;
 }
 
 /** In place of Disetujui while the resident is out on the leave. */
 export function OutBadge() {
-  return <span className={`${shared.badge} ${styles.ok}`}>Di luar asrama</span>;
+  return <span className={toneBadge("good")}>Di luar asrama</span>;
 }
 
 export function LateBadge() {
-  return <span className={`${shared.badge} ${styles.bad}`}>Terlambat</span>;
+  return <span className={toneBadge("bad")}>Terlambat</span>;
 }
 
 export function KindBadge({ kind }: { kind: LeaveKind }) {
-  return (
-    <span className={`${shared.badge} ${styles.plain}`}>
-      {KIND_SHORT_WORDS[kind]}
-    </span>
-  );
+  return <span className={toneBadge("plain")}>{KIND_SHORT_WORDS[kind]}</span>;
 }

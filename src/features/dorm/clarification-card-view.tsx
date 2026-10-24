@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import {
   type CheckWords,
   type DormClarificationCard,
@@ -9,12 +11,12 @@ import type { DormClarificationStatus } from "./clarification-ids";
 import { STATUS_WORDS } from "./clarification-words";
 import styles from "./leave.module.css";
 
-const STATUS_STYLES: Record<DormClarificationStatus, string | undefined> = {
-  submitted: styles.warn,
-  verified: styles.warn,
-  accepted: styles.ok,
-  rejected: styles.bad,
-  closed: styles.plain,
+const STATUS_TONES: Record<DormClarificationStatus, BadgeTone> = {
+  submitted: "warning",
+  verified: "warning",
+  accepted: "good",
+  rejected: "bad",
+  closed: "plain",
 };
 
 export function ClarificationStatusBadge({
@@ -23,7 +25,7 @@ export function ClarificationStatusBadge({
   status: DormClarificationStatus;
 }) {
   return (
-    <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
+    <span className={toneBadge(STATUS_TONES[status])}>
       {STATUS_WORDS[status]}
     </span>
   );

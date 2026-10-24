@@ -1,4 +1,5 @@
-import shared from "@/ui/data-screen.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import {
   type EvaluationResult,
   RESULT_TITLES,
@@ -7,16 +8,14 @@ import {
 import { NOT_EVALUATED, resultWords } from "./evaluation-words";
 import styles from "./mentor-groups.module.css";
 
-const RESULT_STYLES: Record<EvaluationResult, string | undefined> = {
-  good: styles.good,
-  fair: styles.fair,
-  poor: styles.poor,
+const RESULT_TONES: Record<EvaluationResult, BadgeTone> = {
+  good: "good",
+  fair: "warning",
+  poor: "bad",
 };
 
 function Badge({ result, words }: { result: EvaluationResult; words: string }) {
-  return (
-    <span className={`${shared.badge} ${RESULT_STYLES[result]}`}>{words}</span>
-  );
+  return <span className={toneBadge(RESULT_TONES[result])}>{words}</span>;
 }
 
 /**

@@ -33,33 +33,6 @@
   color: var(--surface);
 }
 
-.open,
-.waiting,
-.refused,
-.plain {
-  border: var(--line-width) solid var(--line);
-  background: var(--surface);
-}
-
-.refused {
-  border-color: var(--bad);
-  color: var(--bad);
-}
-
-.open {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
-.waiting {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-
-.plain {
-  color: var(--muted);
-}
-
 .message {
   margin-top: var(--space-md);
 }

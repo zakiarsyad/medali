@@ -4,6 +4,7 @@
   font-size: var(--text-md);
 }
 
+/* The colour of each category in the bars of how many students it holds. */
 .excellent {
   --category-colour: var(--ok);
 }
@@ -22,11 +23,6 @@
 
 .untested {
   --category-colour: var(--faint);
-}
-
-/* A badge of a category: its words in its colour. */
-.category {
-  color: var(--category-colour);
 }
 
 .bars {

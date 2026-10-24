@@ -1,31 +1,3 @@
-/* The colours of a screening level, from fine to most serious. */
-.ok,
-.warn,
-.bad,
-.plain {
-  border: var(--line-width) solid var(--line);
-  background: var(--surface);
-}
-
-.ok {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
-.warn {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-
-.bad {
-  border-color: var(--bad);
-  color: var(--bad);
-}
-
-.plain {
-  color: var(--muted);
-}
-
 .levelBars {
   display: grid;
   gap: var(--space-sm);

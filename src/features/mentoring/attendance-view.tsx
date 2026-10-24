@@ -1,6 +1,7 @@
 import Link from "next/link";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import { marksOf } from "./attendance-form-values";
 import {
   countMarks,
@@ -47,7 +48,7 @@ export function AttendanceView({
           return (
             <li key={member.id} className={styles.member}>
               <MemberName member={member} />
-              <span className={`${shared.badge} ${styles.notHeld}`}>
+              <span className={toneBadge("plain")}>
                 {mark === undefined ? NO_MARK_TITLE : MARK_TITLES[mark]}
               </span>
             </li>

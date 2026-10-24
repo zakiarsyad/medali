@@ -3,7 +3,8 @@ import type {
   ScheduleKind,
   ScheduleStatus,
 } from "@/mental-health/schedule-ids";
-import shared from "@/ui/data-screen.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./counselling.module.css";
 import { KIND_WORDS, SCHEDULE_STATUS_WORDS } from "./schedule-words";
 
@@ -11,43 +12,41 @@ import { KIND_WORDS, SCHEDULE_STATUS_WORDS } from "./schedule-words";
  * The colours of the prototype: waits for Konselor, waits for the
  * student, agreed, and finished, missed or cancelled.
  */
-const STATUS_STYLES: Record<ScheduleStatus, string | undefined> = {
-  submitted: styles.warn,
-  proposed: styles.plain,
-  scheduled: styles.ok,
-  done: styles.plain,
-  missed: styles.bad,
-  cancelled: styles.plain,
-  awaiting: styles.warn,
-  reschedule_asked: styles.warn,
+const STATUS_TONES: Record<ScheduleStatus, BadgeTone> = {
+  submitted: "warning",
+  proposed: "plain",
+  scheduled: "good",
+  done: "plain",
+  missed: "bad",
+  cancelled: "plain",
+  awaiting: "warning",
+  reschedule_asked: "warning",
 };
 
 export function ScheduleBadge({ status }: { status: ScheduleStatus }) {
   return (
-    <span className={`${shared.badge} ${STATUS_STYLES[status]}`}>
+    <span className={toneBadge(STATUS_TONES[status])}>
       {SCHEDULE_STATUS_WORDS[status]}
     </span>
   );
 }
 
 /** The colours of the Jenis in the prototype. */
-const KIND_STYLES: Record<ScheduleKind, string | undefined> = {
-  voluntary: styles.ok,
-  assigned: styles.bad,
-  called: styles.warn,
+const KIND_TONES: Record<ScheduleKind, BadgeTone> = {
+  voluntary: "good",
+  assigned: "bad",
+  called: "warning",
 };
 
 export function KindBadge({ kind }: { kind: ScheduleKind }) {
   return (
-    <span className={`${shared.badge} ${KIND_STYLES[kind]}`}>
-      {KIND_WORDS[kind]}
-    </span>
+    <span className={toneBadge(KIND_TONES[kind])}>{KIND_WORDS[kind]}</span>
   );
 }
 
 /** The mark of a counselling the student did not ask for. */
 export function MandatoryBadge() {
-  return <span className={`${shared.badge} ${styles.bad}`}>wajib</span>;
+  return <span className={toneBadge("bad")}>wajib</span>;
 }
 
 /** One fact of a card: its title over it, across the card when wide. */

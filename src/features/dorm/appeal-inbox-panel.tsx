@@ -1,5 +1,6 @@
 import shared from "@/ui/data-screen.module.css";
 import { ListPager } from "@/ui/list-pager";
+import { toneBadge } from "@/ui/tone-badge";
 import { AppealCards } from "./appeal-cards";
 import type { AppealInbox } from "./appeal-inbox";
 import {
@@ -24,7 +25,7 @@ export function AppealInboxPanel({
   params: StaffViolationParams;
   ownStudentId: string | null;
 }) {
-  const look = inbox.waiting > 0 ? styles.warn : undefined;
+  const tone = inbox.waiting > 0 ? "warning" : null;
   return (
     <section className={shared.panel}>
       <div className={styles.panelHead}>
@@ -35,9 +36,7 @@ export function AppealInboxPanel({
             Pengelola Asrama.
           </p>
         </div>
-        <span className={`${shared.badge} ${look ?? ""}`}>
-          {inbox.waiting} menunggu
-        </span>
+        <span className={toneBadge(tone)}>{inbox.waiting} menunggu</span>
       </div>
       {inbox.cards.length === 0 ? (
         <p className={shared.empty}>{NO_WAITING_APPEALS}</p>

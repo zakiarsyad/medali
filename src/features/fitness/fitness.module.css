@@ -38,15 +38,6 @@
   min-width: 0;
 }
 
-.attention {
-  --category-colour: var(--warn);
-}
-
-/* A badge of a category: its words in its colour. */
-.category {
-  color: var(--category-colour);
-}
-
 .subheading {
   display: block;
   margin: var(--space-lg) 0 var(--space-xs);

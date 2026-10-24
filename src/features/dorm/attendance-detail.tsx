@@ -1,5 +1,6 @@
 import shared from "@/ui/data-screen.module.css";
 import { shownMoment } from "@/ui/day";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./activities.module.css";
 import type {
   AnnouncedAttendance,
@@ -10,12 +11,12 @@ import type {
 /** Hadir, Tidak hadir in the look of an absence, or Izin. */
 export function PresenceBadge({ status }: { status: PresenceStatus }) {
   if (status === "leave") {
-    return <span className={`${shared.badge} ${styles.plain}`}>Izin</span>;
+    return <span className={toneBadge("plain")}>Izin</span>;
   }
   if (status === "present") {
-    return <span className={`${shared.badge} ${styles.ok}`}>Hadir</span>;
+    return <span className={toneBadge("good")}>Hadir</span>;
   }
-  return <span className={`${shared.badge} ${styles.bad}`}>Tidak hadir</span>;
+  return <span className={toneBadge("bad")}>Tidak hadir</span>;
 }
 
 function MarkedList({ marked }: { marked: MarkedParticipant[] }) {

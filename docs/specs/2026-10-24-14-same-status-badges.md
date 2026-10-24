@@ -54,18 +54,41 @@ Pengasuh, Penilaian, Pembinaan, Tugas saya, Dashboard and Profil saya.
 2. The look kept is coloured text with a coloured border on white,
    because most screens use it.
 3. Decided while building: a badge that names a thing rather than a
-   status, such as a role, a Kategori or a Jenjang, keeps the gold label
-   look. It has no meaning of good or bad, and its dark text on gold
-   already reaches 4.5 to 1.
+   status, such as a role or the Kategori of a violation note, keeps the
+   gold label look. It has no meaning of good or bad, and its dark text
+   on gold already reaches 4.5 to 1. "Pelanggaran lanjutan" keeps its
+   warning colour, as it warns that a penalty may follow.
 4. Decided while building: the health and fitness categories take the
-   meaning their colour already had: "Sangat baik" and "Baik" good,
-   "Perlu perhatian" warning, a medical category bad, and "Belum dites"
-   plain. "Baik" and "Sangat baik" then share one colour; their words
+   meaning their colour already had: "Prima" and "Baik" good, "Perlu
+   perhatian" warning, "Perlu tindak lanjut medis" bad, and "Belum
+   dites" plain. "Prima" and "Baik" then share one colour; their words
    still tell them apart, and the bars keep their own colours.
+5. Decided while building: a status badge that shows the gold label
+   look today, with no colour of its own, keeps it, such as "Berakhir"
+   of a survey, "Terjadwal" of a violation or "Saat ini". Only the
+   badges that had a colour take the shared looks.
+6. Decided while building: badges with a scale of their own take the
+   shared looks where a step means good, warning, bad or plain, and the
+   heaviest step keeps its solid red with white text, which reaches 5.85
+   to 1. The Jenjang badge: Ringan warning, Sedang bad, Berat solid red.
+   The coaching level: Ringan plain, Sedang warning, Intensif solid red.
+   Ringan of a Jenjang and Sedang of a coaching level had amber text on
+   gold, 2.83 to 1. The grade letter: passing good, not passing bad. The
+   badge of a suspended or dismissed student keeps its solid red, and
+   the predikat keeps the gold look with the dot of its colour.
+7. Decided while building: two badges name a thing but had colours in
+   the prototype: the Penanggung jawab of a dorm activity, UPK green,
+   Pelatih amber and BAM gold, and the Jenis of a counselling,
+   Sukarela green, Penugasan red and Pemanggilan amber. They keep those
+   colours through the good, warning and bad looks, so their text is
+   readable.
+8. Decided while building: "Terkirim" of the survey on Profil saya was
+   solid green, and "Tidak aktif" of a BAM student had its own copy of a
+   red badge. They take the shared good and bad looks.
 
 ## Steps
 
 - [x] 1. One shared badge look for each meaning, which wins over the
   general badge look whatever order the styles load in, with a check.
-- [ ] 2. The status badges of every screen use the shared look, and the
+- [x] 2. The status badges of every screen use the shared look, and the
   copies on each screen are removed.

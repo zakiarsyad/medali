@@ -79,22 +79,6 @@
   font-size: var(--text-md);
 }
 
-.waiting,
-.clear {
-  border: var(--line-width) solid var(--line);
-  background: var(--surface);
-}
-
-.waiting {
-  border-color: var(--warn);
-  color: var(--warn);
-}
-
-.clear {
-  border-color: var(--ok);
-  color: var(--ok);
-}
-
 .more {
   margin: var(--space-md) 0 0;
   font-size: var(--text-md);

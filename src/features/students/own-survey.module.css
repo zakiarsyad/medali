@@ -17,11 +17,6 @@
   font-size: var(--text-md);
 }
 
-.sent {
-  background: var(--ok);
-  color: var(--surface);
-}
-
 .statements {
   display: grid;
   gap: var(--space-xs);

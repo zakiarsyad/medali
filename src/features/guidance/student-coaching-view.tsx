@@ -2,6 +2,7 @@ import { COACHING_STATUS_WORDS } from "@/character-scores/coaching-status";
 import { COACHING_LEVEL_WORDS } from "@/character-scores/coaching-words";
 import shared from "@/ui/data-screen.module.css";
 import { valueNameOf } from "@/ui/medali-values";
+import { toneBadge } from "@/ui/tone-badge";
 import type { StudentCoaching } from "./student-coaching";
 import styles from "./student-coaching.module.css";
 
@@ -30,7 +31,7 @@ export function StudentCoachingView({
     <section className={`${shared.panel} ${styles.panel}`}>
       <div className={styles.panelHead}>
         <h2 className={shared.heading}>Pembinaan {level}</h2>
-        <span className={`${shared.badge} ${styles.status}`}>
+        <span className={toneBadge("bad")}>
           {COACHING_STATUS_WORDS[coaching.status]}
         </span>
       </div>

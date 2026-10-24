@@ -2,6 +2,7 @@ import { roomWords } from "@/health-notes/health-words";
 import shared from "@/ui/data-screen.module.css";
 import { DAY } from "@/ui/day";
 import { ListPager } from "@/ui/list-pager";
+import { toneBadge } from "@/ui/tone-badge";
 import { ConsentBadge } from "./consent-badge";
 import styles from "./counselling.module.css";
 import { REFERRALS_PAGE_SIZE, referralAddress } from "./referral-address";
@@ -122,7 +123,7 @@ export function ReferralPanel({
         <h2 className={shared.heading}>
           Rujukan potensi kesehatan mental dari asrama
         </h2>
-        <span className={`${shared.badge} ${styles.plain}`}>
+        <span className={toneBadge("plain")}>
           {list.matching.toLocaleString("id-ID")}
         </span>
       </div>

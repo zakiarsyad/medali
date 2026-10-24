@@ -1,28 +1,26 @@
+import type { BadgeTone } from "@/ui/badge-tone";
 import type { ClarificationStatus } from "./clarification-reasons";
 import type { HistoryStatus } from "./history-status";
 import type { ScheduleStatus } from "./schedule-status";
 
-/** How a badge looks: all is well, something waits, something is wrong, or neither. */
-export type BadgeLook = "ok" | "warn" | "bad" | "plain";
-
-export const HISTORY_LOOKS: Record<HistoryStatus, BadgeLook> = {
-  valid: "ok",
-  waiting: "warn",
+export const HISTORY_LOOKS: Record<HistoryStatus, BadgeTone> = {
+  valid: "good",
+  waiting: "warning",
   rejected: "bad",
   dispensation: "plain",
   absent: "bad",
-  not_sent: "warn",
+  not_sent: "warning",
 };
 
-export const CLARIFICATION_LOOKS: Record<ClarificationStatus, BadgeLook> = {
-  submitted: "warn",
-  accepted: "ok",
+export const CLARIFICATION_LOOKS: Record<ClarificationStatus, BadgeTone> = {
+  submitted: "warning",
+  accepted: "good",
   rejected: "bad",
 };
 
-export const SCHEDULE_LOOKS: Record<ScheduleStatus, BadgeLook> = {
+export const SCHEDULE_LOOKS: Record<ScheduleStatus, BadgeTone> = {
   coming: "plain",
-  not_open_yet: "warn",
-  open: "ok",
+  not_open_yet: "warning",
+  open: "good",
   over: "plain",
 };

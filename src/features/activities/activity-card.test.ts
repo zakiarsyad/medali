@@ -74,11 +74,11 @@ describe("cardOf", () => {
 
     expect(cardOf(TEST_STUDENT_SCHEDULE, TEST_NOW).badge).toEqual({
       words: "Unggah foto dibuka",
-      look: "ok",
+      look: "good",
     });
     expect(cardOf(TEST_STUDENT_SCHEDULE, early).badge).toEqual({
       words: "Hari ini, belum dibuka",
-      look: "warn",
+      look: "warning",
     });
     expect(cardOf(TEST_STUDENT_SCHEDULE, TEST_NOW).photoLine).toBeNull();
   });
@@ -86,7 +86,10 @@ describe("cardOf", () => {
   it("shows Menunggu verifikasi with the time the photo was sent, in campus time", () => {
     const card = cardOf(WAITING, TEST_NOW);
 
-    expect(card.badge).toEqual({ words: "Menunggu verifikasi", look: "warn" });
+    expect(card.badge).toEqual({
+      words: "Menunggu verifikasi",
+      look: "warning",
+    });
     expect(card.photoLine).toBe(
       "Foto terunggah 13 Okt 2026, 09.05. Pegawai UPK akan memverifikasi.",
     );
@@ -94,7 +97,7 @@ describe("cardOf", () => {
   });
 
   it.each([
-    ["valid", "Hadir", "ok"],
+    ["valid", "Hadir", "good"],
     ["rejected", "Ditolak", "bad"],
     ["dispensation", "Dispensasi", "plain"],
   ] as const)("shows a %s attendance as %s", (status, words, look) => {

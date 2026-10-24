@@ -13,6 +13,7 @@ import {
   WEIGHT_TOTAL,
 } from "@/character-grades/scheme-ids";
 import shared from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./character-grades.module.css";
 import { limitField, PASS_LETTER_FIELD, weightField } from "./scheme-fields";
 import type { SchemeFaults, SentScheme } from "./scheme-input";
@@ -141,8 +142,7 @@ export function SchemeView({
 }) {
   const weights = shownWeights(typed.weights);
   const total = weightTotal(weights);
-  const totalLook =
-    total === WEIGHT_TOTAL ? styles.totalRight : styles.totalWrong;
+  const totalTone = total === WEIGHT_TOTAL ? "good" : "bad";
   return (
     <section className={shared.panel}>
       <div className={styles.panelHead}>
@@ -150,7 +150,7 @@ export function SchemeView({
           <h2 className={shared.heading}>Skema bobot</h2>
           <p className={styles.sub}>{note}</p>
         </div>
-        <span className={`${shared.badge} ${totalLook}`}>Total {total}%</span>
+        <span className={toneBadge(totalTone)}>Total {total}%</span>
       </div>
       <div className={styles.weights}>
         {GRADE_PARTS.map((part) => (

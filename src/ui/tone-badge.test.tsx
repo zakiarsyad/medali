@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BADGE_TONES } from "./badge-tone";
-import { ToneBadge } from "./tone-badge";
+import shared from "./data-screen.module.css";
+import { ToneBadge, toneBadge } from "./tone-badge";
 
 // Starts with a break, so the first rule is found like every other.
 const SHARED = `\n${readFileSync("src/ui/data-screen.module.css", "utf8")}`;
@@ -43,5 +44,9 @@ describe("the shared look of a status badge", () => {
         `^<span class="[^"]*badge[^"]* [^"]*${tone}[^"]*">Menunggu</span>$`,
       ),
     );
+  });
+
+  it("leaves a status with no colour of its own the gold badge look", () => {
+    expect(toneBadge(null)).toBe(shared.badge);
   });
 });

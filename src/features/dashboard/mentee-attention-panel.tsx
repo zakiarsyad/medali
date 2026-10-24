@@ -1,5 +1,7 @@
 import { StudentLink } from "@/mentoring/student-link";
+import type { BadgeTone } from "@/ui/badge-tone";
 import shared from "@/ui/data-screen.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./dashboard.module.css";
 import { menteeDetailAddress } from "./dashboard-kind";
 import {
@@ -9,9 +11,9 @@ import {
   type ReasonTone,
 } from "./mentee-attention";
 
-const TONE_LOOKS: Record<ReasonTone, string | undefined> = {
-  serious: styles.seriousTag,
-  warning: styles.warningTag,
+const REASON_TONES: Record<ReasonTone, BadgeTone> = {
+  serious: "bad",
+  warning: "warning",
 };
 
 function AttentionItem({ row }: { row: AttentionRow }) {
@@ -28,7 +30,7 @@ function AttentionItem({ row }: { row: AttentionRow }) {
         {row.reasons.map((reason) => (
           <span
             key={reason.words}
-            className={`${shared.badge} ${TONE_LOOKS[reason.tone]}`}
+            className={toneBadge(REASON_TONES[reason.tone])}
           >
             {reason.words}
           </span>

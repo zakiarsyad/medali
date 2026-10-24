@@ -3,6 +3,7 @@ import { AutoSubmitForm } from "@/ui/auto-submit-form";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { ListPager } from "@/ui/list-pager";
+import { toneBadge } from "@/ui/tone-badge";
 import {
   CATEGORY_CHOICES,
   NOTES_ADDRESS,
@@ -66,11 +67,9 @@ function FilterRow({ params }: { params: NotesParams }) {
 }
 
 function CategoryBadge({ row }: { row: NoteRow }) {
-  const look = row.category === "further" ? styles.warn : "";
+  const tone = row.category === "further" ? "warning" : null;
   return (
-    <span className={`${shared.badge} ${look}`}>
-      {CATEGORY_WORDS[row.category]}
-    </span>
+    <span className={toneBadge(tone)}>{CATEGORY_WORDS[row.category]}</span>
   );
 }
 
@@ -78,7 +77,7 @@ function InForce({ row, semester }: { row: NoteRow; semester: string }) {
   if (!row.isActive) {
     return <span className={shared.badge}>{NOT_IN_FORCE}</span>;
   }
-  return <span className={`${shared.badge} ${styles.ok}`}>{semester}</span>;
+  return <span className={toneBadge("good")}>{semester}</span>;
 }
 
 function NoteLine({

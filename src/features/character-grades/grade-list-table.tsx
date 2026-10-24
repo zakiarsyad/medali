@@ -8,6 +8,7 @@ import {
 } from "@/character-grades/grade-words";
 import shared from "@/ui/data-screen.module.css";
 import { ProfileNameLink } from "@/ui/profile-name-link";
+import { toneBadge } from "@/ui/tone-badge";
 import styles from "./character-grades.module.css";
 import { type GradeParams, gradeAddress } from "./grade-address";
 
@@ -93,9 +94,7 @@ export function GradeListTable({
               </td>
               <td data-title="Keterangan">
                 {row.limited && (
-                  <span className={`${shared.badge} ${styles.limited}`}>
-                    {LIMITED_WORDS}
-                  </span>
+                  <span className={toneBadge("bad")}>{LIMITED_WORDS}</span>
                 )}
                 <span className={styles.muted}>{row.siku.note}</span>
               </td>

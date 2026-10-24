@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StudentLink } from "@/mentoring/student-link";
 import shared from "@/ui/data-screen.module.css";
-import styles from "./mentoring.module.css";
+import { toneBadge } from "@/ui/tone-badge";
 import { bandOf } from "./score-bands";
 import type { ScoreRow } from "./score-rows";
 
@@ -29,9 +29,7 @@ export function ScoreRemark({
 /** The state of a row that holds what is saved: the day, or that it has no score. */
 export function SavedState({ row }: { row: ScoreRow }) {
   if (row.scoredOn === null) {
-    return (
-      <span className={`${shared.badge} ${styles.notHeld}`}>Belum dinilai</span>
-    );
+    return <span className={toneBadge("plain")}>Belum dinilai</span>;
   }
   return <>Diinput {row.scoredOn}</>;
 }

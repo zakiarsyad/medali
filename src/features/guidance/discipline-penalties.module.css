@@ -4,12 +4,6 @@
   font-size: var(--text-md);
 }
 
-/* Ditetapkan: the student's status ends for good. */
-.set {
-  border: var(--line-width) solid var(--bad);
-  color: var(--bad);
-}
-
 /*
  * The status choice and the Keputusan: never wider than the card, and
  * tall enough for a thumb on a phone. Named with its element, so it

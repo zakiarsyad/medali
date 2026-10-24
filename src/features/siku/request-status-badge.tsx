@@ -1,13 +1,13 @@
-import shared from "@/ui/data-screen.module.css";
+import type { BadgeTone } from "@/ui/badge-tone";
+import { toneBadge } from "@/ui/tone-badge";
 import { SHOWN_STATUS_WORDS, type ShownStatus } from "./request-status";
-import styles from "./siku.module.css";
 import { signedPoints } from "./siku-words";
 
-const LOOKS: Record<ShownStatus, string | undefined> = {
-  waiting: styles.waiting,
-  approved: styles.approved,
-  rejected: styles.rejected,
-  cancelled: styles.cancelled,
+const TONES: Record<ShownStatus, BadgeTone> = {
+  waiting: "warning",
+  approved: "good",
+  rejected: "bad",
+  cancelled: "plain",
 };
 
 /** Where a request stands, with the points of an approval in force. */
@@ -24,7 +24,7 @@ export function RequestStatusBadge({
       ? ` ${signedPoints(points, "gain")}`
       : "";
   return (
-    <span className={`${shared.badge} ${LOOKS[status] ?? ""}`}>
+    <span className={toneBadge(TONES[status])}>
       {words}
       {shownPoints}
     </span>

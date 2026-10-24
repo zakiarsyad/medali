@@ -73,20 +73,6 @@
   align-items: center;
 }
 
-/* The look of a status: Masa advokasi waits, Naik ke Pengelola counts. */
-.warn {
-  composes: warn from "./leave.module.css";
-}
-
-.bad {
-  composes: bad from "./leave.module.css";
-}
-
-/* An accepted appeal: the violation does not count. */
-.ok {
-  composes: ok from "./leave.module.css";
-}
-
 /* A heading with a choice beside it, which folds under it on a phone. */
 .panelHead {
   display: flex;
