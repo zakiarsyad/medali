@@ -110,4 +110,4 @@ Konseling.
   bar, then the chosen tab's description and its note, with the shared
   spaces; every page with tabs and the dashboard choice use it.
 - [x] 2. A student's room status on Asrama moves into the tab's content.
-- [ ] 3. Konseling shows the prototype's description under its title.
+- [x] 3. Konseling shows the prototype's description under its title.

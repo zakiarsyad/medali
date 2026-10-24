@@ -157,7 +157,11 @@ export function CounsellingScreen({
     students !== null;
   return (
     <>
-      <PageHead title="Konseling" />
+      <PageHead title="Konseling">
+        Daftar konseling secara sukarela, dan pantau jadwal konseling yang
+        ditugaskan kepada Anda. Isi pembicaraan dalam sesi bersifat rahasia
+        antara Anda dan konselor.
+      </PageHead>
       <div className={styles.parts}>
         {own && <OwnPart own={own} />}
         {showsCounsellor && (
