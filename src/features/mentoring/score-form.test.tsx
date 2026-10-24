@@ -197,7 +197,12 @@ describe("ScoreBoxes", () => {
 
 describe("ScoreForm", () => {
   const form = renderToStaticMarkup(
-    <ScoreForm groupId={GROUP_ID} rows={ROWS} names={NAMES} />,
+    <ScoreForm
+      groupId={GROUP_ID}
+      rows={ROWS}
+      names={NAMES}
+      indicatorsVersion="start"
+    />,
   );
 
   it("opens with nothing changed: the button reads Simpan nilai and is off", () => {
@@ -208,8 +213,9 @@ describe("ScoreForm", () => {
     expect(form).not.toContain("Belum disimpan");
   });
 
-  it("sends the group, never who gives the scores", () => {
+  it("sends the group and the indicators it was opened on, never who gives the scores", () => {
     expect(form).toContain(`name="groupId" value="${GROUP_ID}"`);
+    expect(form).toContain('name="indicatorsVersion" value="start"');
     expect(form).not.toContain("scoredBy");
   });
 });

@@ -6,7 +6,8 @@ import {
   type ScoreIndicator,
   STARTING_INDICATORS,
 } from "@/mentoring/score-indicators";
-import { readIndicators, STARTING_INDICATORS_VERSION } from "./indicator-set";
+import { readIndicators } from "./indicator-set";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import {
   INDICATORS_CHANGED,
   NOT_ALLOWED_TO_SET_INDICATORS,

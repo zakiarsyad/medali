@@ -130,6 +130,12 @@ None.
 20. On a laptop screen too narrow for the ten columns, the table
     scrolls sideways inside its own frame, as other wide tables do; the
     page itself does not.
+21. The form "Nilai anak asuh" carries the indicators it was opened on.
+    When Kepala Unit has changed them since, the whole save is refused
+    and nothing of it is kept, so no score lands under another
+    indicator: the message says "Indikator penilaian sudah diubah oleh
+    (name). Muat ulang." A save of scores waits for a save of the
+    indicators under way.
 
 ## Steps
 

@@ -3,7 +3,8 @@ import type { Database } from "@/db/connect";
 import { accounts, mentoringIndicatorSets } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
-import { readIndicators, STARTING_INDICATORS_VERSION } from "./indicator-set";
+import { readIndicators } from "./indicator-set";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 
 const inTestDatabase = withTestDatabase();
 

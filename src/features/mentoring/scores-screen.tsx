@@ -18,7 +18,7 @@ import { listScoredMembers } from "./group-scores";
 import { groupChoiceOf } from "./group-search";
 import { IndicatorForm } from "./indicator-form";
 import { IndicatorPanel } from "./indicator-panel";
-import { readIndicators } from "./indicator-set";
+import { type IndicatorsInForce, readIndicators } from "./indicator-set";
 import styles from "./mentoring.module.css";
 import { MentoringHead } from "./mentoring-head";
 import { ScoreForm } from "./score-form";
@@ -36,14 +36,14 @@ const FINAL_SCORE_RULE = "Nilai akhir = rerata enam indikator × 20";
 async function GroupScores({
   groupId,
   period,
-  names,
+  indicators,
   mayGive,
   detailVisible,
 }: {
   groupId: string;
   period: AcademicPeriod;
-  /** The names of the indicators in force, in their order. */
-  names: readonly string[];
+  /** The indicators in force, which name the columns of the scores. */
+  indicators: IndicatorsInForce;
   /** Whether the account may give the scores of this group. */
   mayGive: boolean;
   detailVisible: SQL | null;
@@ -68,7 +68,12 @@ async function GroupScores({
           <span className={styles.quiet}>{FINAL_SCORE_RULE}</span>
         </div>
         <ScoreRubric />
-        <Scores groupId={groupId} rows={rows} names={names} mayGive={mayGive} />
+        <Scores
+          groupId={groupId}
+          rows={rows}
+          indicators={indicators}
+          mayGive={mayGive}
+        />
       </section>
     </>
   );
@@ -81,12 +86,12 @@ async function GroupScores({
 function Scores({
   groupId,
   rows,
-  names,
+  indicators,
   mayGive,
 }: {
   groupId: string;
   rows: ScoreRow[];
-  names: readonly string[];
+  indicators: IndicatorsInForce;
   mayGive: boolean;
 }) {
   if (rows.length === 0) {
@@ -96,10 +101,17 @@ function Scores({
       </p>
     );
   }
+  const names = indicators.indicators.map((indicator) => indicator.name);
   if (!mayGive) return <ScoreList rows={rows} names={names} />;
   // Made anew for each group, so nothing chosen for one stays for another.
   return (
-    <ScoreForm key={groupId} groupId={groupId} rows={rows} names={names} />
+    <ScoreForm
+      key={groupId}
+      groupId={groupId}
+      rows={rows}
+      names={names}
+      indicatorsVersion={indicators.version}
+    />
   );
 }
 
@@ -107,14 +119,14 @@ function Scores({
 function Groups({
   groups,
   period,
-  names,
+  indicators,
   giveLimit,
   detailVisible,
   askedGroupId,
 }: {
   groups: AttendanceGroup[];
   period: AcademicPeriod | null;
-  names: readonly string[];
+  indicators: IndicatorsInForce;
   /** The groups the account may give scores in, or null for one that only reads. */
   giveLimit: RowLimit | null;
   detailVisible: SQL | null;
@@ -154,7 +166,7 @@ function Groups({
       <GroupScores
         groupId={shown.id}
         period={period}
-        names={names}
+        indicators={indicators}
         mayGive={mayFillInFor(giveLimit, shown.mentor?.id ?? null)}
         detailVisible={detailVisible}
       />
@@ -219,7 +231,7 @@ export async function ScoresScreen({
         <Groups
           groups={groups}
           period={period}
-          names={indicators.indicators.map((indicator) => indicator.name)}
+          indicators={indicators}
           giveLimit={giveLimit}
           detailVisible={detailVisible}
           askedGroupId={params.groupId}

@@ -6,8 +6,7 @@ import {
   STARTING_INDICATORS,
 } from "@/mentoring/score-indicators";
 
-/** The version of a form opened while the starting indicators are in force. */
-export const STARTING_INDICATORS_VERSION = "start";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 
 /** The indicators as they are now, with who set them last and when. */
 export interface IndicatorsInForce {

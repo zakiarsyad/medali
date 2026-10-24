@@ -9,11 +9,11 @@ import {
 } from "@/mentoring/score-indicators";
 import type { Parsed } from "@/parsed";
 import { parseIndicators } from "./indicator-input";
+import { type LatestIndicators, readLatestIndicators } from "./indicator-set";
 import {
-  type LatestIndicators,
-  readLatestIndicators,
+  INDICATOR_SET_LOCK,
   STARTING_INDICATORS_VERSION,
-} from "./indicator-set";
+} from "./indicator-version";
 
 export const NOT_ALLOWED_TO_SET_INDICATORS = {
   ok: false,
@@ -84,7 +84,7 @@ async function save(
   // The setting in force is the latest by time, so the time comes from
   // the database clock once the wait is over.
   await tx.execute(
-    sql`select pg_advisory_xact_lock(hashtext('mentoring_indicator_set'))`,
+    sql`select pg_advisory_xact_lock(hashtext(${INDICATOR_SET_LOCK}))`,
   );
   const latest = await readLatestIndicators(tx);
   const inForce = latest?.version ?? STARTING_INDICATORS_VERSION;

@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { AccountForAccess } from "@/auth/access";
@@ -6,12 +7,17 @@ import {
   finalScoreOf,
   INDICATOR_COUNT,
   isIndicatorScore,
+  STARTING_INDICATORS,
 } from "@/mentoring/score-indicators";
 import type { Parsed } from "@/parsed";
 import { mayFillInFor } from "./attendance-groups";
 import { listActiveMembers } from "./group-meetings";
 import { lockGroup, readMentorOfToday } from "./held-group";
-import { readIndicators } from "./indicator-set";
+import { readLatestIndicators } from "./indicator-set";
+import {
+  INDICATOR_SET_LOCK,
+  STARTING_INDICATORS_VERSION,
+} from "./indicator-version";
 import {
   keptKey,
   NOT_INDICATOR_SCORE,
@@ -64,6 +70,45 @@ export const NOT_MEMBERS_TO_SCORE = {
 
 /** What a save answers when a score of an indicator is no whole number from 1 to 5. */
 export const NOT_SCORES = { ok: false, error: NOT_INDICATOR_SCORE } as const;
+
+/** What a form opened on a version that is no setting of the indicators is told. */
+export const SCORE_INDICATORS_CHANGED = {
+  ok: false,
+  error: "Indikator penilaian sudah diubah. Muat ulang.",
+} as const;
+
+/**
+ * What a form opened before Kepala Unit changed the indicators is told:
+ * its columns name other indicators than those in force now.
+ */
+export function scoreIndicatorsChangedBy(name: string) {
+  return {
+    ok: false,
+    error: `Indikator penilaian sudah diubah oleh ${name}. Muat ulang.`,
+  } as const;
+}
+
+/**
+ * The names of the indicators the form was opened on, when they are
+ * still in force, or why the save is refused. Waits for a save of the
+ * indicators under way, so the two are never mixed.
+ */
+async function namesOpenedOn(
+  tx: Database,
+  version: string,
+): Promise<Parsed<string[]>> {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock_shared(hashtext(${INDICATOR_SET_LOCK}))`,
+  );
+  const latest = await readLatestIndicators(tx);
+  const inForce = latest?.version ?? STARTING_INDICATORS_VERSION;
+  if (version !== inForce) {
+    if (latest === null) return SCORE_INDICATORS_CHANGED;
+    return scoreIndicatorsChangedBy(latest.set.by);
+  }
+  const indicators = latest?.indicators ?? STARTING_INDICATORS;
+  return { ok: true, value: indicators.map((indicator) => indicator.name) };
+}
 
 /** What a save answers when a mentee is sent other than six indicator scores. */
 export const NOT_SIX_SCORES = { ok: false, error: SOME_INCOMPLETE } as const;
@@ -138,7 +183,8 @@ export interface SavedScores {
  * each with a line in the log. A student without a score gets their
  * first; a student who has one, of six indicators or given before them,
  * gets the new score in its place, and six that are the ones kept write
- * nothing. Refused, with nothing saved, for any role but Pengasuh, for a
+ * nothing. Refused, with nothing saved, for a form opened on other
+ * indicators than those in force, for any role but Pengasuh, for a
  * group the actor does not hold today, while no period runs, for a row
  * that is not six whole numbers from 1 to 5, for a score of someone who is no Aktif
  * member of the group today, and for a form opened on another score than
@@ -170,10 +216,10 @@ export async function saveScores(
     const kept = await readKeptScores(tx, period.id, studentIds);
     const changedIds = changedSince(input.basedOn, kept);
     if (changedIds.length > 0) return scoresChanged(changedIds);
-    const { indicators } = await readIndicators(tx);
-    const names = indicators.map((indicator) => indicator.name);
+    const names = await namesOpenedOn(tx, input.indicatorsVersion);
+    if (!names.ok) return names;
     for (const [studentId, six] of Object.entries(input.scores)) {
-      const given = givenScoreOf(six, names);
+      const given = givenScoreOf(six, names.value);
       const keptScore = kept.get(studentId);
       if (keptScore === undefined) {
         await addScore(tx, actor.id, {

@@ -7,6 +7,7 @@ import {
 } from "@/mentoring/score-indicators";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 
 /**
  * A row as the form sends it: the id of the student, what each of the
@@ -17,11 +18,18 @@ type SentScore = [studentId: string, scores: string[], basedOn: string];
 /** "Simpan nilai" as the form sends it. */
 export interface SentScores {
   groupId: string;
+  /** The version of the indicators the form was opened on. */
+  indicatorsVersion: string;
   scores: SentScore[];
 }
 
 export interface ScoresInput {
   groupId: string;
+  /**
+   * The version of the indicators the form was opened on: its columns
+   * name them, so the six of a row are given on these.
+   */
+  indicatorsVersion: string;
   /** The six new indicator scores of each student, by the id of the student. */
   scores: Record<string, number[]>;
   /**
@@ -51,6 +59,14 @@ export function keptKey(kept: KeptForKey | null | undefined): string {
 
 /** A key `keptKey` can write: nothing, six indicator scores, or a whole score. */
 const KEPT_KEY = /^(|\d(,\d){5}|\d{1,3}(\.\d)?)$/;
+
+/** The field that holds the version of the indicators the form was opened on. */
+export const INDICATORS_VERSION_OF_SCORES = "indicatorsVersion";
+
+/** A version of the indicators: the starting one, or the id of a setting. */
+function isIndicatorsVersion(version: string): boolean {
+  return version === STARTING_INDICATORS_VERSION || isUuid(version);
+}
 
 /** What the name of a field that holds a choice of a student starts with. */
 const SCORE_FIELD_START = "score.";
@@ -145,6 +161,9 @@ function readSix(texts: readonly string[]): Parsed<number[]> {
  */
 export function parseScores(sent: SentScores): Parsed<ScoresInput> {
   if (!isUuid(sent.groupId)) return refused(INCOMPLETE_FORM);
+  if (!isIndicatorsVersion(sent.indicatorsVersion)) {
+    return refused(INCOMPLETE_FORM);
+  }
   if (sent.scores.length === 0) return refused("Belum ada nilai yang diubah.");
   const scores: Record<string, number[]> = {};
   const basedOn: Record<string, string> = {};
@@ -157,5 +176,6 @@ export function parseScores(sent: SentScores): Parsed<ScoresInput> {
     scores[studentId] = six.value;
     basedOn[studentId] = openedOn;
   }
-  return { ok: true, value: { groupId: sent.groupId, scores, basedOn } };
+  const { groupId, indicatorsVersion } = sent;
+  return { ok: true, value: { groupId, indicatorsVersion, scores, basedOn } };
 }

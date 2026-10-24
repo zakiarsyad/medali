@@ -10,6 +10,7 @@ import { mentorGroups } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import { readIndicators } from "./indicator-set";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import { saveIndicators } from "./save-indicators";
 import {
   changedSince,
@@ -18,6 +19,7 @@ import {
   NOT_MEMBERS_TO_SCORE,
   NOT_SCORES,
   NOT_SIX_SCORES,
+  SCORE_INDICATORS_CHANGED,
   SCORED_GROUP_NOT_HELD,
   saveScores,
   scoresChanged,
@@ -141,7 +143,12 @@ function scoresOf(
     const before = openedOn[studentId];
     basedOn[studentId] = before ? before.join(",") : "";
   }
-  return { groupId: records.groupId, scores, basedOn };
+  return {
+    groupId: records.groupId,
+    indicatorsVersion: STARTING_INDICATORS_VERSION,
+    scores,
+    basedOn,
+  };
 }
 
 /** The score kept for a student, or null for a student without one. */
@@ -318,11 +325,15 @@ describe("saveScores", () => {
       );
       const { version } = await readIndicators(db);
       await saveIndicators(db, kepala, renamed, version);
+      const reloaded = await readIndicators(db);
 
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [budi]: S80 }),
+        {
+          ...scoresOf(records, { [budi]: S80 }),
+          indicatorsVersion: reloaded.version,
+        },
         period.day,
       );
 
@@ -332,6 +343,59 @@ describe("saveScores", () => {
       expect(budiScore?.indicatorNames).toEqual(
         renamed.map((indicator) => indicator.name),
       );
+    });
+  });
+
+  it("refuses the whole save of a form opened before Kepala Unit changed the indicators, keeping nothing, so no score lands under another indicator", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani, budi } = records;
+      const openedOn = await readIndicators(db);
+      const kepala = await addTestAccount(db, "Kepala Uji Ganti Indikator", [
+        "head_of_unit",
+      ]);
+      const swapped = STARTING_INDICATORS.map((indicator, place) =>
+        place === 2 ? { ...indicator, name: "Ketertiban" } : indicator,
+      );
+      await saveIndicators(db, kepala, swapped, openedOn.version);
+
+      const saved = await saveScores(
+        db,
+        mentor,
+        {
+          ...scoresOf(records, { [ani]: S83, [budi]: S80 }),
+          indicatorsVersion: openedOn.version,
+        },
+        period.day,
+      );
+
+      expect(saved).toEqual({
+        ok: false,
+        error:
+          "Indikator penilaian sudah diubah oleh Kepala Uji Ganti Indikator. Muat ulang.",
+      });
+      expect(await keptScoreOf(db, ani)).toBeNull();
+      expect(await keptScoreOf(db, budi)).toBeNull();
+      expect(await testScoreLogOf(db, ani)).toEqual([]);
+    });
+  });
+
+  it("refuses a form that names indicators that are no setting", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const saved = await saveScores(
+        db,
+        records.mentor,
+        {
+          ...scoresOf(records, { [records.ani]: S83 }),
+          indicatorsVersion: randomUUID(),
+        },
+        records.period.day,
+      );
+
+      expect(saved).toEqual(SCORE_INDICATORS_CHANGED);
+      expect(await keptScoreOf(db, records.ani)).toBeNull();
     });
   });
 
@@ -352,6 +416,7 @@ describe("saveScores", () => {
         {
           groupId: records.groupId,
           scores: { [ani]: S83 },
+          indicatorsVersion: STARTING_INDICATORS_VERSION,
           basedOn: { [ani]: "80" },
         },
         period.day,

@@ -20,6 +20,7 @@ const SIX = ["4", "5", "4", "3", "5", "4"];
 function sent(more: Partial<SentScores> = {}): SentScores {
   return {
     groupId: GROUP_ID,
+    indicatorsVersion: "start",
     scores: [
       [ANI, SIX, ""],
       [BUDI, ["1", "1", "1", "1", "1", "1"], "70"],
@@ -96,6 +97,7 @@ describe("parseScores", () => {
       ok: true,
       value: {
         groupId: GROUP_ID,
+        indicatorsVersion: "start",
         scores: { [ANI]: [4, 5, 4, 3, 5, 4], [BUDI]: [1, 1, 1, 1, 1, 1] },
         basedOn: { [ANI]: "", [BUDI]: "70" },
       },
@@ -129,6 +131,9 @@ describe("parseScores", () => {
 
   it("refuses what is no id of a student or of a group, a student sent twice, and an opening that is no kept score", () => {
     expect(parseScores(sent({ groupId: "kelompok" })).ok).toBe(false);
+    expect(parseScores(sent({ indicatorsVersion: "" })).ok).toBe(false);
+    expect(parseScores(sent({ indicatorsVersion: "lama" })).ok).toBe(false);
+    expect(parseScores(sent({ indicatorsVersion: GROUP_ID })).ok).toBe(true);
     expect(parseScores(sent({ scores: [["ani", SIX, ""]] })).ok).toBe(false);
     expect(
       parseScores(

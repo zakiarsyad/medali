@@ -18,6 +18,7 @@ import {
   withoutBoxes,
   withTyped,
 } from "./score-form-values";
+import { INDICATORS_VERSION_OF_SCORES } from "./score-input";
 import type { ScoreRow } from "./score-rows";
 
 const LEAVE_QUESTION =
@@ -41,12 +42,15 @@ export function ScoreForm({
   groupId,
   rows,
   names,
+  indicatorsVersion,
 }: {
   groupId: string;
   /** The Aktif members of the group, each with the score kept for them. */
   rows: readonly ScoreRow[];
   /** The names of the indicators in force, in their order. */
   names: readonly string[];
+  /** The version of those indicators, so a save after they change is refused. */
+  indicatorsVersion: string;
 }) {
   const [typed, setTyped] = useState<Typed>({});
   const sentIds = idsToSend(rows, typed);
@@ -71,6 +75,11 @@ export function ScoreForm({
     // noValidate: the server says what is wrong, in the app's own words.
     <form onSubmit={(event) => sendForm(event, save)} noValidate>
       <input type="hidden" name="groupId" value={groupId} />
+      <input
+        type="hidden"
+        name={INDICATORS_VERSION_OF_SCORES}
+        value={indicatorsVersion}
+      />
       <ScoreBoxes
         rows={rows}
         names={names}

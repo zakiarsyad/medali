@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import { IndicatorForm } from "./indicator-form";
-import { STARTING_INDICATORS_VERSION } from "./indicator-set";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import { INDICATORS_READ_ONLY } from "./indicator-words";
 
 function shownForm(): string {

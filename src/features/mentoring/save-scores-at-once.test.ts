@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import { saveScores, scoresChanged } from "./save-scores";
 import type { ScoresInput } from "./score-input";
 import { addTestPeriod, type TestPeriod } from "./test-meetings";
@@ -74,6 +75,7 @@ function scoreOf(
   return {
     groupId: records.groupId,
     scores: { [records.memberId]: sixOf(final) },
+    indicatorsVersion: STARTING_INDICATORS_VERSION,
     basedOn: {
       [records.memberId]: openedOn === null ? "" : sixOf(openedOn).join(","),
     },

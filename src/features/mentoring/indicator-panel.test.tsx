@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import { IndicatorPanel } from "./indicator-panel";
-import { STARTING_INDICATORS_VERSION } from "./indicator-set";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import { INDICATORS_READ_ONLY, STARTING_NOTE } from "./indicator-words";
 
 const STARTING = {
