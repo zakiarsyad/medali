@@ -1,117 +1,136 @@
+import { INDICATOR_MEANINGS } from "@/mentoring/score-indicators";
 import shared from "@/ui/data-screen.module.css";
 import styles from "./mentoring.module.css";
 import {
-  boxState,
-  boxText,
+  choiceText,
+  rowState,
   spokenScore,
   type Typed,
 } from "./score-form-values";
-import {
-  basedField,
-  NOT_A_SCORE,
-  SCORE_NOT_EMPTIED,
-  scoreField,
-} from "./score-input";
+import { basedField, keptKey, ROW_INCOMPLETE, scoreField } from "./score-input";
 import type { ScoreRow } from "./score-rows";
-import { SavedState, ScoreRemark, ScoreTable } from "./score-table";
+import { FinalScore, SavedState, ScoreRemark, ScoreTable } from "./score-table";
 
-/** Takes what was typed in the box of a student. */
-type OnType = (studentId: string, text: string) => void;
-
-/** Whether a box holds what cannot be saved. */
-function isFaulty(row: ScoreRow, typed: Typed): boolean {
-  const state = boxState(row, typed);
-  return state === "invalid" || state === "emptied";
-}
+/** Takes what was chosen in one choice of a row. */
+type OnChoose = (row: ScoreRow, place: number, text: string) => void;
 
 /**
- * The state of a row of the form: that its box is not saved yet, why
- * what it holds cannot be saved, or what is saved.
+ * The state of a row of the form: that its six are not saved yet, that
+ * only part of the six are chosen, or what is saved.
  */
-function BoxRemark({ row, typed }: { row: ScoreRow; typed: Typed }) {
-  const state = boxState(row, typed);
+function RowRemark({ row, typed }: { row: ScoreRow; typed: Typed }) {
+  const state = rowState(row, typed);
   if (state === "unsaved") {
     return <span className={shared.badge}>Belum disimpan</span>;
   }
-  if (state === "invalid") {
-    return <span className={styles.boxFault}>{NOT_A_SCORE}</span>;
-  }
-  if (state === "emptied") {
-    return <span className={styles.boxFault}>{SCORE_NOT_EMPTIED}</span>;
+  if (state === "incomplete") {
+    return <span className={styles.boxFault}>{ROW_INCOMPLETE}</span>;
   }
   return <SavedState row={row} />;
 }
 
 /**
- * The box of one member. A box that is sent carries its name, and with
- * it goes the score it was opened on, so a score saved in between is
- * not written over.
+ * The choice of one member on one indicator, from 1 to 5 with what each
+ * means. A choice of a row that is sent carries its name.
  */
-function ScoreBox({
+function IndicatorChoice({
+  row,
+  place,
+  name,
+  typed,
+  isSent,
+  onChoose,
+}: {
+  row: ScoreRow;
+  place: number;
+  name: string;
+  typed: Typed;
+  isSent: boolean;
+  onChoose: OnChoose;
+}) {
+  return (
+    <select
+      className={`${shared.input} ${styles.indicatorChoice}`}
+      aria-label={`${name} ${row.name}`}
+      aria-invalid={rowState(row, typed) === "incomplete" || undefined}
+      name={isSent ? scoreField(row.id, place) : undefined}
+      value={choiceText(row, typed, place)}
+      onChange={(event) => onChoose(row, place, event.target.value)}
+    >
+      <option value="">-</option>
+      {INDICATOR_MEANINGS.map(({ score, meaning }) => (
+        <option key={score} value={String(score)}>
+          {score} {meaning}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+/**
+ * "Nilai akhir" of a row of the form, which follows its six at once. A
+ * row that is sent carries with it what it was opened on, so a score
+ * saved in between is not written over.
+ */
+function FinalOfRow({
   row,
   typed,
   isSent,
-  onType,
 }: {
   row: ScoreRow;
   typed: Typed;
   isSent: boolean;
-  onType: OnType;
 }) {
   return (
     <>
-      <input
-        className={`${shared.input} ${styles.scoreBox}`}
-        // Not a number box: what is no score stays to be read and corrected.
-        inputMode="numeric"
-        aria-label={`Nilai pengasuhan ${row.name}`}
-        aria-invalid={isFaulty(row, typed) || undefined}
-        name={isSent ? scoreField(row.id) : undefined}
-        value={boxText(row, typed)}
-        onChange={(event) => onType(row.id, event.target.value)}
-      />
+      <FinalScore score={spokenScore(row, typed)} />
       {isSent && (
-        <input
-          type="hidden"
-          name={basedField(row.id)}
-          value={row.score ?? ""}
-        />
+        <input type="hidden" name={basedField(row.id)} value={keptKey(row)} />
       )}
     </>
   );
 }
 
 /**
- * "Nilai anak asuh" for the mentor of the group: a box for the score of
- * each member, and beside it what the rubric says of what the box holds.
- * Only the boxes of `sentIds` carry a name, so a save sends nothing of a
- * row that was not changed.
+ * "Nilai anak asuh" for the mentor of the group: six choices for each
+ * member, "Nilai akhir" of them, and beside it what the rubric says of
+ * it. Only the rows of `sentIds` carry a name, so a save sends nothing of
+ * a row that was not changed.
  */
 export function ScoreBoxes({
   rows,
+  names,
   typed,
   sentIds,
-  onType,
+  onChoose,
 }: {
   rows: readonly ScoreRow[];
+  /** The names of the indicators in force, in their order. */
+  names: readonly string[];
   typed: Typed;
   sentIds: readonly string[];
-  onType: OnType;
+  onChoose: OnChoose;
 }) {
   return (
     <ScoreTable
       rows={rows}
-      scoreOf={(row) => (
-        <ScoreBox
+      names={names}
+      indicatorOf={(row, place) => (
+        <IndicatorChoice
           row={row}
+          place={place}
+          name={names[place] ?? ""}
           typed={typed}
           isSent={sentIds.includes(row.id)}
-          onType={onType}
+          onChoose={onChoose}
         />
+      )}
+      finalOf={(row) => (
+        <FinalOfRow row={row} typed={typed} isSent={sentIds.includes(row.id)} />
       )}
       remarkOf={(row) => (
         <ScoreRemark score={spokenScore(row, typed)}>
-          <BoxRemark row={row} typed={typed} />
+          <RowRemark row={row} typed={typed} />
         </ScoreRemark>
       )}
     />

@@ -2,11 +2,14 @@
 // the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import { ScoreList } from "./score-list";
 import { ScoreNumbers } from "./score-numbers";
 import type { ScoreRow } from "./score-rows";
 import { ScoreRubric } from "./score-rubric";
 import { scoresOverview } from "./scores-overview";
+
+const NAMES = STARTING_INDICATORS.map((indicator) => indicator.name);
 
 const SCORED: ScoreRow = {
   id: "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f7601",
@@ -14,7 +17,9 @@ const SCORED: ScoreRow = {
   nim: "9962000901",
   detailAddress: "/pengasuhan/nilai?kelompok=g&profil=a",
   attendance: "3/4",
-  score: 88,
+  score: 90,
+  indicatorScores: [5, 5, 4, 4, 5, 4],
+  indicatorNames: NAMES,
   scoredOn: "8 Okt 2026",
 };
 const UNSCORED: ScoreRow = {
@@ -24,27 +29,64 @@ const UNSCORED: ScoreRow = {
   detailAddress: null,
   attendance: "-",
   score: null,
+  indicatorScores: null,
+  indicatorNames: null,
   scoredOn: null,
 };
 
 /** The rows of the list as text, one for each member. */
 function rowsOf(rows: ScoreRow[]): string[] {
-  const shown = renderToStaticMarkup(<ScoreList rows={rows} />);
+  const shown = renderToStaticMarkup(<ScoreList rows={rows} names={NAMES} />);
   return shown.split("<tr").slice(2);
 }
 
 describe("ScoreList", () => {
-  it("has the columns Anak asuh, Kehadiran pengasuhan, Nilai pengasuhan and Keterangan", () => {
-    const shown = renderToStaticMarkup(<ScoreList rows={[SCORED]} />);
+  it("has the columns Anak asuh, Kehadiran pengasuhan, the six indicators, Nilai akhir and Keterangan", () => {
+    const shown = renderToStaticMarkup(
+      <ScoreList rows={[SCORED]} names={NAMES} />,
+    );
 
     for (const title of [
       "Anak asuh",
       "Kehadiran pengasuhan",
-      "Nilai pengasuhan",
+      ...NAMES,
+      "Nilai akhir",
       "Keterangan",
     ]) {
       expect(shown).toContain(`<th>${title}</th>`);
     }
+  });
+
+  it("shows the six indicator scores of a row, and a dash for each of a row without them", () => {
+    const [scored, unscored] = rowsOf([SCORED, UNSCORED]);
+
+    expect(scored).toContain('<td data-title="Mandiri"');
+    expect(scored).toMatch(/data-title="Disiplin"[^>]*>4<\/td>/);
+    expect(unscored).toMatch(/data-title="Disiplin"[^>]*>-<\/td>/);
+  });
+
+  it("names beside an indicator score the name it was given with when that is not the name in force", () => {
+    const given = [...NAMES];
+    given[0] = "Kemandirian";
+    const [row] = rowsOf([{ ...SCORED, indicatorNames: given }]);
+
+    expect(row).toContain("Kemandirian");
+    expect(row?.match(/Kemandirian/g)).toHaveLength(1);
+  });
+
+  it("shows a score given before the indicators with Nilai tanpa indikator, and still its score", () => {
+    const [row] = rowsOf([{ ...SCORED, score: 72, indicatorScores: null }]);
+
+    expect(row).toContain("<b>72</b>");
+    expect(row).toContain("Nilai tanpa indikator");
+    expect(row).toContain("Diinput 8 Okt 2026");
+  });
+
+  it("shows a final score with its decimal, and what the rubric says of it", () => {
+    const [row] = rowsOf([{ ...SCORED, score: 83.3 }]);
+
+    expect(row).toContain("<b>83,3</b>");
+    expect(row).toContain("Aktif dan konsisten mengikuti pengasuhan");
   });
 
   it("shows a member with NIM, attendance, the saved score, what the rubric says of it and the day it was saved", () => {
@@ -53,7 +95,7 @@ describe("ScoreList", () => {
     expect(row).toContain("Ani Uji Daftar");
     expect(row).toContain("9962000901");
     expect(row).toContain("3/4");
-    expect(row).toContain("<b>88</b>");
+    expect(row).toContain("<b>90</b>");
     expect(row).toContain(
       "Sangat aktif, menjadi teladan dan menggerakkan kelompok",
     );
@@ -72,7 +114,9 @@ describe("ScoreList", () => {
   });
 
   it("has no box and no button: nothing can be typed or sent", () => {
-    const shown = renderToStaticMarkup(<ScoreList rows={[SCORED, UNSCORED]} />);
+    const shown = renderToStaticMarkup(
+      <ScoreList rows={[SCORED, UNSCORED]} names={NAMES} />,
+    );
 
     expect(shown).not.toContain("<input");
     expect(shown).not.toContain("<button");

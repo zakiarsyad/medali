@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import type { AccountForAccess } from "@/auth/access";
 import { withOwnTestDatabase } from "@/db/test-database-at-once";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import { saveScores, scoresChanged } from "./save-scores";
 import type { ScoresInput } from "./score-input";
 import { addTestPeriod, type TestPeriod } from "./test-meetings";
@@ -51,16 +52,33 @@ async function addRecords(place: number): Promise<Records> {
   return { mentor, groupId, memberId, period };
 }
 
-/** A score for the member, from a form opened on `openedOn`. */
+/** Six indicator scores, by the final score they give. */
+const SIX: Record<number, number[]> = {
+  60: [3, 3, 3, 3, 3, 3],
+  70: [4, 4, 3, 3, 4, 3],
+  80: [4, 4, 4, 4, 4, 4],
+  86.7: [5, 5, 4, 4, 4, 4],
+};
+
+function sixOf(final: number): number[] {
+  const six = SIX[final];
+  if (!six) throw new Error("No six scores give this final score here.");
+  return six;
+}
+
+/** The six scores that give `final` for the member, from a form opened on `openedOn`. */
 function scoreOf(
   records: Records,
-  score: number,
+  final: number,
   openedOn: number | null,
 ): ScoresInput {
   return {
     groupId: records.groupId,
-    scores: { [records.memberId]: score },
-    basedOn: { [records.memberId]: openedOn },
+    scores: { [records.memberId]: sixOf(final) },
+    indicatorsVersion: STARTING_INDICATORS_VERSION,
+    basedOn: {
+      [records.memberId]: openedOn === null ? "" : sixOf(openedOn).join(","),
+    },
   };
 }
 
@@ -72,7 +90,7 @@ describe("Simpan nilai sent twice at the same moment", () => {
 
     const both = await own.atOnce(
       (db) => saveScores(db, mentor, scoreOf(records, 80, null), day),
-      (db) => saveScores(db, mentor, scoreOf(records, 65, null), day),
+      (db) => saveScores(db, mentor, scoreOf(records, 60, null), day),
     );
 
     expect(both.sooner).toEqual({ ok: true, value: { savedIds: [memberId] } });
@@ -90,14 +108,14 @@ describe("Simpan nilai sent twice at the same moment", () => {
     await saveScores(own.db, mentor, scoreOf(records, 70, null), day);
 
     const both = await own.atOnce(
-      (db) => saveScores(db, mentor, scoreOf(records, 85, 70), day),
+      (db) => saveScores(db, mentor, scoreOf(records, 86.7, 70), day),
       (db) => saveScores(db, mentor, scoreOf(records, 60, 70), day),
     );
 
     expect(both.sooner).toEqual({ ok: true, value: { savedIds: [memberId] } });
     expect(both.later).toEqual(scoresChanged([memberId]));
     expect(await testScoresOf(own.db, memberId)).toEqual([
-      expect.objectContaining({ score: 85 }),
+      expect.objectContaining({ score: 86.7 }),
     ]);
     expect(await testScoreLogOf(own.db, memberId)).toHaveLength(2);
   });

@@ -3,6 +3,10 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import {
+  finalScoreOf,
+  STARTING_INDICATORS,
+} from "@/mentoring/score-indicators";
+import {
   mentorGroupMembers,
   mentorGroupMentors,
   mentoringScoreChanges,
@@ -95,7 +99,26 @@ describe("the sample mentoring scores", { timeout: 20_000 }, () => {
           changedBy: score.scoredBy,
           scoreBefore: null,
           scoreAfter: score.score,
+          indicatorScoresAfter: score.indicatorScores,
+          indicatorNamesAfter: score.indicatorNames,
         });
+      }
+    });
+  });
+
+  it("are given on six indicators with the names of the starting indicators, but a few given before them", async () => {
+    await inTestDatabase(async (db) => {
+      await fillWithSampleData(db);
+
+      const scores = await db.select().from(mentoringScores);
+      const names = STARTING_INDICATORS.map((indicator) => indicator.name);
+      const onIndicators = scores.filter((score) => score.indicatorScores);
+
+      expect(onIndicators.length).toBeGreaterThan(0);
+      expect(onIndicators.length).toBeLessThan(scores.length);
+      for (const score of onIndicators) {
+        expect(score.indicatorNames).toEqual(names);
+        expect(score.score).toBe(finalScoreOf(score.indicatorScores ?? []));
       }
     });
   });

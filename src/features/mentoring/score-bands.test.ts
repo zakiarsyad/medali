@@ -16,7 +16,21 @@ describe("bandOf", () => {
     expect(bandOf(score)?.sentence).toBe(sentence);
   });
 
-  it.each([-1, 101, 84.5, Number.NaN])(
+  it.each([
+    [86.7, "Sangat aktif, menjadi teladan dan menggerakkan kelompok"],
+    [84.9, "Aktif dan konsisten mengikuti pengasuhan"],
+    [83.3, "Aktif dan konsisten mengikuti pengasuhan"],
+    [66.7, "Cukup aktif, perlu dorongan"],
+    [64.9, "Kurang aktif, perlu pendampingan khusus"],
+    [20, "Kurang aktif, perlu pendampingan khusus"],
+  ])(
+    "puts the final score %d with its decimal in the band that says: %s",
+    (score, sentence) => {
+      expect(bandOf(score)?.sentence).toBe(sentence);
+    },
+  );
+
+  it.each([-1, 101, 100.1, Number.NaN])(
     "has no band for %d, which is no score",
     (score) => {
       expect(bandOf(score)).toBeNull();

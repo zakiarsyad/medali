@@ -2,6 +2,7 @@
 // the database.
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import { ScoreBoxes } from "./score-boxes";
 import { ScoreForm } from "./score-form";
 import type { Typed } from "./score-form-values";
@@ -9,6 +10,7 @@ import type { ScoreRow } from "./score-rows";
 
 vi.mock("./actions", () => ({}));
 
+const NAMES = STARTING_INDICATORS.map((indicator) => indicator.name);
 const GROUP_ID = "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f7800";
 const SCORED: ScoreRow = {
   id: "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f7801",
@@ -16,7 +18,9 @@ const SCORED: ScoreRow = {
   nim: "9962001101",
   detailAddress: "/pengasuhan/nilai?kelompok=g&profil=a",
   attendance: "3/4",
-  score: 88,
+  score: 90,
+  indicatorScores: [5, 5, 4, 4, 5, 4],
+  indicatorNames: NAMES,
   scoredOn: "8 Okt 2026",
 };
 const UNSCORED: ScoreRow = {
@@ -26,109 +30,166 @@ const UNSCORED: ScoreRow = {
   detailAddress: null,
   attendance: "-",
   score: null,
+  indicatorScores: null,
+  indicatorNames: null,
   scoredOn: null,
 };
-const ROWS = [SCORED, UNSCORED];
+const BEFORE: ScoreRow = {
+  id: "0b4f6c1e-6f0e-4f55-9d0a-0d3c1e2f7803",
+  name: "Cici Uji Kotak Nilai",
+  nim: "9962001103",
+  detailAddress: null,
+  attendance: "2/4",
+  score: 72,
+  indicatorScores: null,
+  indicatorNames: null,
+  scoredOn: "1 Okt 2026",
+};
+const ROWS = [SCORED, UNSCORED, BEFORE];
 
-/** The rows of the table as text, one for each member, for what was typed. */
+const SIX_70 = ["4", "4", "3", "3", "4", "3"];
+
+/** The rows of the table as text, one for each member, for what was chosen. */
 function rowsWith(typed: Typed, sentIds: string[] = []): string[] {
   const shown = renderToStaticMarkup(
     <ScoreBoxes
       rows={ROWS}
+      names={NAMES}
       typed={typed}
       sentIds={sentIds}
-      onType={() => {}}
+      onChoose={() => {}}
     />,
   );
   return shown.split("<tr").slice(2);
 }
 
-describe("ScoreBoxes", () => {
-  it("has a box for each member, named for whom it is, holding the saved score or nothing", () => {
-    const [scored, unscored] = rowsWith({});
+/** The value each of the six choices of a row shows. */
+function chosenIn(row: string): string[] {
+  const selects = row.match(/<select[\s\S]*?<\/select>/g) ?? [];
+  return selects.map((select) => {
+    const picked = select.match(/<option value="(\d?)" selected="">/);
+    return picked?.[1] ?? "";
+  });
+}
 
-    expect(scored).toContain(
-      'aria-label="Nilai pengasuhan Ani Uji Kotak Nilai"',
+describe("ScoreBoxes", () => {
+  it("heads a column with each of the six indicator names, then Nilai akhir and Keterangan", () => {
+    const shown = renderToStaticMarkup(
+      <ScoreBoxes
+        rows={ROWS}
+        names={NAMES}
+        typed={{}}
+        sentIds={[]}
+        onChoose={() => {}}
+      />,
     );
-    expect(scored).toMatch(/<input[^>]*value="88"/);
-    expect(unscored).toContain(
-      'aria-label="Nilai pengasuhan Budi Uji Kotak Nilai"',
+
+    const heads = [...shown.matchAll(/<th>([^<]*)<\/th>/g)].map(
+      (head) => head[1],
     );
-    expect(unscored).toMatch(/<input[^>]*value=""/);
+    expect(heads).toEqual([
+      "Anak asuh",
+      "Kehadiran pengasuhan",
+      ...NAMES,
+      "Nilai akhir",
+      "Keterangan",
+    ]);
   });
 
-  it("shows the mentee, NIM, attendance, what the rubric says of the saved score and the day it was saved", () => {
+  it("gives each member six choices from 1 to 5 with what each means, named for whom and which indicator they are", () => {
     const [scored, unscored] = rowsWith({});
 
-    expect(scored).toContain("Ani Uji Kotak Nilai");
-    expect(scored).toContain("9962001101");
-    expect(scored).toContain("3/4");
+    expect(scored?.match(/<select/g)).toHaveLength(6);
+    expect(scored).toContain('aria-label="Mandiri Ani Uji Kotak Nilai"');
+    expect(scored).toContain('aria-label="Integritas Ani Uji Kotak Nilai"');
+    expect(scored).toContain('<option value="1">1 Sangat kurang</option>');
+    expect(scored).toContain('<option value="">-</option>');
+    expect(chosenIn(scored ?? "")).toEqual(["5", "5", "4", "4", "5", "4"]);
+    expect(chosenIn(unscored ?? "")).toEqual(["", "", "", "", "", ""]);
+  });
+
+  it("shows the saved Nilai akhir, what the rubric says of it and the day it was saved", () => {
+    const [scored, unscored] = rowsWith({});
+
+    expect(scored).toContain("<b>90</b>");
     expect(scored).toContain("Sangat aktif, menjadi teladan");
     expect(scored).toContain("Diinput 8 Okt 2026");
+    expect(unscored).toContain("<b>-</b>");
     expect(unscored).toContain("Belum dinilai");
-    expect(unscored).not.toContain("aktif");
   });
 
-  it("shows Belum disimpan on a row whose score was changed, with what the rubric says of the typed score", () => {
-    const [scored, unscored] = rowsWith({ [SCORED.id]: "70" }, [SCORED.id]);
+  it("shows a score given before the indicators with Nilai tanpa indikator, its six choices empty", () => {
+    const [, , before] = rowsWith({});
 
-    expect(scored).toMatch(/<input[^>]*value="70"/);
+    expect(before).toContain("<b>72</b>");
+    expect(before).toContain("Nilai tanpa indikator");
+    expect(before).toContain("Diinput 1 Okt 2026");
+    expect(chosenIn(before ?? "")).toEqual(["", "", "", "", "", ""]);
+  });
+
+  it("shows Nilai akhir of the six chosen at once, with Belum disimpan and what the rubric says of it", () => {
+    const [scored, unscored] = rowsWith(
+      {
+        [SCORED.id]: SIX_70,
+        [UNSCORED.id]: ["4", "5", "4", "3", "5", "4"],
+      },
+      [SCORED.id, UNSCORED.id],
+    );
+
+    expect(scored).toContain("<b>70</b>");
     expect(scored).toContain("Belum disimpan");
     expect(scored).toContain("Cukup aktif, perlu dorongan");
     expect(scored).not.toContain("Diinput");
-    expect(unscored).not.toContain("Belum disimpan");
-  });
-
-  it("shows Belum disimpan in place of Belum dinilai once a first score is typed", () => {
-    const [, unscored] = rowsWith({ [UNSCORED.id]: "90" }, [UNSCORED.id]);
-
-    expect(unscored).toContain("Belum disimpan");
+    expect(unscored).toContain("<b>83,3</b>");
     expect(unscored).not.toContain("Belum dinilai");
   });
 
-  it.each(["101", "-1", "79.5", "abc"])(
-    "says on the row that %o is no whole number from 0 to 100, and marks its box",
-    (text) => {
-      const [scored, unscored] = rowsWith({ [SCORED.id]: text }, [SCORED.id]);
-
-      expect(scored).toContain("Nilai harus bilangan bulat dari 0 sampai 100.");
-      expect(scored).toMatch(/<input[^>]*aria-invalid="true"/);
-      expect(scored).not.toContain("Belum disimpan");
-      expect(scored).not.toContain("Diinput");
-      expect(scored).not.toContain("aktif");
-      expect(unscored).not.toContain("Nilai harus");
-      expect(unscored).not.toContain("aria-invalid");
-    },
-  );
-
-  it("says on the row that a saved score cannot be emptied, only changed", () => {
-    const [scored, unscored] = rowsWith({ [SCORED.id]: "", [UNSCORED.id]: "" });
-
-    expect(scored).toContain(
-      "Nilai yang sudah disimpan tidak dapat dikosongkan. Isi nilai penggantinya.",
+  it("says Lengkapi enam indikator on a row with only part of the six, with no Nilai akhir, and marks its choices", () => {
+    const [scored, unscored] = rowsWith(
+      { [UNSCORED.id]: ["4", "", "4", "4", "", "4"] },
+      [UNSCORED.id],
     );
-    expect(scored).toMatch(/<input[^>]*aria-invalid="true"/);
-    expect(unscored).toContain("Belum dinilai");
-    expect(unscored).not.toContain("dikosongkan");
+
+    expect(unscored).toContain("Lengkapi enam indikator");
+    expect(unscored).toContain("<b>-</b>");
+    expect(unscored).toMatch(/<select[^>]*aria-invalid="true"/);
+    expect(unscored).not.toContain("aktif");
+    expect(scored).not.toContain("Lengkapi");
+    expect(scored).not.toContain("aria-invalid");
   });
 
-  it("sends only the boxes that are to be saved, each under the id of its student", () => {
-    const [scored, unscored] = rowsWith({ [UNSCORED.id]: "90" }, [UNSCORED.id]);
+  it("sends only the rows that are to be saved, each choice under the id of its student and its place", () => {
+    const [scored, unscored] = rowsWith({ [UNSCORED.id]: SIX_70 }, [
+      UNSCORED.id,
+    ]);
 
     expect(scored).not.toContain('name="score.');
-    expect(unscored).toContain(`name="score.${UNSCORED.id}"`);
+    for (let place = 0; place < 6; place++) {
+      expect(unscored).toContain(`name="score.${UNSCORED.id}.${place}"`);
+    }
   });
 
-  it("sends with each such box the score it was opened on, so a score saved in between is not written over", () => {
-    const typed = { [SCORED.id]: "70", [UNSCORED.id]: "90" };
-    const [scored, unscored] = rowsWith(typed, [SCORED.id, UNSCORED.id]);
+  it("sends with each such row what it was opened on, so a score saved in between is not written over", () => {
+    const typed = {
+      [SCORED.id]: SIX_70,
+      [UNSCORED.id]: SIX_70,
+      [BEFORE.id]: SIX_70,
+    };
+    const [scored, unscored, before] = rowsWith(typed, [
+      SCORED.id,
+      UNSCORED.id,
+      BEFORE.id,
+    ]);
     const [untouched] = rowsWith({});
 
     expect(scored).toContain(
-      `<input type="hidden" name="based.${SCORED.id}" value="88"/>`,
+      `<input type="hidden" name="based.${SCORED.id}" value="5,5,4,4,5,4"/>`,
     );
     expect(unscored).toContain(
       `<input type="hidden" name="based.${UNSCORED.id}" value=""/>`,
+    );
+    expect(before).toContain(
+      `<input type="hidden" name="based.${BEFORE.id}" value="72"/>`,
     );
     expect(untouched).not.toContain('name="based.');
   });
@@ -136,7 +197,12 @@ describe("ScoreBoxes", () => {
 
 describe("ScoreForm", () => {
   const form = renderToStaticMarkup(
-    <ScoreForm groupId={GROUP_ID} rows={ROWS} />,
+    <ScoreForm
+      groupId={GROUP_ID}
+      rows={ROWS}
+      names={NAMES}
+      indicatorsVersion="start"
+    />,
   );
 
   it("opens with nothing changed: the button reads Simpan nilai and is off", () => {
@@ -147,8 +213,9 @@ describe("ScoreForm", () => {
     expect(form).not.toContain("Belum disimpan");
   });
 
-  it("sends the group, never who gives the scores", () => {
+  it("sends the group and the indicators it was opened on, never who gives the scores", () => {
     expect(form).toContain(`name="groupId" value="${GROUP_ID}"`);
+    expect(form).toContain('name="indicatorsVersion" value="start"');
     expect(form).not.toContain("scoredBy");
   });
 });

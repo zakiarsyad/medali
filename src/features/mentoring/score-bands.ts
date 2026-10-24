@@ -1,4 +1,4 @@
-import { isScore } from "@/mentoring/score-range";
+import { SCORE_MAX, SCORE_MIN } from "@/mentoring/score-range";
 
 /** One line of "Panduan penilaian": the scores it holds and what they say. */
 export interface ScoreBand {
@@ -22,12 +22,14 @@ export const SCORE_BANDS: readonly ScoreBand[] = [
   { from: 0, to: 64, sentence: "Kurang aktif, perlu pendampingan khusus" },
 ];
 
-/** The band a score falls in, or null for what is no score. */
+/**
+ * The band a score falls in, or null for what is no score. A final score
+ * with a decimal falls in the band whose lowest score it reaches, so
+ * 84.9 is in 75–84.
+ */
 export function bandOf(score: number): ScoreBand | null {
-  if (!isScore(score)) return null;
-  return (
-    SCORE_BANDS.find((band) => score >= band.from && score <= band.to) ?? null
-  );
+  if (!(score >= SCORE_MIN && score <= SCORE_MAX)) return null;
+  return SCORE_BANDS.find((band) => score >= band.from) ?? null;
 }
 
 /** The scores of a band as the rubric writes them, such as 85–100. */

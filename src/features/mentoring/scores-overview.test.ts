@@ -18,6 +18,13 @@ describe("scoresOverview", () => {
     expect(scoresOverview([70, 75]).average).toBe(72.5);
   });
 
+  it("averages final scores of six indicators with scores given before them", () => {
+    const overview = scoresOverview([83.3, 100, 70, null]);
+
+    expect(overview.average).toBeCloseTo(84.43, 2);
+    expect(shownScoreAverage(overview.average)).toBe("84,4");
+  });
+
   it("counts a saved score of 0 as a score", () => {
     expect(scoresOverview([0, 100, null])).toEqual({
       scored: 2,
