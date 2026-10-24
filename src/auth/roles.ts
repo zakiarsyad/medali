@@ -326,6 +326,8 @@ export interface Role {
   title: string;
   initials: string;
   pages: readonly PageId[];
+  /** The page the role lands on after sign-in, when not the first of its menu. */
+  firstPage?: PageId;
   /** Those of its pages the role opens only for a student who lives in the dorm. */
   residentPages?: readonly PageId[];
   tabs: RoleTabs;
@@ -841,6 +843,7 @@ export const ROLES: Record<RoleId, Role> = {
     title: "Penilai Mahasiswa",
     initials: "PN",
     pages: ["assessment", "activities"],
+    firstPage: "assessment",
     tabs: {
       activities: ["clarification"],
       assessment: ["character", "skpm", "siku", "character_test", "fitness"],

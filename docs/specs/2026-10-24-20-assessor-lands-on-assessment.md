@@ -47,6 +47,6 @@ Penilai Mahasiswa. Every other role keeps the page it lands on.
 
 ## Steps
 
-- [ ] 1. Penilai Mahasiswa names Penilaian as its first page, and the
+- [x] 1. Penilai Mahasiswa names Penilaian as its first page, and the
   start address sends each account to the earliest of its roles' first
   pages, with checks over every role.
