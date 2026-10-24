@@ -17,6 +17,8 @@ import { readMarks, readMeetings } from "./group-meetings";
 import { GroupPicker } from "./group-picker";
 import { listScoredMembers } from "./group-scores";
 import { groupChoiceOf } from "./group-search";
+import { IndicatorPanel } from "./indicator-panel";
+import { readIndicators } from "./indicator-set";
 import styles from "./mentoring.module.css";
 import { MentoringHead } from "./mentoring-head";
 import { ScoreForm } from "./score-form";
@@ -182,9 +184,10 @@ export async function ScoresScreen({
   params: ScoresParams;
 }) {
   const db = database();
-  const [groups, period] = await Promise.all([
+  const [groups, period, indicators] = await Promise.all([
     listAttendanceGroups(db, limit),
     readRunningPeriod(db),
+    readIndicators(db),
   ]);
   return (
     <>
@@ -194,6 +197,7 @@ export async function ScoresScreen({
         readsOnly={giveLimit === null}
       />
       <div className={styles.meetings}>
+        <IndicatorPanel inForce={indicators} />
         <Groups
           groups={groups}
           period={period}

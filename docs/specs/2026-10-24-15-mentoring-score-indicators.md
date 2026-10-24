@@ -93,6 +93,13 @@ None.
    screens are, such as 83,3, and a whole one without it, such as 100.
 7. "Panduan penilaian" puts a final score with a decimal in the band
    whose lowest score it reaches: 84,9 is in 75–84.
+8. The panel "Indikator penilaian" comes first on the tab, above the
+   group choice, and shows also when there is no group to read or no
+   running period. Its head says "Skala 1–5", and the meanings of the
+   numbers are under the heading "Arti nilai", in the look of "Panduan
+   penilaian".
+9. While nobody has set the indicators, the note says "Indikator awal:
+   nilai MEDALI dengan indikator utama tingkat 1 dari Kurikulum."
 
 ## Steps
 
@@ -104,7 +111,7 @@ None.
   gets six-indicator scores.
 - [x] 3. The rule for the final score (average × 20, one decimal), with
   checks, used by the tab and by the character grade.
-- [ ] 4. The panel "Indikator penilaian" shows, read only.
+- [x] 4. The panel "Indikator penilaian" shows, read only.
 - [ ] 5. Kepala Unit changes and saves the indicators, with the refusal
   of a second save.
 - [ ] 6. Pengasuh gives six scores per mentee and saves them, with the

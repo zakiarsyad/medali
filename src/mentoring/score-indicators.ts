@@ -66,3 +66,13 @@ export function finalScoreOf(
   const final = (sum / INDICATOR_COUNT) * POINTS_PER_STEP;
   return Math.round(final * 10) / 10;
 }
+
+/** What each indicator score means, from the lowest up. A first draft, to be confirmed by the campus. */
+export const INDICATOR_MEANINGS: readonly { score: number; meaning: string }[] =
+  [
+    { score: 1, meaning: "Sangat kurang" },
+    { score: 2, meaning: "Kurang" },
+    { score: 3, meaning: "Cukup" },
+    { score: 4, meaning: "Baik" },
+    { score: 5, meaning: "Sangat baik" },
+  ];

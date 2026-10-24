@@ -283,3 +283,19 @@
   gap: var(--space-sm) var(--space-lg);
   align-items: center;
 }
+
+/* "Indikator penilaian": each indicator, its name over its sentence. */
+.indicators {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-md);
+  padding: 0;
+  list-style: none;
+}
+
+.indicator {
+  display: grid;
+  gap: var(--space-2xs);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

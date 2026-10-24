@@ -3,6 +3,7 @@ import { STARTING_TEXTS } from "@/ui/medali-starting-texts";
 import {
   finalScoreOf,
   INDICATOR_COUNT,
+  INDICATOR_MEANINGS,
   indicatorScoreRange,
   isIndicatorScore,
   SENTENCE_MAX,
@@ -65,5 +66,20 @@ describe("isIndicatorScore", () => {
     for (const other of [0, 6, 2.5, -1, Number.NaN]) {
       expect(isIndicatorScore(other)).toBe(false);
     }
+  });
+});
+
+describe("INDICATOR_MEANINGS", () => {
+  it("gives every indicator score its meaning, from 1 Sangat kurang to 5 Sangat baik", () => {
+    expect(INDICATOR_MEANINGS).toEqual([
+      { score: 1, meaning: "Sangat kurang" },
+      { score: 2, meaning: "Kurang" },
+      { score: 3, meaning: "Cukup" },
+      { score: 4, meaning: "Baik" },
+      { score: 5, meaning: "Sangat baik" },
+    ]);
+    expect(INDICATOR_MEANINGS.map((each) => each.score)).toEqual(
+      indicatorScoreRange(),
+    );
   });
 });
