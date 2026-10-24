@@ -18,6 +18,17 @@ const CARD_LOOK = [
   "box-shadow",
   "gap",
 ];
+const NOTE_NAME = /note|Note|warn|Warn/;
+const NOTE_LOOKS = new Set(["note", "warningNote"]);
+const NOTE_LOOK = [
+  "padding",
+  "border",
+  "border-color",
+  "border-radius",
+  "background",
+  "color",
+  "font-size",
+];
 const NO_LINE = new Set(["0", "none"]);
 
 function sharedLookOf(rule: Rule): string | undefined {
@@ -67,5 +78,36 @@ function isCardCopy(rule: Rule): boolean {
 export function cardCopies(stylesheet: string): string[] {
   return rulesOf(stylesheet)
     .filter(isCardCopy)
+    .map((rule) => rule.selector);
+}
+
+function looksLikeNote(rule: Rule): boolean {
+  if (!hasLine(rule)) return false;
+  const greyBox =
+    rule.declarations.get("background") === "var(--surface2)" &&
+    rule.declarations.has("padding");
+  if (greyBox) return true;
+  return selectorsOf(rule).some((part) => NOTE_NAME.test(part));
+}
+
+function isNoteCopy(rule: Rule): boolean {
+  const shared = sharedLookOf(rule);
+  if (shared !== undefined && NOTE_LOOKS.has(shared)) {
+    return setsAny(rule, NOTE_LOOK);
+  }
+  if (shared !== undefined) return false;
+  return looksLikeNote(rule);
+}
+
+/**
+ * The selectors of a style file whose rule draws a note of its own: a
+ * grey box with a line and inner space, or a class named as a note or a
+ * warning that
+ * draws a line, that does not take the shared note look, or takes it and
+ * changes it.
+ */
+export function noteCopies(stylesheet: string): string[] {
+  return rulesOf(stylesheet)
+    .filter(isNoteCopy)
     .map((rule) => rule.selector);
 }

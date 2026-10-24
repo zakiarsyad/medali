@@ -67,9 +67,10 @@ Every role.
    summary of a request, is not a note either and keeps its look.
 6. Decided while building: a note that warns takes the warning note
    look: the box of a note with an amber border. Its words take the
-   muted note colour too, like every note. This includes the boxes
-   about counselling consent on Konseling and the note that a student's
-   scores are held lower, which had a red border.
+   muted note colour too, like every note. This includes the emergency
+   notice and the requests waiting on Konseling, which had a white
+   background, and the note that a student's scores are held lower,
+   which had a red border.
 7. Decided while building: the amber border of a warning note is named
    once in the shared set, as the warning colour.
 8. Decided while building: a section heading is the heading of a part
@@ -84,7 +85,7 @@ Every role.
 ## Steps
 
 - [x] 1. Every card takes the shared card look, with a check.
-- [ ] 2. Every note takes the shared note look and every warning note
+- [x] 2. Every note takes the shared note look and every warning note
   its amber border, "Belum diumumkan…" in it, with a check.
 - [ ] 3. Every section heading inside a page takes the shared heading
   look, with a check.

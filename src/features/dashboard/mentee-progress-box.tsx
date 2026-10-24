@@ -44,11 +44,7 @@ export function MenteeProgressBox({
   }
   const done = progressComplete(progress);
   return (
-    <p
-      className={
-        done ? styles.progress : `${styles.progress} ${styles.progressWarn}`
-      }
-    >
+    <p className={done ? styles.progress : styles.progressWarn}>
       {progressLine(progress)} <BoxLinks links={links} />
     </p>
   );

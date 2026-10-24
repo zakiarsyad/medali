@@ -9,12 +9,10 @@ const SHARED_LOOK_FILES = [
 ];
 
 /**
- * Rules the check leaves alone, by file: a note box that is not a badge,
- * and the "Penuh" chip of a room on Kamar, which is not a `.badge` and has
- * a look of its own.
+ * Rules the check leaves alone, by file: the "Penuh" chip of a room on
+ * Kamar, which is not a `.badge` and has a look of its own.
  */
 const LEFT_ALONE: Record<string, string[]> = {
-  "src/features/dorm/leave.module.css": [".warning"],
   "src/features/dorm/rooms.module.css": [".full"],
 };
 

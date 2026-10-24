@@ -90,7 +90,6 @@ describe("Penilaian jasmani on a phone", () => {
 describe("Kesehatan jasmani on Profil saya on a phone", () => {
   const VIEW = readFileSync(`${FOLDER}/student-fitness-view.tsx`, "utf8");
   const OWN = readFileSync(`${FOLDER}/own-fitness-panel.tsx`, "utf8");
-  const NOTE_BOXES = ".noteBox,\n.noteBoxWarn";
 
   it("puts the category under the title, and the score and the day under each other, when there is no room", () => {
     expect(VIEW).toContain("<div className={styles.panelHead}>");
@@ -103,11 +102,21 @@ describe("Kesehatan jasmani on Profil saya on a phone", () => {
 
   it("folds the long words of the note and the line on who reads it inside its box", () => {
     expect(VIEW).toContain("styles.noteBoxWarn : styles.noteBox");
-    expect(ruleOf(NOTE_BOXES)).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".noteBox")).toContain(
+      'composes: note from "../../ui/data-screen.module.css";',
+    );
+    expect(ruleOf(".noteBoxWarn")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
+    );
   });
 
   it("forces no width wider than a phone, and sets no style in its code", () => {
-    for (const selector of [".panelHead", ".facts", NOTE_BOXES]) {
+    for (const selector of [
+      ".panelHead",
+      ".facts",
+      ".noteBox",
+      ".noteBoxWarn",
+    ]) {
       const rule = ruleOf(selector);
       expect(rule, selector).not.toBe("");
       expect(rule, selector).not.toMatch(/(^|[ ;{])width:/);

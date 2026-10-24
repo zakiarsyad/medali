@@ -72,7 +72,7 @@ function WatchBox({ tasks }: { tasks: DormTasks }) {
   const anyAppeals = waitingAppeals > 0;
   if (!anyOutLate && !anyAppeals) return null;
   return (
-    <p className={`${styles.box} ${styles.watch}`}>
+    <p className={styles.watch}>
       <b>Perlu dipantau:</b> {anyOutLate && <OutLateLine outLate={outLate} />}
       {anyOutLate && anyAppeals && "; "}
       {anyAppeals && <WaitingAppealsLine waitingAppeals={waitingAppeals} />}.

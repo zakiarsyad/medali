@@ -1,15 +1,12 @@
 /* A box of words above the sections, such as "Semua tugas sudah beres." */
 .box {
+  composes: note from "../../ui/data-screen.module.css";
   margin: 0 0 var(--space-lg);
-  padding: var(--space-sm) var(--space-md);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  overflow-wrap: anywhere;
 }
 
 .watch {
-  border-color: var(--warn);
+  composes: warningNote from "../../ui/data-screen.module.css";
+  margin: 0 0 var(--space-lg);
 }
 
 /*

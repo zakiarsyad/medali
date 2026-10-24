@@ -511,17 +511,13 @@ a.tile:hover {
 
 /* What a Pengasuh has filled in this semester, marked while some is left. */
 .progress {
+  composes: note from "../../ui/data-screen.module.css";
   margin: var(--space-lg) 0 0;
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line2);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  font-size: var(--text-md);
-  overflow-wrap: anywhere;
 }
 
 .progressWarn {
-  border-color: var(--warn);
+  composes: warningNote from "../../ui/data-screen.module.css";
+  margin: var(--space-lg) 0 0;
 }
 
 /* The anak asuh of "Perlu perhatian": the name, then the tags, which fold onto new lines. */

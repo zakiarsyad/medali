@@ -66,7 +66,9 @@ describe("Konseling on a phone", () => {
 
   it("folds the long words of a notice instead of widening the page", () => {
     expect(read("warn-box.tsx")).toContain("className={styles.warnBox}");
-    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".warnBox")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
+    );
   });
 });
 
@@ -263,7 +265,9 @@ describe("the student's sharing box on a phone", () => {
   it("folds a waiting request and puts Tolak under Setujui berbagi data when both do not fit", () => {
     expect(BOX).toContain("className={styles.warnBox}");
     expect(BOX).toContain("className={shared.actions}");
-    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".warnBox")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
+    );
     expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
   });
 
@@ -386,7 +390,9 @@ describe("Kesehatan mental on Profil saya on a phone", () => {
 
   it("folds the long words of a notice, a shared line, the help line and the campus contact", () => {
     expect(NOTICES).toContain("<div className={styles.warnBox}>");
-    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".warnBox")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
+    );
     expect(NOTICES).toMatch(
       /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
     );

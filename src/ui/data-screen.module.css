@@ -33,6 +33,28 @@
   overflow-wrap: anywhere;
 }
 
+/*
+ * A note: a box of words that explains or warns. A warning note is the
+ * same box with the warning line. Each screen keeps the space around it.
+ * Long words break, so a note never pushes a phone screen sideways. The
+ * warning note is written out here, not composed of the note, since a
+ * screen that composes it would lose what it composed.
+ */
+.note,
+.warningNote {
+  padding: var(--note-padding);
+  border: var(--note-line) solid var(--note-line-colour);
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--note-ink);
+  font-size: var(--note-text);
+  overflow-wrap: anywhere;
+}
+
+.warningNote {
+  border-color: var(--note-warning-line-colour);
+}
+
 .form {
   display: grid;
   /* A column is never asked to be wider than the room a narrow phone leaves. */
