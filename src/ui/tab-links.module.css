@@ -1,8 +1,9 @@
+/* Tabs that do not fit on one line go onto the next, so none is hidden. */
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2xs);
   margin: 0 0 var(--space-xl);
-  overflow-x: auto;
   border-bottom: var(--line-width) solid var(--line);
 }
 

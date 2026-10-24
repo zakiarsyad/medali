@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { EmptyPage } from "./empty-page";
@@ -37,5 +38,15 @@ describe("the row of tabs", () => {
     expect(html).toContain("Asrama");
     expect(html).toContain('aria-label="Isi halaman"');
     expect(html).not.toContain("Bagian halaman");
+  });
+});
+
+describe("a row of tabs that does not fit on one line", () => {
+  const STYLES = readFileSync("src/ui/tab-links.module.css", "utf8");
+  const row = STYLES.slice(STYLES.indexOf(".tabs {"), STYLES.indexOf("}"));
+
+  it("puts the tabs that do not fit on the next line, with no sideways scroll", () => {
+    expect(row).toContain("flex-wrap: wrap;");
+    expect(row).not.toContain("overflow");
   });
 });
