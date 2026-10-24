@@ -272,9 +272,7 @@ describe("the student's sharing box on a phone", () => {
   });
 
   it("folds what is shared with whom inside its box", () => {
-    expect(BOX).toMatch(
-      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
-    );
+    expect(BOX).toMatch(/className=\{styles\.card\}/);
     expect(ruleOf(".card")).toContain(
       'composes: card from "../../ui/data-screen.module.css";',
     );
@@ -393,9 +391,7 @@ describe("Kesehatan mental on Profil saya on a phone", () => {
     expect(ruleOf(".warnBox")).toContain(
       'composes: warningNote from "../../ui/data-screen.module.css";',
     );
-    expect(NOTICES).toMatch(
-      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
-    );
+    expect(NOTICES).toMatch(/className=\{styles\.card\}/);
     expect(ruleOf(".card")).toContain(
       'composes: card from "../../ui/data-screen.module.css";',
     );

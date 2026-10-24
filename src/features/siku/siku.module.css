@@ -324,11 +324,7 @@ a.choice {
 }
 
 .warning {
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-md);
-  background: var(--goldsoft);
-  color: var(--ink);
-  font-size: var(--text-md);
+  composes: warningNote from "../../ui/data-screen.module.css";
 }
 
 /* Poin, the note and the two decisions fold onto lines of their own on a phone. */

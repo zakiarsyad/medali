@@ -83,13 +83,18 @@ export function cardCopies(stylesheet: string): string[] {
     .map((rule) => rule.selector);
 }
 
+function hasFill(rule: Rule): boolean {
+  const fill = rule.declarations.get("background");
+  return fill !== undefined && fill !== "none";
+}
+
 function looksLikeNote(rule: Rule): boolean {
-  if (!hasLine(rule)) return false;
-  const greyBox =
-    rule.declarations.get("background") === "var(--surface2)" &&
-    rule.declarations.has("padding");
-  if (greyBox) return true;
-  return selectorsOf(rule).some((part) => NOTE_NAME.test(part));
+  const box =
+    rule.declarations.has("padding") && (hasLine(rule) || hasFill(rule));
+  if (selectorsOf(rule).some((part) => NOTE_NAME.test(part))) {
+    return box || hasLine(rule);
+  }
+  return box && rule.declarations.get("background") === "var(--surface2)";
 }
 
 function isNoteCopy(rule: Rule): boolean {

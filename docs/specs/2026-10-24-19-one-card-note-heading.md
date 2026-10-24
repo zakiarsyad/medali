@@ -69,8 +69,10 @@ Every role.
    look: the box of a note with an amber border. Its words take the
    muted note colour too, like every note. This includes the emergency
    notice and the requests waiting on Konseling, which had a white
-   background, and the note that a student's scores are held lower,
-   which had a red border.
+   background, the warning on Penilaian › SIKU that a student already
+   got a gain for the same criteria, which had a gold background, and
+   the note that a student's scores are held lower, which had a red
+   border.
 7. Decided while building: the amber border of a warning note is named
    once in the shared set, as the warning colour.
 8. Decided while building: a section heading is the heading of a part

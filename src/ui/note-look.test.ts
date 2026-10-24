@@ -56,7 +56,10 @@ const NOTES: Record<string, Record<string, "note" | "warningNote">> = {
     ".note": "note",
     ".warnedNote": "warningNote",
   },
-  "src/features/siku/siku.module.css": { ".note": "note" },
+  "src/features/siku/siku.module.css": {
+    ".note": "note",
+    ".warning": "warningNote",
+  },
   "src/features/skpm/skpm.module.css": { ".note": "note" },
   "src/ui/limit-note.module.css": { ".note": "warningNote" },
   "src/ui/tabbed-head.module.css": { ".note": "note" },
@@ -123,6 +126,8 @@ describe("noteCopies", () => {
     ],
     [".warnNote { border-color: var(--warn); }"],
     [".warning { border: var(--line-width) solid var(--warn); }"],
+    [".warning { padding: var(--space-xs); background: var(--goldsoft); }"],
+    [".hint { padding: var(--space-xs); background: var(--surface2); }"],
     [
       '.note { composes: note from "../../ui/data-screen.module.css"; padding: 0; }',
     ],

@@ -48,6 +48,45 @@ function sharedRule(selector: string): Map<string, string> {
   return rule?.declarations ?? new Map();
 }
 
+const STYLE_IMPORT = /import (\w+) from "\.\/([\w-]+\.module\.css)";/g;
+const CLASS_LIST = /className=\{`([^`]*)`\}/g;
+const CLASS_PART = /\$\{(\w+)\.(\w+)\}/g;
+const CARD_LAYOUT = ["display", "flex-direction", "gap", "padding"];
+
+function folderOf(path: string): string {
+  return path.slice(0, path.lastIndexOf("/"));
+}
+
+/**
+ * The classes that a screen puts on a card beside its card class, where
+ * that class changes how the card lays out its lines: in the same style
+ * file it wins over the shared card or not by load order alone.
+ */
+function cardLayoutChanges(code: string, folder: string): string[] {
+  const styleFiles = new Map<string, string>();
+  for (const [, name = "", file = ""] of code.matchAll(STYLE_IMPORT)) {
+    styleFiles.set(name, `${folder}/${file}`);
+  }
+  const found: string[] = [];
+  for (const [list = ""] of code.matchAll(CLASS_LIST)) {
+    const parts = [...list.matchAll(CLASS_PART)];
+    for (const [, name = "", card = ""] of parts) {
+      const path = styleFiles.get(name);
+      if (path === undefined || CARDS[path] !== `.${card}`) continue;
+      const rules = rulesOf(readFileSync(path, "utf8"));
+      for (const [, other = "", beside = ""] of parts) {
+        if (other !== name || beside === card) continue;
+        const rule = rules.find((one) => one.selector === `.${beside}`);
+        const changes = CARD_LAYOUT.some((property) =>
+          rule?.declarations.has(property),
+        );
+        if (changes) found.push(`${card} with ${beside}`);
+      }
+    }
+  }
+  return found;
+}
+
 function screenStylesheets(): string[] {
   return sourceFilesEndingWith(".css").filter(
     (path) => path !== SHARED_STYLES && path !== "src/ui/tokens.css",
@@ -122,6 +161,21 @@ describe("the cards of every screen", () => {
       expect(rule?.declarations.get("composes")).toMatch(
         /^card from "(\.\.\/)+ui\/data-screen\.module\.css"$/,
       );
+    },
+  );
+
+  it.each([...new Set(Object.keys(CARDS).map(folderOf))])(
+    "%s gives no card another way to lay out its lines",
+    (folder) => {
+      const changes = sourceFilesEndingWith(".tsx")
+        .filter((path) => folderOf(path) === folder)
+        .flatMap((path) =>
+          cardLayoutChanges(readFileSync(path, "utf8"), folder).map(
+            (change) => `${path}: ${change}`,
+          ),
+        );
+
+      expect(changes).toEqual([]);
     },
   );
 

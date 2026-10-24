@@ -65,7 +65,7 @@ function LevelPart({ screening }: { screening: SharedScreening | null }) {
  */
 export function SharedDetailBox({ detail }: { detail: SharedDetail }) {
   return (
-    <div className={`${styles.card} ${styles.stack}`}>
+    <div className={styles.card}>
       {detail.data.includes("level") && (
         <section className={styles.stack}>
           <h3 className={styles.subHeading}>{SHARED_PART_WORDS.level}</h3>
