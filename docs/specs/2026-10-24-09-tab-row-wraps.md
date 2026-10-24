@@ -48,5 +48,5 @@ owner chose to change that.
 
 ## Steps
 
-- [ ] 1. Tabs that do not fit on one line go onto the next line, with no
+- [x] 1. Tabs that do not fit on one line go onto the next line, with no
   sideways scroll.
