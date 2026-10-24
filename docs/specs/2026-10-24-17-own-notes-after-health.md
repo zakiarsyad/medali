@@ -44,5 +44,5 @@ Mahasiswa, on their own Profil saya.
 
 ## Steps
 
-- [ ] 1. Catatan pengasuhan moves after Kesehatan mental on Profil saya,
+- [x] 1. Catatan pengasuhan moves after Kesehatan mental on Profil saya,
   with a check.

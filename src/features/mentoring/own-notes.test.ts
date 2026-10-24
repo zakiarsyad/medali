@@ -123,12 +123,19 @@ describe("readOwnNotes", () => {
 describe("Catatan pengasuhan on Profil saya", () => {
   const PAGE = readFileSync("src/app/(app)/saya/page.tsx", "utf8");
 
-  it("stands last, after Pembinaan (level), for the student of the account", () => {
-    const coaching = PAGE.indexOf("<OwnCoachingPanel account={account} />");
+  it("stands last, after Pembinaan, Kesehatan jasmani and Kesehatan mental, for the student of the account", () => {
+    const order = [
+      "<OwnScoreHistoryPanel ",
+      "<OwnCoachingPanel account={account} />",
+      "<OwnFitnessPanel account={account} />",
+      "<OwnMentalPanel account={account} />",
+      "<OwnNotesPanel account={account} />",
+    ].map((panel) => PAGE.indexOf(panel));
 
-    expect(coaching).toBeGreaterThan(-1);
-    expect(PAGE.indexOf("<OwnNotesPanel account={account} />")).toBeGreaterThan(
-      coaching,
-    );
+    const notes = PAGE.indexOf("<OwnNotesPanel account={account} />");
+
+    expect(order).not.toContain(-1);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(PAGE.indexOf("<Own", notes + 1)).toBe(-1);
   });
 });

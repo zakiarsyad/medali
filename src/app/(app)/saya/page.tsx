@@ -48,9 +48,9 @@ export default async function OwnProfilePage() {
           <OwnPenaltiesPanel account={account} />
           <OwnScoreHistoryPanel account={account} />
           <OwnCoachingPanel account={account} />
-          <OwnNotesPanel account={account} />
           <OwnFitnessPanel account={account} />
           <OwnMentalPanel account={account} />
+          <OwnNotesPanel account={account} />
         </>
       }
     />
