@@ -38,7 +38,7 @@ a.me:hover,
   background: none;
   color: var(--sideink);
   font: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   cursor: pointer;
 }
 

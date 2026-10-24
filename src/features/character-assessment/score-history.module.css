@@ -7,7 +7,7 @@
   margin: 0;
   padding: 0;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   list-style: none;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .D {
-  color: var(--vD);
+  color: var(--ok);
 }
 
 .A {

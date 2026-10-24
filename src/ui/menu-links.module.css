@@ -14,7 +14,7 @@
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   color: var(--sideink);
-  font-size: var(--text-nav);
+  font-size: var(--text-base);
   font-weight: var(--weight-medium);
   text-decoration: none;
 }

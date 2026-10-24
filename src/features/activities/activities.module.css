@@ -71,7 +71,7 @@
  */
 .sentFile {
   display: block;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   overflow-wrap: anywhere;
 }
 
@@ -353,6 +353,6 @@
   border-radius: var(--radius-md);
   background: var(--goldsoft);
   color: var(--ink);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   overflow-wrap: anywhere;
 }

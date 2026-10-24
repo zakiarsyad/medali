@@ -25,7 +25,7 @@
   gap: var(--space-sm);
   align-items: center;
   margin: 0 0 var(--space-xs);
-  font-size: var(--text-nav);
+  font-size: var(--text-base);
   font-weight: var(--weight-heavy);
 }
 
@@ -85,7 +85,7 @@
 }
 
 .emas {
-  background: var(--emas);
+  background: var(--gold);
 }
 
 .perak {
@@ -97,7 +97,7 @@
 }
 
 .bina {
-  background: var(--bina);
+  background: var(--bad);
 }
 
 .fields {
@@ -115,7 +115,7 @@
 
 .stage {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }
 
@@ -212,7 +212,7 @@
 .stageName {
   display: block;
   margin: var(--space-2xs) 0;
-  font-size: var(--text-nav);
+  font-size: var(--text-base);
   font-weight: var(--weight-heavy);
 }
 
@@ -226,7 +226,7 @@
   display: block;
   margin-top: var(--space-md);
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .valueScore {

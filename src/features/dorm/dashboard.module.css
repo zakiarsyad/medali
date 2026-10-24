@@ -9,7 +9,7 @@
 
 .sub {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 /* The parts under the list: side by side here, one under the other once they do not fit. */
@@ -116,7 +116,7 @@
 
 .when {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   white-space: nowrap;
 }
 

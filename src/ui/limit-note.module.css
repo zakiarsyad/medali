@@ -2,7 +2,7 @@
 .note {
   margin: var(--space-sm) 0;
   padding: var(--space-sm) var(--space-md);
-  border: var(--line-width) solid var(--bina);
+  border: var(--line-width) solid var(--bad);
   border-radius: var(--radius-md);
   color: var(--ink);
   font-size: var(--text-md);

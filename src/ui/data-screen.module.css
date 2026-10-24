@@ -226,7 +226,7 @@
   width: var(--stacked-title-width);
   margin-left: calc(-1 * var(--stacked-title-width));
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   content: attr(data-title);
 }
@@ -316,7 +316,7 @@
   border-radius: var(--radius-md);
   background: var(--goldsoft);
   color: var(--ink);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   white-space: nowrap;
 }
@@ -329,7 +329,7 @@
 .detail {
   display: block;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 /*

@@ -13,7 +13,7 @@
 }
 
 .gold {
-  background: var(--emas);
+  background: var(--gold);
 }
 
 .silver {
@@ -25,12 +25,12 @@
 }
 
 .guidance {
-  background: var(--bina);
+  background: var(--bad);
 }
 
 /* The level of coaching a student needs: Intensif, Sedang and Ringan. */
 .intensive {
-  background: var(--bina);
+  background: var(--bad);
   color: var(--surface);
 }
 
@@ -54,7 +54,7 @@
 }
 
 .goldPart {
-  fill: var(--emas);
+  fill: var(--gold);
 }
 
 .silverPart {
@@ -66,7 +66,7 @@
 }
 
 .guidancePart {
-  fill: var(--bina);
+  fill: var(--bad);
 }
 
 .medal {
@@ -125,7 +125,7 @@
 }
 
 .dotD {
-  fill: var(--vD);
+  fill: var(--ok);
 }
 
 .dotA {
@@ -142,7 +142,7 @@
 
 .medalLabel {
   fill: var(--ink);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-heavy);
 }
 

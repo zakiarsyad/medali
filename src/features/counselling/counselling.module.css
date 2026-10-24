@@ -176,7 +176,7 @@
 
 .facts dt {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
 }
 
@@ -189,7 +189,7 @@
 /* "Riwayat langkah" under a card, folded until opened. */
 .steps {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .steps ol {

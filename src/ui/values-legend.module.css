@@ -3,7 +3,7 @@
   padding: var(--space-lg) var(--space-sm) var(--space-md);
   border-top: var(--line-width) solid var(--sideline);
   color: var(--sidemuted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .list {

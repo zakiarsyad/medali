@@ -110,7 +110,7 @@
 .fault {
   margin: 0;
   color: var(--bad);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .hint {

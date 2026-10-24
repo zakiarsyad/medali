@@ -54,7 +54,7 @@
 
 .quiet {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .panelHead {
@@ -74,7 +74,7 @@
   margin: 0 0 var(--space-sm);
   padding: 0;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   list-style: none;
 }
 

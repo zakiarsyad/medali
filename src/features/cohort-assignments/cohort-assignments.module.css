@@ -51,7 +51,7 @@
 .unusual {
   display: block;
   color: var(--warn);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .members {

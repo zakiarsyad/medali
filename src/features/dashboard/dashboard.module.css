@@ -60,7 +60,7 @@ a.card:hover {
   border-radius: var(--radius-round);
   background: var(--navy2);
   color: var(--surface);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-heavy);
 }
 
@@ -217,7 +217,7 @@ a.card:hover {
 
 .valueChange {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .medal {
@@ -372,7 +372,7 @@ a.card:hover {
 
 .when {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   white-space: nowrap;
 }
 
@@ -397,7 +397,7 @@ a.card:hover {
 
 .facts dt {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .facts dd {
@@ -421,7 +421,7 @@ a.card:hover {
   margin: 0;
   padding: 0;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   list-style: none;
 }
 
@@ -559,9 +559,9 @@ a.tile:hover {
 }
 
 .seriousTag {
-  border: var(--line-width) solid var(--bina);
+  border: var(--line-width) solid var(--bad);
   background: var(--surface);
-  color: var(--bina);
+  color: var(--bad);
 }
 
 .warningTag {

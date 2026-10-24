@@ -18,7 +18,7 @@
 
 .weakScore {
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .more {
@@ -110,7 +110,7 @@
 .level {
   flex-basis: 100%;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
 }
 
 .previewHead {
