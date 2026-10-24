@@ -89,6 +89,16 @@ function section({
   );
 }
 
+describe("the semester choice", () => {
+  it("is the shared choose-one row, named Semester, with ganjil chosen first", () => {
+    const html = section();
+
+    expect(html).toMatch(/<legend[^>]*>Semester<\/legend>/);
+    expect(html).toContain('aria-pressed="true">Semester ganjil</button>');
+    expect(html).toContain('aria-pressed="false">Semester genap</button>');
+  });
+});
+
 describe("the tahap boxes", () => {
   it("show the active students of each tahap", () => {
     const html = section();

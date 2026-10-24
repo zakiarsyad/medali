@@ -26,7 +26,12 @@ export function FitnessInputPanel({
   const [mode, setMode] = useState<Mode>("form");
   return (
     <>
-      <ModeSwitch modes={MODES} mode={mode} onChoose={setMode} />
+      <ModeSwitch
+        legend="Cara input"
+        modes={MODES}
+        mode={mode}
+        onChoose={setMode}
+      />
       {mode === "upload" ? <FitnessUpload today={today} /> : form}
     </>
   );

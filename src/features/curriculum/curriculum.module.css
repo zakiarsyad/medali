@@ -151,33 +151,6 @@
   margin-top: var(--space-xl);
 }
 
-.choice {
-  display: inline-flex;
-  overflow: hidden;
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-}
-
-.choiceButton {
-  padding: var(--space-xs) var(--space-md);
-  border: 0;
-  background: var(--surface);
-  color: var(--muted);
-  font: inherit;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  cursor: pointer;
-}
-
-.choiceButton + .choiceButton {
-  border-left: var(--line-width) solid var(--line);
-}
-
-.choiceButton[aria-pressed="true"] {
-  background: var(--navy2);
-  color: var(--sidestrong);
-}
-
 .stages {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--box-min-width), 1fr));

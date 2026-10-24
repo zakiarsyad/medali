@@ -141,7 +141,12 @@ export function SkpmUpload() {
     <section className={shared.panel}>
       <div className={skpmStyles.panelHead}>
         <h2 className={shared.heading}>Unggah data SKPM</h2>
-        <ModeSwitch modes={MODE_CHOICES} mode={mode} onChoose={setMode} />
+        <ModeSwitch
+          legend="Cara input"
+          modes={MODE_CHOICES}
+          mode={mode}
+          onChoose={setMode}
+        />
       </div>
       <ColumnNotes mode={mode} />
       <div className={shared.actions}>

@@ -1,6 +1,8 @@
 .modes {
   display: inline-flex;
+  align-items: stretch;
   min-width: 0;
+  min-height: var(--field-height);
   margin: 0;
   padding: var(--space-3xs);
   border: var(--line-width) solid var(--line);
@@ -14,8 +16,10 @@
   border-radius: var(--radius-md);
   background: none;
   color: var(--muted);
-  font: inherit;
+  font-family: inherit;
+  font-size: var(--field-text);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-body);
   cursor: pointer;
 }
 

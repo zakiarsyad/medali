@@ -128,12 +128,6 @@
   cursor: pointer;
 }
 
-.choice[aria-pressed="true"] {
-  border-color: var(--navy);
-  background: var(--navy);
-  color: var(--surface);
-}
-
 /* A field that takes the whole width of the form. */
 .full {
   grid-column: 1 / -1;

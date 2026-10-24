@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { ModeSwitch } from "@/ui/mode-switch";
 import { BreakdownPanel } from "./breakdown-panel";
 import styles from "./curriculum.module.css";
 import type { ValueIndicators } from "./main-indicators";
@@ -16,6 +17,10 @@ const PARITIES: { parity: Parity; label: string; short: string }[] = [
   { parity: "odd", label: "Semester ganjil", short: "ganjil" },
   { parity: "even", label: "Semester genap", short: "genap" },
 ];
+
+const PARITY_MODES = PARITIES.map(
+  (choice) => [choice.parity, choice.label] as const,
+);
 
 const SPECIAL_NOTE =
   "Daftar kegiatan di luar PPKS. Setelah terdaftar di sini, kegiatan dapat dijadwalkan di menu Kegiatan karakter untuk mahasiswa tertentu, kelas, angkatan, atau lintas angkatan.";
@@ -122,19 +127,12 @@ export function StagesSection({
     <section>
       <div className={styles.sectionHead}>
         <h2 className={shared.heading}>Tahapan dan program per semester</h2>
-        <div className={styles.choice}>
-          {PARITIES.map((choice) => (
-            <button
-              key={choice.parity}
-              type="button"
-              className={styles.choiceButton}
-              aria-pressed={choice.parity === parity}
-              onClick={() => show(tahapNo, choice.parity)}
-            >
-              {choice.label}
-            </button>
-          ))}
-        </div>
+        <ModeSwitch
+          legend="Semester"
+          modes={PARITY_MODES}
+          mode={parity}
+          onChoose={(next) => show(tahapNo, next)}
+        />
       </div>
       <div className={styles.stages}>
         {TAHAP.map((tahap) => (

@@ -29,7 +29,12 @@ export function SikuInputPanel({
     <>
       <div className={styles.panelHead}>
         <SikuInputTitle base={base} />
-        <ModeSwitch modes={MODES} mode={mode} onChoose={setMode} />
+        <ModeSwitch
+          legend="Cara input"
+          modes={MODES}
+          mode={mode}
+          onChoose={setMode}
+        />
       </div>
       {mode === "upload" ? <SikuUpload /> : form}
     </>
