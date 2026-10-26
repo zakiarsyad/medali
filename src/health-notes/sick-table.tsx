@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
-import { toneBadge } from "@/ui/tone-badge";
 import { FinalCategoryBadge } from "./category-badge";
 import {
   examinerOf,
@@ -15,7 +14,7 @@ import type { RecapRow } from "./sick-list";
 function HistoryCell({ row }: { row: RecapRow }) {
   const { note } = row;
   if (note === null) {
-    return <span className={toneBadge("warning")}>{NOTE_MISSING}</span>;
+    return <span className={shared.emptyCell}>{NOTE_MISSING}</span>;
   }
   return (
     <>

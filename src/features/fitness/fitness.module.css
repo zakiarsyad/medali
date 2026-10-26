@@ -93,10 +93,6 @@
   font-size: var(--text-md);
 }
 
-.muted {
-  color: var(--muted);
-}
-
 /* "Kesehatan jasmani" in a student's detail. */
 .panelHead {
   display: flex;

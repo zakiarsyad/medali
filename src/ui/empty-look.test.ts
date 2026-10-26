@@ -6,7 +6,7 @@ import { sourceFilesEndingWith } from "./source-files";
 
 const SHARED_STYLES = "src/ui/data-screen.module.css";
 const SHARED_IMPORT = /import (\w+) from "[^"]*data-screen\.module\.css";/;
-const EMPTY_LOOKS = new Set(["empty", "emptySection"]);
+const EMPTY_LOOKS = new Set(["empty", "emptySection", "emptyCell"]);
 const EMPTY_WORDS = String.raw`(?:Belum|Tidak) ada\b`;
 const EMPTY_CONSTANT = new RegExp(
   String.raw`const ([A-Z_]+)\s*=\s*"${EMPTY_WORDS}[^"]*"`,
@@ -64,8 +64,9 @@ const LEFT_ALONE: Record<string, string[]> = {
   "src/features/siku/siku-form.tsx": ["NOBODY_FOUND"],
 };
 
-/** Empty table cells, by file, which take the muted look of a cell instead. */
+/** The table cells with no value, by file, which take the empty cell look. */
 const CELLS: Record<string, string[]> = {
+  "src/features/counselling/referral-panel.tsx": ["NO_ACTIVE_SCHEDULE"],
   "src/features/counselling/shared-table.tsx": ["NOT_SCREENED"],
   "src/features/dorm/cleaning-schedule-board.tsx": ["Belum ada kamar bertugas"],
   "src/features/fitness/fitness-list-table.tsx": ["NOTE_MISSING", "NO_NOTE"],
@@ -123,18 +124,21 @@ function emptyLinesOf(source: string, constants: string[]): EmptyLine[] {
   );
 }
 
-function takesSharedLook(line: EmptyLine, source: string): boolean {
+/** The shared empty look a line takes, or "" for a look of its own. */
+function sharedLookOf(line: EmptyLine, source: string): string {
   const shared = SHARED_IMPORT.exec(source)?.[1];
   const [from, look = ""] = line.className.split(".");
-  return from === shared && EMPTY_LOOKS.has(look);
+  if (from !== shared || !EMPTY_LOOKS.has(look)) return "";
+  return look;
 }
 
-/** The empty texts of a screen that do not take a shared empty look. */
-function linesOfTheirOwn(path: string, constants: string[]): string[] {
+/** The empty texts of a screen that take the given shared look. */
+function linesTaking(look: string, path: string, constants: string[]) {
   const source = readFileSync(path, "utf8");
   return emptyLinesOf(source, constants)
-    .filter((line) => !takesSharedLook(line, source))
-    .map((line) => line.text);
+    .filter((line) => sharedLookOf(line, source) === look)
+    .map((line) => line.text)
+    .sort();
 }
 
 describe("emptyCopies", () => {
@@ -210,6 +214,14 @@ describe("the shared empty looks", () => {
       "text-align": "var(--empty-section-align)",
     });
   });
+
+  it("mute a table cell with no value, at the size of the other cells", () => {
+    const cell = sharedRule(".emptyCell");
+
+    expect(Object.fromEntries(cell)).toEqual({
+      color: "var(--empty-section-ink)",
+    });
+  });
 });
 
 describe("the empty texts of every screen", () => {
@@ -225,9 +237,15 @@ describe("the empty texts of every screen", () => {
   });
 
   it.each(screens)("%s shows each empty text in a shared look", (path) => {
-    const expected = [...(LEFT_ALONE[path] ?? []), ...(CELLS[path] ?? [])];
+    const leftAlone = [...(LEFT_ALONE[path] ?? [])].sort();
 
-    expect(linesOfTheirOwn(path, constants).sort()).toEqual(expected.sort());
+    expect(linesTaking("", path, constants)).toEqual(leftAlone);
+  });
+
+  it.each(screens)("%s mutes each table cell with no value", (path) => {
+    const cells = [...(CELLS[path] ?? [])].sort();
+
+    expect(linesTaking("emptyCell", path, constants)).toEqual(cells);
   });
 
   it.each(screenStylesheets())("%s draws no empty look of its own", (path) => {
@@ -251,6 +269,19 @@ describe("the empty sections side by side", () => {
     );
     expect(requests).toContain(
       "<p className={shared.emptySection}>{NO_REQUESTS}</p>",
+    );
+  });
+});
+
+describe("Predikat on Pengasuh › Survei", () => {
+  it("is muted while a group has none, such as Belum ada responden", () => {
+    const table = readFileSync(
+      "src/features/mentor-groups/survey-results-table.tsx",
+      "utf8",
+    );
+
+    expect(table).toContain(
+      "<span className={shared.emptyCell}>{missingResultWords(result)}</span>",
     );
   });
 });

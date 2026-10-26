@@ -24,7 +24,7 @@ function SharedLevel({ row }: { row: SharedRow }) {
     return <span className={styles.sub}>{LEVEL_NOT_SHARED}</span>;
   }
   if (row.level === null) {
-    return <span className={styles.sub}>{NOT_SCREENED}</span>;
+    return <span className={shared.emptyCell}>{NOT_SCREENED}</span>;
   }
   return <LevelBadges level={row.level} risk={false} />;
 }

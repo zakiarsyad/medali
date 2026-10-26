@@ -86,7 +86,11 @@ describe("what is under way for a referral", () => {
   it("shows Belum diminta and no active request for a student never asked", () => {
     const html = renderToStaticMarkup(<ReferralPanel list={ONE} />);
     expect(html).toContain("Belum diminta");
-    expect(html).toContain(`data-title="Jadwal aktif">${NO_ACTIVE_SCHEDULE}<`);
+    expect(html).toMatch(
+      new RegExp(
+        `data-title="Jadwal aktif"><span class="[^"]*emptyCell[^"]*">${NO_ACTIVE_SCHEDULE}<`,
+      ),
+    );
   });
 
   it("shows the consent and the status of the active request", () => {

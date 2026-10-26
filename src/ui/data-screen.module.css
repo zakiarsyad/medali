@@ -483,6 +483,11 @@ a.quiet {
   text-align: var(--empty-section-align);
 }
 
+/* A cell of a list that has no value, such as "Belum ada data". */
+.emptyCell {
+  color: var(--empty-section-ink);
+}
+
 .pager {
   display: flex;
   flex-wrap: wrap;

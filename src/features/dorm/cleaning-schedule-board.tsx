@@ -210,7 +210,7 @@ function EmptyRow({
         {mayAssign ? (
           <AssignForm placeId={row.place.id} scope={scope} onSaid={onSaid} />
         ) : (
-          <span className={styles.quiet}>Belum ada kamar bertugas</span>
+          <span className={shared.emptyCell}>Belum ada kamar bertugas</span>
         )}
       </td>
       <td data-title="Status" />

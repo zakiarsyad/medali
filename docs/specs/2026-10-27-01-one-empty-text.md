@@ -78,12 +78,21 @@ Every role, on lists and panels that can be empty.
 6. Decided while building: on Asrama › Dashboard the line that says how
    many residents are out keeps its old look; only "Tidak ada." in its
    place takes the list look.
+7. Decided while building: "Belum ada catatan" on Jasmani and on the
+   list of sick students was a gold warning badge, as in the prototype.
+   It becomes muted words like every other cell with no value, as the
+   spec names it.
+8. Decided while building: "Tidak ada" under "Jadwal aktif" of a
+   referral on Konseling, "Belum ada asesmen" in the list of shared
+   data and the Predikat of a group without one on Pengasuh › Survei
+   are cells with no value too and are muted the same way. A dash
+   for a missing number is not changed.
 
 ## Steps
 
 - [x] 1. Every whole empty list and every empty section takes its
   shared look, with a check.
-- [ ] 2. Every empty table cell is muted, with a check.
+- [x] 2. Every empty table cell is muted, with a check.
 - [ ] 3. Every "no match" text says "Tidak ada <hal> pada filter ini."
   and every "nothing yet" text starts with "Belum ada", the summary
   list on Asrama › Pelanggaran included, with checks.

@@ -68,7 +68,7 @@ export function SkpmListTable({
                     Rincian
                   </Link>
                 ) : (
-                  <span className={shared.detail}>{NO_DATA}</span>
+                  <span className={shared.emptyCell}>{NO_DATA}</span>
                 )}
               </td>
             </tr>

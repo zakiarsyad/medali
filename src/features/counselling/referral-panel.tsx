@@ -47,9 +47,11 @@ function ReferralTableRow({
         <ConsentBadge status={row.consent} />
       </td>
       <td data-title="Jadwal aktif">
-        {row.activeSchedule === null
-          ? NO_ACTIVE_SCHEDULE
-          : SCHEDULE_STATUS_WORDS[row.activeSchedule]}
+        {row.activeSchedule === null ? (
+          <span className={shared.emptyCell}>{NO_ACTIVE_SCHEDULE}</span>
+        ) : (
+          SCHEDULE_STATUS_WORDS[row.activeSchedule]
+        )}
       </td>
       <td className={shared.rowActions}>
         {onFollowUp && (
