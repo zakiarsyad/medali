@@ -56,12 +56,13 @@ function screen(
   form: string | null,
   menteesOnly = false,
   mayFollowUp = false,
+  params = PENALTIES_START,
 ): string {
   return renderToStaticMarkup(
     <PenaltiesScreen
       tabs={{ pagePath: "pembinaan", tabs: [], open: "disiplin" }}
       board={board(rows, menteesOnly)}
-      params={PENALTIES_START}
+      params={params}
       form={form}
       mayFollowUp={mayFollowUp}
       asks={ASKS}
@@ -160,8 +161,25 @@ describe("PenaltiesScreen", () => {
     expect(shown).toContain(">Sedang dijalani</span>");
   });
 
-  it("says so when no penalty matches", () => {
-    expect(screen([], null)).toContain(
+  it("says there is none yet when nothing is searched or chosen", () => {
+    const shown = screen([], null);
+
+    expect(shown).toContain("Belum ada pelanggaran disiplin.");
+    expect(shown).not.toContain("pada filter ini");
+  });
+
+  it("says so when no penalty matches the search", () => {
+    const params = { ...PENALTIES_START, query: "nama lain" };
+
+    expect(screen([], null, false, false, params)).toContain(
+      "Tidak ada pelanggaran pada filter ini.",
+    );
+  });
+
+  it("says so when no penalty matches a chosen status", () => {
+    const params = { ...PENALTIES_START, status: "served" as const };
+
+    expect(screen([], null, false, false, params)).toContain(
       "Tidak ada pelanggaran pada filter ini.",
     );
   });

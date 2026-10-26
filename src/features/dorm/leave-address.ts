@@ -99,12 +99,15 @@ export interface LeaveListParams {
 
 const PAGE = /^[1-9]\d{0,5}$/;
 
+/** The status the list shows when the address names none. */
+export const LEAVE_START_STATUS: StatusChoice = "submitted";
+
 /** The status choice an address names, or Menunggu verifikasi for any other. */
 export function statusNamed(sent: string): StatusChoice {
   const named = STATUS_CHOICE_ORDER.find(
     (choice) => STATUS_CHOICES[choice] === sent,
   );
-  return named ?? "submitted";
+  return named ?? LEAVE_START_STATUS;
 }
 
 /** The kind choice an address names, or every kind for any other. */

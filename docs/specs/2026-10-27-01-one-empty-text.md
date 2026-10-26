@@ -105,6 +105,19 @@ Every role, on lists and panels that can be empty.
 11. Decided while building: a status tab that names what it waits for,
     such as "Tidak ada klarifikasi yang menunggu verifikasi BAM.",
     keeps its words, as they say more than "pada filter ini".
+12. Decided while building: a list is "with no filter set" while its
+    search is empty and every choice is the one it starts with. Then
+    it says "Belum ada …": "Belum ada pelanggaran disiplin.", "Belum
+    ada catatan pelanggaran pada semester ini." (or "Belum ada catatan
+    pelanggaran." with past notes shown), "Belum ada mahasiswa yang
+    sakit.", "Belum ada kelompok pada periode ini.", "Belum ada
+    peserta.", "Belum ada mahasiswa aktif non asrama." and "Belum ada
+    mahasiswa yang dapat ditetapkan." Choosing a semester or a period
+    is not a filter.
+13. Decided while building: the list on Asrama › Izin starts at
+    "Menunggu", so there it says "Tidak ada pengajuan yang menunggu.",
+    like the other status tabs. With "Semua" status and nothing else
+    chosen it says "Belum ada pengajuan izin."
 
 ## Steps
 

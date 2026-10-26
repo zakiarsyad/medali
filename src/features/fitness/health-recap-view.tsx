@@ -11,6 +11,7 @@ import {
   listedHint,
   medicalHint,
   NOBODY_ILL,
+  NOBODY_ILL_YET,
   RESIDENCE_WORDS,
   residenceHint,
 } from "@/health-notes/health-words";
@@ -31,6 +32,7 @@ import {
   type FitnessParams,
 } from "./fitness-address";
 import {
+  RECAP_START,
   RESIDENCE_CHOICES,
   type RecapParams,
   recapAddress,
@@ -143,6 +145,16 @@ function RecapFilterRow({
   );
 }
 
+/** What the recap says when it lists nobody: none yet, or none on the filters set. */
+export function nobodyIllWords(params: RecapParams): string {
+  const isFiltered =
+    params.query !== RECAP_START.query ||
+    params.residence !== RECAP_START.residence ||
+    params.category !== RECAP_START.category ||
+    params.illness !== RECAP_START.illness;
+  return isFiltered ? NOBODY_ILL : NOBODY_ILL_YET;
+}
+
 /**
  * "Rekap data kesehatan seluruh mahasiswa": the search, the filters and
  * one page of the students the recap lists. On a phone each student is
@@ -176,7 +188,7 @@ export function RecapPanel({
         </p>
       )}
       {recap.matching === 0 ? (
-        <p className={shared.empty}>{NOBODY_ILL}</p>
+        <p className={shared.empty}>{nobodyIllWords(params)}</p>
       ) : (
         <>
           <SickTable rows={recap.rows} />
