@@ -237,7 +237,7 @@ describe("Hasil tes kebugaran", () => {
       <FitnessListTable rows={[]} showsNotes params={START_PARAMS} />,
     );
 
-    expect(html).toContain("Tidak ada data pada filter ini.");
+    expect(html).toContain("Tidak ada mahasiswa pada filter ini.");
   });
 });
 

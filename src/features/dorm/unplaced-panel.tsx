@@ -9,7 +9,7 @@ import { ROOMS_ADDRESS, type RoomsParams, roomsAddress } from "./rooms-address";
 
 function emptyWords(params: RoomsParams, residents: number): string {
   if (params.query !== "") {
-    return "Tidak ada penghuni belum diplot yang cocok. Ubah kata kunci.";
+    return "Tidak ada penghuni belum diplot pada filter ini.";
   }
   if (residents === 0) {
     return `Belum ada penghuni di ${DORM_NAMES[params.dorm]}.`;

@@ -9,7 +9,7 @@ import styles from "./fitness.module.css";
 import { type FitnessParams, fitnessAddress } from "./fitness-address";
 import type { FitnessListRow, RowHealth } from "./fitness-board";
 
-export const NO_FITNESS_MATCHES = "Tidak ada data pada filter ini.";
+export const NO_FITNESS_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
 /** Whether a student of this category should have a health note. */
 export function needsNote(category: ShownCategory): boolean {

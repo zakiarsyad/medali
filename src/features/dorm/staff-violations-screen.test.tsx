@@ -85,8 +85,8 @@ const WARNINGS: WarningCalls = {
 /** The student the account of the screen belongs to. */
 const OWN_STUDENT = "00000000-0000-4000-8000-0000000000e2";
 
-function screen(board = BOARD, reduces = false): string {
-  const params = readStaffViolationParams({});
+function screen(board = BOARD, reduces = false, search = ""): string {
+  const params = { ...readStaffViolationParams({}), query: search };
   return renderToStaticMarkup(
     <StaffViolationsScreen
       tabs={{ pagePath: "asrama", tabs: [], open: "pel" }}
@@ -208,6 +208,20 @@ describe("the staff screen", () => {
     expect(shown).toContain(">Status</th>");
     expect(shown).toContain(">SP 2</span>");
     expect(shown).not.toContain(">SP 1</span>");
+  });
+
+  it("says the rekap has none yet when nothing is searched", () => {
+    const shown = screen();
+
+    expect(shown).toContain("Belum ada pelanggaran pada semester ini.");
+    expect(shown).not.toContain("pada filter ini");
+  });
+
+  it("says nobody matches the search, not that the semester has none", () => {
+    const shown = screen(BOARD, false, "nama tanpa pelanggaran");
+
+    expect(shown).toContain("Tidak ada pelanggaran pada filter ini.");
+    expect(shown).not.toContain("pada semester ini.");
   });
 });
 

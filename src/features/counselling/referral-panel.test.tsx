@@ -62,7 +62,7 @@ describe("Rujukan potensi kesehatan mental dari asrama", () => {
     }
   });
 
-  it("says Tidak ada rujukan dari asrama. when there is none", () => {
+  it("says Belum ada rujukan dari asrama. when there is none", () => {
     const html = renderToStaticMarkup(<ReferralPanel list={NONE} />);
     expect(html).toContain(NO_REFERRALS);
     expect(html).toMatch(/class="[^"]*badge[^"]*">0<\/span>/);

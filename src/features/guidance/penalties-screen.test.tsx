@@ -162,7 +162,7 @@ describe("PenaltiesScreen", () => {
 
   it("says so when no penalty matches", () => {
     expect(screen([], null)).toContain(
-      "Belum ada pelanggaran pada filter ini.",
+      "Tidak ada pelanggaran pada filter ini.",
     );
   });
 

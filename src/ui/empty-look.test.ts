@@ -285,3 +285,47 @@ describe("Predikat on Pengasuh › Survei", () => {
     );
   });
 });
+
+/** The files of the name pickers, whose hint while typing keeps "yang cocok". */
+const NAME_PICKERS = [
+  "src/features/accounts/student-search.tsx",
+  "src/features/activities/participant-field.tsx",
+  "src/features/activities/record-student-field.tsx",
+  "src/features/character-assessment/student-picker.tsx",
+  "src/features/counselling/consent-words.ts",
+  "src/features/dorm/dorm-health-note-panel.tsx",
+  "src/features/dorm/violation-form.tsx",
+  "src/features/fitness/health-note-panel.tsx",
+  "src/features/guidance/note-form.tsx",
+  "src/features/guidance/penalty-form.tsx",
+  "src/features/mentoring/group-picker.tsx",
+  "src/features/mentoring/mentee-picker.tsx",
+  "src/features/siku/siku-form.tsx",
+];
+
+const FILTER_WORDS = /[\w ]+ pada filter ini/g;
+
+describe("the words for a list with nothing in it", () => {
+  const files = codeFiles();
+
+  it.each(files)(
+    "%s says Tidak ada <hal> pada filter ini. for no match",
+    (path) => {
+      const said = readFileSync(path, "utf8").match(FILTER_WORDS) ?? [];
+
+      for (const words of said) {
+        expect(words.trim()).toMatch(
+          /^Tidak ada (?!data )[\w ]+ pada filter ini$/,
+        );
+      }
+    },
+  );
+
+  it("keeps yang cocok only for the hint of a name picker", () => {
+    const sayingIt = files.filter((path) =>
+      /ada [\w ]+ yang cocok/.test(readFileSync(path, "utf8")),
+    );
+
+    expect(sayingIt.sort()).toEqual([...NAME_PICKERS].sort());
+  });
+});

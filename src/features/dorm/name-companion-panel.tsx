@@ -33,7 +33,7 @@ function Search({ query }: { query: string }) {
 function offeredWords(candidates: Candidates): string {
   const { shown, matching } = candidates;
   if (matching === 0) {
-    return "Tidak ada mahasiswa yang dapat ditetapkan. Ubah kata kunci.";
+    return "Tidak ada mahasiswa yang dapat ditetapkan pada filter ini.";
   }
   const all = `${matching.toLocaleString("id-ID")} mahasiswa dapat dipilih`;
   if (matching <= shown.length) return `${all}.`;

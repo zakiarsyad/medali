@@ -12,7 +12,7 @@ import { SCHEDULE_STATUS_WORDS } from "./schedule-words";
 export const REFERRAL_NOTE =
   "Penanda awal dari BAM - Kesehatan berdasarkan pengamatan, bukan hasil asesmen.";
 
-export const NO_REFERRALS = "Tidak ada rujukan dari asrama.";
+export const NO_REFERRALS = "Belum ada rujukan dari asrama.";
 
 /** "Jadwal aktif" of a student without an active request. */
 export const NO_ACTIVE_SCHEDULE = "Tidak ada";

@@ -44,7 +44,7 @@ function Search({ params }: { params: RoomsParams }) {
 function offeredWords(found: NonResidents): string {
   const { shown, matching } = found;
   if (matching === 0) {
-    return "Tidak ada mahasiswa aktif non asrama yang cocok. Ubah kata kunci.";
+    return "Tidak ada mahasiswa aktif non asrama pada filter ini.";
   }
   const all = `${matching.toLocaleString("id-ID")} mahasiswa non asrama dapat dipilih`;
   if (matching <= shown.length) return `${all}.`;

@@ -87,12 +87,30 @@ Every role, on lists and panels that can be empty.
    data and the Predikat of a group without one on Pengasuh › Survei
    are cells with no value too and are muted the same way. A dash
    for a missing number is not changed.
+9. Decided while building: the Penilaian lists of Asesmen karakter,
+   Nilai karakter, Jasmani, SIKU and SKPM list students, so they say
+   "Tidak ada mahasiswa pada filter ini."; Kegiatan › Verifikasi lists
+   photos and says "Tidak ada foto pada filter ini." The same wording
+   now holds for Mahasiswa baru, the Dashboard filter, the screening
+   list on Konseling, the participants of a count on Asrama ›
+   Kegiatan, and the searches of "Tambah penghuni" and "Tetapkan
+   kakak pendamping".
+10. Decided while building: "Belum ada" is for things that come over
+    time and have not come yet: "Belum ada rujukan dari asrama.",
+    "Belum ada pelanggaran tercatat semester ini." and a student's own
+    "Belum ada pelanggaran pada periode ini." Words that say nothing is
+    waiting now, nothing happens on a day, or nobody needs attention,
+    such as "Tidak ada yang menunggu." or "Tidak ada kegiatan hari
+    ini.", keep "Tidak ada", as they are not "not yet".
+11. Decided while building: a status tab that names what it waits for,
+    such as "Tidak ada klarifikasi yang menunggu verifikasi BAM.",
+    keeps its words, as they say more than "pada filter ini".
 
 ## Steps
 
 - [x] 1. Every whole empty list and every empty section takes its
   shared look, with a check.
 - [x] 2. Every empty table cell is muted, with a check.
-- [ ] 3. Every "no match" text says "Tidak ada <hal> pada filter ini."
+- [x] 3. Every "no match" text says "Tidak ada <hal> pada filter ini."
   and every "nothing yet" text starts with "Belum ada", the summary
   list on Asrama › Pelanggaran included, with checks.

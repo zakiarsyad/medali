@@ -99,7 +99,7 @@ export function DashboardScreen({
       {view.counts.matching === 0 ? (
         <section className={shared.panel}>
           <p className={shared.empty}>
-            Tidak ada mahasiswa aktif dengan kombinasi filter ini.
+            Tidak ada mahasiswa aktif pada filter ini.
           </p>
         </section>
       ) : (

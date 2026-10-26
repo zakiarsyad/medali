@@ -245,7 +245,7 @@ export function CountForm({
         </label>
       </div>
       {shown.length === 0 ? (
-        <p className={shared.empty}>Tidak ada peserta yang cocok.</p>
+        <p className={shared.empty}>Tidak ada peserta pada filter ini.</p>
       ) : (
         <ul className={styles.countList}>
           {shown.map((participant) => (

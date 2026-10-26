@@ -49,7 +49,7 @@ function NothingListed({ anyAdded }: { anyAdded: boolean }) {
   return (
     <p className={shared.empty}>
       {anyAdded
-        ? "Tidak ada yang cocok dengan pencarian."
+        ? "Tidak ada mahasiswa pada filter ini."
         : "Belum ada mahasiswa yang ditambahkan."}
     </p>
   );

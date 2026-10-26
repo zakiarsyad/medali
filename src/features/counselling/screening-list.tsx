@@ -16,7 +16,7 @@ import type { ScreeningList } from "./screening-view";
 
 export const NOBODY_SCREENED = "Belum ada mahasiswa yang diasesmen.";
 
-export const NOBODY_MATCHING = "Tidak ada mahasiswa yang cocok.";
+export const NOBODY_MATCHING = "Tidak ada mahasiswa pada filter ini.";
 
 /** "Cari nama atau NIM" and the filter. */
 function FilterRow({ params }: { params: ScreeningParams }) {
