@@ -61,10 +61,27 @@ Every role, on lists and panels that can be empty.
    nothing yet, because most lists already say so.
 2. Two looks: one for a whole empty list, one for an empty section, as
    in the shared set of values.
+3. Decided while building: an empty section is a part inside a panel,
+   a profile, a card or a detail that has nothing in it, such as
+   "Belum ada catatan." under Catatan pengasuhan, "Belum ada penghuni."
+   in a room box or "Belum ada pengajuan." on SIKU. Everything else
+   that stands in place of a list takes the list look, including the
+   parts of Asrama › Dashboard, as the spec names "Tidak ada." there.
+4. Decided while building: an empty section has no space above or
+   below it, as its words sit right under the heading of its part.
+5. Decided while building: these keep their own look, as they are not
+   an empty list or section: a note or a warning, the hint inside a
+   name picker, a line inside a number card on Dashboard, the parts a
+   grade still waits for, a choice in a drop-down, the sign-in page,
+   and the line that a page cannot be used until an academic period
+   runs.
+6. Decided while building: on Asrama › Dashboard the line that says how
+   many residents are out keeps its old look; only "Tidak ada." in its
+   place takes the list look.
 
 ## Steps
 
-- [ ] 1. Every whole empty list and every empty section takes its
+- [x] 1. Every whole empty list and every empty section takes its
   shared look, with a check.
 - [ ] 2. Every empty table cell is muted, with a check.
 - [ ] 3. Every "no match" text says "Tidak ada <hal> pada filter ini."

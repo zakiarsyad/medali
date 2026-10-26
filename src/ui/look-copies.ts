@@ -142,3 +142,23 @@ export function headingCopies(stylesheet: string): string[] {
     .filter(isHeadingCopy)
     .map((rule) => rule.selector);
 }
+
+const EMPTY_NAME = /^\.(?:empty|none|nothing|[\w-]+(?:Empty|None|Nothing))$/;
+const EMPTY_LOOK = ["padding", "color", "font-size", "text-align"];
+
+function isEmptyCopy(rule: Rule): boolean {
+  if (!selectorsOf(rule).some((part) => EMPTY_NAME.test(part))) return false;
+  return setsAny(rule, EMPTY_LOOK);
+}
+
+/**
+ * The selectors of a style file whose rule gives "nothing here yet" a look
+ * of its own: a class named as empty or as none that sets its inner
+ * space, text size, colour or alignment, whether or not it takes a shared
+ * empty look first.
+ */
+export function emptyCopies(stylesheet: string): string[] {
+  return rulesOf(stylesheet)
+    .filter(isEmptyCopy)
+    .map((rule) => rule.selector);
+}

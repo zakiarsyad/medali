@@ -33,7 +33,7 @@ export function OwnNotesView({ notes }: { notes: OwnNote[] }) {
         </span>
       </div>
       {notes.length === 0 ? (
-        <p className={styles.quiet}>Belum ada catatan.</p>
+        <p className={shared.emptySection}>Belum ada catatan.</p>
       ) : (
         <OwnNoteItems notes={first} />
       )}

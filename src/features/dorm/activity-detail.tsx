@@ -1,3 +1,4 @@
+import shared from "@/ui/data-screen.module.css";
 import styles from "./activities.module.css";
 import type { RundownLine } from "./activity-ids";
 import type { ActivityRow } from "./activity-row";
@@ -8,7 +9,7 @@ import { AttendanceDetail } from "./attendance-detail";
 /** Rincian kegiatan: each line its time, then what happens. */
 export function Rundown({ lines }: { lines: RundownLine[] }) {
   if (lines.length === 0) {
-    return <p className={styles.quietLine}>Belum ada rincian kegiatan.</p>;
+    return <p className={shared.emptySection}>Belum ada rincian kegiatan.</p>;
   }
   return (
     <ol className={styles.rundown}>

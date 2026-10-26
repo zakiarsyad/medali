@@ -60,7 +60,7 @@ function Residents({
 }: RoomCardProps) {
   const hidden = room.taken - residents.length - companions.length;
   if (room.taken === 0) {
-    return <p className={styles.quietLine}>Belum ada penghuni.</p>;
+    return <p className={shared.emptySection}>Belum ada penghuni.</p>;
   }
   return (
     <>

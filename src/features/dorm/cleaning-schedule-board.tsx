@@ -321,7 +321,7 @@ export function CleaningScheduleBoard({
         </p>
       )}
       {rows.length === 0 ? (
-        <p className={styles.quiet}>Belum ada tempat.</p>
+        <p className={shared.emptySection}>Belum ada tempat.</p>
       ) : (
         <ScheduleTable scope={scope}>
           {rows.map((row) =>

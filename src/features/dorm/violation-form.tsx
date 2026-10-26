@@ -130,7 +130,7 @@ function DraftTable({
   rows: DraftRow[];
   onRemove: (key: string) => void;
 }) {
-  if (rows.length === 0) return <p className={styles.note}>{EMPTY_LIST}</p>;
+  if (rows.length === 0) return <p className={shared.empty}>{EMPTY_LIST}</p>;
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>

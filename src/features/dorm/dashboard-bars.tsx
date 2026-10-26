@@ -98,7 +98,7 @@ export function AttendanceBars({
   return (
     <section className={shared.panel}>
       <h2 className={shared.heading}>Kehadiran per penanggung jawab</h2>
-      {none !== null && <p className={board.none}>{none}.</p>}
+      {none !== null && <p className={shared.empty}>{none}.</p>}
       <Bars
         bars={ORGANISERS.map((organiser) =>
           organiserBar(organiser, byOrganiser[organiser]),

@@ -145,7 +145,7 @@ function DormBox({
           />
         ))}
         {group.places.length === 0 && (
-          <li className={styles.quiet}>Belum ada tempat.</li>
+          <li className={shared.emptySection}>Belum ada tempat.</li>
         )}
       </ul>
       <span className={styles.quiet}>
