@@ -45,7 +45,8 @@ const APPEAL_DECIDED: AppealStatus[] = ["accepted", "rejected"];
 /**
  * The statuses of each kind of record that no longer wait for anyone: a
  * decision was made, or the request was withdrawn or the clarification
- * closed. A file of a record in any other status is never removable.
+ * closed. A file of a record in any other status is never removable,
+ * unless the schedule it belongs to was removed.
  */
 export const DECIDED_STATUSES: Record<ProofKind, readonly string[]> = {
   attendance_photo: ATTENDANCE_DECIDED,
@@ -62,6 +63,8 @@ export interface KeptProof {
   status: string;
   /** The campus day the file was sent, or null when no day is known. */
   sentOn: string | null;
+  /** Its record belongs to a removed schedule, so nobody can decide it any more. */
+  isScheduleRemoved: boolean;
 }
 
 export interface KeepingRule {
@@ -84,13 +87,15 @@ function periodHolding(
 
 /**
  * Whether a kept file may be removed now: its record has a final
- * decision, and the academic period it was sent in ended more than the
- * set number of days ago. Nothing is removable while the days are not
- * set, nor a file sent on a day no period holds.
+ * decision or belongs to a removed schedule, and the academic period it
+ * was sent in ended more than the set number of days ago. Nothing is
+ * removable while the days are not set, nor a file sent on a day no
+ * period holds.
  */
 export function isRemovable(file: KeptProof, rule: KeepingRule): boolean {
   if (rule.keepDays === null) return false;
-  if (!DECIDED_STATUSES[file.kind].includes(file.status)) return false;
+  const isDecided = DECIDED_STATUSES[file.kind].includes(file.status);
+  if (!isDecided && !file.isScheduleRemoved) return false;
   if (file.sentOn === null) return false;
   const period = periodHolding(rule.periods, file.sentOn);
   if (period === null) return false;

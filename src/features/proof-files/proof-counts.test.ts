@@ -14,6 +14,7 @@ function group(more: Partial<SentGroup>): SentGroup {
     kind: "attendance_photo",
     status: "valid",
     sentOn: "2025-10-01",
+    isScheduleRemoved: false,
     isMarked: false,
     files: 1,
     ...more,

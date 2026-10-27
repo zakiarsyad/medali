@@ -28,7 +28,7 @@ const WAITING: Record<ProofKind, string[]> = {
 
 function decided(kind: ProofKind, sentOn: string | null): KeptProof {
   const [status = ""] = DECIDED_STATUSES[kind];
-  return { kind, status, sentOn };
+  return { kind, status, sentOn, isScheduleRemoved: false };
 }
 
 /** Each kind with each of its statuses. */
@@ -51,7 +51,12 @@ describe("isRemovable", () => {
   it.each(pairsOf(DECIDED_STATUSES))(
     "counts %s with status %s as decided",
     (kind, status) => {
-      const file = { kind, status, sentOn: "2025-10-01" };
+      const file = {
+        kind,
+        status,
+        sentOn: "2025-10-01",
+        isScheduleRemoved: false,
+      };
       expect(isRemovable(file, RULE)).toBe(true);
     },
   );
@@ -59,10 +64,55 @@ describe("isRemovable", () => {
   it.each(pairsOf(WAITING))(
     "never removes %s whose record still waits as %s",
     (kind, status) => {
-      const file = { kind, status, sentOn: "2025-10-01" };
+      const file = {
+        kind,
+        status,
+        sentOn: "2025-10-01",
+        isScheduleRemoved: false,
+      };
       expect(isRemovable(file, RULE)).toBe(false);
     },
   );
+
+  describe("a file of a removed schedule", () => {
+    const SCHEDULE_KINDS: [ProofKind, string][] = [
+      ["attendance_photo", "waiting"],
+      ["activity_clarification", "submitted"],
+    ];
+
+    it.each(SCHEDULE_KINDS)(
+      "removes %s still waiting as %s once its period ended long enough ago",
+      (kind, status) => {
+        const file = { kind, status, sentOn: "2025-10-01" };
+        expect(isRemovable({ ...file, isScheduleRemoved: true }, RULE)).toBe(
+          true,
+        );
+        expect(isRemovable({ ...file, isScheduleRemoved: false }, RULE)).toBe(
+          false,
+        );
+      },
+    );
+
+    it("keeps it while its period did not end long enough ago", () => {
+      const file = {
+        kind: "attendance_photo" as const,
+        status: "waiting",
+        sentOn: "2026-02-10",
+        isScheduleRemoved: true,
+      };
+      expect(isRemovable(file, RULE)).toBe(false);
+    });
+
+    it("keeps it while the number of days is not set", () => {
+      const file = {
+        kind: "attendance_photo" as const,
+        status: "waiting",
+        sentOn: "2025-10-01",
+        isScheduleRemoved: true,
+      };
+      expect(isRemovable(file, { ...RULE, keepDays: null })).toBe(false);
+    });
+  });
 
   it("removes nothing while the number of days is not set", () => {
     const file = decided("attendance_photo", "2025-10-01");
