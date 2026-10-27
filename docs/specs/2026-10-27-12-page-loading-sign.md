@@ -49,6 +49,6 @@ Every role, on a phone and on a computer.
 
 1. [x] Dim the content area while a pressed link loads its page.
 2. [x] Mark the pressed tab or side menu item as chosen at once.
-3. [ ] Dim the content area while a search or filter form loads.
+3. [x] Dim the content area while a search or filter form loads.
 4. [ ] Dim the content area while a filter or a day choice changes the
    page by itself.

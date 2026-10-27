@@ -73,3 +73,36 @@ export function isChosen(
   if (chosen === null) return isOpen;
   return opensPath(chosen, href);
 }
+
+/** What tells whether a sent form moves to another address of the app. */
+export interface SentForm {
+  method: string;
+  /** The `action` the form was given, or null for none. */
+  action: string | null;
+  /** Whether the app took the send over to open the address itself. */
+  takenByApp: boolean;
+}
+
+function isAddress(action: string | null): action is string {
+  return action !== null && !action.startsWith("javascript:");
+}
+
+/**
+ * The address a search or filter form moves to, its fields after the
+ * `?`, or null for a form that saves or that sends itself in its own way.
+ */
+export function formMoveAddress(
+  form: SentForm,
+  fields: [string, FormDataEntryValue][],
+  here: string,
+): string | null {
+  if (!form.takenByApp || form.method !== "get") return null;
+  if (!isAddress(form.action)) return null;
+  const to = new URL(form.action, here);
+  const search = new URLSearchParams();
+  for (const [name, value] of fields) {
+    if (typeof value === "string") search.append(name, value);
+  }
+  to.search = search.toString();
+  return appAddress(to);
+}

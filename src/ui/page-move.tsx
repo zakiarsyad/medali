@@ -12,6 +12,7 @@ import {
 } from "react";
 import {
   chosenPath,
+  formMoveAddress,
   isChosen,
   linkMoveAddress,
   movesAway,
@@ -48,11 +49,24 @@ function linkMoveOf(event: MouseEvent): string | null {
   return linkMoveAddress(press, window.location.href);
 }
 
+function formMoveOf(event: SubmitEvent): string | null {
+  if (!(event.target instanceof HTMLFormElement)) return null;
+  const form = event.target;
+  const sent = {
+    method: form.method,
+    action: form.getAttribute("action"),
+    takenByApp: event.defaultPrevented,
+  };
+  const fields = [...new FormData(form, event.submitter)];
+  return formMoveAddress(sent, fields, window.location.href);
+}
+
 /**
  * Knows when the app is moving to another page, tab, filter or search,
- * from the press until the new address is shown. The app's links open
- * their page themselves; a press is seen here after them, so a press that
- * a form takes back, as one with unsaved changes asks, is never seen.
+ * from the press until the new address is shown. The app's links and
+ * search forms open their page themselves; a press or a send is seen here
+ * after them, so a press that a form takes back, as one with unsaved
+ * changes asks, is never seen.
  */
 export function PageMoveProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -76,8 +90,17 @@ export function PageMoveProvider({ children }: { children: ReactNode }) {
       if (to !== null) start(to);
     }
 
+    function onSend(event: SubmitEvent) {
+      const to = formMoveOf(event);
+      if (to !== null) start(to);
+    }
+
     window.addEventListener("click", onPress);
-    return () => window.removeEventListener("click", onPress);
+    window.addEventListener("submit", onSend);
+    return () => {
+      window.removeEventListener("click", onPress);
+      window.removeEventListener("submit", onSend);
+    };
   }, [start]);
 
   return (

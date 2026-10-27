@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   chosenPath,
+  formMoveAddress,
   isChosen,
   type LinkMovePress,
   linkMoveAddress,
@@ -109,5 +110,56 @@ describe("whether a path is within a page", () => {
     expect(opensPath("/asrama", "/asrama")).toBe(true);
     expect(opensPath("/asrama/kamar", "/asrama")).toBe(true);
     expect(opensPath("/asramax", "/asrama")).toBe(false);
+  });
+});
+
+describe("the address a search or filter form moves to", () => {
+  const search = { method: "get", action: "/asrama/kamar", takenByApp: true };
+
+  it("is its address with what was typed and chosen after the ?", () => {
+    const fields: [string, string][] = [
+      ["q", "Budi Santoso"],
+      ["dorm", "a"],
+    ];
+
+    expect(formMoveAddress(search, fields, HERE)).toBe(
+      "/asrama/kamar?q=Budi+Santoso&dorm=a",
+    );
+  });
+
+  it("puts only the fields after the ?, in place of what its address held", () => {
+    const form = { ...search, action: "/asrama/kamar?page=4" };
+
+    expect(formMoveAddress(form, [["q", "Ani"]], HERE)).toBe(
+      "/asrama/kamar?q=Ani",
+    );
+  });
+
+  it("leaves out a picked file", () => {
+    const file = new File([""], "foto.jpg");
+
+    expect(formMoveAddress(search, [["photo", file]], HERE)).toBe(
+      "/asrama/kamar",
+    );
+  });
+
+  it("is none for a form that saves, which sends its fields to the server", () => {
+    const saves = { ...search, method: "post" };
+
+    expect(formMoveAddress(saves, [], HERE)).toBeNull();
+  });
+
+  it("is none for a form that sends itself in its own way", () => {
+    const own = { ...search, action: null };
+    const action = { ...search, action: "javascript:throw new Error()" };
+
+    expect(formMoveAddress(own, [], HERE)).toBeNull();
+    expect(formMoveAddress(action, [], HERE)).toBeNull();
+  });
+
+  it("is none for a form the browser sends by itself", () => {
+    const plain = { ...search, takenByApp: false };
+
+    expect(formMoveAddress(plain, [], HERE)).toBeNull();
   });
 });
