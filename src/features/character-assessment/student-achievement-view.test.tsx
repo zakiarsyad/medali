@@ -164,6 +164,14 @@ describe("Capaian karakter in a student's detail", () => {
     expect(html).not.toContain("menonjol");
   });
 
+  it("names the strongest and the weakest value on the student's own card when the scores differ", () => {
+    const html = viewOf({ ...ASSESSED, own: true, mayAssess: false });
+
+    expect(html).toContain("Paling menonjol pada <b>Integritas</b> (86).");
+    expect(html).toContain("Perlu perhatian pada <b>Adaptif</b> (72).");
+    expect(html).not.toContain("Semua nilai MEDALI sama");
+  });
+
   it("keeps naming the strongest and the weakest value on the staff card when the six scores are the same", () => {
     const html = viewOf({
       ...ASSESSED,
