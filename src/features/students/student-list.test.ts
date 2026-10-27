@@ -8,7 +8,11 @@ import { PAGE_SIZE } from "@/ui/list-pages";
 import type { ListCohorts } from "./list-cohorts";
 import { countChoices } from "./student-choice-counts";
 import { listCohortYears, listStudents } from "./student-list";
-import { NO_FILTERS, type StudentListFilters } from "./student-list-address";
+import {
+  NO_FILTERS,
+  readStudentListParams,
+  type StudentListFilters,
+} from "./student-list-address";
 import {
   addTestActor,
   addTestMentorGroup,
@@ -227,6 +231,17 @@ describe("listStudents", () => {
         "9900001324",
       ]);
       expect(await nimsFound(db, limit, { query: "Saring%" })).toEqual([]);
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = await addFilterRows(db);
+      const asked = (q: string) =>
+        nimsFound(db, limit, readStudentListParams({ q }).filters);
+
+      expect(await asked("\0ring\0 ak\0")).toEqual(["9900001321"]);
+      expect(await asked("\0 \0")).toEqual(await nimsFound(db, limit, {}));
     });
   });
 

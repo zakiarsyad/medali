@@ -1,4 +1,5 @@
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 
 export const GROUP_LIST_ADDRESS = "/pengasuh/kelompok";
 
@@ -66,7 +67,9 @@ export function readGroupListParams(params: SearchParams): GroupListParams {
     memberPage: readPage(params[MEMBER_PAGE]),
     detailId: readId(params.profil),
     filters: {
-      query: firstParam(params.q).trim().slice(0, SEARCH_MAX_LENGTH),
+      query: withoutNullCharacter(firstParam(params.q))
+        .trim()
+        .slice(0, SEARCH_MAX_LENGTH),
       studyProgramId: PROGRAM_ID.test(program) ? Number(program) : null,
       cohortYear: YEAR.test(year) ? Number(year) : null,
     },

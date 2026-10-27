@@ -55,6 +55,11 @@ describe("readListParams", () => {
   ])("falls back on what it cannot read: %o", (params, expected) => {
     expect(readListParams(params)).toEqual(expected);
   });
+
+  it("drops the null character from the search", () => {
+    expect(readListParams({ q: "\0bu\0 di\0" }).query).toBe("bu di");
+    expect(readListParams({ q: "\0 \0 " })).toEqual(NOTHING);
+  });
 });
 
 describe("listAddress", () => {

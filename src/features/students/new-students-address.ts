@@ -1,4 +1,5 @@
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 import { isNim } from "./input-limits";
 
 export const NEW_STUDENTS_ADDRESS = "/pengaturan/mahasiswa";
@@ -24,7 +25,7 @@ export function readNewStudentsParams(params: SearchParams): NewStudentsParams {
   const editing = firstParam(params.ubah);
   const page = firstParam(params.hal);
   return {
-    query: firstParam(params.q).trim(),
+    query: withoutNullCharacter(firstParam(params.q)).trim(),
     page: PAGE.test(page) ? Number(page) : 1,
     editing: isNim(editing) ? editing : null,
   };

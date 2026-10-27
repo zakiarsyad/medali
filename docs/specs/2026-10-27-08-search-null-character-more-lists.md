@@ -61,5 +61,5 @@ Decided while building:
 
 ## Steps
 
-- [ ] 1. The six lists drop the null character from their search text,
+- [x] 1. The six lists drop the null character from their search text,
   with checks that open each of them with a search that holds it.

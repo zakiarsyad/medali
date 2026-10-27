@@ -5,7 +5,11 @@ import { withTestDatabase } from "@/db/test-database";
 import { groupCode } from "@/ui/group-code";
 import { PAGE_SIZE } from "@/ui/list-pages";
 import { listGroups } from "./group-list";
-import { type GroupListFilters, NO_FILTERS } from "./group-list-address";
+import {
+  type GroupListFilters,
+  NO_FILTERS,
+  readGroupListParams,
+} from "./group-list-address";
 import {
   addTestEndedGroup,
   addTestGroup,
@@ -190,6 +194,17 @@ describe("listGroups", () => {
       expect(await codesFound(db, limit, { query: "uji ani" })).toEqual([
         "KP 24-UJISARING-01",
       ]);
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      const limit = onlyProgram(await addFilterGroups(db));
+      const asked = (q: string) =>
+        codesFound(db, limit, readGroupListParams({ q }).filters);
+
+      expect(await asked("\0uji\0 ani\0")).toEqual(["KP 24-UJISARING-01"]);
+      expect(await asked("\0 \0")).toEqual(await codesFound(db, limit, {}));
     });
   });
 

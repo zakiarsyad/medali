@@ -1,5 +1,6 @@
 import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 import { FIRST_FLOOR, FLOORS, SEARCH_MAX_LENGTH } from "./room-limits";
 
 export const ROOMS_ADDRESS = "/asrama/kamar";
@@ -21,7 +22,9 @@ export interface RoomsParams {
 const ADDING = "1";
 
 function readSearch(value: string | string[] | undefined): string {
-  return firstParam(value).trim().slice(0, SEARCH_MAX_LENGTH);
+  return withoutNullCharacter(firstParam(value))
+    .trim()
+    .slice(0, SEARCH_MAX_LENGTH);
 }
 
 const FIRST_DORM: DormId = "wismantara_putra";

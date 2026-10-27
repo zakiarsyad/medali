@@ -87,6 +87,14 @@ describe("readMentorListParams", () => {
     expect(params.detailId).toHaveLength(36);
   });
 
+  it("drops the null character from the search, before it is cut", () => {
+    const query = (q: string) => readMentorListParams({ q }).filters.query;
+
+    expect(query("\0hen\0 dra\0")).toBe("hen dra");
+    expect(query("\0 \0 ")).toBe("");
+    expect(query(`\0${"a".repeat(100)}`)).toBe("a".repeat(100));
+  });
+
   it("reads the mentor whose page is open, and the student over it", () => {
     const params = readMentorListParams({
       pengasuh: MENTOR_ID,

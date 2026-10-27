@@ -1,4 +1,5 @@
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 import type { AccountFilter } from "./manage-accounts";
 import { isListedRole } from "./managed-roles";
 
@@ -36,7 +37,7 @@ function orNull(text: string): string | null {
 export function readListParams(params: SearchParams): ListParams {
   const role = firstParam(params.peran);
   return {
-    query: firstParam(params.q).trim(),
+    query: withoutNullCharacter(firstParam(params.q)).trim(),
     role: isListedRole(role) ? role : null,
     page: pageNumber(firstParam(params.hal)),
     editing: orNull(firstParam(params.ubah)),

@@ -4,6 +4,7 @@ import { accountsInRoleOrder, findActiveAccount } from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { readListParams } from "./list-address";
 import {
   addAccount,
   changeRoles,
@@ -532,6 +533,24 @@ describe("listManagedAccounts", () => {
       });
 
       expect(listed).toEqual({ accounts: [], total: 0, page: 0 });
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      await addTestStaffAccount(db, "Cari Uji Satu", ["mentor"]);
+      await addTestStaffAccount(db, "Lain Uji Dua", ["assessor"]);
+      const asked = (q: string) =>
+        listManagedAccounts(db, readListParams({ q }));
+
+      const byName = await asked("\0cari\0 uji\0");
+      const nothing = await asked("\0 \0");
+
+      expect(byName.accounts.map((account) => account.name)).toEqual([
+        "Cari Uji Satu",
+      ]);
+      expect(nothing).toEqual(await asked(""));
+      expect(nothing.total).toBe(2);
     });
   });
 });

@@ -12,6 +12,7 @@ import {
 import { withTestDatabase } from "@/db/test-database";
 import { PAGE_SIZE } from "@/ui/list-pages";
 import { countStudents, listAddedStudents } from "./added-students";
+import { readNewStudentsParams } from "./new-students-address";
 import { addTestActor, addTestProgram, addTestStudent } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -215,6 +216,37 @@ describe("listAddedStudents", () => {
         "9900000206",
       ]);
       expect(literal.students).toEqual([]);
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      const program = await addTestProgram(db, "Prodi Uji Cari Nol");
+      const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
+      const input = {
+        inputBy: staff.id,
+        inputSource: "form" as const,
+        inputAt: LATER,
+      };
+      await addTestStudent(db, program, {
+        nim: "9900000207",
+        name: "Nol Uji Satu",
+        ...input,
+      });
+      await addTestStudent(db, program, {
+        nim: "9900000208",
+        name: "Nol Uji Dua",
+        ...input,
+      });
+      const asked = (q: string) =>
+        listAddedStudents(db, readNewStudentsParams({ q }).query, []);
+
+      const byName = await asked("\0uji\0 dua\0");
+      const nothing = await asked("\0 \0");
+
+      expect(byName.students.map((s) => s.nim)).toEqual(["9900000208"]);
+      expect(nothing).toEqual(await listAddedStudents(db, "", []));
+      expect(nothing.matching).toBe(2);
     });
   });
 

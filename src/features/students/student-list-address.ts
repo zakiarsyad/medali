@@ -9,6 +9,7 @@ import {
 import { entryPath } from "@/db/schema";
 import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import { NAME_MAX_LENGTH } from "./input-limits";
 import { CATEGORIES, type CategoryField } from "./labels";
@@ -166,7 +167,9 @@ export function readStudentListParams(params: SearchParams): StudentListParams {
     page: PAGE.test(page) ? Number(page) : 1,
     detailId: detail === "" ? null : detail,
     filters: {
-      query: firstParam(params.q).trim().slice(0, NAME_MAX_LENGTH),
+      query: withoutNullCharacter(firstParam(params.q))
+        .trim()
+        .slice(0, NAME_MAX_LENGTH),
       cohortYear: YEAR.test(year) ? Number(year) : null,
       status: readStatus(firstParam(params.status)),
       predicate: readPredicate(firstParam(params.predikat)),
