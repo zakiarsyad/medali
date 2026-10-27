@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { EmptyPage } from "./empty-page";
+import { OpeningPage } from "./page-opening";
 import { TabLinks } from "./tab-links";
 
 const kesehatan = { path: "kesehatan", title: "Kesehatan" };
@@ -53,6 +54,28 @@ describe("the row of tabs", () => {
     expect(html.indexOf("Belum diplot")).toBeGreaterThan(
       html.indexOf("</nav>"),
     );
+  });
+});
+
+describe("a tab pressed", () => {
+  function markedWhileOpening(opening: string): string[] {
+    const html = renderToStaticMarkup(
+      <OpeningPage value={opening}>
+        <TabLinks pagePath="asrama" tabs={[kamar, kesehatan]} open="kamar" />
+      </OpeningPage>,
+    );
+    const marked = html.match(/<a [^>]*aria-current="page"[^>]*>/g) ?? [];
+    return marked.map((link) => link.match(/href="([^"]+)"/)?.[1] ?? "");
+  }
+
+  it("is marked as chosen at once, in place of the tab open", () => {
+    expect(markedWhileOpening("/asrama/kesehatan")).toEqual([
+      "/asrama/kesehatan",
+    ]);
+  });
+
+  it("leaves the open tab marked when the page opening is not a tab", () => {
+    expect(markedWhileOpening("/mahasiswa")).toEqual(["/asrama/kamar"]);
   });
 });
 

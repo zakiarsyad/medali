@@ -1,5 +1,4 @@
-import Link from "next/link";
-import styles from "./tab-links.module.css";
+import { TabRow } from "./tab-row";
 
 export interface TabLinksProps {
   pagePath: string;
@@ -16,18 +15,5 @@ export function showsTabBar(tabs: TabLinksProps["tabs"]): boolean {
 export function TabLinks({ pagePath, tabs, open }: TabLinksProps) {
   if (!showsTabBar(tabs)) return null;
 
-  return (
-    <nav className={styles.tabs} aria-label="Bagian halaman">
-      {tabs.map((tab) => (
-        <Link
-          key={tab.path}
-          href={`/${pagePath}/${tab.path}`}
-          className={styles.tab}
-          aria-current={tab.path === open ? "page" : undefined}
-        >
-          {tab.title}
-        </Link>
-      ))}
-    </nav>
-  );
+  return <TabRow pagePath={pagePath} tabs={tabs} open={open} />;
 }

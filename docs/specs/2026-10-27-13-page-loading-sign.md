@@ -50,8 +50,11 @@ Decided while building, because the issue did not say:
    started it: a link, a tab, the menu, a filter, a search, a row of a
    list, closing a box, or the browser's own step back and forward.
 5. A page that opens elsewhere, such as in a new tab, gives no sign.
+6. "Cari" on Pengguna and on the list of new students loaded the whole
+   page again, so the app could not give a sign. It now opens the list
+   inside the app, as every other search does, and gives the sign.
 
 ## Steps
 
-- [ ] 1. The pressed tab or menu item shows as chosen at once, and the
+- [x] 1. The pressed tab or menu item shows as chosen at once, and the
   content area dims after a fifth of a second until the new page shows.

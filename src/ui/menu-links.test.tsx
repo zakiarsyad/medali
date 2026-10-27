@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { MenuLinks } from "./menu-links";
+import { OpeningPage } from "./page-opening";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/tugas" }));
 
@@ -24,5 +25,22 @@ describe("the menu", () => {
     );
 
     expect(html).not.toContain("count");
+  });
+
+  it("marks a menu item pressed as chosen at once, in place of the page open", () => {
+    const html = renderToStaticMarkup(
+      <OpeningPage value="/asrama/kamar">
+        <MenuLinks
+          menu={[
+            { path: "tugas", title: "Tugas saya" },
+            { path: "asrama", title: "Asrama" },
+          ]}
+        />
+      </OpeningPage>,
+    );
+
+    const marked = html.match(/<a [^>]*aria-current="page"[^>]*>/g) ?? [];
+    expect(marked).toHaveLength(1);
+    expect(marked[0]).toContain('href="/asrama"');
   });
 });

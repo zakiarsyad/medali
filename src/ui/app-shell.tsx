@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import styles from "./app-shell.module.css";
 import type { MenuItem, SignedInAs } from "./menu-types";
+import { PageContent, PageOpeningWatch } from "./page-opening";
 import { SideMenu } from "./side-menu";
 import { TopBar } from "./top-bar";
 
@@ -12,12 +13,14 @@ interface AppShellProps {
 
 export function AppShell({ children, menu, signedInAs }: AppShellProps) {
   return (
-    <div className={styles.shell}>
-      <SideMenu menu={menu} signedInAs={signedInAs} />
-      <div className={styles.main}>
-        <TopBar />
-        <main className={styles.content}>{children}</main>
+    <PageOpeningWatch>
+      <div className={styles.shell}>
+        <SideMenu menu={menu} signedInAs={signedInAs} />
+        <div className={styles.main}>
+          <TopBar />
+          <PageContent className={styles.content}>{children}</PageContent>
+        </div>
       </div>
-    </div>
+    </PageOpeningWatch>
   );
 }
