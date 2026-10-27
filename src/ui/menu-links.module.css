@@ -11,6 +11,7 @@
   display: flex;
   gap: var(--space-sm);
   align-items: center;
+  min-height: var(--tap-least);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   color: var(--sideink);

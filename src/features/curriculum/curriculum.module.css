@@ -231,6 +231,7 @@
 }
 
 .tick {
+  composes: tapArea from "../../ui/data-screen.module.css";
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2xs) var(--space-xs);

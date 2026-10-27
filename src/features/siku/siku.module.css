@@ -112,6 +112,7 @@
 }
 
 .choice {
+  composes: tapArea from "../../ui/data-screen.module.css";
   padding: var(--space-xs) var(--space-md);
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius-md);
@@ -220,6 +221,7 @@
 }
 
 .dropPhoto {
+  composes: tapArea from "../../ui/data-screen.module.css";
   position: absolute;
   top: var(--space-3xs);
   right: var(--space-3xs);

@@ -11,6 +11,7 @@
 }
 
 .mode {
+  min-height: var(--tap-least);
   padding: var(--space-2xs) var(--space-md);
   border: 0;
   border-radius: var(--radius-md);
@@ -84,6 +85,8 @@
 }
 
 .skipped summary {
+  min-height: var(--tap-least);
+  align-content: center;
   cursor: pointer;
 }
 

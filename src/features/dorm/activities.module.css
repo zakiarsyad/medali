@@ -277,6 +277,7 @@
 }
 
 .countAbsent {
+  composes: tapArea from "../../ui/data-screen.module.css";
   display: flex;
   gap: var(--space-xs);
   align-items: center;

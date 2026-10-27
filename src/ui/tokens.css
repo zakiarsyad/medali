@@ -284,6 +284,13 @@
 
   /* The smallest a part pressed on a phone may be, both ways. */
   --tap-size: 44px;
+
+  /*
+   * The least size of a pressed part, which only a phone sets, so computer
+   * screens keep their density. A link stands as a box there to take it.
+   */
+  --tap-least: auto;
+  --link-display: inline;
 }
 
 /*
@@ -343,6 +350,10 @@
     --statement-text-basis: 100%;
     --care-status-basis: 100%;
     --care-body-basis: 100%;
+    --field-height: var(--tap-size);
+    --button-height: var(--tap-size);
+    --tap-least: var(--tap-size);
+    --link-display: inline-block;
   }
 }
 

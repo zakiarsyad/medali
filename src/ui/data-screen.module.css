@@ -140,6 +140,7 @@
  */
 .button {
   display: inline-block;
+  min-width: var(--tap-least);
   min-height: var(--button-height);
   align-content: center;
   padding: var(--button-padding);
@@ -154,6 +155,7 @@
 }
 
 .quiet {
+  min-width: var(--tap-least);
   min-height: var(--button-height);
   align-content: center;
   padding: var(--button-padding);
@@ -195,6 +197,29 @@ a.quiet {
   color: var(--bad);
 }
 
+/*
+ * On a phone a link button, and a tick or round choice with its words,
+ * take the tap area as their own box, their look unchanged. A screen
+ * composes `tapArea` for its own chips and choices.
+ */
+.link,
+.danger,
+.role,
+.tapArea {
+  min-width: var(--tap-least);
+  min-height: var(--tap-least);
+  align-content: center;
+}
+
+/*
+ * A link takes no least size unless it stands as a box. Of no weight, so a
+ * screen that sets a link's own display keeps it.
+ */
+:where(a.link, a.danger) {
+  display: var(--link-display);
+}
+
+/* Also a link inside running words, which keeps its size on a phone. */
 .inline {
   display: inline;
 }

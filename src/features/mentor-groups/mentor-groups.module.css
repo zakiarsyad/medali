@@ -108,6 +108,7 @@
 }
 
 .part {
+  composes: tapArea from "../../ui/data-screen.module.css";
   padding: var(--space-2xs) var(--space-md);
   color: var(--muted);
   font-size: var(--text-md);
@@ -122,6 +123,7 @@
 
 /* The tick box with the sentence that says what the replacement does. */
 .confirm {
+  composes: tapArea from "../../ui/data-screen.module.css";
   display: flex;
   gap: var(--space-sm);
   align-items: flex-start;
@@ -140,6 +142,8 @@
 }
 
 .folded summary {
+  min-height: var(--tap-least);
+  align-content: center;
   font-weight: var(--weight-heavy);
   cursor: pointer;
 }

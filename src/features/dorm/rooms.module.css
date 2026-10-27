@@ -10,7 +10,10 @@
   gap: var(--space-sm);
 }
 
+/* Also in a plain list a chip stands as a box on a phone, to take its tap area. */
 .choice {
+  composes: tapArea from "../../ui/data-screen.module.css";
+  display: var(--link-display);
   padding: var(--space-xs) var(--space-md);
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius-md);

@@ -6,6 +6,7 @@
 
 /* A tick with its words beside it, in the row of filters. */
 .tick {
+  composes: tapArea from "../../ui/data-screen.module.css";
   display: inline-flex;
   gap: var(--space-xs);
   align-items: center;

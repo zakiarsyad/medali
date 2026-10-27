@@ -72,6 +72,7 @@
 
 /* The consent tick, with its text folding beside the box. */
 .tick {
+  composes: tapArea from "../../ui/data-screen.module.css";
   display: flex;
   gap: var(--space-sm);
   align-items: flex-start;
@@ -150,6 +151,11 @@
 .steps {
   color: var(--muted);
   font-size: var(--text-md);
+}
+
+.steps summary {
+  min-height: var(--tap-least);
+  align-content: center;
 }
 
 .steps ol {

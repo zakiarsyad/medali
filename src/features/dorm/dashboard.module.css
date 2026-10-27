@@ -146,6 +146,13 @@
   margin: var(--space-sm) 0 0;
 }
 
+/* The way to Kesehatan stands on its own under the list. */
+.more > a {
+  display: var(--link-display);
+  min-height: var(--tap-least);
+  align-content: center;
+}
+
 .outCount {
   margin: 0 0 var(--space-sm);
   color: var(--muted);
