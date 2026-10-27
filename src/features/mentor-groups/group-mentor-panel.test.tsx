@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { GroupMentorLine } from "./group-detail";
 import { GroupMentorPanel } from "./group-mentor-panel";
 import { mentorAddress } from "./mentor-list-address";
+import type { NeedsCoaching } from "./needs-coaching";
 
 const MENTOR_ID = "00000000-0000-4000-8000-000000000002";
 
@@ -28,12 +29,18 @@ const EARLIER: GroupMentorLine = {
   endReason: "Uji penggantian",
 };
 
-function panelWith(recentNotes: number): string {
+const NOBODY = { students: 0, percent: 0 };
+
+function panelWith(
+  recentNotes: number,
+  needsCoaching: NeedsCoaching = NOBODY,
+): string {
   return renderToStaticMarkup(
     <GroupMentorPanel
       mentors={[]}
       mentorAddress={null}
       recentNotes={recentNotes}
+      needsCoaching={needsCoaching}
     />,
   );
 }
@@ -44,6 +51,7 @@ function panelOf(address: string | null): string {
       mentors={[TODAY, EARLIER]}
       mentorAddress={address}
       recentNotes={0}
+      needsCoaching={NOBODY}
     />,
   );
 }
@@ -63,6 +71,18 @@ describe("GroupMentorPanel", () => {
 
   it("shows the count also when it is 0", () => {
     expect(panelWith(0)).toMatch(/Catatan pengasuhan 90 hari:.*<b>0<\/b>/);
+  });
+
+  it("shows Perlu pembinaan with its students and their share", () => {
+    expect(panelWith(0, { students: 1, percent: 25 })).toMatch(
+      /Perlu pembinaan:.*<b>1 mahasiswa \(25%\)<\/b>/,
+    );
+  });
+
+  it("shows Perlu pembinaan also when nobody needs it", () => {
+    expect(panelWith(0)).toMatch(
+      /Perlu pembinaan:.*<b>0 mahasiswa \(0%\)<\/b>/,
+    );
   });
 
   it("links the name of the mentor of today to their page, and no earlier mentor", () => {

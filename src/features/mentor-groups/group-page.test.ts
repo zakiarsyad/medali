@@ -1,10 +1,11 @@
+// Sample Tahun akademik of this file: 7401 to 7401.
 // Sample NIMs of this file: 9961000700 to 9961000799.
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { type AccountForAccess, may } from "@/auth/access";
 import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { mentoringNotes } from "@/db/schema";
+import { coachingStatuses, mentoringNotes } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readGroupPage } from "./group-page";
 import {
@@ -15,6 +16,7 @@ import {
   addTestProgram,
   addTestStudent,
 } from "./test-records";
+import { addTestAssessor, addTestScoredMember, allScores } from "./test-scores";
 import { groupRowsFor } from "./visible-groups";
 
 const inTestDatabase = withTestDatabase();
@@ -77,6 +79,7 @@ describe("readGroupPage", () => {
         kind: "found",
         group: { id: groupId },
         recentNotes: 2,
+        needsCoaching: { students: 0, percent: 0 },
       });
       expect(may(["upk_staff"], "view_mentoring_notes")).toBe(false);
       expect(may(["upk_staff"], "view_student_detail")).toBe(false);
@@ -106,6 +109,37 @@ describe("readGroupPage", () => {
     });
   });
 
+  it("gives Perlu pembinaan out of the Aktif members, leaving out one on Cuti", async () => {
+    await inTestDatabase(async (db) => {
+      const { groupId, programId } = await addRecords(db);
+      const group = {
+        id: groupId,
+        programId,
+        by: await addTestAssessor(db, 7401),
+      };
+      const listed = allScores(60);
+      await addTestScoredMember(db, group, "9961000702", listed);
+      const done = await addTestScoredMember(db, group, "9961000703", listed);
+      await db.insert(coachingStatuses).values({
+        studentId: done,
+        status: "done",
+        changedBy: group.by.enteredBy,
+        changedAt: new Date(),
+      });
+      await addTestScoredMember(db, group, "9961000704", allScores(80));
+      await addTestScoredMember(db, group, "9961000705", listed, {
+        status: "on_leave",
+      });
+
+      const page = await pageFor(db, groupId, ["head_of_program"], programId);
+
+      expect(page).toMatchObject({
+        kind: "found",
+        needsCoaching: { students: 1, percent: 25 },
+      });
+    });
+  });
+
   it("refuses Ketua Program Studi a group outside their program, with no count", async () => {
     await inTestDatabase(async (db) => {
       const { groupId, otherProgramId } = await addRecords(db);
@@ -119,6 +153,7 @@ describe("readGroupPage", () => {
 
       expect(page).toEqual({ kind: "refused" });
       expect(page).not.toHaveProperty("recentNotes");
+      expect(page).not.toHaveProperty("needsCoaching");
     });
   });
 

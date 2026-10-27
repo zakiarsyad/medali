@@ -5,6 +5,7 @@ import { mentorLabel } from "@/ui/mentor-label";
 import type { GroupMentorLine } from "./group-detail";
 import styles from "./mentor-groups.module.css";
 import { currentMentor, mentorLineWords } from "./mentor-history";
+import type { NeedsCoaching } from "./needs-coaching";
 
 const BETWEEN = " · ";
 
@@ -55,12 +56,14 @@ function HistoryLine({ line }: { line: GroupMentorLine }) {
 
 /**
  * The mentor of today, how many notes were written about the members
- * lately, and every mentor the group has had, newest first.
+ * lately, how many of them need coaching, and every mentor the group has
+ * had, newest first.
  */
 export function GroupMentorPanel({
   mentors,
   mentorAddress,
   recentNotes,
+  needsCoaching,
 }: {
   mentors: GroupMentorLine[];
   /**
@@ -70,6 +73,8 @@ export function GroupMentorPanel({
   mentorAddress: string | null;
   /** How many mentoring notes of the last 90 days there are about the members. */
   recentNotes: number;
+  /** The Aktif members on Pembinaan karakter who are not yet Selesai. */
+  needsCoaching: NeedsCoaching;
 }) {
   return (
     <section className={shared.panel}>
@@ -77,6 +82,13 @@ export function GroupMentorPanel({
       <CurrentMentor mentor={currentMentor(mentors)} address={mentorAddress} />
       <p className={styles.facts}>
         Catatan pengasuhan 90 hari: <b>{recentNotes.toLocaleString("id-ID")}</b>
+      </p>
+      <p className={styles.facts}>
+        Perlu pembinaan:{" "}
+        <b>
+          {needsCoaching.students.toLocaleString("id-ID")} mahasiswa (
+          {needsCoaching.percent}%)
+        </b>
       </p>
       <h3 className={styles.subheading}>Riwayat pengasuh kelompok</h3>
       {mentors.length === 0 ? (

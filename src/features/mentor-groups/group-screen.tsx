@@ -92,7 +92,7 @@ export async function GroupScreen({
   ]);
   if (answer.kind === "not_found") return whenNotFound;
   if (answer.kind === "refused") forbidden();
-  const { group, recentNotes } = answer;
+  const { group, recentNotes, needsCoaching } = answer;
   // Read once the group is found: its id is then known to be one.
   const [evaluations, waiting, scores] = await Promise.all([
     evaluationLimit === null
@@ -135,6 +135,7 @@ export async function GroupScreen({
           mentors={group.mentors}
           mentorAddress={mentor && mentorAddressOf(mentor.mentorId, group)}
           recentNotes={recentNotes}
+          needsCoaching={needsCoaching}
         />
         <ScoresPanel title="Rerata kelompok" summary={group.summary} withBar />
       </div>

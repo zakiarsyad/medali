@@ -3,6 +3,11 @@ import { campusDay } from "@/academic-periods/campus-day";
 import type { RowLimit } from "@/auth/access";
 import type { Database } from "@/db/connect";
 import { type GroupDetail, readGroup } from "./group-detail";
+import {
+  countNeedsCoaching,
+  type NeedsCoaching,
+  needsCoachingPercent,
+} from "./needs-coaching";
 import { countRecentNotes } from "./recent-notes";
 
 export type GroupPageAnswer =
@@ -13,6 +18,8 @@ export type GroupPageAnswer =
       group: GroupDetail;
       /** "Catatan pengasuhan 90 hari": the notes about the members lately. */
       recentNotes: number;
+      /** "Perlu pembinaan": the Aktif members on Pembinaan karakter. */
+      needsCoaching: NeedsCoaching;
     };
 
 /**
@@ -33,6 +40,15 @@ export async function readGroupPage(
 ): Promise<GroupPageAnswer> {
   const answer = await readGroup(db, limit, groupId, detailVisible, memberPage);
   if (answer.kind !== "found") return answer;
-  const recentNotes = await countRecentNotes(db, answer.group.id, day);
-  return { ...answer, recentNotes };
+  const { id, memberCounts } = answer.group;
+  const [recentNotes, needing] = await Promise.all([
+    countRecentNotes(db, id, day),
+    countNeedsCoaching(db, id),
+  ]);
+  const percent = needsCoachingPercent(needing, memberCounts.counted);
+  return {
+    ...answer,
+    recentNotes,
+    needsCoaching: { students: needing, percent },
+  };
 }
