@@ -13,6 +13,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from "react";
@@ -21,8 +22,8 @@ import {
   formMoveAddress,
   isChosen,
   linkMoveAddress,
-  type MoveStep,
-  movingToAfter,
+  movesAway,
+  pathOf,
 } from "./page-move-rules";
 
 interface PageMove {
@@ -74,7 +75,7 @@ function formMoveOf(event: SubmitEvent): string | null {
  */
 const ShownMark = memo(function ShownMark({ shown }: { shown: () => void }) {
   useSelectedLayoutSegments();
-  useEffect(() => shown());
+  useLayoutEffect(() => shown());
   return null;
 });
 
@@ -89,14 +90,11 @@ export function PageMoveProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [movingTo, setMovingTo] = useState<string | null>(null);
 
-  const step = useCallback((taken: MoveStep) => {
-    setMovingTo(movingToAfter(taken, window.location.href));
+  const start = useCallback((to: string) => {
+    const here = window.location.href;
+    setMovingTo(movesAway(to, here) ? pathOf(to, here) : null);
   }, []);
-  const start = useCallback(
-    (to: string) => step({ kind: "pressed", to }),
-    [step],
-  );
-  const shown = useCallback(() => step({ kind: "shown" }), [step]);
+  const shown = useCallback(() => setMovingTo(null), []);
 
   useEffect(() => {
     function onPress(event: MouseEvent) {

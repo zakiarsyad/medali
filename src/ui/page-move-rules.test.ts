@@ -6,7 +6,6 @@ import {
   type LinkMovePress,
   linkMoveAddress,
   movesAway,
-  movingToAfter,
   opensPath,
 } from "./page-move-rules";
 
@@ -172,23 +171,5 @@ describe("the same address written in two ways", () => {
     expect(movesAway("/asrama/kamar?q=Budi%20Santoso&ids=a,b", here)).toBe(
       false,
     );
-  });
-});
-
-describe("the path a move runs to after a step", () => {
-  it("is the path pressed when it opens another address", () => {
-    const pressed = { kind: "pressed", to: "/asrama/kesehatan" } as const;
-
-    expect(movingToAfter(pressed, HERE)).toBe("/asrama/kesehatan");
-  });
-
-  it("is none when the press opens the address already shown", () => {
-    const pressed = { kind: "pressed", to: "/asrama/kamar?page=2" } as const;
-
-    expect(movingToAfter(pressed, HERE)).toBeNull();
-  });
-
-  it("is none once the app has shown what it got, even at the address already shown, as a page sent on to its first tab", () => {
-    expect(movingToAfter({ kind: "shown" }, HERE)).toBeNull();
   });
 });

@@ -110,16 +110,3 @@ export function formMoveAddress(
   to.search = search.toString();
   return appAddress(to);
 }
-
-/** A step of a move: a press that opens `to`, or the app showing what it got. */
-export type MoveStep = { kind: "pressed"; to: string } | { kind: "shown" };
-
-/**
- * The path a move runs to after a step, or null when none runs. A move
- * ends once the app has shown what it got, also when that is the address
- * already shown, as for a page that sends on to its first tab.
- */
-export function movingToAfter(step: MoveStep, here: string): string | null {
-  if (step.kind === "shown") return null;
-  return movesAway(step.to, here) ? pathOf(step.to, here) : null;
-}
