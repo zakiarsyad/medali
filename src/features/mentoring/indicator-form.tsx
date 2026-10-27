@@ -3,12 +3,12 @@
 import {
   type FormEvent,
   startTransition,
-  useActionState,
   useState,
 } from "react";
 import type { ScoreIndicator } from "@/mentoring/score-indicators";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveIndicatorsAction } from "./indicator-actions";
 import {
   INDICATORS_VERSION_FIELD,
@@ -89,7 +89,7 @@ export function IndicatorForm({ inForce }: { inForce: IndicatorsInForce }) {
   const [typed, setTyped] = useState(() =>
     inForce.indicators.map((indicator) => ({ ...indicator })),
   );
-  const [state, save, pending] = useActionState(saveIndicatorsAction, START);
+  const [state, save, pending] = useSaveState(saveIndicatorsAction, START);
   const faults = indicatorFaults(typed);
 
   // Sent from here, not by the browser: the browser would empty the
