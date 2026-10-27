@@ -58,13 +58,19 @@ Students who send an attachment, and everyone who tries the preview.
    refuse phone photos that work on the preview today.
 4. Decided while building: the app's own limit on a whole sent form is
    set to what the preview hosting accepts, so the campus server refuses
-   the same sends as the preview.
+   the same sends as the preview. The hosting counts the request's
+   headers too, so the app's limit is 4,400,000 bytes, a little under
+   the hosting's 4.5 MB.
+5. Decided while building: the hosting's refusal reaches the screen
+   without its reason, so a failed send counts as refused for size when
+   what was sent is over that limit. The "Unggah berkas" forms keep their
+   1 MB limit and their messages: they cannot reach that size.
 
 ## Steps
 
 - [x] 1. The attachment of a clarification and of an "Advokasi", and a
   sent attendance photo, are 4 MB at most, and the app takes no larger
   sent form than the hosting does, with checks.
-- [ ] 2. Every form that sends a file says the file is too large, not to
+- [x] 2. Every form that sends a file says the file is too large, not to
   check the connection, when the send is refused for its size, and says
   so before sending when the picked file is over its limit, with checks.

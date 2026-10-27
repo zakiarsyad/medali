@@ -96,4 +96,18 @@ describe("sendAppealDraft", () => {
       done: null,
     });
   });
+
+  it("says the proof is too large when the send is refused for its size", async () => {
+    const { edges } = edgesOf({
+      send: async () => {
+        throw new Error("Body exceeded 4400000 limit.");
+      },
+    });
+    const proof = new File(["%PDF-1.4"], "bukti.pdf");
+
+    expect(await sendAppealDraft(draft({ file: proof }), edges)).toEqual({
+      error: "Ukuran lampiran maksimal 4 MB.",
+      done: null,
+    });
+  });
 });
