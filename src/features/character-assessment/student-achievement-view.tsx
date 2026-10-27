@@ -61,23 +61,38 @@ function ValueAndScore({ scores, value }: { scores: Scores; value: ValueKey }) {
 
 /**
  * The strongest and the weakest value. `beforeLimit` says the scores are
- * the stored ones above the limit, which only the student is given.
+ * the stored ones above the limit, which only the student is given. On
+ * the student's own card six equal scores get one line, as naming the
+ * same value twice reads as a mistake.
  */
 function Standouts({
   scores,
   withEarlier,
   beforeLimit,
+  own,
 }: {
   scores: Scores;
   withEarlier: boolean;
   beforeLimit: boolean;
+  own: boolean;
 }) {
+  const strongest = strongestValueOf(scores);
+  const weakest = weakestValueOf(scores);
+  const allEqual = scores[strongest] === scores[weakest];
   return (
     <p className={styles.sub}>
-      {beforeLimit ? "Sebelum pembatasan, paling" : "Paling"} menonjol pada{" "}
-      <ValueAndScore scores={scores} value={strongestValueOf(scores)} />. Perlu
-      perhatian pada{" "}
-      <ValueAndScore scores={scores} value={weakestValueOf(scores)} />.
+      {own && allEqual ? (
+        <>
+          {beforeLimit ? "Sebelum pembatasan, semua" : "Semua"} nilai MEDALI
+          sama ({scores[strongest]}).
+        </>
+      ) : (
+        <>
+          {beforeLimit ? "Sebelum pembatasan, paling" : "Paling"} menonjol pada{" "}
+          <ValueAndScore scores={scores} value={strongest} />. Perlu perhatian
+          pada <ValueAndScore scores={scores} value={weakest} />.
+        </>
+      )}
       {withEarlier && " Garis putus-putus menunjukkan semester lalu."}
     </p>
   );
@@ -126,6 +141,7 @@ export function StudentAchievementView({
         scores={achievement.stored ?? latest.scores}
         withEarlier={earlier !== null}
         beforeLimit={achievement.stored !== undefined}
+        own={achievement.own === true}
       />
     </section>
   );
