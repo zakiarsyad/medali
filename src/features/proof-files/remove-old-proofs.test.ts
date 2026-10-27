@@ -1,9 +1,9 @@
 // Sample Tahun akademik of this file: 3401 to 3401.
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
-import { proofFileRemovals } from "@/db/schema";
+import { activitySchedules, proofFileRemovals } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestPeriods } from "@/features/activities/test-records";
 import type { FileStore } from "@/files/file-store";
@@ -18,7 +18,13 @@ import {
   STOPPED_REFUSAL,
 } from "./remove-old-proofs";
 import { saveKeepDays } from "./save-keep-days";
-import { addProofSetting, addTestProofs, type TestProofs } from "./test-proofs";
+import {
+  addProofSetting,
+  addTestProofs,
+  type ProofSetting,
+  removeSchedulesOf,
+  type TestProofs,
+} from "./test-proofs";
 import { addTestActor } from "./test-records";
 
 /*
@@ -36,6 +42,7 @@ const NOW = new Date("3402-06-01T03:00:00Z");
 
 interface Setting {
   actor: { id: string; roles: ["head_of_unit"] };
+  proofSetting: ProofSetting;
   old: TestProofs;
   waiting: TestProofs;
   store: MemoryStore;
@@ -51,6 +58,7 @@ async function addSetting(db: Database, nim: string): Promise<Setting> {
   const added = await addTestActor(db, "Kepala Uji Hapus", ["head_of_unit"]);
   return {
     actor: { id: added.id, roles: ["head_of_unit"] },
+    proofSetting: setting,
     old,
     waiting,
     store,
@@ -156,6 +164,57 @@ describe("removeOldProofs", () => {
         expect(record?.isMarked).toBe(false);
         expect(record?.keys[0]).toBe(waiting[kind].key);
       }
+    });
+  });
+
+  it("removes the waiting files of a removed schedule, and keeps their records and the schedule removed", async () => {
+    await inTestDatabase(async (db) => {
+      const { actor, proofSetting, waiting, store } = await addSettingWithDays(
+        db,
+        "9989510012",
+      );
+      const ofRemoved = await addTestProofs(
+        db,
+        proofSetting,
+        SENT_AT,
+        false,
+        store,
+      );
+      const scheduleIds = await removeSchedulesOf(db, proofSetting, ofRemoved);
+
+      const removed = await removeOldProofs(db, store, actor, NOW);
+
+      expect(removed).toEqual({ ok: true, value: 8 });
+      const goneKinds = ["attendance_photo", "activity_clarification"] as const;
+      for (const kind of goneKinds) {
+        expect(store.files.has(ofRemoved[kind].key)).toBe(false);
+        const record = await recordOf(db, kind, ofRemoved[kind].id);
+        expect(record?.isMarked).toBe(true);
+        expect(record?.keys).toEqual([null]);
+        expect(store.files.has(waiting[kind].key)).toBe(true);
+      }
+      expect(
+        (await recordOf(db, "attendance_photo", ofRemoved.attendance_photo.id))
+          ?.status,
+      ).toBe("waiting");
+      expect(
+        (
+          await recordOf(
+            db,
+            "activity_clarification",
+            ofRemoved.activity_clarification.id,
+          )
+        )?.status,
+      ).toBe("submitted");
+      const schedules = await db
+        .select({ deletedAt: activitySchedules.deletedAt })
+        .from(activitySchedules)
+        .where(inArray(activitySchedules.id, scheduleIds));
+      expect(schedules).toHaveLength(2);
+      for (const schedule of schedules) {
+        expect(schedule.deletedAt).not.toBeNull();
+      }
+      expect(store.files.has(ofRemoved.dorm_clarification.key)).toBe(true);
     });
   });
 

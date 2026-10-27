@@ -4,6 +4,7 @@ import {
   inArray,
   isNotNull,
   isNull,
+  or,
   type SQL,
   sql,
 } from "drizzle-orm";
@@ -83,7 +84,7 @@ async function markRemovable(
       and(
         keepsFile(source),
         isNull(source.removedAt),
-        inArray(source.status, [...decided]),
+        or(inArray(source.status, [...decided]), source.isScheduleRemoved),
         inArray(campusDayOf(source.sentAt), days),
       ),
     )

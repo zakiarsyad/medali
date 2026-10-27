@@ -1,4 +1,10 @@
+import { eq, inArray } from "drizzle-orm";
 import type { Database } from "@/db/connect";
+import {
+  activityAttendances,
+  activityClarifications,
+  activitySchedules,
+} from "@/db/schema";
 import {
   addTestActivity,
   addTestActor,
@@ -238,6 +244,45 @@ const ADDERS: Record<
   dorm_clarification: addDormClarification,
   appeal_proof: addAppeal,
 };
+
+/** The schedule a record of an activity kind belongs to. */
+async function scheduleOf(
+  db: Database,
+  table: typeof activityAttendances | typeof activityClarifications,
+  id: string,
+): Promise<string> {
+  const [row] = await db
+    .select({ scheduleId: table.scheduleId })
+    .from(table)
+    .where(eq(table.id, id));
+  if (!row) throw new Error("The record was not found.");
+  return row.scheduleId;
+}
+
+/**
+ * Marks the schedules of the attendance photo and the activity
+ * clarification among `proofs` as removed, as "Hapus jadwal" does.
+ * Gives back their keys.
+ */
+export async function removeSchedulesOf(
+  db: Database,
+  setting: ProofSetting,
+  proofs: TestProofs,
+): Promise<string[]> {
+  const ids = [
+    await scheduleOf(db, activityAttendances, proofs.attendance_photo.id),
+    await scheduleOf(
+      db,
+      activityClarifications,
+      proofs.activity_clarification.id,
+    ),
+  ];
+  await db
+    .update(activitySchedules)
+    .set({ deletedAt: new Date(), deletedBy: setting.deciderId })
+    .where(inArray(activitySchedules.id, ids));
+  return ids;
+}
 
 const TEST_FILE = { bytes: new Uint8Array([1]), contentType: "image/jpeg" };
 
