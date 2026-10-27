@@ -46,7 +46,7 @@ Mahasiswa, on Profil saya.
 
 ## Steps
 
-- [ ] 1. The student's own "Capaian karakter" says "Semua nilai MEDALI
+- [x] 1. The student's own "Capaian karakter" says "Semua nilai MEDALI
   sama (score)." when all six scores are equal, with checks for the
   plain case, the case under a penalty, and the case with differing
   scores.

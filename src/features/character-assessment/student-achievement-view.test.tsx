@@ -130,6 +130,53 @@ describe("Capaian karakter in a student's detail", () => {
     expect(html).not.toContain("Input asesmen");
   });
 
+  it("says all MEDALI values are equal on the student's own card when the six scores are the same", () => {
+    const html = viewOf({
+      ...ASSESSED,
+      latest: ASSESSED.latest && {
+        ...ASSESSED.latest,
+        scores: { M: 85, E: 85, D: 85, A: 85, L: 85, I: 85 },
+      },
+      own: true,
+      mayAssess: false,
+    });
+
+    expect(html).toContain(
+      "Semua nilai MEDALI sama (85). Garis putus-putus menunjukkan semester lalu.",
+    );
+    expect(html).not.toContain("menonjol");
+  });
+
+  it("says all MEDALI values were equal before the limit on the student's own card when the stored scores are the same", () => {
+    const html = viewOf({
+      ...ASSESSED,
+      latest: ASSESSED.latest && {
+        ...ASSESSED.latest,
+        scores: { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+      },
+      limit: { category: "light", level: 1 },
+      stored: { M: 85, E: 85, D: 85, A: 85, L: 85, I: 85 },
+      own: true,
+      mayAssess: false,
+    });
+
+    expect(html).toContain("Sebelum pembatasan, semua nilai MEDALI sama (85).");
+    expect(html).not.toContain("menonjol");
+  });
+
+  it("keeps naming the strongest and the weakest value on the staff card when the six scores are the same", () => {
+    const html = viewOf({
+      ...ASSESSED,
+      latest: ASSESSED.latest && {
+        ...ASSESSED.latest,
+        scores: { M: 70, E: 70, D: 70, A: 70, L: 70, I: 70 },
+      },
+    });
+
+    expect(html).toContain("Paling menonjol pada <b>Mandiri</b> (70).");
+    expect(html).not.toContain("Semua nilai MEDALI sama");
+  });
+
   it("says nothing of a limit for a student without one", () => {
     expect(viewOf(ASSESSED)).not.toContain("dibatasi");
   });
