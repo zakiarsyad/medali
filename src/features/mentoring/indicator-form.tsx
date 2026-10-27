@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  type FormEvent,
-  startTransition,
-  useState,
-} from "react";
+import { type FormEvent, startTransition, useState } from "react";
 import type { ScoreIndicator } from "@/mentoring/score-indicators";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
