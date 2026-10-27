@@ -1,5 +1,6 @@
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
+import { NOT_SENT } from "@/ui/save-not-sent";
 import type { LeaveStatus } from "./leave-ids";
 import { STATUS_WORDS } from "./leave-words";
 
@@ -96,6 +97,9 @@ export interface DecisionAnswer extends FormState {
   /** Whether it was refused as decided or cancelled first. */
   stale: boolean;
 }
+
+/** A decision that did not reach the server. */
+export const NOT_SENT_DECISION: DecisionAnswer = { ...NOT_SENT, stale: false };
 
 /** A refused decision as the screen is answered. */
 export function refusedDecision(

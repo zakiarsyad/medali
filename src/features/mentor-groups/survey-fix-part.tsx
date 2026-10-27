@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import styles from "./mentor-groups.module.css";
 import { fixSurveyResultsAction } from "./survey-actions";
 
@@ -40,7 +41,9 @@ export function SurveyFixPart({
     if (!window.confirm(chosen.question)) return;
     const form = new FormData();
     form.set("surveyPeriodId", chosen.surveyPeriodId);
-    startSending(async () => setSaid(await fixSurveyResultsAction(form)));
+    startSending(async () =>
+      setSaid(await sentOr(() => fixSurveyResultsAction(form), NOT_SENT)),
+    );
   }
 
   return (

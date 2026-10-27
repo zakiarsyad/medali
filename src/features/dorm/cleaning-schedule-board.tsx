@@ -5,6 +5,7 @@ import { DORM_NAMES, DORM_SHORT_NAMES, type DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { ListPager } from "@/ui/list-pager";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import { dayWords } from "./activity-words";
 import { ChangeButton } from "./change-button";
 import styles from "./cleaning.module.css";
@@ -73,10 +74,14 @@ function AssignForm({
     event.preventDefault();
     const roomId = new FormData(event.currentTarget).get("roomId");
     startSending(async () => {
-      const after = await assignPlaceDutyAction(
-        placeId,
-        typeof roomId === "string" ? roomId : "",
-        scope.params.day,
+      const after = await sentOr(
+        () =>
+          assignPlaceDutyAction(
+            placeId,
+            typeof roomId === "string" ? roomId : "",
+            scope.params.day,
+          ),
+        NOT_SENT,
       );
       setError(after.error);
       if (after.done) onSaid(after.done);

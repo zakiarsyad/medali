@@ -8,6 +8,7 @@ import {
   useTransition,
 } from "react";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import { isToldAbove } from "./answer-place";
 import styles from "./cohort-assignments.module.css";
 
@@ -83,7 +84,7 @@ export function useChangeAnswer(
 
   async function sendChange(form: FormData) {
     announce(null);
-    const after = await action(START, form);
+    const after = await sentOr(() => action(START, form), NOT_SENT);
     if (isToldAbove("change", after)) {
       announce(after);
       return;

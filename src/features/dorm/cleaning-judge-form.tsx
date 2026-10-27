@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import styles from "./cleaning.module.css";
 import { judgeDutyAction } from "./cleaning-assessment-actions";
 import { CLEANING_NOTE_MAX_LENGTH, type CleaningResult } from "./cleaning-ids";
@@ -25,7 +26,10 @@ export function CleaningJudgeForm({
 
   function send(result: CleaningResult) {
     startSending(async () => {
-      const after = await judgeDutyAction(dutyId, result, note);
+      const after = await sentOr(
+        () => judgeDutyAction(dutyId, result, note),
+        NOT_SENT,
+      );
       setError(after.error);
       if (after.done) onSaid(after.done);
     });

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import { toneBadge } from "@/ui/tone-badge";
 import styles from "./siku.module.css";
 import { cancelSikuEntryAction } from "./siku-actions";
@@ -38,7 +39,9 @@ function CancelButton({
 
   function press() {
     if (!window.confirm(question)) return;
-    startSending(async () => onAnswer(await cancelSikuEntryAction(id)));
+    startSending(async () =>
+      onAnswer(await sentOr(() => cancelSikuEntryAction(id), NOT_SENT)),
+    );
   }
 
   return (

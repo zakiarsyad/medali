@@ -4,9 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import styles from "./leave.module.css";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
-import { type DecisionAnswer, REJECTION_NEEDS_NOTE } from "./leave-messages";
+import {
+  type DecisionAnswer,
+  NOT_SENT_DECISION,
+  REJECTION_NEEDS_NOTE,
+} from "./leave-messages";
 import own from "./tasks.module.css";
 import { taskOutcome } from "./tasks-card";
 
@@ -62,7 +67,9 @@ export function TaskDecide({
 
   function send(decision: string) {
     startSending(async () => {
-      setRefusal(answered(await decide(decision, note)));
+      setRefusal(
+        answered(await sentOr(() => decide(decision, note), NOT_SENT_DECISION)),
+      );
     });
   }
 

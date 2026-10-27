@@ -8,6 +8,7 @@ import { FileSaveButtons } from "@/ui/file-save-buttons";
 import styles from "@/ui/file-upload.module.css";
 import { ModeSwitch } from "@/ui/mode-switch";
 import { saveAgainNote } from "@/ui/repeated-file";
+import { NOT_SENT_RESULT, sentOr } from "@/ui/save-not-sent";
 import skpmStyles from "./skpm.module.css";
 import { previewSkpmFileAction, saveSkpmFileAction } from "./skpm-actions";
 import {
@@ -128,7 +129,10 @@ export function SkpmUpload() {
     form.set("mode", mode);
     if (confirmRepeat) form.set("confirmRepeat", "yes");
     startSaving(async () => {
-      const saved = await saveSkpmFileAction(form);
+      const saved = await sentOr(
+        () => saveSkpmFileAction(form),
+        NOT_SENT_RESULT,
+      );
       if (!saved.ok) return refuse(saved.error);
       setChecked(null);
       setError(null);

@@ -6,6 +6,7 @@ import { checkFileShape, MAX_FILE_ROWS } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
 import { FileDrop } from "@/ui/file-drop";
 import styles from "@/ui/file-upload.module.css";
+import { NOT_SENT_RESULT, sentOr } from "@/ui/save-not-sent";
 import own from "./fitness.module.css";
 import {
   previewFitnessFileAction,
@@ -156,7 +157,10 @@ export function FitnessUpload({ today }: { today: string }) {
     form.set("id", sent.id);
     form.set("testedOn", testedOn);
     startSaving(async () => {
-      const saved = await saveFitnessFileAction(form);
+      const saved = await sentOr(
+        () => saveFitnessFileAction(form),
+        NOT_SENT_RESULT,
+      );
       if (!saved.ok && keepsPicked(saved.error)) return setError(saved.error);
       if (!saved.ok) return refuse(saved.error);
       setChecked(null);

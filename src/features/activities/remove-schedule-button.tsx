@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import { removeScheduleAction } from "./actions";
 import styles from "./activities.module.css";
 import { REMOVAL_QUESTION } from "./form-words";
@@ -22,7 +23,7 @@ export function RemoveScheduleButton({
     const sure = window.confirm(REMOVAL_QUESTION);
     if (!sure) return;
     startRemoving(async () => {
-      const after = await removeScheduleAction(id);
+      const after = await sentOr(() => removeScheduleAction(id), NOT_SENT);
       if (after.done) onRemoved(after.done);
       setError(after.error);
     });

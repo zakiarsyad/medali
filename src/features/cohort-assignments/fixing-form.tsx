@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import { isToldAbove } from "./answer-place";
 import { changeForm } from "./change-form";
 import styles from "./cohort-assignments.module.css";
@@ -66,7 +67,7 @@ export function FixingForm({
   function take(step: DecreeStep) {
     const form = changeForm(shown, { step, decreeNumber, effectiveOn });
     save(async () => {
-      const after = await decreeStepAction(form);
+      const after = await sentOr(() => decreeStepAction(form), NOT_SENT);
       if (isToldAbove(step, after)) {
         announce(after);
         return;

@@ -5,8 +5,10 @@ import { COUNSELLING_HOURS, NOTE_MAX } from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
 import type { StudentMoveOutcome } from "./move-schedule";
+import { REFUSED_NOT_SENT } from "./not-sent";
 import {
   acceptScheduleAction,
   askAnotherTimeAction,
@@ -111,7 +113,12 @@ export function OwnScheduleItem({
 
   function accept() {
     startSending(async () => {
-      answered(await acceptScheduleAction(schedule.id, schedule.version));
+      answered(
+        await sentOr(
+          () => acceptScheduleAction(schedule.id, schedule.version),
+          REFUSED_NOT_SENT,
+        ),
+      );
     });
   }
 
@@ -121,7 +128,10 @@ export function OwnScheduleItem({
     if (!window.confirm(CANCEL_QUESTION)) return;
     announce(null);
     startSending(async () => {
-      const outcome = await cancelScheduleAction(schedule.id, schedule.version);
+      const outcome = await sentOr(
+        () => cancelScheduleAction(schedule.id, schedule.version),
+        REFUSED_NOT_SENT,
+      );
       if (outcome.kind === "refused") {
         answered(outcome);
         return;
@@ -133,14 +143,14 @@ export function OwnScheduleItem({
 
   function askAnother(form: FormData) {
     startSending(async () => {
-      const outcome = await askAnotherTimeAction(
-        schedule.id,
-        schedule.version,
-        {
-          day: text(form, "day"),
-          hour: text(form, "hour"),
-          reason: text(form, "reason"),
-        },
+      const outcome = await sentOr(
+        () =>
+          askAnotherTimeAction(schedule.id, schedule.version, {
+            day: text(form, "day"),
+            hour: text(form, "hour"),
+            reason: text(form, "reason"),
+          }),
+        REFUSED_NOT_SENT,
       );
       answered(outcome);
     });

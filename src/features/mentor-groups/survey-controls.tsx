@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import styles from "./mentor-groups.module.css";
 import {
   cancelSurveyPeriodAction,
@@ -41,7 +42,9 @@ export function SurveyControls({
   function saveEnd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    send(async () => setSaid(await changeSurveyEndAction(form)));
+    send(async () =>
+      setSaid(await sentOr(() => changeSurveyEndAction(form), NOT_SENT)),
+    );
   }
 
   function end(action: EndingAction, question: string) {
@@ -49,7 +52,7 @@ export function SurveyControls({
     const form = new FormData();
     form.set("surveyPeriodId", periodId);
     send(async () => {
-      const after = await action(form);
+      const after = await sentOr(() => action(form), NOT_SENT);
       if (after.done !== null) {
         // The form that opens a period takes the place of the card.
         announce(after.done);

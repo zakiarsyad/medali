@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { FormState } from "./form-message";
+import { SAVE_NOT_SENT } from "./save-not-sent";
 import { sourceFilesEndingWith } from "./source-files";
-import { keptWhenNotSent, SAVE_NOT_SENT } from "./use-save-state";
+import { keptWhenNotSent } from "./use-save-state";
 
 const TYPED = new FormData();
 TYPED.set("name", "Budi Santoso");

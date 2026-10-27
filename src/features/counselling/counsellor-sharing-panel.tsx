@@ -10,9 +10,11 @@ import {
 import type { Parsed } from "@/parsed";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import type { SharingOutcome } from "./change-sharing";
 import type { ConsentPick } from "./consent-picks";
 import styles from "./counselling.module.css";
+import { REFUSED_NOT_SENT } from "./not-sent";
 import { askSharingAction, lookUpSharingAction } from "./sharing-actions";
 import { SharingFacts } from "./sharing-facts";
 import { type SharingAsk, SharingForm } from "./sharing-form";
@@ -97,11 +99,15 @@ function PickedSharing({ student }: { student: ConsentPick }) {
   function ask(sent: SharingAsk) {
     startSending(async () => {
       shown(
-        await askSharingAction(
-          student.id,
-          sent.data,
-          sent.recipients,
-          sent.summary,
+        await sentOr(
+          () =>
+            askSharingAction(
+              student.id,
+              sent.data,
+              sent.recipients,
+              sent.summary,
+            ),
+          REFUSED_NOT_SENT,
         ),
       );
     });
@@ -109,7 +115,12 @@ function PickedSharing({ student }: { student: ConsentPick }) {
 
   function step(action: SharingStepAction, sharing: SharingView) {
     startSending(async () => {
-      shown(await action(student.id, sharing.id, sharing.version));
+      shown(
+        await sentOr(
+          () => action(student.id, sharing.id, sharing.version),
+          REFUSED_NOT_SENT,
+        ),
+      );
     });
   }
 

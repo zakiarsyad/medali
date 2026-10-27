@@ -5,9 +5,11 @@ import { NEEDS_CONSENT } from "@/mental-health/session-words";
 import shared from "@/ui/data-screen.module.css";
 import { text } from "@/ui/form-data";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
 import { CounsellorScheduleCardView } from "./counsellor-schedule-card";
 import type { CounsellorMoveOutcome } from "./move-schedule";
+import { REFUSED_NOT_SENT } from "./not-sent";
 import {
   approveScheduleAction,
   markScheduleDoneAction,
@@ -118,7 +120,10 @@ export function CounsellorScheduleItem({
     announce(null);
     showSession(NO_SESSION);
     startSending(async () => {
-      answered(await action(card.id, card.version), redraws);
+      answered(
+        await sentOr(() => action(card.id, card.version), REFUSED_NOT_SENT),
+        redraws,
+      );
     });
   }
 
@@ -127,7 +132,10 @@ export function CounsellorScheduleItem({
     announce(null);
     showSession(NO_SESSION);
     startSending(async () => {
-      const outcome = await markScheduleDoneAction(card.id, card.version);
+      const outcome = await sentOr(
+        () => markScheduleDoneAction(card.id, card.version),
+        REFUSED_NOT_SENT,
+      );
       answered(outcome, true);
       if (outcome.kind !== "kept" || !mayKeepSessions) return;
       showSession(await scheduleSessionAction(card.id));
@@ -140,7 +148,13 @@ export function CounsellorScheduleItem({
     announce(null);
     showSession(NO_SESSION);
     startSending(async () => {
-      answered(await send(card.id, card.version, proposalOf(form)), redraws);
+      answered(
+        await sentOr(
+          () => send(card.id, card.version, proposalOf(form)),
+          REFUSED_NOT_SENT,
+        ),
+        redraws,
+      );
     });
   }
 

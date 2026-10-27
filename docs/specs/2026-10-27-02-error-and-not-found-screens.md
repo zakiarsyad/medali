@@ -71,9 +71,13 @@ Decided while building:
    sign-in page.
 6. A save that cannot reach the server says "Data tidak terkirim.
    Periksa koneksi internet, lalu coba lagi.", worded like the saves
-   that already say so, such as "Putusan tidak terkirim. …". Every form
-   that shows its answer in the message under its button gets it,
-   "Tambah pengguna" too.
+   that already say so, such as "Putusan tidak terkirim. …". Every save
+   gets it, "Tambah pengguna" too: each form, button, choice and upload
+   that sends a change keeps what was typed or picked and shows the
+   message where it shows its other refusals. The saves that already
+   said "… tidak terkirim" in their own words keep them. A read, such as
+   a search, the detail of a row or the preview of a picked file, is not
+   a save and does not get it.
 7. A signed-out person who opens an unknown address is sent to the
    sign-in page where Google sign-in is the only way in, so they learn
    nothing of which addresses exist; elsewhere they get the card, as

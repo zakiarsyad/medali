@@ -5,6 +5,7 @@ import { DORM_SHORT_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
 import { isOwnRecord } from "./own-record";
 import { OwnRecordNote } from "./own-record-note";
 import { cancelViolationAction } from "./violation-actions";
@@ -29,7 +30,9 @@ function CancelButton({
 
   function press() {
     if (!window.confirm(CANCEL_QUESTION)) return;
-    startSending(async () => onAnswer(await cancelViolationAction(id)));
+    startSending(async () =>
+      onAnswer(await sentOr(() => cancelViolationAction(id), NOT_SENT)),
+    );
   }
 
   return (

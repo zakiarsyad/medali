@@ -1,15 +1,6 @@
 import { unstable_rethrow } from "next/navigation";
 import { useActionState } from "react";
-
-/** Said under the button when a save did not reach the server, or no answer came back. */
-export const SAVE_NOT_SENT =
-  "Data tidak terkirim. Periksa koneksi internet, lalu coba lagi.";
-
-/** What every form that saves says back: a refusal, or that it was done. */
-interface SaveAnswer {
-  error: string | null;
-  done: string | null;
-}
+import { SAVE_NOT_SENT, type SaveAnswer } from "./save-not-sent";
 
 /**
  * The save, or what the form held with `SAVE_NOT_SENT` when it did not
