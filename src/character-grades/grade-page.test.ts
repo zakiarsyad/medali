@@ -7,6 +7,7 @@ import {
   GRADE_LIST_PAGE_SIZE,
   type GradeFilter,
   type GradeParams,
+  readGradeParams,
   START_PARAMS,
 } from "@/features/character-grades/grade-address";
 import { pageWithin } from "@/ui/list-pages";
@@ -90,6 +91,8 @@ function askedFor(rows: readonly GradeRow[]): GradeParams[] {
     ...asked,
     { ...START_PARAMS, query: namePart.toLocaleUpperCase("id-ID") },
     { ...START_PARAMS, query: first.nim.slice(2, 8) },
+    readGradeParams({ cari: `\0${namePart}\0` }),
+    readGradeParams({ cari: "\0 \0" }),
   ];
 }
 
