@@ -78,8 +78,55 @@ describe("the shared parts", () => {
     expect(rule.get("display")).toBe("var(--link-display)");
   });
 
+  it("lends the tap area to a screen part", () => {
+    const rule = declarationsOf("src/ui/data-screen.module.css", ".tapArea");
+    expect(rule.get("min-width")).toBe(TAP);
+    expect(rule.get("min-height")).toBe(TAP);
+  });
+
   it("keeps a link inline inside running words, where no least size applies", () => {
     const rule = declarationsOf("src/ui/data-screen.module.css", ".inline");
     expect(rule.get("display")).toBe("inline");
+  });
+});
+
+describe("the screen parts", () => {
+  it.each([
+    ["src/features/dorm/rooms.module.css", ".choice"],
+    ["src/features/dorm/activities.module.css", ".countAbsent"],
+    ["src/features/dorm/violations.module.css", ".tick"],
+    ["src/features/activities/activities.module.css", ".choice"],
+    ["src/features/siku/siku.module.css", ".choice"],
+    ["src/features/mentor-groups/mentor-groups.module.css", ".part"],
+    ["src/features/mentor-groups/mentor-groups.module.css", ".confirm"],
+    ["src/features/guidance/discipline-penalties.module.css", ".choice"],
+    ["src/features/guidance/violation-notes.module.css", ".tick"],
+    ["src/features/curriculum/curriculum.module.css", ".tick"],
+    ["src/features/counselling/counselling.module.css", ".tick"],
+  ])("%s %s takes the shared tap area", (file, selector) => {
+    expect(declarationsOf(file, selector).get("composes")).toBe(
+      `tapArea from "../../ui/data-screen.module.css"`,
+    );
+  });
+
+  it.each([
+    ["src/features/counselling/counselling.module.css", ".steps summary"],
+    ["src/features/mentor-groups/mentor-groups.module.css", ".folded summary"],
+    ["src/features/dashboard/dashboard.module.css", ".more summary"],
+    ["src/features/dorm/dashboard.module.css", ".more > a"],
+    [
+      "src/features/cohort-assignments/cohort-assignments.module.css",
+      ".logTitle",
+    ],
+  ])("%s %s is at least as high as the tap area", (file, selector) => {
+    expect(declarationsOf(file, selector).get("min-height")).toBe(TAP);
+  });
+
+  it("stands a chip that is a link as a box on a phone", () => {
+    const rule = declarationsOf(
+      "src/features/dorm/rooms.module.css",
+      ".choice",
+    );
+    expect(rule.get("display")).toBe("var(--link-display)");
   });
 });

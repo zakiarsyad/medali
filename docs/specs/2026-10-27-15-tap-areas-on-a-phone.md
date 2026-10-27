@@ -69,5 +69,5 @@ Every role, on a phone.
 - [x] 1. Shared parts: fields, buttons, link buttons, tabs, the menu
   button, the side menu, check box rows and fold-open links take a tap
   area of at least 44 by 44 px on a phone.
-- [ ] 2. Screen parts: the chips, choice rows and fold-open links of
+- [x] 2. Screen parts: the chips, choice rows and fold-open links of
   each screen take the same tap area on a phone.

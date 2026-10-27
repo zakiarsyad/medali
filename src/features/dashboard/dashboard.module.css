@@ -550,6 +550,8 @@ a.tile:hover {
 }
 
 .more summary {
+  min-height: var(--tap-least);
+  align-content: center;
   padding: var(--space-sm) 0;
   color: var(--navy3);
   font-weight: var(--weight-semibold);

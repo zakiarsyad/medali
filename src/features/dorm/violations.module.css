@@ -68,6 +68,7 @@
 
 /* The tick "Kurangi" of a counted violation, its box beside its word. */
 .tick {
+  composes: tapArea from "../../ui/data-screen.module.css";
   display: inline-flex;
   gap: var(--space-xs);
   align-items: center;

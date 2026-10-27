@@ -199,11 +199,13 @@ a.quiet {
 
 /*
  * On a phone a link button, and a tick or round choice with its words,
- * take the tap area as their own box, their look unchanged.
+ * take the tap area as their own box, their look unchanged. A screen
+ * composes `tapArea` for its own chips and choices.
  */
 .link,
 .danger,
-.role {
+.role,
+.tapArea {
   min-width: var(--tap-least);
   min-height: var(--tap-least);
   align-content: center;
