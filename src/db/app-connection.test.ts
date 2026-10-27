@@ -28,11 +28,11 @@ describe("sharedConnectionAddress", () => {
 
 describe("appConnectionOf", () => {
   it.each([["pr-preview" as const], ["main-preview" as const]])(
-    "on the %s uses the shared address with few connections that close when idle",
+    "on the %s uses the shared address with one connection that closes when idle",
     (stage) => {
       expect(appConnectionOf(NEON, stage)).toEqual({
         url: NEON_POOLED,
-        limits: { max: 5, idleTimeoutSeconds: 10 },
+        limits: { max: 1, idleTimeoutSeconds: 10 },
       });
     },
   );
