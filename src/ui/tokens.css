@@ -360,5 +360,15 @@
     --side: #0a1222;
     --navy: #c9d6ee;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+    /*
+     * Badge text on the dark surface: each status colour made lighter, the
+     * least that reads. The general status colours stay, so charts do not
+     * change.
+     */
+    --badge-good-ink: #529478;
+    --badge-warning-ink: #b17d2e;
+    --badge-bad-ink: #c66d77;
+    --badge-severe-ink: #ffffff;
   }
 }

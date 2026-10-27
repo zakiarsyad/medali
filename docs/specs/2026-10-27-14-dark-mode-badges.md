@@ -51,5 +51,5 @@ Every role that sees a status badge with dark mode on.
 
 ## Steps
 
-- [ ] 1. Dark mode text colours for the badges that need them, with the
+- [x] 1. Dark mode text colours for the badges that need them, with the
   shared check of the badge colours run in dark mode too.
