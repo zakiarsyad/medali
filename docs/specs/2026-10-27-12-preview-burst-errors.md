@@ -87,9 +87,13 @@ Everyone who uses the preview, and the owner, who tries merged work there.
    instead of five, still closed after 10 seconds idle and still through
    the shared-connection address. Twenty copies then ask for about
    twenty connections. One connection still sends a page's questions
-   one after another without waiting for each answer, and the free
-   database runs on a quarter of a processor, so more connections in one
-   copy did not make it answer faster.
+   one after another without waiting for each answer. On this computer,
+   with all twenty requests in one copy, the middle answer of Dashboard
+   went from about 0.6 to 1.2 seconds, and a single request took under
+   0.1 seconds. The hosting spreads such a burst over many copies, and
+   the smallest free database runs on a quarter of a processor, so more
+   connections in one copy gain little there. Whether the middle answer
+   stays within about 1 second is confirmed after the merge.
 3. No transaction in the app asks the database a second way while it is
    open, so one connection per copy cannot leave a request waiting on
    itself.
@@ -103,6 +107,6 @@ Everyone who uses the preview, and the owner, who tries merged work there.
 
 ## Steps
 
-- [ ] 1. On both previews each copy of the app keeps one database
+- [x] 1. On both previews each copy of the app keeps one database
   connection; the campus server and a local computer keep today's
   connection.

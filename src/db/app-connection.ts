@@ -5,8 +5,9 @@ import type { PoolLimits } from "./connect";
  * The hosting runs many short-lived copies of the app at once. With ten
  * connections each, kept open while idle, they ran the free database out
  * of connections, and every page failed until the idle copies went away.
+ * With five each, twenty copies opening theirs at once still did.
  */
-const PREVIEW_LIMITS: PoolLimits = { max: 5, idleTimeoutSeconds: 10 };
+const PREVIEW_LIMITS: PoolLimits = { max: 1, idleTimeoutSeconds: 10 };
 
 export interface AppConnection {
   url: string;
