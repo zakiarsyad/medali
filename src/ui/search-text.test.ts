@@ -18,4 +18,16 @@ describe("searchText", () => {
   it("counts the length before the spaces around it are dropped", () => {
     expect(searchText(` ${"a".repeat(SEARCH_TEXT_MAX)}`)).toBeNull();
   });
+
+  it("drops the null character, which the database refuses", () => {
+    expect(searchText("\0laras\0 uji\0")).toBe("laras uji");
+  });
+
+  it("gives nothing for a text of only null characters and spaces", () => {
+    expect(searchText("\0 \0\0 ")).toBeNull();
+  });
+
+  it("counts the length once the null characters are dropped", () => {
+    expect(searchText(`\0${"a".repeat(SEARCH_TEXT_MAX)}\0`)).toHaveLength(100);
+  });
 });
