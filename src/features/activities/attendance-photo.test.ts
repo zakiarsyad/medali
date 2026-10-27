@@ -3,9 +3,9 @@ import { fileFault } from "@/files/file-check";
 import {
   PHOTO_FAULTS,
   PHOTO_FILE_NAME,
-  PHOTO_MAX_BYTES,
   PHOTO_RULE,
   pickedPhotoFault,
+  SENT_PHOTO_MAX_BYTES,
 } from "./attendance-photo";
 import { testPhoto } from "./test-photo";
 
@@ -44,14 +44,15 @@ describe("what the server takes as a photo", () => {
     return fault === null ? null : PHOTO_FAULTS[fault];
   }
 
-  it("takes a JPEG picture of up to 8 MB", () => {
+  it("takes a JPEG picture of up to 4 MB", () => {
+    expect(SENT_PHOTO_MAX_BYTES).toBe(4 * 1024 * 1024);
     expect(faultOf(testPhoto())).toBeNull();
-    expect(faultOf(testPhoto(PHOTO_MAX_BYTES))).toBeNull();
+    expect(faultOf(testPhoto(SENT_PHOTO_MAX_BYTES))).toBeNull();
   });
 
-  it("refuses a picture one byte over 8 MB", () => {
-    expect(faultOf(testPhoto(PHOTO_MAX_BYTES + 1))).toBe(
-      "Ukuran foto maksimal 8 MB.",
+  it("refuses a picture one byte over 4 MB", () => {
+    expect(faultOf(testPhoto(SENT_PHOTO_MAX_BYTES + 1))).toBe(
+      "Foto terlalu besar. Pilih foto lain.",
     );
   });
 

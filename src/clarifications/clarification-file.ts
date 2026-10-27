@@ -10,12 +10,15 @@ import { JPEG, PDF, PNG } from "@/files/file-kinds";
 
 const MEGABYTE = 1024 * 1024;
 
-/** The largest file of a clarification, picked or sent. */
-export const CLARIFICATION_FILE_MAX_BYTES = 5 * MEGABYTE;
+/**
+ * The largest file of a clarification, picked or sent. A PDF is sent as
+ * it is, so this stays below what the preview hosting takes in one send.
+ */
+export const CLARIFICATION_FILE_MAX_BYTES = 4 * MEGABYTE;
 
 export const FILE_MISSING = "Lampirkan dokumen pendukung.";
 export const FILE_WRONG_KIND = "Lampiran harus berupa PDF atau gambar.";
-export const FILE_TOO_LARGE = "Ukuran lampiran maksimal 5 MB.";
+export const FILE_TOO_LARGE = "Ukuran lampiran maksimal 4 MB.";
 
 /**
  * What the server takes as the file of a clarification. Other kinds of

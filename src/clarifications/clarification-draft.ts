@@ -1,7 +1,12 @@
+import { isRefusedForSize } from "@/files/sent-form-size";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
-import { FILE_MISSING, FILE_WRONG_KIND } from "./clarification-file";
+import {
+  FILE_MISSING,
+  FILE_TOO_LARGE,
+  FILE_WRONG_KIND,
+} from "./clarification-file";
 import {
   explanationFault,
   isPictureName,
@@ -117,6 +122,9 @@ export async function sendDraft(
     return { error: null, done: sent.value };
   } catch (error) {
     edges.rethrow(error);
+    if (isRefusedForSize(error, ready.value)) {
+      return { error: FILE_TOO_LARGE, done: null };
+    }
     return { error: CLARIFICATION_SEND_FAILED, done: null };
   }
 }

@@ -8,13 +8,10 @@ import { shrunkSize } from "@/ui/photo-size";
 import { CAMERA_FAILED, cameraFault, NO_CAMERA_HERE } from "./camera-fault";
 import styles from "./leave.module.css";
 import { sendReturnReportAction } from "./leave-actions";
-import { RETURN_PHOTO_FILE_NAME } from "./return-photo";
+import { RETURN_PHOTO_FILE_NAME, returnSendFault } from "./return-photo";
 
 /** How much of the detail a sent photo keeps: enough to see the dorm. */
 const JPEG_QUALITY = 0.72;
-
-export const SEND_FAILED =
-  "Laporan tidak terkirim. Periksa koneksi internet, lalu tekan Kirim laporan kembali lagi.";
 
 /** Where the camera stands: shut, opening, showing what it sees, or a photo taken. */
 type Stage = "shut" | "opening" | "live" | "taken";
@@ -138,10 +135,9 @@ export function ReturnCamera({
     if (photo === null || sending) return;
     setSending(true);
     setFault(null);
+    const form = formOf(leaveId, reportId, photo.blob);
     try {
-      const sent = await sendReturnReportAction(
-        formOf(leaveId, reportId, photo.blob),
-      );
+      const sent = await sendReturnReportAction(form);
       if (sent.ok) {
         onSent(sent.value);
         return;
@@ -149,7 +145,7 @@ export function ReturnCamera({
       setFault(sent.error);
     } catch (error) {
       unstable_rethrow(error);
-      setFault(SEND_FAILED);
+      setFault(returnSendFault(error, form));
     } finally {
       setSending(false);
     }

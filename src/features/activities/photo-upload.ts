@@ -1,7 +1,9 @@
+import { isRefusedForSize } from "@/files/sent-form-size";
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
 import {
   NOT_A_PICTURE,
+  PHOTO_FAULTS,
   PHOTO_FILE_NAME,
   pickedPhotoFault,
 } from "./attendance-photo";
@@ -96,6 +98,11 @@ const START: UploadState = {
   sending: false,
 };
 
+function failureWords(error: unknown, form: FormData): string {
+  if (isRefusedForSize(error, form)) return PHOTO_FAULTS["too-large"];
+  return SEND_FAILED;
+}
+
 function formOf(scheduleId: string, photo: Blob): FormData {
   const form = new FormData();
   form.set("scheduleId", scheduleId);
@@ -184,8 +191,9 @@ export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
   }
 
   async function deliver(photo: Blob): Promise<void> {
+    const form = formOf(scheduleId, photo);
     try {
-      const sent = await edges.send(formOf(scheduleId, photo));
+      const sent = await edges.send(form);
       onAnswer(
         sent.ok
           ? { error: null, done: sent.value }
@@ -193,7 +201,7 @@ export function createPhotoUpload(parts: PhotoUploadParts): PhotoUpload {
       );
     } catch (error) {
       edges.rethrow(error);
-      onAnswer({ error: SEND_FAILED, done: null });
+      onAnswer({ error: failureWords(error, form), done: null });
     } finally {
       // The photo stays, so it can be sent again.
       change({ sending: false });
