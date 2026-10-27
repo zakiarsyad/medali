@@ -74,7 +74,8 @@ Decided while building:
    that already say so, such as "Putusan tidak terkirim. …". Every save
    gets it, "Tambah pengguna" too: each form, button, choice and upload
    that sends a change keeps what was typed or picked and shows the
-   message where it shows its other refusals. The saves that already
+   message where it shows its other refusals, which in most forms is
+   just above the save button. The saves that already
    said "… tidak terkirim" in their own words keep them. A read, such as
    a search, the detail of a row or the preview of a picked file, is not
    a save and does not get it. A save that reaches the server but fails
@@ -85,8 +86,11 @@ Decided while building:
    still goes there.
 7. A signed-out person who opens an unknown address is sent to the
    sign-in page where Google sign-in is the only way in, so they learn
-   nothing of which addresses exist; elsewhere they get the card, as
-   today. This now holds however long the address is.
+   nothing of which addresses exist. This now holds however long the
+   address is. Where "Ganti peran" is on, a visitor is always signed in
+   as a sample account; only when the sample data holds no account at
+   all does an address of three parts or more show the card, while one
+   or two parts still say "Sesi berakhir", as today.
 8. On Pengasuh › Kelompok a wrong group opens the list of groups with a
    "Kelompok tidak ditemukan" window over it, worded as the one for a
    student: "Data kelompok ini tidak ada atau tidak dapat Anda lihat.
