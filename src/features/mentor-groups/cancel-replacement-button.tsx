@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { cancelReplacementAction } from "./replacement-actions";
 
 const START: FormState = { error: null, done: null };
@@ -24,10 +25,7 @@ export function CancelReplacementButton({
   /** What is asked before the cancel is sent. */
   question: string;
 }) {
-  const [state, action, pending] = useActionState(
-    cancelReplacementAction,
-    START,
-  );
+  const [state, action, pending] = useSaveState(cancelReplacementAction, START);
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {
     if (!window.confirm(question)) event.preventDefault();

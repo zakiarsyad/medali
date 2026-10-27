@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useActionState, useState } from "react";
+import { Fragment, useState } from "react";
 import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { text, texts } from "@/ui/form-data";
 import { FormMessage } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { addStudentAction, changeStudentAction } from "./actions";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
@@ -188,7 +189,7 @@ export function StudentForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(send, START);
+  const [state, action, pending] = useSaveState(send, START);
   const shown = formShows(state, start);
   const note = residentNote(resident, period);
   const program = programs.find(

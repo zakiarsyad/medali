@@ -1,10 +1,11 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useAskBeforeLeaving } from "@/ui/ask-before-leaving";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { toneBadge } from "@/ui/tone-badge";
+import { useSaveState } from "@/ui/use-save-state";
 import styles from "./activities.module.css";
 import type { ActivityRow } from "./activity-row";
 import { saveCountAction } from "./count-actions";
@@ -203,7 +204,7 @@ export function CountForm({
     return after;
   }
 
-  const [state, save, pending] = useActionState(send, {
+  const [state, save, pending] = useSaveState(send, {
     error: null,
     done: null,
     version: kept?.version ?? NOT_COUNTED_YET,

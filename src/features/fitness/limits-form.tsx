@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import type { LimitsInForce } from "@/health-notes/fitness-limits";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import styles from "./fitness.module.css";
 import { saveLimitsAction } from "./fitness-actions";
 import { LIMITS_VERSION_FIELD, typedLimitsOf } from "./fitness-input";
@@ -20,7 +21,7 @@ const START: FormState = { error: null, done: null };
  */
 export function LimitsForm({ inForce }: { inForce: LimitsInForce }) {
   const [typed, setTyped] = useState(() => typedLimitsOf(inForce.limits));
-  const [state, save, pending] = useActionState(saveLimitsAction, START);
+  const [state, save, pending] = useSaveState(saveLimitsAction, START);
 
   return (
     // noValidate: the server says what is wrong, in the app's own words.

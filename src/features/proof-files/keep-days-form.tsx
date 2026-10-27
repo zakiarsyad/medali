@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState } from "react";
+import { type FormEvent, startTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveKeepDaysAction } from "./actions";
 import { KEEP_DAYS_MAX, KEEP_DAYS_MIN } from "./keep-days";
 import styles from "./proof-files.module.css";
@@ -11,7 +12,7 @@ const START: FormState = { error: null, done: null };
 
 /** The number of days proof files are kept, empty while not set. */
 export function KeepDaysForm({ keepDays }: { keepDays: number | null }) {
-  const [state, save, pending] = useActionState(saveKeepDaysAction, START);
+  const [state, save, pending] = useSaveState(saveKeepDaysAction, START);
 
   // Sent from here, not by the browser: the browser puts a sent form back
   // on its first number, and a refused number must stay to be corrected.

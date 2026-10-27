@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import {
   OLD_MENTOR_STATUSES,
   REPLACEMENT_REASON_TITLES,
@@ -11,6 +11,7 @@ import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { MENTOR_STATUS_TITLES } from "@/ui/mentor-status";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { NOTE_MAX_LENGTH } from "./evaluation-input";
 import styles from "./mentor-groups.module.css";
 import { saveReplacementAction } from "./replacement-actions";
@@ -116,7 +117,7 @@ export function ReplacementForm({
   /** The day on campus, which "Tanggal efektif" starts with. */
   today: string;
 }) {
-  const [state, save, pending] = useActionState(saveReplacementAction, START);
+  const [state, save, pending] = useSaveState(saveReplacementAction, START);
   const [typed, setTyped] = useState(() => startOfReplacement(today));
   const [answered, setAnswered] = useState(state);
   if (state !== answered) {

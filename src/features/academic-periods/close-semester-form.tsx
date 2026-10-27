@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { closeSemesterAction } from "./actions";
 import { UNDERSTOOD, UNDERSTOOD_FIELD } from "./close-request";
 import { PERIODS_ADDRESS } from "./period-address";
@@ -12,7 +12,7 @@ import styles from "./periods.module.css";
 const START: FormState = { error: null, done: null };
 
 export function CloseSemesterForm({ periodId }: { periodId: string }) {
-  const [state, close, pending] = useActionState(closeSemesterAction, START);
+  const [state, close, pending] = useSaveState(closeSemesterAction, START);
   return (
     <form action={close} className={styles.closeForm}>
       <input type="hidden" name="id" value={periodId} />

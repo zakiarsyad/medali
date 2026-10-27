@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { removeAccountAction } from "./actions";
 
 const START: FormState = { error: null, done: null };
@@ -18,7 +19,7 @@ export function RemoveAccountButton({
   name,
   roles,
 }: RemoveAccountButtonProps) {
-  const [state, action, pending] = useActionState(removeAccountAction, START);
+  const [state, action, pending] = useSaveState(removeAccountAction, START);
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {
     const sure = window.confirm(

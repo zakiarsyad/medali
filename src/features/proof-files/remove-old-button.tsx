@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { removeOldProofsAction } from "./actions";
 import styles from "./proof-files.module.css";
 import { type CountsByKind, totalOf } from "./proof-kinds";
@@ -21,7 +22,7 @@ export function RemoveOldButton({
   removable: CountsByKind;
   isSet: boolean;
 }) {
-  const [state, remove, pending] = useActionState(removeOldProofsAction, START);
+  const [state, remove, pending] = useSaveState(removeOldProofsAction, START);
   const isOff = !isSet || totalOf(removable) === 0;
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {

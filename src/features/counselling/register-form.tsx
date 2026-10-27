@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState } from "react";
+import { type FormEvent, startTransition } from "react";
 import {
   COUNSELLING_HOURS,
   COUNSELLING_TOPICS,
@@ -9,6 +9,7 @@ import {
 } from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { CONSENT_TEXT } from "./consent-words";
 import styles from "./counselling.module.css";
 import { registerCounsellingAction } from "./own-schedule-actions";
@@ -28,10 +29,7 @@ const START: FormState = { error: null, done: null };
  * first day that may be picked, as the day the form opens with.
  */
 export function RegisterForm({ tomorrow }: { tomorrow: string }) {
-  const [state, save, pending] = useActionState(
-    registerCounsellingAction,
-    START,
-  );
+  const [state, save, pending] = useSaveState(registerCounsellingAction, START);
   const announce = useScheduleNotice();
 
   // Sent from here, not by the browser: the browser empties a sent form,

@@ -69,12 +69,17 @@ Decided while building:
 5. When the menu itself cannot load, the whole app counts as not able to
    load, and the message shows on its own page, in a box like the
    sign-in page.
+6. A save that cannot reach the server says "Data tidak terkirim.
+   Periksa koneksi internet, lalu coba lagi.", worded like the saves
+   that already say so, such as "Putusan tidak terkirim. …". Every form
+   that shows its answer in the message under its button gets it,
+   "Tambah pengguna" too.
 
 ## Steps
 
 - [x] 1. A screen that cannot load, and the whole app when it cannot
   load, show the message of decision 1 in the app's look, with checks.
-- [ ] 2. A save that cannot reach the server keeps the form and its
+- [x] 2. A save that cannot reach the server keeps the form and its
   typed values and shows a message under the button, with checks.
 - [ ] 3. Any unknown address shows "Halaman tidak ditemukan" inside
   the menu for a signed-in person, and the card without the menu for

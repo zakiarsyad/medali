@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { isDay } from "@/db/is-day";
 import { CategoryBadge } from "@/health-notes/category-badge";
 import { categoryOf } from "@/health-notes/fitness-category";
@@ -12,6 +12,7 @@ import {
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import styles from "./fitness.module.css";
 import { groupMembersAction, saveScoresAction } from "./fitness-actions";
 import type { GroupChoice, GroupMember } from "./fitness-groups";
@@ -181,7 +182,7 @@ export function ScoreForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
   const year = isDay(testedOn) ? String(testYearOf(testedOn)) : "";
   const isFuture = isDay(testedOn) && testedOn > today;
 

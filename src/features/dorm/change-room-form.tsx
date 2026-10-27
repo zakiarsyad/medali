@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState } from "react";
+import { type FormEvent, startTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { changeRoomAction } from "./actions";
 import {
   MAX_CAPACITY,
@@ -15,7 +16,7 @@ import styles from "./rooms.module.css";
 const START: FormState = { error: null, done: null };
 
 export function ChangeRoomForm({ room }: { room: Room }) {
-  const [state, save, pending] = useActionState(changeRoomAction, START);
+  const [state, save, pending] = useSaveState(changeRoomAction, START);
 
   // Sent from here, not by the browser: the browser puts a sent form back
   // on its first values, and a refused one must stay to be corrected.

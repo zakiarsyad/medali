@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  type KeyboardEvent,
-  useActionState,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { type KeyboardEvent, useRef, useState, useTransition } from "react";
 import {
   CATEGORY_WORDS,
   LEVEL_WORDS,
@@ -21,6 +15,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
+import { useSaveState } from "@/ui/use-save-state";
 import { startChange } from "./asked-start";
 import styles from "./discipline-penalties.module.css";
 import {
@@ -416,7 +411,7 @@ export function PenaltyForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   return (
     <div className={notes.parts}>

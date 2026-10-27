@@ -17,7 +17,7 @@ describe("a button pressed twice on the screen", () => {
     const button = buttonOf("replacement-form.tsx", "Tetapkan penggantian");
 
     expect(form).toContain(
-      "const [state, save, pending] = useActionState(saveReplacementAction, START);",
+      "const [state, save, pending] = useSaveState(saveReplacementAction, START);",
     );
     expect(button).toMatch(/disabled=\{\s*pending \|\|/);
   });
@@ -30,7 +30,7 @@ describe("a button pressed twice on the screen", () => {
     const button = buttonOf("cancel-replacement-button.tsx", "Batalkan\n");
 
     expect(form).toMatch(
-      /const \[state, action, pending\] = useActionState\(\s*cancelReplacementAction,/,
+      /const \[state, action, pending\] = useSaveState\(\s*cancelReplacementAction,/,
     );
     expect(button).toContain("disabled={pending}");
   });

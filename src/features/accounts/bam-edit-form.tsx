@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { changeBamRolesAction } from "./actions";
 import { BamRoleChoices } from "./bam-role-choices";
 import type { BamStudent } from "./list-bam-students";
@@ -18,7 +18,7 @@ interface BamEditFormProps {
 }
 
 export function BamEditForm({ student, back }: BamEditFormProps) {
-  const [state, save, pending] = useActionState(changeBamRolesAction, START);
+  const [state, save, pending] = useSaveState(changeBamRolesAction, START);
   return (
     <form onSubmit={(event) => sendForm(event, save)} className={styles.form}>
       <input type="hidden" name="accountId" value={student.accountId} />
