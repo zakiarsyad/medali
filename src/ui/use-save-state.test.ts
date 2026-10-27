@@ -99,13 +99,13 @@ const SENT_BY_THE_BROWSER: Record<string, string> = {
     "Only a hidden field.",
   "src/features/proof-files/remove-old-button.tsx": "A button with no field.",
   "src/features/students/remove-student-button.tsx": "Only a hidden field.",
-  "src/features/students/student-form.tsx":
-    "Draws its fields anew from what it keeps after each send.",
+  "src/features/dorm/place-form.tsx":
+    "The pick is the send, so it returns to empty to be sent again.",
   "src/features/curriculum/indicator-form.tsx":
     "Keeps every typed text in its own state.",
 };
 
-const HANDS_ACTION_TO_BROWSER = /<form[^>]*\saction=\{/;
+const HANDS_ACTION_TO_BROWSER = /<form\b(?:=>|[^>])*\saction=\{/;
 
 describe("every form with a save state", () => {
   const forms = sourceFilesEndingWith(".tsx").filter((path) =>
@@ -119,6 +119,11 @@ describe("every form with a save state", () => {
         "<form onSubmit={(event) => sendForm(event, save)}>",
       ),
     ).toBe(false);
+    expect(
+      HANDS_ACTION_TO_BROWSER.test(
+        "<form onChange={(event) => follow(event)} action={save}>",
+      ),
+    ).toBe(true);
   });
 
   it.each(forms.filter((path) => !(path in SENT_BY_THE_BROWSER)))(
@@ -128,7 +133,11 @@ describe("every form with a save state", () => {
     },
   );
 
-  it.each(Object.keys(SENT_BY_THE_BROWSER))("%s still exists", (path) => {
-    expect(forms).toContain(path);
-  });
+  it.each(Object.keys(SENT_BY_THE_BROWSER))(
+    "%s still exists, and still hands its save to the browser",
+    (path) => {
+      expect(forms).toContain(path);
+      expect(readFileSync(path, "utf8")).toMatch(HANDS_ACTION_TO_BROWSER);
+    },
+  );
 });
