@@ -1,3 +1,4 @@
+import Form from "next/form";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
@@ -30,7 +31,7 @@ const EVERY_STUDENT: RowLimit = { kind: "all" };
 
 function Search({ query }: { query: string }) {
   return (
-    <form action={NEW_STUDENTS_ADDRESS} className={shared.filters}>
+    <Form action={NEW_STUDENTS_ADDRESS} className={shared.filters}>
       <input
         name="q"
         className={shared.input}
@@ -41,7 +42,7 @@ function Search({ query }: { query: string }) {
       <button type="submit" className={shared.quiet}>
         Cari
       </button>
-    </form>
+    </Form>
   );
 }
 

@@ -1,3 +1,4 @@
+import Form from "next/form";
 import { ROLES } from "@/auth/roles";
 import { database } from "@/db/database";
 import { listStudyPrograms } from "@/db/study-programs";
@@ -21,7 +22,7 @@ import { LISTED_ROLES } from "./managed-roles";
 
 function Filters({ params }: { params: ListParams }) {
   return (
-    <form action={USERS_ADDRESS} className={styles.filters}>
+    <Form action={USERS_ADDRESS} className={styles.filters}>
       <input
         name="q"
         className={styles.input}
@@ -48,7 +49,7 @@ function Filters({ params }: { params: ListParams }) {
       <button type="submit" className={styles.quiet}>
         Cari
       </button>
-    </form>
+    </Form>
   );
 }
 
