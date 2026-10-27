@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+  useSelectedLayoutSegments,
+} from "next/navigation";
 import {
   createContext,
+  memo,
   type ReactNode,
   useCallback,
   useContext,
@@ -16,8 +21,8 @@ import {
   formMoveAddress,
   isChosen,
   linkMoveAddress,
-  movesAway,
-  pathOf,
+  type MoveStep,
+  movingToAfter,
 } from "./page-move-rules";
 
 interface PageMove {
@@ -25,7 +30,7 @@ interface PageMove {
   movingTo: string | null;
   /** The path a tab or menu item shows as chosen, or null for the open one. */
   chosen: string | null;
-  /** Marks a move to `to` as started, until the address shown changes. */
+  /** Marks a move to `to` as started, until the app shows what it got. */
   start: (to: string) => void;
 }
 
@@ -63,27 +68,35 @@ function formMoveOf(event: SubmitEvent): string | null {
 }
 
 /**
+ * Tells each time the app has shown what the router got: the router gives
+ * the layout new parts then, also for a move that ends on the address
+ * already shown. Kept apart, so a render of the content does not count.
+ */
+const ShownMark = memo(function ShownMark({ shown }: { shown: () => void }) {
+  useSelectedLayoutSegments();
+  useEffect(() => shown());
+  return null;
+});
+
+/**
  * Knows when the app is moving to another page, tab, filter or search,
- * from the press until the new address is shown. The app's links and
+ * from the press until the app shows what it got. The app's links and
  * search forms open their page themselves; a press or a send is seen here
  * after them, so a press that a form takes back, as one with unsaved
  * changes asks, is never seen.
  */
 export function PageMoveProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const shown = `${pathname}?${useSearchParams().toString()}`;
-  const [seen, setSeen] = useState(shown);
   const [movingTo, setMovingTo] = useState<string | null>(null);
 
-  if (seen !== shown) {
-    setSeen(shown);
-    setMovingTo(null);
-  }
-
-  const start = useCallback((to: string) => {
-    const here = window.location.href;
-    setMovingTo(movesAway(to, here) ? pathOf(to, here) : null);
+  const step = useCallback((taken: MoveStep) => {
+    setMovingTo(movingToAfter(taken, window.location.href));
   }, []);
+  const start = useCallback(
+    (to: string) => step({ kind: "pressed", to }),
+    [step],
+  );
+  const shown = useCallback(() => step({ kind: "shown" }), [step]);
 
   useEffect(() => {
     function onPress(event: MouseEvent) {
@@ -108,6 +121,7 @@ export function PageMoveProvider({ children }: { children: ReactNode }) {
     <PageMoveContext.Provider
       value={{ movingTo, chosen: chosenPath(movingTo, pathname), start }}
     >
+      <ShownMark shown={shown} />
       {children}
     </PageMoveContext.Provider>
   );

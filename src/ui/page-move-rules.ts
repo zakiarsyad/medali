@@ -12,9 +12,13 @@ export interface LinkMovePress extends LinkPress {
   takenByApp: boolean;
 }
 
-/** An address of the app: its path and what follows its `?`. */
+/**
+ * An address of the app: its path and what follows its `?`, written the
+ * one way the router writes it, so the same address is never two.
+ */
 function appAddress(url: URL): string {
-  return url.pathname + url.search;
+  const search = new URLSearchParams(url.search).toString();
+  return search === "" ? url.pathname : `${url.pathname}?${search}`;
 }
 
 /**
@@ -105,4 +109,17 @@ export function formMoveAddress(
   }
   to.search = search.toString();
   return appAddress(to);
+}
+
+/** A step of a move: a press that opens `to`, or the app showing what it got. */
+export type MoveStep = { kind: "pressed"; to: string } | { kind: "shown" };
+
+/**
+ * The path a move runs to after a step, or null when none runs. A move
+ * ends once the app has shown what it got, also when that is the address
+ * already shown, as for a page that sends on to its first tab.
+ */
+export function movingToAfter(step: MoveStep, here: string): string | null {
+  if (step.kind === "shown") return null;
+  return movesAway(step.to, here) ? pathOf(step.to, here) : null;
 }
