@@ -61,5 +61,5 @@ Kepala Unit, who removes old proof files on Pengaturan > Berkas bukti.
 
 ## Steps
 
-- [ ] 1. Files of a removed schedule count as decided on Berkas bukti
+- [x] 1. Files of a removed schedule count as decided on Berkas bukti
   and go with "Hapus berkas lama", with checks.

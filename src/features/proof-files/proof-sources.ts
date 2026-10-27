@@ -3,6 +3,7 @@ import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import {
   activityAttendances,
   activityClarifications,
+  activitySchedules,
   dormClarifications,
   dormReturnReports,
   dormViolationAppeals,
@@ -26,12 +27,24 @@ export interface ProofSource {
   /** The status of the record, as text. */
   status: SQL<string>;
   sentAt: PgColumn | SQL;
+  /**
+   * Whether the record belongs to a schedule removed with "Hapus jadwal":
+   * nobody can decide it any more. Always false for kinds with no schedule.
+   */
+  isScheduleRemoved: SQL<boolean>;
 }
 
 /** A SIKU photo row takes its status and its time sent from its request. */
 function ofSikuRequest(column: PgColumn): SQL {
   return sql`(select ${column} from ${sikuRequests} where ${sikuRequests.id} = ${sikuRequestPhotos.requestId})`;
 }
+
+function isRemovedSchedule(scheduleId: PgColumn): SQL<boolean> {
+  return sql<boolean>`exists (select 1 from ${activitySchedules} where ${activitySchedules.id} = ${scheduleId} and ${activitySchedules.deletedAt} is not null)`;
+}
+
+/** Cast, as Postgres refuses a bare constant in GROUP BY. */
+const NO_SCHEDULE = sql<boolean>`false::boolean`;
 
 export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
   attendance_photo: {
@@ -42,6 +55,7 @@ export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
     removedAt: activityAttendances.fileRemovedAt,
     status: sql<string>`${activityAttendances.status}::text`,
     sentAt: activityAttendances.sentAt,
+    isScheduleRemoved: isRemovedSchedule(activityAttendances.scheduleId),
   },
   siku_photo: {
     kind: "siku_photo",
@@ -51,6 +65,7 @@ export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
     removedAt: sikuRequestPhotos.fileRemovedAt,
     status: sql<string>`${ofSikuRequest(sikuRequests.status)}::text`,
     sentAt: ofSikuRequest(sikuRequests.sentAt),
+    isScheduleRemoved: NO_SCHEDULE,
   },
   return_photo: {
     kind: "return_photo",
@@ -60,6 +75,7 @@ export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
     removedAt: dormReturnReports.fileRemovedAt,
     status: sql<string>`${dormReturnReports.status}::text`,
     sentAt: dormReturnReports.sentAt,
+    isScheduleRemoved: NO_SCHEDULE,
   },
   activity_clarification: {
     kind: "activity_clarification",
@@ -69,6 +85,7 @@ export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
     removedAt: activityClarifications.fileRemovedAt,
     status: sql<string>`${activityClarifications.status}::text`,
     sentAt: activityClarifications.sentAt,
+    isScheduleRemoved: isRemovedSchedule(activityClarifications.scheduleId),
   },
   dorm_clarification: {
     kind: "dorm_clarification",
@@ -78,6 +95,7 @@ export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
     removedAt: dormClarifications.fileRemovedAt,
     status: sql<string>`${dormClarifications.status}::text`,
     sentAt: dormClarifications.sentAt,
+    isScheduleRemoved: NO_SCHEDULE,
   },
   appeal_proof: {
     kind: "appeal_proof",
@@ -87,6 +105,7 @@ export const PROOF_SOURCES: Record<ProofKind, ProofSource> = {
     removedAt: dormViolationAppeals.fileRemovedAt,
     status: sql<string>`${dormViolationAppeals.status}::text`,
     sentAt: dormViolationAppeals.sentAt,
+    isScheduleRemoved: NO_SCHEDULE,
   },
 };
 
