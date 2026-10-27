@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { usePageMove } from "@/ui/page-move";
 import { SEARCH_TEXT_MAX, searchText } from "@/ui/search-text";
 import { SEARCH_DELAY_MS } from "@/ui/use-found";
 import {
@@ -33,7 +33,7 @@ export function RekapFilterRow({
   /** The semester the rekap shows, or null while no period is stored. */
   shownSemester: string | null;
 }) {
-  const router = useRouter();
+  const router = usePageMove();
   const [typed, setTyped] = useState(params.query);
   /** The text the address was last asked to hold by the typing here. */
   const [asked, setAsked] = useState(params.query);

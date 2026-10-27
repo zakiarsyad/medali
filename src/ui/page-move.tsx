@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
   type ReactNode,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -155,5 +156,29 @@ export function ChosenLink({
     >
       {children}
     </Link>
+  );
+}
+
+type Router = ReturnType<typeof useRouter>;
+
+/**
+ * `push` and `replace` of the router, for a filter or a day choice that
+ * changes the address by itself, so the content dims as for a link.
+ */
+export function usePageMove(): Pick<Router, "push" | "replace"> {
+  const router = useRouter();
+  const { start } = useContext(PageMoveContext);
+  return useMemo(
+    () => ({
+      push(href, options) {
+        start(href);
+        router.push(href, options);
+      },
+      replace(href, options) {
+        start(href);
+        router.replace(href, options);
+      },
+    }),
+    [router, start],
   );
 }

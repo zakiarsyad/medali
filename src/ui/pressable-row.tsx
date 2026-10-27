@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import type { MouseEvent, ReactNode } from "react";
+import { usePageMove } from "./page-move";
 import styles from "./pressable-row.module.css";
 import { rememberPressedBox } from "./pressed-box";
 
@@ -34,7 +34,7 @@ export function PressableRow({
   opens?: "box" | "page";
   children: ReactNode;
 }) {
-  const router = useRouter();
+  const router = usePageMove();
   const opensBox = opens === "box";
 
   function open(event: MouseEvent<HTMLTableRowElement>) {

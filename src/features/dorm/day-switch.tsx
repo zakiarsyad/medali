@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { daysAfter } from "@/academic-periods/days-after";
 import { isDay } from "@/db/is-day";
 import shared from "@/ui/data-screen.module.css";
+import { usePageMove } from "@/ui/page-move";
 import styles from "./activities.module.css";
 import { activitiesAddress } from "./activities-address";
 
@@ -22,7 +22,7 @@ export function DaySwitch({
   /** What is asked before another day opens, or null to ask nothing. */
   leaveQuestion: string | null;
 }) {
-  const router = useRouter();
+  const router = usePageMove();
 
   function addressOf(shown: string): string {
     return activitiesAddress(

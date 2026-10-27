@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { daysAfter } from "@/academic-periods/days-after";
 import { isDay } from "@/db/is-day";
 import shared from "@/ui/data-screen.module.css";
+import { usePageMove } from "@/ui/page-move";
 import styles from "./cleaning.module.css";
 import { type CleaningParams, cleaningAddress } from "./cleaning-address";
 
@@ -19,7 +19,7 @@ export function CleaningDaySwitch({
   params: CleaningParams;
   today: string;
 }) {
-  const router = useRouter();
+  const router = usePageMove();
 
   function addressOf(day: string): string {
     return cleaningAddress({ ...params, day, page: 1 }, today);

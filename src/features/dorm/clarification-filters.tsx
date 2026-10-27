@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { usePageMove } from "@/ui/page-move";
 import { SEARCH_TEXT_MAX, searchText } from "@/ui/search-text";
 import { SEARCH_DELAY_MS } from "@/ui/use-found";
 import {
@@ -25,7 +25,7 @@ export function ClarificationFilterRow({
 }: {
   filters: ClarificationFilters;
 }) {
-  const router = useRouter();
+  const router = usePageMove();
   const [typed, setTyped] = useState(filters.query);
   /** The text the address was last asked to hold by the typing here. */
   const [asked, setAsked] = useState(filters.query);

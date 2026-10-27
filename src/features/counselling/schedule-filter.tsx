@@ -1,11 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   SCHEDULE_KINDS,
   type ScheduleKind,
 } from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
+import { usePageMove } from "@/ui/page-move";
 import {
   FILTER_ORDER,
   FILTER_WORDS,
@@ -26,7 +26,7 @@ export function ScheduleFilterRow({
   filter: ScheduleFilter;
   kind: ScheduleKind | null;
 }) {
-  const router = useRouter();
+  const router = usePageMove();
   return (
     <div className={shared.filters}>
       <select
