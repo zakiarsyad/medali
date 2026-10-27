@@ -53,8 +53,8 @@ describe("the schedule form on a phone", () => {
   });
 
   it("folds the Peserta choices, the angkatan and the students picked, and scrolls the classes inside their own box", () => {
-    expect(ruleOf(".modes")).toContain("flex-wrap: wrap;");
-    expect(ruleOf(".modes")).toContain("min-width: 0;");
+    expect(ruleOf(".participants > fieldset")).toContain("flex-wrap: wrap;");
+    expect(ruleOf(".participants > fieldset")).toContain("max-width: 100%;");
     expect(ruleOf(".choices")).toContain("flex-wrap: wrap;");
     expect(ruleOf(".chips")).toContain("flex-wrap: wrap;");
     expect(ruleOf(".chip")).toContain("max-width: 100%;");
