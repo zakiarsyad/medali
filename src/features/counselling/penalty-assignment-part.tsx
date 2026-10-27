@@ -5,7 +5,7 @@ import { type ReactNode, useState, useTransition } from "react";
 import { ASSIGNMENT_TEXT_MAX } from "@/mental-health/schedule-ids";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
 import { assignFromPenaltyAction } from "./penalty-assignment-actions";
 import { readsPageAgain } from "./penalty-assignment-rules";
@@ -46,7 +46,7 @@ export function PenaltyAssignmentPart({
     startSending(async () => {
       const answer = await sentOr(
         () => assignFromPenaltyAction(penaltyId, typed),
-        NOT_SENT,
+        refusedSave,
       );
       setMessage(answer);
       if (readsPageAgain(answer)) router.refresh();

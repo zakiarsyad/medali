@@ -10,7 +10,7 @@ import { studentMoves } from "./consent-rules";
 import { type ConsentView, versionOfConsent } from "./consent-view";
 import { CONSENT_TEXT } from "./consent-words";
 import styles from "./counselling.module.css";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import {
   approveConsentAction,
   declineConsentAction,
@@ -78,10 +78,7 @@ export function OwnConsentBox({ consent }: { consent: ConsentView | null }) {
     startSending(async () => {
       setMessage(
         messageOf(
-          await sentOr(
-            () => action(versionOfConsent(consent)),
-            REFUSED_NOT_SENT,
-          ),
+          await sentOr(() => action(versionOfConsent(consent)), refusedOutcome),
         ),
       );
     });

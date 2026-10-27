@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import type { FormState } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import styles from "./leave.module.css";
 import { validateReturnAction, verifyReturnAction } from "./leave-actions";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
@@ -44,7 +44,7 @@ export function ReturnDecide({
     startSending(async () => {
       const state = await sentOr(
         () => ACTIONS[check](reportId, decision, note),
-        NOT_SENT,
+        refusedSave,
       );
       onAnswer(state, state.done ? status : null);
     });

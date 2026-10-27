@@ -19,7 +19,7 @@ import {
 import type { Parsed } from "@/parsed";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { ConsentStatusLine } from "./consent-badge";
 import type { ConsentPick } from "./consent-picks";
 import { ConsentStudentPicker } from "./consent-student-picker";
@@ -201,7 +201,7 @@ export function ScreeningForm({
     startSending(async () => {
       const outcome = await sentOr(
         () => saveScreeningAction(newKey, sent),
-        NOT_SENT,
+        refusedSave,
       );
       setMessage(outcome);
       if (outcome.done !== null) {

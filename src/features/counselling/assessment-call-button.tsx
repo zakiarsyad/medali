@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { callFromAssessmentAction } from "./assessment-call-actions";
 import { CALL_BUTTON, callQuestion } from "./assessment-call-words";
 
@@ -33,7 +33,7 @@ export function AssessmentCallButton({
     startSending(async () => {
       const answer = await sentOr(
         () => callFromAssessmentAction(studentId),
-        NOT_SENT,
+        refusedSave,
       );
       setMessage(answer);
       if (answer.done !== null) router.refresh();

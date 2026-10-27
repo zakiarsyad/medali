@@ -7,7 +7,7 @@ import { FileDrop } from "@/ui/file-drop";
 import { FileSaveButtons } from "@/ui/file-save-buttons";
 import styles from "@/ui/file-upload.module.css";
 import { savedBeforeNote } from "@/ui/repeated-file";
-import { NOT_SENT_RESULT, sentOr } from "@/ui/save-not-sent";
+import { refusedResult, sentOr } from "@/ui/save-not-sent";
 import { previewSikuFileAction, saveSikuFileAction } from "./siku-actions";
 import {
   SIKU_FILE_COLUMNS,
@@ -89,10 +89,7 @@ export function SikuUpload() {
     form.set("id", sent.id);
     if (confirmRepeat) form.set("confirmRepeat", "yes");
     startSaving(async () => {
-      const saved = await sentOr(
-        () => saveSikuFileAction(form),
-        NOT_SENT_RESULT,
-      );
+      const saved = await sentOr(() => saveSikuFileAction(form), refusedResult);
       if (!saved.ok) return refuse(saved.error);
       setChecked(null);
       setError(null);

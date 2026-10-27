@@ -1,7 +1,7 @@
-import { SAVE_NOT_SENT } from "@/ui/save-not-sent";
-
-/** The refused outcome of a counselling save that did not reach the server. */
-export const REFUSED_NOT_SENT = {
-  kind: "refused",
-  error: SAVE_NOT_SENT,
-} as const;
+/** The refused outcome of a counselling save that threw, with its words. */
+export function refusedOutcome(message: string): {
+  kind: "refused";
+  error: string;
+} {
+  return { kind: "refused", error: message };
+}

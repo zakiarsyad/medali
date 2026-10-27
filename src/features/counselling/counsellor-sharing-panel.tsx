@@ -14,7 +14,7 @@ import { sentOr } from "@/ui/save-not-sent";
 import type { SharingOutcome } from "./change-sharing";
 import type { ConsentPick } from "./consent-picks";
 import styles from "./counselling.module.css";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import { askSharingAction, lookUpSharingAction } from "./sharing-actions";
 import { SharingFacts } from "./sharing-facts";
 import { type SharingAsk, SharingForm } from "./sharing-form";
@@ -107,7 +107,7 @@ function PickedSharing({ student }: { student: ConsentPick }) {
               sent.recipients,
               sent.summary,
             ),
-          REFUSED_NOT_SENT,
+          refusedOutcome,
         ),
       );
     });
@@ -118,7 +118,7 @@ function PickedSharing({ student }: { student: ConsentPick }) {
       shown(
         await sentOr(
           () => action(student.id, sharing.id, sharing.version),
-          REFUSED_NOT_SENT,
+          refusedOutcome,
         ),
       );
     });

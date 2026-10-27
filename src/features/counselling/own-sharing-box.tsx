@@ -14,7 +14,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { sentOr } from "@/ui/save-not-sent";
 import type { SharingOutcome } from "./change-sharing";
 import styles from "./counselling.module.css";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import {
   approveSharingAction,
   declineSharingAction,
@@ -140,7 +140,7 @@ export function OwnSharingBox({ sharing }: { sharing: SharingView | null }) {
         messageOf(
           await sentOr(
             () => action(sharing.id, sharing.version),
-            REFUSED_NOT_SENT,
+            refusedOutcome,
           ),
         ),
       );

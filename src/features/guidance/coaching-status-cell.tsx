@@ -9,7 +9,7 @@ import {
   isCoachingStatus,
 } from "@/character-scores/coaching-status";
 import shared from "@/ui/data-screen.module.css";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { changeCoachingStatusAction } from "./coaching-actions";
 import styles from "./coaching-list.module.css";
 import { SetCoachingMessage } from "./coaching-message";
@@ -74,7 +74,7 @@ export function CoachingStatusCell({
     startSending(async () => {
       const answer = await sentOr(
         () => changeCoachingStatusAction(studentId, version, sending, typed),
-        NOT_SENT,
+        refusedSave,
       );
       setMessage(answer);
       // Kept or refused, the row shows the status the page reads again.

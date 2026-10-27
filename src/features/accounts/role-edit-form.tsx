@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sendForm } from "@/ui/send-form";
 import { useSaveState } from "@/ui/use-save-state";
 import { UNIT_MAX_LENGTH } from "./account-limits";
 import { changeRolesAction } from "./actions";
@@ -22,7 +23,7 @@ interface RoleEditFormProps {
 export function RoleEditForm({ account, programs, back }: RoleEditFormProps) {
   const [state, action, pending] = useSaveState(changeRolesAction, START);
   return (
-    <form action={action} className={styles.form}>
+    <form onSubmit={(event) => sendForm(event, action)} className={styles.form}>
       <input type="hidden" name="accountId" value={account.id} />
       <input type="hidden" name="back" value={back} />
       <RoleChoices chosen={account.roles} />

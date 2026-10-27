@@ -3,7 +3,7 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { isToldAbove } from "./answer-place";
 import { changeForm } from "./change-form";
 import { cancelAction } from "./decree-actions";
@@ -24,7 +24,7 @@ export function CancelButton({ shown }: { shown: DraftKey }) {
     save(async () => {
       const after = await sentOr(
         () => cancelAction(changeForm(shown)),
-        NOT_SENT,
+        refusedSave,
       );
       if (isToldAbove("cancel", after)) {
         announce(after);

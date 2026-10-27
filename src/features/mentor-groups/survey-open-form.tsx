@@ -3,7 +3,7 @@
 import { type FormEvent, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { NOTE_MAX_LENGTH } from "./evaluation-input";
 import styles from "./mentor-groups.module.css";
 import { openSurveyPeriodAction } from "./survey-actions";
@@ -37,7 +37,10 @@ export function SurveyOpenForm({ start }: { start: SurveyFormStart }) {
       return;
     }
     send(async () => {
-      const after = await sentOr(() => openSurveyPeriodAction(form), NOT_SENT);
+      const after = await sentOr(
+        () => openSurveyPeriodAction(form),
+        refusedSave,
+      );
       if (after.done !== null) {
         // The card of the period takes the place of this form.
         announce(after.done);

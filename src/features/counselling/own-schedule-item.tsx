@@ -8,7 +8,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
 import type { StudentMoveOutcome } from "./move-schedule";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import {
   acceptScheduleAction,
   askAnotherTimeAction,
@@ -116,7 +116,7 @@ export function OwnScheduleItem({
       answered(
         await sentOr(
           () => acceptScheduleAction(schedule.id, schedule.version),
-          REFUSED_NOT_SENT,
+          refusedOutcome,
         ),
       );
     });
@@ -130,7 +130,7 @@ export function OwnScheduleItem({
     startSending(async () => {
       const outcome = await sentOr(
         () => cancelScheduleAction(schedule.id, schedule.version),
-        REFUSED_NOT_SENT,
+        refusedOutcome,
       );
       if (outcome.kind === "refused") {
         answered(outcome);
@@ -150,7 +150,7 @@ export function OwnScheduleItem({
             hour: text(form, "hour"),
             reason: text(form, "reason"),
           }),
-        REFUSED_NOT_SENT,
+        refusedOutcome,
       );
       answered(outcome);
     });

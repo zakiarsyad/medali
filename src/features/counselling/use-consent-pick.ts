@@ -9,7 +9,7 @@ import type { ConsentOutcome } from "./change-consent";
 import { type askConsentAction, lookUpConsentAction } from "./consent-actions";
 import type { ConsentPick } from "./consent-picks";
 import { type ConsentView, versionOfConsent } from "./consent-view";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import { readSessionHistoryAction } from "./session-actions";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
@@ -69,7 +69,7 @@ export function useConsentPick(mayKeepSessions: boolean) {
     startSending(async () => {
       const outcome = await sentOr(
         () => action(student.id, versionOfConsent(consent)),
-        REFUSED_NOT_SENT,
+        refusedOutcome,
       );
       setMessage(messageOf(outcome));
       if (outcome.kind !== "refused") {

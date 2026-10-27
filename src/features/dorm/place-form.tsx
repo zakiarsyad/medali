@@ -3,6 +3,7 @@
 import type { ChangeEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sendForm } from "@/ui/send-form";
 import { useSaveState } from "@/ui/use-save-state";
 import type { Resident } from "./room-list";
 import styles from "./rooms.module.css";
@@ -35,7 +36,7 @@ export function PlaceForm({
 }) {
   const [state, send] = useSaveState(action, START);
   return (
-    <form action={send} className={styles.place}>
+    <form onSubmit={(event) => sendForm(event, send)} className={styles.place}>
       <input type="hidden" name="roomId" value={roomId} />
       <select
         name="studentId"

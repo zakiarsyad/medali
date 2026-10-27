@@ -1,6 +1,6 @@
 import { useState, useTransition } from "react";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 
 /**
  * A button that sends one change and passes on what was done; a refusal
@@ -26,7 +26,7 @@ export function ChangeButton({
   function press() {
     if (question !== null && !window.confirm(question)) return;
     startSending(async () => {
-      const after = await sentOr(send, NOT_SENT);
+      const after = await sentOr(send, refusedSave);
       if (after.done) onDone(after.done);
       setError(after.error);
     });

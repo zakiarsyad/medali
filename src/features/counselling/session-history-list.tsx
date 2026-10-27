@@ -13,7 +13,7 @@ import { FormMessage } from "@/ui/form-message";
 import { sentOr } from "@/ui/save-not-sent";
 import type { ChangeOutcome } from "./change-session";
 import styles from "./counselling.module.css";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import { TOPIC_WORDS } from "./schedule-words";
 import { changeSessionAction } from "./session-actions";
 import { SessionFields } from "./session-fields";
@@ -45,7 +45,7 @@ function ChangeForm({
     startSending(async () => {
       const outcome = await sentOr(
         () => changeSessionAction(session.id, session.version, form),
-        REFUSED_NOT_SENT,
+        refusedOutcome,
       );
       if (outcome.kind === "refused") {
         setError(outcome.error);

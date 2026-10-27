@@ -6,7 +6,7 @@ import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import { writeSessionAction } from "./session-actions";
 import { SessionFields } from "./session-fields";
 import type { SessionOutcome } from "./write-session";
@@ -45,7 +45,7 @@ export function SessionForm({
     startSending(async () => {
       const outcome = await sentOr(
         () => writeSessionAction(form),
-        REFUSED_NOT_SENT,
+        refusedOutcome,
       );
       if (outcome.kind === "refused") {
         setMessage({ error: outcome.error, done: null });

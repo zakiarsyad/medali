@@ -4,7 +4,7 @@ import { type FormEvent, useState, useTransition } from "react";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { ChangeButton } from "./change-button";
 import styles from "./cleaning.module.css";
 import {
@@ -52,7 +52,7 @@ function RenameForm({
             place.id,
             typeof name === "string" ? name : "",
           ),
-        NOT_SENT,
+        refusedSave,
       );
       setError(after.error);
       if (!after.done) return;

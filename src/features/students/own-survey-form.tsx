@@ -8,7 +8,7 @@ import {
 } from "@/mentoring/survey-statements";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { NOT_SENT_RESULT, sentOr } from "@/ui/save-not-sent";
+import { refusedResult, sentOr } from "@/ui/save-not-sent";
 import { deviceStorage } from "@/ui/survey-drafts";
 import type { OwnSurvey } from "./own-survey";
 import styles from "./own-survey.module.css";
@@ -130,7 +130,7 @@ export function OwnSurveyForm({
             scores,
             suggestion,
           }),
-        NOT_SENT_RESULT,
+        refusedResult,
       );
       if (!sent.ok) {
         setSaid({ error: sent.error, done: null });

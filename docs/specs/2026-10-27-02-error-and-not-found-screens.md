@@ -77,7 +77,12 @@ Decided while building:
    message where it shows its other refusals. The saves that already
    said "… tidak terkirim" in their own words keep them. A read, such as
    a search, the detail of a row or the preview of a picked file, is not
-   a save and does not get it.
+   a save and does not get it. A save that reaches the server but fails
+   there, or that the server no longer knows after a new version of the
+   app is put live, also keeps what was typed or picked, but says "Data
+   tidak dapat disimpan. Muat ulang halaman, lalu coba lagi." instead.
+   A save answered with another page, "not found" or "Akses ditolak"
+   still goes there.
 7. A signed-out person who opens an unknown address is sent to the
    sign-in page where Google sign-in is the only way in, so they learn
    nothing of which addresses exist; elsewhere they get the card, as

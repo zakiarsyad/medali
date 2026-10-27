@@ -9,7 +9,7 @@ import { sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
 import { CounsellorScheduleCardView } from "./counsellor-schedule-card";
 import type { CounsellorMoveOutcome } from "./move-schedule";
-import { REFUSED_NOT_SENT } from "./not-sent";
+import { refusedOutcome } from "./not-sent";
 import {
   approveScheduleAction,
   markScheduleDoneAction,
@@ -121,7 +121,7 @@ export function CounsellorScheduleItem({
     showSession(NO_SESSION);
     startSending(async () => {
       answered(
-        await sentOr(() => action(card.id, card.version), REFUSED_NOT_SENT),
+        await sentOr(() => action(card.id, card.version), refusedOutcome),
         redraws,
       );
     });
@@ -134,7 +134,7 @@ export function CounsellorScheduleItem({
     startSending(async () => {
       const outcome = await sentOr(
         () => markScheduleDoneAction(card.id, card.version),
-        REFUSED_NOT_SENT,
+        refusedOutcome,
       );
       answered(outcome, true);
       if (outcome.kind !== "kept" || !mayKeepSessions) return;
@@ -151,7 +151,7 @@ export function CounsellorScheduleItem({
       answered(
         await sentOr(
           () => send(card.id, card.version, proposalOf(form)),
-          REFUSED_NOT_SENT,
+          refusedOutcome,
         ),
         redraws,
       );

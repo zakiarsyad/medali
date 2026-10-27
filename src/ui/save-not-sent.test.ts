@@ -1,8 +1,17 @@
 import { readFileSync } from "node:fs";
-import { redirect } from "next/navigation";
-import { describe, expect, it } from "vitest";
-import { NOT_SENT, SAVE_NOT_SENT, sentOr } from "./save-not-sent";
+import { forbidden, notFound, redirect } from "next/navigation";
+import { describe, expect, it, vi } from "vitest";
+import {
+  faultMessage,
+  refusedSave,
+  SAVE_FAILED,
+  SAVE_NOT_SENT,
+  sentOr,
+} from "./save-not-sent";
 import { sourceFilesEndingWith } from "./source-files";
+
+// The app turns on "Akses ditolak"; the checks run without its settings.
+vi.stubEnv("__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS", "true");
 
 function thrownBy(run: () => void): unknown {
   try {
@@ -13,17 +22,50 @@ function thrownBy(run: () => void): unknown {
   return null;
 }
 
+describe("faultMessage", () => {
+  it("says the data was not sent when the browser could not reach the server", () => {
+    expect(faultMessage(new TypeError("Failed to fetch"))).toBe(SAVE_NOT_SENT);
+  });
+
+  it.each([
+    [
+      "a fault on the server",
+      new Error("An error occurred in the Server Components render."),
+    ],
+    [
+      "a save the server no longer knows",
+      new Error('Server Action "abc" was not found on the server.'),
+    ],
+    ["something thrown that is no error", "gagal"],
+  ])("says the data could not be saved after %s", (_kind, fault) => {
+    expect(faultMessage(fault)).toBe(SAVE_FAILED);
+    expect(SAVE_FAILED).toBe(
+      "Data tidak dapat disimpan. Muat ulang halaman, lalu coba lagi.",
+    );
+  });
+
+  it.each([
+    ["a move to another page", () => redirect("/masuk")],
+    ["not found", () => notFound()],
+    ["Akses ditolak", () => forbidden()],
+  ])("throws again %s", (_kind, run) => {
+    const moved = thrownBy(run);
+
+    expect(() => faultMessage(moved)).toThrow();
+  });
+});
+
 describe("a save sent from the screen's own code", () => {
   it("gives what the server answered", async () => {
     const answer = { error: null, done: "Tersimpan." };
 
-    expect(await sentOr(async () => answer, NOT_SENT)).toBe(answer);
+    expect(await sentOr(async () => answer, refusedSave)).toBe(answer);
   });
 
-  it("gives the refused answer when it does not arrive", async () => {
+  it("gives the refused answer with the words of the fault", async () => {
     const answer = await sentOr(async () => {
       throw new TypeError("Failed to fetch");
-    }, NOT_SENT);
+    }, refusedSave);
 
     expect(answer).toEqual({ error: SAVE_NOT_SENT, done: null });
   });
@@ -34,7 +76,7 @@ describe("a save sent from the screen's own code", () => {
     await expect(
       sentOr(async () => {
         throw moved;
-      }, NOT_SENT),
+      }, refusedSave),
     ).rejects.toBe(moved);
   });
 });
@@ -74,7 +116,7 @@ describe("unwrappedSaves", () => {
   it.each([
     [
       "sent through sentOr",
-      "await sentOr(() => removeRowAction(id), NOT_SENT)",
+      "await sentOr(() => removeRowAction(id), refusedSave)",
     ],
     ["kept by useSaveState", "const after = await addRowAction(before, form);"],
     ["a read", "setOpened(await openRowDetailAction(id));"],

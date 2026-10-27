@@ -5,7 +5,7 @@ import { checkFileShape, MAX_FILE_ROWS } from "@/files/csv-file";
 import shared from "@/ui/data-screen.module.css";
 import { FileDrop } from "@/ui/file-drop";
 import styles from "@/ui/file-upload.module.css";
-import { NOT_SENT_RESULT, sentOr } from "@/ui/save-not-sent";
+import { refusedResult, sentOr } from "@/ui/save-not-sent";
 import {
   previewStudentFileAction,
   type SavedFileShown,
@@ -106,7 +106,7 @@ export function StudentUpload({
     startSaving(async () => {
       const result = await sentOr(
         () => saveStudentFileAction(formWith(file)),
-        NOT_SENT_RESULT,
+        refusedResult,
       );
       if (!result.ok) return refuse(result.error);
       setChecked(null);

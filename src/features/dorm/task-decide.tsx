@@ -9,8 +9,8 @@ import styles from "./leave.module.css";
 import { DECISION_NOTE_MAX_LENGTH } from "./leave-ids";
 import {
   type DecisionAnswer,
-  NOT_SENT_DECISION,
   REJECTION_NEEDS_NOTE,
+  refusedDecisionWith,
 } from "./leave-messages";
 import own from "./tasks.module.css";
 import { taskOutcome } from "./tasks-card";
@@ -68,7 +68,9 @@ export function TaskDecide({
   function send(decision: string) {
     startSending(async () => {
       setRefusal(
-        answered(await sentOr(() => decide(decision, note), NOT_SENT_DECISION)),
+        answered(
+          await sentOr(() => decide(decision, note), refusedDecisionWith),
+        ),
       );
     });
   }

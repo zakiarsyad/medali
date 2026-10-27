@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { shownMoment } from "@/ui/day";
 import { FormMessage, type FormState } from "@/ui/form-message";
-import { NOT_SENT, sentOr } from "@/ui/save-not-sent";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { removeSkpmUploadAction } from "./skpm-actions";
 import type { UploadLine } from "./skpm-uploads";
 import { MODE_WORDS, removeQuestion } from "./skpm-words";
@@ -26,7 +26,7 @@ function RemoveButton({
   function press() {
     if (!window.confirm(removeQuestion(fileName))) return;
     startSending(async () =>
-      onAnswer(await sentOr(() => removeSkpmUploadAction(id), NOT_SENT)),
+      onAnswer(await sentOr(() => removeSkpmUploadAction(id), refusedSave)),
     );
   }
 

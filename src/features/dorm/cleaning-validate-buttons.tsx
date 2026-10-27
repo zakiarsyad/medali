@@ -10,7 +10,7 @@ import {
   validateDutyAction,
 } from "./cleaning-assessment-actions";
 import { CLEANING_NOTE_MAX_LENGTH } from "./cleaning-ids";
-import { type DecisionAnswer, NOT_SENT_DECISION } from "./leave-messages";
+import { type DecisionAnswer, refusedDecisionWith } from "./leave-messages";
 
 /**
  * "Validasi" and the rejecting button for a duty Pengelola Asrama may
@@ -35,7 +35,7 @@ export function CleaningValidateButtons({
 
   function send(decide: () => Promise<DecisionAnswer>) {
     startSending(async () => {
-      setError(onAnswer(await sentOr(decide, NOT_SENT_DECISION)));
+      setError(onAnswer(await sentOr(decide, refusedDecisionWith)));
     });
   }
 
