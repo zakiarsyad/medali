@@ -60,10 +60,11 @@ Their keys are kept by Vercel. They are never written in the repo.
 Vercel runs many short-lived copies of the app at once, so on both
 previews the app reaches its database through Neon's shared-connection
 address: the database's own address with `-pooler` added to its first
-part. Each copy keeps at most five connections and closes one that has
-been idle for 10 seconds. The build step that changes the tables uses
-the database's own address. The campus server runs one copy all the
-time and keeps up to ten connections, open while idle.
+part, unless the key Vercel gives is that address already. Each copy
+keeps at most five connections and closes one that has been idle for 10
+seconds. The build step that changes the tables uses the key as Vercel
+gives it. The campus server runs one copy all the time and keeps up to
+ten connections, open while idle.
 
 ### What a deploy does to its database
 

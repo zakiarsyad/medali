@@ -63,9 +63,12 @@ Everyone who uses the preview, and the owner, who tries merged work there.
    database's own address with `-pooler` added to its first part, as the
    database service names it; an address that already has it, or that is
    not at that service, is used as it is.
-2. The build step that changes the tables keeps the database's own
-   address: it runs once per build, and table changes need a connection
-   of their own.
+2. The build step that changes the tables keeps the address Vercel
+   gives, as today: it runs once per build. Which address that is, the
+   database's own or the shared one, could not be read from this
+   computer, since Vercel keeps the key; when it is the shared one
+   already, the fewer connections that close when idle are the change
+   that counts.
 3. The campus server does not change. It runs one copy of the app all
    the time, keeps up to ten connections, and never closes idle ones, as
    today. A local computer does not change either.
