@@ -23,3 +23,19 @@
   margin-inline: auto;
   padding: var(--content-padding);
 }
+
+/*
+ * While the next page loads, the old one is not pressed by mistake. It
+ * dims only after a wait, so a page that comes fast does not flicker.
+ */
+.content[aria-busy="true"] {
+  pointer-events: none;
+  animation: dim-content var(--page-move-dim-time) var(--page-move-dim-wait)
+    both;
+}
+
+@keyframes dim-content {
+  to {
+    opacity: var(--switched-off-opacity);
+  }
+}

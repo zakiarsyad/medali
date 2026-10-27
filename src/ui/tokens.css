@@ -121,6 +121,9 @@
   --icon-size: 18px;
   --icon-stroke: 2;
   --switched-off-opacity: 0.55;
+  /* How long the content waits before it dims while a page loads. */
+  --page-move-dim-wait: 200ms;
+  --page-move-dim-time: 150ms;
   --layer-top-bar: 20;
 
   /*
