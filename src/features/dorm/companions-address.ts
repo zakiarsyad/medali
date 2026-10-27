@@ -1,4 +1,5 @@
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 import { SEARCH_MAX_LENGTH } from "./room-limits";
 
 export const COMPANIONS_ADDRESS = "/asrama/kakak";
@@ -21,7 +22,9 @@ export function readCompanionsParams(params: SearchParams): CompanionsParams {
   const page = firstParam(params.hal);
   return {
     page: PAGE.test(page) ? Number(page) : 1,
-    query: firstParam(params.q).trim().slice(0, SEARCH_MAX_LENGTH),
+    query: withoutNullCharacter(firstParam(params.q))
+      .trim()
+      .slice(0, SEARCH_MAX_LENGTH),
   };
 }
 
