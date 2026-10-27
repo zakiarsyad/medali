@@ -147,7 +147,7 @@ export function SessionHistoryList({
     <div className={styles.stack}>
       <h3 className={shared.heading}>Riwayat sesi</h3>
       {history.items.length === 0 ? (
-        <p className={styles.sub}>{NO_SESSIONS}</p>
+        <p className={shared.emptySection}>{NO_SESSIONS}</p>
       ) : (
         <ul className={styles.cards}>
           {history.items.map((session) => (

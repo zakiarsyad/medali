@@ -30,10 +30,13 @@ function Search({ query }: { query: string }) {
 }
 
 /** How many students can be chosen, and what to do when not all are listed. */
-function offeredWords(candidates: Candidates): string {
+export function offeredWords(candidates: Candidates, query: string): string {
   const { shown, matching } = candidates;
+  if (matching === 0 && query === "") {
+    return "Belum ada mahasiswa yang dapat ditetapkan.";
+  }
   if (matching === 0) {
-    return "Tidak ada mahasiswa yang dapat ditetapkan. Ubah kata kunci.";
+    return "Tidak ada mahasiswa yang dapat ditetapkan pada filter ini.";
   }
   const all = `${matching.toLocaleString("id-ID")} mahasiswa dapat dipilih`;
   if (matching <= shown.length) return `${all}.`;
@@ -64,7 +67,7 @@ export function NameCompanionPanel({
         <>
           {/* Made anew for each address, so the field shows what was searched. */}
           <Search key={query} query={query} />
-          <p className={styles.quietLine}>{offeredWords(candidates)}</p>
+          <p className={styles.quietLine}>{offeredWords(candidates, query)}</p>
           <NameCompanionForm offered={candidates.shown} />
         </>
       )}

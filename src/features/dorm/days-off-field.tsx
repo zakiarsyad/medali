@@ -81,7 +81,7 @@ export function DaysOffField({
         </button>
       </div>
       {shown.length === 0 ? (
-        <p className={styles.quietLine}>Belum ada.</p>
+        <p className={shared.emptySection}>Belum ada.</p>
       ) : (
         <ul className={styles.chips}>
           {shown.map((day) => (

@@ -6,7 +6,6 @@ import { PressableRow } from "@/ui/pressable-row";
 import pressable from "@/ui/pressable-row.module.css";
 import { ResultBadge } from "./evaluation-badge";
 import { programAndCohort } from "./group-list-table";
-import styles from "./mentor-groups.module.css";
 import { NO_MENTOR } from "./mentor-history";
 import type { SurveyGroupRow } from "./survey-group-list";
 import type { SurveyGroupResult } from "./survey-result";
@@ -22,7 +21,9 @@ const COLUMNS = 7;
 
 function Predicate({ result }: { result: SurveyGroupResult }) {
   if (result.result === null) {
-    return <span className={styles.quiet}>{missingResultWords(result)}</span>;
+    return (
+      <span className={shared.emptyCell}>{missingResultWords(result)}</span>
+    );
   }
   return <ResultBadge result={result.result} />;
 }

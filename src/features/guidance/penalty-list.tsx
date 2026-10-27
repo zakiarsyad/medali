@@ -8,6 +8,7 @@ import { ListPager } from "@/ui/list-pager";
 import {
   CATEGORY_CHOICES,
   PENALTIES_ADDRESS,
+  PENALTIES_START,
   type PenaltiesParams,
   penaltiesAddress,
   STATUS_CHOICES,
@@ -17,6 +18,7 @@ import { PENALTIES_PAGE_SIZE, PENALTY_STATUSES } from "./penalty-ids";
 import type { RincianAsks } from "./penalty-rincian";
 import { PenaltyTable } from "./penalty-table";
 import {
+  NO_PENALTIES,
   NO_PENALTIES_FOUND,
   PENALTY_NOUN,
   STATUS_WORDS,
@@ -70,6 +72,15 @@ function FilterRow({ params }: { params: PenaltiesParams }) {
   );
 }
 
+/** What the list says when it is empty: none yet, or none on the filters set. */
+export function noPenaltyWords(params: PenaltiesParams): string {
+  const isFiltered =
+    params.query !== PENALTIES_START.query ||
+    params.category !== PENALTIES_START.category ||
+    params.status !== PENALTIES_START.status;
+  return isFiltered ? NO_PENALTIES_FOUND : NO_PENALTIES;
+}
+
 /**
  * "Daftar pelanggaran": the search, the filters and one page of the
  * penalties. On a phone each penalty is a card.
@@ -93,7 +104,7 @@ export function PenaltyListPanel({
         <FilterRow params={params} />
       </AutoSubmitForm>
       {list.matching === 0 ? (
-        <p className={shared.empty}>{NO_PENALTIES_FOUND}</p>
+        <p className={shared.empty}>{noPenaltyWords(params)}</p>
       ) : (
         <>
           <PenaltyTable

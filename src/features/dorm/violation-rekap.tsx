@@ -20,7 +20,13 @@ import type { WarningLevel } from "./warning-ids";
 import { issuedWords } from "./warning-words";
 import warnings from "./warnings.module.css";
 
-export const NO_REKAP = "Tidak ada pelanggaran pada semester ini.";
+export const NO_REKAP = "Belum ada pelanggaran pada semester ini.";
+export const NO_REKAP_MATCHES = "Tidak ada pelanggaran pada filter ini.";
+
+/** What the rekap says when it lists nobody: for a search, or for the semester. */
+export function noRekapWords(params: Pick<StaffViolationParams, "query">) {
+  return params.query === "" ? NO_REKAP : NO_REKAP_MATCHES;
+}
 
 function shownCount(amount: number): string {
   return amount === 0 ? "-" : amount.toLocaleString("id-ID");
@@ -36,7 +42,7 @@ function RekapTable({
   params: StaffViolationParams;
 }) {
   if (rekap.rows.length === 0)
-    return <p className={shared.empty}>{NO_REKAP}</p>;
+    return <p className={shared.empty}>{noRekapWords(params)}</p>;
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>

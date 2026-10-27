@@ -128,6 +128,12 @@ function MarkFields({
   );
 }
 
+/** What the list of participants says when it shows nobody. */
+export function noParticipantWords(typed: string, onlyMarked: boolean) {
+  if (typed.trim() === "" && !onlyMarked) return "Belum ada peserta.";
+  return "Tidak ada peserta pada filter ini.";
+}
+
 /** The form as it is sent: the absent, and each note beside its student. */
 function sentForm(
   parts: { activityId: string; day: string; version: number },
@@ -245,7 +251,7 @@ export function CountForm({
         </label>
       </div>
       {shown.length === 0 ? (
-        <p className={shared.empty}>Tidak ada peserta yang cocok.</p>
+        <p className={shared.empty}>{noParticipantWords(typed, onlyMarked)}</p>
       ) : (
         <ul className={styles.countList}>
           {shown.map((participant) => (

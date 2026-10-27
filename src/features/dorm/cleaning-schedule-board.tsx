@@ -210,7 +210,7 @@ function EmptyRow({
         {mayAssign ? (
           <AssignForm placeId={row.place.id} scope={scope} onSaid={onSaid} />
         ) : (
-          <span className={styles.quiet}>Belum ada kamar bertugas</span>
+          <span className={shared.emptyCell}>Belum ada kamar bertugas</span>
         )}
       </td>
       <td data-title="Status" />
@@ -321,7 +321,7 @@ export function CleaningScheduleBoard({
         </p>
       )}
       {rows.length === 0 ? (
-        <p className={styles.quiet}>Belum ada tempat.</p>
+        <p className={shared.emptySection}>Belum ada tempat.</p>
       ) : (
         <ScheduleTable scope={scope}>
           {rows.map((row) =>

@@ -466,10 +466,26 @@ a.quiet {
   overflow-wrap: anywhere;
 }
 
+/* "Nothing here yet" in place of a whole list. */
 .empty {
-  padding: var(--space-xl);
-  color: var(--muted);
-  text-align: center;
+  padding: var(--empty-list-padding);
+  color: var(--empty-list-ink);
+  font-size: var(--empty-list-text);
+  text-align: var(--empty-list-align);
+}
+
+/* "Nothing here yet" in place of one section of a panel or a profile. */
+.emptySection {
+  margin: 0;
+  padding: var(--empty-section-padding);
+  color: var(--empty-section-ink);
+  font-size: var(--empty-section-text);
+  text-align: var(--empty-section-align);
+}
+
+/* A cell of a list that has no value, such as "Belum ada data". */
+.emptyCell {
+  color: var(--empty-section-ink);
 }
 
 .pager {

@@ -119,9 +119,7 @@ export async function StudentListScreen({
               />
             </>
           ) : (
-            <p className={shared.empty}>
-              Tidak ada mahasiswa yang cocok. Ubah kata kunci atau filter.
-            </p>
+            <p className={shared.empty}>Tidak ada mahasiswa pada filter ini.</p>
           )}
         </section>
       </AutoSubmitForm>

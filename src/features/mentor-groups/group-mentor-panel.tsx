@@ -80,7 +80,7 @@ export function GroupMentorPanel({
       </p>
       <h3 className={styles.subheading}>Riwayat pengasuh kelompok</h3>
       {mentors.length === 0 ? (
-        <p className={styles.quiet}>Belum ada riwayat pengasuh.</p>
+        <p className={shared.emptySection}>Belum ada riwayat pengasuh.</p>
       ) : (
         <ul className={styles.history}>
           {mentors.map((line) => (

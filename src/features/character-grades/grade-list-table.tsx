@@ -12,7 +12,7 @@ import { toneBadge } from "@/ui/tone-badge";
 import styles from "./character-grades.module.css";
 import { type GradeParams, gradeAddress } from "./grade-address";
 
-export const NO_GRADE_MATCHES = "Tidak ada data pada filter ini.";
+export const NO_GRADE_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
 function Attendance({ part }: { part: AttendancePart }) {
   if (part.percent === null) return "-";

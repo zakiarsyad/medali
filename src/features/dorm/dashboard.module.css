@@ -146,7 +146,7 @@
   margin: var(--space-sm) 0 0;
 }
 
-.none {
+.outCount {
   margin: 0 0 var(--space-sm);
   color: var(--muted);
 }

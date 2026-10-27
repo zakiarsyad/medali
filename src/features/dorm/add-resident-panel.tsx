@@ -41,10 +41,13 @@ function Search({ params }: { params: RoomsParams }) {
 }
 
 /** How many students can be chosen, and what to do when not all are listed. */
-function offeredWords(found: NonResidents): string {
+export function offeredWords(found: NonResidents, search: string): string {
   const { shown, matching } = found;
+  if (matching === 0 && search === "") {
+    return "Belum ada mahasiswa aktif non asrama.";
+  }
   if (matching === 0) {
-    return "Tidak ada mahasiswa aktif non asrama yang cocok. Ubah kata kunci.";
+    return "Tidak ada mahasiswa aktif non asrama pada filter ini.";
   }
   const all = `${matching.toLocaleString("id-ID")} mahasiswa non asrama dapat dipilih`;
   if (matching <= shown.length) return `${all}.`;
@@ -83,7 +86,9 @@ export function AddResidentPanel({
         <>
           {/* Made anew for each address, so the field shows what was searched. */}
           <Search key={params.adding} params={params} />
-          <p className={styles.quietLine}>{offeredWords(found)}</p>
+          <p className={styles.quietLine}>
+            {offeredWords(found, params.adding ?? "")}
+          </p>
           <AddResidentForm offered={found.shown} openDorm={params.dorm} />
         </>
       )}

@@ -87,10 +87,10 @@ function DormRows({
 function PhysicalCounts({ physical }: { physical: PhysicalPanel }) {
   const { recap, byDorm, limits } = physical;
   if (recap.kind === "untested") {
-    return <p className={board.none}>{NOBODY_TESTED}</p>;
+    return <p className={shared.empty}>{NOBODY_TESTED}</p>;
   }
   if (recap.kind === "too_few" || byDorm === null) {
-    return <p className={board.none}>{PHYSICAL_TOO_FEW}</p>;
+    return <p className={shared.empty}>{PHYSICAL_TOO_FEW}</p>;
   }
   return (
     <>
@@ -120,7 +120,7 @@ function CareList({ care }: { care: readonly CareRow[] }) {
     <>
       <h3 className={board.subheading}>{CARE_HEADING}</h3>
       {care.length === 0 ? (
-        <p className={board.none}>{NOBODY_NEEDS_CARE}</p>
+        <p className={shared.empty}>{NOBODY_NEEDS_CARE}</p>
       ) : (
         <ul className={board.outList}>
           {care.map((row) => (

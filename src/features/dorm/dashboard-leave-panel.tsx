@@ -41,7 +41,7 @@ function MonthLeave({ byKind }: { byKind: LeaveByKind }) {
         <span className={board.sub}>{shown(total)} pengajuan</span>
       </div>
       {total === 0 ? (
-        <p className={board.none}>{NO_MONTH_LEAVE}</p>
+        <p className={shared.empty}>{NO_MONTH_LEAVE}</p>
       ) : (
         <Bars
           bars={LEAVE_KINDS.map((kind) => ({
@@ -98,9 +98,9 @@ function OutNames({ out, outCount }: { out: OutList; outCount: number }) {
 
 /** For an account without the right to the names: how many are out, and nothing more. */
 function OutCount({ amount }: { amount: number }) {
-  if (amount === 0) return <p className={board.none}>{NOBODY_OUT}</p>;
+  if (amount === 0) return <p className={shared.empty}>{NOBODY_OUT}</p>;
   return (
-    <p className={board.none}>
+    <p className={board.outCount}>
       {shown(amount)} penghuni sedang di luar asrama.
     </p>
   );

@@ -20,7 +20,9 @@ export function ScreeningLine({
   screening: ShownScreening | null;
 }) {
   if (screening === null) {
-    return <p className={styles.sub}>Belum ada asesmen kesehatan mental.</p>;
+    return (
+      <p className={shared.emptySection}>Belum ada asesmen kesehatan mental.</p>
+    );
   }
   return (
     <p className={styles.sub}>
@@ -32,7 +34,7 @@ export function ScreeningLine({
 
 function SharedBody({ screening }: { screening: ShownScreening | null }) {
   if (screening === null) {
-    return <p className={styles.sub}>{NOT_SCREENED}.</p>;
+    return <p className={shared.emptySection}>{NOT_SCREENED}.</p>;
   }
   return (
     <>

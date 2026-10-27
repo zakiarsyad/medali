@@ -20,6 +20,7 @@ import {
   fixedByWords,
   fixOfferWords,
   fixQuestion,
+  NO_GROUPS_WORDS,
   NO_MATCH_WORDS,
   NO_PERIOD_WORDS,
   OPEN_PERIOD_WORDS,
@@ -175,6 +176,12 @@ function FixPart({ shown, mayFix }: { shown: ShownResults; mayFix: boolean }) {
   return <SurveyFixPart fixedWords={null} offer={offer} />;
 }
 
+/** What the list says when it shows no group: none yet in the period, or none on the filters set. */
+export function noGroupWords(choices: SurveyResultChoices): string {
+  const isFiltered = choices.query !== "" || choices.filter !== null;
+  return isFiltered ? NO_MATCH_WORDS : NO_GROUPS_WORDS;
+}
+
 function Results({
   shown,
   choices,
@@ -216,7 +223,7 @@ function Results({
           />
         </>
       ) : (
-        <p className={shared.empty}>{NO_MATCH_WORDS}</p>
+        <p className={shared.empty}>{noGroupWords(choices)}</p>
       )}
     </>
   );

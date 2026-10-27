@@ -16,10 +16,10 @@ import {
 function MentalCounts({ mental }: { mental: DormMental }) {
   const { recap, sessions } = mental;
   if (recap.kind === "none") {
-    return <p className={board.none}>{NOBODY_ASSESSED}</p>;
+    return <p className={shared.empty}>{NOBODY_ASSESSED}</p>;
   }
   if (recap.kind === "too_few" || sessions === null) {
-    return <p className={board.none}>{MENTAL_TOO_FEW}</p>;
+    return <p className={shared.empty}>{MENTAL_TOO_FEW}</p>;
   }
   return (
     <>
@@ -48,7 +48,7 @@ function PublishedList({ rows }: { rows: readonly DormPublishedRow[] }) {
     <>
       <h3 className={board.subheading}>{PUBLISHED_HEADING}</h3>
       {rows.length === 0 ? (
-        <p className={board.none}>{NOTHING_PUBLISHED}</p>
+        <p className={shared.empty}>{NOTHING_PUBLISHED}</p>
       ) : (
         <ul className={board.outList}>
           {rows.map((row) => (
