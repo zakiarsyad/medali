@@ -1,5 +1,4 @@
-import { isUuid } from "@/db/is-uuid";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -75,16 +74,12 @@ export function readScreeningParams(params: SearchParams): ScreeningParams {
     filter: filterNamed(firstParam(params.filter)),
     page: pageOf(firstParam(params.hal)),
     sharedPage: pageOf(firstParam(params["hal-data"])),
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 
 function pageOf(sent: string): number {
   return PAGE.test(sent) ? Number(sent) : 1;
-}
-
-function idNamed(sent: string): string | null {
-  return isUuid(sent) ? sent : null;
 }
 
 /** The address of the tab with these choices; what is not chosen is left out. */

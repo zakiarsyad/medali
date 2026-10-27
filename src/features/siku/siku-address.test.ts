@@ -56,10 +56,13 @@ describe("readSikuParams", () => {
         lihathal: "x",
         pengajuan: "dibatalkan",
         pengajuanhal: "0",
-        profil: "bukan-id",
       }),
     ).toEqual(START_PARAMS);
     expect(readSikuParams({ hal: ["2", "5"] }).page).toBe(2);
+  });
+
+  it("keeps a wrong student as given, so it is answered not found", () => {
+    expect(readSikuParams({ profil: "bukan-id" }).detailId).toBe("bukan-id");
   });
 });
 

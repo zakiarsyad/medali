@@ -100,9 +100,11 @@ describe("assessmentAddress", () => {
 describe("the student whose profile is open over the tab", () => {
   const PROFILE = "3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b";
 
-  it("is read from the address, and only as an id", () => {
+  it("is read from the address, of any shape", () => {
     expect(readAssessmentParams({ profil: PROFILE }).profileId).toBe(PROFILE);
-    expect(readAssessmentParams({ profil: "bukan-id" }).profileId).toBeNull();
+    expect(readAssessmentParams({ profil: "bukan-id" }).profileId).toBe(
+      "bukan-id",
+    );
     expect(readAssessmentParams({}).profileId).toBeNull();
   });
 
