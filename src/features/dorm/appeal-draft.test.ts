@@ -68,7 +68,7 @@ describe("sendAppealDraft", () => {
 
   it("refuses a short reason and a proof of the wrong kind or too large, sending nothing", async () => {
     const { edges, sent } = edgesOf();
-    const big = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "bukti.pdf");
+    const big = new File([new Uint8Array(4 * 1024 * 1024 + 1)], "bukti.pdf");
 
     expect(await sendAppealDraft(draft({ reason: "Izin" }), edges)).toEqual({
       error: "Alasan advokasi minimal 15 karakter.",
@@ -79,7 +79,7 @@ describe("sendAppealDraft", () => {
         .error,
     ).toBe("Lampiran harus berupa PDF atau gambar.");
     expect((await sendAppealDraft(draft({ file: big }), edges)).error).toBe(
-      "Ukuran lampiran maksimal 5 MB.",
+      "Ukuran lampiran maksimal 4 MB.",
     );
     expect(sent).toHaveLength(0);
   });

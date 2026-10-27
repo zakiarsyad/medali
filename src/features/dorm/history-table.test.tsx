@@ -132,7 +132,7 @@ describe("the form of a clarification", () => {
       expect(form).toContain(`>${words}</option>`);
     }
     expect(form).not.toContain("Kendala teknis presensi");
-    expect(form).toContain("Lampiran (PDF atau gambar, maks. 5 MB)");
+    expect(form).toContain("Lampiran (PDF atau gambar, maks. 4 MB)");
     expect(form).toContain('name="explanation"');
   });
 

@@ -73,7 +73,7 @@ export function AppealForm({
         />
       </label>
       <label className={`${shared.field} ${styles.field} ${styles.full}`}>
-        Bukti pendukung (opsional, PDF atau gambar maks. 5 MB)
+        Bukti pendukung (opsional, PDF atau gambar maks. 4 MB)
         <input
           type="file"
           name="file"

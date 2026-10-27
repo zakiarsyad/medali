@@ -7,10 +7,11 @@ const nextConfig: NextConfig = {
   experimental: {
     // Lets a page refuse an account with a proper "forbidden" answer.
     authInterrupts: true,
-    // The file of a clarification may be 5 MB, and a sent form adds to
-    // that. Every form still refuses its own files by its own limit, with
-    // a message that says so: a student file over 1 MB, for one.
-    serverActions: { bodySizeLimit: "6mb" },
+    // The preview hosting refuses a send over 4.5 MB before the app sees
+    // it, so the campus server refuses the same sends: what works on the
+    // preview works on campus. Every form still refuses its own files by
+    // its own limit, at most 4 MB, with a message that says so.
+    serverActions: { bodySizeLimit: 4_500_000 },
   },
 };
 

@@ -62,7 +62,7 @@ Students who send an attachment, and everyone who tries the preview.
 
 ## Steps
 
-- [ ] 1. The attachment of a clarification and of an "Advokasi", and a
+- [x] 1. The attachment of a clarification and of an "Advokasi", and a
   sent attendance photo, are 4 MB at most, and the app takes no larger
   sent form than the hosting does, with checks.
 - [ ] 2. Every form that sends a file says the file is too large, not to
