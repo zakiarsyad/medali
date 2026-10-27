@@ -7,7 +7,7 @@ export function NewMentorsNote({ usersAddress }: { usersAddress: string }) {
   return (
     <TabNote>
       Pengasuh baru ditambahkan di Pengaturan &gt;{" "}
-      <Link href={usersAddress} className={shared.link}>
+      <Link href={usersAddress} className={`${shared.link} ${shared.inline}`}>
         Pengguna dan peran
       </Link>
       .

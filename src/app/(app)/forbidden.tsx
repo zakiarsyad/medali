@@ -10,7 +10,7 @@ export default async function Forbidden() {
       <Notice title="Sesi berakhir">
         Sesi Anda berakhir.{" "}
         {/* A plain link, so the sign-in page loads anew. */}
-        <a href={SIGN_IN_PATH} className={styles.link}>
+        <a href={SIGN_IN_PATH} className={`${styles.link} ${styles.inline}`}>
           Masuk lagi.
         </a>
       </Notice>

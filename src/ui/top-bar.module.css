@@ -20,6 +20,10 @@
 
 .menuButton {
   display: var(--menu-button-display);
+  min-width: var(--tap-least);
+  min-height: var(--tap-least);
+  justify-content: center;
+  align-items: center;
   padding: var(--space-xs) var(--space-sm);
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius-md);

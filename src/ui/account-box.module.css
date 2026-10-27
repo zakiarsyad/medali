@@ -31,6 +31,7 @@ a.me:hover,
 
 .out {
   width: 100%;
+  min-height: var(--tap-least);
   margin-top: var(--space-xs);
   padding: var(--space-xs) var(--space-sm);
   border: var(--line-width) solid var(--sideboxline);

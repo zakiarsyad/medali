@@ -6,7 +6,7 @@ export function AddressNotFound() {
   return (
     <Notice title="Halaman tidak ditemukan">
       Alamat ini tidak ada.{" "}
-      <a href="/" className={styles.link}>
+      <a href="/" className={`${styles.link} ${styles.inline}`}>
         Kembali ke halaman utama.
       </a>
     </Notice>

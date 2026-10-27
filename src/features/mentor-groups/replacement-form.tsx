@@ -87,7 +87,10 @@ function NewMentorField({
       {hasNone && (
         <small className={shared.detail}>
           Beri peran Pengasuh kepada akun pegawai di{" "}
-          <Link href={USERS_ADDRESS} className={shared.link}>
+          <Link
+            href={USERS_ADDRESS}
+            className={`${shared.link} ${shared.inline}`}
+          >
             Pengguna dan peran
           </Link>
           .
@@ -173,7 +176,10 @@ export function ReplacementForm({
       {needsEvaluation && (
         <p className={`${styles.warnedNote} ${styles.whole}`}>
           {needsPoorEvaluationWords(group.code)}{" "}
-          <Link href={group.evaluationAddress} className={shared.link}>
+          <Link
+            href={group.evaluationAddress}
+            className={`${shared.link} ${shared.inline}`}
+          >
             Lakukan evaluasi dulu
           </Link>
         </p>

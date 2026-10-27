@@ -8,6 +8,9 @@
 }
 
 .tab {
+  min-width: var(--tap-least);
+  min-height: var(--tap-least);
+  align-content: center;
   margin-bottom: calc(var(--line-width) * -1);
   padding: var(--space-sm) var(--space-md);
   border-bottom: var(--line-width-strong) solid transparent;
