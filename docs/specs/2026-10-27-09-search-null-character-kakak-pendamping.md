@@ -45,5 +45,5 @@ Pengelola Asrama, and every role that may name a kakak pendamping.
 
 ## Steps
 
-- [ ] 1. The search of Kakak pendamping drops the null character, with
+- [x] 1. The search of Kakak pendamping drops the null character, with
   checks that open its student search with a search that holds it.
