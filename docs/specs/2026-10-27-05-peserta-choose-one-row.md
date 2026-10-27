@@ -47,8 +47,11 @@ tambahan.
    the picks and the "Sasaran" count below it. A reader of the screen
    hears the row itself named "Jenis peserta", as the other screens name
    their row by what it chooses.
+4. Decided while building: the row is as wide as its four kinds, like
+   the other rows, and on a phone it folds them onto two lines, as the
+   old Peserta choice did, instead of widening the page.
 
 ## Steps
 
-- [ ] 1. The Peserta choice uses the shared choose-one row, under the
+- [x] 1. The Peserta choice uses the shared choose-one row, under the
   visible label "Peserta", with a check.
