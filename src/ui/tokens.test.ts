@@ -12,6 +12,7 @@ import {
 
 const TOKENS = tokenBlocks(readFileSync("src/ui/tokens.css", "utf8"));
 const PHONE = inForce(TOKENS.light, TOKENS.phone);
+const DARK = inForce(TOKENS.light, TOKENS.dark);
 const BADGE_KINDS = ["good", "warning", "bad", "severe", "plain"];
 const MUTED = "#5a6577";
 
@@ -136,11 +137,6 @@ describe("the shared set of UI values", () => {
     expect(resolvedValue(name, TOKENS.light)).toBe(value);
   });
 
-  /*
-   * Checked at computer width in light mode: dark mode is left as it is
-   * for now, and its surfaces do not yet give the status colours this
-   * contrast.
-   */
   it.each(BADGE_KINDS)(
     "gives the %s badge a text, background and border colour, its text at a contrast of 4.5 or more",
     (kind) => {
@@ -148,6 +144,16 @@ describe("the shared set of UI values", () => {
       const background = resolvedValue(`--badge-${kind}-bg`, TOKENS.light);
 
       expect(resolvedValue(`--badge-${kind}-line`, TOKENS.light)).toMatch(/^#/);
+      expect(contrastRatio(ink, background)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it.each(BADGE_KINDS)(
+    "gives the %s badge text at a contrast of 4.5 or more in dark mode",
+    (kind) => {
+      const ink = resolvedValue(`--badge-${kind}-ink`, DARK);
+      const background = resolvedValue(`--badge-${kind}-bg`, DARK);
+
       expect(contrastRatio(ink, background)).toBeGreaterThanOrEqual(4.5);
     },
   );
