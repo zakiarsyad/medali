@@ -74,6 +74,10 @@ Decided while building:
    that already say so, such as "Putusan tidak terkirim. …". Every form
    that shows its answer in the message under its button gets it,
    "Tambah pengguna" too.
+7. A signed-out person who opens an unknown address is sent to the
+   sign-in page where Google sign-in is the only way in, so they learn
+   nothing of which addresses exist; elsewhere they get the card, as
+   today. This now holds however long the address is.
 
 ## Steps
 
@@ -81,7 +85,7 @@ Decided while building:
   load, show the message of decision 1 in the app's look, with checks.
 - [x] 2. A save that cannot reach the server keeps the form and its
   typed values and shows a message under the button, with checks.
-- [ ] 3. Any unknown address shows "Halaman tidak ditemukan" inside
+- [x] 3. Any unknown address shows "Halaman tidak ditemukan" inside
   the menu for a signed-in person, and the card without the menu for
   a signed-out person, with checks.
 - [ ] 4. A wrong student, group or record in the address opens the page

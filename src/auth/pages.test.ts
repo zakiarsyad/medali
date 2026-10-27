@@ -6,7 +6,14 @@ import { pageAt } from "./pages";
  * Screens that are not menu pages. The sign-in page is open to anyone;
  * the others are open to every account.
  */
-const OUTSIDE_THE_MENU = ["", "[page]", "[page]/[tab]", "ganti-peran", "masuk"];
+const OUTSIDE_THE_MENU = [
+  "",
+  "[page]",
+  "[page]/[tab]",
+  "[page]/[tab]/[...rest]",
+  "ganti-peran",
+  "masuk",
+];
 
 /** A folder in brackets only groups screens; it is not in the address. */
 const GROUP_FOLDER = /\([^/]+\)\//g;
