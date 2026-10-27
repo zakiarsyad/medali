@@ -6,7 +6,11 @@ import { addTestReplacement } from "@/mentoring/test-replacements";
 import { groupCode } from "@/ui/group-code";
 import { mentorStatus } from "@/ui/mentor-status";
 import { listMentors, MENTOR_PAGE_SIZE } from "./mentor-list";
-import { type MentorListFilters, NO_FILTERS } from "./mentor-list-address";
+import {
+  type MentorListFilters,
+  NO_FILTERS,
+  readMentorListParams,
+} from "./mentor-list-address";
 import { listMentorUnits } from "./mentor-units";
 import {
   addTestEndedGroup,
@@ -373,6 +377,19 @@ describe("listMentors", () => {
       expect(await namesFound(db, EVERYONE, { query: "uji bu" })).toEqual([
         "Pengasuh Uji Budi",
       ]);
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      await addEachStanding(db);
+      const asked = (q: string) =>
+        namesFound(db, EVERYONE, {
+          query: readMentorListParams({ q }).filters.query,
+        });
+
+      expect(await asked("\0uji\0 bu\0")).toEqual(["Pengasuh Uji Budi"]);
+      expect(await asked("\0 \0")).toEqual(await namesFound(db, EVERYONE));
     });
   });
 

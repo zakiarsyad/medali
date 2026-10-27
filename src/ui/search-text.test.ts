@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { SEARCH_TEXT_MAX, searchText } from "./search-text";
+import {
+  SEARCH_TEXT_MAX,
+  searchText,
+  withoutNullCharacter,
+} from "./search-text";
+
+describe("withoutNullCharacter", () => {
+  it("drops every null character and keeps the rest as it is", () => {
+    expect(withoutNullCharacter("\0 laras\0 uji \0")).toBe(" laras uji ");
+  });
+});
 
 describe("searchText", () => {
   it("gives the text without the spaces around it", () => {

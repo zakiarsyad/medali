@@ -187,6 +187,14 @@ describe("readStudentListParams", () => {
 
     expect(read.filters.query).toHaveLength(100);
   });
+
+  it("drops the null character from the search, before it is cut", () => {
+    const query = (q: string) => readStudentListParams({ q }).filters.query;
+
+    expect(query("\0ayu\0 la\0")).toBe("ayu la");
+    expect(query("\0 \0 ")).toBe("");
+    expect(query(`\0${"a".repeat(100)}`)).toBe("a".repeat(100));
+  });
 });
 
 describe("studentListAddress", () => {

@@ -63,6 +63,14 @@ describe("readGroupListParams", () => {
     expect(params.filters.query.length).toBe(100);
   });
 
+  it("drops the null character from the search, before it is cut", () => {
+    const query = (q: string) => readGroupListParams({ q }).filters.query;
+
+    expect(query("\0KP\0 24\0")).toBe("KP 24");
+    expect(query("\0 \0 ")).toBe("");
+    expect(query(`\0${"x".repeat(100)}`)).toBe("x".repeat(100));
+  });
+
   it("reads the group and the student an address names, cut to the length of an id", () => {
     const params = readGroupListParams({
       kelompok: ` ${GROUP_ID}-and-more `,

@@ -1,5 +1,6 @@
 import { MENTOR_STATUSES, type MentorStatus } from "@/ui/mentor-status";
 import { firstParam, type SearchParams } from "@/ui/search-params";
+import { withoutNullCharacter } from "@/ui/search-text";
 
 export const MENTOR_LIST_ADDRESS = "/pengasuh/daftar";
 
@@ -83,7 +84,9 @@ export function readMentorListParams(params: SearchParams): MentorListParams {
     studentPage: readPage(params[STUDENT_PAGE]),
     detailId: readId(params.profil),
     filters: {
-      query: firstParam(params.q).trim().slice(0, SEARCH_MAX_LENGTH),
+      query: withoutNullCharacter(firstParam(params.q))
+        .trim()
+        .slice(0, SEARCH_MAX_LENGTH),
       status: readStatus(params.status),
       unit: readUnit(params.unit),
     },

@@ -14,10 +14,15 @@ describe("readNewStudentsParams", () => {
     ).toEqual({ query: "ayu", page: 3, editing: "9900002101" });
   });
 
+  it("drops the null character from the search", () => {
+    expect(readNewStudentsParams({ q: "\0ayu\0 la\0" }).query).toBe("ayu la");
+  });
+
   it.each([
     [{}],
     [{ q: "" }],
     [{ q: [] }],
+    [{ q: "\0 \0 " }],
     [{ ubah: "990000210" }],
     [{ ubah: "abc" }],
   ])("reads no search and no student from %o", (params) => {
