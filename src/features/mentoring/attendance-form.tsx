@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import {
   ATTENDANCE_MARKS,
   type AttendanceMark,
@@ -12,6 +12,7 @@ import { useAskBeforeLeaving } from "@/ui/ask-before-leaving";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveAttendanceAction } from "./actions";
 import type { AttendanceFormState } from "./attendance-form-state";
 import {
@@ -176,7 +177,7 @@ export function AttendanceForm({
   }
 
   const first: AttendanceFormState = { error: null, done: null, version };
-  const [state, save, pending] = useActionState(send, first);
+  const [state, save, pending] = useSaveState(send, first);
   useAskBeforeLeaving(hasUnsavedChanges(kept, values), LEAVE_QUESTION);
 
   function setMark(studentId: string, mark: AttendanceMark | null) {

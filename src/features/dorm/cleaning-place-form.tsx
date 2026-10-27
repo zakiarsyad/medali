@@ -1,9 +1,10 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState, useRef } from "react";
+import { type FormEvent, startTransition, useRef } from "react";
 import { DORM_IDS, DORM_NAMES, type DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { addCleaningPlaceAction } from "./cleaning-actions";
 import { PLACE_NAME_MAX_LENGTH } from "./cleaning-ids";
 
@@ -19,7 +20,7 @@ export function AddPlaceForm({ formDorm }: { formDorm: DormId }) {
     return after;
   }
 
-  const [state, save, pending] = useActionState(add, START);
+  const [state, save, pending] = useSaveState(add, START);
 
   // Sent from here, not by the browser: the browser empties a sent form,
   // and a refused name must stay to be corrected.

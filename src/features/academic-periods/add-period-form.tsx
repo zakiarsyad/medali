@@ -1,15 +1,11 @@
 "use client";
 
-import {
-  type FormEvent,
-  startTransition,
-  useActionState,
-  useState,
-} from "react";
+import { type FormEvent, startTransition, useState } from "react";
 import type { Term } from "@/academic-periods/academic-period";
 import { academicYear, TERM_LABELS } from "@/academic-periods/period-labels";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { addPeriodAction } from "./actions";
 import { parseStartYear } from "./period-input";
 import { suggestedStart } from "./suggested-start";
@@ -22,7 +18,7 @@ export function AddPeriodForm({
   /** The first year of the Tahun akademik the form opens with. */
   startYear: number;
 }) {
-  const [state, save, pending] = useActionState(addPeriodAction, START);
+  const [state, save, pending] = useSaveState(addPeriodAction, START);
   const [year, setYear] = useState(academicYear(startYear));
   const [term, setTerm] = useState<Term>("odd");
   const [startsOn, setStartsOn] = useState(suggestedStart(startYear, "odd"));

@@ -4,7 +4,9 @@ import { type FormEvent, useState, useTransition } from "react";
 import type { SessionStart } from "@/mental-health/session-view";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import styles from "./counselling.module.css";
+import { refusedOutcome } from "./not-sent";
 import { writeSessionAction } from "./session-actions";
 import { SessionFields } from "./session-fields";
 import type { SessionOutcome } from "./write-session";
@@ -41,7 +43,10 @@ export function SessionForm({
     const sent = event.currentTarget;
     const form = new FormData(sent);
     startSending(async () => {
-      const outcome = await writeSessionAction(form);
+      const outcome = await sentOr(
+        () => writeSessionAction(form),
+        refusedOutcome,
+      );
       if (outcome.kind === "refused") {
         setMessage({ error: outcome.error, done: null });
         return;

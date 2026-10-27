@@ -10,7 +10,10 @@ import { DormHealthNoteForm } from "./dorm-health-note-panel";
 import { DormHealthScreen } from "./dorm-health-screen";
 import { LIST_READER_NOTE, NUMBERS_ONLY_NOTE } from "./dorm-health-words";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({}),
+  unstable_rethrow: vi.fn(),
+}));
 vi.mock("./dorm-health-actions", () => ({
   dormHealthSubjectAction: vi.fn(),
   saveDormHealthNoteAction: vi.fn(),

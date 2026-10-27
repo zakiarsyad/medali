@@ -1,12 +1,13 @@
 "use client";
 
-import { type ChangeEvent, useActionState, useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { FOLLOW_UPS, NOTE_KINDS, type NoteKind } from "@/mentoring/note-ids";
 import { FOLLOW_UP_TITLES, KIND_TITLES } from "@/mentoring/note-words";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { ValueSwatch } from "@/ui/value-swatch";
 import { saveNoteAction } from "./actions";
 import { MenteePicker } from "./mentee-picker";
@@ -84,7 +85,7 @@ export function NoteForm({
   }
 
   const start: NoteFormState = { error: null, done: null, noteId };
-  const [state, save, pending] = useActionState(send, start);
+  const [state, save, pending] = useSaveState(send, start);
 
   function chooseKind(event: ChangeEvent<HTMLSelectElement>) {
     if (!isNoteKind(event.target.value)) return;

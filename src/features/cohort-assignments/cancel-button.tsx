@@ -3,6 +3,7 @@
 import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { isToldAbove } from "./answer-place";
 import { changeForm } from "./change-form";
 import { cancelAction } from "./decree-actions";
@@ -21,7 +22,10 @@ export function CancelButton({ shown }: { shown: DraftKey }) {
   function cancel() {
     if (!window.confirm(cancelQuestion(shown.cohortYear))) return;
     save(async () => {
-      const after = await cancelAction(changeForm(shown));
+      const after = await sentOr(
+        () => cancelAction(changeForm(shown)),
+        refusedSave,
+      );
       if (isToldAbove("cancel", after)) {
         announce(after);
         return;

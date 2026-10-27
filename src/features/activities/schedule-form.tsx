@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveScheduleAction } from "./actions";
 import styles from "./activities.module.css";
 import { ActivityFacts } from "./activity-facts";
@@ -79,7 +80,7 @@ export function ScheduleForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   return (
     // noValidate: the server says what is wrong, in the app's own words.

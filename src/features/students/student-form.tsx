@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useActionState, useState } from "react";
+import { Fragment, useState } from "react";
 import type { StudyProgram } from "@/db/study-programs";
 import shared from "@/ui/data-screen.module.css";
 import { text, texts } from "@/ui/form-data";
 import { FormMessage } from "@/ui/form-message";
+import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { addStudentAction, changeStudentAction } from "./actions";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
@@ -170,9 +172,9 @@ export function StudentForm({
     notify(null);
     const save = editing ? changeStudentAction : addStudentAction;
     const after = await save(before, form);
-    // The browser puts a sent form back on its first choices; this keeps
-    // Instansi asal, the note on the dorm and the groups offered in step
-    // with what the form then shows.
+    // The fields are drawn anew after each answer; this keeps Instansi
+    // asal, the note on the dorm and the groups offered in step with what
+    // the form then shows.
     const shownAfter = formShows(after, start);
     setEntryPath(shownAfter.entryPath);
     setResident(shownAfter);
@@ -188,7 +190,7 @@ export function StudentForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(send, START);
+  const [state, action, pending] = useSaveState(send, START);
   const shown = formShows(state, start);
   const note = residentNote(resident, period);
   const program = programs.find(
@@ -199,13 +201,15 @@ export function StudentForm({
   return (
     // noValidate: a wrong NIM or a short name gets the app's own message.
     <form
-      action={action}
+      onSubmit={(event) => sendForm(event, action)}
       className={shared.form}
       noValidate
       onChange={(event) => followForm(new FormData(event.currentTarget))}
     >
-      {/* Drawn anew each time the form is sent: the browser empties a
-          sent form, and this fills it again with what `shown` holds. */}
+      {/* Drawn anew after each answer of the server, with what `shown`
+          holds: what was sent after a refusal, empty after a save. A
+          save that does not arrive draws nothing anew, so what was typed
+          stays. */}
       <Fragment key={state.attempt}>
         <NimField nim={shown.nim} locked={editing !== null} />
         {editing && (

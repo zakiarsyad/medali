@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { giveBamRolesAction } from "./actions";
 import panel from "./bam-panel.module.css";
 import { BamRoleChoices } from "./bam-role-choices";
@@ -22,7 +23,7 @@ export function AddBamForm() {
     return after;
   }
 
-  const [state, save, pending] = useActionState(give, START);
+  const [state, save, pending] = useSaveState(give, START);
   return (
     <details className={panel.add}>
       <summary className={styles.button}>Tambah pengurus BAM</summary>

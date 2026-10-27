@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveMainIndicatorsAction } from "./actions";
 import styles from "./curriculum.module.css";
 import { ValueBox } from "./indicator-boxes";
@@ -42,7 +43,7 @@ export function IndicatorForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(send, START);
+  const [state, action, pending] = useSaveState(send, START);
   return (
     <form action={action}>
       <input type="hidden" name="version" value={openedOn} />

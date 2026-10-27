@@ -8,6 +8,7 @@ import {
 } from "@/mentoring/survey-statements";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { refusedResult, sentOr } from "@/ui/save-not-sent";
 import { deviceStorage } from "@/ui/survey-drafts";
 import type { OwnSurvey } from "./own-survey";
 import styles from "./own-survey.module.css";
@@ -121,12 +122,16 @@ export function OwnSurveyForm({
     }
     setSaid(START);
     startSending(async () => {
-      const sent = await sendOwnSurveyAction({
-        surveyPeriodId: survey.surveyPeriodId,
-        mentorId: survey.mentorId,
-        scores,
-        suggestion,
-      });
+      const sent = await sentOr(
+        () =>
+          sendOwnSurveyAction({
+            surveyPeriodId: survey.surveyPeriodId,
+            mentorId: survey.mentorId,
+            scores,
+            suggestion,
+          }),
+        refusedResult,
+      );
       if (!sent.ok) {
         setSaid({ error: sent.error, done: null });
         return;

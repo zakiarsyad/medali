@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { removeStudentAction } from "./actions";
 import { useNotify } from "./student-notice";
 
@@ -25,7 +26,7 @@ export function RemoveStudentButton({
     return { error: after.error, done: null };
   }
 
-  const [state, action, pending] = useActionState(remove, START);
+  const [state, action, pending] = useSaveState(remove, START);
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {
     const sure = window.confirm(

@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useAskBeforeLeaving } from "@/ui/ask-before-leaving";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveScoresAction } from "./actions";
 import styles from "./mentoring.module.css";
 import { ScoreBoxes } from "./score-boxes";
@@ -61,7 +62,7 @@ export function ScoreForm({
     return after;
   }
 
-  const [state, save, pending] = useActionState(send, NOTHING_SENT);
+  const [state, save, pending] = useSaveState(send, NOTHING_SENT);
   useAskBeforeLeaving(hasUnsavedScores(rows, typed), LEAVE_QUESTION);
 
   return (

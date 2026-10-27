@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  type FormEvent,
-  startTransition,
-  useActionState,
-  useState,
-} from "react";
+import { type FormEvent, startTransition, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import type { ValueKey } from "@/ui/medali-values";
+import { useSaveState } from "@/ui/use-save-state";
 import { ValueSwatch } from "@/ui/value-swatch";
 import { savePpksActivityAction } from "./actions";
 import styles from "./curriculum.module.css";
@@ -87,7 +83,7 @@ export function PpksForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   // Sent from here, not by the browser: the browser empties a sent form,
   // and what was typed must stay when the save is refused.

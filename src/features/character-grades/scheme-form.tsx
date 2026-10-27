@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  type FormEvent,
-  startTransition,
-  useActionState,
-  useState,
-} from "react";
+import { type FormEvent, startTransition, useState } from "react";
 import type { SchemeInForce } from "@/character-grades/grade-scheme";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import styles from "./character-grades.module.css";
 import { saveSchemeAction } from "./scheme-actions";
 import { typedOf, VERSION_FIELD } from "./scheme-fields";
@@ -26,7 +22,7 @@ const START: FormState = { error: null, done: null };
  */
 export function SchemeForm({ inForce }: { inForce: SchemeInForce }) {
   const [typed, setTyped] = useState(() => typedOf(inForce.scheme));
-  const [state, save, pending] = useActionState(saveSchemeAction, START);
+  const [state, save, pending] = useSaveState(saveSchemeAction, START);
   const faults = schemeFaults(typed);
   const canSave = maySave(typed);
 

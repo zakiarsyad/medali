@@ -2,8 +2,13 @@
 
 import { use, useState, useTransition } from "react";
 import type { FormState } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import type { FollowUpState, PenaltyFollowUp } from "./penalty-follow-up";
 import { SetUnfinishedWork } from "./penalty-numbers";
+
+function refusedFollowUp(message: string): FollowUpState {
+  return { ...refusedSave(message), followUp: null, unfinishedWork: null };
+}
 
 const NO_MESSAGE: FormState = { error: null, done: null };
 
@@ -20,7 +25,7 @@ export function useFollowUpSend(onFollowUp: (next: PenaltyFollowUp) => void) {
   function send(sending: () => Promise<FollowUpState>) {
     setMessage(NO_MESSAGE);
     startSending(async () => {
-      const answer = await sending();
+      const answer = await sentOr(sending, refusedFollowUp);
       setMessage({ error: answer.error, done: answer.done });
       if (answer.followUp !== null) onFollowUp(answer.followUp);
       if (answer.unfinishedWork !== null) {

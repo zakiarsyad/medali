@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import shared from "@/ui/data-screen.module.css";
 import { ModalDialog } from "@/ui/modal-dialog";
+import { NotFoundDialog } from "@/ui/not-found-dialog";
 import type { RunningPeriod } from "./semester-now";
 import type { DetailOrBrief } from "./student-brief";
 import { StudentDetailView } from "./student-detail-view";
@@ -81,16 +81,11 @@ export function StudentDetailDialog({
 }) {
   if (detail.kind === "not_found") {
     return (
-      <ModalDialog
-        label="Mahasiswa tidak ditemukan"
+      <NotFoundDialog
+        thing="student"
+        returnPlace={RETURN_PLACE[openedFrom]}
         closeAddress={closeAddress}
-      >
-        <h2 className={shared.heading}>Mahasiswa tidak ditemukan</h2>
-        <p>
-          Data mahasiswa ini tidak ada atau tidak dapat Anda lihat. Pilih Tutup
-          untuk kembali ke {RETURN_PLACE[openedFrom]}.
-        </p>
-      </ModalDialog>
+      />
     );
   }
   if (detail.kind === "brief") {

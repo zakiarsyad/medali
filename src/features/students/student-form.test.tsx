@@ -5,7 +5,10 @@ import { MentorGroupField } from "./mentor-group-field";
 import { StudentForm } from "./student-form";
 import type { StoredStudent } from "./student-input";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({}),
+  unstable_rethrow: vi.fn(),
+}));
 vi.mock("./actions", () => ({}));
 
 /** Angkatan 2026 is in semester 1, and angkatan 2025 in semester 3. */
