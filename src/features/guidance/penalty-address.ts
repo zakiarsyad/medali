@@ -1,6 +1,5 @@
-import { isUuid } from "@/db/is-uuid";
 import type { PenaltyCategory } from "@/discipline-penalties/penalty-kinds";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 import type { PenaltyStatus } from "./penalty-ids";
 
@@ -58,10 +57,6 @@ function choiceNamed<Choice extends string>(
   return "all";
 }
 
-function idNamed(sent: string): string | null {
-  return isUuid(sent) ? sent : null;
-}
-
 /**
  * What the address asks the list for. Nothing in an address is trusted:
  * a part that is not understood counts as not chosen, and a text too
@@ -74,7 +69,7 @@ export function readPenaltiesParams(params: SearchParams): PenaltiesParams {
     category: choiceNamed(CATEGORY_CHOICES, firstParam(params.kategori)),
     status: choiceNamed(STATUS_CHOICES, firstParam(params.status)),
     page: PAGE.test(page) ? Number(page) : 1,
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 

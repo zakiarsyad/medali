@@ -54,6 +54,6 @@ Decided while building:
 
 ## Steps
 
-- [ ] 1. Penilaian › Asesmen, Jasmani, SIKU and SKPM, Konseling ›
+- [x] 1. Penilaian › Asesmen, Jasmani, SIKU and SKPM, Konseling ›
   Kesehatan mental and Pembinaan › Pelanggaran disiplin read `profil=`
   with the shared reader, with checks.

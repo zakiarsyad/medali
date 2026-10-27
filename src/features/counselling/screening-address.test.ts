@@ -88,9 +88,11 @@ describe("the address of Kesehatan mental", () => {
 describe("the student whose profile is open over the tab", () => {
   const PROFILE = "3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b";
 
-  it("is read from the address, and only as an id", () => {
+  it("is read from the address, of any shape", () => {
     expect(readScreeningParams({ profil: PROFILE }).profileId).toBe(PROFILE);
-    expect(readScreeningParams({ profil: "bukan-id" }).profileId).toBeNull();
+    expect(readScreeningParams({ profil: "bukan-id" }).profileId).toBe(
+      "bukan-id",
+    );
     expect(readScreeningParams({}).profileId).toBeNull();
   });
 

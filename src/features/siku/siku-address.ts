@@ -1,5 +1,5 @@
 import { isUuid } from "@/db/is-uuid";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -136,7 +136,7 @@ export function readSikuParams(params: SearchParams): SikuParams {
     seenPage: pageNamed(firstParam(params.lihathal)),
     requestFilter: requestFilterNamed(firstParam(params.pengajuan)),
     requestPage: pageNamed(firstParam(params.pengajuanhal)),
-    detailId: idNamed(firstParam(params.profil)),
+    detailId: idParam(params.profil),
   };
 }
 

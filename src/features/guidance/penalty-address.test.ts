@@ -42,9 +42,14 @@ describe("readPenaltiesParams", () => {
         kategori: "semua",
         status: "selesai",
         hal: "0",
-        profil: "bukan-id",
       }),
     ).toEqual(PENALTIES_START);
+  });
+
+  it("keeps a wrong student as given, so it is answered not found", () => {
+    expect(readPenaltiesParams({ profil: "bukan-id" }).profileId).toBe(
+      "bukan-id",
+    );
   });
 });
 

@@ -1,5 +1,5 @@
 import { isUuid } from "@/db/is-uuid";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -103,7 +103,7 @@ export function readAssessmentParams(params: SearchParams): AssessmentParams {
     coachingAll: firstParam(params.pembinaan) === ALL,
     coachingPage: pageNamed(firstParam(params.pembinaanhal)),
     pickId: idNamed(firstParam(params.mahasiswa)),
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 

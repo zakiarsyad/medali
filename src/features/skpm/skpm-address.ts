@@ -1,5 +1,5 @@
 import { isUuid } from "@/db/is-uuid";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -84,7 +84,7 @@ export function readSkpmParams(params: SearchParams): SkpmParams {
     page: pageNamed(firstParam(params.hal)),
     detailId: idNamed(firstParam(params.rincian)),
     historyPage: pageNamed(firstParam(params.riwayat)),
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 
