@@ -63,6 +63,12 @@ Every role, on a phone.
 6. Decided while building: the tap area of a link button grows as its
    own box, so it pushes what stands next to it aside instead of
    reaching under it. That makes some lists on a phone a little taller.
+7. Decided while building: on a computer the smallest tap area is
+   `auto`, the browser's own value, not 0, so parts there keep shrinking
+   in a row the way they did.
+8. Decided while building: the links inside the words of a warning
+   note, such as "Isi daftar hadir" and "Perizinan asrama", are words of
+   that sentence and keep their size, as decision 4 says.
 
 ## Steps
 

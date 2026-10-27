@@ -103,6 +103,7 @@ describe("the screen parts", () => {
     ["src/features/guidance/violation-notes.module.css", ".tick"],
     ["src/features/curriculum/curriculum.module.css", ".tick"],
     ["src/features/counselling/counselling.module.css", ".tick"],
+    ["src/features/siku/siku.module.css", ".dropPhoto"],
   ])("%s %s takes the shared tap area", (file, selector) => {
     expect(declarationsOf(file, selector).get("composes")).toBe(
       `tapArea from "../../ui/data-screen.module.css"`,

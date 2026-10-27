@@ -221,6 +221,7 @@
 }
 
 .dropPhoto {
+  composes: tapArea from "../../ui/data-screen.module.css";
   position: absolute;
   top: var(--space-3xs);
   right: var(--space-3xs);

@@ -40,7 +40,7 @@ function GroupWords({
   return (
     <>
       {BEFORE_GROUP_CODE}
-      <Link href={address} className={shared.link}>
+      <Link href={address} className={`${shared.link} ${shared.inline}`}>
         {groupCode(group)}
       </Link>
       {afterGroupCode(group)}
