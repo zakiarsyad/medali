@@ -46,5 +46,5 @@ Decided while building:
 
 ## Steps
 
-- [ ] 1. The shared reader of search texts drops the null character,
+- [x] 1. The shared reader of search texts drops the null character,
   with checks on Pembinaan › Karakter and Penilaian › Karakter.
