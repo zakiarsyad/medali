@@ -1,7 +1,8 @@
+import { isRefusedForSize } from "@/files/sent-form-size";
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
 import { parseRequest } from "./request-input";
-import { REQUEST_PHOTO_FILE_NAME } from "./request-photo";
+import { REQUEST_PHOTO_FAULTS, REQUEST_PHOTO_FILE_NAME } from "./request-photo";
 
 /*
  * What the form of a request does when it is sent, apart from how it is
@@ -67,12 +68,16 @@ export async function sendRequest(
   const draft = { ...fields, photoCount: photos.length };
   const checked = parseRequest(draft, today);
   if (!checked.ok) return { error: checked.error, done: null };
+  const form = requestFormData(id, fields, photos);
   try {
-    const sent = await edges.send(requestFormData(id, fields, photos));
+    const sent = await edges.send(form);
     if (!sent.ok) return { error: sent.error, done: null };
     return { error: null, done: sent.value };
   } catch (error) {
     edges.rethrow(error);
+    if (isRefusedForSize(error, form)) {
+      return { error: REQUEST_PHOTO_FAULTS["too-large"], done: null };
+    }
     return { error: REQUEST_SEND_FAILED, done: null };
   }
 }

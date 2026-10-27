@@ -8,11 +8,19 @@ import { JPEG } from "@/files/file-kinds";
 
 const MEGABYTE = 1024 * 1024;
 
-/** The largest photo, picked or sent. */
-export const PHOTO_MAX_BYTES = 8 * MEGABYTE;
+/** The largest photo a student may pick, before it is made smaller. */
+export const PICKED_PHOTO_MAX_BYTES = 8 * MEGABYTE;
+
+/**
+ * The largest photo the server takes. The upload makes every picked photo
+ * a JPEG 1,280 dots on its longest side, far smaller than this, and this
+ * stays below what the preview hosting takes in one send.
+ */
+export const SENT_PHOTO_MAX_BYTES = 4 * MEGABYTE;
 
 export const NOT_A_PICTURE = "Berkas harus berupa gambar.";
 export const PHOTO_TOO_LARGE = "Ukuran foto maksimal 8 MB.";
+const SENT_PHOTO_TOO_LARGE = "Foto terlalu besar. Pilih foto lain.";
 
 /**
  * What the server takes as an attendance photo. The upload makes every
@@ -20,7 +28,7 @@ export const PHOTO_TOO_LARGE = "Ukuran foto maksimal 8 MB.";
  */
 export const PHOTO_RULE: FileRule = {
   kinds: [JPEG],
-  maxBytes: PHOTO_MAX_BYTES,
+  maxBytes: SENT_PHOTO_MAX_BYTES,
 };
 
 /** The part of the file storage that keeps the attendance photos. */
@@ -33,7 +41,7 @@ export const PHOTO_FILE_NAME = `foto-kehadiran${JPEG.extension}`;
 export const PHOTO_FAULTS: Record<FileFault, string> = {
   "wrong-kind": NOT_A_PICTURE,
   empty: NOT_A_PICTURE,
-  "too-large": PHOTO_TOO_LARGE,
+  "too-large": SENT_PHOTO_TOO_LARGE,
   "wrong-content": NOT_A_PICTURE,
 };
 
@@ -45,6 +53,6 @@ export const PHOTO_FAULTS: Record<FileFault, string> = {
 export function pickedPhotoFault(type: string, bytes: number): string | null {
   if (!type.startsWith("image/")) return NOT_A_PICTURE;
   if (bytes === 0) return NOT_A_PICTURE;
-  if (bytes > PHOTO_MAX_BYTES) return PHOTO_TOO_LARGE;
+  if (bytes > PICKED_PHOTO_MAX_BYTES) return PHOTO_TOO_LARGE;
   return null;
 }

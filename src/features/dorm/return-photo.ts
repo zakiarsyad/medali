@@ -1,5 +1,6 @@
 import type { FileFault, FileRule } from "@/files/file-check";
 import { JPEG } from "@/files/file-kinds";
+import { isRefusedForSize } from "@/files/sent-form-size";
 
 /*
  * The photo of a report of a return from leave. Read by the camera in
@@ -39,3 +40,13 @@ export const RETURN_PHOTO_FAULTS: Record<FileFault, string> = {
   "too-large": "Ukuran foto maksimal 2 MB. Ambil foto lagi.",
   "wrong-content": NOT_A_PHOTO,
 };
+
+/** Said when the report did not reach the server, or no answer came back. */
+const SEND_FAILED =
+  "Laporan tidak terkirim. Periksa koneksi internet, lalu tekan Kirim laporan kembali lagi.";
+
+/** What the camera says when sending the report failed. */
+export function returnSendFault(error: unknown, form: FormData): string {
+  if (isRefusedForSize(error, form)) return RETURN_PHOTO_FAULTS["too-large"];
+  return SEND_FAILED;
+}

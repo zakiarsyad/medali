@@ -8,7 +8,7 @@ import {
   memoryStore,
   unreachableStore,
 } from "@/files/memory-store";
-import { PHOTO_FILE_NAME, PHOTO_MAX_BYTES } from "./attendance-photo";
+import { PHOTO_FILE_NAME, SENT_PHOTO_MAX_BYTES } from "./attendance-photo";
 import {
   ALREADY_DECIDED,
   NO_PHOTO_STORAGE,
@@ -182,13 +182,13 @@ describe("sendAttendancePhoto", () => {
     },
   );
 
-  it('refuses a photo over 8 MB with "Ukuran foto maksimal 8 MB." and keeps nothing', async () => {
+  it('refuses a photo over 4 MB with "Foto terlalu besar. Pilih foto lain." and keeps nothing', async () => {
     await inTestDatabase(async (db) => {
       const { student, scheduleId } = await addRecords(db);
       const store = memoryStore();
       const large = {
         name: PHOTO_FILE_NAME,
-        bytes: testPhoto(PHOTO_MAX_BYTES + 1),
+        bytes: testPhoto(SENT_PHOTO_MAX_BYTES + 1),
       };
 
       const sent = await sendAttendancePhoto(
@@ -200,7 +200,10 @@ describe("sendAttendancePhoto", () => {
         WHILE_OPEN,
       );
 
-      expect(sent).toEqual({ ok: false, error: "Ukuran foto maksimal 8 MB." });
+      expect(sent).toEqual({
+        ok: false,
+        error: "Foto terlalu besar. Pilih foto lain.",
+      });
       await expectNothingKept(db, store);
     });
   });

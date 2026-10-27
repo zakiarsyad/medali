@@ -68,7 +68,7 @@ describe("sendAppealDraft", () => {
 
   it("refuses a short reason and a proof of the wrong kind or too large, sending nothing", async () => {
     const { edges, sent } = edgesOf();
-    const big = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "bukti.pdf");
+    const big = new File([new Uint8Array(4 * 1024 * 1024 + 1)], "bukti.pdf");
 
     expect(await sendAppealDraft(draft({ reason: "Izin" }), edges)).toEqual({
       error: "Alasan advokasi minimal 15 karakter.",
@@ -79,7 +79,7 @@ describe("sendAppealDraft", () => {
         .error,
     ).toBe("Lampiran harus berupa PDF atau gambar.");
     expect((await sendAppealDraft(draft({ file: big }), edges)).error).toBe(
-      "Ukuran lampiran maksimal 5 MB.",
+      "Ukuran lampiran maksimal 4 MB.",
     );
     expect(sent).toHaveLength(0);
   });
@@ -93,6 +93,20 @@ describe("sendAppealDraft", () => {
 
     expect(await sendAppealDraft(draft(), edges)).toEqual({
       error: APPEAL_SEND_FAILED,
+      done: null,
+    });
+  });
+
+  it("says the proof is too large when the send is refused for its size", async () => {
+    const { edges } = edgesOf({
+      send: async () => {
+        throw new Error("Body exceeded 4400000 limit.");
+      },
+    });
+    const proof = new File(["%PDF-1.4"], "bukti.pdf");
+
+    expect(await sendAppealDraft(draft({ file: proof }), edges)).toEqual({
+      error: "Ukuran lampiran maksimal 4 MB.",
       done: null,
     });
   });

@@ -340,9 +340,9 @@ describe("sendDormClarification", () => {
       "Lampiran harus berupa PDF atau gambar.",
     ],
     [
-      "a file larger than 5 MB",
-      { file: { name: "surat.pdf", bytes: testPaper(5 * MEGABYTE + 1) } },
-      "Ukuran lampiran maksimal 5 MB.",
+      "a file larger than 4 MB",
+      { file: { name: "surat.pdf", bytes: testPaper(4 * MEGABYTE + 1) } },
+      "Ukuran lampiran maksimal 4 MB.",
     ],
     [
       "a reason not on the list",
