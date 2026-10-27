@@ -150,6 +150,18 @@ describe("the form for a new schedule of an extra activity", () => {
     expect(fieldOf(form, "participantMode")).toContain('value="cohort"');
   });
 
+  it("shows Peserta above the four kinds, in the shared choose-one row named Jenis peserta", () => {
+    expect(form).toMatch(
+      /<legend class="[^"]*label[^"]*">Peserta<\/legend><fieldset class="[^"]*modes[^"]*"><legend class="[^"]*hidden[^"]*">Jenis peserta<\/legend>/,
+    );
+    expect(form).toMatch(
+      /<button type="button" class="[^"]*mode[^"]*mode[^"]*" aria-pressed="true">Per angkatan<\/button>/,
+    );
+    expect(form).toMatch(
+      /<button type="button" class="[^"]*mode[^"]*" aria-pressed="false">Per mahasiswa<\/button>/,
+    );
+  });
+
   it("offers each angkatan with its count, the newest first, and counts nobody while none is picked", () => {
     expect(form.indexOf("Angkatan 2026")).toBeLessThan(
       form.indexOf("Angkatan 2025"),
