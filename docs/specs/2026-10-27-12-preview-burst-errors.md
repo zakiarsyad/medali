@@ -61,7 +61,8 @@ Everyone who uses the preview, and the owner, who tries merged work there.
    Two rounds of twenty requests to Dashboard, Penilaian karakter,
    Pengaturan and Asrama got the page every time, so the error does not
    show on this computer. The hosting's own logs could not be read from
-   here. On the preview of `main` the same bursts gave:
+   here. On the preview of `main`, later on 2026-10-27, new runs of the
+   same bursts gave:
    - Dashboard 11 and 2 of 20, Penilaian karakter 13 and 3 of 20: the
      rest an error of the app itself, after 0.3 to 1.5 seconds, from
      many copies of the app at once. Pengaturan and Asrama 20 of 20.
@@ -77,12 +78,16 @@ Everyone who uses the preview, and the owner, who tries merged work there.
    the same moment, and most often on the screens that ask the database
    many things at once, which open the most connections. Of the three
    differences named in the issue, how many copies run at once is the
-   one these results point to: twenty copies with five connections each
-   ask for about a hundred connections at once, about as many as the
-   smallest database of the free plan takes, and copies that the
-   hosting has put to sleep keep theirs until they wake. The time a
-   request may take is not reached (the errors come within 1.5 seconds),
-   and the plan's limits are those connections.
+   one these results point to, so it is the one fixed: twenty copies
+   with five connections each ask for about a hundred new connections
+   at once. Without the hosting's logs the exact limit they hit is a
+   guess: the shared-connection address usually makes extra connections
+   wait rather than refusing them, so it may be how many new connections
+   the free plan takes at once, or the about a hundred connections the
+   smallest free database takes in all. Either way fewer connections per
+   copy is the cure, and the bursts after the merge confirm it. The time
+   a request may take is not reached: the errors come within 1.5
+   seconds.
 2. So on both previews each copy of the app now keeps one connection
    instead of five, still closed after 10 seconds idle and still through
    the shared-connection address. Twenty copies then ask for about
