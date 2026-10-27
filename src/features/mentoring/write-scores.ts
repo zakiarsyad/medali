@@ -24,11 +24,17 @@ export async function readKeptScores(
   return new Map(rows.map((row) => [row.studentId, row]));
 }
 
-/** What a new score is of: the student, the period and who gives it. */
-export interface NewScore {
+/** A score as it is given: the final score, the six indicator scores and their names. */
+export interface GivenScore {
+  score: number;
+  indicatorScores: number[];
+  indicatorNames: string[];
+}
+
+/** What a new score is of: the student and the period, with the score given. */
+export interface NewScore extends GivenScore {
   studentId: string;
   periodId: string;
-  score: number;
 }
 
 /**
@@ -38,14 +44,14 @@ export interface NewScore {
 export async function addScore(
   tx: Database,
   actorId: string,
-  { studentId, periodId, score }: NewScore,
+  { studentId, periodId, ...given }: NewScore,
 ): Promise<void> {
   const [added] = await tx
     .insert(mentoringScores)
     .values({
       studentId,
       periodId,
-      score,
+      ...given,
       scoredBy: actorId,
       scoredAt: WRITTEN_NOW,
     })
@@ -55,29 +61,36 @@ export async function addScore(
     scoreId: added.id,
     changedBy: actorId,
     changedAt: WRITTEN_NOW,
-    scoreAfter: score,
+    scoreAfter: given.score,
+    indicatorScoresAfter: given.indicatorScores,
+    indicatorNamesAfter: given.indicatorNames,
   });
 }
 
 /**
  * Puts a new score in the place of the one kept, and adds a line to the
- * log with the score before and after.
+ * log with the score, the indicator scores and their names before and
+ * after.
  */
 export async function changeScore(
   tx: Database,
   actorId: string,
   kept: KeptScore,
-  score: number,
+  given: GivenScore,
 ): Promise<void> {
   await tx
     .update(mentoringScores)
-    .set({ score, scoredBy: actorId, scoredAt: WRITTEN_NOW })
+    .set({ ...given, scoredBy: actorId, scoredAt: WRITTEN_NOW })
     .where(eq(mentoringScores.id, kept.id));
   await tx.insert(mentoringScoreChanges).values({
     scoreId: kept.id,
     changedBy: actorId,
     changedAt: WRITTEN_NOW,
     scoreBefore: kept.score,
-    scoreAfter: score,
+    indicatorScoresBefore: kept.indicatorScores,
+    indicatorNamesBefore: kept.indicatorNames,
+    scoreAfter: given.score,
+    indicatorScoresAfter: given.indicatorScores,
+    indicatorNamesAfter: given.indicatorNames,
   });
 }

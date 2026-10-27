@@ -89,6 +89,37 @@ function addScore(
     .returning();
 }
 
+const SIX_SCORES = [4, 5, 4, 3, 5, 4];
+const SIX_NAMES = ["Uji A", "Uji B", "Uji C", "Uji D", "Uji E", "Uji F"];
+
+type IndicatorColumns = Partial<
+  Pick<
+    typeof mentoringScores.$inferInsert,
+    "indicatorScores" | "indicatorNames"
+  >
+>;
+
+/** A score of 83.3 given on six indicators, with `columns` in place of theirs. */
+function addIndicatorScore(
+  db: Database,
+  of: Records,
+  columns: IndicatorColumns,
+) {
+  return db
+    .insert(mentoringScores)
+    .values({
+      studentId: of.studentId,
+      periodId: of.periodId,
+      score: 83.3,
+      indicatorScores: SIX_SCORES,
+      indicatorNames: SIX_NAMES,
+      ...columns,
+      scoredBy: of.scoredBy,
+      scoredAt: new Date(),
+    })
+    .returning();
+}
+
 async function addLogLine(db: Database): Promise<{ id: string; of: string }> {
   const records = await addRecords(db);
   const [score] = await addScore(db, records);
@@ -141,6 +172,46 @@ describe("a mentoring score", () => {
     },
   );
 
+  it("keeps a final score with one decimal, its six indicator scores and the names they were given with", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const [kept] = await addIndicatorScore(db, records, {});
+
+      expect(kept).toMatchObject({
+        score: 83.3,
+        indicatorScores: SIX_SCORES,
+        indicatorNames: SIX_NAMES,
+      });
+    });
+  });
+
+  it("keeps a score given without indicators, as before them", async () => {
+    await inTestDatabase(async (db) => {
+      const [kept] = await addScore(db, await addRecords(db), 80);
+
+      expect(kept).toMatchObject({
+        indicatorScores: null,
+        indicatorNames: null,
+      });
+    });
+  });
+
+  it.each<[string, IndicatorColumns]>([
+    ["five indicator scores", { indicatorScores: [4, 5, 4, 3, 5] }],
+    ["an indicator score of 0", { indicatorScores: [0, 5, 4, 3, 5, 4] }],
+    ["an indicator score of 6", { indicatorScores: [6, 5, 4, 3, 5, 4] }],
+    ["five names", { indicatorNames: SIX_NAMES.slice(0, 5) }],
+    ["scores without names", { indicatorNames: null }],
+    ["names without scores", { indicatorScores: null }],
+  ])("is refused with %s", async (_, columns) => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      await expect(addIndicatorScore(db, records, columns)).rejects.toThrow();
+    });
+  });
+
   it("cannot be deleted once it has a log line", async () => {
     await inTestDatabase(async (db) => {
       const line = await addLogLine(db);
@@ -184,6 +255,35 @@ describe("the log of mentoring scores", () => {
         scoreAfter: 85,
       });
       expect(line?.changedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  it("keeps the indicator scores and names before and after, and a final score with one decimal", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const [score] = await addIndicatorScore(db, records, {});
+      if (!score) throw new Error("The score was not added.");
+
+      const [line] = await db
+        .insert(mentoringScoreChanges)
+        .values({
+          scoreId: score.id,
+          changedBy: records.scoredBy,
+          scoreBefore: 70,
+          scoreAfter: 83.3,
+          indicatorScoresAfter: SIX_SCORES,
+          indicatorNamesAfter: SIX_NAMES,
+        })
+        .returning();
+
+      expect(line).toMatchObject({
+        scoreBefore: 70,
+        scoreAfter: 83.3,
+        indicatorScoresBefore: null,
+        indicatorNamesBefore: null,
+        indicatorScoresAfter: SIX_SCORES,
+        indicatorNamesAfter: SIX_NAMES,
+      });
     });
   });
 

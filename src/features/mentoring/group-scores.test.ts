@@ -79,14 +79,16 @@ async function addRecords(db: Database): Promise<Records> {
 }
 
 describe("listScoredMembers", () => {
-  it("lists the Aktif members of the group by name, each with the score kept for them in the period", async () => {
+  it("lists the Aktif members of the group by name, each with the score kept for them in the period, its six indicator scores and their names", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
       const scoredAt = new Date("2650-10-01T03:00:00Z");
       await addTestScore(db, {
         studentId: records.budi,
         periodId: records.period.id,
-        score: 82,
+        score: 83.3,
+        indicatorScores: [4, 5, 4, 3, 5, 4],
+        indicatorNames: ["A", "B", "C", "D", "E", "F"],
         scoredBy: records.mentor.id,
         scoredAt,
       });
@@ -104,6 +106,8 @@ describe("listScoredMembers", () => {
           name: "Ani Uji Nilai",
           nim: "9962000701",
           score: null,
+          indicatorScores: null,
+          indicatorNames: null,
           scoredAt: null,
           opensDetail: false,
         },
@@ -111,7 +115,9 @@ describe("listScoredMembers", () => {
           id: records.budi,
           name: "Budi Uji Nilai",
           nim: "9962000702",
-          score: 82,
+          score: 83.3,
+          indicatorScores: [4, 5, 4, 3, 5, 4],
+          indicatorNames: ["A", "B", "C", "D", "E", "F"],
           scoredAt,
           opensDetail: false,
         },

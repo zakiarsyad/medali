@@ -254,13 +254,6 @@
   overflow-wrap: anywhere;
 }
 
-/* The box of one score: as wide as a score needs, never wider than its card. */
-.scoreBox {
-  width: var(--score-box-width);
-  max-width: 100%;
-  scroll-margin-bottom: var(--above-save-bar);
-}
-
 /* Why what a box holds cannot be saved, on the row of that box. */
 .boxFault {
   color: var(--bad);
@@ -277,4 +270,42 @@
   flex-wrap: var(--save-bar-wrap);
   gap: var(--space-sm) var(--space-lg);
   align-items: center;
+}
+
+/* "Indikator penilaian": each indicator, its name over its sentence. */
+.indicators {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-md);
+  padding: 0;
+  list-style: none;
+}
+
+.indicator {
+  display: grid;
+  gap: var(--space-2xs);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* "Simpan indikator", with what the save answered beside it, or under it where there is no room. */
+.saveIndicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: center;
+  margin-top: var(--space-md);
+}
+
+/* The cell of one indicator, never wider than its share of the table or its card. */
+.indicatorCell {
+  min-width: 0;
+}
+
+/* The choice of one indicator: as wide as its cell, never wider. */
+.indicatorChoice {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  scroll-margin-bottom: var(--above-save-bar);
 }

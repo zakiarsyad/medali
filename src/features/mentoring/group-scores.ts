@@ -11,6 +11,10 @@ export interface ScoredMember {
   nim: string;
   /** The score of the period, or null for a member without one. */
   score: number | null;
+  /** Its six indicator scores, or null for none or a score given before them. */
+  indicatorScores: number[] | null;
+  /** The names of the indicators they were given with, or null. */
+  indicatorNames: string[] | null;
   /** When the score was saved last, or null for a member without one. */
   scoredAt: Date | null;
   /** Whether the account that reads the list may open the member's detail. */
@@ -40,6 +44,8 @@ export function listScoredMembers(
       name: students.name,
       nim: students.nim,
       score: mentoringScores.score,
+      indicatorScores: mentoringScores.indicatorScores,
+      indicatorNames: mentoringScores.indicatorNames,
       scoredAt: mentoringScores.scoredAt,
       opensDetail: opensDetailOf(detailVisible),
     })

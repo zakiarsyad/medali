@@ -13,8 +13,12 @@ export interface ScoreRow {
   detailAddress: string | null;
   /** "Kehadiran pengasuhan", such as 3/4, or a dash for none yet. */
   attendance: string;
-  /** The saved score, or null for a member without one. */
+  /** The saved final score, or null for a member without one. */
   score: number | null;
+  /** Its six indicator scores, or null for none or a score given before them. */
+  indicatorScores: number[] | null;
+  /** The names of the indicators they were given with, or null. */
+  indicatorNames: string[] | null;
   /** The day the score was saved last as the screens show it, or null. */
   scoredOn: string | null;
 }
@@ -41,6 +45,8 @@ export function scoreRowsOf(
         : null,
       attendance: shownAttendance(count),
       score: member.score,
+      indicatorScores: member.indicatorScores,
+      indicatorNames: member.indicatorNames,
       scoredOn: member.scoredAt === null ? null : DAY.format(member.scoredAt),
     };
   });

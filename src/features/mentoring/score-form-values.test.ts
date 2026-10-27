@@ -1,159 +1,168 @@
 import { describe, expect, it } from "vitest";
 import {
   afterSave,
-  boxState,
-  boxText,
+  choiceText,
   hasUnsavedScores,
   idsToSend,
+  rowState,
   saveButtonWords,
   spokenScore,
   withoutBoxes,
   withTyped,
 } from "./score-form-values";
 
-const SCORED = { id: "scored", score: 80 };
-const UNSCORED = { id: "unscored", score: null };
-const ROWS = [SCORED, UNSCORED];
+const SIX = { id: "six", score: 83.3, indicatorScores: [4, 5, 4, 3, 5, 4] };
+const BEFORE = { id: "before", score: 80, indicatorScores: null };
+const UNSCORED = { id: "unscored", score: null, indicatorScores: null };
+const ROWS = [SIX, BEFORE, UNSCORED];
 
-describe("boxText", () => {
-  it("shows the kept score, and nothing for a student without one", () => {
-    expect(boxText(SCORED, {})).toBe("80");
-    expect(boxText(UNSCORED, {})).toBe("");
+const ALL_FIVE = ["5", "5", "5", "5", "5", "5"];
+const EMPTY = ["", "", "", "", "", ""];
+
+describe("choiceText", () => {
+  it("shows the kept indicator score, and nothing for a row without six", () => {
+    expect(choiceText(SIX, {}, 1)).toBe("5");
+    expect(choiceText(BEFORE, {}, 1)).toBe("");
+    expect(choiceText(UNSCORED, {}, 1)).toBe("");
   });
 
-  it("shows what was typed, as it was typed", () => {
-    expect(boxText(SCORED, { scored: "9o" })).toBe("9o");
-    expect(boxText(SCORED, { scored: "" })).toBe("");
+  it("shows what was chosen", () => {
+    expect(choiceText(SIX, { six: ALL_FIVE }, 3)).toBe("5");
   });
 });
 
-describe("boxState", () => {
-  it("is saved for a box nobody touched", () => {
-    expect(boxState(SCORED, {})).toBe("saved");
-    expect(boxState(UNSCORED, {})).toBe("saved");
+describe("rowState", () => {
+  it("is saved for a row nobody touched", () => {
+    for (const row of ROWS) expect(rowState(row, {})).toBe("saved");
   });
 
-  it("is unsaved for another score than the one kept", () => {
-    expect(boxState(SCORED, { scored: "85" })).toBe("unsaved");
-    expect(boxState(UNSCORED, { unscored: "0" })).toBe("unsaved");
+  it("is unsaved once six are chosen that are not the ones kept", () => {
+    expect(rowState(SIX, { six: ALL_FIVE })).toBe("unsaved");
+    expect(rowState(BEFORE, { before: ALL_FIVE })).toBe("unsaved");
+    expect(rowState(UNSCORED, { unscored: ALL_FIVE })).toBe("unsaved");
   });
 
-  it("is saved again once the kept score is typed back", () => {
-    expect(boxState(SCORED, { scored: "80" })).toBe("saved");
-    expect(boxState(SCORED, { scored: " 80 " })).toBe("saved");
-    expect(boxState(UNSCORED, { unscored: "" })).toBe("saved");
+  it("is saved again once the six kept are chosen back", () => {
+    expect(rowState(SIX, { six: ["4", "5", "4", "3", "5", "4"] })).toBe(
+      "saved",
+    );
   });
 
-  it.each(["101", "-1", "79.5", "abc"])(
-    "is invalid for %o, which is no whole number from 0 to 100",
-    (text) => {
-      expect(boxState(SCORED, { scored: text })).toBe("invalid");
-      expect(boxState(UNSCORED, { unscored: text })).toBe("invalid");
-    },
-  );
+  it("is incomplete while only part of the six are chosen", () => {
+    const part = ["4", "", "4", "4", "4", "4"];
 
-  it("is emptied for an empty box where a score is kept: a saved score is only changed", () => {
-    expect(boxState(SCORED, { scored: "" })).toBe("emptied");
-    expect(boxState(SCORED, { scored: "  " })).toBe("emptied");
+    expect(rowState(UNSCORED, { unscored: part })).toBe("incomplete");
+    expect(rowState(BEFORE, { before: part })).toBe("incomplete");
+    expect(rowState(SIX, { six: part })).toBe("incomplete");
+  });
+
+  it("is saved for a row without six whose choices are all emptied again, and incomplete for one with six", () => {
+    expect(rowState(UNSCORED, { unscored: EMPTY })).toBe("saved");
+    expect(rowState(BEFORE, { before: EMPTY })).toBe("saved");
+    expect(rowState(SIX, { six: EMPTY })).toBe("incomplete");
   });
 });
 
 describe("spokenScore", () => {
-  it("is the typed score while it is not saved, so the rubric follows the box", () => {
-    expect(spokenScore(SCORED, { scored: "60" })).toBe(60);
-    expect(spokenScore(UNSCORED, { unscored: "90" })).toBe(90);
+  it("is the final score of the six chosen while they are not saved, so Nilai akhir follows them at once", () => {
+    expect(spokenScore(UNSCORED, { unscored: ALL_FIVE })).toBe(100);
+    expect(
+      spokenScore(UNSCORED, { unscored: ["4", "5", "4", "3", "5", "4"] }),
+    ).toBe(83.3);
+    expect(
+      spokenScore(UNSCORED, { unscored: ["1", "1", "1", "1", "1", "1"] }),
+    ).toBe(20);
   });
 
-  it("is the kept score for a box that agrees with it", () => {
-    expect(spokenScore(SCORED, {})).toBe(80);
+  it("is the kept score for a row that agrees with it, one given before the indicators among them", () => {
+    expect(spokenScore(SIX, {})).toBe(83.3);
+    expect(spokenScore(BEFORE, {})).toBe(80);
     expect(spokenScore(UNSCORED, {})).toBeNull();
   });
 
-  it("is none for a box that holds no score", () => {
-    expect(spokenScore(SCORED, { scored: "150" })).toBeNull();
-    expect(spokenScore(SCORED, { scored: "" })).toBeNull();
+  it("is none for a row with only part of the six", () => {
+    expect(spokenScore(SIX, { six: ["4", "", "4", "3", "5", "4"] })).toBeNull();
   });
 });
 
 describe("idsToSend", () => {
   it("sends nothing while nothing is changed", () => {
     expect(idsToSend(ROWS, {})).toEqual([]);
-    expect(idsToSend(ROWS, { scored: "80" })).toEqual([]);
   });
 
-  it("sends the changed boxes, also one that holds no score, for the server to refuse", () => {
-    expect(idsToSend(ROWS, { scored: "85" })).toEqual(["scored"]);
-    expect(idsToSend(ROWS, { scored: "85", unscored: "150" })).toEqual([
-      "scored",
-      "unscored",
-    ]);
+  it("sends the changed rows, also one with only part of the six, for the server to refuse", () => {
+    expect(
+      idsToSend(ROWS, {
+        six: ALL_FIVE,
+        unscored: ["4", "", "", "", "", ""],
+      }),
+    ).toEqual(["six", "unscored"]);
   });
 
-  it("does not send an emptied box", () => {
-    expect(idsToSend(ROWS, { scored: "" })).toEqual([]);
-  });
-
-  it("does not send a box of a student who is no longer in the list", () => {
-    expect(idsToSend(ROWS, { gone: "70" })).toEqual([]);
+  it("does not send a row of a student who is no longer in the list", () => {
+    expect(idsToSend(ROWS, { gone: ALL_FIVE })).toEqual([]);
   });
 });
 
 describe("hasUnsavedScores", () => {
-  it("is false while every box agrees with what is kept", () => {
+  it("is false while every row agrees with what is kept", () => {
     expect(hasUnsavedScores(ROWS, {})).toBe(false);
-    expect(hasUnsavedScores(ROWS, { scored: "80", unscored: "" })).toBe(false);
+    expect(hasUnsavedScores(ROWS, { before: EMPTY })).toBe(false);
   });
 
-  it("is true for a changed score, for what is no score and for an emptied box", () => {
-    expect(hasUnsavedScores(ROWS, { unscored: "70" })).toBe(true);
-    expect(hasUnsavedScores(ROWS, { unscored: "tujuh" })).toBe(true);
-    expect(hasUnsavedScores(ROWS, { scored: "" })).toBe(true);
+  it("is true for six changed and for part of the six", () => {
+    expect(hasUnsavedScores(ROWS, { six: ALL_FIVE })).toBe(true);
+    expect(hasUnsavedScores(ROWS, { before: ["4", "", "", "", "", ""] })).toBe(
+      true,
+    );
   });
 });
 
 describe("withTyped", () => {
-  it("sets the text of one box and keeps the others", () => {
-    expect(withTyped({ scored: "85" }, "unscored", "7")).toEqual({
-      scored: "85",
-      unscored: "7",
+  it("sets one choice of a row, starting from the six kept, and keeps the other rows", () => {
+    const typed = withTyped({ before: ALL_FIVE }, SIX, 0, "1");
+
+    expect(typed).toEqual({
+      before: ALL_FIVE,
+      six: ["1", "5", "4", "3", "5", "4"],
     });
   });
 });
 
 describe("afterSave", () => {
-  it("forgets the boxes that were saved, so they show what is kept", () => {
-    const typed = { scored: "85", unscored: "70" };
+  it("forgets the rows that were saved, so they show what is kept", () => {
+    const typed = { six: ALL_FIVE };
 
-    expect(afterSave(typed, typed, ["scored", "unscored"])).toEqual({});
+    expect(afterSave(typed, typed, ["six"])).toEqual({});
   });
 
-  it("keeps a box that was not sent", () => {
-    const typed = { scored: "85", unscored: "" };
+  it("keeps a row that was not sent", () => {
+    const typed = { six: ALL_FIVE, before: ["4", "", "", "", "", ""] };
 
-    expect(afterSave(typed, typed, ["scored"])).toEqual({ unscored: "" });
+    expect(afterSave(typed, typed, ["six"])).toEqual({
+      before: ["4", "", "", "", "", ""],
+    });
   });
 
-  it("keeps a box the person changed again while the save was on its way", () => {
-    const sent = { scored: "85" };
-    const typed = { scored: "86" };
+  it("keeps a row the person changed again while the save was on its way", () => {
+    const sent = { six: ALL_FIVE };
+    const now = { six: ["1", "5", "5", "5", "5", "5"] };
 
-    expect(afterSave(typed, sent, ["scored"])).toEqual({ scored: "86" });
+    expect(afterSave(now, sent, ["six"])).toEqual(now);
   });
 });
 
 describe("withoutBoxes", () => {
-  it("forgets what was typed for these students and keeps the rest", () => {
-    const typed = { scored: "85", unscored: "70" };
-
-    expect(withoutBoxes(typed, ["scored", "gone"])).toEqual({ unscored: "70" });
-    expect(withoutBoxes(typed, [])).toEqual(typed);
+  it("forgets what was chosen for these students and keeps the rest", () => {
+    expect(withoutBoxes({ six: ALL_FIVE, before: ALL_FIVE }, ["six"])).toEqual({
+      before: ALL_FIVE,
+    });
   });
 });
 
 describe("saveButtonWords", () => {
   it("names how many scores the button saves", () => {
-    expect(saveButtonWords(1)).toBe("Simpan 1 nilai");
-    expect(saveButtonWords(12)).toBe("Simpan 12 nilai");
+    expect(saveButtonWords(3)).toBe("Simpan 3 nilai");
   });
 
   it("names no number while nothing is changed", () => {

@@ -31,12 +31,14 @@ import { readConversion } from "@/features/skpm/skpm-conversion";
 import { skpmVisibleTo } from "@/features/skpm/skpm-readers";
 import { shownOneDecimal } from "@/features/skpm/skpm-words";
 import { addTestActor, addTestUpload } from "@/features/skpm/test-skpm";
+import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import { readGradeBasis } from "./grade-facts";
 import type { GradeRow } from "./grade-list";
 import { readGradePage } from "./grade-page";
 import { readGradeRows } from "./grade-rows";
 import { readGradeScheme } from "./grade-scheme";
 import { gradeVisibleTo } from "./grade-students";
+import { readGradeNumbers } from "./read-grade-numbers";
 import { FORTY_TWENTY } from "./test-weights";
 
 /*
@@ -215,6 +217,38 @@ describe("the parts of the character grade", () => {
         attended: 0,
         counted: 0,
       });
+    });
+  });
+
+  it("uses the final score of the six indicators as Nilai pengasuhan, in the list and in its numbers", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      await addAttendances(db, records);
+      await addSkpm(db, records);
+      await addTestScore(db, {
+        studentId: records.ani.studentId,
+        periodId: records.periodId,
+        score: 83.3,
+        indicatorScores: [4, 5, 4, 3, 5, 4],
+        indicatorNames: STARTING_INDICATORS.map((indicator) => indicator.name),
+        scoredBy: records.mentor.id,
+      });
+
+      const ani = await aniRow(db, records);
+      const { scheme } = await readGradeScheme(db);
+      const basis = await readGradeBasis(db, scheme, TODAY);
+      const numbers = await readGradeNumbers(
+        db,
+        gradeVisibleTo(records.kepala),
+        basis,
+      );
+
+      // 50, 83.3, 65 and 72 with 25% each.
+      expect(ani).toMatchObject({
+        mentoring: 83.3,
+        grade: { complete: true, final: 67.6 },
+      });
+      expect(numbers.meanFinal).toBe(67.6);
     });
   });
 

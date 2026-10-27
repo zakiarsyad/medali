@@ -22,7 +22,10 @@ while building.
   the students whose detail may be opened, with the name that links to
   it, the kinds and follow-ups of a mentoring note with their names, how
   a note is read for a list and shown in it, how many meetings a period
-  has with their marks and suggested topics, the range a mentoring score lies in, the reasons for
+  has with their marks and suggested topics, the range a mentoring score lies in,
+  the six indicators a mentoring score is given on with the indicators
+  they start with, the score from 1 to 5 each takes with its meaning, and
+  the rule for the final score of the six, the reasons for
   replacing a mentor with what the old mentor becomes, which mentor a
   replacement set Tidak aktif, which mentor is kept for a replacement
   that waits for its date, whether an account holds a group today, how a
