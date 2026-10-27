@@ -121,6 +121,8 @@
   --icon-size: 18px;
   --icon-stroke: 2;
   --switched-off-opacity: 0.55;
+  /* A page that opens faster than this gives no sign, so nothing flickers. */
+  --page-opening-wait: 200ms;
   --layer-top-bar: 20;
 
   /*

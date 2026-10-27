@@ -23,3 +23,14 @@
   margin-inline: auto;
   padding: var(--content-padding);
 }
+
+/*
+ * While another page opens, the content dims as pale as a switched-off
+ * button and takes no press. The dimming waits, and goes at once.
+ */
+.content[aria-busy="true"] {
+  opacity: var(--switched-off-opacity);
+  pointer-events: none;
+  transition-property: opacity;
+  transition-delay: var(--page-opening-wait);
+}

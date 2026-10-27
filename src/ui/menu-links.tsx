@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { use } from "react";
 import styles from "./menu-links.module.css";
 import type { MenuItem } from "./menu-types";
-
-function isOpen(pathname: string, path: string): boolean {
-  return pathname === `/${path}` || pathname.startsWith(`/${path}/`);
-}
+import { isWithin, markedPath } from "./page-change";
+import { OpeningPage } from "./page-opening";
 
 export function MenuLinks({ menu }: { menu: MenuItem[] }) {
-  const pathname = usePathname();
+  const addresses = menu.map((item) => `/${item.path}`);
+  const marked = markedPath(addresses, use(OpeningPage), usePathname());
   return (
     <ul className={styles.list}>
       {menu.map((item) => (
@@ -18,7 +18,9 @@ export function MenuLinks({ menu }: { menu: MenuItem[] }) {
           <Link
             href={`/${item.path}`}
             className={styles.link}
-            aria-current={isOpen(pathname, item.path) ? "page" : undefined}
+            aria-current={
+              isWithin(marked, `/${item.path}`) ? "page" : undefined
+            }
           >
             {item.title}
             {item.count !== undefined && item.count > 0 && (
