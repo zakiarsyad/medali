@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useRef } from "react";
 import type { StudyProgram } from "@/db/study-programs";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import {
   NAME_MAX_LENGTH,
   TITLE_MAX_LENGTH,
@@ -24,7 +25,7 @@ export function AddAccountForm({ programs }: { programs: StudyProgram[] }) {
     return after;
   }
 
-  const [state, save, pending] = useActionState(add, START);
+  const [state, save, pending] = useSaveState(add, START);
 
   return (
     <details className={styles.panel}>

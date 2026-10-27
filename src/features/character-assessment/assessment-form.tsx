@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useActionState, useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   levelOf,
   rerataOf,
@@ -26,6 +26,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { LimitNote } from "@/ui/limit-note";
 import { MEDALI_VALUES, type ValueKey } from "@/ui/medali-values";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import { ValueSwatch } from "@/ui/value-swatch";
 import { saveAssessmentAction } from "./assessment-actions";
 import {
@@ -206,7 +207,7 @@ export function AssessmentForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   return (
     <div className={styles.sideBySide}>

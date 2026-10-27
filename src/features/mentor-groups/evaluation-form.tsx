@@ -1,9 +1,10 @@
 "use client";
 
-import { type ChangeEvent, useActionState, useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
+import { useSaveState } from "@/ui/use-save-state";
 import type { StoredEvaluation } from "./evaluated-group";
 import { saveEvaluationAction } from "./evaluation-actions";
 import {
@@ -72,7 +73,7 @@ export function EvaluationForm({
   /** What is saved already for those periods. */
   stored: StoredEvaluation[];
 }) {
-  const [state, save, pending] = useActionState(saveEvaluationAction, START);
+  const [state, save, pending] = useSaveState(saveEvaluationAction, START);
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [typed, setTyped] = useState(() => typedFor(stored, periodId));
   const isStored = stored.some((saved) => saved.periodId === periodId);

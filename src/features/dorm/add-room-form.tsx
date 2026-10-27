@@ -1,9 +1,10 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState, useRef } from "react";
+import { type FormEvent, startTransition, useRef } from "react";
 import type { DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { addRoomAction } from "./actions";
 import {
   MAX_CAPACITY,
@@ -24,7 +25,7 @@ export function AddRoomForm({ dorm, floor }: { dorm: DormId; floor: number }) {
     return after;
   }
 
-  const [state, save, pending] = useActionState(add, START);
+  const [state, save, pending] = useSaveState(add, START);
 
   // Sent from here, not by the browser: the browser empties a sent form,
   // and a refused number must stay to be corrected.

@@ -1,13 +1,9 @@
 "use client";
 
-import {
-  type FormEvent,
-  startTransition,
-  useActionState,
-  useState,
-} from "react";
+import { type FormEvent, startTransition, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveStageBreakdownAction } from "./actions";
 import { BreakdownTitle } from "./breakdown-box";
 import { ACTIVITY_MAX_LENGTH, TEXT_MAX_LENGTH } from "./breakdown-input";
@@ -54,7 +50,7 @@ export function BreakdownForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   // Sent from here, not by the browser: the browser empties a sent form,
   // and what was typed must stay when the save is refused.

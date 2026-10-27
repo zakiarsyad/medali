@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { restorePpksActivityAction } from "./actions";
 
 /** "Urungkan" beside the message of a removal: brings the activity back. */
@@ -19,7 +20,10 @@ export function RestorePpksButton({
 
   function restore() {
     startRestoring(async () => {
-      const after = await restorePpksActivityAction(id);
+      const after = await sentOr(
+        () => restorePpksActivityAction(id),
+        refusedSave,
+      );
       if (after.done) onRestored(after.done);
       setError(after.error);
     });

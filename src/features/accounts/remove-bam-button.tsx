@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { removeBamRolesAction } from "./actions";
 
 const START: FormState = { error: null, done: null };
@@ -18,7 +19,7 @@ export function RemoveBamButton({
   name,
   roles,
 }: RemoveBamButtonProps) {
-  const [state, action, pending] = useActionState(removeBamRolesAction, START);
+  const [state, action, pending] = useSaveState(removeBamRolesAction, START);
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {
     const sure = window.confirm(

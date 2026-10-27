@@ -3,13 +3,14 @@
 import { type FormEvent, useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import styles from "./cleaning.module.css";
 import {
   sendBackDutyAction,
   validateDutyAction,
 } from "./cleaning-assessment-actions";
 import { CLEANING_NOTE_MAX_LENGTH } from "./cleaning-ids";
-import type { DecisionAnswer } from "./leave-messages";
+import { type DecisionAnswer, refusedDecisionWith } from "./leave-messages";
 
 /**
  * "Validasi" and the rejecting button for a duty Pengelola Asrama may
@@ -34,7 +35,7 @@ export function CleaningValidateButtons({
 
   function send(decide: () => Promise<DecisionAnswer>) {
     startSending(async () => {
-      setError(onAnswer(await decide()));
+      setError(onAnswer(await sentOr(decide, refusedDecisionWith)));
     });
   }
 

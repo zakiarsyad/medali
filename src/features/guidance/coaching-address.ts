@@ -1,7 +1,6 @@
 import type { CoachingLevel } from "@/character-scores/coaching-need";
 import type { CoachingStatus } from "@/character-scores/coaching-status";
-import { isUuid } from "@/db/is-uuid";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -68,10 +67,6 @@ function choiceNamed<Choice extends string>(
   return null;
 }
 
-function idNamed(sent: string): string | null {
-  return isUuid(sent) ? sent : null;
-}
-
 /**
  * What the address asks the list for. Nothing in an address is trusted:
  * a part that is not understood counts as not chosen, and a text too
@@ -84,7 +79,7 @@ export function readCoachingParams(params: SearchParams): CoachingParams {
     level: choiceNamed(LEVEL_CHOICES, firstParam(params.tingkat)) ?? "all",
     status: choiceNamed(STATUS_CHOICES, firstParam(params.status)) ?? "open",
     page: PAGE.test(page) ? Number(page) : 1,
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 

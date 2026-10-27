@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState } from "react";
+import { type FormEvent, startTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import styles from "./skpm.module.css";
 import { saveConversionAction } from "./skpm-actions";
 import {
@@ -27,7 +28,7 @@ export function ConversionPanel({
   /** Who set the number last and when, or that it is the starting one. */
   note: string;
 }) {
-  const [state, save, pending] = useActionState(saveConversionAction, START);
+  const [state, save, pending] = useSaveState(saveConversionAction, START);
 
   // Sent from here, not by the browser: the browser puts a sent form back
   // on its first number, and a refused number must stay to be corrected.

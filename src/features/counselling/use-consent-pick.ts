@@ -4,10 +4,12 @@ import { useState, useTransition } from "react";
 import type { SessionHistory } from "@/mental-health/session-view";
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import type { ConsentOutcome } from "./change-consent";
 import { type askConsentAction, lookUpConsentAction } from "./consent-actions";
 import type { ConsentPick } from "./consent-picks";
 import { type ConsentView, versionOfConsent } from "./consent-view";
+import { refusedOutcome } from "./not-sent";
 import { readSessionHistoryAction } from "./session-actions";
 
 const NO_MESSAGE: FormState = { error: null, done: null };
@@ -65,7 +67,10 @@ export function useConsentPick(mayKeepSessions: boolean) {
     action: typeof askConsentAction,
   ) {
     startSending(async () => {
-      const outcome = await action(student.id, versionOfConsent(consent));
+      const outcome = await sentOr(
+        () => action(student.id, versionOfConsent(consent)),
+        refusedOutcome,
+      );
       setMessage(messageOf(outcome));
       if (outcome.kind !== "refused") {
         setLooked({ ok: true, value: outcome.consent });
