@@ -131,8 +131,8 @@ describe("the bar of Nilai anak asuh", () => {
     expect(ON_A_PHONE).toContain("--save-bar-wrap: wrap-reverse;");
   });
 
-  it("keeps the box being typed in above the bar, not behind it", () => {
-    expect(ruleOf(".scoreBox")).toContain(
+  it("keeps the choice being made above the bar, not behind it", () => {
+    expect(ruleOf(".indicatorChoice")).toContain(
       "scroll-margin-bottom: var(--above-save-bar);",
     );
   });

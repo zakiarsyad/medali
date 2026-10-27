@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { finalScoreOf } from "@/mentoring/score-indicators";
 import { isScore } from "@/mentoring/score-range";
 import { SAMPLE_STUDENTS, samplePeriods } from "./sample-data";
 import { sampleMentorGroups } from "./sample-mentor-groups";
@@ -31,8 +32,18 @@ describe("sampleMentoringScores", () => {
     expect(scoredNims.size).toBe(scores.length);
   });
 
-  it("gives whole numbers from 0 to 100", () => {
-    for (const { score } of scores) expect(isScore(score)).toBe(true);
+  it("gives most scores on six indicators, each final score the one of its six", () => {
+    const onIndicators = scores.filter((score) => score.indicatorScores);
+    expect(onIndicators.length).toBeGreaterThan(scores.length / 2);
+    for (const { score, indicatorScores } of onIndicators) {
+      expect(score).toBe(finalScoreOf(indicatorScores ?? []));
+    }
+  });
+
+  it("keeps a score given before the indicators, a whole number from 0 to 100, in each group that is done", () => {
+    const before = scores.filter((score) => score.indicatorScores === null);
+    expect(before.length).toBeGreaterThan(0);
+    for (const { score } of before) expect(isScore(score)).toBe(true);
   });
 
   it("scores only Aktif members of the sample groups", () => {

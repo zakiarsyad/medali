@@ -1,4 +1,5 @@
 import { forbidden } from "next/navigation";
+import { may } from "@/auth/access";
 import { openPage } from "@/auth/open-page";
 import { detailVisibleTo, visibleTo } from "@/auth/visible-students";
 import { StudentSanctionBadge } from "@/discipline-penalties/student-sanction-badge";
@@ -51,6 +52,7 @@ export default async function MentoringScoresPage(
         limit={limit}
         giveLimit={givenRowsFor(account)}
         detailVisible={detailVisibleTo(account)}
+        maySetIndicators={may(account.roles, "set_mentoring_indicators")}
         params={params}
       />
       {detail && (

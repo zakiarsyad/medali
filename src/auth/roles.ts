@@ -84,6 +84,7 @@ export const ACTIONS = [
   "fill_mentoring_attendance",
   "view_mentoring_scores",
   "give_mentoring_scores",
+  "set_mentoring_indicators",
   "send_attendance_photo",
   "verify_attendance",
   "decide_activity_clarifications",
@@ -241,6 +242,7 @@ export const ACTION_TITLES: Record<Action, string> = {
   fill_mentoring_attendance: "Mengisi daftar hadir pertemuan pengasuhan",
   view_mentoring_scores: "Melihat nilai pengasuhan",
   give_mentoring_scores: "Mengisi nilai pengasuhan",
+  set_mentoring_indicators: "Mengatur indikator penilaian pengasuhan",
   send_attendance_photo: "Presensi swafoto",
   verify_attendance: "Verifikasi presensi",
   decide_activity_clarifications:
@@ -467,6 +469,7 @@ export const ROLES: Record<RoleId, Role> = {
       "view_mentoring_notes",
       "view_mentoring_attendance",
       "view_mentoring_scores",
+      "set_mentoring_indicators",
       "view_siku",
       "adjust_siku",
       "decide_siku_additions",

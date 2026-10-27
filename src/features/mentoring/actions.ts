@@ -19,7 +19,11 @@ import { saveAttendance } from "./save-attendance";
 import { saveNote } from "./save-note";
 import { saveScores } from "./save-scores";
 import type { ScoreFormState } from "./score-form-state";
-import { parseScores, sentScores } from "./score-input";
+import {
+  INDICATORS_VERSION_OF_SCORES,
+  parseScores,
+  sentScores,
+} from "./score-input";
 import { SCORES_ADDRESS } from "./scores-address";
 
 /**
@@ -131,6 +135,7 @@ export async function saveScoresAction(
   const actor = await scorer();
   const parsed = parseScores({
     groupId: text(form, "groupId"),
+    indicatorsVersion: text(form, INDICATORS_VERSION_OF_SCORES),
     scores: sentScores(form),
   });
   if (!parsed.ok) return { error: parsed.error, done: null, changedIds: [] };

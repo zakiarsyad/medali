@@ -8,12 +8,18 @@ import { ROLE_IDS } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { mentorGroups } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
+import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
+import { readIndicators } from "./indicator-set";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
+import { saveIndicators } from "./save-indicators";
 import {
   changedSince,
   NO_PERIOD_TO_SCORE,
   NOT_ALLOWED_TO_SCORE,
   NOT_MEMBERS_TO_SCORE,
   NOT_SCORES,
+  NOT_SIX_SCORES,
+  SCORE_INDICATORS_CHANGED,
   SCORED_GROUP_NOT_HELD,
   saveScores,
   scoresChanged,
@@ -27,7 +33,7 @@ import {
   addTestStudent,
   replaceTestMentor,
 } from "./test-records";
-import { testScoreLogOf, testScoresOf } from "./test-scores";
+import { addTestScore, testScoreLogOf, testScoresOf } from "./test-scores";
 
 const inTestDatabase = withTestDatabase();
 
@@ -110,20 +116,39 @@ async function addRecords(db: Database): Promise<Records> {
   };
 }
 
+/** Six indicator scores, by the final score they give. */
+const S20 = [1, 1, 1, 1, 1, 1];
+const S60 = [3, 3, 3, 3, 3, 3];
+const S70 = [4, 4, 3, 3, 4, 3];
+const S80 = [4, 4, 4, 4, 4, 4];
+const S83 = [4, 5, 4, 3, 5, 4];
+const S87 = [5, 5, 4, 4, 4, 4];
+const S90 = [5, 5, 4, 4, 5, 4];
+const S100 = [5, 5, 5, 5, 5, 5];
+
+const STARTING_NAMES = STARTING_INDICATORS.map((indicator) => indicator.name);
+
 /**
- * Scores for members of the mentor's group. `openedOn` holds the score
- * the form was opened on, for each student who had one then.
+ * Six scores for each of some members of the mentor's group. `openedOn`
+ * holds the six scores the form was opened on, for each student who had
+ * them then.
  */
 function scoresOf(
   records: Records,
-  scores: Record<string, number>,
-  openedOn: Record<string, number> = {},
+  scores: Record<string, number[]>,
+  openedOn: Record<string, number[]> = {},
 ): ScoresInput {
-  const basedOn: Record<string, number | null> = {};
+  const basedOn: Record<string, string> = {};
   for (const studentId of Object.keys(scores)) {
-    basedOn[studentId] = openedOn[studentId] ?? null;
+    const before = openedOn[studentId];
+    basedOn[studentId] = before ? before.join(",") : "";
   }
-  return { groupId: records.groupId, scores, basedOn };
+  return {
+    groupId: records.groupId,
+    indicatorsVersion: STARTING_INDICATORS_VERSION,
+    scores,
+    basedOn,
+  };
 }
 
 /** The score kept for a student, or null for a student without one. */
@@ -144,7 +169,7 @@ describe("saveScores", () => {
       const saved = await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 88, [budi]: 61 }),
+        scoresOf(records, { [ani]: S90, [budi]: S60 }),
         period.day,
       );
 
@@ -152,11 +177,13 @@ describe("saveScores", () => {
       expect(await testScoresOf(db, ani)).toEqual([
         expect.objectContaining({
           periodId: period.id,
-          score: 88,
+          score: 90,
+          indicatorScores: S90,
+          indicatorNames: STARTING_NAMES,
           scoredBy: mentor.id,
         }),
       ]);
-      expect(await keptScoreOf(db, budi)).toBe(61);
+      expect(await keptScoreOf(db, budi)).toBe(60);
     });
   });
 
@@ -167,7 +194,7 @@ describe("saveScores", () => {
       await saveScores(
         db,
         records.mentor,
-        scoresOf(records, { [records.ani]: 88 }),
+        scoresOf(records, { [records.ani]: S90 }),
         records.period.day,
       );
 
@@ -175,14 +202,18 @@ describe("saveScores", () => {
     });
   });
 
-  it.each([0, 100])("takes the score %i", async (score) => {
+  it.each([
+    [S20, 20],
+    [S83, 83.3],
+    [S100, 100],
+  ])("takes the six scores %j, which give %d", async (six, score) => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
 
       const saved = await saveScores(
         db,
         records.mentor,
-        scoresOf(records, { [records.ani]: score }),
+        scoresOf(records, { [records.ani]: six }),
         records.period.day,
       );
 
@@ -199,7 +230,7 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 88 }),
+        scoresOf(records, { [ani]: S90 }),
         records.period.day,
       );
 
@@ -208,7 +239,11 @@ describe("saveScores", () => {
       expect(lines[0]).toMatchObject({
         changedBy: mentor.id,
         scoreBefore: null,
-        scoreAfter: 88,
+        scoreAfter: 90,
+        indicatorScoresBefore: null,
+        indicatorNamesBefore: null,
+        indicatorScoresAfter: S90,
+        indicatorNamesAfter: STARTING_NAMES,
       });
       expect(lines[0]?.changedAt).toBeInstanceOf(Date);
     });
@@ -221,20 +256,20 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }),
         period.day,
       );
 
       const saved = await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 85 }, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S87 }, { [ani]: S70 }),
         period.day,
       );
 
       expect(saved.ok).toBe(true);
       expect(await testScoresOf(db, ani)).toEqual([
-        expect.objectContaining({ score: 85, scoredBy: mentor.id }),
+        expect.objectContaining({ score: 86.7, scoredBy: mentor.id }),
       ]);
     });
   });
@@ -246,14 +281,14 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }),
         period.day,
       );
 
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 85 }, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S87 }, { [ani]: S70 }),
         period.day,
       );
 
@@ -262,13 +297,220 @@ describe("saveScores", () => {
       expect(lines.map((line) => [line.scoreBefore, line.scoreAfter])).toEqual(
         expect.arrayContaining([
           [null, 70],
-          [70, 85],
+          [70, 86.7],
         ]),
       );
       for (const line of lines) {
         expect(line.changedBy).toBe(mentor.id);
         expect(line.changedAt).toBeInstanceOf(Date);
       }
+    });
+  });
+
+  it("keeps the names the scores were given with when Kepala Unit changes the indicators after, and gives new scores the new names", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani, budi } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: S83 }),
+        period.day,
+      );
+      const kepala = await addTestAccount(db, "Kepala Uji Simpan Nilai", [
+        "head_of_unit",
+      ]);
+      const renamed = STARTING_INDICATORS.map((indicator, place) =>
+        place === 0 ? { ...indicator, name: "Kemandirian" } : indicator,
+      );
+      const { version } = await readIndicators(db);
+      await saveIndicators(db, kepala, renamed, version);
+      const reloaded = await readIndicators(db);
+
+      await saveScores(
+        db,
+        mentor,
+        {
+          ...scoresOf(records, { [budi]: S80 }),
+          indicatorsVersion: reloaded.version,
+        },
+        period.day,
+      );
+
+      const [aniScore] = await testScoresOf(db, ani);
+      const [budiScore] = await testScoresOf(db, budi);
+      expect(aniScore?.indicatorNames).toEqual(STARTING_NAMES);
+      expect(budiScore?.indicatorNames).toEqual(
+        renamed.map((indicator) => indicator.name),
+      );
+    });
+  });
+
+  it("refuses the whole save of a form opened before Kepala Unit changed the indicators, keeping nothing, so no score lands under another indicator", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani, budi } = records;
+      const openedOn = await readIndicators(db);
+      const kepala = await addTestAccount(db, "Kepala Uji Ganti Indikator", [
+        "head_of_unit",
+      ]);
+      const swapped = STARTING_INDICATORS.map((indicator, place) =>
+        place === 2 ? { ...indicator, name: "Ketertiban" } : indicator,
+      );
+      await saveIndicators(db, kepala, swapped, openedOn.version);
+
+      const saved = await saveScores(
+        db,
+        mentor,
+        {
+          ...scoresOf(records, { [ani]: S83, [budi]: S80 }),
+          indicatorsVersion: openedOn.version,
+        },
+        period.day,
+      );
+
+      expect(saved).toEqual({
+        ok: false,
+        error:
+          "Indikator penilaian sudah diubah oleh Kepala Uji Ganti Indikator. Muat ulang.",
+      });
+      expect(await keptScoreOf(db, ani)).toBeNull();
+      expect(await keptScoreOf(db, budi)).toBeNull();
+      expect(await testScoreLogOf(db, ani)).toEqual([]);
+    });
+  });
+
+  it("tells a form opened before both a score and the indicators changed that the indicators changed, keeping nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani, budi } = records;
+      const openedOn = await readIndicators(db);
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: S70 }),
+        period.day,
+      );
+      const kepala = await addTestAccount(db, "Kepala Uji Dua Ubahan", [
+        "head_of_unit",
+      ]);
+      const swapped = STARTING_INDICATORS.map((indicator, place) =>
+        place === 2 ? { ...indicator, name: "Ketertiban" } : indicator,
+      );
+      await saveIndicators(db, kepala, swapped, openedOn.version);
+
+      const saved = await saveScores(
+        db,
+        mentor,
+        {
+          ...scoresOf(records, { [ani]: S83, [budi]: S80 }),
+          indicatorsVersion: openedOn.version,
+        },
+        period.day,
+      );
+
+      expect(saved).toEqual({
+        ok: false,
+        error:
+          "Indikator penilaian sudah diubah oleh Kepala Uji Dua Ubahan. Muat ulang.",
+      });
+      expect(await keptScoreOf(db, ani)).toBe(70);
+      expect(await keptScoreOf(db, budi)).toBeNull();
+      expect(await testScoreLogOf(db, ani)).toHaveLength(1);
+    });
+  });
+
+  it("refuses a form that names indicators that are no setting", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+
+      const saved = await saveScores(
+        db,
+        records.mentor,
+        {
+          ...scoresOf(records, { [records.ani]: S83 }),
+          indicatorsVersion: randomUUID(),
+        },
+        records.period.day,
+      );
+
+      expect(saved).toEqual(SCORE_INDICATORS_CHANGED);
+      expect(await keptScoreOf(db, records.ani)).toBeNull();
+    });
+  });
+
+  it("puts six indicator scores in the place of a score given before the indicators, and logs both", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani } = records;
+      await addTestScore(db, {
+        studentId: ani,
+        periodId: period.id,
+        score: 80,
+        scoredBy: records.earlierMentor.id,
+      });
+
+      const saved = await saveScores(
+        db,
+        mentor,
+        {
+          groupId: records.groupId,
+          scores: { [ani]: S83 },
+          indicatorsVersion: STARTING_INDICATORS_VERSION,
+          basedOn: { [ani]: "80" },
+        },
+        period.day,
+      );
+
+      expect(saved.ok).toBe(true);
+      expect(await testScoresOf(db, ani)).toEqual([
+        expect.objectContaining({
+          score: 83.3,
+          indicatorScores: S83,
+          indicatorNames: STARTING_NAMES,
+          scoredBy: mentor.id,
+        }),
+      ]);
+      expect(await testScoreLogOf(db, ani)).toEqual([
+        expect.objectContaining({
+          changedBy: mentor.id,
+          scoreBefore: 80,
+          scoreAfter: 83.3,
+          indicatorScoresBefore: null,
+          indicatorNamesBefore: null,
+          indicatorScoresAfter: S83,
+          indicatorNamesAfter: STARTING_NAMES,
+        }),
+      ]);
+    });
+  });
+
+  it("logs the six scores and their names before and after a change", async () => {
+    await inTestDatabase(async (db) => {
+      const records = await addRecords(db);
+      const { mentor, period, ani } = records;
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: S70 }),
+        period.day,
+      );
+
+      await saveScores(
+        db,
+        mentor,
+        scoresOf(records, { [ani]: S83 }, { [ani]: S70 }),
+        period.day,
+      );
+
+      const lines = await testScoreLogOf(db, ani);
+      expect(lines.find((line) => line.scoreBefore === 70)).toMatchObject({
+        scoreAfter: 83.3,
+        indicatorScoresBefore: S70,
+        indicatorNamesBefore: STARTING_NAMES,
+        indicatorScoresAfter: S83,
+        indicatorNamesAfter: STARTING_NAMES,
+      });
     });
   });
 
@@ -279,7 +521,7 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }),
         period.day,
       );
       await replaceTestMentor(db, records.groupId, otherMentor.id, period.day);
@@ -287,7 +529,7 @@ describe("saveScores", () => {
       const saved = await saveScores(
         db,
         otherMentor,
-        scoresOf(records, { [ani]: 60 }, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S60 }, { [ani]: S70 }),
         period.day,
       );
 
@@ -311,7 +553,7 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }),
         period.day,
       );
       await replaceTestMentor(db, records.groupId, otherMentor.id, period.day);
@@ -319,7 +561,7 @@ describe("saveScores", () => {
       const saved = await saveScores(
         db,
         otherMentor,
-        scoresOf(records, { [ani]: 70 }, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }, { [ani]: S70 }),
         period.day,
       );
 
@@ -338,21 +580,21 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }),
         period.day,
       );
-      const fromFirstWindow = scoresOf(records, { [ani]: 85 }, { [ani]: 70 });
+      const fromFirstWindow = scoresOf(records, { [ani]: S87 }, { [ani]: S70 });
       const fromSecondWindow = scoresOf(
         records,
-        { [ani]: 60, [budi]: 90 },
-        { [ani]: 70 },
+        { [ani]: S60, [budi]: S90 },
+        { [ani]: S70 },
       );
       await saveScores(db, mentor, fromFirstWindow, period.day);
 
       const saved = await saveScores(db, mentor, fromSecondWindow, period.day);
 
       expect(saved).toEqual(scoresChanged([ani]));
-      expect(await keptScoreOf(db, ani)).toBe(85);
+      expect(await keptScoreOf(db, ani)).toBe(86.7);
       expect(await keptScoreOf(db, budi)).toBeNull();
       expect(await testScoreLogOf(db, ani)).toHaveLength(2);
     });
@@ -365,14 +607,14 @@ describe("saveScores", () => {
       await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 70 }),
+        scoresOf(records, { [ani]: S70 }),
         period.day,
       );
 
       const saved = await saveScores(
         db,
         mentor,
-        scoresOf(records, { [ani]: 95 }),
+        scoresOf(records, { [ani]: S90 }),
         period.day,
       );
 
@@ -385,29 +627,37 @@ describe("saveScores", () => {
 });
 
 describe("changedSince", () => {
-  it("finds nobody while every score kept is the one the form was opened on", () => {
-    const kept = new Map([["ani", 70]]);
+  const kept = (score: number, indicatorScores: number[] | null) => ({
+    score,
+    indicatorScores,
+  });
 
-    expect(changedSince({ ani: 70, budi: null }, kept)).toEqual([]);
+  it("finds nobody while every score kept is the one the form was opened on", () => {
+    const keptNow = new Map([
+      ["ani", kept(83.3, S83)],
+      ["cici", kept(80, null)],
+    ]);
+
+    expect(
+      changedSince({ ani: "4,5,4,3,5,4", budi: "", cici: "80" }, keptNow),
+    ).toEqual([]);
   });
 
   it("finds a student whose score is another now, one who got a first score, and one whose box was opened on a score that is not kept", () => {
-    const kept = new Map([
-      ["ani", 85],
-      ["budi", 60],
+    const keptNow = new Map([
+      ["ani", kept(86.7, S87)],
+      ["budi", kept(60, S60)],
     ]);
 
-    expect(changedSince({ ani: 70, budi: null, cici: 50 }, kept)).toEqual([
-      "ani",
-      "budi",
-      "cici",
-    ]);
+    expect(
+      changedSince({ ani: "4,5,4,3,5,4", budi: "", cici: "80" }, keptNow),
+    ).toEqual(["ani", "budi", "cici"]);
   });
 });
 
 describe("saveScores refused", () => {
-  it.each([101, -1, 79.5, Number.NaN])(
-    "saves nothing when one score is %d, which is no whole number from 0 to 100",
+  it.each([6, 0, 4.5, Number.NaN])(
+    "saves nothing when one indicator score is %d, which is no whole number from 1 to 5",
     async (score) => {
       await inTestDatabase(async (db) => {
         const records = await addRecords(db);
@@ -416,13 +666,36 @@ describe("saveScores refused", () => {
         const saved = await saveScores(
           db,
           records.mentor,
-          scoresOf(records, { [ani]: 88, [budi]: score }),
+          scoresOf(records, { [ani]: S90, [budi]: [score, 4, 4, 4, 4, 4] }),
           records.period.day,
         );
 
         expect(saved).toEqual(NOT_SCORES);
         expect(await keptScoreOf(db, ani)).toBeNull();
         expect(await keptScoreOf(db, budi)).toBeNull();
+      });
+    },
+  );
+
+  it.each([
+    ["five", [4, 4, 4, 4, 4]],
+    ["seven", [4, 4, 4, 4, 4, 4, 4]],
+  ])(
+    "saves nothing when a mentee is sent %s indicator scores",
+    async (_, scores) => {
+      await inTestDatabase(async (db) => {
+        const records = await addRecords(db);
+        const { ani, budi } = records;
+
+        const saved = await saveScores(
+          db,
+          records.mentor,
+          scoresOf(records, { [ani]: S90, [budi]: scores }),
+          records.period.day,
+        );
+
+        expect(saved).toEqual(NOT_SIX_SCORES);
+        expect(await keptScoreOf(db, ani)).toBeNull();
       });
     },
   );
@@ -435,7 +708,7 @@ describe("saveScores refused", () => {
       const saved = await saveScores(
         db,
         records.mentor,
-        scoresOf(records, { [records.ani]: 88 }),
+        scoresOf(records, { [records.ani]: S90 }),
         beforeEveryPeriod,
       );
 
@@ -452,7 +725,7 @@ describe("saveScores refused", () => {
       const saved = await saveScores(
         db,
         other,
-        scoresOf(records, { [records.ani]: 88 }),
+        scoresOf(records, { [records.ani]: S90 }),
         records.period.day,
       );
 
@@ -472,7 +745,7 @@ describe("saveScores refused", () => {
       const saved = await saveScores(
         db,
         both,
-        scoresOf(records, { [records.ani]: 88 }),
+        scoresOf(records, { [records.ani]: S90 }),
         records.period.day,
       );
 
@@ -488,7 +761,7 @@ describe("saveScores refused", () => {
       const saved = await saveScores(
         db,
         records.earlierMentor,
-        scoresOf(records, { [records.ani]: 88 }),
+        scoresOf(records, { [records.ani]: S90 }),
         records.period.day,
       );
 
@@ -502,7 +775,7 @@ describe("saveScores refused", () => {
       const records = await addRecords(db);
       const { mentor, period, ani } = records;
       const missing = {
-        ...scoresOf(records, { [ani]: 88 }),
+        ...scoresOf(records, { [ani]: S90 }),
         groupId: randomUUID(),
       };
 
@@ -519,7 +792,7 @@ describe("saveScores refused", () => {
         await saveScores(
           db,
           mentor,
-          scoresOf(records, { [ani]: 88 }),
+          scoresOf(records, { [ani]: S90 }),
           period.day,
         ),
       ).toEqual(SCORED_GROUP_NOT_HELD);
@@ -535,7 +808,7 @@ describe("saveScores refused", () => {
       const saved = await saveScores(
         db,
         records.mentor,
-        scoresOf(records, { [ani]: 88, [outsider]: 90 }),
+        scoresOf(records, { [ani]: S90, [outsider]: S90 }),
         records.period.day,
       );
 
@@ -550,7 +823,7 @@ describe("saveScores refused", () => {
       const records = await addRecords(db);
       const { outsider } = records;
       const scores = {
-        ...scoresOf(records, { [outsider]: 90 }),
+        ...scoresOf(records, { [outsider]: S90 }),
         groupId: records.otherGroupId,
       };
 
@@ -575,7 +848,7 @@ describe("saveScores refused", () => {
         await saveScores(
           db,
           mentor,
-          scoresOf(records, { [onLeave]: 75 }),
+          scoresOf(records, { [onLeave]: S80 }),
           period.day,
         ),
       ).toEqual(NOT_MEMBERS_TO_SCORE);
@@ -583,7 +856,7 @@ describe("saveScores refused", () => {
         await saveScores(
           db,
           mentor,
-          scoresOf(records, { [randomUUID()]: 75 }),
+          scoresOf(records, { [randomUUID()]: S80 }),
           period.day,
         ),
       ).toEqual(NOT_MEMBERS_TO_SCORE);
@@ -598,7 +871,7 @@ describe("saveScores refused", () => {
       const saved = await saveScores(
         db,
         records.otherMentor,
-        scoresOf(records, { [records.ani]: 88 }),
+        scoresOf(records, { [records.ani]: S90 }),
         records.period.day,
       );
 

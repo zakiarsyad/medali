@@ -1,17 +1,34 @@
+import { sql } from "drizzle-orm";
 import { campusDay } from "@/academic-periods/campus-day";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { AccountForAccess } from "@/auth/access";
 import type { Database } from "@/db/connect";
-import { isScore } from "@/mentoring/score-range";
+import {
+  finalScoreOf,
+  INDICATOR_COUNT,
+  isIndicatorScore,
+  STARTING_INDICATORS,
+} from "@/mentoring/score-indicators";
 import type { Parsed } from "@/parsed";
 import { mayFillInFor } from "./attendance-groups";
 import { listActiveMembers } from "./group-meetings";
 import { lockGroup, readMentorOfToday } from "./held-group";
-import { NOT_A_SCORE, type ScoresInput } from "./score-input";
+import { readLatestIndicators } from "./indicator-set";
+import {
+  INDICATOR_SET_LOCK,
+  STARTING_INDICATORS_VERSION,
+} from "./indicator-version";
+import {
+  keptKey,
+  NOT_INDICATOR_SCORE,
+  type ScoresInput,
+  SOME_INCOMPLETE,
+} from "./score-input";
 import { givenRowsFor } from "./visible-scores";
 import {
   addScore,
   changeScore,
+  type GivenScore,
   type KeptScore,
   readKeptScores,
 } from "./write-scores";
@@ -51,7 +68,50 @@ export const NOT_MEMBERS_TO_SCORE = {
     "Ada nilai untuk mahasiswa yang bukan anak asuh aktif kelompok ini saat ini, jadi belum ada nilai yang disimpan. Muat ulang halaman, lalu isi lagi.",
 } as const;
 
-export const NOT_SCORES = { ok: false, error: NOT_A_SCORE } as const;
+/** What a save answers when a score of an indicator is no whole number from 1 to 5. */
+export const NOT_SCORES = { ok: false, error: NOT_INDICATOR_SCORE } as const;
+
+/** What a form opened on a version that is no setting of the indicators is told. */
+export const SCORE_INDICATORS_CHANGED = {
+  ok: false,
+  error: "Indikator penilaian sudah diubah. Muat ulang.",
+} as const;
+
+/**
+ * What a form opened before Kepala Unit changed the indicators is told:
+ * its columns name other indicators than those in force now.
+ */
+export function scoreIndicatorsChangedBy(name: string) {
+  return {
+    ok: false,
+    error: `Indikator penilaian sudah diubah oleh ${name}. Muat ulang.`,
+  } as const;
+}
+
+/**
+ * The names of the indicators the form was opened on, when they are
+ * still in force, or why the save is refused. Waits for a save of the
+ * indicators under way, so the two are never mixed.
+ */
+async function namesOpenedOn(
+  tx: Database,
+  version: string,
+): Promise<Parsed<string[]>> {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock_shared(hashtext(${INDICATOR_SET_LOCK}))`,
+  );
+  const latest = await readLatestIndicators(tx);
+  const inForce = latest?.version ?? STARTING_INDICATORS_VERSION;
+  if (version !== inForce) {
+    if (latest === null) return SCORE_INDICATORS_CHANGED;
+    return scoreIndicatorsChangedBy(latest.set.by);
+  }
+  const indicators = latest?.indicators ?? STARTING_INDICATORS;
+  return { ok: true, value: indicators.map((indicator) => indicator.name) };
+}
+
+/** What a save answers when a mentee is sent other than six indicator scores. */
+export const NOT_SIX_SCORES = { ok: false, error: SOME_INCOMPLETE } as const;
 
 /**
  * What a save answers when a score kept is not the one its box was
@@ -74,21 +134,40 @@ export function scoresChanged(changedIds: string[]): ScoresChanged {
   };
 }
 
+/** A kept score as `changedSince` reads it. */
+type KeptForCheck = Pick<KeptScore, "score" | "indicatorScores">;
+
 /**
  * The students whose kept score is not the one the form was opened on.
- * `basedOn` holds the score each box was opened on, null for none, and
- * `kept` the score kept now for each student who has one.
+ * `basedOn` holds what each row was opened on, as `keptKey` writes it,
+ * and `kept` the score kept now for each student who has one.
  */
 export function changedSince(
-  basedOn: Readonly<Record<string, number | null>>,
-  kept: ReadonlyMap<string, number>,
+  basedOn: Readonly<Record<string, string>>,
+  kept: ReadonlyMap<string, KeptForCheck>,
 ): string[] {
   const changedIds: string[] = [];
   for (const [studentId, before] of Object.entries(basedOn)) {
-    const now = kept.get(studentId) ?? null;
-    if (now !== before) changedIds.push(studentId);
+    if (keptKey(kept.get(studentId)) !== before) changedIds.push(studentId);
   }
   return changedIds;
+}
+
+/** Why the six scores of the rows sent cannot be saved, or null when they can. */
+function sixScoresFault(
+  scores: Readonly<Record<string, number[]>>,
+): typeof NOT_SIX_SCORES | typeof NOT_SCORES | null {
+  const rows = Object.values(scores);
+  if (rows.some((six) => six.length !== INDICATOR_COUNT)) return NOT_SIX_SCORES;
+  if (!rows.every((six) => six.every(isIndicatorScore))) return NOT_SCORES;
+  return null;
+}
+
+/** The score six indicator scores give, with the names they are given with. */
+function givenScoreOf(six: number[], names: string[]): GivenScore {
+  const score = finalScoreOf(six);
+  if (score === null) throw new Error("Six indicator scores give a score.");
+  return { score, indicatorScores: six, indicatorNames: names };
 }
 
 /** What "Simpan nilai" tells the one who saved. */
@@ -98,13 +177,16 @@ export interface SavedScores {
 }
 
 /**
- * "Simpan nilai": keeps the scores sent for members of one group in the
- * period that runs on `day`, as the work of the actor, each with a line
- * in the log. A student without a score gets their first; a student who
- * has one gets the new score in its place, and a score that is the one
- * kept writes nothing. Refused, with nothing saved, for any role but
- * Pengasuh, for a group the actor does not hold today, while no period
- * runs, for what is no score, for a score of someone who is no Aktif
+ * "Simpan nilai": keeps the six indicator scores sent for members of one
+ * group in the period that runs on `day`, with the final score they give
+ * and the names of the indicators in force, as the work of the actor,
+ * each with a line in the log. A student without a score gets their
+ * first; a student who has one, of six indicators or given before them,
+ * gets the new score in its place, and six that are the ones kept write
+ * nothing. Refused, with nothing saved, for a form opened on other
+ * indicators than those in force, for any role but Pengasuh, for a
+ * group the actor does not hold today, while no period runs, for a row
+ * that is not six whole numbers from 1 to 5, for a score of someone who is no Aktif
  * member of the group today, and for a form opened on another score than
  * the one kept now, a second press or a second window.
  */
@@ -117,7 +199,8 @@ export async function saveScores(
   const limit = givenRowsFor(actor);
   if (limit === null) return NOT_ALLOWED_TO_SCORE;
   const studentIds = Object.keys(input.scores);
-  if (!Object.values(input.scores).every(isScore)) return NOT_SCORES;
+  const fault = sixScoresFault(input.scores);
+  if (fault !== null) return fault;
 
   return db.transaction(async (tx) => {
     if (!(await lockGroup(tx, input.groupId))) return SCORED_GROUP_NOT_HELD;
@@ -130,25 +213,27 @@ export async function saveScores(
     if (!studentIds.every((id) => memberIds.includes(id))) {
       return NOT_MEMBERS_TO_SCORE;
     }
+    // Before the scores kept: a refusal for changed scores reloads the
+    // tab, which would give the form the new indicators under its choices.
+    const names = await namesOpenedOn(tx, input.indicatorsVersion);
+    if (!names.ok) return names;
     const kept = await readKeptScores(tx, period.id, studentIds);
-    const changedIds = changedSince(input.basedOn, scoresOf(kept));
+    const changedIds = changedSince(input.basedOn, kept);
     if (changedIds.length > 0) return scoresChanged(changedIds);
-    for (const [studentId, score] of Object.entries(input.scores)) {
+    for (const [studentId, six] of Object.entries(input.scores)) {
+      const given = givenScoreOf(six, names.value);
       const keptScore = kept.get(studentId);
       if (keptScore === undefined) {
-        await addScore(tx, actor.id, { studentId, periodId: period.id, score });
+        await addScore(tx, actor.id, {
+          studentId,
+          periodId: period.id,
+          ...given,
+        });
         continue;
       }
-      if (keptScore.score === score) continue;
-      await changeScore(tx, actor.id, keptScore, score);
+      if (keptKey(keptScore) === keptKey(given)) continue;
+      await changeScore(tx, actor.id, keptScore, given);
     }
     return { ok: true, value: { savedIds: studentIds } };
   });
-}
-
-/** The score of each kept row, by the id of the student. */
-function scoresOf(kept: ReadonlyMap<string, KeptScore>): Map<string, number> {
-  const scores = new Map<string, number>();
-  for (const [studentId, row] of kept) scores.set(studentId, row.score);
-  return scores;
 }

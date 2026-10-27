@@ -1,3 +1,4 @@
+import { STARTING_INDICATORS } from "@/mentoring/score-indicators";
 import type { Database } from "./connect";
 import type { SamplePeriod } from "./sample-data";
 import { sampleMentoringScores } from "./sample-mentoring-scores";
@@ -20,6 +21,9 @@ function idOf(ids: Map<string, string>, key: string, what: string): string {
   return id;
 }
 
+/** The names of the starting indicators, which every sample score with indicators is given with. */
+const STARTING_NAMES = STARTING_INDICATORS.map((indicator) => indicator.name);
+
 /** The moment a sample score was saved: the afternoon of its day, or now. */
 function scoredAt(scoredOn: string, now: Date): Date {
   const afternoon = new Date(`${scoredOn}T16:00:00+07:00`);
@@ -28,7 +32,8 @@ function scoredAt(scoredOn: string, now: Date): Date {
 
 /**
  * Adds the sample scores of the running period for part of the sample
- * groups, each with its first log line, as the work of the sample Pengasuh
+ * groups, each with its first log line, those on six indicators with
+ * the names of the starting indicators, as the work of the sample Pengasuh
  * who held the group on its day. The groups with their members and
  * mentors and the sample periods must be there already. `day` is today on
  * campus.
@@ -55,6 +60,8 @@ export async function addSampleMentoringScores(
         studentId: idOf(studentIds, sample.nim, "student"),
         periodId,
         score: sample.score,
+        indicatorScores: sample.indicatorScores,
+        indicatorNames: sample.indicatorScores === null ? null : STARTING_NAMES,
         scoredBy: idOf(mentorIds, sample.scoredBy, "Pengasuh"),
         scoredAt: scoredAt(sample.scoredOn, now),
       })),
@@ -66,6 +73,8 @@ export async function addSampleMentoringScores(
       changedBy: score.scoredBy,
       changedAt: score.scoredAt,
       scoreAfter: score.score,
+      indicatorScoresAfter: score.indicatorScores,
+      indicatorNamesAfter: score.indicatorNames,
     })),
   );
 }

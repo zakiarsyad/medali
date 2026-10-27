@@ -8,6 +8,7 @@ import { carryOutReplacement } from "@/mentoring/carry-out-replacement";
 import { carryOutDueReplacements } from "@/mentoring/due-replacements";
 import { addTestReplacement } from "@/mentoring/test-replacements";
 import { NOT_SAVED_YET } from "./attendance-input";
+import { STARTING_INDICATORS_VERSION } from "./indicator-version";
 import { listMentees } from "./mentees";
 import { GROUP_NOT_HELD, saveAttendance } from "./save-attendance";
 import { NOT_OWN_MENTEE, saveNote } from "./save-note";
@@ -104,8 +105,9 @@ async function savesBy(
     account,
     {
       groupId,
-      scores: { [round.scored]: 80 },
-      basedOn: { [round.scored]: null },
+      scores: { [round.scored]: [4, 4, 4, 4, 4, 4] },
+      indicatorsVersion: STARTING_INDICATORS_VERSION,
+      basedOn: { [round.scored]: "" },
     },
     period.day,
   );
