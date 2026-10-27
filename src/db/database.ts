@@ -1,4 +1,5 @@
-import { readSetting } from "@/settings";
+import { currentStage, readSetting } from "@/settings";
+import { appConnectionOf } from "./app-connection";
 import { type Connection, connect } from "./connect";
 
 const shared = globalThis as { medaliConnection?: Connection };
@@ -9,6 +10,11 @@ const shared = globalThis as { medaliConnection?: Connection };
  * open a new pool.
  */
 export function database() {
-  shared.medaliConnection ??= connect(readSetting("DATABASE_URL"));
+  shared.medaliConnection ??= connectApp();
   return shared.medaliConnection.db;
+}
+
+function connectApp(): Connection {
+  const app = appConnectionOf(readSetting("DATABASE_URL"), currentStage());
+  return connect(app.url, app.limits);
 }

@@ -75,6 +75,6 @@ Everyone who uses the preview, and the owner, who tries merged work there.
 
 ## Steps
 
-- [ ] 1. On both previews the app connects through the shared-connection
+- [x] 1. On both previews the app connects through the shared-connection
   address, with at most five connections that close when idle; the
   campus server and a local computer keep today's connection.

@@ -45,7 +45,7 @@ export const FILE_STORAGE_NAMES = [
   "FILE_STORAGE_SECRET_KEY",
 ] as const satisfies readonly SettingName[];
 
-function isPreview(stage: Stage): boolean {
+export function isPreview(stage: Stage): boolean {
   return stage === "pr-preview" || stage === "main-preview";
 }
 
