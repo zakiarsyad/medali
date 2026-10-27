@@ -59,9 +59,20 @@ Every role.
    because it keeps the page usable.
 3. The server's own fault detail is never shown on screen.
 
+Decided while building:
+
+4. The heading is "Halaman tidak dapat ditampilkan" and the line below
+   it "Coba lagi, atau kembali ke halaman utama.", with the two buttons
+   under it. "Coba lagi" loads the screen again; "Kembali ke halaman
+   utama" opens the first address, which leads each account to its own
+   first page.
+5. When the menu itself cannot load, the whole app counts as not able to
+   load, and the message shows on its own page, in a box like the
+   sign-in page.
+
 ## Steps
 
-- [ ] 1. A screen that cannot load, and the whole app when it cannot
+- [x] 1. A screen that cannot load, and the whole app when it cannot
   load, show the message of decision 1 in the app's look, with checks.
 - [ ] 2. A save that cannot reach the server keeps the form and its
   typed values and shows a message under the button, with checks.

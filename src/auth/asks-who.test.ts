@@ -31,6 +31,10 @@ const NEEDS_NO_SIGN_IN: Record<string, string> = {
     '"Halaman tidak ditemukan" outside the menu: it shows no data.',
   "src/app/(app)/not-found.tsx":
     '"Halaman tidak ditemukan" inside the menu: it shows no data.',
+  "src/app/(app)/error.tsx":
+    '"Halaman tidak dapat ditampilkan" inside the menu: it shows no data, not even what the fault says.',
+  "src/app/global-error.tsx":
+    '"Halaman tidak dapat ditampilkan" on a page of its own: it shows no data, not even what the fault says.',
   "src/app/(app)/forbidden.tsx":
     '"Akses ditolak": it shows no data, and offers the sign-in page to someone whose sign-in has ended.',
   "src/app/(app)/ganti-peran/page.tsx":

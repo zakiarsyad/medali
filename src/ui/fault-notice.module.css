@@ -1,0 +1,9 @@
+.actions {
+  composes: actions from "./data-screen.module.css";
+  margin-top: var(--below-lede);
+}
+
+/* On a page of its own the message stands in the middle of its box. */
+.centred {
+  justify-content: center;
+}
