@@ -1,4 +1,5 @@
 import { forbidden } from "next/navigation";
+import type { ReactNode } from "react";
 import type { RowLimit } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { openPage } from "@/auth/open-page";
@@ -14,6 +15,7 @@ import { StudentCoachingPanel } from "@/features/guidance/student-coaching-panel
 import { StudentPenaltiesPanel } from "@/features/guidance/student-penalties-panel";
 import {
   groupAddress,
+  groupListAddress,
   readGroupListParams,
 } from "@/features/mentor-groups/group-list-address";
 import { GroupListScreen } from "@/features/mentor-groups/group-list-screen";
@@ -32,6 +34,7 @@ import { StudentSikuPanel } from "@/features/siku/student-siku-panel";
 import { askedDetail } from "@/features/students/asked-detail";
 import { runningPeriodNow } from "@/features/students/running-period-now";
 import { StudentDetailDialog } from "@/features/students/student-detail-dialog";
+import { NotFoundDialog } from "@/ui/not-found-dialog";
 
 /**
  * The page of one group, with the detail of a member over it when the
@@ -44,6 +47,7 @@ async function GroupPage({
   groupId,
   memberPage,
   detailId,
+  whenNotFound,
 }: {
   account: Account;
   /** Which groups the account may read. */
@@ -51,6 +55,8 @@ async function GroupPage({
   groupId: string;
   memberPage: number;
   detailId: string | null;
+  /** What shows instead when the address names no group. */
+  whenNotFound: ReactNode;
 }) {
   const detail = await askedDetail(account, detailId);
   // Only for the notes shown in a member's detail. The count on the page
@@ -76,6 +82,7 @@ async function GroupPage({
         mentorAddressOf={(mentorId, group) =>
           openMentorAddress(account, mentorId, group)
         }
+        whenNotFound={whenNotFound}
       />
       {detail && (
         <StudentDetailDialog
@@ -128,24 +135,33 @@ export default async function MentorGroupsPage(
   const limit = groupRowsFor(account);
   if (limit === null) forbidden();
   const params = readGroupListParams(await props.searchParams);
-  if (params.groupId !== null) {
-    return (
-      <GroupPage
-        account={account}
-        limit={limit}
-        groupId={params.groupId}
-        memberPage={params.memberPage}
-        detailId={params.detailId}
-      />
-    );
-  }
-  return (
+  const list = (
     <GroupListScreen
       tabs={{ pagePath: "pengasuh", tabs: opened.tabs, open: "kelompok" }}
       limit={limit}
       evaluationLimit={evaluationRowsFor(account)}
       mentorLimit={mentorRowsFor(account)}
       params={params}
+    />
+  );
+  if (params.groupId === null) return list;
+  return (
+    <GroupPage
+      account={account}
+      limit={limit}
+      groupId={params.groupId}
+      memberPage={params.memberPage}
+      detailId={params.detailId}
+      whenNotFound={
+        <>
+          {list}
+          <NotFoundDialog
+            thing="group"
+            returnPlace="daftar kelompok"
+            closeAddress={groupListAddress(params.filters, params.page)}
+          />
+        </>
+      }
     />
   );
 }

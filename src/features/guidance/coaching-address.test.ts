@@ -47,9 +47,14 @@ describe("readCoachingParams", () => {
         tingkat: "berat",
         status: "dijatuhkan",
         hal: "0",
-        profil: "bukan-id",
       }),
     ).toEqual(COACHING_START);
+  });
+
+  it("keeps a wrong student as given, so it is answered not found", () => {
+    expect(readCoachingParams({ profil: "bukan-id" }).profileId).toBe(
+      "bukan-id",
+    );
   });
 });
 

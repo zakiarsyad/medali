@@ -78,6 +78,17 @@ Decided while building:
    sign-in page where Google sign-in is the only way in, so they learn
    nothing of which addresses exist; elsewhere they get the card, as
    today. This now holds however long the address is.
+8. On Pengasuh › Kelompok a wrong group opens the list of groups with a
+   "Kelompok tidak ditemukan" window over it, worded as the one for a
+   student: "Data kelompok ini tidak ada atau tidak dapat Anda lihat.
+   Pilih Tutup untuk kembali ke daftar kelompok." A group that has
+   ended counts as not found, as before. A group outside the person's
+   own rows is still refused with "Akses ditolak", as before.
+9. On Penilaian › Karakter and Pembinaan › Karakter a wrong student of
+   any shape now opens the "Mahasiswa tidak ditemukan" window, as on
+   Mahasiswa; before, one that was not shaped like an id was ignored. A
+   wrong semester on Penilaian › Karakter still shows the running
+   semester, as a choice that is not understood does.
 
 ## Steps
 
@@ -88,7 +99,7 @@ Decided while building:
 - [x] 3. Any unknown address shows "Halaman tidak ditemukan" inside
   the menu for a signed-in person, and the card without the menu for
   a signed-out person, with checks.
-- [ ] 4. A wrong student, group or record in the address opens the page
+- [x] 4. A wrong student, group or record in the address opens the page
   with the "… tidak ditemukan" window on Mahasiswa, Dashboard,
   Penilaian › Karakter, Pembinaan › Karakter and Pengasuh › Kelompok,
   with checks.
