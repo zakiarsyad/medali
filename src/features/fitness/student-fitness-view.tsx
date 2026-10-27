@@ -89,7 +89,7 @@ export function StudentFitnessView({
       {latest ? (
         <TestFacts latest={latest} />
       ) : (
-        <p className={styles.sub}>{NOT_TESTED}</p>
+        <p className={shared.emptySection}>{NOT_TESTED}</p>
       )}
       {health && (
         <NoteBox health={health} category={final.category} isOwn={isOwn} />

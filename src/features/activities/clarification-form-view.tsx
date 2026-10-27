@@ -35,7 +35,7 @@ export function ClarificationFormView({
         </select>
       </label>
       <label className={`${shared.field} ${styles.fits}`}>
-        Lampiran (PDF atau gambar, maks. 5 MB)
+        Lampiran (PDF atau gambar, maks. 4 MB)
         <input
           type="file"
           name="file"

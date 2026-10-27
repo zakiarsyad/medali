@@ -5,6 +5,7 @@ import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { addTestProgram, addTestStudent } from "@/dorms/test-records";
 import { listCandidates } from "./companion-candidates";
+import { readCompanionsParams } from "./companions-address";
 import { addTestCompanion, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -134,6 +135,20 @@ describe("listCandidates", () => {
 
       expect(byName.shown.map((one) => one.name)).toEqual(["Sinta Calon Uji"]);
       expect(byNim.shown.map((one) => one.name)).toEqual(["Bima Calon Uji"]);
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      await addTestRows(db);
+      const asked = (q: string) => list(db, readCompanionsParams({ q }).query);
+
+      const byName = await asked("\0sinta\0 calon\0");
+      const nothing = await asked("\0 \0");
+
+      expect(byName).toEqual(await list(db, "sinta calon"));
+      expect(byName.shown.map((one) => one.name)).toEqual(["Sinta Calon Uji"]);
+      expect(nothing).toEqual(await list(db, ""));
     });
   });
 

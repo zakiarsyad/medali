@@ -66,7 +66,9 @@ describe("Konseling on a phone", () => {
 
   it("folds the long words of a notice instead of widening the page", () => {
     expect(read("warn-box.tsx")).toContain("className={styles.warnBox}");
-    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".warnBox")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
+    );
   });
 });
 
@@ -144,7 +146,9 @@ describe("Daftar konseling sukarela and Jadwal konseling saya on a phone", () =>
     expect(ruleOf(".cards")).toContain("display: grid;");
     expect(ruleOf(".cards")).not.toContain("grid-template-columns");
     expect(CARD).toContain("className={styles.card}");
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
   });
 
   it("put the status under the title, and the facts one under the other, when there is no room", () => {
@@ -249,7 +253,9 @@ describe("Publikasi data kesehatan mental on a phone", () => {
 
   it("folds who it is for, what it gives and the summary inside its box", () => {
     expect(FACTS).toContain("className={styles.card}");
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
   });
 });
 
@@ -259,15 +265,17 @@ describe("the student's sharing box on a phone", () => {
   it("folds a waiting request and puts Tolak under Setujui berbagi data when both do not fit", () => {
     expect(BOX).toContain("className={styles.warnBox}");
     expect(BOX).toContain("className={shared.actions}");
-    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".warnBox")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
+    );
     expect(ruleOf(".actions", SHARED)).toContain("flex-wrap: wrap;");
   });
 
   it("folds what is shared with whom inside its box", () => {
-    expect(BOX).toMatch(
-      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
+    expect(BOX).toMatch(/className=\{styles\.card\}/);
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
     );
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
   });
 });
 
@@ -344,7 +352,9 @@ describe("Tugaskan konseling wajib in Rincian of a penalty on a phone", () => {
     expect(ruleOf(".form > .done", SHARED)).toContain("grid-column: 1 / -1;");
     expect(SHARED).toContain(".form > .actions,");
     expect(PART).toContain("className={`${styles.card} ${styles.assignment}`}");
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
   });
 });
 
@@ -378,11 +388,13 @@ describe("Kesehatan mental on Profil saya on a phone", () => {
 
   it("folds the long words of a notice, a shared line, the help line and the campus contact", () => {
     expect(NOTICES).toContain("<div className={styles.warnBox}>");
-    expect(ruleOf(".warnBox")).toContain("overflow-wrap: anywhere;");
-    expect(NOTICES).toMatch(
-      /className=\{`\$\{styles\.card\} \$\{styles\.stack\}`\}/,
+    expect(ruleOf(".warnBox")).toContain(
+      'composes: warningNote from "../../ui/data-screen.module.css";',
     );
-    expect(ruleOf(".card")).toContain("overflow-wrap: anywhere;");
+    expect(NOTICES).toMatch(/className=\{styles\.card\}/);
+    expect(ruleOf(".card")).toContain(
+      'composes: card from "../../ui/data-screen.module.css";',
+    );
     expect(VIEW.match(/styles\.helpLine/g)).toHaveLength(2);
     expect(ruleOf(".helpLine")).toContain("overflow-wrap: anywhere;");
   });

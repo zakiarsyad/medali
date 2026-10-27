@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import type { FormState } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import styles from "./leave.module.css";
 import { recordReturnAction } from "./leave-actions";
 
@@ -33,7 +34,9 @@ export function RecordReturnForm({
 
   function send() {
     startSending(async () => {
-      onAnswer(await recordReturnAction(leaveId, time));
+      onAnswer(
+        await sentOr(() => recordReturnAction(leaveId, time), refusedSave),
+      );
     });
   }
 

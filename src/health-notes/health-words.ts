@@ -149,6 +149,7 @@ export const RESIDENCE_WORDS: Record<Residence, string> = {
 
 /** What the recap says when nobody matches. */
 export const NOBODY_ILL = "Tidak ada mahasiswa yang sakit pada filter ini.";
+export const NOBODY_ILL_YET = "Belum ada mahasiswa yang sakit.";
 
 /**
  * The line above a list filtered by an illness, its students named as

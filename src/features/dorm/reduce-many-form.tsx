@@ -18,7 +18,7 @@ import { REDUCTION_REASON_MAX_LENGTH } from "./violation-ids";
 import { ONE_STUDENT_TITLES, ViolationCells } from "./violation-lists";
 import styles from "./violations.module.css";
 
-export const NO_COUNTED = "Tidak ada pelanggaran tercatat semester ini.";
+export const NO_COUNTED = "Belum ada pelanggaran tercatat semester ini.";
 
 const NOTHING: FormState = { error: null, done: null };
 

@@ -205,7 +205,7 @@ export function ScoreHistoryView({
     return (
       <section className={shared.panel}>
         <h2 className={shared.heading}>Riwayat per semester</h2>
-        <p className={styles.sub}>Belum ada riwayat.</p>
+        <p className={shared.emptySection}>Belum ada riwayat.</p>
       </section>
     );
   }

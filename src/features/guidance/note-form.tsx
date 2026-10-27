@@ -2,7 +2,6 @@
 
 import {
   type KeyboardEvent,
-  useActionState,
   useEffect,
   useRef,
   useState,
@@ -14,6 +13,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
+import { useSaveState } from "@/ui/use-save-state";
 import {
   noteStudentBoxAction,
   saveViolationNoteAction,
@@ -150,7 +150,7 @@ function StudentBox({ box }: { box: Box }) {
     .map((note) => `${shownDay(note.day)} ${note.description}`)
     .join("; ");
   return (
-    <p className={`${styles.box} ${styles.warnBox}`}>
+    <p className={styles.warnBox}>
       <b>{notes.length} catatan aktif semester ini</b>: {listed}. Catatan baru
       semester ini menjadi Pelanggaran lanjutan.{penaltiesWords(penalties)}
     </p>
@@ -232,7 +232,7 @@ export function NoteForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   return (
     // noValidate: the server says what is wrong, in the app's own words.

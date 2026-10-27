@@ -34,7 +34,7 @@ function NotAssessed({ achievement }: { achievement: StudentAchievement }) {
         <h2 className={shared.heading}>{titleOf(achievement.semester)}</h2>
         <span className={shared.badge}>{NOT_ASSESSED}</span>
       </div>
-      <p className={styles.sub}>
+      <p className={shared.emptySection}>
         Belum ada hasil asesmen karakter semester ini.
         {!achievement.own &&
           " Capaian MEDALI tampil setelah asesmen diinput di Penilaian > Asesmen karakter."}

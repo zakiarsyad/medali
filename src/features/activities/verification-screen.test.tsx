@@ -95,7 +95,7 @@ describe("VerificationScreen", () => {
     (status) => {
       const screen = shown({ filters: { scheduleId: null, status } });
 
-      expect(screen).toContain("Tidak ada data pada filter ini.");
+      expect(screen).toContain("Tidak ada foto pada filter ini.");
       expect(screen).not.toContain("Tidak ada swafoto");
     },
   );

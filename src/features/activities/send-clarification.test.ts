@@ -507,9 +507,9 @@ describe("sendClarification", () => {
       "Lampiran harus berupa PDF atau gambar.",
     ],
     [
-      "a file one byte over 5 MB",
-      { file: { name: "surat.pdf", bytes: testPaper(5 * MEGABYTE + 1) } },
-      "Ukuran lampiran maksimal 5 MB.",
+      "a file one byte over 4 MB",
+      { file: { name: "surat.pdf", bytes: testPaper(4 * MEGABYTE + 1) } },
+      "Ukuran lampiran maksimal 4 MB.",
     ],
     [
       "a reason that is not on the list",
@@ -539,12 +539,12 @@ describe("sendClarification", () => {
     });
   });
 
-  it("takes a file of exactly 5 MB and an explanation of exactly 1,000 characters", async () => {
+  it("takes a file of exactly 4 MB and an explanation of exactly 1,000 characters", async () => {
     await inTestDatabase(async (db) => {
       const { student, scheduleId } = await addRecords(db);
       const sent = sentFor(scheduleId, {
         explanation: "a".repeat(1000),
-        file: { name: "surat.pdf", bytes: testPaper(5 * MEGABYTE) },
+        file: { name: "surat.pdf", bytes: testPaper(4 * MEGABYTE) },
       });
 
       const answer = await sendClarification(

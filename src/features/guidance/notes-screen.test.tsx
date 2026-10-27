@@ -49,12 +49,17 @@ function board(rows: NoteRow[]): NoteBoard {
   };
 }
 
-function screen(rows: NoteRow[], form: string | null, actions: boolean) {
+function screen(
+  rows: NoteRow[],
+  form: string | null,
+  actions: boolean,
+  params = NOTES_START,
+) {
   return renderToStaticMarkup(
     <NotesScreen
       tabs={{ pagePath: "pembinaan", tabs: [], open: "catatan" }}
       board={board(rows)}
-      params={NOTES_START}
+      params={params}
       form={form}
       actionsOf={actions ? () => <button type="button">Hapus</button> : null}
     />,
@@ -106,8 +111,17 @@ describe("NotesScreen", () => {
     expect(shown).not.toContain("catatan aktif");
   });
 
+  it("says there is none yet this semester when nothing is searched or chosen", () => {
+    const shown = screen([], null, false);
+
+    expect(shown).toContain("Belum ada catatan pelanggaran pada semester ini.");
+    expect(shown).not.toContain("pada filter ini");
+  });
+
   it("says so when no note matches", () => {
-    expect(screen([], null, false)).toContain(
+    const params = { ...NOTES_START, query: "nama lain" };
+
+    expect(screen([], null, false, params)).toContain(
       "Tidak ada catatan pelanggaran pada filter ini.",
     );
   });

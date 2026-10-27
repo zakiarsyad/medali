@@ -1,16 +1,17 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState } from "react";
+import { type FormEvent, startTransition } from "react";
 import type { AcademicPeriod } from "@/academic-periods/academic-period";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { changePeriodDatesAction } from "./actions";
 import styles from "./periods.module.css";
 
 const START: FormState = { error: null, done: null };
 
 export function PeriodDatesForm({ period }: { period: AcademicPeriod }) {
-  const [state, save, pending] = useActionState(changePeriodDatesAction, START);
+  const [state, save, pending] = useSaveState(changePeriodDatesAction, START);
 
   // Sent from here, not by the browser: the browser puts a sent form back
   // on its first dates, and a refused date must stay to be corrected.

@@ -1,5 +1,6 @@
 import { type KeyboardEvent, useState } from "react";
 import shared from "@/ui/data-screen.module.css";
+import { ModeSwitch } from "@/ui/mode-switch";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { useFound } from "@/ui/use-found";
 import { searchParticipantStudentsAction } from "./actions";
@@ -29,6 +30,10 @@ import { Offered } from "./record-student-field";
 import { shownCount } from "./schedule-words";
 
 type Change = (change: (draft: ParticipantDraft) => ParticipantDraft) => void;
+
+const MODES = PARTICIPANT_MODES.map(
+  (mode) => [mode, PARTICIPANT_MODE_WORDS[mode]] as const,
+);
 
 /**
  * A search box sits inside the schedule form, where Enter would send the
@@ -212,21 +217,14 @@ export function ParticipantField({
 }) {
   const [draft, setDraft] = useState(start);
   return (
-    <div className={`${styles.full} ${styles.participants}`}>
-      <fieldset className={styles.modes}>
-        <legend className={shared.label}>Peserta</legend>
-        {PARTICIPANT_MODES.map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            className={styles.choice}
-            aria-pressed={draft.mode === mode}
-            onClick={() => setDraft((before) => withMode(before, mode))}
-          >
-            {PARTICIPANT_MODE_WORDS[mode]}
-          </button>
-        ))}
-      </fieldset>
+    <fieldset className={`${styles.full} ${styles.participants}`}>
+      <legend className={shared.label}>Peserta</legend>
+      <ModeSwitch
+        legend="Jenis peserta"
+        modes={MODES}
+        mode={draft.mode}
+        onChoose={(mode) => setDraft((before) => withMode(before, mode))}
+      />
       <input type="hidden" name="participantMode" value={draft.mode} />
       {sentValues(draft).map((value) => (
         <input key={value} type="hidden" name="participant" value={value} />
@@ -235,6 +233,6 @@ export function ParticipantField({
       <p className={shared.detail}>
         {chosenCountWords(chosenCount(draft, pool))}
       </p>
-    </div>
+    </fieldset>
   );
 }

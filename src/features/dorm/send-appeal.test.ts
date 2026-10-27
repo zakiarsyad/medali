@@ -129,12 +129,12 @@ describe("sendViolationAppeal", () => {
     });
   });
 
-  it("refuses a reason under 15 letters, a proof of the wrong kind or over 5 MB, and keeps nothing", async () => {
+  it("refuses a reason under 15 letters, a proof of the wrong kind or over 4 MB, and keeps nothing", async () => {
     await inTestDatabase(async (db) => {
       const { violationId, ani } = await setUp(db);
       const store = memoryStore();
       const at = minutesLater(5);
-      const big = { name: "a.pdf", bytes: testPaper(5 * 1024 * 1024 + 1) };
+      const big = { name: "a.pdf", bytes: testPaper(4 * 1024 * 1024 + 1) };
       const wrong = { name: "a.exe", bytes: testPaper(300) };
       const send = (more: Partial<SentAppeal>) =>
         sendViolationAppeal(db, store, ani, sent(violationId, more), at);
@@ -145,7 +145,7 @@ describe("sendViolationAppeal", () => {
       });
       expect(await send({ file: big })).toEqual({
         ok: false,
-        error: "Ukuran lampiran maksimal 5 MB.",
+        error: "Ukuran lampiran maksimal 4 MB.",
       });
       expect(await send({ file: wrong })).toEqual({
         ok: false,

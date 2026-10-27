@@ -1,5 +1,6 @@
 .note {
-  composes: note from "./rooms.module.css";
+  composes: note from "../../ui/data-screen.module.css";
+  margin: 0 0 var(--space-lg);
 }
 
 /* The switch between the three lists, and beside it what can be added. */
@@ -115,16 +116,7 @@
 }
 
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  min-width: 0;
-  padding: var(--space-lg) var(--space-xl);
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  overflow-wrap: anywhere;
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .cardHead {
@@ -240,8 +232,8 @@
 
 /* Where a count stands before its first announcement: it counts for no one yet. */
 .warnNote {
-  composes: note;
-  border-color: var(--warn);
+  composes: warningNote from "../../ui/data-screen.module.css";
+  margin: 0 0 var(--space-lg);
 }
 
 .countForm {

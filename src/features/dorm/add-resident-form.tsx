@@ -4,13 +4,13 @@ import {
   type ChangeEvent,
   type FormEvent,
   startTransition,
-  useActionState,
   useRef,
   useState,
 } from "react";
 import { DORM_IDS, DORM_NAMES, DORM_SEXES, type DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import type { NonResident } from "./non-residents";
 import { addResidentAction } from "./resident-actions";
 import { ADDED_NOTE_MAX_LENGTH } from "./room-limits";
@@ -46,7 +46,7 @@ export function AddResidentForm({
     return after;
   }
 
-  const [state, save, pending] = useActionState(add, START);
+  const [state, save, pending] = useSaveState(add, START);
 
   /** Offers the dorms of the jenis kelamin of the student chosen. */
   function followStudent(event: ChangeEvent<HTMLSelectElement>) {

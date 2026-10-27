@@ -12,7 +12,10 @@ import { SkpmScreen } from "./skpm-screen";
 import { SkpmSaveButtons, SkpmUpload } from "./skpm-upload";
 import { UploadHistoryTable } from "./upload-history-table";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({}) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({}),
+  unstable_rethrow: vi.fn(),
+}));
 
 const ANI = "00000000-0000-4000-8000-000000000301";
 const BUDI = "00000000-0000-4000-8000-000000000302";

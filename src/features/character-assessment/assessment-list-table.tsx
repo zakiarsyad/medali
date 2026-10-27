@@ -14,7 +14,7 @@ import { shownSource } from "./assessment-words";
 import styles from "./character-assessment.module.css";
 import type { LatestAssessment } from "./latest-assessments";
 
-export const NO_ASSESSMENT_MATCHES = "Tidak ada data pada filter ini.";
+export const NO_ASSESSMENT_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
 /** The columns after Mahasiswa: Tanggal, Sumber, the six values, Rerata and Predikat. */
 const AFTER_STUDENT = 2 + MEDALI_VALUES.length + 2;

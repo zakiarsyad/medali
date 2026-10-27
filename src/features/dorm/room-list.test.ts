@@ -17,6 +17,7 @@ import {
   readFloorResidents,
   readRooms,
 } from "./room-list";
+import { readRoomsParams } from "./rooms-address";
 import { addTestCompanion, EVERYONE } from "./test-records";
 
 const inTestDatabase = withTestDatabase();
@@ -234,6 +235,21 @@ describe("listUnplaced", () => {
         shown: [],
         matching: 0,
       });
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      const { waiting } = await addTestRows(db);
+      const asked = (q: string) =>
+        listUnplaced(db, DANA_RAKCA, readRoomsParams({ q }).query);
+
+      const byName = await asked("\0umi\0");
+      const nothing = await asked("\0 \0");
+
+      expect(byName).toEqual(await listUnplaced(db, DANA_RAKCA, "umi"));
+      expect(byName.shown.map((one) => one.id)).toEqual([waiting]);
+      expect(nothing).toEqual(await listUnplaced(db, DANA_RAKCA, ""));
     });
   });
 

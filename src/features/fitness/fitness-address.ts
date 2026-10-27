@@ -1,7 +1,6 @@
-import { isUuid } from "@/db/is-uuid";
 import { CATEGORY_CHOICES } from "@/health-notes/filter-choices";
 import type { ShownCategory } from "@/health-notes/fitness-category";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -58,10 +57,6 @@ function pageNamed(sent: string): number {
   return PAGE.test(sent) ? Number(sent) : 1;
 }
 
-function idNamed(sent: string): string | null {
-  return isUuid(sent) ? sent : null;
-}
-
 /** The filter an address names, or every student for any other. */
 export function filterNamed(sent: string): FitnessFilter {
   const named = FITNESS_FILTERS.find((each) => FILTER_CHOICES[each] === sent);
@@ -78,7 +73,7 @@ export function readFitnessParams(params: SearchParams): FitnessParams {
     query: searchText(firstParam(params.cari)) ?? "",
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 

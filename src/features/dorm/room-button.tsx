@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 
 const START: FormState = { error: null, done: null };
 
@@ -23,7 +24,7 @@ export function RoomButton({
   confirm?: string;
   children: string;
 }) {
-  const [state, send, pending] = useActionState(action, START);
+  const [state, send, pending] = useSaveState(action, START);
 
   function confirmFirst(event: FormEvent<HTMLFormElement>) {
     if (confirm && !window.confirm(confirm)) event.preventDefault();

@@ -291,7 +291,7 @@ describe("the form of a clarification", () => {
       "Sudah hadir tetapi tidak tercatat",
       "Lainnya",
     ]);
-    expect(form).toContain("Lampiran (PDF atau gambar, maks. 5 MB)");
+    expect(form).toContain("Lampiran (PDF atau gambar, maks. 4 MB)");
     expect(form).toContain('accept="application/pdf,image/jpeg,image/png"');
     expect(form).toContain("Penjelasan");
     expect(form).toContain(

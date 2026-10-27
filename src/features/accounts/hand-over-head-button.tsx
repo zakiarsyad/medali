@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, useActionState } from "react";
+import type { FormEvent } from "react";
 import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { handOverHeadOfUnitAction } from "./actions";
 
 const START: FormState = { error: null, done: null };
@@ -20,7 +21,7 @@ export function HandOverHeadButton({
   accountId,
   name,
 }: HandOverHeadButtonProps) {
-  const [state, action, pending] = useActionState(
+  const [state, action, pending] = useSaveState(
     handOverHeadOfUnitAction,
     START,
   );

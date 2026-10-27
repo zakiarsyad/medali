@@ -1,6 +1,6 @@
 import { GRADE_CHOICE_WORDS } from "@/character-grades/grade-choice";
 import { isUuid } from "@/db/is-uuid";
-import { firstParam, type SearchParams } from "@/ui/search-params";
+import { firstParam, idParam, type SearchParams } from "@/ui/search-params";
 import { searchText } from "@/ui/search-text";
 
 /*
@@ -82,7 +82,7 @@ export function readGradeParams(params: SearchParams): GradeParams {
     query: searchText(firstParam(params.cari)) ?? "",
     filter: filterNamed(firstParam(params.saring)),
     page: pageNamed(firstParam(params.hal)),
-    profileId: idNamed(firstParam(params.profil)),
+    profileId: idParam(params.profil),
   };
 }
 

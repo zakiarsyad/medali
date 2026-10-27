@@ -626,9 +626,7 @@ describe("DashboardScreen", () => {
       counts: { ...view.counts, matching: 0 },
     });
 
-    expect(html).toContain(
-      "Tidak ada mahasiswa aktif dengan kombinasi filter ini.",
-    );
+    expect(html).toContain("Tidak ada mahasiswa aktif pada filter ini.");
     expect(html).toContain("mahasiswa sesuai 1 filter");
     expect(html).toContain("Atur ulang filter");
     expect(html).not.toContain("Capaian karakter");

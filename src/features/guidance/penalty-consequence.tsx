@@ -32,7 +32,7 @@ function HistoryBox({
 }) {
   const lower = isLowerThanBefore(choice.category, choice.level, history.top);
   return (
-    <div className={`${notes.box} ${lower ? notes.warnBox : ""}`}>
+    <div className={lower ? notes.warnBox : notes.box}>
       <p className={styles.line}>{historyWords(history)}</p>
       {lower && (
         <p className={`${styles.line} ${styles.warning}`} role="alert">

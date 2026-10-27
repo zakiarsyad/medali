@@ -1,6 +1,7 @@
 import type { SQL } from "drizzle-orm";
 import Link from "next/link";
-import { forbidden, notFound } from "next/navigation";
+import { forbidden } from "next/navigation";
+import type { ReactNode } from "react";
 import { readRunningPeriod } from "@/academic-periods/stored-periods";
 import type { RowLimit } from "@/auth/access";
 import { database } from "@/db/database";
@@ -38,8 +39,8 @@ function groupLede(group: GroupDetail): string {
 }
 
 /**
- * The page of one group. An address that names no group gets the app's
- * "not found"; a group outside the account's rows is refused aloud.
+ * The page of one group. An address that names no group gets
+ * `whenNotFound`; a group outside the account's rows is refused aloud.
  */
 export async function GroupScreen({
   limit,
@@ -51,6 +52,7 @@ export async function GroupScreen({
   detailVisible,
   memberAddressOf,
   mentorAddressOf,
+  whenNotFound,
 }: {
   /** Which rows the account that opened the page may see. */
   limit: RowLimit;
@@ -80,13 +82,15 @@ export async function GroupScreen({
    */
   memberAddressOf: ((studentId: string) => string) | null;
   mentorAddressOf: MentorAddressOf;
+  /** What shows instead when the address names no group. */
+  whenNotFound: ReactNode;
 }) {
   const db = database();
   const [answer, period] = await Promise.all([
     readGroupPage(db, limit, groupId, detailVisible, memberPage),
     readRunningPeriod(db),
   ]);
-  if (answer.kind === "not_found") notFound();
+  if (answer.kind === "not_found") return whenNotFound;
   if (answer.kind === "refused") forbidden();
   const { group, recentNotes } = answer;
   // Read once the group is found: its id is then known to be one.
@@ -124,9 +128,7 @@ export async function GroupScreen({
         </p>
       )}
       {waiting !== null && (
-        <p className={`${styles.note} ${styles.warned}`}>
-          {scheduledWords(waiting)}
-        </p>
+        <p className={styles.warnedNote}>{scheduledWords(waiting)}</p>
       )}
       <div className={styles.sideBySide}>
         <GroupMentorPanel

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { SENT_FORM_MAX_BYTES } from "./src/files/sent-form-size";
 
 const nextConfig: NextConfig = {
   // The rules for AI tools are in CLAUDE.md. Without this, the dev server
@@ -7,10 +8,11 @@ const nextConfig: NextConfig = {
   experimental: {
     // Lets a page refuse an account with a proper "forbidden" answer.
     authInterrupts: true,
-    // The file of a clarification may be 5 MB, and a sent form adds to
-    // that. Every form still refuses its own files by its own limit, with
-    // a message that says so: a student file over 1 MB, for one.
-    serverActions: { bodySizeLimit: "6mb" },
+    // Kept within what the preview hosting takes in one send, so what
+    // works on the preview works on campus. Every form still refuses
+    // its own files by its own limit, at most 4 MB, with a message that
+    // says so.
+    serverActions: { bodySizeLimit: SENT_FORM_MAX_BYTES },
   },
 };
 

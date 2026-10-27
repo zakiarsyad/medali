@@ -1,8 +1,9 @@
 "use client";
 
-import { type FormEvent, startTransition, useActionState } from "react";
+import { type FormEvent, startTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { saveBaseScoreAction } from "./actions";
 import styles from "./curriculum.module.css";
 
@@ -18,7 +19,7 @@ export function BaseScorePanel({
   note: string;
   mayChange: boolean;
 }) {
-  const [state, save, pending] = useActionState(saveBaseScoreAction, START);
+  const [state, save, pending] = useSaveState(saveBaseScoreAction, START);
 
   // Sent from here, not by the browser: the browser puts a sent form back
   // on its first number, and a refused number must stay to be corrected.

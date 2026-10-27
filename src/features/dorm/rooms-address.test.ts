@@ -42,6 +42,14 @@ describe("readRoomsParams", () => {
   it("cuts a search that is too long", () => {
     expect(readRoomsParams({ q: "a".repeat(500) }).query).toHaveLength(100);
   });
+
+  it("drops the null character from the search, before it is cut", () => {
+    const query = (q: string) => readRoomsParams({ q }).query;
+
+    expect(query("\0sa\0 ri\0")).toBe("sa ri");
+    expect(query("\0 \0 ")).toBe("");
+    expect(query(`\0${"a".repeat(100)}`)).toBe("a".repeat(100));
+  });
 });
 
 describe("roomsAddress", () => {
@@ -64,6 +72,8 @@ describe("addingAddress", () => {
     const query = new URLSearchParams(address.split("?")[1]);
     expect(readRoomsParams(Object.fromEntries(query)).adding).toBe("");
     query.set("cari", "  sari ");
+    expect(readRoomsParams(Object.fromEntries(query)).adding).toBe("sari");
+    query.set("cari", "\0sa\0ri\0");
     expect(readRoomsParams(Object.fromEntries(query)).adding).toBe("sari");
   });
 

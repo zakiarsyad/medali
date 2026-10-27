@@ -53,6 +53,7 @@ export const OPEN_PERIOD_WORDS =
   "Periode masih dibuka. Angka di bawah sementara dan diperbarui setiap ada jawaban baru.";
 
 export const NO_MATCH_WORDS = "Tidak ada kelompok pada filter ini.";
+export const NO_GROUPS_WORDS = "Belum ada kelompok pada periode ini.";
 
 function groupsWords(groups: number): string {
   return `${groups.toLocaleString("id-ID")} kelompok`;

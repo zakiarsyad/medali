@@ -126,7 +126,7 @@ export function OwnRequestList({
       <p className={styles.sub}>Status pemeriksaan oleh Penilai Mahasiswa</p>
       <FormMessage state={answer} />
       {requests.length === 0 ? (
-        <p className={shared.empty}>{NO_REQUESTS}</p>
+        <p className={shared.emptySection}>{NO_REQUESTS}</p>
       ) : (
         <ul className={styles.requests}>
           {requests.map((request) => (

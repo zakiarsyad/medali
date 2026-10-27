@@ -4,6 +4,7 @@ import { type FormEvent, useState, useTransition } from "react";
 import { DORM_NAMES, type DormId } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { ChangeButton } from "./change-button";
 import styles from "./cleaning.module.css";
 import {
@@ -45,9 +46,13 @@ function RenameForm({
     event.preventDefault();
     const name = new FormData(event.currentTarget).get("name");
     startSending(async () => {
-      const after = await renameCleaningPlaceAction(
-        place.id,
-        typeof name === "string" ? name : "",
+      const after = await sentOr(
+        () =>
+          renameCleaningPlaceAction(
+            place.id,
+            typeof name === "string" ? name : "",
+          ),
+        refusedSave,
       );
       setError(after.error);
       if (!after.done) return;
@@ -145,7 +150,7 @@ function DormBox({
           />
         ))}
         {group.places.length === 0 && (
-          <li className={styles.quiet}>Belum ada tempat.</li>
+          <li className={shared.emptySection}>Belum ada tempat.</li>
         )}
       </ul>
       <span className={styles.quiet}>

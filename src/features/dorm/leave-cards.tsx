@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import styles from "./leave.module.css";
 import { decideLeaveAction } from "./leave-actions";
 import type { LeaveCard } from "./leave-card";
@@ -47,7 +48,10 @@ function LeaveDecide({
 
   function send(decision: "approve" | "reject") {
     startSending(async () => {
-      const state = await decideLeaveAction(id, decision, note);
+      const state = await sentOr(
+        () => decideLeaveAction(id, decision, note),
+        refusedSave,
+      );
       const status = decision === "approve" ? "approved" : "rejected";
       onAnswer({ state, decided: state.done ? status : null });
     });

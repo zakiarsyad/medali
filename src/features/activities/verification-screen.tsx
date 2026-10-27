@@ -16,7 +16,7 @@ import { VerificationFilterRow } from "./verification-filters";
 import { VerificationNumbersView } from "./verification-numbers-view";
 
 export const NOTHING_WAITS = "Tidak ada swafoto yang menunggu verifikasi.";
-export const NOTHING_MATCHES = "Tidak ada data pada filter ini.";
+export const NOTHING_MATCHES = "Tidak ada foto pada filter ini.";
 
 /** What the panel says when no card matches the filters. */
 export function emptyWords(filters: VerificationFilters): string {

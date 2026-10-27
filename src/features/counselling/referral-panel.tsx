@@ -12,7 +12,7 @@ import { SCHEDULE_STATUS_WORDS } from "./schedule-words";
 export const REFERRAL_NOTE =
   "Penanda awal dari BAM - Kesehatan berdasarkan pengamatan, bukan hasil asesmen.";
 
-export const NO_REFERRALS = "Tidak ada rujukan dari asrama.";
+export const NO_REFERRALS = "Belum ada rujukan dari asrama.";
 
 /** "Jadwal aktif" of a student without an active request. */
 export const NO_ACTIVE_SCHEDULE = "Tidak ada";
@@ -47,9 +47,11 @@ function ReferralTableRow({
         <ConsentBadge status={row.consent} />
       </td>
       <td data-title="Jadwal aktif">
-        {row.activeSchedule === null
-          ? NO_ACTIVE_SCHEDULE
-          : SCHEDULE_STATUS_WORDS[row.activeSchedule]}
+        {row.activeSchedule === null ? (
+          <span className={shared.emptyCell}>{NO_ACTIVE_SCHEDULE}</span>
+        ) : (
+          SCHEDULE_STATUS_WORDS[row.activeSchedule]
+        )}
       </td>
       <td className={shared.rowActions}>
         {onFollowUp && (

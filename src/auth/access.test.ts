@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   type AccountForAccess,
+  firstPageFor,
   may,
   mayOpenPage,
   mayOpenTab,
@@ -3827,6 +3828,56 @@ describe("pagesFor", () => {
       expect(pages).toEqual(expect.arrayContaining(paths(pagesFor([role]))));
     },
   );
+});
+
+describe("firstPageFor", () => {
+  it("lands Penilai Mahasiswa on Penilaian", () => {
+    expect(firstPageFor(["assessor"])?.path).toBe("penilaian");
+  });
+
+  it("keeps Kegiatan karakter before Penilaian in the menu of Penilai Mahasiswa", () => {
+    expect(paths(pagesFor(["assessor"]))).toEqual(["kegiatan", "penilaian"]);
+  });
+
+  it("opens Penilaian on Penilaian karakter for Penilai Mahasiswa", () => {
+    expect(tabsFor(["assessor"], "assessment")[0]?.id).toBe("character");
+  });
+
+  it("lands every other role on the first page of its menu", () => {
+    const others = ROLE_IDS.filter((role) => role !== "assessor");
+    expect(others.length).toBeGreaterThan(0);
+    for (const role of others) {
+      expect(firstPageFor([role])).toEqual(pagesFor([role])[0]);
+    }
+  });
+
+  it.each([
+    ["student", "saya"],
+    ["head_of_unit", "dashboard"],
+    ["counsellor", "penilaian"],
+    ["dorm_manager", "tugas"],
+  ] as const)("lands %s on %s", (role, path) => {
+    expect(firstPageFor([role])?.path).toBe(path);
+  });
+
+  it("lands no page for an account with no roles", () => {
+    expect(firstPageFor([])).toBeUndefined();
+  });
+
+  it("lands Pegawai UPK who is also Konselor on Kurikulum", () => {
+    expect(firstPageFor(["upk_staff", "counsellor"])?.path).toBe("kurikulum");
+  });
+
+  it.each(BAM_ROLES)(
+    "lands a student who is also %s on Profil saya",
+    (role) => {
+      expect(firstPageFor(["student", role])?.path).toBe("saya");
+    },
+  );
+
+  it("lands Penilai Mahasiswa who is also Konselor on Penilaian", () => {
+    expect(firstPageFor(["assessor", "counsellor"])?.path).toBe("penilaian");
+  });
 });
 
 describe("needsDormResident", () => {

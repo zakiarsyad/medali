@@ -30,7 +30,9 @@ export function StudentNotesView({
         </span>
       </div>
       {notes.length === 0 ? (
-        <p className={styles.quiet}>Belum ada catatan untuk mahasiswa ini.</p>
+        <p className={shared.emptySection}>
+          Belum ada catatan untuk mahasiswa ini.
+        </p>
       ) : (
         <NoteItems>
           {notes.map((note) => (

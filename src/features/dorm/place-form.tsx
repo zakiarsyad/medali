@@ -1,8 +1,9 @@
 "use client";
 
-import { type ChangeEvent, useActionState } from "react";
+import type { ChangeEvent } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import type { Resident } from "./room-list";
 import styles from "./rooms.module.css";
 
@@ -32,7 +33,7 @@ export function PlaceForm({
   /** Those of the dorm without a room that the screen offers. */
   offered: Resident[];
 }) {
-  const [state, send] = useActionState(action, START);
+  const [state, send] = useSaveState(action, START);
   return (
     <form action={send} className={styles.place}>
       <input type="hidden" name="roomId" value={roomId} />

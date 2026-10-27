@@ -5,12 +5,11 @@ import { NO_NOTE, NOTE_MISSING, noteText } from "@/health-notes/health-words";
 import shared from "@/ui/data-screen.module.css";
 import { shownDay } from "@/ui/day";
 import { ProfileNameLink } from "@/ui/profile-name-link";
-import { toneBadge } from "@/ui/tone-badge";
 import styles from "./fitness.module.css";
 import { type FitnessParams, fitnessAddress } from "./fitness-address";
 import type { FitnessListRow, RowHealth } from "./fitness-board";
 
-export const NO_FITNESS_MATCHES = "Tidak ada data pada filter ini.";
+export const NO_FITNESS_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
 /** Whether a student of this category should have a health note. */
 export function needsNote(category: ShownCategory): boolean {
@@ -28,9 +27,9 @@ function NoteCell({
 }) {
   if (health.note !== null) return noteText(health.note);
   if (needsNote(category)) {
-    return <span className={toneBadge("warning")}>{NOTE_MISSING}</span>;
+    return <span className={shared.emptyCell}>{NOTE_MISSING}</span>;
   }
-  return <span className={styles.muted}>{NO_NOTE}</span>;
+  return <span className={shared.emptyCell}>{NO_NOTE}</span>;
 }
 
 function StudentRow({

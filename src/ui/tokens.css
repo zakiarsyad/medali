@@ -261,6 +261,7 @@
   --note-ink: var(--muted);
   --note-line: var(--line-width);
   --note-line-colour: var(--line);
+  --note-warning-line-colour: var(--warn);
 
   --section-heading-text: var(--text-base);
   --section-heading-weight: var(--weight-heavy);

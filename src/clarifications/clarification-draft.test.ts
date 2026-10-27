@@ -111,6 +111,17 @@ describe("readyToSend", () => {
     expect(shrunk).toEqual([]);
   });
 
+  it("refuses a file over 4 MB before it is sent, with the limit in MB", async () => {
+    const { edges, sent } = edgesOf();
+    const file = new File([new Uint8Array(4 * 1024 * 1024 + 1)], "surat.pdf");
+
+    expect(await sendDraft(draft({ file }), edges)).toEqual({
+      error: "Ukuran lampiran maksimal 4 MB.",
+      done: null,
+    });
+    expect(sent).toEqual([]);
+  });
+
   it("sends a PDF as it is, with what the form holds", async () => {
     const { edges, shrunk } = edgesOf();
 
@@ -207,6 +218,19 @@ describe("sendDraft", () => {
     });
     expect(rethrown).toEqual([lost]);
     expect(second).toEqual({ error: null, done: "Klarifikasi terkirim." });
+  });
+
+  it("says the file is too large when the send is refused for its size", async () => {
+    const { edges } = edgesOf({
+      async send() {
+        throw new Error("Body exceeded 4400000 limit.");
+      },
+    });
+
+    expect(await sendDraft(draft(), edges)).toEqual({
+      error: "Ukuran lampiran maksimal 4 MB.",
+      done: null,
+    });
   });
 
   it("passes on an answer that leads elsewhere, as when the student was signed out", async () => {

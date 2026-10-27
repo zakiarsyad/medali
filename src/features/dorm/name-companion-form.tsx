@@ -4,13 +4,13 @@ import {
   type ChangeEvent,
   type FormEvent,
   startTransition,
-  useActionState,
   useRef,
   useState,
 } from "react";
 import { DORM_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { useSaveState } from "@/ui/use-save-state";
 import { nameCompanionAction } from "./companion-actions";
 import type { Candidate } from "./companion-candidates";
 import {
@@ -39,7 +39,7 @@ export function NameCompanionForm({
     return after;
   }
 
-  const [state, save, pending] = useActionState(name, START);
+  const [state, save, pending] = useSaveState(name, START);
 
   /** Sets Asrama from the jenis kelamin of the student chosen. */
   function followStudent(event: ChangeEvent<HTMLSelectElement>) {

@@ -3,7 +3,6 @@
 import {
   type KeyboardEvent,
   type ReactNode,
-  useActionState,
   useRef,
   useState,
   useTransition,
@@ -13,6 +12,7 @@ import { FormMessage, type FormState } from "@/ui/form-message";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
+import { useSaveState } from "@/ui/use-save-state";
 import { draftFrom, EMPTY_DRAFT, type NoteDraft } from "./health-draft";
 import { EarlierNotes, NoteFields, SubjectSummary } from "./health-note-fields";
 import styles from "./health-notes.module.css";
@@ -203,7 +203,7 @@ export function HealthNoteForm<Subject extends HealthSubject>({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   return (
     // noValidate: the server says what is wrong, in the app's own words.

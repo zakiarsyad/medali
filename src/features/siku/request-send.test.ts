@@ -105,4 +105,21 @@ describe("sendRequest", () => {
 
     expect(answer).toEqual({ error: REQUEST_SEND_FAILED, done: null });
   });
+
+  it("says a photo is too large when the request is refused for its size", async () => {
+    const answer = await sendRequest(
+      ID,
+      FIELDS,
+      [PHOTO],
+      TODAY,
+      edges(async () => {
+        throw new Error("Body exceeded 4400000 limit.");
+      }),
+    );
+
+    expect(answer).toEqual({
+      error: "Foto terlalu besar. Pilih foto lain.",
+      done: null,
+    });
+  });
 });

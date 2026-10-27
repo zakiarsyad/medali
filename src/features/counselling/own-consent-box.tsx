@@ -3,12 +3,14 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import type { ConsentOutcome } from "./change-consent";
 import { ConsentStatusLine } from "./consent-badge";
 import { studentMoves } from "./consent-rules";
 import { type ConsentView, versionOfConsent } from "./consent-view";
 import { CONSENT_TEXT } from "./consent-words";
 import styles from "./counselling.module.css";
+import { refusedOutcome } from "./not-sent";
 import {
   approveConsentAction,
   declineConsentAction,
@@ -74,7 +76,11 @@ export function OwnConsentBox({ consent }: { consent: ConsentView | null }) {
 
   function press(action: Press) {
     startSending(async () => {
-      setMessage(messageOf(await action(versionOfConsent(consent))));
+      setMessage(
+        messageOf(
+          await sentOr(() => action(versionOfConsent(consent)), refusedOutcome),
+        ),
+      );
     });
   }
 

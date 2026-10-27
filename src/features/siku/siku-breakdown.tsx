@@ -96,7 +96,7 @@ function EntryTable({
   foldAfter: number | null;
 }) {
   if (lines.length === 0) {
-    return <p className={shared.detail}>{NONE_YET[kind]}</p>;
+    return <p className={shared.emptySection}>{NONE_YET[kind]}</p>;
   }
   if (foldAfter === null || lines.length <= foldAfter) {
     return <LineTable lines={lines} kind={kind} />;

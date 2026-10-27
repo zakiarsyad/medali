@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
+import { refusedSave, sentOr } from "@/ui/save-not-sent";
 import { removePpksActivityAction, scheduleCountAction } from "./actions";
 import styles from "./curriculum.module.css";
 import { removalQuestion } from "./ppks-activities";
@@ -35,7 +36,10 @@ export function RemovePpksButton({
       }
       const sure = window.confirm(removalQuestion(name, counted.value));
       if (!sure) return;
-      const after = await removePpksActivityAction(id);
+      const after = await sentOr(
+        () => removePpksActivityAction(id),
+        refusedSave,
+      );
       if (after.done) onRemoved(after.done);
       setError(after.error);
     });

@@ -10,13 +10,14 @@ import {
   publishedLine,
   SHARED_PART_WORDS,
 } from "@/mental-health/shared-words";
+import shared from "@/ui/data-screen.module.css";
 import { DAY, shownDay } from "@/ui/day";
 import styles from "./counselling.module.css";
 import type { SharedDetail, SharedScreening } from "./shared-view";
 
 function CounsellingPart({ sessions }: { sessions: SessionSummary | null }) {
   if (sessions === null) {
-    return <p className={styles.sub}>Belum ada sesi konseling.</p>;
+    return <p className={shared.emptySection}>Belum ada sesi konseling.</p>;
   }
   return (
     <>
@@ -42,7 +43,7 @@ function CounsellingPart({ sessions }: { sessions: SessionSummary | null }) {
  */
 function LevelPart({ screening }: { screening: SharedScreening | null }) {
   if (screening === null) {
-    return <p className={styles.sub}>{NOT_SCREENED}.</p>;
+    return <p className={shared.emptySection}>{NOT_SCREENED}.</p>;
   }
   return (
     <>
@@ -65,7 +66,7 @@ function LevelPart({ screening }: { screening: SharedScreening | null }) {
  */
 export function SharedDetailBox({ detail }: { detail: SharedDetail }) {
   return (
-    <div className={`${styles.card} ${styles.stack}`}>
+    <div className={styles.card}>
       {detail.data.includes("level") && (
         <section className={styles.stack}>
           <h3 className={styles.subHeading}>{SHARED_PART_WORDS.level}</h3>

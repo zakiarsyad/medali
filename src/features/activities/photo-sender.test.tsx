@@ -416,6 +416,19 @@ describe('"Kirim presensi"', () => {
     expect(answers[1]).toEqual({ error: null, done: KEPT.value });
   });
 
+  it("says the photo is too large when the send is refused for its size", async () => {
+    const { pick, send, answers } = openUpload({
+      send: () => Promise.reject(new Error("Body exceeded 4400000 limit.")),
+    });
+    await pick(picture());
+
+    await send();
+
+    expect(answers).toEqual([
+      { error: "Foto terlalu besar. Pilih foto lain.", done: null },
+    ]);
+  });
+
   it("does not take for a failure what leads the student elsewhere", async () => {
     const elsewhere = new Error("Leads elsewhere.");
     const { pick, send, answers } = openUpload({

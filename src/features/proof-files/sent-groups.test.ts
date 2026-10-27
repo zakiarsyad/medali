@@ -9,7 +9,11 @@ import {
 import { countProofs } from "./proof-counts";
 import { PROOF_KINDS } from "./proof-kinds";
 import { readSentGroups } from "./sent-groups";
-import { addProofSetting, addTestProofs } from "./test-proofs";
+import {
+  addProofSetting,
+  addTestProofs,
+  removeSchedulesOf,
+} from "./test-proofs";
 
 /*
  * This file's own sample values: the Tahun akademik 3400, the program
@@ -98,6 +102,35 @@ describe("readSentGroups", () => {
       for (const kind of PROOF_KINDS) {
         expect(counts.kept[kind]).toBe(2);
         expect(counts.removable[kind]).toBe(1);
+      }
+    });
+  });
+
+  it("counts the waiting files of a removed schedule as may go", async () => {
+    await inTestDatabase(async (db) => {
+      const { oddId } = await addTestPeriods(db, 3400);
+      const setting = await addProofSetting(
+        db,
+        oddId,
+        "UJIBERKASHITUNG",
+        "9989500004",
+      );
+      const waiting = await addTestProofs(db, setting, SENT_AT, false);
+      await addTestProofs(db, setting, SENT_AT, false);
+      await removeSchedulesOf(db, setting, waiting);
+      const periods = [{ startsOn: "3400-08-01", endsOn: "3401-01-31" }];
+
+      const counts = countProofs(await readSentGroups(db), {
+        keepDays: 30,
+        periods,
+        today: "3401-06-01",
+      });
+
+      for (const kind of PROOF_KINDS) {
+        const ofSchedule =
+          kind === "attendance_photo" || kind === "activity_clarification";
+        expect(counts.kept[kind]).toBe(2);
+        expect(counts.removable[kind]).toBe(ofSchedule ? 1 : 0);
       }
     });
   });

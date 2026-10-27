@@ -15,6 +15,9 @@ export const WHO_WRITES =
   "Catatan pelanggaran diisi oleh Pembina Disiplin Mahasiswa dan Kepala Unit Pembangunan Karakter.";
 
 export const NO_NOTES_FOUND = "Tidak ada catatan pelanggaran pada filter ini.";
+export const NO_NOTES = "Belum ada catatan pelanggaran.";
+export const NO_NOTES_THIS_SEMESTER =
+  "Belum ada catatan pelanggaran pada semester ini.";
 
 export const NOT_IN_FORCE = "Tidak berlaku";
 

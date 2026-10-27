@@ -39,7 +39,7 @@ function WaitingNotice({ words }: { words: string }) {
 /** What is shared with whom, in the words of Konseling. */
 function GivenSharing({ sharing }: { sharing: OwnSharing }) {
   return (
-    <div className={`${styles.card} ${styles.stack}`}>
+    <div className={styles.card}>
       <p>
         <b>{givenSharingTitle(sharing.status)}</b> kepada{" "}
         {recipientsLine(sharing.recipients)}: {dataLine(sharing.data)}.

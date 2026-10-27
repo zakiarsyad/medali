@@ -26,7 +26,8 @@ export const WHO_RECORDS =
 /** What Pengasuh is told: the list holds their own mentees only. */
 export const MENTEES_ONLY = "Menampilkan mahasiswa binaan Anda.";
 
-export const NO_PENALTIES_FOUND = "Belum ada pelanggaran pada filter ini.";
+export const NO_PENALTIES_FOUND = "Tidak ada pelanggaran pada filter ini.";
+export const NO_PENALTIES = "Belum ada pelanggaran disiplin.";
 
 /** What "Rincian" shows while the server is asked for it. */
 export const RINCIAN_LOADING = "Memuat rincian…";

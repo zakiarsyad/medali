@@ -1,10 +1,11 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useAskBeforeLeaving } from "@/ui/ask-before-leaving";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage } from "@/ui/form-message";
 import { toneBadge } from "@/ui/tone-badge";
+import { useSaveState } from "@/ui/use-save-state";
 import styles from "./activities.module.css";
 import type { ActivityRow } from "./activity-row";
 import { saveCountAction } from "./count-actions";
@@ -128,6 +129,12 @@ function MarkFields({
   );
 }
 
+/** What the list of participants says when it shows nobody. */
+export function noParticipantWords(typed: string, onlyMarked: boolean) {
+  if (typed.trim() === "" && !onlyMarked) return "Belum ada peserta.";
+  return "Tidak ada peserta pada filter ini.";
+}
+
 /** The form as it is sent: the absent, and each note beside its student. */
 function sentForm(
   parts: { activityId: string; day: string; version: number },
@@ -197,7 +204,7 @@ export function CountForm({
     return after;
   }
 
-  const [state, save, pending] = useActionState(send, {
+  const [state, save, pending] = useSaveState(send, {
     error: null,
     done: null,
     version: kept?.version ?? NOT_COUNTED_YET,
@@ -245,7 +252,7 @@ export function CountForm({
         </label>
       </div>
       {shown.length === 0 ? (
-        <p className={shared.empty}>Tidak ada peserta yang cocok.</p>
+        <p className={shared.empty}>{noParticipantWords(typed, onlyMarked)}</p>
       ) : (
         <ul className={styles.countList}>
           {shown.map((participant) => (

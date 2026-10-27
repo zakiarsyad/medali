@@ -1,5 +1,6 @@
 import type { Parsed } from "@/parsed";
 import type { FormState } from "@/ui/form-message";
+import { refusedSave } from "@/ui/save-not-sent";
 import type { LeaveStatus } from "./leave-ids";
 import { STATUS_WORDS } from "./leave-words";
 
@@ -95,6 +96,11 @@ export function tooLateToDecide(status: LeaveStatus): StaleRefusal {
 export interface DecisionAnswer extends FormState {
   /** Whether it was refused as decided or cancelled first. */
   stale: boolean;
+}
+
+/** A decision that threw on its way, with its words. */
+export function refusedDecisionWith(message: string): DecisionAnswer {
+  return { ...refusedSave(message), stale: false };
 }
 
 /** A refused decision as the screen is answered. */

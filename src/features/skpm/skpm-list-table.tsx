@@ -6,7 +6,7 @@ import { type SkpmParams, skpmAddress } from "./skpm-address";
 import type { SkpmListRow } from "./skpm-board";
 import { shownOneDecimal, shownPoints } from "./skpm-words";
 
-export const NO_SKPM_MATCHES = "Tidak ada data pada filter ini.";
+export const NO_SKPM_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
 export const NO_DATA = "Belum ada data";
 
@@ -68,7 +68,7 @@ export function SkpmListTable({
                     Rincian
                   </Link>
                 ) : (
-                  <span className={shared.detail}>{NO_DATA}</span>
+                  <span className={shared.emptyCell}>{NO_DATA}</span>
                 )}
               </td>
             </tr>

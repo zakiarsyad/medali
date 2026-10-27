@@ -32,6 +32,7 @@ const PART_VALUES: [string, string][] = [
   ["--note-ink", MUTED],
   ["--note-line", "1px"],
   ["--note-line-colour", "#dce2eb"],
+  ["--note-warning-line-colour", "#c07a12"],
   ["--section-heading-text", "15px"],
   ["--section-heading-weight", "800"],
   ["--section-heading-ink", "#13264a"],

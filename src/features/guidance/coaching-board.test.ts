@@ -7,7 +7,11 @@ import type { RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
 import { students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
-import { COACHING_START, type CoachingParams } from "./coaching-address";
+import {
+  COACHING_START,
+  type CoachingParams,
+  readCoachingParams,
+} from "./coaching-address";
 import { readCoachingBoard, readOpenCoachingCount } from "./coaching-board";
 import {
   addCoachingAssessment,
@@ -222,6 +226,21 @@ describe("readCoachingBoard", () => {
         expect.objectContaining({ matching: 0, rows: [] }),
       );
       expect(none?.numbers.identified).toBe(4);
+    });
+  });
+
+  it("searches an address with the null character as the same search without it", async () => {
+    await inTestDatabase(async (db) => {
+      const { kepala, inA, inB } = await setting(db);
+      const [one = "", two = "", three = ""] = inA;
+      const asked = (cari: string) =>
+        readCoachingBoard(db, kepala, readCoachingParams({ cari }), TODAY);
+
+      const byName = await asked("pembinaan\0 a 3\0");
+      const nothing = await asked("\0 \0");
+
+      expect(idsOf(byName)).toEqual([three]);
+      expect(idsOf(nothing)).toEqual([one, inB, two, three]);
     });
   });
 

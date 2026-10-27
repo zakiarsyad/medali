@@ -1,12 +1,13 @@
 "use client";
 
-import { type KeyboardEvent, useActionState, useState } from "react";
+import { type KeyboardEvent, useState } from "react";
 import { DORM_SHORT_NAMES } from "@/dorms/dorms";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { SEARCH_TEXT_MAX } from "@/ui/search-text";
 import { sendForm } from "@/ui/send-form";
 import { useFound } from "@/ui/use-found";
+import { useSaveState } from "@/ui/use-save-state";
 import {
   saveViolationsAction,
   searchViolationStudentsAction,
@@ -130,7 +131,7 @@ function DraftTable({
   rows: DraftRow[];
   onRemove: (key: string) => void;
 }) {
-  if (rows.length === 0) return <p className={styles.note}>{EMPTY_LIST}</p>;
+  if (rows.length === 0) return <p className={shared.empty}>{EMPTY_LIST}</p>;
   return (
     <div className={shared.tableWrap}>
       <table className={`${shared.table} ${shared.stacked}`}>
@@ -249,7 +250,7 @@ export function ViolationForm({
     return after;
   }
 
-  const [state, action, pending] = useActionState(save, START);
+  const [state, action, pending] = useSaveState(save, START);
 
   return (
     // noValidate: the server says what is wrong, in the app's own words.

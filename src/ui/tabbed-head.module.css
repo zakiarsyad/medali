@@ -16,14 +16,7 @@
   display: none;
 }
 
-/* Long words break too, so a note never pushes a phone screen sideways. */
 .note {
+  composes: note from "./data-screen.module.css";
   margin: 0;
-  padding: var(--note-padding);
-  border: var(--note-line) solid var(--note-line-colour);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--note-ink);
-  font-size: var(--note-text);
-  overflow-wrap: anywhere;
 }

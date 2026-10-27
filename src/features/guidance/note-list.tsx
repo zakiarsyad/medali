@@ -7,6 +7,7 @@ import { toneBadge } from "@/ui/tone-badge";
 import {
   CATEGORY_CHOICES,
   NOTES_ADDRESS,
+  NOTES_START,
   type NotesParams,
   notesAddress,
   PAST_CHOICE,
@@ -15,7 +16,9 @@ import type { NoteBoard, NoteRow } from "./note-board";
 import { repeatWords } from "./note-category";
 import {
   CATEGORY_WORDS,
+  NO_NOTES,
   NO_NOTES_FOUND,
+  NO_NOTES_THIS_SEMESTER,
   NOT_IN_FORCE,
   NOTE_NOUN,
   punishmentText,
@@ -124,6 +127,18 @@ function NoteLine({
 }
 
 /**
+ * What the list says when it is empty: none on the filters set, or none
+ * yet, in the running semester unless past notes are shown too.
+ */
+export function noNoteWords(params: NotesParams): string {
+  const isFiltered =
+    params.query !== NOTES_START.query ||
+    params.category !== NOTES_START.category;
+  if (isFiltered) return NO_NOTES_FOUND;
+  return params.past ? NO_NOTES : NO_NOTES_THIS_SEMESTER;
+}
+
+/**
  * The list "Catatan pelanggaran": the search, the filters and one page of
  * the notes. On a phone each note is a card. A writer gets the buttons
  * `actionsOf` gives each row; a reader gets none.
@@ -147,7 +162,7 @@ export function NoteListPanel({
         <FilterRow params={params} />
       </AutoSubmitForm>
       {list.matching === 0 ? (
-        <p className={shared.empty}>{NO_NOTES_FOUND}</p>
+        <p className={shared.empty}>{noNoteWords(params)}</p>
       ) : (
         <>
           <div className={shared.tableWrap}>

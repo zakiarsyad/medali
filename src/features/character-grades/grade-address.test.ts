@@ -52,9 +52,9 @@ describe("gradeAddress", () => {
 describe("the student whose profile is open over the tab", () => {
   const PROFILE = "3f2a1b4c-5d6e-4f70-8a9b-0c1d2e3f4a5b";
 
-  it("is read from the address, and only as an id", () => {
+  it("is read from the address as given, so a wrong one is answered not found", () => {
     expect(readGradeParams({ profil: PROFILE }).profileId).toBe(PROFILE);
-    expect(readGradeParams({ profil: "bukan-id" }).profileId).toBeNull();
+    expect(readGradeParams({ profil: "bukan-id" }).profileId).toBe("bukan-id");
     expect(readGradeParams({}).profileId).toBeNull();
   });
 
@@ -70,7 +70,7 @@ describe("the student whose profile is open over the tab", () => {
 describe("the semester chosen", () => {
   const PERIOD = "7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
 
-  it("is read from the address, and only as an id", () => {
+  it("is read from the address as given, so a wrong one is answered not found", () => {
     expect(readGradeParams({ semester: PERIOD }).semester).toBe(PERIOD);
     expect(readGradeParams({ semester: "ganjil" }).semester).toBeNull();
     expect(readGradeParams({}).semester).toBeNull();

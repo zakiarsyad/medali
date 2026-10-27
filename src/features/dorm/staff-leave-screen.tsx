@@ -6,6 +6,8 @@ import type { TabLinksProps } from "@/ui/tab-links";
 import { TabbedHead } from "@/ui/tabbed-head";
 import {
   LEAVE_CARDS_PAGE_SIZE,
+  LEAVE_START_STATUS,
+  type LeaveFilters,
   type LeaveListParams,
   leaveListAddress,
 } from "./leave-address";
@@ -15,6 +17,20 @@ import type { LeaveBoard } from "./leave-list";
 import { ManagedNote } from "./managed-note";
 
 export const NO_LEAVE_MATCHES = "Tidak ada pengajuan pada filter ini.";
+export const NO_LEAVE = "Belum ada pengajuan izin.";
+export const NO_LEAVE_WAITING = "Tidak ada pengajuan yang menunggu.";
+
+/**
+ * What the list says when it is empty. The list starts at "Menunggu", so
+ * there it says nothing waits; with every status and nothing else
+ * chosen it says there is none yet.
+ */
+export function noLeaveWords(filters: LeaveFilters): string {
+  if (filters.query !== "" || filters.kind !== "all") return NO_LEAVE_MATCHES;
+  if (filters.status === "all") return NO_LEAVE;
+  if (filters.status === LEAVE_START_STATUS) return NO_LEAVE_WAITING;
+  return NO_LEAVE_MATCHES;
+}
 
 /** Whether an account may only see the cards, and change nothing. */
 function onlySees(rights: LeaveRights): boolean {
@@ -102,7 +118,7 @@ export function StaffLeaveScreen({
           rights={rights}
           ownStudentId={ownStudentId}
           asOf={board.asOf}
-          emptyWords={NO_LEAVE_MATCHES}
+          emptyWords={noLeaveWords(filters)}
         />
         {list.matching > 0 && (
           <ListPager

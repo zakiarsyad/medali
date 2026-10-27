@@ -125,8 +125,18 @@ describe("Rekap data kesehatan seluruh mahasiswa", () => {
     expect(html).toContain("2 mahasiswa dengan riwayat asma.");
   });
 
+  it("says there is nobody yet when no filter is set", () => {
+    const html = shown({ ...RECAP, rows: [], matching: 0 }, RECAP_START);
+
+    expect(html).toContain("Belum ada mahasiswa yang sakit.");
+    expect(html).not.toContain("pada filter ini");
+  });
+
   it("says when nobody matches", () => {
-    const html = shown({ ...RECAP, rows: [], matching: 0 });
+    const html = shown(
+      { ...RECAP, rows: [], matching: 0 },
+      { ...RECAP_START, residence: "dorm" },
+    );
 
     expect(html).toContain("Tidak ada mahasiswa yang sakit pada filter ini.");
   });

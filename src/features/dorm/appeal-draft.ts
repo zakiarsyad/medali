@@ -1,10 +1,14 @@
 import type { SendEdges } from "@/clarifications/clarification-draft";
-import { FILE_WRONG_KIND } from "@/clarifications/clarification-file";
+import {
+  FILE_TOO_LARGE,
+  FILE_WRONG_KIND,
+} from "@/clarifications/clarification-file";
 import {
   isPictureName,
   pickedFileFault,
   shrunkName,
 } from "@/clarifications/clarification-input";
+import { isRefusedForSize } from "@/files/sent-form-size";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
@@ -99,6 +103,9 @@ export async function sendAppealDraft(
     return { error: null, done: sent.value };
   } catch (error) {
     edges.rethrow(error);
+    if (isRefusedForSize(error, ready.value)) {
+      return { error: FILE_TOO_LARGE, done: null };
+    }
     return { error: APPEAL_SEND_FAILED, done: null };
   }
 }

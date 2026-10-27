@@ -3,6 +3,7 @@ import {
   FEWEST_ANSWERS_SHOWN,
   SURVEY_STATEMENTS,
 } from "@/mentoring/survey-statements";
+import shared from "@/ui/data-screen.module.css";
 import { shownAverage } from "./evaluation-result";
 import { groupAddress } from "./group-list-address";
 import styles from "./mentor-groups.module.css";
@@ -12,7 +13,7 @@ export const HIDDEN_WORDS = `Disembunyikan karena responden kurang dari ${FEWEST
 
 function Averages({ detail }: { detail: GroupSurveyDetail }) {
   if (detail.answers === 0) {
-    return <p className={styles.quiet}>Belum ada responden.</p>;
+    return <p className={shared.emptySection}>Belum ada responden.</p>;
   }
   if (detail.averages === null) {
     return <p className={styles.quiet}>{HIDDEN_WORDS}</p>;
@@ -35,7 +36,7 @@ function Suggestions({ detail }: { detail: GroupSurveyDetail }) {
     return <p className={styles.quiet}>{HIDDEN_WORDS}</p>;
   }
   if (detail.suggestions.length === 0) {
-    return <p className={styles.quiet}>Tidak ada saran tertulis.</p>;
+    return <p className={shared.emptySection}>Tidak ada saran tertulis.</p>;
   }
   return (
     <ul className={styles.statements}>

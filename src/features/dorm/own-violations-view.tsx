@@ -19,7 +19,7 @@ import {
 import { APPEAL_HOURS, VIOLATIONS_PAGE_SIZE } from "./violation-ids";
 import styles from "./violations.module.css";
 
-export const NO_OWN_VIOLATIONS = "Tidak ada pelanggaran pada periode ini.";
+export const NO_OWN_VIOLATIONS = "Belum ada pelanggaran pada periode ini.";
 
 type Shown = Extract<OwnViolations, { kind: "shown" }>;
 

@@ -37,7 +37,9 @@ interface Shown {
 
 function RunningPeriod({ running }: { running: AcademicPeriod | null }) {
   if (!running) {
-    return <p className={shared.detail}>Belum ada periode yang berjalan.</p>;
+    return (
+      <p className={shared.emptySection}>Belum ada periode yang berjalan.</p>
+    );
   }
   return (
     <>

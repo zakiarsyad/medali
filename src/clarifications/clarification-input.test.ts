@@ -11,7 +11,7 @@ const MEGABYTE = 1024 * 1024;
 const TOO_SHORT = "Tulis penjelasan minimal satu kalimat.";
 const MISSING = "Lampirkan dokumen pendukung.";
 const WRONG_KIND = "Lampiran harus berupa PDF atau gambar.";
-const TOO_LARGE = "Ukuran lampiran maksimal 5 MB.";
+const TOO_LARGE = "Ukuran lampiran maksimal 4 MB.";
 
 describe("explanationFault", () => {
   it("takes 10 to 1,000 characters", () => {
@@ -35,10 +35,10 @@ describe("explanationFault", () => {
 
 describe("pickedFileFault", () => {
   it.each(["surat.pdf", "SURAT.PDF", "foto.jpg", "foto.jpeg", "foto.PNG"])(
-    "takes %s up to 5 MB",
+    "takes %s up to 4 MB",
     (name) => {
       expect(pickedFileFault({ name, size: 1 })).toBeNull();
-      expect(pickedFileFault({ name, size: 5 * MEGABYTE })).toBeNull();
+      expect(pickedFileFault({ name, size: 4 * MEGABYTE })).toBeNull();
     },
   );
 
@@ -54,8 +54,8 @@ describe("pickedFileFault", () => {
     },
   );
 
-  it("refuses a file one byte over 5 MB", () => {
-    expect(pickedFileFault({ name: "surat.pdf", size: 5 * MEGABYTE + 1 })).toBe(
+  it("refuses a file one byte over 4 MB", () => {
+    expect(pickedFileFault({ name: "surat.pdf", size: 4 * MEGABYTE + 1 })).toBe(
       TOO_LARGE,
     );
   });

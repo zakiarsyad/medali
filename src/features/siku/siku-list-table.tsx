@@ -6,7 +6,7 @@ import type { SikuListRow } from "./siku-board";
 import { REASON_WORDS, signedPoints } from "./siku-words";
 import { StudentName } from "./student-name";
 
-export const NO_SIKU_MATCHES = "Tidak ada data pada filter ini.";
+export const NO_SIKU_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
 /** The latest entry of a student: its day and its reason, or "-". */
 function lastWords(row: SikuListRow): string {

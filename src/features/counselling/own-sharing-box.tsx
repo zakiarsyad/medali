@@ -11,8 +11,10 @@ import {
 } from "@/mental-health/sharing-words";
 import shared from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import type { SharingOutcome } from "./change-sharing";
 import styles from "./counselling.module.css";
+import { refusedOutcome } from "./not-sent";
 import {
   approveSharingAction,
   declineSharingAction,
@@ -95,7 +97,7 @@ function GivenSharing({
   onPress: (action: Press) => void;
 }) {
   return (
-    <div className={`${styles.card} ${styles.stack}`}>
+    <div className={styles.card}>
       <p>
         <b>{givenSharingTitle(sharing.status)}</b> kepada{" "}
         {recipientsLine(sharing.recipients)}: {dataLine(sharing.data)}.
@@ -134,7 +136,14 @@ export function OwnSharingBox({ sharing }: { sharing: SharingView | null }) {
   function press(action: Press) {
     if (sharing === null) return;
     startSending(async () => {
-      setMessage(messageOf(await action(sharing.id, sharing.version)));
+      setMessage(
+        messageOf(
+          await sentOr(
+            () => action(sharing.id, sharing.version),
+            refusedOutcome,
+          ),
+        ),
+      );
     });
   }
 

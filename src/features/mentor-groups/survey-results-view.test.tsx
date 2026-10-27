@@ -13,7 +13,7 @@ import {
   NO_RESULT_CHOICES,
   type SurveyResultChoices,
 } from "./survey-results-address";
-import { SurveyResultsView } from "./survey-results-view";
+import { noGroupWords, SurveyResultsView } from "./survey-results-view";
 
 vi.mock("next/form", () => ({
   default: ({ children }: { children: unknown }) => children,
@@ -181,6 +181,15 @@ describe("SurveyResultsView", () => {
     expect(view).toContain("Semua kelompok");
     expect(view).toContain("Nilai kurang");
     expect(view).toContain("Tidak ada kelompok pada filter ini.");
+  });
+
+  it("says the period has no group yet when no search or filter is set", () => {
+    expect(noGroupWords(NO_RESULT_CHOICES)).toBe(
+      "Belum ada kelompok pada periode ini.",
+    );
+    expect(noGroupWords({ ...NO_RESULT_CHOICES, filter: "poor" })).toBe(
+      "Tidak ada kelompok pada filter ini.",
+    );
   });
 
   it("carries the title of each column in its cells, for the cards of a phone", () => {

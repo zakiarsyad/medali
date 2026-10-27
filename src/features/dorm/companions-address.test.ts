@@ -29,6 +29,14 @@ describe("readCompanionsParams", () => {
       100,
     );
   });
+
+  it("drops the null character from the search, before it is cut", () => {
+    const query = (q: string) => readCompanionsParams({ q }).query;
+
+    expect(query("\0sa\0 ri\0")).toBe("sa ri");
+    expect(query("\0 \0 ")).toBe("");
+    expect(query(`\0${"a".repeat(100)}`)).toBe("a".repeat(100));
+  });
 });
 
 describe("companionsAddress", () => {

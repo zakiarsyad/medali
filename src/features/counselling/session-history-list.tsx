@@ -10,8 +10,10 @@ import {
 import shared from "@/ui/data-screen.module.css";
 import { DAY, shownDay } from "@/ui/day";
 import { FormMessage } from "@/ui/form-message";
+import { sentOr } from "@/ui/save-not-sent";
 import type { ChangeOutcome } from "./change-session";
 import styles from "./counselling.module.css";
+import { refusedOutcome } from "./not-sent";
 import { TOPIC_WORDS } from "./schedule-words";
 import { changeSessionAction } from "./session-actions";
 import { SessionFields } from "./session-fields";
@@ -41,10 +43,9 @@ function ChangeForm({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     startSending(async () => {
-      const outcome = await changeSessionAction(
-        session.id,
-        session.version,
-        form,
+      const outcome = await sentOr(
+        () => changeSessionAction(session.id, session.version, form),
+        refusedOutcome,
       );
       if (outcome.kind === "refused") {
         setError(outcome.error);
@@ -147,7 +148,7 @@ export function SessionHistoryList({
     <div className={styles.stack}>
       <h3 className={shared.heading}>Riwayat sesi</h3>
       {history.items.length === 0 ? (
-        <p className={styles.sub}>{NO_SESSIONS}</p>
+        <p className={shared.emptySection}>{NO_SESSIONS}</p>
       ) : (
         <ul className={styles.cards}>
           {history.items.map((session) => (

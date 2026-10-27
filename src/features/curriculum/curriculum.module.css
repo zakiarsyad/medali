@@ -14,19 +14,15 @@
 }
 
 .box {
-  padding: var(--space-md) var(--space-lg);
-  border: var(--line-width) solid var(--line2);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
+  composes: card from "../../ui/data-screen.module.css";
 }
 
 .boxTitle {
+  composes: sectionHeading from "../../ui/data-screen.module.css";
   display: flex;
   gap: var(--space-sm);
   align-items: center;
-  margin: 0 0 var(--space-xs);
-  font-size: var(--text-base);
-  font-weight: var(--weight-heavy);
+  margin: 0;
 }
 
 .indicators {
@@ -149,33 +145,6 @@
   justify-content: space-between;
   align-items: center;
   margin-top: var(--space-xl);
-}
-
-.choice {
-  display: inline-flex;
-  overflow: hidden;
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius-md);
-}
-
-.choiceButton {
-  padding: var(--space-xs) var(--space-md);
-  border: 0;
-  background: var(--surface);
-  color: var(--muted);
-  font: inherit;
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  cursor: pointer;
-}
-
-.choiceButton + .choiceButton {
-  border-left: var(--line-width) solid var(--line);
-}
-
-.choiceButton[aria-pressed="true"] {
-  background: var(--navy2);
-  color: var(--sidestrong);
 }
 
 .stages {
