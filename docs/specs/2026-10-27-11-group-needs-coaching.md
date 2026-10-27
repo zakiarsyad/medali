@@ -45,5 +45,5 @@ because it needed the Pembinaan karakter list, which is now built.
 
 ## Steps
 
-- [ ] 1. "Perlu pembinaan" in "Pengasuh saat ini" on the group page,
+- [x] 1. "Perlu pembinaan" in "Pengasuh saat ini" on the group page,
   with checks.
