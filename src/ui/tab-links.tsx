@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ChosenLink } from "./page-move";
 import styles from "./tab-links.module.css";
 
 export interface TabLinksProps {
@@ -19,14 +19,14 @@ export function TabLinks({ pagePath, tabs, open }: TabLinksProps) {
   return (
     <nav className={styles.tabs} aria-label="Bagian halaman">
       {tabs.map((tab) => (
-        <Link
+        <ChosenLink
           key={tab.path}
           href={`/${pagePath}/${tab.path}`}
+          isOpen={tab.path === open}
           className={styles.tab}
-          aria-current={tab.path === open ? "page" : undefined}
         >
           {tab.title}
-        </Link>
+        </ChosenLink>
       ))}
     </nav>
   );

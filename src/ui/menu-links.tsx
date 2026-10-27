@@ -1,13 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./menu-links.module.css";
 import type { MenuItem } from "./menu-types";
-
-function isOpen(pathname: string, path: string): boolean {
-  return pathname === `/${path}` || pathname.startsWith(`/${path}/`);
-}
+import { ChosenLink } from "./page-move";
+import { opensPath } from "./page-move-rules";
 
 export function MenuLinks({ menu }: { menu: MenuItem[] }) {
   const pathname = usePathname();
@@ -15,10 +12,10 @@ export function MenuLinks({ menu }: { menu: MenuItem[] }) {
     <ul className={styles.list}>
       {menu.map((item) => (
         <li key={item.path}>
-          <Link
+          <ChosenLink
             href={`/${item.path}`}
+            isOpen={opensPath(pathname, `/${item.path}`)}
             className={styles.link}
-            aria-current={isOpen(pathname, item.path) ? "page" : undefined}
           >
             {item.title}
             {item.count !== undefined && item.count > 0 && (
@@ -26,7 +23,7 @@ export function MenuLinks({ menu }: { menu: MenuItem[] }) {
                 {item.count.toLocaleString("id-ID")}
               </span>
             )}
-          </Link>
+          </ChosenLink>
         </li>
       ))}
     </ul>

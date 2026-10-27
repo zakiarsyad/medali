@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  chosenPath,
+  isChosen,
   type LinkMovePress,
   linkMoveAddress,
   movesAway,
+  opensPath,
 } from "./page-move-rules";
 
 const HERE = "https://medali.test/asrama/kamar?page=2";
@@ -63,5 +66,48 @@ describe("a move to an address", () => {
 
   it("does not move away to a part of the page already open", () => {
     expect(movesAway("/asrama/kamar?page=2#rooms", HERE)).toBe(false);
+  });
+});
+
+describe("the tab or menu item shown as chosen", () => {
+  it("is the one open while no move runs", () => {
+    expect(isChosen(true, "/asrama/kamar", null)).toBe(true);
+    expect(isChosen(false, "/asrama/kesehatan", null)).toBe(false);
+  });
+
+  it("is the one pressed while its page loads, in place of the one open", () => {
+    expect(isChosen(true, "/asrama/kamar", "/asrama/kesehatan")).toBe(false);
+    expect(isChosen(false, "/asrama/kesehatan", "/asrama/kesehatan")).toBe(
+      true,
+    );
+  });
+
+  it("is the menu item of the page a pressed tab of it loads", () => {
+    expect(isChosen(false, "/asrama", "/asrama/kesehatan")).toBe(true);
+    expect(isChosen(false, "/as", "/asrama/kesehatan")).toBe(false);
+  });
+});
+
+describe("the path being moved to that a tab or menu item shows", () => {
+  it("is none while a filter of the page open loads", () => {
+    expect(chosenPath("/asrama/kamar", "/asrama/kamar")).toBeNull();
+  });
+
+  it("is the path of another page that loads", () => {
+    expect(chosenPath("/asrama/kesehatan", "/asrama/kamar")).toBe(
+      "/asrama/kesehatan",
+    );
+  });
+
+  it("is none while no move runs", () => {
+    expect(chosenPath(null, "/asrama/kamar")).toBeNull();
+  });
+});
+
+describe("whether a path is within a page", () => {
+  it("holds the page itself and every page under it", () => {
+    expect(opensPath("/asrama", "/asrama")).toBe(true);
+    expect(opensPath("/asrama/kamar", "/asrama")).toBe(true);
+    expect(opensPath("/asramax", "/asrama")).toBe(false);
   });
 });

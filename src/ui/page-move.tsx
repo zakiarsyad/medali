@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -9,17 +10,26 @@ import {
   useEffect,
   useState,
 } from "react";
-import { linkMoveAddress, movesAway, pathOf } from "./page-move-rules";
+import {
+  chosenPath,
+  isChosen,
+  linkMoveAddress,
+  movesAway,
+  pathOf,
+} from "./page-move-rules";
 
 interface PageMove {
   /** The path being moved to, or null while no move runs. */
   movingTo: string | null;
+  /** The path a tab or menu item shows as chosen, or null for the open one. */
+  chosen: string | null;
   /** Marks a move to `to` as started, until the address shown changes. */
   start: (to: string) => void;
 }
 
 const PageMoveContext = createContext<PageMove>({
   movingTo: null,
+  chosen: null,
   start: () => {},
 });
 
@@ -45,7 +55,8 @@ function linkMoveOf(event: MouseEvent): string | null {
  * a form takes back, as one with unsaved changes asks, is never seen.
  */
 export function PageMoveProvider({ children }: { children: ReactNode }) {
-  const shown = `${usePathname()}?${useSearchParams().toString()}`;
+  const pathname = usePathname();
+  const shown = `${pathname}?${useSearchParams().toString()}`;
   const [seen, setSeen] = useState(shown);
   const [movingTo, setMovingTo] = useState<string | null>(null);
 
@@ -70,7 +81,9 @@ export function PageMoveProvider({ children }: { children: ReactNode }) {
   }, [start]);
 
   return (
-    <PageMoveContext.Provider value={{ movingTo, start }}>
+    <PageMoveContext.Provider
+      value={{ movingTo, chosen: chosenPath(movingTo, pathname), start }}
+    >
       {children}
     </PageMoveContext.Provider>
   );
@@ -92,5 +105,32 @@ export function MovingContent({
     <main className={className} aria-busy={movingTo !== null}>
       {children}
     </main>
+  );
+}
+
+/**
+ * A link of a tab or the menu, marked as chosen while it is the one open,
+ * or at once when it is pressed, before its page arrives.
+ */
+export function ChosenLink({
+  href,
+  isOpen,
+  className,
+  children,
+}: {
+  href: string;
+  isOpen: boolean;
+  className: string | undefined;
+  children: ReactNode;
+}) {
+  const { chosen } = useContext(PageMoveContext);
+  return (
+    <Link
+      href={href}
+      className={className}
+      aria-current={isChosen(isOpen, href, chosen) ? "page" : undefined}
+    >
+      {children}
+    </Link>
   );
 }

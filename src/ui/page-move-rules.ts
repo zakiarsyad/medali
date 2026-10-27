@@ -43,3 +43,33 @@ export function movesAway(to: string, here: string): boolean {
 export function pathOf(to: string, here: string): string {
   return new URL(to, here).pathname;
 }
+
+/** Whether `pathname` is the page at `page` or a page under it. */
+export function opensPath(pathname: string, page: string): boolean {
+  return pathname === page || pathname.startsWith(`${page}/`);
+}
+
+/**
+ * The path a tab or menu item shows as chosen while a move runs: none
+ * while a filter or search of the page shown loads, as its tab stays.
+ */
+export function chosenPath(
+  movingTo: string | null,
+  pathname: string,
+): string | null {
+  return movingTo === pathname ? null : movingTo;
+}
+
+/**
+ * Whether a tab or menu item opening `href` shows as chosen: the one
+ * pressed while its page loads, so the press is seen at once, and
+ * otherwise the one open.
+ */
+export function isChosen(
+  isOpen: boolean,
+  href: string,
+  chosen: string | null,
+): boolean {
+  if (chosen === null) return isOpen;
+  return opensPath(chosen, href);
+}
