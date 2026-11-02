@@ -88,6 +88,22 @@ describe("fileStorageSettingsOf", () => {
     });
   });
 
+  it("reads an address of only host and port, as Render gives it, as http", () => {
+    const hostAndPort = { ...FILLED, FILE_STORAGE_URL: "medali-files:9000" };
+
+    expect(fileStorageSettingsOf(hostAndPort, "campus")?.url).toBe(
+      "http://medali-files:9000",
+    );
+  });
+
+  it("keeps an address that names https as it is", () => {
+    const secure = { ...FILLED, FILE_STORAGE_URL: "https://files.example" };
+
+    expect(fileStorageSettingsOf(secure, "campus")?.url).toBe(
+      "https://files.example",
+    );
+  });
+
   it.each(["pr-preview", "main-preview"] as const)(
     "turns file keeping off in %s while all four are empty",
     (stage) => {

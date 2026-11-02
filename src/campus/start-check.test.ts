@@ -26,10 +26,14 @@ const REQUIRED = [
   "FILE_STORAGE_BUCKET",
   "FILE_STORAGE_ACCESS_KEY",
   "FILE_STORAGE_SECRET_KEY",
-  "GOOGLE_CLIENT_ID",
-  "GOOGLE_CLIENT_SECRET",
-  "CAMPUS_EMAIL_ENDING",
 ] as const;
+
+const NO_GOOGLE = {
+  ...FILLED,
+  GOOGLE_CLIENT_ID: "",
+  GOOGLE_CLIENT_SECRET: "",
+  CAMPUS_EMAIL_ENDING: "",
+};
 
 const LOOK_ALIKES = [
   [{ VERCEL_ENV: "preview" }, ["VERCEL_ENV"]],
@@ -97,16 +101,18 @@ describe("missingSettings", () => {
     expect(missingSettings({ MEDALI_CAMPUS: "1" })).toEqual(REQUIRED);
   });
 
-  it("counts a campus address ending of only spaces as missing", () => {
-    const blank = { ...FILLED, CAMPUS_EMAIL_ENDING: " " };
-
-    expect(missingSettings(blank)).toEqual(["CAMPUS_EMAIL_ENDING"]);
+  it("names none of the Google sign-in settings while they are empty", () => {
+    expect(missingSettings(NO_GOOGLE)).toEqual([]);
   });
 });
 
 describe("startRefusals", () => {
   it("lets the package start with every setting filled", () => {
     expect(startRefusals(FILLED)).toEqual([]);
+  });
+
+  it("lets the package start while the Google sign-in settings are empty", () => {
+    expect(startRefusals(NO_GOOGLE)).toEqual([]);
   });
 
   it.each(LOOK_ALIKES)(
@@ -197,7 +203,7 @@ describe("startRefusals", () => {
     const refusals = startRefusals({
       ...FILLED,
       VERCEL_ENV: "preview",
-      GOOGLE_CLIENT_ID: "",
+      FILE_STORAGE_BUCKET: "",
     });
 
     expect(refusals).toHaveLength(2);
@@ -233,7 +239,7 @@ describe("startRefusals", () => {
     const refusals = startRefusals({
       ...FILLED,
       VERCEL_ENV: "preview",
-      GOOGLE_CLIENT_ID: "",
+      FILE_STORAGE_BUCKET: "",
     }).join("\n");
 
     for (const [name, value] of Object.entries(FILLED)) {

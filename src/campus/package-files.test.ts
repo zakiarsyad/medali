@@ -117,6 +117,7 @@ describe("what stays out of the campus server package", () => {
     "src/db/deploy-start.ts",
     "src/files/deploy-command.ts",
     "src/files/deploy-files.ts",
+    "render.yaml",
   ])("keeps out %s", (path) => {
     expect(isIgnored(path)).toBe(true);
   });
@@ -317,6 +318,32 @@ describe("the campus server package", () => {
 
     expect(local).toBeDefined();
     expect(text.match(image)?.[1]).toBe(local);
+  });
+});
+
+describe("the Render setup", () => {
+  const text = readFileSync("render.yaml", "utf8");
+  const campus = readFileSync(PACKAGE_FILE, "utf8");
+
+  it("takes the package's own file storage image", () => {
+    const image = campus.match(/image: (pgsty\/minio:\S+)/)?.[1];
+
+    expect(image).toBeDefined();
+    expect(text).toContain(`url: docker.io/${image}\n`);
+  });
+
+  it("names the place for files as the package does", () => {
+    expect(campus).toContain("FILE_STORAGE_BUCKET: medali\n");
+    expect(text).toMatch(/key: FILE_STORAGE_BUCKET\n\s+value: medali\n/);
+  });
+
+  it("lets nothing from the internet reach the database", () => {
+    expect(text).toContain("ipAllowList: []");
+  });
+
+  it("writes no key and no password itself", () => {
+    expect(text).toMatch(/key: MINIO_ROOT_PASSWORD\n\s+generateValue: true\n/);
+    expect(text).not.toMatch(/(PASSWORD|SECRET|_KEY)\n\s+value:/);
   });
 });
 

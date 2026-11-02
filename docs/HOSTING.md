@@ -1,8 +1,9 @@
 # Hosting
 
-Where the previews of the app run, and how they are set up. The last
-part, "The campus server package", says how the app is run on the campus
-server. The server itself is not chosen yet.
+Where the previews of the app run, and how they are set up. "Render"
+says how the app runs at Render, at `medali.site`. The last part, "The
+campus server package", says how the app is run on the campus server.
+The server itself is not chosen yet.
 
 ## What the hosting is
 
@@ -247,9 +248,10 @@ that is registered.
 ### On the campus server
 
 There is no "Ganti peran" there, so Google sign-in is the only way in.
-The package refuses to start while any of the three settings is empty;
-"The campus server package" below says how. The address to register at
-Google is then the campus server's own link, followed by
+The package still starts while the three settings are empty: the
+sign-in page opens, and "Masuk dengan Google" says "Masuk dengan Google
+belum diatur.", so nobody can sign in yet. The address to register at
+Google is the campus server's own link, followed by
 `/masuk/google/kembali`.
 
 Signing in, signing out, and every refusal of an address that Google
@@ -268,6 +270,75 @@ the line that says where to get help. It is optional and empty at the
 start: while it is empty, nothing more shows. It is set in the Vercel
 dashboard for a preview, and in the settings file of the package on the
 campus server.
+
+## Render
+
+The app also runs at Render, in Singapore, at `medali.site`. It is the
+campus server package's app, so it runs in real-data mode: there is no
+"Ganti peran" and no sample data. It starts with an empty database.
+Vercel keeps the previews as before.
+
+### The three parts
+
+The file `render.yaml` describes them, and Render makes all three from
+it:
+
+- `medali`: the app. It is built from `main` of the GitHub repo
+  `PojokAsrama/medali`, and built again on every merge to `main`. On
+  each start it checks its settings, applies the new table changes once,
+  and makes the place for files if it is not there yet, as the package
+  does; the log says each. It is the only part that can be reached from
+  the internet.
+- `medali-db`: the database, Postgres 17. Only the app reaches it;
+  nothing on the internet may connect to it.
+- `medali-files`: the file storage, the same as in the package, with a
+  5 GB disk that keeps the files when it starts again. Only the app
+  reaches it, inside Render.
+
+Render makes the database's password and the file storage's secret key,
+and gives them to the app. No key or password is written in the repo.
+
+### Making the setup
+
+1. Make sure Render's GitHub app may read the repo `PojokAsrama/medali`.
+2. In the Render dashboard, choose "New", then "Blueprint", and pick the
+   repo `PojokAsrama/medali`.
+3. Render asks for the settings marked to fill in by hand:
+   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CAMPUS_EMAIL_ENDING` and
+   `CAMPUS_COUNSELLING_CONTACT`. Leave each one empty while it is not
+   known yet. If Render does not accept an empty one, remove that setting
+   from the form; it can be added later on the app's page. Render asks
+   only this first time; later they are changed on the app's page.
+4. Render makes the three parts and builds the app. Once the deploy is
+   done, the app's Render link, ending in `onrender.com`, opens "Masuk".
+   If the first deploy fails because the database or the file storage
+   was not ready yet, choose "Manual Deploy" on the app's page.
+
+Nobody can sign in yet: Google sign-in needs its three settings filled,
+and the address `https://medali.site/masuk/google/kembali` registered at
+Google, as in "Google sign-in" above. Signing in with an email and a
+password does not exist yet.
+
+### The domain
+
+`medali.site` is registered at Rumahweb, and its records are kept at
+Cloudflare. Do these steps by hand, in this order:
+
+1. At Rumahweb, set the nameservers of `medali.site` to the two that
+   Cloudflare gives for it.
+2. At Cloudflare, under "SSL/TLS", set the mode to "Full".
+3. At Cloudflare, remove any `AAAA` record of the domain: Render does
+   not answer at those addresses.
+4. At Cloudflare, under "DNS", add a `CNAME` record named `@` that points
+   to the app's Render link, such as `medali.onrender.com`, with "Proxy
+   status" set to "DNS only".
+5. Wait until the app's page at Render shows the certificate of
+   `medali.site` as valid. Render makes the certificate. After that the
+   record may be set to "Proxied".
+
+The Render link keeps working beside `medali.site`. Render also lists
+`www.medali.site` by itself; it stays unverified, because it has no
+record at Cloudflare.
 
 ## The campus server package
 
@@ -301,11 +372,12 @@ While `.env.campus` is not there, Docker Compose itself stops with
 
 On every start the package does, in this order:
 
-1. It checks the settings. With a setting empty, with a database
-   password that holds anything but letters and digits, with a file
-   storage key that is too short, or with a setting that would turn
-   "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or `NODE_ENV` set
-   to `development`), it stops there and nothing starts.
+1. It checks the settings. With the database password or a file storage
+   key empty, with a database password that holds anything but letters
+   and digits, with a file storage key that is too short, or with a
+   setting that would turn "Ganti peran" on elsewhere (`VERCEL_ENV`,
+   `VERCEL`, or `NODE_ENV` set to `development`), it stops there and
+   nothing starts.
    The reason, with the name of each setting to fill in, to change or to
    remove and never a value, is shown by:
 
@@ -316,10 +388,6 @@ On every start the package does, in this order:
 4. It makes the place for files, if it is not there yet.
 5. It starts the app, at port 3000 of the server unless `APP_PORT` in the
    settings file names another. The app opens on the sign-in page.
-
-The app run without this check, outside the package, still refuses
-empty Google sign-in settings by itself: it writes their names to its
-log and answers every address with an error.
 
 ### The first account
 

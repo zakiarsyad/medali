@@ -2,7 +2,6 @@ import { databaseAddressRefusal } from "@/db/database-address";
 import {
   FILE_STORAGE_NAMES,
   hasCampusMark,
-  missingGoogleSignInNames,
   type SettingName,
   type SettingsEnv,
 } from "@/settings";
@@ -24,13 +23,14 @@ export function settingsToRemove(env: SettingsEnv): string[] {
   return names;
 }
 
-/** The names of the settings the campus server needs that are still empty. */
+/**
+ * The names of the settings the campus server needs that are still empty.
+ * Google sign-in may stay empty: "Masuk dengan Google" then says it is not
+ * set up.
+ */
 export function missingSettings(env: SettingsEnv): SettingName[] {
   const names: SettingName[] = ["DATABASE_URL", ...FILE_STORAGE_NAMES];
-  return [
-    ...names.filter((name) => !env[name]),
-    ...missingGoogleSignInNames(env),
-  ];
+  return names.filter((name) => !env[name]);
 }
 
 function missingRefusal(missing: SettingName[]): string {
