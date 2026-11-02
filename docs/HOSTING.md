@@ -289,11 +289,14 @@ it:
   and makes the place for files if it is not there yet, as the package
   does; the log says each. It is the only part that can be reached from
   the internet.
-- `medali-db`: the database, Postgres 17. Only the app reaches it;
-  nothing on the internet may connect to it.
+- `medali-db`: the database, Postgres 17, with 1 GB of storage. Only the
+  app reaches it; nothing on the internet may connect to it.
 - `medali-files`: the file storage, the same as in the package, with a
-  5 GB disk that keeps the files when it starts again. Only the app
+  1 GB disk that keeps the files when it starts again. Only the app
   reaches it, inside Render.
+
+The database's storage and the file storage's disk can be made larger
+later on their pages at Render, but never smaller.
 
 Render makes the database's password and the file storage's secret key,
 and gives them to the app. No key or password is written in the repo.

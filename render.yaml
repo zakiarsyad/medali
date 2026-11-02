@@ -65,7 +65,7 @@ services:
     disk:
       name: data
       mountPath: /data
-      sizeGB: 5
+      sizeGB: 1
     envVars:
       # A fixed name, not a made one: a made one can hold "/", which an
       # access key cannot.
@@ -82,6 +82,7 @@ databases:
   - name: medali-db
     region: singapore
     plan: 0.1c-256mb
+    diskSizeGB: 1
     postgresMajorVersion: "17"
     databaseName: medali
     user: medali
