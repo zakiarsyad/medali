@@ -47,10 +47,11 @@ describe("AccountTable", () => {
     />,
   );
 
-  it('offers "Jadikan Kepala Unit" next to "Edit peran" on a staff account that is not Kepala Unit', () => {
+  it('offers "Jadikan Kepala Unit" next to "Ubah" on a staff account that is not Kepala Unit', () => {
     const row = rowOf(table, MENTOR.name);
 
-    expect(row).toContain("Edit peran");
+    expect(row).toContain("Ubah");
+    expect(row).not.toContain("Edit peran");
     expect(row).toContain("Jadikan Kepala Unit");
   });
 

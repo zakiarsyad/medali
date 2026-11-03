@@ -64,7 +64,7 @@ function AccountRow({
                 href={listAddress(filter, { edit: account.id })}
                 className={styles.link}
               >
-                Edit peran
+                Ubah
               </Link>
               {!account.roles.includes("head_of_unit") && (
                 <HandOverHeadButton
