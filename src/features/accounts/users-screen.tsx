@@ -56,9 +56,12 @@ function Filters({ params }: { params: ListParams }) {
 export async function UsersScreen({
   params,
   tabs,
+  managerId,
 }: {
   params: ListParams;
   tabs: TabLinksProps;
+  /** The account of the manager who opened the screen. */
+  managerId: string;
 }) {
   const db = database();
   const [list, programs, bamList] = await Promise.all([
@@ -81,6 +84,7 @@ export async function UsersScreen({
           accounts={list.accounts}
           filter={shown}
           editing={params.editing}
+          managerId={managerId}
           programs={programs}
         />
         {list.total > 0 && (

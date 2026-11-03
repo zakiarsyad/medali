@@ -6,6 +6,7 @@ import styles from "@/ui/data-screen.module.css";
 import { FormMessage, type FormState } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { useSaveState } from "@/ui/use-save-state";
+import { AccountDetailFields } from "./account-detail-fields";
 import { UNIT_MAX_LENGTH } from "./account-limits";
 import { changeRolesAction } from "./actions";
 import type { ManagedAccount } from "./manage-accounts";
@@ -18,14 +19,27 @@ interface RoleEditFormProps {
   programs: StudyProgram[];
   /** The list address to go back to. */
   back: string;
+  /** Whether the account is the manager's own, whose email stays. */
+  isOwn?: boolean;
 }
 
-export function RoleEditForm({ account, programs, back }: RoleEditFormProps) {
+export function RoleEditForm({
+  account,
+  programs,
+  back,
+  isOwn = false,
+}: RoleEditFormProps) {
   const [state, action, pending] = useSaveState(changeRolesAction, START);
   return (
-    <form onSubmit={(event) => sendForm(event, action)} className={styles.form}>
+    // noValidate: a short name or a wrong email gets the app's own message.
+    <form
+      onSubmit={(event) => sendForm(event, action)}
+      className={styles.form}
+      noValidate
+    >
       <input type="hidden" name="accountId" value={account.id} />
       <input type="hidden" name="back" value={back} />
+      <AccountDetailFields defaults={account} emailLocked={isOwn} />
       <RoleChoices chosen={account.roles} />
       <ProgramChoice programs={programs} chosen={account.studyProgramId} />
       <label className={styles.field}>
@@ -40,7 +54,7 @@ export function RoleEditForm({ account, programs, back }: RoleEditFormProps) {
       <FormMessage state={state} />
       <div className={styles.actions}>
         <button type="submit" className={styles.button} disabled={pending}>
-          Simpan peran
+          Simpan
         </button>
         <Link href={back} className={styles.quiet}>
           Batal
