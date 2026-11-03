@@ -3,8 +3,8 @@ import { sourceFilesEndingWith } from "@/ui/source-files";
 import { pageAt } from "./pages";
 
 /**
- * Screens that are not menu pages. The sign-in page is open to anyone;
- * the others are open to every account.
+ * Screens that are not menu pages. The sign-in page and "Kebijakan
+ * privasi" are open to anyone; the others are open to every account.
  */
 const OUTSIDE_THE_MENU = [
   "",
@@ -13,6 +13,7 @@ const OUTSIDE_THE_MENU = [
   "[page]/[tab]/[...rest]",
   "ganti-peran",
   "masuk",
+  "privasi",
 ];
 
 /** A folder in brackets only groups screens; it is not in the address. */
