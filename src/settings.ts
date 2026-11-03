@@ -50,6 +50,16 @@ export function isPreview(stage: Stage): boolean {
 }
 
 /**
+ * The file storage's address, with http:// put in front when it names no
+ * scheme. Render gives the address of a service on its private network as
+ * host and port only.
+ */
+function fileStorageUrlOf(written: string): string {
+  if (written.includes("://")) return written;
+  return `http://${written}`;
+}
+
+/**
  * The four settings of the file storage, or null where file keeping is
  * off: a preview with all four empty, until the owner fills them in.
  * Anywhere else an empty setting is an error, as for the database. So is
@@ -63,7 +73,7 @@ export function fileStorageSettingsOf(
   const allEmpty = FILE_STORAGE_NAMES.every((name) => !env[name]);
   if (allEmpty && isPreview(stage)) return null;
   return {
-    url: settingIn(env, "FILE_STORAGE_URL"),
+    url: fileStorageUrlOf(settingIn(env, "FILE_STORAGE_URL")),
     bucket: settingIn(env, "FILE_STORAGE_BUCKET"),
     accessKey: settingIn(env, "FILE_STORAGE_ACCESS_KEY"),
     secretKey: settingIn(env, "FILE_STORAGE_SECRET_KEY"),
@@ -121,15 +131,6 @@ export function googleSignInSettingsOf(
   const campusEnding = campusEmailEndingOf(env);
   if (!clientId || !clientSecret || campusEnding === "") return null;
   return { clientId, clientSecret, campusEnding };
-}
-
-/** The names of the Google sign-in settings that are still empty. */
-export function missingGoogleSignInNames(env: SettingsEnv): SettingName[] {
-  const missing: SettingName[] = [];
-  if (!env.GOOGLE_CLIENT_ID) missing.push("GOOGLE_CLIENT_ID");
-  if (!env.GOOGLE_CLIENT_SECRET) missing.push("GOOGLE_CLIENT_SECRET");
-  if (campusEmailEndingOf(env) === "") missing.push("CAMPUS_EMAIL_ENDING");
-  return missing;
 }
 
 export function readGoogleSignInSettings(): GoogleSignInSettings | null {
