@@ -13,6 +13,7 @@ export default async function UsersPage(
   return (
     <UsersScreen
       params={params}
+      managerId={opened.account.id}
       tabs={{ pagePath: "pengaturan", tabs: opened.tabs, open: "pengguna" }}
     />
   );

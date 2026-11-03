@@ -19,9 +19,16 @@ interface RoleEditFormProps {
   programs: StudyProgram[];
   /** The list address to go back to. */
   back: string;
+  /** Whether the account is the manager's own, whose email stays. */
+  isOwn?: boolean;
 }
 
-export function RoleEditForm({ account, programs, back }: RoleEditFormProps) {
+export function RoleEditForm({
+  account,
+  programs,
+  back,
+  isOwn = false,
+}: RoleEditFormProps) {
   const [state, action, pending] = useSaveState(changeRolesAction, START);
   return (
     // noValidate: a short name or a wrong email gets the app's own message.
@@ -32,7 +39,7 @@ export function RoleEditForm({ account, programs, back }: RoleEditFormProps) {
     >
       <input type="hidden" name="accountId" value={account.id} />
       <input type="hidden" name="back" value={back} />
-      <AccountDetailFields defaults={account} />
+      <AccountDetailFields defaults={account} emailLocked={isOwn} />
       <RoleChoices chosen={account.roles} />
       <ProgramChoice programs={programs} chosen={account.studyProgramId} />
       <label className={styles.field}>

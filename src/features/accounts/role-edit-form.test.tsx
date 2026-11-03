@@ -38,4 +38,17 @@ test("shows the name, title, NIP and email filled in, saved by Simpan", () => {
   expect(boxOf("nip")).toContain('value="198001012005011001"');
   expect(boxOf("email")).toContain('value="budi.contoh@contoh.ac.id"');
   expect(form).toContain(">Simpan</button>");
+  expect(boxOf("email")).not.toContain("readOnly");
+});
+
+test("locks the email on the manager's own account, with a note why", () => {
+  const form = renderToStaticMarkup(
+    <RoleEditForm account={account} programs={[]} back="/" isOwn />,
+  );
+  const box = form.match(/<input[^>]* name="email"[^>]*>/)?.[0];
+
+  expect(box).toContain("readOnly");
+  expect(box).toContain('value="budi.contoh@contoh.ac.id"');
+  expect(form).toContain("Email Anda sendiri tidak bisa diubah di sini.");
+  expect(form).not.toMatch(/<input[^>]* name="name"[^>]*readOnly/);
 });

@@ -28,6 +28,7 @@ import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
 import { pageWithin } from "@/ui/list-pages";
 import type { AccountChange, NewAccount, RoleChange } from "./account-input";
+import { OWN_EMAIL_LOCKED } from "./account-limits";
 import {
   REMOVAL_REFUSED_FOR_GROUP,
   REMOVAL_REFUSED_FOR_REPLACEMENT,
@@ -322,10 +323,20 @@ async function changeRolesIn(
   return { ok: true, value: after };
 }
 
+async function emailOf(db: Database, accountId: string) {
+  const [found] = await db
+    .select({ email: accounts.email })
+    .from(accounts)
+    .where(eq(accounts.id, accountId));
+  return found?.email ?? null;
+}
+
 /**
  * Saves what the Ubah form of Daftar pengguna sends: the roles as
  * changeRoles does, and the name, title, NIP and email with them, all or
- * nothing. The email is refused when another active account holds it.
+ * nothing. The email is refused when another active account holds it,
+ * and when it is the manager's own and differs: a wrong one would lock
+ * them out of the app.
  */
 export async function changeAccount(
   db: Database,
@@ -335,6 +346,10 @@ export async function changeAccount(
   const { name, title, nip, email } = change;
   return refusedWhenEmailInUse(() =>
     db.transaction(async (tx) => {
+      const isOwn = change.accountId === by;
+      if (isOwn && (await emailOf(tx, by)) !== email) {
+        return { ok: false, error: OWN_EMAIL_LOCKED };
+      }
       const changed = await changeRolesIn(tx, change, by);
       if (!changed.ok) return changed;
       await tx

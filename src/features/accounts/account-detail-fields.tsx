@@ -1,5 +1,9 @@
 import styles from "@/ui/data-screen.module.css";
-import { NAME_MAX_LENGTH, TITLE_MAX_LENGTH } from "./account-limits";
+import {
+  NAME_MAX_LENGTH,
+  OWN_EMAIL_LOCKED,
+  TITLE_MAX_LENGTH,
+} from "./account-limits";
 
 export interface DetailDefaults {
   name: string;
@@ -10,11 +14,16 @@ export interface DetailDefaults {
 
 const EMPTY: DetailDefaults = { name: "", title: null, nip: null, email: null };
 
-/** Nama lengkap, Gelar, NIP and Email kedinasan, empty or filled in. */
+/**
+ * Nama lengkap, Gelar, NIP and Email kedinasan, empty or filled in.
+ * `emailLocked` keeps the email as it is, on the manager's own account.
+ */
 export function AccountDetailFields({
   defaults = EMPTY,
+  emailLocked = false,
 }: {
   defaults?: DetailDefaults;
+  emailLocked?: boolean;
 }) {
   return (
     <>
@@ -58,7 +67,11 @@ export function AccountDetailFields({
           defaultValue={defaults.email ?? ""}
           placeholder="nama@pknstan.ac.id"
           required
+          readOnly={emailLocked}
         />
+        {emailLocked && (
+          <small className={styles.detail}>{OWN_EMAIL_LOCKED}</small>
+        )}
       </label>
     </>
   );

@@ -5,6 +5,7 @@ import { handOverQuestion } from "./hand-over-head-button";
 import type { ManagedAccount } from "./manage-accounts";
 
 vi.mock("./actions", () => ({
+  changeRolesAction: vi.fn(),
   handOverHeadOfUnitAction: vi.fn(),
   removeAccountAction: vi.fn(),
 }));
@@ -43,6 +44,7 @@ describe("AccountTable", () => {
       accounts={[HEAD, MENTOR]}
       filter={{ query: "", role: null, page: 0, bamPage: 0 }}
       editing={null}
+      managerId={HEAD.id}
       programs={[]}
     />,
   );
@@ -53,6 +55,22 @@ describe("AccountTable", () => {
     expect(row).toContain("Ubah");
     expect(row).not.toContain("Edit peran");
     expect(row).toContain("Jadikan Kepala Unit");
+  });
+
+  it("locks the email only on the manager's own row", () => {
+    const open = (editing: string) =>
+      renderToStaticMarkup(
+        <AccountTable
+          accounts={[HEAD, MENTOR]}
+          filter={{ query: "", role: null, page: 0, bamPage: 0 }}
+          editing={editing}
+          managerId={HEAD.id}
+          programs={[]}
+        />,
+      );
+
+    expect(open(HEAD.id)).toContain("Email Anda sendiri");
+    expect(open(MENTOR.id)).not.toContain("Email Anda sendiri");
   });
 
   it('does not offer "Jadikan Kepala Unit" on the Kepala Unit', () => {

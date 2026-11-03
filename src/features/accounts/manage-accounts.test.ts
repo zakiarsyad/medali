@@ -317,6 +317,47 @@ describe("changeAccount", () => {
     });
   });
 
+  it("changes the manager's own name, title and NIP, keeping their email", async () => {
+    await inTestDatabase(async (db) => {
+      const added = await addAccount(
+        db,
+        newAccount(details.email),
+        await addHead(db),
+      );
+      if (!added.ok) throw new Error(added.error);
+      const self = added.value;
+
+      const changed = await changeAccount(db, changeOf(self), self);
+
+      expect(changed.ok).toBe(true);
+      expect(await detailsOf(db, self)).toEqual(details);
+    });
+  });
+
+  it("refuses a change of the manager's own email, and saves nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const added = await addAccount(
+        db,
+        newAccount("sendiri@contoh.ac.id"),
+        await addHead(db),
+      );
+      if (!added.ok) throw new Error(added.error);
+      const self = added.value;
+
+      const changed = await changeAccount(db, changeOf(self), self);
+
+      expect(changed).toEqual({
+        ok: false,
+        error: "Email Anda sendiri tidak bisa diubah di sini.",
+      });
+      expect(await detailsOf(db, self)).toMatchObject({
+        name: "Pengguna Uji",
+        email: "sendiri@contoh.ac.id",
+      });
+      expect((await findActiveAccount(db, self))?.roles).toEqual(["mentor"]);
+    });
+  });
+
   it("changes the details of another Kepala Unit", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
