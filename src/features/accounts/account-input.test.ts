@@ -224,7 +224,7 @@ describe("parseAccountChange", () => {
   };
 
   it("accepts new details with the roles, as Tambah pengguna keeps them", () => {
-    expect(parseAccountChange(change, ENDING)).toEqual({
+    expect(parseAccountChange(change)).toEqual({
       ok: true,
       value: {
         accountId: change.accountId,
@@ -263,17 +263,12 @@ describe("parseAccountChange", () => {
     ],
     ["a bad email", { email: "budi" }, "Isi email kedinasan yang benar."],
     [
-      "an email outside the campus",
-      { email: "budi@lain.example" },
-      "Gunakan alamat email kampus.",
-    ],
-    [
       "an account id that is not one",
       { accountId: "x" },
       "Akun tidak ditemukan.",
     ],
   ])("refuses %s with the words of Tambah pengguna", (_kind, wrong, error) => {
-    expect(parseAccountChange({ ...change, ...wrong }, ENDING)).toEqual({
+    expect(parseAccountChange({ ...change, ...wrong })).toEqual({
       ok: false,
       error,
     });

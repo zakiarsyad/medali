@@ -70,22 +70,24 @@ export async function changeRolesAction(
   form: FormData,
 ): Promise<FormState> {
   const manager = await userManager();
-  const parsed = parseAccountChange(
-    {
-      accountId: text(form, "accountId"),
-      name: text(form, "name"),
-      title: text(form, "title"),
-      nip: text(form, "nip"),
-      email: text(form, "email"),
-      roles: texts(form, "roles"),
-      studyProgramId: text(form, "studyProgramId"),
-      unit: text(form, "unit"),
-    },
-    readCampusEmailEnding(),
-  );
+  const parsed = parseAccountChange({
+    accountId: text(form, "accountId"),
+    name: text(form, "name"),
+    title: text(form, "title"),
+    nip: text(form, "nip"),
+    email: text(form, "email"),
+    roles: texts(form, "roles"),
+    studyProgramId: text(form, "studyProgramId"),
+    unit: text(form, "unit"),
+  });
   if (!parsed.ok) return { error: parsed.error, done: null };
 
-  const changed = await changeAccount(database(), parsed.value, manager.id);
+  const changed = await changeAccount(
+    database(),
+    parsed.value,
+    manager.id,
+    readCampusEmailEnding(),
+  );
   if (!changed.ok) return { error: changed.error, done: null };
   refreshScreens();
   redirect(backToList(form));

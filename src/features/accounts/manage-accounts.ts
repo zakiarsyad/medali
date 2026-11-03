@@ -11,7 +11,7 @@ import {
   or,
   type SQL,
 } from "drizzle-orm";
-import { refusedWhenEmailInUse } from "@/auth/account-email";
+import { parseAccountEmail, refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -27,7 +27,12 @@ import { holdsGroupToday } from "@/mentoring/holds-group-today";
 import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
 import { pageWithin } from "@/ui/list-pages";
-import type { AccountChange, NewAccount, RoleChange } from "./account-input";
+import {
+  type AccountChange,
+  MALFORMED_EMAIL,
+  type NewAccount,
+  type RoleChange,
+} from "./account-input";
 import { OWN_EMAIL_LOCKED } from "./account-limits";
 import {
   REMOVAL_REFUSED_FOR_GROUP,
@@ -334,21 +339,28 @@ async function emailOf(db: Database, accountId: string) {
 /**
  * Saves what the Ubah form of Daftar pengguna sends: the roles as
  * changeRoles does, and the name, title, NIP and email with them, all or
- * nothing. The email is refused when another active account holds it,
- * and when it is the manager's own and differs: a wrong one would lock
- * them out of the app.
+ * nothing. A new email is refused when another active account holds
+ * it, when it is the manager's own (a wrong one would lock them out of
+ * the app), and when it does not end with `campusEnding` while that is
+ * set. An email kept as it was is not checked against the ending, so an
+ * account added before the ending was set can still be changed.
  */
 export async function changeAccount(
   db: Database,
   change: AccountChange,
   by: string,
+  campusEnding: string,
 ): Promise<Parsed<RoleId[]>> {
   const { name, title, nip, email } = change;
   return refusedWhenEmailInUse(() =>
     db.transaction(async (tx) => {
-      const isOwn = change.accountId === by;
-      if (isOwn && (await emailOf(tx, by)) !== email) {
+      const emailChanged = (await emailOf(tx, change.accountId)) !== email;
+      if (emailChanged && change.accountId === by) {
         return { ok: false, error: OWN_EMAIL_LOCKED };
+      }
+      if (emailChanged) {
+        const checked = parseAccountEmail(email, campusEnding, MALFORMED_EMAIL);
+        if (!checked.ok) return checked;
       }
       const changed = await changeRolesIn(tx, change, by);
       if (!changed.ok) return changed;

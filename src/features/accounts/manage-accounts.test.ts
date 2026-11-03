@@ -25,6 +25,8 @@ import {
 const inTestDatabase = withTestDatabase();
 
 const PROGRAM = "Prodi Uji Daftar Staf";
+/** No campus ending in the settings: any well-formed email is taken. */
+const NO_ENDING = "";
 
 async function addHead(db: Database): Promise<string> {
   return addTestStaffAccount(db, "Kepala Uji", ["head_of_unit"]);
@@ -265,7 +267,7 @@ describe("changeAccount", () => {
       const head = await addHead(db);
       const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
 
-      const changed = await changeAccount(db, changeOf(id), head);
+      const changed = await changeAccount(db, changeOf(id), head, NO_ENDING);
 
       expect(changed).toEqual({ ok: true, value: ["assessor"] });
       expect(await detailsOf(db, id)).toEqual(details);
@@ -278,7 +280,7 @@ describe("changeAccount", () => {
       const added = await addAccount(db, newAccount("lama@contoh.ac.id"), head);
       if (!added.ok) throw new Error(added.error);
 
-      await changeAccount(db, changeOf(added.value), head);
+      await changeAccount(db, changeOf(added.value), head, NO_ENDING);
 
       expect(await activeAccountIdByEmail(db, details.email)).toBe(added.value);
       expect(await activeAccountIdByEmail(db, "lama@contoh.ac.id")).toBeNull();
@@ -291,7 +293,7 @@ describe("changeAccount", () => {
       await addAccount(db, newAccount(details.email), head);
       const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
 
-      const changed = await changeAccount(db, changeOf(id), head);
+      const changed = await changeAccount(db, changeOf(id), head, NO_ENDING);
 
       expect(changed).toEqual({
         ok: false,
@@ -311,7 +313,7 @@ describe("changeAccount", () => {
       await removeAccount(db, old.value, head);
       const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
 
-      const changed = await changeAccount(db, changeOf(id), head);
+      const changed = await changeAccount(db, changeOf(id), head, NO_ENDING);
 
       expect(changed.ok).toBe(true);
     });
@@ -327,7 +329,7 @@ describe("changeAccount", () => {
       if (!added.ok) throw new Error(added.error);
       const self = added.value;
 
-      const changed = await changeAccount(db, changeOf(self), self);
+      const changed = await changeAccount(db, changeOf(self), self, NO_ENDING);
 
       expect(changed.ok).toBe(true);
       expect(await detailsOf(db, self)).toEqual(details);
@@ -344,7 +346,7 @@ describe("changeAccount", () => {
       if (!added.ok) throw new Error(added.error);
       const self = added.value;
 
-      const changed = await changeAccount(db, changeOf(self), self);
+      const changed = await changeAccount(db, changeOf(self), self, NO_ENDING);
 
       expect(changed).toEqual({
         ok: false,
@@ -358,6 +360,45 @@ describe("changeAccount", () => {
     });
   });
 
+  it("keeps an email outside the campus ending when it is not changed", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const added = await addAccount(db, newAccount(details.email), head);
+      if (!added.ok) throw new Error(added.error);
+
+      const changed = await changeAccount(
+        db,
+        changeOf(added.value),
+        head,
+        "@kampus.example",
+      );
+
+      expect(changed).toEqual({ ok: true, value: ["assessor"] });
+      expect(await detailsOf(db, added.value)).toEqual(details);
+    });
+  });
+
+  it("refuses a new email outside the campus ending, and saves nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
+
+      const changed = await changeAccount(
+        db,
+        changeOf(id),
+        head,
+        "@kampus.example",
+      );
+
+      expect(changed).toEqual({
+        ok: false,
+        error: "Gunakan alamat email kampus.",
+      });
+      expect(await detailsOf(db, id)).toMatchObject({ name: "Staf Uji" });
+      expect((await findActiveAccount(db, id))?.roles).toEqual(["mentor"]);
+    });
+  });
+
   it("changes the details of another Kepala Unit", async () => {
     await inTestDatabase(async (db) => {
       const head = await addHead(db);
@@ -365,7 +406,7 @@ describe("changeAccount", () => {
         "head_of_unit",
       ]);
 
-      const changed = await changeAccount(db, changeOf(id), head);
+      const changed = await changeAccount(db, changeOf(id), head, NO_ENDING);
 
       expect(changed.ok).toBe(true);
       expect(await detailsOf(db, id)).toEqual(details);
@@ -383,7 +424,7 @@ describe("changeAccount", () => {
         ["student"],
       );
 
-      const changed = await changeAccount(db, changeOf(id), head);
+      const changed = await changeAccount(db, changeOf(id), head, NO_ENDING);
 
       expect(changed).toEqual({
         ok: false,

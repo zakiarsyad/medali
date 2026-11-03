@@ -52,6 +52,8 @@ export interface RoleChange {
 export type AccountChangeFields = RoleChangeFields & DetailFields;
 export type AccountChange = RoleChange & AccountDetails;
 
+export const MALFORMED_EMAIL = "Isi email kedinasan yang benar.";
+
 const NIP = /^\d{1,18}$/;
 const PROGRAM_ID = /^[1-9]\d*$/;
 /** The largest id the database can hold. */
@@ -145,11 +147,7 @@ function parseDetails(
   if (!name.ok) return name;
   const title = parseTitle(fields.title);
   if (!title.ok) return title;
-  const email = parseAccountEmail(
-    fields.email,
-    campusEnding,
-    "Isi email kedinasan yang benar.",
-  );
+  const email = parseAccountEmail(fields.email, campusEnding, MALFORMED_EMAIL);
   if (!email.ok) return email;
   const nip = optional(fields.nip);
   if (nip !== null && !NIP.test(nip)) {
@@ -212,14 +210,17 @@ export function parseRoleChange(fields: RoleChangeFields): Parsed<RoleChange> {
   };
 }
 
-/** Checks what the Ubah form of Daftar pengguna sends. */
+/**
+ * Checks what the Ubah form of Daftar pengguna sends. The campus ending
+ * is not checked here: an email kept as it was stays allowed, so only
+ * the save, which knows the email held, checks a new one against it.
+ */
 export function parseAccountChange(
   fields: AccountChangeFields,
-  campusEnding: string,
 ): Parsed<AccountChange> {
   const roles = parseRoleChange(fields);
   if (!roles.ok) return roles;
-  const details = parseDetails(fields, campusEnding);
+  const details = parseDetails(fields, "");
   if (!details.ok) return details;
   return { ok: true, value: { ...roles.value, ...details.value } };
 }
