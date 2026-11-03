@@ -15,11 +15,12 @@ export function PrivacyScreen() {
         <h1 className={heads.title}>Kebijakan privasi</h1>
         <p className={styles.campus}>MEDALI · PKN STAN</p>
 
-        <h2 className={shared.heading}>Yang diterima dari Google</h2>
+        <h2 className={shared.heading}>Yang diambil dari Google</h2>
         <p>
-          Saat Anda masuk dengan Google, MEDALI hanya menerima alamat email
-          Anda, apakah Google sudah memastikan email itu, dan apakah akun itu
-          dikelola oleh kampus.
+          Saat Anda masuk dengan Google, MEDALI hanya memakai alamat email Anda,
+          apakah Google sudah memastikan email itu, dan apakah akun itu dikelola
+          oleh kampus. Data lain yang ikut dikirim Google tidak dipakai dan
+          tidak disimpan.
         </p>
         <p>
           MEDALI tidak meminta nama, foto, kontak, atau data lain dari Google.
