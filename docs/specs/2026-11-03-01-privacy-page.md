@@ -50,6 +50,6 @@ None.
 
 1. [x] Add the public "Kebijakan privasi" page at `/privasi`, open
    without sign-in.
-2. [ ] Add the "Kebijakan privasi" link to the sign-in page.
+2. [x] Add the "Kebijakan privasi" link to the sign-in page.
 3. [ ] Add the page's address to the Google sign-in part of the hosting
    notes, for the Branding page at Google.
