@@ -21,6 +21,8 @@ import {
 const NEEDS_NO_SIGN_IN: Record<string, string> = {
   "src/app/masuk/page.tsx":
     "The sign-in page: someone who is not signed in must reach it.",
+  "src/app/privasi/page.tsx":
+    '"Kebijakan privasi": open to anyone, also to Google reviewers, and it shows no data.',
   "src/auth/start-google-sign-in.ts startGoogleSignIn":
     'The start of "Masuk dengan Google": pressed by someone not signed in yet.',
   "src/app/masuk/google/kembali/route.ts":
