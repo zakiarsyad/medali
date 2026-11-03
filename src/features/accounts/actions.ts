@@ -10,13 +10,13 @@ import { database } from "@/db/database";
 import { readCampusEmailEnding } from "@/settings";
 import { text, texts } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
-import { parseNewAccount, parseRoleChange } from "./account-input";
+import { parseAccountChange, parseNewAccount } from "./account-input";
 import { parseBamRoles } from "./bam-role-input";
 import { changeBamRoles, removeBamRoles } from "./change-bam-roles";
 import { giveBamRoles } from "./give-bam-roles";
 import { handOverHeadOfUnit } from "./hand-over-head-of-unit";
 import { USERS_ADDRESS } from "./list-address";
-import { addAccount, changeRoles, removeAccount } from "./manage-accounts";
+import { addAccount, changeAccount, removeAccount } from "./manage-accounts";
 import { type FoundStudent, searchActiveStudents } from "./search-students";
 
 async function userManager(): Promise<Account> {
@@ -70,15 +70,22 @@ export async function changeRolesAction(
   form: FormData,
 ): Promise<FormState> {
   const manager = await userManager();
-  const parsed = parseRoleChange({
-    accountId: text(form, "accountId"),
-    roles: texts(form, "roles"),
-    studyProgramId: text(form, "studyProgramId"),
-    unit: text(form, "unit"),
-  });
+  const parsed = parseAccountChange(
+    {
+      accountId: text(form, "accountId"),
+      name: text(form, "name"),
+      title: text(form, "title"),
+      nip: text(form, "nip"),
+      email: text(form, "email"),
+      roles: texts(form, "roles"),
+      studyProgramId: text(form, "studyProgramId"),
+      unit: text(form, "unit"),
+    },
+    readCampusEmailEnding(),
+  );
   if (!parsed.ok) return { error: parsed.error, done: null };
 
-  const changed = await changeRoles(database(), parsed.value, manager.id);
+  const changed = await changeAccount(database(), parsed.value, manager.id);
   if (!changed.ok) return { error: changed.error, done: null };
   refreshScreens();
   redirect(backToList(form));

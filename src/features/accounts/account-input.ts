@@ -8,21 +8,28 @@ import {
 } from "./account-limits";
 import { isManagedRole, type ManagedRole } from "./managed-roles";
 
-export interface NewAccountFields {
+/** Nama lengkap, Gelar, NIP and Email kedinasan as typed. */
+export interface DetailFields {
   name: string;
   title: string;
   nip: string;
   email: string;
+}
+
+export interface AccountDetails {
+  name: string;
+  title: string | null;
+  nip: string | null;
+  email: string;
+}
+
+export interface NewAccountFields extends DetailFields {
   roles: string[];
   studyProgramId: string;
   unit: string;
 }
 
-export interface NewAccount {
-  name: string;
-  title: string | null;
-  nip: string | null;
-  email: string;
+export interface NewAccount extends AccountDetails {
   roles: ManagedRole[];
   studyProgramId: number | null;
   unit: string | null;
@@ -41,6 +48,9 @@ export interface RoleChange {
   studyProgramId: number | null;
   unit: string | null;
 }
+
+export type AccountChangeFields = RoleChangeFields & DetailFields;
+export type AccountChange = RoleChange & AccountDetails;
 
 const NIP = /^\d{1,18}$/;
 const PROGRAM_ID = /^[1-9]\d*$/;
@@ -122,14 +132,15 @@ function parseProgram(
 }
 
 /**
- * Checks a new account. `campusEnding` is the campus address ending from
- * the settings: once it is set the email must end with it, because no
- * other address can sign in. While it is empty any address is taken.
+ * Checks the details of an account, for Tambah pengguna and Ubah alike.
+ * `campusEnding` is the campus address ending from the settings: once it
+ * is set the email must end with it, because no other address can sign
+ * in. While it is empty any address is taken.
  */
-export function parseNewAccount(
-  fields: NewAccountFields,
+function parseDetails(
+  fields: DetailFields,
   campusEnding: string,
-): Parsed<NewAccount> {
+): Parsed<AccountDetails> {
   const name = parseName(fields.name);
   if (!name.ok) return name;
   const title = parseTitle(fields.title);
@@ -147,6 +158,18 @@ export function parseNewAccount(
       error: "NIP hanya berisi angka, paling banyak 18 digit.",
     };
   }
+  return {
+    ok: true,
+    value: { name: name.value, title: title.value, nip, email: email.value },
+  };
+}
+
+export function parseNewAccount(
+  fields: NewAccountFields,
+  campusEnding: string,
+): Parsed<NewAccount> {
+  const details = parseDetails(fields, campusEnding);
+  if (!details.ok) return details;
   const roles = parseRoles(fields.roles, false);
   if (!roles.ok) return roles;
   const program = parseProgram(roles.value, fields.studyProgramId);
@@ -157,10 +180,7 @@ export function parseNewAccount(
   return {
     ok: true,
     value: {
-      name: name.value,
-      title: title.value,
-      nip,
-      email: email.value,
+      ...details.value,
       roles: roles.value,
       studyProgramId: program.value,
       unit: unit.value,
@@ -190,4 +210,16 @@ export function parseRoleChange(fields: RoleChangeFields): Parsed<RoleChange> {
       unit: unit.value,
     },
   };
+}
+
+/** Checks what the Ubah form of Daftar pengguna sends. */
+export function parseAccountChange(
+  fields: AccountChangeFields,
+  campusEnding: string,
+): Parsed<AccountChange> {
+  const roles = parseRoleChange(fields);
+  if (!roles.ok) return roles;
+  const details = parseDetails(fields, campusEnding);
+  if (!details.ok) return details;
+  return { ok: true, value: { ...roles.value, ...details.value } };
 }

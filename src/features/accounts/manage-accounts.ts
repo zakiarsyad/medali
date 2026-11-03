@@ -27,7 +27,7 @@ import { holdsGroupToday } from "@/mentoring/holds-group-today";
 import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
 import { pageWithin } from "@/ui/list-pages";
-import type { NewAccount, RoleChange } from "./account-input";
+import type { AccountChange, NewAccount, RoleChange } from "./account-input";
 import {
   REMOVAL_REFUSED_FOR_GROUP,
   REMOVAL_REFUSED_FOR_REPLACEMENT,
@@ -249,70 +249,101 @@ export async function changeRoles(
   change: RoleChange,
   by: string,
 ): Promise<Parsed<RoleId[]>> {
-  return db.transaction(async (tx) => {
-    const account = await lockActive(tx, change.accountId);
-    if (!account) return NOT_FOUND;
-    if (account.studentId !== null) {
-      return {
-        ok: false,
-        error:
-          "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
-      };
-    }
-    if (!(await programIsKnown(tx, change.studyProgramId))) {
-      return UNKNOWN_PROGRAM;
-    }
-    const before = await currentRoles(tx, change.accountId);
-    const kept = before.filter((role) => !isManagedRole(role));
-    const after = inRoleOrder([...kept, ...change.roles]);
-    if (after.length === 0) {
-      return { ok: false, error: "Pilih minimal satu peran." };
-    }
-    if (takesMentorRole(before, after)) {
-      if (await holdsGroupToday(tx, change.accountId)) {
-        return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
-      }
-      if (await isKeptForReplacement(tx, change.accountId)) {
-        return { ok: false, error: ROLE_REFUSED_FOR_REPLACEMENT };
-      }
-    }
+  return db.transaction((tx) => changeRolesIn(tx, change, by));
+}
 
+/** The work of changeRoles, inside a transaction the caller holds. */
+async function changeRolesIn(
+  tx: Database,
+  change: RoleChange,
+  by: string,
+): Promise<Parsed<RoleId[]>> {
+  const account = await lockActive(tx, change.accountId);
+  if (!account) return NOT_FOUND;
+  if (account.studentId !== null) {
+    return {
+      ok: false,
+      error:
+        "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
+    };
+  }
+  if (!(await programIsKnown(tx, change.studyProgramId))) {
+    return UNKNOWN_PROGRAM;
+  }
+  const before = await currentRoles(tx, change.accountId);
+  const kept = before.filter((role) => !isManagedRole(role));
+  const after = inRoleOrder([...kept, ...change.roles]);
+  if (after.length === 0) {
+    return { ok: false, error: "Pilih minimal satu peran." };
+  }
+  if (takesMentorRole(before, after)) {
+    if (await holdsGroupToday(tx, change.accountId)) {
+      return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
+    }
+    if (await isKeptForReplacement(tx, change.accountId)) {
+      return { ok: false, error: ROLE_REFUSED_FOR_REPLACEMENT };
+    }
+  }
+
+  await tx
+    .delete(accountRoles)
+    .where(
+      and(
+        eq(accountRoles.accountId, change.accountId),
+        notInArray(accountRoles.role, kept),
+      ),
+    );
+  if (change.roles.length > 0) {
     await tx
-      .delete(accountRoles)
-      .where(
-        and(
-          eq(accountRoles.accountId, change.accountId),
-          notInArray(accountRoles.role, kept),
-        ),
-      );
-    if (change.roles.length > 0) {
+      .insert(accountRoles)
+      .values(
+        change.roles.map((role) => ({ accountId: change.accountId, role })),
+      )
+      .onConflictDoNothing();
+  }
+  await tx
+    .update(accounts)
+    .set({
+      studyProgramId: change.studyProgramId,
+      ...(change.unit === null ? {} : { unit: change.unit }),
+    })
+    .where(eq(accounts.id, change.accountId));
+
+  if (!sameRoles(before, after)) {
+    await tx.insert(roleChanges).values({
+      accountId: change.accountId,
+      changedBy: by,
+      changedAt: WRITTEN_NOW,
+      action: "roles_changed",
+      rolesBefore: before,
+      rolesAfter: after,
+    });
+  }
+  return { ok: true, value: after };
+}
+
+/**
+ * Saves what the Ubah form of Daftar pengguna sends: the roles as
+ * changeRoles does, and the name, title, NIP and email with them, all or
+ * nothing. The email is refused when another active account holds it.
+ */
+export async function changeAccount(
+  db: Database,
+  change: AccountChange,
+  by: string,
+): Promise<Parsed<RoleId[]>> {
+  const { name, title, nip, email } = change;
+  return refusedWhenEmailInUse(() =>
+    db.transaction(async (tx) => {
+      const changed = await changeRolesIn(tx, change, by);
+      if (!changed.ok) return changed;
       await tx
-        .insert(accountRoles)
-        .values(
-          change.roles.map((role) => ({ accountId: change.accountId, role })),
-        )
-        .onConflictDoNothing();
-    }
-    await tx
-      .update(accounts)
-      .set({
-        studyProgramId: change.studyProgramId,
-        ...(change.unit === null ? {} : { unit: change.unit }),
-      })
-      .where(eq(accounts.id, change.accountId));
-
-    if (!sameRoles(before, after)) {
-      await tx.insert(roleChanges).values({
-        accountId: change.accountId,
-        changedBy: by,
-        changedAt: WRITTEN_NOW,
-        action: "roles_changed",
-        rolesBefore: before,
-        rolesAfter: after,
-      });
-    }
-    return { ok: true, value: after };
-  });
+        .update(accounts)
+        .set({ name, title, nip, email })
+        .where(eq(accounts.id, change.accountId));
+      return changed;
+    }),
+  );
 }
 
 /**

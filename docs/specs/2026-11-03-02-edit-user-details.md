@@ -52,7 +52,7 @@ None.
 
 1. [x] Rename the button to "Ubah", the save button to "Simpan", and show
    name, title, NIP and email in the form, filled in.
-2. [ ] Save the new details with the rules of Tambah pengguna, including
+2. [x] Save the new details with the rules of Tambah pengguna, including
    the check that the email is not used by another user.
 3. [ ] Lock the email field on the user's own account, and refuse a change
    of their own email if one is sent anyway.

@@ -1,12 +1,17 @@
 import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { accountsInRoleOrder, findActiveAccount } from "@/auth/accounts";
+import {
+  accountsInRoleOrder,
+  activeAccountIdByEmail,
+  findActiveAccount,
+} from "@/auth/accounts";
 import type { Database } from "@/db/connect";
 import { accounts, roleChanges } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { readListParams } from "./list-address";
 import {
   addAccount,
+  changeAccount,
   changeRoles,
   listManagedAccounts,
   removeAccount,
@@ -220,6 +225,133 @@ describe("changeRoles", () => {
         head,
       );
       expect(changed).toEqual({ ok: false, error: "Akun tidak ditemukan." });
+    });
+  });
+});
+
+describe("changeAccount", () => {
+  const details = {
+    name: "Staf Uji Baru",
+    title: "S.E.",
+    nip: "198001012005011001",
+    email: "staf.baru@contoh.ac.id",
+  };
+
+  function changeOf(accountId: string) {
+    return {
+      accountId,
+      ...details,
+      roles: ["assessor" as const],
+      studyProgramId: null,
+      unit: null,
+    };
+  }
+
+  async function detailsOf(db: Database, accountId: string) {
+    const [found] = await db
+      .select({
+        name: accounts.name,
+        title: accounts.title,
+        nip: accounts.nip,
+        email: accounts.email,
+      })
+      .from(accounts)
+      .where(eq(accounts.id, accountId));
+    return found;
+  }
+
+  it("saves the name, title, NIP and email with the roles", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
+
+      const changed = await changeAccount(db, changeOf(id), head);
+
+      expect(changed).toEqual({ ok: true, value: ["assessor"] });
+      expect(await detailsOf(db, id)).toEqual(details);
+    });
+  });
+
+  it("signs the account in by its new email, and no longer by the old one", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const added = await addAccount(db, newAccount("lama@contoh.ac.id"), head);
+      if (!added.ok) throw new Error(added.error);
+
+      await changeAccount(db, changeOf(added.value), head);
+
+      expect(await activeAccountIdByEmail(db, details.email)).toBe(added.value);
+      expect(await activeAccountIdByEmail(db, "lama@contoh.ac.id")).toBeNull();
+    });
+  });
+
+  it("refuses an email another active account uses, and saves nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      await addAccount(db, newAccount(details.email), head);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
+
+      const changed = await changeAccount(db, changeOf(id), head);
+
+      expect(changed).toEqual({
+        ok: false,
+        error: "Email sudah dipakai akun lain.",
+      });
+      expect(await detailsOf(db, id)).toMatchObject({ name: "Staf Uji" });
+      expect((await findActiveAccount(db, id))?.roles).toEqual(["mentor"]);
+      expect(await logOf(db, id)).toEqual([]);
+    });
+  });
+
+  it("lets the email of a removed account be taken", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const old = await addAccount(db, newAccount(details.email), head);
+      if (!old.ok) throw new Error(old.error);
+      await removeAccount(db, old.value, head);
+      const id = await addTestStaffAccount(db, "Staf Uji", ["mentor"]);
+
+      const changed = await changeAccount(db, changeOf(id), head);
+
+      expect(changed.ok).toBe(true);
+    });
+  });
+
+  it("changes the details of another Kepala Unit", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const id = await addTestStaffAccount(db, "Kepala Lain Uji", [
+        "head_of_unit",
+      ]);
+
+      const changed = await changeAccount(db, changeOf(id), head);
+
+      expect(changed.ok).toBe(true);
+      expect(await detailsOf(db, id)).toEqual(details);
+    });
+  });
+
+  it("refuses a student's account and keeps its details", async () => {
+    await inTestDatabase(async (db) => {
+      const head = await addHead(db);
+      const program = await addTestProgram(db, PROGRAM);
+      const id = await addTestStudentAccount(
+        db,
+        program,
+        { nim: "9912800105", name: "Mahasiswa Uji Ubah" },
+        ["student"],
+      );
+
+      const changed = await changeAccount(db, changeOf(id), head);
+
+      expect(changed).toEqual({
+        ok: false,
+        error:
+          "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
+      });
+      expect(await detailsOf(db, id)).toMatchObject({
+        name: "Mahasiswa Uji Ubah",
+      });
     });
   });
 });
