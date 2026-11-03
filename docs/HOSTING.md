@@ -232,6 +232,10 @@ followed by `/masuk/google/kembali`. The app builds this address from the
 link it was opened at, so the preview must be opened at the same link
 that is registered.
 
+Google's Branding page asks for a privacy policy link before the app can
+leave "Testing". It is the app's link followed by `/privasi`: the public
+"Kebijakan privasi" page, which opens without sign-in.
+
 ### While the settings are empty
 
 - The sign-in page, at `/masuk`, still opens. Pressing "Masuk dengan

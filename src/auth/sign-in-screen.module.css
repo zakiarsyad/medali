@@ -17,3 +17,8 @@
   gap: var(--space-md);
   justify-items: center;
 }
+
+.privacy {
+  margin: var(--space-xl) 0 0;
+  font-size: var(--text-md);
+}
