@@ -75,7 +75,7 @@ describe("readOwnLeave", () => {
       const answer = await readOwnLeave(db, ani, 1, MOMENT);
 
       if (answer.kind !== "shown") throw new Error("It was refused.");
-      expect(answer.leave.dorm).toBe("dana_rakca");
+      expect(answer.leave.dorm).toBe("cipta_bakti");
       expect(answer.leave.matching).toBe(2);
       expect(answer.leave.rows.map((row) => row.kind)).toEqual([
         "skip_activities",

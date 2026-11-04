@@ -42,7 +42,7 @@ describe("coveredActivities", () => {
   it("lists each day's activities in the time of an overnight leave, the earliest first", () => {
     const covered = coveredActivities(
       ROWS,
-      "dana_rakca",
+      "cipta_bakti",
       span("2026-10-14T18:00", "2026-10-15T07:00"),
     );
 
@@ -58,7 +58,7 @@ describe("coveredActivities", () => {
     expect(
       coveredActivities(
         [forMen],
-        "dana_rakca",
+        "cipta_bakti",
         span("2026-10-14T18:00", "2026-10-14T22:00"),
       ),
     ).toEqual([]);
@@ -67,7 +67,7 @@ describe("coveredActivities", () => {
   it("names an activity by its name, day and hour", () => {
     const [first] = coveredActivities(
       ROWS,
-      "dana_rakca",
+      "cipta_bakti",
       span("2026-10-14T18:00", "2026-10-14T22:00"),
     );
 

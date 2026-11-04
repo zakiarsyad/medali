@@ -109,14 +109,14 @@ describe("loadCountPanel", () => {
           id: residents.ani,
           name: "Ani Penghuni Uji",
           nim: "9937740002",
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           room: "UJI-HITUNG-1",
         },
         {
           id: residents.zahra,
           name: "Zahra Penghuni Uji",
           nim: "9937740001",
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           room: null,
         },
       ]);
@@ -150,7 +150,7 @@ describe("loadCountPanel", () => {
         id: residents.senior,
         name: "Senior Uji",
         nim: "9937740004",
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: null,
       });
     });

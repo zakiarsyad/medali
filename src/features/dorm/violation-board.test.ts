@@ -135,8 +135,8 @@ describe("readViolationRekap", () => {
       expect(
         odd.rows.map((row) => [row.name, row.escalated, row.dorm]),
       ).toEqual([
-        ["Ani Uji Pelanggaran", 2, "dana_rakca"],
-        ["Bea Uji Pelanggaran", 1, "dana_rakca"],
+        ["Ani Uji Pelanggaran", 2, "cipta_bakti"],
+        ["Bea Uji Pelanggaran", 1, "cipta_bakti"],
       ]);
     });
   });

@@ -72,10 +72,10 @@ describe("the Asrama filter", () => {
     await inTestDatabase(async (db) => {
       const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
 
-      expect(await nimsFound(db, limit, { dorm: "dana_rakca" })).toEqual([
+      expect(await nimsFound(db, limit, { dorm: "cipta_bakti" })).toEqual([
         "9900400001",
       ]);
-      expect(await nimsFound(db, limit, { dorm: "cipta_bakti" })).toEqual([
+      expect(await nimsFound(db, limit, { dorm: "dana_rakca" })).toEqual([
         "9900400002",
       ]);
       expect(await nimsFound(db, limit, { dorm: "wismantara_putri" })).toEqual([
@@ -107,10 +107,10 @@ describe("the Asrama filter", () => {
       const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
 
       expect(
-        await nimsFound(db, limit, { dorm: "dana_rakca", query: "Asrama" }),
+        await nimsFound(db, limit, { dorm: "cipta_bakti", query: "Asrama" }),
       ).toEqual(["9900400001"]);
       expect(
-        await nimsFound(db, limit, { dorm: "dana_rakca", cohortYear: 2023 }),
+        await nimsFound(db, limit, { dorm: "cipta_bakti", cohortYear: 2023 }),
       ).toEqual([]);
     });
   });
@@ -120,7 +120,7 @@ describe("the Asrama filter", () => {
       const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
 
       expect(
-        await nimsFound(db, limit, { dorm: "dana_rakca" }, NO_PERIOD),
+        await nimsFound(db, limit, { dorm: "cipta_bakti" }, NO_PERIOD),
       ).toEqual([]);
       expect(
         await nimsFound(db, limit, { dorm: "wismantara_putri" }, NO_PERIOD),
@@ -138,12 +138,12 @@ describe("the Asrama filter", () => {
       });
       const limit = onlyProgram(own);
 
-      expect(await nimsFound(db, limit, { dorm: "dana_rakca" })).toEqual([
+      expect(await nimsFound(db, limit, { dorm: "cipta_bakti" })).toEqual([
         "9900400001",
       ]);
       expect(
         await nimsFound(db, limit, {
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           studyProgramId: other,
         }),
       ).toEqual([]);
@@ -153,7 +153,7 @@ describe("the Asrama filter", () => {
         { ...ALL_STATUSES, studyProgramId: other },
         COHORTS,
       );
-      expect(counts.dorms.dana_rakca).toBe(0);
+      expect(counts.dorms.cipta_bakti).toBe(0);
     });
   });
 
@@ -171,7 +171,7 @@ describe("the Asrama filter", () => {
         name: "Asrama Halaman Putra",
         sex: "male",
       });
-      const filters = { ...ALL_STATUSES, dorm: "dana_rakca" as const };
+      const filters = { ...ALL_STATUSES, dorm: "cipta_bakti" as const };
       const limit = onlyProgram(program);
 
       const first = await listStudents(db, limit, filters, 1, COHORTS);
@@ -198,8 +198,8 @@ describe("the Asrama tag", () => {
         student.dorm,
       ]);
       expect(dorms.sort()).toEqual([
-        ["9900400001", "dana_rakca"],
-        ["9900400002", "cipta_bakti"],
+        ["9900400001", "cipta_bakti"],
+        ["9900400002", "dana_rakca"],
         ["9900400003", "wismantara_putri"],
         ["9900400004", "wismantara_putra"],
         ["9900400005", null],
@@ -214,7 +214,7 @@ describe("a student who stops being a resident", () => {
   it("loses the tag and leaves the filter and its count on the next read", async () => {
     await inTestDatabase(async (db) => {
       const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
-      const inDorm = { dorm: "dana_rakca" as const };
+      const inDorm = { dorm: "cipta_bakti" as const };
       const before = await countChoices(db, limit, ALL_STATUSES, COHORTS);
 
       await db
@@ -232,15 +232,15 @@ describe("a student who stops being a resident", () => {
       );
       expect(row?.dorm).toBeNull();
       const after = await countChoices(db, limit, ALL_STATUSES, COHORTS);
-      expect(before.dorms.dana_rakca).toBe(1);
-      expect(after.dorms.dana_rakca).toBe(0);
+      expect(before.dorms.cipta_bakti).toBe(1);
+      expect(after.dorms.cipta_bakti).toBe(0);
       expect(after.dorms[NO_DORM]).toBe(before.dorms[NO_DORM] + 1);
     });
   });
 });
 
 describe("a kakak pendamping", () => {
-  /** Names the senior of the rows kakak pendamping of Dana Rakca. */
+  /** Names the senior of the rows kakak pendamping of Cipta Bakti. */
   async function nameSenior(db: Database): Promise<string> {
     const [senior] = await db
       .select({ id: students.id })
@@ -249,7 +249,7 @@ describe("a kakak pendamping", () => {
     if (!senior) throw new Error("The senior was not found.");
     await db
       .insert(dormCompanions)
-      .values({ studentId: senior.id, dorm: "dana_rakca" });
+      .values({ studentId: senior.id, dorm: "cipta_bakti" });
     return senior.id;
   }
 
@@ -263,8 +263,8 @@ describe("a kakak pendamping", () => {
       const limit = onlyProgram(await addRows(db, "Prodi Uji Asrama Saring"));
       await nameSenior(db);
 
-      expect(await tagOf(db, limit, "9900400005")).toBe("dana_rakca");
-      expect(await nimsFound(db, limit, { dorm: "dana_rakca" })).toEqual([
+      expect(await tagOf(db, limit, "9900400005")).toBe("cipta_bakti");
+      expect(await nimsFound(db, limit, { dorm: "cipta_bakti" })).toEqual([
         "9900400001",
         "9900400005",
       ]);
@@ -272,7 +272,7 @@ describe("a kakak pendamping", () => {
         "9900400005",
       );
       const counts = await countChoices(db, limit, ALL_STATUSES, COHORTS);
-      expect(counts.dorms.dana_rakca).toBe(2);
+      expect(counts.dorms.cipta_bakti).toBe(2);
     });
   });
 
@@ -285,9 +285,9 @@ describe("a kakak pendamping", () => {
         .where(eq(students.nim, "9900400003"));
       await db
         .insert(dormCompanions)
-        .values({ studentId: wisma?.id ?? "", dorm: "dana_rakca" });
+        .values({ studentId: wisma?.id ?? "", dorm: "cipta_bakti" });
 
-      expect(await tagOf(db, limit, "9900400003")).toBe("dana_rakca");
+      expect(await tagOf(db, limit, "9900400003")).toBe("cipta_bakti");
       expect(await nimsFound(db, limit, { dorm: "wismantara_putri" })).toEqual(
         [],
       );
@@ -327,7 +327,7 @@ describe("a kakak pendamping", () => {
       await nameSenior(db);
 
       const found = await nimsFound(db, onlyProgram(other), {
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
       });
 
       expect(found).toEqual([]);
@@ -345,8 +345,8 @@ describe("the counts of the Asrama filter", () => {
       expect(counts.dorms).toEqual({
         wismantara_putra: 1,
         wismantara_putri: 1,
-        dana_rakca: 1,
         cipta_bakti: 1,
+        dana_rakca: 1,
         [NO_DORM]: 3,
       });
     });
@@ -359,11 +359,11 @@ describe("the counts of the Asrama filter", () => {
       const counts = await countChoices(
         db,
         limit,
-        { ...NO_FILTERS, dorm: "dana_rakca" },
+        { ...NO_FILTERS, dorm: "cipta_bakti" },
         COHORTS,
       );
 
-      expect(counts.dorms.cipta_bakti).toBe(1);
+      expect(counts.dorms.dana_rakca).toBe(1);
       expect(counts.dorms[NO_DORM]).toBe(2);
       expect(counts.entryPaths).toEqual({ regular: 1, transfer: 0 });
     });

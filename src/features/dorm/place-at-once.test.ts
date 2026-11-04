@@ -219,7 +219,7 @@ describe("Nonaktifkan and placing the same kakak pendamping at the same moment",
       "Kamar kakak pendamping ini baru saja berubah. Muat ulang halaman, lalu coba lagi.",
   };
 
-  /** A kakak pendamping of Dana Rakca without a room, and a room there. */
+  /** A kakak pendamping of Cipta Bakti without a room, and a room there. */
   async function addCompanionAndRoom() {
     const program = await addTestProgram(own.db, PROGRAM);
     const studentId = await addTestStudent(own.db, program, {
@@ -318,7 +318,7 @@ describe("naming a kakak pendamping while the student goes on leave at the same 
   }
 
   function name(studentId: string): RoomSave {
-    const sent = { studentId, dorm: "dana_rakca", note: "" };
+    const sent = { studentId, dorm: "cipta_bakti", note: "" };
     return (db) => nameCompanion(db, MANAGER, sent, DAY);
   }
 
@@ -417,7 +417,7 @@ describe("two people placing in two rooms at the same moment, each removing a pl
   }
 
   /**
-   * A resident of Dana Rakca and one of Wismantara Putri, each with a
+   * A resident of Cipta Bakti and one of Wismantara Putri, each with a
    * place left behind in a room of the other one's dorm.
    */
   async function addCrossedResidents() {
@@ -439,7 +439,7 @@ describe("two people placing in two rooms at the same moment, each removing a pl
   }
 
   /**
-   * A resident of Wismantara Putri and a kakak pendamping of Dana Rakca,
+   * A resident of Wismantara Putri and a kakak pendamping of Cipta Bakti,
    * each with a place left behind in a room of the other one's dorm.
    */
   async function addCrossedResidentAndCompanion() {

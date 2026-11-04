@@ -28,7 +28,7 @@ const TODAY = "2700-10-12";
 const FROM = { startsOn: "2700-08-01" };
 
 interface Residents {
-  /** A Reguler woman of semester 1: she lives in Dana Rakca. */
+  /** A Reguler woman of semester 1: she lives in Cipta Bakti. */
   woman: string;
   /** A Reguler woman of semester 3: she lives in no dorm. */
   senior: string;
@@ -62,14 +62,14 @@ describe("readResidentActivities", () => {
     await inTestDatabase(async (db) => {
       const { woman } = await addResidents(db);
       const by = (await addTestActor(db, "Pengelola", ["dorm_manager"])).id;
-      for (const audience of ["all", "women", "dana_rakca"] as const) {
+      for (const audience of ["all", "women", "cipta_bakti"] as const) {
         await addTestActivity(db, by, {
           versions: [{ ...FROM, name: `Untuk ${audience}`, audience }],
         });
       }
       for (const audience of [
         "men",
-        "cipta_bakti",
+        "dana_rakca",
         "wismantara_putri",
       ] as const) {
         await addTestActivity(db, by, {
@@ -85,11 +85,11 @@ describe("readResidentActivities", () => {
 
       if (answer.kind !== "shown") throw new Error("The resident was refused.");
       const { today, coming, dorm, now } = answer.activities;
-      expect(dorm).toBe("dana_rakca");
+      expect(dorm).toBe("cipta_bakti");
       expect(now).toEqual({ day: TODAY, time: "10:00" });
       expect(today.map((row) => row.name).sort()).toEqual([
         "Untuk all",
-        "Untuk dana_rakca",
+        "Untuk cipta_bakti",
         "Untuk women",
       ]);
       expect(coming).toHaveLength(6);
@@ -136,7 +136,7 @@ describe("readResidentActivities", () => {
     await inTestDatabase(async (db) => {
       const { woman } = await addResidents(db);
       const by = (await addTestActor(db, "Pengelola", ["dorm_manager"])).id;
-      for (const audience of ["dana_rakca", "cipta_bakti", "men"] as const) {
+      for (const audience of ["cipta_bakti", "dana_rakca", "men"] as const) {
         await addTestActivity(db, by, {
           versions: [{ ...FROM, name: `Untuk ${audience}`, audience }],
         });
@@ -156,7 +156,7 @@ describe("readResidentActivities", () => {
       if (withBam.kind !== "shown")
         throw new Error("The resident was refused.");
       expect(withBam.activities.today.map((row) => row.name)).toEqual([
-        "Untuk dana_rakca",
+        "Untuk cipta_bakti",
       ]);
       expect(withBam).toEqual(alone);
     });

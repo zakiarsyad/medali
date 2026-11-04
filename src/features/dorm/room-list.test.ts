@@ -23,7 +23,7 @@ import { addTestCompanion, EVERYONE } from "./test-records";
 const inTestDatabase = withTestDatabase();
 
 const DANA_RAKCA: ResidentScope = {
-  dorm: "dana_rakca",
+  dorm: "cipta_bakti",
   dormCohorts: [2026],
   visible: EVERYONE,
 };
@@ -39,7 +39,7 @@ interface TestRows {
   waiting: string;
 }
 
-/** One room of Dana Rakca with two residents, and one resident without. */
+/** One room of Cipta Bakti with two residents, and one resident without. */
 async function addTestRows(db: Database): Promise<TestRows> {
   const ownProgram = await addTestProgram(db, "Prodi Uji Daftar Kamar Sendiri");
   const otherProgram = await addTestProgram(db, "Prodi Uji Daftar Kamar Lain");
@@ -78,9 +78,9 @@ describe("readRooms", () => {
       const { roomId } = await addTestRows(db);
       await addTestRoom(db, { floor: 2, number: "L201", capacity: 6 });
       await addTestRoom(db, { number: "L100" });
-      await addTestRoom(db, { number: "L101", dorm: "cipta_bakti" });
+      await addTestRoom(db, { number: "L101", dorm: "dana_rakca" });
 
-      const rooms = await readRooms(db, "dana_rakca", [2026]);
+      const rooms = await readRooms(db, "cipta_bakti", [2026]);
 
       expect(rooms.map((room) => room.number)).toEqual([
         "L100",
@@ -201,7 +201,7 @@ describe("countResidents", () => {
   it("counts nobody in a dorm without residents", async () => {
     await inTestDatabase(async (db) => {
       await addTestRows(db);
-      const scope: ResidentScope = { ...DANA_RAKCA, dorm: "cipta_bakti" };
+      const scope: ResidentScope = { ...DANA_RAKCA, dorm: "dana_rakca" };
 
       expect(await countResidents(db, scope)).toEqual({
         residents: 0,

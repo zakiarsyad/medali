@@ -50,7 +50,7 @@ const MAY_NOT: RoleId[] = [
 
 type TestStudent = Partial<typeof students.$inferInsert>;
 
-/** A Reguler woman of semester 1, a resident of Dana Rakca, unless told otherwise. */
+/** A Reguler woman of semester 1, a resident of Cipta Bakti, unless told otherwise. */
 async function addFirstYear(db: Database, nim: string, more: TestStudent = {}) {
   await db.insert(academicPeriods).values(ODD_3503).onConflictDoNothing();
   const program = await addTestProgram(db, `Prodi Uji Non Asrama ${nim}`);
@@ -90,7 +90,7 @@ describe("makeNonResident", () => {
       });
       expect(await readStudentDorm(db, id, DAY)).toBeNull();
       expect(await residentsOfRoom(db, roomId)).toEqual([]);
-      expect(await logOf(db, id)).toEqual([["dana_rakca", null, manager.id]]);
+      expect(await logOf(db, id)).toEqual([["cipta_bakti", null, manager.id]]);
     });
   });
 
@@ -124,7 +124,7 @@ describe("makeNonResident", () => {
       expect(added.ok).toBe(true);
       expect(await readStudentDorm(db, id, DAY)).toBe("wismantara_putri");
       expect(await logOf(db, id)).toEqual([
-        ["dana_rakca", null, manager.id],
+        ["cipta_bakti", null, manager.id],
         [null, "wismantara_putri", manager.id],
       ]);
     });
@@ -143,7 +143,7 @@ describe("makeNonResident", () => {
         error:
           "Mahasiswa ini kakak pendamping aktif. Nonaktifkan dulu di menu Kakak pendamping.",
       });
-      expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
+      expect(await readStudentDorm(db, id, DAY)).toBe("cipta_bakti");
       expect(await logOf(db, id)).toEqual([]);
     });
   });
@@ -171,7 +171,7 @@ describe("makeNonResident", () => {
       const made = await makeNonResident(db, actor, id, DAY);
 
       expect(made).toEqual(RESIDENTS_NOT_ALLOWED);
-      expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
+      expect(await readStudentDorm(db, id, DAY)).toBe("cipta_bakti");
       expect(await residentsOfRoom(db, roomId)).toEqual([id]);
       expect(await logOf(db, id)).toEqual([]);
       const choices = await db

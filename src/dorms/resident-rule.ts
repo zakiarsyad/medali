@@ -49,5 +49,5 @@ export function dormOf(
   }
   if (student.entryPath !== "regular") return null;
   if (!isDormSemester(semester)) return null;
-  return isMan ? "cipta_bakti" : "dana_rakca";
+  return isMan ? "dana_rakca" : "cipta_bakti";
 }

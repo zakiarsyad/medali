@@ -210,7 +210,7 @@ describe("the sample students of a first year", () => {
   });
 
   it("leave more than 60 residents of one dorm without a room", () => {
-    expect(residentsOf("dana_rakca").length - placed).toBeGreaterThan(60);
+    expect(residentsOf("cipta_bakti").length - placed).toBeGreaterThan(60);
   });
 });
 

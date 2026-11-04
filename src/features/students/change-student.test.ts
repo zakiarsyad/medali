@@ -452,7 +452,7 @@ describe("a dorm resident choice made by hand", () => {
     const { id } = await recordOf(db, nim);
     await db.insert(dormResidentChoices).values({
       studentId: id,
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       setBy: staff.id,
       setAt: NOW,
     });
@@ -473,7 +473,7 @@ describe("a dorm resident choice made by hand", () => {
 
       expect((await changeTestStudent(db, staff, changed)).ok).toBe(true);
 
-      expect(await choicesOf(db, id)).toEqual([{ dorm: "dana_rakca" }]);
+      expect(await choicesOf(db, id)).toEqual([{ dorm: "cipta_bakti" }]);
     });
   });
 
@@ -509,14 +509,10 @@ describe("a dorm resident choice made by hand", () => {
   it("ends when the jenis kelamin no longer fits the dorm chosen, and the room there no longer counts", async () => {
     await inTestDatabase(async (db) => {
       const nim = "9900000593";
-      const { program, staff, id } = await manWithChoice(
-        db,
-        nim,
-        "cipta_bakti",
-      );
+      const { program, staff, id } = await manWithChoice(db, nim, "dana_rakca");
       const [room] = await db
         .insert(dormRooms)
-        .values({ dorm: "cipta_bakti", floor: 1, number: "TS593", capacity: 4 })
+        .values({ dorm: "dana_rakca", floor: 1, number: "TS593", capacity: 4 })
         .returning({ id: dormRooms.id });
       await db
         .insert(dormRoomPlaces)

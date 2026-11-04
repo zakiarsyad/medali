@@ -148,14 +148,14 @@ export interface SampleCompanion {
 export const SAMPLE_COMPANIONS: SampleCompanion[] = [
   {
     nim: "9900230032",
-    dorm: "dana_rakca",
+    dorm: "cipta_bakti",
     note: "Pendamping lantai 1",
     isActive: true,
   },
-  { nim: "9900220019", dorm: "cipta_bakti", note: null, isActive: true },
+  { nim: "9900220019", dorm: "dana_rakca", note: null, isActive: true },
   {
     nim: "9900230045",
-    dorm: "cipta_bakti",
+    dorm: "dana_rakca",
     note: "Pendamping lantai 2",
     isActive: false,
   },

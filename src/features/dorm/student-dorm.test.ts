@@ -28,7 +28,7 @@ describe("readStudentDorm", () => {
         cohortYear: 2570,
       });
 
-      expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
+      expect(await readStudentDorm(db, id, DAY)).toBe("cipta_bakti");
     });
   });
 
@@ -84,9 +84,9 @@ describe("readStudentDorm", () => {
       });
       await db
         .insert(dormCompanions)
-        .values({ studentId: id, dorm: "dana_rakca" });
+        .values({ studentId: id, dorm: "cipta_bakti" });
 
-      expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
+      expect(await readStudentDorm(db, id, DAY)).toBe("cipta_bakti");
     });
   });
 
@@ -101,7 +101,7 @@ describe("readStudentDorm", () => {
       });
       await db
         .insert(dormCompanions)
-        .values({ studentId: id, dorm: "dana_rakca", isActive: false });
+        .values({ studentId: id, dorm: "cipta_bakti", isActive: false });
 
       expect(await readStudentDorm(db, id, DAY)).toBeNull();
     });

@@ -325,7 +325,7 @@ describe("readDormTasks", () => {
           id: ownRoom.id,
           day: "11 Okt 3310",
           place: "Kamar NT102 (kamar sendiri)",
-          room: "Dana Rakca · Kamar NT102",
+          room: "Cipta Bakti · Kamar NT102",
           result: "met",
           judgeNote: "",
         }),

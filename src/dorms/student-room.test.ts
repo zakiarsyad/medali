@@ -36,29 +36,29 @@ async function placeAsCompanion(
 ): Promise<void> {
   await db
     .insert(dormCompanions)
-    .values({ studentId, dorm: "dana_rakca", roomId });
+    .values({ studentId, dorm: "cipta_bakti", roomId });
 }
 
 describe("ownRoomWords", () => {
   it("names a resident's own room as the header does", () => {
     const room = {
-      dorm: "cipta_bakti",
+      dorm: "dana_rakca",
       floor: 2,
       number: "204",
       asCompanion: false,
     } as const;
-    expect(ownRoomWords(room)).toBe("Asrama Cipta Bakti, lantai 2, kamar 204");
+    expect(ownRoomWords(room)).toBe("Asrama Dana Rakca, lantai 2, kamar 204");
   });
 
   it("marks a kakak pendamping room", () => {
     const room = {
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       floor: 1,
       number: "102",
       asCompanion: true,
     } as const;
     expect(ownRoomWords(room)).toBe(
-      "Asrama Dana Rakca, lantai 1, kamar 102 (kakak pendamping)",
+      "Asrama Cipta Bakti, lantai 1, kamar 102 (kakak pendamping)",
     );
   });
 
@@ -78,8 +78,8 @@ describe("readOwnRoom", () => {
       const roomId = await addTestRoom(db, { floor: 2, number: "R204" });
       await placeTestResident(db, roomId, id);
 
-      expect(await readOwnRoom(db, id, "dana_rakca")).toEqual({
-        dorm: "dana_rakca",
+      expect(await readOwnRoom(db, id, "cipta_bakti")).toEqual({
+        dorm: "cipta_bakti",
         floor: 2,
         number: "R204",
         asCompanion: false,
@@ -94,7 +94,7 @@ describe("readOwnRoom", () => {
       await placeAsCompanion(db, id, roomId);
 
       expect(await readOwnRoom(db, id, "wismantara_putri")).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         floor: 1,
         number: "R102",
         asCompanion: true,
@@ -150,7 +150,7 @@ describe("roomHeader", () => {
   });
 
   it("says Belum diplot for a resident without a room", () => {
-    expect(roomHeader("cipta_bakti", null)).toBe("Belum diplot");
+    expect(roomHeader("dana_rakca", null)).toBe("Belum diplot");
   });
 });
 
@@ -165,7 +165,7 @@ describe("readStudentRoom", () => {
       const roomId = await addTestRoom(db, { floor: 2, number: "R204" });
       await placeTestResident(db, roomId, id);
 
-      expect(await readStudentRoom(db, id, "dana_rakca")).toEqual({
+      expect(await readStudentRoom(db, id, "cipta_bakti")).toEqual({
         floor: 2,
         number: "R204",
       });
@@ -181,7 +181,7 @@ describe("readStudentRoom", () => {
       });
       await addTestRoom(db, { number: "R101" });
 
-      expect(await readStudentRoom(db, id, "dana_rakca")).toBeNull();
+      expect(await readStudentRoom(db, id, "cipta_bakti")).toBeNull();
     });
   });
 

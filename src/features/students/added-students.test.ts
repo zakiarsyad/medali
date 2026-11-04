@@ -346,7 +346,7 @@ describe("listAddedStudents", () => {
       expect(
         listed.students.map((student) => [student.nim, student.dorm]),
       ).toEqual([
-        ["9900000231", "dana_rakca"],
+        ["9900000231", "cipta_bakti"],
         ["9900000232", "wismantara_putra"],
         ["9900000233", null],
         ["9900000234", null],
@@ -383,11 +383,11 @@ describe("listAddedStudents", () => {
       });
       const [room] = await db
         .insert(dormRooms)
-        .values({ dorm: "dana_rakca", floor: 1, number: "U0241", capacity: 4 })
+        .values({ dorm: "cipta_bakti", floor: 1, number: "U0241", capacity: 4 })
         .returning({ id: dormRooms.id });
       await db.insert(dormCompanions).values([
-        { studentId: seedling, dorm: "dana_rakca", roomId: room?.id },
-        { studentId: senior, dorm: "dana_rakca", roomId: room?.id },
+        { studentId: seedling, dorm: "cipta_bakti", roomId: room?.id },
+        { studentId: senior, dorm: "cipta_bakti", roomId: room?.id },
       ]);
 
       const roomsOf = async (mayBeShownRoom: boolean) => {
@@ -405,7 +405,7 @@ describe("listAddedStudents", () => {
       };
 
       const companionRoom = {
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         floor: 1,
         number: "U0241",
         asCompanion: true,
@@ -558,7 +558,7 @@ describe("countStudents", () => {
 
       await db
         .insert(dormCompanions)
-        .values({ studentId: senior, dorm: "dana_rakca" });
+        .values({ studentId: senior, dorm: "cipta_bakti" });
       const named = await countStudents(db, DORM_COHORTS);
       await db
         .update(dormCompanions)

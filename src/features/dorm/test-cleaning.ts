@@ -20,7 +20,7 @@ export interface TestDuty {
 type DutyValues = Partial<typeof dormCleaningDuties.$inferInsert>;
 
 /**
- * A place of Dana Rakca given to a new room on a day, by a new Pengelola
+ * A place of Cipta Bakti given to a new room on a day, by a new Pengelola
  * Asrama, with what else is given. Room numbers and place names must be
  * used by no other file of checks.
  */
@@ -35,14 +35,14 @@ export async function addTestDuty(
   const roomId = await addTestRoom(db, { number: names.room });
   const [place] = await db
     .insert(dormCleaningPlaces)
-    .values({ dorm: "dana_rakca", name: names.place })
+    .values({ dorm: "cipta_bakti", name: names.place })
     .returning();
   if (!place) throw new Error("The place was not added.");
   const [duty] = await db
     .insert(dormCleaningDuties)
     .values({
       day: "2026-10-12",
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       placeId: place.id,
       roomId,
       roomNumber: names.room,

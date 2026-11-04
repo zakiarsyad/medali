@@ -79,7 +79,7 @@ test("the browser's own check is off, so the app's message is the one shown", ()
 });
 
 test("the note names the dorm the student being filled in will live in", () => {
-  expect(formFor([2026])).toContain("Masuk penghuni Asrama Cipta Bakti.");
+  expect(formFor([2026])).toContain("Masuk penghuni Asrama Dana Rakca.");
   expect(formFor([2025])).toContain("Bukan penghuni asrama.");
 });
 

@@ -35,11 +35,11 @@ const TODAY = "3361-10-01";
 const ASSESSED_AT = new Date("3361-09-15T03:00:00Z");
 
 /**
- * In one program: three Reguler women of semester 1 in Dana Rakca, one
- * Reguler man of semester 1 in Cipta Bakti, a Pembibitan woman and an
+ * In one program: three Reguler women of semester 1 in Cipta Bakti, one
+ * Reguler man of semester 1 in Dana Rakca, a Pembibitan woman and an
  * Internasional man of semester 3 in Wismantara, five Reguler women of
  * semester 3 in no dorm, and a woman of semester 1 on Cuti, who never
- * counts. In another program one woman of semester 1 in Dana Rakca.
+ * counts. In another program one woman of semester 1 in Cipta Bakti.
  */
 async function addRecords(db: Database) {
   const programId = await addTestProgram(db, "Prodi Uji Asrama Dashboard");
@@ -58,8 +58,8 @@ async function addRecords(db: Database) {
       ...more,
     });
   };
-  const danaRakca = [await add(), await add(), await add()];
-  const ciptaBakti = await add({ sex: "male" });
+  const ciptaBakti = [await add(), await add(), await add()];
+  const danaRakca = await add({ sex: "male" });
   const wismantara = [
     await add({ cohortYear: 3360, isSeedling: true }),
     await add({ cohortYear: 3360, sex: "male", isInternational: true }),
@@ -77,8 +77,8 @@ async function addRecords(db: Database) {
   return {
     programId,
     otherProgramId,
-    danaRakca,
     ciptaBakti,
+    danaRakca,
     wismantara,
     outside,
   };
@@ -152,8 +152,8 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
         new Map([
           ["semua", 6],
           ["wismantara", 2],
-          ["dana_rakca", 3],
-          ["cipta_bakti", 1],
+          ["cipta_bakti", 3],
+          ["dana_rakca", 1],
           ["non", 5],
         ]),
       );
@@ -172,8 +172,8 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
         new Map([
           ["semua", 2],
           ["wismantara", 2],
-          ["dana_rakca", 0],
           ["cipta_bakti", 0],
+          ["dana_rakca", 0],
           ["non", 5],
         ]),
       );
@@ -183,10 +183,10 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
   it("counts every card and section only for the students of the Asrama choice", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const { programId, danaRakca, ciptaBakti, wismantara, outside } = records;
+      const { programId, ciptaBakti, danaRakca, wismantara, outside } = records;
       await addResults(db, [
-        ...danaRakca,
-        ciptaBakti,
+        ...ciptaBakti,
+        danaRakca,
         ...wismantara,
         ...outside,
       ]);
@@ -219,16 +219,16 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
   it("gives no average and no health or mental health count for a dorm with fewer than 5 students, and the server sends none", async () => {
     await inTestDatabase(async (db) => {
       const records = await addRecords(db);
-      const { programId, danaRakca, ciptaBakti, wismantara, outside } = records;
+      const { programId, ciptaBakti, danaRakca, wismantara, outside } = records;
       await addResults(db, [
-        ...danaRakca,
-        ciptaBakti,
+        ...ciptaBakti,
+        danaRakca,
         ...wismantara,
         ...outside,
       ]);
 
       const view = await loadWith(db, programScope(programId), {
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
       });
 
       expect(view.counts.matching).toBe(3);
@@ -253,22 +253,22 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
         visible: inArray(students.studyProgramId, [programId, otherProgramId]),
       };
       const asked: Partial<DashboardFilters> = {
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         studyProgramId: otherProgramId,
       };
 
       const own = await loadWith(db, scope, asked);
-      const wider = await loadWith(db, both, { dorm: "dana_rakca" });
+      const wider = await loadWith(db, both, { dorm: "cipta_bakti" });
 
       expect(own.programs).toBeNull();
       expect(own.filters.studyProgramId).toBeNull();
-      expect(own.filters.dorm).toBe("dana_rakca");
+      expect(own.filters.dorm).toBe("cipta_bakti");
       expect(own.counts.matching).toBe(3);
-      expect(own.counts.dorms.get("dana_rakca")).toBe(3);
+      expect(own.counts.dorms.get("cipta_bakti")).toBe(3);
       expect(own.counts.dorms.get("semua")).toBe(6);
       expect(own.counts.programs).toEqual(new Map([[programId, 3]]));
       expect(own.mentoring.numbers.everyone).toBe(11);
-      expect(wider.counts.dorms.get("dana_rakca")).toBe(4);
+      expect(wider.counts.dorms.get("cipta_bakti")).toBe(4);
     });
   });
 
@@ -292,11 +292,11 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
 
   it("follows a student who stops being a resident on the next load", async () => {
     await inTestDatabase(async (db) => {
-      const { programId, danaRakca } = await addRecords(db);
+      const { programId, ciptaBakti } = await addRecords(db);
       const scope = programScope(programId);
-      const [leaving] = danaRakca;
+      const [leaving] = ciptaBakti;
       if (leaving === undefined) throw new Error("No resident was added.");
-      const before = await loadWith(db, scope, { dorm: "dana_rakca" });
+      const before = await loadWith(db, scope, { dorm: "cipta_bakti" });
       await db.insert(dormResidentChoices).values({
         studentId: leaving,
         dorm: null,
@@ -304,11 +304,11 @@ describe("the Asrama filter of Dashboard pembangunan karakter", () => {
         setAt: new Date("3361-10-01T03:00:00Z"),
       });
 
-      const after = await loadWith(db, scope, { dorm: "dana_rakca" });
+      const after = await loadWith(db, scope, { dorm: "cipta_bakti" });
 
       expect(before.counts.matching).toBe(3);
       expect(after.counts.matching).toBe(2);
-      expect(after.counts.dorms.get("dana_rakca")).toBe(2);
+      expect(after.counts.dorms.get("cipta_bakti")).toBe(2);
       expect(after.counts.dorms.get("semua")).toBe(5);
       expect(after.counts.dorms.get("non")).toBe(6);
     });

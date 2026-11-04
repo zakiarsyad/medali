@@ -40,10 +40,10 @@ describe("searchViolationStudents", () => {
       const byNim = await searchViolationStudents(db, "998204000", null, TODAY);
 
       expect(found.map((pick) => [pick.name, pick.dorm])).toEqual([
-        ["Ani Uji Pelanggaran", "dana_rakca"],
-        ["Bea Uji Pelanggaran", "dana_rakca"],
-        ["Cici Uji Pelanggaran", "dana_rakca"],
-        ["Dodi Uji Pelanggaran", "cipta_bakti"],
+        ["Ani Uji Pelanggaran", "cipta_bakti"],
+        ["Bea Uji Pelanggaran", "cipta_bakti"],
+        ["Cici Uji Pelanggaran", "cipta_bakti"],
+        ["Dodi Uji Pelanggaran", "dana_rakca"],
       ]);
       expect(byNim).toHaveLength(4);
     });
@@ -62,7 +62,7 @@ describe("searchViolationStudents", () => {
       const stopped = await searchViolationStudents(db, "Euis", null, TODAY);
 
       expect(found.map((pick) => [pick.name, pick.dorm])).toEqual([
-        ["Euis Uji Pelanggaran", "dana_rakca"],
+        ["Euis Uji Pelanggaran", "cipta_bakti"],
       ]);
       expect(stopped).toEqual([]);
     });
@@ -109,8 +109,8 @@ describe("readResidentDorms", () => {
 
       expect([...dorms.entries()].sort()).toEqual(
         [
-          [ani, "dana_rakca"],
-          [setting.otherDorm, "cipta_bakti"],
+          [ani, "cipta_bakti"],
+          [setting.otherDorm, "dana_rakca"],
         ].sort(),
       );
     });

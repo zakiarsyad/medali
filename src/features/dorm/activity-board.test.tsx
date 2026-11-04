@@ -18,8 +18,8 @@ const NOW = { day: "2026-10-14", time: "18:00" };
 const RESIDENTS = {
   wismantara_putra: 3,
   wismantara_putri: 5,
-  dana_rakca: 40,
-  cipta_bakti: 20,
+  cipta_bakti: 40,
+  dana_rakca: 20,
 };
 
 function params(view: ActivitiesParams["view"]): ActivitiesParams {

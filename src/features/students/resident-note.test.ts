@@ -15,10 +15,10 @@ const FILLED: ResidentFields = {
 describe("residentNote", () => {
   it("names the dorm of a Reguler student in semester 1 or 2", () => {
     expect(residentNote(FILLED, ODD_2026)).toBe(
-      "Masuk penghuni Asrama Dana Rakca.",
+      "Masuk penghuni Asrama Cipta Bakti.",
     );
     expect(residentNote({ ...FILLED, sex: "male" }, ODD_2026)).toBe(
-      "Masuk penghuni Asrama Cipta Bakti.",
+      "Masuk penghuni Asrama Dana Rakca.",
     );
   });
 

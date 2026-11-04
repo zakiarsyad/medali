@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { companionDormOf, hasCompanions } from "./companion-dorms";
 
 describe("companionDormOf", () => {
-  it("gives Dana Rakca for a woman", () => {
-    expect(companionDormOf("female")).toBe("dana_rakca");
+  it("gives Cipta Bakti for a woman", () => {
+    expect(companionDormOf("female")).toBe("cipta_bakti");
   });
 
-  it("gives Cipta Bakti for a man", () => {
-    expect(companionDormOf("male")).toBe("cipta_bakti");
+  it("gives Dana Rakca for a man", () => {
+    expect(companionDormOf("male")).toBe("dana_rakca");
   });
 });
 

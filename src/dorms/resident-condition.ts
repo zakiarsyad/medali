@@ -49,7 +49,7 @@ function usualDorm(dormCohorts: number[]): SQL {
         then 'wismantara_putra' else 'wismantara_putri' end
     when ${inFirstYear(dormCohorts)} then
       case when ${students.sex} = 'male'
-        then 'cipta_bakti' else 'dana_rakca' end
+        then 'dana_rakca' else 'cipta_bakti' end
     else null
   end)::dorm`;
 }

@@ -15,7 +15,7 @@ export interface TestResident {
 
 /**
  * The odd period of a year far from those of other files, a program, and
- * Reguler women of that angkatan, who live in Dana Rakca then. `nims` are
+ * Reguler women of that angkatan, who live in Cipta Bakti then. `nims` are
  * the NIMs of the file's own block.
  */
 export async function addTestResidents(

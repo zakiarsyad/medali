@@ -75,11 +75,11 @@ describe("linesOf", () => {
 });
 
 const GROUPS: MarkGroup[] = [
-  { countId: "c1", dorm: "dana_rakca", isAbsent: false, students: 9 },
-  { countId: "c1", dorm: "dana_rakca", isAbsent: true, students: 1 },
-  { countId: "c2", dorm: "cipta_bakti", isAbsent: false, students: 3 },
-  { countId: "c2", dorm: "cipta_bakti", isAbsent: true, students: 3 },
-  { countId: "c3", dorm: "dana_rakca", isAbsent: true, students: 4 },
+  { countId: "c1", dorm: "cipta_bakti", isAbsent: false, students: 9 },
+  { countId: "c1", dorm: "cipta_bakti", isAbsent: true, students: 1 },
+  { countId: "c2", dorm: "dana_rakca", isAbsent: false, students: 3 },
+  { countId: "c2", dorm: "dana_rakca", isAbsent: true, students: 3 },
+  { countId: "c3", dorm: "cipta_bakti", isAbsent: true, students: 4 },
 ];
 
 function line(more: Partial<ActivityLine>): ActivityLine {
@@ -102,7 +102,7 @@ const LINES: ActivityLine[] = [
 describe("attendanceOfLine", () => {
   it("is the announced count's Hadir, Tidak hadir and Izin, or null before it is announced", () => {
     const changed: Changed[] = [
-      { countId: "c1", dorm: "dana_rakca", isAbsent: true, becomes: "leave" },
+      { countId: "c1", dorm: "cipta_bakti", isAbsent: true, becomes: "leave" },
     ];
 
     expect(attendanceOfLine(line({ countId: "c1" }), GROUPS, changed)).toEqual({
@@ -117,14 +117,14 @@ describe("attendanceOfLine", () => {
 const RESIDENTS = {
   wismantara_putra: 5,
   wismantara_putri: 6,
-  dana_rakca: 30,
-  cipta_bakti: 20,
+  cipta_bakti: 30,
+  dana_rakca: 20,
 };
 
 describe("shownLineOf", () => {
   it("gives an announced activity the Peserta, Hadir, Izin and Tidak hadir of its count", () => {
     const changed: Changed[] = [
-      { countId: "c1", dorm: "dana_rakca", isAbsent: false, becomes: "leave" },
+      { countId: "c1", dorm: "cipta_bakti", isAbsent: false, becomes: "leave" },
     ];
 
     expect(
@@ -230,7 +230,7 @@ describe("attendanceByDorm", () => {
     const changed: Changed[] = [
       {
         countId: "c2",
-        dorm: "cipta_bakti",
+        dorm: "dana_rakca",
         isAbsent: true,
         becomes: "present",
       },
@@ -239,8 +239,8 @@ describe("attendanceByDorm", () => {
     expect(attendanceByDorm(LINES, GROUPS, changed)).toEqual({
       wismantara_putra: { present: 0, absent: 0, leave: 0 },
       wismantara_putri: { present: 0, absent: 0, leave: 0 },
-      dana_rakca: { present: 9, absent: 1, leave: 0 },
-      cipta_bakti: { present: 4, absent: 2, leave: 0 },
+      cipta_bakti: { present: 9, absent: 1, leave: 0 },
+      dana_rakca: { present: 4, absent: 2, leave: 0 },
     });
   });
 });
