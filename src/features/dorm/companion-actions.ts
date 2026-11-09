@@ -9,6 +9,7 @@ import { database } from "@/db/database";
 import type { Parsed } from "@/parsed";
 import { text } from "@/ui/form-data";
 import type { FormState } from "@/ui/form-message";
+import { changeCompanionNote } from "./change-companion-note";
 import { restartCompanion, stopCompanion } from "./companion-duty";
 import { COMPANIONS_ADDRESS } from "./companions-address";
 import { nameCompanion } from "./name-companion";
@@ -42,6 +43,18 @@ export async function nameCompanionAction(
     note: text(form, "note"),
   });
   return answer(named);
+}
+
+export async function changeCompanionNoteAction(
+  _before: FormState,
+  form: FormData,
+): Promise<FormState> {
+  const manager = await companionManager();
+  const changed = await changeCompanionNote(database(), manager, {
+    studentId: text(form, "studentId"),
+    note: text(form, "note"),
+  });
+  return answer(changed);
 }
 
 export async function stopCompanionAction(
