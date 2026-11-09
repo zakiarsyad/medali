@@ -1,5 +1,18 @@
+/* The bare screen, on a soft wash from the page colour to gold. */
+.screen {
+  composes: screen from "../ui/bare-screen.module.css";
+  background: linear-gradient(to bottom, var(--bg), var(--goldsoft));
+}
+
+.box {
+  composes: box from "../ui/bare-screen.module.css";
+  display: grid;
+  justify-items: center;
+  border-top: var(--line-width-heavy) solid var(--gold);
+}
+
 .name {
-  margin: 0;
+  margin: var(--space-md) 0 0;
   color: var(--navy);
   font-size: var(--text-title);
   font-weight: var(--weight-heavy);
@@ -8,8 +21,31 @@
 }
 
 .campus {
-  margin: 0 0 var(--space-xl);
+  margin: 0;
   color: var(--muted);
+}
+
+.tagline {
+  margin: var(--space-lg) 0 0;
+  color: var(--navy);
+  font-weight: var(--weight-semibold);
+}
+
+.values {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2xs) var(--space-md);
+  margin: var(--space-sm) 0 var(--space-xl);
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.letter {
+  color: var(--gold-ink);
+  font-weight: var(--weight-heavy);
 }
 
 .form {
