@@ -96,6 +96,7 @@ describe("listAddedStudents", () => {
         nim: "9900000202",
         name: "Daftar Uji Baru",
         className: "1-01",
+        religion: "buddhist",
         isAffirmation: true,
         ...input,
         inputAt: LATER,
@@ -112,9 +113,11 @@ describe("listAddedStudents", () => {
         "9900000202",
         "9900000201",
       ]);
+      expect(listed.students[1]?.religion).toBeNull();
       expect(listed.students[0]).toMatchObject({
         name: "Daftar Uji Baru",
         sex: "female",
+        religion: "buddhist",
         studyProgram: "Prodi Uji Daftar",
         entryPath: "regular",
         className: "1-01",

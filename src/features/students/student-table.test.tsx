@@ -12,6 +12,7 @@ function student(nim: string, group: AddedStudent["group"]): AddedStudent {
     name: "Mahasiswa Contoh",
     email: null,
     sex: "female",
+    religion: "hindu",
     studyProgram: "D3 Pajak",
     entryPath: "regular",
     className: null,
@@ -59,6 +60,24 @@ test("the list has the column Kelompok pengasuhan after Asrama", () => {
   expect(tableOf(null)).toContain(
     "<th>Asrama</th><th>Kelompok pengasuhan</th>",
   );
+});
+
+test("the list has the column Agama after Angkatan", () => {
+  expect(tableOf(null)).toContain(
+    "<th>Angkatan</th><th>Agama</th><th>Asrama</th>",
+  );
+});
+
+test("the column Agama shows the Agama of each row, and a dash for one saved before it was asked", () => {
+  function tableWith(religion: AddedStudent["religion"]): string {
+    const one = { ...student("9900003302", null), religion };
+    return renderToStaticMarkup(
+      <StudentTable students={[one]} place={{ query: "", page: 1 }} />,
+    );
+  }
+
+  expect(tableWith("hindu")).toContain('<td data-title="Agama">Hindu</td>');
+  expect(tableWith(null)).toContain('<td data-title="Agama">—</td>');
 });
 
 test("the column shows the code of the group with its mentor under it", () => {

@@ -25,7 +25,8 @@ const NOT_KEPT = {
 function csvFile(name: string, ...nims: string[]): UploadedFile {
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const lines = nims.map(
-    (nim) => `${nim},Berkas Uji ${nim},${PROGRAM},Reguler,L,2026,,,,,,,Aktif`,
+    (nim) =>
+      `${nim},Berkas Uji ${nim},${PROGRAM},Reguler,L,2026,,,,,,,Aktif,,Islam`,
   );
   const text = [titles, ...lines].join("\r\n");
   return { name, bytes: new TextEncoder().encode(text) };

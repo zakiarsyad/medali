@@ -245,6 +245,15 @@ export const entryPath = pgEnum("entry_path", ["regular", "transfer"]);
 
 export const sex = pgEnum("sex", ["male", "female"]);
 
+export const religion = pgEnum("religion", [
+  "islam",
+  "protestant",
+  "catholic",
+  "hindu",
+  "buddhist",
+  "confucian",
+]);
+
 export const studentStatus = pgEnum("student_status", [
   "active",
   "on_leave",
@@ -577,6 +586,8 @@ export const students = pgTable("students", {
     .references(() => studyPrograms.id),
   entryPath: entryPath().notNull(),
   sex: sex().notNull(),
+  /** Empty only for a student saved before Agama was asked. */
+  religion: religion(),
   cohortYear: smallint().notNull(),
   className: text(),
   province: text(),

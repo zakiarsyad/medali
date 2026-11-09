@@ -48,7 +48,8 @@ function ColumnNotes({ cohortYears }: { cohortYears: number[] }) {
         </Fragment>
       ))}
       . Prodi, provinsi, dan instansi harus sama dengan daftar di formulir.
-      Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Angkatan:{" "}
+      Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Agama: Islam,
+      Kristen, Katolik, Hindu, Buddha, atau Konghucu. Angkatan:{" "}
       {yearRange(cohortYears)}. Kolom kategori diisi ya atau tidak. Status:
       Aktif, Cuti, atau Non Aktif. Email: alamat email kampus mahasiswa, boleh
       dikosongkan. Satu berkas paling banyak{" "}

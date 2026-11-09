@@ -1,6 +1,10 @@
 import type { RoleId } from "@/auth/role-ids";
 import type { ValueKey } from "@/ui/medali-values";
-import { MORE_SAMPLE_STUDENTS, type SampleStudent } from "./sample-students";
+import {
+  MORE_SAMPLE_STUDENTS,
+  type SampleStudent,
+  withSampleReligions,
+} from "./sample-students";
 
 /*
  * Made-up people only. Every name is a mix of common given names and
@@ -155,8 +159,11 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
   },
 ];
 
-/** Two made-up students in each study program, then the rest. */
-export const SAMPLE_STUDENTS: SampleStudent[] = [
+/**
+ * Two made-up students in each study program, then the rest, each with a
+ * made-up Agama.
+ */
+export const SAMPLE_STUDENTS: SampleStudent[] = withSampleReligions([
   {
     nim: "9900230001",
     name: "Ayu Lestiani",
@@ -350,7 +357,7 @@ export const SAMPLE_STUDENTS: SampleStudent[] = [
     province: "Sulawesi Utara",
   },
   ...MORE_SAMPLE_STUDENTS,
-];
+]);
 
 export interface SamplePpksActivity {
   semester: number;

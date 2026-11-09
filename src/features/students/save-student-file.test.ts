@@ -30,7 +30,7 @@ function csvFile(
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const lines = rows.map(
     ([nim, studentName, email = ""]) =>
-      `${nim},${studentName},${PROGRAM},Alih program,P,2026,1-02,Riau,Direktorat Jenderal Pajak,ya,,,Cuti,${email}`,
+      `${nim},${studentName},${PROGRAM},Alih program,P,2026,1-02,Riau,Direktorat Jenderal Pajak,ya,,,Cuti,${email},Hindu`,
   );
   const text = [titles, ...lines].join("\n");
   const file: UploadedFile = { name, bytes: new TextEncoder().encode(text) };

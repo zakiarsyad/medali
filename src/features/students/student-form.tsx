@@ -34,6 +34,7 @@ import {
 import {
   CATEGORIES,
   ENTRY_PATH_LABELS,
+  RELIGION_LABELS,
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
@@ -260,6 +261,12 @@ export function StudentForm({
           name="sex"
           choices={Object.entries(SEX_LABELS)}
           chosen={shown.sex}
+        />
+        <SelectField
+          label="Agama"
+          name="religion"
+          choices={[["", "Pilih agama"], ...Object.entries(RELIGION_LABELS)]}
+          chosen={shown.religion}
         />
         <SelectField
           label="Angkatan"

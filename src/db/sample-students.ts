@@ -33,6 +33,40 @@ type Row = [
   extra?: Extra,
 ];
 
+/**
+ * The made-up Agama the sample students take in turn: every choice, with
+ * Islam the most often.
+ */
+const RELIGION_TURNS: NonNullable<SampleStudent["religion"]>[] = [
+  "islam",
+  "protestant",
+  "islam",
+  "catholic",
+  "islam",
+  "hindu",
+  "islam",
+  "buddhist",
+  "islam",
+  "confucian",
+];
+
+/** The made-up Agama of the sample student in this place of a list. */
+export function sampleReligion(
+  place: number,
+): NonNullable<SampleStudent["religion"]> {
+  return RELIGION_TURNS[place % RELIGION_TURNS.length] ?? "islam";
+}
+
+/** Gives each sample student of a list a made-up Agama, in turn. */
+export function withSampleReligions(
+  sampleStudents: SampleStudent[],
+): SampleStudent[] {
+  return sampleStudents.map((student, place) => ({
+    ...student,
+    religion: sampleReligion(place),
+  }));
+}
+
 const ON_LEAVE: Extra = { status: "on_leave" };
 const INACTIVE: Extra = { status: "inactive" };
 

@@ -21,7 +21,7 @@ import {
   sampleFirstYears,
   samplePlaces,
 } from "./sample-dorms";
-import { studentStatus } from "./schema";
+import { religion, studentStatus } from "./schema";
 
 describe("the sample accounts with two roles", () => {
   const twoRoles = SAMPLE_ACCOUNTS.filter((a) => a.roles.length === 2);
@@ -159,6 +159,15 @@ describe("the sample students", () => {
     }
   });
 
+  it("each have an Agama, and hold every one of them", () => {
+    for (const student of SAMPLE_STUDENTS) {
+      expect(religion.enumValues).toContain(student.religion);
+    }
+    expect(different(SAMPLE_STUDENTS.map((s) => s.religion))).toBe(
+      religion.enumValues.length,
+    );
+  });
+
   it("name a listed provinsi, and an instansi asal only for Alih program", () => {
     for (const student of SAMPLE_STUDENTS) {
       expect(PROVINCES).toContain(student.province);
@@ -203,6 +212,14 @@ describe("the sample students of a first year", () => {
       expect(student.entryPath).toBe("regular");
       expect(PROVINCES).toContain(student.province);
     }
+  });
+
+  it("each have an Agama, and hold every one of them", () => {
+    for (const student of firstYears) {
+      expect(religion.enumValues).toContain(student.religion);
+    }
+    const held = new Set(firstYears.map((s) => s.religion));
+    expect(held.size).toBe(religion.enumValues.length);
   });
 
   it.each(DORM_IDS)("leave residents of %s without a room", (dorm) => {

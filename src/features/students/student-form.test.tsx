@@ -43,6 +43,7 @@ const STUDENT: StoredStudent = {
   studyProgramId: 3,
   entryPath: "regular",
   sex: "female",
+  religion: "protestant",
   cohortYear: 2026,
   className: null,
   province: null,
@@ -148,6 +149,46 @@ test("the form to change a student sends the version and the group it opened wit
   );
   expect(formFor([2026], GROUPS)).not.toContain('name="version"');
   expect(formFor([2026], GROUPS)).not.toContain('name="openedGroupId"');
+});
+
+function religionChoiceOf(form: string): string {
+  return form.match(/<select name="religion".*?<\/select>/)?.[0] ?? "";
+}
+
+test("Agama offers the six choices, and asks for one on a new student", () => {
+  expect(formFor([2026])).toContain('Agama<select name="religion"');
+  expect(religionChoiceOf(formFor([2026]))).toContain(
+    '<option value="" selected="">Pilih agama</option>' +
+      '<option value="islam">Islam</option>' +
+      '<option value="protestant">Kristen</option>' +
+      '<option value="catholic">Katolik</option>' +
+      '<option value="hindu">Hindu</option>' +
+      '<option value="buddhist">Buddha</option>' +
+      '<option value="confucian">Konghucu</option>' +
+      "</select>",
+  );
+});
+
+test("Agama stands on what was saved for the student being changed, or asks for one", () => {
+  function changing(student: StoredStudent): string {
+    return renderToStaticMarkup(
+      <StudentForm
+        programs={PROGRAMS}
+        cohortYears={[2026]}
+        editing={student}
+        groups={GROUPS}
+        place={{ query: "", page: 1 }}
+        period={ODD_2026}
+      />,
+    );
+  }
+
+  expect(religionChoiceOf(changing(STUDENT))).toContain(
+    '<option value="protestant" selected="">Kristen</option>',
+  );
+  expect(religionChoiceOf(changing({ ...STUDENT, religion: null }))).toContain(
+    '<option value="" selected="">Pilih agama</option>',
+  );
 });
 
 test("the warning of a full group shows under the line of the choice", () => {

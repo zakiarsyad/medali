@@ -32,6 +32,7 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
     studyProgramId: program,
     entryPath: "regular",
     sex: "female",
+    religion: "islam",
     cohortYear: 2024,
     className: null,
     province: null,

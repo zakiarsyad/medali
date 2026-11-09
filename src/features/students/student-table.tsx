@@ -12,6 +12,7 @@ import {
   CATEGORIES,
   ENTRY_PATH_LABELS,
   inputSourceLabel,
+  RELIGION_LABELS,
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
@@ -24,6 +25,7 @@ import {
 import { RemoveStudentButton } from "./remove-student-button";
 
 const NO_EMAIL = "Belum ada email";
+const NO_RELIGION = "—";
 
 const STATUS_TONES: Record<AddedStudent["status"], BadgeTone> = {
   active: "good",
@@ -101,6 +103,9 @@ function StudentRow({
         <small className={shared.detail}>{pathAndClass(student)}</small>
       </td>
       <td data-title="Angkatan">{student.cohortYear}</td>
+      <td data-title="Agama">
+        {student.religion ? RELIGION_LABELS[student.religion] : NO_RELIGION}
+      </td>
       <td data-title="Asrama">
         <Dorm student={student} />
       </td>
@@ -150,6 +155,7 @@ export function StudentTable({
             <th>Mahasiswa</th>
             <th>Program studi</th>
             <th>Angkatan</th>
+            <th>Agama</th>
             <th>Asrama</th>
             <th>Kelompok pengasuhan</th>
             <th>Status</th>

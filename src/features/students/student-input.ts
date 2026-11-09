@@ -1,5 +1,5 @@
 import { parseAccountEmail } from "@/auth/account-email";
-import { entryPath, sex, studentStatus } from "@/db/schema";
+import { entryPath, religion, sex, studentStatus } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import type { Parsed } from "@/parsed";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
@@ -21,6 +21,7 @@ export interface StudentFields {
   studyProgramId: string;
   entryPath: string;
   sex: string;
+  religion: string;
   cohortYear: string;
   className: string;
   province: string;
@@ -40,6 +41,7 @@ export interface StudentInput extends Record<CategoryField, boolean> {
   studyProgramId: number;
   entryPath: (typeof entryPath.enumValues)[number];
   sex: (typeof sex.enumValues)[number];
+  religion: (typeof religion.enumValues)[number];
   cohortYear: number;
   className: string | null;
   province: string | null;
@@ -48,7 +50,9 @@ export interface StudentInput extends Record<CategoryField, boolean> {
 }
 
 /** A student as stored, with what the form shows beside the record. */
-export interface StoredStudent extends StudentInput {
+export interface StoredStudent extends Omit<StudentInput, "religion"> {
+  /** Null for a student saved before Agama was asked. */
+  religion: StudentInput["religion"] | null;
   /** The kelompok pengasuhan the student is in, or null for none. */
   mentorGroupId: string | null;
   /** How many times the record was saved. A change is sent with it. */
@@ -75,6 +79,8 @@ const MALFORMED_EMAIL = "Alamat email tidak valid.";
  */
 export const UNKNOWN_PROGRAM = "Program studi tidak dikenal.";
 export const UNKNOWN_SEX = "Jenis kelamin harus Laki-laki atau Perempuan.";
+export const NO_RELIGION = "Agama wajib dipilih.";
+export const UNKNOWN_RELIGION = "Agama tidak dikenal.";
 export const UNKNOWN_PROVINCE = "Provinsi tidak dikenal.";
 export const UNKNOWN_AGENCY = "Instansi asal tidak dikenal.";
 
@@ -165,7 +171,7 @@ function parseCategories(
 
 type Choices = Pick<
   StudentInput,
-  "studyProgramId" | "entryPath" | "sex" | "cohortYear" | "status"
+  "studyProgramId" | "entryPath" | "sex" | "religion" | "cohortYear" | "status"
 >;
 
 /** The fields that must be one of the choices the form offers. */
@@ -181,6 +187,9 @@ function parseChoices(
   if (!path) return refused("Jalur harus Reguler atau Alih program.");
   const studentSex = oneOf(sex.enumValues, fields.sex);
   if (!studentSex) return refused(UNKNOWN_SEX);
+  if (fields.religion === "") return refused(NO_RELIGION);
+  const studentReligion = oneOf(religion.enumValues, fields.religion);
+  if (!studentReligion) return refused(UNKNOWN_RELIGION);
   const cohortYear = context.cohortYears.find(
     (year) => String(year) === fields.cohortYear,
   );
@@ -195,6 +204,7 @@ function parseChoices(
       studyProgramId: program.id,
       entryPath: path,
       sex: studentSex,
+      religion: studentReligion,
       cohortYear,
       status,
     },

@@ -19,7 +19,7 @@ const PROGRAM = "Prodi Uji Pratinjau";
 function csvFile(name: string, ...nims: string[]): UploadedFile {
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const rows = nims.map(
-    (nim) => `${nim},Pratinjau Uji,${PROGRAM},Reguler,L,2026,,,,,,,`,
+    (nim) => `${nim},Pratinjau Uji,${PROGRAM},Reguler,L,2026,,,,,,,,,Islam`,
   );
   const text = [titles, ...rows].join("\n");
   return { name, bytes: new TextEncoder().encode(text) };

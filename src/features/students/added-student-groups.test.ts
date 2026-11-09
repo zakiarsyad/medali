@@ -27,6 +27,7 @@ function newStudent(
     studyProgramId,
     entryPath: "regular",
     sex: "female",
+    religion: "islam",
     cohortYear: 2026,
     className: null,
     province: null,

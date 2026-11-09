@@ -73,6 +73,7 @@ function cellsOf(row: NumberedRow): FileCells {
     internasional: cell(11),
     status: cell(12),
     email: cell(13),
+    agama: cell(14),
   };
 }
 

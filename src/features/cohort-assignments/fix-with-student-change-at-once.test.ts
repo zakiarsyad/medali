@@ -67,7 +67,9 @@ async function addDraftWithAddedStudent(
 async function openForm(db: Database, nim: string) {
   const stored = await findAddedStudent(db, nim);
   if (!stored) throw new Error("The student was not put in here.");
-  const { mentorGroupId, version, ...record } = stored;
+  const { mentorGroupId, version, religion, ...rest } = stored;
+  // Agama must be chosen to save, as in the form.
+  const record = { ...rest, religion: religion ?? "islam" };
   return { record, openedGroupId: mentorGroupId, version };
 }
 

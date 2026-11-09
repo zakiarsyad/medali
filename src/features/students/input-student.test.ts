@@ -25,6 +25,7 @@ function newStudent(
     studyProgramId,
     entryPath: "transfer",
     sex: "male",
+    religion: "islam",
     cohortYear: 2026,
     className: "1-02",
     province: "Riau",

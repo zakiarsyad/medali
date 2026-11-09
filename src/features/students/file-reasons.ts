@@ -3,9 +3,11 @@ import { type FileCells, yearRange } from "./student-file-columns";
 import {
   type InputContext,
   invalidCohort,
+  NO_RELIGION,
   UNKNOWN_AGENCY,
   UNKNOWN_PROGRAM,
   UNKNOWN_PROVINCE,
+  UNKNOWN_RELIGION,
   UNKNOWN_SEX,
 } from "./student-input";
 
@@ -16,6 +18,12 @@ function withText(refusal: string, text: string): string {
   if (text === "") return refusal;
   const reason = refusal.replace(/\.$/, "");
   return `${reason}: ${shortLine(text, SHOWN_TEXT_LENGTH)}.`;
+}
+
+/** A file sends no Agama for a text it does not know: the text is named. */
+function religionReason(text: string): string {
+  if (text === "") return "Agama wajib diisi.";
+  return withText(UNKNOWN_RELIGION, text);
 }
 
 /**
@@ -31,6 +39,7 @@ export function fileReason(
   if (formRefusal === UNKNOWN_PROGRAM)
     return withText(formRefusal, cells.prodi);
   if (formRefusal === UNKNOWN_SEX) return "Jenis kelamin harus L atau P.";
+  if (formRefusal === NO_RELIGION) return religionReason(cells.agama);
   if (formRefusal === invalidCohort(context.cohortYears)) {
     return `Angkatan harus ${yearRange(context.cohortYears)}.`;
   }

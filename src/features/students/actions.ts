@@ -49,6 +49,7 @@ function readFields(form: FormData): StudentFormFields {
     studyProgramId: text(form, "studyProgramId"),
     entryPath: text(form, "entryPath"),
     sex: text(form, "sex"),
+    religion: text(form, "religion"),
     cohortYear: text(form, "cohortYear"),
     className: text(form, "className"),
     province: text(form, "province"),
