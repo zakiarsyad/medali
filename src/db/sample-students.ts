@@ -78,9 +78,26 @@ export function sampleBirthDate(place: number, cohortYear: number): string {
   return `${cohortYear - age}-${month}-${day}`;
 }
 
+/** The cities and regencies the sample students take in turn. */
+const BIRTH_PLACES = [
+  "Kota Bandung",
+  "Kabupaten Sleman",
+  "Kota Medan",
+  "Kabupaten Banyumas",
+  "Kota Makassar",
+  "Kabupaten Gianyar",
+  "Kota Pontianak",
+  "Kabupaten Jember",
+];
+
+/** The made-up Tempat lahir of the sample student in this place of a list. */
+export function sampleBirthPlace(place: number): string {
+  return BIRTH_PLACES[place % BIRTH_PLACES.length] ?? "Kota Bandung";
+}
+
 /**
- * Gives each sample student of a list a made-up Agama and Tanggal lahir,
- * in turn.
+ * Gives each sample student of a list a made-up Agama, Tanggal lahir and
+ * Tempat lahir, in turn.
  */
 export function withSampleDetails(
   sampleStudents: SampleStudent[],
@@ -89,6 +106,7 @@ export function withSampleDetails(
     ...student,
     religion: sampleReligion(place),
     birthDate: sampleBirthDate(place, student.cohortYear),
+    birthPlace: sampleBirthPlace(place),
   }));
 }
 

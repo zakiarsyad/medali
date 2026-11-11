@@ -52,6 +52,7 @@ function readFields(form: FormData): StudentFormFields {
     sex: text(form, "sex"),
     religion: text(form, "religion"),
     birthDate: text(form, "birthDate"),
+    birthPlace: text(form, "birthPlace"),
     cohortYear: text(form, "cohortYear"),
     className: text(form, "className"),
     province: text(form, "province"),

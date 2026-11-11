@@ -22,6 +22,7 @@ const student: StoredStudent = {
   sex: "female",
   religion: "hindu",
   birthDate: "2005-08-17",
+  birthPlace: "Kota Contoh",
   cohortYear: 2025,
   className: null,
   province: "Bali",
@@ -44,6 +45,7 @@ const typed: StudentFormFields = {
   sex: "female",
   religion: "islam",
   birthDate: "08/17",
+  birthPlace: "Kota",
   cohortYear: "2024",
   className: "1-01",
   province: "Riau",
@@ -64,6 +66,7 @@ describe("formValues", () => {
       sex: "male",
       religion: "",
       birthDate: "",
+      birthPlace: "",
       cohortYear: "2026",
       className: "",
       province: "",
@@ -84,6 +87,7 @@ describe("formValues", () => {
       sex: "female",
       religion: "hindu",
       birthDate: "08/17/2005",
+      birthPlace: "Kota Contoh",
       cohortYear: "2025",
       className: "",
       province: "Bali",
@@ -104,6 +108,12 @@ describe("formValues", () => {
 
   it("leaves Tanggal lahir empty for a student saved before it was asked", () => {
     expect(formValues({ ...student, birthDate: null }, first).birthDate).toBe(
+      "",
+    );
+  });
+
+  it("leaves Tempat lahir empty for a student saved before it was asked", () => {
+    expect(formValues({ ...student, birthPlace: null }, first).birthPlace).toBe(
       "",
     );
   });

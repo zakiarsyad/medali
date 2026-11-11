@@ -3,6 +3,7 @@ import type { CompanionDormId } from "@/features/dorm/companion-dorms";
 import {
   type SampleStudent,
   sampleBirthDate,
+  sampleBirthPlace,
   sampleReligion,
 } from "./sample-students";
 
@@ -79,6 +80,7 @@ function firstYear(
     sex,
     religion: sampleReligion(place),
     birthDate: sampleBirthDate(place, cohortYear),
+    birthPlace: sampleBirthPlace(place),
     cohortYear,
     className: `1-0${(place % CLASSES) + 1}`,
     province: isInternational ? ABROAD : province,

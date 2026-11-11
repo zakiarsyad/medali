@@ -20,6 +20,8 @@ export interface StudentFacts {
   cohortYear: number;
   className: string | null;
   province: string | null;
+  /** Null for a student saved before Tempat lahir was asked. */
+  birthPlace: string | null;
   sex: Student["sex"];
 }
 
@@ -38,6 +40,7 @@ const FACTS = {
   cohortYear: students.cohortYear,
   className: students.className,
   province: students.province,
+  birthPlace: students.birthPlace,
   sex: students.sex,
 };
 

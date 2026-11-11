@@ -21,6 +21,7 @@ export const FILE_COLUMNS = [
   { title: "email", others: [] },
   { title: "agama", others: [] },
   { title: "tanggal_lahir", others: ["tanggal lahir"] },
+  { title: "tempat_lahir", others: ["tempat lahir"] },
 ] as const satisfies readonly { title: string; others: readonly string[] }[];
 
 export type FileColumn = (typeof FILE_COLUMNS)[number]["title"];
@@ -54,6 +55,7 @@ const TEMPLATE_EXAMPLE: FileCells = {
   email: "",
   agama: "Islam",
   tanggal_lahir: "08/17/2005",
+  tempat_lahir: "Kota Contoh",
 };
 
 export function templateCsv(): string {

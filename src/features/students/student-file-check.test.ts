@@ -20,7 +20,7 @@ function csvFile(name: string, ...nims: string[]): UploadedFile {
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const rows = nims.map(
     (nim) =>
-      `${nim},Pratinjau Uji,${PROGRAM},Reguler,L,2026,,,,,,,,,Islam,08/17/2005`,
+      `${nim},Pratinjau Uji,${PROGRAM},Reguler,L,2026,,,,,,,,,Islam,08/17/2005,Kota Contoh`,
   );
   const text = [titles, ...rows].join("\n");
   return { name, bytes: new TextEncoder().encode(text) };

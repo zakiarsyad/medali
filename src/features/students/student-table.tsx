@@ -110,6 +110,7 @@ function StudentRow({
       <td data-title="Tanggal lahir">
         {student.birthDate ? shownBirthDate(student.birthDate) : NOT_ASKED_YET}
       </td>
+      <td data-title="Tempat lahir">{student.birthPlace ?? NOT_ASKED_YET}</td>
       <td data-title="Asrama">
         <Dorm student={student} />
       </td>
@@ -161,6 +162,7 @@ export function StudentTable({
             <th>Angkatan</th>
             <th>Agama</th>
             <th>Tanggal lahir</th>
+            <th>Tempat lahir</th>
             <th>Asrama</th>
             <th>Kelompok pengasuhan</th>
             <th>Status</th>

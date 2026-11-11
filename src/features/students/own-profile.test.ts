@@ -56,6 +56,7 @@ async function addRows(db: Database) {
     cohortYear: 2025,
     className: "2-01",
     province: "Bali",
+    birthPlace: "Kota Contoh",
     isSeedling: true,
     status: "on_leave",
   });
@@ -113,6 +114,7 @@ describe("readOwnProfile", () => {
           cohortYear: 2025,
           className: "2-01",
           province: "Bali",
+          birthPlace: "Kota Contoh",
           sex: "female",
           mentorGroup: {
             cohortYear: 2026,

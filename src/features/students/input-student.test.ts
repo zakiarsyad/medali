@@ -27,6 +27,7 @@ function newStudent(
     sex: "male",
     religion: "islam",
     birthDate: "2005-08-17",
+    birthPlace: "Kota Contoh",
     cohortYear: 2026,
     className: "1-02",
     province: "Riau",

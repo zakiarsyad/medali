@@ -50,6 +50,7 @@ function student(nim: string, studyProgramId: number): StudentInput {
     sex: "female",
     religion: "islam",
     birthDate: "2005-08-17",
+    birthPlace: "Kota Contoh",
     cohortYear: 2026,
     className: null,
     province: null,

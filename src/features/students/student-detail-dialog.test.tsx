@@ -125,6 +125,7 @@ describe("the tags another area adds beside the status", () => {
         cohortYear: 2025,
         className: null,
         province: null,
+        birthPlace: null,
         sex: "female",
         mentorGroup: null,
         residence: null,

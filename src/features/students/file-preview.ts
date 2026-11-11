@@ -52,6 +52,7 @@ function cellsOf(student: StudentInput, programs: StudyProgram[]): string[] {
     student.email ?? NOT_FILLED,
     RELIGION_LABELS[student.religion],
     shownBirthDate(student.birthDate),
+    student.birthPlace,
   ];
 }
 

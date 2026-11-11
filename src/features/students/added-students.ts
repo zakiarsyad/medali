@@ -52,6 +52,7 @@ const ROW = {
   sex: students.sex,
   religion: students.religion,
   birthDate: students.birthDate,
+  birthPlace: students.birthPlace,
   studyProgram: studyPrograms.name,
   entryPath: students.entryPath,
   className: students.className,
@@ -77,6 +78,8 @@ export interface AddedStudent {
   religion: typeof students.$inferSelect.religion;
   /** Null for a student saved before Tanggal lahir was asked. */
   birthDate: typeof students.$inferSelect.birthDate;
+  /** Null for a student saved before Tempat lahir was asked. */
+  birthPlace: string | null;
   studyProgram: string;
   entryPath: typeof students.$inferSelect.entryPath;
   className: string | null;
@@ -237,6 +240,7 @@ const INPUT = {
   sex: students.sex,
   religion: students.religion,
   birthDate: students.birthDate,
+  birthPlace: students.birthPlace,
   cohortYear: students.cohortYear,
   className: students.className,
   province: students.province,

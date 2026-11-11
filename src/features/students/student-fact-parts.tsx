@@ -4,6 +4,9 @@ import { detailSemesterWords } from "./semester-words";
 import type { StudentFacts } from "./student-facts";
 import styles from "./student-list.module.css";
 
+/** Shown for a fact asked only after the student was saved. */
+const NOT_ASKED_YET = "—";
+
 export function Fact({
   title,
   wide = false,
@@ -48,6 +51,7 @@ export function MainFacts({
       <Fact title="Provinsi (domisili sesuai NIK)">
         {student.province ?? "-"}
       </Fact>
+      <Fact title="Tempat lahir">{student.birthPlace ?? NOT_ASKED_YET}</Fact>
       <Fact title="Semester · tahap">
         {detailSemesterWords(student.status, semester)}
       </Fact>

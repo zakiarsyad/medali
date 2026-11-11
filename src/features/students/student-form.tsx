@@ -26,6 +26,7 @@ import {
   keptGroupId,
 } from "./group-choice-words";
 import {
+  BIRTH_PLACE_MAX_LENGTH,
   CLASS_MAX_LENGTH,
   EMAIL_MAX_LENGTH,
   NAME_MAX_LENGTH,
@@ -47,6 +48,8 @@ import { SelectField } from "./select-field";
 import type { RunningPeriod } from "./semester-now";
 import type { StoredStudent } from "./student-input";
 import { useNotify } from "./student-notice";
+
+const BIRTH_PLACE_HINT = "Misalnya Kota Bandung";
 
 function sameAsShown(values: readonly (string | number)[]) {
   return values.map((value) => [String(value), String(value)] as const);
@@ -282,6 +285,17 @@ export function StudentForm({
             maxLength={BIRTH_DATE_HINT.length}
             placeholder={BIRTH_DATE_HINT}
             defaultValue={shown.birthDate}
+            required
+          />
+        </label>
+        <label className={shared.field}>
+          Tempat lahir
+          <input
+            name="birthPlace"
+            className={shared.input}
+            maxLength={BIRTH_PLACE_MAX_LENGTH}
+            placeholder={BIRTH_PLACE_HINT}
+            defaultValue={shown.birthPlace}
             required
           />
         </label>

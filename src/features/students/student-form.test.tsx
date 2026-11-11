@@ -45,6 +45,7 @@ const STUDENT: StoredStudent = {
   sex: "female",
   religion: "protestant",
   birthDate: "2005-08-17",
+  birthPlace: "Kota Contoh",
   cohortYear: 2026,
   className: null,
   province: null,
@@ -227,6 +228,44 @@ test("Tanggal lahir shows what was saved for the student being changed as MM/DD/
   expect(birthDateFieldOf(changing({ ...STUDENT, birthDate: null }))).toContain(
     'value=""',
   );
+});
+
+function birthPlaceFieldOf(form: string): string {
+  return form.match(/<input[^>]* name="birthPlace"[^>]*>/)?.[0] ?? "";
+}
+
+test("Tempat lahir is a text field after Tanggal lahir, with the hint Misalnya Kota Bandung", () => {
+  const form = formFor([2026]);
+
+  expect(form).toMatch(/Tempat lahir<input[^>]* name="birthPlace"/);
+  const place = form.indexOf("Tempat lahir<input");
+  expect(place).toBeGreaterThan(form.indexOf("Tanggal lahir<input"));
+  expect(place).toBeLessThan(form.indexOf('Angkatan<select name="cohortYear"'));
+  const field = birthPlaceFieldOf(form);
+  expect(field).toContain('placeholder="Misalnya Kota Bandung"');
+  expect(field).toContain('maxLength="60"');
+  expect(field).toContain('required=""');
+  expect(field).toContain('value=""');
+});
+
+test("Tempat lahir shows what was saved for the student being changed, or nothing", () => {
+  function changing(student: StoredStudent): string {
+    return renderToStaticMarkup(
+      <StudentForm
+        programs={PROGRAMS}
+        cohortYears={[2026]}
+        editing={student}
+        groups={GROUPS}
+        place={{ query: "", page: 1 }}
+        period={ODD_2026}
+      />,
+    );
+  }
+
+  expect(birthPlaceFieldOf(changing(STUDENT))).toContain('value="Kota Contoh"');
+  expect(
+    birthPlaceFieldOf(changing({ ...STUDENT, birthPlace: null })),
+  ).toContain('value=""');
 });
 
 test("the warning of a full group shows under the line of the choice", () => {

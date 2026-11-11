@@ -161,7 +161,7 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
 
 /**
  * Two made-up students in each study program, then the rest, each with a
- * made-up Agama and Tanggal lahir.
+ * made-up Agama, Tanggal lahir and Tempat lahir.
  */
 export const SAMPLE_STUDENTS: SampleStudent[] = withSampleDetails([
   {

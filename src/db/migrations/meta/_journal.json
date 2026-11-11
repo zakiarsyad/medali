@@ -561,6 +561,13 @@
       "when": 1794268474946,
       "tag": "0079_student-birth-date",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1794367088098,
+      "tag": "0080_student-birth-place",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import type { Parsed } from "@/parsed";
 import { parseBirthDate } from "./birth-date";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
+  BIRTH_PLACE_MAX_LENGTH,
   CLASS_MAX_LENGTH,
   EMAIL_MAX_LENGTH,
   isNim,
@@ -25,6 +26,7 @@ export interface StudentFields {
   religion: string;
   /** Written MM/DD/YYYY. */
   birthDate: string;
+  birthPlace: string;
   cohortYear: string;
   className: string;
   province: string;
@@ -47,6 +49,8 @@ export interface StudentInput extends Record<CategoryField, boolean> {
   religion: (typeof religion.enumValues)[number];
   /** A day written year-month-day, the way the database keeps it. */
   birthDate: string;
+  /** The city or regency of birth, as typed. */
+  birthPlace: string;
   cohortYear: number;
   className: string | null;
   province: string | null;
@@ -56,11 +60,13 @@ export interface StudentInput extends Record<CategoryField, boolean> {
 
 /** A student as stored, with what the form shows beside the record. */
 export interface StoredStudent
-  extends Omit<StudentInput, "religion" | "birthDate"> {
+  extends Omit<StudentInput, "religion" | "birthDate" | "birthPlace"> {
   /** Null for a student saved before Agama was asked. */
   religion: StudentInput["religion"] | null;
   /** Null for a student saved before Tanggal lahir was asked. */
   birthDate: string | null;
+  /** Null for a student saved before Tempat lahir was asked. */
+  birthPlace: string | null;
   /** The kelompok pengasuhan the student is in, or null for none. */
   mentorGroupId: string | null;
   /** How many times the record was saved. A change is sent with it. */
@@ -131,6 +137,17 @@ function parseName(text: string): Parsed<string> {
     return refused(`Nama paling banyak ${NAME_MAX_LENGTH} karakter.`);
   }
   return { ok: true, value: name };
+}
+
+function parseBirthPlace(text: string): Parsed<string> {
+  const place = text.trim().replace(/\s+/g, " ");
+  if (place === "") return refused("Tempat lahir wajib diisi.");
+  if (place.length > BIRTH_PLACE_MAX_LENGTH) {
+    return refused(
+      `Tempat lahir paling banyak ${BIRTH_PLACE_MAX_LENGTH} karakter.`,
+    );
+  }
+  return { ok: true, value: place };
 }
 
 /** The address is optional: empty means the student has none. */
@@ -236,6 +253,8 @@ export function parseStudent(
   if (!choices.ok) return choices;
   const birthDate = parseBirthDate(fields.birthDate, context.today);
   if (!birthDate.ok) return birthDate;
+  const birthPlace = parseBirthPlace(fields.birthPlace);
+  if (!birthPlace.ok) return birthPlace;
   const className = parseClassName(fields.className);
   if (!className.ok) return className;
   const province = parseListed(PROVINCES, fields.province, UNKNOWN_PROVINCE);
@@ -258,6 +277,7 @@ export function parseStudent(
       email: email.value,
       ...choices.value,
       birthDate: birthDate.value,
+      birthPlace: birthPlace.value,
       className: className.value,
       province: province.value,
       originAgency: isTransfer ? agency.value : null,

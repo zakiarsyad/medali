@@ -590,6 +590,8 @@ export const students = pgTable("students", {
   religion: religion(),
   /** Empty only for a student saved before Tanggal lahir was asked. */
   birthDate: date(),
+  /** Empty only for a student saved before Tempat lahir was asked. */
+  birthPlace: text(),
   cohortYear: smallint().notNull(),
   className: text(),
   province: text(),

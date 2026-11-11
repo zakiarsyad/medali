@@ -34,6 +34,13 @@ function expectSampleBirthDate(student: SampleStudent): void {
   expect(age).toBeLessThanOrEqual(20);
 }
 
+/** A made-up Tempat lahir is a city or regency of at most 60 characters. */
+function expectSampleBirthPlace(student: SampleStudent): void {
+  const place = student.birthPlace ?? "";
+  expect(place).toMatch(/^(Kota|Kabupaten) \S/);
+  expect(place.length).toBeLessThanOrEqual(60);
+}
+
 describe("the sample accounts with two roles", () => {
   const twoRoles = SAMPLE_ACCOUNTS.filter((a) => a.roles.length === 2);
 
@@ -186,6 +193,13 @@ describe("the sample students", () => {
     );
   });
 
+  it("each have a made-up Tempat lahir, not all the same", () => {
+    for (const student of SAMPLE_STUDENTS) expectSampleBirthPlace(student);
+    expect(different(SAMPLE_STUDENTS.map((s) => s.birthPlace))).toBeGreaterThan(
+      5,
+    );
+  });
+
   it("name a listed provinsi, and an instansi asal only for Alih program", () => {
     for (const student of SAMPLE_STUDENTS) {
       expect(PROVINCES).toContain(student.province);
@@ -242,6 +256,10 @@ describe("the sample students of a first year", () => {
 
   it("each have a made-up Tanggal lahir", () => {
     for (const student of firstYears) expectSampleBirthDate(student);
+  });
+
+  it("each have a made-up Tempat lahir", () => {
+    for (const student of firstYears) expectSampleBirthPlace(student);
   });
 
   it.each(DORM_IDS)("leave residents of %s without a room", (dorm) => {

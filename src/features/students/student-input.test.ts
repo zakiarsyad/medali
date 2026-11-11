@@ -25,6 +25,7 @@ const valid: StudentFields = {
   sex: "female",
   religion: "catholic",
   birthDate: " 08/17/2005 ",
+  birthPlace: "  Kota   Contoh ",
   cohortYear: "2025",
   className: " 1-01 ",
   province: "Jawa Barat",
@@ -60,6 +61,7 @@ describe("parseStudent", () => {
         sex: "female",
         religion: "catholic",
         birthDate: "2005-08-17",
+        birthPlace: "Kota Contoh",
         cohortYear: 2025,
         className: "1-01",
         province: "Jawa Barat",
@@ -108,6 +110,14 @@ describe("parseStudent", () => {
       ok: true,
       value: { email: "mahasiswa.contoh@luar.example" },
     });
+  });
+
+  it("accepts a Tempat lahir of 60 characters", () => {
+    const parsed = parseStudent(
+      { ...valid, birthPlace: "K".repeat(60) },
+      context,
+    );
+    expect(parsed.ok && parsed.value.birthPlace).toBe("K".repeat(60));
   });
 
   it("keeps Instansi asal only for Alih program", () => {
@@ -178,6 +188,17 @@ describe("parseStudent", () => {
       "a Tanggal lahir after today",
       { birthDate: "11/11/2026" },
       "Tanggal lahir tidak boleh setelah hari ini.",
+    ],
+    ["no Tempat lahir", { birthPlace: "" }, "Tempat lahir wajib diisi."],
+    [
+      "a Tempat lahir of spaces",
+      { birthPlace: "   " },
+      "Tempat lahir wajib diisi.",
+    ],
+    [
+      "a Tempat lahir longer than 60 characters",
+      { birthPlace: "K".repeat(61) },
+      "Tempat lahir paling banyak 60 karakter.",
     ],
     [
       "a year before the choices",
