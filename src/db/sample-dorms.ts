@@ -1,6 +1,10 @@
 import type { DormId } from "@/dorms/dorms";
 import type { CompanionDormId } from "@/features/dorm/companion-dorms";
-import { type SampleStudent, sampleReligion } from "./sample-students";
+import {
+  type SampleStudent,
+  sampleBirthDate,
+  sampleReligion,
+} from "./sample-students";
 
 /*
  * Made-up people only. Every name is a mix of common given names and
@@ -74,6 +78,7 @@ function firstYear(
     entryPath: "regular",
     sex,
     religion: sampleReligion(place),
+    birthDate: sampleBirthDate(place, cohortYear),
     cohortYear,
     className: `1-0${(place % CLASSES) + 1}`,
     province: isInternational ? ABROAD : province,

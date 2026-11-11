@@ -2,6 +2,7 @@ import { parseAccountEmail } from "@/auth/account-email";
 import { entryPath, religion, sex, studentStatus } from "@/db/schema";
 import type { StudyProgram } from "@/db/study-programs";
 import type { Parsed } from "@/parsed";
+import { parseBirthDate } from "./birth-date";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
   CLASS_MAX_LENGTH,
@@ -22,6 +23,8 @@ export interface StudentFields {
   entryPath: string;
   sex: string;
   religion: string;
+  /** Written MM/DD/YYYY. */
+  birthDate: string;
   cohortYear: string;
   className: string;
   province: string;
@@ -42,6 +45,8 @@ export interface StudentInput extends Record<CategoryField, boolean> {
   entryPath: (typeof entryPath.enumValues)[number];
   sex: (typeof sex.enumValues)[number];
   religion: (typeof religion.enumValues)[number];
+  /** A day written year-month-day, the way the database keeps it. */
+  birthDate: string;
   cohortYear: number;
   className: string | null;
   province: string | null;
@@ -50,9 +55,12 @@ export interface StudentInput extends Record<CategoryField, boolean> {
 }
 
 /** A student as stored, with what the form shows beside the record. */
-export interface StoredStudent extends Omit<StudentInput, "religion"> {
+export interface StoredStudent
+  extends Omit<StudentInput, "religion" | "birthDate"> {
   /** Null for a student saved before Agama was asked. */
   religion: StudentInput["religion"] | null;
+  /** Null for a student saved before Tanggal lahir was asked. */
+  birthDate: string | null;
   /** The kelompok pengasuhan the student is in, or null for none. */
   mentorGroupId: string | null;
   /** How many times the record was saved. A change is sent with it. */
@@ -68,6 +76,8 @@ export interface InputContext {
    * it is empty any well-formed address is taken.
    */
   campusEnding: string;
+  /** Today on campus, written year-month-day. */
+  today: string;
 }
 
 const COHORT_YEARS_BACK = 5;
@@ -224,6 +234,8 @@ export function parseStudent(
   if (!email.ok) return email;
   const choices = parseChoices(fields, context);
   if (!choices.ok) return choices;
+  const birthDate = parseBirthDate(fields.birthDate, context.today);
+  if (!birthDate.ok) return birthDate;
   const className = parseClassName(fields.className);
   if (!className.ok) return className;
   const province = parseListed(PROVINCES, fields.province, UNKNOWN_PROVINCE);
@@ -245,6 +257,7 @@ export function parseStudent(
       name: name.value,
       email: email.value,
       ...choices.value,
+      birthDate: birthDate.value,
       className: className.value,
       province: province.value,
       originAgency: isTransfer ? agency.value : null,

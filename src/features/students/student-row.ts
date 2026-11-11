@@ -89,6 +89,7 @@ export function rowFields(
     entryPath: entryPath(cells.jalur),
     sex: sex(cells.jenis_kelamin),
     religion: religion(cells.agama),
+    birthDate: cells.tanggal_lahir,
     cohortYear: cohortYear(cells.angkatan),
     className: cells.kelas,
     province: listed(PROVINCES, cells.provinsi),

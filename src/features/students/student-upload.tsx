@@ -11,6 +11,7 @@ import {
   type SavedFileShown,
   saveStudentFileAction,
 } from "./actions";
+import { BIRTH_DATE_HINT } from "./birth-date";
 import type { FilePreview } from "./file-preview";
 import { FilePreviewView, SkippedRows } from "./file-preview-view";
 import {
@@ -49,11 +50,11 @@ function ColumnNotes({ cohortYears }: { cohortYears: number[] }) {
       ))}
       . Prodi, provinsi, dan instansi harus sama dengan daftar di formulir.
       Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Agama: Islam,
-      Kristen, Katolik, Hindu, Buddha, atau Konghucu. Angkatan:{" "}
-      {yearRange(cohortYears)}. Kolom kategori diisi ya atau tidak. Status:
-      Aktif, Cuti, atau Non Aktif. Email: alamat email kampus mahasiswa, boleh
-      dikosongkan. Satu berkas paling banyak{" "}
-      {MAX_FILE_ROWS.toLocaleString("id-ID")} baris dan 1 MB.
+      Kristen, Katolik, Hindu, Buddha, atau Konghucu. Tanggal lahir:{" "}
+      {BIRTH_DATE_HINT}, misalnya 08/17/2005. Angkatan: {yearRange(cohortYears)}
+      . Kolom kategori diisi ya atau tidak. Status: Aktif, Cuti, atau Non Aktif.
+      Email: alamat email kampus mahasiswa, boleh dikosongkan. Satu berkas
+      paling banyak {MAX_FILE_ROWS.toLocaleString("id-ID")} baris dan 1 MB.
     </p>
   );
 }

@@ -36,6 +36,7 @@ function contextWith(program: number): InputContext {
     programs: [{ id: program, name: "Prodi Uji Telat" }],
     cohortYears: cohortChoices(2026),
     campusEnding: "@kampus.example",
+    today: "2026-11-10",
   };
 }
 
@@ -48,6 +49,7 @@ function student(nim: string, studyProgramId: number): StudentInput {
     entryPath: "regular",
     sex: "female",
     religion: "islam",
+    birthDate: "2005-08-17",
     cohortYear: 2026,
     className: null,
     province: null,

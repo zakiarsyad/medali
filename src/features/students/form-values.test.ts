@@ -21,6 +21,7 @@ const student: StoredStudent = {
   entryPath: "transfer",
   sex: "female",
   religion: "hindu",
+  birthDate: "2005-08-17",
   cohortYear: 2025,
   className: null,
   province: "Bali",
@@ -42,6 +43,7 @@ const typed: StudentFormFields = {
   entryPath: "transfer",
   sex: "female",
   religion: "islam",
+  birthDate: "08/17",
   cohortYear: "2024",
   className: "1-01",
   province: "Riau",
@@ -61,6 +63,7 @@ describe("formValues", () => {
       entryPath: "regular",
       sex: "male",
       religion: "",
+      birthDate: "",
       cohortYear: "2026",
       className: "",
       province: "",
@@ -80,6 +83,7 @@ describe("formValues", () => {
       entryPath: "transfer",
       sex: "female",
       religion: "hindu",
+      birthDate: "08/17/2005",
       cohortYear: "2025",
       className: "",
       province: "Bali",
@@ -96,6 +100,12 @@ describe("formValues", () => {
 
   it("leaves Agama to be chosen for a student saved before it was asked", () => {
     expect(formValues({ ...student, religion: null }, first).religion).toBe("");
+  });
+
+  it("leaves Tanggal lahir empty for a student saved before it was asked", () => {
+    expect(formValues({ ...student, birthDate: null }, first).birthDate).toBe(
+      "",
+    );
   });
 
   it("stands on Belum ditetapkan for a student who is in no group", () => {

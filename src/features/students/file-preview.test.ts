@@ -15,6 +15,7 @@ function student(nim: string): StudentInput {
     entryPath: "regular",
     sex: "male",
     religion: "islam",
+    birthDate: "2005-08-17",
     cohortYear: 2026,
     className: null,
     province: null,
@@ -51,6 +52,7 @@ describe("previewOf", () => {
       entryPath: "transfer",
       sex: "female",
       religion: "confucian",
+      birthDate: "2004-01-31",
       className: "1-01",
       province: "Riau",
       originAgency: "Direktorat Jenderal Pajak",
@@ -84,6 +86,7 @@ describe("previewOf", () => {
         "Aktif",
         "-",
         "Islam",
+        "08/17/2005",
       ],
       [
         "9900000601",
@@ -101,6 +104,7 @@ describe("previewOf", () => {
         "Cuti",
         "pratinjau.uji@kampus.example",
         "Konghucu",
+        "01/31/2004",
       ],
     ]);
   });

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { forbidden } from "next/navigation";
+import { campusDay } from "@/academic-periods/campus-day";
 import { may } from "@/auth/access";
 import type { Account } from "@/auth/accounts";
 import { currentAccount } from "@/auth/current-account";
@@ -50,6 +51,7 @@ function readFields(form: FormData): StudentFormFields {
     entryPath: text(form, "entryPath"),
     sex: text(form, "sex"),
     religion: text(form, "religion"),
+    birthDate: text(form, "birthDate"),
     cohortYear: text(form, "cohortYear"),
     className: text(form, "className"),
     province: text(form, "province"),
@@ -70,6 +72,7 @@ async function inputContext(
     programs: await listStudyPrograms(db),
     cohortYears,
     campusEnding: readCampusEmailEnding(),
+    today: campusDay(),
   };
 }
 

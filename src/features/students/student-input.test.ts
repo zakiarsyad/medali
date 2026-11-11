@@ -13,6 +13,7 @@ const context = {
   ],
   cohortYears: cohortChoices(2026),
   campusEnding: "@kampus.example",
+  today: "2026-11-10",
 };
 
 const valid: StudentFields = {
@@ -23,6 +24,7 @@ const valid: StudentFields = {
   entryPath: "transfer",
   sex: "female",
   religion: "catholic",
+  birthDate: " 08/17/2005 ",
   cohortYear: "2025",
   className: " 1-01 ",
   province: "Jawa Barat",
@@ -57,6 +59,7 @@ describe("parseStudent", () => {
         entryPath: "transfer",
         sex: "female",
         religion: "catholic",
+        birthDate: "2005-08-17",
         cohortYear: 2025,
         className: "1-01",
         province: "Jawa Barat",
@@ -160,6 +163,22 @@ describe("parseStudent", () => {
     ],
     ["no Agama", { religion: "" }, "Agama wajib dipilih."],
     ["an unknown Agama", { religion: "other" }, "Agama tidak dikenal."],
+    ["no Tanggal lahir", { birthDate: "" }, "Tanggal lahir wajib diisi."],
+    [
+      "a Tanggal lahir not written MM/DD/YYYY",
+      { birthDate: "17-08-2005" },
+      "Tanggal lahir harus ditulis MM/DD/YYYY.",
+    ],
+    [
+      "a Tanggal lahir that does not exist",
+      { birthDate: "02/30/2005" },
+      "Tanggal lahir tidak ada di kalender.",
+    ],
+    [
+      "a Tanggal lahir after today",
+      { birthDate: "11/11/2026" },
+      "Tanggal lahir tidak boleh setelah hari ini.",
+    ],
     [
       "a year before the choices",
       { cohortYear: "2020" },

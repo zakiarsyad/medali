@@ -35,6 +35,7 @@ async function addStudentAndGroup(db: Database, nim: string) {
     entryPath: "regular",
     sex: "female",
     religion: "islam",
+    birthDate: "2005-08-17",
     cohortYear: 2026,
     className: null,
     province: null,

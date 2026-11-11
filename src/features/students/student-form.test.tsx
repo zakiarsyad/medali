@@ -44,6 +44,7 @@ const STUDENT: StoredStudent = {
   entryPath: "regular",
   sex: "female",
   religion: "protestant",
+  birthDate: "2005-08-17",
   cohortYear: 2026,
   className: null,
   province: null,
@@ -188,6 +189,43 @@ test("Agama stands on what was saved for the student being changed, or asks for 
   );
   expect(religionChoiceOf(changing({ ...STUDENT, religion: null }))).toContain(
     '<option value="" selected="">Pilih agama</option>',
+  );
+});
+
+function birthDateFieldOf(form: string): string {
+  return form.match(/<input[^>]* name="birthDate"[^>]*>/)?.[0] ?? "";
+}
+
+test("Tanggal lahir is a text field after Agama, with the hint MM/DD/YYYY", () => {
+  const form = formFor([2026]);
+
+  expect(form).toMatch(/Tanggal lahir<input[^>]* name="birthDate"/);
+  const place = form.indexOf("Tanggal lahir<input");
+  expect(place).toBeGreaterThan(form.indexOf('Agama<select name="religion"'));
+  expect(place).toBeLessThan(form.indexOf('Angkatan<select name="cohortYear"'));
+  const field = birthDateFieldOf(form);
+  expect(field).toContain('type="text"');
+  expect(field).toContain('placeholder="MM/DD/YYYY"');
+  expect(field).toContain('value=""');
+});
+
+test("Tanggal lahir shows what was saved for the student being changed as MM/DD/YYYY, or nothing", () => {
+  function changing(student: StoredStudent): string {
+    return renderToStaticMarkup(
+      <StudentForm
+        programs={PROGRAMS}
+        cohortYears={[2026]}
+        editing={student}
+        groups={GROUPS}
+        place={{ query: "", page: 1 }}
+        period={ODD_2026}
+      />,
+    );
+  }
+
+  expect(birthDateFieldOf(changing(STUDENT))).toContain('value="08/17/2005"');
+  expect(birthDateFieldOf(changing({ ...STUDENT, birthDate: null }))).toContain(
+    'value=""',
   );
 });
 

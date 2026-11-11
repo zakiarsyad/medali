@@ -57,13 +57,38 @@ export function sampleReligion(
   return RELIGION_TURNS[place % RELIGION_TURNS.length] ?? "islam";
 }
 
-/** Gives each sample student of a list a made-up Agama, in turn. */
-export function withSampleReligions(
+const BIRTH_AGES = [18, 19];
+const MONTHS = 12;
+/** Every month has a 28th day, so each made-up day is a real one. */
+const DAYS = 28;
+
+function twoDigits(number: number): string {
+  return String(number).padStart(2, "0");
+}
+
+/**
+ * The made-up Tanggal lahir of the sample student in this place of a list,
+ * 18 or 19 years before their angkatan, written the way the database keeps
+ * a day.
+ */
+export function sampleBirthDate(place: number, cohortYear: number): string {
+  const age = BIRTH_AGES[place % BIRTH_AGES.length] ?? 18;
+  const month = twoDigits((place % MONTHS) + 1);
+  const day = twoDigits(((place * 5) % DAYS) + 1);
+  return `${cohortYear - age}-${month}-${day}`;
+}
+
+/**
+ * Gives each sample student of a list a made-up Agama and Tanggal lahir,
+ * in turn.
+ */
+export function withSampleDetails(
   sampleStudents: SampleStudent[],
 ): SampleStudent[] {
   return sampleStudents.map((student, place) => ({
     ...student,
     religion: sampleReligion(place),
+    birthDate: sampleBirthDate(place, student.cohortYear),
   }));
 }
 

@@ -7,6 +7,7 @@ import { DAY } from "@/ui/day";
 import { groupCode } from "@/ui/group-code";
 import { toneBadge } from "@/ui/tone-badge";
 import type { AddedStudent } from "./added-students";
+import { shownBirthDate } from "./birth-date";
 import { NO_GROUP_WORDS } from "./group-choice-words";
 import {
   CATEGORIES,
@@ -25,7 +26,7 @@ import {
 import { RemoveStudentButton } from "./remove-student-button";
 
 const NO_EMAIL = "Belum ada email";
-const NO_RELIGION = "—";
+const NOT_ASKED_YET = "—";
 
 const STATUS_TONES: Record<AddedStudent["status"], BadgeTone> = {
   active: "good",
@@ -104,7 +105,10 @@ function StudentRow({
       </td>
       <td data-title="Angkatan">{student.cohortYear}</td>
       <td data-title="Agama">
-        {student.religion ? RELIGION_LABELS[student.religion] : NO_RELIGION}
+        {student.religion ? RELIGION_LABELS[student.religion] : NOT_ASKED_YET}
+      </td>
+      <td data-title="Tanggal lahir">
+        {student.birthDate ? shownBirthDate(student.birthDate) : NOT_ASKED_YET}
       </td>
       <td data-title="Asrama">
         <Dorm student={student} />
@@ -156,6 +160,7 @@ export function StudentTable({
             <th>Program studi</th>
             <th>Angkatan</th>
             <th>Agama</th>
+            <th>Tanggal lahir</th>
             <th>Asrama</th>
             <th>Kelompok pengasuhan</th>
             <th>Status</th>

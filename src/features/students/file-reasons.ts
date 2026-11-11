@@ -1,4 +1,9 @@
 import { shortLine } from "@/files/csv-file";
+import {
+  LATER_BIRTH_DATE,
+  MALFORMED_BIRTH_DATE,
+  UNREAL_BIRTH_DATE,
+} from "./birth-date";
 import { type FileCells, yearRange } from "./student-file-columns";
 import {
   type InputContext,
@@ -26,6 +31,13 @@ function religionReason(text: string): string {
   return withText(UNKNOWN_RELIGION, text);
 }
 
+/** A Tanggal lahir that is filled but refused: the text is named. */
+const BIRTH_DATE_REFUSALS = [
+  MALFORMED_BIRTH_DATE,
+  UNREAL_BIRTH_DATE,
+  LATER_BIRTH_DATE,
+];
+
 /**
  * Why a row of a file is skipped, from why the form refuses it. The rule
  * is the form's. The words differ where a file holds text and the form a
@@ -48,6 +60,9 @@ export function fileReason(
   }
   if (formRefusal === UNKNOWN_AGENCY) {
     return withText(formRefusal, cells.instansi_asal);
+  }
+  if (BIRTH_DATE_REFUSALS.includes(formRefusal)) {
+    return withText(formRefusal, cells.tanggal_lahir);
   }
   return formRefusal;
 }

@@ -30,7 +30,7 @@ function csvFile(
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const lines = rows.map(
     ([nim, studentName, email = ""]) =>
-      `${nim},${studentName},${PROGRAM},Alih program,P,2026,1-02,Riau,Direktorat Jenderal Pajak,ya,,,Cuti,${email},Hindu`,
+      `${nim},${studentName},${PROGRAM},Alih program,P,2026,1-02,Riau,Direktorat Jenderal Pajak,ya,,,Cuti,${email},Hindu,08/17/2005`,
   );
   const text = [titles, ...lines].join("\n");
   const file: UploadedFile = { name, bytes: new TextEncoder().encode(text) };
@@ -43,6 +43,7 @@ async function contextWithProgram(db: Database): Promise<InputContext> {
     programs: [{ id, name: PROGRAM }],
     cohortYears: cohortChoices(2026),
     campusEnding: "@kampus.example",
+    today: "2026-11-10",
   };
 }
 

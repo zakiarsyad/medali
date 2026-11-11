@@ -3,7 +3,7 @@ import type { ValueKey } from "@/ui/medali-values";
 import {
   MORE_SAMPLE_STUDENTS,
   type SampleStudent,
-  withSampleReligions,
+  withSampleDetails,
 } from "./sample-students";
 
 /*
@@ -161,9 +161,9 @@ export const SAMPLE_ACCOUNTS: SampleAccount[] = [
 
 /**
  * Two made-up students in each study program, then the rest, each with a
- * made-up Agama.
+ * made-up Agama and Tanggal lahir.
  */
-export const SAMPLE_STUDENTS: SampleStudent[] = withSampleReligions([
+export const SAMPLE_STUDENTS: SampleStudent[] = withSampleDetails([
   {
     nim: "9900230001",
     name: "Ayu Lestiani",

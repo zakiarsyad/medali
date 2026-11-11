@@ -10,6 +10,7 @@ import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { useSaveState } from "@/ui/use-save-state";
 import { addStudentAction, changeStudentAction } from "./actions";
+import { BIRTH_DATE_HINT } from "./birth-date";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
   formShows,
@@ -268,6 +269,22 @@ export function StudentForm({
           choices={[["", "Pilih agama"], ...Object.entries(RELIGION_LABELS)]}
           chosen={shown.religion}
         />
+        <label className={shared.field}>
+          Tanggal lahir
+          {/* A plain text field, not a calendar: the browser's calendar
+              writes the day in the order the computer is set to. */}
+          <input
+            name="birthDate"
+            type="text"
+            className={shared.input}
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={BIRTH_DATE_HINT.length}
+            placeholder={BIRTH_DATE_HINT}
+            defaultValue={shown.birthDate}
+            required
+          />
+        </label>
         <SelectField
           label="Angkatan"
           name="cohortYear"

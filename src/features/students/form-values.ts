@@ -1,4 +1,5 @@
 import type { FormState } from "@/ui/form-message";
+import { shownBirthDate } from "./birth-date";
 import { NO_GROUP } from "./group-choice-words";
 import { CATEGORIES } from "./labels";
 import type { StoredStudent, StudentFields } from "./student-input";
@@ -73,6 +74,7 @@ export function formValues(
       entryPath: "regular",
       sex: "male",
       religion: "",
+      birthDate: "",
       className: "",
       province: "",
       originAgency: "",
@@ -89,6 +91,7 @@ export function formValues(
     entryPath: student.entryPath,
     sex: student.sex,
     religion: student.religion ?? "",
+    birthDate: student.birthDate ? shownBirthDate(student.birthDate) : "",
     cohortYear: String(student.cohortYear),
     className: student.className ?? "",
     province: student.province ?? "",

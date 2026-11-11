@@ -74,6 +74,7 @@ function cellsOf(row: NumberedRow): FileCells {
     status: cell(12),
     email: cell(13),
     agama: cell(14),
+    tanggal_lahir: cell(15),
   };
 }
 

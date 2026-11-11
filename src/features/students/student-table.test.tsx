@@ -13,6 +13,7 @@ function student(nim: string, group: AddedStudent["group"]): AddedStudent {
     email: null,
     sex: "female",
     religion: "hindu",
+    birthDate: "2005-08-17",
     studyProgram: "D3 Pajak",
     entryPath: "regular",
     className: null,
@@ -63,9 +64,7 @@ test("the list has the column Kelompok pengasuhan after Asrama", () => {
 });
 
 test("the list has the column Agama after Angkatan", () => {
-  expect(tableOf(null)).toContain(
-    "<th>Angkatan</th><th>Agama</th><th>Asrama</th>",
-  );
+  expect(tableOf(null)).toContain("<th>Angkatan</th><th>Agama</th>");
 });
 
 test("the column Agama shows the Agama of each row, and a dash for one saved before it was asked", () => {
@@ -78,6 +77,26 @@ test("the column Agama shows the Agama of each row, and a dash for one saved bef
 
   expect(tableWith("hindu")).toContain('<td data-title="Agama">Hindu</td>');
   expect(tableWith(null)).toContain('<td data-title="Agama">—</td>');
+});
+
+test("the list has the column Tanggal lahir after Agama", () => {
+  expect(tableOf(null)).toContain(
+    "<th>Agama</th><th>Tanggal lahir</th><th>Asrama</th>",
+  );
+});
+
+test("the column Tanggal lahir shows it as MM/DD/YYYY, and a dash for one saved before it was asked", () => {
+  function tableWith(birthDate: AddedStudent["birthDate"]): string {
+    const one = { ...student("9900003302", null), birthDate };
+    return renderToStaticMarkup(
+      <StudentTable students={[one]} place={{ query: "", page: 1 }} />,
+    );
+  }
+
+  expect(tableWith("2005-08-17")).toContain(
+    '<td data-title="Tanggal lahir">08/17/2005</td>',
+  );
+  expect(tableWith(null)).toContain('<td data-title="Tanggal lahir">—</td>');
 });
 
 test("the column shows the code of the group with its mentor under it", () => {
