@@ -120,6 +120,17 @@ describe("parseStudent", () => {
     expect(parsed.ok && parsed.value.birthPlace).toBe("K".repeat(60));
   });
 
+  it.each([
+    "Kalimantan Utara",
+    "Papua Barat Daya",
+    "Papua Pegunungan",
+    "Papua Selatan",
+    "Papua Tengah",
+  ])("accepts the newer province %s", (province) => {
+    const parsed = parseStudent({ ...valid, province }, context);
+    expect(parsed.ok && parsed.value.province).toBe(province);
+  });
+
   it("keeps Instansi asal only for Alih program", () => {
     const parsed = parseStudent({ ...valid, entryPath: "regular" }, context);
     expect(parsed).toMatchObject({ ok: true, value: { originAgency: null } });
