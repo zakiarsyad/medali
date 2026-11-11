@@ -162,8 +162,8 @@ test("Agama offers the six choices, and asks for one on a new student", () => {
   expect(religionChoiceOf(formFor([2026]))).toContain(
     '<option value="" selected="">Pilih agama</option>' +
       '<option value="islam">Islam</option>' +
-      '<option value="protestant">Kristen</option>' +
-      '<option value="catholic">Katolik</option>' +
+      '<option value="protestant">Kristen Protestan</option>' +
+      '<option value="catholic">Kristen Katolik</option>' +
       '<option value="hindu">Hindu</option>' +
       '<option value="buddhist">Buddha</option>' +
       '<option value="confucian">Konghucu</option>' +
@@ -186,7 +186,7 @@ test("Agama stands on what was saved for the student being changed, or asks for 
   }
 
   expect(religionChoiceOf(changing(STUDENT))).toContain(
-    '<option value="protestant" selected="">Kristen</option>',
+    '<option value="protestant" selected="">Kristen Protestan</option>',
   );
   expect(religionChoiceOf(changing({ ...STUDENT, religion: null }))).toContain(
     '<option value="" selected="">Pilih agama</option>',

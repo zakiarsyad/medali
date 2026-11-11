@@ -51,9 +51,9 @@ function ColumnNotes({ cohortYears }: { cohortYears: number[] }) {
       ))}
       . Prodi, provinsi, dan instansi harus sama dengan daftar di formulir.
       Jalur: Reguler atau Alih program. Jenis kelamin: L atau P. Agama: Islam,
-      Kristen, Katolik, Hindu, Buddha, atau Konghucu. Tanggal lahir:{" "}
-      {BIRTH_DATE_HINT}, misalnya 08/17/2005. Tempat lahir: kota atau kabupaten,
-      paling banyak {BIRTH_PLACE_MAX_LENGTH} karakter. Angkatan:{" "}
+      Kristen Protestan, Kristen Katolik, Hindu, Buddha, atau Konghucu. Tanggal
+      lahir: {BIRTH_DATE_HINT}, misalnya 08/17/2005. Tempat lahir: kota atau
+      kabupaten, paling banyak {BIRTH_PLACE_MAX_LENGTH} karakter. Angkatan:{" "}
       {yearRange(cohortYears)}. Kolom kategori diisi ya atau tidak. Status:
       Aktif, Cuti, atau Non Aktif. Email: alamat email kampus mahasiswa, boleh
       dikosongkan. Satu berkas paling banyak{" "}

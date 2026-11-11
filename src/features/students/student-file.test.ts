@@ -125,7 +125,7 @@ describe("readStudentFile", () => {
       10: "1",
       11: "tidak",
       12: "Non Aktif",
-      13: "  katolik ",
+      13: "  kristen KATOLIK ",
       14: " 01/31/2004 ",
       15: "  Kabupaten   Contoh ",
     });
@@ -212,6 +212,16 @@ describe("readStudentFile", () => {
     ],
     ["an empty Agama", { 13: "" }, "Agama wajib diisi."],
     ["an unknown Agama", { 13: "Lainnya" }, "Agama tidak dikenal: Lainnya."],
+    [
+      "the old Agama name Kristen",
+      { 13: "Kristen" },
+      "Agama tidak dikenal: Kristen.",
+    ],
+    [
+      "the old Agama name Katolik",
+      { 13: "Katolik" },
+      "Agama tidak dikenal: Katolik.",
+    ],
     ["an empty Tanggal lahir", { 14: "" }, "Tanggal lahir wajib diisi."],
     [
       "a Tanggal lahir not written MM/DD/YYYY",
@@ -348,7 +358,7 @@ describe("readStudentFile", () => {
   it("follows the titles of the first row, in any order and spelling", () => {
     const rows = read(
       "Status;JK;Program Studi;Nama;NIM;angkatan;jalur;kelas;provinsi;instansi;afirmasi;pembibitan;internasional;Agama;Tanggal Lahir;Tempat Lahir;catatan",
-      "Cuti;P;Prodi Uji Satu;Berkas Uji Empat;9900001607;2026;;;;;;;;KRISTEN;12/01/2006;Kota Contoh;abaikan",
+      "Cuti;P;Prodi Uji Satu;Berkas Uji Empat;9900001607;2026;;;;;;;;KRISTEN PROTESTAN;12/01/2006;Kota Contoh;abaikan",
     );
 
     expect(rows.skipped).toEqual([]);

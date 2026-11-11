@@ -14,8 +14,8 @@ export const RELIGION_LABELS: Record<
   string
 > = {
   islam: "Islam",
-  protestant: "Kristen",
-  catholic: "Katolik",
+  protestant: "Kristen Protestan",
+  catholic: "Kristen Katolik",
   hindu: "Hindu",
   buddhist: "Buddha",
   confucian: "Konghucu",
