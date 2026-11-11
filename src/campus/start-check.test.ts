@@ -40,6 +40,7 @@ const LOOK_ALIKES = [
   [{ VERCEL_ENV: "production" }, ["VERCEL_ENV"]],
   [{ VERCEL: "1" }, ["VERCEL"]],
   [{ NODE_ENV: "development" }, ["NODE_ENV"]],
+  [{ MEDALI_RENDER_PREVIEW: "1" }, ["MEDALI_RENDER_PREVIEW"]],
   [
     { VERCEL_ENV: "preview", VERCEL: "1", NODE_ENV: "development" },
     ["VERCEL_ENV", "VERCEL", "NODE_ENV"],
@@ -58,12 +59,15 @@ describe("settingsToRemove", () => {
     },
   );
 
-  it.each([[{ VERCEL_ENV: "" }], [{ VERCEL: "" }], [{ NODE_ENV: "test" }]])(
-    "leaves %o alone: it turns Ganti peran on nowhere",
-    (extra) => {
-      expect(settingsToRemove({ ...FILLED, ...extra })).toEqual([]);
-    },
-  );
+  it.each([
+    [{ VERCEL_ENV: "" }],
+    [{ VERCEL: "" }],
+    [{ NODE_ENV: "test" }],
+    [{ MEDALI_RENDER_PREVIEW: "" }],
+    [{ RENDER: "true", RENDER_SERVICE_NAME: "medali" }],
+  ])("leaves %o alone: it turns Ganti peran on nowhere", (extra) => {
+    expect(settingsToRemove({ ...FILLED, ...extra })).toEqual([]);
+  });
 });
 
 describe("the campus mark", () => {
@@ -76,7 +80,10 @@ describe("the campus mark", () => {
 
   it.each(LOOK_ALIKES)("is what keeps it off with %o", (extra) => {
     const { MEDALI_CAMPUS: _mark, ...unmarked } = { ...FILLED, ...extra };
-    const turnsItOn = "VERCEL_ENV" in extra || "NODE_ENV" in extra;
+    const turnsItOn =
+      "VERCEL_ENV" in extra ||
+      "NODE_ENV" in extra ||
+      "MEDALI_RENDER_PREVIEW" in extra;
 
     expect(accountSwitcherOn(stageOf(unmarked))).toBe(turnsItOn);
   });

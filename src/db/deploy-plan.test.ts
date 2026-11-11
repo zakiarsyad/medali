@@ -22,6 +22,12 @@ describe("deployPlanFor", () => {
     expect(() => deployPlanFor("main-preview", undefined)).toThrow();
   });
 
+  it("starts the Render preview database over once for each commit", () => {
+    expect(deployPlanFor("render-preview", undefined)).toBe(
+      "reset-for-new-commit",
+    );
+  });
+
   it.each(["local", "campus"] as const)("refuses to run in %s", (stage) => {
     expect(() => deployPlanFor(stage, undefined)).toThrow();
   });
@@ -87,14 +93,37 @@ describe("checkDeployTarget", () => {
     ).toThrow();
   });
 
-  it.each(["reset-to-sample-data", "apply-table-changes"] as const)(
-    "refuses to %s in the database of the campus server",
-    (plan) => {
-      const target = { marker: "campus" as const, hasTables: true };
+  it("takes a database marked as the PR preview one for the Render preview", () => {
+    expect(
+      checkDeployTarget("reset-for-new-commit", {
+        marker: "pr-preview",
+        hasTables: true,
+      }),
+    ).toBe("go");
+    expect(
+      checkDeployTarget("reset-for-new-commit", {
+        marker: null,
+        hasTables: false,
+      }),
+    ).toBe("mark-and-go");
+  });
 
-      expect(() => checkDeployTarget(plan, target)).toThrow(/marked campus/);
-    },
-  );
+  it.each([
+    [{ marker: null, hasTables: true }],
+    [{ marker: "main-preview" as const, hasTables: true }],
+  ])("refuses any other database for the Render preview: %o", (target) => {
+    expect(() => checkDeployTarget("reset-for-new-commit", target)).toThrow();
+  });
+
+  it.each([
+    "reset-to-sample-data",
+    "apply-table-changes",
+    "reset-for-new-commit",
+  ] as const)("refuses to %s in the database of the campus server", (plan) => {
+    const target = { marker: "campus" as const, hasTables: true };
+
+    expect(() => checkDeployTarget(plan, target)).toThrow(/marked campus/);
+  });
 });
 
 describe("startOverReasonFor", () => {

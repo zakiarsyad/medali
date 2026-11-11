@@ -33,6 +33,7 @@ src/db/database-server.ts
 src/db/deploy-command.ts
 src/db/deploy-database.ts
 src/db/deploy-start.ts
+src/db/deploy-commit.ts
 src/files/deploy-command.ts
 src/files/deploy-files.ts
 

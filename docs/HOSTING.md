@@ -1,7 +1,8 @@
 # Hosting
 
 Where the previews of the app run, and how they are set up. "Render"
-says how the app runs at Render, at `medali.site`. The last part, "The
+says how the app runs at Render, at `medali.site`, and how the one
+preview at Render shows the PR pushed last. The last part, "The
 campus server package", says how the app is run on the campus server.
 The server itself is not chosen yet.
 
@@ -107,10 +108,12 @@ so it is refused too. Both refuse a database marked for the campus
 server.
 
 "Ganti peran", the switch between sample accounts, is on in both
-previews and in the local dev server, and off everywhere else, the campus
-server included. The app also refuses to start with it on unless a
-second sign agrees: a preview must really be running on Vercel, and a
-local run must use a database on the same computer.
+previews, in the preview at Render and in the local dev server, and off
+everywhere else, the campus server and `medali.site` included. The app
+also refuses to start with it on unless a second sign agrees: a preview
+at Vercel must really be running on Vercel, the preview at Render must be
+the app Render names `medali-preview`, and a local run must use a
+database on the same computer.
 
 ### Set only in the Vercel and Neon dashboards
 
@@ -280,12 +283,13 @@ campus server.
 The app also runs at Render, in Singapore, at `medali.site`. It is the
 campus server package's app, so it runs in real-data mode: there is no
 "Ganti peran" and no sample data. It starts with an empty database.
-Vercel keeps the previews as before.
+Vercel keeps the previews as before. Render also runs one preview of its
+own, described in "The preview at Render" below.
 
 ### The three parts
 
 The file `render.yaml` describes them, and Render makes all three from
-it:
+it, beside the two parts of the preview:
 
 - `medali`: the app. It is built from `main` of the GitHub repo
   `PojokAsrama/medali`, and built again on every merge to `main`. On
@@ -346,6 +350,95 @@ Cloudflare. Do these steps by hand, in this order:
 The Render link keeps working beside `medali.site`. Render also lists
 `www.medali.site` by itself; it stays unverified, because it has no
 record at Cloudflare.
+
+### The preview at Render
+
+One more copy of the app, with sample data only. It shows one PR at a
+time: the PR pushed last. It never touches `medali.site` or its data.
+`render.yaml` describes its two parts:
+
+- `medali-preview`: the app, at its own Render link, ending in
+  `onrender.com`. It has no domain and no file storage: uploads keep no
+  file, as on a preview at Vercel without file storage. It never
+  deploys by itself, not even from `main`.
+- `medali-preview-db`: its own database, which only the preview app
+  reaches; nothing on the internet may connect to it.
+
+The app knows it is the preview from two signs: the setting
+`MEDALI_RENDER_PREVIEW`, which `render.yaml` gives this app only, and
+the name Render gives the app, `medali-preview`. Only with both does it
+run with sample data and "Ganti peran". The app of `medali.site` is
+built with the campus mark, which wins over both.
+
+#### Which PR it shows
+
+The GitHub step "Pratinjau Render" has Render build a PR's last commit
+on the preview:
+
+- by itself, each time a PR to `main` is opened, reopened or gets a new
+  push. The push made last wins. A PR from a fork is skipped.
+- by hand, from the "Actions" tab on GitHub: choose "Pratinjau Render",
+  then "Run workflow", and fill in the PR's number. This brings back a
+  PR after another one was pushed. The PR must be open.
+
+It does so through the preview's deploy hook: a secret address that can
+only start a deploy of the preview, and change nothing else at Render.
+The step always runs as it is on `main`, so a PR cannot change it. While
+the hook's GitHub secret is missing, the step says so and does nothing;
+it does not fail.
+
+The preview's own branch at Render stays `main`. A deploy that Render
+starts by itself, such as after a "Manual Sync" of the Blueprint, shows
+`main` until the next push to a PR or a run of "Pratinjau Render" by
+hand.
+
+#### What a deploy does to its database
+
+The app starts its database over each time it starts with a commit it
+did not start with before: it empties the database, adds the tables of
+that PR, fills it with sample data, and only then opens. The log says
+"Render preview database started over with sample data", with the
+commit.
+
+When nobody has opened the preview for about 15 minutes, Render puts it
+to sleep. The next visit wakes it, which takes about a minute. Waking
+starts the app again with the same commit, so the data is kept, and the
+log says "data kept". Running "Pratinjau Render" for the PR that is
+already shown, with no new push, keeps the data too.
+
+Before it changes anything, the start checks the database's mark, as a
+deploy at Vercel does: the database is marked as a PR preview one on
+its first start. It refuses a database marked for the campus server,
+which the database of `medali.site` is, and one with no mark that
+already holds tables. The app then does not start, and the log says why.
+
+#### Making the preview
+
+Do these steps by hand, once, after this setup is merged to `main`:
+
+1. In the Render dashboard, open the Blueprint of `PojokAsrama/medali`.
+   If it does not list `medali-preview` and `medali-preview-db` yet,
+   choose "Manual Sync". Render makes both, builds the preview from
+   `main`, and starts it.
+2. On the page of `medali-preview`, open "Settings", find "Deploy
+   Hook", and copy its address. Anyone who has it can start a deploy of
+   the preview, and nothing else, so it goes only into GitHub's secrets.
+   If it ever leaks, choose "Regenerate Hook" there and put the new one
+   in GitHub.
+3. On GitHub, in the repo's "Settings", then "Secrets and variables",
+   then "Actions", add a repository secret named
+   `RENDER_PREVIEW_DEPLOY_HOOK`, holding the address.
+
+From the next push to a PR on, the preview shows that PR.
+
+#### What it costs
+
+- The app: Render's free size, which costs nothing. It sleeps when nobody
+  visits.
+- The database: the same smallest paid size as the database of
+  `medali.site`, with 1 GB of storage, so Render does not remove it
+  after a while. It costs as much as that one; Render's price page says
+  how much.
 
 ## The campus server package
 

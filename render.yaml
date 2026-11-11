@@ -1,5 +1,5 @@
-# The setup at Render: the app, its database and its file storage, all
-# in Singapore. Render makes every key and password; none is written
+# The setup at Render: the app, its database and its file storage, and
+# the one preview with its own database, all in Singapore. Render makes every key and password; none is written
 # here. docs/HOSTING.md says how to make the setup and what is filled in
 # by hand.
 
@@ -51,6 +51,36 @@ services:
       - key: CAMPUS_COUNSELLING_CONTACT
         sync: false
 
+  # The one preview: one PR at a time, the one pushed last, with sample
+  # data only. It never deploys by itself: a GitHub step has its deploy
+  # hook build a PR's last commit. The free size, which sleeps when nobody
+  # visits. No file storage: uploads keep no file here.
+  - type: web
+    name: medali-preview
+    runtime: node
+    region: singapore
+    plan: free
+    repo: https://github.com/PojokAsrama/medali
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: corepack pnpm install --frozen-lockfile && corepack pnpm build
+    # Starts its database over with sample data, once for each commit,
+    # then the app. Waking from sleep keeps the data.
+    startCommand: node_modules/.bin/tsx src/db/deploy-command.ts && node_modules/.bin/next start
+    healthCheckPath: /masuk
+    envVars:
+      # The sign that this is the preview: sample data and Ganti peran.
+      # The app also checks that Render names it medali-preview.
+      - key: MEDALI_RENDER_PREVIEW
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medali-preview-db
+          property: connectionString
+      # pnpm is fetched once while building, without asking.
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
+
   # The same file storage as in the package, reached only by the app.
   - type: pserv
     name: medali-files
@@ -85,5 +115,16 @@ databases:
     diskSizeGB: 1
     postgresMajorVersion: "17"
     databaseName: medali
+    user: medali
+    ipAllowList: []
+
+  # The preview's own database, sample data only, of the same size as the
+  # one of medali.site. Reached only by the preview app.
+  - name: medali-preview-db
+    region: singapore
+    plan: 0.1c-256mb
+    diskSizeGB: 1
+    postgresMajorVersion: "17"
+    databaseName: medali_preview
     user: medali
     ipAllowList: []

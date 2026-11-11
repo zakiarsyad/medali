@@ -1,0 +1,82 @@
+name: Pratinjau Render
+
+# Has the one preview at Render build a PR's last commit: the PR pushed
+# last, or the PR whose number is given when this is run by hand. It uses
+# the preview's deploy hook, a GitHub secret that can only start a deploy
+# of the preview, nothing else at Render; without it this step says so
+# and does nothing.
+#
+# It runs on pull_request_target, so it is always this file as it is on
+# main: a PR cannot change the step. It never checks out or runs the PR's
+# code; it only reads the PR's last commit.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Nomor PR
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# One preview, so the last push wins: a run still waiting is dropped.
+concurrency:
+  group: render-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # A PR from a fork gets no secret, and may not choose what the preview
+    # runs.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Find the last commit of the PR
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr }}
+          PR_COMMIT: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$PR_NUMBER" ]; then
+            found=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+              --json headRefOid,isCrossRepository,state)
+            if [ "$(echo "$found" | jq -r .state)" != "OPEN" ]; then
+              echo "::error::PR $PR_NUMBER is not open."
+              exit 1
+            fi
+            if [ "$(echo "$found" | jq -r .isCrossRepository)" = "true" ]; then
+              echo "::error::PR $PR_NUMBER comes from a fork; the preview shows only branches of this repo."
+              exit 1
+            fi
+            PR_COMMIT=$(echo "$found" | jq -r .headRefOid)
+          fi
+          if ! [[ "$PR_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::No commit found for the PR."
+            exit 1
+          fi
+          echo "commit=$PR_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Have the preview build that commit
+        shell: bash
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_PREVIEW_DEPLOY_HOOK }}
+          COMMIT: ${{ steps.pr.outputs.commit }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::notice::The secret RENDER_PREVIEW_DEPLOY_HOOK is not set; the Render preview is not changed."
+            exit 0
+          fi
+          # Render's answer is not shown: it may repeat the hook's address.
+          curl --silent --show-error --fail --output /dev/null \
+            --request POST "$DEPLOY_HOOK&ref=$COMMIT"
+          echo "The Render preview now builds the commit $COMMIT."

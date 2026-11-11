@@ -76,7 +76,13 @@ describe("fileStorageSettingsOf", () => {
     FILE_STORAGE_ACCESS_KEY: "kunci-uji",
     FILE_STORAGE_SECRET_KEY: "rahasia-uji",
   };
-  const STAGES = ["local", "pr-preview", "main-preview", "campus"] as const;
+  const STAGES = [
+    "local",
+    "pr-preview",
+    "main-preview",
+    "render-preview",
+    "campus",
+  ] as const;
   const NAMES = Object.keys(FILLED) as (keyof typeof FILLED)[];
 
   it.each(STAGES)("reads the four settings in %s", (stage) => {
@@ -104,7 +110,7 @@ describe("fileStorageSettingsOf", () => {
     );
   });
 
-  it.each(["pr-preview", "main-preview"] as const)(
+  it.each(["pr-preview", "main-preview", "render-preview"] as const)(
     "turns file keeping off in %s while all four are empty",
     (stage) => {
       expect(fileStorageSettingsOf({}, stage)).toBeNull();
@@ -213,6 +219,7 @@ describe("stageOf", () => {
     [{ VERCEL_ENV: "production", NODE_ENV: "production" }, "main-preview"],
     [{ NODE_ENV: "development" }, "local"],
     [{ VERCEL_ENV: "development", NODE_ENV: "development" }, "local"],
+    [{ MEDALI_RENDER_PREVIEW: "1", NODE_ENV: "production" }, "render-preview"],
   ])("reads %o as %s", (env, stage) => {
     expect(stageOf(env)).toBe(stage);
   });
@@ -222,6 +229,9 @@ describe("stageOf", () => {
     [{ NODE_ENV: "test" }],
     [{}],
     [{ VERCEL_ENV: "something-new" }],
+    [{ NODE_ENV: "production", RENDER: "true" }],
+    [{ MEDALI_RENDER_PREVIEW: "true" }],
+    [{ MEDALI_RENDER_PREVIEW: "" }],
   ])("reads anything without a clear yes, such as %o, as campus", (env) => {
     expect(stageOf(env)).toBe("campus");
   });
@@ -231,6 +241,7 @@ describe("stageOf", () => {
     [{ VERCEL_ENV: "production", VERCEL: "1" }],
     [{ NODE_ENV: "development" }],
     [{ VERCEL_ENV: "development", NODE_ENV: "development" }],
+    [{ MEDALI_RENDER_PREVIEW: "1", RENDER: "true" }],
   ])("reads %o as campus once the campus mark is there", (env) => {
     expect(stageOf({ ...env, MEDALI_CAMPUS: "1" })).toBe("campus");
   });

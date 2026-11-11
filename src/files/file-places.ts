@@ -10,6 +10,7 @@ export const FILE_PLACES: Record<Stage, string> = {
   local: "local",
   "pr-preview": "pr-previews",
   "main-preview": "main-preview",
+  "render-preview": "render-preview",
   campus: "campus",
 };
 

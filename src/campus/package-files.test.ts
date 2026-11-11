@@ -345,6 +345,73 @@ describe("the Render setup", () => {
     expect(text).toMatch(/key: MINIO_ROOT_PASSWORD\n\s+generateValue: true\n/);
     expect(text).not.toMatch(/(PASSWORD|SECRET|_KEY)\n\s+value:/);
   });
+
+  /** The lines of each part of the setup, without notes, by its name. */
+  function renderParts(): Map<string, string> {
+    const parts = new Map<string, string>();
+    for (const chunk of text.split(/\n(?= {2}- )/).slice(1)) {
+      const lines = chunk
+        .split("\n")
+        .filter((line) => /^ {2}[ -]/.test(line))
+        .map((line) => line.trim().replace(/^- /, ""))
+        .filter((line) => !line.startsWith("#"));
+      const name = lines.find((line) => line.startsWith("name: "));
+      if (name) parts.set(name.slice("name: ".length), lines.join("\n"));
+    }
+    return parts;
+  }
+
+  const parts = renderParts();
+  const site = parts.get("medali") ?? "";
+  const preview = parts.get("medali-preview") ?? "";
+  const previewDb = parts.get("medali-preview-db") ?? "";
+
+  it("keeps the app of medali.site in real-data mode, with no preview sign", () => {
+    expect(site).toContain("dockerfilePath: ./Dockerfile");
+    expect(site).not.toContain("MEDALI_RENDER_PREVIEW");
+  });
+
+  it("has a preview app of the free size, which never deploys by itself", () => {
+    expect(preview).toContain("type: web");
+    expect(preview).toContain("plan: free");
+    expect(preview).toContain("region: singapore");
+    expect(preview).toContain('autoDeployTrigger: "off"');
+    expect(preview).not.toContain("domains");
+    expect(preview).not.toContain("disk");
+  });
+
+  it("gives the preview app the sign of the Render preview", () => {
+    expect(preview).toMatch(/key: MEDALI_RENDER_PREVIEW\nvalue: "1"/);
+  });
+
+  it("starts the preview's database over before the app starts", () => {
+    expect(preview).toContain(
+      "startCommand: node_modules/.bin/tsx src/db/deploy-command.ts && node_modules/.bin/next start",
+    );
+  });
+
+  it("lets the preview app reach only its own database, and no file storage", () => {
+    expect(preview).toMatch(
+      /key: DATABASE_URL\nfromDatabase:\nname: medali-preview-db\n/,
+    );
+    expect(preview).not.toContain("name: medali-db");
+    expect(preview).not.toContain("FILE_STORAGE");
+    expect(preview).not.toContain("medali-files");
+  });
+
+  it("gives the preview a database of the same size as that of medali.site", () => {
+    const sizeOf = (part: string) =>
+      part
+        .split("\n")
+        .filter((line) =>
+          /^(plan|diskSizeGB|region|postgresMajorVersion):/.test(line),
+        );
+    const siteDb = parts.get("medali-db") ?? "";
+
+    expect(sizeOf(siteDb)).toHaveLength(4);
+    expect(sizeOf(previewDb)).toEqual(sizeOf(siteDb));
+    expect(previewDb).toContain("ipAllowList: []");
+  });
 });
 
 describe("the backup part of the campus server package", () => {
@@ -464,5 +531,76 @@ describe("the example settings file of the package", () => {
     expect(kept).toContain(".env.*");
     expect(kept).toContain("!.env.campus.example");
     expect(kept).not.toContain("!.env.campus");
+  });
+});
+
+describe("the GitHub step of the Render preview", () => {
+  const workflow = readFileSync(".github/workflows/render-preview.yml", "utf8");
+  const scripts = workflow
+    .split(/\n {8}run: \|\n/)
+    .slice(1)
+    .map((rest) => rest.split(/\n(?! {10})/)[0] ?? "");
+
+  it("runs for each push to a PR against main, and by hand with a PR number", () => {
+    expect(workflow).toContain("name: Pratinjau Render");
+    expect(workflow).toContain(
+      "types: [opened, synchronize, reopened]\n    branches: [main]",
+    );
+    expect(workflow).toMatch(/workflow_dispatch:\n\s+inputs:\n\s+pr:/);
+  });
+
+  it("runs only the step as it is on main, never a PR's own copy of it", () => {
+    expect(workflow).toContain("pull_request_target:");
+    expect(workflow).not.toMatch(/^ {2}pull_request:/m);
+    expect(workflow).not.toContain("actions/checkout");
+  });
+
+  it("holds no Render key that can change other parts of Render", () => {
+    expect(workflow).not.toContain("RENDER_API_KEY");
+    expect(workflow).not.toContain("api.render.com/v1");
+  });
+
+  it("lets the last push win", () => {
+    expect(workflow).toMatch(
+      /concurrency:\n\s+group: render-preview\n\s+cancel-in-progress: true/,
+    );
+  });
+
+  it("skips a PR from a fork", () => {
+    expect(workflow).toContain(
+      "github.event.pull_request.head.repo.full_name == github.repository",
+    );
+    expect(workflow).toContain("isCrossRepository");
+  });
+
+  it("takes the preview's deploy hook only from a GitHub secret", () => {
+    expect(workflow).toContain(
+      "DEPLOY_HOOK: $" + "{{ secrets.RENDER_PREVIEW_DEPLOY_HOOK }}",
+    );
+    expect(workflow).toContain("exit 0");
+  });
+
+  it("puts nothing from GitHub straight into a script, only through settings", () => {
+    expect(scripts).toHaveLength(2);
+    for (const script of scripts) {
+      expect(script.length).toBeGreaterThan(0);
+      expect(script).not.toContain("${{");
+    }
+  });
+
+  it("finds the last commit of the PR", () => {
+    const [find = ""] = scripts;
+
+    expect(find).toContain("headRefOid");
+    expect(workflow).toContain(
+      "PR_COMMIT: $" + "{{ github.event.pull_request.head.sha }}",
+    );
+  });
+
+  it("has the deploy hook build the preview from that commit", () => {
+    const [, deploy = ""] = scripts;
+
+    expect(deploy).toContain("--request POST");
+    expect(deploy).toContain('"$DEPLOY_HOOK&ref=$COMMIT"');
   });
 });

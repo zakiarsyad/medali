@@ -1,6 +1,9 @@
 import type { Stage } from "@/settings";
 
-export type DeployPlan = "reset-to-sample-data" | "apply-table-changes";
+export type DeployPlan =
+  | "reset-to-sample-data"
+  | "apply-table-changes"
+  | "reset-for-new-commit";
 
 /**
  * Which preview a database belongs to, or that it is the campus server's,
@@ -21,13 +24,16 @@ const MAIN_BRANCH = "main";
  * tables and the sample data. The preview of `main` is started over only
  * when `startOverReasonFor` gives a reason, and keeps its data otherwise.
  * Only a build that says it comes from `main` may deploy to it; a deploy
- * from the command line names no branch, and is refused.
+ * from the command line names no branch, and is refused. The one preview
+ * at Render shows one PR at a time, and starts its own database over each
+ * time it starts with a commit it did not start with before.
  */
 export function deployPlanFor(
   stage: Stage,
   branch: string | undefined,
 ): DeployPlan {
   if (stage === "pr-preview") return "reset-to-sample-data";
+  if (stage === "render-preview") return "reset-for-new-commit";
   if (stage === "main-preview") {
     if (branch !== MAIN_BRANCH) {
       throw new Error(
@@ -37,22 +43,30 @@ export function deployPlanFor(
     return "apply-table-changes";
   }
   throw new Error(
-    `The deploy database step runs only in a Vercel build, not in ${stage}.`,
+    `The deploy database step runs only on a preview, not in ${stage}.`,
   );
+}
+
+/**
+ * The kind of database a plan works on. The database of the Render
+ * preview holds a PR's sample data, as the one the PR previews at Vercel
+ * share, so it carries the same mark.
+ */
+export function databaseKindFor(plan: DeployPlan): DatabaseKind {
+  return plan === "apply-table-changes" ? "main-preview" : "pr-preview";
 }
 
 /**
  * Checks that the database is the one the plan expects, before anything is
  * changed. A database that is not marked yet is marked on its first
- * deploy, but only when it holds no tables at all: either plan may start
- * it over, and nothing says its tables are a preview's.
+ * deploy, but only when it holds no tables at all: any plan may start it
+ * over, and nothing says its tables are a preview's.
  */
 export function checkDeployTarget(
   plan: DeployPlan,
   target: DeployTarget,
 ): "go" | "mark-and-go" {
-  const expected: DatabaseKind =
-    plan === "reset-to-sample-data" ? "pr-preview" : "main-preview";
+  const expected = databaseKindFor(plan);
   if (target.marker === expected) return "go";
   if (target.marker !== null) {
     throw new Error(

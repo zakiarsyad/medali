@@ -2,16 +2,18 @@ import { databaseAddressRefusal } from "@/db/database-address";
 import {
   FILE_STORAGE_NAMES,
   hasCampusMark,
+  hasRenderPreviewSign,
   type SettingName,
   type SettingsEnv,
 } from "@/settings";
 
 /**
  * The settings that would turn Ganti peran on somewhere else: one that
- * says the app is a preview, one that says it runs at the previews'
- * hosting, and one that says it is a local run. The campus mark already
- * keeps Ganti peran off; one of these on the campus server is still a
- * mistake to put right before real data is served.
+ * says the app is a preview, at Vercel or at Render, one that says it
+ * runs at the previews' hosting, and one that says it is a local run.
+ * The campus mark already keeps Ganti peran off; one of these on the
+ * campus server is still a mistake to put right before real data is
+ * served.
  */
 export function settingsToRemove(env: SettingsEnv): string[] {
   const names: string[] = [];
@@ -20,6 +22,7 @@ export function settingsToRemove(env: SettingsEnv): string[] {
   if (saysPreview) names.push("VERCEL_ENV");
   if (env.VERCEL) names.push("VERCEL");
   if (env.NODE_ENV === "development") names.push("NODE_ENV");
+  if (hasRenderPreviewSign(env)) names.push("MEDALI_RENDER_PREVIEW");
   return names;
 }
 
