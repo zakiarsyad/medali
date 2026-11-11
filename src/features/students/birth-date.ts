@@ -9,7 +9,8 @@ export const MALFORMED_BIRTH_DATE = `Tanggal lahir harus ditulis ${BIRTH_DATE_HI
 export const UNREAL_BIRTH_DATE = "Tanggal lahir tidak ada di kalender.";
 export const LATER_BIRTH_DATE = "Tanggal lahir tidak boleh setelah hari ini.";
 
-const MONTH_DAY_YEAR = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+/** The month and the day may each be written with one digit, as 8/7/2005. */
+const MONTH_DAY_YEAR = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
 const YEAR_MONTH_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function refused(error: string): { ok: false; error: string } {
@@ -17,16 +18,17 @@ function refused(error: string): { ok: false; error: string } {
 }
 
 /**
- * Reads a Tanggal lahir written MM/DD/YYYY into a day the way the database
- * keeps it. `today` is today on campus, written the same way.
+ * Reads a Tanggal lahir written MM/DD/YYYY, or with a one-digit month or
+ * day, into a day the way the database keeps it. `today` is today on
+ * campus, written the same way.
  */
 export function parseBirthDate(text: string, today: string): Parsed<string> {
   const written = text.trim();
   if (written === "") return refused(NO_BIRTH_DATE);
   const parts = MONTH_DAY_YEAR.exec(written);
   if (!parts) return refused(MALFORMED_BIRTH_DATE);
-  const [, month, day, year] = parts;
-  const kept = `${year}-${month}-${day}`;
+  const [, month = "", day = "", year] = parts;
+  const kept = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
   if (!isDay(kept)) return refused(UNREAL_BIRTH_DATE);
   if (kept > today) return refused(LATER_BIRTH_DATE);
   return { ok: true, value: kept };
