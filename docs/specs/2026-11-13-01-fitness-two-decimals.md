@@ -59,4 +59,4 @@ typed and shown with its decimals.
   decimals.
 - [x] 3. Scores show with two decimals in the list, the student detail,
   Profil saya and the Dashboard.
-- [ ] 4. "Unggah berkas" accepts scores with up to two decimals.
+- [x] 4. "Unggah berkas" accepts scores with up to two decimals.

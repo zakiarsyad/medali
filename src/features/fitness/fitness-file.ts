@@ -4,14 +4,12 @@ import {
   readTitledRows,
   type TitledFile,
 } from "@/files/titled-rows";
-import { SCORE_MAX, SCORE_MIN } from "@/health-notes/fitness-ids";
 import type { Parsed } from "@/parsed";
 import { FITNESS_FILE_COLUMNS } from "./fitness-file-columns";
-import { scoreOf } from "./fitness-input";
+import { SCORE_NOT_VALID, scoreOf } from "./fitness-input";
 
 export const UNKNOWN_NIM = "NIM tidak ada dalam data mahasiswa.";
 export const NOT_ACTIVE = "Mahasiswa tidak aktif.";
-export const SCORE_NOT_IN_RANGE = `Skor harus angka ${SCORE_MIN}–${SCORE_MAX}.`;
 
 /** A filled row of a fitness file: its number in the file, from 1. */
 export interface FitnessLine {
@@ -101,8 +99,8 @@ function studentOf(
 
 /**
  * Whether a row may be saved, and what it holds, or why it is skipped.
- * The score follows the group form's rule: a whole number from 0 to 100,
- * so one with a decimal is skipped rather than rounded.
+ * The score follows the group form's rule and words: from 0 to 100 with
+ * at most two decimals, so one with more is skipped rather than rounded.
  */
 function checkLine(
   line: FitnessLine,
@@ -111,7 +109,7 @@ function checkLine(
   const student = studentOf(line.nim, known);
   if (!student.ok) return student;
   const score = scoreOf(line.score);
-  if (score === null) return refused(SCORE_NOT_IN_RANGE);
+  if (score === null) return refused(SCORE_NOT_VALID);
   return {
     ok: true,
     value: {

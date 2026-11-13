@@ -7,8 +7,9 @@ import type { Database } from "@/db/connect";
 import { fitnessScores, students } from "@/db/schema";
 import { withTestDatabase } from "@/db/test-database";
 import { MAX_FILE_ROWS } from "@/files/csv-file";
-import { NOT_ACTIVE, SCORE_NOT_IN_RANGE, UNKNOWN_NIM } from "./fitness-file";
+import { NOT_ACTIVE, UNKNOWN_NIM } from "./fitness-file";
 import { checkFitnessFile, previewFitnessFile } from "./fitness-file-check";
+import { SCORE_NOT_VALID } from "./fitness-input";
 import { NOT_ALLOWED_TO_ENTER } from "./save-fitness-scores";
 import { addTestActor, addTestStudents } from "./test-fitness";
 
@@ -88,7 +89,7 @@ describe("checkFitnessFile", () => {
             { row: 4, nim: "9986200603", reason: UNKNOWN_NIM },
             { row: 5, nim: "9986200604", reason: UNKNOWN_NIM },
             { row: 6, nim: "9986200699", reason: UNKNOWN_NIM },
-            { row: 7, nim: "9986200601", reason: SCORE_NOT_IN_RANGE },
+            { row: 7, nim: "9986200601", reason: SCORE_NOT_VALID },
           ],
           duplicates: 0,
         },
