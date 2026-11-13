@@ -74,6 +74,18 @@ describe("countFitness", () => {
     expect(numbers.untested).toBe(2);
   });
 
+  it("works Rerata skor out exactly from scores with decimals, to one decimal", () => {
+    const numbers = countFitness(
+      [
+        { students: 1, latest: { score: 0.07, thisYear: true }, note: null },
+        { students: 1, latest: { score: 71.63, thisYear: true }, note: null },
+      ],
+      STARTING_LIMITS,
+    );
+
+    expect(numbers.meanScore).toBe(35.9);
+  });
+
   it("gives no Rerata skor while nobody is tested", () => {
     const numbers = countFitness(
       [{ students: 5, latest: null, note: null }],

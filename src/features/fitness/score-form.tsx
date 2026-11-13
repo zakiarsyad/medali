@@ -23,7 +23,7 @@ import {
   scoreOf,
   testYearOf,
 } from "./fitness-input";
-import { readyLine } from "./fitness-words";
+import { readyLine, shownScore } from "./fitness-words";
 
 const START: FormState = { error: null, done: null };
 
@@ -62,7 +62,7 @@ function MemberRow({
         <small className={shared.detail}>{member.nim}</small>
         <input type="hidden" name="student" value={member.id} />
       </td>
-      <td data-title="Skor saat ini">{member.latestScore ?? "-"}</td>
+      <td data-title="Skor saat ini">{shownScore(member.latestScore)}</td>
       <td data-title="Skor baru">
         <input
           name="score"

@@ -84,6 +84,27 @@ function categoryShownFor(typed: string): string {
   return cell?.[1] ?? "";
 }
 
+describe("Skor saat ini", () => {
+  it("writes the latest score with two decimals, or - for none", () => {
+    const BUDI = {
+      ...ANI,
+      id: "00000000-0000-4000-8000-000000000712",
+      latestScore: null,
+    };
+    const page = renderToStaticMarkup(
+      <MemberTable
+        members={[{ ...ANI, latestScore: 85.25 }, BUDI]}
+        typed={{}}
+        limits={STARTING_LIMITS}
+        onType={() => undefined}
+      />,
+    );
+
+    expect(page).toContain('<td data-title="Skor saat ini">85,25</td>');
+    expect(page).toContain('<td data-title="Skor saat ini">-</td>');
+  });
+});
+
 describe("the category beside each Skor baru, with the starting limits 85/70/55", () => {
   it.each([
     ["72", ">Baik</span>"],

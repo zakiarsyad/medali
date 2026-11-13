@@ -215,6 +215,7 @@ describe("StudentFitnessView", () => {
     );
 
     expect(markup).toContain("Skor tes kebugaran 2026");
+    expect(markup).toMatch(/>80,00<\/dd>/);
     expect(markup).toContain("1 Okt 2026");
     expect(markup).toContain("berdasarkan catatan kesehatan");
     expect(markup).toContain(`Riwayat: Asma (sejak SMP). ${ADVICE}`);

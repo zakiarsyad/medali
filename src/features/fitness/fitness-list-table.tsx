@@ -8,6 +8,7 @@ import { ProfileNameLink } from "@/ui/profile-name-link";
 import styles from "./fitness.module.css";
 import { type FitnessParams, fitnessAddress } from "./fitness-address";
 import type { FitnessListRow, RowHealth } from "./fitness-board";
+import { shownScore } from "./fitness-words";
 
 export const NO_FITNESS_MATCHES = "Tidak ada mahasiswa pada filter ini.";
 
@@ -55,7 +56,7 @@ function StudentRow({
       </td>
       <td data-title="Tes">{latest ? shownDay(latest.testedOn) : "-"}</td>
       <td className={styles.score} data-title="Skor">
-        {latest ? latest.score : "-"}
+        {shownScore(latest ? latest.score : null)}
       </td>
       <td data-title="Kategori">
         <FinalCategoryBadge final={final} showsMark={health !== null} />

@@ -10,6 +10,7 @@ import { shownDay } from "@/ui/day";
 import styles from "./fitness.module.css";
 import type { RowHealth } from "./fitness-board";
 import { needsNote } from "./fitness-list-table";
+import { shownScore } from "./fitness-words";
 import type { StudentFitness } from "./student-fitness";
 
 /** What the panel says of a student who never took the test. */
@@ -25,7 +26,7 @@ function TestFacts({
     <dl className={styles.facts}>
       <div>
         <dt>Skor tes kebugaran {year}</dt>
-        <dd className={styles.bigScore}>{latest.score}</dd>
+        <dd className={styles.bigScore}>{shownScore(latest.score)}</dd>
       </div>
       <div>
         <dt>Tanggal tes</dt>

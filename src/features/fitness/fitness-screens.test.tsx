@@ -177,7 +177,7 @@ describe("Hasil tes kebugaran", () => {
     expect(html).toContain("Ani Contoh");
     expect(html).toContain("9986200201 · D3 Pajak");
     expect(html).toContain('<td data-title="Tes">1 Okt 2026</td>');
-    expect(html).toMatch(/data-title="Skor">72<\/td>/);
+    expect(html).toMatch(/data-title="Skor">72,00<\/td>/);
     expect(html).toMatch(/data-title="Kategori"><span[^>]*>Baik<\/span>/);
     expect(html).toMatch(/data-title="Tes">-<\/td>/);
     expect(html).toMatch(

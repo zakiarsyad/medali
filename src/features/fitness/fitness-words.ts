@@ -61,6 +61,18 @@ export function readyLine(ready: number): string {
   return `${shown(ready)} skor siap disimpan.`;
 }
 
+/**
+ * A fitness score always with two decimals, such as 85,25 or 80,00, so
+ * every score of a column has one form; "-" for none.
+ */
+export function shownScore(score: number | null): string {
+  if (score === null) return "-";
+  return score.toLocaleString("id-ID", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 /** "Rerata skor" with one decimal, such as 75,3, or "-" for none. */
 export function shownMean(mean: number | null): string {
   if (mean === null) return "-";

@@ -34,6 +34,8 @@ export interface FitnessNumbers {
   untested: number;
 }
 
+const HUNDREDTHS_PER_TENTH = 10;
+
 function testCategoryOf(
   group: ScoreGroup,
   limits: FitnessLimits,
@@ -54,7 +56,8 @@ export function countFitness(
   let students = 0;
   let tested = 0;
   let testedThisYear = 0;
-  let total = 0;
+  // In hundredths, whole numbers, so adding scores with decimals stays exact.
+  let totalHundredths = 0;
   for (const group of groups) {
     students += group.students;
     const { category } = finalCategory(
@@ -65,10 +68,12 @@ export function countFitness(
     if (group.latest === null) continue;
     tested += group.students;
     if (group.latest.thisYear) testedThisYear += group.students;
-    total += group.latest.score * group.students;
+    totalHundredths += Math.round(group.latest.score * 100) * group.students;
   }
   const meanScore =
-    tested === 0 ? null : Math.round((total / tested) * 10) / 10;
+    tested === 0
+      ? null
+      : Math.round(totalHundredths / (tested * HUNDREDTHS_PER_TENTH)) / 10;
   return {
     students,
     testedThisYear,

@@ -57,6 +57,6 @@ typed and shown with its decimals.
   category rule handles decimals, with checks.
 - [x] 2. "Formulir kolektif" accepts and saves scores with up to two
   decimals.
-- [ ] 3. Scores show with two decimals in the list, the student detail,
+- [x] 3. Scores show with two decimals in the list, the student detail,
   Profil saya and the Dashboard.
 - [ ] 4. "Unggah berkas" accepts scores with up to two decimals.
