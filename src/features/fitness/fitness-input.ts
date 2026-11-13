@@ -24,7 +24,7 @@ export interface SentScore {
   typed: string;
 }
 
-/** A score the server keeps for a student. */
+/** A score the server keeps for a student, with at most two decimals. */
 export interface StudentScore {
   studentId: string;
   score: number;
@@ -33,7 +33,8 @@ export interface StudentScore {
 export const LIMITS_NOT_WHOLE = "Ambang harus bilangan bulat 1–100.";
 export const LIMITS_NOT_DOWN =
   "Ambang harus menurun: prima > baik > perlu perhatian.";
-export const SCORE_NOT_WHOLE = "Skor harus bilangan bulat 0–100.";
+export const SCORE_NOT_VALID =
+  "Skor harus angka 0–100, paling banyak 2 angka di belakang koma.";
 export const NO_SCORE = "Isi minimal satu skor.";
 export const NO_TEST_DAY = "Isi tanggal tes.";
 export const DAY_IN_FUTURE = "Tanggal tes tidak boleh setelah hari ini.";
@@ -49,12 +50,26 @@ function wholeWithin(typed: string, min: number, max: number): number | null {
   return number;
 }
 
-/** A typed score as a number, or null when it is not a whole one from 0 to 100. */
+/**
+ * A whole part as WHOLE_NUMBER takes it, then at most two decimals after
+ * a comma or a dot, since some phones show only a dot on their keypad.
+ */
+const SCORE_NUMBER = /^(0|[1-9]\d{0,2})([.,]\d{1,2})?$/;
+
+/**
+ * A typed score as a number, or null when it is not one from 0 to 100
+ * with at most two decimals. A number with at most two decimals never
+ * lands on the other side of a whole limit, so its category is exact.
+ */
 export function scoreOf(typed: string): number | null {
-  return wholeWithin(typed, SCORE_MIN, SCORE_MAX);
+  const trimmed = typed.trim();
+  if (!SCORE_NUMBER.test(trimmed)) return null;
+  const number = Number(trimmed.replace(",", "."));
+  if (number < SCORE_MIN || number > SCORE_MAX) return null;
+  return number;
 }
 
-/** How many typed scores a save would keep: the whole ones from 0 to 100. */
+/** How many typed scores a save would keep: the ones scoreOf reads. */
 export function readyCount(typed: readonly string[]): number {
   return typed.filter((text) => scoreOf(text) !== null).length;
 }
@@ -94,8 +109,8 @@ function isFilled(row: SentScore): boolean {
 
 /**
  * Checks the rows of a group form: an empty "Skor baru" is skipped, and
- * every filled one must be a whole score from 0 to 100, or nothing is
- * kept. At least one must be filled.
+ * every filled one must be a score from 0 to 100 with at most two
+ * decimals, or nothing is kept. At least one must be filled.
  */
 export function parseScores(
   rows: readonly SentScore[],
@@ -105,7 +120,7 @@ export function parseScores(
   const scores: StudentScore[] = [];
   for (const row of filled) {
     const score = scoreOf(row.typed);
-    if (score === null) return { ok: false, error: SCORE_NOT_WHOLE };
+    if (score === null) return { ok: false, error: SCORE_NOT_VALID };
     scores.push({ studentId: row.studentId, score });
   }
   return { ok: true, value: scores };

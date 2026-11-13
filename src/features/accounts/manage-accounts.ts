@@ -11,7 +11,7 @@ import {
   or,
   type SQL,
 } from "drizzle-orm";
-import { refusedWhenEmailInUse } from "@/auth/account-email";
+import { parseAccountEmail, refusedWhenEmailInUse } from "@/auth/account-email";
 import { rolesByAccount } from "@/auth/accounts";
 import { ROLE_IDS, type RoleId } from "@/auth/role-ids";
 import type { Database } from "@/db/connect";
@@ -27,7 +27,13 @@ import { holdsGroupToday } from "@/mentoring/holds-group-today";
 import { isKeptForReplacement } from "@/mentoring/waiting-replacement";
 import type { Parsed } from "@/parsed";
 import { pageWithin } from "@/ui/list-pages";
-import type { NewAccount, RoleChange } from "./account-input";
+import {
+  type AccountChange,
+  MALFORMED_EMAIL,
+  type NewAccount,
+  type RoleChange,
+} from "./account-input";
+import { OWN_EMAIL_LOCKED } from "./account-limits";
 import {
   REMOVAL_REFUSED_FOR_GROUP,
   REMOVAL_REFUSED_FOR_REPLACEMENT,
@@ -249,70 +255,122 @@ export async function changeRoles(
   change: RoleChange,
   by: string,
 ): Promise<Parsed<RoleId[]>> {
-  return db.transaction(async (tx) => {
-    const account = await lockActive(tx, change.accountId);
-    if (!account) return NOT_FOUND;
-    if (account.studentId !== null) {
-      return {
-        ok: false,
-        error:
-          "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
-      };
-    }
-    if (!(await programIsKnown(tx, change.studyProgramId))) {
-      return UNKNOWN_PROGRAM;
-    }
-    const before = await currentRoles(tx, change.accountId);
-    const kept = before.filter((role) => !isManagedRole(role));
-    const after = inRoleOrder([...kept, ...change.roles]);
-    if (after.length === 0) {
-      return { ok: false, error: "Pilih minimal satu peran." };
-    }
-    if (takesMentorRole(before, after)) {
-      if (await holdsGroupToday(tx, change.accountId)) {
-        return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
-      }
-      if (await isKeptForReplacement(tx, change.accountId)) {
-        return { ok: false, error: ROLE_REFUSED_FOR_REPLACEMENT };
-      }
-    }
+  return db.transaction((tx) => changeRolesIn(tx, change, by));
+}
 
+/** The work of changeRoles, inside a transaction the caller holds. */
+async function changeRolesIn(
+  tx: Database,
+  change: RoleChange,
+  by: string,
+): Promise<Parsed<RoleId[]>> {
+  const account = await lockActive(tx, change.accountId);
+  if (!account) return NOT_FOUND;
+  if (account.studentId !== null) {
+    return {
+      ok: false,
+      error:
+        "Akun ini tidak dikelola di sini, sehingga perannya tidak bisa diubah.",
+    };
+  }
+  if (!(await programIsKnown(tx, change.studyProgramId))) {
+    return UNKNOWN_PROGRAM;
+  }
+  const before = await currentRoles(tx, change.accountId);
+  const kept = before.filter((role) => !isManagedRole(role));
+  const after = inRoleOrder([...kept, ...change.roles]);
+  if (after.length === 0) {
+    return { ok: false, error: "Pilih minimal satu peran." };
+  }
+  if (takesMentorRole(before, after)) {
+    if (await holdsGroupToday(tx, change.accountId)) {
+      return { ok: false, error: ROLE_REFUSED_FOR_GROUP };
+    }
+    if (await isKeptForReplacement(tx, change.accountId)) {
+      return { ok: false, error: ROLE_REFUSED_FOR_REPLACEMENT };
+    }
+  }
+
+  await tx
+    .delete(accountRoles)
+    .where(
+      and(
+        eq(accountRoles.accountId, change.accountId),
+        notInArray(accountRoles.role, kept),
+      ),
+    );
+  if (change.roles.length > 0) {
     await tx
-      .delete(accountRoles)
-      .where(
-        and(
-          eq(accountRoles.accountId, change.accountId),
-          notInArray(accountRoles.role, kept),
-        ),
-      );
-    if (change.roles.length > 0) {
+      .insert(accountRoles)
+      .values(
+        change.roles.map((role) => ({ accountId: change.accountId, role })),
+      )
+      .onConflictDoNothing();
+  }
+  await tx
+    .update(accounts)
+    .set({
+      studyProgramId: change.studyProgramId,
+      ...(change.unit === null ? {} : { unit: change.unit }),
+    })
+    .where(eq(accounts.id, change.accountId));
+
+  if (!sameRoles(before, after)) {
+    await tx.insert(roleChanges).values({
+      accountId: change.accountId,
+      changedBy: by,
+      changedAt: WRITTEN_NOW,
+      action: "roles_changed",
+      rolesBefore: before,
+      rolesAfter: after,
+    });
+  }
+  return { ok: true, value: after };
+}
+
+async function emailOf(db: Database, accountId: string) {
+  const [found] = await db
+    .select({ email: accounts.email })
+    .from(accounts)
+    .where(eq(accounts.id, accountId));
+  return found?.email ?? null;
+}
+
+/**
+ * Saves what the Ubah form of Daftar pengguna sends: the roles as
+ * changeRoles does, and the name, title, NIP and email with them, all or
+ * nothing. A new email is refused when another active account holds
+ * it, when it is the manager's own (a wrong one would lock them out of
+ * the app), and when it does not end with `campusEnding` while that is
+ * set. An email kept as it was is not checked against the ending, so an
+ * account added before the ending was set can still be changed.
+ */
+export async function changeAccount(
+  db: Database,
+  change: AccountChange,
+  by: string,
+  campusEnding: string,
+): Promise<Parsed<RoleId[]>> {
+  const { name, title, nip, email } = change;
+  return refusedWhenEmailInUse(() =>
+    db.transaction(async (tx) => {
+      const emailChanged = (await emailOf(tx, change.accountId)) !== email;
+      if (emailChanged && change.accountId === by) {
+        return { ok: false, error: OWN_EMAIL_LOCKED };
+      }
+      if (emailChanged) {
+        const checked = parseAccountEmail(email, campusEnding, MALFORMED_EMAIL);
+        if (!checked.ok) return checked;
+      }
+      const changed = await changeRolesIn(tx, change, by);
+      if (!changed.ok) return changed;
       await tx
-        .insert(accountRoles)
-        .values(
-          change.roles.map((role) => ({ accountId: change.accountId, role })),
-        )
-        .onConflictDoNothing();
-    }
-    await tx
-      .update(accounts)
-      .set({
-        studyProgramId: change.studyProgramId,
-        ...(change.unit === null ? {} : { unit: change.unit }),
-      })
-      .where(eq(accounts.id, change.accountId));
-
-    if (!sameRoles(before, after)) {
-      await tx.insert(roleChanges).values({
-        accountId: change.accountId,
-        changedBy: by,
-        changedAt: WRITTEN_NOW,
-        action: "roles_changed",
-        rolesBefore: before,
-        rolesAfter: after,
-      });
-    }
-    return { ok: true, value: after };
-  });
+        .update(accounts)
+        .set({ name, title, nip, email })
+        .where(eq(accounts.id, change.accountId));
+      return changed;
+    }),
+  );
 }
 
 /**

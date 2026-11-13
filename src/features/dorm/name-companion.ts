@@ -12,12 +12,12 @@ import {
   type CompanionDormId,
   companionDormOf,
 } from "./companion-dorms";
-import { NOTE_MAX_LENGTH } from "./companion-limits";
 import {
   COMPANION_DORMS_NAMED,
   COMPANIONS_NOT_ALLOWED,
   NO_PERIOD_TO_NAME,
 } from "./companion-messages";
+import { parseCompanionNote } from "./companion-note";
 import { livesWithCompanions } from "./lives-with-companions";
 
 /** A kakak pendamping as the form sends it. */
@@ -35,10 +35,6 @@ interface NewCompanion {
 
 const STUDENT_MISSING = { ok: false, error: "Pilih mahasiswa." } as const;
 const DORM_MISSING = { ok: false, error: "Pilih asrama." } as const;
-const NOTE_TOO_LONG = {
-  ok: false,
-  error: `Keterangan paling panjang ${NOTE_MAX_LENGTH} karakter.`,
-} as const;
 const NOT_ACTIVE = {
   ok: false,
   error: "Mahasiswa tidak ditemukan atau tidak aktif. Muat ulang halaman.",
@@ -64,11 +60,11 @@ export function parseCompanion(sent: SentCompanion): Parsed<NewCompanion> {
   if (!isUuid(sent.studentId)) return STUDENT_MISSING;
   const dorm = COMPANION_DORM_IDS.find((id) => id === sent.dorm);
   if (!dorm) return DORM_MISSING;
-  const note = sent.note.trim();
-  if (note.length > NOTE_MAX_LENGTH) return NOTE_TOO_LONG;
+  const note = parseCompanionNote(sent.note);
+  if (!note.ok) return note;
   return {
     ok: true,
-    value: { studentId: sent.studentId, dorm, note: note === "" ? null : note },
+    value: { studentId: sent.studentId, dorm, note: note.value },
   };
 }
 

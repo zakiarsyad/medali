@@ -58,7 +58,7 @@ function name(
   actor = MANAGER,
   day = DAY,
 ) {
-  const all = { studentId: "", dorm: "dana_rakca", note: "", ...sent };
+  const all = { studentId: "", dorm: "cipta_bakti", note: "", ...sent };
   return nameCompanion(db, actor, all, day);
 }
 
@@ -76,11 +76,11 @@ describe("nameCompanion", () => {
       expect(named).toEqual({
         ok: true,
         value:
-          "Sinta Uji ditetapkan sebagai kakak pendamping Asrama Dana Rakca.",
+          "Sinta Uji ditetapkan sebagai kakak pendamping Asrama Cipta Bakti.",
       });
       expect(await companionOf(db, studentId)).toEqual({
         studentId,
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         note: "Lantai 3",
         isActive: true,
         roomId: null,
@@ -98,39 +98,39 @@ describe("nameCompanion", () => {
     });
   });
 
-  it("names a man for Cipta Bakti", async () => {
-    await inTestDatabase(async (db) => {
-      const studentId = await addSenior(db, { sex: "male" });
-
-      const named = await name(db, { studentId, dorm: "cipta_bakti" });
-
-      expect(named.ok).toBe(true);
-    });
-  });
-
-  it("refuses Cipta Bakti for a woman, and saves nothing", async () => {
-    await inTestDatabase(async (db) => {
-      const studentId = await addSenior(db);
-
-      const named = await name(db, { studentId, dorm: "cipta_bakti" });
-
-      expect(named).toEqual({
-        ok: false,
-        error: "Asrama Cipta Bakti hanya untuk mahasiswa laki-laki.",
-      });
-      expect(await companionCount(db)).toBe(0);
-    });
-  });
-
-  it("refuses Dana Rakca for a man, and saves nothing", async () => {
+  it("names a man for Dana Rakca", async () => {
     await inTestDatabase(async (db) => {
       const studentId = await addSenior(db, { sex: "male" });
 
       const named = await name(db, { studentId, dorm: "dana_rakca" });
 
+      expect(named.ok).toBe(true);
+    });
+  });
+
+  it("refuses Dana Rakca for a woman, and saves nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addSenior(db);
+
+      const named = await name(db, { studentId, dorm: "dana_rakca" });
+
       expect(named).toEqual({
         ok: false,
-        error: "Asrama Dana Rakca hanya untuk mahasiswa perempuan.",
+        error: "Asrama Dana Rakca hanya untuk mahasiswa laki-laki.",
+      });
+      expect(await companionCount(db)).toBe(0);
+    });
+  });
+
+  it("refuses Cipta Bakti for a man, and saves nothing", async () => {
+    await inTestDatabase(async (db) => {
+      const studentId = await addSenior(db, { sex: "male" });
+
+      const named = await name(db, { studentId, dorm: "cipta_bakti" });
+
+      expect(named).toEqual({
+        ok: false,
+        error: "Asrama Cipta Bakti hanya untuk mahasiswa perempuan.",
       });
       expect(await companionCount(db)).toBe(0);
     });
@@ -174,7 +174,7 @@ describe("nameCompanion", () => {
     });
   });
 
-  it("refuses a Reguler student in semester 1, who lives in Dana Rakca", async () => {
+  it("refuses a Reguler student in semester 1, who lives in Cipta Bakti", async () => {
     await inTestDatabase(async (db) => {
       const studentId = await addSenior(db, { cohortYear: 2530 });
 

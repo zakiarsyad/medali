@@ -28,9 +28,9 @@ interface TestRows {
 }
 
 /**
- * Dana Rakca with a room on floor 1 that holds a resident and two kakak
+ * Cipta Bakti with a room on floor 1 that holds a resident and two kakak
  * pendamping, one of them of another program; one kakak pendamping who
- * waits for a room, one who is stopped, and one of Cipta Bakti.
+ * waits for a room, one who is stopped, and one of Dana Rakca.
  */
 async function addTestRows(db: Database): Promise<TestRows> {
   const ownProgram = await addTestProgram(db, "Prodi Uji Kamar Kakak Sendiri");
@@ -72,12 +72,12 @@ async function addTestRows(db: Database): Promise<TestRows> {
     name: "Bima Uji",
     sex: "male",
   });
-  await addTestCompanion(db, man, { dorm: "cipta_bakti" });
+  await addTestCompanion(db, man, { dorm: "dana_rakca" });
   return { ownProgram, roomId, placed, placedOther, waiting };
 }
 
 function read(db: Database, visible = EVERYONE, floor = 1) {
-  return readRoomCompanions(db, { dorm: "dana_rakca", visible }, floor);
+  return readRoomCompanions(db, { dorm: "cipta_bakti", visible }, floor);
 }
 
 describe("readRooms", () => {
@@ -85,7 +85,7 @@ describe("readRooms", () => {
     await inTestDatabase(async (db) => {
       const { roomId } = await addTestRows(db);
 
-      const rooms = await readRooms(db, "dana_rakca", DORM_COHORTS);
+      const rooms = await readRooms(db, "cipta_bakti", DORM_COHORTS);
 
       expect(rooms.find((room) => room.id === roomId)?.taken).toBe(3);
     });
@@ -151,11 +151,11 @@ describe("readRoomCompanions", () => {
 describe("loadRooms", () => {
   const DAY = "2026-10-12";
 
-  it("gives the kakak pendamping of Dana Rakca", async () => {
+  it("gives the kakak pendamping of Cipta Bakti", async () => {
     await inTestDatabase(async (db) => {
       await addTestRows(db);
       const params = {
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         floor: 1,
         query: "",
         adding: null,

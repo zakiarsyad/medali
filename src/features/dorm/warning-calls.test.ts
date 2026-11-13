@@ -65,7 +65,7 @@ describe("readWarningCalls", () => {
         counted: 7,
         mark: null,
         schedule: null,
-        room: "Asrama Dana Rakca, belum diplot",
+        room: "Asrama Cipta Bakti, belum diplot",
       });
       expect(calls.active).toBe(1);
       expect(calls.semester?.title).toContain("3291");

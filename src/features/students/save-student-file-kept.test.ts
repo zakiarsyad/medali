@@ -25,7 +25,8 @@ const NOT_KEPT = {
 function csvFile(name: string, ...nims: string[]): UploadedFile {
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const lines = nims.map(
-    (nim) => `${nim},Berkas Uji ${nim},${PROGRAM},Reguler,L,2026,,,,,,,Aktif`,
+    (nim) =>
+      `${nim},Berkas Uji ${nim},${PROGRAM},Reguler,L,2026,,,,,,,Aktif,,Islam,08/17/2005,Kota Contoh`,
   );
   const text = [titles, ...lines].join("\r\n");
   return { name, bytes: new TextEncoder().encode(text) };
@@ -37,6 +38,7 @@ async function contextWithProgram(db: Database): Promise<InputContext> {
     programs: [{ id, name: PROGRAM }],
     cohortYears: cohortChoices(2026),
     campusEnding: "@kampus.example",
+    today: "2026-11-10",
   };
 }
 

@@ -43,6 +43,9 @@ const STUDENT: StoredStudent = {
   studyProgramId: 3,
   entryPath: "regular",
   sex: "female",
+  religion: "protestant",
+  birthDate: "2005-08-17",
+  birthPlace: "Kota Contoh",
   cohortYear: 2026,
   className: null,
   province: null,
@@ -79,7 +82,7 @@ test("the browser's own check is off, so the app's message is the one shown", ()
 });
 
 test("the note names the dorm the student being filled in will live in", () => {
-  expect(formFor([2026])).toContain("Masuk penghuni Asrama Cipta Bakti.");
+  expect(formFor([2026])).toContain("Masuk penghuni Asrama Dana Rakca.");
   expect(formFor([2025])).toContain("Bukan penghuni asrama.");
 });
 
@@ -148,6 +151,121 @@ test("the form to change a student sends the version and the group it opened wit
   );
   expect(formFor([2026], GROUPS)).not.toContain('name="version"');
   expect(formFor([2026], GROUPS)).not.toContain('name="openedGroupId"');
+});
+
+function religionChoiceOf(form: string): string {
+  return form.match(/<select name="religion".*?<\/select>/)?.[0] ?? "";
+}
+
+test("Agama offers the six choices, and asks for one on a new student", () => {
+  expect(formFor([2026])).toContain('Agama<select name="religion"');
+  expect(religionChoiceOf(formFor([2026]))).toContain(
+    '<option value="" selected="">Pilih agama</option>' +
+      '<option value="islam">Islam</option>' +
+      '<option value="protestant">Kristen Protestan</option>' +
+      '<option value="catholic">Kristen Katolik</option>' +
+      '<option value="hindu">Hindu</option>' +
+      '<option value="buddhist">Buddha</option>' +
+      '<option value="confucian">Konghucu</option>' +
+      "</select>",
+  );
+});
+
+test("Agama stands on what was saved for the student being changed, or asks for one", () => {
+  function changing(student: StoredStudent): string {
+    return renderToStaticMarkup(
+      <StudentForm
+        programs={PROGRAMS}
+        cohortYears={[2026]}
+        editing={student}
+        groups={GROUPS}
+        place={{ query: "", page: 1 }}
+        period={ODD_2026}
+      />,
+    );
+  }
+
+  expect(religionChoiceOf(changing(STUDENT))).toContain(
+    '<option value="protestant" selected="">Kristen Protestan</option>',
+  );
+  expect(religionChoiceOf(changing({ ...STUDENT, religion: null }))).toContain(
+    '<option value="" selected="">Pilih agama</option>',
+  );
+});
+
+function birthDateFieldOf(form: string): string {
+  return form.match(/<input[^>]* name="birthDate"[^>]*>/)?.[0] ?? "";
+}
+
+test("Tanggal lahir is a text field after Agama, with the hint MM/DD/YYYY", () => {
+  const form = formFor([2026]);
+
+  expect(form).toMatch(/Tanggal lahir<input[^>]* name="birthDate"/);
+  const place = form.indexOf("Tanggal lahir<input");
+  expect(place).toBeGreaterThan(form.indexOf('Agama<select name="religion"'));
+  expect(place).toBeLessThan(form.indexOf('Angkatan<select name="cohortYear"'));
+  const field = birthDateFieldOf(form);
+  expect(field).toContain('type="text"');
+  expect(field).toContain('placeholder="MM/DD/YYYY"');
+  expect(field).toContain('value=""');
+});
+
+test("Tanggal lahir shows what was saved for the student being changed as MM/DD/YYYY, or nothing", () => {
+  function changing(student: StoredStudent): string {
+    return renderToStaticMarkup(
+      <StudentForm
+        programs={PROGRAMS}
+        cohortYears={[2026]}
+        editing={student}
+        groups={GROUPS}
+        place={{ query: "", page: 1 }}
+        period={ODD_2026}
+      />,
+    );
+  }
+
+  expect(birthDateFieldOf(changing(STUDENT))).toContain('value="08/17/2005"');
+  expect(birthDateFieldOf(changing({ ...STUDENT, birthDate: null }))).toContain(
+    'value=""',
+  );
+});
+
+function birthPlaceFieldOf(form: string): string {
+  return form.match(/<input[^>]* name="birthPlace"[^>]*>/)?.[0] ?? "";
+}
+
+test("Tempat lahir is a text field after Tanggal lahir, with the hint Misalnya Kota Bandung", () => {
+  const form = formFor([2026]);
+
+  expect(form).toMatch(/Tempat lahir<input[^>]* name="birthPlace"/);
+  const place = form.indexOf("Tempat lahir<input");
+  expect(place).toBeGreaterThan(form.indexOf("Tanggal lahir<input"));
+  expect(place).toBeLessThan(form.indexOf('Angkatan<select name="cohortYear"'));
+  const field = birthPlaceFieldOf(form);
+  expect(field).toContain('placeholder="Misalnya Kota Bandung"');
+  expect(field).toContain('maxLength="60"');
+  expect(field).toContain('required=""');
+  expect(field).toContain('value=""');
+});
+
+test("Tempat lahir shows what was saved for the student being changed, or nothing", () => {
+  function changing(student: StoredStudent): string {
+    return renderToStaticMarkup(
+      <StudentForm
+        programs={PROGRAMS}
+        cohortYears={[2026]}
+        editing={student}
+        groups={GROUPS}
+        place={{ query: "", page: 1 }}
+        period={ODD_2026}
+      />,
+    );
+  }
+
+  expect(birthPlaceFieldOf(changing(STUDENT))).toContain('value="Kota Contoh"');
+  expect(
+    birthPlaceFieldOf(changing({ ...STUDENT, birthPlace: null })),
+  ).toContain('value=""');
 });
 
 test("the warning of a full group shows under the line of the choice", () => {

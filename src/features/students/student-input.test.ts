@@ -13,6 +13,7 @@ const context = {
   ],
   cohortYears: cohortChoices(2026),
   campusEnding: "@kampus.example",
+  today: "2026-11-10",
 };
 
 const valid: StudentFields = {
@@ -22,6 +23,9 @@ const valid: StudentFields = {
   studyProgramId: "7",
   entryPath: "transfer",
   sex: "female",
+  religion: "catholic",
+  birthDate: " 08/17/2005 ",
+  birthPlace: "  Kota   Contoh ",
   cohortYear: "2025",
   className: " 1-01 ",
   province: "Jawa Barat",
@@ -55,6 +59,9 @@ describe("parseStudent", () => {
         studyProgramId: 7,
         entryPath: "transfer",
         sex: "female",
+        religion: "catholic",
+        birthDate: "2005-08-17",
+        birthPlace: "Kota Contoh",
         cohortYear: 2025,
         className: "1-01",
         province: "Jawa Barat",
@@ -103,6 +110,25 @@ describe("parseStudent", () => {
       ok: true,
       value: { email: "mahasiswa.contoh@luar.example" },
     });
+  });
+
+  it("accepts a Tempat lahir of 60 characters", () => {
+    const parsed = parseStudent(
+      { ...valid, birthPlace: "K".repeat(60) },
+      context,
+    );
+    expect(parsed.ok && parsed.value.birthPlace).toBe("K".repeat(60));
+  });
+
+  it.each([
+    "Kalimantan Utara",
+    "Papua Barat Daya",
+    "Papua Pegunungan",
+    "Papua Selatan",
+    "Papua Tengah",
+  ])("accepts the newer province %s", (province) => {
+    const parsed = parseStudent({ ...valid, province }, context);
+    expect(parsed.ok && parsed.value.province).toBe(province);
   });
 
   it("keeps Instansi asal only for Alih program", () => {
@@ -155,6 +181,35 @@ describe("parseStudent", () => {
       "an unknown sex",
       { sex: "" },
       "Jenis kelamin harus Laki-laki atau Perempuan.",
+    ],
+    ["no Agama", { religion: "" }, "Agama wajib dipilih."],
+    ["an unknown Agama", { religion: "other" }, "Agama tidak dikenal."],
+    ["no Tanggal lahir", { birthDate: "" }, "Tanggal lahir wajib diisi."],
+    [
+      "a Tanggal lahir not written MM/DD/YYYY",
+      { birthDate: "17-08-2005" },
+      "Tanggal lahir harus ditulis MM/DD/YYYY.",
+    ],
+    [
+      "a Tanggal lahir that does not exist",
+      { birthDate: "02/30/2005" },
+      "Tanggal lahir tidak ada di kalender.",
+    ],
+    [
+      "a Tanggal lahir after today",
+      { birthDate: "11/11/2026" },
+      "Tanggal lahir tidak boleh setelah hari ini.",
+    ],
+    ["no Tempat lahir", { birthPlace: "" }, "Tempat lahir wajib diisi."],
+    [
+      "a Tempat lahir of spaces",
+      { birthPlace: "   " },
+      "Tempat lahir wajib diisi.",
+    ],
+    [
+      "a Tempat lahir longer than 60 characters",
+      { birthPlace: "K".repeat(61) },
+      "Tempat lahir paling banyak 60 karakter.",
     ],
     [
       "a year before the choices",

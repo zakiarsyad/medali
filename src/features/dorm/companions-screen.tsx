@@ -47,7 +47,7 @@ export async function CompanionsScreen({
       <TabbedHead
         title="Asrama"
         tabs={tabs}
-        lede="Kakak pendamping adalah mahasiswa senior yang ditugaskan tinggal dan mendampingi penghuni di Asrama Dana Rakca (putri) atau Cipta Bakti (putra). Setelah ditetapkan di sini, kakak pendamping dapat diplot ke kamar di tab Ploting kamar."
+        lede="Kakak pendamping adalah mahasiswa senior yang ditugaskan tinggal dan mendampingi penghuni di Asrama Dana Rakca (putra) atau Cipta Bakti (putri). Setelah ditetapkan di sini, kakak pendamping dapat diplot ke kamar di tab Ploting kamar."
       />
       {mayManage && (
         <NameCompanionPanel query={params.query} candidates={candidates} />

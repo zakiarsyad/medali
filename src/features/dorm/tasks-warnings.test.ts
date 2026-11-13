@@ -96,7 +96,7 @@ describe("readDormTasks: Penetapan SP", () => {
       });
       expect(warnings?.items[1]).toMatchObject({
         studentId: ani,
-        room: "Asrama Dana Rakca, belum diplot",
+        room: "Asrama Cipta Bakti, belum diplot",
         mark: null,
         counted: 7,
         rejected: 0,

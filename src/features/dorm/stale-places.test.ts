@@ -44,7 +44,7 @@ interface Placed {
   studentId: string;
 }
 
-/** A Reguler woman of semester 1 with a place in a room of Dana Rakca. */
+/** A Reguler woman of semester 1 with a place in a room of Cipta Bakti. */
 async function addPlacedResident(db: Database): Promise<Placed> {
   await db.insert(academicPeriods).values(ODD_2560);
   const program = await addTestProgram(db, "Prodi Uji Asrama S");
@@ -62,9 +62,9 @@ function open(dorm: DormId): RoomsParams {
   return { dorm, floor: 1, query: "", adding: null };
 }
 
-/** What the Ploting kamar screen of Dana Rakca shows on a day. */
+/** What the Ploting kamar screen of Cipta Bakti shows on a day. */
 function load(db: Database, day = DAY): Promise<RoomsView> {
-  return loadRooms(db, open("dana_rakca"), EVERYONE, day);
+  return loadRooms(db, open("cipta_bakti"), EVERYONE, day);
 }
 
 function takenIn(view: RoomsView, roomId: string): number {
@@ -235,7 +235,7 @@ describe("a load of Ploting kamar", () => {
       const ownProgram = and(EVERYONE, eq(students.studyProgramId, program));
       if (!ownProgram) throw new Error("The condition was not made.");
 
-      const view = await loadRooms(db, open("dana_rakca"), ownProgram, DAY);
+      const view = await loadRooms(db, open("cipta_bakti"), ownProgram, DAY);
 
       expect(shownIds(view)).toEqual([studentId]);
       expect(takenIn(view, roomId) - view.residents.length).toBe(1);

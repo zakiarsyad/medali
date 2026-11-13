@@ -6,7 +6,7 @@ describe("accountSwitcherOn", () => {
     expect(accountSwitcherOn("campus")).toBe(false);
   });
 
-  it.each(["local", "pr-preview", "main-preview"] as const)(
+  it.each(["local", "pr-preview", "main-preview", "render-preview"] as const)(
     "is on in %s",
     (stage) => {
       expect(accountSwitcherOn(stage)).toBe(true);
@@ -20,6 +20,31 @@ describe("checkSwitcherAtStartup", () => {
   it.each([
     [{ VERCEL_ENV: "production" }, "a main preview not on Vercel"],
     [{ VERCEL_ENV: "preview" }, "a PR preview not on Vercel"],
+    [{ MEDALI_RENDER_PREVIEW: "1" }, "the Render preview not on Render"],
+    [
+      {
+        MEDALI_RENDER_PREVIEW: "1",
+        RENDER: "true",
+        RENDER_SERVICE_NAME: "medali",
+      },
+      "the Render preview sign on the app of medali.site",
+    ],
+    [
+      { MEDALI_RENDER_PREVIEW: "1", RENDER_SERVICE_NAME: "medali-preview" },
+      "the Render preview with only the service name",
+    ],
+    [
+      { MEDALI_RENDER_PREVIEW: "1", VERCEL: "1" },
+      "the Render preview sign on Vercel",
+    ],
+    [
+      {
+        VERCEL_ENV: "preview",
+        RENDER: "true",
+        RENDER_SERVICE_NAME: "medali-preview",
+      },
+      "a PR preview on Render instead of Vercel",
+    ],
     [
       {
         NODE_ENV: "development",
@@ -39,6 +64,14 @@ describe("checkSwitcherAtStartup", () => {
   it.each([
     [{ VERCEL: "1", VERCEL_ENV: "production" }],
     [{ VERCEL: "1", VERCEL_ENV: "preview" }],
+    [
+      {
+        MEDALI_RENDER_PREVIEW: "1",
+        RENDER: "true",
+        RENDER_SERVICE_NAME: "medali-preview",
+      },
+    ],
+    [{ RENDER: "true", RENDER_SERVICE_NAME: "medali", MEDALI_CAMPUS: "1" }],
     [{ NODE_ENV: "development", DATABASE_URL: LOCAL_DB }],
     [
       {

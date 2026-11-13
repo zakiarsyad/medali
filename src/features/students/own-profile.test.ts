@@ -56,6 +56,7 @@ async function addRows(db: Database) {
     cohortYear: 2025,
     className: "2-01",
     province: "Bali",
+    birthPlace: "Kota Contoh",
     isSeedling: true,
     status: "on_leave",
   });
@@ -66,7 +67,7 @@ async function addRows(db: Database) {
   return { program, own, other };
 }
 
-/** A woman of angkatan 2026, who lives in Dana Rakca. */
+/** A woman of angkatan 2026, who lives in Cipta Bakti. */
 async function addResident(db: Database): Promise<string> {
   const program = await addTestProgram(db, "Prodi Uji Profil Asrama");
   return addTestStudent(db, program, {
@@ -113,6 +114,7 @@ describe("readOwnProfile", () => {
           cohortYear: 2025,
           className: "2-01",
           province: "Bali",
+          birthPlace: "Kota Contoh",
           sex: "female",
           mentorGroup: {
             cohortYear: 2026,
@@ -218,10 +220,10 @@ describe("readOwnProfile", () => {
       const profile = await ownProfileOf(db, resident);
 
       expect(profile?.residence).toStrictEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: {
           plotted: true,
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           floor: 2,
           number: ROOM_NUMBER,
           asCompanion: false,
@@ -237,7 +239,7 @@ describe("readOwnProfile", () => {
       const profile = await ownProfileOf(db, resident);
 
       expect(profile?.residence).toStrictEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: { plotted: false },
       });
     });
@@ -261,10 +263,10 @@ describe("readOwnProfile", () => {
 
       expect(before?.residence?.room).toMatchObject({ number: ROOM_NUMBER });
       expect((await ownProfileOf(db, resident))?.residence).toStrictEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: {
           plotted: true,
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           floor: 3,
           number: NEXT_ROOM_NUMBER,
           asCompanion: false,
@@ -317,13 +319,13 @@ describe("readOwnProfile", () => {
       const room = await addTestRoom(db, { number: COMPANION_ROOM_NUMBER });
       await db
         .insert(dormCompanions)
-        .values({ studentId: woman, dorm: "dana_rakca", roomId: room });
+        .values({ studentId: woman, dorm: "cipta_bakti", roomId: room });
 
       expect((await ownProfileOf(db, woman))?.residence).toStrictEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: {
           plotted: true,
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           floor: 1,
           number: COMPANION_ROOM_NUMBER,
           asCompanion: true,
@@ -342,14 +344,14 @@ describe("readOwnProfile", () => {
       });
       await db
         .insert(dormCompanions)
-        .values({ studentId: senior, dorm: "dana_rakca" });
+        .values({ studentId: senior, dorm: "cipta_bakti" });
       const oldRoom = await addTestRoom(db, { number: "U2209" });
       await db
         .insert(dormRoomPlaces)
         .values({ roomId: oldRoom, studentId: senior });
 
       expect((await ownProfileOf(db, senior))?.residence).toStrictEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: { plotted: false },
       });
     });

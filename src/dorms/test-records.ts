@@ -58,7 +58,7 @@ type TestRoom = Pick<typeof dormRooms.$inferInsert, "number"> &
   Partial<typeof dormRooms.$inferInsert>;
 
 /**
- * A room of Dana Rakca on floor 1 for 4 people, unless told otherwise.
+ * A room of Cipta Bakti on floor 1 for 4 people, unless told otherwise.
  * Each file of checks uses room numbers, NIMs and program names of its
  * own: the database makes two checks that add the same one wait for each
  * other.
@@ -70,7 +70,7 @@ export async function addTestRoom(
   const [added] = await db
     .insert(dormRooms)
     .values({
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       floor: 1,
       capacity: 4,
       ...room,

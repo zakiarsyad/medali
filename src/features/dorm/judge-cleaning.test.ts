@@ -44,7 +44,7 @@ async function expectUnjudged(db: Database, dutyId: string) {
   expect(await changesOfDuty(db, dutyId)).toEqual([]);
 }
 
-/** A day of 5300, when angkatan 5300 lives in Dana Rakca. */
+/** A day of 5300, when angkatan 5300 lives in Cipta Bakti. */
 const OWN_TODAY = "5300-10-12";
 
 /**

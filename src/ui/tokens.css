@@ -11,6 +11,11 @@
   --gold: #b8892a;
   --gold2: #d9b45c;
   --goldsoft: #f3e7c6;
+  /* Gold dark enough for text on the surface. */
+  --gold-ink: #946c1c;
+  /* The logo keeps its colours in dark mode, on its own light backing. */
+  --logo-navy: #13264a;
+  --logo-backing: #fbf6ea;
   --bg: #f3f5f8;
   --surface: #ffffff;
   --surface2: #f8f9fb;
@@ -109,6 +114,7 @@
   --care-status-basis: auto;
   --care-body-basis: var(--column-min-width);
   --medal-width: 370px;
+  --logo-size: 88px;
   --history-chart-width: 560px;
   --bare-box-width: 380px;
   --photo-preview-height: 260px;
@@ -368,6 +374,7 @@
     --muted: #a3b0c4;
     --faint: #73819a;
     --goldsoft: #3a3220;
+    --gold-ink: #d4ac52;
     --side: #0a1222;
     --navy: #c9d6ee;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);

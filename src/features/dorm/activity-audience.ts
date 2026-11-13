@@ -6,8 +6,8 @@ import { AUDIENCES, type Audience } from "./activity-ids";
  * each Peserta is told as the dorms it covers.
  */
 
-const MEN_DORMS: readonly DormId[] = ["wismantara_putra", "cipta_bakti"];
-const WOMEN_DORMS: readonly DormId[] = ["wismantara_putri", "dana_rakca"];
+const MEN_DORMS: readonly DormId[] = ["wismantara_putra", "dana_rakca"];
+const WOMEN_DORMS: readonly DormId[] = ["wismantara_putri", "cipta_bakti"];
 
 /** The dorms whose residents take part. */
 export function dormsOf(audience: Audience): readonly DormId[] {

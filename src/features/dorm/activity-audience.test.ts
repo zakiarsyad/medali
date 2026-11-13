@@ -72,11 +72,11 @@ describe("covers", () => {
 });
 
 describe("audiencesCovering", () => {
-  it("gives a resident of Cipta Bakti the activities of all, of the men and of their dorm", () => {
-    expect(audiencesCovering("cipta_bakti")).toEqual([
+  it("gives a resident of Dana Rakca the activities of all, of the men and of their dorm", () => {
+    expect(audiencesCovering("dana_rakca")).toEqual([
       "all",
       "men",
-      "cipta_bakti",
+      "dana_rakca",
     ]);
   });
 
@@ -92,8 +92,8 @@ describe("audiencesCovering", () => {
 describe("countAudience", () => {
   it.each([
     ["all", 68],
-    ["men", 23],
-    ["women", 45],
+    ["men", 43],
+    ["women", 25],
     ["dana_rakca", 40],
   ] as const)("counts the residents of %s as %i", (audience, total) => {
     expect(countAudience(RESIDENTS, audience)).toBe(total);

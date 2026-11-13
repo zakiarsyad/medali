@@ -33,7 +33,7 @@ describe("readOccupiedRooms", () => {
       await placeTestResident(db, full, one);
       await placeTestResident(db, full, two);
 
-      const rooms = await readOccupiedRooms(db, "dana_rakca", COHORTS);
+      const rooms = await readOccupiedRooms(db, "cipta_bakti", COHORTS);
 
       expect(rooms.filter((room) => room.number.startsWith("BK"))).toEqual([
         { id: full, number: "BK101", residents: 2 },
@@ -53,7 +53,7 @@ describe("readOccupiedRooms", () => {
       const roomId = await addTestRoom(db, { number: "BK103" });
       await placeTestResident(db, roomId, away);
 
-      const rooms = await readOccupiedRooms(db, "dana_rakca", COHORTS);
+      const rooms = await readOccupiedRooms(db, "cipta_bakti", COHORTS);
 
       expect(rooms.map((room) => room.id)).not.toContain(roomId);
     });

@@ -48,7 +48,7 @@ export async function residentsOfRoom(
 
 type TestCompanion = Partial<typeof dormCompanions.$inferInsert>;
 
-/** An active kakak pendamping of Dana Rakca without a room, unless told otherwise. */
+/** An active kakak pendamping of Cipta Bakti without a room, unless told otherwise. */
 export async function addTestCompanion(
   db: Database,
   studentId: string,
@@ -56,7 +56,7 @@ export async function addTestCompanion(
 ): Promise<void> {
   await db
     .insert(dormCompanions)
-    .values({ studentId, dorm: "dana_rakca", ...companion });
+    .values({ studentId, dorm: "cipta_bakti", ...companion });
 }
 
 /** A kakak pendamping as kept, or undefined for a student who is not one. */

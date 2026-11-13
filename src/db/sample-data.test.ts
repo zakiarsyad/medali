@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { campusDay } from "@/academic-periods/campus-day";
 import { studentSemester } from "@/academic-periods/student-semester";
 import { pagesFor } from "@/auth/access";
+import { isDay } from "@/db/is-day";
 import { DORM_IDS, type DormId } from "@/dorms/dorms";
 import { dormOf } from "@/dorms/resident-rule";
 import { companionDormOf } from "@/features/dorm/companion-dorms";
@@ -21,7 +22,24 @@ import {
   sampleFirstYears,
   samplePlaces,
 } from "./sample-dorms";
-import { studentStatus } from "./schema";
+import type { SampleStudent } from "./sample-students";
+import { religion, studentStatus } from "./schema";
+
+/** A made-up Tanggal lahir is a real day, 17 to 20 years before the angkatan. */
+function expectSampleBirthDate(student: SampleStudent): void {
+  const day = student.birthDate ?? "";
+  expect(isDay(day)).toBe(true);
+  const age = student.cohortYear - Number(day.slice(0, 4));
+  expect(age).toBeGreaterThanOrEqual(17);
+  expect(age).toBeLessThanOrEqual(20);
+}
+
+/** A made-up Tempat lahir is a city or regency of at most 60 characters. */
+function expectSampleBirthPlace(student: SampleStudent): void {
+  const place = student.birthPlace ?? "";
+  expect(place).toMatch(/^(Kota|Kabupaten) \S/);
+  expect(place.length).toBeLessThanOrEqual(60);
+}
 
 describe("the sample accounts with two roles", () => {
   const twoRoles = SAMPLE_ACCOUNTS.filter((a) => a.roles.length === 2);
@@ -159,6 +177,29 @@ describe("the sample students", () => {
     }
   });
 
+  it("each have an Agama, and hold every one of them", () => {
+    for (const student of SAMPLE_STUDENTS) {
+      expect(religion.enumValues).toContain(student.religion);
+    }
+    expect(different(SAMPLE_STUDENTS.map((s) => s.religion))).toBe(
+      religion.enumValues.length,
+    );
+  });
+
+  it("each have a made-up Tanggal lahir, not all the same", () => {
+    for (const student of SAMPLE_STUDENTS) expectSampleBirthDate(student);
+    expect(different(SAMPLE_STUDENTS.map((s) => s.birthDate))).toBeGreaterThan(
+      10,
+    );
+  });
+
+  it("each have a made-up Tempat lahir, not all the same", () => {
+    for (const student of SAMPLE_STUDENTS) expectSampleBirthPlace(student);
+    expect(different(SAMPLE_STUDENTS.map((s) => s.birthPlace))).toBeGreaterThan(
+      5,
+    );
+  });
+
   it("name a listed provinsi, and an instansi asal only for Alih program", () => {
     for (const student of SAMPLE_STUDENTS) {
       expect(PROVINCES).toContain(student.province);
@@ -205,12 +246,28 @@ describe("the sample students of a first year", () => {
     }
   });
 
+  it("each have an Agama, and hold every one of them", () => {
+    for (const student of firstYears) {
+      expect(religion.enumValues).toContain(student.religion);
+    }
+    const held = new Set(firstYears.map((s) => s.religion));
+    expect(held.size).toBe(religion.enumValues.length);
+  });
+
+  it("each have a made-up Tanggal lahir", () => {
+    for (const student of firstYears) expectSampleBirthDate(student);
+  });
+
+  it("each have a made-up Tempat lahir", () => {
+    for (const student of firstYears) expectSampleBirthPlace(student);
+  });
+
   it.each(DORM_IDS)("leave residents of %s without a room", (dorm) => {
     expect(residentsOf(dorm).length).toBeGreaterThan(placed);
   });
 
   it("leave more than 60 residents of one dorm without a room", () => {
-    expect(residentsOf("dana_rakca").length - placed).toBeGreaterThan(60);
+    expect(residentsOf("cipta_bakti").length - placed).toBeGreaterThan(60);
   });
 });
 

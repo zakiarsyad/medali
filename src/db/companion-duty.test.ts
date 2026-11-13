@@ -34,7 +34,7 @@ interface TestRows {
   roomId: string;
 }
 
-/** A Reguler woman of semester 3, kakak pendamping of Dana Rakca in a room. */
+/** A Reguler woman of semester 3, kakak pendamping of Cipta Bakti in a room. */
 async function addPlacedCompanion(db: Database): Promise<TestRows> {
   await db.insert(academicPeriods).values(ODD_2400);
   const [program] = await db
@@ -58,12 +58,12 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
     .returning();
   const [room] = await db
     .insert(dormRooms)
-    .values({ dorm: "dana_rakca", floor: 1, number: "KS101", capacity: 4 })
+    .values({ dorm: "cipta_bakti", floor: 1, number: "KS101", capacity: 4 })
     .returning();
   if (!student || !room) throw new Error("The test rows were not added.");
   await db
     .insert(dormCompanions)
-    .values({ studentId: student.id, dorm: "dana_rakca", roomId: room.id });
+    .values({ studentId: student.id, dorm: "cipta_bakti", roomId: room.id });
   return { studentId: student.id, roomId: room.id };
 }
 
@@ -118,7 +118,7 @@ describe("settleCompanionDuty", () => {
     ["is not active", { status: "inactive" }],
     ["was removed", { deletedAt: new Date() }],
     ["is of an angkatan in semester 1", { cohortYear: 2400 }],
-    ["is a man, while serving Dana Rakca", { sex: "male" }],
+    ["is a man, while serving Cipta Bakti", { sex: "male" }],
   ] as [string, Change][])(
     "ends the duty, and the room is left, when the student %s",
     async (_what, to) => {

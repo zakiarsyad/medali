@@ -111,7 +111,7 @@ function idOf(ids: string[], place: number): string {
 }
 
 /**
- * Angkatan 3913 is in semester 1, so its Reguler women live in Dana Rakca.
+ * Angkatan 3913 is in semester 1, so its Reguler women live in Cipta Bakti.
  * - Prodi A: 1 to 5 Normal, 6 Ringan, 7 Berat, 8 not screened, 9 Berat
  *   but of angkatan 3909, so in no dorm, 10 Berat but on Cuti; sessions
  *   of 1 to 5 in the last 30 days, of 6 before, and of 9 and 10;
@@ -277,7 +277,7 @@ function sharingStudent(people: TestPeople, place: number) {
 
 /**
  * On top of addRecords' residents, Prodi A's 1 is placed in room DM-01
- * of Dana Rakca. Published: 1 with the level to Kepala Unit and Ketua
+ * of Cipta Bakti. Published: 1 with the level to Kepala Unit and Ketua
  * Program Studi; 2 with the sessions and the summary to Kepala Unit; 3
  * with the level to Pengasuh only; 9, who lives in no dorm, with the
  * level to Kepala Unit.
@@ -316,7 +316,7 @@ describe("loadDormHealth: Data yang dipublikasikan konselor untuk Anda", () => {
           publishedAt: PUBLISHED_AT,
           name: "Mahasiswa Uji Konseling 1",
           mentorName: null,
-          room: "Dana Rakca, lantai 1, kamar DM-01",
+          room: "Cipta Bakti, lantai 1, kamar DM-01",
           data: ["level"],
           level: "normal",
           sessions: null,
@@ -327,7 +327,7 @@ describe("loadDormHealth: Data yang dipublikasikan konselor untuk Anda", () => {
           publishedAt: PUBLISHED_AT,
           name: "Mahasiswa Uji Konseling 2",
           mentorName: null,
-          room: "Dana Rakca, belum diplot",
+          room: "Cipta Bakti, belum diplot",
           data: ["counselling", "summary"],
           level: null,
           sessions: {

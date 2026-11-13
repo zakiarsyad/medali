@@ -19,7 +19,8 @@ const PROGRAM = "Prodi Uji Pratinjau";
 function csvFile(name: string, ...nims: string[]): UploadedFile {
   const titles = FILE_COLUMNS.map((column) => column.title).join(",");
   const rows = nims.map(
-    (nim) => `${nim},Pratinjau Uji,${PROGRAM},Reguler,L,2026,,,,,,,`,
+    (nim) =>
+      `${nim},Pratinjau Uji,${PROGRAM},Reguler,L,2026,,,,,,,,,Islam,08/17/2005,Kota Contoh`,
   );
   const text = [titles, ...rows].join("\n");
   return { name, bytes: new TextEncoder().encode(text) };
@@ -31,6 +32,7 @@ async function contextWithProgram(db: Database): Promise<InputContext> {
     programs: [{ id, name: PROGRAM }],
     cohortYears: cohortChoices(2026),
     campusEnding: "@kampus.example",
+    today: "2026-11-10",
   };
 }
 

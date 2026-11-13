@@ -37,7 +37,7 @@ function morningOf(day: string): Date {
 /**
  * Ani has one violation of the odd semester and one of the even one, gone
  * up, and one announced at 20:00 today; Bea, of her dorm, one of today;
- * Dodi, of Cipta Bakti, one of today; Cici one waiting for 23:00.
+ * Dodi, of Dana Rakca, one of today; Cici one waiting for 23:00.
  */
 async function setUp(db: Database) {
   const setting = await addViolationSetting(
@@ -97,7 +97,7 @@ describe("readOwnViolations", () => {
 
       if (own.kind !== "shown") throw new Error("It was refused.");
       expect(own.recorded).toBe(1);
-      expect(own.dorm).toBe("dana_rakca");
+      expect(own.dorm).toBe("cipta_bakti");
       expect(own.history.rows.map((row) => row.day)).toEqual([
         "3159-02-03",
         "3159-02-02",

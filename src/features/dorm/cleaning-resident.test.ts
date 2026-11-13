@@ -26,7 +26,7 @@ const inTestDatabase = withTestDatabase();
 /*
  * A period far from those of any other file of checks, so these wait for
  * none of them. Angkatan 3130 is in semester 1 in it, so its Reguler women
- * live in Dana Rakca. Room numbers, NIMs and place names are this file's.
+ * live in Cipta Bakti. Room numbers, NIMs and place names are this file's.
  */
 const ODD_3130 = {
   startYear: 3130,
@@ -35,7 +35,7 @@ const ODD_3130 = {
   endsOn: "3131-01-31",
 } as const;
 const TODAY = "3130-10-12";
-const DORM = "dana_rakca" as const;
+const DORM = "cipta_bakti" as const;
 
 interface Setting {
   staff: TestActor;

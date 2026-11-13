@@ -22,6 +22,7 @@ const STUDENT: OwnProfile = {
   cohortYear: 2025,
   className: null,
   province: "Bali",
+  birthPlace: "Kota Contoh",
   sex: "female",
   mentorGroup: null,
   residence: null,
@@ -75,6 +76,7 @@ describe("OwnProfileScreen", () => {
     expect(screen).toContain(
       "<dt>Provinsi (domisili sesuai NIK)</dt><dd>Bali</dd>",
     );
+    expect(screen).toContain("<dt>Tempat lahir</dt><dd>Kota Contoh</dd>");
     expect(screen).toContain(
       "<dt>Semester · tahap</dt><dd>Semester 3 · Tahap Penumbuhan (tingkat 2)</dd>",
     );

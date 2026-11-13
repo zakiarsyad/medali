@@ -53,7 +53,7 @@ async function placeInRoom(
   await db.insert(dormRoomPlaces).values({ roomId: room.id, studentId });
 }
 
-/** A program with a woman of angkatan 2026, who lives in Dana Rakca. */
+/** A program with a woman of angkatan 2026, who lives in Cipta Bakti. */
 async function addResident(db: Database) {
   const program = await addTestProgram(db, "Prodi Uji Asrama Detail");
   const id = await addTestStudent(db, program, {
@@ -78,13 +78,13 @@ describe("the Asrama line of a student's detail", () => {
   it("gives Kepala Unit the dorm, the floor and the room of a resident", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addResident(db);
-      await placeInRoom(db, id, "dana_rakca");
+      await placeInRoom(db, id, "cipta_bakti");
 
       expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: {
           plotted: true,
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           floor: FLOOR,
           number: ROOM_NUMBER,
           asCompanion: false,
@@ -98,7 +98,7 @@ describe("the Asrama line of a student's detail", () => {
       const { id } = await addResident(db);
 
       expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: { plotted: false },
       });
     });
@@ -109,7 +109,7 @@ describe("the Asrama line of a student's detail", () => {
     async (role) => {
       await inTestDatabase(async (db) => {
         const { program, id } = await addResident(db);
-        await placeInRoom(db, id, "dana_rakca");
+        await placeInRoom(db, id, "cipta_bakti");
 
         const answer = await readStudentDetail(
           db,
@@ -120,7 +120,7 @@ describe("the Asrama line of a student's detail", () => {
 
         expect(answer).toMatchObject({
           kind: "found",
-          student: { residence: { dorm: "dana_rakca", room: null } },
+          student: { residence: { dorm: "cipta_bakti", room: null } },
         });
         const sent = JSON.stringify(answer);
         expect(sent).not.toContain(ROOM_NUMBER);
@@ -133,12 +133,12 @@ describe("the Asrama line of a student's detail", () => {
   it("gives the floor and the room to an account that is Kepala Unit among its roles", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addResident(db);
-      await placeInRoom(db, id, "dana_rakca");
+      await placeInRoom(db, id, "cipta_bakti");
       const asking = account(["director", "head_of_unit"]);
 
       expect((await residenceFor(db, asking, id))?.room).toEqual({
         plotted: true,
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         floor: FLOOR,
         number: ROOM_NUMBER,
         asCompanion: false,
@@ -191,7 +191,7 @@ describe("the Asrama line of a student's detail", () => {
   it("gives no residence, and no room left behind, once a resident stops being one", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addResident(db);
-      await placeInRoom(db, id, "dana_rakca");
+      await placeInRoom(db, id, "cipta_bakti");
       const asking = account(["head_of_unit"]);
       const asResident = await residenceFor(db, asking, id);
 
@@ -200,7 +200,7 @@ describe("the Asrama line of a student's detail", () => {
         .set({ status: "on_leave" })
         .where(eq(students.id, id));
 
-      expect(asResident?.dorm).toBe("dana_rakca");
+      expect(asResident?.dorm).toBe("cipta_bakti");
       expect(await residenceFor(db, asking, id)).toBeNull();
     });
   });
@@ -240,7 +240,7 @@ async function addWismantaraCompanion(db: Database) {
   const [room] = await db
     .insert(dormRooms)
     .values({
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       floor: 1,
       number: COMPANION_ROOM_NUMBER,
       capacity: 4,
@@ -249,7 +249,7 @@ async function addWismantaraCompanion(db: Database) {
   if (!room) throw new Error("The room was not added.");
   await db
     .insert(dormCompanions)
-    .values({ studentId: id, dorm: "dana_rakca", roomId: room.id });
+    .values({ studentId: id, dorm: "cipta_bakti", roomId: room.id });
   return { program, id };
 }
 
@@ -259,10 +259,10 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
       const { id } = await addWismantaraCompanion(db);
 
       expect(await residenceFor(db, account(["head_of_unit"]), id)).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: {
           plotted: true,
-          dorm: "dana_rakca",
+          dorm: "cipta_bakti",
           floor: 1,
           number: COMPANION_ROOM_NUMBER,
           asCompanion: true,
@@ -300,7 +300,7 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
 
       expect(answer).toMatchObject({
         kind: "found",
-        student: { residence: { dorm: "dana_rakca", room: null } },
+        student: { residence: { dorm: "cipta_bakti", room: null } },
       });
       expect(JSON.stringify(answer)).not.toContain(COMPANION_ROOM_NUMBER);
     });
@@ -330,7 +330,7 @@ describe("the Asrama line of a kakak pendamping who lives in Wismantara", () => 
   });
 });
 
-/** A Reguler woman of semester 3, kakak pendamping of Dana Rakca. */
+/** A Reguler woman of semester 3, kakak pendamping of Cipta Bakti. */
 async function addSeniorCompanion(db: Database, roomId: string | null = null) {
   const program = await addTestProgram(db, "Prodi Uji Asrama Pendamping");
   const id = await addTestStudent(db, program, {
@@ -340,7 +340,7 @@ async function addSeniorCompanion(db: Database, roomId: string | null = null) {
   });
   await db
     .insert(dormCompanions)
-    .values({ studentId: id, dorm: "dana_rakca", roomId });
+    .values({ studentId: id, dorm: "cipta_bakti", roomId });
   return { program, id };
 }
 
@@ -348,7 +348,7 @@ async function addCompanionRoom(db: Database): Promise<string> {
   const [room] = await db
     .insert(dormRooms)
     .values({
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       floor: 1,
       number: COMPANION_ROOM_NUMBER,
       capacity: 4,
@@ -366,11 +366,11 @@ describe("the Asrama line of a kakak pendamping who lives in no dorm by the usua
       const residence = await residenceFor(db, account(["head_of_unit"]), id);
 
       expect(residence).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: { plotted: false },
       });
       expect(residenceWords(residence ?? null)).toBe(
-        "Asrama Dana Rakca · Belum diplot",
+        "Asrama Cipta Bakti · Belum diplot",
       );
     });
   });
@@ -378,12 +378,12 @@ describe("the Asrama line of a kakak pendamping who lives in no dorm by the usua
   it("gives Kepala Unit Belum diplot, not an old place left in the dorm they serve", async () => {
     await inTestDatabase(async (db) => {
       const { id } = await addSeniorCompanion(db);
-      await placeInRoom(db, id, "dana_rakca");
+      await placeInRoom(db, id, "cipta_bakti");
 
       const residence = await residenceFor(db, account(["head_of_unit"]), id);
 
       expect(residence).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: { plotted: false },
       });
     });
@@ -396,7 +396,7 @@ describe("the Asrama line of a kakak pendamping who lives in no dorm by the usua
       const residence = await residenceFor(db, account(["head_of_unit"]), id);
 
       expect(residenceWords(residence ?? null)).toBe(
-        `Asrama Dana Rakca, lantai 1, kamar ${COMPANION_ROOM_NUMBER} (kakak pendamping)`,
+        `Asrama Cipta Bakti, lantai 1, kamar ${COMPANION_ROOM_NUMBER} (kakak pendamping)`,
       );
     });
   });
@@ -414,7 +414,7 @@ describe("the Asrama line of a kakak pendamping who lives in no dorm by the usua
 
       expect(answer).toMatchObject({
         kind: "found",
-        student: { residence: { dorm: "dana_rakca", room: null } },
+        student: { residence: { dorm: "cipta_bakti", room: null } },
       });
       expect(JSON.stringify(answer)).not.toContain(COMPANION_ROOM_NUMBER);
     });
@@ -458,7 +458,7 @@ describe("the Asrama line of a kakak pendamping who lives in no dorm by the usua
       );
 
       expect(outside).toEqual({ kind: "not_found" });
-      expect(JSON.stringify(outside)).not.toContain("dana_rakca");
+      expect(JSON.stringify(outside)).not.toContain("cipta_bakti");
     });
   });
 });

@@ -7,10 +7,11 @@ import {
   fitnessFileRows,
   NOT_ACTIVE,
   readFitnessFile,
-  SCORE_NOT_IN_RANGE,
+  TOO_MANY_CELLS,
   UNKNOWN_NIM,
 } from "./fitness-file";
 import { fitnessTemplateCsv } from "./fitness-file-columns";
+import { SCORE_NOT_VALID } from "./fitness-input";
 
 const TITLES = "nim,skor";
 
@@ -106,12 +107,45 @@ describe("readFitnessFile and fitnessFileRows", () => {
     ["negative", "4121230001,-1"],
     ["empty", "4121230001,"],
     ["a word", "4121230001,baik"],
-    ["with a decimal point", "4121230001,79.5"],
-    ["with a decimal comma", '4121230001,"79,5"'],
-    ["a whole number written with a decimal", "4121230001,80.0"],
+    ["with three decimals after a dot", "4121230001,79.555"],
+    ["with three decimals after a comma", '4121230001,"79,555"'],
+    ["above 100 with decimals", "4121230001,100.01"],
   ])("skips a row with a score %s, as the form refuses it", (_, line) => {
-    expect(reasonFor(line)).toBe(SCORE_NOT_IN_RANGE);
+    expect(reasonFor(line)).toBe(SCORE_NOT_VALID);
   });
+
+  it.each([
+    ["4121230001,79.5", 79.5],
+    ['4121230001,"79,5"', 79.5],
+    ["4121230001,85.25", 85.25],
+    ['4121230001,"84,99"', 84.99],
+    ["4121230001,80.0", 80],
+  ])(
+    "keeps %s, a score with up to two decimals, as the form does",
+    (line, score) => {
+      expect(read(TITLES, line).ready).toEqual([
+        expect.objectContaining({ nim: "4121230001", score }),
+      ]);
+    },
+  );
+
+  it.each([
+    ["with titles", [TITLES, "4121230001,79,5"]],
+    ["without titles", ["4121230001,79,5"]],
+  ])(
+    "skips a row with a decimal comma left unquoted, %s, rather than keep a wrong score",
+    (_, lines) => {
+      const rows = read(...lines);
+
+      expect(rows.ready).toEqual([]);
+      expect(rows.skipped).toEqual([
+        expect.objectContaining({ nim: "4121230001", reason: TOO_MANY_CELLS }),
+      ]);
+      expect(TOO_MANY_CELLS).toBe(
+        'Baris punya kolom lebih banyak dari judul kolom. Beri tanda kutip pada skor berdesimal, contoh "79,5".',
+      );
+    },
+  );
 
   it("keeps the edges of the range", () => {
     expect(read(TITLES, "4121230001,0", "4121230002,100").ready).toHaveLength(
@@ -135,7 +169,12 @@ describe("readFitnessFile and fitnessFileRows", () => {
         nim: "4121230099",
         reason: "NIM tidak ada dalam data mahasiswa.",
       },
-      { row: 5, nim: "4121230002", reason: "Skor harus angka 0–100." },
+      {
+        row: 5,
+        nim: "4121230002",
+        reason:
+          "Skor harus angka 0–100, paling banyak 2 angka di belakang koma.",
+      },
       { row: 6, nim: "4121230003", reason: "Mahasiswa tidak aktif." },
     ]);
   });

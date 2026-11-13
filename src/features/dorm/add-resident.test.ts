@@ -65,7 +65,7 @@ async function addManager(db: Database, roles: RoleId[] = ["dorm_manager"]) {
 }
 
 function sent(studentId: string, more: Partial<SentResident> = {}) {
-  return { studentId, dorm: "dana_rakca", note: "", ...more };
+  return { studentId, dorm: "cipta_bakti", note: "", ...more };
 }
 
 async function logOf(db: Database, studentId: string) {
@@ -76,7 +76,7 @@ async function logOf(db: Database, studentId: string) {
   return lines.map((line) => [line.dormBefore, line.dormAfter, line.changedBy]);
 }
 
-async function unplacedIds(db: Database, dorm: "dana_rakca") {
+async function unplacedIds(db: Database, dorm: "cipta_bakti") {
   const scope = { dorm, dormCohorts: [3501], visible: EVERYONE };
   const unplaced = await listUnplaced(db, scope, "");
   return unplaced.shown.map((resident) => resident.id);
@@ -97,11 +97,12 @@ describe("addResident", () => {
 
       expect(added).toEqual({
         ok: true,
-        value: "Uji 9935000201 ditambahkan sebagai penghuni Asrama Dana Rakca.",
+        value:
+          "Uji 9935000201 ditambahkan sebagai penghuni Asrama Cipta Bakti.",
       });
-      expect(await readStudentDorm(db, id, DAY)).toBe("dana_rakca");
-      expect(await unplacedIds(db, "dana_rakca")).toContain(id);
-      expect(await logOf(db, id)).toEqual([[null, "dana_rakca", manager.id]]);
+      expect(await readStudentDorm(db, id, DAY)).toBe("cipta_bakti");
+      expect(await unplacedIds(db, "cipta_bakti")).toContain(id);
+      expect(await logOf(db, id)).toEqual([[null, "cipta_bakti", manager.id]]);
       const [choice] = await db
         .select({ note: dormResidentChoices.note })
         .from(dormResidentChoices)
@@ -119,25 +120,25 @@ describe("addResident", () => {
       const toMen = await addResident(
         db,
         manager,
-        sent(woman, { dorm: "wismantara_putra" }),
+        sent(woman, { dorm: "dana_rakca" }),
         DAY,
       );
       const toWomen = await addResident(
         db,
         manager,
-        sent(man, { dorm: "dana_rakca" }),
+        sent(man, { dorm: "cipta_bakti" }),
         DAY,
       );
 
       expect(toMen).toEqual({
         ok: false,
         error:
-          "Asrama Wismantara Putra hanya untuk mahasiswa laki-laki. Pilih asrama lain.",
+          "Asrama Dana Rakca hanya untuk mahasiswa laki-laki. Pilih asrama lain.",
       });
       expect(toWomen).toEqual({
         ok: false,
         error:
-          "Asrama Dana Rakca hanya untuk mahasiswa perempuan. Pilih asrama lain.",
+          "Asrama Cipta Bakti hanya untuk mahasiswa perempuan. Pilih asrama lain.",
       });
       expect(await readStudentDorm(db, woman, DAY)).toBeNull();
       expect(await logOf(db, woman)).toEqual([]);
@@ -178,7 +179,7 @@ describe("addResident", () => {
       expect(added).toEqual({
         ok: false,
         error:
-          "Uji 9935000205 sudah penghuni Asrama Dana Rakca. Muat ulang halaman untuk melihat daftar terbaru.",
+          "Uji 9935000205 sudah penghuni Asrama Cipta Bakti. Muat ulang halaman untuk melihat daftar terbaru.",
       });
       expect(await logOf(db, id)).toEqual([]);
     });
@@ -231,7 +232,7 @@ describe("addResident", () => {
 
       await addResident(db, manager, sent(id), DAY);
 
-      expect(await unplacedIds(db, "dana_rakca")).toContain(id);
+      expect(await unplacedIds(db, "cipta_bakti")).toContain(id);
     });
   });
 

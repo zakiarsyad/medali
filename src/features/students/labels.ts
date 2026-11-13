@@ -8,6 +8,19 @@ export const SEX_LABELS: Record<Student["sex"], string> = {
   female: "Perempuan",
 };
 
+/** The Agama choices, in the order the form offers them. */
+export const RELIGION_LABELS: Record<
+  NonNullable<Student["religion"]>,
+  string
+> = {
+  islam: "Islam",
+  protestant: "Kristen Protestan",
+  catholic: "Kristen Katolik",
+  hindu: "Hindu",
+  buddhist: "Buddha",
+  confucian: "Konghucu",
+};
+
 export const ENTRY_PATH_LABELS: Record<Student["entryPath"], string> = {
   regular: "Reguler",
   transfer: "Alih program",

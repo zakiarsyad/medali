@@ -41,7 +41,7 @@ const YES_NO = [false, true];
 
 /** The dorm a kakak pendamping of each jenis kelamin serves. */
 function servedBy(sex: "female" | "male"): "dana_rakca" | "cipta_bakti" {
-  return sex === "female" ? "dana_rakca" : "cipta_bakti";
+  return sex === "female" ? "cipta_bakti" : "dana_rakca";
 }
 
 type NewStudent = Omit<typeof students.$inferInsert, "studyProgramId">;
@@ -300,7 +300,7 @@ describe("livesIn", () => {
       const found = await db
         .select({ id: students.id })
         .from(students)
-        .where(livesIn("dana_rakca", [2026]));
+        .where(livesIn("cipta_bakti", [2026]));
 
       const ids = found.map((row) => row.id);
       expect(ids).toContain(woman);
@@ -323,8 +323,8 @@ async function dormsOf(db: Database, id: string) {
     .select({
       dorm: dormInSql([2026]),
       usual: usualDormInSql([2026]),
-      livesThere: livesIn("dana_rakca", [2026]),
-      takesRoom: sql`coalesce(${takesRoomIn("dana_rakca", [2026])}, false)`,
+      livesThere: livesIn("cipta_bakti", [2026]),
+      takesRoom: sql`coalesce(${takesRoomIn("cipta_bakti", [2026])}, false)`,
     })
     .from(students)
     .where(eq(students.id, id));
@@ -338,10 +338,10 @@ describe("a kakak pendamping", () => {
       const id = await addSenior(db, program, "9922260101");
       await db
         .insert(dormCompanions)
-        .values({ studentId: id, dorm: "dana_rakca" });
+        .values({ studentId: id, dorm: "cipta_bakti" });
 
       expect(await dormsOf(db, id)).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         usual: null,
         livesThere: true,
         takesRoom: false,
@@ -359,10 +359,10 @@ describe("a kakak pendamping", () => {
       });
       await db
         .insert(dormCompanions)
-        .values({ studentId: id, dorm: "dana_rakca" });
+        .values({ studentId: id, dorm: "cipta_bakti" });
 
       expect(await dormsOf(db, id)).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         usual: "wismantara_putri",
         livesThere: true,
         takesRoom: false,
@@ -376,7 +376,7 @@ describe("a kakak pendamping", () => {
       const id = await addSenior(db, program, "9922260103");
       await db
         .insert(dormCompanions)
-        .values({ studentId: id, dorm: "dana_rakca", isActive: false });
+        .values({ studentId: id, dorm: "cipta_bakti", isActive: false });
 
       expect((await dormsOf(db, id))?.dorm).toBeNull();
     });
@@ -390,7 +390,7 @@ describe("a kakak pendamping", () => {
         const id = await addSenior(db, program, "9922260104");
         await db
           .insert(dormCompanions)
-          .values({ studentId: id, dorm: "dana_rakca" });
+          .values({ studentId: id, dorm: "cipta_bakti" });
         await db.update(students).set({ status }).where(eq(students.id, id));
 
         expect((await dormsOf(db, id))?.dorm).toBeNull();
@@ -407,13 +407,13 @@ describe("a choice made by hand", () => {
       const setBy = await addChooser(db);
       await db.insert(dormResidentChoices).values({
         studentId: id,
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         setBy,
         setAt: new Date(),
       });
 
       expect(await dormsOf(db, id)).toEqual({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         usual: null,
         livesThere: true,
         takesRoom: true,
@@ -435,7 +435,7 @@ describe("a choice made by hand", () => {
 
       expect(await dormsOf(db, id)).toEqual({
         dorm: null,
-        usual: "dana_rakca",
+        usual: "cipta_bakti",
         livesThere: null,
         takesRoom: false,
       });

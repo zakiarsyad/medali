@@ -27,14 +27,14 @@ export const DORM_SHORT_NAMES: Record<DormId, string> = {
 export const DORM_RESIDENTS: Record<DormId, string> = {
   wismantara_putra: "mahasiswa laki-laki",
   wismantara_putri: "mahasiswa perempuan",
-  dana_rakca: "mahasiswa perempuan",
-  cipta_bakti: "mahasiswa laki-laki",
+  dana_rakca: "mahasiswa laki-laki",
+  cipta_bakti: "mahasiswa perempuan",
 };
 
 /** The jenis kelamin of the residents of each dorm. */
 export const DORM_SEXES: Record<DormId, "male" | "female"> = {
   wismantara_putra: "male",
   wismantara_putri: "female",
-  dana_rakca: "female",
-  cipta_bakti: "male",
+  dana_rakca: "male",
+  cipta_bakti: "female",
 };

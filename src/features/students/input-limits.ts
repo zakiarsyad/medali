@@ -3,6 +3,7 @@ export const NIM_LENGTH = 10;
 export const NAME_MIN_LENGTH = 3;
 export const NAME_MAX_LENGTH = 100;
 export const CLASS_MAX_LENGTH = 20;
+export const BIRTH_PLACE_MAX_LENGTH = 60;
 /** The longest address a mailbox can have. */
 export const EMAIL_MAX_LENGTH = 254;
 

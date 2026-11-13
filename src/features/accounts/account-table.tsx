@@ -13,6 +13,8 @@ interface AccountTableProps {
   accounts: ManagedAccount[];
   filter: ListView;
   editing: string | null;
+  /** The account of the manager who looks at the list. */
+  managerId: string;
   programs: StudyProgram[];
 }
 
@@ -28,11 +30,13 @@ function AccountRow({
   account,
   filter,
   isEditing,
+  isOwn,
   programs,
 }: {
   account: ManagedAccount;
   filter: ListView;
   isEditing: boolean;
+  isOwn: boolean;
   programs: StudyProgram[];
 }) {
   return (
@@ -64,7 +68,7 @@ function AccountRow({
                 href={listAddress(filter, { edit: account.id })}
                 className={styles.link}
               >
-                Edit peran
+                Ubah
               </Link>
               {!account.roles.includes("head_of_unit") && (
                 <HandOverHeadButton
@@ -90,6 +94,7 @@ function AccountRow({
               account={account}
               programs={programs}
               back={listAddress(filter)}
+              isOwn={isOwn}
             />
           </td>
         </tr>
@@ -102,6 +107,7 @@ export function AccountTable({
   accounts,
   filter,
   editing,
+  managerId,
   programs,
 }: AccountTableProps) {
   if (accounts.length === 0) {
@@ -128,6 +134,7 @@ export function AccountTable({
               account={account}
               filter={filter}
               isEditing={account.id === editing}
+              isOwn={account.id === managerId}
               programs={programs}
             />
           ))}

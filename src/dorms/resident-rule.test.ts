@@ -26,16 +26,16 @@ describe("isDormSemester", () => {
 
 describe("dormOf", () => {
   it.each([1, 2])(
-    "puts a Reguler woman of semester %i in Dana Rakca",
+    "puts a Reguler woman of semester %i in Cipta Bakti",
     (semester) => {
-      expect(dormOf(WOMAN, semester, null, null)).toBe("dana_rakca");
+      expect(dormOf(WOMAN, semester, null, null)).toBe("cipta_bakti");
     },
   );
 
   it.each([1, 2])(
-    "puts a Reguler man of semester %i in Cipta Bakti",
+    "puts a Reguler man of semester %i in Dana Rakca",
     (semester) => {
-      expect(dormOf(MAN, semester, null, null)).toBe("cipta_bakti");
+      expect(dormOf(MAN, semester, null, null)).toBe("dana_rakca");
     },
   );
 
@@ -111,30 +111,30 @@ describe("dormOf", () => {
 
   it("puts an active kakak pendamping in the dorm they serve", () => {
     expect(
-      dormOf({ ...WOMAN, entryPath: "transfer" }, 3, "dana_rakca", null),
-    ).toBe("dana_rakca");
-    expect(dormOf(MAN, 5, "cipta_bakti", null)).toBe("cipta_bakti");
-    expect(dormOf(WOMAN, null, "dana_rakca", null)).toBe("dana_rakca");
+      dormOf({ ...WOMAN, entryPath: "transfer" }, 3, "cipta_bakti", null),
+    ).toBe("cipta_bakti");
+    expect(dormOf(MAN, 5, "dana_rakca", null)).toBe("dana_rakca");
+    expect(dormOf(WOMAN, null, "cipta_bakti", null)).toBe("cipta_bakti");
   });
 
   it("puts a resident of Wismantara who is kakak pendamping in the dorm they serve only", () => {
     expect(
-      dormOf({ ...WOMAN, isInternational: true }, 3, "dana_rakca", null),
-    ).toBe("dana_rakca");
-    expect(dormOf({ ...MAN, isSeedling: true }, 1, "cipta_bakti", null)).toBe(
-      "cipta_bakti",
+      dormOf({ ...WOMAN, isInternational: true }, 3, "cipta_bakti", null),
+    ).toBe("cipta_bakti");
+    expect(dormOf({ ...MAN, isSeedling: true }, 1, "dana_rakca", null)).toBe(
+      "dana_rakca",
     );
   });
 
   it.each(["on_leave", "inactive"] as const)(
     "gives no dorm to a kakak pendamping whose status is %s",
     (status) => {
-      expect(dormOf({ ...WOMAN, status }, 3, "dana_rakca", null)).toBeNull();
+      expect(dormOf({ ...WOMAN, status }, 3, "cipta_bakti", null)).toBeNull();
     },
   );
 
   it("puts a student made a resident by hand in the dorm chosen", () => {
-    expect(dormOf(WOMAN, 5, null, { dorm: "dana_rakca" })).toBe("dana_rakca");
+    expect(dormOf(WOMAN, 5, null, { dorm: "cipta_bakti" })).toBe("cipta_bakti");
     expect(
       dormOf({ ...MAN, entryPath: "transfer" }, 1, null, {
         dorm: "wismantara_putra",
@@ -153,14 +153,14 @@ describe("dormOf", () => {
   });
 
   it("keeps a choice made by hand in semester 3", () => {
-    expect(dormOf(WOMAN, 3, null, { dorm: "dana_rakca" })).toBe("dana_rakca");
+    expect(dormOf(WOMAN, 3, null, { dorm: "cipta_bakti" })).toBe("cipta_bakti");
     expect(dormOf(WOMAN, 3, null, null)).toBeNull();
   });
 
   it("puts an active kakak pendamping in the dorm they serve before a choice made by hand", () => {
-    expect(dormOf(WOMAN, 3, "dana_rakca", { dorm: null })).toBe("dana_rakca");
-    expect(dormOf(WOMAN, 3, "dana_rakca", { dorm: "wismantara_putri" })).toBe(
-      "dana_rakca",
+    expect(dormOf(WOMAN, 3, "cipta_bakti", { dorm: null })).toBe("cipta_bakti");
+    expect(dormOf(WOMAN, 3, "cipta_bakti", { dorm: "wismantara_putri" })).toBe(
+      "cipta_bakti",
     );
   });
 
@@ -168,7 +168,7 @@ describe("dormOf", () => {
     "gives no dorm to a student made a resident by hand whose status is %s",
     (status) => {
       expect(
-        dormOf({ ...WOMAN, status }, 1, null, { dorm: "dana_rakca" }),
+        dormOf({ ...WOMAN, status }, 1, null, { dorm: "cipta_bakti" }),
       ).toBeNull();
     },
   );

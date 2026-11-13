@@ -11,7 +11,7 @@ const PREVIEW: FitnessFilePreview = {
       row: 2,
       nim: "4121230001",
       name: "Ani Uji",
-      score: 62,
+      score: 62.5,
       category: "attention",
     },
   ],
@@ -49,7 +49,7 @@ describe("the preview of a fitness file", () => {
       "<th>nim</th><th>nama</th><th>skor</th><th>Kategori</th>",
     );
     expect(html).toContain("<td>4121230001</td>");
-    expect(html).toContain("<td>62</td>");
+    expect(html).toContain("<td>62,50</td>");
     expect(html).toContain(">Perlu perhatian</span>");
     expect(html).toContain("dan 6 baris lainnya.");
   });

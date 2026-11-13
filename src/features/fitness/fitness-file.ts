@@ -4,14 +4,14 @@ import {
   readTitledRows,
   type TitledFile,
 } from "@/files/titled-rows";
-import { SCORE_MAX, SCORE_MIN } from "@/health-notes/fitness-ids";
 import type { Parsed } from "@/parsed";
 import { FITNESS_FILE_COLUMNS } from "./fitness-file-columns";
-import { scoreOf } from "./fitness-input";
+import { SCORE_NOT_VALID, scoreOf } from "./fitness-input";
 
 export const UNKNOWN_NIM = "NIM tidak ada dalam data mahasiswa.";
 export const NOT_ACTIVE = "Mahasiswa tidak aktif.";
-export const SCORE_NOT_IN_RANGE = `Skor harus angka ${SCORE_MIN}–${SCORE_MAX}.`;
+export const TOO_MANY_CELLS =
+  'Baris punya kolom lebih banyak dari judul kolom. Beri tanda kutip pada skor berdesimal, contoh "79,5".';
 
 /** A filled row of a fitness file: its number in the file, from 1. */
 export interface FitnessLine {
@@ -19,6 +19,8 @@ export interface FitnessLine {
   nim: string;
   /** The text under skor. */
   score: string;
+  /** Whether it fills a cell beyond the file's columns. */
+  overflows: boolean;
 }
 
 /** What the server knows of a student a file names by NIM. */
@@ -69,7 +71,12 @@ function refused(error: string): { ok: false; error: string } {
 }
 
 function lineOf(row: NumberedRow): FitnessLine {
-  return { row: row.row, nim: row.cells[0] ?? "", score: row.cells[1] ?? "" };
+  return {
+    row: row.row,
+    nim: row.cells[0] ?? "",
+    score: row.cells[1] ?? "",
+    overflows: row.overflows,
+  };
 }
 
 /**
@@ -101,17 +108,18 @@ function studentOf(
 
 /**
  * Whether a row may be saved, and what it holds, or why it is skipped.
- * The score follows the group form's rule: a whole number from 0 to 100,
- * so one with a decimal is skipped rather than rounded.
+ * The score follows the group form's rule and words: from 0 to 100 with
+ * at most two decimals, so one with more is skipped rather than rounded.
  */
 function checkLine(
   line: FitnessLine,
   known: ReadonlyMap<string, FileStudent>,
 ): Parsed<ReadyFitnessRow> {
+  if (line.overflows) return refused(TOO_MANY_CELLS);
   const student = studentOf(line.nim, known);
   if (!student.ok) return student;
   const score = scoreOf(line.score);
-  if (score === null) return refused(SCORE_NOT_IN_RANGE);
+  if (score === null) return refused(SCORE_NOT_VALID);
   return {
     ok: true,
     value: {

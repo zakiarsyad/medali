@@ -92,7 +92,8 @@ export function FitnessScreen({
         <section className={shared.panel}>
           <h2 className={shared.heading}>Input hasil tes kebugaran</h2>
           <p className={styles.sub}>
-            Data utama penilaian jasmani, dites setahun sekali. Skor 0–100.
+            Data utama penilaian jasmani, dites setahun sekali. Skor 0–100,
+            paling banyak 2 angka di belakang koma.
           </p>
           {manage}
         </section>

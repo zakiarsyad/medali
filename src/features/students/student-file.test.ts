@@ -16,13 +16,17 @@ const context = {
   ],
   cohortYears: cohortChoices(2026),
   campusEnding: "@kampus.example",
+  today: "2026-11-10",
 };
 
 const TITLES =
-  "nim,nama,prodi,jalur,jenis_kelamin,angkatan,kelas,provinsi,instansi_asal,afirmasi,pembibitan,internasional,status";
+  "nim,nama,prodi,jalur,jenis_kelamin,angkatan,kelas,provinsi,instansi_asal,afirmasi,pembibitan,internasional,status,agama,tanggal_lahir,tempat_lahir";
 
-/** A valid row for a made-up student, with some columns set otherwise. */
-function row(nim: string, changed: Record<number, string> = {}): string {
+/**
+ * The cells of a valid row for a made-up student, in the order of TITLES,
+ * with some columns set otherwise.
+ */
+function cellsOf(nim: string, changed: Record<number, string>): string[] {
   const cells = [
     nim,
     "Berkas Uji",
@@ -37,11 +41,25 @@ function row(nim: string, changed: Record<number, string> = {}): string {
     "",
     "",
     "",
+    "Islam",
+    "08/17/2005",
+    "Kota Contoh",
   ];
   for (const [place, text] of Object.entries(changed)) {
     cells[Number(place)] = text;
   }
-  return cells.join(",");
+  return cells;
+}
+
+/** A valid row in the order of TITLES, with some columns set otherwise. */
+function row(nim: string, changed: Record<number, string> = {}): string {
+  return cellsOf(nim, changed).join(",");
+}
+
+/** A valid row in the order of the template, for a file with no titles. */
+function untitledRow(nim: string, email = ""): string {
+  const cells = cellsOf(nim, {});
+  return [...cells.slice(0, -3), email, ...cells.slice(-3)].join(",");
 }
 
 function read(...lines: string[]) {
@@ -71,6 +89,9 @@ describe("readStudentFile", () => {
               studyProgramId: 7,
               entryPath: "regular",
               sex: "female",
+              religion: "islam",
+              birthDate: "2005-08-17",
+              birthPlace: "Kota Contoh",
               cohortYear: 2026,
               className: "1-01",
               province: "Jawa Barat",
@@ -104,6 +125,9 @@ describe("readStudentFile", () => {
       10: "1",
       11: "tidak",
       12: "Non Aktif",
+      13: "  kristen KATOLIK ",
+      14: " 01/31/2004 ",
+      15: "  Kabupaten   Contoh ",
     });
 
     expect(read(TITLES, line).ready[0]?.student).toEqual({
@@ -113,6 +137,9 @@ describe("readStudentFile", () => {
       studyProgramId: 3,
       entryPath: "transfer",
       sex: "female",
+      religion: "catholic",
+      birthDate: "2004-01-31",
+      birthPlace: "Kabupaten Contoh",
       cohortYear: 2025,
       className: "2-03",
       province: "Jawa Barat",
@@ -183,6 +210,46 @@ describe("readStudentFile", () => {
       { 12: "Lulus" },
       "Status harus Aktif, Cuti, atau Non Aktif.",
     ],
+    ["an empty Agama", { 13: "" }, "Agama wajib diisi."],
+    ["an unknown Agama", { 13: "Lainnya" }, "Agama tidak dikenal: Lainnya."],
+    [
+      "the old Agama name Kristen",
+      { 13: "Kristen" },
+      "Agama tidak dikenal: Kristen.",
+    ],
+    [
+      "the old Agama name Katolik",
+      { 13: "Katolik" },
+      "Agama tidak dikenal: Katolik.",
+    ],
+    ["an empty Tanggal lahir", { 14: "" }, "Tanggal lahir wajib diisi."],
+    [
+      "a Tanggal lahir not written MM/DD/YYYY",
+      { 14: "17-08-2005" },
+      "Tanggal lahir harus ditulis MM/DD/YYYY: 17-08-2005.",
+    ],
+    [
+      "a Tanggal lahir written day first",
+      { 14: "17/08/2005" },
+      "Tanggal lahir tidak ada di kalender: 17/08/2005.",
+    ],
+    [
+      "a Tanggal lahir that does not exist",
+      { 14: "02/30/2005" },
+      "Tanggal lahir tidak ada di kalender: 02/30/2005.",
+    ],
+    [
+      "a Tanggal lahir after today",
+      { 14: "01/01/2027" },
+      "Tanggal lahir tidak boleh setelah hari ini: 01/01/2027.",
+    ],
+    ["an empty Tempat lahir", { 15: "" }, "Tempat lahir wajib diisi."],
+    ["a Tempat lahir of spaces", { 15: "   " }, "Tempat lahir wajib diisi."],
+    [
+      "a Tempat lahir longer than 60 characters",
+      { 15: "K".repeat(61) },
+      "Tempat lahir paling banyak 60 karakter.",
+    ],
   ])("skips a row with %s, and says why", (_kind, changed, reason) => {
     expect(reasonFor(changed)).toBe(reason);
   });
@@ -194,6 +261,9 @@ describe("readStudentFile", () => {
     expect(reasonFor({ 4: "male" })).toBe("Jenis kelamin harus L atau P.");
     expect(reasonFor({ 12: "active" })).toBe(
       "Status harus Aktif, Cuti, atau Non Aktif.",
+    );
+    expect(reasonFor({ 13: "protestant" })).toBe(
+      "Agama tidak dikenal: protestant.",
     );
   });
 
@@ -227,7 +297,10 @@ describe("readStudentFile", () => {
   });
 
   it("reads a first row that starts with a NIM as a student, whatever its cells say", () => {
-    const rows = read(row("9900001618", { 1: "Status" }), row("9900001619"));
+    const rows = read(
+      untitledRow("9900001618").replace("Berkas Uji", "Status"),
+      untitledRow("9900001619"),
+    );
 
     expect(rows.skipped).toEqual([]);
     expect(rows.ready.map(({ row, student }) => [row, student.nim])).toEqual([
@@ -284,8 +357,8 @@ describe("readStudentFile", () => {
 
   it("follows the titles of the first row, in any order and spelling", () => {
     const rows = read(
-      "Status;JK;Program Studi;Nama;NIM;angkatan;jalur;kelas;provinsi;instansi;afirmasi;pembibitan;internasional;catatan",
-      "Cuti;P;Prodi Uji Satu;Berkas Uji Empat;9900001607;2026;;;;;;;;abaikan",
+      "Status;JK;Program Studi;Nama;NIM;angkatan;jalur;kelas;provinsi;instansi;afirmasi;pembibitan;internasional;Agama;Tanggal Lahir;Tempat Lahir;catatan",
+      "Cuti;P;Prodi Uji Satu;Berkas Uji Empat;9900001607;2026;;;;;;;;KRISTEN PROTESTAN;12/01/2006;Kota Contoh;abaikan",
     );
 
     expect(rows.skipped).toEqual([]);
@@ -293,12 +366,15 @@ describe("readStudentFile", () => {
       nim: "9900001607",
       name: "Berkas Uji Empat",
       sex: "female",
+      religion: "protestant",
+      birthDate: "2006-12-01",
+      birthPlace: "Kota Contoh",
       status: "on_leave",
     });
   });
 
   it("reads the columns in the order of the template when no row names them", () => {
-    const rows = read(row("9900001608"), row("9900001609"));
+    const rows = read(untitledRow("9900001608"), untitledRow("9900001609"));
 
     expect(rows.ready.map(({ row, student }) => [row, student.nim])).toEqual([
       [1, "9900001608"],
@@ -322,10 +398,10 @@ describe("readStudentFile", () => {
     ]);
   });
 
-  it("reads email as the last column when no row names the columns", () => {
+  it("reads email, then agama, tanggal_lahir and tempat_lahir, as the last columns when no row names the columns", () => {
     const rows = read(
-      `${row("9900001625")},berkas.uji@kampus.example`,
-      row("9900001626"),
+      untitledRow("9900001625", "berkas.uji@kampus.example"),
+      untitledRow("9900001626"),
     );
 
     expect(
@@ -362,7 +438,43 @@ describe("readStudentFile", () => {
     expect(result).toEqual({
       ok: false,
       error:
-        "Kolom tidak ditemukan: jenis_kelamin, kelas, provinsi, instansi_asal, afirmasi, pembibitan, internasional, status. Samakan judul kolom dengan templat.",
+        "Kolom tidak ditemukan: jenis_kelamin, kelas, provinsi, instansi_asal, afirmasi, pembibitan, internasional, status, agama, tanggal_lahir, tempat_lahir. Samakan judul kolom dengan templat.",
+    });
+  });
+
+  it("refuses a file whose titles lack agama, and names it", () => {
+    const titles = TITLES.replace(",agama", "");
+
+    expect(
+      readStudentFile([titles, row("9900001630")].join("\n"), context),
+    ).toEqual({
+      ok: false,
+      error:
+        "Kolom tidak ditemukan: agama. Samakan judul kolom dengan templat.",
+    });
+  });
+
+  it("refuses a file whose titles lack tanggal_lahir, and names it", () => {
+    const titles = TITLES.replace(",tanggal_lahir", "");
+
+    expect(
+      readStudentFile([titles, row("9900001638")].join("\n"), context),
+    ).toEqual({
+      ok: false,
+      error:
+        "Kolom tidak ditemukan: tanggal_lahir. Samakan judul kolom dengan templat.",
+    });
+  });
+
+  it("refuses a file whose titles lack tempat_lahir, and names it", () => {
+    const titles = TITLES.replace(",tempat_lahir", "");
+
+    expect(
+      readStudentFile([titles, row("9900001639")].join("\n"), context),
+    ).toEqual({
+      ok: false,
+      error:
+        "Kolom tidak ditemukan: tempat_lahir. Samakan judul kolom dengan templat.",
     });
   });
 

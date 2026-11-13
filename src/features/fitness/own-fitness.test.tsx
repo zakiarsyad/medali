@@ -161,6 +161,7 @@ describe("StudentFitnessView on Profil saya", () => {
       expect(markup).toContain("Perlu perhatian");
       expect(markup).toContain("berdasarkan catatan kesehatan");
       expect(markup).toContain("Skor tes kebugaran 2026");
+      expect(markup).toMatch(/>85,00<\/dd>/);
       expect(markup).toContain("Tanggal tes");
       expect(markup).toContain("Catatan kesehatan");
       expect(markup).toContain(ADVICE);

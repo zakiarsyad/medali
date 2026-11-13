@@ -19,11 +19,11 @@ import type { GroupChoice, GroupMember } from "./fitness-groups";
 import {
   DAY_IN_FUTURE,
   readyCount,
-  SCORE_NOT_WHOLE,
+  SCORE_NOT_VALID,
   scoreOf,
   testYearOf,
 } from "./fitness-input";
-import { readyLine } from "./fitness-words";
+import { readyLine, shownScore } from "./fitness-words";
 
 const START: FormState = { error: null, done: null };
 
@@ -40,7 +40,7 @@ function TypedCategory({
   if (typed.trim() === "") return null;
   const score = scoreOf(typed);
   if (score === null)
-    return <span className={styles.fault}>{SCORE_NOT_WHOLE}</span>;
+    return <span className={styles.fault}>{SCORE_NOT_VALID}</span>;
   return <CategoryBadge category={categoryOf(score, limits)} />;
 }
 
@@ -62,12 +62,12 @@ function MemberRow({
         <small className={shared.detail}>{member.nim}</small>
         <input type="hidden" name="student" value={member.id} />
       </td>
-      <td data-title="Skor saat ini">{member.latestScore ?? "-"}</td>
+      <td data-title="Skor saat ini">{shownScore(member.latestScore)}</td>
       <td data-title="Skor baru">
         <input
           name="score"
-          // Not a number box: what is no whole number stays to be read and corrected.
-          inputMode="numeric"
+          // Not a number box: what is no good score stays to be read and corrected.
+          inputMode="decimal"
           className={`${shared.input} ${styles.numberInput}`}
           value={typed}
           aria-label={`Skor ${member.name}`}

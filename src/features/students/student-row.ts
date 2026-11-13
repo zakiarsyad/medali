@@ -1,6 +1,6 @@
 import type { StudyProgram } from "@/db/study-programs";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
-import type { CategoryField } from "./labels";
+import { type CategoryField, RELIGION_LABELS } from "./labels";
 import type { FileCells, FileColumn } from "./student-file-columns";
 import type { StudentFields } from "./student-input";
 
@@ -38,6 +38,14 @@ function entryPath(text: string): string {
 function sex(text: string): string {
   if (FEMALE.includes(plain(text))) return "female";
   return MALE.includes(plain(text)) ? "male" : NOT_A_CHOICE;
+}
+
+/** An Agama is written as the form shows it, in any letters. */
+function religion(text: string): string {
+  const named = Object.entries(RELIGION_LABELS).find(
+    ([, label]) => plain(label) === plain(text),
+  );
+  return named ? named[0] : NOT_A_CHOICE;
 }
 
 /** A year may be written short: 26 is 2026. */
@@ -80,6 +88,9 @@ export function rowFields(
     studyProgramId: programId(cells.prodi, programs),
     entryPath: entryPath(cells.jalur),
     sex: sex(cells.jenis_kelamin),
+    religion: religion(cells.agama),
+    birthDate: cells.tanggal_lahir,
+    birthPlace: cells.tempat_lahir,
     cohortYear: cohortYear(cells.angkatan),
     className: cells.kelas,
     province: listed(PROVINCES, cells.provinsi),

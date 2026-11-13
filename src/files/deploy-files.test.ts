@@ -190,7 +190,7 @@ describe("deployFiles", () => {
 
       await expect(
         deployFiles(store, stage, undefined, startsOfMain(true)),
-      ).rejects.toThrow("runs only in a Vercel build");
+      ).rejects.toThrow("runs only on a preview");
       expect(store.files.size).toBe(ALL.length);
     },
   );

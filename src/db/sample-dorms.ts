@@ -1,6 +1,11 @@
 import type { DormId } from "@/dorms/dorms";
 import type { CompanionDormId } from "@/features/dorm/companion-dorms";
-import type { SampleStudent } from "./sample-students";
+import {
+  type SampleStudent,
+  sampleBirthDate,
+  sampleBirthPlace,
+  sampleReligion,
+} from "./sample-students";
 
 /*
  * Made-up people only. Every name is a mix of common given names and
@@ -73,6 +78,9 @@ function firstYear(
     studyProgram: PROGRAMS[place % PROGRAMS.length] ?? "D3 Pajak",
     entryPath: "regular",
     sex,
+    religion: sampleReligion(place),
+    birthDate: sampleBirthDate(place, cohortYear),
+    birthPlace: sampleBirthPlace(place),
     cohortYear,
     className: `1-0${(place % CLASSES) + 1}`,
     province: isInternational ? ABROAD : province,
@@ -148,14 +156,14 @@ export interface SampleCompanion {
 export const SAMPLE_COMPANIONS: SampleCompanion[] = [
   {
     nim: "9900230032",
-    dorm: "dana_rakca",
+    dorm: "cipta_bakti",
     note: "Pendamping lantai 1",
     isActive: true,
   },
-  { nim: "9900220019", dorm: "cipta_bakti", note: null, isActive: true },
+  { nim: "9900220019", dorm: "dana_rakca", note: null, isActive: true },
   {
     nim: "9900230045",
-    dorm: "cipta_bakti",
+    dorm: "dana_rakca",
     note: "Pendamping lantai 2",
     isActive: false,
   },

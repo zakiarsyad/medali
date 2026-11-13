@@ -37,7 +37,7 @@ const ODD_3110 = {
 const TODAY = "3110-10-12";
 const YESTERDAY = "3110-10-11";
 const TOMORROW = "3110-10-13";
-const DORM = "dana_rakca";
+const DORM = "cipta_bakti";
 
 const NOT_ALLOWED = {
   ok: false,
@@ -212,7 +212,7 @@ describe("assignPlaceDuty", () => {
       const { manager, placeId, full, empty } = await setUp(db);
       const elsewhere = await addTestRoom(db, {
         number: "BD201",
-        dorm: "cipta_bakti",
+        dorm: "dana_rakca",
       });
 
       expect(

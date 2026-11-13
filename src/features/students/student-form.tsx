@@ -10,6 +10,7 @@ import { FormMessage } from "@/ui/form-message";
 import { sendForm } from "@/ui/send-form";
 import { useSaveState } from "@/ui/use-save-state";
 import { addStudentAction, changeStudentAction } from "./actions";
+import { BIRTH_DATE_HINT } from "./birth-date";
 import { ORIGIN_AGENCIES, PROVINCES } from "./fixed-lists";
 import {
   formShows,
@@ -25,6 +26,7 @@ import {
   keptGroupId,
 } from "./group-choice-words";
 import {
+  BIRTH_PLACE_MAX_LENGTH,
   CLASS_MAX_LENGTH,
   EMAIL_MAX_LENGTH,
   NAME_MAX_LENGTH,
@@ -34,6 +36,7 @@ import {
 import {
   CATEGORIES,
   ENTRY_PATH_LABELS,
+  RELIGION_LABELS,
   SEX_LABELS,
   STATUS_LABELS,
 } from "./labels";
@@ -45,6 +48,8 @@ import { SelectField } from "./select-field";
 import type { RunningPeriod } from "./semester-now";
 import type { StoredStudent } from "./student-input";
 import { useNotify } from "./student-notice";
+
+const BIRTH_PLACE_HINT = "Misalnya Kota Bandung";
 
 function sameAsShown(values: readonly (string | number)[]) {
   return values.map((value) => [String(value), String(value)] as const);
@@ -261,6 +266,39 @@ export function StudentForm({
           choices={Object.entries(SEX_LABELS)}
           chosen={shown.sex}
         />
+        <SelectField
+          label="Agama"
+          name="religion"
+          choices={[["", "Pilih agama"], ...Object.entries(RELIGION_LABELS)]}
+          chosen={shown.religion}
+        />
+        <label className={shared.field}>
+          Tanggal lahir
+          {/* A plain text field, not a calendar: the browser's calendar
+              writes the day in the order the computer is set to. */}
+          <input
+            name="birthDate"
+            type="text"
+            className={shared.input}
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={BIRTH_DATE_HINT.length}
+            placeholder={BIRTH_DATE_HINT}
+            defaultValue={shown.birthDate}
+            required
+          />
+        </label>
+        <label className={shared.field}>
+          Tempat lahir
+          <input
+            name="birthPlace"
+            className={shared.input}
+            maxLength={BIRTH_PLACE_MAX_LENGTH}
+            placeholder={BIRTH_PLACE_HINT}
+            defaultValue={shown.birthPlace}
+            required
+          />
+        </label>
         <SelectField
           label="Angkatan"
           name="cohortYear"

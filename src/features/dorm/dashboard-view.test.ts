@@ -104,7 +104,7 @@ describe("loadDashboard", () => {
 
       const view = await loadDashboard(db, EVERY_ROW, MOMENT);
 
-      expect(view.residents).toMatchObject({ dana_rakca: 2, cipta_bakti: 2 });
+      expect(view.residents).toMatchObject({ cipta_bakti: 2, dana_rakca: 2 });
     });
   });
 
@@ -165,8 +165,8 @@ describe("loadDashboard", () => {
         absent: 0,
       });
       expect(view.byDorm).toMatchObject({
-        dana_rakca: { present: 1, absent: 0, leave: 1 },
-        cipta_bakti: { present: 2, absent: 0, leave: 0 },
+        cipta_bakti: { present: 1, absent: 0, leave: 1 },
+        dana_rakca: { present: 2, absent: 0, leave: 0 },
       });
       expect(view.byOrganiser.coach).toEqual(view.overall);
     });
@@ -325,14 +325,14 @@ describe("loadDashboard", () => {
             name: "Penghuni Uji Dashboard 02",
             kind: "special",
             destination: "",
-            room: "Asrama Cipta Bakti, belum diplot",
+            room: "Asrama Dana Rakca, belum diplot",
             isLate: true,
           }),
           expect.objectContaining({
             name: "Penghuni Uji Dashboard 01",
             kind: "outing",
             destination: "Bintaro",
-            room: "Asrama Dana Rakca, belum diplot",
+            room: "Asrama Cipta Bakti, belum diplot",
             isLate: false,
           }),
         ],
@@ -401,7 +401,7 @@ describe("loadDashboard", () => {
         MOMENT,
       );
 
-      expect(view.residents).toMatchObject({ dana_rakca: 1, cipta_bakti: 1 });
+      expect(view.residents).toMatchObject({ cipta_bakti: 1, dana_rakca: 1 });
       expect(view.leave).toEqual({ out: 1, outLate: 0, waiting: 0 });
       expect(view.overall.attendance).toEqual({
         present: 1,
@@ -409,8 +409,8 @@ describe("loadDashboard", () => {
         leave: 0,
       });
       expect(view.byDorm).toMatchObject({
-        dana_rakca: { present: 0, absent: 1, leave: 0 },
-        cipta_bakti: { present: 1, absent: 0, leave: 0 },
+        cipta_bakti: { present: 0, absent: 1, leave: 0 },
+        dana_rakca: { present: 1, absent: 0, leave: 0 },
       });
       const [today, yesterday] = view.activities.lines;
       expect(today?.participants).toBe(2);

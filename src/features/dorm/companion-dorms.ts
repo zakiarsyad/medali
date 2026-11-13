@@ -11,9 +11,9 @@ export type CompanionDormId = (typeof COMPANION_DORM_IDS)[number];
 
 type Sex = (typeof students.$inferSelect)["sex"];
 
-/** The dorm a student can be kakak pendamping of: women in Dana Rakca. */
+/** The dorm a student can be kakak pendamping of: men in Dana Rakca. */
 export function companionDormOf(sex: Sex): CompanionDormId {
-  return sex === "female" ? "dana_rakca" : "cipta_bakti";
+  return sex === "male" ? "dana_rakca" : "cipta_bakti";
 }
 
 export function hasCompanions(dorm: DormId): dorm is CompanionDormId {

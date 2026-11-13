@@ -39,6 +39,7 @@ const STUDENT: StudentDetail = {
   cohortYear: 2025,
   className: null,
   province: "Bali",
+  birthPlace: "Kota Contoh",
   sex: "female",
   mentorGroup: GROUP,
   residence: null,
@@ -79,6 +80,16 @@ function linksIn(view: string): number {
 }
 
 describe("StudentDetailView", () => {
+  it("shows the Tempat lahir, and a dash for one saved before it was asked", () => {
+    const view = viewOf(STUDENT, mayOpenGroup, mayOpenMentor);
+    const before = { ...STUDENT, birthPlace: null };
+
+    expect(view).toContain("<dt>Tempat lahir</dt><dd>Kota Contoh</dd>");
+    expect(viewOf(before, mayOpenGroup, mayOpenMentor)).toContain(
+      "<dt>Tempat lahir</dt><dd>—</dd>",
+    );
+  });
+
   it("links the mentor's name to the mentor's page and the group's code to the group's page", () => {
     const view = viewOf(STUDENT, mayOpenGroup, mayOpenMentor);
 

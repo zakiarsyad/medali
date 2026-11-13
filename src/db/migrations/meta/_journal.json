@@ -547,6 +547,34 @@
       "when": 1792827769263,
       "tag": "0077_mentoring-score-indicators",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1794214658276,
+      "tag": "0078_student-religion",
+      "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1794268474946,
+      "tag": "0079_student-birth-date",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1794367088098,
+      "tag": "0080_student-birth-place",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1794559409279,
+      "tag": "0081_fitness-two-decimals",
+      "breakpoints": true
     }
   ]
 }

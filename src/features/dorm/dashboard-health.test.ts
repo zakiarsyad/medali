@@ -60,8 +60,8 @@ async function addResident(db: Database, resident: Resident) {
 }
 
 /**
- * Angkatan 3911 is in semester 1, so its Reguler students live in Dana
- * Rakca (women) and Cipta Bakti (men).
+ * Angkatan 3911 is in semester 1, so its Reguler students live in Cipta
+ * Bakti (women) and Dana Rakca (men).
  * - Prodi A: six women tested at 90, 90, 75, 75, 60 and 40, two men
  *   tested at 90, and one woman not tested;
  * - Prodi B: three women tested at 90, one on Cuti tested at 40, and one
@@ -157,8 +157,8 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         expect(physical?.byDorm).toEqual({
           wismantara_putra: { excellent: 0, good: 0, attention: 0, medical: 0 },
           wismantara_putri: { excellent: 0, good: 0, attention: 0, medical: 0 },
-          dana_rakca: null,
           cipta_bakti: null,
+          dana_rakca: null,
         });
       });
     },
@@ -180,13 +180,13 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
       expect(physical?.byDorm).toEqual({
         wismantara_putra: { excellent: 0, good: 0, attention: 0, medical: 0 },
         wismantara_putri: { excellent: 0, good: 0, attention: 0, medical: 0 },
-        dana_rakca: {
+        cipta_bakti: {
           excellent: 5,
           good: "<5",
           attention: "<5",
           medical: "<5",
         },
-        cipta_bakti: { excellent: 0, good: 0, attention: 0, medical: 0 },
+        dana_rakca: { excellent: 0, good: 0, attention: 0, medical: 0 },
       });
     });
   });
@@ -205,8 +205,8 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
         students: 9,
         tested: 8,
       });
-      expect(ofA.physical?.byDorm?.dana_rakca).toBeNull();
       expect(ofA.physical?.byDorm?.cipta_bakti).toBeNull();
+      expect(ofA.physical?.byDorm?.dana_rakca).toBeNull();
       expect(ofB.physical).toEqual({
         recap: { kind: "too_few", students: 3 },
         byDorm: null,
@@ -230,8 +230,8 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
       const { physical } = await loadDormHealth(db, headA, MOMENT);
 
       expect(physical?.recap).toMatchObject({ kind: "shown", tested: 7 });
-      expect(physical?.byDorm?.cipta_bakti).toBeNull();
       expect(physical?.byDorm?.dana_rakca).toBeNull();
+      expect(physical?.byDorm?.cipta_bakti).toBeNull();
     });
   });
 
@@ -260,7 +260,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
       const { physical } = await loadDormHealth(db, actor, MOMENT);
 
       expect(physical?.recap.kind).toBe("shown");
-      expect(physical?.byDorm?.cipta_bakti).toBeNull();
+      expect(physical?.byDorm?.dana_rakca).toBeNull();
     });
   });
 
@@ -291,7 +291,7 @@ describe("loadDormHealth: Kesehatan jasmani penghuni", () => {
 /**
  * On top of addRecords' residents:
  * - Prodi A's woman tested at 40, Perlu tindak lanjut medis with no
- *   note, is placed in room DH-01 of Dana Rakca;
+ *   note, is placed in room DH-01 of Cipta Bakti;
  * - Prodi A's first woman tested at 75 has a note "Perlu perhatian";
  * - Prodi B's first woman tested at 90 has a note "Perlu tindak lanjut
  *   medis";
@@ -340,19 +340,19 @@ describe("loadDormHealth: Perlu perhatian dan tindak lanjut medis", () => {
         expect(physical?.care?.map(({ id: _, ...row }) => row)).toEqual([
           {
             name: "Penghuni Uji Kesehatan 06",
-            room: "Dana Rakca, lantai 1, kamar DH-01",
+            room: "Cipta Bakti, lantai 1, kamar DH-01",
             final: { category: "medical", fromNote: false },
             note: null,
           },
           {
             name: "Penghuni Uji Kesehatan 10",
-            room: "Dana Rakca, belum diplot",
+            room: "Cipta Bakti, belum diplot",
             final: { category: "medical", fromNote: true },
             note: "Rujuk ke RS.",
           },
           {
             name: "Penghuni Uji Kesehatan 03",
-            room: "Dana Rakca, belum diplot",
+            room: "Cipta Bakti, belum diplot",
             final: { category: "attention", fromNote: true },
             note: "Riwayat: Asma. Kontrol rutin.",
           },

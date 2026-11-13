@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { objectAddress, readListing } from "./object-store";
+import { createServer, type IncomingHttpHeaders } from "node:http";
+import type { AddressInfo } from "node:net";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { objectAddress, objectStore, readListing } from "./object-store";
 
 const LOCAL = { url: "http://localhost:9000", bucket: "medali" };
 
@@ -69,4 +71,66 @@ describe("objectAddress", () => {
       );
     },
   );
+});
+
+/**
+ * Behaves like the fetch of the running Next.js server, which rebuilds a
+ * request it is handed from the request's body stream, losing its size.
+ */
+function nextLikeFetch(realFetch: typeof fetch): typeof fetch {
+  return (input, init) => {
+    if (input instanceof Request) {
+      return realFetch(
+        new Request(input.url, {
+          method: input.method,
+          headers: input.headers,
+          body: input.body,
+          duplex: "half",
+        } as RequestInit),
+      );
+    }
+    return realFetch(input, init);
+  };
+}
+
+/** A storage that keeps the headers of each request and answers 200. */
+async function headerKeeper() {
+  const received: IncomingHttpHeaders[] = [];
+  const server = createServer((request, response) => {
+    received.push(request.headers);
+    request.resume();
+    request.on("end", () => response.end());
+  });
+  await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
+  const { port } = server.address() as AddressInfo;
+  return { url: `http://127.0.0.1:${port}`, received, server };
+}
+
+describe("objectStore put", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("states the file's exact size, even where fetch rebuilds the request", async () => {
+    const storage = await headerKeeper();
+    vi.stubGlobal("fetch", nextLikeFetch(fetch));
+    const bytes = new TextEncoder().encode("nim,nama\n1,Contoh\n");
+
+    try {
+      await objectStore({
+        url: storage.url,
+        bucket: "medali",
+        accessKey: "uji",
+        secretKey: "uji-rahasia",
+      }).put("uji/berkas", { bytes, contentType: "text/csv" });
+    } finally {
+      storage.server.close();
+    }
+
+    expect(storage.received).toHaveLength(1);
+    expect(storage.received[0]?.["content-length"]).toBe(
+      String(bytes.byteLength),
+    );
+    expect(storage.received[0]?.["transfer-encoding"]).toBeUndefined();
+  });
 });

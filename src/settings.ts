@@ -46,7 +46,21 @@ export const FILE_STORAGE_NAMES = [
 ] as const satisfies readonly SettingName[];
 
 export function isPreview(stage: Stage): boolean {
-  return stage === "pr-preview" || stage === "main-preview";
+  return (
+    stage === "pr-preview" ||
+    stage === "main-preview" ||
+    stage === "render-preview"
+  );
+}
+
+/**
+ * The file storage's address, with http:// put in front when it names no
+ * scheme. Render gives the address of a service on its private network as
+ * host and port only.
+ */
+function fileStorageUrlOf(written: string): string {
+  if (written.includes("://")) return written;
+  return `http://${written}`;
 }
 
 /**
@@ -63,7 +77,7 @@ export function fileStorageSettingsOf(
   const allEmpty = FILE_STORAGE_NAMES.every((name) => !env[name]);
   if (allEmpty && isPreview(stage)) return null;
   return {
-    url: settingIn(env, "FILE_STORAGE_URL"),
+    url: fileStorageUrlOf(settingIn(env, "FILE_STORAGE_URL")),
     bucket: settingIn(env, "FILE_STORAGE_BUCKET"),
     accessKey: settingIn(env, "FILE_STORAGE_ACCESS_KEY"),
     secretKey: settingIn(env, "FILE_STORAGE_SECRET_KEY"),
@@ -123,32 +137,35 @@ export function googleSignInSettingsOf(
   return { clientId, clientSecret, campusEnding };
 }
 
-/** The names of the Google sign-in settings that are still empty. */
-export function missingGoogleSignInNames(env: SettingsEnv): SettingName[] {
-  const missing: SettingName[] = [];
-  if (!env.GOOGLE_CLIENT_ID) missing.push("GOOGLE_CLIENT_ID");
-  if (!env.GOOGLE_CLIENT_SECRET) missing.push("GOOGLE_CLIENT_SECRET");
-  if (campusEmailEndingOf(env) === "") missing.push("CAMPUS_EMAIL_ENDING");
-  return missing;
-}
-
 export function readGoogleSignInSettings(): GoogleSignInSettings | null {
   return googleSignInSettingsOf(process.env);
 }
 
 /**
  * Where the app runs. Vercel names its environments: `production` is the
- * preview of `main`, and `preview` is a PR preview. A local computer says
- * so with NODE_ENV=development. Anything without such a clear yes is
- * treated as the campus server, where real data lives. The campus mark
- * wins over all of them.
+ * preview of `main`, and `preview` is a PR preview. The one preview at
+ * Render says so with MEDALI_RENDER_PREVIEW=1, set in its part of
+ * `render.yaml`. A local computer says so with NODE_ENV=development.
+ * Anything without such a clear yes is treated as the campus server,
+ * where real data lives. The campus mark wins over all of them.
  */
-export type Stage = "local" | "pr-preview" | "main-preview" | "campus";
+export type Stage =
+  | "local"
+  | "pr-preview"
+  | "main-preview"
+  | "render-preview"
+  | "campus";
 
 interface StageEnv {
   NODE_ENV?: string | undefined;
   VERCEL_ENV?: string | undefined;
+  MEDALI_RENDER_PREVIEW?: string | undefined;
   MEDALI_CAMPUS?: string | undefined;
+}
+
+/** The setting that says the app is the one preview at Render. */
+export function hasRenderPreviewSign(env: StageEnv): boolean {
+  return env.MEDALI_RENDER_PREVIEW === "1";
 }
 
 /**
@@ -162,6 +179,7 @@ export function hasCampusMark(env: StageEnv): boolean {
 
 export function stageOf(env: StageEnv): Stage {
   if (hasCampusMark(env)) return "campus";
+  if (hasRenderPreviewSign(env)) return "render-preview";
   if (env.VERCEL_ENV === "preview") return "pr-preview";
   if (env.VERCEL_ENV === "production") return "main-preview";
   const onVercelOrNowhere =
@@ -177,4 +195,9 @@ export function currentStage(): Stage {
 /** The branch a Vercel build was made from, when Vercel says so. */
 export function deployBranch(): string | undefined {
   return process.env.VERCEL_GIT_COMMIT_REF || undefined;
+}
+
+/** The commit a Render deploy was made from, when Render says so. */
+export function deployCommit(): string | undefined {
+  return process.env.RENDER_GIT_COMMIT || undefined;
 }

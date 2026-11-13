@@ -158,6 +158,15 @@ describe("the shared set of UI values", () => {
     },
   );
 
+  it("gives gold text a contrast of 4.5 or more on the surface, in light and dark mode", () => {
+    for (const mode of [TOKENS.light, DARK]) {
+      const ink = resolvedValue("--gold-ink", mode);
+      const surface = resolvedValue("--surface", mode);
+
+      expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("holds no two colour names with the same colour in light and dark mode", () => {
     expect(sameColourNames(TOKENS.light, TOKENS.dark)).toEqual([]);
   });

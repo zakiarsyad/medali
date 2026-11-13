@@ -20,6 +20,9 @@ const student: StoredStudent = {
   studyProgramId: 7,
   entryPath: "transfer",
   sex: "female",
+  religion: "hindu",
+  birthDate: "2005-08-17",
+  birthPlace: "Kota Contoh",
   cohortYear: 2025,
   className: null,
   province: "Bali",
@@ -40,6 +43,9 @@ const typed: StudentFormFields = {
   studyProgramId: "7",
   entryPath: "transfer",
   sex: "female",
+  religion: "islam",
+  birthDate: "08/17",
+  birthPlace: "Kota",
   cohortYear: "2024",
   className: "1-01",
   province: "Riau",
@@ -58,6 +64,9 @@ describe("formValues", () => {
       studyProgramId: "3",
       entryPath: "regular",
       sex: "male",
+      religion: "",
+      birthDate: "",
+      birthPlace: "",
       cohortYear: "2026",
       className: "",
       province: "",
@@ -76,6 +85,9 @@ describe("formValues", () => {
       studyProgramId: "7",
       entryPath: "transfer",
       sex: "female",
+      religion: "hindu",
+      birthDate: "08/17/2005",
+      birthPlace: "Kota Contoh",
       cohortYear: "2025",
       className: "",
       province: "Bali",
@@ -88,6 +100,22 @@ describe("formValues", () => {
 
   it("leaves the address empty for a student who has none", () => {
     expect(formValues({ ...student, email: null }, first).email).toBe("");
+  });
+
+  it("leaves Agama to be chosen for a student saved before it was asked", () => {
+    expect(formValues({ ...student, religion: null }, first).religion).toBe("");
+  });
+
+  it("leaves Tanggal lahir empty for a student saved before it was asked", () => {
+    expect(formValues({ ...student, birthDate: null }, first).birthDate).toBe(
+      "",
+    );
+  });
+
+  it("leaves Tempat lahir empty for a student saved before it was asked", () => {
+    expect(formValues({ ...student, birthPlace: null }, first).birthPlace).toBe(
+      "",
+    );
   });
 
   it("stands on Belum ditetapkan for a student who is in no group", () => {

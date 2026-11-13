@@ -142,6 +142,66 @@ describe("the database step of a PR deploy", { timeout: 120_000 }, () => {
   });
 });
 
+describe("the database step of the Render preview", {
+  timeout: 120_000,
+}, () => {
+  const own = withEmptyTestDatabase("deployrender");
+
+  function deployRender(commit: string | undefined): Promise<string> {
+    return deployDatabase(own.db, "render-preview", undefined, commit);
+  }
+
+  it("marks an empty database and fills it with sample data", async () => {
+    const done = await deployRender("aaa111");
+
+    expect(done).toContain("started over");
+    expect((await readDeployTarget(own.db)).marker).toBe("pr-preview");
+    expect(await countAccounts(own.db)).toBeGreaterThan(0);
+  });
+
+  it("keeps the data when the app starts again with the same commit, as after a sleep", async () => {
+    await addByHand(own.db);
+
+    const done = await deployRender("aaa111");
+
+    expect(done).toContain("data kept");
+    expect(await countAddedByHand(own.db)).toBe(1);
+  });
+
+  it("starts over with sample data for another commit", async () => {
+    const done = await deployRender("bbb222");
+
+    expect(done).toContain("started over");
+    expect(await countAddedByHand(own.db)).toBe(0);
+    expect(await countAccounts(own.db)).toBeGreaterThan(0);
+  });
+
+  it("starts over on every start when Render names no commit", async () => {
+    await addByHand(own.db);
+
+    expect(await deployRender(undefined)).toContain("started over");
+    expect(await countAddedByHand(own.db)).toBe(0);
+    await addByHand(own.db);
+
+    expect(await deployRender(undefined)).toContain("started over");
+    expect(await countAddedByHand(own.db)).toBe(0);
+  });
+});
+
+describe("the database step of the Render preview given the database of medali.site", () => {
+  const own = withEmptyTestDatabase("deployrendercampus");
+
+  it("refuses one marked as the campus one, and changes nothing", async () => {
+    await markDatabase(own.db, "campus");
+
+    const step = deployDatabase(own.db, "render-preview", undefined, "aaa111");
+
+    await expect(step).rejects.toThrow("marked campus");
+    const target = await readDeployTarget(own.db);
+    expect(target).toEqual({ marker: "campus", hasTables: false });
+  });
+});
+
 describe("the database step of a deploy of main given another database", () => {
   const own = withEmptyTestDatabase("deploymainother");
 

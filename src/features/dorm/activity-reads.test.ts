@@ -223,8 +223,8 @@ describe("countResidentsByDorm", () => {
       expect(await countResidentsByDorm(db, EVERYONE, DAY_2690)).toEqual({
         wismantara_putra: 1,
         wismantara_putri: 0,
-        dana_rakca: 2,
-        cipta_bakti: 1,
+        cipta_bakti: 2,
+        dana_rakca: 1,
       });
     });
   });
@@ -237,8 +237,8 @@ describe("countResidentsByDorm", () => {
       expect(await countResidentsByDorm(db, ownProgram, DAY_2690)).toEqual({
         wismantara_putra: 0,
         wismantara_putri: 0,
-        dana_rakca: 1,
         cipta_bakti: 1,
+        dana_rakca: 1,
       });
     });
   });
@@ -252,8 +252,8 @@ describe("countResidentsByDorm", () => {
       expect(counted).toEqual({
         wismantara_putra: 1,
         wismantara_putri: 0,
-        dana_rakca: 0,
         cipta_bakti: 0,
+        dana_rakca: 0,
       });
     });
   });

@@ -159,6 +159,11 @@ More than one person may work on this repo at the same time.
   with no new table change keeps its data. The other is shared by all PR
   previews, and is reset to sample data with the PR's tables each time a
   PR deploys.
+- Render also has one fixed preview link, `medali-preview`, with its own
+  database and sample data only. It shows the PR pushed last; the GitHub
+  step "Pratinjau Render" brings back another PR by its number. Each new
+  deploy resets its database to sample data with that PR's tables. It
+  sleeps when nobody visits and wakes in about a minute.
 
 ## Building rules
 

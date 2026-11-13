@@ -59,7 +59,7 @@ async function addTestRows(db: Database): Promise<TestRows> {
     cohortYear: 2509,
   });
   await addTestCompanion(db, stopped, { isActive: false });
-  await addTestCompanion(db, man, { dorm: "cipta_bakti" });
+  await addTestCompanion(db, man, { dorm: "dana_rakca" });
   await addTestCompanion(db, inRoom, { roomId, note: "Pendamping lantai 2" });
   return { ownProgram, roomId };
 }
@@ -75,7 +75,7 @@ describe("listCompanions", () => {
 
       const list = await listCompanions(db, EVERYONE, 1, DAY);
 
-      expect(names(list)).toEqual(["Sinta Uji", "Bima Uji", "Ajeng Uji"]);
+      expect(names(list)).toEqual(["Bima Uji", "Sinta Uji", "Ajeng Uji"]);
       expect(list.matching).toBe(3);
       expect(list.active).toBe(2);
       expect(list.page).toBe(1);
@@ -88,13 +88,13 @@ describe("listCompanions", () => {
 
       const list = await listCompanions(db, EVERYONE, 1, DAY);
 
-      expect(list.companions[0]).toEqual({
+      expect(list.companions[1]).toEqual({
         studentId: expect.any(String),
         name: "Sinta Uji",
         nim: "9931590002",
         studyProgram: "Prodi Uji Kakak Sendiri",
         semester: 3,
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         room: { id: roomId, floor: 2, number: "KD201" },
         note: "Pendamping lantai 2",
         isActive: true,
@@ -108,9 +108,9 @@ describe("listCompanions", () => {
 
       const list = await listCompanions(db, EVERYONE, 1, DAY);
 
-      expect(list.companions[1]).toMatchObject({
+      expect(list.companions[0]).toMatchObject({
         name: "Bima Uji",
-        dorm: "cipta_bakti",
+        dorm: "dana_rakca",
         room: null,
         note: null,
       });

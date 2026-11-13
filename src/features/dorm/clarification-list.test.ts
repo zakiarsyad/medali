@@ -101,7 +101,7 @@ describe("readClarificationBoard", () => {
       const [waiting, accepted] = list.cards;
       expect(waiting).toMatchObject({
         nim: "9937980501",
-        room: "Asrama Dana Rakca, belum diplot",
+        room: "Asrama Cipta Bakti, belum diplot",
         activity: "Apel pagi uji",
         held: "13 Okt 3040, 05:30–06:15",
         reason: "Sakit",

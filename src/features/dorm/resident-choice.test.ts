@@ -55,7 +55,7 @@ describe("saveChosenDorm", () => {
       await saveChosenDorm(db, manager.id, {
         studentId,
         before: null,
-        after: "dana_rakca",
+        after: "cipta_bakti",
         note: "Pindahan",
       });
 
@@ -64,14 +64,14 @@ describe("saveChosenDorm", () => {
         .from(dormResidentChoices)
         .where(eq(dormResidentChoices.studentId, studentId));
       expect(choice).toMatchObject({
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         note: "Pindahan",
         setBy: manager.id,
       });
       expect(await logOf(db, studentId)).toEqual([
-        [null, "dana_rakca", manager.id],
+        [null, "cipta_bakti", manager.id],
       ]);
-      expect((await held(db, studentId))?.dorm).toBe("dana_rakca");
+      expect((await held(db, studentId))?.dorm).toBe("cipta_bakti");
     });
   });
 
@@ -79,12 +79,12 @@ describe("saveChosenDorm", () => {
     await inTestDatabase(async (db) => {
       const studentId = await addSenior(db, "9935000102");
       const manager = await addTestActor(db, "Pengelola Uji", ["dorm_manager"]);
-      const first = { studentId, before: null, after: "dana_rakca" as const };
+      const first = { studentId, before: null, after: "cipta_bakti" as const };
       await saveChosenDorm(db, manager.id, { ...first, note: "Catatan" });
 
       await saveChosenDorm(db, manager.id, {
         studentId,
-        before: "dana_rakca",
+        before: "cipta_bakti",
         after: null,
         note: null,
       });
@@ -95,8 +95,8 @@ describe("saveChosenDorm", () => {
         .where(eq(dormResidentChoices.studentId, studentId));
       expect(choices).toEqual([{ dorm: null }]);
       expect(await logOf(db, studentId)).toEqual([
-        [null, "dana_rakca", manager.id],
-        ["dana_rakca", null, manager.id],
+        [null, "cipta_bakti", manager.id],
+        ["cipta_bakti", null, manager.id],
       ]);
       expect((await held(db, studentId))?.dorm).toBeNull();
     });
@@ -113,7 +113,7 @@ describe("holdStudent", () => {
         name: "Uji",
         sex: "female",
         isActive: true,
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         isCompanion: true,
       });
     });

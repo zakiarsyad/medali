@@ -1,6 +1,7 @@
 import type { StudyProgram } from "@/db/study-programs";
 import { PREVIEW_ROWS, PREVIEW_SKIPPED } from "@/files/csv-file";
-import { ENTRY_PATH_LABELS, STATUS_LABELS } from "./labels";
+import { shownBirthDate } from "./birth-date";
+import { ENTRY_PATH_LABELS, RELIGION_LABELS, STATUS_LABELS } from "./labels";
 import type { FileRows, SkippedRow } from "./student-file";
 import type { StudentInput } from "./student-input";
 
@@ -49,6 +50,9 @@ function cellsOf(student: StudentInput, programs: StudyProgram[]): string[] {
     ticked(student.isInternational),
     STATUS_LABELS[student.status],
     student.email ?? NOT_FILLED,
+    RELIGION_LABELS[student.religion],
+    shownBirthDate(student.birthDate),
+    student.birthPlace,
   ];
 }
 

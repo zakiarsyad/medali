@@ -270,7 +270,7 @@ describe("restartCompanion for a student who no longer fits the duty", () => {
 
   type Facts = Partial<typeof students.$inferInsert>;
 
-  /** A stopped kakak pendamping of Dana Rakca: a woman of semester 3, unless told otherwise. */
+  /** A stopped kakak pendamping of Cipta Bakti: a woman of semester 3, unless told otherwise. */
   async function addStoppedWith(db: Database, facts: Facts): Promise<string> {
     await db.insert(academicPeriods).values(ODD_2500);
     const program = await addTestProgram(db, "Prodi Uji Aktifkan Kakak");
@@ -295,7 +295,7 @@ describe("restartCompanion for a student who no longer fits the duty", () => {
     });
   });
 
-  it("refuses a Reguler student in semester 1, who lives in Dana Rakca now", async () => {
+  it("refuses a Reguler student in semester 1, who lives in Cipta Bakti now", async () => {
     await inTestDatabase(async (db) => {
       const studentId = await addStoppedWith(db, { cohortYear: 2500 });
 
@@ -336,7 +336,7 @@ describe("restartCompanion for a student who no longer fits the duty", () => {
       expect(restarted).toEqual({
         ok: false,
         error:
-          "Asrama Dana Rakca hanya untuk mahasiswa perempuan, jadi kakak pendamping ini tidak bisa diaktifkan.",
+          "Asrama Cipta Bakti hanya untuk mahasiswa perempuan, jadi kakak pendamping ini tidak bisa diaktifkan.",
       });
       expect((await companionOf(db, studentId))?.isActive).toBe(false);
     });

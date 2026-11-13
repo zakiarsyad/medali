@@ -21,7 +21,7 @@ interface TestRows {
   roomId: string;
 }
 
-/** A senior put in through the tab, kakak pendamping of Dana Rakca in a room. */
+/** A senior put in through the tab, kakak pendamping of Cipta Bakti in a room. */
 async function addPlacedCompanion(db: Database): Promise<TestRows> {
   const program = await addTestProgram(db, "Prodi Uji Tugas Berakhir");
   const staff = await addTestActor(db, "Pegawai Uji", ["upk_staff"]);
@@ -32,6 +32,9 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
     studyProgramId: program,
     entryPath: "regular",
     sex: "female",
+    religion: "islam",
+    birthDate: "2005-08-17",
+    birthPlace: "Kota Contoh",
     cohortYear: 2024,
     className: null,
     province: null,
@@ -50,12 +53,12 @@ async function addPlacedCompanion(db: Database): Promise<TestRows> {
     .where(eq(students.nim, NIM));
   const [room] = await db
     .insert(dormRooms)
-    .values({ dorm: "dana_rakca", floor: 1, number: "KB101", capacity: 4 })
+    .values({ dorm: "cipta_bakti", floor: 1, number: "KB101", capacity: 4 })
     .returning({ id: dormRooms.id });
   if (!student || !room) throw new Error("The test rows were not added.");
   await db
     .insert(dormCompanions)
-    .values({ studentId: student.id, dorm: "dana_rakca", roomId: room.id });
+    .values({ studentId: student.id, dorm: "cipta_bakti", roomId: room.id });
   return { staff, input, studentId: student.id, roomId: room.id };
 }
 

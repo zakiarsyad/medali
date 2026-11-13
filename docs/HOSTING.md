@@ -1,8 +1,10 @@
 # Hosting
 
-Where the previews of the app run, and how they are set up. The last
-part, "The campus server package", says how the app is run on the campus
-server. The server itself is not chosen yet.
+Where the previews of the app run, and how they are set up. "Render"
+says how the app runs at Render, at `medali.site`, and how the one
+preview at Render shows the PR pushed last. The last part, "The
+campus server package", says how the app is run on the campus server.
+The server itself is not chosen yet.
 
 ## What the hosting is
 
@@ -106,10 +108,12 @@ so it is refused too. Both refuse a database marked for the campus
 server.
 
 "Ganti peran", the switch between sample accounts, is on in both
-previews and in the local dev server, and off everywhere else, the campus
-server included. The app also refuses to start with it on unless a
-second sign agrees: a preview must really be running on Vercel, and a
-local run must use a database on the same computer.
+previews, in the preview at Render and in the local dev server, and off
+everywhere else, the campus server and `medali.site` included. The app
+also refuses to start with it on unless a second sign agrees: a preview
+at Vercel must really be running on Vercel, the preview at Render must be
+the app Render names `medali-preview`, and a local run must use a
+database on the same computer.
 
 ### Set only in the Vercel and Neon dashboards
 
@@ -251,9 +255,10 @@ leave "Testing". It is the app's link followed by `/privasi`: the public
 ### On the campus server
 
 There is no "Ganti peran" there, so Google sign-in is the only way in.
-The package refuses to start while any of the three settings is empty;
-"The campus server package" below says how. The address to register at
-Google is then the campus server's own link, followed by
+The package still starts while the three settings are empty: the
+sign-in page opens, and "Masuk dengan Google" says "Masuk dengan Google
+belum diatur.", so nobody can sign in yet. The address to register at
+Google is the campus server's own link, followed by
 `/masuk/google/kembali`.
 
 Signing in, signing out, and every refusal of an address that Google
@@ -272,6 +277,168 @@ the line that says where to get help. It is optional and empty at the
 start: while it is empty, nothing more shows. It is set in the Vercel
 dashboard for a preview, and in the settings file of the package on the
 campus server.
+
+## Render
+
+The app also runs at Render, in Singapore, at `medali.site`. It is the
+campus server package's app, so it runs in real-data mode: there is no
+"Ganti peran" and no sample data. It starts with an empty database.
+Vercel keeps the previews as before. Render also runs one preview of its
+own, described in "The preview at Render" below.
+
+### The three parts
+
+The file `render.yaml` describes them, and Render makes all three from
+it, beside the two parts of the preview:
+
+- `medali`: the app. It is built from `main` of the GitHub repo
+  `PojokAsrama/medali`, and built again on every merge to `main`. On
+  each start it checks its settings, applies the new table changes once,
+  and makes the place for files if it is not there yet, as the package
+  does; the log says each. It is the only part that can be reached from
+  the internet.
+- `medali-db`: the database, Postgres 17, with 1 GB of storage. Only the
+  app reaches it; nothing on the internet may connect to it.
+- `medali-files`: the file storage, the same as in the package, with a
+  1 GB disk that keeps the files when it starts again. Only the app
+  reaches it, inside Render.
+
+The database's storage and the file storage's disk can be made larger
+later on their pages at Render, but never smaller.
+
+Render makes the database's password and the file storage's secret key,
+and gives them to the app. No key or password is written in the repo.
+
+### Making the setup
+
+1. Make sure Render's GitHub app may read the repo `PojokAsrama/medali`.
+2. In the Render dashboard, choose "New", then "Blueprint", and pick the
+   repo `PojokAsrama/medali`.
+3. Render asks for the settings marked to fill in by hand:
+   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CAMPUS_EMAIL_ENDING` and
+   `CAMPUS_COUNSELLING_CONTACT`. Leave each one empty while it is not
+   known yet. If Render does not accept an empty one, remove that setting
+   from the form; it can be added later on the app's page. Render asks
+   only this first time; later they are changed on the app's page.
+4. Render makes the three parts and builds the app. Once the deploy is
+   done, the app's Render link, ending in `onrender.com`, opens "Masuk".
+   If the first deploy fails because the database or the file storage
+   was not ready yet, choose "Manual Deploy" on the app's page.
+
+Nobody can sign in yet: Google sign-in needs its three settings filled,
+and the address `https://medali.site/masuk/google/kembali` registered at
+Google, as in "Google sign-in" above. Signing in with an email and a
+password does not exist yet.
+
+### The domain
+
+`medali.site` is registered at Rumahweb, and its records are kept at
+Cloudflare. Do these steps by hand, in this order:
+
+1. At Rumahweb, set the nameservers of `medali.site` to the two that
+   Cloudflare gives for it.
+2. At Cloudflare, under "SSL/TLS", set the mode to "Full".
+3. At Cloudflare, remove any `AAAA` record of the domain: Render does
+   not answer at those addresses.
+4. At Cloudflare, under "DNS", add a `CNAME` record named `@` that points
+   to the app's Render link, such as `medali.onrender.com`, with "Proxy
+   status" set to "DNS only".
+5. Wait until the app's page at Render shows the certificate of
+   `medali.site` as valid. Render makes the certificate. After that the
+   record may be set to "Proxied".
+
+The Render link keeps working beside `medali.site`. Render also lists
+`www.medali.site` by itself; it stays unverified, because it has no
+record at Cloudflare.
+
+### The preview at Render
+
+One more copy of the app, with sample data only. It shows one PR at a
+time: the PR pushed last. It never touches `medali.site` or its data.
+`render.yaml` describes its two parts:
+
+- `medali-preview`: the app, at its own Render link, ending in
+  `onrender.com`. It has no domain and no file storage: uploads keep no
+  file, as on a preview at Vercel without file storage. It never
+  deploys by itself, not even from `main`.
+- `medali-preview-db`: its own database, which only the preview app
+  reaches; nothing on the internet may connect to it.
+
+The app knows it is the preview from two signs: the setting
+`MEDALI_RENDER_PREVIEW`, which `render.yaml` gives this app only, and
+the name Render gives the app, `medali-preview`. Only with both does it
+run with sample data and "Ganti peran". The app of `medali.site` is
+built with the campus mark, which wins over both.
+
+#### Which PR it shows
+
+The GitHub step "Pratinjau Render" has Render build a PR's last commit
+on the preview:
+
+- by itself, each time a PR to `main` is opened, reopened or gets a new
+  push. The push made last wins. A PR from a fork is skipped.
+- by hand, from the "Actions" tab on GitHub: choose "Pratinjau Render",
+  then "Run workflow", and fill in the PR's number. This brings back a
+  PR after another one was pushed. The PR must be open.
+
+It does so through the preview's deploy hook: a secret address that can
+only start a deploy of the preview, and change nothing else at Render.
+The step always runs as it is on `main`, so a PR cannot change it. While
+the hook's GitHub secret is missing, the step says so and does nothing;
+it does not fail.
+
+The preview's own branch at Render stays `main`. A deploy that Render
+starts by itself, such as after a "Manual Sync" of the Blueprint, shows
+`main` until the next push to a PR or a run of "Pratinjau Render" by
+hand.
+
+#### What a deploy does to its database
+
+The app starts its database over each time it starts with a commit it
+did not start with before: it empties the database, adds the tables of
+that PR, fills it with sample data, and only then opens. The log says
+"Render preview database started over with sample data", with the
+commit.
+
+When nobody has opened the preview for about 15 minutes, Render puts it
+to sleep. The next visit wakes it, which takes about a minute. Waking
+starts the app again with the same commit, so the data is kept, and the
+log says "data kept". Running "Pratinjau Render" for the PR that is
+already shown, with no new push, keeps the data too.
+
+Before it changes anything, the start checks the database's mark, as a
+deploy at Vercel does: the database is marked as a PR preview one on
+its first start. It refuses a database marked for the campus server,
+which the database of `medali.site` is, and one with no mark that
+already holds tables. The app then does not start, and the log says why.
+
+#### Making the preview
+
+Do these steps by hand, once, after this setup is merged to `main`:
+
+1. In the Render dashboard, open the Blueprint of `PojokAsrama/medali`.
+   If it does not list `medali-preview` and `medali-preview-db` yet,
+   choose "Manual Sync". Render makes both, builds the preview from
+   `main`, and starts it.
+2. On the page of `medali-preview`, open "Settings", find "Deploy
+   Hook", and copy its address. Anyone who has it can start a deploy of
+   the preview, and nothing else, so it goes only into GitHub's secrets.
+   If it ever leaks, choose "Regenerate Hook" there and put the new one
+   in GitHub.
+3. On GitHub, in the repo's "Settings", then "Secrets and variables",
+   then "Actions", add a repository secret named
+   `RENDER_PREVIEW_DEPLOY_HOOK`, holding the address.
+
+From the next push to a PR on, the preview shows that PR.
+
+#### What it costs
+
+- The app: Render's free size, which costs nothing. It sleeps when nobody
+  visits.
+- The database: the same smallest paid size as the database of
+  `medali.site`, with 1 GB of storage, so Render does not remove it
+  after a while. It costs as much as that one; Render's price page says
+  how much.
 
 ## The campus server package
 
@@ -305,11 +472,12 @@ While `.env.campus` is not there, Docker Compose itself stops with
 
 On every start the package does, in this order:
 
-1. It checks the settings. With a setting empty, with a database
-   password that holds anything but letters and digits, with a file
-   storage key that is too short, or with a setting that would turn
-   "Ganti peran" on elsewhere (`VERCEL_ENV`, `VERCEL`, or `NODE_ENV` set
-   to `development`), it stops there and nothing starts.
+1. It checks the settings. With the database password or a file storage
+   key empty, with a database password that holds anything but letters
+   and digits, with a file storage key that is too short, or with a
+   setting that would turn "Ganti peran" on elsewhere (`VERCEL_ENV`,
+   `VERCEL`, or `NODE_ENV` set to `development`), it stops there and
+   nothing starts.
    The reason, with the name of each setting to fill in, to change or to
    remove and never a value, is shown by:
 
@@ -320,10 +488,6 @@ On every start the package does, in this order:
 4. It makes the place for files, if it is not there yet.
 5. It starts the app, at port 3000 of the server unless `APP_PORT` in the
    settings file names another. The app opens on the sign-in page.
-
-The app run without this check, outside the package, still refuses
-empty Google sign-in settings by itself: it writes their names to its
-log and answers every address with an error.
 
 ### The first account
 

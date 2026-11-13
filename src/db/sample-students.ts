@@ -33,6 +33,83 @@ type Row = [
   extra?: Extra,
 ];
 
+/**
+ * The made-up Agama the sample students take in turn: every choice, with
+ * Islam the most often.
+ */
+const RELIGION_TURNS: NonNullable<SampleStudent["religion"]>[] = [
+  "islam",
+  "protestant",
+  "islam",
+  "catholic",
+  "islam",
+  "hindu",
+  "islam",
+  "buddhist",
+  "islam",
+  "confucian",
+];
+
+/** The made-up Agama of the sample student in this place of a list. */
+export function sampleReligion(
+  place: number,
+): NonNullable<SampleStudent["religion"]> {
+  return RELIGION_TURNS[place % RELIGION_TURNS.length] ?? "islam";
+}
+
+const BIRTH_AGES = [18, 19];
+const MONTHS = 12;
+/** Every month has a 28th day, so each made-up day is a real one. */
+const DAYS = 28;
+
+function twoDigits(number: number): string {
+  return String(number).padStart(2, "0");
+}
+
+/**
+ * The made-up Tanggal lahir of the sample student in this place of a list,
+ * 18 or 19 years before their angkatan, written the way the database keeps
+ * a day.
+ */
+export function sampleBirthDate(place: number, cohortYear: number): string {
+  const age = BIRTH_AGES[place % BIRTH_AGES.length] ?? 18;
+  const month = twoDigits((place % MONTHS) + 1);
+  const day = twoDigits(((place * 5) % DAYS) + 1);
+  return `${cohortYear - age}-${month}-${day}`;
+}
+
+/** The cities and regencies the sample students take in turn. */
+const BIRTH_PLACES = [
+  "Kota Bandung",
+  "Kabupaten Sleman",
+  "Kota Medan",
+  "Kabupaten Banyumas",
+  "Kota Makassar",
+  "Kabupaten Gianyar",
+  "Kota Pontianak",
+  "Kabupaten Jember",
+];
+
+/** The made-up Tempat lahir of the sample student in this place of a list. */
+export function sampleBirthPlace(place: number): string {
+  return BIRTH_PLACES[place % BIRTH_PLACES.length] ?? "Kota Bandung";
+}
+
+/**
+ * Gives each sample student of a list a made-up Agama, Tanggal lahir and
+ * Tempat lahir, in turn.
+ */
+export function withSampleDetails(
+  sampleStudents: SampleStudent[],
+): SampleStudent[] {
+  return sampleStudents.map((student, place) => ({
+    ...student,
+    religion: sampleReligion(place),
+    birthDate: sampleBirthDate(place, student.cohortYear),
+    birthPlace: sampleBirthPlace(place),
+  }));
+}
+
 const ON_LEAVE: Extra = { status: "on_leave" };
 const INACTIVE: Extra = { status: "inactive" };
 

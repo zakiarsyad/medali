@@ -52,7 +52,7 @@ describe("sampleDormCounts", () => {
     const women = counts.find((count) =>
       Object.keys(count.marks).every(
         (id) =>
-          id.startsWith("wismantara_putri") || id.startsWith("dana_rakca"),
+          id.startsWith("wismantara_putri") || id.startsWith("cipta_bakti"),
       ),
     );
     expect(women).toBeDefined();

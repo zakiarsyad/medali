@@ -15,9 +15,9 @@ import type { SentViolationRow, SentViolations } from "./violation-input";
 /** Made-up residents and BAM members for the checks of dorm violations. */
 
 export interface ViolationSetting {
-  /** Reguler women of the year's angkatan, who live in Dana Rakca. */
+  /** Reguler women of the year's angkatan, who live in Cipta Bakti. */
   residents: string[];
-  /** A Reguler man of that angkatan, who lives in Cipta Bakti. */
+  /** A Reguler man of that angkatan, who lives in Dana Rakca. */
   otherDorm: string;
   /** A student of an angkatan five years before, who lives in no dorm. */
   outsider: string;
@@ -111,7 +111,7 @@ export function violationsUnder(db: Database, key: string) {
 }
 
 /**
- * A violation of a resident of Dana Rakca on a day, added straight to
+ * A violation of a resident of Cipta Bakti on a day, added straight to
  * the table, announced at 21:00 that day. Gives back its key.
  */
 export async function addTestViolation(
@@ -126,7 +126,7 @@ export async function addTestViolation(
     .values({
       batchId: crypto.randomUUID(),
       studentId,
-      dorm: "dana_rakca",
+      dorm: "cipta_bakti",
       day,
       reason: "Terlambat apel pagi",
       punishment: "warning",

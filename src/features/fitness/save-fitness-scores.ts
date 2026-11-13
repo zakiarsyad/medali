@@ -153,9 +153,9 @@ async function save(
  * save is its own line in the log: it can never be changed or deleted,
  * and a student's score of the save made last counts. Refused, with
  * nothing kept, for a role without the right "Penilaian jasmani", for a
- * score that is not whole from 0 to 100, for a test day after today on
- * campus, with no score filled, and for any student who is not an Aktif
- * member of the group. `id` is the key its form made: a form sent twice
+ * score not from 0 to 100 with at most two decimals, for a test day
+ * after today on campus, with no score filled, and for any student who
+ * is not an Aktif member of the group. `id` is the key its form made: a form sent twice
  * is kept once, and the second press is answered as the first. Gives
  * how many scores were kept.
  */

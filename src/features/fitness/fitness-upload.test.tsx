@@ -10,7 +10,9 @@ describe("Unggah berkas of Input hasil tes kebugaran", () => {
     expect(html).toContain(
       "Satu baris per mahasiswa. Kolom: <b>nim</b>, <b>skor</b>.",
     );
-    expect(html).toContain("Skor 0–100.");
+    expect(html).toContain(
+      "Skor 0–100, paling banyak 2 angka di belakang koma.",
+    );
     expect(html).toContain("Satu berkas paling banyak 1.000 baris dan 1 MB.");
   });
 

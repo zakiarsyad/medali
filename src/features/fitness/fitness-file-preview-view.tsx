@@ -6,6 +6,7 @@ import type {
   FitnessFilePreview,
   FitnessPreviewRow,
 } from "./fitness-file-preview";
+import { shownScore } from "./fitness-words";
 
 function ReadyRow({ row }: { row: FitnessPreviewRow }) {
   return (
@@ -14,7 +15,7 @@ function ReadyRow({ row }: { row: FitnessPreviewRow }) {
       <td>
         <span className={shared.typed}>{row.name}</span>
       </td>
-      <td>{row.score}</td>
+      <td>{shownScore(row.score)}</td>
       <td>
         <CategoryBadge category={row.category} />
       </td>

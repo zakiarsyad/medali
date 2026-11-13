@@ -145,13 +145,13 @@ describe("readLeaveBoard", () => {
       ]);
       expect(list.cards[0]).toMatchObject({
         nim: "9937860001",
-        room: "Asrama Dana Rakca, kamar U-IZIN-1",
+        room: "Asrama Cipta Bakti, kamar U-IZIN-1",
         start: "13 Okt 2880, 09.00",
         length: "3 jam",
         destination: "Bintaro",
         warnings: [],
       });
-      expect(list.cards[1]?.room).toBe("Asrama Dana Rakca, belum diplot");
+      expect(list.cards[1]?.room).toBe("Asrama Cipta Bakti, belum diplot");
     });
   });
 

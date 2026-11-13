@@ -64,7 +64,7 @@ describe("readViolationSchedule", () => {
       ]);
       expect(schedule.rows[0]).toMatchObject({
         day: TODAY,
-        dorm: "dana_rakca",
+        dorm: "cipta_bakti",
         enteredBy: "BAM Uji Jadwal",
       });
     });

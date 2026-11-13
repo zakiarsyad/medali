@@ -1,0 +1,130 @@
+# The setup at Render: the app, its database and its file storage, and
+# the one preview with its own database, all in Singapore. Render makes every key and password; none is written
+# here. docs/HOSTING.md says how to make the setup and what is filled in
+# by hand.
+
+services:
+  # The campus server package's app, in real-data mode, built again on
+  # every merge to main. The only part that can be reached from outside.
+  - type: web
+    name: medali
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    repo: https://github.com/PojokAsrama/medali
+    branch: main
+    autoDeployTrigger: commit
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /masuk
+    domains:
+      - medali.site
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medali-db
+          property: connectionString
+      # Host and port only; the app reaches it over http.
+      - key: FILE_STORAGE_URL
+        fromService:
+          type: pserv
+          name: medali-files
+          property: hostport
+      - key: FILE_STORAGE_BUCKET
+        value: medali
+      - key: FILE_STORAGE_ACCESS_KEY
+        fromService:
+          type: pserv
+          name: medali-files
+          envVarKey: MINIO_ROOT_USER
+      - key: FILE_STORAGE_SECRET_KEY
+        fromService:
+          type: pserv
+          name: medali-files
+          envVarKey: MINIO_ROOT_PASSWORD
+      # Filled in by hand, and may stay empty.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CAMPUS_EMAIL_ENDING
+        sync: false
+      - key: CAMPUS_COUNSELLING_CONTACT
+        sync: false
+
+  # The one preview: one PR at a time, the one pushed last, with sample
+  # data only. It never deploys by itself: a GitHub step has its deploy
+  # hook build a PR's last commit. The free size, which sleeps when nobody
+  # visits. No file storage: uploads keep no file here.
+  - type: web
+    name: medali-preview
+    runtime: node
+    region: singapore
+    plan: free
+    repo: https://github.com/PojokAsrama/medali
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: corepack pnpm install --frozen-lockfile && corepack pnpm build
+    # Starts its database over with sample data, once for each commit,
+    # then the app. Waking from sleep keeps the data.
+    startCommand: node_modules/.bin/tsx src/db/deploy-command.ts && node_modules/.bin/next start
+    healthCheckPath: /masuk
+    envVars:
+      # The sign that this is the preview: sample data and Ganti peran.
+      # The app also checks that Render names it medali-preview.
+      - key: MEDALI_RENDER_PREVIEW
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: medali-preview-db
+          property: connectionString
+      # pnpm is fetched once while building, without asking.
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
+
+  # The same file storage as in the package, reached only by the app.
+  - type: pserv
+    name: medali-files
+    runtime: image
+    image:
+      url: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    region: singapore
+    plan: 0.5c-512mb
+    # A fixed port for its web page too, so Render never takes it for the
+    # file storage's own port.
+    dockerCommand: minio server /data --console-address :9001
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      # A fixed name, not a made one: a made one can hold "/", which an
+      # access key cannot.
+      - key: MINIO_ROOT_USER
+        value: medali
+      - key: MINIO_ROOT_PASSWORD
+        generateValue: true
+      # Tells Render which port the file storage answers at.
+      - key: PORT
+        value: 9000
+
+databases:
+  # Reached only by the app: no address on the internet may connect.
+  - name: medali-db
+    region: singapore
+    plan: 0.1c-256mb
+    diskSizeGB: 1
+    postgresMajorVersion: "17"
+    databaseName: medali
+    user: medali
+    ipAllowList: []
+
+  # The preview's own database, sample data only, of the same size as the
+  # one of medali.site. Reached only by the preview app.
+  - name: medali-preview-db
+    region: singapore
+    plan: 0.1c-256mb
+    diskSizeGB: 1
+    postgresMajorVersion: "17"
+    databaseName: medali_preview
+    user: medali
+    ipAllowList: []

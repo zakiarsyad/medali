@@ -9,7 +9,7 @@ import type { NoteCategory } from "./health-ids";
 
 const inTestDatabase = withTestDatabase();
 
-const SCORES = [null, 100, 85, 84, 70, 69, 55, 54, 0];
+const SCORES = [null, 100, 85, 84.99, 84, 70, 69.99, 69, 55, 54.99, 54, 0];
 const NOTES: (NoteCategory | null)[] = [null, "good", "attention", "medical"];
 
 function expectedRank(score: number | null, note: NoteCategory | null) {
@@ -23,7 +23,7 @@ describe("finalRankSql", () => {
     await inTestDatabase(async (db) => {
       for (const score of SCORES) {
         for (const note of NOTES) {
-          const scoreSql = sql`${score}::integer`;
+          const scoreSql = sql`${score}::numeric(5, 2)`;
           const noteSql = sql`${note}::health_note_category`;
           const [row] = await db.execute<{ rank: number | null }>(
             sql`select ${finalRankSql(scoreSql, noteSql, STARTING_LIMITS)} as rank`,

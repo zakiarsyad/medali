@@ -38,26 +38,47 @@ export function objectAddress(
   return `${base}/${path}`;
 }
 
+/** A busy storage gets a few more tries; more would keep a person waiting. */
+const RETRIES = 2;
+const FIRST_WAIT_MS = 50;
+
+function worthRetrying(status: number): boolean {
+  return status >= 500 || status === 429;
+}
+
 function sender(settings: FileStorageSettings): Send {
   const client = new AwsClient({
     accessKeyId: settings.accessKey,
     secretAccessKey: settings.secretKey,
     service: "s3",
-    // The library's ten tries would keep a person waiting for a minute.
-    retries: 2,
   });
-  return (method, address, file) => {
-    const request: RequestInit = {
-      method,
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    };
+  return async (method, address, file) => {
+    const request: RequestInit = { method };
     if (file) {
       // Copied, so the request holds the file's own bytes and nothing
       // else of a larger buffer they may be a view of.
-      request.body = new Blob([new Uint8Array(file.bytes)]);
+      request.body = new Uint8Array(file.bytes);
       request.headers = { "content-type": file.contentType };
     }
-    return client.fetch(address, request);
+    const signal = AbortSignal.timeout(TIMEOUT_MS);
+    for (let attempt = 0; ; attempt++) {
+      const signed = await client.sign(address, request);
+      // Sent with the bytes themselves, not the signed request: the
+      // Next.js server rebuilds a request from its body stream, which
+      // drops the file's size, and the storage refuses a file without it.
+      const response = await fetch(signed.url, {
+        method,
+        headers: signed.headers,
+        body: request.body ?? null,
+        signal,
+      });
+      if (attempt === RETRIES || !worthRetrying(response.status)) {
+        return response;
+      }
+      await new Promise((wait) =>
+        setTimeout(wait, FIRST_WAIT_MS * 2 ** attempt),
+      );
+    }
   };
 }
 

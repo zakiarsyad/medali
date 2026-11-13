@@ -2,8 +2,13 @@ import { count, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import type { Stage } from "@/settings";
 import {
+  forgetStartedCommit,
+  noteStartedCommit,
+  readStartedCommit,
+} from "./deploy-commit";
+import {
   checkDeployTarget,
-  type DatabaseKind,
+  databaseKindFor,
   deployPlanFor,
   type MainPreviewState,
   type StartOverReason,
@@ -71,21 +76,44 @@ async function deployMainPreview(db: PostgresJsDatabase): Promise<string> {
 }
 
 /**
- * The database step of a Vercel build. The checks that guard it run
- * before anything is changed.
+ * The Render preview starts its database over once for each commit it
+ * shows, and keeps the data when it only wakes from sleep. The commit is
+ * noted last, so a start that failed anywhere is tried again. Without a
+ * commit named, every start is a new one.
+ */
+async function deployRenderPreview(
+  db: PostgresJsDatabase,
+  commit: string | undefined,
+): Promise<string> {
+  if (commit && (await readStartedCommit(db)) === commit) {
+    return `Render preview database already holds the sample data of commit ${commit}; data kept.`;
+  }
+  await forgetStartedCommit(db);
+  await startOver(db);
+  if (!commit) {
+    return "Render preview database started over with sample data; Render named no commit.";
+  }
+  await noteStartedCommit(db, commit);
+  return `Render preview database started over with sample data for commit ${commit}.`;
+}
+
+/**
+ * The database step of a preview: in a Vercel build, or when the Render
+ * preview starts, with the commit Render deployed. The checks that guard
+ * it run before anything is changed.
  */
 export async function deployDatabase(
   db: PostgresJsDatabase,
   stage: Stage,
   branch: string | undefined,
+  commit?: string,
 ): Promise<string> {
   const plan = deployPlanFor(stage, branch);
   const check = checkDeployTarget(plan, await readDeployTarget(db));
-  const kind: DatabaseKind =
-    plan === "reset-to-sample-data" ? "pr-preview" : "main-preview";
-  if (check === "mark-and-go") await markDatabase(db, kind);
+  if (check === "mark-and-go") await markDatabase(db, databaseKindFor(plan));
 
   if (plan === "apply-table-changes") return deployMainPreview(db);
+  if (plan === "reset-for-new-commit") return deployRenderPreview(db, commit);
   // Also removes the tables other PRs added.
   await startOver(db);
   return "PR preview database reset to sample data.";

@@ -24,7 +24,16 @@ export const CATEGORY_MEANINGS: Record<FitnessCategory, string> = {
     "Perlu pemeriksaan atau penanganan medis; lengkapi catatan kesehatan.",
 };
 
-/** The scores of a category, such as 85–100. */
+/** One end of a range: whole as it is, else with two decimals, such as 84,99. */
+function endWords(end: number): string {
+  if (Number.isInteger(end)) return String(end);
+  return end.toLocaleString("id-ID", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+/** The scores of a category, such as 85–100 or 70–84,99. */
 export function rangeWords(range: ScoreRange): string {
-  return `${range.lowest}–${range.highest}`;
+  return `${endWords(range.lowest)}–${endWords(range.highest)}`;
 }

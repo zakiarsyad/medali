@@ -67,7 +67,16 @@ async function addDraftWithAddedStudent(
 async function openForm(db: Database, nim: string) {
   const stored = await findAddedStudent(db, nim);
   if (!stored) throw new Error("The student was not put in here.");
-  const { mentorGroupId, version, ...record } = stored;
+  const { mentorGroupId, version, religion, birthDate, birthPlace, ...rest } =
+    stored;
+  // Agama, Tanggal lahir and Tempat lahir must be filled to save, as in the
+  // form.
+  const record = {
+    ...rest,
+    religion: religion ?? "islam",
+    birthDate: birthDate ?? "2005-08-17",
+    birthPlace: birthPlace ?? "Kota Contoh",
+  };
   return { record, openedGroupId: mentorGroupId, version };
 }
 

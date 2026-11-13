@@ -62,7 +62,7 @@ describe("two people adding the same student at the same moment", () => {
 
     const both = await own.atOnce(
       (db) =>
-        addResident(db, one, { studentId: id, dorm: "dana_rakca", note }, DAY),
+        addResident(db, one, { studentId: id, dorm: "cipta_bakti", note }, DAY),
       (db) =>
         addResident(
           db,
@@ -76,9 +76,9 @@ describe("two people adding the same student at the same moment", () => {
     expect(both.later).toEqual({
       ok: false,
       error:
-        "Uji 9935000301 sudah penghuni Asrama Dana Rakca. Muat ulang halaman untuk melihat daftar terbaru.",
+        "Uji 9935000301 sudah penghuni Asrama Cipta Bakti. Muat ulang halaman untuk melihat daftar terbaru.",
     });
-    expect(await readStudentDorm(own.db, id, DAY)).toBe("dana_rakca");
+    expect(await readStudentDorm(own.db, id, DAY)).toBe("cipta_bakti");
     expect(await logLinesOf(id)).toBe(1);
   });
 });

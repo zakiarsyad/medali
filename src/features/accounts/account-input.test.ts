@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseNewAccount, parseRoleChange } from "./account-input";
+import {
+  parseAccountChange,
+  parseNewAccount,
+  parseRoleChange,
+} from "./account-input";
 
 const valid = {
   name: "Budi Contoh",
@@ -204,5 +208,69 @@ describe("parseRoleChange", () => {
   it("accepts no managed role, which leaves only roles not managed here", () => {
     const parsed = parseRoleChange({ ...change, roles: [] });
     expect(parsed.ok && parsed.value.roles).toEqual([]);
+  });
+});
+
+describe("parseAccountChange", () => {
+  const change = {
+    accountId: "6f1c1f8e-3b7a-4c55-9a51-2f7d3c8b9e10",
+    name: " Budi Contoh ",
+    title: "",
+    nip: "",
+    email: "Budi.Contoh@kampus.example",
+    roles: ["mentor"],
+    studyProgramId: "",
+    unit: "",
+  };
+
+  it("accepts new details with the roles, as Tambah pengguna keeps them", () => {
+    expect(parseAccountChange(change)).toEqual({
+      ok: true,
+      value: {
+        accountId: change.accountId,
+        name: "Budi Contoh",
+        title: null,
+        nip: null,
+        email: "budi.contoh@kampus.example",
+        roles: ["mentor"],
+        studyProgramId: null,
+        unit: null,
+      },
+    });
+  });
+
+  it.each([
+    ["an empty name", { name: "" }, "Isi nama lengkap."],
+    [
+      "a name over its longest length",
+      { name: "a".repeat(101) },
+      "Nama paling banyak 100 karakter.",
+    ],
+    [
+      "a title over its longest length",
+      { title: "a".repeat(51) },
+      "Gelar paling banyak 50 karakter.",
+    ],
+    [
+      "a NIP with letters",
+      { nip: "1980A" },
+      "NIP hanya berisi angka, paling banyak 18 digit.",
+    ],
+    [
+      "a NIP over 18 digits",
+      { nip: "1".repeat(19) },
+      "NIP hanya berisi angka, paling banyak 18 digit.",
+    ],
+    ["a bad email", { email: "budi" }, "Isi email kedinasan yang benar."],
+    [
+      "an account id that is not one",
+      { accountId: "x" },
+      "Akun tidak ditemukan.",
+    ],
+  ])("refuses %s with the words of Tambah pengguna", (_kind, wrong, error) => {
+    expect(parseAccountChange({ ...change, ...wrong })).toEqual({
+      ok: false,
+      error,
+    });
   });
 });

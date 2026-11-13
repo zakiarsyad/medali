@@ -66,11 +66,11 @@ type Actor = { roles: RoleId[] };
 
 interface TestRows {
   program: number;
-  /** A room of Dana Rakca for two. */
+  /** A room of Cipta Bakti for two. */
   roomId: string;
-  /** An active kakak pendamping of Dana Rakca without a room. */
+  /** An active kakak pendamping of Cipta Bakti without a room. */
   companion: string;
-  /** Two residents of Dana Rakca without a room, in NIM order. */
+  /** Two residents of Cipta Bakti without a room, in NIM order. */
   residents: string[];
 }
 
@@ -96,7 +96,7 @@ async function addTestRows(db: Database): Promise<TestRows> {
   return { program, roomId, companion, residents };
 }
 
-/** One more active kakak pendamping of Dana Rakca without a room. */
+/** One more active kakak pendamping of Cipta Bakti without a room. */
 async function addSecondCompanion(db: Database, program: number) {
   const id = await addTestStudent(db, program, {
     nim: "9936610002",
@@ -107,7 +107,7 @@ async function addSecondCompanion(db: Database, program: number) {
   return id;
 }
 
-/** An active kakak pendamping of Dana Rakca who lives in Wismantara Putri. */
+/** An active kakak pendamping of Cipta Bakti who lives in Wismantara Putri. */
 async function addWismantaraCompanion(db: Database, program: number) {
   const id = await addTestStudent(db, program, {
     nim: "9936610003",
@@ -232,12 +232,12 @@ describe("placeCompanion", () => {
       const { companion } = await addTestRows(db);
       const elsewhere = await addTestRoom(db, {
         number: "KP103",
-        dorm: "cipta_bakti",
+        dorm: "dana_rakca",
       });
 
       expect(await place(db, elsewhere, companion)).toEqual({
         ok: false,
-        error: "Kakak pendamping ini bertugas di Asrama Dana Rakca.",
+        error: "Kakak pendamping ini bertugas di Asrama Cipta Bakti.",
       });
     });
   });
@@ -273,7 +273,7 @@ describe("placeCompanion", () => {
     });
   });
 
-  it("refuses one who lives in Dana Rakca now", async () => {
+  it("refuses one who lives in Cipta Bakti now", async () => {
     await inTestDatabase(async (db) => {
       const { program, roomId } = await addTestRows(db);
       const resident = await addTestStudent(db, program, {

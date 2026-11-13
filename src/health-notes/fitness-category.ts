@@ -35,7 +35,12 @@ export function categoryOf(
   return "medical";
 }
 
-/** The scores a category holds with these limits. */
+/** The highest score with two decimals under a limit, such as 84,99 under 85. */
+function justUnder(limit: number): number {
+  return (limit * 100 - 1) / 100;
+}
+
+/** The scores a category holds with these limits, decimals counted in. */
 export function categoryRange(
   category: FitnessCategory,
   limits: FitnessLimits,
@@ -44,10 +49,16 @@ export function categoryRange(
     case "excellent":
       return { lowest: limits.excellentFrom, highest: SCORE_MAX };
     case "good":
-      return { lowest: limits.goodFrom, highest: limits.excellentFrom - 1 };
+      return {
+        lowest: limits.goodFrom,
+        highest: justUnder(limits.excellentFrom),
+      };
     case "attention":
-      return { lowest: limits.attentionFrom, highest: limits.goodFrom - 1 };
+      return {
+        lowest: limits.attentionFrom,
+        highest: justUnder(limits.goodFrom),
+      };
     case "medical":
-      return { lowest: SCORE_MIN, highest: limits.attentionFrom - 1 };
+      return { lowest: SCORE_MIN, highest: justUnder(limits.attentionFrom) };
   }
 }

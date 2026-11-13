@@ -47,9 +47,9 @@ const FROM = { startsOn: "2710-08-01" };
 
 interface Records {
   counter: TestActor;
-  /** A Reguler woman of semester 1: she lives in Dana Rakca. */
+  /** A Reguler woman of semester 1: she lives in Cipta Bakti. */
   ani: string;
-  /** Another one, in Dana Rakca too. */
+  /** Another one, in Cipta Bakti too. */
   cici: string;
   /** A Reguler woman of semester 3: she lives in no dorm. */
   senior: string;

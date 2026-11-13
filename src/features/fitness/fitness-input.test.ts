@@ -13,7 +13,7 @@ import {
   parseScores,
   parseTestDay,
   readyCount,
-  SCORE_NOT_WHOLE,
+  SCORE_NOT_VALID,
   scoreOf,
   testYearOf,
   yearStartOf,
@@ -75,37 +75,61 @@ describe("scoreOf", () => {
     ["100", 100],
     ["72", 72],
     [" 72 ", 72],
-  ])("reads %j as %i", (typed, score) => {
+    ["85,25", 85.25],
+    ["85.25", 85.25],
+    ["72,5", 72.5],
+    ["84,99", 84.99],
+    ["100,00", 100],
+    ["0,01", 0.01],
+  ])("reads %j as %d", (typed, score) => {
     expect(scoreOf(typed)).toBe(score);
   });
 
-  it.each(["101", "-1", "72.5", "72,5", "abc", "", "007"])(
-    "reads %j as no score",
-    (typed) => {
-      expect(scoreOf(typed)).toBeNull();
-    },
-  );
+  it.each([
+    "101",
+    "-1",
+    "100,01",
+    "85,255",
+    "85.255",
+    "85,",
+    ",5",
+    "85,2,5",
+    "85 ,25",
+    "abc",
+    "",
+    "007",
+  ])("reads %j as no score", (typed) => {
+    expect(scoreOf(typed)).toBeNull();
+  });
 });
 
 describe("readyCount", () => {
-  it("counts every filled field when all are whole scores", () => {
-    expect(readyCount(["72", "", "100", " 0 "])).toBe(3);
+  it("counts every filled field when all are good scores", () => {
+    expect(readyCount(["72", "", "100", " 0 ", "85,25"])).toBe(4);
   });
 
-  it("counts only the whole scores beside wrong ones", () => {
-    expect(readyCount(["72", "101", "7.5"])).toBe(1);
+  it("counts only the good scores beside wrong ones", () => {
+    expect(readyCount(["72", "101", "7,555"])).toBe(1);
   });
 
   it("counts nothing when every filled field is wrong", () => {
-    expect(readyCount(["101", "7.5", ""])).toBe(0);
+    expect(readyCount(["101", "7,555", ""])).toBe(0);
   });
 
-  it.each(["0", "100", "72", "101", "-1", "72.5", "72,5", "abc", "007"])(
-    "counts %j just as the field's own message judges it",
-    (typed) => {
-      expect(readyCount([typed])).toBe(scoreOf(typed) === null ? 0 : 1);
-    },
-  );
+  it.each([
+    "0",
+    "100",
+    "72",
+    "101",
+    "-1",
+    "72.5",
+    "72,5",
+    "72,555",
+    "abc",
+    "007",
+  ])("counts %j just as the field's own message judges it", (typed) => {
+    expect(readyCount([typed])).toBe(scoreOf(typed) === null ? 0 : 1);
+  });
 });
 
 describe("parseScores", () => {
@@ -126,7 +150,7 @@ describe("parseScores", () => {
     expect(parseScores([])).toEqual({ ok: false, error: NO_SCORE });
   });
 
-  it.each(["101", "-3", "72.5"])(
+  it.each(["101", "-3", "85,255", "100,5"])(
     "refuses the whole form when one score is %j",
     (typed) => {
       expect(
@@ -134,13 +158,30 @@ describe("parseScores", () => {
           { studentId: ANI, typed: "80" },
           { studentId: BUDI, typed },
         ]),
-      ).toEqual({ ok: false, error: SCORE_NOT_WHOLE });
+      ).toEqual({ ok: false, error: SCORE_NOT_VALID });
     },
   );
 
+  it("keeps a score with two decimals, with a comma or a dot", () => {
+    expect(
+      parseScores([
+        { studentId: ANI, typed: "85,25" },
+        { studentId: BUDI, typed: "85.25" },
+      ]),
+    ).toEqual({
+      ok: true,
+      value: [
+        { studentId: ANI, score: 85.25 },
+        { studentId: BUDI, score: 85.25 },
+      ],
+    });
+  });
+
   it("says why in the words of the tab", () => {
     expect(NO_SCORE).toBe("Isi minimal satu skor.");
-    expect(SCORE_NOT_WHOLE).toBe("Skor harus bilangan bulat 0–100.");
+    expect(SCORE_NOT_VALID).toBe(
+      "Skor harus angka 0–100, paling banyak 2 angka di belakang koma.",
+    );
   });
 });
 

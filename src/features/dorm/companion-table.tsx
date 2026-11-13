@@ -5,6 +5,7 @@ import {
   stopCompanionAction,
 } from "./companion-actions";
 import type { ListedCompanion } from "./companion-list";
+import { CompanionNoteButton } from "./companion-note-button";
 import styles from "./companions.module.css";
 import { RoomButton } from "./room-button";
 
@@ -73,6 +74,7 @@ function CompanionRow({
       </td>
       {mayManage && (
         <td className={`${shared.rowActions} ${styles.duty}`}>
+          <CompanionNoteButton companion={companion} />
           <DutyButton companion={companion} />
         </td>
       )}
@@ -86,7 +88,10 @@ export function CompanionTable({
   mayManage,
 }: {
   companions: ListedCompanion[];
-  /** Whether the account may stop and restart a duty, or only see the list. */
+  /**
+   * Whether the account may change the Keterangan and stop and restart a
+   * duty, or only see the list.
+   */
   mayManage: boolean;
 }) {
   return (

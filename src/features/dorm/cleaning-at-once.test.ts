@@ -28,7 +28,7 @@ import { addTestActor, type TestActor } from "./test-records";
 const own = withOwnTestDatabase("cleaning");
 const MANAGER = { roles: ["dorm_manager"] as RoleId[] };
 const BAM = { roles: ["bam_household"] as RoleId[] };
-const DORM = "dana_rakca";
+const DORM = "cipta_bakti";
 const PROGRAM = "Prodi Uji Bersih Serentak";
 const TAKEN = {
   ok: false,

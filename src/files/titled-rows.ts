@@ -25,11 +25,14 @@ export interface TitledFile {
 
 /**
  * One filled row of a file. `row` is its number in the file, from 1;
- * `cells` are its texts, trimmed, in the order of the template.
+ * `cells` are its texts, trimmed, in the order of the template;
+ * `overflows` is whether it fills a cell beyond the file's columns, as
+ * an unquoted decimal comma does.
  */
 export interface NumberedRow {
   row: number;
   cells: string[];
+  overflows: boolean;
 }
 
 function refused(error: string): { ok: false; error: string } {
@@ -41,7 +44,11 @@ function shown(amount: number): string {
 }
 
 function filled(rows: string[][]): NumberedRow[] {
-  const numbered = rows.map((cells, index) => ({ row: index + 1, cells }));
+  const numbered = rows.map((cells, index) => ({
+    row: index + 1,
+    cells,
+    overflows: false,
+  }));
   return numbered.filter(({ cells }) => cells.some((cell) => cell.trim()));
 }
 
@@ -85,10 +92,19 @@ function placesByTitle(titles: string[], file: TitledFile): Parsed<number[]> {
   return { ok: true, value: places };
 }
 
-/** The cells of a row in the order of the template, empty where none is. */
-function inTemplateOrder(row: NumberedRow, places: number[]): NumberedRow {
+/**
+ * The cells of a row in the order of the template, empty where none is,
+ * and whether it fills a cell past the first `width`.
+ */
+function inTemplateOrder(
+  row: NumberedRow,
+  places: number[],
+  width: number,
+): NumberedRow {
   const cells = places.map((place) => (row.cells[place] ?? "").trim());
-  return { row: row.row, cells };
+  const beyond = row.cells.slice(width);
+  const overflows = beyond.some((cell) => cell.trim() !== "");
+  return { row: row.row, cells, overflows };
 }
 
 /**
@@ -124,6 +140,9 @@ export function readTitledRows(
       `Berkas berisi ${shown(records.length)} baris ${file.noun}, paling banyak ${shown(MAX_FILE_ROWS)}. Bagi menjadi beberapa berkas, lalu unggah satu per satu.`,
     );
   }
-  const ordered = records.map((row) => inTemplateOrder(row, places.value));
+  const width = hasTitles ? titles.length : file.columns.length;
+  const ordered = records.map((row) =>
+    inTemplateOrder(row, places.value, width),
+  );
   return { ok: true, value: ordered };
 }

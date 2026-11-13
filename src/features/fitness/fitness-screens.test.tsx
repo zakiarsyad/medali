@@ -117,6 +117,12 @@ describe("Penilaian jasmani", () => {
     );
   });
 
+  it("says under Input hasil tes kebugaran what a score may be", () => {
+    expect(screen()).toContain(
+      "Data utama penilaian jasmani, dites setahun sekali. Skor 0–100, paling banyak 2 angka di belakang koma.",
+    );
+  });
+
   it("shows - for Rerata skor while nobody is tested", () => {
     const html = screen({ ...NUMBERS, meanScore: null });
 
@@ -127,7 +133,7 @@ describe("Penilaian jasmani", () => {
     const html = screen();
 
     expect(html).toContain("Kategori");
-    for (const range of ["(85–100)", "(70–84)", "(55–69)", "(0–54)"]) {
+    for (const range of ["(85–100)", "(70–84,99)", "(55–69,99)", "(0–54,99)"]) {
       expect(html).toContain(range);
     }
     expect(html.match(/<meter /g)).toHaveLength(4);
@@ -177,7 +183,7 @@ describe("Hasil tes kebugaran", () => {
     expect(html).toContain("Ani Contoh");
     expect(html).toContain("9986200201 · D3 Pajak");
     expect(html).toContain('<td data-title="Tes">1 Okt 2026</td>');
-    expect(html).toMatch(/data-title="Skor">72<\/td>/);
+    expect(html).toMatch(/data-title="Skor">72,00<\/td>/);
     expect(html).toMatch(/data-title="Kategori"><span[^>]*>Baik<\/span>/);
     expect(html).toMatch(/data-title="Tes">-<\/td>/);
     expect(html).toMatch(

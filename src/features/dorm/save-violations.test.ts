@@ -75,9 +75,9 @@ describe("saveViolations", () => {
       const kept = await violationsUnder(db, key);
       expect(kept.map((row) => [row.studentId, row.dorm])).toEqual(
         expect.arrayContaining([
-          [ani, "dana_rakca"],
-          [setting.otherDorm, "cipta_bakti"],
-          [bea, "dana_rakca"],
+          [ani, "cipta_bakti"],
+          [setting.otherDorm, "dana_rakca"],
+          [bea, "cipta_bakti"],
         ]),
       );
       for (const row of kept) {
