@@ -10,6 +10,8 @@ import { SCORE_NOT_VALID, scoreOf } from "./fitness-input";
 
 export const UNKNOWN_NIM = "NIM tidak ada dalam data mahasiswa.";
 export const NOT_ACTIVE = "Mahasiswa tidak aktif.";
+export const TOO_MANY_CELLS =
+  'Baris punya kolom lebih banyak dari judul kolom. Beri tanda kutip pada skor berdesimal, contoh "79,5".';
 
 /** A filled row of a fitness file: its number in the file, from 1. */
 export interface FitnessLine {
@@ -17,6 +19,8 @@ export interface FitnessLine {
   nim: string;
   /** The text under skor. */
   score: string;
+  /** Whether it fills a cell beyond the file's columns. */
+  overflows: boolean;
 }
 
 /** What the server knows of a student a file names by NIM. */
@@ -67,7 +71,12 @@ function refused(error: string): { ok: false; error: string } {
 }
 
 function lineOf(row: NumberedRow): FitnessLine {
-  return { row: row.row, nim: row.cells[0] ?? "", score: row.cells[1] ?? "" };
+  return {
+    row: row.row,
+    nim: row.cells[0] ?? "",
+    score: row.cells[1] ?? "",
+    overflows: row.overflows,
+  };
 }
 
 /**
@@ -106,6 +115,7 @@ function checkLine(
   line: FitnessLine,
   known: ReadonlyMap<string, FileStudent>,
 ): Parsed<ReadyFitnessRow> {
+  if (line.overflows) return refused(TOO_MANY_CELLS);
   const student = studentOf(line.nim, known);
   if (!student.ok) return student;
   const score = scoreOf(line.score);

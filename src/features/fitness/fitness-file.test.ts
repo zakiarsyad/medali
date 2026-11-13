@@ -7,6 +7,7 @@ import {
   fitnessFileRows,
   NOT_ACTIVE,
   readFitnessFile,
+  TOO_MANY_CELLS,
   UNKNOWN_NIM,
 } from "./fitness-file";
 import { fitnessTemplateCsv } from "./fitness-file-columns";
@@ -125,6 +126,24 @@ describe("readFitnessFile and fitnessFileRows", () => {
       expect(read(TITLES, line).ready).toEqual([
         expect.objectContaining({ nim: "4121230001", score }),
       ]);
+    },
+  );
+
+  it.each([
+    ["with titles", [TITLES, "4121230001,79,5"]],
+    ["without titles", ["4121230001,79,5"]],
+  ])(
+    "skips a row with a decimal comma left unquoted, %s, rather than keep a wrong score",
+    (_, lines) => {
+      const rows = read(...lines);
+
+      expect(rows.ready).toEqual([]);
+      expect(rows.skipped).toEqual([
+        expect.objectContaining({ nim: "4121230001", reason: TOO_MANY_CELLS }),
+      ]);
+      expect(TOO_MANY_CELLS).toBe(
+        'Baris punya kolom lebih banyak dari judul kolom. Beri tanda kutip pada skor berdesimal, contoh "79,5".',
+      );
     },
   );
 
