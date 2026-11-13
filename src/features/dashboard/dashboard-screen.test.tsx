@@ -488,7 +488,7 @@ describe("DashboardScreen", () => {
     expect(html).toContain("30 dari 40 sudah dites<");
     expect(html).toContain("Prima <span");
     expect(html).toContain("(85–100)");
-    expect(html).toContain("(0–54)");
+    expect(html).toContain("(0–54,99)");
     expect(html).toMatch(
       /aria-label="Perlu tindak lanjut medis"><\/meter><span[^>]*>&lt;5</,
     );
@@ -506,7 +506,7 @@ describe("DashboardScreen", () => {
 
       expect(html).toContain("Arti kategori");
       expect(html).toMatch(/>Prima<\/span> <span[^>]*>85–100<\/span>/);
-      expect(html).toMatch(/>Baik<\/span> <span[^>]*>70–84<\/span>/);
+      expect(html).toMatch(/>Baik<\/span> <span[^>]*>70–84,99<\/span>/);
       for (const meaning of [
         "Kebugaran sangat baik, tidak perlu catatan.",
         "Kebugaran baik, tidak perlu catatan.",

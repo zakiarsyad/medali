@@ -45,30 +45,34 @@ describe("categoryRange", () => {
     });
     expect(categoryRange("good", STARTING_LIMITS)).toEqual({
       lowest: 70,
-      highest: 84,
+      highest: 84.99,
     });
     expect(categoryRange("attention", STARTING_LIMITS)).toEqual({
       lowest: 55,
-      highest: 69,
+      highest: 69.99,
     });
     expect(categoryRange("medical", STARTING_LIMITS)).toEqual({
       lowest: 0,
-      highest: 54,
+      highest: 54.99,
     });
   });
 
   it("follows the limits in force", () => {
     const limits = { excellentFrom: 90, goodFrom: 75, attentionFrom: 60 };
 
-    expect(categoryRange("good", limits)).toEqual({ lowest: 75, highest: 89 });
+    expect(categoryRange("good", limits)).toEqual({
+      lowest: 75,
+      highest: 89.99,
+    });
     expect(categoryRange("medical", limits)).toEqual({
       lowest: 0,
-      highest: 59,
+      highest: 59.99,
     });
   });
 
   it("holds every score in the range of the category it is put in", () => {
-    for (let score = 0; score <= 100; score += 1) {
+    for (let hundredths = 0; hundredths <= 10000; hundredths += 1) {
+      const score = hundredths / 100;
       const range = categoryRange(
         categoryOf(score, STARTING_LIMITS),
         STARTING_LIMITS,

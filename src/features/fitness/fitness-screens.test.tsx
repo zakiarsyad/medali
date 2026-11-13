@@ -127,7 +127,7 @@ describe("Penilaian jasmani", () => {
     const html = screen();
 
     expect(html).toContain("Kategori");
-    for (const range of ["(85–100)", "(70–84)", "(55–69)", "(0–54)"]) {
+    for (const range of ["(85–100)", "(70–84,99)", "(55–69,99)", "(0–54,99)"]) {
       expect(html).toContain(range);
     }
     expect(html.match(/<meter /g)).toHaveLength(4);
