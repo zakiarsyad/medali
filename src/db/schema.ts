@@ -4149,8 +4149,9 @@ export const fitnessTests = pgTable(
 );
 
 /**
- * One student's score of a save of fitness test scores, whole from 0 to
- * 100. A student's score of the save made last counts; the earlier ones
+ * One student's score of a save of fitness test scores, from 0 to 100
+ * with at most two decimals, kept exactly and read as a number. A
+ * student's score of the save made last counts; the earlier ones
  * stay as history. Rows here cannot be changed or deleted; the database
  * refuses it, so the scores are their own log, and a wrong one is
  * replaced by a new save.
@@ -4164,7 +4165,7 @@ export const fitnessScores = pgTable(
     studentId: uuid()
       .notNull()
       .references(() => students.id),
-    score: smallint().notNull(),
+    score: numeric({ precision: 5, scale: 2, mode: "number" }).notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.testId, table.studentId] }),

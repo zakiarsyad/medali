@@ -1,0 +1,1 @@
+ALTER TABLE "fitness_scores" ALTER COLUMN "score" SET DATA TYPE numeric(5, 2);

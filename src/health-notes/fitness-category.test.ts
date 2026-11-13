@@ -16,6 +16,19 @@ describe("categoryOf", () => {
     expect(categoryOf(score, STARTING_LIMITS)).toBe(category);
   });
 
+  it.each([
+    [84.99, "good"],
+    [85, "excellent"],
+    [85.25, "excellent"],
+    [69.99, "attention"],
+    [54.99, "medical"],
+  ] as const)(
+    "puts %d, with its decimals, in %s with the starting limits",
+    (score, category) => {
+      expect(categoryOf(score, STARTING_LIMITS)).toBe(category);
+    },
+  );
+
   it("works a score out again with new limits: with Baik from 75, 72 is Perlu perhatian", () => {
     const limits: FitnessLimits = { ...STARTING_LIMITS, goodFrom: 75 };
 

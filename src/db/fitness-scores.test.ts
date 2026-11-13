@@ -137,25 +137,31 @@ describe("a setting of Ambang skor", () => {
 });
 
 describe("a fitness score", () => {
-  it.each([0, 100])("keeps a score of %i", async (score) => {
-    await inTestDatabase(async (db) => {
-      const { studentId } = await addSavedScore(db, score);
+  it.each([0, 100, 85.25, 84.99, 72.5])(
+    "keeps a score of %d exactly",
+    async (score) => {
+      await inTestDatabase(async (db) => {
+        const { studentId } = await addSavedScore(db, score);
 
-      const kept = await db
-        .select()
-        .from(fitnessScores)
-        .where(eq(fitnessScores.studentId, studentId));
-      expect(kept).toEqual([expect.objectContaining({ score })]);
-    });
-  });
+        const kept = await db
+          .select()
+          .from(fitnessScores)
+          .where(eq(fitnessScores.studentId, studentId));
+        expect(kept).toEqual([expect.objectContaining({ score })]);
+      });
+    },
+  );
 
-  it.each([-1, 101])("is refused with a score of %i", async (score) => {
-    await inTestDatabase(async (db) => {
-      await expect(
-        inOwnStep(db, (tx) => addSavedScore(tx, score)),
-      ).rejects.toThrow();
-    });
-  });
+  it.each([-1, 101, -0.01, 100.01])(
+    "is refused with a score of %d",
+    async (score) => {
+      await inTestDatabase(async (db) => {
+        await expect(
+          inOwnStep(db, (tx) => addSavedScore(tx, score)),
+        ).rejects.toThrow();
+      });
+    },
+  );
 
   it("is kept once per student in one save", async () => {
     await inTestDatabase(async (db) => {

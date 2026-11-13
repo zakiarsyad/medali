@@ -53,7 +53,7 @@ typed and shown with its decimals.
 
 ## Steps
 
-- [ ] 1. A fitness score is stored with up to two decimals, and the
+- [x] 1. A fitness score is stored with up to two decimals, and the
   category rule handles decimals, with checks.
 - [ ] 2. "Formulir kolektif" accepts and saves scores with up to two
   decimals.

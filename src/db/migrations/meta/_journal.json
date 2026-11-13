@@ -568,6 +568,13 @@
       "when": 1794367088098,
       "tag": "0080_student-birth-place",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1794559409279,
+      "tag": "0081_fitness-two-decimals",
+      "breakpoints": true
     }
   ]
 }
