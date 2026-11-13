@@ -14,8 +14,8 @@ export const FITNESS_FILE_COLUMNS = [
 
 export const FITNESS_TEMPLATE_FILE_NAME = "templat-tes-kebugaran.csv";
 
-/** What the score column takes, in the prototype's words. */
-export const FITNESS_FILE_NOTE = `Skor ${SCORE_MIN}–${SCORE_MAX}.`;
+/** What the score column takes, as the group form takes it. */
+export const FITNESS_FILE_NOTE = `Skor ${SCORE_MIN}–${SCORE_MAX}, paling banyak 2 angka di belakang koma.`;
 
 /** A made-up student and the score 82. */
 const TEMPLATE_EXAMPLE: readonly string[] = ["4121239999", "82"];

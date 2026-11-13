@@ -117,6 +117,12 @@ describe("Penilaian jasmani", () => {
     );
   });
 
+  it("says under Input hasil tes kebugaran what a score may be", () => {
+    expect(screen()).toContain(
+      "Data utama penilaian jasmani, dites setahun sekali. Skor 0–100, paling banyak 2 angka di belakang koma.",
+    );
+  });
+
   it("shows - for Rerata skor while nobody is tested", () => {
     const html = screen({ ...NUMBERS, meanScore: null });
 
