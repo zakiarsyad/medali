@@ -55,7 +55,7 @@ typed and shown with its decimals.
 
 - [x] 1. A fitness score is stored with up to two decimals, and the
   category rule handles decimals, with checks.
-- [ ] 2. "Formulir kolektif" accepts and saves scores with up to two
+- [x] 2. "Formulir kolektif" accepts and saves scores with up to two
   decimals.
 - [ ] 3. Scores show with two decimals in the list, the student detail,
   Profil saya and the Dashboard.

@@ -106,9 +106,6 @@ describe("readFitnessFile and fitnessFileRows", () => {
     ["negative", "4121230001,-1"],
     ["empty", "4121230001,"],
     ["a word", "4121230001,baik"],
-    ["with a decimal point", "4121230001,79.5"],
-    ["with a decimal comma", '4121230001,"79,5"'],
-    ["a whole number written with a decimal", "4121230001,80.0"],
   ])("skips a row with a score %s, as the form refuses it", (_, line) => {
     expect(reasonFor(line)).toBe(SCORE_NOT_IN_RANGE);
   });

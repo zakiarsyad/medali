@@ -33,7 +33,7 @@ const ROWS = [
   "9986200702,88",
   "9986200701,72",
   "9986200799,80",
-  "9986200703,79.5",
+  "9986200703,79.555",
 ];
 
 function csv(lines: string[], name = "kebugaran-oktober.csv") {

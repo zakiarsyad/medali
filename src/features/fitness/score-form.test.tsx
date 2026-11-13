@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { STARTING_LIMITS } from "@/health-notes/fitness-ids";
-import { SCORE_NOT_WHOLE } from "./fitness-input";
+import { SCORE_NOT_VALID } from "./fitness-input";
 import { MemberTable, ScoreForm } from "./score-form";
 
 const GROUPS = [
@@ -88,6 +88,9 @@ describe("the category beside each Skor baru, with the starting limits 85/70/55"
   it.each([
     ["72", ">Baik</span>"],
     ["54", ">Perlu tindak lanjut medis</span>"],
+    ["84,99", ">Baik</span>"],
+    ["85,00", ">Prima</span>"],
+    ["85.25", ">Prima</span>"],
   ])("shows %j as %s", (typed, badge) => {
     expect(categoryShownFor(typed)).toContain(badge);
   });
@@ -97,11 +100,11 @@ describe("the category beside each Skor baru, with the starting limits 85/70/55"
     expect(categoryShownFor("  ")).toBe("");
   });
 
-  it.each(["101", "72.5"])(
-    "flags %j as no whole score before saving",
+  it.each(["101", "85,255"])(
+    "flags %j as no good score before saving",
     (typed) => {
       const shown = categoryShownFor(typed);
-      expect(shown).toContain(SCORE_NOT_WHOLE);
+      expect(shown).toContain(SCORE_NOT_VALID);
       expect(shown).not.toContain("Baik");
     },
   );

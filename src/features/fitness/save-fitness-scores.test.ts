@@ -15,7 +15,7 @@ import {
   DAY_IN_FUTURE,
   NO_SCORE,
   NO_TEST_DAY,
-  SCORE_NOT_WHOLE,
+  SCORE_NOT_VALID,
 } from "./fitness-input";
 import {
   NOT_ALLOWED_TO_ENTER,
@@ -104,6 +104,36 @@ describe("saveFitnessScores", () => {
     });
   });
 
+  it("keeps a score with two decimals exactly, typed with a comma or a dot", async () => {
+    await inTestDatabase(async (db) => {
+      const { groupId, penilai, ids } = await addGroups(db);
+
+      const saved = await saveFitnessScores(
+        db,
+        penilai,
+        crypto.randomUUID(),
+        {
+          groupId,
+          testedOn: "2026-10-16",
+          rows: [
+            { studentId: ids.ani, typed: "85,25" },
+            { studentId: ids.budi, typed: "84.99" },
+            { studentId: ids.citra, typed: "" },
+          ],
+        },
+        MOMENT,
+      );
+
+      expect(saved).toEqual({ ok: true, value: 2 });
+      const members = await readGroupMembers(db, penilai, groupId);
+      expect(members.map((member) => member.latestScore)).toEqual([
+        85.25,
+        84.99,
+        null,
+      ]);
+    });
+  });
+
   it("lets Kepala Unit save too", async () => {
     await inTestDatabase(async (db) => {
       const { groupId, ids } = await addGroups(db);
@@ -156,8 +186,8 @@ describe("saveFitnessScores", () => {
   });
 
   it.each<[string, string, string, string]>([
-    ["a score above 100", "2026-10-16", "101", SCORE_NOT_WHOLE],
-    ["a score that is not whole", "2026-10-16", "72.5", SCORE_NOT_WHOLE],
+    ["a score above 100", "2026-10-16", "101", SCORE_NOT_VALID],
+    ["a score with three decimals", "2026-10-16", "72,555", SCORE_NOT_VALID],
     ["a test day after today", "2026-10-17", "80", DAY_IN_FUTURE],
     ["no test day", "", "80", NO_TEST_DAY],
   ])(
